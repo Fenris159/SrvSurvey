@@ -91,7 +91,7 @@ namespace SrvSurvey.plotters
             };
 
             // if not many jumps but we have a followed route - use that instead
-            if (route.Count < 2 && game.cmdr.route.active)
+            if (route.Count < 2 && game.cmdr.route.active && game.cmdr.route.hops.Count > 0)
             {
                 route = game.cmdr.route.hops.Select(h => new RouteEntry()
                 {
@@ -100,6 +100,7 @@ namespace SrvSurvey.plotters
                     StarPos = h.xyz!,
                     StarClass = h.neutron ? "N" : null!,
                 }).ToList();
+                routeStart = route.First();
             }
 
             // proceed with either FSDTarget or status.Destination, or exit early if none
@@ -325,7 +326,7 @@ namespace SrvSurvey.plotters
 
         private void drawJumpLine(Graphics g, TextCursor tt)
         {
-            if (hopDistances.Count == 0) return;
+            if (hopDistances.Count == 0 || totalDistance == 0) return;
             tt.dty += N.four;
             // draw text for `#1 of 2` on left, and total distance travelled on the right
             var szLeft = tt.draw(N.eight, Res.JumpCounts.format(nextHopIdx + 1, hopDistances.Count));
@@ -343,7 +344,7 @@ namespace SrvSurvey.plotters
 
             // draw the whole line if we are travelling a long way (as drawing it in parts looks poor)
             var limitExcessDistance = 1000;
-            if (this.totalDistance > limitExcessDistance)
+            if (this.totalDistance > limitExcessDistance && game.navRoute.Route.Count > 2)
                 g.DrawLine(GameColors.Route.penBehind, x, y, x - lineWidth, y);
 
             // prep rectangles for drawing dots and scoop arcs above them

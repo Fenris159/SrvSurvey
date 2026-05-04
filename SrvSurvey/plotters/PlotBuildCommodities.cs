@@ -223,8 +223,9 @@ namespace SrvSurvey.plotters
             }
             else
             {
-                // nothing to show
-                this.hide();
+                // nothing to show?
+                if (!dockedAtConstructionSite)
+                    this.hide();
                 this.needs = new();
             }
 

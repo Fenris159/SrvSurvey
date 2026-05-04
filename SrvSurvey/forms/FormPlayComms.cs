@@ -31,7 +31,7 @@ namespace SrvSurvey.forms
 
         public PlayState cmdrPlay;
         private Control? selectedThing;
-        private string mode = "quests";
+        private string mode = "msgs";
         private Control lastLeftBtn;
         public string? lastListName;
         private Dictionary<string, string> mappedGameKeyBinds = new();
@@ -407,6 +407,7 @@ namespace SrvSurvey.forms
                     // remember this message has now been read
                     if (!pm.read)
                     {
+                        await pm.parent.onMessageRead(pm.id);
                         pm.read = true;
                         await pm.parent.updateIfDirty(true);
                     }
@@ -940,7 +941,9 @@ namespace SrvSurvey.forms
             tt.newLine();
 
             // subject (ellipse if too wide)
-            var subject = pm.subject ?? qm?.subject ?? pm.body ?? qm?.body;
+            var subject = pm.subject ?? qm?.subject ?? pm.body ?? qm?.body ?? "";
+            subject = subject.Replace("`", "");
+
             var flags = tt.flags;
             tt.flags |= TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis;
             tt.drawWrapped(N.forty, tt.containerWidth - (int)N.ten, subject, GameColors.Fonts.arial_12);

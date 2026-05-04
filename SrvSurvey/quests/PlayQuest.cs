@@ -259,6 +259,20 @@ public class PlayQuest
         return count > 0;
     }
 
+    /// <summary> Called by Quest Comms when a player first views a message </summary>
+    public async Task onMessageRead(string msgId)
+    {
+        this.log($"PQ.onMessageRead: {msgId}");
+        var pm = msgs.Find(m => m.id == msgId);
+        if (pm == null) throw new Exception($"Message not found, id: {msgId}");
+        var chapterId = pm.chapter!;
+
+        var chapter = chapters.FirstOrDefault(c => c.id == chapterId);
+        if (chapter == null) throw new Exception($"Bad chapter id: {id}");
+
+        await chapter.onMessageRead(msgId);
+    }
+
     /// <summary> Called by Quest Comms when a player hit a message reply button </summary>
     public async Task invokeMessageAction(string msgId, string actionId)
     {

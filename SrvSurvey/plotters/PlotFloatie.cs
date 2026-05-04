@@ -34,7 +34,10 @@ namespace SrvSurvey.plotters
             var game = Game.activeGame;
             if (!Game.settings.autoShowFloatie_TEST || game == null) return;
             if (Program.control.InvokeRequired)
+            {
                 Program.defer(() => showMessage(msg));
+                return;
+            }
 
             var existing = messages.Find(_ => _.msg == msg);
             if (existing != null)

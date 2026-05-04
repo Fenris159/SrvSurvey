@@ -200,7 +200,7 @@ namespace SrvSurvey
             if (game == null) return true;
 
             // we need a route for this to work
-            if (game.navRoute.Route.Count > 0)
+            if (game.navRoute.Route.Count > 0 || (game.cmdr.route.active && game.cmdr.route.hops.Count > 0))
             {
                 var jumpInfo = PlotBase2.getPlotter<PlotJumpInfo>();
                 if (jumpInfo == null)

@@ -270,7 +270,6 @@ namespace SrvSurvey.forms
             if (game.status.hasLatLong)
             {
                 var txt = $"{game.status.Latitude}, {game.status.Longitude}";
-                if (game.status.Latitude > 0) txt = "+" + txt;
                 Clipboard.SetText(txt);
             }
         }

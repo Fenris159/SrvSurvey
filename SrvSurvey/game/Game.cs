@@ -643,7 +643,7 @@ namespace SrvSurvey.game
                 if (Game.settings.buildProjects_TEST)
                     this.cmdrColony.fetchLatest().justDoIt();
 
-                if (Game.settings.enableQuests)
+                if (Game.settings.enableQuests && !string.IsNullOrEmpty(this.cmdr.rccApiKey))
                     PlayState.loadAsync(this.cmdr.fid).justDoIt();
             }
 
@@ -2766,16 +2766,18 @@ namespace SrvSurvey.game
             if (this.systemStation != null && systemStation.marketId != entry.MarketID) Debugger.Break(); // Would this ever happen?
             if (this.systemData == null) return;
 
-            if (entry.StationServices == null
+            var knownStation = systemData.getStation(entry.MarketID);
+
+            if (knownStation == null && (entry.StationServices == null
                 || entry.StationServices.Count == 0 // horizons old settlements are not compatible
                 || entry.StationServices.Contains("socialspace") // bigger settlements (Planetary ports) are not compatible
                 || ColonyData.isConstructionSite(entry.Name, entry.StationServices) // Colonization construction sites are not compatible
                 || entry.StationGovernment == "$government_Engineer;" // Engineer's stations (with no socialspace) are also not compatible
-            )
+            ))
                 return;
 
             // use known station reference if this station is known, or start creating a new one
-            this.systemStation = systemData.getStation(entry.MarketID);
+            this.systemStation = knownStation;
             if (this.systemStation == null)
             {
                 Game.log($"Creating new CanonnStation for '{entry.Name}' ({entry.MarketID}) ");

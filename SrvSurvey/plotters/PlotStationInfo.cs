@@ -152,7 +152,7 @@ namespace SrvSurvey.plotters
                 foreach (var entry in station.economies.OrderByDescending(kv => kv.Value))
                 {
                     tt.draw(indent, $"{entry.Key}: ", GameColors.Fonts.gothic_9);
-                    tt.draw($"{entry.Value.ToString("F2")}%", count < 2 ? C.cyan : C.orange, GameColors.Fonts.gothic_9);
+                    tt.draw($"{entry.Value.ToString("F0")}%", count < 2 ? C.cyan : C.orange, GameColors.Fonts.gothic_9);
                     tt.newLine(true);
                     count++;
                 }

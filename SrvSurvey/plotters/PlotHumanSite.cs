@@ -678,14 +678,14 @@ namespace SrvSurvey.plotters
             // draw relative to cmdr's location ...
             this.resetMiddleRotated(g);
 
-            // draw any quest markers?
-            if (PlayState.cmdr?.activeQuests.Count > 0)
-                drawQuestMarkers(g, PlayState.cmdr);
-
             this.drawShipAndSrvLocation(g, tt);
 
+            // draw any quest markers?
             if (PlayState.cmdr?.activeQuests.Count > 0)
+            {
                 drawRouteWayPoints(g, PlayState.cmdr);
+                drawQuestMarkers(g, PlayState.cmdr);
+            }
 
             // draw relative to center of window ...
             this.resetMiddle(g);
@@ -988,7 +988,12 @@ namespace SrvSurvey.plotters
                         markSize * 2,
                         markSize * 2);
 
-                    g.DrawEllipse(C.Pens.menuGold3r, rect);
+                    var p = C.Pens.menuGold3r;
+                    var dist = (double)Util.getDistance(ll2, Status.here, this.radius);
+                    if (dist < ll3.size)
+                        p = C.Pens.cyan3r;
+
+                    g.DrawEllipse(p, rect);
                 }
             }
         }

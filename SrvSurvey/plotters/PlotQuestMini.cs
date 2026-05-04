@@ -23,7 +23,7 @@ namespace SrvSurvey.plotters
             return Game.settings.enableQuests
                 // NOT suppressed by buildProjectsSuppressOtherOverlays
                 && PlayState.cmdr?.activeQuests.Count > 0
-                && game.isMode(GameMode.Flying, GameMode.SuperCruising, GameMode.GlideMode, GameMode.InSrv, GameMode.OnFoot, GameMode.OnFootInStation, GameMode.InTaxi, GameMode.CommsPanel, GameMode.InFighter, GameMode.Docked, GameMode.Landed, GameMode.FSDJumping, GameMode.StationServices, GameMode.ExternalPanel)
+                && game.isMode(GameMode.Flying, GameMode.SuperCruising, GameMode.GlideMode, GameMode.InSrv, GameMode.OnFoot, GameMode.OnFootInStation, GameMode.InTaxi, GameMode.CommsPanel, GameMode.InFighter, GameMode.Docked, GameMode.Landed, GameMode.FSDJumping, GameMode.StationServices, GameMode.ExternalPanel, GameMode.InternalPanel)
                 ;
         }
 

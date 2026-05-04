@@ -550,6 +550,7 @@ class RavenColonial
 
         var response = await RavenColonial.client.SendAsync(req);
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return [];
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) return [];
 
         var json = await response.Content.ReadAsStringAsync();
         var obj = JsonConvert.DeserializeObject<Dictionary<string, PlayQuest>>(json);

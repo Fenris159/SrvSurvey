@@ -225,7 +225,7 @@ end");
 
         // invoke the function?
         if (state.Environment[funcName].Type == LuaValueType.Function)
-            shouldSave |=  await invokeLuaFunc(funcName, new LuaValue[] { entry });
+            shouldSave |= await invokeLuaFunc(funcName, new LuaValue[] { entry });
 
         // special case for easier emote/gesture processing
         if (eventName == "ReceiveText" && state.Environment.ContainsKey(LuaFunc.onEmote))
@@ -236,6 +236,14 @@ end");
         }
 
         return shouldSave;
+    }
+
+    private async Task<bool> invokeIfLuaFunc(string funcName, LuaValue[] args)
+    {
+        if (state.Environment[funcName].TryRead<LuaFunction>(out var func))
+            return await invokeLuaFunc(funcName, args);
+        else
+            return false;
     }
 
     private async Task<bool> invokeLuaFunc(string funcName, LuaValue[] args)
@@ -304,10 +312,25 @@ end");
         return await invokeLuaFunc(LuaFunc.onEmote, [actor, action, target]);
     }
 
+    /// <summary> Called by Quest Comms when a player FIRST reads a message </summary>
+    public async Task onMessageRead(string msgId)
+    {
+        if (!active) throw new Exception($"Cannot invoke message read action: {msgId}, chapter not active: {id}");
+
+        var pm = pq.msgs.Find(m => m.id == msgId);
+        if (pm == null) throw new Exception($"Message not found, id: {msgId}");
+        var chapterId = pm.chapter!;
+
+        // invoke the action
+        await invokeIfLuaFunc(LuaFunc.onMsgRead, new LuaValue[] { msgId });
+
+        PlayState.updateUI(pq);
+    }
+
     /// <summary> Called by Quest Comms when a player hit a message reply button </summary>
     public async Task invokeMessageAction(string msgId, string actionId)
     {
-        if (!active) throw new Exception($"Cannot invoke message action: {actionId}, chapter not active: {id}");
+        if (!active) throw new Exception($"Cannot invoke message: {msgId}, response action: {actionId}, chapter not active: {id}");
 
         var pm = pq.msgs.Find(m => m.id == msgId);
         if (pm == null) throw new Exception($"Message not found, id: {msgId}");

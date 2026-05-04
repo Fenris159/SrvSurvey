@@ -118,5 +118,6 @@ public static class LuaFunc
 {    
     public static string onStart = "onStart";
     public static string onMsgAction = "onMsgAction";
+    public static string onMsgRead = "onMsgRead";
     public static string onEmote = "onEmote";
 };
