@@ -70,8 +70,8 @@ namespace SrvSurvey.forms
             btnWatch.Visible = Debugger.IsAttached;
             btnDev.Visible = Debugger.IsAttached;
 
-            if (PlayState.cmdr != null)
-                this.cmdrPlay = PlayState.cmdr;
+            if (PlayState.current != null)
+                this.cmdrPlay = PlayState.current;
         }
 
         protected override void OnLoad(EventArgs e)
@@ -409,7 +409,7 @@ namespace SrvSurvey.forms
                     {
                         await pm.parent.onMessageRead(pm.id);
                         pm.read = true;
-                        await pm.parent.updateIfDirty(true);
+                        await pm.parent.save(true);
                     }
 
                     setSelectedThing(new PanelMsg(this, pm, qm));
@@ -763,7 +763,7 @@ namespace SrvSurvey.forms
                 g.SmoothingMode = SmoothingMode.None;
                 var p = btn?.pen(C.Pens.orangeDark1, C.Pens.menuGold1, C.Pens.black1) ?? C.Pens.orangeDark1;
                 if (colorObjectives && active) p = C.Pens.cyanDark1;
-                g.DrawRectangle(p, x, tt.dty+N.three, w + 5, N.ten);
+                g.DrawRectangle(p, x, tt.dty + N.three, w + 5, N.ten);
 
                 w = w / obj.total * obj.current;
                 var b = btn?.brush(C.Brushes.orangeDark, C.Brushes.menuGold, C.Brushes.black) ?? C.Brushes.orangeDark;
@@ -829,12 +829,19 @@ namespace SrvSurvey.forms
 
         private void BtnQ_Click(object? sender, EventArgs e)
         {
+            var btn = sender as Control;
+            if (btn == null) return;
+            btn.Enabled = false;
+
             var rslt = MessageBox.Show("Are you sure you want to abandon this quest?", "SrvSurvey", MessageBoxButtons.YesNo);
             if (rslt == DialogResult.Yes)
             {
-                pq.parent.removeQuest(pq);
-                form.clearSelection();
-                PlayState.updateUI(pq);
+                pq.parent.removeQuest(pq, game.RavenColonial.QuestState.unknown).continueOnMain(form, () =>
+                {
+                    form.clearSelection();
+                    PlayState.updateUI(null);
+                    btn.Enabled = true;
+                });
             }
         }
 
@@ -1124,7 +1131,7 @@ namespace SrvSurvey.forms
 
             pq.invokeMessageAction(pm.id, actionId).continueOnMain(this.form, async () =>
             {
-                await pq.updateIfDirty();
+                await pq.save();
                 form.clearSelection();
                 form.onQuestChanged();
             });

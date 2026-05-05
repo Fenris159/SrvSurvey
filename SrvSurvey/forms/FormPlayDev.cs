@@ -41,10 +41,10 @@ namespace SrvSurvey.forms
 
             this.setChildrenEnabled(false);
 
-            if (PlayState.cmdr == null || reset)
-                this.cmdrPlay = await PlayState.loadAsync(PlayState.cmdr?.fid ?? CommanderSettings.currentOrLastFid);
+            if (PlayState.current == null || reset)
+                this.cmdrPlay = await PlayState.loadAsync(PlayState.current?.fid ?? CommanderSettings.currentOrLastFid);
             else
-                this.cmdrPlay = PlayState.cmdr;
+                this.cmdrPlay = PlayState.current;
 
             if (cmdrPlay.devQuest != null)
                 this.pq = cmdrPlay.devQuest;
@@ -74,6 +74,8 @@ namespace SrvSurvey.forms
 
         public void onQuestChanged(PlayQuest? pq = null)
         {
+            if (cmdrPlay == null) return;
+
             txtDevQuest.Text = cmdrPlay.devQuest?.quest.title ?? "(none)";
             txtDevVer.Text = (cmdrPlay.devQuest?.quest.ver ?? 0).ToString();
             this.pq = cmdrPlay.devQuest!;

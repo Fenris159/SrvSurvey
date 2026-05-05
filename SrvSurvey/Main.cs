@@ -363,8 +363,8 @@ namespace SrvSurvey
         private void removeGame()
         {
             Game.log($"Main.removeGame, has old game: {this.game != null} (cmdr: {this.game?.Commander})");
-            PlayState.cmdr?.Save(false);
-            PlayState.cmdr = null;
+            PlayState.current?.Save(true);
+            PlayState.current = null;
             Program.closeAllPlotters();
             BigOverlay.close();
             PlotBase2.closeAll();

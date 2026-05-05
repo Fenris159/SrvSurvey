@@ -256,7 +256,7 @@ namespace SrvSurvey.plotters
             var sysName = SystemNickNames.get(this.netData.systemName);
             tt.draw(" " + sysName, GameColors.fontMiddleBold);
             // quest related?
-            if (PlayState.cmdr?.isTagged(netData.systemName) == true)
+            if (PlayState.current?.isTagged(netData.systemName) == true)
                 PlotQuestMini.drawLogo(g, tt.dtx + N.six, N.ten, true, N.oneSix);
 
             if (netData.starClass != null)

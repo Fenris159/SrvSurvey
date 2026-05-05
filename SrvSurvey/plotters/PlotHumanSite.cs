@@ -538,7 +538,7 @@ namespace SrvSurvey.plotters
             var headerLeftSz = tt.draw(N.eight, headerTxt);
 
             // quest related?
-            if (PlayState.cmdr?.isTagged(station.name) == true)
+            if (PlayState.current?.isTagged(station.name) == true)
                 PlotQuestMini.drawLogo(g, tt.dtx + N.six, N.eight, true, N.oneFour);
 
             // (one time) figure out how much space we need for the zoom headers
@@ -681,10 +681,10 @@ namespace SrvSurvey.plotters
             this.drawShipAndSrvLocation(g, tt);
 
             // draw any quest markers?
-            if (PlayState.cmdr?.activeQuests.Count > 0)
+            if (PlayState.current?.activeQuests.Count > 0)
             {
-                drawRouteWayPoints(g, PlayState.cmdr);
-                drawQuestMarkers(g, PlayState.cmdr);
+                drawRouteWayPoints(g, PlayState.current);
+                drawQuestMarkers(g, PlayState.current);
             }
 
             // draw relative to center of window ...

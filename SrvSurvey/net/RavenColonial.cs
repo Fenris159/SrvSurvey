@@ -502,6 +502,8 @@ class RavenColonial
         var json2 = await response.Content.ReadAsStringAsync();
 
         Game.log($"RCC.publishQuest: HTTP:{(int)response.StatusCode}({response.StatusCode}) {response.ReasonPhrase}");
+        if (!response.IsSuccessStatusCode) Debugger.Break();
+
         return response.ReasonPhrase ?? "?";
     }
 
@@ -521,42 +523,114 @@ class RavenColonial
 
         var obj = JsonConvert.DeserializeObject<DefQuest>(json)!;
         Game.log($"RCC.getQuest: HTTP:{(int)response.StatusCode}({response.StatusCode}) {response.ReasonPhrase}");
+        if (!response.IsSuccessStatusCode) Debugger.Break();
 
         return obj;
     }
 
-    public async Task saveCmdrQuests(string fid, List<PlayQuest> playQuests)
+    public async Task saveCmdrQuest(string fid, PlayQuest pq)
     {
-        var nonDevQuests = playQuests
-            .Where(pq => !pq.dev)
-            .ToDictionary(pq => QuestRef.from(pq.quest), pq => pq);
+        if (pq.dev || string.IsNullOrEmpty(pq.publisher) || string.IsNullOrWhiteSpace(pq.id) || pq.ver == 0) return;
 
-        Game.log($"RCC.saveCmdrQuests: {nonDevQuests.Count} quests");
+        Game.log($"RCC.saveCmdrQuest: {pq.publisher}/{pq.id}/{pq.ver}");
 
-        var json1 = JsonConvert.SerializeObject(nonDevQuests);
+        var json1 = JsonConvert.SerializeObject(pq);
         var body = new StringContent(json1, Encoding.Default, "application/json");
         body.Headers.addIf("rcc-key", this.getApiKey(fid));
 
-        var response = await RavenColonial.client.PostAsync($"{svcUri}/api/quest/save", body);
-        var json2 = await response.Content.ReadAsStringAsync();
+        var response = await RavenColonial.client.PostAsync($"{svcUri}/api/quest/cmdr/save/{Uri.EscapeDataString(pq.publisher)}/{Uri.EscapeDataString(pq.id)}", body);
+        //var json2 = await response.Content.ReadAsStringAsync();
 
         Game.log($"RCC.saveCmdrQuest: HTTP:{(int)response.StatusCode}({response.StatusCode}) {response.ReasonPhrase}");
+        if (!response.IsSuccessStatusCode) Debugger.Break();
     }
 
-    public async Task<Dictionary<QuestRef, PlayQuest>> loadCmdrQuests(string fid)
+    public async Task<PlayQuest[]> loadCmdrQuests(string fid, QuestState state)
     {
-        var req = new HttpRequestMessage(HttpMethod.Post, $"{svcUri}/api/quest/load");
+        var req = new HttpRequestMessage(HttpMethod.Post, $"{svcUri}/api/quest/cmdr/load/{state}");
         req.Headers.addIf("rcc-key", this.getApiKey(fid));
 
         var response = await RavenColonial.client.SendAsync(req);
+        Game.log($"RCC.loadCmdrQuests: HTTP:{(int)response.StatusCode}({response.StatusCode}) {response.ReasonPhrase}");
+        if (!response.IsSuccessStatusCode) Debugger.Break();
+
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return [];
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) return [];
 
         var json = await response.Content.ReadAsStringAsync();
-        var obj = JsonConvert.DeserializeObject<Dictionary<string, PlayQuest>>(json);
+        var obj = JsonConvert.DeserializeObject<PlayQQuest[]>(json);
+        return obj ?? [];
+    }
 
-        Game.log($"RCC.loadCmdrQuests: HTTP:{(int)response.StatusCode}({response.StatusCode}) {response.ReasonPhrase}");
-        return obj?.ToDictionary(x => QuestRef.parse(x.Key), x => x.Value) ?? [];
+    public async Task<QuestSummary[]> getCmdrQuests(string fid)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, $"{svcUri}/api/quest/cmdr");
+        req.Headers.addIf("rcc-key", this.getApiKey(fid));
+
+        var response = await RavenColonial.client.SendAsync(req);
+        Game.log($"RCC.getCmdrQuests: HTTP:{(int)response.StatusCode}({response.StatusCode}) {response.ReasonPhrase}");
+        if (!response.IsSuccessStatusCode) Debugger.Break();
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return [];
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) return [];
+
+        var json = await response.Content.ReadAsStringAsync();
+        var obj = JsonConvert.DeserializeObject<QuestSummary[]>(json) ?? [];
+        return obj;
+    }
+
+    public async Task<DefQuest> activateQuest(string fid, string publisher, string id)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, $"{svcUri}/api/quest/cmdr/{Uri.EscapeDataString(publisher)}/{Uri.EscapeDataString(id)}/activate");
+        req.Headers.addIf("rcc-key", this.getApiKey(fid));
+
+        var response = await RavenColonial.client.SendAsync(req);
+        Game.log($"RCC.activateQuest: HTTP:{(int)response.StatusCode}({response.StatusCode}) {response.ReasonPhrase}");
+        if (!response.IsSuccessStatusCode) Debugger.Break();
+
+        var json = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode) throw new Exception(json);
+
+        var obj = JsonConvert.DeserializeObject<DefQuest>(json)!;
+        return obj;
+    }
+
+    public async Task<bool> deleteQuest(string fid, string publisher, string id)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, $"{svcUri}/api/quest/cmdr/{Uri.EscapeDataString(publisher)}/{Uri.EscapeDataString(id)}/activate");
+        req.Headers.addIf("rcc-key", this.getApiKey(fid));
+
+        var response = await RavenColonial.client.SendAsync(req);
+        Game.log($"RCC.deleteQuest: HTTP:{(int)response.StatusCode}({response.StatusCode}) {response.ReasonPhrase}");
+        if (!response.IsSuccessStatusCode) Debugger.Break();
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> setQuestState(string fid, string publisher, string id, QuestState newState)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, $"{svcUri}/api/quest/cmdr/{Uri.EscapeDataString(publisher)}/{Uri.EscapeDataString(id)}/state/{newState}");
+        req.Headers.addIf("rcc-key", this.getApiKey(fid));
+
+        var response = await RavenColonial.client.SendAsync(req);
+        Game.log($"RCC.setQuestState: HTTP:{(int)response.StatusCode}({response.StatusCode}) {response.ReasonPhrase}");
+        if (!response.IsSuccessStatusCode) Debugger.Break();
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<string?> getQuestChapter(string fid, string publisher, string id, double version, string chapterId)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, $"{svcUri}/api/quest/{Uri.EscapeDataString(publisher)}/{Uri.EscapeDataString(id)}/{version}/chapter/{Uri.EscapeDataString(chapterId)}");
+        req.Headers.addIf("rcc-key", this.getApiKey(fid));
+
+        var response = await RavenColonial.client.SendAsync(req);
+        Game.log($"RCC.getQuestChapter: HTTP:{(int)response.StatusCode}({response.StatusCode}) {response.ReasonPhrase}");
+        if (!response.IsSuccessStatusCode) Debugger.Break();
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) return null;
+
+        var text = await response.Content.ReadAsStringAsync();
+        return text;
     }
 }
 
@@ -872,4 +946,34 @@ public class CmdrCurrentShip
     public required string type;
     public required int maxCargo;
     public required Dictionary<string, int> cargo;
+}
+
+public class QuestSummary
+{
+    public required string id;
+    public required double ver;
+    public required string publisher;
+    public required string title;
+    public string? desc;
+    public QuestState state;
+}
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum QuestState
+{
+    unknown,
+    active,
+    paused,
+    complete,
+    failed,
+}
+
+public class PlayQQuest : PlayQuest
+{
+    public new DefQuest quest
+    {
+        get => base.quest;
+        set => base.quest = value;
+
+    }
 }

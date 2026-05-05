@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using SrvSurvey.forms;
 using SrvSurvey.game;
+using SrvSurvey.game.RavenColonial;
 using SrvSurvey.plotters;
 using System.Diagnostics;
 using System.Globalization;
@@ -18,7 +19,7 @@ internal class PlayState : Data
 
     private static string folder = Path.Combine(Program.dataFolder, "quests");
 
-    public static PlayState? cmdr;
+    public static PlayState? current;
 
     public static Task<PlayState> loadAsync(string fid)
     {
@@ -26,7 +27,7 @@ internal class PlayState : Data
         {
             try
             {
-                cmdr = await PlayState.loadInner(fid);
+                current = await PlayState.loadInner(fid);
                 PlayState.updateUI();
             }
             catch (Exception ex)
@@ -38,7 +39,7 @@ internal class PlayState : Data
                 });
                 throw;
             }
-            return cmdr;
+            return current;
         });
     }
 
@@ -55,26 +56,29 @@ internal class PlayState : Data
             ps = new PlayState()
             {
                 fid = fid,
+                cmdr = CommanderSettings.Load(fid, true, null).commander,
                 filepath = filepath,
             };
-            ps.Save(false);
-
-            // and store empty state on server
-            await Game.rcc.saveCmdrQuests(ps.fid, ps.activeQuests);
+            ps.Save(true);
         }
         else
         {
             // parse existing state
             ps = Data.Load<PlayState>(filepath)!;
 
-            // load state for all quests and hydrate them
-            var loadedQuests = await Game.rcc.loadCmdrQuests(fid);
-            Game.log($"Loaded {loadedQuests.Count} quests");
-            foreach (var (qr, pq) in loadedQuests)
+            // temporary, just for a few weeks
+            if (string.IsNullOrWhiteSpace(ps.cmdr))
             {
-                // pull quest def from the server
-                pq.quest = await Game.rcc.getQuest(ps.fid, qr.publisher, qr.id, qr.ver);
-                if (pq.quest == null) { Debugger.Break(); continue; }// TODO: maybe throw or warn?
+                ps.cmdr = CommanderSettings.Load(fid, true, null).commander;
+                ps.Save(true);
+            }
+
+            // load state for all quests and hydrate them
+            var loadedQuests = await Game.rcc.loadCmdrQuests(fid, game.RavenColonial.QuestState.active);
+            Game.log($"Loaded {loadedQuests.Length} quests");
+            foreach (var pq in loadedQuests)
+            {
+                if (pq.quest == null) { Debugger.Break(); continue; } // TODO: maybe throw or warn?
                 await ps.initQuest(pq, false);
             }
 
@@ -112,6 +116,7 @@ internal class PlayState : Data
     #region data members
 
     public string fid = "";
+    public string cmdr = "";
 
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
     public QuestRef? devRef;
@@ -123,32 +128,29 @@ internal class PlayState : Data
     #endregion
 
     [JsonIgnore] public readonly List<PlayQuest> activeQuests = [];
-    [JsonIgnore] public bool dirty;
     [JsonIgnore] public int messagesTotal => activeQuests.Sum(q => q.msgs.Count);
     [JsonIgnore] public int messagesUnread => activeQuests.Sum(pq => pq.unreadMessageCount);
 
     public override void Save()
     {
         Debugger.Break();
-        this.Save(false);
+        this.Save(false); // ok
     }
 
     public void Save(bool localOnly)
     {
         base.Save();
-
-        // space this out so we're not hitting the server too often
-        Util.deferAfter(5000, async () =>
+        if (!localOnly)
         {
-            await Game.rcc.saveCmdrQuests(this.fid, this.activeQuests);
-        });
+            // space this out so we're not hitting the server too often
+            Debugger.Break(); // does this still happen?
+        }
     }
 
     /// <summary> Onboard a cmdr to a new quest </summary>
     public async Task<PlayQuest> activateQuest(string publisher, string id)
     {
-        // download quest def (ver "0" guarantee's we get the latest version)
-        var q = await Game.rcc.getQuest(this.fid, publisher, id, 0);
+        var q = await Game.rcc.activateQuest(this.fid, publisher, id);
         if (q == null) throw new Exception($"Cannot activate quest by: {publisher} / {id}");
         Game.log($"Activating NEW quest: {q.publisher} / {q.id} / {q.id}");
 
@@ -159,7 +161,7 @@ internal class PlayState : Data
             startTime = DateTime.UtcNow,
             // quest must be null, so we download from the server
         };
-        pq.chapters = q.chapters.Keys.Select(id => new PlayChapter(id, pq)).ToHashSet();
+        pq.chapters = q.chapters.Keys.Select(id => new PlayChapter(id, pq)).ToHashSet(); // what about this?
 
         await initQuest(pq, true);
 
@@ -167,16 +169,32 @@ internal class PlayState : Data
         return pq;
     }
 
-    public void removeQuest(PlayQuest pq)
+    public async Task removeQuest(PlayQuest pq, QuestState newState)
     {
-        this.activeQuests.Remove(pq);
-        if (devQuest != null && devQuest?.ToString() == pq.ToString())
+        if (!pq.dev)
         {
+            var success = newState == QuestState.unknown
+                ? await Game.rcc.deleteQuest(this.fid, pq.publisher, pq.id)
+                : await Game.rcc.setQuestState(this.fid, pq.publisher, pq.id, newState);
+
+            // update server if not a devQuest
+            if (success)
+                this.activeQuests.Remove(pq);
+            else
+                Debugger.Break(); // would this ever happen?
+        }
+        else if (pq.dev || (this.devQuest != null && this.devQuest.ToString() == pq.ToString()))
+        {
+            // otherwise, remove and save local file
             devRef = null;
             devQuest = null;
+            this.Save(true);
+            this.activeQuests.Remove(pq);
         }
-
-        this.Save(false);
+        else
+        {
+            Debugger.Break(); // would this ever happen?
+        }
     }
 
     private static void setPriorKepts(PlayQuest pq)
@@ -240,7 +258,7 @@ internal class PlayState : Data
         this.activeQuests.Add(pq);
 
         if (startFirstChapterAndSave)
-            this.Save(false);
+            await pq.save();
     }
 
     public async Task<PlayQuest> sideLoad(string folder)
@@ -368,9 +386,6 @@ internal class PlayState : Data
 
     public async Task processJournalEntry(JObject raw)
     {
-        if (dirty) this.Save(false);
-        dirty = false;
-
         var eventName = raw.Value<string>("event");
 
         // special case: replace with the relevant file contents
@@ -394,11 +409,14 @@ internal class PlayState : Data
 
         var tbl = raw.toTbl();
 
+        // process all ...
         foreach (var pq in activeQuests.ToList())
-            dirty |= await pq.processJournalEntry(tbl, raw);
+            await pq.processJournalEntry(tbl, raw);
 
-        if (dirty)
-            this.Save(false);
+        // ... then save afterwards
+        var dirtyQuests = this.activeQuests.Where(pq => pq.dirty).ToList();
+        foreach (var pq in dirtyQuests)
+            await pq.save();
     }
 
     public PlayQuest? get(string id)
@@ -437,9 +455,9 @@ internal class PlayState : Data
                 Game.settings.Save();
             }
 
-            PlayState.cmdr ??= await PlayState.loadAsync(cmdr.fid);
+            PlayState.current ??= await PlayState.loadAsync(cmdr.fid);
 
-            await PlayState.cmdr.activateQuest("Grinning2001", "galtea1");
+            Task.Run(() => PlayState.current.activateQuest("Grinning2001", "surface1")).justDoIt();
 
             MessageBox.Show("The quest is ready.\r\n\r\n● Look in the top/right corner of the game for visual queues.\r\n\r\n● It is strongly recommended to set an easy key-chord for 'questShow'.\r\n\r\n● To interact with quests, use the new button with 2 squares diagonal (above the Quit button), or use the key-chord.", "Quest active");
         }

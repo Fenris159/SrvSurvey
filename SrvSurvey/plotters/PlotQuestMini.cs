@@ -22,7 +22,7 @@ namespace SrvSurvey.plotters
         {
             return Game.settings.enableQuests
                 // NOT suppressed by buildProjectsSuppressOtherOverlays
-                && PlayState.cmdr?.activeQuests.Count > 0
+                && PlayState.current?.activeQuests.Count > 0
                 && game.isMode(GameMode.Flying, GameMode.SuperCruising, GameMode.GlideMode, GameMode.InSrv, GameMode.OnFoot, GameMode.OnFootInStation, GameMode.InTaxi, GameMode.CommsPanel, GameMode.InFighter, GameMode.Docked, GameMode.Landed, GameMode.FSDJumping, GameMode.StationServices, GameMode.ExternalPanel, GameMode.InternalPanel)
                 ;
         }
@@ -79,7 +79,7 @@ namespace SrvSurvey.plotters
         {
             drawLogo(g, N.eight, N.eight, showStripe, 16);
 
-            var ps = PlayState.cmdr;
+            var ps = PlayState.current;
             if (ps == null) return this.size;
 
             var pq = ps.activeQuests.FirstOrDefault();

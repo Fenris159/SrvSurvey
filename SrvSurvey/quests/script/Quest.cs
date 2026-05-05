@@ -16,13 +16,13 @@ public partial class Quest
     [LuaMember]
     public void complete()
     {
-        pq.complete();
+        pq.complete().justDoIt();
     }
 
     [LuaMember]
     public void fail()
     {
-        pq.fail();
+        pq.fail().justDoIt();
     }
 
     [LuaMember]

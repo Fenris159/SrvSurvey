@@ -172,9 +172,9 @@ namespace SrvSurvey.forms
 
         private void replayNode(JObject? obj)
         {
-            if (obj == null || PlayState.cmdr == null) return;
+            if (obj == null || PlayState.current == null) return;
 
-            PlayState.cmdr.processJournalEntry(obj).justDoIt();
+            PlayState.current.processJournalEntry(obj).justDoIt();
         }
 
         private void treeJournals_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)

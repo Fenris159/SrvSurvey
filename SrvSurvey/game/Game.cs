@@ -422,7 +422,7 @@ namespace SrvSurvey.game
             PlotBase2.renderAll(this);
 
             // and tell any quests
-            PlayState.cmdr?.processJournalEntry(JObject.FromObject(this.status)).justDoIt();
+            PlayState.current?.processJournalEntry(JObject.FromObject(this.status)).justDoIt();
         }
 
         private void statusDestinationChanged()
@@ -1111,7 +1111,7 @@ namespace SrvSurvey.game
                 }
 
                 // finally, let active quests know about this
-                PlayState.cmdr?.processJournalEntry(raw).justDoIt();
+                PlayState.current?.processJournalEntry(raw).justDoIt();
             }
             catch (Exception ex)
             {

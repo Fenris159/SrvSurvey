@@ -1300,10 +1300,15 @@ static class Util
         return (int)Math.Ceiling((outer / 2f) - (inner / 2f));
     }
 
+    public static void deferAfter(int delayMs, Action func)
+    {
+        deferAfter(delayMs, null, func);
+    }
+
     /// <summary>
     /// Waits to invoke the action, invoking only once should there be multiple requests during the delay time.
     /// </summary>
-    public static void deferAfter(int delayMs, Action func, string? prefix = null)
+    public static void deferAfter(int delayMs, string? prefix, Action func)
     {
         var name = $"{prefix}{func.Target}/{func.Method}";
         if (!pendingCounts.ContainsKey(name)) pendingCounts[name] = 0;

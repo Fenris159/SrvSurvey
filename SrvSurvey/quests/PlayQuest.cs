@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SrvSurvey;
 using SrvSurvey.game;
+using SrvSurvey.game.RavenColonial;
 using System.Diagnostics.CodeAnalysis;
 using System.Media;
 
@@ -100,11 +101,11 @@ public class PlayQuest
         foreach (var pc in activeChapters)
             pc.doPendings();
 
-        return await updateIfDirty(triggered);
+        return await save(triggered);
     }
 
-    /// <summary> Returns true if quest states were dirty, after saving to a file </summary>
-    public async Task<bool> updateIfDirty(bool force = false)
+    /// <summary> Returns true if quest states were dirty </summary>
+    public async Task<bool> save(bool force = false)
     {
         if (!dirty && !force) return false;
 
@@ -117,7 +118,21 @@ public class PlayQuest
             if (pc.active)
                 pc.pullScriptVars();
 
-        this.parent.Save(false);
+        if (this.dev)
+        {
+            // save to local file
+            this.parent.Save(true);
+            this.dirty = false;
+        }
+        else
+        {
+            // space this out so we're not hitting the server too often
+            Util.deferAfter(5000, async () =>
+            {
+                await Game.rcc.saveCmdrQuest(this.parent.fid, this);
+                this.dirty = false;
+            });
+        }
 
         PlayState.updateUI(this);
 
@@ -125,22 +140,46 @@ public class PlayQuest
         return true;
     }
 
-    public void complete()
+    public async Task complete()
     {
         this.log("PQ.complete");
         this.endTime = DateTimeOffset.UtcNow;
-        this.dirty = true;
+
+        if (this.dev)
+        {
+            parent.activeQuests.Remove(this);
+            await this.save(true);
+        }
+        else
+        {
+            await this.save(true);
+            await parent.removeQuest(this, QuestState.complete);
+        }
+
+        PlayState.updateUI(null);
     }
 
-    public void fail()
+    public async Task fail()
     {
         this.log("PQ.fail");
         this.endTime = DateTimeOffset.UtcNow;
-        this.dirty = true;
 
         /* TODO: what does it really mean for the whole quest to be completed successfully or not?
          * Maybe we have `string endReason` with something descriptive for players to know success or not
          */
+
+        if (this.dev)
+        {
+            parent.activeQuests.Remove(this);
+            await this.save(true);
+        }
+        else
+        {
+            await this.save(true);
+            await parent.removeQuest(this, QuestState.failed);
+        }
+
+        PlayState.updateUI(null);
     }
 
     public void startChapter(string id)

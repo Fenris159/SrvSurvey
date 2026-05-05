@@ -17,6 +17,7 @@ public class PlayChapter
     [AllowNull] private LuaState state;
     [AllowNull] private LuaClosure closure;
 
+    private string? src;
     private HashSet<string> journalFuncs = [];
     private HashSet<string> varNames = [];
     private List<Action> pending = [];
@@ -44,8 +45,6 @@ public class PlayChapter
         this.pq = pq;
     }
 
-    private string? src => pq.quest.chapters.GetValueOrDefault(id);
-
     /// <summary> Returns true if this chapter is currently active </summary>
     [JsonIgnore] public bool active => !endTime.HasValue && startTime.HasValue;
 
@@ -56,9 +55,24 @@ public class PlayChapter
 
     public async Task<LuaState> load()
     {
-        if (string.IsNullOrEmpty(src) || !active)
-            return state;
-        Game.log($"PlayChapter.load: {id}");
+        if (!active) return state;
+        Game.log($"PlayChapter.load: {id} (dev:{pq.dev})");
+
+        if (string.IsNullOrWhiteSpace(src))
+        {
+            if (pq.dev)
+            {
+                // pull from local?
+                this.src = pq.quest.chapters.GetValueOrDefault(this.id);
+            }
+            else
+            {
+                // download from server
+                var newSrc = await Game.rcc.getQuestChapter(pq.parent.fid, pq.publisher, pq.id, pq.ver, this.id);
+                this.src = newSrc!;
+            }
+        }
+        if (string.IsNullOrWhiteSpace(src)) { Debugger.Break(); throw new Exception($"No code for: '{this.id}' ?"); }
 
         // prep state
         state = LuaState.Create();
