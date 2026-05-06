@@ -238,13 +238,17 @@ namespace SrvSurvey.game
                 {
                     needs.commodities.init(commodity);
                     needs.commodities[commodity] += need;
-                }
 
-                // prep assignments
-                var assignment = project.commanders?.GetValueOrDefault(cmdr, StringComparison.OrdinalIgnoreCase);
-                if (assignment != null)
-                    foreach (var commodity in assignment)
-                        needs.assigned.Add(commodity);
+                    // prep assignments
+                    if (project.commanders != null)
+                    {
+                        var assignedTo = project.commanders.Keys.Where(k => project.commanders[k].Contains(commodity)).ToList();
+                        if (assignedTo.Contains(cmdr, StringComparer.OrdinalIgnoreCase))
+                            needs.assignedMe.Add(commodity);
+                        else if (assignedTo.Count > 0)
+                            needs.assignedOthers.Add(commodity);
+                    }
+                }
             }
 
             return needs;
@@ -445,7 +449,8 @@ namespace SrvSurvey.game
         public class Needs
         {
             public Dictionary<string, int> commodities = new();
-            public HashSet<string> assigned = new();
+            public HashSet<string> assignedMe = new();
+            public HashSet<string> assignedOthers = new();
         }
 
         /** Prior mistakes and corrections in the cargo names:

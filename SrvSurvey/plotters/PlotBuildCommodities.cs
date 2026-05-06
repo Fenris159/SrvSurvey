@@ -312,7 +312,7 @@ namespace SrvSurvey.plotters
             }
 
             // prep 3 columns: first zero width (that will grow), last 2 large enough for a big number
-            var hasPin = needs!.assigned.Count > 0;
+            var hasPin = needs!.assignedMe.Count > 0 || needs.assignedOthers.Count > 0;
             var haveAnyCargo = game.cargoFile.Inventory.Count > 0;
             var showFCs = Game.settings.buildProjectsShowSumFC_TEST && this.sumCargoLinkedFCs.Count > 0;
             if (showFCs && Game.settings.buildProjectsInlineSumFC_TEST) haveAnyCargo |= this.sumCargoLinkedFCs.Count > 0;
@@ -525,8 +525,10 @@ namespace SrvSurvey.plotters
                     tt.draw(N.two, Program.isLinux ? "✓" : "✔️", shipHasEnough ? C.Colonise.surplus : C.greenDark, ff);
 
                 // draw assigned pin behind the need number
-                if (needs.assigned.Contains(name))
-                    tt.draw(xNeed, Program.isLinux ? "◬" : "📌", col, ff);
+                if (needs.assignedMe.Contains(name))
+                    tt.draw(xNeed, Program.isLinux ? "◬" : "📌", C.Colonise.highlight, ff);
+                else if (needs.assignedOthers.Contains(name))
+                    tt.draw(xNeed, "🚫", C.Colonise.highlight, ff);
 
                 tt.dtx = this.width - N.twenty;
 
@@ -717,8 +719,10 @@ namespace SrvSurvey.plotters
                     }
 
                     // draw assigned pin behind the need number
-                    if (needs.assigned.Contains(name))
-                        tt.draw(xNeed, Program.isLinux ? "◬" : "📌", col, ff);
+                    if (needs.assignedMe.Contains(name))
+                        tt.draw(xNeed, Program.isLinux ? "◬" : "📌", C.Colonise.highlight, ff);
+                    else if (needs.assignedOthers.Contains(name))
+                        tt.draw(xNeed, "🚫", C.Colonise.highlight, ff);
 
                     if (almost)
                         nameTxt += Program.isLinux ? " ◈" : " 🏁";
