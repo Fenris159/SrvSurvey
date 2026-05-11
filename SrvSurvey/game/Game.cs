@@ -2748,8 +2748,8 @@ namespace SrvSurvey.game
             if (entry.Name.StartsWith("$Ancient"))
             {
                 // Guardian site
-                PlotGuardianStatus.glideSite = GuardianSiteData.Load(entry);
-                PlotGuardianStatus.glideSite.loadPub();
+                PlotGuardianStatus.glideSite = GuardianSiteData.Load(entry, this);
+                PlotGuardianStatus.glideSite?.loadPub();
                 this.setCurrentSite();
 
                 if (systemSite != null)

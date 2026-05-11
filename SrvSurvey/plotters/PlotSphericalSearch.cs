@@ -75,7 +75,10 @@ namespace SrvSurvey.plotters
                         if (text != null)
                         {
                             Game.log($"Setting next boxel search system to clipboard: {text}");
-                            Clipboard.SetDataObject(new DataObject(DataFormats.UnicodeText, text), true, 2, 50);
+                            if (Program.control.InvokeRequired)
+                                Program.control.Invoke(() => Clipboard.SetDataObject(new DataObject(DataFormats.UnicodeText, text), true, 2, 50));
+                            else
+                                Clipboard.SetDataObject(new DataObject(DataFormats.UnicodeText, text), true, 2, 50);
                             this.nextBoxelSystemCopied = true;
                             this.invalidate();
                         }

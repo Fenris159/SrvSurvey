@@ -1204,12 +1204,15 @@ namespace SrvSurvey.game
                 body.settlements[entry.Name] = entry;
 
                 var siteData = GuardianSiteData.Load(entry);
-                // always update the location of the site based on latest journal data
-                siteData.location = entry;
-                if (siteData != null && siteData.lastVisited < entry.timestamp)
+                if (siteData != null)
                 {
-                    siteData.lastVisited = entry.timestamp;
-                    siteData.Save();
+                    // always update the location of the site based on latest journal data
+                    siteData.location = entry;
+                    if (siteData.lastVisited < entry.timestamp)
+                    {
+                        siteData.lastVisited = entry.timestamp;
+                        siteData.Save();
+                    }
                 }
             }
 

@@ -819,8 +819,11 @@ namespace SrvSurvey.plotters
             this.Name = def.name;
             this.Text = def.name;
 
-            this.Left = def.instance!.left;
-            this.Top = def.instance.top;
+            if (def.instance != null)
+            {
+                this.Left = def.instance.left;
+                this.Top = def.instance.top;
+            }
         }
 
         protected override void Dispose(bool disposing)

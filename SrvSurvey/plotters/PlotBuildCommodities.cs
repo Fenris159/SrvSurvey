@@ -471,7 +471,7 @@ namespace SrvSurvey.plotters
 
                 // (skip FC numbers if sharing 2nd column and we already rendered there)
                 var fcHasEnough = false;
-                if (xFC > 0 && Game.settings.buildProjectsShowSumFC_TEST && (!Game.settings.buildProjectsInlineSumFC_TEST || cargoCount > 0))
+                if (xFC > 0 && Game.settings.buildProjectsShowSumFC_TEST && (!Game.settings.buildProjectsInlineSumFC_TEST || cargoCount == 0))
                 {
                     // show amount on all FCs in same column?
                     var fcAmount = this.sumCargoLinkedFCs.GetValueOrDefault(name);
@@ -581,8 +581,6 @@ namespace SrvSurvey.plotters
                 g.DrawLine(C.Pens.orangeDark2, lx, ly, this.width - N.four, ly);
                 tt.newLine(true);
 
-                if (collapseGroup) continue;
-
                 // then each commodity in the type
                 var flip = true;
 
@@ -595,6 +593,13 @@ namespace SrvSurvey.plotters
                     var needCount = needs.commodities.GetValueOrDefault(name);
                     if (needCount == 0) continue;
                     //if (!needs.commodities.ContainsKey(name)) continue;
+
+                    // we must calculate this before skipping
+                    var fcAmount = this.sumCargoLinkedFCs.GetValueOrDefault(name, 0);
+                    if (fcAmount >= 0)
+                        fcSumTotal += Math.Min(needCount, fcAmount);
+
+                    if (collapseGroup) continue;
 
                     if (flip) g.FillRectangle(brushBackgroundStripe, N.four, tt.dty - N.one, this.width - N.eight, szBigNumbers.Height + N.one);
                     flip = !flip;
@@ -655,10 +660,8 @@ namespace SrvSurvey.plotters
                     if (xFC > 0 && Game.settings.buildProjectsShowSumFC_TEST && (!Game.settings.buildProjectsInlineSumFC_TEST || cargoCount == 0))
                     {
                         // show amount on all FCs in same column?
-                        var fcAmount = this.sumCargoLinkedFCs.GetValueOrDefault(name, 0);
                         if (fcAmount >= 0)
                         {
-                            fcSumTotal += Math.Min(needCount, fcAmount);
                             var showDelta = Game.settings.buildProjectsShowSumFCDelta_TEST;
 
                             if (Game.settings.buildProjectsHighlightAlmostFC_TEST && isDocked && !this.cargoLinkedFCs.Any(fc => fc.marketId == game.lastDocked?.MarketID))
@@ -733,7 +736,7 @@ namespace SrvSurvey.plotters
 
                     if (isPending)
                         tt.draw(N.two, "►", C.cyan, ff);
-                    else if (haveEnough && !nameTxt.EndsWith("❌"))
+                    else if (haveEnough)
                         tt.draw(N.two, Program.isLinux ? "✓" : "✔️", col == C.Colonise.surplus ? C.Colonise.surplus : C.Colonise.surplusDark, ff);
 
                     tt.newLine(true);
