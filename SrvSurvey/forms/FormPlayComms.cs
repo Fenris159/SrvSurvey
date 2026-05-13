@@ -46,8 +46,9 @@ namespace SrvSurvey.forms
             SetStyle(ControlStyles.ResizeRedraw, true);
             SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
 
+            tlist.SuspendLayout();
             tlist.Controls.Clear();
-            tlist.RowStyles.Clear();
+            tlist.ResumeLayout();
 
             lastLeftBtn = btnQuests;
 
@@ -56,7 +57,7 @@ namespace SrvSurvey.forms
             foreach (var btn in new DrawButton[] { btnClose, btnQuests, btnMsgs, btnWatch, btnDev })
                 btn.setGameColors();
 
-            this.Opacity = 0.95f;
+            this.Opacity = 0;
 
             var newMap = parseGameKeybinds();
             if (newMap != null) mappedGameKeyBinds = newMap;
@@ -77,6 +78,8 @@ namespace SrvSurvey.forms
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+
+            Util.deferAfter(100, () => this.Opacity = 0.95f);
 
             // position ourself over the top/right quadrant of the game
             var r = Elite.getWindowRect();
@@ -127,7 +130,7 @@ namespace SrvSurvey.forms
 
             Util.deferAfter(25, () =>
             {
-                if (cmdrPlay.messagesUnread > 0)
+                if (cmdrPlay.messagesTotal > 0)
                 {
                     mode = "msgs";
                     btnMsgs.Focus();
@@ -136,6 +139,7 @@ namespace SrvSurvey.forms
                 {
                     btnQuests.Focus();
                 }
+
                 if (mode == "quests")
                     showQuests();
                 else
@@ -237,8 +241,8 @@ namespace SrvSurvey.forms
             }
             else if (this.mode != "quests")
             {
+                tlist.Hide();
                 tlist.Controls.Clear();
-                tlist.RowStyles.Clear();
                 this.mode = "quests";
                 showQuests();
             }
@@ -252,8 +256,8 @@ namespace SrvSurvey.forms
             }
             else //if (this.mode != "msgs" || selectedThing != null)
             {
+                tlist.Hide();
                 tlist.Controls.Clear();
-                tlist.RowStyles.Clear();
                 this.mode = "msgs";
                 showMsgs();
             }
@@ -325,7 +329,7 @@ namespace SrvSurvey.forms
             for (int n = 0; n < sorted.Count; n++)
             {
                 var id = sorted[n].id;
-                tlist.SetRow(tlist.Controls[id]!, n);
+                tlist.Controls.SetChildIndex(tlist.Controls[id]!, n);
             }
 
             tlist.ResumeLayout();
@@ -334,15 +338,20 @@ namespace SrvSurvey.forms
 
         private void addRow(Control ctrl)
         {
+            ctrl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            ctrl.Left = 4;
+            ctrl.Width = tlist.Width - 8;
+            var top = tlist.Controls.last()?.Top + (int)N.fourEight;
+            ctrl.Top = top ?? 0;
+
             if (tlist.Controls[ctrl.Name] == null)
             {
-                tlist.Controls.Add(ctrl, 0, tlist.Controls.Count);
-                tlist.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+                tlist.Controls.Add(ctrl);
             }
             else
             {
                 tlist.Controls.RemoveByKey(ctrl.Name);
-                tlist.Controls.Add(ctrl, 0, tlist.Controls.Count);
+                tlist.Controls.Add(ctrl);
             }
         }
 
@@ -379,7 +388,9 @@ namespace SrvSurvey.forms
                 .ToList();
             Game.log($"showing {allMsgs.Count} msgs");
 
+            tlist.Hide();
             tlist.SuspendLayout();
+            tlist.Controls.Clear();
 
             var activeNames = new HashSet<string>();
             foreach (var pm in allMsgs)
@@ -421,7 +432,7 @@ namespace SrvSurvey.forms
             }
 
             // Remove anything stale
-            var stale = tlist.Controls.Cast<Control>().Where(c => !activeNames.Contains(c.Name));
+            var stale = tlist.Controls.Cast<Control>().Where(c => !activeNames.Contains(c.Name)).ToList();
             foreach (var ctrl in stale) tlist.Controls.Remove(ctrl);
 
             // Enforce the order
@@ -429,10 +440,13 @@ namespace SrvSurvey.forms
             {
                 var pm = allMsgs[n];
                 var name = $"{pm.parent.id}/{pm.id}";
-                tlist.SetRow(tlist.Controls[name]!, n);
+                var ctrl = tlist.Controls[name];
+                if (ctrl != null && tlist.Controls.GetChildIndex(ctrl) != n)
+                    tlist.Controls.SetChildIndex(ctrl, n);
             }
 
             tlist.ResumeLayout();
+            tlist.Show();
             this.Invalidate(true);
         }
 

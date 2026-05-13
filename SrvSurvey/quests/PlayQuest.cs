@@ -147,7 +147,7 @@ public class PlayQuest
 
         if (this.dev)
         {
-            parent.activeQuests.Remove(this);
+            await parent.removeQuest(this, QuestState.complete);
             await this.save(true);
         }
         else
@@ -170,7 +170,7 @@ public class PlayQuest
 
         if (this.dev)
         {
-            parent.activeQuests.Remove(this);
+            await parent.removeQuest(this, QuestState.failed);
             await this.save(true);
         }
         else

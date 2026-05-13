@@ -86,8 +86,10 @@ namespace SrvSurvey.quests.script
         [LuaMember]
         public bool isWithin(double lat, double @long, double targetDist)
         {
+            if (Game.activeGame?.status.hasLatLong != true) return false;
+
             var dist = distanceFrom(lat, @long);
-            return dist < targetDist;
+            return dist >= 0 && dist < targetDist;
         }
 
         [LuaMember]

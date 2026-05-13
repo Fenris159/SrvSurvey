@@ -457,7 +457,7 @@ internal class PlayState : Data
 
             PlayState.current ??= await PlayState.loadAsync(cmdr.fid);
 
-            Task.Run(() => PlayState.current.activateQuest("Grinning2001", "surface1")).justDoIt();
+            Task.Run(() => PlayState.current.activateQuest("Grinning2001", "galtea1")).justDoIt();
 
             MessageBox.Show("The quest is ready.\r\n\r\n● Look in the top/right corner of the game for visual queues.\r\n\r\n● It is strongly recommended to set an easy key-chord for 'questShow'.\r\n\r\n● To interact with quests, use the new button with 2 squares diagonal (above the Quit button), or use the key-chord.", "Quest active");
         }
