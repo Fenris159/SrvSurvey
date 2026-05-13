@@ -143,12 +143,14 @@ namespace SrvSurvey.net
                 }
 
                 var filepathRavenNicknames = Path.Combine(Git.pubDataFolder, "nicknames.json");
-                if (!File.Exists(filepathRavenNicknames) || pubData.nicknames > Game.settings.pubNicknames)
+                var duration = DateTime.Now - Game.settings.lastNicknames;
+                if (duration.TotalDays > 2 || !File.Exists(filepathRavenNicknames) || pubData.nicknames > Game.settings.pubNicknames)
                 {
                     await this.updateNicknames();
 
                     // update settings to current level
                     Game.settings.pubNicknames = pubData.nicknames;
+                    Game.settings.lastNicknames = DateTime.Now;
                     Game.settings.Save();
                 }
                 if (File.Exists(filepathRavenNicknames))

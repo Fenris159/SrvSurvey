@@ -208,6 +208,7 @@ namespace SrvSurvey
         public int pubDataGuardian = 0;
         public int pubSettlements = 0;
         public int pubNicknames = 0;
+        public DateTime lastNicknames = DateTime.MinValue;
         public int pubGGG = 0;
 
         public DateTime lastCodexRefDownload = DateTime.MinValue;
