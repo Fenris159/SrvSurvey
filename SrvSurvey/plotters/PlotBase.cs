@@ -466,7 +466,7 @@ namespace SrvSurvey.plotters
                     var targetOpacity = PlotPos.getOpacity(this);
                     if (targetOpacity != this.Opacity)
                     {
-                        Program.control.BeginInvoke(() =>
+                        Program.defer(() =>
                         {
                             Util.fadeOpacity(this, targetOpacity, Game.settings.fadeInDuration);
                         });
