@@ -1375,6 +1375,7 @@ namespace SrvSurvey.game
         public void deferPredictSpecies(SystemBody? body, bool checkForMissedPredictions = false)
         {
             if (body == null) return;
+            if (Game.settings.disableBioPredictions) return;
 
             Util.deferAfter(100, () =>
             {
@@ -1399,8 +1400,9 @@ namespace SrvSurvey.game
 
         public void predictSystemSpecies()
         {
-            Game.log("predictSystemSpecies");
             if (this.systemData == null || !Game.ready) return;
+            if (Game.settings.disableBioPredictions) return;
+            Game.log("predictSystemSpecies");
 
             // re-predict everything in the current system
             foreach (var body in this.systemData.bodies.ToList())

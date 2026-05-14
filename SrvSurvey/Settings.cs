@@ -280,6 +280,9 @@ namespace SrvSurvey
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string? eddnEnvironment = null;
 
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public bool disableBioPredictions = false;
+
         public bool uploadGGG = false;
 
         #region loading / saving
