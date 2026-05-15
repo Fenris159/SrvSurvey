@@ -34,46 +34,45 @@ internal class FormPlayComms2 : BaseFormZippy
     {
         this.Font = GameColors.Fonts.arial_12;
         this.ForeColor = C.orange;
+        this.Size = new(800, 800);
         this.MinimumSize = new(400, 400);
 
         // init ctrls
         btnMsgs = new BtnFillDrawCtrl
         {
-            pt = new(10, 72),
-            r = new(0, 0, 72, 72),
+            offset = new(10, 72),
+            sz = new(72, 72),
             iconName = "envelope",
             iconOffset = new(9, 16),
             //disabled = true,
             onClick = () => setMode(Mode.msgs),
         };
-        addCtrl(btnMsgs);
 
         btnCat = new BtnFillDrawCtrl
         {
-            pt = new(10, -100),
-            r = new(0, 0, 72, 72),
+            offset = new(10, -100),
+            sz = new(72, 72),
             iconName = "page",
             iconOffset = new(15, 12),
             onClick = () => setMode(Mode.catalog),
         };
-        addCtrl(btnCat);
-
-        addCtrl(new BtnFillTextCtrl
-        {
-            pt = new(10, -44),
-            r = new(0, 0, 72, 24),
-            text = "(refresh)",
-            onClick = () => this.Invalidate(),
-        });
-
-        addCtrl(new BtnFillDrawCtrl
-        {
-            pt = new(10, -10),
-            r = new(0, 0, 72, 24),
-            iconName = "close",
-            iconOffset = new(26, 6),
-            onClick = () => this.Close(),
-        });
+        addCtrl(btnMsgs, btnCat,
+            new BtnFillTextCtrl
+            {
+                offset = new(10, -44),
+                sz = new(72, 72),
+                text = "(refresh)",
+                onClick = () => this.Invalidate(),
+            },
+            new BtnFillDrawCtrl
+            {
+                offset = new(10, -10),
+                r = new(0, 0, 72, 24),
+                iconName = "close",
+                iconOffset = new(26, 6),
+                onClick = () => this.Close(),
+            }
+        );
 
         setMode(Mode.msgs);
     }
@@ -118,20 +117,15 @@ internal class FormPlayComms2 : BaseFormZippy
         this.mode = mode;
         btnMsgs.sideBar = mode == Mode.msgs;
         btnCat.sideBar = mode == Mode.catalog;
-        stopScroll();
+        stack.Clear();
 
         if (mode == Mode.catalog)
-        {
             loadPublishedQuests().justDoIt();
-        }
-        else
-        {
-            ctrls.RemoveAll(ctrl => ctrl is QuestCatalogLine);
-        }
+
         this.Invalidate();
     }
 
-    protected override void render(Graphics g, TextCursor tt)
+    protected override bool render(Graphics g, TextCursor tt)
     {
         base.render(g, tt);
 
@@ -140,40 +134,21 @@ internal class FormPlayComms2 : BaseFormZippy
         switch (mode)
         {
             case Mode.msgs:
-                renderMessages(g, tt);
-                break;
+                return renderMessages(g, tt);
+
             case Mode.catalog:
-                renderQuestCatalog(g, tt);
-                break;
+                return renderQuestCatalog(g, tt);
         }
+        return false;
     }
 
     #region catalog
 
+    private static DefQuest[]? publishedQuests;
     private bool loadingCatalog;
+    private DefQuest? selectedQD;
 
-    private async Task loadPublishedQuests()
-    {
-        // TODO: background thread!
-        ctrls.RemoveAll(ctrl => ctrl is QuestCatalogLine);
-        loadingCatalog = true;
-        this.Invalidate();
-
-        var quests = await Game.rcc.getPublishedQuests(CommanderSettings.currentOrLastFid);
-
-        setScroll(100, 72, -10, -10);
-        var catalog = quests.Select((qd, i) => new QuestCatalogLine() { qd = qd, first = i == 0 }).ToArray();
-        addCtrl(catalog);
-        addCtrl(quests.Select((qd, i) => new QuestCatalogLine() { qd = qd }).ToArray());
-        addCtrl(quests.Select((qd, i) => new QuestCatalogLine() { qd = qd }).ToArray());
-        addCtrl(quests.Select((qd, i) => new QuestCatalogLine() { qd = qd }).ToArray());
-
-        scrollFrom = catalog[0];
-        loadingCatalog = false;
-        this.Invalidate();
-    }
-
-    private void renderQuestCatalog(Graphics g, TextCursor tt)
+    private bool renderQuestCatalog(Graphics g, TextCursor tt)
     {
         tt.dty = N.ten;
         tt.draw(N.hundred, "Quest Catalog", GameColors.Fonts.arial_20);
@@ -183,17 +158,64 @@ internal class FormPlayComms2 : BaseFormZippy
 
         if (loadingCatalog)
             tt.draw(N.hundred, "... loading ...");
+
+        return false;
+    }
+
+    private async Task loadPublishedQuests()
+    {
+        // TODO: background thread!
+        loadingCatalog = true;
+        this.Invalidate();
+
+        // only download once per process
+        if (publishedQuests == null)
+            publishedQuests = await Game.rcc.getPublishedQuests(CommanderSettings.currentOrLastFid);
+
+        if (publishedQuests == null || publishedQuests.Length == 0) throw new Exception("Why are there zero quests available?");
+
+        setScroll(100, 72, -10, -10);
+        addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)
+        {
+            onClick = () => showQuestDef(qd),
+        }).ToArray());
+        //addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)).ToArray());
+        //addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)).ToArray());
+
+        loadingCatalog = false;
+        this.Invalidate();
+    }
+
+    private void showQuestDef(DefQuest qd)
+    {
+        this.selectedQD = qd;
+        // remove list items
+        stack.Clear();
+
+        // add new items
+        addStack(
+            new QuestCatalogItem(qd) { offset = scrollZone.Location },
+            new BtnFillDrawCtrl
+            {
+                offset = new(200, 200),
+                r = new(0, 0, 72, 24),
+                iconName = "close",
+                iconOffset = new(26, 6),
+                onClick = () => setMode(Mode.catalog),
+            }
+        );
     }
 
     #endregion
 
     #region list msgs
 
-    private void renderMessages(Graphics g, TextCursor tt)
+    private bool renderMessages(Graphics g, TextCursor tt)
     {
         tt.dty = 10;
         tt.dtx = 100;
         tt.draw("Hello!");
+        return false;
     }
 
     #endregion
@@ -207,57 +229,29 @@ internal class FormPlayComms2 : BaseFormZippy
 
 class QuestCatalogLine : BtnFillCtrl
 {
-    private static QuestCatalogLine? expandedLine;
-    private static BtnFillTextCtrl? btnActivate;
+    public new FormPlayComms2 form => (FormPlayComms2)base.form;
 
     public DefQuest qd;
-    public bool first;
 
-    public QuestCatalogLine() : base()
+    public QuestCatalogLine(DefQuest qd) : base()
     {
-        onClick = () => this.toggle();
-    }
-
-    public void toggle()
-    {
-        if (btnActivate != null)
-            form.ctrls.Remove(btnActivate);
-
-        if (expandedLine == this)
-        {
-            expandedLine = null;
-        }
-        else
-        {
-            var idx = form.ctrls.IndexOf(this);
-            btnActivate = new BtnFillTextCtrl()
-            {
-                text = "Activate Quest",
-                pt = new(-20, r.Top),
-                csBack = ColorSet.csCyanBack,
-                csFore = ColorSet.csCyanFore,
-            };
-            form.ctrls.Insert(idx + 1, btnActivate);
-            expandedLine = this;
-        }
+        this.qd = qd;
     }
 
     override public string ToString() => this.qd.title;
 
-    public override void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
     {
-        // are we the first scrolling item?
+        // match scrollBox width
         var sb = form.scrollBox;
-        r.Y = first || prior == null
-            ? sb.Y
-            : prior.r.Bottom + 4;
+        r.Width = sb.Width;
 
-        r.X = sb.X;
-        r.Width = tt.containerWidth - r.X - 13;
-
+        // be 4px below the prior
+        if (prior != null)
+            r.Y = prior.r.Bottom + 4;
 
         // render background
-        base.render(g, tt, isCurrent, isPressed, prior);
+        var redraw = base.render(g, tt, isCurrent, isPressed, prior);
 
         tt.dty = r.Y + 4;
         tt.dtx = r.X + 4;
@@ -267,24 +261,37 @@ class QuestCatalogLine : BtnFillCtrl
         var x = tt.dtx;
         tt.draw(x, this.qd.title, ColorSet.csFore.get(isCurrent, isPressed, disabled), GameColors.Fonts.arial_16);
         tt.newLine(4, true);
-        if (expandedLine != this)
-        {
-            // draw desc as a single line with ...
-            var rr = new Rectangle((int)x, (int)(tt.dty), (int)r.Width - 32, 32);
-            TextRenderer.DrawText(g, qd.desc, GameColors.Fonts.arial_12, rr, isCurrent ? C.black : C.orangeDark, TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis | TextFormatFlags.PreserveGraphicsClipping | TextFormatFlags.PreserveGraphicsTranslateTransform);
-        }
-        else
-        {
-            // draw whole desc + buttons
-            tt.drawWrapped(x, qd.desc, isCurrent ? C.menuGold : C.orangeDark, GameColors.Fonts.arial_12);
-
-        }
+        // draw desc as a single line with ...
+        var rr = new Rectangle((int)x, (int)(tt.dty), (int)r.Width - 32, 32);
+        TextRenderer.DrawText(g, qd.desc, GameColors.Fonts.arial_12, rr, isCurrent ? C.black : C.orangeDark, TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis | TextFormatFlags.PreserveGraphicsClipping | TextFormatFlags.PreserveGraphicsTranslateTransform);
         tt.newLine(4, true);
 
         // set our hight to be as larged as we needed
-        r.Height = tt.pad().Height - r.Y;
+        var newHeight = tt.pad().Height - r.Y;
+        if (newHeight != r.Height)
+        {
+            r.Height = newHeight;
+            redraw = true;
+        }
+        return redraw;
+    }
+}
 
-        if (expandedLine == this && btnActivate != null)
-            btnActivate.pt.Y = r.Bottom + 6;
+
+internal class QuestCatalogItem : Ctrl
+{
+    private DefQuest qd;
+
+    public QuestCatalogItem(DefQuest qd) : base()
+    {
+        this.qd = qd;
+        r.Width = 200;
+        r.Height = 400;
+    }
+
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    {
+        tt.draw("**" + qd.title);
+        return false;
     }
 }

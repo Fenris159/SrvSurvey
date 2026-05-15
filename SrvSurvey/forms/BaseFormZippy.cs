@@ -2,7 +2,6 @@
 using SrvSurvey.plotters;
 using SrvSurvey.widgets;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing.Drawing2D;
 
 namespace SrvSurvey.forms;
@@ -12,11 +11,16 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
 {
     /// <summary> The set of all visible controls on this form. For perf reasons We manage these manually instead of using actual WinForms controls.handling). </summary>
     public List<Ctrl> ctrls = [];
-    public Ctrl? scrollFrom = null;
-    public Rectangle scrollBox;
-    public Size scrollPad;
+    /// <summary> Ctrls that participate in scrolling </summary>
+    protected List<Ctrl> stack = [];
+
+    /// <summary> The definition of the scrollling zone </summary>
+    protected Rectangle scrollZone;
+    /// <summary> The concrete adjusted rectangle scrolling occurs within </summary>
+    public RectangleF scrollBox;
     public float scrollUp;
     public float scrollMax;
+    private bool canScroll => stack.Count > 0;
 
     /// <summary> The ctrl that is "current" or active / has focus </summary>
     protected Ctrl? ctrlCurrent = null;
@@ -68,11 +72,25 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
 
     protected void addCtrl(params Ctrl[] newCtrls)
     {
+        addCtrls(false, newCtrls);
+    }
+
+    protected void addStack(params Ctrl[] newCtrls)
+    {
+        addCtrls(true, newCtrls);
+    }
+
+    private void addCtrls(bool addToStack, Ctrl[] newCtrls)
+    {
         foreach (var ctrl in newCtrls)
         {
             ctrl.form = this;
-            ctrls.Add(ctrl);
+            if (addToStack)
+                stack.Add(ctrl);
+            else
+                ctrls.Add(ctrl);
         }
+        this.Invalidate();
     }
 
     #region for PlotterForm
@@ -116,28 +134,29 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         }
 
         // find a sibling ctrl
+        var allCtrls = ctrls.Concat(stack).ToList();
         Ctrl? next = null;
         if (keyData == Keys.Escape)
             next = null;
         else if (keyData == Keys.Left)
-            next = findSibling(ctrls, last, (f, s) => s.r.Left < f?.r.Left, Side.Left, Side.Left);
+            next = findSibling(allCtrls, last, (f, s) => s.r.Left < f?.r.Left, Side.Left, Side.Left);
         else if (keyData == Keys.Right)
-            next = findSibling(ctrls, last, (f, s) => s.r.Left > f?.r.Left, Side.Right, Side.Left);
+            next = findSibling(allCtrls, last, (f, s) => s.r.Left > f?.r.Left, Side.Right, Side.Left);
         else if (keyData == Keys.Up)
-            next = findSibling(ctrls, last, (f, s) => s.r.Top < f?.r.Top, Side.Top, Side.Bottom);
+            next = findSibling(allCtrls, last, (f, s) => s.r.Top < f?.r.Top, Side.Top, Side.Bottom);
         else if (keyData == Keys.Down)
-            next = findSibling(ctrls, last, (f, s) => s.r.Top > f?.r.Top, Side.Bottom, Side.Top);
+            next = findSibling(allCtrls, last, (f, s) => s.r.Top > f?.r.Top, Side.Bottom, Side.Top);
         else if (keyData == Keys.Tab)
         {
             if (ctrlCurrent == null)
-                next = ctrls.FirstOrDefault();
+                next = allCtrls.FirstOrDefault();
             else
             {
-                var idx = ctrls.IndexOf(ctrlCurrent);
-                if (idx == ctrls.Count - 1)
-                    next = ctrls.FirstOrDefault();
+                var idx = allCtrls.IndexOf(ctrlCurrent);
+                if (idx == allCtrls.Count - 1)
+                    next = allCtrls.FirstOrDefault();
                 else
-                    next = ctrls[idx + 1];
+                    next = allCtrls[idx + 1];
             }
         }
 
@@ -205,13 +224,14 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         base.OnMouseMove(e);
 
         // tell any ctrls
+        var allCtrls = ctrls.Concat(stack).ToList();
         var doInvalidate = false;
         var newMouseOverCtrl = false;
-        foreach (var ctrl in ctrls)
+        foreach (var ctrl in allCtrls)
         {
             var x = e.Location.X;
             var y = e.Location.Y;
-            if (scrollFrom != null && scrollBox.Contains(e.Location))
+            if (canScroll && scrollBox.Contains(e.Location))
                 y += (int)scrollUp;
 
             var match = ctrl.r.Contains(x, y);
@@ -256,7 +276,7 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
     {
         base.OnMouseWheel(e);
 
-        if (scrollFrom != null)
+        if (canScroll)
         {
             scrollUp -= e.Delta * 0.5f;
             if (scrollUp < 0) scrollUp = 0;
@@ -265,41 +285,11 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         }
     }
 
-    protected override void OnResize(EventArgs e)
-    {
-        base.OnResize(e);
-
-        if (scrollFrom != null)
-        {
-            var w = scrollPad.Width;
-            var h = scrollPad.Height;
-            scrollBox = new(
-                scrollBox.X, scrollBox.Y,
-                w > 0 ? w : ClientSize.Width - scrollBox.X + w,
-                h > 0 ? h : ClientSize.Height - scrollBox.Y + h
-            );
-
-            this.Invalidate();
-        }
-    }
-
-    public void stopScroll()
-    {
-        scrollFrom = null;
-        scrollUp = 0;
-        scrollBox = default;
-        scrollPad = default;
-    }
-
     public void setScroll(int x, int y, int w, int h)
     {
+        scrollZone = new Rectangle(x, y, w, h);
         scrollUp = 0;
-        scrollPad = new(w, h);
-        scrollBox = new(
-            x, y,
-            w > 0 ? w : ClientSize.Width - x + w,
-            h > 0 ? h : ClientSize.Height - y + h
-        );
+        scrollBox = Util.applyOffset(scrollZone, ClientSize);
     }
 
     #endregion
@@ -311,41 +301,69 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         var tt = new TextCursor(g, this);
         tt.flags |= TextFormatFlags.PreserveGraphicsClipping | TextFormatFlags.PreserveGraphicsTranslateTransform;
 
-        drawCommon(g, tt);
+        var redraw = drawCommon(g, tt);
 
-        render(g, tt);
+        redraw |= render(g, tt);
+
+        // something changed size, or otherwise signaled we should trigger an immediate redraw
+        if (redraw)
+            Program.defer(() => this.Invalidate());
     }
 
-    protected virtual void render(Graphics g, TextCursor tt)
+    protected virtual bool render(Graphics g, TextCursor tt)
     {
-        // no op
+        return false;
     }
 
-    void drawCommon(Graphics g, TextCursor tt)
+    bool renderCtrl(Graphics g, TextCursor tt, List<Ctrl> ctrls, int n)
     {
-        for (var n = 0; n < ctrls.Count; n++)
+        var ctrl = ctrls[n];
+
+        // negative values mean re-position in from the right or bottom edge of the window
+        var frameSz = this.ClientSize;
+        ctrl.r.X = Util.applyOffset(ctrl.offset.X, ctrl.r.Width, frameSz.Width);
+        ctrl.r.Y = Util.applyOffset(ctrl.offset.Y, ctrl.r.Height, frameSz.Height);
+
+        // relocate stack items to the scrollBox
+        if (ctrls == stack)
         {
-            var ctrl = ctrls[n];
-
-            // apply scrolling for everything that follows
-            if (ctrl == scrollFrom)
-            {
-                g.Clip = new Region(scrollBox);
-                g.TranslateTransform(0, -scrollUp);
-            }
-
-            ctrl.setOrigin(this.ClientSize);
-            tt.dtx = ctrl.r.X;
-            tt.dty = ctrl.r.Y;
-            ctrl.render(g, tt, ctrl == ctrlCurrent, mouseOverCtrl && ctrl == ctrlCurrent && mouseDown, n == 0 ? null : ctrls[n - 1]);
+            ctrl.r.X = ctrl.offset.X + scrollBox.X;
+            ctrl.r.Y = ctrl.offset.Y + scrollBox.Y;
         }
 
-        if (scrollFrom != null)
+        tt.dtx = ctrl.r.X;
+        tt.dty = ctrl.r.Y;
+
+        var isCurrent = ctrl == ctrlCurrent;
+        var isPressed = mouseOverCtrl && ctrl == ctrlCurrent && mouseDown;
+        var priorCtrl = n == 0 ? null : ctrls[n - 1];
+        return ctrl.render(g, tt, isCurrent, isPressed, priorCtrl);
+    }
+
+    bool drawCommon(Graphics g, TextCursor tt)
+    {
+        var redraw = false;
+        // render fixed controls
+        for (var n = 0; n < ctrls.Count; n++)
+            redraw |= renderCtrl(g, tt, ctrls, n);
+
+        // render scrollable controls?
+        if (canScroll)
         {
+            scrollBox = Util.applyOffset(scrollZone, ClientSize);
+            //g.DrawRectangle(Pens.Lime, scrollBox); // TMP!!
+
+            g.Clip = new Region(scrollBox);
+            g.TranslateTransform(0, -scrollUp);
+
+            for (var n = 0; n < stack.Count; n++)
+                redraw |= renderCtrl(g, tt, stack, n);
+
+            // and draw scrollbar, if needed
             g.ResetTransform();
             g.ResetClip();
 
-            var lastBottom = ctrls.LastOrDefault()?.r.Bottom;
+            var lastBottom = stack.LastOrDefault()?.r.Bottom;
             if (lastBottom > scrollBox.Bottom)
             {
                 scrollMax = lastBottom - scrollBox.Height - scrollBox.Top ?? 0;
@@ -358,6 +376,7 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
                 g.FillRectangle(C.Brushes.orangeDark, x, scrollBox.Top + (int)y, 6, (int)h);
             }
         }
+        return redraw;
     }
 }
 
@@ -367,13 +386,19 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
 abstract class Ctrl
 {
     public BaseFormZippy form;
-    public PointF pt;
+    public PointF offset;
     public RectangleF r;
     public bool disabled;
     protected bool hovered;
     public bool isCurrent;
 
-    public abstract void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior);
+    public SizeF sz
+    {
+        get => r.Size;
+        set => r.Size = value;
+    }
+
+    public abstract bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior);
 
     public virtual bool setHovered(bool hovered)
     {
@@ -385,12 +410,14 @@ abstract class Ctrl
 
     public Action onClick;
 
+    /*
     public void setOrigin(SizeF sz)
     {
         // negative values mean re-position in from the right or bottom edge
         r.X = pt.X >= 0 ? pt.X : sz.Width - r.Width + pt.X;
         r.Y = pt.Y >= 0 ? pt.Y : sz.Height - r.Height + pt.Y;
     }
+    */
 }
 
 struct ColorSet
@@ -542,9 +569,7 @@ class BtnFillCtrl : Ctrl
     public ColorSet csBack = ColorSet.csBack;
     private SolidBrush? backBrush;
 
-    //public Action<Graphics, TextCursor, bool, bool>? onRender;
-
-    public override void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
     {
         // choose colours based on state
         var backColor = csBack.get(isCurrent, isPressed, disabled);
@@ -560,10 +585,7 @@ class BtnFillCtrl : Ctrl
         if (backBrush != null)
             g.FillRectangle(backBrush, r);
 
-        // TODO: do we really want a notion of current (has-focus) as well as hovered? For now ... I think not
-
-        //if (onRender != null)
-        //    onRender(g, tt, isCurrent, isPressed);
+        return false;
     }
 }
 
@@ -572,13 +594,9 @@ class BtnFillTextCtrl : BtnFillCtrl
     public ColorSet csFore = ColorSet.csFore;
     public float pad = N.four;
     public string text;
+    override public string ToString() => this.text;
 
-    override public string ToString()
-    {
-        return this.text;
-    }
-
-    public override void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
     {
         // set our size based on text + padding
         tt.dtx += pad;
@@ -589,10 +607,12 @@ class BtnFillTextCtrl : BtnFillCtrl
         r.Width = sz.Width + pad + pad;
         r.Height = sz.Height + pad + pad;
 
-        base.render(g, tt, isCurrent, isPressed, prior);
+        var redraw = base.render(g, tt, isCurrent, isPressed, prior);
 
         // finally, draw the text
         tt.draw(" " + this.text, csFore.get(isCurrent, isPressed, disabled));
+
+        return redraw;
     }
 }
 
@@ -603,14 +623,11 @@ class BtnFillDrawCtrl : BtnFillCtrl
     public PointF iconOffset;
     private Color iconColor;
     private Pen? iconPen;
-    override public string ToString()
-    {
-        return this.iconName ?? "?";
-    }
+    override public string ToString() => this.iconName ?? "?";
 
-    public override void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
     {
-        base.render(g, tt, isCurrent, isPressed, prior);
+        var redraw = base.render(g, tt, isCurrent, isPressed, prior);
 
         iconColor = ColorSet.csForeIcon.get(isCurrent, isPressed, disabled);
         if (iconPen == null || iconPen.Color != iconColor)
@@ -643,5 +660,7 @@ class BtnFillDrawCtrl : BtnFillCtrl
             g.SmoothingMode = SmoothingMode.Default;
             g.DrawLineR(iconPen, r.Right - 2, r.Top, 0, r.Height);
         }
+
+        return redraw;
     }
 }

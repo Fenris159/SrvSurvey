@@ -811,6 +811,11 @@ static class Util
             Game.log($"Ignoring HTTP:500 response");
             return true;
         }
+
+#if DEBUG
+        if ((ex?.InnerException ?? ex) is BadImageFormatException)
+            MessageBox.Show("BadImageFormatException ... time to restart");
+#endif
         return false;
     }
 
@@ -1298,6 +1303,30 @@ static class Util
     public static float centerIn(float outer, float inner)
     {
         return (int)Math.Ceiling((outer / 2f) - (inner / 2f));
+    }
+
+    /// <summary>
+    /// Applies a positive co-ordinate as-is, negative numbers will be applied in from the edge the frame size
+    /// </summary>
+    public static float applyOffset(float offset, float mySize, float frameSize)
+    {
+        //pt.X >= 0 ? pt.X : sz.Width - r.Width + pt.X;
+        if (offset < 0)
+            return frameSize - mySize + offset;
+        else
+            return offset;
+    }
+
+    /// <summary>
+    /// Applies a positive co-ordinate as-is, negative numbers will be applied in from the edge the frame size
+    /// </summary>
+    public static RectangleF applyOffset(RectangleF offset, SizeF frameSize)
+    {
+        var x2 = Util.applyOffset(offset.X, offset.Width, frameSize.Width);
+        var y2 = Util.applyOffset(offset.Y, offset.Height, frameSize.Height);
+        var w2 = Util.applyOffset(offset.Width, x2, frameSize.Width);
+        var h2 = Util.applyOffset(offset.Height, y2, frameSize.Height);
+        return new(x2, y2, w2, h2);
     }
 
     public static void deferAfter(int delayMs, Action func)
