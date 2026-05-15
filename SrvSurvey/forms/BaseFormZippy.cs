@@ -1,9 +1,9 @@
-﻿using Lua.CodeAnalysis.Syntax.Nodes;
-using SrvSurvey.game;
+﻿using SrvSurvey.game;
 using SrvSurvey.plotters;
 using SrvSurvey.widgets;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing.Drawing2D;
 
 namespace SrvSurvey.forms;
 
@@ -11,32 +11,40 @@ namespace SrvSurvey.forms;
 internal abstract class BaseFormZippy : SizableForm, PlotterForm
 {
     /// <summary> The set of all visible controls on this form. For perf reasons We manage these manually instead of using actual WinForms controls.handling). </summary>
-    protected List<Ctrl> ctrls = [];
+    public List<Ctrl> ctrls = [];
+    public Ctrl? scrollFrom = null;
+    public Rectangle scrollBox;
+    public Size scrollPad;
+    public float scrollUp;
+    public float scrollMax;
 
     /// <summary> The ctrl that is "current" or active / has focus </summary>
     protected Ctrl? ctrlCurrent = null;
+    /// <summary> The last ctrl that was "current" but isn't any more </summary>
+    private Ctrl? ctrlLast = null;
 
     protected bool mouseDown = false;
     protected bool mouseOverCtrl = false;
 
     public BaseFormZippy()
     {
+        ctrls.Clear();
+
         SetStyle(ControlStyles.UserPaint, true);
         SetStyle(ControlStyles.AllPaintingInWmPaint, true);
         SetStyle(ControlStyles.ResizeRedraw, true);
         SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
 
         this.Name = this.GetType().Name;
-        this.Text = this.Name;
         this.ShowIcon = false;
         this.StartPosition = FormStartPosition.Manual;
         this.MinimizeBox = false;
         this.MaximizeBox = false;
         this.ControlBox = false;
-        this.FormBorderStyle = FormBorderStyle.None;
+        this.FormBorderStyle = FormBorderStyle.SizableToolWindow; // .None; // <-- TMP!
         this.DoubleBuffered = true;
         this.ResizeRedraw = true;
-        this.ShowInTaskbar = false;
+        //this.ShowInTaskbar = false; // <-- TMP!
         this.BackColor = C.black;
         this.ForeColor = C.orange;
 
@@ -45,31 +53,26 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         this.Activated += (o, s) => KeyboardHook.redirect = true;
         this.Deactivate += (o, s) => KeyboardHook.redirect = false;
 
-        initCtrls();
-        ctrlCurrent = ctrls.FirstOrDefault();
     }
-
-    protected abstract void initCtrls();
 
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
 
-        // position ourself over the top/right quadrant of the game
-        var r = Elite.getWindowRect();
-        if (r.Width > 0)
-        {
-            this.Width = (int)(r.Width * 0.3f);
-            this.Height = (int)(r.Height * 0.5f);
-            this.Left = r.Right - this.Width - 20;
-            this.Top = r.Top + 10 + (PlotBase2.getPlotter<PlotQuestMini>()?.bottom ?? 20);
-            Application.DoEvents();
-        }
-        this.BackgroundImage = GameGraphics.getBackgroundImage(this.ClientSize);
-        this.Invalidate();
+        ctrlCurrent = ctrls.FirstOrDefault(sib => !sib.disabled);
+        if (ctrlCurrent != null) ctrlLast = ctrlCurrent;
 
         // delay fading in to avoid initial renders that are always Window coloured
         Util.deferAfter(100, () => Util.fadeOpacity(this, 0.95f, Game.settings.fadeInDuration));
+    }
+
+    protected void addCtrl(params Ctrl[] newCtrls)
+    {
+        foreach (var ctrl in newCtrls)
+        {
+            ctrl.form = this;
+            ctrls.Add(ctrl);
+        }
     }
 
     #region for PlotterForm
@@ -102,11 +105,13 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
     {
+        var last = ctrlCurrent ?? ctrlLast;
         //Debug.WriteLine($"ProcessCmdKey: {keyData}");
         if (keyData == Keys.Enter)
         {
             // "click" the current ctrl
-            ctrlCurrent?.onClick();
+            if (last?.onClick != null && !last.disabled)
+                last.onClick();
             return true;
         }
 
@@ -115,13 +120,13 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         if (keyData == Keys.Escape)
             next = null;
         else if (keyData == Keys.Left)
-            next = findSibling(ctrls, ctrlCurrent, (f, s) => s.r.Left < f?.r.Left, Side.Left, Side.Left);
+            next = findSibling(ctrls, last, (f, s) => s.r.Left < f?.r.Left, Side.Left, Side.Left);
         else if (keyData == Keys.Right)
-            next = findSibling(ctrls, ctrlCurrent, (f, s) => s.r.Right > f?.r.Right, Side.Right, Side.Left);
+            next = findSibling(ctrls, last, (f, s) => s.r.Left > f?.r.Left, Side.Right, Side.Left);
         else if (keyData == Keys.Up)
-            next = findSibling(ctrls, ctrlCurrent, (f, s) => s.r.Top < f?.r.Top, Side.Top, Side.Bottom);
+            next = findSibling(ctrls, last, (f, s) => s.r.Top < f?.r.Top, Side.Top, Side.Bottom);
         else if (keyData == Keys.Down)
-            next = findSibling(ctrls, ctrlCurrent, (f, s) => s.r.Top > f?.r.Top, Side.Bottom, Side.Top);
+            next = findSibling(ctrls, last, (f, s) => s.r.Top > f?.r.Top, Side.Bottom, Side.Top);
         else if (keyData == Keys.Tab)
         {
             if (ctrlCurrent == null)
@@ -136,18 +141,23 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
             }
         }
 
-        //Debug.WriteLine($"{keyData} => was: {ctrlCurrent}, next: {next}");
-        this.ctrlCurrent = next;
-        this.Invalidate();
+        // only change if we found something
+        if (next != null)
+        {
+            //Debug.WriteLine($"{keyData} => was: {last}, next: {next}");
+            this.ctrlCurrent = next;
+            this.ctrlLast = next;
+            this.Invalidate();
+        }
         return true;
     }
 
     private static Ctrl? findSibling(List<Ctrl> list, Ctrl? from, Func<Ctrl, Ctrl, bool> match, Side fs, Side ss)
     {
-        if (from == null) return list.FirstOrDefault();
+        if (from == null) return list.FirstOrDefault(sib => !sib.disabled);
 
         // find next ctrl to the left
-        var sibs = list.Where(sib => match(from, sib)).ToList();
+        var sibs = list.Where(sib => sib != from && !sib.disabled && match(from, sib)).ToList();
 
         if (sibs.Count == 0) return null; // TODO: add another func to select by wrapping around
         if (sibs.Count == 1) return sibs[0];
@@ -195,24 +205,33 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         base.OnMouseMove(e);
 
         // tell any ctrls
-        var dirty = false;
-        mouseOverCtrl = false;
-        foreach (var ctrl in this.ctrls)
+        var doInvalidate = false;
+        var newMouseOverCtrl = false;
+        foreach (var ctrl in ctrls)
         {
-            var match = ctrl.r.Contains(e.Location);
-            dirty |= ctrl.setHovered(match);
+            var x = e.Location.X;
+            var y = e.Location.Y;
+            if (scrollFrom != null && scrollBox.Contains(e.Location))
+                y += (int)scrollUp;
+
+            var match = ctrl.r.Contains(x, y);
+            doInvalidate |= ctrl.setHovered(match);
             if (match)
             {
-                mouseOverCtrl = true;
+                newMouseOverCtrl = true;
                 ctrlCurrent = ctrl;
-                dirty = true;
+                ctrlLast = ctrl;
+                doInvalidate = true;
             }
         }
 
-        if (!mouseOverCtrl)
+        // only clear this if mouse has just left a ctrl
+        if (!newMouseOverCtrl && newMouseOverCtrl != mouseOverCtrl)
             ctrlCurrent = null;
 
-        if (dirty)
+        mouseOverCtrl = newMouseOverCtrl;
+
+        if (doInvalidate)
             this.Invalidate();
     }
 
@@ -229,27 +248,115 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         mouseDown = false;
         this.Invalidate();
 
-        if (mouseOverCtrl && ctrlCurrent != null)
+        if (mouseOverCtrl && ctrlCurrent?.onClick != null && !ctrlCurrent.disabled)
             ctrlCurrent.onClick();
     }
 
+    protected override void OnMouseWheel(MouseEventArgs e)
+    {
+        base.OnMouseWheel(e);
+
+        if (scrollFrom != null)
+        {
+            scrollUp -= e.Delta * 0.5f;
+            if (scrollUp < 0) scrollUp = 0;
+            if (scrollUp > scrollMax) scrollUp = scrollMax;
+            this.Invalidate();
+        }
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+
+        if (scrollFrom != null)
+        {
+            var w = scrollPad.Width;
+            var h = scrollPad.Height;
+            scrollBox = new(
+                scrollBox.X, scrollBox.Y,
+                w > 0 ? w : ClientSize.Width - scrollBox.X + w,
+                h > 0 ? h : ClientSize.Height - scrollBox.Y + h
+            );
+
+            this.Invalidate();
+        }
+    }
+
+    public void stopScroll()
+    {
+        scrollFrom = null;
+        scrollUp = 0;
+        scrollBox = default;
+        scrollPad = default;
+    }
+
+    public void setScroll(int x, int y, int w, int h)
+    {
+        scrollUp = 0;
+        scrollPad = new(w, h);
+        scrollBox = new(
+            x, y,
+            w > 0 ? w : ClientSize.Width - x + w,
+            h > 0 ? h : ClientSize.Height - y + h
+        );
+    }
+
     #endregion
+
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e);
         var g = e.Graphics;
         var tt = new TextCursor(g, this);
+        tt.flags |= TextFormatFlags.PreserveGraphicsClipping | TextFormatFlags.PreserveGraphicsTranslateTransform;
 
         drawCommon(g, tt);
+
+        render(g, tt);
+    }
+
+    protected virtual void render(Graphics g, TextCursor tt)
+    {
+        // no op
     }
 
     void drawCommon(Graphics g, TextCursor tt)
     {
-        foreach (var ctrl in this.ctrls)
+        for (var n = 0; n < ctrls.Count; n++)
         {
+            var ctrl = ctrls[n];
+
+            // apply scrolling for everything that follows
+            if (ctrl == scrollFrom)
+            {
+                g.Clip = new Region(scrollBox);
+                g.TranslateTransform(0, -scrollUp);
+            }
+
+            ctrl.setOrigin(this.ClientSize);
             tt.dtx = ctrl.r.X;
             tt.dty = ctrl.r.Y;
-            ctrl.render(g, tt, ctrl == ctrlCurrent, mouseOverCtrl && ctrl == ctrlCurrent && mouseDown);
+            ctrl.render(g, tt, ctrl == ctrlCurrent, mouseOverCtrl && ctrl == ctrlCurrent && mouseDown, n == 0 ? null : ctrls[n - 1]);
+        }
+
+        if (scrollFrom != null)
+        {
+            g.ResetTransform();
+            g.ResetClip();
+
+            var lastBottom = ctrls.LastOrDefault()?.r.Bottom;
+            if (lastBottom > scrollBox.Bottom)
+            {
+                scrollMax = lastBottom - scrollBox.Height - scrollBox.Top ?? 0;
+                if (scrollUp > scrollMax) scrollUp = scrollMax;
+
+                var ratio = scrollBox.Height / (lastBottom - scrollBox.Top);
+                var x = ClientSize.Width - 10;
+                var y = scrollUp * ratio;
+                var h = scrollBox.Height * ratio;
+                g.FillRectangle(C.Brushes.orangeDark, x, scrollBox.Top + (int)y, 6, (int)h);
+            }
         }
     }
 }
@@ -259,11 +366,14 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
 /// </summary>
 abstract class Ctrl
 {
+    public BaseFormZippy form;
+    public PointF pt;
     public RectangleF r;
+    public bool disabled;
     protected bool hovered;
     public bool isCurrent;
 
-    public abstract void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed);
+    public abstract void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior);
 
     public virtual bool setHovered(bool hovered)
     {
@@ -273,10 +383,75 @@ abstract class Ctrl
         return changed;
     }
 
-    public virtual void onClick()
-    {
+    public Action onClick;
 
+    public void setOrigin(SizeF sz)
+    {
+        // negative values mean re-position in from the right or bottom edge
+        r.X = pt.X >= 0 ? pt.X : sz.Width - r.Width + pt.X;
+        r.Y = pt.Y >= 0 ? pt.Y : sz.Height - r.Height + pt.Y;
     }
+}
+
+struct ColorSet
+{
+    public Color normal;
+    public Color current;
+    public Color pressed;
+    public Color disabled;
+
+    public Color get(bool isCurrent, bool isPressed, bool isDisabled)
+    {
+        if (isDisabled)
+            return disabled;
+        else if (isPressed)
+            return pressed;
+        else if (isCurrent)
+            return current;
+        else
+            return normal;
+    }
+
+    public static ColorSet csFore = new()
+    {
+        normal = C.orange,
+        current = C.menuGold,
+        pressed = C.black,
+        disabled = C.black,
+    };
+
+    public static ColorSet csForeIcon = new()
+    {
+        normal = C.orangeDark,
+        current = C.menuGold,
+        pressed = C.black,
+        disabled = C.black,
+    };
+
+    public static ColorSet csBack = new()
+    {
+        normal = C.orangeDarker,
+        current = C.orangeDark,
+        pressed = C.orange,
+        disabled = C.grey,
+    };
+
+    public static ColorSet csCyanBack = new()
+    {
+        normal = C.cyanDarker,
+        current = C.cyanDark,
+        pressed = C.cyan,
+        disabled = C.grey,
+    };
+
+    public static ColorSet csCyanFore = new()
+    {
+        normal = C.cyanDark,
+        current = Color.White,
+        pressed = C.black,
+        disabled = C.black,
+    };
+
 }
 
 /*
@@ -362,49 +537,17 @@ class BtnBorderTextCtrl : Ctrl
 }
 */
 
-class BtnFillTextCtrl : Ctrl
+class BtnFillCtrl : Ctrl
 {
-    public string text;
-    private ColorSet csBack = new()
-    {
-        normal = C.orangeDarker,
-        current = C.orangeDark,
-        pressed = C.orange,
-        disabled = C.grey,
-    };
-    private ColorSet csText = new()
-    {
-        normal = C.orange,
-        current = C.menuGold,
-        pressed = C.black,
-        disabled = C.black,
-    };
-    private Pen? borderPen;
+    public ColorSet csBack = ColorSet.csBack;
     private SolidBrush? backBrush;
 
-    public override string ToString()
+    //public Action<Graphics, TextCursor, bool, bool>? onRender;
+
+    public override void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
     {
-        return this.text;
-    }
-
-    public override void onClick()
-    {
-        Debug.WriteLine($"CLICK: {text}");
-    }
-
-    public override void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed)
-    {
-        var pad = N.four;
-        tt.dtx += pad;
-        tt.dty += pad;
-
-        //if (isPressed) Debugger.Break();
-        var sz = TextRenderer.MeasureText(g, this.text, tt.font);
-        r.Width = sz.Width + pad + pad;
-        r.Height = sz.Height + pad + pad;
-
         // choose colours based on state
-        var backColor = csBack.get(isCurrent, isPressed);
+        var backColor = csBack.get(isCurrent, isPressed, disabled);
         if (backBrush == null || backBrush.Color != backColor)
         {
             backBrush?.Dispose();
@@ -413,34 +556,92 @@ class BtnFillTextCtrl : Ctrl
                 backBrush = backColor.toBrush();
         }
 
-        // draw background and/or border?
+        // draw background
         if (backBrush != null)
             g.FillRectangle(backBrush, r);
 
-        if (borderPen != null)
-            g.DrawRectangle(borderPen, this.r);
-
         // TODO: do we really want a notion of current (has-focus) as well as hovered? For now ... I think not
 
-        // finally, draw the text
-        tt.draw(this.text, csText.get(isCurrent, isPressed));
+        //if (onRender != null)
+        //    onRender(g, tt, isCurrent, isPressed);
     }
 }
 
-struct ColorSet
+class BtnFillTextCtrl : BtnFillCtrl
 {
-    public Color normal;
-    public Color current;
-    public Color pressed;
-    public Color disabled;
+    public ColorSet csFore = ColorSet.csFore;
+    public float pad = N.four;
+    public string text;
 
-    public Color get(bool isCurrent, bool isPressed)
+    override public string ToString()
     {
-        if (isPressed)
-            return pressed;
-        else if (isCurrent)
-            return current;
-        else
-            return normal;
+        return this.text;
+    }
+
+    public override void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    {
+        // set our size based on text + padding
+        tt.dtx += pad;
+        tt.dty += pad;
+
+        var sz = TextRenderer.MeasureText(g, this.text, tt.font);
+
+        r.Width = sz.Width + pad + pad;
+        r.Height = sz.Height + pad + pad;
+
+        base.render(g, tt, isCurrent, isPressed, prior);
+
+        // finally, draw the text
+        tt.draw(" " + this.text, csFore.get(isCurrent, isPressed, disabled));
+    }
+}
+
+class BtnFillDrawCtrl : BtnFillCtrl
+{
+    public bool sideBar;
+    public string? iconName;
+    public PointF iconOffset;
+    private Color iconColor;
+    private Pen? iconPen;
+    override public string ToString()
+    {
+        return this.iconName ?? "?";
+    }
+
+    public override void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    {
+        base.render(g, tt, isCurrent, isPressed, prior);
+
+        iconColor = ColorSet.csForeIcon.get(isCurrent, isPressed, disabled);
+        if (iconPen == null || iconPen.Color != iconColor)
+        {
+            iconPen?.Dispose();
+            iconPen = null;
+            if (iconColor != Color.Transparent)
+                iconPen = iconColor.toPen(3, LineCap.Round);
+        }
+
+        // draw the icon
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        switch (iconName)
+        {
+            case "close":
+                PlotQuestMini.drawBackArrow(g, r.X + iconOffset.X, r.Y + iconOffset.Y, 18, iconPen!);
+                break;
+            case "envelope":
+                PlotQuestMini.drawEnvelope(g, r.X + iconOffset.X, r.Y + iconOffset.Y, 53, iconPen!);
+                break;
+            case "page":
+                PlotQuestMini.drawPage(g, r.X + iconOffset.X, r.Y + iconOffset.Y, 51, iconPen!);
+                break;
+
+            default: throw new Exception($"Unexpected iconName: {iconName}");
+        }
+
+        if (sideBar && iconPen != null)
+        {
+            g.SmoothingMode = SmoothingMode.Default;
+            g.DrawLineR(iconPen, r.Right - 2, r.Top, 0, r.Height);
+        }
     }
 }

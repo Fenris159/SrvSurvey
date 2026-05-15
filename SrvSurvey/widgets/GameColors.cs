@@ -641,6 +641,7 @@ namespace SrvSurvey.widgets
             public static Font arial_14 = new Font("Arial", 14F * Program.fontScaleFactor, FontStyle.Regular, GraphicsUnit.Point);
             public static Font arial_16 = new Font("Arial", 16F * Program.fontScaleFactor, FontStyle.Regular, GraphicsUnit.Point);
             public static Font arial_16B = new Font("Arial", 16F * Program.fontScaleFactor, FontStyle.Bold, GraphicsUnit.Point);
+            public static Font arial_20 = new Font("Arial", 20F * Program.fontScaleFactor, FontStyle.Regular, GraphicsUnit.Point);
 
             // TODO: confirm these Pixel sized fonts scale properly with large fonts
             public static Font typewriter_p4 = new Font("Lucida Console", 4F * Program.fontScaleFactor, FontStyle.Regular, GraphicsUnit.Pixel);

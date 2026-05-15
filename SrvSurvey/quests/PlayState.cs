@@ -433,7 +433,7 @@ internal class PlayState : Data
         return false;
     }
 
-    public static async Task enableGaltea1()
+    public static async Task enableGaltea1(string questId)
     {
         try
         {
@@ -446,7 +446,7 @@ internal class PlayState : Data
                 return;
             }
 
-            var rslt = MessageBox.Show("Would you like to activate the Galtea sample quest?\r\n\r\n(This will reset any prior progress)", "Activate Quest?", MessageBoxButtons.YesNo);
+            var rslt = MessageBox.Show($"Would you like to activate the '{questId}' sample quest?\r\n\r\n(This will reset any prior progress)", "Activate Quest?", MessageBoxButtons.YesNo);
             if (rslt != DialogResult.Yes) return;
 
             if (!Game.settings.enableQuests)
@@ -457,9 +457,9 @@ internal class PlayState : Data
 
             PlayState.current ??= await PlayState.loadAsync(cmdr.fid);
 
-            Task.Run(() => PlayState.current.activateQuest("Grinning2001", "galtea1")).justDoIt();
+            Task.Run(() => PlayState.current.activateQuest("Grinning2001", questId)).justDoIt();
 
-            MessageBox.Show("The quest is ready.\r\n\r\n● Look in the top/right corner of the game for visual queues.\r\n\r\n● It is strongly recommended to set an easy key-chord for 'questShow'.\r\n\r\n● To interact with quests, use the new button with 2 squares diagonal (above the Quit button), or use the key-chord.", "Quest active");
+            MessageBox.Show("The quest is ready!\r\n\r\n- Look in the top/right corner of the game for visual queues\r\n\r\n- It is strongly recommended to set an easy key-chord for 'questShow'\r\n\r\n- To interact with quests: use that key-chord or new button on the main window (with 2 squares diagonal, below the giant Colonise button)", "Quest activated: " + questId);
         }
         catch (Exception ex)
         {

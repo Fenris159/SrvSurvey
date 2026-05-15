@@ -507,6 +507,23 @@ class RavenColonial
         return response.ReasonPhrase ?? "?";
     }
 
+    public async Task<DefQuest[]> getPublishedQuests(string fid)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, $"{svcUri}/api/quest/published");
+        req.Headers.addIf("rcc-key", this.getApiKey(fid));
+
+        var response = await RavenColonial.client.SendAsync(req);
+        Game.log($"RCC.getPublishedQuests: HTTP:{(int)response.StatusCode}({response.StatusCode}) {response.ReasonPhrase}");
+        if (!response.IsSuccessStatusCode) Debugger.Break();
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return [];
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) return [];
+
+        var json = await response.Content.ReadAsStringAsync();
+        var obj = JsonConvert.DeserializeObject<DefQuest[]>(json) ?? [];
+        return obj;
+    }
+
     public async Task<DefQuest> getQuest(string fid, string publisher, string id, double ver)
     {
         Game.log($"RCC.getQuest: {publisher} / {id} / {ver}");

@@ -1776,7 +1776,11 @@ namespace SrvSurvey
             if (ModifierKeys.HasFlag(Keys.Control))
                 BaseForm.show<FormPlayDev>();
             else if (ModifierKeys.HasFlag(Keys.Shift))
-                BaseForm.show<FormPlayJournal>();
+            {
+                if (game != null) BaseForm.show<FormPlayJournal>();
+            }
+            else if (ModifierKeys.HasFlag(Keys.Alt))
+                FormPlayComms2.toggleForm();
             else
                 FormPlayComms.toggleForm();
         }
@@ -1918,22 +1922,28 @@ namespace SrvSurvey
 
         private void btnCodexBingo_Click(object sender, EventArgs e)
         {
-            if (ModifierKeys.HasFlag(Keys.Shift) && !Program.isAppStoreBuild)
+            if (!Program.isAppStoreBuild)
             {
-                // temp behaviour - need to create a more formal entry point :)
-                PlayState.enableGaltea1().justDoIt(() =>
+                var questId = ModifierKeys.HasFlag(Keys.Shift)
+                    ? "galtea1" : ModifierKeys.HasFlag(Keys.Control)
+                        ? "surface1" : ModifierKeys.HasFlag(Keys.Alt)
+                            ? "simplest1" : null;
+                if (questId != null)
                 {
-                    Program.defer(() =>
+                    // temp behaviour - need to create a more formal entry point :)
+                    PlayState.enableGaltea1(questId).justDoIt(() =>
                     {
-                        btnQuestComms.Visible = Game.settings.enableQuests;
-                        Elite.setFocusED();
+                        Program.defer(() =>
+                        {
+                            btnQuestComms.Visible = Game.settings.enableQuests;
+                            Elite.setFocusED();
+                        });
                     });
-                });
+                    return;
+                }
             }
-            else
-            {
-                BaseForm.show<FormCodexBingo>();
-            }
+
+            BaseForm.show<FormCodexBingo>();
         }
 
         private void btnLogs_Click(object sender, EventArgs e)

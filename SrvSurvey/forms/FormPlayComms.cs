@@ -147,6 +147,15 @@ namespace SrvSurvey.forms
             });
         }
 
+        protected override void OnDeactivate(EventArgs e)
+        {
+            base.OnDeactivate(e);
+
+            // close ourself anytime we lose focus (but not if debugging)
+            if (!Debugger.IsAttached)
+                Program.defer(() => this.Close());
+        }
+
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             base.OnFormClosed(e);
