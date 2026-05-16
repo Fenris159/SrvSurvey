@@ -89,6 +89,7 @@ internal class PlayState : Data
                 if (!File.Exists(questPath)) throw new Exception($"Missing! {questPath}");
                 var questJson = File.ReadAllText(questPath);
                 ps.devQuest.quest = JsonConvert.DeserializeObject<DefQuest>(questJson)!;
+                ps.devQuest.dev = true;
 
                 await ps.initQuest(ps.devQuest, false);
             }
@@ -186,8 +187,8 @@ internal class PlayState : Data
         else if (pq.dev || (this.devQuest != null && this.devQuest.ToString() == pq.ToString()))
         {
             // otherwise, remove and save local file
-            devRef = null;
-            devQuest = null;
+            this.devRef = null;
+            this.devQuest = null;
             this.Save(true);
             this.activeQuests.Remove(pq);
         }

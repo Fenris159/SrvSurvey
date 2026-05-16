@@ -6,6 +6,8 @@ using System.Drawing.Drawing2D;
 
 namespace SrvSurvey.forms.playComms;
 
+// TODO: This class desperately needs a better name
+
 [System.ComponentModel.DesignerCategory("")]
 internal abstract class BaseFormZippy : SizableForm, PlotterForm
 {
@@ -122,6 +124,8 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
 
 
     #region sibling navigation
+
+    // TODO: Support DirectX input (again)
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
     {
@@ -529,6 +533,21 @@ class Ctrl
     }
 }
 
+internal class HorizLine : Ctrl
+{
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    {
+        r.X = form.scrollBox.Left;
+        r.Width = form.scrollWidth;
+        r.Height = gap;
+
+        g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, r.Width, 0);
+
+        return false;
+    }
+
+}
+
 /*
 class BtnBorderTextCtrl : Ctrl
 {
@@ -643,6 +662,10 @@ class TextCtrl : Ctrl
     public float pad = N.four;
     public string text;
     public bool autoSize;
+    public Color backColor = Color.Transparent;
+    private SolidBrush? backBrush;
+    public Font? font;
+
     override public string ToString() => this.text;
 
     public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
@@ -653,13 +676,24 @@ class TextCtrl : Ctrl
 
         if (autoSize)
         {
-            var sz = TextRenderer.MeasureText(g, this.text, tt.font);
+            var sz = TextRenderer.MeasureText(g, this.text, this.font ?? tt.font);
             r.Width = sz.Width + pad + pad;
             r.Height = sz.Height + pad + pad;
         }
 
+        if (backBrush == null || backBrush.Color != backColor)
+        {
+            backBrush?.Dispose();
+            backBrush = null;
+            if (backColor != Color.Transparent)
+                backBrush = backColor.toBrush();
+        }
+
+        if (backBrush != null)
+            g.FillRectangle(backBrush, r);
+
         // finally, draw the text
-        tt.drawCentered(this.r.toRectangle(), this.text, this.color);
+        tt.drawCentered(this.r.toRectangle(), this.text, this.color, this.font);
 
         return false;
     }

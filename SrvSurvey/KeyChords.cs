@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using SrvSurvey.forms;
+using SrvSurvey.forms.playComms;
 using SrvSurvey.game;
 using SrvSurvey.plotters;
 using System.Diagnostics;
@@ -492,7 +493,7 @@ namespace SrvSurvey
 
         private static bool questShow()
         {
-            FormPlayComms.toggleForm();
+            FormPlayComms2.toggleForm();
             return true;
         }
 

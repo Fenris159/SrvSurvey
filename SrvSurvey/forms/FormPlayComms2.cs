@@ -5,6 +5,7 @@ using SrvSurvey.quests;
 using SrvSurvey.widgets;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
+using System.Text.RegularExpressions;
 
 namespace SrvSurvey.forms.playComms;
 
@@ -34,6 +35,8 @@ internal class FormPlayComms2 : BaseFormZippy
         init,
         /// <summary> Show a list of messages </summary>
         msgs,
+        /// <summary> Show details for a specific message </summary>
+        msgItem,
         /// <summary> Show a catalog of available quests </summary>
         catalog,
         /// <summary> Show details on a specific quest </summary>
@@ -84,7 +87,7 @@ internal class FormPlayComms2 : BaseFormZippy
 
         addCtrl(
             btnMsgs,
-            new BtnFillDrawCtrl { offset = new(10, -10), r = new(0, 0, 72, 32), iconName = "close", iconOffset = new(26, 6), onClick = btn => this.Close(), },
+            new BtnFillDrawCtrl { offset = new(10, -10), r = new(0, 0, 72, 32), iconName = "close", iconOffset = new(26, 10), onClick = btn => this.Close(), },
 #if DEBUG
             new BtnFillTextCtrl { follow = Side.Bottom, gap = 10, sz = new(72, 32), text = "(watch)", onClick = btn => BaseForm.show<FormPlayJournal>(), disabled = Game.activeGame == null },
             new BtnFillTextCtrl { follow = Side.Bottom, gap = 10, sz = new(72, 32), text = "(dev)", onClick = btn => BaseForm.show<FormPlayDev>(), },
@@ -93,7 +96,7 @@ internal class FormPlayComms2 : BaseFormZippy
         );
 
         // choose a starting mode
-        setMode(Mode.catalog);
+        setMode(Mode.msgs);
 
         //var ps = PlayState.current;
         //if (ps?.devQuest != null)
@@ -155,6 +158,8 @@ internal class FormPlayComms2 : BaseFormZippy
 
         if (mode == Mode.catalog)
             loadPublishedQuests().justDoIt();
+        else if (mode == Mode.msgs)
+            loadMessages();
 
         this.Invalidate();
     }
@@ -162,8 +167,10 @@ internal class FormPlayComms2 : BaseFormZippy
     protected override bool render(Graphics g, TextCursor tt)
     {
         base.render(g, tt);
+        var ps = PlayState.current;
+        if (ps == null) return false;
 
-        PlotQuestMini.drawLogo(g, 32, N.ten, false, 48);
+        PlotQuestMini.drawLogo(g, 32, N.ten, ps.messagesUnread > 0, 48);
 
         switch (mode)
         {
@@ -171,7 +178,8 @@ internal class FormPlayComms2 : BaseFormZippy
                 return renderInitializing(g, tt);
 
             case Mode.msgs:
-                return renderMessages(g, tt);
+            case Mode.msgItem:
+                return renderMessages(g, tt, ps);
 
             case Mode.catalog:
             case Mode.defQuest:
@@ -196,6 +204,7 @@ internal class FormPlayComms2 : BaseFormZippy
 
     private bool renderQuestCatalog(Graphics g, TextCursor tt)
     {
+        // TODO: make this a ctrl
         tt.dty = N.ten;
         tt.draw(N.hundred, "Quest Catalog", GameColors.Fonts.arial_20);
         tt.newLine(true);
@@ -219,13 +228,23 @@ internal class FormPlayComms2 : BaseFormZippy
         {
             // fetch whole catalog
             publishedQuests = await Game.rcc.getPublishedQuests(CommanderSettings.currentOrLastFid);
-
-            // and include the in-progress devQuest
-            if (PlayState.current?.devQuest != null)
-                publishedQuests.Insert(0, PlayState.current.devQuest.quest);
         }
 
         if (publishedQuests == null || publishedQuests.Count == 0) throw new Exception("Why are there zero quests available?");
+
+        // TODO: add filter buttons, selecting Active vs Paused vs Complete vs Failed vs Not-started ???
+
+        // and include the in-progress devQuest
+        if (PlayState.current?.devQuest != null)
+        {
+            addStack(new QuestCatalogLine
+            {
+                qd = PlayState.current.devQuest.quest,
+                follow = Side.Top,
+                gap = 4,
+                onClick = btn => showQuestDef(PlayState.current.devQuest.quest),
+            });
+        }
 
         addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine
         {
@@ -343,12 +362,125 @@ internal class FormPlayComms2 : BaseFormZippy
 
     #region list msgs
 
-    private bool renderMessages(Graphics g, TextCursor tt)
+    private bool renderMessages(Graphics g, TextCursor tt, PlayState ps)
     {
-        tt.dty = 10;
-        tt.dtx = 100;
-        tt.draw("Hello!");
+        tt.dty = N.ten;
+        tt.draw(N.hundred, "Messages:", GameColors.Fonts.arial_20);
+        tt.draw(ps.messagesTotal.ToString(), C.oranger, GameColors.Fonts.arial_20);
+        tt.draw(" Unread: ", GameColors.Fonts.arial_20);
+        tt.draw(ps.messagesUnread.ToString(), C.oranger, GameColors.Fonts.arial_20);
+        tt.newLine(true);
+
         return false;
+    }
+
+    private void loadMessages()
+    {
+        var ps = PlayState.current;
+        if (ps == null) return;
+
+        var allMsgs = ps.activeQuests
+            .SelectMany(q => q.msgs)
+            .OrderByDescending(m => m.received)
+            .ToList();
+        Game.log($"showing {allMsgs.Count} msgs");
+
+        addStack(allMsgs.Select(pm =>
+        {
+            var qm = pm.parent.quest.msgs.Find(m => m.id == pm.id);
+            return new MessageLine
+            {
+                pm = pm,
+                qm = qm,
+                follow = Side.Top,
+                gap = 4,
+                onClick = btn => this.showMessage(pm, qm, ps).justDoIt(),
+            };
+        }));
+
+        this.Invalidate();
+    }
+
+    private async Task showMessage(PlayMsg pm, DefMsg? qm, PlayState ps)
+    {
+        var raw = pm.body ?? qm?.body ?? "";
+        var matchParts = new Regex("`(.+?)`");
+        var matches = matchParts.Matches(raw);
+
+        List<Ctrl> subStack = [];
+
+        // body and copy-tags
+        string body;
+        if (matches.Count == 0)
+        {
+            body = raw;
+        }
+        else
+        {
+            body = raw.Replace("`", "");
+            var copyTexts = matches.Select(m => m.Groups[1].Value).ToHashSet();
+            if (copyTexts.Count > 0)
+            {
+                subStack.Add(new TextCtrl { follow = Side.Top, gap = 4, autoSize = true, font = GameColors.Fonts.arial_9, color = C.oranged, text = "Copy:" });
+                subStack.AddRange(copyTexts.Select(t => new BtnFillTextCtrl
+                {
+                    follow = Side.Left,
+                    gap = 4,
+                    autoSize = true,
+                    text = t,
+                    onClick = btn => Clipboard.SetText(t),
+                }));
+                subStack.Add(new HorizLine { follow = Side.Top, gap = 10 });
+            }
+        }
+
+        // reply buttons
+        var actions = pm.actions ?? qm?.actions?.Keys.ToArray();
+        if (actions != null && qm?.actions != null)
+        {
+            if (pm.replied != null)
+            {
+                var replied = qm.actions.GetValueOrDefault(pm.replied) ?? pm.replied;
+                subStack.AddRange(
+                    new TextCtrl { follow = Side.Top, gap = 4, autoSize = true, color = C.oranged, font = GameColors.Fonts.arial_9, text = "Replied: " },
+                    new TextCtrl { follow = Side.Left, gap = 4, autoSize = true, color = C.orange, backColor = C.orangeDarker, text = replied }
+                );
+                subStack.Add(new HorizLine { follow = Side.Top, gap = 10 });
+            }
+            else
+            {
+                subStack.Add(new TextCtrl { follow = Side.Top, gap = 4, autoSize = true, color = C.oranged, font = GameColors.Fonts.arial_9, text = "Reply with:" });
+                subStack.AddRange(actions.Select(k => new BtnFillTextCtrl
+                {
+                    follow = Side.Left,
+                    gap = 4,
+                    autoSize = true,
+                    text = qm.actions.GetValueOrDefault(k) ?? k,
+                    onClick = btn =>
+                    {
+                        pm.parent.invokeMessageAction(pm.id, k).continueOnMain(this, () => setMode(Mode.msgs));
+                    },
+                }));
+                subStack.Add(new HorizLine { follow = Side.Top, gap = 10 });
+            }
+        }
+
+        stack.Clear();
+        addStack(new MessageItem { pm = pm, qm = qm, body = body });
+        addStack(subStack);
+        addStack(new BtnFillDrawCtrl { follow = Side.Top, gap = 4, offset = new(0, 0), sz = new(72, 32), iconName = "close", iconOffset = new(28, 10), onClick = btn => setMode(Mode.msgs) });
+
+        this.mode = Mode.msgItem;
+        btnMsgs.sideBar = true;
+        btnCat.sideBar = false;
+
+        // remember this message has now been read
+        if (!pm.read)
+        {
+            await pm.parent.onMessageRead(pm.id);
+            pm.read = true;
+            await pm.parent.save(true);
+        }
     }
 
     #endregion
@@ -357,7 +489,6 @@ internal class FormPlayComms2 : BaseFormZippy
 class QuestCatalogLine : BtnFillCtrl
 {
     private static Brush brushDevQuest;
-    public new FormPlayComms2 form => (FormPlayComms2)base.form;
 
     public required DefQuest qd;
 
@@ -437,7 +568,7 @@ internal class QuestCatalogItem : Ctrl
         tt.draw(x, "Tags: ");
         if (qd.tags?.Length > 0)
         {
-            // TODO: many clickable boxes?
+            // TODO: make clickable boxes, like email tag copy
             tt.draw(string.Join(", ", qd.tags), C.oranger);
         }
         else
@@ -456,6 +587,7 @@ internal class QuestCatalogItem : Ctrl
         g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, w, 0);
         tt.dty += 10;
 
+        // TODO: make seperate ctrls + publisher is a copy button
 
         // publisher and version
         tt.draw(x, "Publisher: ");
@@ -469,5 +601,101 @@ internal class QuestCatalogItem : Ctrl
         tt.dty += 10;
 
         return adjustHeight(tt.dty - r.Y);
+    }
+}
+
+
+class MessageLine : BtnFillCtrl
+{
+    public required PlayMsg pm;
+    public required DefMsg? qm;
+
+    override public string ToString() => this.pm.subject ?? pm.body ?? "?";
+
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    {
+        r.Width = form.scrollWidth; // match scrollBox width        
+        var redraw = base.render(g, tt, isCurrent, isPressed, prior); // render btn background
+
+        // envelope
+        tt.dty = r.Y + 4;
+        tt.dtx = r.X + 8;
+        PlotQuestMini.drawEnvelope(g, tt.dtx, tt.dty + 4, N.twoEight, pm.read ? C.Pens.orange2r : C.Pens.cyan2r);
+
+        tt.dtx += 40;
+        var x = tt.dtx;
+
+        // received time on right side
+        var time = pm.received.Subtract(DateTime.Now).TotalDays < 1
+            ? pm.received.ToString("HH:mm")
+            : pm.received.AddYears(1286).UtcDateTime.ToString("dd MMM yyyy - HH:mm");
+        tt.drawRight(form.scrollBox.Right - 6, time, null, GameColors.Fonts.arial_9);
+
+        // message from
+        var from = pm.from ?? qm?.from;
+        tt.draw(x, string.IsNullOrEmpty(from) ? "?" : from, ColorSet.csFore.get(isCurrent, isPressed, disabled), GameColors.Fonts.arial_12);
+        tt.newLine(4, true);
+
+        // subject
+        var subject = pm.subject ?? qm?.subject ?? pm.body ?? qm?.body ?? "";
+        tt.draw(x, subject, ColorSet.csFore.get(isCurrent, isPressed, disabled), GameColors.Fonts.arial_16);
+        tt.newLine(4, true);
+
+        // set our hight to be as larged as we needed
+        return adjustHeight(tt.pad().Height - r.Y);
+    }
+}
+
+
+internal class MessageItem : Ctrl
+{
+    public required PlayMsg pm;
+    public required DefMsg? qm;
+    public required string body;
+
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    {
+        r.Width = form.scrollWidth; // match scrollBox width
+        var w = (int)(r.Width + r.X - 0);
+        tt.dty += 1;
+
+        g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, w, 0);
+        tt.dty += 12;
+
+        PlotQuestMini.drawEnvelope(g, r.X, tt.dty, 56, pm.read ? C.Pens.orange3r : C.Pens.cyan3r);
+
+        var x2 = r.X + 72;
+        var x3 = r.X + 122;
+
+        // from
+        var from = pm.from ?? qm?.from;
+        tt.draw(x2, "From: ", GameColors.Fonts.arial_9);
+        tt.draw(x3, string.IsNullOrEmpty(from) ? "?" : from, C.oranger, GameColors.Fonts.arial_12);
+        tt.newLine(2, true);
+
+        // sent
+        var time = pm.received.AddYears(1286).UtcDateTime.ToString("dd MMM yyyy HH:mm");
+        tt.draw(x2, "Sent: ", GameColors.Fonts.arial_9);
+        tt.draw(x3, time, C.oranger, GameColors.Fonts.arial_12);
+        tt.newLine(2, true);
+
+        // subject
+        var subject = pm.subject ?? qm?.subject ?? pm.body ?? qm?.body ?? "";
+        tt.draw(x2, "Subject: ", GameColors.Fonts.arial_9);
+        tt.draw(x3, subject, C.oranger, GameColors.Fonts.arial_16);
+        tt.newLine(8, true);
+
+        g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, w, 0);
+        tt.dty += 12;
+
+        // body
+        var sz = tt.drawWrapped(r.X + 10, w - 10, body, C.oranger, GameColors.Fonts.arial_12);
+        tt.newLine(true);
+
+        g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, w, 0);
+        tt.dty += 12;
+
+        // set our hight to be as larged as we needed
+        return adjustHeight(tt.pad(0, 10).Height - r.Y);
     }
 }
