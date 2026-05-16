@@ -507,7 +507,7 @@ class RavenColonial
         return response.ReasonPhrase ?? "?";
     }
 
-    public async Task<DefQuest[]> getPublishedQuests(string fid)
+    public async Task<List<DefQuest>> getPublishedQuests(string fid)
     {
         var req = new HttpRequestMessage(HttpMethod.Get, $"{svcUri}/api/quest/published");
         req.Headers.addIf("rcc-key", this.getApiKey(fid));
@@ -520,7 +520,7 @@ class RavenColonial
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) return [];
 
         var json = await response.Content.ReadAsStringAsync();
-        var obj = JsonConvert.DeserializeObject<DefQuest[]>(json) ?? [];
+        var obj = JsonConvert.DeserializeObject<List<DefQuest>>(json) ?? [];
         return obj;
     }
 
@@ -614,7 +614,7 @@ class RavenColonial
 
     public async Task<bool> deleteQuest(string fid, string publisher, string id)
     {
-        var req = new HttpRequestMessage(HttpMethod.Post, $"{svcUri}/api/quest/cmdr/{Uri.EscapeDataString(publisher)}/{Uri.EscapeDataString(id)}/activate");
+        var req = new HttpRequestMessage(HttpMethod.Post, $"{svcUri}/api/quest/cmdr/{Uri.EscapeDataString(publisher)}/{Uri.EscapeDataString(id)}/delete");
         req.Headers.addIf("rcc-key", this.getApiKey(fid));
 
         var response = await RavenColonial.client.SendAsync(req);

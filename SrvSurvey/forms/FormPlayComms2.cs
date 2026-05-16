@@ -1,10 +1,12 @@
 ﻿using SrvSurvey.game;
+using SrvSurvey.game.RavenColonial;
 using SrvSurvey.plotters;
 using SrvSurvey.quests;
 using SrvSurvey.widgets;
 using System.Diagnostics;
+using System.Drawing.Drawing2D;
 
-namespace SrvSurvey.forms;
+namespace SrvSurvey.forms.playComms;
 
 [Draggable]
 [System.ComponentModel.DesignerCategory("")]
@@ -26,6 +28,18 @@ internal class FormPlayComms2 : BaseFormZippy
         }
     }
 
+    enum Mode
+    {
+        /// <summary> Loading initial PlayState </summary>
+        init,
+        /// <summary> Show a list of messages </summary>
+        msgs,
+        /// <summary> Show a catalog of available quests </summary>
+        catalog,
+        /// <summary> Show details on a specific quest </summary>
+        defQuest,
+    }
+
     private Mode mode;
     private BtnFillDrawCtrl btnMsgs;
     private BtnFillDrawCtrl btnCat;
@@ -36,7 +50,17 @@ internal class FormPlayComms2 : BaseFormZippy
         this.ForeColor = C.orange;
         this.Size = new(800, 800);
         this.MinimumSize = new(400, 400);
+        setScroll(100, 72, -10, -10);
 
+        // do we need to start loading?
+        if (PlayState.current == null)
+            PlayState.loadAsync(CommanderSettings.currentOrLastFid).continueOnMain(this, () => this.init());
+        else
+            this.init();
+    }
+
+    private void init()
+    {
         // init ctrls
         btnMsgs = new BtnFillDrawCtrl
         {
@@ -44,37 +68,47 @@ internal class FormPlayComms2 : BaseFormZippy
             sz = new(72, 72),
             iconName = "envelope",
             iconOffset = new(9, 16),
-            //disabled = true,
-            onClick = () => setMode(Mode.msgs),
+            disabled = !(PlayState.current?.messagesTotal > 0),
+            onClick = btn => setMode(Mode.msgs),
         };
 
         btnCat = new BtnFillDrawCtrl
         {
-            offset = new(10, -100),
+            follow = Side.Bottom,
+            gap = 10,
             sz = new(72, 72),
             iconName = "page",
             iconOffset = new(15, 12),
-            onClick = () => setMode(Mode.catalog),
+            onClick = btn => setMode(Mode.catalog),
         };
-        addCtrl(btnMsgs, btnCat,
-            new BtnFillTextCtrl
-            {
-                offset = new(10, -44),
-                sz = new(72, 72),
-                text = "(refresh)",
-                onClick = () => this.Invalidate(),
-            },
-            new BtnFillDrawCtrl
-            {
-                offset = new(10, -10),
-                r = new(0, 0, 72, 24),
-                iconName = "close",
-                iconOffset = new(26, 6),
-                onClick = () => this.Close(),
-            }
+
+        addCtrl(
+            btnMsgs,
+            new BtnFillDrawCtrl { offset = new(10, -10), r = new(0, 0, 72, 32), iconName = "close", iconOffset = new(26, 6), onClick = btn => this.Close(), },
+#if DEBUG
+            new BtnFillTextCtrl { follow = Side.Bottom, gap = 10, sz = new(72, 32), text = "(watch)", onClick = btn => BaseForm.show<FormPlayJournal>(), disabled = Game.activeGame == null },
+            new BtnFillTextCtrl { follow = Side.Bottom, gap = 10, sz = new(72, 32), text = "(dev)", onClick = btn => BaseForm.show<FormPlayDev>(), },
+#endif
+            btnCat
         );
 
-        setMode(Mode.msgs);
+        // choose a starting mode
+        setMode(Mode.catalog);
+
+        //var ps = PlayState.current;
+        //if (ps?.devQuest != null)
+        //{
+        //    showQuestDef(ps.devQuest.quest);
+        //}
+        //else 
+        //if (ps?.messagesTotal > 0)
+        //{
+        //    setMode(Mode.msgs);
+        //}
+        //else if (ps == null)
+        //{
+        //    setMode(Mode.catalog);
+        //}
     }
 
     protected override void OnLoad(EventArgs e)
@@ -133,18 +167,30 @@ internal class FormPlayComms2 : BaseFormZippy
 
         switch (mode)
         {
+            case Mode.init:
+                return renderInitializing(g, tt);
+
             case Mode.msgs:
                 return renderMessages(g, tt);
 
             case Mode.catalog:
+            case Mode.defQuest:
                 return renderQuestCatalog(g, tt);
         }
         return false;
     }
 
+    private bool renderInitializing(Graphics g, TextCursor tt)
+    {
+        tt.dty = 10;
+        tt.dtx = 100;
+        tt.draw("Initializing...");
+        return false;
+    }
+
     #region catalog
 
-    private static DefQuest[]? publishedQuests;
+    private static List<DefQuest>? publishedQuests;
     private bool loadingCatalog;
     private DefQuest? selectedQD;
 
@@ -170,17 +216,26 @@ internal class FormPlayComms2 : BaseFormZippy
 
         // only download once per process
         if (publishedQuests == null)
+        {
+            // fetch whole catalog
             publishedQuests = await Game.rcc.getPublishedQuests(CommanderSettings.currentOrLastFid);
 
-        if (publishedQuests == null || publishedQuests.Length == 0) throw new Exception("Why are there zero quests available?");
+            // and include the in-progress devQuest
+            if (PlayState.current?.devQuest != null)
+                publishedQuests.Insert(0, PlayState.current.devQuest.quest);
+        }
 
-        setScroll(100, 72, -10, -10);
-        addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)
+        if (publishedQuests == null || publishedQuests.Count == 0) throw new Exception("Why are there zero quests available?");
+
+        addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine
         {
-            onClick = () => showQuestDef(qd),
-        }).ToArray());
-        //addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)).ToArray());
-        //addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)).ToArray());
+            qd = qd,
+            follow = Side.Top,
+            gap = 4,
+            onClick = btn => showQuestDef(qd),
+        }));
+        //addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)));
+        //addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)));
 
         loadingCatalog = false;
         this.Invalidate();
@@ -189,21 +244,99 @@ internal class FormPlayComms2 : BaseFormZippy
     private void showQuestDef(DefQuest qd)
     {
         this.selectedQD = qd;
-        // remove list items
-        stack.Clear();
 
-        // add new items
-        addStack(
-            new QuestCatalogItem(qd) { offset = scrollZone.Location },
-            new BtnFillDrawCtrl
+        var btnBack = new BtnFillDrawCtrl { follow = Side.Top, gap = 4, sz = new(72, 32), iconName = "close", iconOffset = new(28, 10), onClick = btn => setMode(Mode.catalog) };
+
+        var lblConfirm = new TextCtrl { follow = Side.Top, gap = 4, autoSize = true, text = "Are you sure? This will undo any prior progress", color = C.cyan };
+        var btnYes = new BtnFillTextCtrl { follow = Side.Top, gap = 10, sz = new(72, 32), text = "Yes", onClick = btn => this.Invalidate() };
+        var btnNo = new BtnFillTextCtrl { follow = Side.Left, gap = 10, sz = new(72, 32), text = "No", onClick = btn => this.Invalidate() };
+        var btnAct = new BtnFillTextCtrl { follow = Side.Left, gap = 4, sz = new(120, 32), csBack = ColorSet.csCyanBack, csFore = ColorSet.csCyanFore };
+        var lblActing = new TextCtrl { follow = Side.Left, gap = 10, autoSize = true, color = C.oranger };
+
+        List<Ctrl> subStack = [];
+        btnAct.onClick = btn =>
+        {
+            // show prompt
+            btnBack.hidden = true;
+            btnAct.hidden = true;
+            subStack = addStack(lblConfirm, btnYes, btnNo);
+        };
+        btnNo.onClick = btn =>
+        {
+            // decline
+            btnBack.hidden = false;
+            btnAct.hidden = false;
+            stack.RemoveAll(c => subStack.Contains(c));
+        };
+
+        // adjust messages depending on quest state
+        var pq = PlayState.current?.activeQuests.Find(pq => pq.quest.equals(qd));
+        if (pq == null)
+        {
+            btnAct.text = "Activate quest";
+            lblActing.text = "Activating ...";
+            btnYes.onClick = btn =>
             {
-                offset = new(200, 200),
-                r = new(0, 0, 72, 24),
-                iconName = "close",
-                iconOffset = new(26, 6),
-                onClick = () => setMode(Mode.catalog),
-            }
+                // activate quest
+                lblConfirm.color = C.grey;
+                btnYes.disabled = true;
+                btnNo.disabled = true;
+                subStack.AddRange(addStack(lblActing));
+
+                PlayState.current?.activateQuest(qd.publisher, qd.id).continueOnMain(this, () =>
+                {
+                    btnBack.hidden = false;
+                    btnAct.hidden = false;
+                    stack.Remove(btnAct);
+                    stack.RemoveAll(c => subStack.Contains(c));
+                    addStack(new TextCtrl { follow = Side.Left, gap = 10, autoSize = true, text = "Enjoy the quest ...", color = C.oranger });
+                });
+            };
+        }
+        else
+        {
+            btnAct.text = "Remove";
+            lblActing.text = "Removing ...";
+            btnYes.onClick = btn =>
+            {
+                // remove quest
+                lblConfirm.color = C.grey;
+                btnYes.disabled = true;
+                btnNo.disabled = true;
+                subStack.AddRange(addStack(lblActing));
+
+                PlayState.current?.removeQuest(pq, QuestState.unknown).continueOnMain(this, () =>
+                {
+                    btnBack.hidden = false;
+                    btnAct.hidden = false;
+                    stack.Remove(btnAct);
+                    stack.RemoveAll(c => subStack.Contains(c));
+                    addStack(new TextCtrl { follow = Side.Left, gap = 10, autoSize = true, text = "Better luck next time ...", color = C.oranger });
+                });
+            };
+        }
+
+        // now, add into the stack
+        stack.Clear();
+        addStack(
+            new QuestCatalogItem { qd = qd, },
+
+            //new Ctrl()
+            //{
+            //    onRender = (Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior) =>
+            //    {
+            //        g.DrawLineR(Pens.Lime, this.scrollWidth, this.scrollBox.Top, 44, 44);
+            //        return false;
+            //    },
+            //},
+
+            btnBack,
+            btnAct
         );
+
+        this.mode = Mode.defQuest;
+        btnMsgs.sideBar = false;
+        btnCat.sideBar = true;
     }
 
     #endregion
@@ -219,39 +352,30 @@ internal class FormPlayComms2 : BaseFormZippy
     }
 
     #endregion
-
-    enum Mode
-    {
-        msgs,
-        catalog,
-    }
 }
 
 class QuestCatalogLine : BtnFillCtrl
 {
+    private static Brush brushDevQuest;
     public new FormPlayComms2 form => (FormPlayComms2)base.form;
 
-    public DefQuest qd;
-
-    public QuestCatalogLine(DefQuest qd) : base()
-    {
-        this.qd = qd;
-    }
+    public required DefQuest qd;
 
     override public string ToString() => this.qd.title;
 
     public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
     {
-        // match scrollBox width
-        var sb = form.scrollBox;
-        r.Width = sb.Width;
-
-        // be 4px below the prior
-        if (prior != null)
-            r.Y = prior.r.Bottom + 4;
+        r.Width = form.scrollWidth; // match scrollBox width
 
         // render background
         var redraw = base.render(g, tt, isCurrent, isPressed, prior);
+
+        // highlight if this is the devQuest
+        if (PlayState.current?.devQuest?.quest == this.qd)
+        {
+            brushDevQuest ??= new HatchBrush(HatchStyle.WideUpwardDiagonal, Color.FromArgb(199, C.orangeDarker));
+            g.FillRectangle(brushDevQuest, r.X, r.Y, 34, r.Height);
+        }
 
         tt.dty = r.Y + 4;
         tt.dtx = r.X + 4;
@@ -259,39 +383,91 @@ class QuestCatalogLine : BtnFillCtrl
 
         tt.dtx += 32;
         var x = tt.dtx;
+
+        // render current state?
+        var pq = PlayState.current?.activeQuests.Find(pq => pq.quest.equals(qd));
+        if (pq != null)
+        {
+            var msg = qd.equals(PlayState.current?.devQuest?.quest) ? "Dev" : "Active";
+            tt.drawRight(form.scrollBox.Right - 6, msg, C.cyan, GameColors.Fonts.arial_8);
+        }
+
+        // title
         tt.draw(x, this.qd.title, ColorSet.csFore.get(isCurrent, isPressed, disabled), GameColors.Fonts.arial_16);
         tt.newLine(4, true);
         // draw desc as a single line with ...
         var rr = new Rectangle((int)x, (int)(tt.dty), (int)r.Width - 32, 32);
-        TextRenderer.DrawText(g, qd.desc, GameColors.Fonts.arial_12, rr, isCurrent ? C.black : C.orangeDark, TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis | TextFormatFlags.PreserveGraphicsClipping | TextFormatFlags.PreserveGraphicsTranslateTransform);
+        TextRenderer.DrawText(g, qd.desc, GameColors.Fonts.arial_12, rr, isCurrent ? C.black : C.oranged, TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis | TextFormatFlags.PreserveGraphicsClipping | TextFormatFlags.PreserveGraphicsTranslateTransform);
         tt.newLine(4, true);
 
         // set our hight to be as larged as we needed
-        var newHeight = tt.pad().Height - r.Y;
-        if (newHeight != r.Height)
-        {
-            r.Height = newHeight;
-            redraw = true;
-        }
-        return redraw;
+        return adjustHeight(tt.pad().Height - r.Y);
     }
 }
 
 
 internal class QuestCatalogItem : Ctrl
 {
-    private DefQuest qd;
-
-    public QuestCatalogItem(DefQuest qd) : base()
-    {
-        this.qd = qd;
-        r.Width = 200;
-        r.Height = 400;
-    }
+    public required DefQuest qd;
 
     public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
     {
-        tt.draw("**" + qd.title);
-        return false;
+        r.Width = form.scrollWidth; // match scrollBox width
+        tt.dty = r.Y + 4;
+        var x = r.X + 4;
+        var w = (int)(r.Width + x - 4);
+
+        // the title
+        tt.draw(x, qd.title, C.oranger, GameColors.Fonts.arial_20);
+        tt.newLine(10, true);
+
+        // desc with an orange bar
+        var y = tt.dty;
+        tt.dty += 10;
+        var sz = tt.drawWrapped(x + 10, w, qd.desc);
+        tt.newLine(10, true);
+        g.FillRectangle(C.Brushes.orangeDark, r.X, y, 10, tt.dty - y);
+        tt.dty += 10;
+
+        g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, w, 0);
+        tt.dty += 10;
+
+
+        // tags
+        tt.draw(x, "Tags: ");
+        if (qd.tags?.Length > 0)
+        {
+            // TODO: many clickable boxes?
+            tt.draw(string.Join(", ", qd.tags), C.oranger);
+        }
+        else
+        {
+            tt.draw("None", C.grey);
+        }
+        tt.newLine(6, true);
+
+
+        // duration
+        tt.draw(x, "Duration: ");
+        tt.draw(qd.duration.ToString(), C.oranger);
+        tt.draw($" ({DefQuest.mapQuestDuration.GetValueOrDefault(qd.duration)})");
+        tt.newLine(10, true);
+
+        g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, w, 0);
+        tt.dty += 10;
+
+
+        // publisher and version
+        tt.draw(x, "Publisher: ");
+        tt.draw(qd.publisher, C.oranger);
+        tt.newLine(6, true);
+        tt.draw(x, $"Version: ");
+        tt.draw(qd.ver.ToString(), C.oranger);
+        tt.newLine(10, true);
+
+        g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, w, 0);
+        tt.dty += 10;
+
+        return adjustHeight(tt.dty - r.Y);
     }
 }

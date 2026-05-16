@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using SrvSurvey.game;
+﻿using SrvSurvey.game;
 using System.Drawing.Drawing2D;
 
 namespace SrvSurvey.widgets
@@ -29,6 +28,14 @@ namespace SrvSurvey.widgets
             return theme[name];
         }
 
+        private static Color adjustRGB(Color src, float delta)
+        {
+            var r = Math.Min(255, src.R * delta);
+            var g = Math.Min(255, src.G * delta);
+            var b = Math.Min(255, src.B * delta);
+            return Color.FromArgb(src.A, (int)r, (int)g, (int)b);
+        }
+
         #region common colors
 
         public static Color orange = c("orange");
@@ -47,9 +54,18 @@ namespace SrvSurvey.widgets
         public static Color green = c("green");
         public static Color greenDark = c("greenDark");
 
+        public static Color white = c("white");
         public static Color black = c("black");
         public static Color menuGold = c("menuGold");
         public static Color grey = c("grey");
+
+        // dynamically calculated colors that are brighter or darker than their originals
+
+        public static Color oranger => beOranger.Value;
+        private static Lazy<Color> beOranger = new Lazy<Color>(() => adjustRGB(c("orange"), 1.4f));
+
+        public static Color oranged => beOranged.Value;
+        private static Lazy<Color> beOranged = new Lazy<Color>(() => adjustRGB(c("orange"), 0.6f));
 
         #endregion
 

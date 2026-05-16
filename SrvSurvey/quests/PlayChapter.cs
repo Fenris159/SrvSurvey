@@ -16,12 +16,12 @@ public class PlayChapter
     [JsonIgnore] public PlayQuest pq;
     [AllowNull] private LuaState state;
     [AllowNull] private LuaClosure closure;
+    [JsonIgnore] public string? invokingFunc;
 
     private string? src;
     private HashSet<string> journalFuncs = [];
     private HashSet<string> varNames = [];
     private List<Action> pending = [];
-    public string? invokingFunc;
 
     #region data members
 

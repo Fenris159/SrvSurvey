@@ -1756,6 +1756,11 @@ internal static class ExtensionMethods
         foreach (var item in items)
             set.Add(item);
     }
+
+    public static Rectangle toRectangle(this RectangleF rf)
+    {
+        return new((int)rf.X, (int)rf.Y, (int)rf.Width, (int)rf.Height);
+    }
 }
 
 public class WatchColor

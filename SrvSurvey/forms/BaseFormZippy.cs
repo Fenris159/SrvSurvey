@@ -4,7 +4,7 @@ using SrvSurvey.widgets;
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
 
-namespace SrvSurvey.forms;
+namespace SrvSurvey.forms.playComms;
 
 [System.ComponentModel.DesignerCategory("")]
 internal abstract class BaseFormZippy : SizableForm, PlotterForm
@@ -70,17 +70,17 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         Util.deferAfter(100, () => Util.fadeOpacity(this, 0.95f, Game.settings.fadeInDuration));
     }
 
-    protected void addCtrl(params Ctrl[] newCtrls)
+    protected void addCtrl(params IEnumerable<Ctrl> newCtrls)
     {
         addCtrls(false, newCtrls);
     }
 
-    protected void addStack(params Ctrl[] newCtrls)
+    protected List<Ctrl> addStack(params IEnumerable<Ctrl> newCtrls)
     {
-        addCtrls(true, newCtrls);
+        return addCtrls(true, newCtrls);
     }
 
-    private void addCtrls(bool addToStack, Ctrl[] newCtrls)
+    private List<Ctrl> addCtrls(bool addToStack, IEnumerable<Ctrl> newCtrls)
     {
         foreach (var ctrl in newCtrls)
         {
@@ -91,6 +91,8 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
                 ctrls.Add(ctrl);
         }
         this.Invalidate();
+
+        return newCtrls.ToList();
     }
 
     #region for PlotterForm
@@ -129,7 +131,7 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         {
             // "click" the current ctrl
             if (last?.onClick != null && !last.disabled)
-                last.onClick();
+                last.onClick(last);
             return true;
         }
 
@@ -206,14 +208,6 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         }
     }
 
-    enum Side
-    {
-        Top,
-        Left,
-        Bottom,
-        Right
-    }
-
     #endregion
 
 
@@ -269,7 +263,7 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         this.Invalidate();
 
         if (mouseOverCtrl && ctrlCurrent?.onClick != null && !ctrlCurrent.disabled)
-            ctrlCurrent.onClick();
+            ctrlCurrent.onClick(ctrlCurrent);
     }
 
     protected override void OnMouseWheel(MouseEventArgs e)
@@ -308,6 +302,9 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         // something changed size, or otherwise signaled we should trigger an immediate redraw
         if (redraw)
             Program.defer(() => this.Invalidate());
+
+        // tmp?
+        g.DrawRectangle(C.Pens.orangeDark1, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
     }
 
     protected virtual bool render(Graphics g, TextCursor tt)
@@ -318,6 +315,7 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
     bool renderCtrl(Graphics g, TextCursor tt, List<Ctrl> ctrls, int n)
     {
         var ctrl = ctrls[n];
+        if (ctrl.hidden) return false;
 
         // negative values mean re-position in from the right or bottom edge of the window
         var frameSz = this.ClientSize;
@@ -331,13 +329,45 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
             ctrl.r.Y = ctrl.offset.Y + scrollBox.Y;
         }
 
+        // get prior (non-hidden) ctrl
+        Ctrl? prior = null;
+        for (var nn = n - 1; nn >= 0 && prior?.hidden != false; nn--)
+            prior = ctrls[nn];
+
+        // following any side?
+        if (prior != null && ctrl.follow != default)
+            followPrior(ctrl, prior);
+
         tt.dtx = ctrl.r.X;
         tt.dty = ctrl.r.Y;
-
         var isCurrent = ctrl == ctrlCurrent;
         var isPressed = mouseOverCtrl && ctrl == ctrlCurrent && mouseDown;
-        var priorCtrl = n == 0 ? null : ctrls[n - 1];
-        return ctrl.render(g, tt, isCurrent, isPressed, priorCtrl);
+
+        return ctrl.render(g, tt, isCurrent, isPressed, prior);
+    }
+
+    private void followPrior(Ctrl ctrl, Ctrl prior)
+    {
+        if (ctrl.follow == Side.Top)
+        {
+            ctrl.r.X = prior.r.Left;
+            ctrl.r.Y = prior.r.Bottom + ctrl.gap;
+        }
+        if (ctrl.follow == Side.Bottom)
+        {
+            ctrl.r.X = prior.r.Left;
+            ctrl.r.Y = prior.r.Top - ctrl.gap - ctrl.r.Height;
+        }
+        else if (ctrl.follow == Side.Left)
+        {
+            ctrl.r.X = prior.r.Right + ctrl.gap;
+            ctrl.r.Y = prior.r.Top;
+        }
+        else if (ctrl.follow == Side.Right)
+        {
+            ctrl.r.X = prior.r.Left - ctrl.gap - ctrl.r.Width;
+            ctrl.r.Y = prior.r.Top;
+        }
     }
 
     bool drawCommon(Graphics g, TextCursor tt)
@@ -378,46 +408,18 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         }
         return redraw;
     }
+
+    public float scrollWidth => scrollBox.Width;
+    public float scrollHeight => scrollBox.Height;
 }
 
-/// <summary>
-/// A proxy for control, but windowless.
-/// </summary>
-abstract class Ctrl
+public enum Side
 {
-    public BaseFormZippy form;
-    public PointF offset;
-    public RectangleF r;
-    public bool disabled;
-    protected bool hovered;
-    public bool isCurrent;
-
-    public SizeF sz
-    {
-        get => r.Size;
-        set => r.Size = value;
-    }
-
-    public abstract bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior);
-
-    public virtual bool setHovered(bool hovered)
-    {
-        var changed = this.hovered != hovered;
-        this.hovered = hovered;
-
-        return changed;
-    }
-
-    public Action onClick;
-
-    /*
-    public void setOrigin(SizeF sz)
-    {
-        // negative values mean re-position in from the right or bottom edge
-        r.X = pt.X >= 0 ? pt.X : sz.Width - r.Width + pt.X;
-        r.Y = pt.Y >= 0 ? pt.Y : sz.Height - r.Height + pt.Y;
-    }
-    */
+    Unknown,
+    Top,
+    Left,
+    Bottom,
+    Right
 }
 
 struct ColorSet
@@ -474,11 +476,57 @@ struct ColorSet
     public static ColorSet csCyanFore = new()
     {
         normal = C.cyanDark,
-        current = Color.White,
+        current = C.white,
         pressed = C.black,
         disabled = C.black,
     };
 
+}
+
+/// <summary>
+/// A proxy for control, but windowless.
+/// </summary>
+class Ctrl
+{
+    public BaseFormZippy form;
+    public PointF offset;
+    public RectangleF r;
+    public bool disabled;
+    public bool hidden;
+    protected bool hovered;
+    public bool isCurrent;
+
+    public Side follow;
+    public int gap;
+
+    public Action<Ctrl> onClick;
+    public Func<Graphics, TextCursor, bool, bool, Ctrl?, bool>? onRender;
+
+    public SizeF sz { get => r.Size; set => r.Size = value; }
+
+    public virtual bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    {
+        if (onRender != null)
+            return onRender(g, tt, isCurrent, isPressed, prior);
+
+        return false;
+    }
+
+    public virtual bool setHovered(bool hovered)
+    {
+        var changed = this.hovered != hovered;
+        this.hovered = hovered;
+
+        return changed;
+    }
+
+    protected bool adjustHeight(float newHeight)
+    {
+        if (newHeight == r.Height) return false;
+
+        r.Height = newHeight;
+        return true;
+    }
 }
 
 /*
@@ -589,11 +637,12 @@ class BtnFillCtrl : Ctrl
     }
 }
 
-class BtnFillTextCtrl : BtnFillCtrl
+class TextCtrl : Ctrl
 {
-    public ColorSet csFore = ColorSet.csFore;
+    public Color color;
     public float pad = N.four;
     public string text;
+    public bool autoSize;
     override public string ToString() => this.text;
 
     public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
@@ -602,15 +651,45 @@ class BtnFillTextCtrl : BtnFillCtrl
         tt.dtx += pad;
         tt.dty += pad;
 
-        var sz = TextRenderer.MeasureText(g, this.text, tt.font);
+        if (autoSize)
+        {
+            var sz = TextRenderer.MeasureText(g, this.text, tt.font);
+            r.Width = sz.Width + pad + pad;
+            r.Height = sz.Height + pad + pad;
+        }
 
-        r.Width = sz.Width + pad + pad;
-        r.Height = sz.Height + pad + pad;
+        // finally, draw the text
+        tt.drawCentered(this.r.toRectangle(), this.text, this.color);
+
+        return false;
+    }
+}
+
+class BtnFillTextCtrl : BtnFillCtrl
+{
+    public ColorSet csFore = ColorSet.csFore;
+    public float pad = N.four;
+    public string text;
+    public bool autoSize;
+    override public string ToString() => this.text;
+
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    {
+        // set our size based on text + padding
+        tt.dtx += pad;
+        tt.dty += pad;
+
+        if (autoSize)
+        {
+            var sz = TextRenderer.MeasureText(g, this.text, tt.font);
+            r.Width = sz.Width + pad + pad;
+            r.Height = sz.Height + pad + pad;
+        }
 
         var redraw = base.render(g, tt, isCurrent, isPressed, prior);
 
         // finally, draw the text
-        tt.draw(" " + this.text, csFore.get(isCurrent, isPressed, disabled));
+        tt.drawCentered(this.r.toRectangle(), this.text, csFore.get(isCurrent, isPressed, disabled));
 
         return redraw;
     }

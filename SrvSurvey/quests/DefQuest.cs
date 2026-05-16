@@ -1,4 +1,7 @@
-﻿namespace SrvSurvey.quests;
+﻿using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
+
+namespace SrvSurvey.quests;
 
 /// <summary> A static definition of a quest </summary>
 public class DefQuest
@@ -8,6 +11,10 @@ public class DefQuest
     public required string publisher;
     public required string title;
     public string? desc;
+
+    public string? subTitle;
+    public string[] tags;
+    public QuestDuration duration;
 
     /// <summary> The ID of the chapter to run when the quest is initialized </summary>
     public required string firstChapter;
@@ -24,4 +31,28 @@ public class DefQuest
     {
         return $"quest:{id} '{title}'";
     }
+
+    public static Dictionary<QuestDuration, string> mapQuestDuration = new()
+    {
+        { QuestDuration.Unknown , "No value specified" },
+        { QuestDuration.Short , "Within an evening" },
+        { QuestDuration.Medium , "Needs a few days" },
+        { QuestDuration.Long , "Might be a week or two" },
+        { QuestDuration.Extended , "It may never end" },
+    };
+
+    public bool equals(DefQuest? other)
+    {
+        return this.publisher == other?.publisher && this.id == other?.id;
+    }
+}
+
+[JsonConverter(typeof(StringEnumConverter))]
+public enum QuestDuration
+{
+    Unknown,
+    Short,
+    Medium,
+    Long,
+    Extended
 }

@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using SrvSurvey.canonn;
 using SrvSurvey.forms;
+using SrvSurvey.forms.playComms;
 using SrvSurvey.game;
 using SrvSurvey.game.RavenColonial;
 using SrvSurvey.net;
@@ -1780,9 +1781,9 @@ namespace SrvSurvey
                 if (game != null) BaseForm.show<FormPlayJournal>();
             }
             else if (ModifierKeys.HasFlag(Keys.Alt))
-                FormPlayComms2.toggleForm();
-            else
                 FormPlayComms.toggleForm();
+            else
+                FormPlayComms2.toggleForm();
         }
 
         private void menuMyProjects_Click(object sender, EventArgs e)
