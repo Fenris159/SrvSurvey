@@ -44,6 +44,7 @@ internal class FormPlayComms2 : BaseFormZippy
     }
 
     private Mode mode;
+    private Func<bool>? onBackCustom;
     private BtnFillDrawCtrl btnMsgs;
     private BtnFillDrawCtrl btnCat;
 
@@ -164,11 +165,40 @@ internal class FormPlayComms2 : BaseFormZippy
         this.Invalidate();
     }
 
+    protected override bool onBack()
+    {
+        // move 'back' in the UI
+        if (this.onBackCustom != null)
+            return this.onBackCustom();
+
+        switch (this.mode)
+        {
+            case Mode.msgs:
+            case Mode.catalog:
+                // close the window
+                this.Close();
+                return true;
+
+            case Mode.defQuest:
+                setMode(Mode.catalog);
+                return true;
+
+            case Mode.msgItem:
+                setMode(Mode.msgs);
+                return true;
+
+            default:
+                throw new Exception($"Unexpected mode: {mode}");
+        }
+    }
+
     protected override bool render(Graphics g, TextCursor tt)
     {
-        base.render(g, tt);
         var ps = PlayState.current;
         if (ps == null) return false;
+        btnMsgs.disabled = ps.messagesTotal == 0;
+
+        base.render(g, tt);
 
         PlotQuestMini.drawLogo(g, 32, N.ten, ps.messagesUnread > 0, 48);
 
@@ -255,6 +285,7 @@ internal class FormPlayComms2 : BaseFormZippy
         }));
         //addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)));
         //addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)));
+        if (stack.Count > 0) ctrlCurrent = stack[0];
 
         loadingCatalog = false;
         this.Invalidate();
@@ -279,13 +310,24 @@ internal class FormPlayComms2 : BaseFormZippy
             btnBack.hidden = true;
             btnAct.hidden = true;
             subStack = addStack(lblConfirm, btnYes, btnNo);
+            ctrlCurrent = btnNo;
+
+            onBackCustom = () =>
+            {
+                // do the 'No' click action
+                btnNo.onClick(btnNo);
+                return true;
+            };
         };
         btnNo.onClick = btn =>
         {
             // decline
             btnBack.hidden = false;
             btnAct.hidden = false;
+            onBackCustom = null;
+
             stack.RemoveAll(c => subStack.Contains(c));
+            ctrlCurrent = btnBack;
         };
 
         // adjust messages depending on quest state
@@ -301,6 +343,7 @@ internal class FormPlayComms2 : BaseFormZippy
                 btnYes.disabled = true;
                 btnNo.disabled = true;
                 subStack.AddRange(addStack(lblActing));
+                onBackCustom = null;
 
                 PlayState.current?.activateQuest(qd.publisher, qd.id).continueOnMain(this, () =>
                 {
@@ -309,6 +352,8 @@ internal class FormPlayComms2 : BaseFormZippy
                     stack.Remove(btnAct);
                     stack.RemoveAll(c => subStack.Contains(c));
                     addStack(new TextCtrl { follow = Side.Left, gap = 10, autoSize = true, text = "Enjoy the quest ...", color = C.oranger });
+                    ctrlCurrent = btnBack;
+                    PlotBase2.renderAll(null, true);
                 });
             };
         }
@@ -323,6 +368,7 @@ internal class FormPlayComms2 : BaseFormZippy
                 btnYes.disabled = true;
                 btnNo.disabled = true;
                 subStack.AddRange(addStack(lblActing));
+                onBackCustom = null;
 
                 PlayState.current?.removeQuest(pq, QuestState.unknown).continueOnMain(this, () =>
                 {
@@ -331,6 +377,8 @@ internal class FormPlayComms2 : BaseFormZippy
                     stack.Remove(btnAct);
                     stack.RemoveAll(c => subStack.Contains(c));
                     addStack(new TextCtrl { follow = Side.Left, gap = 10, autoSize = true, text = "Better luck next time ...", color = C.oranger });
+                    ctrlCurrent = btnBack;
+                    PlotBase2.renderAll(null, true);
                 });
             };
         }
@@ -352,6 +400,7 @@ internal class FormPlayComms2 : BaseFormZippy
             btnBack,
             btnAct
         );
+        ctrlCurrent = btnBack;
 
         this.mode = Mode.defQuest;
         btnMsgs.sideBar = false;
@@ -397,6 +446,7 @@ internal class FormPlayComms2 : BaseFormZippy
                 onClick = btn => this.showMessage(pm, qm, ps).justDoIt(),
             };
         }));
+        if (stack.Count > 0) ctrlCurrent = stack[0];
 
         this.Invalidate();
     }
@@ -408,6 +458,7 @@ internal class FormPlayComms2 : BaseFormZippy
         var matches = matchParts.Matches(raw);
 
         List<Ctrl> subStack = [];
+        var btnBack = new BtnFillDrawCtrl { follow = Side.Top, gap = 4, offset = new(0, 0), sz = new(72, 32), iconName = "close", iconOffset = new(28, 10), onClick = btn => setMode(Mode.msgs) };
 
         // body and copy-tags
         string body;
@@ -436,6 +487,7 @@ internal class FormPlayComms2 : BaseFormZippy
 
         // reply buttons
         var actions = pm.actions ?? qm?.actions?.Keys.ToArray();
+        Ctrl nextCurrent = btnBack;
         if (actions != null && qm?.actions != null)
         {
             if (pm.replied != null)
@@ -443,7 +495,7 @@ internal class FormPlayComms2 : BaseFormZippy
                 var replied = qm.actions.GetValueOrDefault(pm.replied) ?? pm.replied;
                 subStack.AddRange(
                     new TextCtrl { follow = Side.Top, gap = 4, autoSize = true, color = C.oranged, font = GameColors.Fonts.arial_9, text = "Replied: " },
-                    new TextCtrl { follow = Side.Left, gap = 4, autoSize = true, color = C.orange, backColor = C.orangeDarker, text = replied }
+                    new TextCtrl { follow = Side.Left, gap = 4, autoSize = true, color = C.oranged, backColor = C.orangeDarker, text = replied }
                 );
                 subStack.Add(new HorizLine { follow = Side.Top, gap = 10 });
             }
@@ -459,16 +511,19 @@ internal class FormPlayComms2 : BaseFormZippy
                     onClick = btn =>
                     {
                         pm.parent.invokeMessageAction(pm.id, k).continueOnMain(this, () => setMode(Mode.msgs));
+                        this.Invalidate();
                     },
                 }));
                 subStack.Add(new HorizLine { follow = Side.Top, gap = 10 });
+                if (subStack.Count > 2) nextCurrent = subStack[1];
             }
         }
 
         stack.Clear();
         addStack(new MessageItem { pm = pm, qm = qm, body = body });
         addStack(subStack);
-        addStack(new BtnFillDrawCtrl { follow = Side.Top, gap = 4, offset = new(0, 0), sz = new(72, 32), iconName = "close", iconOffset = new(28, 10), onClick = btn => setMode(Mode.msgs) });
+        addStack(btnBack);
+        ctrlCurrent = nextCurrent;
 
         this.mode = Mode.msgItem;
         btnMsgs.sideBar = true;
@@ -510,7 +565,7 @@ class QuestCatalogLine : BtnFillCtrl
 
         tt.dty = r.Y + 4;
         tt.dtx = r.X + 4;
-        PlotQuestMini.drawLogo(g, tt.dtx, tt.dty, isCurrent, 24);
+        PlotQuestMini.drawLogo(g, tt.dtx + (isCurrent ? 0 : 6), tt.dty, isCurrent, isCurrent ? 24 : 18);
 
         tt.dtx += 32;
         var x = tt.dtx;
@@ -581,7 +636,7 @@ internal class QuestCatalogItem : Ctrl
         // duration
         tt.draw(x, "Duration: ");
         tt.draw(qd.duration.ToString(), C.oranger);
-        tt.draw($" ({DefQuest.mapQuestDuration.GetValueOrDefault(qd.duration)})");
+        tt.draw($" ({DefQuest.mapQuestDuration.GetValueOrDefault(qd.duration)})", C.oranged);
         tt.newLine(10, true);
 
         g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, w, 0);

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SrvSurvey.forms;
+using SrvSurvey.forms.playComms;
 using SrvSurvey.game;
 using SrvSurvey.game.RavenColonial;
 using SrvSurvey.plotters;
@@ -110,6 +111,7 @@ internal class PlayState : Data
         PlotBase2.renderAll(null, true);
         BaseForm.get<FormPlayComms>()?.onQuestChanged(pq);
         BaseForm.get<FormPlayDev>()?.onQuestChanged(pq);
+        BaseForm.get<FormPlayComms2>()?.Invalidate();
     }
 
     #endregion

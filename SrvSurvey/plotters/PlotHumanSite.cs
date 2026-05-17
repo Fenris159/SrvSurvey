@@ -73,7 +73,7 @@ namespace SrvSurvey.plotters
             this.station = game.systemStation;
             this.siteLocation = this.station.location;
             this.siteHeading = this.station.heading;
-            this.showCZPoints = this.station.factionState == "War";
+            this.showCZPoints = this.station.factionState == "War" || this.station.factionState == "CivilWar";
 
             if (siteLocation.Lat == 0 || siteLocation.Long == 0) Debugger.Break(); // Does this ever happen?
 

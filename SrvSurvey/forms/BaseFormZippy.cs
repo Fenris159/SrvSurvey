@@ -56,9 +56,33 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
 
         this.Opacity = 0;
 
+        // prep for DirectX inputs
+        if (KeyboardHook.mappedGameKeyBinds.Count == 0)
+            KeyboardHook.parseGameKeybinds();
+
         this.Activated += (o, s) => KeyboardHook.redirect = true;
         this.Deactivate += (o, s) => KeyboardHook.redirect = false;
+        KeyboardHook.buttonsPressed += KeyboardHook_buttonsPressed;
+    }
 
+    protected override void Dispose(bool disposing)
+    {
+        KeyboardHook.redirect = false;
+        KeyboardHook.buttonsPressed -= KeyboardHook_buttonsPressed;
+
+        base.Dispose(disposing);
+    }
+
+    private void KeyboardHook_buttonsPressed(bool hook, string chord, int analog)
+    {
+        //Debug.WriteLine($"Hook: {hook}, Chord: {chord}");
+
+        // only process when buttons are pushed down and we have focus
+        if (hook || !Elite.focusSrvSurvey) return;
+
+        // mimic a keypress if we have a mapping
+        if (KeyboardHook.mappedGameKeyBinds.ContainsKey(chord))
+            SendKeys.SendWait(KeyboardHook.mappedGameKeyBinds[chord]);
     }
 
     protected override void OnLoad(EventArgs e)
@@ -122,10 +146,7 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
 
     #endregion
 
-
     #region sibling navigation
-
-    // TODO: Support DirectX input (again)
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
     {
@@ -136,15 +157,20 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
             // "click" the current ctrl
             if (last?.onClick != null && !last.disabled)
                 last.onClick(last);
+            this.Invalidate();
             return true;
+        }
+        else if (keyData == Keys.Escape)
+        {
+            var rslt = onBack();
+            this.Invalidate();
+            return rslt;
         }
 
         // find a sibling ctrl
         var allCtrls = ctrls.Concat(stack).ToList();
         Ctrl? next = null;
-        if (keyData == Keys.Escape)
-            next = null;
-        else if (keyData == Keys.Left)
+        if (keyData == Keys.Left)
             next = findSibling(allCtrls, last, (f, s) => s.r.Left < f?.r.Left, Side.Left, Side.Left);
         else if (keyData == Keys.Right)
             next = findSibling(allCtrls, last, (f, s) => s.r.Left > f?.r.Left, Side.Right, Side.Left);
@@ -177,12 +203,17 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         return true;
     }
 
+    protected virtual bool onBack()
+    {
+        return true;
+    }
+
     private static Ctrl? findSibling(List<Ctrl> list, Ctrl? from, Func<Ctrl, Ctrl, bool> match, Side fs, Side ss)
     {
         if (from == null) return list.FirstOrDefault(sib => !sib.disabled);
 
         // find next ctrl to the left
-        var sibs = list.Where(sib => sib != from && !sib.disabled && match(from, sib)).ToList();
+        var sibs = list.Where(sib => sib != from && !sib.hidden && !sib.disabled && !sib.noFocus && match(from, sib)).ToList();
 
         if (sibs.Count == 0) return null; // TODO: add another func to select by wrapping around
         if (sibs.Count == 1) return sibs[0];
@@ -213,7 +244,6 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
     }
 
     #endregion
-
 
     #region ctrl rendering and mouse states
 
@@ -497,6 +527,7 @@ class Ctrl
     public RectangleF r;
     public bool disabled;
     public bool hidden;
+    public bool noFocus;
     protected bool hovered;
     public bool isCurrent;
 
@@ -535,6 +566,11 @@ class Ctrl
 
 internal class HorizLine : Ctrl
 {
+    public HorizLine() : base()
+    {
+        noFocus = true;
+    }
+
     public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
     {
         r.X = form.scrollBox.Left;
@@ -545,7 +581,6 @@ internal class HorizLine : Ctrl
 
         return false;
     }
-
 }
 
 /*
@@ -666,6 +701,11 @@ class TextCtrl : Ctrl
     private SolidBrush? backBrush;
     public Font? font;
 
+    public TextCtrl(): base()
+    {
+        noFocus = true;
+    }
+
     override public string ToString() => this.text;
 
     public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
@@ -702,7 +742,7 @@ class TextCtrl : Ctrl
 class BtnFillTextCtrl : BtnFillCtrl
 {
     public ColorSet csFore = ColorSet.csFore;
-    public float pad = N.four;
+    public float pad = 8;
     public string text;
     public bool autoSize;
     override public string ToString() => this.text;

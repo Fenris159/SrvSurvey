@@ -62,10 +62,10 @@ namespace SrvSurvey.widgets
         // dynamically calculated colors that are brighter or darker than their originals
 
         public static Color oranger => beOranger.Value;
-        private static Lazy<Color> beOranger = new Lazy<Color>(() => adjustRGB(c("orange"), 1.4f));
+        private static Lazy<Color> beOranger = new Lazy<Color>(() => adjustRGB(c("orange"), 1.2f));
 
         public static Color oranged => beOranged.Value;
-        private static Lazy<Color> beOranged = new Lazy<Color>(() => adjustRGB(c("orange"), 0.6f));
+        private static Lazy<Color> beOranged = new Lazy<Color>(() => adjustRGB(c("orange"), 0.8f));
 
         #endregion
 
