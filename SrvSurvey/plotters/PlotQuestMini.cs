@@ -217,21 +217,18 @@ namespace SrvSurvey.plotters
 
         public static void drawPage(Graphics g, float x, float y, float sz, Pen p)
         {
-            var szh = sz * 0.6f;
-            var szw = sz * 1.75f;
-            var szwh = szw / 2f;
-
             // page
             var ws = sz * 0.3f;
-            var wl = sz * 0.55f;
+            var wl = (float)Math.Floor(sz * 0.55f);
+            var x2 = x + (sz * 0.12f);
 
             var h = sz * 0.16f;
             g.DrawRectangle(p, x, y, sz * 0.8f, sz);
-            g.DrawLineR(p, x + 6, (int)Math.Floor(y + h), ws, 0);
-            g.DrawLineR(p, x + 6, (int)Math.Floor(y + h * 2), wl, 0);
-            g.DrawLineR(p, x + 6, (int)Math.Floor(y + h * 3), wl, 0);
-            g.DrawLineR(p, x + 6, (int)Math.Floor(y + h * 4), wl, 0);
-            g.DrawLineR(p, x + 6 + wl, (int)Math.Floor(y + h * 5), -ws, 0);
+            g.DrawLineR(p, x2, (int)Math.Floor(y + h), ws, 0);
+            g.DrawLineR(p, x2, (int)Math.Floor(y + h * 2), wl, 0);
+            g.DrawLineR(p, x2, (int)Math.Floor(y + h * 3), wl, 0);
+            g.DrawLineR(p, x2, (int)Math.Floor(y + h * 4), wl, 0);
+            g.DrawLineR(p, x2 + wl, (int)Math.Floor(y + h * 5), -ws, 0);
         }
 
         public static void drawBackArrow(Graphics g, float x, float y, float sz, Pen p)

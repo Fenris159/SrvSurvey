@@ -25,16 +25,7 @@ namespace SrvSurvey.game
         /// </summary>
         public static SystemData? Load(string systemName, long systemAddress, string fid, string? commanderName, bool skipPredictSpecies = false)
         {
-            var systemFileName = systemName
-                .Replace("\\", "-")
-                .Replace("/", "-")
-                .Replace(":", "-")
-                .Replace("*", "-")
-                .Replace("?", "-")
-                .Replace("\"", "-")
-                .Replace("<", "-")
-                .Replace(">", "-")
-                .Replace("|", "-");
+            var systemFileName = Util.safeFilename(systemName);
 
             if (systemFileName != "") Game.log($"Loading SystemData for: '{systemFileName}' ({systemAddress})");
 
@@ -185,7 +176,7 @@ namespace SrvSurvey.game
                     // create a new data object with the main star populated
                     data = new SystemData()
                     {
-                        filepath = Path.Combine(Program.dataFolder, "systems", fid, $"{entry.StarSystem}_{entry.SystemAddress}.json"),
+                        filepath = Path.Combine(Program.dataFolder, "systems", fid, Util.safeFilename($"{entry.StarSystem}_{entry.SystemAddress}.json")),
                         name = entry.StarSystem,
                         address = entry.SystemAddress,
                         starPos = entry.StarPos,
@@ -227,7 +218,7 @@ namespace SrvSurvey.game
 
             var data = new SystemData()
             {
-                filepath = Path.Combine(Program.dataFolder, "systems", fid, $"{dump.name}_{dump.id64}.json"),
+                filepath = Path.Combine(Program.dataFolder, "systems", fid, Util.safeFilename($"{dump.name}_{dump.id64}.json")),
                 name = dump.name,
                 address = dump.id64,
                 starPos = new double[3] { dump.coords.x, dump.coords.y, dump.coords.z },
@@ -255,7 +246,7 @@ namespace SrvSurvey.game
                     // create a new data object with the main star populated
                     data = new SystemData()
                     {
-                        filepath = Path.Combine(Program.dataFolder, "systems", cmdr.fid, $"{bodyData.systemName}_{bodyData.systemAddress}.json"),
+                        filepath = Path.Combine(Program.dataFolder, "systems", cmdr.fid, Util.safeFilename($"{bodyData.systemName}_{bodyData.systemAddress}.json")),
                         name = bodyData.systemName,
                         address = bodyData.systemAddress,
                         starPos = null!,
@@ -2023,7 +2014,7 @@ namespace SrvSurvey.game
         public List<ApiSystemDump.System.Station>? spanshStations;
 
         [JsonIgnore]
-        public string folderImages => Path.Combine(Game.settings.screenshotTargetFolder!, this.name);
+        public string folderImages => Path.Combine(Game.settings.screenshotTargetFolder!, Util.safeFilename(this.name));
     }
 
     internal class SummaryGenus

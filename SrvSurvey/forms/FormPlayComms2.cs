@@ -39,12 +39,14 @@ internal class FormPlayComms2 : BaseFormZippy
         msgItem,
         /// <summary> Show a catalog of available quests </summary>
         catalog,
-        /// <summary> Show details on a specific quest </summary>
+        /// <summary> Show details on a specific quest from the catalog </summary>
         defQuest,
+        /// <summary> Show details on a specific active quest </summary>
+        questSummary,
     }
 
     private Mode mode;
-    private Func<bool>? onBackCustom;
+    private Action? onBackCustom;
     private BtnFillDrawCtrl btnMsgs;
     private BtnFillDrawCtrl btnCat;
 
@@ -71,6 +73,7 @@ internal class FormPlayComms2 : BaseFormZippy
             offset = new(10, 72),
             sz = new(72, 72),
             iconName = "envelope",
+            iconSize = 53,
             iconOffset = new(9, 16),
             disabled = !(PlayState.current?.messagesTotal > 0),
             onClick = btn => setMode(Mode.msgs),
@@ -82,13 +85,14 @@ internal class FormPlayComms2 : BaseFormZippy
             gap = 10,
             sz = new(72, 72),
             iconName = "page",
+            iconSize = 51,
             iconOffset = new(15, 12),
             onClick = btn => setMode(Mode.catalog),
         };
 
         addCtrl(
             btnMsgs,
-            new BtnFillDrawCtrl { offset = new(10, -10), r = new(0, 0, 72, 32), iconName = "close", iconOffset = new(26, 10), onClick = btn => this.Close(), },
+            new BtnFillDrawCtrl { offset = new(10, -10), r = new(0, 0, 72, 32), iconName = "close", iconSize = 18, iconOffset = new(26, 10), onClick = btn => this.Close(), },
 #if DEBUG
             new BtnFillTextCtrl { follow = Side.Bottom, gap = 10, sz = new(72, 32), text = "(watch)", onClick = btn => BaseForm.show<FormPlayJournal>(), disabled = Game.activeGame == null },
             new BtnFillTextCtrl { follow = Side.Bottom, gap = 10, sz = new(72, 32), text = "(dev)", onClick = btn => BaseForm.show<FormPlayDev>(), },
@@ -155,6 +159,7 @@ internal class FormPlayComms2 : BaseFormZippy
         this.mode = mode;
         btnMsgs.sideBar = mode == Mode.msgs;
         btnCat.sideBar = mode == Mode.catalog;
+        onBackCustom = null;
         stack.Clear();
 
         if (mode == Mode.catalog)
@@ -169,7 +174,10 @@ internal class FormPlayComms2 : BaseFormZippy
     {
         // move 'back' in the UI
         if (this.onBackCustom != null)
-            return this.onBackCustom();
+        {
+            this.onBackCustom();
+            return true;
+        }
 
         switch (this.mode)
         {
@@ -276,7 +284,8 @@ internal class FormPlayComms2 : BaseFormZippy
             });
         }
 
-        addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine
+        // (hide if matches devQuest)
+        addStack(publishedQuests.Where(qd => !qd.equals(PlayState.current?.devQuest?.quest)).Select((qd, i) => new QuestCatalogLine
         {
             qd = qd,
             follow = Side.Top,
@@ -295,7 +304,7 @@ internal class FormPlayComms2 : BaseFormZippy
     {
         this.selectedQD = qd;
 
-        var btnBack = new BtnFillDrawCtrl { follow = Side.Top, gap = 4, sz = new(72, 32), iconName = "close", iconOffset = new(28, 10), onClick = btn => setMode(Mode.catalog) };
+        var btnBack = new BtnFillDrawCtrl { follow = Side.Top, gap = 4, sz = new(72, 32), iconName = "close", iconSize = 18, iconOffset = new(28, 10), onClick = btn => setMode(Mode.catalog) };
 
         var lblConfirm = new TextCtrl { follow = Side.Top, gap = 4, autoSize = true, text = "Are you sure? This will undo any prior progress", color = C.cyan };
         var btnYes = new BtnFillTextCtrl { follow = Side.Top, gap = 10, sz = new(72, 32), text = "Yes", onClick = btn => this.Invalidate() };
@@ -316,7 +325,6 @@ internal class FormPlayComms2 : BaseFormZippy
             {
                 // do the 'No' click action
                 btnNo.onClick(btnNo);
-                return true;
             };
         };
         btnNo.onClick = btn =>
@@ -387,16 +395,6 @@ internal class FormPlayComms2 : BaseFormZippy
         stack.Clear();
         addStack(
             new QuestCatalogItem { qd = qd, },
-
-            //new Ctrl()
-            //{
-            //    onRender = (Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior) =>
-            //    {
-            //        g.DrawLineR(Pens.Lime, this.scrollWidth, this.scrollBox.Top, 44, 44);
-            //        return false;
-            //    },
-            //},
-
             btnBack,
             btnAct
         );
@@ -458,7 +456,7 @@ internal class FormPlayComms2 : BaseFormZippy
         var matches = matchParts.Matches(raw);
 
         List<Ctrl> subStack = [];
-        var btnBack = new BtnFillDrawCtrl { follow = Side.Top, gap = 4, offset = new(0, 0), sz = new(72, 32), iconName = "close", iconOffset = new(28, 10), onClick = btn => setMode(Mode.msgs) };
+        var btnBack = new BtnFillDrawCtrl { follow = Side.Top, gap = 4, offset = new(0, 0), sz = new(72, 32), iconName = "close", iconSize = 18, iconOffset = new(28, 10), onClick = btn => setMode(Mode.msgs) };
 
         // body and copy-tags
         string body;
@@ -525,9 +523,26 @@ internal class FormPlayComms2 : BaseFormZippy
         addStack(btnBack);
         ctrlCurrent = nextCurrent;
 
-        this.mode = Mode.msgItem;
-        btnMsgs.sideBar = true;
-        btnCat.sideBar = false;
+        addStack(new BtnFillCtrl
+        {
+            follow = Side.Left,
+            gap = 10,
+            sz = new(32, 32),
+            onRender = (ctrl, g, tt, isCurrent, isPressed, prior) =>
+            {
+                PlotQuestMini.drawPage(g, tt.dtx + 7, tt.dty + 6, 20, ColorSet.csFore.get(isCurrent, isPressed, false).toPen(1));
+                return false;
+            },
+            onClick = btn =>
+            {
+                showQuestSummary(pm.parent);
+                this.onBackCustom = () =>
+                {
+                    this.showMessage(pm, qm, ps).justDoIt();
+                    this.onBackCustom = null;
+                };
+            },
+        });
 
         // remember this message has now been read
         if (!pm.read)
@@ -536,6 +551,86 @@ internal class FormPlayComms2 : BaseFormZippy
             pm.read = true;
             await pm.parent.save(true);
         }
+
+        this.mode = Mode.msgItem;
+        btnMsgs.sideBar = true;
+        btnCat.sideBar = false;
+    }
+
+    private void showQuestSummary(PlayQuest pq)
+    {
+        var priorStack = new List<Ctrl>(stack);
+        var priorCustomBack = this.onBackCustom;
+        List<Ctrl> subStack = [];
+
+        var btnBack = new BtnFillDrawCtrl { follow = Side.Top, gap = 4, offset = new(0, 0), sz = new(72, 32), iconName = "close", iconSize = 18, iconOffset = new(28, 10), onClick = btn => priorCustomBack!() };
+        var btnPause = new BtnFillTextCtrl { follow = Side.Left, gap = 10, sz = new(84, 32), text = "Pause" };
+        var btnRemove = new BtnFillTextCtrl { follow = Side.Left, gap = 10, sz = new(84, 32), text = "Remove" };
+
+        var lblConfirm = new TextCtrl { follow = Side.Top, gap = 4, autoSize = true, text = "Are you sure?", color = C.cyan };
+        var btnYes = new BtnFillTextCtrl { follow = Side.Top, gap = 10, sz = new(72, 32), text = "Yes", onClick = btn => this.Invalidate() };
+        var btnNo = new BtnFillTextCtrl { follow = Side.Left, gap = 10, sz = new(72, 32), text = "No", onClick = btn => this.Invalidate() };
+        btnNo.onClick = btn =>
+        {
+            // decline
+            btnBack.hidden = false;
+            btnPause.hidden = false;
+            btnRemove.hidden = false;
+            onBackCustom = priorCustomBack;
+
+            stack.RemoveAll(c => subStack.Contains(c));
+            ctrlCurrent = btnBack;
+        };
+
+        var preAction = (QuestState newState) =>
+        {
+            // show prompt
+            btnBack.hidden = true;
+            btnPause.hidden = true;
+            btnRemove.hidden = true;
+            subStack = addStack(lblConfirm, btnYes, btnNo);
+            ctrlCurrent = btnNo;
+            priorCustomBack = this.onBackCustom;
+
+            btnYes.onClick = btn =>
+            {
+                lblConfirm.text = "Updating...";
+                this.Invalidate();
+
+                pq.parent.removeQuest(pq, newState).continueOnMain(this, () =>
+                {
+                    btnBack.hidden = false;
+                    lblConfirm.text = "Done";
+                    btnBack.onClick = btn => this.Close();
+                    stack.Remove(btnYes);
+                    stack.Remove(btnNo);
+                    this.Invalidate();
+                    PlotBase2.renderAll(null, true);
+                });
+            };
+
+            onBackCustom = () =>
+            {
+                // do the 'No' click action
+                btnNo.onClick(btnNo);
+            };
+        };
+
+        btnPause.onClick = btn => preAction(QuestState.paused);
+        btnRemove.onClick = btn => preAction(QuestState.unknown);
+
+        stack.Clear();
+        addStack(
+            new QuestSummary { pq = pq },
+            btnBack,
+            btnPause,
+            btnRemove
+        );
+        ctrlCurrent = btnBack;
+
+        this.mode = Mode.questSummary;
+        btnMsgs.sideBar = true;
+        btnCat.sideBar = false;
     }
 
     #endregion
@@ -752,5 +847,47 @@ internal class MessageItem : Ctrl
 
         // set our hight to be as larged as we needed
         return adjustHeight(tt.pad(0, 10).Height - r.Y);
+    }
+}
+
+internal class QuestSummary : Ctrl
+{
+    public required PlayQuest pq;
+
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    {
+        r.Width = form.scrollWidth; // match scrollBox width
+        var w = (int)(r.Width + r.X - 0);
+        tt.dty += 1;
+
+        g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, w, 0);
+        tt.dty += 12;
+        var x = tt.dtx;
+        var x2 = tt.dtx + 32;
+
+        // title
+        tt.draw(x, pq.quest.title, C.oranger, GameColors.Fonts.arial_16B);
+        tt.newLine(6, true);
+
+        // list objectives
+        tt.draw(x, "Objectives:", C.oranged);
+        tt.newLine(10, true);
+        tt.dtx = x2;
+        foreach (var (key, obj) in pq.objectives)
+            if (obj.state == PlayObjective.State.visible)
+                PanelQuest.drawObjective(g, tt, C.orange, key, obj, pq, false, null, r.X);
+
+        // time played
+        tt.dty += 10;
+        tt.draw(x, "Started: ", C.oranged);
+        var duration = DateTimeOffset.Now.Subtract(pq.startTime!.Value);
+        tt.draw(Util.timeSpanToString(duration), C.oranger);
+        tt.newLine(6, true);
+
+        tt.dty += 6;
+        g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, w, 0);
+
+        // set our hight to be as larged as we needed
+        return adjustHeight(tt.pad(0, 23).Height - r.Y);
     }
 }

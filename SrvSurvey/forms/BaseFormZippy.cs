@@ -535,14 +535,14 @@ class Ctrl
     public int gap;
 
     public Action<Ctrl> onClick;
-    public Func<Graphics, TextCursor, bool, bool, Ctrl?, bool>? onRender;
+    public Func<Ctrl, Graphics, TextCursor, bool, bool, Ctrl?, bool>? onRender;
 
     public SizeF sz { get => r.Size; set => r.Size = value; }
 
     public virtual bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
     {
         if (onRender != null)
-            return onRender(g, tt, isCurrent, isPressed, prior);
+            return onRender(this, g, tt, isCurrent, isPressed, prior);
 
         return false;
     }
@@ -687,6 +687,9 @@ class BtnFillCtrl : Ctrl
         if (backBrush != null)
             g.FillRectangle(backBrush, r);
 
+        if (onRender != null)
+            return onRender(this, g, tt, isCurrent, isPressed, prior);
+
         return false;
     }
 }
@@ -772,7 +775,8 @@ class BtnFillTextCtrl : BtnFillCtrl
 class BtnFillDrawCtrl : BtnFillCtrl
 {
     public bool sideBar;
-    public string? iconName;
+    public string iconName;
+    public int iconSize;
     public PointF iconOffset;
     private Color iconColor;
     private Pen? iconPen;
@@ -795,14 +799,17 @@ class BtnFillDrawCtrl : BtnFillCtrl
         g.SmoothingMode = SmoothingMode.AntiAlias;
         switch (iconName)
         {
+            //case "logo":
+            //    PlotQuestMini.drawLogo(g, r.X + iconOffset.X, r.Y + iconOffset.Y, 18, iconPen!);
+            //    break;
             case "close":
-                PlotQuestMini.drawBackArrow(g, r.X + iconOffset.X, r.Y + iconOffset.Y, 18, iconPen!);
+                PlotQuestMini.drawBackArrow(g, r.X + iconOffset.X, r.Y + iconOffset.Y, iconSize, iconPen!);
                 break;
             case "envelope":
-                PlotQuestMini.drawEnvelope(g, r.X + iconOffset.X, r.Y + iconOffset.Y, 53, iconPen!);
+                PlotQuestMini.drawEnvelope(g, r.X + iconOffset.X, r.Y + iconOffset.Y, iconSize, iconPen!);
                 break;
             case "page":
-                PlotQuestMini.drawPage(g, r.X + iconOffset.X, r.Y + iconOffset.Y, 51, iconPen!);
+                PlotQuestMini.drawPage(g, r.X + iconOffset.X, r.Y + iconOffset.Y, iconSize, iconPen!);
                 break;
 
             default: throw new Exception($"Unexpected iconName: {iconName}");

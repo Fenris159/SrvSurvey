@@ -864,7 +864,7 @@ namespace SrvSurvey
                     return;
 
                 case MsgCmd.imgs:
-                    var folder = Path.Combine(Game.settings.screenshotTargetFolder!, game.cmdr.currentSystem);
+                    var folder = Path.Combine(Game.settings.screenshotTargetFolder, Util.safeFilename(game.cmdr.currentSystem));
                     if (Directory.Exists(folder))
                         Util.openLink(folder);
                     return;
@@ -1352,7 +1352,7 @@ namespace SrvSurvey
              * {body name} Ruins{1} {Alpha} {UTC time}.png
              */
             var timestamp = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HHmmss");
-            var filename = $"{entry.Body} ({timestamp})";
+            var filename = Util.safeFilename($"{entry.Body} ({timestamp})");
 
             var extraTxt = "";
             var isAerialScreenshot = false;
@@ -1393,7 +1393,7 @@ namespace SrvSurvey
                 sourceImage = new Bitmap(img);
 
             // bucket all screenshots into 1 folder per system
-            var folder = Path.Combine(Game.settings.screenshotTargetFolder!, entry.System);
+            var folder = Path.Combine(Game.settings.screenshotTargetFolder, Util.safeFilename(entry.System));
 
             // save final image
             var saveImage = new Bitmap(sourceImage);
@@ -1442,7 +1442,7 @@ namespace SrvSurvey
                 }
                 this.addBannerToScreenshot(entry, sourceImage, extraTxt);
 
-                folder = Path.Combine(Game.settings.screenshotTargetFolder!, $"Aerial {siteType}");
+                folder = Path.Combine(Game.settings.screenshotTargetFolder, $"Aerial {siteType}");
                 Game.log($"Writing screenshot '{filename}' in: {folder}");
                 Directory.CreateDirectory(folder);
                 sourceImage.Save(Path.Combine(folder, filename), ImageFormat.Png);

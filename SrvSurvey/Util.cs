@@ -1414,6 +1414,21 @@ static class Util
 
         return resilienceHandler;
     }
+
+    /// <summary> Returns a filesystem safe name, with illegal characters, like * converted to - </summary>
+    public static string safeFilename(string name)
+    {
+        return name
+            .Replace("\\", "-")
+            .Replace("/", "-")
+            .Replace(":", "-")
+            .Replace("*", "-")
+            .Replace("?", "-")
+            .Replace("\"", "-")
+            .Replace("<", "-")
+            .Replace(">", "-")
+            .Replace("|", "-");
+    }
 }
 
 internal static class ExtensionMethods
