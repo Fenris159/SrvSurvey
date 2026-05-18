@@ -1,12 +1,12 @@
 {
-  "ghVer": "2.0.95.16",
+  "ghVer": "2.0.95.23",
   "msVer": "2.0.95.0",
   "bioCriteria": 6,
   "bioEngine": 4,
   "codexRef": 10,
   "settlementTemplate": 48,
   "guardian": 68,
-  "settlements": 14,
+  "settlements": 15,
   "nicknames": 1,
   "ggg": 1
 }
