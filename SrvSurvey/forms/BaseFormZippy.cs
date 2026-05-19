@@ -96,25 +96,24 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         Util.deferAfter(100, () => Util.fadeOpacity(this, 0.95f, Game.settings.fadeInDuration));
     }
 
-    protected void addCtrl(params IEnumerable<Ctrl> newCtrls)
-    {
-        addCtrls(false, newCtrls);
-    }
-
-    protected List<Ctrl> addStack(params IEnumerable<Ctrl> newCtrls)
-    {
-        return addCtrls(true, newCtrls);
-    }
-
-    private List<Ctrl> addCtrls(bool addToStack, IEnumerable<Ctrl> newCtrls)
+    protected List<Ctrl> addCtrl(params IEnumerable<Ctrl> newCtrls)
     {
         foreach (var ctrl in newCtrls)
         {
             ctrl.form = this;
-            if (addToStack)
-                stack.Add(ctrl);
-            else
-                ctrls.Add(ctrl);
+            ctrls.Add(ctrl);
+        }
+        this.Invalidate();
+
+        return newCtrls.ToList();
+    }
+
+    protected List<Ctrl> addStack(params IEnumerable<Ctrl> newCtrls)
+    {
+        foreach (var ctrl in newCtrls)
+        {
+            ctrl.form = this;
+            stack.Add(ctrl);
         }
         this.Invalidate();
 
@@ -269,13 +268,17 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
                 newMouseOverCtrl = true;
                 ctrlCurrent = ctrl;
                 ctrlLast = ctrl;
+                this.skipDrag = true;
                 doInvalidate = true;
             }
         }
 
         // only clear this if mouse has just left a ctrl
-        if (!newMouseOverCtrl && newMouseOverCtrl != mouseOverCtrl)
+        if (!newMouseOverCtrl && newMouseOverCtrl != mouseOverCtrl && !mouseDown)
+        {
             ctrlCurrent = null;
+            this.skipDrag = false;
+        }
 
         mouseOverCtrl = newMouseOverCtrl;
 
@@ -395,12 +398,12 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         else if (ctrl.follow == Side.Left)
         {
             ctrl.r.X = prior.r.Right + ctrl.gap;
-            ctrl.r.Y = prior.r.Top;
+            ctrl.r.Y = prior.r.Y;
         }
         else if (ctrl.follow == Side.Right)
         {
             ctrl.r.X = prior.r.Left - ctrl.gap - ctrl.r.Width;
-            ctrl.r.Y = prior.r.Top;
+            ctrl.r.Y = prior.r.Y;
         }
     }
 
@@ -583,6 +586,54 @@ internal class HorizLine : Ctrl
     }
 }
 
+class TextCtrl : Ctrl
+{
+    public Color color;
+    public float pad = N.four;
+    public string text;
+    public bool autoSize;
+    public Color backColor = Color.Transparent;
+    private SolidBrush? backBrush;
+    public Font? font;
+
+    public TextCtrl() : base()
+    {
+        noFocus = true;
+    }
+
+    override public string ToString() => this.text;
+
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    {
+        // set our size based on text + padding
+        tt.dtx += pad;
+        tt.dty += pad;
+
+        if (autoSize)
+        {
+            var sz = TextRenderer.MeasureText(g, this.text, this.font ?? tt.font);
+            r.Width = sz.Width + pad + pad;
+            r.Height = sz.Height + pad + pad;
+        }
+
+        if (backBrush == null || backBrush.Color != backColor)
+        {
+            backBrush?.Dispose();
+            backBrush = null;
+            if (backColor != Color.Transparent)
+                backBrush = backColor.toBrush();
+        }
+
+        if (backBrush != null)
+            g.FillRectangle(backBrush, r);
+
+        // finally, draw the text
+        tt.drawCentered(this.r.toRectangle(), this.text, this.color, this.font);
+
+        return false;
+    }
+}
+
 /*
 class BtnBorderTextCtrl : Ctrl
 {
@@ -694,60 +745,16 @@ class BtnFillCtrl : Ctrl
     }
 }
 
-class TextCtrl : Ctrl
-{
-    public Color color;
-    public float pad = N.four;
-    public string text;
-    public bool autoSize;
-    public Color backColor = Color.Transparent;
-    private SolidBrush? backBrush;
-    public Font? font;
-
-    public TextCtrl(): base()
-    {
-        noFocus = true;
-    }
-
-    override public string ToString() => this.text;
-
-    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
-    {
-        // set our size based on text + padding
-        tt.dtx += pad;
-        tt.dty += pad;
-
-        if (autoSize)
-        {
-            var sz = TextRenderer.MeasureText(g, this.text, this.font ?? tt.font);
-            r.Width = sz.Width + pad + pad;
-            r.Height = sz.Height + pad + pad;
-        }
-
-        if (backBrush == null || backBrush.Color != backColor)
-        {
-            backBrush?.Dispose();
-            backBrush = null;
-            if (backColor != Color.Transparent)
-                backBrush = backColor.toBrush();
-        }
-
-        if (backBrush != null)
-            g.FillRectangle(backBrush, r);
-
-        // finally, draw the text
-        tt.drawCentered(this.r.toRectangle(), this.text, this.color, this.font);
-
-        return false;
-    }
-}
-
 class BtnFillTextCtrl : BtnFillCtrl
 {
     public ColorSet csFore = ColorSet.csFore;
     public float pad = 8;
     public string text;
     public bool autoSize;
+
+    public bool bottomBar;
+    private Pen? bottomPen;
+
     override public string ToString() => this.text;
 
     public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
@@ -764,9 +771,24 @@ class BtnFillTextCtrl : BtnFillCtrl
         }
 
         var redraw = base.render(g, tt, isCurrent, isPressed, prior);
+        var color = csFore.get(isCurrent, isPressed, disabled);
+
+        if (bottomBar)
+        {
+            if (!isPressed) color = ColorSet.csForeIcon.current;
+
+            if (bottomPen == null || bottomPen.Color != color)
+            {
+                bottomPen?.Dispose();
+                bottomPen = color.toPen(4);
+            }
+
+            if (bottomPen != null)
+                g.DrawLineR(bottomPen, r.X, r.Bottom, r.Width, 0);
+        }
 
         // finally, draw the text
-        tt.drawCentered(this.r.toRectangle(), this.text, csFore.get(isCurrent, isPressed, disabled));
+        tt.drawCentered(this.r.toRectangle(), this.text, color);
 
         return redraw;
     }
@@ -780,6 +802,8 @@ class BtnFillDrawCtrl : BtnFillCtrl
     public PointF iconOffset;
     private Color iconColor;
     private Pen? iconPen;
+    private Pen? sidePen;
+
     override public string ToString() => this.iconName ?? "?";
 
     public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
@@ -799,9 +823,10 @@ class BtnFillDrawCtrl : BtnFillCtrl
         g.SmoothingMode = SmoothingMode.AntiAlias;
         switch (iconName)
         {
-            //case "logo":
-            //    PlotQuestMini.drawLogo(g, r.X + iconOffset.X, r.Y + iconOffset.Y, 18, iconPen!);
-            //    break;
+            case "logo":
+                // TODO: make this fit current colours better
+                PlotQuestMini.drawLogo(g, r.X + iconOffset.X, r.Y + iconOffset.Y, isCurrent, iconSize);
+                break;
             case "close":
                 PlotQuestMini.drawBackArrow(g, r.X + iconOffset.X, r.Y + iconOffset.Y, iconSize, iconPen!);
                 break;
@@ -814,11 +839,19 @@ class BtnFillDrawCtrl : BtnFillCtrl
 
             default: throw new Exception($"Unexpected iconName: {iconName}");
         }
+        g.SmoothingMode = SmoothingMode.Default;
 
-        if (sideBar && iconPen != null)
+        if (sideBar)
         {
-            g.SmoothingMode = SmoothingMode.Default;
-            g.DrawLineR(iconPen, r.Right - 2, r.Top, 0, r.Height);
+            var sideColor = !isPressed ? ColorSet.csForeIcon.current : iconColor;
+            if (sidePen == null || sidePen.Color != sideColor)
+            {
+                sidePen?.Dispose();
+                sidePen = sideColor.toPen(4);
+            }
+
+            if (sidePen != null)
+                g.DrawLineR(sidePen, r.Right - 2, r.Top, 0, r.Height);
         }
 
         return redraw;

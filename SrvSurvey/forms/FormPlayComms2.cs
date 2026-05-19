@@ -41,33 +41,36 @@ internal class FormPlayComms2 : BaseFormZippy
         catalog,
         /// <summary> Show details on a specific quest from the catalog </summary>
         defQuest,
-        /// <summary> Show details on a specific active quest </summary>
-        questSummary,
+        /// <summary> Show a list of quests for current Cmdr </summary>
+        cmdrQuests,
     }
 
     private Mode mode;
     private Action? onBackCustom;
     private BtnFillDrawCtrl btnMsgs;
+    private BtnFillDrawCtrl btnCmdr;
     private BtnFillDrawCtrl btnCat;
+    private List<Ctrl> extras = [];
+
+    private bool loadingCatalog;
+    private static List<DefQuest>? publishedQuests;
+    private static List<QuestCmdrStatus> cmdrQuests = [];
+    private static string? lastFID;
 
     public FormPlayComms2() : base()
     {
         this.Font = GameColors.Fonts.arial_12;
         this.ForeColor = C.orange;
         this.Size = new(800, 800);
-        this.MinimumSize = new(400, 400);
+        this.MinimumSize = new(560, 400);
         setScroll(100, 72, -10, -10);
 
-        // do we need to start loading?
-        if (PlayState.current == null)
-            PlayState.loadAsync(CommanderSettings.currentOrLastFid).continueOnMain(this, () => this.init());
-        else
-            this.init();
+        Task.Run(() => this.init()).justDoIt();
     }
 
-    private void init()
+    private async Task init()
     {
-        // init ctrls
+        // init static ctrls
         btnMsgs = new BtnFillDrawCtrl
         {
             offset = new(10, 72),
@@ -79,9 +82,20 @@ internal class FormPlayComms2 : BaseFormZippy
             onClick = btn => setMode(Mode.msgs),
         };
 
+        btnCmdr = new BtnFillDrawCtrl
+        {
+            follow = Side.Top,
+            gap = 10,
+            sz = new(72, 72),
+            iconName = "logo",
+            iconSize = 46,
+            iconOffset = new(15, 12),
+            onClick = btn => setMode(Mode.cmdrQuests),
+        };
+
         btnCat = new BtnFillDrawCtrl
         {
-            follow = Side.Bottom,
+            follow = Side.Top,
             gap = 10,
             sz = new(72, 72),
             iconName = "page",
@@ -92,31 +106,47 @@ internal class FormPlayComms2 : BaseFormZippy
 
         addCtrl(
             btnMsgs,
-            new BtnFillDrawCtrl { offset = new(10, -10), r = new(0, 0, 72, 32), iconName = "close", iconSize = 18, iconOffset = new(26, 10), onClick = btn => this.Close(), },
-#if DEBUG
-            new BtnFillTextCtrl { follow = Side.Bottom, gap = 10, sz = new(72, 32), text = "(watch)", onClick = btn => BaseForm.show<FormPlayJournal>(), disabled = Game.activeGame == null },
-            new BtnFillTextCtrl { follow = Side.Bottom, gap = 10, sz = new(72, 32), text = "(dev)", onClick = btn => BaseForm.show<FormPlayDev>(), },
-#endif
-            btnCat
+            btnCmdr,
+            btnCat,
+            new BtnFillDrawCtrl { offset = new(10, -10), r = new(0, 0, 72, 32), iconName = "close", iconSize = 18, iconOffset = new(26, 10), onClick = btn => this.Close(), }
         );
+#if DEBUG
+        addCtrl(
+            new BtnFillTextCtrl { follow = Side.Bottom, gap = 10, sz = new(72, 32), text = "(watch)", onClick = btn => BaseForm.show<FormPlayJournal>(), disabled = Game.activeGame == null },
+            new BtnFillTextCtrl { follow = Side.Bottom, gap = 10, sz = new(72, 32), text = "(dev)", onClick = btn => BaseForm.show<FormPlayDev>(), }
+        );
+#endif
+
+        // now do async stuff
+        this.Invalidate();
+
+        // do we need to load current play-state
+        var fid = CommanderSettings.currentOrLastFid;
+        if (PlayState.current == null)
+            await PlayState.loadAsync(fid);
+
+        if (PlayState.current == null) throw new Exception($"Cannot get PlayState for: {fid}");
+
+        // fetch cmdr's current mission status, if needed
+        if (lastFID != fid || true)
+            await fetchCmdrQuests(fid);
 
         // choose a starting mode
-        setMode(Mode.msgs);
+        var ps = PlayState.current;
+        if (ps?.messagesTotal > 0)
+            setMode(Mode.msgs);
+        else if (cmdrQuests.Count > 0)
+            setMode(Mode.cmdrQuests);
+        else
+            setMode(Mode.catalog);
+    }
 
-        //var ps = PlayState.current;
-        //if (ps?.devQuest != null)
-        //{
-        //    showQuestDef(ps.devQuest.quest);
-        //}
-        //else 
-        //if (ps?.messagesTotal > 0)
-        //{
-        //    setMode(Mode.msgs);
-        //}
-        //else if (ps == null)
-        //{
-        //    setMode(Mode.catalog);
-        //}
+    public static async Task fetchCmdrQuests(string fid)
+    {
+        cmdrQuests = await Game.rcc.getCmdrQuests(fid);
+        lastFID = fid;
+
+        BaseForm.get<FormPlayComms2>()?.Invalidate();
     }
 
     protected override void OnLoad(EventArgs e)
@@ -158,14 +188,21 @@ internal class FormPlayComms2 : BaseFormZippy
     {
         this.mode = mode;
         btnMsgs.sideBar = mode == Mode.msgs;
+        btnCmdr.sideBar = mode == Mode.cmdrQuests;
         btnCat.sideBar = mode == Mode.catalog;
         onBackCustom = null;
+        // remove scrollable ctrls
         stack.Clear();
+        // and any extra stuff
+        ctrls.RemoveAll(c => extras.Contains(c));
+        extras.Clear();
 
         if (mode == Mode.catalog)
-            loadPublishedQuests().justDoIt();
+            loadPublishedQuests();
         else if (mode == Mode.msgs)
             loadMessages();
+        else if (mode == Mode.cmdrQuests)
+            loadCmdrQuests();
 
         this.Invalidate();
     }
@@ -181,8 +218,10 @@ internal class FormPlayComms2 : BaseFormZippy
 
         switch (this.mode)
         {
+            case Mode.init:
             case Mode.msgs:
             case Mode.catalog:
+            case Mode.cmdrQuests:
                 // close the window
                 this.Close();
                 return true;
@@ -194,7 +233,6 @@ internal class FormPlayComms2 : BaseFormZippy
             case Mode.msgItem:
                 setMode(Mode.msgs);
                 return true;
-
             default:
                 throw new Exception($"Unexpected mode: {mode}");
         }
@@ -208,7 +246,7 @@ internal class FormPlayComms2 : BaseFormZippy
 
         base.render(g, tt);
 
-        PlotQuestMini.drawLogo(g, 32, N.ten, ps.messagesUnread > 0, 48);
+        //PlotQuestMini.drawLogo(g, 32, N.ten, ps.messagesUnread > 0, 48);
 
         switch (mode)
         {
@@ -222,12 +260,16 @@ internal class FormPlayComms2 : BaseFormZippy
             case Mode.catalog:
             case Mode.defQuest:
                 return renderQuestCatalog(g, tt);
+
+            case Mode.cmdrQuests:
+                return renderCmdrQuests(g, tt);
         }
         return false;
     }
 
     private bool renderInitializing(Graphics g, TextCursor tt)
     {
+        // TODO: make this more interesting?
         tt.dty = 10;
         tt.dtx = 100;
         tt.draw("Initializing...");
@@ -235,10 +277,6 @@ internal class FormPlayComms2 : BaseFormZippy
     }
 
     #region catalog
-
-    private static List<DefQuest>? publishedQuests;
-    private bool loadingCatalog;
-    private DefQuest? selectedQD;
 
     private bool renderQuestCatalog(Graphics g, TextCursor tt)
     {
@@ -255,9 +293,8 @@ internal class FormPlayComms2 : BaseFormZippy
         return false;
     }
 
-    private async Task loadPublishedQuests()
+    private async Task fetchPublishedQuests()
     {
-        // TODO: background thread!
         loadingCatalog = true;
         this.Invalidate();
 
@@ -270,7 +307,18 @@ internal class FormPlayComms2 : BaseFormZippy
 
         if (publishedQuests == null || publishedQuests.Count == 0) throw new Exception("Why are there zero quests available?");
 
-        // TODO: add filter buttons, selecting Active vs Paused vs Complete vs Failed vs Not-started ???
+        loadingCatalog = false;
+    }
+
+    private void loadPublishedQuests()
+    {
+        // only download once per process
+        if (publishedQuests == null)
+        {
+            // fetch on a thread
+            Task.Run(() => this.fetchPublishedQuests().continueOnMain(this, () => this.loadPublishedQuests()));
+            return;
+        }
 
         // and include the in-progress devQuest
         if (PlayState.current?.devQuest != null)
@@ -284,16 +332,16 @@ internal class FormPlayComms2 : BaseFormZippy
             });
         }
 
-        // (hide if matches devQuest)
-        addStack(publishedQuests.Where(qd => !qd.equals(PlayState.current?.devQuest?.quest)).Select((qd, i) => new QuestCatalogLine
+        // hide items if matches devQuest, or cmdr has activated them before
+        var items = publishedQuests.Where(qd => !qd.equals(PlayState.current?.devQuest?.quest) && cmdrQuests.Find(x => x.publisher == qd.publisher && x.id == qd.id) == null);
+        addStack(items.Select((qd, i) => new QuestCatalogLine
         {
             qd = qd,
+            qs = cmdrQuests?.Find(qs => qs.publisher == qd.publisher && qs.id == qd.id),
             follow = Side.Top,
             gap = 4,
             onClick = btn => showQuestDef(qd),
         }));
-        //addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)));
-        //addStack(publishedQuests.Select((qd, i) => new QuestCatalogLine(qd)));
         if (stack.Count > 0) ctrlCurrent = stack[0];
 
         loadingCatalog = false;
@@ -302,11 +350,16 @@ internal class FormPlayComms2 : BaseFormZippy
 
     private void showQuestDef(DefQuest qd)
     {
-        this.selectedQD = qd;
+        var btnBack = new BtnFillDrawCtrl { follow = Side.Top, gap = 4, sz = new(72, 32), iconName = "close", iconSize = 18, iconOffset = new(28, 10) };
+        btnBack.onClick = btn =>
+        {
+            if (onBackCustom != null)
+                onBackCustom();
+            else
+                setMode(Mode.catalog);
+        };
 
-        var btnBack = new BtnFillDrawCtrl { follow = Side.Top, gap = 4, sz = new(72, 32), iconName = "close", iconSize = 18, iconOffset = new(28, 10), onClick = btn => setMode(Mode.catalog) };
-
-        var lblConfirm = new TextCtrl { follow = Side.Top, gap = 4, autoSize = true, text = "Are you sure? This will undo any prior progress", color = C.cyan };
+        var lblConfirm = new TextCtrl { follow = Side.Top, gap = 4, autoSize = true, color = C.cyan };
         var btnYes = new BtnFillTextCtrl { follow = Side.Top, gap = 10, sz = new(72, 32), text = "Yes", onClick = btn => this.Invalidate() };
         var btnNo = new BtnFillTextCtrl { follow = Side.Left, gap = 10, sz = new(72, 32), text = "No", onClick = btn => this.Invalidate() };
         var btnAct = new BtnFillTextCtrl { follow = Side.Left, gap = 4, sz = new(120, 32), csBack = ColorSet.csCyanBack, csFore = ColorSet.csCyanFore };
@@ -340,8 +393,43 @@ internal class FormPlayComms2 : BaseFormZippy
 
         // adjust messages depending on quest state
         var pq = PlayState.current?.activeQuests.Find(pq => pq.quest.equals(qd));
-        if (pq == null)
+        var qs = cmdrQuests.Find(x => x.publisher == qd.publisher && x.id == qd.id);
+        var isPaused = qs?.state == QuestState.paused;
+        if (isPaused)
         {
+            lblConfirm.text = "Are you sure?";
+            btnAct.text = "Resume quest";
+            lblActing.text = "Resuming ...";
+            btnYes.onClick = btn =>
+            {
+                // activate quest
+                lblConfirm.color = C.grey;
+                btnYes.disabled = true;
+                btnNo.disabled = true;
+                subStack.AddRange(addStack(lblActing));
+                onBackCustom = null;
+
+                PlayState.current?.resumeQuest(qd.publisher, qd.id).continueOnMain(this, () =>
+                {
+                    btnBack.hidden = false;
+                    btnAct.hidden = false;
+                    stack.Remove(btnAct);
+                    stack.RemoveAll(c => subStack.Contains(c));
+                    addStack(new TextCtrl { follow = Side.Left, gap = 10, autoSize = true, text = "Enjoy the quest ...", color = C.oranger });
+                    ctrlCurrent = btnBack;
+                    btnBack.onClick = b => setMode(PlayState.current?.messagesTotal > 0 ? Mode.msgs : Mode.cmdrQuests);
+
+                    PlotBase2.renderAll(null, true);
+
+                    // update our internal state (rather than re-hit the server)
+                    if (lastFID != null)
+                        fetchCmdrQuests(lastFID).justDoIt();
+                });
+            };
+        }
+        else if (pq == null)
+        {
+            lblConfirm.text = "Are you sure?";
             btnAct.text = "Activate quest";
             lblActing.text = "Activating ...";
             btnYes.onClick = btn =>
@@ -361,12 +449,19 @@ internal class FormPlayComms2 : BaseFormZippy
                     stack.RemoveAll(c => subStack.Contains(c));
                     addStack(new TextCtrl { follow = Side.Left, gap = 10, autoSize = true, text = "Enjoy the quest ...", color = C.oranger });
                     ctrlCurrent = btnBack;
+                    btnBack.onClick = b => setMode(PlayState.current?.messagesTotal > 0 ? Mode.msgs : Mode.cmdrQuests);
+
                     PlotBase2.renderAll(null, true);
+
+                    // update our internal state (rather than re-hit the server)
+                    if (lastFID != null)
+                        fetchCmdrQuests(lastFID).justDoIt();
                 });
             };
         }
         else
         {
+            lblConfirm.text = "Are you sure? This will undo any prior progress";
             btnAct.text = "Remove";
             lblActing.text = "Removing ...";
             btnYes.onClick = btn =>
@@ -400,9 +495,7 @@ internal class FormPlayComms2 : BaseFormZippy
         );
         ctrlCurrent = btnBack;
 
-        this.mode = Mode.defQuest;
-        btnMsgs.sideBar = false;
-        btnCat.sideBar = true;
+        mode = Mode.defQuest;
     }
 
     #endregion
@@ -535,12 +628,12 @@ internal class FormPlayComms2 : BaseFormZippy
             },
             onClick = btn =>
             {
-                showQuestSummary(pm.parent);
                 this.onBackCustom = () =>
                 {
                     this.showMessage(pm, qm, ps).justDoIt();
                     this.onBackCustom = null;
                 };
+                showCmdrQuestSummary(pm.parent);
             },
         });
 
@@ -552,24 +645,34 @@ internal class FormPlayComms2 : BaseFormZippy
             await pm.parent.save(true);
         }
 
-        this.mode = Mode.msgItem;
-        btnMsgs.sideBar = true;
-        btnCat.sideBar = false;
+        mode = Mode.msgItem;
     }
 
-    private void showQuestSummary(PlayQuest pq)
+    private void showCmdrQuestSummary(PlayQuest pq)
     {
         var priorStack = new List<Ctrl>(stack);
         var priorCustomBack = this.onBackCustom;
         List<Ctrl> subStack = [];
 
         var btnBack = new BtnFillDrawCtrl { follow = Side.Top, gap = 4, offset = new(0, 0), sz = new(72, 32), iconName = "close", iconSize = 18, iconOffset = new(28, 10), onClick = btn => priorCustomBack!() };
+        var btnMore = new BtnFillTextCtrl { follow = Side.Left, gap = 10, sz = new(84, 32), autoSize = true, text = "..." };
         var btnPause = new BtnFillTextCtrl { follow = Side.Left, gap = 10, sz = new(84, 32), text = "Pause" };
         var btnRemove = new BtnFillTextCtrl { follow = Side.Left, gap = 10, sz = new(84, 32), text = "Remove" };
 
-        var lblConfirm = new TextCtrl { follow = Side.Top, gap = 4, autoSize = true, text = "Are you sure?", color = C.cyan };
+        var lblConfirm = new TextCtrl { follow = Side.Top, gap = 4, autoSize = true, color = C.cyan };
         var btnYes = new BtnFillTextCtrl { follow = Side.Top, gap = 10, sz = new(72, 32), text = "Yes", onClick = btn => this.Invalidate() };
         var btnNo = new BtnFillTextCtrl { follow = Side.Left, gap = 10, sz = new(72, 32), text = "No", onClick = btn => this.Invalidate() };
+        var lblActing = new TextCtrl { follow = Side.Left, gap = 10, autoSize = true, color = C.oranger };
+
+        btnMore.onClick = b =>
+        {
+            stack.Remove(btnMore);
+            // prevent devQuest from being paused
+            if (!pq.dev) addStack(btnPause);
+            addStack(btnRemove);
+            ctrlCurrent = btnBack;
+        };
+
         btnNo.onClick = btn =>
         {
             // decline
@@ -588,24 +691,33 @@ internal class FormPlayComms2 : BaseFormZippy
             btnBack.hidden = true;
             btnPause.hidden = true;
             btnRemove.hidden = true;
-            subStack = addStack(lblConfirm, btnYes, btnNo);
+            subStack = addStack(lblConfirm, btnYes, btnNo, lblActing);
             ctrlCurrent = btnNo;
             priorCustomBack = this.onBackCustom;
 
+            lblConfirm.text = newState == QuestState.paused
+                ? "Are you sure?"
+                : "Are you sure? This will remove all progress.";
+
             btnYes.onClick = btn =>
             {
-                lblConfirm.text = "Updating...";
+                lblConfirm.color = C.grey;
+                lblActing.text = newState == QuestState.paused ? "Pausing ..." : "Removing ...";
                 this.Invalidate();
 
                 pq.parent.removeQuest(pq, newState).continueOnMain(this, () =>
                 {
                     btnBack.hidden = false;
-                    lblConfirm.text = "Done";
-                    btnBack.onClick = btn => this.Close();
-                    stack.Remove(btnYes);
-                    stack.Remove(btnNo);
+                    btnBack.onClick = btn => this.setMode(Mode.cmdrQuests);
+                    stack.RemoveAll(c => subStack.Contains(c));
+                    addStack(new TextCtrl { follow = Side.Left, gap = 10, autoSize = true, text = "Better luck next time ...", color = C.oranger });
+                    ctrlCurrent = btnBack;
                     this.Invalidate();
                     PlotBase2.renderAll(null, true);
+
+                    // update our internal state (rather than re-hit the server)
+                    if (lastFID != null)
+                        fetchCmdrQuests(lastFID).justDoIt();
                 });
             };
 
@@ -623,14 +735,114 @@ internal class FormPlayComms2 : BaseFormZippy
         addStack(
             new QuestSummary { pq = pq },
             btnBack,
-            btnPause,
-            btnRemove
+            btnMore
         );
         ctrlCurrent = btnBack;
+    }
 
-        this.mode = Mode.questSummary;
-        btnMsgs.sideBar = true;
-        btnCat.sideBar = false;
+    #endregion
+
+    #region Cmdr quests
+
+    private bool renderCmdrQuests(Graphics g, TextCursor tt)
+    {
+        // TODO: make this a ctrl
+        tt.dty = N.ten;
+        tt.draw(N.hundred, "Quests:", GameColors.Fonts.arial_16B);
+        tt.newLine(true);
+
+        if (loadingCatalog)
+        {
+            tt.dty += 32;
+            tt.draw(N.hundred, "... loading ...");
+        }
+
+        return false;
+    }
+
+    private void setFilter(Ctrl btn, QuestState newFilter)
+    {
+        stack.Clear();
+
+        // start loading catalog, if needed
+        if (newFilter != QuestState.active && publishedQuests == null)
+        {
+            // fetch on a thread
+            Task.Run(() => this.fetchPublishedQuests().continueOnMain(this, () => this.setFilter(btn, newFilter)));
+            return;
+        }
+
+        // set bottomBar on the buttons
+        extras.ForEach(c => { if (c is BtnFillTextCtrl c2) { c2.bottomBar = c == btn; } });
+
+        // fill stack with filtered lines
+        var items = cmdrQuests.Where(qs => qs.state == newFilter).ToList();
+        if (PlayState.current?.devQuest != null)
+        {
+            items.Insert(0, new QuestCmdrStatus
+            {
+                publisher = PlayState.current.devQuest.publisher,
+                id = PlayState.current.devQuest.id,
+                ver = PlayState.current.devQuest.ver,
+                state = QuestState.active,
+                stateChangedOn = PlayState.current.devQuest.startTime.HasValue ? PlayState.current.devQuest.startTime.Value : default,
+            });
+        }
+
+        if (items.Count == 0)
+        {
+            addStack(new TextCtrl { offset = new(0, 0), autoSize = true, color = C.grey, text = "None" });
+            if (newFilter == QuestState.active)
+                addStack(new BtnFillTextCtrl { follow = Side.Top, gap = 10, autoSize = true, text = "Find more in the catalog", onClick = btn => setMode(Mode.catalog) });
+        }
+        else
+        {
+            var lines = items.Select(qs =>
+            {
+                var pq = PlayState.current?.activeQuests.Find(pq => pq.publisher == qs.publisher && pq.id == qs.id);
+                var qd = pq?.quest ?? publishedQuests?.Find(x => x.publisher == qs.publisher && x.id == qs.id);
+
+                if (qd == null) return null;
+                return new QuestCatalogLine
+                {
+                    qd = qd,
+                    qs = qs,
+                    follow = Side.Top,
+                    gap = 4,
+                    onClick = b =>
+                    {
+                        this.onBackCustom = () =>
+                        {
+                            this.setFilter(btn, newFilter);
+                            this.onBackCustom = null;
+                        };
+
+                        if (newFilter == QuestState.active && pq != null)
+                            showCmdrQuestSummary(pq!);
+                        else
+                            showQuestDef(qd);
+                    },
+                };
+            }).ToList();
+            addStack(lines.Where(c => c != null).Cast<Ctrl>());
+            ctrlCurrent = stack.FirstOrDefault() ?? ctrlCurrent;
+        }
+    }
+
+    private void loadCmdrQuests()
+    {
+        // show 4 filter buttons
+        extras = addCtrl(
+            new BtnFillTextCtrl { offset = new(190, 14), autoSize = true, text = "Active", onClick = btn => setFilter(btn, QuestState.active) },
+            new BtnFillTextCtrl { follow = Side.Left, gap = 10, autoSize = true, text = "Paused", onClick = btn => setFilter(btn, QuestState.paused) },
+            new BtnFillTextCtrl { follow = Side.Left, gap = 10, autoSize = true, text = "Completed", onClick = btn => setFilter(btn, QuestState.complete) },
+            new BtnFillTextCtrl { follow = Side.Left, gap = 10, autoSize = true, text = "Failed", onClick = btn => setFilter(btn, QuestState.failed) }
+        );
+
+        // and default to 'Active'
+        setFilter(extras[0], QuestState.active);
+
+        this.Invalidate();
     }
 
     #endregion
@@ -641,6 +853,7 @@ class QuestCatalogLine : BtnFillCtrl
     private static Brush brushDevQuest;
 
     public required DefQuest qd;
+    public QuestCmdrStatus? qs;
 
     override public string ToString() => this.qd.title;
 
@@ -666,12 +879,9 @@ class QuestCatalogLine : BtnFillCtrl
         var x = tt.dtx;
 
         // render current state?
-        var pq = PlayState.current?.activeQuests.Find(pq => pq.quest.equals(qd));
-        if (pq != null)
-        {
-            var msg = qd.equals(PlayState.current?.devQuest?.quest) ? "Dev" : "Active";
-            tt.drawRight(form.scrollBox.Right - 6, msg, C.cyan, GameColors.Fonts.arial_8);
-        }
+        var state = qd.equals(PlayState.current?.devQuest?.quest) ? "DEV" : qs?.state.ToString();
+        if (state != null)
+            tt.drawRight(form.scrollBox.Right - 6, state, C.cyan, GameColors.Fonts.arial_8);
 
         // title
         tt.draw(x, this.qd.title, ColorSet.csFore.get(isCurrent, isPressed, disabled), GameColors.Fonts.arial_16);

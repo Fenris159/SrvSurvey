@@ -169,6 +169,23 @@ internal class PlayState : Data
         await initQuest(pq, true);
 
         PlayState.updateUI(pq);
+        FormPlayComms2.fetchCmdrQuests(this.fid).justDoIt();
+        return pq;
+    }
+
+    public async Task<PlayQuest> resumeQuest(string publisher, string id)
+    {
+        var success = await Game.rcc.setQuestState(this.fid, publisher, id, QuestState.active);
+        if (!success) throw new Exception($"Cannot resume quest by: {publisher} / {id}");
+
+        var loadedQuests = await Game.rcc.loadCmdrQuests(fid, game.RavenColonial.QuestState.active);
+        var pq = loadedQuests.FirstOrDefault(q => q.publisher == publisher && q.id == id);
+        Game.log($"Resuming quest: {pq.publisher} / {pq.id} / {pq.ver}");
+
+        await initQuest(pq, false);
+
+        PlayState.updateUI(pq);
+        FormPlayComms2.fetchCmdrQuests(this.fid).justDoIt();
         return pq;
     }
 
@@ -198,6 +215,8 @@ internal class PlayState : Data
         {
             Debugger.Break(); // would this ever happen?
         }
+
+        FormPlayComms2.fetchCmdrQuests(this.fid).justDoIt();
     }
 
     private static void setPriorKepts(PlayQuest pq)

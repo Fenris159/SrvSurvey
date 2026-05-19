@@ -579,9 +579,9 @@ class RavenColonial
         return obj ?? [];
     }
 
-    public async Task<QuestSummary[]> getCmdrQuests(string fid)
+    public async Task<List<QuestCmdrStatus>> getCmdrQuests(string fid)
     {
-        var req = new HttpRequestMessage(HttpMethod.Post, $"{svcUri}/api/quest/cmdr");
+        var req = new HttpRequestMessage(HttpMethod.Get, $"{svcUri}/api/quest/cmdr"); // not including state in path, but we could
         req.Headers.addIf("rcc-key", this.getApiKey(fid));
 
         var response = await RavenColonial.client.SendAsync(req);
@@ -592,13 +592,13 @@ class RavenColonial
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) return [];
 
         var json = await response.Content.ReadAsStringAsync();
-        var obj = JsonConvert.DeserializeObject<QuestSummary[]>(json) ?? [];
+        var obj = JsonConvert.DeserializeObject<List<QuestCmdrStatus>>(json) ?? [];
         return obj;
     }
 
     public async Task<DefQuest> activateQuest(string fid, string publisher, string id)
     {
-        var req = new HttpRequestMessage(HttpMethod.Post, $"{svcUri}/api/quest/cmdr/{Uri.EscapeDataString(publisher)}/{Uri.EscapeDataString(id)}/activate");
+        var req = new HttpRequestMessage(HttpMethod.Put, $"{svcUri}/api/quest/cmdr/{Uri.EscapeDataString(publisher)}/{Uri.EscapeDataString(id)}");
         req.Headers.addIf("rcc-key", this.getApiKey(fid));
 
         var response = await RavenColonial.client.SendAsync(req);
@@ -614,7 +614,7 @@ class RavenColonial
 
     public async Task<bool> deleteQuest(string fid, string publisher, string id)
     {
-        var req = new HttpRequestMessage(HttpMethod.Post, $"{svcUri}/api/quest/cmdr/{Uri.EscapeDataString(publisher)}/{Uri.EscapeDataString(id)}/delete");
+        var req = new HttpRequestMessage(HttpMethod.Delete, $"{svcUri}/api/quest/cmdr/{Uri.EscapeDataString(publisher)}/{Uri.EscapeDataString(id)}");
         req.Headers.addIf("rcc-key", this.getApiKey(fid));
 
         var response = await RavenColonial.client.SendAsync(req);
@@ -965,6 +965,7 @@ public class CmdrCurrentShip
     public required Dictionary<string, int> cargo;
 }
 
+/// <summary> A brief summary of a published quest </summary>
 public class QuestSummary
 {
     public required string id;
@@ -973,6 +974,17 @@ public class QuestSummary
     public required string title;
     public string? desc;
     public QuestState state;
+}
+
+/// <summary> A brief summary of a Cmdr's status on a specific quest </summary>
+public class QuestCmdrStatus
+{
+    public required string id;
+    public required double ver;
+    public required string publisher;
+
+    public QuestState state;
+    public DateTimeOffset stateChangedOn;
 }
 
 [JsonConverter(typeof(StringEnumConverter))]

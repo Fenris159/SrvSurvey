@@ -188,12 +188,17 @@ namespace SrvSurvey.plotters
 
         public static void drawLogo(Graphics g, float x, float y, bool highlight, float sz)
         {
-            var half = sz / 2;
-
             var fat = sz >= 36;
             var p2 = highlight ? (fat ? C.Pens.cyan4 : C.Pens.cyan2) : (fat ? C.Pens.orange4 : C.Pens.orange2);
             var p1 = highlight ? (fat ? C.Pens.cyan2 : C.Pens.cyan1) : (fat ? C.Pens.orange2 : C.Pens.orange1);
             var b = highlight ? C.Brushes.cyanDark : C.Brushes.orangeDark;
+
+            drawLogo(g, x, y, sz, p1, p2, b);
+        }
+
+        public static void drawLogo(Graphics g, float x, float y, float sz, Pen p1, Pen p2, Brush b)
+        {
+            var half = sz / 2;
 
             g.FillRectangle(b, x, y, half, half);
             g.FillRectangle(b, x + half, y + half, half, half);
