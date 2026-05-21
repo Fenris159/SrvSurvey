@@ -189,38 +189,48 @@ namespace SrvSurvey.plotters
         public static void drawLogo(Graphics g, float x, float y, bool highlight, float sz)
         {
             var fat = sz >= 36;
-            var p2 = highlight ? (fat ? C.Pens.cyan4 : C.Pens.cyan2) : (fat ? C.Pens.orange4 : C.Pens.orange2);
-            var p1 = highlight ? (fat ? C.Pens.cyan2 : C.Pens.cyan1) : (fat ? C.Pens.orange2 : C.Pens.orange1);
+            var penFat = highlight ? (fat ? C.Pens.cyan4 : C.Pens.cyan2) : (fat ? C.Pens.orange4 : C.Pens.orange2);
+            var penThin = highlight ? (fat ? C.Pens.cyan2 : C.Pens.cyan1) : (fat ? C.Pens.orange2 : C.Pens.orange1);
             var b = highlight ? C.Brushes.cyanDark : C.Brushes.orangeDark;
 
-            drawLogo(g, x, y, sz, p1, p2, b);
+            drawLogo(g, x, y, sz, penFat, penThin, b);
         }
 
-        public static void drawLogo(Graphics g, float x, float y, float sz, Pen p1, Pen p2, Brush b)
+        public static void drawLogo(Graphics g, float x, float y, float sz, Pen fat, Pen thin, Brush b)
         {
             var half = sz / 2;
 
             g.FillRectangle(b, x, y, half, half);
             g.FillRectangle(b, x + half, y + half, half, half);
-            g.DrawLine(p2, x + half, y, x + half, y + sz);
-            g.DrawLine(p2, x, y + half, x + sz, y + half);
+            g.DrawLine(fat, x + half, y, x + half, y + sz);
+            g.DrawLine(fat, x, y + half, x + sz, y + half);
             // diagonals
-            g.DrawLine(p1, x, y + half, x + half, y + sz);
-            g.DrawLine(p1, x + half, y, x + sz, y + half);
+            g.DrawLine(thin, x, y + half, x + half, y + sz);
+            g.DrawLine(thin, x + half, y, x + sz, y + half);
         }
 
-        public static void drawEnvelope(Graphics g, float x, float y, float sz, Pen p)
+        public static void drawEnvelope(Graphics g, float x, float y, float sz, Pen p, Brush? fill = null)
         {
             var downHeight = sz * 0.4f;
             var widthHalf = sz / 2f;
 
             // mail envelope
+            if (fill != null)
+            {
+                g.FillPolygon(fill, new PointF[]
+                {
+                    new(x,y),
+                    new(x + sz,y),
+                    new(x + widthHalf, y + downHeight),
+                });
+            }
+
             g.DrawRectangle(p, x, y, sz, sz * 0.7f);
             g.DrawLine(p, x, y, x + widthHalf, y + downHeight);
             g.DrawLine(p, x + sz, y, x + widthHalf, y + downHeight);
         }
 
-        public static void drawPage(Graphics g, float x, float y, float sz, Pen p)
+        public static void drawPage(Graphics g, float x, float y, float sz, Pen p, Brush? b = null)
         {
             // page
             var ws = sz * 0.3f;
@@ -228,6 +238,9 @@ namespace SrvSurvey.plotters
             var x2 = x + (sz * 0.12f);
 
             var h = sz * 0.16f;
+            if (b != null)
+                g.FillRectangle(b, x, y, sz * 0.8f, sz);
+
             g.DrawRectangle(p, x, y, sz * 0.8f, sz);
             g.DrawLineR(p, x2, (int)Math.Floor(y + h), ws, 0);
             g.DrawLineR(p, x2, (int)Math.Floor(y + h * 2), wl, 0);

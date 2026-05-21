@@ -47,12 +47,19 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         this.MinimizeBox = false;
         this.MaximizeBox = false;
         this.ControlBox = false;
-        this.FormBorderStyle = FormBorderStyle.SizableToolWindow; // .None; // <-- TMP!
         this.DoubleBuffered = true;
         this.ResizeRedraw = true;
-        //this.ShowInTaskbar = false; // <-- TMP!
         this.BackColor = C.black;
         this.ForeColor = C.orange;
+
+#if DEBUG
+        // for the sake of debugging sanity ...
+        this.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+        this.ShowInTaskbar = true;
+#else
+        this.FormBorderStyle = FormBorderStyle.SizableToolWindow.None;
+        this.ShowInTaskbar = false;
+#endif
 
         this.Opacity = 0;
 
@@ -145,7 +152,7 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
 
     #endregion
 
-    #region sibling navigation
+    #region sibling navigation + key press handling
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
     {
@@ -154,9 +161,7 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         if (keyData == Keys.Enter)
         {
             // "click" the current ctrl
-            if (last?.onClick != null && !last.disabled)
-                last.onClick(last);
-            this.Invalidate();
+            last?.doClick(false);
             return true;
         }
         else if (keyData == Keys.Escape)
@@ -290,7 +295,11 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
     {
         base.OnMouseDown(e);
         mouseDown = true;
-        this.Invalidate();
+
+        if (mouseOverCtrl && ctrlCurrent?.onClick != null && !ctrlCurrent.disabled)
+        {
+            ctrlCurrent.doClick(true);
+        }
     }
 
     protected override void OnMouseUp(MouseEventArgs e)
@@ -298,9 +307,6 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         base.OnMouseUp(e);
         mouseDown = false;
         this.Invalidate();
-
-        if (mouseOverCtrl && ctrlCurrent?.onClick != null && !ctrlCurrent.disabled)
-            ctrlCurrent.onClick(ctrlCurrent);
     }
 
     protected override void OnMouseWheel(MouseEventArgs e)
@@ -378,9 +384,8 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         tt.dtx = ctrl.r.X;
         tt.dty = ctrl.r.Y;
         var isCurrent = ctrl == ctrlCurrent;
-        var isPressed = mouseOverCtrl && ctrl == ctrlCurrent && mouseDown;
 
-        return ctrl.render(g, tt, isCurrent, isPressed, prior);
+        return ctrl.render(g, tt, isCurrent, ctrl.isClicking, prior);
     }
 
     private void followPrior(Ctrl ctrl, Ctrl prior)
@@ -463,15 +468,15 @@ struct ColorSet
 {
     public Color normal;
     public Color current;
-    public Color pressed;
+    public Color clicking;
     public Color disabled;
 
-    public Color get(bool isCurrent, bool isPressed, bool isDisabled)
+    public Color get(bool isCurrent, bool isClicking, bool isDisabled)
     {
         if (isDisabled)
             return disabled;
-        else if (isPressed)
-            return pressed;
+        else if (isClicking)
+            return clicking;
         else if (isCurrent)
             return current;
         else
@@ -481,40 +486,40 @@ struct ColorSet
     public static ColorSet csFore = new()
     {
         normal = C.orange,
-        current = C.menuGold,
-        pressed = C.black,
+        current = C.black,
+        clicking = C.black,
         disabled = C.black,
     };
 
     public static ColorSet csForeIcon = new()
     {
         normal = C.orangeDark,
-        current = C.menuGold,
-        pressed = C.black,
+        current = C.black,
+        clicking = C.black,
         disabled = C.black,
     };
 
     public static ColorSet csBack = new()
     {
         normal = C.orangeDarker,
-        current = C.orangeDark,
-        pressed = C.orange,
+        current = C.orange,
+        clicking = C.white,
         disabled = C.grey,
     };
 
     public static ColorSet csCyanBack = new()
     {
         normal = C.cyanDarker,
-        current = C.cyanDark,
-        pressed = C.cyan,
+        current = C.cyan,
+        clicking = C.white,
         disabled = C.grey,
     };
 
     public static ColorSet csCyanFore = new()
     {
         normal = C.cyanDark,
-        current = C.white,
-        pressed = C.black,
+        current = C.black,
+        clicking = C.black,
         disabled = C.black,
     };
 
@@ -533,19 +538,62 @@ class Ctrl
     public bool noFocus;
     protected bool hovered;
     public bool isCurrent;
+    /// <summary> 0: not => 1: starting => 2: going => 3: ending => 0: not</summary>
+    protected int clicking;
+    public bool isClicking => this.clicking > 0;
 
     public Side follow;
-    public int gap;
+    public int gap = 8;
 
-    public Action<Ctrl> onClick;
+    public Action<Ctrl, bool> onClick;
     public Func<Ctrl, Graphics, TextCursor, bool, bool, Ctrl?, bool>? onRender;
 
     public SizeF sz { get => r.Size; set => r.Size = value; }
 
-    public virtual bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    public void doClick(bool byMouse)
+    {
+        // animate ourself clicked and then do the click action
+        if (this.onClick != null && !this.disabled && !this.noFocus)
+            this.animateClicking(byMouse);
+    }
+
+    private void animateClicking(bool byMouse)
+    {
+        if (clicking == 0)
+        {
+            // starting: briefly be GOLD
+            this.clicking = 1;
+            this.form.Invalidate();
+            Task.Delay(50).continueOnMain(this.form, () => animateClicking(byMouse));
+        }
+        else if (clicking == 1)
+        {
+            // going: be WHITE
+            this.clicking = 2;
+            this.form.Invalidate();
+            Task.Delay(100).continueOnMain(this.form, () => animateClicking(byMouse));
+        }
+        else if (clicking == 2)
+        {
+            // ending: now do the action, and briefly be GOLD
+            this.onClick(this, byMouse);
+
+            this.clicking = 3;
+            this.form.Invalidate();
+            Task.Delay(50).continueOnMain(this.form, () => animateClicking(byMouse));
+        }
+        else if (clicking == 3)
+        {
+            // ended
+            this.clicking = 0;
+            this.form.Invalidate();
+        }
+    }
+
+    public virtual bool render(Graphics g, TextCursor tt, bool isCurrent, bool isClicking, Ctrl? prior)
     {
         if (onRender != null)
-            return onRender(this, g, tt, isCurrent, isPressed, prior);
+            return onRender(this, g, tt, isCurrent, isClicking, prior);
 
         return false;
     }
@@ -574,7 +622,7 @@ internal class HorizLine : Ctrl
         noFocus = true;
     }
 
-    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isClicking, Ctrl? prior)
     {
         r.X = form.scrollBox.Left;
         r.Width = form.scrollWidth;
@@ -603,7 +651,7 @@ class TextCtrl : Ctrl
 
     override public string ToString() => this.text;
 
-    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isClicking, Ctrl? prior)
     {
         // set our size based on text + padding
         tt.dtx += pad;
@@ -634,98 +682,17 @@ class TextCtrl : Ctrl
     }
 }
 
-/*
-class BtnBorderTextCtrl : Ctrl
-{
-    public string text;
-    private ColorSet csBorder = new()
-    {
-        normal = C.orangeDark,
-        current = C.orange,
-        pressed = C.menuGold,
-        disabled = C.grey,
-    };
-    private ColorSet csBack = new()
-    {
-        normal = Color.Transparent,
-        current = C.orangeDarker,
-        pressed = C.orangeDark,
-        disabled = C.grey,
-    };
-    private ColorSet csText = new()
-    {
-        normal = C.orange,
-        current = C.menuGold,
-        pressed = C.black,
-        disabled = C.black,
-    };
-    private Pen? borderPen;
-    private SolidBrush? backBrush;
-
-    public override string ToString()
-    {
-        return this.text;
-    }
-
-    public override void onClick()
-    {
-        Debug.WriteLine($"CLICK: {text}");
-    }
-
-    public override void render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed)
-    {
-        var pad = N.four;
-        tt.dtx += pad;
-        tt.dty += pad;
-
-        //if (isPressed) Debugger.Break();
-        var sz = TextRenderer.MeasureText(g, this.text, tt.font);
-        r.Width = sz.Width + pad + pad;
-        r.Height = sz.Height + pad + pad;
-
-        // choose colours based on state
-        var borderColor = csBorder.get(isCurrent, isPressed);
-        if (borderPen == null || borderPen.Color != borderColor)
-        {
-            borderPen?.Dispose();
-            borderPen = null;
-
-            if (borderColor != Color.Transparent)
-                borderPen = borderColor.toPen(1);
-        }
-        var backColor = csBack.get(isCurrent, isPressed);
-        if (backBrush == null || backBrush.Color != backColor)
-        {
-            backBrush?.Dispose();
-            backBrush = null;
-            if (backColor != Color.Transparent)
-                backBrush = backColor.toBrush();
-        }
-
-        // draw background and/or border?
-        if (backBrush != null)
-            g.FillRectangle(backBrush, r);
-
-        if (borderPen != null)
-            g.DrawRectangle(borderPen, this.r);
-
-        // TODO: do we really want a notion of current (has-focus) as well as hovered? For now ... I think not
-
-        // finally, draw the text
-        tt.draw(this.text, csText.get(isCurrent, isPressed));
-    }
-}
-*/
-
 class BtnFillCtrl : Ctrl
 {
     public ColorSet csBack = ColorSet.csBack;
-    private SolidBrush? backBrush;
+    protected SolidBrush? backBrush;
 
-    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isClicking, Ctrl? prior)
     {
         // choose colours based on state
-        var backColor = csBack.get(isCurrent, isPressed, disabled);
+        var backColor = csBack.get(isCurrent, isClicking, disabled);
+        if (clicking == 1 || clicking == 3) backColor = C.menuGold; // gold might be wierd in cases ... maybe add this into ColorSet too?
+
         if (backBrush == null || backBrush.Color != backColor)
         {
             backBrush?.Dispose();
@@ -739,7 +706,7 @@ class BtnFillCtrl : Ctrl
             g.FillRectangle(backBrush, r);
 
         if (onRender != null)
-            return onRender(this, g, tt, isCurrent, isPressed, prior);
+            return onRender(this, g, tt, isCurrent, isClicking, prior);
 
         return false;
     }
@@ -757,7 +724,7 @@ class BtnFillTextCtrl : BtnFillCtrl
 
     override public string ToString() => this.text;
 
-    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isClicking, Ctrl? prior)
     {
         // set our size based on text + padding
         tt.dtx += pad;
@@ -770,17 +737,16 @@ class BtnFillTextCtrl : BtnFillCtrl
             r.Height = sz.Height + pad + pad;
         }
 
-        var redraw = base.render(g, tt, isCurrent, isPressed, prior);
-        var color = csFore.get(isCurrent, isPressed, disabled);
+        var redraw = base.render(g, tt, isCurrent, isClicking, prior);
+        var color = csFore.get(isCurrent, isClicking, disabled);
 
         if (bottomBar)
         {
-            if (!isPressed) color = ColorSet.csForeIcon.current;
-
-            if (bottomPen == null || bottomPen.Color != color)
+            var bottomColor = isCurrent ? C.orangeDark : C.orange;
+            if (bottomPen == null || bottomPen.Color != bottomColor)
             {
                 bottomPen?.Dispose();
-                bottomPen = color.toPen(4);
+                bottomPen = bottomColor.toPen(4);
             }
 
             if (bottomPen != null)
@@ -806,11 +772,11 @@ class BtnFillDrawCtrl : BtnFillCtrl
 
     override public string ToString() => this.iconName ?? "?";
 
-    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isPressed, Ctrl? prior)
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isClicking, Ctrl? prior)
     {
-        var redraw = base.render(g, tt, isCurrent, isPressed, prior);
+        var redraw = base.render(g, tt, isCurrent, isClicking, prior);
 
-        iconColor = ColorSet.csForeIcon.get(isCurrent, isPressed, disabled);
+        iconColor = ColorSet.csForeIcon.get(isCurrent, isClicking, disabled);
         if (iconPen == null || iconPen.Color != iconColor)
         {
             iconPen?.Dispose();
@@ -823,27 +789,32 @@ class BtnFillDrawCtrl : BtnFillCtrl
         g.SmoothingMode = SmoothingMode.AntiAlias;
         switch (iconName)
         {
-            case "logo":
-                // TODO: make this fit current colours better
-                PlotQuestMini.drawLogo(g, r.X + iconOffset.X, r.Y + iconOffset.Y, isCurrent, iconSize);
-                break;
+            default: throw new Exception($"Unexpected iconName: {iconName}");
+
             case "close":
                 PlotQuestMini.drawBackArrow(g, r.X + iconOffset.X, r.Y + iconOffset.Y, iconSize, iconPen!);
                 break;
             case "envelope":
-                PlotQuestMini.drawEnvelope(g, r.X + iconOffset.X, r.Y + iconOffset.Y, iconSize, iconPen!);
+                PlotQuestMini.drawEnvelope(g, r.X + iconOffset.X, r.Y + iconOffset.Y, iconSize, iconPen!, isCurrent ? C.Brushes.grey : null);
                 break;
             case "page":
-                PlotQuestMini.drawPage(g, r.X + iconOffset.X, r.Y + iconOffset.Y, iconSize, iconPen!);
+                PlotQuestMini.drawPage(g, r.X + iconOffset.X, r.Y + iconOffset.Y, iconSize, iconPen!, isCurrent ? C.Brushes.grey : null);
                 break;
 
-            default: throw new Exception($"Unexpected iconName: {iconName}");
+            case "logo":
+                {
+                    var fat = isCurrent ? C.Pens.black4 : C.Pens.orange4;
+                    var thin = isCurrent ? C.black.toPen(3) : C.orange.toPen(2);
+                    var b = isCurrent ? C.Brushes.grey : C.Brushes.orangeDark;
+                    PlotQuestMini.drawLogo(g, r.X + iconOffset.X, r.Y + iconOffset.Y, iconSize, fat, thin, b);
+                    break;
+                }
         }
         g.SmoothingMode = SmoothingMode.Default;
 
         if (sideBar)
         {
-            var sideColor = !isPressed ? ColorSet.csForeIcon.current : iconColor;
+            var sideColor = isCurrent ? C.orangeDark : C.orange;
             if (sidePen == null || sidePen.Color != sideColor)
             {
                 sidePen?.Dispose();

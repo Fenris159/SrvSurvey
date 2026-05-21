@@ -137,6 +137,8 @@ namespace SrvSurvey.widgets
             public static Brush grey = C.grey.toBrush();
 
             public static Brush menuGold = C.menuGold.toBrush();
+
+            public static Brush orangeDiag = new HatchBrush(HatchStyle.WideUpwardDiagonal, Color.FromArgb(199, C.orangeDarker));
         }
 
         internal class Bio

@@ -1429,6 +1429,14 @@ static class Util
             .Replace(">", "-")
             .Replace("|", "-");
     }
+
+    public static void setClipboardText(string txt)
+    {
+        if (Program.control.InvokeRequired)
+            Program.control.Invoke(() => setClipboardText(txt));
+        else
+            Clipboard.SetDataObject(new DataObject(DataFormats.UnicodeText, txt), true, 2, 50);
+    }
 }
 
 internal static class ExtensionMethods

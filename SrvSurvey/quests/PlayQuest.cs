@@ -307,9 +307,10 @@ public class PlayQuest
         var chapterId = pm.chapter!;
 
         var chapter = chapters.FirstOrDefault(c => c.id == chapterId);
-        if (chapter == null) throw new Exception($"Bad chapter id: {id}");
-
-        await chapter.onMessageRead(msgId);
+        if (chapter == null)
+            Game.log($"Bad chapter id: {id}");
+        else
+            await chapter.onMessageRead(msgId);
     }
 
     /// <summary> Called by Quest Comms when a player hit a message reply button </summary>

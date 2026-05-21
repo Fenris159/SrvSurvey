@@ -180,6 +180,7 @@ internal class PlayState : Data
 
         var loadedQuests = await Game.rcc.loadCmdrQuests(fid, game.RavenColonial.QuestState.active);
         var pq = loadedQuests.FirstOrDefault(q => q.publisher == publisher && q.id == id);
+        if (pq == null) throw new Exception($"Cannot find quest by: {publisher} / {id}");
         Game.log($"Resuming quest: {pq.publisher} / {pq.id} / {pq.ver}");
 
         await initQuest(pq, false);
