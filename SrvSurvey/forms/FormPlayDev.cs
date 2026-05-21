@@ -1,5 +1,6 @@
 ﻿using Lua;
 using Newtonsoft.Json;
+using SrvSurvey.forms.playComms;
 using SrvSurvey.game;
 using SrvSurvey.quests;
 using System.Data;
@@ -256,7 +257,7 @@ namespace SrvSurvey.forms
             var rslt = MessageBox.Show(this, "This will clobber the previously published version.\r\n\r\nAre you sure?", "Publish quest?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (rslt == DialogResult.Yes)
             {
-                menuStatus.Text = $"Pubishing ... ({DateTime.Now:T})";
+                menuStatus.Text = $"Publishing ... ({DateTime.Now:T})";
                 Game.rcc.publishQuest(pq.parent.fid, pq.quest).continueOnMain(this, status =>
                 {
                     menuStatus.Text = $"{status} ({DateTime.Now:T})";
@@ -281,9 +282,24 @@ namespace SrvSurvey.forms
             });
         }
 
+        private void menuRemoveQuest_Click(object sender, EventArgs e)
+        {
+            if (pq == null) return;
+
+            var rslt = MessageBox.Show(this, "This will remove any current progress.\r\n\r\nAre you sure?", "Remove quest?", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (rslt == DialogResult.Yes)
+            {
+                pq.parent.removeQuest(pq, game.RavenColonial.QuestState.unknown).continueOnMain(this, () =>
+                {
+                    menuStatus.Text = $"Removed: '{pq.quest.title}' ({DateTime.Now:T})";
+                    onQuestChanged();
+                });
+            }
+        }
+
         private void menuComms_Click(object sender, EventArgs e)
         {
-            FormPlayComms.toggleForm();
+            FormPlayComms2.toggleForm();
         }
 
         private void stopWatching()

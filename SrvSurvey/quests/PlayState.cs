@@ -393,6 +393,10 @@ internal class PlayState : Data
                 var parts = line.Substring("action:".Length).Split(':', StringSplitOptions.TrimEntries)!;
                 msg.actions.Add(parts[0], parts[1]);
             }
+            else if (line.StartsWith("tags:", StringComparison.OrdinalIgnoreCase))
+            {
+                msg.tags = JsonConvert.DeserializeObject<HashSet<string>>(line.Substring("tags:".Length));
+            }
             else
             {
                 if (line == "" && firstBlankLine)

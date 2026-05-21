@@ -72,13 +72,10 @@ internal class FormPlayComms2 : BaseFormZippy
     private void init()
     {
         // init static ctrls
-        btnMsgs = new BtnFillDrawCtrl
+        btnMsgs = new BtnMsgsEnvelope
         {
             offset = new(10, 72),
             sz = new(72, 72),
-            iconName = "envelope",
-            iconSize = 53,
-            iconOffset = new(9, 16),
             disabled = !(PlayState.current?.messagesTotal > 0),
             onClick = (_, _) => setMode(Mode.msgs),
         };
@@ -191,6 +188,8 @@ internal class FormPlayComms2 : BaseFormZippy
 
     private void setMode(Mode mode)
     {
+        if (this.mode == mode) return;
+
         this.mode = mode;
         btnMsgs.sideBar = mode == Mode.msgs;
         btnCmdr.sideBar = mode == Mode.cmdrQuests;
@@ -505,9 +504,12 @@ internal class FormPlayComms2 : BaseFormZippy
         stack.Clear();
         addStack(
             new QuestCatalogItem { qd = qd, qs = qs },
-            new TextCtrl { follow = Side.Top, color = C.orange, autoSize = true, pad = 0, text = "Tags:" }
+            new TextCtrl { follow = Side.Top, color = C.orange, autoSize = true, font = GameColors.Fonts.arial_9, pad = 0, text = "Tags:" }
         );
-        addStack(qd.tags.Select(t => new BtnFillTextCtrl { follow = Side.Left, autoSize = true, pad = 1, text = t, onClick = (_, _) => Util.setClipboardText(t) }));
+        if (qd.tags?.Count > 0)
+            addStack(qd.tags.Select(t => new BtnFillTextCtrl { follow = Side.Left, autoSize = true, pad = 1, font = GameColors.Fonts.arial_9, text = t, onClick = (_, _) => Util.setClipboardText(t) }));
+        else
+            addStack(new TextCtrl { follow = Side.Left, color = C.grey, autoSize = true, pad = 0, text = "none" });
         addStack(new HorizLine { follow = Side.Top }, btnBack, btnAct);
         ctrlCurrent = btnBack;
 
@@ -559,35 +561,23 @@ internal class FormPlayComms2 : BaseFormZippy
 
     private async Task showMessage(PlayMsg pm, DefMsg? qm, PlayState ps)
     {
-        var raw = pm.body ?? qm?.body ?? "";
-        var matchParts = new Regex("`(.+?)`");
-        var matches = matchParts.Matches(raw);
+        var body = pm.body ?? qm?.body ?? "";
 
         List<Ctrl> subStack = [];
         var btnBack = new BtnFillDrawCtrl { follow = Side.Top, offset = new(0, 0), sz = new(72, 32), iconName = "close", iconSize = 18, iconOffset = new(28, 10), onClick = (_, _) => setMode(Mode.msgs) };
 
-        // body and copy-tags
-        string body;
-        if (matches.Count == 0)
+        // copy-tags
+        if (qm?.tags?.Count > 0)
         {
-            body = raw;
-        }
-        else
-        {
-            body = raw.Replace("`", "");
-            var copyTexts = matches.Select(m => m.Groups[1].Value).ToHashSet();
-            if (copyTexts.Count > 0)
+            subStack.Add(new TextCtrl { follow = Side.Top, autoSize = true, font = GameColors.Fonts.arial_9, color = C.oranged, text = "Copy:" });
+            subStack.AddRange(qm.tags.Select(t => new BtnFillTextCtrl
             {
-                subStack.Add(new TextCtrl { follow = Side.Top, autoSize = true, font = GameColors.Fonts.arial_9, color = C.oranged, text = "Copy:" });
-                subStack.AddRange(copyTexts.Select(t => new BtnFillTextCtrl
-                {
-                    follow = Side.Left,
-                    autoSize = true,
-                    text = t,
-                    onClick = (_, _) => Clipboard.SetText(t),
-                }));
-                subStack.Add(new HorizLine { follow = Side.Top });
-            }
+                follow = Side.Left,
+                autoSize = true,
+                text = t,
+                onClick = (_, _) => Util.setClipboardText(t),
+            }));
+            subStack.Add(new HorizLine { follow = Side.Top });
         }
 
         // reply buttons
@@ -894,6 +884,57 @@ internal class FormPlayComms2 : BaseFormZippy
     #endregion
 }
 
+class BtnMsgsEnvelope : BtnFillDrawCtrl
+{
+    override public string ToString() => "MsgsEnvelope";
+
+    public override bool render(Graphics g, TextCursor tt, bool isCurrent, bool isClicking, Ctrl? prior)
+    {
+        var hasUnread = PlayState.current?.messagesUnread > 0;
+
+        // draw background
+        var backColor = hasUnread
+            ? ColorSet.csCyanBack.get(isCurrent, isClicking, disabled)
+            : ColorSet.csBack.get(isCurrent, isClicking, disabled);
+        if (clicking == 1 || clicking == 3) backColor = C.menuGold;
+
+        if (backBrush == null || backBrush.Color != backColor)
+        {
+            backBrush?.Dispose();
+            backBrush = null;
+            if (backColor != Color.Transparent)
+                backBrush = backColor.toBrush();
+        }
+        if (backBrush != null)
+            g.FillRectangle(backBrush, r);
+
+
+        // draw foreground
+        iconColor = hasUnread
+            ? ColorSet.csCyanFore.get(isCurrent, isClicking, disabled)
+            : ColorSet.csForeIcon.get(isCurrent, isClicking, disabled);
+        if (iconPen == null || iconPen.Color != iconColor)
+        {
+            iconPen?.Dispose();
+            iconPen = iconColor.toPen(3, LineCap.Round);
+        }
+
+        var iconBrush = isCurrent ? C.Brushes.grey : hasUnread ? C.Brushes.cyanDark : null;
+
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        PlotQuestMini.drawEnvelope(g, r.X + 9, r.Y + 16, 53, iconPen, iconBrush);
+        g.SmoothingMode = SmoothingMode.Default;
+
+        if (sideBar)
+        {
+            Color? sideColor = !hasUnread ? null : isCurrent ? C.cyanDark : C.cyan;
+            this.renderSideBar(g, isCurrent, sideColor);
+        }
+
+        return false;
+    }
+}
+
 class QuestCatalogLine : BtnFillCtrl
 {
     public required DefQuest qd;
@@ -973,6 +1014,7 @@ internal class QuestCatalogItem : Ctrl
         // TODO: make seperate ctrls + publisher is a copy button
 
         // publisher and version
+        tt.font = GameColors.Fonts.arial_9;
         tt.draw(x, "Publisher: ");
         tt.draw(qd.publisher, C.oranger);
         tt.newLine(6, true);
@@ -991,7 +1033,7 @@ internal class QuestCatalogItem : Ctrl
         tt.draw(qd.duration.ToString(), C.oranger);
         tt.draw($" ({DefQuest.mapQuestDuration.GetValueOrDefault(qd.duration)})", C.oranged);
         tt.newLine(true);
-
+        tt.font = GameColors.Fonts.arial_12;
         return adjustHeight(tt.dty - r.Y);
     }
 }
@@ -1180,6 +1222,6 @@ internal class QuestSummary : Ctrl
         g.DrawLineR(C.Pens.orangeDark2r, r.X, tt.dty, w, 0);
 
         // set our hight to be as larged as we needed
-        return adjustHeight(tt.pad(0, 23).Height - r.Y);
+        return adjustHeight(tt.pad(0, 12).Height - r.Y);
     }
 }

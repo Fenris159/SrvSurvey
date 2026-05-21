@@ -57,7 +57,7 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         this.FormBorderStyle = FormBorderStyle.SizableToolWindow;
         this.ShowInTaskbar = true;
 #else
-        this.FormBorderStyle = FormBorderStyle.SizableToolWindow.None;
+        this.FormBorderStyle = FormBorderStyle.None;
         this.ShowInTaskbar = false;
 #endif
 
@@ -379,7 +379,16 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
 
         // following any side?
         if (prior != null && ctrl.follow != default)
+        {
             followPrior(ctrl, prior);
+            /* TODO: handle wrapping overflow on tags
+            if (!ClientRectangle.Contains(ctrl.r.toRectangle()))
+            {
+                var idx = ctrls.FindLastIndex(ctrls.IndexOf(ctrl), (x => x.follow != ctrl.follow))+1;
+                var o2 = ctrls[idx];
+                Game.log($"! {ctrl} => {o2}");
+            }*/
+        }
 
         tt.dtx = ctrl.r.X;
         tt.dty = ctrl.r.Y;
@@ -517,7 +526,7 @@ struct ColorSet
 
     public static ColorSet csCyanFore = new()
     {
-        normal = C.cyanDark,
+        normal = C.cyan,
         current = C.black,
         clicking = C.black,
         disabled = C.black,
@@ -718,6 +727,7 @@ class BtnFillTextCtrl : BtnFillCtrl
     public float pad = 8;
     public string text;
     public bool autoSize;
+    public Font? font;
 
     public bool bottomBar;
     private Pen? bottomPen;
@@ -732,7 +742,7 @@ class BtnFillTextCtrl : BtnFillCtrl
 
         if (autoSize)
         {
-            var sz = TextRenderer.MeasureText(g, this.text, tt.font);
+            var sz = TextRenderer.MeasureText(g, this.text, this.font ?? tt.font);
             r.Width = sz.Width + pad + pad;
             r.Height = sz.Height + pad + pad;
         }
@@ -754,7 +764,7 @@ class BtnFillTextCtrl : BtnFillCtrl
         }
 
         // finally, draw the text
-        tt.drawCentered(this.r.toRectangle(), this.text, color);
+        tt.drawCentered(this.r.toRectangle(), this.text, color, this.font);
 
         return redraw;
     }
@@ -766,8 +776,8 @@ class BtnFillDrawCtrl : BtnFillCtrl
     public string iconName;
     public int iconSize;
     public PointF iconOffset;
-    private Color iconColor;
-    private Pen? iconPen;
+    protected Color iconColor;
+    protected Pen? iconPen;
     private Pen? sidePen;
 
     override public string ToString() => this.iconName ?? "?";
@@ -790,6 +800,7 @@ class BtnFillDrawCtrl : BtnFillCtrl
         switch (iconName)
         {
             default: throw new Exception($"Unexpected iconName: {iconName}");
+            case null: break;
 
             case "close":
                 PlotQuestMini.drawBackArrow(g, r.X + iconOffset.X, r.Y + iconOffset.Y, iconSize, iconPen!);
@@ -813,18 +824,21 @@ class BtnFillDrawCtrl : BtnFillCtrl
         g.SmoothingMode = SmoothingMode.Default;
 
         if (sideBar)
-        {
-            var sideColor = isCurrent ? C.orangeDark : C.orange;
-            if (sidePen == null || sidePen.Color != sideColor)
-            {
-                sidePen?.Dispose();
-                sidePen = sideColor.toPen(4);
-            }
-
-            if (sidePen != null)
-                g.DrawLineR(sidePen, r.Right - 2, r.Top, 0, r.Height);
-        }
+            this.renderSideBar(g, isCurrent);
 
         return redraw;
+    }
+
+    protected void renderSideBar(Graphics g, bool isCurrent, Color? color = null)
+    {
+        var sideColor = color.HasValue ? color.Value : isCurrent ? C.orangeDark : C.orange;
+        if (sidePen == null || sidePen.Color != sideColor)
+        {
+            sidePen?.Dispose();
+            sidePen = sideColor.toPen(4);
+        }
+
+        if (sidePen != null)
+            g.DrawLineR(sidePen, r.Right - 2, r.Top, 0, r.Height);
     }
 }

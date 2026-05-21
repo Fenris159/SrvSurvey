@@ -50,6 +50,7 @@
             txtDevQuest = new TextBox();
             txtDevVer = new TextBox();
             btnLoad = new DrawButton();
+            menuRemoveQuest = new ToolStripMenuItem();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -126,7 +127,7 @@
             // menuMore
             // 
             menuMore.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            menuMore.DropDownItems.AddRange(new ToolStripItem[] { menuPublish, menuReadFromFile });
+            menuMore.DropDownItems.AddRange(new ToolStripItem[] { menuPublish, menuReadFromFile, menuRemoveQuest });
             menuMore.Image = (Image)resources.GetObject("menuMore.Image");
             menuMore.ImageTransparentColor = Color.Magenta;
             menuMore.Name = "menuMore";
@@ -325,6 +326,13 @@
             btnLoad.UseVisualStyleBackColor = true;
             btnLoad.Click += btnLoad_Click;
             // 
+            // removeDevQuestToolStripMenuItem
+            // 
+            menuRemoveQuest.Name = "removeDevQuestToolStripMenuItem";
+            menuRemoveQuest.Size = new Size(180, 22);
+            menuRemoveQuest.Text = "Remove DevQuest";
+            menuRemoveQuest.Click += menuRemoveQuest_Click;
+            // 
             // FormPlayDev
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -376,5 +384,6 @@
         private TextBox txtDevVer;
         private DrawButton btnLoad;
         private ToolStripMenuItem menuPublish;
+        private ToolStripMenuItem menuRemoveQuest;
     }
 }

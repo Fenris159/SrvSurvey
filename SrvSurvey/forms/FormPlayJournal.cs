@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SrvSurvey.forms.playComms;
 using SrvSurvey.game;
 using SrvSurvey.quests;
 using SrvSurvey.units;
@@ -262,7 +263,7 @@ namespace SrvSurvey.forms
 
         private void menuComms_Click(object sender, EventArgs e)
         {
-            BaseForm.show<FormPlayComms>();
+            FormPlayComms2.toggleForm();
         }
 
         private void txtStatusFile_DoubleClick(object sender, EventArgs e)

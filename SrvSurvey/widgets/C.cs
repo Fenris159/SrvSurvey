@@ -127,6 +127,7 @@ namespace SrvSurvey.widgets
         {
             public static Brush orange = C.orange.toBrush();
             public static Brush orangeDark = C.orangeDark.toBrush();
+            //public static Brush orangeDarker = C.orangeDarker.toBrush();
             public static Brush cyan = C.cyan.toBrush();
             public static Brush cyanDark = C.cyanDark.toBrush();
 
