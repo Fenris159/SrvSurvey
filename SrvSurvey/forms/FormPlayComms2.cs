@@ -5,7 +5,6 @@ using SrvSurvey.quests;
 using SrvSurvey.widgets;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
-using System.Text.RegularExpressions;
 
 namespace SrvSurvey.forms.playComms;
 
@@ -1168,7 +1167,7 @@ internal class MessageItem : Ctrl
 
         // body
         var y = tt.dty;
-        var sz = tt.drawWrapped(r.X + 20, w - 10, body, C.oranger, GameColors.Fonts.arial_12);
+        var sz = tt.drawWrapped(r.X + 20, w - 10, body, C.oranger, GameColors.Fonts.arial_13);
         tt.newLine(true);
 
         g.FillRectangle(C.Brushes.orangeDark, r.X, y, 10, tt.dty - y);

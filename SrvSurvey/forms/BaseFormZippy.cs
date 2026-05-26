@@ -2,6 +2,7 @@
 using SrvSurvey.plotters;
 using SrvSurvey.widgets;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing.Drawing2D;
 
 namespace SrvSurvey.forms.playComms;
@@ -51,17 +52,19 @@ internal abstract class BaseFormZippy : SizableForm, PlotterForm
         this.ResizeRedraw = true;
         this.BackColor = C.black;
         this.ForeColor = C.orange;
-
-#if DEBUG
-        // for the sake of debugging sanity ...
-        this.FormBorderStyle = FormBorderStyle.SizableToolWindow;
-        this.ShowInTaskbar = true;
-#else
-        this.FormBorderStyle = FormBorderStyle.None;
-        this.ShowInTaskbar = false;
-#endif
-
         this.Opacity = 0;
+
+        if (!Debugger.IsAttached)
+        {
+            // for the sake of debugging sanity ...
+            this.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+            this.ShowInTaskbar = true;
+        }
+        else
+        {
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.ShowInTaskbar = false;
+        }
 
         // prep for DirectX inputs
         if (KeyboardHook.mappedGameKeyBinds.Count == 0)
