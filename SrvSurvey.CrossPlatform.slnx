@@ -5,5 +5,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SrvSurvey.Core.Tests/SrvSurvey.Core.Tests.csproj" />
+    <Project Path="tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj" />
   </Folder>
 </Solution>
