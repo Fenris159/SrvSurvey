@@ -19,7 +19,9 @@ public sealed record OverlayPlatformCapabilities(
                 : "Windows topmost transparency and native click-through are available; game-window following and global input are pending."
             : "Windows overlay input pass-through could not be enabled.",
         OverlayHostKind.LinuxX11 =>
-            "X11 topmost transparency is available; click-through, game-window following, and global input are pending runtime adapters.",
+            SupportsClickThrough && SupportsGameWindowTracking
+                ? "X11 topmost transparency, XShape click-through, and game-window tracking are available; global input is pending."
+                : "X11 is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
         OverlayHostKind.LinuxWayland =>
             "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
         _ => "Detached overlays are unavailable on this platform.",
@@ -61,8 +63,8 @@ public sealed record OverlayPlatformCapabilities(
                 host,
                 SupportsTopmost: true,
                 SupportsTransparency: true,
-                SupportsClickThrough: false,
-                SupportsGameWindowTracking: false,
+                SupportsClickThrough: true,
+                SupportsGameWindowTracking: true,
                 SupportsGlobalInput: false),
             OverlayHostKind.LinuxWayland => new OverlayPlatformCapabilities(
                 host,

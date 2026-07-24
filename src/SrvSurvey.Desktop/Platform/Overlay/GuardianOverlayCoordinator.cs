@@ -54,6 +54,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         guardian.PropertyChanged -= OnGuardianPropertyChanged;
         CloseWindow();
         gameWindowTracker.Dispose();
+        platform.Dispose();
     }
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)

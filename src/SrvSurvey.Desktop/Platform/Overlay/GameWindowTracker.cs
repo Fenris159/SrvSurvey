@@ -15,9 +15,19 @@ public static class GameWindowTracker
 {
     public static IGameWindowTracker CreateCurrent()
     {
-        return OperatingSystem.IsWindows()
-            ? new WindowsGameWindowTracker()
-            : new UnavailableGameWindowTracker();
+        if (OperatingSystem.IsWindows())
+        {
+            return new WindowsGameWindowTracker();
+        }
+
+        if (OverlayPlatformCapabilities.DetectCurrent().Host
+            == OverlayHostKind.LinuxX11)
+        {
+            return X11GameWindowTracker.TryCreate()
+                ?? new UnavailableGameWindowTracker();
+        }
+
+        return new UnavailableGameWindowTracker();
     }
 }
 
@@ -29,7 +39,6 @@ public sealed record GameWindowSnapshot(
     bool IsForeground)
 {
     public bool IsAvailable => NativeHandle != nint.Zero
-        && ProcessId is not null
         && ClientBounds.Width > 0
         && ClientBounds.Height > 0;
 
@@ -56,7 +65,6 @@ internal sealed class UnavailableGameWindowTracker : IGameWindowTracker
 [SupportedOSPlatform("windows")]
 internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
 {
-    private const string ProcessName = "EliteDangerous64";
     private nint windowHandle;
     private nint inspectedForeground;
     private bool inspectedForegroundIsElite;
@@ -139,7 +147,8 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
         using var currentProcess = Process.GetCurrentProcess();
         var currentSession = currentProcess.SessionId;
         var firstWindow = nint.Zero;
-        foreach (var process in Process.GetProcessesByName(ProcessName))
+        foreach (var process in Process.GetProcessesByName(
+                     EliteGameWindowIdentity.WindowsProcessName))
         {
             using (process)
             {
@@ -184,7 +193,7 @@ internal sealed partial class WindowsGameWindowTracker : IGameWindowTracker
             using var process = Process.GetProcessById(processId);
             return string.Equals(
                 process.ProcessName,
-                ProcessName,
+                EliteGameWindowIdentity.WindowsProcessName,
                 StringComparison.OrdinalIgnoreCase);
         }
         catch (Exception exception) when (

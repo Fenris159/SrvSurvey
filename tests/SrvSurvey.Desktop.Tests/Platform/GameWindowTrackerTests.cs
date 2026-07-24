@@ -20,7 +20,7 @@ public sealed class GameWindowTrackerTests
 
         Assert.True(available.IsAvailable);
         Assert.False(missingHandle.IsAvailable);
-        Assert.False(missingProcess.IsAvailable);
+        Assert.True(missingProcess.IsAvailable);
         Assert.False(emptyBounds.IsAvailable);
     }
 

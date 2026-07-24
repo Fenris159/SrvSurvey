@@ -18,14 +18,15 @@ public sealed class OverlayPlatformCapabilitiesTests
     }
 
     [Fact]
-    public void X11KeepsUnimplementedInputCapabilitiesVisible()
+    public void X11AdvertisesImplementedPassiveCapabilities()
     {
         var capabilities = OverlayPlatformCapabilities.ForHost(
             OverlayHostKind.LinuxX11);
 
         Assert.True(capabilities.SupportsPassiveOverlay);
-        Assert.False(capabilities.SupportsClickThrough);
-        Assert.Contains("click-through", capabilities.StatusText);
+        Assert.True(capabilities.SupportsClickThrough);
+        Assert.True(capabilities.SupportsGameWindowTracking);
+        Assert.Contains("global input", capabilities.StatusText);
     }
 
     [Fact]

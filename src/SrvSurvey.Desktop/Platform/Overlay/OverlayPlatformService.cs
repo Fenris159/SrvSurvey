@@ -4,7 +4,7 @@ using Avalonia.Controls;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-public interface IOverlayPlatformService
+public interface IOverlayPlatformService : IDisposable
 {
     OverlayPlatformCapabilities Capabilities { get; }
 
@@ -15,10 +15,24 @@ public static class OverlayPlatformService
 {
     public static IOverlayPlatformService CreateCurrent()
     {
-        return OperatingSystem.IsWindows()
-            ? new WindowsOverlayPlatformService()
-            : new PortableOverlayPlatformService(
-                OverlayPlatformCapabilities.DetectCurrent());
+        if (OperatingSystem.IsWindows())
+        {
+            return new WindowsOverlayPlatformService();
+        }
+
+        var capabilities = OverlayPlatformCapabilities.DetectCurrent();
+        if (capabilities.Host == OverlayHostKind.LinuxX11)
+        {
+            return X11OverlayPlatformService.TryCreate()
+                ?? new PortableOverlayPlatformService(
+                    capabilities with
+                    {
+                        SupportsClickThrough = false,
+                        SupportsGameWindowTracking = false,
+                    });
+        }
+
+        return new PortableOverlayPlatformService(capabilities);
     }
 }
 
@@ -39,6 +53,10 @@ internal sealed class PortableOverlayPlatformService(
             Capabilities.SupportsPassiveOverlay,
             IsClickThrough: false,
             Capabilities.StatusText);
+    }
+
+    public void Dispose()
+    {
     }
 }
 
@@ -85,6 +103,10 @@ internal sealed partial class WindowsOverlayPlatformService
             IsPrepared: true,
             IsClickThrough: true,
             Capabilities.StatusText);
+    }
+
+    public void Dispose()
+    {
     }
 
     [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
