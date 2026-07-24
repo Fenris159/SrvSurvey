@@ -144,8 +144,10 @@ public sealed class JourneyServiceTests : IDisposable
         var stored = await new JourneyStore(DataDirectory).LoadAsync(
             "F123",
             begun.Journey!.FileName);
-        Assert.Equal(1, stored.Journey!.CurrentSystem!.Counts.Notes);
-        Assert.Equal(1, service.ActiveJourney!.CurrentSystem!.Counts.Notes);
+        Assert.Equal(1, stored.Journey!.VisitedSystems[0].Counts.Notes);
+        Assert.Equal(0, stored.Journey.CurrentSystem!.Counts.Notes);
+        Assert.Equal(1, service.ActiveJourney!.VisitedSystems[0].Counts.Notes);
+        Assert.Equal(0, service.ActiveJourney.CurrentSystem!.Counts.Notes);
     }
 
     [Fact]
