@@ -17,6 +17,10 @@
                       LogicalName="SrvSurvey.Core.Resources.allStructures.json" />
     <EmbeddedResource Include="..\..\SrvSurvey\allBeacons.json"
                       LogicalName="SrvSurvey.Core.Resources.allBeacons.json" />
+    <EmbeddedResource Include="..\..\SrvSurvey\guardianSiteTemplates.json"
+                      LogicalName="SrvSurvey.Core.Resources.guardianSiteTemplates.json" />
+    <EmbeddedResource Include="..\..\data\guardian.zip"
+                      LogicalName="SrvSurvey.Core.Resources.guardian.zip" />
   </ItemGroup>
 
 </Project>
