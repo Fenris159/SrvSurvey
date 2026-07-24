@@ -267,6 +267,32 @@
                       Command="{Binding BoxelSearch.ToggleEmptyCommand}"
                       Content="{Binding BoxelSearch.EmptyButtonText}" />
             </WrapPanel>
+            <Separator />
+            <StackPanel Spacing="8">
+              <TextBlock Classes="card-title" Text="Full-area completion audit" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding BoxelSearch.AuditDescription}" />
+              <ProgressBar Height="6"
+                           IsVisible="{Binding BoxelSearch.IsAuditing}"
+                           Maximum="{Binding BoxelSearch.AuditTotal}"
+                           Value="{Binding BoxelSearch.AuditProcessed}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding BoxelSearch.AuditProgress}" />
+              <CheckBox IsChecked="{Binding BoxelSearch.ConfirmLargeAudit, Mode=TwoWay}"
+                        IsVisible="{Binding BoxelSearch.ShowLargeAuditConfirmation}"
+                        Content="I understand this large audit can make thousands of Spansh requests" />
+              <WrapPanel Orientation="Horizontal">
+                <Button Classes="secondary"
+                        Margin="0,0,10,0"
+                        Command="{Binding BoxelSearch.AuditAllCommand}"
+                        Content="{Binding BoxelSearch.AuditButtonText}" />
+                <Button Classes="secondary"
+                        Command="{Binding BoxelSearch.CancelAuditCommand}"
+                        Content="Cancel audit" />
+              </WrapPanel>
+            </StackPanel>
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="{Binding BoxelSearch.StatusMessage}" />

@@ -140,6 +140,71 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.NotEqual(top.Prefix, saved.Data?.BoxelSearch.Current?.Prefix);
     }
 
+    [Fact]
+    public async Task FullAreaAuditRefreshesEveryChildAndPersistsProgress()
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        var top = BoxelAddress.Parse("Praea Euq RS-U d2-0");
+        var observations = new[] { top }
+            .Concat(top.Children)
+            .Select((boxel, index) => new BoxelSystemObservation(
+                boxel.WithSystemNumber(0) with { SystemAddress = 100 + index },
+                new GalacticCoordinate(index, 0, 0),
+                null,
+                DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                true))
+            .ToArray();
+        var viewModel = CreateViewModel(
+            profileStore,
+            new StubResolver(observations));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = top.Name;
+        viewModel.LowMassCode = "c";
+        viewModel.StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z");
+        viewModel.SkipKnownToSpansh = true;
+        await viewModel.ActivateAsync();
+
+        await viewModel.AuditAllAsync();
+
+        Assert.False(viewModel.IsAuditing);
+        Assert.Equal(9, viewModel.AuditProcessed);
+        Assert.Equal(9, viewModel.AuditTotal);
+        Assert.Equal("9 of 9 boxels complete", viewModel.BoxelProgress);
+        Assert.Contains("Audited all 9 boxels", viewModel.AuditProgress);
+        var saved = await profileStore.LoadAsync("F123", true);
+        Assert.Equal(9, saved.Data?.BoxelSearch.CompletedPrefixes.Count);
+    }
+
+    [Fact]
+    public async Task LargeAuditRequiresExplicitConfirmation()
+    {
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        var top = BoxelAddress.Parse("Praea Euq IL-P c5-0")
+            .Parent
+            .Parent
+            .Parent;
+        var viewModel = CreateViewModel(profileStore, new StubResolver([]));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = top.Name;
+        viewModel.LowMassCode = "a";
+        await viewModel.ActivateAsync();
+
+        Assert.True(viewModel.ShowLargeAuditConfirmation);
+        Assert.False(viewModel.AuditAllCommand.CanExecute(null));
+
+        viewModel.ConfirmLargeAudit = true;
+
+        Assert.True(viewModel.AuditAllCommand.CanExecute(null));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
