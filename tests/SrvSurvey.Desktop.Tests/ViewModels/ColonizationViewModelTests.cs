@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -116,6 +117,39 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Equal("75 remaining",
             viewModel.ConstructionResources[0].RemainingText);
         Assert.Contains("76 cargo remaining", viewModel.ConstructionStatus);
+    }
+
+    [Fact]
+    public async Task FeedsConsentedLiveContextIntoProjectEditor()
+    {
+        var viewModel = Create(new StubRavenColonialClient());
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.UpdateSystemContext(
+            "Test",
+            new GalacticCoordinate(1, 2, 3));
+
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":10,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"Orbital Construction Site: Hope",
+                "StationServices":["colonisationcontribution"]
+                """),
+            Event(
+                "ColonisationConstructionDepot",
+                """
+                "MarketID":10,"ConstructionProgress":0.25,
+                "ResourcesRequired":[
+                  {"Name":"$steel_name;","Name_Localised":"Steel","RequiredAmount":100,"ProvidedAmount":25,"Payment":5000}
+                ]
+                """),
+        ]);
+
+        Assert.True(viewModel.ProjectEditor.CanPrepare);
+        Assert.True(viewModel.ProjectEditor.PrepareCommand.CanExecute(null));
     }
 
     [Fact]

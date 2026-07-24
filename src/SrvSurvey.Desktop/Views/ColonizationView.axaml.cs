@@ -35,4 +35,36 @@ public sealed partial class ColonizationView : UserControl
             }
         }
     }
+
+    private async void OpenCreatedProject_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel
+            || string.IsNullOrWhiteSpace(
+                viewModel.Colonization.ProjectEditor.CreatedProjectId))
+        {
+            return;
+        }
+
+        try
+        {
+            var launcher = TopLevel.GetTopLevel(this)?.Launcher
+                ?? throw new InvalidOperationException(
+                    "The desktop link launcher is not available.");
+            var buildId = Uri.EscapeDataString(
+                viewModel.Colonization.ProjectEditor.CreatedProjectId);
+            await launcher.LaunchUriAsync(new Uri(
+                RavenColonialClient.WebsiteUri,
+                $"#build={buildId}"));
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or UriFormatException
+                or NotSupportedException)
+        {
+            viewModel.Colonization.ProjectEditor.ReportLinkFailure(
+                exception.Message);
+        }
+    }
 }

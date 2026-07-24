@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -21,6 +22,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private HashSet<string> hiddenProjectIds = new(
         StringComparer.OrdinalIgnoreCase);
     private string? commanderName;
+    private string? currentSystemName;
+    private IReadOnlyList<double> currentStarPosition = [];
     private string? primaryProjectId;
     private bool isEnabled;
     private bool isBusy;
@@ -56,6 +59,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 && CommanderName is not null);
         RefreshCommand = refreshCommand;
         SaveProjectsCommand = saveProjectsCommand;
+        ProjectEditor = new ColonizationProjectEditorViewModel(
+            this.client,
+            this.buildCatalog,
+            OnProjectCreatedAsync);
+        UpdateProjectEditorContext();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -63,6 +71,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     public ICommand RefreshCommand { get; }
 
     public ICommand SaveProjectsCommand { get; }
+
+    public ColonizationProjectEditorViewModel ProjectEditor { get; }
 
     public bool IsEnabled
     {
@@ -91,6 +101,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                     ClearProjects();
                     StatusMessage = "Raven Colonial access is off. No project data will be fetched or published.";
                 }
+
+                UpdateProjectEditorContext();
             }
             catch (Exception exception) when (
                 exception is IOException
@@ -230,6 +242,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
 
         CommanderName = normalized;
         ClearProjects();
+        UpdateProjectEditorContext();
         if (CommanderName is null)
         {
             StatusMessage = "No commander profile is active.";
@@ -256,7 +269,21 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         {
             UpdateConstructionDisplay();
             UpdateProjectSummary();
+            UpdateProjectEditorContext();
         }
+    }
+
+    public void UpdateSystemContext(
+        string? systemName,
+        GalacticCoordinate? position)
+    {
+        currentSystemName = string.IsNullOrWhiteSpace(systemName)
+            ? null
+            : systemName.Trim();
+        currentStarPosition = position is GalacticCoordinate coordinate
+            ? [coordinate.X, coordinate.Y, coordinate.Z]
+            : [];
+        UpdateProjectEditorContext();
     }
 
     public void ReportLinkFailure(string message)
@@ -368,6 +395,35 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 StringComparison.OrdinalIgnoreCase),
             !hiddenProjectIds.Contains(project.BuildId),
             OnProjectShownChanged);
+    }
+
+    private Task OnProjectCreatedAsync(ColonizationProject project)
+    {
+        Projects = Projects
+            .Where(row => !string.Equals(
+                row.Project.BuildId,
+                project.BuildId,
+                StringComparison.OrdinalIgnoreCase))
+            .Select(row => row.Project)
+            .Append(project)
+            .OrderBy(candidate => candidate.SystemName)
+            .ThenBy(candidate => candidate.BuildName)
+            .Select(CreateRow)
+            .ToArray();
+        UpdateProjectSummary();
+        return Task.CompletedTask;
+    }
+
+    private void UpdateProjectEditorContext()
+    {
+        var snapshot = constructionState.CreateSnapshot();
+        ProjectEditor.UpdateContext(new ColonizationProjectEditorContext(
+            IsEnabled,
+            CommanderName,
+            currentSystemName,
+            currentStarPosition,
+            snapshot.CurrentDock,
+            snapshot.CurrentDepot));
     }
 
     private void OnProjectShownChanged(

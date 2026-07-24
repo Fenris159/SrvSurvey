@@ -714,6 +714,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         Colonization.ApplyJournalEvents(update.JournalEvents);
         await Colonization.SetCommanderAsync(journalState.CommanderName);
+        Colonization.UpdateSystemContext(
+            journalState.SystemName,
+            journalState.StarPosition);
 
         Search.UpdateCurrentSystem(
             journalState.SystemName,

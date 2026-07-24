@@ -164,11 +164,146 @@
       </Border>
 
       <Border Classes="card">
-        <StackPanel Spacing="6">
-          <TextBlock Classes="card-title" Text="Create a project" />
-          <TextBlock Classes="muted"
-                     TextWrapping="Wrap"
-                     Text="The new-project workflow is the next Colonisation increment. It will require a current construction depot, planned-site matching, build layout/body selection, and an explicit final publish action." />
+        <StackPanel Spacing="16">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="eyebrow" Text="NEW BUILD" />
+              <TextBlock Classes="card-title" Text="Create a project" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Prepare uses the current construction depot and reads matching Raven site data. Nothing is published until you review and confirm." />
+            </StackPanel>
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    VerticalAlignment="Center"
+                    Command="{Binding Colonization.ProjectEditor.PrepareCommand}"
+                    Content="{Binding Colonization.ProjectEditor.PrepareButtonText}" />
+          </Grid>
+
+          <Border Background="{DynamicResource RavenSurfaceBrush}"
+                  CornerRadius="8"
+                  Padding="12">
+            <TextBlock TextWrapping="Wrap"
+                       Text="{Binding Colonization.ProjectEditor.StatusMessage}" />
+          </Border>
+
+          <StackPanel IsVisible="{Binding Colonization.ProjectEditor.IsEditorVisible}"
+                      Spacing="16">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="muted" Text="PLANNED RAVEN SITE" />
+                <ComboBox ItemsSource="{Binding Colonization.ProjectEditor.SystemSites}"
+                          SelectedItem="{Binding Colonization.ProjectEditor.SelectedSystemSite, Mode=TwoWay}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ColonizationSystemSiteOptionViewModel">
+                      <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="6">
+                <TextBlock Classes="muted" Text="PROJECT NAME" />
+                <TextBox Text="{Binding Colonization.ProjectEditor.ProjectName, Mode=TwoWay}"
+                         PlaceholderText="Project name" />
+              </StackPanel>
+            </Grid>
+
+            <Grid ColumnDefinitions="150,*,*" ColumnSpacing="18">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="muted" Text="LOCATION" />
+                <ComboBox IsEnabled="{Binding Colonization.ProjectEditor.IsBuildSelectionEnabled}"
+                          ItemsSource="{Binding Colonization.ProjectEditor.Locations}"
+                          SelectedItem="{Binding Colonization.ProjectEditor.SelectedLocation, Mode=TwoWay}" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="6">
+                <TextBlock Classes="muted" Text="BUILD TYPE" />
+                <ComboBox IsEnabled="{Binding Colonization.ProjectEditor.IsBuildSelectionEnabled}"
+                          ItemsSource="{Binding Colonization.ProjectEditor.BuildOptions}"
+                          SelectedItem="{Binding Colonization.ProjectEditor.SelectedBuild, Mode=TwoWay}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ColonizationBuildOptionViewModel">
+                      <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Classes="muted" Text="LAYOUT" />
+                <ComboBox IsEnabled="{Binding Colonization.ProjectEditor.IsBuildSelectionEnabled}"
+                          ItemsSource="{Binding Colonization.ProjectEditor.Layouts}"
+                          SelectedItem="{Binding Colonization.ProjectEditor.SelectedLayout, Mode=TwoWay}" />
+              </StackPanel>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,140,*" ColumnSpacing="18">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="muted" Text="ARCHITECT" />
+                <TextBox Text="{Binding Colonization.ProjectEditor.ArchitectName, Mode=TwoWay}"
+                         PlaceholderText="Commander or architect" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="6">
+                <TextBlock Classes="muted" Text="BODY NUMBER" />
+                <TextBox Text="{Binding Colonization.ProjectEditor.BodyNumberText, Mode=TwoWay}"
+                         PlaceholderText="-1" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Classes="muted" Text="BODY NAME" />
+                <TextBox Text="{Binding Colonization.ProjectEditor.BodyName, Mode=TwoWay}"
+                         PlaceholderText="Optional" />
+              </StackPanel>
+            </Grid>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="muted" Text="NOTES" />
+              <TextBox AcceptsReturn="True"
+                       MinHeight="72"
+                       Text="{Binding Colonization.ProjectEditor.Notes, Mode=TwoWay}"
+                       TextWrapping="Wrap"
+                       PlaceholderText="Optional project notes" />
+            </StackPanel>
+
+            <Button Classes="primary"
+                    HorizontalAlignment="Left"
+                    MinWidth="150"
+                    Command="{Binding Colonization.ProjectEditor.ReviewCommand}"
+                    Content="{Binding Colonization.ProjectEditor.ReviewButtonText}" />
+
+            <Border Background="{DynamicResource RavenSurfaceBrush}"
+                    BorderBrush="{DynamicResource RavenWarningBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    IsVisible="{Binding Colonization.ProjectEditor.IsConfirmationPending}"
+                    Padding="16">
+              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                <StackPanel Spacing="3">
+                  <TextBlock FontWeight="Bold" Text="Confirm external publish" />
+                  <TextBlock TextWrapping="Wrap"
+                             Text="{Binding Colonization.ProjectEditor.ConfirmationSummary}" />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Classes="secondary"
+                        Command="{Binding Colonization.ProjectEditor.CancelReviewCommand}"
+                        Content="Cancel" />
+                <Button Grid.Column="2"
+                        Classes="primary"
+                        Command="{Binding Colonization.ProjectEditor.ConfirmCommand}"
+                        Content="Confirm publish" />
+              </Grid>
+            </Border>
+          </StackPanel>
+
+          <Grid ColumnDefinitions="*,Auto"
+                ColumnSpacing="12"
+                IsVisible="{Binding Colonization.ProjectEditor.HasCreatedProject}">
+            <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Text="{Binding Colonization.ProjectEditor.CreatedProjectSummary}" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Click="OpenCreatedProject_Click"
+                    Content="Open created project" />
+          </Grid>
         </StackPanel>
       </Border>
     </StackPanel>
