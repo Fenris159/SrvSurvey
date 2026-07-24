@@ -705,6 +705,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             exobiologyState.UpdateStatus(update.Status);
             GroundTarget.UpdateStatus(update.Status);
+            Colonization.UpdateStatus(update.Status);
         }
 
         foreach (var journalEvent in update.JournalEvents)
@@ -748,6 +749,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             activeProfileCommanderName);
         await RamTah.ApplyJournalEventsAsync(update.JournalEvents);
         Guardian.UpdateCargo(update.Cargo);
+        Colonization.UpdateCargo(update.Cargo);
 
         if (update.Status is not null)
         {

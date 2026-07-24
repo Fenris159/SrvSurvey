@@ -13,6 +13,8 @@ namespace SrvSurvey.Desktop;
 public sealed partial class App : Application
 {
     private GuardianOverlayCoordinator? guardianOverlayCoordinator;
+    private ColonizationCommodityOverlayCoordinator?
+        colonizationCommodityOverlayCoordinator;
     private GlobalKeyboardHookService? globalKeyboardHookService;
     private GlobalControllerInputService? globalControllerInputService;
 
@@ -48,6 +50,11 @@ public sealed partial class App : Application
                 viewModel.Guardian,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent());
+            colonizationCommodityOverlayCoordinator =
+                new ColonizationCommodityOverlayCoordinator(
+                    viewModel.Colonization.CommodityOverlay,
+                    OverlayPlatformService.CreateCurrent(),
+                    GameWindowTracker.CreateCurrent());
             globalKeyboardHookService = new GlobalKeyboardHookService(
                 inputSettings.CurrentSettings,
                 capabilities.Host,
@@ -82,11 +89,40 @@ public sealed partial class App : Application
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    var handled = eventArgs.Action
-                        == GlobalInputAction.ToggleAllVisibility;
-                    if (handled)
+                    var handled = false;
+                    switch (eventArgs.Action)
                     {
-                        guardianOverlayCoordinator?.ToggleVisibility();
+                        case GlobalInputAction.ToggleAllVisibility:
+                            var suppress =
+                                guardianOverlayCoordinator?.IsVisible == true
+                                || colonizationCommodityOverlayCoordinator
+                                    ?.IsVisible == true;
+                            guardianOverlayCoordinator?.SetSuppressed(suppress);
+                            colonizationCommodityOverlayCoordinator
+                                ?.SetSuppressed(suppress);
+                            handled = true;
+                            break;
+
+                        case GlobalInputAction.ShowColonyShopping:
+                            colonizationCommodityOverlayCoordinator
+                                ?.ToggleVisibility();
+                            handled = true;
+                            break;
+
+                        case GlobalInputAction.RefreshColonyData:
+                            handled = viewModel.Colonization.IsEnabled;
+                            if (handled)
+                            {
+                                _ = viewModel.Colonization.RefreshAsync();
+                            }
+
+                            break;
+
+                        case GlobalInputAction.CollapseColonyData:
+                            viewModel.Colonization.CommodityOverlay
+                                .ToggleSatisfiedGroups();
+                            handled = true;
+                            break;
                     }
 
                     inputSettings.ReportAction(eventArgs.Action, handled);
@@ -114,6 +150,8 @@ public sealed partial class App : Application
                 globalControllerInputService = null;
                 globalKeyboardHookService?.Dispose();
                 globalKeyboardHookService = null;
+                colonizationCommodityOverlayCoordinator?.Dispose();
+                colonizationCommodityOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();
                 guardianOverlayCoordinator = null;
             };

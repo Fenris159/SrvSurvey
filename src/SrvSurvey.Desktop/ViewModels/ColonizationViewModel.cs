@@ -21,6 +21,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         [];
     private HashSet<string> hiddenProjectIds = new(
         StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyList<ColonizationFleetCarrier> fleetCarriers = [];
+    private CargoSnapshot? shipCargo;
+    private EliteStatus? latestStatus;
     private string? commanderName;
     private string? currentSystemName;
     private IReadOnlyList<double> currentStarPosition = [];
@@ -63,7 +66,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             this.client,
             this.buildCatalog,
             OnProjectCreatedAsync);
+        CommodityOverlay = new ColonizationCommodityOverlayViewModel();
         UpdateProjectEditorContext();
+        UpdateCommodityPlan();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -73,6 +78,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     public ICommand SaveProjectsCommand { get; }
 
     public ColonizationProjectEditorViewModel ProjectEditor { get; }
+
+    public ColonizationCommodityOverlayViewModel CommodityOverlay { get; }
 
     public bool IsEnabled
     {
@@ -273,6 +280,28 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         }
     }
 
+    public void UpdateCargo(CargoSnapshot? cargo)
+    {
+        if (cargo is null)
+        {
+            return;
+        }
+
+        shipCargo = cargo;
+        UpdateCommodityPlan();
+    }
+
+    public void UpdateStatus(EliteStatus? status)
+    {
+        if (status is null)
+        {
+            return;
+        }
+
+        latestStatus = status;
+        UpdateCommodityPlan();
+    }
+
     public void UpdateSystemContext(
         string? systemName,
         GalacticCoordinate? position)
@@ -306,6 +335,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             hiddenProjectIds = result.HiddenProjectIds.ToHashSet(
                 StringComparer.OrdinalIgnoreCase);
             primaryProjectId = result.PrimaryProjectId;
+            fleetCarriers = result.FleetCarriers;
             Projects = result.Projects
                 .OrderBy(project => project.SystemName)
                 .ThenBy(project => project.BuildName)
@@ -454,6 +484,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             : string.Empty;
         ProjectSummary = $"Cargo required: {totals.RemainingCargo:N0}"
             + trips;
+        UpdateCommodityPlan();
     }
 
     private void UpdateConstructionDisplay()
@@ -500,10 +531,25 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private void ClearProjects()
     {
         Projects = [];
+        fleetCarriers = [];
         hiddenProjectIds.Clear();
         primaryProjectId = null;
         HasUnsavedProjectVisibility = false;
         UpdateProjectSummary();
+    }
+
+    private void UpdateCommodityPlan()
+    {
+        CommodityOverlay.Apply(
+            ColonizationCommodityPlanner.Create(
+                Projects.Select(row => row.Project),
+                hiddenProjectIds,
+                primaryProjectId,
+                CommanderName,
+                fleetCarriers,
+                shipCargo,
+                constructionState.CreateSnapshot()),
+            latestStatus);
     }
 
     private void RaiseCommandStates()

@@ -6,29 +6,30 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-public sealed class GuardianOverlayCoordinator : IDisposable
+public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
 {
-    private readonly GuardianViewModel guardian;
+    private readonly ColonizationCommodityOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private GuardianOverlayWindow? window;
+    private ColonizationCommodityOverlayWindow? window;
+    private bool manualShow;
     private bool isSuppressed;
     private bool disposed;
 
-    public GuardianOverlayCoordinator(
-        GuardianViewModel guardian,
+    public ColonizationCommodityOverlayCoordinator(
+        ColonizationCommodityOverlayViewModel viewModel,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker)
     {
-        this.guardian = guardian
-            ?? throw new ArgumentNullException(nameof(guardian));
+        this.viewModel = viewModel
+            ?? throw new ArgumentNullException(nameof(viewModel));
         this.platform = platform
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.guardian.PropertyChanged += OnGuardianPropertyChanged;
+        this.viewModel.PropertyChanged += OnViewModelPropertyChanged;
         timer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
@@ -40,8 +41,6 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
     public bool IsVisible => window is not null;
 
-    public string PlatformStatus => platform.Capabilities.StatusText;
-
     public bool IsSuppressed => isSuppressed;
 
     public void ToggleVisibility()
@@ -51,7 +50,17 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             return;
         }
 
-        isSuppressed = !isSuppressed;
+        if (IsVisible)
+        {
+            manualShow = false;
+            isSuppressed = true;
+        }
+        else
+        {
+            manualShow = true;
+            isSuppressed = false;
+        }
+
         SynchronizeWindow();
     }
 
@@ -76,7 +85,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         disposed = true;
         timer.Stop();
         timer.Tick -= OnTimerTick;
-        guardian.PropertyChanged -= OnGuardianPropertyChanged;
+        viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         CloseWindow();
         gameWindowTracker.Dispose();
         platform.Dispose();
@@ -87,11 +96,12 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnGuardianPropertyChanged(
+    private void OnViewModelPropertyChanged(
         object? sender,
         PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName == nameof(GuardianViewModel.HasActiveSite))
+        if (eventArgs.PropertyName
+            == nameof(ColonizationCommodityOverlayViewModel.ShouldAutoShow))
         {
             SynchronizeWindow();
         }
@@ -105,8 +115,9 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
+        var wantsWindow = manualShow || viewModel.ShouldAutoShow;
         if (isSuppressed
-            || !guardian.HasActiveSite
+            || !wantsWindow
             || !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
             || !platform.Capabilities.SupportsGameWindowTracking
@@ -124,10 +135,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             return;
         }
 
-        var viewModel = new GuardianOverlayViewModel(
-            guardian,
-            platform.Capabilities);
-        var overlay = new GuardianOverlayWindow(viewModel);
+        var overlay = new ColonizationCommodityOverlayWindow(viewModel);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -161,7 +169,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
         var width = (int)Math.Ceiling(window.Width * screen.Scaling);
         var height = (int)Math.Ceiling(window.Height * screen.Scaling);
-        var position = OverlayWindowPlacement.BottomRight(
+        var position = OverlayWindowPlacement.TopRight(
             gameBounds,
             new PixelSize(width, height));
         if (window.Position != position)

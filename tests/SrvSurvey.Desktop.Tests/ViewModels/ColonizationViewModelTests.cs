@@ -176,6 +176,51 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Contains("offline", viewModel.StatusMessage);
     }
 
+    [Fact]
+    public async Task FeedsProjectsCarriersAndShipCargoIntoOverlay()
+    {
+        var project = Project("build-1", "Port", remaining: 100) with
+        {
+            Commodities = new Dictionary<string, int> { ["steel"] = 100 },
+            LinkedFleetCarriers =
+            [
+                new ColonizationProjectFleetCarrier { MarketId = 42 },
+            ],
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [project],
+                [],
+                null,
+                [
+                    new ColonizationFleetCarrier
+                    {
+                        MarketId = 42,
+                        Name = "ABC-123",
+                        Cargo = new Dictionary<string, int>
+                        {
+                            ["steel"] = 60,
+                        },
+                    },
+                ]),
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.UpdateCargo(new CargoSnapshot(
+            DateTimeOffset.UtcNow,
+            "Cargo",
+            "Ship",
+            25,
+            [new CargoItem("steel", "Steel", 25, 0)]));
+
+        var row = Assert.Single(viewModel.CommodityOverlay.Plan.Rows);
+        Assert.Equal(25, row.InShip);
+        Assert.Equal(60, row.OnFleetCarriers);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(directory))
