@@ -1,0 +1,1 @@
+// Async JSON loader for embedded resources - full implementation in local artifacts
