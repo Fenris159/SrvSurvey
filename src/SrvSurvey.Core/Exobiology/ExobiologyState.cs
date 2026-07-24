@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Navigation;
 
 namespace SrvSurvey.Core.Exobiology;
 
@@ -390,38 +391,23 @@ public sealed class ExobiologyState
             .Where(sample => sample is not null)
             .Cast<BioSampleSnapshot>()
             .ToArray();
-        NearestActiveSampleDistance = activeSamples.Length == 0
-            ? null
-            : activeSamples.Min(sample => GetSurfaceDistance(
-                sample.Location,
-                currentLocation,
-                currentPlanetRadius));
-    }
-
-    private static double GetSurfaceDistance(
-        SurfaceLocation first,
-        SurfaceLocation second,
-        double radius)
-    {
-        if (first == second)
+        try
         {
-            return 0;
+            NearestActiveSampleDistance = activeSamples.Length == 0
+                ? null
+                : activeSamples.Min(sample => SurfaceNavigation.GetDistance(
+                    new SurfaceCoordinate(
+                        sample.Location.Latitude,
+                        sample.Location.Longitude),
+                    new SurfaceCoordinate(
+                        currentLocation.Latitude,
+                        currentLocation.Longitude),
+                    currentPlanetRadius));
         }
-
-        var firstLatitude = DegreesToRadians(first.Latitude);
-        var secondLatitude = DegreesToRadians(second.Latitude);
-        var longitudeDelta = DegreesToRadians(
-            second.Longitude - first.Longitude);
-        var cosine = (Math.Sin(firstLatitude) * Math.Sin(secondLatitude))
-            + (Math.Cos(firstLatitude)
-                * Math.Cos(secondLatitude)
-                * Math.Cos(longitudeDelta));
-        return Math.Acos(Math.Clamp(cosine, -1, 1)) * radius;
-    }
-
-    private static double DegreesToRadians(double degrees)
-    {
-        return degrees * Math.PI / 180d;
+        catch (ArgumentOutOfRangeException)
+        {
+            NearestActiveSampleDistance = null;
+        }
     }
 
     private void RecalculateRewards()
