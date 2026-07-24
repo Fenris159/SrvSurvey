@@ -15,7 +15,7 @@ public sealed class MainWindowViewModelTests
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
         Assert.Equal(9, viewModel.NavigationItems.Count);
-        Assert.Equal(6, viewModel.NavigationItems.Count(item => item.IsImplemented));
+        Assert.Equal(7, viewModel.NavigationItems.Count(item => item.IsImplemented));
         Assert.True(viewModel.IsOverviewSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
@@ -28,6 +28,12 @@ public sealed class MainWindowViewModelTests
             item => item.Key == "travel");
 
         Assert.True(viewModel.IsTravelSelected);
+        Assert.False(viewModel.IsPendingSelected);
+
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
+            item => item.Key == "search");
+
+        Assert.True(viewModel.IsSearchSelected);
         Assert.False(viewModel.IsPendingSelected);
     }
 
@@ -91,7 +97,7 @@ public sealed class MainWindowViewModelTests
             await File.WriteAllTextAsync(
                 Path.Combine(root, "Journal.2026-07-24T100000.01.log"),
                 "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
-                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\",\"SystemAddress\":10477373803,\"Body\":\"Earth\",\"BodyType\":\"Planet\"}\n");
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\",\"SystemAddress\":10477373803,\"StarPos\":[0,0,0],\"Body\":\"Earth\",\"BodyType\":\"Planet\"}\n");
             await File.WriteAllTextAsync(
                 Path.Combine(root, StatusFileReader.FileName),
                 "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":12.5,\"Longitude\":-44.25,\"Heading\":-1,\"Altitude\":123.4}");
@@ -110,6 +116,8 @@ public sealed class MainWindowViewModelTests
             Assert.Equal("SRV", viewModel.VehicleState);
             Assert.Equal("12.500000, -44.250000", viewModel.SurfacePosition);
             Assert.Equal("359° / 123 m", viewModel.HeadingAndAltitude);
+            Assert.Equal("Sol", viewModel.Search.CurrentSystemName);
+            Assert.Equal("[ 0, 0, 0 ]", viewModel.Search.CurrentPosition);
         }
         finally
         {

@@ -4,6 +4,7 @@ using System.Windows.Input;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Theming;
 
@@ -69,12 +70,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         RavenThemeService? themeService = null,
         AppDataPaths? appDataPaths = null,
         LegacyProfileImporter? profileImporter = null,
-        ExobiologyReferenceCatalog? exobiologyCatalog = null)
+        ExobiologyReferenceCatalog? exobiologyCatalog = null,
+        IStarSystemResolver? starSystemResolver = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
         commanderProfileStore = new CommanderProfileStore(AppDataPaths.DataDirectory);
+        Search = new SphereLimitViewModel(
+            commanderProfileStore,
+            starSystemResolver ?? new SpanshStarSystemResolver());
         GroundTarget = new GroundTargetViewModel(
             new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
         exobiologyState = new ExobiologyState(
@@ -131,7 +136,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             new("exploration", "Exploration", "02", "Trip totals and body scans", true),
             new("exobiology", "Exobiology", "03", "Organic scans and unclaimed rewards", true),
             new("travel", "Travel", "04", "Ground targets, journeys, and routes", true),
-            new("search", "Search", "05", "Spherical and boxel searches", false),
+            new("search", "Search", "05", "Spherical and boxel searches", true),
             new("guardian", "Guardian", "06", "Sites, maps, and Ram Tah", false),
             new("colonisation", "Colonisation", "07", "Raven Colonial projects", false),
             new("diagnostics", "Diagnostics", "08", "Journal source and parsed state", true),
@@ -157,6 +162,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public AppDataPaths AppDataPaths { get; }
 
     public GroundTargetViewModel GroundTarget { get; }
+
+    public SphereLimitViewModel Search { get; }
 
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
 
@@ -221,6 +228,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsExplorationSelected));
             OnPropertyChanged(nameof(IsExobiologySelected));
             OnPropertyChanged(nameof(IsTravelSelected));
+            OnPropertyChanged(nameof(IsSearchSelected));
             OnPropertyChanged(nameof(IsDiagnosticsSelected));
             OnPropertyChanged(nameof(IsSettingsSelected));
             OnPropertyChanged(nameof(IsPendingSelected));
@@ -237,6 +245,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsExobiologySelected => SelectedNavigation.Key == "exobiology";
 
     public bool IsTravelSelected => SelectedNavigation.Key == "travel";
+
+    public bool IsSearchSelected => SelectedNavigation.Key == "search";
 
     public bool IsDiagnosticsSelected => SelectedNavigation.Key == "diagnostics";
 
@@ -663,6 +673,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             journalState.Apply(journalEvent);
         }
 
+        Search.UpdateCurrentSystem(
+            journalState.SystemName,
+            journalState.StarPosition);
+
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
         var explorationBefore = explorationState.CreateSnapshot();
         var exobiologyVersionBefore = exobiologyState.Version;
@@ -766,11 +780,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                 ?? "The commander profile could not be loaded.";
             ExobiologyStatusMessage = result.Error
                 ?? "The commander profile could not be loaded.";
+            Search.SetProfileError(
+                result.Error ?? "The commander profile could not be loaded.");
             return false;
         }
 
         explorationState.Reset(result.Data.Exploration);
         exobiologyState.Reset(result.Data.Exobiology);
+        Search.LoadProfile(
+            result.Data.FrontierId,
+            activeProfileCommanderName,
+            result.Data.IsOdyssey,
+            result.Data.SphereLimit);
         UpdateExplorationDisplay(result.Data.Exploration);
         UpdateExobiologyDisplay(result.Data.Exobiology);
         ExplorationStatusMessage = result.Exists

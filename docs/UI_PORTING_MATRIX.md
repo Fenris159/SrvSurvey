@@ -33,7 +33,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, journeys and routes | Ground-target editor, clipboard/current actions, persistence, and live guidance implemented; journeys/routes remain pending |
-| Search | `Main` Search menu, sphere/boxel forms | Spatial and boxel searches | Not ported |
+| Search | `Main` Search menu, sphere/boxel forms | Spatial and boxel searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; boxel and nearest-system workflows remain pending |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Not ported |
 | Colonisation | `Main` Colonise menu and project forms | Raven projects and construction state | Not ported |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
@@ -79,7 +79,7 @@ system/body and platform behavior is ported.
 | `FormSettings` | Settings pages | Raven theme slice implemented; remainder not ported |
 | `FormShareData` | Settings / Privacy | Not ported |
 | `FormShowCodex` | Exobiology / Codex | Not ported |
-| `FormSphereLimit` | Search / Spherical | Not ported |
+| `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
 | `FormStartNewCmdr` | Commander onboarding | Not ported |
 | `FormSwapStarCache` | Diagnostics / Reference data | Not ported |
 | `FormSystemNotes` | Travel / System notes | Not ported |
@@ -137,6 +137,12 @@ Checked on 2026-07-24 at 1180 by 760 logical pixels with a live journal folder:
   position, and explicit pending journey/route card. UI Automation exposed both
   coordinate fields and Set, current-location, Paste, and Clear actions with
   correct disabled state.
+- Search rendered the spherical limit, live current-system coordinates,
+  configuration editor, and explicit boxel/nearby pending cards. A live Spansh
+  lookup for Sol returned five matches, selected the exact system, calculated
+  131.09 ly from Facece, and enabled the save action without changing the live
+  commander profile. UI Automation exposed lookup, match selection, radius,
+  enable, and disable controls.
 - Diagnostics rendered the selected journal folder, parsed state, candidate
   paths, refresh action, and update time.
 - Settings rendered all five palette previews. Switching from Blue (dark) to

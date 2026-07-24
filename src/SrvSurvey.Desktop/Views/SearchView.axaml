@@ -1,0 +1,174 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:search="using:SrvSurvey.Core.Search"
+             x:Class="SrvSurvey.Desktop.Views.SearchView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="32" Spacing="24" MaxWidth="1050">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="eyebrow" Text="SEARCH" />
+          <TextBlock Classes="page-title" Text="Spherical search limit" />
+          <TextBlock Classes="muted"
+                     Text="Constrain searches to a radius around a known galactic system." />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="primary"
+                MinWidth="116"
+                VerticalAlignment="Center"
+                Command="{Binding RefreshCommand}"
+                Content="{Binding RefreshButtonText}" />
+      </Grid>
+
+      <Border Classes="card raised" Padding="0">
+        <Grid ColumnDefinitions="6,*">
+          <Border Classes="accent-line" CornerRadius="12,0,0,12" />
+          <Grid Grid.Column="1"
+                Margin="28"
+                ColumnDefinitions="2*,*,*"
+                ColumnSpacing="24">
+            <StackPanel Spacing="5">
+              <TextBlock Classes="muted" Text="CURRENT LIMIT" />
+              <TextBlock FontSize="28"
+                         FontWeight="SemiBold"
+                         Foreground="{DynamicResource RavenAccentBrush}"
+                         TextWrapping="Wrap"
+                         Text="{Binding Search.LimitSummary}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding Search.CurrentSystemResult}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="5">
+              <TextBlock Classes="muted" Text="CURRENT SYSTEM" />
+              <TextBlock Classes="card-title"
+                         TextWrapping="Wrap"
+                         Text="{Binding Search.CurrentSystemName}" />
+              <TextBlock Classes="muted monospace"
+                         TextWrapping="Wrap"
+                         Text="{Binding Search.CurrentPosition}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="5">
+              <TextBlock Classes="muted" Text="TO CENTER" />
+              <TextBlock Classes="metric"
+                         Text="{Binding Search.DistanceToCenter}" />
+              <Border Classes="badge" HorizontalAlignment="Left">
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontSize="11"
+                           Text="{Binding Search.StatusLabel}" />
+              </Border>
+            </StackPanel>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="3*,2*" ColumnSpacing="18">
+        <Border Classes="card">
+          <StackPanel Spacing="16">
+            <TextBlock Classes="card-title" Text="Configure the search sphere" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="muted" Text="CENTER SYSTEM" />
+                <TextBox Text="{Binding Search.Query, Mode=TwoWay}"
+                         PlaceholderText="Sol, Colonia, or another system" />
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      MinWidth="120"
+                      VerticalAlignment="Bottom"
+                      Command="{Binding Search.SearchCommand}"
+                      Content="{Binding Search.SearchButtonText}" />
+            </Grid>
+            <StackPanel Spacing="6" IsVisible="{Binding Search.HasSearchResults}">
+              <TextBlock Classes="muted" Text="MATCHING SYSTEMS" />
+              <ComboBox ItemsSource="{Binding Search.SearchResults}"
+                        SelectedItem="{Binding Search.SelectedCenterSystem, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="search:StarSystemReference">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                      <TextBlock Text="{Binding Name}" />
+                      <TextBlock Grid.Column="1"
+                                 Classes="muted monospace"
+                                 Text="{Binding Position}" />
+                    </Grid>
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel Spacing="6">
+              <TextBlock Classes="muted" Text="RADIUS (LIGHT-YEARS)" />
+              <TextBox Text="{Binding Search.Radius, Mode=TwoWay}"
+                       PlaceholderText="1 to 1000" />
+            </StackPanel>
+            <WrapPanel Orientation="Horizontal">
+              <Button Classes="primary"
+                      Margin="0,0,10,10"
+                      Command="{Binding Search.EnableCommand}"
+                      Content="Enable limit" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,10"
+                      Command="{Binding Search.DisableCommand}"
+                      Content="Disable limit" />
+            </WrapPanel>
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding Search.StatusMessage}" />
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel Spacing="16">
+            <TextBlock Classes="card-title" Text="Resolved center" />
+            <StackPanel Spacing="5">
+              <TextBlock Classes="muted" Text="SYSTEM" />
+              <TextBlock FontWeight="SemiBold"
+                         TextWrapping="Wrap"
+                         Text="{Binding Search.CenterSystemName}" />
+            </StackPanel>
+            <StackPanel Spacing="5">
+              <TextBlock Classes="muted" Text="GALACTIC POSITION" />
+              <TextBlock Classes="monospace"
+                         TextWrapping="Wrap"
+                         Text="{Binding Search.CenterPosition}" />
+            </StackPanel>
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="System suggestions and coordinates are resolved through Spansh. Enabling writes the legacy sphereLimit profile fields without replacing unrelated data." />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+        <Border Classes="card">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="5">
+              <TextBlock Classes="card-title" Text="Boxel search" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Mass-code filtering, visited-system state, completion tracking, route integration, and automatic clipboard behavior are the next Search slice." />
+            </StackPanel>
+            <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+              <TextBlock Classes="muted" FontSize="11" Text="PENDING" />
+            </Border>
+          </Grid>
+        </Border>
+        <Border Grid.Column="1" Classes="card">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="5">
+              <TextBlock Classes="card-title" Text="Nearby systems" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Nearest-system queries remain pending until their cache and result workflow is ported." />
+            </StackPanel>
+            <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+              <TextBlock Classes="muted" FontSize="11" Text="PENDING" />
+            </Border>
+          </Grid>
+        </Border>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
