@@ -1,0 +1,1 @@
+// MVVM ViewModel with live Core data binding
