@@ -32,7 +32,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
-| Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance, and the system-notes secondary window implemented; journeys/routes remain pending |
+| Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance, system notes, and the unified Commander Journeys workspace implemented; routes remain pending |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
@@ -59,10 +59,10 @@ system/body and platform behavior is ported.
 | `FormEditMap` | Guardian / Map editor | Partially implemented with native template rendering plus site/relic headings, notes, POI states, relic headings, and obelisk-group editing; raw POI add/remove, origin measurement, and template-authoring tools remain |
 | `FormErrorSubmit` | Diagnostics / Report issue | Not ported |
 | `FormGroundTarget` | Travel / Ground target | Implemented in Travel with typed, current, clipboard, clear, and guidance actions; Windows visually checked |
-| `FormJourneyBegin` | Travel / Journeys | Not ported |
-| `FormJourneyEdit` | Travel / Journeys | Not ported |
-| `FormJourneyList` | Travel / Journeys | Not ported |
-| `FormJourneyViewer` | Travel / Journeys | Not ported |
+| `FormJourneyBegin` | Travel / Journeys | Implemented in the unified Journey workspace with current/prior-system selection, system search, exact last-visit lookup, journal replay, validation, and begin action; Windows visually checked |
+| `FormJourneyEdit` | Travel / Journeys | Implemented in the unified Journey workspace with editable name, description, per-system notes, dirty/save/discard state, conclude, and guarded reprocess; Windows visually checked |
+| `FormJourneyList` | Travel / Journeys | Implemented as the Journey history sidebar with active/completed state, start time, description, selection, and refresh; Windows visually checked |
+| `FormJourneyViewer` | Travel / Journeys | Implemented with legacy-compatible quick statistics, active/completed byline, preferences, visited-system drilldown, screenshots, and lifecycle actions; Windows visually checked in Blue dark/light |
 | `FormMyProjects` | Colonisation / Projects | Implemented with opt-in Raven loading, hidden-project selection, primary-project display, aggregate cargo planning, current-ship trip estimates, refresh/save, and Raven build link; Windows visually checked |
 | `FormNearestSystems` | Search / Nearby systems | Implemented with current journal coordinates, Canonn signal and Spansh missing-variant searches, enriched notes, five unique results, selection, clipboard actions, Canonn/Spansh links, and original Spansh search link; Windows visually checked |
 | `FormNewProject` | Colonisation / Projects | Implemented with live depot/docked context, shipped build catalog, planned Raven sites, location/build/layout/body/architect/notes fields, validation, explicit review/confirm publishing, refresh, and created-project link; Windows visually checked |
@@ -82,8 +82,8 @@ system/body and platform behavior is ported.
 | `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
 | `FormStartNewCmdr` | Commander onboarding | Not ported |
 | `FormSwapStarCache` | Diagnostics / Reference data | Not ported |
-| `FormSystemNotes` | Travel / System notes | Implemented with current journal context, lossless legacy system-file updates/creation, save/cancel, persistent always-on-top, screenshot-folder detection, exact Canonn/Spansh/EDSM actions, Travel launcher, and `Ctrl+Shift+N`; Windows visually checked in Blue dark/light. Journey note-count updates remain coupled to the unported Journey workflow |
-| `ViewJourneySystem` | Travel / Journeys | Not ported |
+| `FormSystemNotes` | Travel / System notes | Implemented with current journal context, lossless legacy system-file updates/creation, save/cancel, persistent always-on-top, screenshot-folder detection, exact Canonn/Spansh/EDSM actions, Travel launcher, `Ctrl+Shift+N`, and active-Journey note-count updates; Windows visually checked in Blue dark/light |
+| `ViewJourneySystem` | Travel / Journeys | Implemented in the Journey workspace with recent-first visits, legacy interest flags, arrival/departure and scan/reward details, system notes, screenshot listing, folder opening, and OS file launch; Windows visually checked |
 | `ViewLogs` | Diagnostics / Logs | Not ported |
 
 ## Overlay and plotter surfaces
@@ -163,12 +163,19 @@ check at 1182 by 790, using a live journal folder:
   three-stage progress, profile status, and compatibility cards; UI Automation
   exposed Refresh and Clear unclaimed.
 - Travel rendered the surface-navigation metrics, coordinate editor, live
-  position, system-notes launcher, and explicit pending journey/route card. UI
+  position, system-notes launcher, Commander Journeys card, and explicit pending
+  route state. UI
   Automation exposed both coordinate fields and Set, current-location, Paste,
   and Clear actions with correct disabled state. The resizable system-notes
   window rendered the live Facece system/address, empty-note state, topmost
   control, three external links, and cancel/save actions in Blue (dark) and Blue
   (light); it was cancelled without writing live profile data.
+- The single Journey workspace was exercised with an isolated QA journal and
+  commander in Blue (dark) and Blue (light). Both start modes, last-visit
+  lookup, begin, overview statistics, history selection, visited-system detail,
+  note edit/discard, refresh, and conclude/reprocess confirmations rendered and
+  behaved correctly. The QA records were removed and the original theme was
+  restored afterward; active in-game updates and Linux remain untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live
