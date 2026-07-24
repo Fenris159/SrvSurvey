@@ -27,6 +27,35 @@
         <TabItem Header="Sites &amp; surveys">
           <StackPanel Margin="0,16,0,0" Spacing="20">
       <Border Classes="card raised">
+        <Grid ColumnDefinitions="8,*,Auto" ColumnSpacing="18">
+          <Border Background="{DynamicResource RavenAccentBrush}"
+                  CornerRadius="4" />
+          <StackPanel Grid.Column="1" Spacing="5">
+            <TextBlock Classes="eyebrow" Text="LIVE SITE" />
+            <TextBlock Classes="card-title"
+                       Text="{Binding Guardian.ActiveSiteTitle}" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding Guardian.ActiveSiteDescription}" />
+            <WrapPanel Margin="0,5,0,0">
+              <TextBlock Classes="monospace"
+                         Margin="0,0,18,0"
+                         Text="{Binding Guardian.ActiveSiteLocation}" />
+              <TextBlock Classes="muted"
+                         Text="{Binding Guardian.ActiveSiteVisit}" />
+            </WrapPanel>
+          </StackPanel>
+          <Border Grid.Column="2"
+                  Classes="badge"
+                  VerticalAlignment="Top">
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontWeight="SemiBold"
+                       Text="{Binding Guardian.ActiveSiteReference}" />
+          </Border>
+        </Grid>
+      </Border>
+
+      <Border Classes="card raised">
         <Grid ColumnDefinitions="2*,*,*,*" ColumnSpacing="12">
           <StackPanel Spacing="6">
             <TextBlock Classes="muted" Text="SEARCH" />

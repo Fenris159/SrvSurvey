@@ -120,6 +120,32 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
     public bool HasActiveSite => ActiveSite is not null;
 
+    public string ActiveSiteTitle => ActiveSite is { } site
+        ? string.IsNullOrWhiteSpace(site.LocalizedName)
+            ? site.Kind == GuardianSiteKind.Ruins
+                ? $"Ancient Ruins ({site.Index})"
+                : "Guardian Structure"
+            : site.LocalizedName
+        : "No live Guardian site detected";
+
+    public string ActiveSiteDescription => ActiveSite is { } site
+        ? $"{site.SiteType} {site.Kind.ToString().ToLowerInvariant()} on "
+            + $"{site.BodyName}"
+        : "Approach a Guardian ruins or structure settlement to activate its survey.";
+
+    public string ActiveSiteReference => ActiveSite is { } site
+        ? site.Reference?.DisplayId ?? "Uncatalogued site"
+        : "WAITING";
+
+    public string ActiveSiteLocation => ActiveSite?.Location is { } location
+        ? FormattableString.Invariant(
+            $"{location.Latitude:F6}, {location.Longitude:F6}")
+        : "Surface location unavailable";
+
+    public string ActiveSiteVisit => ActiveSite is { } site
+        ? $"Last approach {site.LastVisited.ToLocalTime():g}"
+        : "Journal monitoring is active.";
+
     public string FilterText
     {
         get => filterText;
@@ -484,6 +510,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     {
         OnPropertyChanged(nameof(ActiveSite));
         OnPropertyChanged(nameof(HasActiveSite));
+        OnPropertyChanged(nameof(ActiveSiteTitle));
+        OnPropertyChanged(nameof(ActiveSiteDescription));
+        OnPropertyChanged(nameof(ActiveSiteReference));
+        OnPropertyChanged(nameof(ActiveSiteLocation));
+        OnPropertyChanged(nameof(ActiveSiteVisit));
     }
 
     private void ApplyFilters()

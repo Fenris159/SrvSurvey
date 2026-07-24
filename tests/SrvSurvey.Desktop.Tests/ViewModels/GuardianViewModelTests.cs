@@ -168,6 +168,8 @@ public sealed class GuardianViewModelTests
         {
             var viewModel = new GuardianViewModel(root);
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            Assert.Equal("No live Guardian site detected", viewModel.ActiveSiteTitle);
+            Assert.Equal("WAITING", viewModel.ActiveSiteReference);
 
             await viewModel.ApplyJournalEventsAsync(
             [
@@ -180,6 +182,10 @@ public sealed class GuardianViewModelTests
 
             Assert.True(viewModel.HasActiveSite);
             Assert.Equal("GR 1", viewModel.ActiveSite?.Reference?.DisplayId);
+            Assert.Equal("Ancient Ruins (1)", viewModel.ActiveSiteTitle);
+            Assert.Equal("GR 1", viewModel.ActiveSiteReference);
+            Assert.Contains("Beta ruins", viewModel.ActiveSiteDescription);
+            Assert.Equal("-46.576923, 133.985107", viewModel.ActiveSiteLocation);
             Assert.Equal("GR 1", viewModel.SelectedSite?.DisplayId);
             Assert.True(viewModel.SelectedSite?.Visit.IsVisited);
             Assert.Contains("Recorded the live Guardian site", viewModel.StatusMessage);
@@ -217,6 +223,7 @@ public sealed class GuardianViewModelTests
             "Drew");
 
             Assert.False(viewModel.HasActiveSite);
+            Assert.Equal("No live Guardian site detected", viewModel.ActiveSiteTitle);
             var reader = new GuardianCommanderDataReader(root);
             var data = await reader.ReadAsync("F123", isOdyssey: false);
             var survey = Assert.Single(data.Surveys);
