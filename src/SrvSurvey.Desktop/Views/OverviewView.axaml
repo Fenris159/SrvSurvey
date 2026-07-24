@@ -99,27 +99,29 @@
             <Grid ColumnDefinitions="*,Auto">
               <TextBlock Classes="card-title" Text="Exploration trip" />
               <Border Grid.Column="1" Classes="badge">
-                <TextBlock Classes="muted" FontSize="11" Text="CORE PENDING" />
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontSize="11"
+                           Text="LIVE" />
               </Border>
             </Grid>
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18">
               <StackPanel Spacing="3">
-                <TextBlock Classes="metric" Text="—" />
+                <TextBlock Classes="metric" Text="{Binding ExplorationJumps}" />
                 <TextBlock Classes="muted" FontSize="12" Text="Jumps" />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="3">
-                <TextBlock Classes="metric" Text="—" />
+                <TextBlock Classes="metric" Text="{Binding ExplorationDistance}" />
                 <TextBlock Classes="muted" FontSize="12" Text="Distance" />
               </StackPanel>
               <StackPanel Grid.Column="2" Spacing="3">
-                <TextBlock Classes="metric" Text="—" />
-                <TextBlock Classes="muted" FontSize="12" Text="Bodies" />
+                <TextBlock Classes="metric" Text="{Binding EstimatedExplorationValue}" />
+                <TextBlock Classes="muted" FontSize="12" Text="Estimated" />
               </StackPanel>
             </Grid>
             <TextBlock Classes="muted"
                        FontSize="12"
                        TextWrapping="Wrap"
-                       Text="The legacy counter is mapped here; journal aggregation is not ported yet." />
+                       Text="{Binding ExplorationBodies}" />
           </StackPanel>
         </Border>
 

@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.ExplorationView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="32" Spacing="24" MaxWidth="1050">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="eyebrow" Text="EXPLORATION" />
+          <TextBlock Classes="page-title" Text="Survey totals" />
+          <TextBlock Classes="muted"
+                     Text="Legacy-compatible jump, scan, mapping, landing, distance, and estimated reward totals." />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="primary"
+                MinWidth="116"
+                VerticalAlignment="Center"
+                Command="{Binding RefreshCommand}"
+                Content="{Binding RefreshButtonText}" />
+      </Grid>
+
+      <Border Classes="card raised" Padding="0">
+        <Grid ColumnDefinitions="6,*">
+          <Border Classes="accent-line" CornerRadius="12,0,0,12" />
+          <StackPanel Grid.Column="1" Margin="28" Spacing="8">
+            <TextBlock Classes="muted" Text="ESTIMATED EXPLORATION VALUE" />
+            <TextBlock FontSize="38"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource RavenAccentBrush}"
+                       Text="{Binding EstimatedExplorationValue}" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Uses the same body-class, terraformability, discovery, mapping, Odyssey, and probe-efficiency formula as the WinForms application." />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18">
+        <Border Classes="card">
+          <StackPanel Spacing="5">
+            <TextBlock Classes="metric" Text="{Binding ExplorationJumps}" />
+            <TextBlock Classes="muted" Text="Hyperspace jumps" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel Spacing="5">
+            <TextBlock Classes="metric" Text="{Binding ExplorationDistance}" />
+            <TextBlock Classes="muted" Text="Distance travelled" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="2" Classes="card">
+          <StackPanel Spacing="5">
+            <TextBlock Classes="card-title" Text="Bodies" />
+            <TextBlock TextWrapping="Wrap" Text="{Binding ExplorationBodies}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Border Classes="card">
+        <StackPanel Spacing="16">
+          <StackPanel Spacing="5">
+            <TextBlock Classes="card-title" Text="Commander profile" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding ExplorationStatusMessage}" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding ResetExplorationCommand}"
+                    Content="{Binding ResetExplorationButtonText}" />
+            <Button Classes="secondary"
+                    IsVisible="{Binding IsResetExplorationPending}"
+                    Command="{Binding CancelResetExplorationCommand}"
+                    Content="Cancel" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

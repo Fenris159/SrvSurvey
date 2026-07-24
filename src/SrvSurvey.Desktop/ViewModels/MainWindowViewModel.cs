@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Theming;
@@ -14,9 +15,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private readonly JournalFolderResolution folderResolution;
     private readonly JournalDirectoryMonitor? journalMonitor;
     private readonly JournalSessionState journalState = new();
+    private readonly ExplorationState explorationState = new();
+    private readonly CommanderProfileStore commanderProfileStore;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
     private readonly AsyncCommand importLegacyProfileCommand;
+    private readonly AsyncCommand resetExplorationCommand;
+    private readonly AsyncCommand cancelResetExplorationCommand;
     private bool isBusy;
     private bool isImportingProfile;
     private string statusMessage;
@@ -33,6 +38,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private string surfacePosition = Unavailable;
     private string headingAndAltitude = Unavailable;
     private string gameUiFocus = Unavailable;
+    private string estimatedExplorationValue = "0 CR";
+    private string explorationJumps = "0";
+    private string explorationDistance = "0.0 ly";
+    private string explorationBodies = "Scanned: 0, DSS: 0, Landed: 0";
+    private string explorationStatusMessage = "Waiting for commander profile.";
+    private bool isResetExplorationPending;
+    private string? activeProfileFrontierId;
+    private string? activeProfileCommanderName;
+    private bool activeProfileIsOdyssey = true;
     private NavigationItemViewModel selectedNavigation;
     private ThemeOptionViewModel selectedTheme;
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
@@ -47,6 +61,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        commanderProfileStore = new CommanderProfileStore(AppDataPaths.DataDirectory);
         ProfileBackupDirectory = Path.Combine(
             Path.GetDirectoryName(AppDataPaths.DataDirectory)
                 ?? AppDataPaths.ConfigDirectory,
@@ -76,11 +91,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             ? null
             : new JournalDirectoryMonitor(folderResolution.SelectedPath);
         RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
+        resetExplorationCommand = new AsyncCommand(
+            ResetExplorationAsync,
+            () => activeProfileFrontierId is not null);
+        ResetExplorationCommand = resetExplorationCommand;
+        cancelResetExplorationCommand = new AsyncCommand(
+            CancelResetExplorationAsync,
+            () => IsResetExplorationPending);
+        CancelResetExplorationCommand = cancelResetExplorationCommand;
 
         NavigationItems =
         [
             new("overview", "Overview", "01", "Commander and current journal state", true),
-            new("exploration", "Exploration", "02", "Trip totals and body scans", false),
+            new("exploration", "Exploration", "02", "Trip totals and body scans", true),
             new("exobiology", "Exobiology", "03", "Organic scans, rewards, and Codex", false),
             new("travel", "Travel", "04", "Targets, journeys, and routes", false),
             new("search", "Search", "05", "Spherical and boxel searches", false),
@@ -168,6 +191,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             }
 
             OnPropertyChanged(nameof(IsOverviewSelected));
+            OnPropertyChanged(nameof(IsExplorationSelected));
             OnPropertyChanged(nameof(IsDiagnosticsSelected));
             OnPropertyChanged(nameof(IsSettingsSelected));
             OnPropertyChanged(nameof(IsPendingSelected));
@@ -178,6 +202,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     }
 
     public bool IsOverviewSelected => SelectedNavigation.Key == "overview";
+
+    public bool IsExplorationSelected => SelectedNavigation.Key == "exploration";
 
     public bool IsDiagnosticsSelected => SelectedNavigation.Key == "diagnostics";
 
@@ -292,6 +318,57 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         private set => SetField(ref gameUiFocus, value);
     }
 
+    public string EstimatedExplorationValue
+    {
+        get => estimatedExplorationValue;
+        private set => SetField(ref estimatedExplorationValue, value);
+    }
+
+    public string ExplorationJumps
+    {
+        get => explorationJumps;
+        private set => SetField(ref explorationJumps, value);
+    }
+
+    public string ExplorationDistance
+    {
+        get => explorationDistance;
+        private set => SetField(ref explorationDistance, value);
+    }
+
+    public string ExplorationBodies
+    {
+        get => explorationBodies;
+        private set => SetField(ref explorationBodies, value);
+    }
+
+    public string ExplorationStatusMessage
+    {
+        get => explorationStatusMessage;
+        private set => SetField(ref explorationStatusMessage, value);
+    }
+
+    public ICommand ResetExplorationCommand { get; }
+
+    public ICommand CancelResetExplorationCommand { get; }
+
+    public bool IsResetExplorationPending
+    {
+        get => isResetExplorationPending;
+        private set
+        {
+            if (SetField(ref isResetExplorationPending, value))
+            {
+                OnPropertyChanged(nameof(ResetExplorationButtonText));
+                cancelResetExplorationCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string ResetExplorationButtonText => IsResetExplorationPending
+        ? "Confirm reset"
+        : "Reset totals";
+
     public async Task RefreshAsync()
     {
         if (IsBusy)
@@ -313,7 +390,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             StatusMessage = "Reading journal and status updates…";
 
             var update = await journalMonitor.PollAsync();
-            ApplyMonitorUpdate(update, isManualRefresh: true);
+            await ApplyMonitorUpdateAsync(update, isManualRefresh: true);
         }
         catch (Exception exception) when (
             exception is IOException
@@ -344,7 +421,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var update = await journalMonitor.PollAsync(cancellationToken);
-                ApplyMonitorUpdate(update, isManualRefresh: false);
+                await ApplyMonitorUpdateAsync(update, isManualRefresh: false);
                 await Task.Delay(interval, cancellationToken);
             }
         }
@@ -475,13 +552,33 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             + ".";
     }
 
-    private void ApplyMonitorUpdate(
+    private async Task ApplyMonitorUpdateAsync(
         JournalMonitorUpdate update,
         bool isManualRefresh)
     {
         foreach (var journalEvent in update.JournalEvents)
         {
             journalState.Apply(journalEvent);
+        }
+
+        var loadedExistingProfile = await EnsureCommanderProfileAsync();
+        var explorationBefore = explorationState.CreateSnapshot();
+        var skipPersistedBootstrapEvents = update.IsBootstrapRead
+            && loadedExistingProfile;
+        foreach (var journalEvent in update.JournalEvents)
+        {
+            if (!skipPersistedBootstrapEvents
+                || journalEvent.EventName is "Fileheader" or "LoadGame")
+            {
+                explorationState.Apply(journalEvent);
+            }
+        }
+
+        var explorationAfter = explorationState.CreateSnapshot();
+        if (explorationAfter != explorationBefore)
+        {
+            UpdateExplorationDisplay(explorationAfter);
+            await SaveExplorationAsync(explorationAfter);
         }
 
         if (update.JournalEvents.Count > 0)
@@ -512,6 +609,114 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             LastUpdated = $"Last update: {DateTimeOffset.Now:G}";
         }
+    }
+
+    private async Task<bool> EnsureCommanderProfileAsync()
+    {
+        if (string.IsNullOrWhiteSpace(journalState.FrontierId))
+        {
+            return false;
+        }
+
+        var isOdyssey = journalState.IsOdyssey ?? true;
+        if (string.Equals(
+                activeProfileFrontierId,
+                journalState.FrontierId,
+                StringComparison.OrdinalIgnoreCase)
+            && activeProfileIsOdyssey == isOdyssey)
+        {
+            activeProfileCommanderName = journalState.CommanderName
+                ?? activeProfileCommanderName;
+            return false;
+        }
+
+        var result = await commanderProfileStore.LoadAsync(
+            journalState.FrontierId,
+            isOdyssey);
+        activeProfileFrontierId = journalState.FrontierId;
+        activeProfileCommanderName = journalState.CommanderName
+            ?? result.Data?.CommanderName;
+        activeProfileIsOdyssey = isOdyssey;
+        resetExplorationCommand.RaiseCanExecuteChanged();
+
+        if (result.Data is null)
+        {
+            ExplorationStatusMessage = result.Error
+                ?? "The commander profile could not be loaded.";
+            return false;
+        }
+
+        explorationState.Reset(result.Data.Exploration);
+        UpdateExplorationDisplay(result.Data.Exploration);
+        ExplorationStatusMessage = result.Exists
+            ? $"Loaded compatible totals from {Path.GetFileName(result.Path)}."
+            : $"No existing profile was found; session totals will be saved to "
+                + Path.GetFileName(result.Path)
+                + ".";
+        return result.Exists;
+    }
+
+    private async Task SaveExplorationAsync(ExplorationSnapshot snapshot)
+    {
+        if (activeProfileFrontierId is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await commanderProfileStore.SaveExplorationAsync(
+                activeProfileFrontierId,
+                activeProfileCommanderName,
+                activeProfileIsOdyssey,
+                snapshot);
+            ExplorationStatusMessage = $"Totals saved to "
+                + Path.GetFileName(commanderProfileStore.GetProfilePath(
+                    activeProfileFrontierId,
+                    activeProfileIsOdyssey))
+                + ".";
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            ExplorationStatusMessage = "Totals changed for this session but could not be saved: "
+                + exception.Message;
+        }
+    }
+
+    private void UpdateExplorationDisplay(ExplorationSnapshot snapshot)
+    {
+        EstimatedExplorationValue = $"{snapshot.EstimatedRewards:N0} CR";
+        ExplorationJumps = snapshot.JumpCount.ToString("N0");
+        ExplorationDistance = $"{snapshot.DistanceTravelled:N1} ly";
+        ExplorationBodies = $"Scanned: {snapshot.ScanCount:N0}, "
+            + $"DSS: {snapshot.DetailedSurfaceScanCount:N0}, "
+            + $"Landed: {snapshot.LandedBodyCount:N0}";
+    }
+
+    public async Task ResetExplorationAsync()
+    {
+        if (!IsResetExplorationPending)
+        {
+            IsResetExplorationPending = true;
+            ExplorationStatusMessage = "Select Confirm reset to clear all six exploration totals.";
+            return;
+        }
+
+        explorationState.Reset();
+        var snapshot = explorationState.CreateSnapshot();
+        UpdateExplorationDisplay(snapshot);
+        IsResetExplorationPending = false;
+        await SaveExplorationAsync(snapshot);
+    }
+
+    private Task CancelResetExplorationAsync()
+    {
+        IsResetExplorationPending = false;
+        ExplorationStatusMessage = "Reset cancelled; totals were not changed.";
+        return Task.CompletedTask;
     }
 
     private void ApplyStatus(EliteStatus status)

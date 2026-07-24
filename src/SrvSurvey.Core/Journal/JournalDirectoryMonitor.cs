@@ -10,6 +10,7 @@ public sealed class JournalDirectoryMonitor
     private long currentJournalOffset;
     private byte[] pendingJournalBytes = [];
     private string? statusContentHash;
+    private bool hasCompletedFirstPoll;
 
     public JournalDirectoryMonitor(string journalDirectory)
     {
@@ -86,7 +87,9 @@ public sealed class JournalDirectoryMonitor
                 currentJournalPath,
                 events,
                 status,
-                errors);
+                errors,
+                IsBootstrapRead: !hasCompletedFirstPoll);
+            hasCompletedFirstPoll = true;
         }
         finally
         {
@@ -268,4 +271,5 @@ public sealed record JournalMonitorUpdate(
     string? JournalPath,
     IReadOnlyList<JournalEventEnvelope> JournalEvents,
     EliteStatus? Status,
-    IReadOnlyList<string> Errors);
+    IReadOnlyList<string> Errors,
+    bool IsBootstrapRead);

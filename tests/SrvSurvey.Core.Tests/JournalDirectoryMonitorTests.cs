@@ -33,6 +33,7 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         Assert.NotNull(initial.Status);
         Assert.True(initial.Status.InSrv);
         Assert.Empty(initial.Errors);
+        Assert.True(initial.IsBootstrapRead);
 
         await File.AppendAllTextAsync(
             firstJournal,
@@ -60,6 +61,7 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
 
         Assert.Equal(secondJournal, rotated.JournalPath);
         Assert.Equal("Fileheader", Assert.Single(rotated.JournalEvents).EventName);
+        Assert.False(rotated.IsBootstrapRead);
     }
 
     [Fact]
