@@ -1,4 +1,5 @@
 using System.Text.Json;
+using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.Theming;
 
@@ -71,19 +72,7 @@ public sealed class ThemePreferenceStore
 
     private static string GetDefaultSettingsPath()
     {
-        var applicationData = Environment.GetFolderPath(
-            Environment.SpecialFolder.ApplicationData);
-        if (string.IsNullOrWhiteSpace(applicationData))
-        {
-            applicationData = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".config");
-        }
-
-        return Path.Combine(
-            applicationData,
-            "SrvSurvey",
-            "cross-platform-ui.json");
+        return AppDataPaths.ResolveCurrent().UiSettingsPath;
     }
 
     private sealed record UiSettings(int Version, string Theme);

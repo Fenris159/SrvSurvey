@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Theming;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -12,7 +13,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     private readonly JournalFolderResolution folderResolution;
     private readonly RavenThemeService? themeService;
+    private readonly LegacyProfileImporter profileImporter;
+    private readonly AsyncCommand importLegacyProfileCommand;
     private bool isBusy;
+    private bool isImportingProfile;
     private string statusMessage;
     private string commanderName = Unavailable;
     private string frontierId = Unavailable;
@@ -25,12 +29,32 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private string themeStatusMessage = string.Empty;
     private NavigationItemViewModel selectedNavigation;
     private ThemeOptionViewModel selectedTheme;
+    private LegacyProfileOptionViewModel? selectedLegacyProfile;
+    private string profileStatusMessage;
 
     public MainWindowViewModel(
         string? configuredJournalDirectory,
-        RavenThemeService? themeService = null)
+        RavenThemeService? themeService = null,
+        AppDataPaths? appDataPaths = null,
+        LegacyProfileImporter? profileImporter = null)
     {
         this.themeService = themeService;
+        this.profileImporter = profileImporter ?? new LegacyProfileImporter();
+        AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        ProfileBackupDirectory = Path.Combine(
+            Path.GetDirectoryName(AppDataPaths.DataDirectory)
+                ?? AppDataPaths.ConfigDirectory,
+            "legacy-backups");
+        LegacyProfiles = LegacyProfileLocator.Discover(
+                AppDataPaths.LegacyProfileCandidates)
+            .Select(discovery => new LegacyProfileOptionViewModel(discovery))
+            .ToArray();
+        selectedLegacyProfile = LegacyProfiles.FirstOrDefault();
+        profileStatusMessage = GetInitialProfileStatus();
+        importLegacyProfileCommand = new AsyncCommand(
+            ImportLegacyProfileAsync,
+            CanImportLegacyProfile);
+        ImportLegacyProfileCommand = importLegacyProfileCommand;
         folderResolution = JournalFolderLocator.ResolveCurrent(configuredJournalDirectory);
         JournalFolderPath = folderResolution.SelectedPath
             ?? folderResolution.CandidatePaths.FirstOrDefault()
@@ -72,6 +96,51 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public IReadOnlyList<NavigationItemViewModel> NavigationItems { get; }
 
     public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; }
+
+    public AppDataPaths AppDataPaths { get; }
+
+    public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
+
+    public string ProfileDataDirectory => AppDataPaths.DataDirectory;
+
+    public string ProfileBackupDirectory { get; }
+
+    public ICommand ImportLegacyProfileCommand { get; }
+
+    public LegacyProfileOptionViewModel? SelectedLegacyProfile
+    {
+        get => selectedLegacyProfile;
+        set
+        {
+            if (SetField(ref selectedLegacyProfile, value))
+            {
+                importLegacyProfileCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string ProfileStatusMessage
+    {
+        get => profileStatusMessage;
+        private set => SetField(ref profileStatusMessage, value);
+    }
+
+    public string ImportProfileButtonText => IsImportingProfile
+        ? "Importing profile…"
+        : "Back up and import profile";
+
+    public bool IsImportingProfile
+    {
+        get => isImportingProfile;
+        private set
+        {
+            if (SetField(ref isImportingProfile, value))
+            {
+                importLegacyProfileCommand.RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(ImportProfileButtonText));
+            }
+        }
+    }
 
     public string JournalFolderPath { get; }
 
@@ -225,6 +294,63 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             IsBusy = false;
             LastUpdated = $"Last refresh: {DateTimeOffset.Now:G}";
         }
+    }
+
+    public async Task ImportLegacyProfileAsync()
+    {
+        if (!CanImportLegacyProfile() || SelectedLegacyProfile is null)
+        {
+            return;
+        }
+
+        try
+        {
+            IsImportingProfile = true;
+            ProfileStatusMessage = "Creating and verifying the legacy profile backup…";
+            var result = await profileImporter.ImportAsync(
+                SelectedLegacyProfile.Path,
+                AppDataPaths.DataDirectory,
+                ProfileBackupDirectory);
+            ProfileStatusMessage = $"Imported {result.Manifest.Entries.Count:N0} files. "
+                + $"Verified backup: {result.BackupDirectory}";
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException)
+        {
+            ProfileStatusMessage = $"Profile import failed without changing the legacy data: "
+                + exception.Message;
+        }
+        finally
+        {
+            IsImportingProfile = false;
+            importLegacyProfileCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    private bool CanImportLegacyProfile()
+    {
+        return !IsImportingProfile
+            && SelectedLegacyProfile is not null
+            && !Directory.Exists(AppDataPaths.DataDirectory)
+            && !File.Exists(AppDataPaths.DataDirectory);
+    }
+
+    private string GetInitialProfileStatus()
+    {
+        if (Directory.Exists(AppDataPaths.DataDirectory)
+            || File.Exists(AppDataPaths.DataDirectory))
+        {
+            return $"Cross-platform profile data already exists at "
+                + $"{AppDataPaths.DataDirectory}. It will not be overwritten.";
+        }
+
+        return LegacyProfiles.Count == 0
+            ? "No legacy Windows profile was found in the desktop or Microsoft Store locations."
+            : $"Found {LegacyProfiles.Count:N0} legacy profile source(s). "
+                + "Import creates a checksum-verified backup before activating the copy.";
     }
 
     private void SelectTheme(ThemeOptionViewModel option)
