@@ -12,7 +12,7 @@ public sealed class OverlayPlatformCapabilitiesTests
 
         Assert.True(capabilities.SupportsPassiveOverlay);
         Assert.True(capabilities.SupportsClickThrough);
-        Assert.False(capabilities.SupportsGameWindowTracking);
+        Assert.True(capabilities.SupportsGameWindowTracking);
         Assert.False(capabilities.SupportsGlobalInput);
         Assert.Contains("pending", capabilities.StatusText);
     }

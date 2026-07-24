@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -9,18 +10,30 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 {
     private readonly GuardianViewModel guardian;
     private readonly IOverlayPlatformService platform;
+    private readonly IGameWindowTracker gameWindowTracker;
+    private readonly DispatcherTimer timer;
+    private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private GuardianOverlayWindow? window;
     private bool disposed;
 
     public GuardianOverlayCoordinator(
         GuardianViewModel guardian,
-        IOverlayPlatformService platform)
+        IOverlayPlatformService platform,
+        IGameWindowTracker gameWindowTracker)
     {
         this.guardian = guardian
             ?? throw new ArgumentNullException(nameof(guardian));
         this.platform = platform
             ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker
+            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.guardian.PropertyChanged += OnGuardianPropertyChanged;
+        timer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(250),
+        };
+        timer.Tick += OnTimerTick;
+        timer.Start();
         SynchronizeWindow();
     }
 
@@ -36,8 +49,16 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         disposed = true;
+        timer.Stop();
+        timer.Tick -= OnTimerTick;
         guardian.PropertyChanged -= OnGuardianPropertyChanged;
         CloseWindow();
+        gameWindowTracker.Dispose();
+    }
+
+    private void OnTimerTick(object? sender, EventArgs eventArgs)
+    {
+        SynchronizeWindow();
     }
 
     private void OnGuardianPropertyChanged(
@@ -52,10 +73,19 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
     private void SynchronizeWindow()
     {
-        if (disposed
-            || !guardian.HasActiveSite
+        if (disposed)
+        {
+            return;
+        }
+
+        gameWindow = gameWindowTracker.GetSnapshot();
+        if (!guardian.HasActiveSite
             || !platform.Capabilities.SupportsPassiveOverlay
-            || !platform.Capabilities.SupportsClickThrough)
+            || !platform.Capabilities.SupportsClickThrough
+            || !platform.Capabilities.SupportsGameWindowTracking
+            || !gameWindow.IsAvailable
+            || !gameWindow.IsVisible
+            || !gameWindow.IsForeground)
         {
             CloseWindow();
             return;
@@ -63,6 +93,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
         if (window is not null)
         {
+            PositionWindow(window, gameWindow.ClientBounds);
             return;
         }
 
@@ -72,7 +103,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         var overlay = new GuardianOverlayWindow(viewModel);
         overlay.Opened += (_, _) =>
         {
-            PositionWindow(overlay);
+            PositionWindow(overlay, gameWindow.ClientBounds);
             var preparation = platform.PreparePassiveWindow(overlay);
             viewModel.ApplyPreparation(preparation);
             if (!preparation.IsClickThrough)
@@ -91,25 +122,24 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         overlay.Show();
     }
 
-    private static void PositionWindow(Window window)
+    private static void PositionWindow(Window window, PixelRect gameBounds)
     {
-        var screen = window.Screens.ScreenFromWindow(window)
+        var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
         if (screen is null)
         {
             return;
         }
 
-        const int margin = 20;
         var width = (int)Math.Ceiling(window.Width * screen.Scaling);
         var height = (int)Math.Ceiling(window.Height * screen.Scaling);
-        window.Position = new PixelPoint(
-            Math.Max(
-                screen.WorkingArea.X + margin,
-                screen.WorkingArea.Right - width - margin),
-            Math.Max(
-                screen.WorkingArea.Y + margin,
-                screen.WorkingArea.Bottom - height - margin));
+        var position = OverlayWindowPlacement.BottomRight(
+            gameBounds,
+            new PixelSize(width, height));
+        if (window.Position != position)
+        {
+            window.Position = position;
+        }
     }
 
     private void CloseWindow()

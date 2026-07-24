@@ -36,7 +36,8 @@ public sealed partial class App : Application
             desktop.MainWindow = new MainWindow(viewModel);
             guardianOverlayCoordinator = new GuardianOverlayCoordinator(
                 viewModel.Guardian,
-                OverlayPlatformService.CreateCurrent());
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent());
             desktop.Exit += (_, _) =>
             {
                 guardianOverlayCoordinator?.Dispose();

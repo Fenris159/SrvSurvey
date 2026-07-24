@@ -14,7 +14,9 @@ public sealed record OverlayPlatformCapabilities(
     public string StatusText => Host switch
     {
         OverlayHostKind.Windows => SupportsClickThrough
-            ? "Windows topmost transparency and native click-through are available; game-window following and global input are pending."
+            ? SupportsGameWindowTracking
+                ? "Windows topmost transparency, native click-through, and game-window tracking are available; global input is pending."
+                : "Windows topmost transparency and native click-through are available; game-window following and global input are pending."
             : "Windows overlay input pass-through could not be enabled.",
         OverlayHostKind.LinuxX11 =>
             "X11 topmost transparency is available; click-through, game-window following, and global input are pending runtime adapters.",
@@ -53,7 +55,7 @@ public sealed record OverlayPlatformCapabilities(
                 SupportsTopmost: true,
                 SupportsTransparency: true,
                 SupportsClickThrough: true,
-                SupportsGameWindowTracking: false,
+                SupportsGameWindowTracking: true,
                 SupportsGlobalInput: false),
             OverlayHostKind.LinuxX11 => new OverlayPlatformCapabilities(
                 host,
