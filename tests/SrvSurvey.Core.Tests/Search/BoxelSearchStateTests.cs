@@ -209,6 +209,41 @@ public sealed class BoxelSearchStateTests
         Assert.True(system.IsComplete);
     }
 
+    [Fact]
+    public void CompletionAuditUpdatesContainedProgressWithoutChangingCurrent()
+    {
+        var state = new BoxelSearchState();
+        state.TryActivate(
+            BoxelAddress.Parse("Praea Euq RS-U d2-0"),
+            'c',
+            DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            false,
+            false,
+            BoxelCompletionMode.EnterSystem,
+            true,
+            out _);
+        var current = state.Current;
+        var completed = state.TopBoxel!.Children[0];
+        var empty = state.TopBoxel.Children[1];
+
+        var changed = state.ApplyCompletionAudit(
+        [
+            new BoxelCompletionAuditEntry(completed, 4, true, false),
+            new BoxelCompletionAuditEntry(empty, -1, false, true),
+            new BoxelCompletionAuditEntry(
+                BoxelAddress.Parse("Wregoe BU-Y b2-0"),
+                10,
+                true,
+                false),
+        ]);
+
+        Assert.True(changed);
+        Assert.Equal(current, state.Current);
+        Assert.Equal(1, state.CompletedBoxelCount);
+        Assert.Contains(completed.Prefix, state.CreateSnapshot().CompletedPrefixes);
+        Assert.Contains(empty.Prefix, state.EmptyBoxelPrefixes);
+    }
+
     private static BoxelSearchState CreateActiveState(BoxelCompletionMode mode)
     {
         var state = new BoxelSearchState();

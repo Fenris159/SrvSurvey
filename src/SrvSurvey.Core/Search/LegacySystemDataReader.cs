@@ -16,21 +16,24 @@ public sealed class LegacySystemDataReader(string dataDirectory)
         BoxelAddress boxel,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
         ArgumentNullException.ThrowIfNull(boxel);
-        if (frontierId is "." or ".."
-            || !string.Equals(
-            Path.GetFileName(frontierId),
-            frontierId,
-            StringComparison.Ordinal)
-            || frontierId.IndexOfAny(
-                [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0)
-        {
-            throw new ArgumentException(
-                "The Frontier ID must be a folder name, not a path.",
-                nameof(frontierId));
-        }
+        var result = await ReadAllAsync(frontierId, cancellationToken)
+            .ConfigureAwait(false);
+        return new LegacySystemDataReadResult(
+            result.Systems
+                .Where(system => string.Equals(
+                    system.Boxel.Prefix,
+                    boxel.Prefix,
+                    StringComparison.Ordinal))
+                .ToArray(),
+            result.Errors);
+    }
 
+    public async Task<LegacySystemDataReadResult> ReadAllAsync(
+        string frontierId,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateFrontierId(frontierId);
         var systemDirectory = Path.Combine(dataDirectory, "systems", frontierId);
         if (!Directory.Exists(systemDirectory))
         {
@@ -45,44 +48,15 @@ public sealed class LegacySystemDataReader(string dataDirectory)
                      SearchOption.TopDirectoryOnly))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            LegacySystemData? data;
-            try
-            {
-                await using var stream = new FileStream(
-                    path,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.ReadWrite | FileShare.Delete,
-                    16 * 1024,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan);
-                data = await JsonSerializer.DeserializeAsync<LegacySystemData>(
-                        stream,
-                        SerializerOptions,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or JsonException)
-            {
-                errors.Add($"Could not read {path}: {exception.Message}");
-                continue;
-            }
-
+            var data = await ReadSystemAsync(path, errors, cancellationToken)
+                .ConfigureAwait(false);
             var resolved = data?.Address > 0
                 ? BoxelAddress.TryFromSystemAddress(
                     data.Address,
                     data.Name,
                     out var systemBoxel)
                 : BoxelAddress.TryParse(data?.Name, out systemBoxel);
-            if (data is null
-                || !resolved
-                || systemBoxel is null
-                || !string.Equals(
-                    systemBoxel.Prefix,
-                    boxel.Prefix,
-                    StringComparison.Ordinal))
+            if (data is null || !resolved || systemBoxel is null)
             {
                 continue;
             }
@@ -98,9 +72,57 @@ public sealed class LegacySystemDataReader(string dataDirectory)
 
         return new LegacySystemDataReadResult(
             systems
-                .OrderBy(system => system.Boxel.N2)
+                .OrderBy(system => system.Boxel.Prefix, StringComparer.Ordinal)
+                .ThenBy(system => system.Boxel.N2)
                 .ToArray(),
             errors);
+    }
+
+    private static void ValidateFrontierId(string frontierId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
+        if (frontierId is "." or ".."
+            || !string.Equals(
+            Path.GetFileName(frontierId),
+            frontierId,
+            StringComparison.Ordinal)
+            || frontierId.IndexOfAny(
+                [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0)
+        {
+            throw new ArgumentException(
+                "The Frontier ID must be a folder name, not a path.",
+                nameof(frontierId));
+        }
+    }
+
+    private static async Task<LegacySystemData?> ReadSystemAsync(
+        string path,
+        ICollection<string> errors,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var stream = new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete,
+                16 * 1024,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+            return await JsonSerializer.DeserializeAsync<LegacySystemData>(
+                    stream,
+                    SerializerOptions,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or JsonException)
+        {
+            errors.Add($"Could not read {path}: {exception.Message}");
+            return null;
+        }
     }
 
     private static string GetFullPath(string path)

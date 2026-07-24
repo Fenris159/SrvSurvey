@@ -70,6 +70,11 @@ public sealed class BoxelSearchState
         .Select(prefix => BoxelAddress.Parse(prefix + "0"))
         .ToArray();
 
+    public IReadOnlySet<string> EmptyBoxelPrefixes => progress
+        .Where(entry => entry.Value == -1)
+        .Select(entry => entry.Key)
+        .ToHashSet(StringComparer.Ordinal);
+
     public void Reset(BoxelSearchSnapshot? seed = null)
     {
         seed ??= BoxelSearchSnapshot.Empty;
@@ -305,6 +310,39 @@ public sealed class BoxelSearchState
 
         SetNextSystem();
         Version++;
+    }
+
+    public bool ApplyCompletionAudit(
+        IEnumerable<BoxelCompletionAuditEntry> entries)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+        var changed = false;
+        foreach (var entry in entries)
+        {
+            if (!progress.TryGetValue(entry.Boxel.Prefix, out var currentProgress))
+            {
+                continue;
+            }
+
+            var auditedProgress = entry.IsEmpty ? -1 : Math.Max(0, entry.SystemCount);
+            if (currentProgress != auditedProgress)
+            {
+                progress[entry.Boxel.Prefix] = auditedProgress;
+                changed = true;
+            }
+
+            changed |= entry.IsComplete
+                ? completed.Add(entry.Boxel.Prefix)
+                : completed.Remove(entry.Boxel.Prefix);
+        }
+
+        if (changed)
+        {
+            SetNextSystem();
+            Version++;
+        }
+
+        return changed;
     }
 
     public bool Apply(JournalEventEnvelope journalEvent)
