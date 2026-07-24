@@ -92,7 +92,7 @@ public sealed class GuardianSiteTemplateCatalog
         return value.EnumerateArray().Select(ReadPointOfInterest).ToArray();
     }
 
-    private static GuardianPointOfInterest ReadPointOfInterest(
+    internal static GuardianPointOfInterest ReadPointOfInterest(
         JsonElement value)
     {
         if (value.ValueKind != JsonValueKind.Object)
