@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/SrvSurvey.Core/SrvSurvey.Core.csproj" />
+    <Project Path="src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SrvSurvey.Core.Tests/SrvSurvey.Core.Tests.csproj" />

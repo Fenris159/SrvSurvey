@@ -1,1 +1,119 @@
-<Window ...> <!-- Avalonia XAML with bindings -->
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="820"
+        d:DesignHeight="620"
+        Width="820"
+        Height="620"
+        MinWidth="680"
+        MinHeight="520"
+        Title="SrvSurvey cross-platform development">
+  <Window.Styles>
+    <Style Selector="TextBlock.heading">
+      <Setter Property="FontSize" Value="24" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.section">
+      <Setter Property="FontSize" Value="17" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.label">
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Margin" Value="0,2,18,2" />
+    </Style>
+    <Style Selector="TextBlock.value">
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="Margin" Value="0,2" />
+    </Style>
+  </Window.Styles>
+
+  <Grid Margin="24" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="16">
+    <Grid ColumnDefinitions="*,Auto">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="heading" Text="SrvSurvey journal bootstrap" />
+        <TextBlock Opacity="0.72"
+                   Text="Development shell — feature and overlay parity are not complete." />
+      </StackPanel>
+      <Button Grid.Column="1"
+              MinWidth="100"
+              Padding="18,8"
+              Command="{Binding RefreshCommand}"
+              Content="Refresh" />
+    </Grid>
+
+    <Border Grid.Row="1"
+            Padding="14"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+            BorderThickness="1"
+            CornerRadius="6">
+      <StackPanel Spacing="6">
+        <TextBlock Classes="section" Text="Journal source" />
+        <TextBlock Classes="value" Text="{Binding JournalFolderPath}" />
+        <TextBlock Opacity="0.72"
+                   TextWrapping="Wrap"
+                   Text="{Binding StatusMessage}" />
+      </StackPanel>
+    </Border>
+
+    <ScrollViewer Grid.Row="2">
+      <StackPanel Spacing="16">
+        <Border Padding="14"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="6">
+          <Grid ColumnDefinitions="Auto,*"
+                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+            <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
+                       Classes="section"
+                       Margin="0,0,0,8"
+                       Text="Latest journal state" />
+
+            <TextBlock Grid.Row="1" Classes="label" Text="Commander" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Classes="value" Text="{Binding CommanderName}" />
+
+            <TextBlock Grid.Row="2" Classes="label" Text="Frontier ID" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Classes="value" Text="{Binding FrontierId}" />
+
+            <TextBlock Grid.Row="3" Classes="label" Text="Game" />
+            <TextBlock Grid.Row="3" Grid.Column="1" Classes="value" Text="{Binding GameDescription}" />
+
+            <TextBlock Grid.Row="4" Classes="label" Text="Mode" />
+            <TextBlock Grid.Row="4" Grid.Column="1" Classes="value" Text="{Binding GameMode}" />
+
+            <TextBlock Grid.Row="5" Classes="label" Text="System" />
+            <TextBlock Grid.Row="5" Grid.Column="1" Classes="value" Text="{Binding SystemDescription}" />
+
+            <TextBlock Grid.Row="6" Classes="label" Text="Body" />
+            <TextBlock Grid.Row="6" Grid.Column="1" Classes="value" Text="{Binding BodyName}" />
+
+            <TextBlock Grid.Row="7" Classes="label" Text="Session" />
+            <TextBlock Grid.Row="7" Grid.Column="1" Classes="value" Text="{Binding SessionState}" />
+          </Grid>
+        </Border>
+
+        <Border Padding="14"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                BorderThickness="1"
+                CornerRadius="6">
+          <StackPanel Spacing="6">
+            <TextBlock Classes="section" Text="Searched locations" />
+            <TextBlock FontFamily="Consolas,monospace"
+                       FontSize="12"
+                       TextWrapping="Wrap"
+                       Text="{Binding CandidatePaths}" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <TextBlock Grid.Row="3"
+               HorizontalAlignment="Right"
+               Opacity="0.65"
+               Text="{Binding LastUpdated}" />
+  </Grid>
+</Window>
