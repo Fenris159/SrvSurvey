@@ -13,6 +13,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private readonly IRavenColonialClient client;
     private readonly ColonizationBuildCatalog buildCatalog;
     private readonly ColonizationSettingsStore settingsStore;
+    private ColonizationOverlayPreferences overlayPreferences;
     private readonly ColonizationConstructionState constructionState = new();
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand saveProjectsCommand;
@@ -47,6 +48,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         this.client = client ?? new RavenColonialClient();
         this.buildCatalog = buildCatalog
             ?? ColonizationBuildCatalog.LoadEmbedded();
+        overlayPreferences = settingsStore.LoadOverlayPreferences();
         isEnabled = settingsStore.LoadEnabled();
         statusMessage = isEnabled
             ? "Raven Colonial access is enabled. Waiting for a commander profile."
@@ -67,6 +69,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             this.buildCatalog,
             OnProjectCreatedAsync);
         CommodityOverlay = new ColonizationCommodityOverlayViewModel();
+        CommodityOverlay.ApplyPreferences(overlayPreferences);
         UpdateProjectEditorContext();
         UpdateCommodityPlan();
     }
@@ -80,6 +83,48 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     public ColonizationProjectEditorViewModel ProjectEditor { get; }
 
     public ColonizationCommodityOverlayViewModel CommodityOverlay { get; }
+
+    public bool AutoShowCommodityOverlay
+    {
+        get => overlayPreferences.AutoShow;
+        set => SaveOverlayPreferences(
+            overlayPreferences with { AutoShow = value });
+    }
+
+    public bool ShowCommodityOverlayOnRightPanel
+    {
+        get => overlayPreferences.ShowOnRightPanel;
+        set => SaveOverlayPreferences(
+            overlayPreferences with { ShowOnRightPanel = value });
+    }
+
+    public bool ShowFleetCarrierCargo
+    {
+        get => overlayPreferences.ShowFleetCarrierCargo;
+        set => SaveOverlayPreferences(
+            overlayPreferences with { ShowFleetCarrierCargo = value });
+    }
+
+    public bool ShowFleetCarrierDelta
+    {
+        get => overlayPreferences.ShowFleetCarrierDelta;
+        set => SaveOverlayPreferences(
+            overlayPreferences with { ShowFleetCarrierDelta = value });
+    }
+
+    public bool InlineFleetCarrierCargo
+    {
+        get => overlayPreferences.InlineFleetCarrierCargo;
+        set => SaveOverlayPreferences(
+            overlayPreferences with { InlineFleetCarrierCargo = value });
+    }
+
+    public bool CollapseCoveredCommodityGroups
+    {
+        get => overlayPreferences.CollapseCoveredGroups;
+        set => SaveOverlayPreferences(
+            overlayPreferences with { CollapseCoveredGroups = value });
+    }
 
     public bool IsEnabled
     {
@@ -550,6 +595,33 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 shipCargo,
                 constructionState.CreateSnapshot()),
             latestStatus);
+    }
+
+    private void SaveOverlayPreferences(
+        ColonizationOverlayPreferences updatedPreferences,
+        [CallerMemberName] string? propertyName = null)
+    {
+        if (updatedPreferences == overlayPreferences)
+        {
+            return;
+        }
+
+        try
+        {
+            settingsStore.SaveOverlayPreferences(updatedPreferences);
+            overlayPreferences = updatedPreferences;
+            CommodityOverlay.ApplyPreferences(updatedPreferences);
+            OnPropertyChanged(propertyName);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidOperationException)
+        {
+            StatusMessage =
+                "The construction overlay preference could not be saved: "
+                + exception.Message;
+        }
     }
 
     private void RaiseCommandStates()

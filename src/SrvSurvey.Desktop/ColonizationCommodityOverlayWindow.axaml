@@ -89,12 +89,12 @@
                      Classes="muted"
                      FontSize="10"
                      HorizontalAlignment="Right"
-                     Text="FC" />
+                     Text="{Binding FleetCarrierColumnHeader}" />
           <TextBlock Grid.Column="3"
                      Classes="muted"
                      FontSize="10"
                      HorizontalAlignment="Right"
-                     Text="SHIP" />
+                     Text="{Binding ShipColumnHeader}" />
         </Grid>
       </StackPanel>
 

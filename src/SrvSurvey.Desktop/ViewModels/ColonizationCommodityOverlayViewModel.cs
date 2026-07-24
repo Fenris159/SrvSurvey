@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -11,6 +12,8 @@ public sealed class ColonizationCommodityOverlayViewModel
 {
     private ColonizationCommodityPlan plan = EmptyPlan();
     private EliteStatus? status;
+    private ColonizationOverlayPreferences preferences =
+        ColonizationOverlayPreferences.Default;
     private IReadOnlyList<ColonizationCommodityGroupViewModel> groups = [];
     private bool showSatisfiedGroups;
     private string platformStatus = string.Empty;
@@ -39,7 +42,8 @@ public sealed class ColonizationCommodityOverlayViewModel
 
     public bool HasRows => Plan.Rows.Count > 0;
 
-    public bool HasFleetCarriers => Plan.FleetCarriers.Count > 0;
+    public bool HasFleetCarriers => preferences.ShowFleetCarrierCargo
+        && Plan.FleetCarriers.Count > 0;
 
     public bool IsConstructionComplete => Plan.IsConstructionComplete;
 
@@ -88,21 +92,35 @@ public sealed class ColonizationCommodityOverlayViewModel
         }
     }
 
-    public bool ShouldAutoShow => Plan.HasContent
+    public bool ShouldAutoShow => preferences.AutoShow
+        && Plan.HasContent
         && status is not null
         && !status.FsdChargingJump
         && !status.Flags.HasFlag(StatusFlags.FsdJump)
         && status.GuiFocus is not GuiFocus.GalaxyMap
             and not GuiFocus.ExternalPanel
-        && (status.GuiFocus is GuiFocus.StationServices
-                or GuiFocus.InternalPanel
+        && (status.GuiFocus == GuiFocus.StationServices
+            || preferences.ShowOnRightPanel
+                && status.GuiFocus == GuiFocus.InternalPanel
             || Plan.IsAtConstructionSite
                 && status.Docked
                 && status.GuiFocus == GuiFocus.NoFocus);
 
-    public string CollapseModeText => showSatisfiedGroups
-        ? "Covered Fleet Carrier groups are expanded."
-        : "Covered Fleet Carrier groups collapse automatically.";
+    public string CollapseModeText =>
+        preferences.CollapseCoveredGroups ^ showSatisfiedGroups
+            ? "Covered Fleet Carrier groups collapse automatically."
+            : "Covered Fleet Carrier groups are expanded.";
+
+    public string FleetCarrierColumnHeader =>
+        preferences.InlineFleetCarrierCargo
+            ? "HAVE"
+            : preferences.ShowFleetCarrierDelta
+                ? "FC Δ"
+                : "FC";
+
+    public string ShipColumnHeader => preferences.InlineFleetCarrierCargo
+        ? string.Empty
+        : "SHIP";
 
     public string PlatformStatus
     {
@@ -138,6 +156,18 @@ public sealed class ColonizationCommodityOverlayViewModel
         OnPropertyChanged(nameof(CollapseModeText));
     }
 
+    public void ApplyPreferences(
+        ColonizationOverlayPreferences updatedPreferences)
+    {
+        ArgumentNullException.ThrowIfNull(updatedPreferences);
+        preferences = updatedPreferences;
+        RebuildGroups();
+        RaisePlanProperties();
+        OnPropertyChanged(nameof(CollapseModeText));
+        OnPropertyChanged(nameof(FleetCarrierColumnHeader));
+        OnPropertyChanged(nameof(ShipColumnHeader));
+    }
+
     public void ApplyPreparation(OverlayPreparationResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -153,13 +183,20 @@ public sealed class ColonizationCommodityOverlayViewModel
             .Select(group =>
             {
                 var rows = group.Select(row =>
-                        new ColonizationCommodityOverlayRowViewModel(row))
+                        new ColonizationCommodityOverlayRowViewModel(
+                            row,
+                            preferences.ShowFleetCarrierCargo,
+                            preferences.ShowFleetCarrierDelta,
+                            preferences.InlineFleetCarrierCargo))
                     .ToArray();
                 var canCollapse = !Plan.IsAtConstructionSite
+                    && preferences.ShowFleetCarrierCargo
                     && Plan.FleetCarriers.Count > 0
                     && rows.All(row =>
                         row.FleetCarriersHaveEnough && row.InShip == 0);
-                var isCollapsed = canCollapse && !showSatisfiedGroups;
+                var isCollapsed = canCollapse
+                    && (preferences.CollapseCoveredGroups
+                        ^ showSatisfiedGroups);
                 return new ColonizationCommodityGroupViewModel(
                     group.Key,
                     isCollapsed ? [] : rows,
@@ -244,10 +281,16 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
     bool IsAssignedToOther,
     bool ShipHasEnough,
     bool FleetCarriersHaveEnough,
-    bool HasSurplusInShip)
+    bool HasSurplusInShip,
+    bool ShowFleetCarrierCargo,
+    bool ShowFleetCarrierDelta,
+    bool InlineFleetCarrierCargo)
 {
     public ColonizationCommodityOverlayRowViewModel(
-        ColonizationCommodityPlanRow row)
+        ColonizationCommodityPlanRow row,
+        bool showFleetCarrierCargo,
+        bool showFleetCarrierDelta,
+        bool inlineFleetCarrierCargo)
         : this(
             row.Commodity,
             row.DisplayName,
@@ -258,17 +301,44 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
             row.IsAssignedToOther,
             row.ShipHasEnough,
             row.FleetCarriersHaveEnough,
-            row.HasSurplusInShip)
+            row.HasSurplusInShip,
+            showFleetCarrierCargo,
+            showFleetCarrierDelta,
+            inlineFleetCarrierCargo)
     {
     }
 
     public string NeededText => Needed.ToString("N0");
 
-    public string InShipText => InShip > 0 ? InShip.ToString("N0") : string.Empty;
-
-    public string OnFleetCarriersText => OnFleetCarriers > 0
-        ? OnFleetCarriers.ToString("N0")
+    public string InShipText => !InlineFleetCarrierCargo && InShip > 0
+        ? InShip.ToString("N0")
         : string.Empty;
+
+    public string OnFleetCarriersText
+    {
+        get
+        {
+            if (InlineFleetCarrierCargo && InShip > 0)
+            {
+                return InShip.ToString("N0");
+            }
+
+            if (!ShowFleetCarrierCargo || OnFleetCarriers <= 0)
+            {
+                return string.Empty;
+            }
+
+            if (!ShowFleetCarrierDelta)
+            {
+                return OnFleetCarriers.ToString("N0");
+            }
+
+            var difference = OnFleetCarriers - Needed;
+            return difference > 0
+                ? $"+{difference:N0}"
+                : difference.ToString("N0");
+        }
+    }
 
     public bool IsSatisfied => ShipHasEnough || FleetCarriersHaveEnough;
 

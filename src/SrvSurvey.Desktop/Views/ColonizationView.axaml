@@ -47,6 +47,40 @@
         </Grid>
       </Border>
 
+      <Expander HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                IsExpanded="False">
+        <Expander.Header>
+          <StackPanel Spacing="3">
+            <TextBlock Classes="card-title" Text="Shopping overlay" />
+            <TextBlock Classes="muted"
+                       Text="Configure the passive in-game commodity list and linked Fleet Carrier columns." />
+          </StackPanel>
+        </Expander.Header>
+        <Border Margin="0,12,0,0" Classes="card">
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
+            <StackPanel Spacing="10">
+              <CheckBox IsChecked="{Binding Colonization.AutoShowCommodityOverlay, Mode=TwoWay}"
+                        Content="Auto-show shopping overlay" />
+              <CheckBox IsChecked="{Binding Colonization.ShowCommodityOverlayOnRightPanel, Mode=TwoWay}"
+                        Content="Show while the right panel is open" />
+              <CheckBox IsChecked="{Binding Colonization.CollapseCoveredCommodityGroups, Mode=TwoWay}"
+                        Content="Collapse groups covered by linked FCs" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="10">
+              <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierCargo, Mode=TwoWay}"
+                        Content="Show linked Fleet Carrier cargo" />
+              <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierDelta, Mode=TwoWay}"
+                        IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
+                        Content="Show FC surplus or deficit" />
+              <CheckBox IsChecked="{Binding Colonization.InlineFleetCarrierCargo, Mode=TwoWay}"
+                        IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
+                        Content="Combine FC and ship counts" />
+            </StackPanel>
+          </Grid>
+        </Border>
+      </Expander>
+
       <Border Classes="card">
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">

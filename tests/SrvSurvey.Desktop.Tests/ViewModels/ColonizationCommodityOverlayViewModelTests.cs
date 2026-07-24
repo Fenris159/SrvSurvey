@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -93,6 +94,36 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         Assert.Equal("20", row.InShipText);
         Assert.Contains("100 remaining", viewModel.RemainingSummary);
         Assert.Contains("80 deficit", viewModel.FleetCarrierSummary);
+    }
+
+    [Fact]
+    public void PreferencesControlAutoShowDeltaAndInlineColumns()
+    {
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+        viewModel.Apply(Plan(), Status(GuiFocus.InternalPanel));
+        viewModel.ApplyPreferences(
+            ColonizationOverlayPreferences.Default with
+            {
+                AutoShow = false,
+                ShowFleetCarrierDelta = true,
+            });
+
+        Assert.False(viewModel.ShouldAutoShow);
+        var deltaRow = Assert.Single(Assert.Single(viewModel.Groups).Rows);
+        Assert.Equal("-80", deltaRow.OnFleetCarriersText);
+        Assert.Equal("FC Δ", viewModel.FleetCarrierColumnHeader);
+
+        viewModel.ApplyPreferences(
+            ColonizationOverlayPreferences.Default with
+            {
+                InlineFleetCarrierCargo = true,
+            });
+
+        var inlineRow = Assert.Single(Assert.Single(viewModel.Groups).Rows);
+        Assert.Equal("20", inlineRow.OnFleetCarriersText);
+        Assert.Empty(inlineRow.InShipText);
+        Assert.Equal("HAVE", viewModel.FleetCarrierColumnHeader);
+        Assert.Empty(viewModel.ShipColumnHeader);
     }
 
     private static ColonizationCommodityPlan Plan()
