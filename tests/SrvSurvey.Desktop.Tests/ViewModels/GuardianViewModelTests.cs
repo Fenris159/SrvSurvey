@@ -17,6 +17,12 @@ public sealed class GuardianViewModelTests
 
             Assert.Equal(759, viewModel.Rows.Count);
             Assert.Contains("759 of 759", viewModel.Summary);
+            Assert.NotNull(viewModel.MapProjection);
+            Assert.Equal(
+                viewModel.SelectedSite?.Reference.SiteType,
+                viewModel.MapProjection?.SiteType);
+            Assert.NotEmpty(viewModel.MapProjection!.Points);
+            Assert.Contains("Reference map only", viewModel.MapStatus);
 
             viewModel.SelectedKindFilter = "Ruins";
             viewModel.SelectedSiteTypeFilter = "Beta";
@@ -57,6 +63,7 @@ public sealed class GuardianViewModelTests
             Assert.Equal(target.Reference, viewModel.Rows[0].Reference);
             Assert.Equal(0, viewModel.Rows[0].Distance);
             Assert.Contains("GR 1 system", viewModel.OriginStatus);
+            Assert.Contains("GR 1", viewModel.MapTitle);
         }
         finally
         {

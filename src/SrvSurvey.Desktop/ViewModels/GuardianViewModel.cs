@@ -16,7 +16,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
     private readonly GuardianSiteCatalog references;
     private readonly GuardianPublishedSiteCatalog publishedSites;
+    private readonly GuardianSiteTemplateCatalog templates;
     private readonly GuardianSurveyCompletionCalculator completionCalculator;
+    private readonly GuardianSiteMapProjector mapProjector = new();
     private readonly GuardianCommanderDataReader commanderDataReader;
     private readonly GuardianCommanderSurveyStore commanderSurveyStore;
     private readonly AsyncCommand refreshCommand;
@@ -25,6 +27,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         GuardianCommanderDataReadResult.Empty;
     private GuardianSiteVisitCatalog visits;
     private IReadOnlyList<GuardianSiteRowViewModel> rows = [];
+    private GuardianSiteMapProjection? mapProjection;
     private string filterText = string.Empty;
     private string selectedKindFilter = AllKinds;
     private string selectedVisitFilter = AllVisits;
@@ -48,8 +51,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         this.references = references ?? GuardianSiteCatalog.LoadEmbedded();
         this.publishedSites = publishedSites
             ?? GuardianPublishedSiteCatalog.LoadEmbedded();
-        completionCalculator = new GuardianSurveyCompletionCalculator(
-            templates ?? GuardianSiteTemplateCatalog.LoadEmbedded());
+        this.templates = templates ?? GuardianSiteTemplateCatalog.LoadEmbedded();
+        completionCalculator = new GuardianSurveyCompletionCalculator(this.templates);
         commanderDataReader = new GuardianCommanderDataReader(dataDirectory);
         commanderSurveyStore = new GuardianCommanderSurveyStore(dataDirectory);
         liveSiteState = new GuardianLiveSiteState(this.references);
@@ -110,11 +113,34 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             if (SetField(ref selectedSite, value))
             {
                 OnPropertyChanged(nameof(HasSelectedSite));
+                UpdateMapProjection();
             }
         }
     }
 
     public bool HasSelectedSite => SelectedSite is not null;
+
+    public GuardianSiteMapProjection? MapProjection
+    {
+        get => mapProjection;
+        private set => SetField(ref mapProjection, value);
+    }
+
+    public string MapTitle => SelectedSite is { } row
+        ? $"{row.DisplayId} · {row.SiteDescription}"
+        : "Select a Guardian site";
+
+    public string MapSummary => MapProjection is { } projection
+        ? $"{projection.Points.Count:N0} mapped objects · "
+            + $"{projection.ConfirmedPointCount:N0} of "
+            + $"{projection.SurveyablePointCount:N0} survey points confirmed"
+        : "No compatible map template is available.";
+
+    public string MapStatus => SelectedSite is { } row
+        ? row.Visit.HasCommanderData
+            ? "Commander survey states and raw POIs are overlaid on the reference map."
+            : "Reference map only. Visit this site to begin a commander survey."
+        : "Choose a site on the Sites & surveys tab.";
 
     public GuardianLiveSiteSnapshot? ActiveSite => liveSiteState.CurrentSite;
 
@@ -515,6 +541,58 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ActiveSiteReference));
         OnPropertyChanged(nameof(ActiveSiteLocation));
         OnPropertyChanged(nameof(ActiveSiteVisit));
+    }
+
+    private void UpdateMapProjection()
+    {
+        var row = SelectedSite;
+        if (row is null)
+        {
+            MapProjection = null;
+            NotifyMapTextChanged();
+            return;
+        }
+
+        var survey = FindSurvey(row.Reference);
+        var siteType = survey is not null
+            && !string.Equals(
+                survey.SiteType,
+                "Unknown",
+                StringComparison.OrdinalIgnoreCase)
+                    ? survey.SiteType
+                    : row.Reference.SiteType;
+        var template = templates.Find(siteType)
+            ?? templates.Find(row.Reference.SiteType);
+        MapProjection = template is null
+            ? null
+            : mapProjector.Project(
+                template,
+                survey?.Survey,
+                survey?.ActiveObelisks,
+                survey?.ObeliskGroups);
+        NotifyMapTextChanged();
+    }
+
+    private GuardianCommanderSiteSurvey? FindSurvey(
+        GuardianSiteReference reference)
+    {
+        return commanderData.Surveys.FirstOrDefault(survey =>
+            survey.SystemAddress == reference.SystemAddress
+            && survey.Index == reference.Index
+            && (reference.BodyId >= 0 && survey.BodyId >= 0
+                ? reference.BodyId == survey.BodyId
+                : string.Equals(
+                    survey.BodyName,
+                    reference.FullBodyName,
+                    StringComparison.OrdinalIgnoreCase))
+            && IsRuins(survey) == (reference.Kind == GuardianSiteKind.Ruins));
+    }
+
+    private void NotifyMapTextChanged()
+    {
+        OnPropertyChanged(nameof(MapTitle));
+        OnPropertyChanged(nameof(MapSummary));
+        OnPropertyChanged(nameof(MapStatus));
     }
 
     private void ApplyFilters()
