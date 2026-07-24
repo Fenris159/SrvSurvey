@@ -235,7 +235,7 @@ not expected to run as a headless container service.
 
 | Feature | Core | Desktop UI | Windows runtime | Linux runtime |
 | --- | --- | --- | --- | --- |
-| Application shell | Not applicable | Modern navigation plus Overview, Exploration, Exobiology, Travel, Search, Diagnostics, Settings, and explicit pending states | Blue dark/light shell plus current Overview, Exobiology, Travel, and Search visual/accessibility smoke passed; Exploration page needs current visual recheck | Not tested |
+| Application shell | Not applicable | Modern navigation plus Overview, Exploration, Exobiology, Travel, Search, Guardian, Colonisation, Diagnostics, Settings, and explicit pending states | Blue dark/light shell plus current Overview, Exobiology, Travel, Search, Guardian, Colonisation, and Settings visual smoke passed; Exploration page needs current visual recheck | Not tested |
 | Journal folder discovery | Implemented; 3 tests | Paths and errors shown | Missing and default paths smoke-tested | Not tested |
 | Journal ingestion/state | Retrying status/cargo readers plus polling journal append/partial-line/rotation and `Status.json`/`Cargo.json`/`NavRoute.json` change monitor; shared bootstrap/live reducer | Overview and Diagnostics projections update live; cargo changes feed Guardian artifact state | Earlier bootstrap state and cargo-backed inactive Guardian state inspected; current live monitor not exercised with Elite | Not tested |
 | Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
@@ -245,9 +245,11 @@ not expected to run as a headless container service.
 | Ground target tracking | Legacy coordinate parsing plus cardinal formats, validated settings, great-circle distance/bearing, relative heading, and approach bands implemented | Travel target editor supports typed, current, clipboard, clear, and live guidance; overlay remains pending | Inactive/live-profile page visually and accessibility checked; active surface guidance not run | Not tested |
 | Spherical search limit | Legacy-compatible center/radius state, strict boundary rule, lossless commander persistence, journal galactic position, and current Spansh response contract implemented | Search supports center lookup and selection, 1–1000 ly radius, enable/disable, and current-system distance/result; `PlotSphericalSearch` remains pending | Live profile page and Sol lookup visually/accessibility checked; save action enabled but profile was not changed | Not tested |
 | Boxel search | Generated-name hierarchy, ID64 decoding for generated and hand-authored names, completion/skip rules, lossless commander fields, legacy local-system and empty-boxel files, paged Spansh search, live `NavRoute.json`/journal updates, and cancellable full-area completion audit with partial results implemented | Search supports activation, mass-code/date options, current/parent/sibling/child navigation, expected counts, manual completion, empty marking, current-system highlighting, refresh, manual/Galaxy Map clipboard copy, audit progress/cancellation, and a large-audit confirmation guard | Inactive live-profile page and audit controls visually and accessibility checked at 1182 by 790; automated ID64, source-merge, live-completion, audit, cancellation, and confirmation integration passed; no search/profile/audit action was invoked | Not tested |
+| Nearby biological systems | Canonn nearest-codex and POI enrichment plus Spansh missing-variant request/response contracts implemented; malformed rows are excluded and Spansh results are limited to five unique systems | Search supports current journal reference coordinates, both legacy modes, validation, result selection, copy name/coordinates, Canonn/Spansh links, and the original Spansh result page | Both modes and conditional inputs visually checked in Blue dark at 1182 by 790 without issuing a live query; automated request, enrichment, selection, clipboard, address-resolution, and link coverage passed | Not tested |
 | Guardian surveys | All 759 shipped sites, 13 map templates, 729 published surveys, exact completion scoring, duplicate-ID/full-body matching, legacy/current commander files, compact/old POI and obelisk formats, visits, notes, beacon locations, live site transitions/writes, native map projection, lossless survey editing, cargo artifact aliases, 25 m obelisk proximity, scan persistence, and both Ram Tah missions implemented; advanced authoring and remaining Guardian plotter modes remain | Browser, clipboard actions, native maps, survey editor, live-site/scanner cards, artifact requirements, scan toggle, both complete Ram Tah workspaces, and a detached live map/current-obelisk overlay implemented | Live-profile browser, maps/editor, Ram Tah tabs, and inactive scanner card visually checked at 1182 by 790; scanner checked in Blue dark/light without changing commander state; detached overlay compiled and automated but active in-game proximity was not run | Not tested |
 | Overlays/input | Passive overlay contract, monitor-aware placement, Windows native click-through/client tracking, X11 XShape click-through/EWMH tracking, Wayland overlay gating, SharpHook keyboard input, and SDL3 controller input implemented; remaining plotters pending | Guardian live map/current-obelisk overlay follows foreground Elite and closes on unsafe states; all 30 legacy chords are editable and keyboard/controller events share focus-aware routing | Placement, capability, identity, hook, controller lifecycle, and chord tests passed; Windows keyboard hook reached active and SDL enumerated successfully without hardware; no live Elite overlay or physical controller session run | Native libraries present in Linux publish; runtime not tested |
-| Secondary features | Not implemented | Not implemented | Not tested | Not tested |
+| Colonisation projects | Shipped build costs, construction depot state, commander Raven profile, project creation validation, aggregate commodity planning, Cargo/Market readers, carrier inventories, Raven cargo reconciliation/endpoints, and lossless API-key persistence implemented | Opt-in project workspace and creation review, depot progress, market/ship/FC shopping overlay, overlay preferences, and credential-gated linked-carrier sync implemented | Main workspace and shopping overlay visually checked in Blue dark; automated core/UI coverage passed; no external publish or live Elite overlay session was run | Not tested |
+| Secondary features | Nearest systems and colonisation project forms are implemented; remaining rows are tracked in `docs/UI_PORTING_MATRIX.md` | Implemented slices are integrated into Search and Colonisation; other secondary forms remain open | See per-feature rows and UI matrix | Not tested |
 | Packaging/AppImage | Self-contained publish configured; no AppImage | Not applicable | `win-x64` publish passed | Cross-publish passed; runtime not tested |
 
 Update this table only with evidence from the relevant exit gate.
@@ -260,7 +262,7 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 292 tests: 184 Core tests and 108 Desktop tests.
+  passed all 376 tests: 235 Core tests and 141 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
@@ -301,6 +303,12 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   hashing/updates, bootstrap replay suppression, live jump/FSS completion,
   Galaxy Map auto-copy, tree navigation, source merging, full-area completion,
   partial-result cancellation, and the large-audit confirmation guard.
+- Automated nearby-system coverage exercises the exact Canonn nearest/POI and
+  Spansh body-search shapes, biological-note summaries, malformed-response
+  handling, five-unique-system limit, current-system/commander context,
+  validation, row selection, clipboard actions, Canonn/Spansh links, and address
+  resolution for Canonn results. Both conditional mode layouts were visually
+  checked at 1182 by 790 in Blue (dark), with no live query or browser action.
 - Automated Guardian coverage loads all 759 reference sites, all 13 map
   templates, and all 729 published surveys; reproduces every shipped survey
   percentage; preserves the duplicate `GS 80` identities and case-sensitive
@@ -350,6 +358,13 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   `SDL3.dll`/`libSDL3.so` and `uiohook.dll`/`libuiohook.so` native libraries.
   The Settings input cards, all 30 binding editors, and the SDL device picker
   were visually/accessibility checked in the saved Blue (light) theme.
+- Automated Colonisation coverage now includes the shipped build catalog,
+  construction journal state, project validation/creation, commander Fleet
+  Carriers, ship cargo capacity, aggregate commodity allocation, local Market
+  guidance and freshness, Raven project/cargo endpoints, credential persistence,
+  exact market reconciliation, consent gating, and pending sync state. The main
+  workspace and detached shopping overlay were visually checked without
+  publishing commander or carrier data.
 - The workflow YAML and `global.json` parsed successfully.
 
 Not validated in this environment:

@@ -33,9 +33,9 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, journeys and routes | Ground-target editor, clipboard/current actions, persistence, and live guidance implemented; journeys/routes remain pending |
-| Search | `Main` Search menu, sphere/boxel forms | Spatial and boxel searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest-system workflow remains pending |
+| Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
-| Colonisation | `Main` Colonise menu and project forms | Raven projects and construction state | Not ported |
+| Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
 | Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; overlay adjustment and privacy settings remain |
 
@@ -63,9 +63,9 @@ system/body and platform behavior is ported.
 | `FormJourneyEdit` | Travel / Journeys | Not ported |
 | `FormJourneyList` | Travel / Journeys | Not ported |
 | `FormJourneyViewer` | Travel / Journeys | Not ported |
-| `FormMyProjects` | Colonisation / Projects | Not ported |
-| `FormNearestSystems` | Search / Nearby systems | Not ported |
-| `FormNewProject` | Colonisation / Projects | Not ported |
+| `FormMyProjects` | Colonisation / Projects | Implemented with opt-in Raven loading, hidden-project selection, primary-project display, aggregate cargo planning, current-ship trip estimates, refresh/save, and Raven build link; Windows visually checked |
+| `FormNearestSystems` | Search / Nearby systems | Implemented with current journal coordinates, Canonn signal and Spansh missing-variant searches, enriched notes, five unique results, selection, clipboard actions, Canonn/Spansh links, and original Spansh search link; Windows visually checked |
+| `FormNewProject` | Colonisation / Projects | Implemented with live depot/docked context, shipped build catalog, planned Raven sites, location/build/layout/body/architect/notes fields, validation, explicit review/confirm publishing, refresh, and created-project link; Windows visually checked |
 | `FormPlayComms` | Developer tools | Deferred |
 | `FormPlayDev` | Developer tools | Deferred |
 | `FormPlayJournal` | Diagnostics / Journal tools | Not ported |
@@ -117,6 +117,14 @@ edits every legacy action binding; controller chords retain the original
 first-release dispatch behavior. Wayland keyboard capture remains disabled,
 while SDL controller input can operate when the Avalonia app itself is active.
 
+The code-rendered legacy `PlotBuildCommodities` surface is not part of the 22
+designer count above. Its Avalonia replacement is implemented as the detached
+construction shopping overlay with project grouping, ship and linked Fleet
+Carrier quantities, pending-sync state, market availability guidance,
+completion/collapse modes, and persisted display preferences. It uses the same
+passive-window lifecycle as the Guardian overlay. Legacy squadron Fleet Carrier
+and music-state auto-show special cases still remain open.
+
 ## Raven Colonial theme contract
 
 The live theme menu at <https://ravencolonial.com/> exposes five named themes.
@@ -158,12 +166,20 @@ check at 1182 by 790, using a live journal folder:
   correct disabled state.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
-  full-area audit controls, and an explicit nearby-systems pending card. A live
+  full-area audit controls, and the nearby-biology workspace. A live
   Spansh lookup for Sol returned five matches, selected the exact system,
   calculated 131.09 ly from Facece, and enabled the save action without changing
   the live commander profile. UI Automation exposed the spherical and Boxel
   controls, including the inactive audit/cancel states; no Boxel action or audit
-  was invoked.
+  was invoked. Both nearby modes, their conditional inputs, current Facece
+  reference coordinates, selected-result actions, and disabled empty states
+  were visually checked in Blue (dark) without issuing a network query.
+- Colonisation rendered external-data consent, active project selection, live
+  construction resources, project creation/review, Fleet Carrier credential and
+  sync controls, and shopping-overlay preferences. The detached shopping
+  overlay was visually checked with grouped commodities, market badges, ship/FC
+  columns, collapse options, and pending-state presentation; no external publish
+  was made during the visual checks.
 - Guardian rendered all 759 shipped sites ordered from the live Facece position,
   filtered immediately to the unique `GR 1` system address, and exposed selected
   site/commander details plus system, address, galactic-position, and lat/long
