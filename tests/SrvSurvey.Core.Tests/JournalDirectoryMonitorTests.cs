@@ -33,6 +33,14 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
             "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"NavRoute\","
                 + "\"Route\":[{\"StarSystem\":\"Praea Euq IL-P c5-2\","
                 + "\"SystemAddress\":102,\"StarPos\":[1,2,3],\"StarClass\":\"M\"}]}");
+        var cargoPath = Path.Combine(
+            temporaryDirectory,
+            CargoFileReader.FileName);
+        await File.WriteAllTextAsync(
+            cargoPath,
+            "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Cargo\","
+                + "\"Vessel\":\"SRV\",\"Count\":1,\"Inventory\":[{\"Name\":"
+                + "\"ancientorb\",\"Count\":1,\"Stolen\":0}]}");
         var monitor = new JournalDirectoryMonitor(temporaryDirectory);
 
         var initial = await monitor.PollAsync();
@@ -44,6 +52,7 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         Assert.Equal(
             "Praea Euq IL-P c5-2",
             Assert.Single(initial.NavRoute.Route).StarSystem);
+        Assert.Equal(1, initial.Cargo?.GetCount("ancientorb"));
         Assert.Empty(initial.Errors);
         Assert.True(initial.IsBootstrapRead);
 
@@ -58,7 +67,17 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         await File.AppendAllTextAsync(firstJournal, "Event\",\"Value\":42}\n");
         var completed = await monitor.PollAsync();
         Assert.Equal("FutureEvent", Assert.Single(completed.JournalEvents).EventName);
+        Assert.Null(completed.Cargo);
         Assert.Empty(completed.Errors);
+
+        await File.WriteAllTextAsync(
+            cargoPath,
+            "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Cargo\","
+                + "\"Vessel\":\"SRV\",\"Count\":2,\"Inventory\":[{\"Name\":"
+                + "\"ancientorb\",\"Count\":2,\"Stolen\":0}]}");
+        var cargoChanged = await monitor.PollAsync();
+        Assert.Equal(2, cargoChanged.Cargo?.GetCount("ancientorb"));
+        Assert.Equal(2, monitor.CurrentCargo?.Count);
 
         await File.WriteAllTextAsync(
             navRoutePath,
