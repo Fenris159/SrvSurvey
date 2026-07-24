@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Guardian;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -159,6 +160,75 @@ public sealed class GuardianViewModelTests
         }
     }
 
+    [Fact]
+    public async Task LiveJournalVisitCreatesSurveyAndSelectsKnownSite()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var viewModel = new GuardianViewModel(root);
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+
+            await viewModel.ApplyJournalEventsAsync(
+            [
+                Parse(
+                    """{"timestamp":"2026-07-24T10:00:00Z","event":"Location","StarSystem":"Synuefe XR-H d11-102","SystemAddress":3515254557027}"""),
+                Parse(
+                    """{"timestamp":"2026-07-24T10:05:00Z","event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":3515254557027,"BodyID":13,"BodyName":"Synuefe XR-H d11-102 1 b","Latitude":-46.576923,"Longitude":133.985107}"""),
+            ],
+            "Drew");
+
+            Assert.True(viewModel.HasActiveSite);
+            Assert.Equal("GR 1", viewModel.ActiveSite?.Reference?.DisplayId);
+            Assert.Equal("GR 1", viewModel.SelectedSite?.DisplayId);
+            Assert.True(viewModel.SelectedSite?.Visit.IsVisited);
+            Assert.Contains("Recorded the live Guardian site", viewModel.StatusMessage);
+
+            var reader = new GuardianCommanderDataReader(root);
+            var data = await reader.ReadAsync("F123", isOdyssey: true);
+            var survey = Assert.Single(data.Surveys);
+            Assert.Equal("Drew", survey.Commander);
+            Assert.Equal("Beta", survey.SiteType);
+            Assert.Equal(
+                new GuardianSurfaceLocation(-46.576923, 133.985107),
+                survey.Survey.Location);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task LiveDepartureClearsSiteWithoutRemovingRecordedVisit()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var viewModel = new GuardianViewModel(root);
+            await viewModel.LoadProfileAsync("F123", isOdyssey: false);
+            await viewModel.ApplyJournalEventsAsync(
+            [
+                Parse(
+                    """{"timestamp":"2026-07-24T10:05:00Z","event":"ApproachSettlement","Name":"$Ancient_Tiny_001:#index=1;","Name_Localised":"Guardian Structure","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":1,"Longitude":2}"""),
+                Parse(
+                    """{"timestamp":"2026-07-24T10:06:00Z","event":"SupercruiseEntry"}"""),
+            ],
+            "Drew");
+
+            Assert.False(viewModel.HasActiveSite);
+            var reader = new GuardianCommanderDataReader(root);
+            var data = await reader.ReadAsync("F123", isOdyssey: false);
+            var survey = Assert.Single(data.Surveys);
+            Assert.Equal("Lacrosse", survey.SiteType);
+            Assert.True(survey.Legacy);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
     private static string CreateTemporaryDirectory()
     {
         var path = Path.Combine(
@@ -166,5 +236,15 @@ public sealed class GuardianViewModelTests
             $"SrvSurvey-guardian-vm-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static JournalEventEnvelope Parse(string json)
+    {
+        var success = JournalEventEnvelope.TryParse(
+            json,
+            out var journalEvent,
+            out var error);
+        Assert.True(success, error);
+        return Assert.IsType<JournalEventEnvelope>(journalEvent);
     }
 }

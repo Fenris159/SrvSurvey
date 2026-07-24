@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Guardian;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -17,7 +18,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private readonly GuardianPublishedSiteCatalog publishedSites;
     private readonly GuardianSurveyCompletionCalculator completionCalculator;
     private readonly GuardianCommanderDataReader commanderDataReader;
+    private readonly GuardianCommanderSurveyStore commanderSurveyStore;
     private readonly AsyncCommand refreshCommand;
+    private GuardianLiveSiteState liveSiteState;
+    private GuardianCommanderDataReadResult commanderData =
+        GuardianCommanderDataReadResult.Empty;
     private GuardianSiteVisitCatalog visits;
     private IReadOnlyList<GuardianSiteRowViewModel> rows = [];
     private string filterText = string.Empty;
@@ -46,6 +51,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         completionCalculator = new GuardianSurveyCompletionCalculator(
             templates ?? GuardianSiteTemplateCatalog.LoadEmbedded());
         commanderDataReader = new GuardianCommanderDataReader(dataDirectory);
+        commanderSurveyStore = new GuardianCommanderSurveyStore(dataDirectory);
+        liveSiteState = new GuardianLiveSiteState(this.references);
         visits = GuardianSiteVisitCatalog.Merge(
             this.references,
             GuardianCommanderDataReadResult.Empty,
@@ -108,6 +115,10 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     }
 
     public bool HasSelectedSite => SelectedSite is not null;
+
+    public GuardianLiveSiteSnapshot? ActiveSite => liveSiteState.CurrentSite;
+
+    public bool HasActiveSite => ActiveSite is not null;
 
     public string FilterText
     {
@@ -218,9 +229,95 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         bool isOdyssey,
         CancellationToken cancellationToken = default)
     {
+        if (!string.Equals(
+                activeFrontierId,
+                frontierId,
+                StringComparison.OrdinalIgnoreCase)
+            || activeIsOdyssey != isOdyssey)
+        {
+            liveSiteState = new GuardianLiveSiteState(references);
+            NotifyActiveSiteChanged();
+        }
+
         activeFrontierId = frontierId;
         activeIsOdyssey = isOdyssey;
         await RefreshAsync(cancellationToken);
+    }
+
+    public async Task ApplyJournalEventsAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        string? commanderName,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(journalEvents);
+        var activeSiteChanged = false;
+        var surveyChanged = false;
+        string? saveStatus = null;
+        foreach (var journalEvent in journalEvents)
+        {
+            var previous = liveSiteState.CurrentSite;
+            var recognized = liveSiteState.Apply(journalEvent);
+            if (liveSiteState.CurrentSite != previous)
+            {
+                activeSiteChanged = true;
+            }
+
+            if (!recognized
+                || journalEvent.EventName != "ApproachSettlement"
+                || liveSiteState.CurrentSite is null
+                || activeFrontierId is null)
+            {
+                continue;
+            }
+
+            try
+            {
+                var existing = FindSurvey(liveSiteState.CurrentSite);
+                var survey = liveSiteState.CreateOrUpdateSurvey(
+                    commanderName ?? string.Empty,
+                    legacy: !activeIsOdyssey,
+                    existing);
+                var path = await commanderSurveyStore.SaveAsync(
+                    activeFrontierId,
+                    activeIsOdyssey,
+                    survey,
+                    cancellationToken);
+                ReplaceSurvey(survey with { Path = path });
+                surveyChanged = true;
+                saveStatus = $"Recorded the live Guardian site in "
+                    + $"{Path.GetFileName(path)}.";
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or InvalidDataException)
+            {
+                saveStatus = "The live Guardian site was detected but its survey "
+                    + "could not be saved: "
+                    + exception.Message;
+            }
+        }
+
+        if (activeSiteChanged)
+        {
+            NotifyActiveSiteChanged();
+        }
+
+        if (surveyChanged)
+        {
+            visits = GuardianSiteVisitCatalog.Merge(
+                references,
+                commanderData,
+                publishedSites,
+                completionCalculator);
+            ApplyFilters();
+            SelectActiveReference();
+        }
+
+        if (saveStatus is not null)
+        {
+            StatusMessage = saveStatus;
+        }
     }
 
     public void SetProfileError(string error)
@@ -273,7 +370,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         IsBusy = true;
         try
         {
-            var commanderData = await commanderDataReader.ReadAsync(
+            commanderData = await commanderDataReader.ReadAsync(
                 activeFrontierId,
                 activeIsOdyssey,
                 cancellationToken);
@@ -324,6 +421,69 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         {
             StatusMessage = $"The {label} could not be copied: {exception.Message}";
         }
+    }
+
+    private GuardianCommanderSiteSurvey? FindSurvey(
+        GuardianLiveSiteSnapshot site)
+    {
+        return commanderData.Surveys.FirstOrDefault(survey =>
+            survey.SystemAddress == site.SystemAddress
+            && survey.Index == site.Index
+            && IsSameBody(site, survey)
+            && IsRuins(survey) == (site.Kind == GuardianSiteKind.Ruins));
+    }
+
+    private void ReplaceSurvey(GuardianCommanderSiteSurvey survey)
+    {
+        var replaced = FindSurvey(liveSiteState.CurrentSite!);
+        var surveys = commanderData.Surveys
+            .Where(candidate => candidate != replaced)
+            .Append(survey)
+            .OrderBy(candidate => candidate.SystemName)
+            .ThenBy(candidate => candidate.BodyName)
+            .ThenBy(candidate => candidate.Index)
+            .ToArray();
+        commanderData = new GuardianCommanderDataReadResult(
+            surveys,
+            commanderData.Beacons,
+            commanderData.Errors);
+    }
+
+    private void SelectActiveReference()
+    {
+        if (ActiveSite?.Reference is not { } reference)
+        {
+            return;
+        }
+
+        SelectedSite = Rows.FirstOrDefault(row => row.Reference == reference)
+            ?? SelectedSite;
+    }
+
+    private static bool IsSameBody(
+        GuardianLiveSiteSnapshot site,
+        GuardianCommanderSiteSurvey survey)
+    {
+        return site.BodyId >= 0 && survey.BodyId >= 0
+            ? site.BodyId == survey.BodyId
+            : string.Equals(
+                site.BodyName,
+                survey.BodyName,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsRuins(GuardianCommanderSiteSurvey survey)
+    {
+        return survey.Name.StartsWith(
+                "$Ancient:#index=",
+                StringComparison.Ordinal)
+            || survey.Path.Contains("-ruins-", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void NotifyActiveSiteChanged()
+    {
+        OnPropertyChanged(nameof(ActiveSite));
+        OnPropertyChanged(nameof(HasActiveSite));
     }
 
     private void ApplyFilters()

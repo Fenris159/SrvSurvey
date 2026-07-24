@@ -716,6 +716,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             await BoxelSearch.ApplyJournalEventsAsync(update.JournalEvents);
         }
 
+        await Guardian.ApplyJournalEventsAsync(
+            update.JournalEvents,
+            activeProfileCommanderName);
         await RamTah.ApplyJournalEventsAsync(update.JournalEvents);
 
         if (update.Status is not null)
