@@ -104,7 +104,7 @@ desktops.
 | Transparent topmost overlays | Required | Validate | Probe compositor support |
 | Click-through overlay mode | Required | Validate | May be unavailable |
 | Follow Elite game window | Required | Validate | May be unavailable |
-| Global keyboard/controller input | Required | Validate replacement | Portal/compositor dependent |
+| Global keyboard/controller input | Required | Validate replacement | Keyboard portal/compositor dependent; SDL controllers available |
 | VR/Direct3D integration | Preserve as Windows adapter | Not initially planned | Not initially planned |
 
 Unavailable capabilities must disable dependent features with an explanation;
@@ -173,8 +173,8 @@ events remain non-fatal and observable.
   coordinates.
 - [x] Add platform adapters for topmost/click-through behavior and game-window
   tracking.
-- [ ] Replace SharpDX input with maintained APIs and preserve configurable
-  bindings.
+- [x] Replace SharpDX input with maintained APIs and preserve configurable
+  keyboard and controller bindings.
 - [x] Define behavior for unsupported Wayland capabilities.
 - [ ] Measure overlay update cost while the game is active.
 
@@ -184,8 +184,12 @@ XShape input regions plus EWMH/Xlib window discovery. Both follow the active
 Elite client area, account for monitor scaling, hide when Elite is minimized or
 not foreground, and fail closed if click-through cannot be enabled. Wayland
 keeps detached overlays disabled because absolute placement and input regions
-are compositor-controlled. Native Elite runtime checks on Windows and X11,
-global input, and the remaining plotter surfaces are still required.
+are compositor-controlled. SharpHook now provides opt-in global keyboard input
+on Windows and X11, while SDL3 provides standard gamepad, joystick, and HOTAS
+discovery/polling on Windows and Linux with reconnecting stable device IDs and
+legacy chord-release behavior. Native Elite input checks with physical hardware,
+Windows/X11 overlay runtime checks, and the remaining plotter surfaces are still
+required.
 
 Exit gate: overlay positioning, DPI scaling, focus, click-through behavior, and
 input are recorded on the supported platform matrix.
@@ -235,14 +239,14 @@ not expected to run as a headless container service.
 | Journal folder discovery | Implemented; 3 tests | Paths and errors shown | Missing and default paths smoke-tested | Not tested |
 | Journal ingestion/state | Retrying status/cargo readers plus polling journal append/partial-line/rotation and `Status.json`/`Cargo.json`/`NavRoute.json` change monitor; shared bootstrap/live reducer | Overview and Diagnostics projections update live; cargo changes feed Guardian artifact state | Earlier bootstrap state and cargo-backed inactive Guardian state inspected; current live monitor not exercised with Elite | Not tested |
 | Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
-| Settings/data migration | OS paths, legacy discovery, manifests, verified backup/staging/import, and lossless commander profile updates implemented | Explicit backup-and-import workflow in Settings | Automated only; real profile restart comparison not run | Not tested |
+| Settings/data migration | OS paths, legacy discovery, manifests, verified backup/staging/import, lossless commander profile updates, and all 30 legacy input binding names/defaults implemented | Explicit backup-and-import workflow plus opt-in global keyboard/controller settings, validation, default restore, SDL device picker, refresh, and reconnect status | Settings/input UI visually and accessibility checked in Blue light; native keyboard hook reached active; SDL initialized without connected hardware; real profile restart comparison and physical controller input not run | Not tested |
 | Exploration totals | Legacy valuation and six counters plus compatible, atomic profile persistence implemented | Live Overview/Exploration projections and two-step reset | Automated only | Not tested |
 | Organic scans | Codex reference, three-sample state, surface separation, first-footfall reward, sale, death, reset, and compatible profile fields implemented; system/body organism history remains | Live Overview/Exobiology projections and two-step unclaimed reset; predictions/Codex remain pending | Empty/live-profile page visually and accessibility checked; active Elite sampling not run | Not tested |
 | Ground target tracking | Legacy coordinate parsing plus cardinal formats, validated settings, great-circle distance/bearing, relative heading, and approach bands implemented | Travel target editor supports typed, current, clipboard, clear, and live guidance; overlay remains pending | Inactive/live-profile page visually and accessibility checked; active surface guidance not run | Not tested |
 | Spherical search limit | Legacy-compatible center/radius state, strict boundary rule, lossless commander persistence, journal galactic position, and current Spansh response contract implemented | Search supports center lookup and selection, 1–1000 ly radius, enable/disable, and current-system distance/result; `PlotSphericalSearch` remains pending | Live profile page and Sol lookup visually/accessibility checked; save action enabled but profile was not changed | Not tested |
 | Boxel search | Generated-name hierarchy, ID64 decoding for generated and hand-authored names, completion/skip rules, lossless commander fields, legacy local-system and empty-boxel files, paged Spansh search, live `NavRoute.json`/journal updates, and cancellable full-area completion audit with partial results implemented | Search supports activation, mass-code/date options, current/parent/sibling/child navigation, expected counts, manual completion, empty marking, current-system highlighting, refresh, manual/Galaxy Map clipboard copy, audit progress/cancellation, and a large-audit confirmation guard | Inactive live-profile page and audit controls visually and accessibility checked at 1182 by 790; automated ID64, source-merge, live-completion, audit, cancellation, and confirmation integration passed; no search/profile/audit action was invoked | Not tested |
 | Guardian surveys | All 759 shipped sites, 13 map templates, 729 published surveys, exact completion scoring, duplicate-ID/full-body matching, legacy/current commander files, compact/old POI and obelisk formats, visits, notes, beacon locations, live site transitions/writes, native map projection, lossless survey editing, cargo artifact aliases, 25 m obelisk proximity, scan persistence, and both Ram Tah missions implemented; advanced authoring and remaining Guardian plotter modes remain | Browser, clipboard actions, native maps, survey editor, live-site/scanner cards, artifact requirements, scan toggle, both complete Ram Tah workspaces, and a detached live map/current-obelisk overlay implemented | Live-profile browser, maps/editor, Ram Tah tabs, and inactive scanner card visually checked at 1182 by 790; scanner checked in Blue dark/light without changing commander state; detached overlay compiled and automated but active in-game proximity was not run | Not tested |
-| Overlays/input | Passive overlay contract, monitor-aware placement, Windows native click-through/client tracking, X11 XShape click-through/EWMH tracking, and Wayland capability gating implemented; global input and remaining plotters pending | Guardian live map/current-obelisk overlay automatically follows foreground Elite and closes on unsafe/unavailable states | Placement, capability, identity, view-model, and Linux publish checks passed; no live Elite overlay session run | Linux runtime not tested |
+| Overlays/input | Passive overlay contract, monitor-aware placement, Windows native click-through/client tracking, X11 XShape click-through/EWMH tracking, Wayland overlay gating, SharpHook keyboard input, and SDL3 controller input implemented; remaining plotters pending | Guardian live map/current-obelisk overlay follows foreground Elite and closes on unsafe states; all 30 legacy chords are editable and keyboard/controller events share focus-aware routing | Placement, capability, identity, hook, controller lifecycle, and chord tests passed; Windows keyboard hook reached active and SDL enumerated successfully without hardware; no live Elite overlay or physical controller session run | Native libraries present in Linux publish; runtime not tested |
 | Secondary features | Not implemented | Not implemented | Not tested | Not tested |
 | Packaging/AppImage | Self-contained publish configured; no AppImage | Not applicable | `win-x64` publish passed | Cross-publish passed; runtime not tested |
 
@@ -256,7 +260,7 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 243 tests: 184 Core tests and 59 Desktop tests.
+  passed all 292 tests: 184 Core tests and 108 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
@@ -335,6 +339,17 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   commander map projection. The Windows and X11 adapters are compiled into
   self-contained publish outputs, but have not yet been exercised over a live
   Elite window; Wayland remains intentionally disabled.
+- Automated global-input coverage now validates all 30 legacy action names and
+  default chords, keyboard formatting/routing and text-entry suppression,
+  controller button/trigger/eight-way POV chords, first-release dispatch,
+  disconnect clearing, focus/Elite gating, device changes, and settings
+  persistence. The real Windows SharpHook service reached its active state.
+  SDL3 initialized and enumerated successfully with no controller connected;
+  physical button/HOTAS input has not been exercised on this machine.
+- Framework-dependent `win-x64` and `linux-x64` publishes include the expected
+  `SDL3.dll`/`libSDL3.so` and `uiohook.dll`/`libuiohook.so` native libraries.
+  The Settings input cards, all 30 binding editors, and the SDL device picker
+  were visually/accessibility checked in the saved Blue (light) theme.
 - The workflow YAML and `global.json` parsed successfully.
 
 Not validated in this environment:
@@ -343,6 +358,7 @@ Not validated in this environment:
 - The Dockerfile (`docker` is not installed on the validation machine).
 - Linux X11 or Wayland startup, live journals, overlays, input, or AppImage.
 - A live Elite Dangerous session or parity comparison with real commander data.
+- Physical gamepad, joystick, or HOTAS input and reconnect behavior.
 - Minimum-width, OS high-contrast, and non-blue runtime theme rendering.
 
 ## Review and commit strategy

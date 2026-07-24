@@ -37,7 +37,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
 | Colonisation | `Main` Colonise menu and project forms | Raven projects and construction state | Not ported |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
-| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes plus checksum-verified legacy profile import implemented; remaining settings not ported |
+| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; overlay adjustment and privacy settings remain |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
@@ -75,8 +75,8 @@ system/body and platform behavior is ported.
 | `FormRavenUpdater` | Update flow | Not ported |
 | `FormRoute` | Travel / Routes | Not ported |
 | `FormRuins` | Guardian / Survey maps | Partially implemented through the unified site browser, native map renderer, live-site card, and lossless survey editor; dedicated open/share workflows and advanced map authoring remain |
-| `FormSetKeyChord` | Settings / Input | Not ported |
-| `FormSettings` | Settings pages | Raven theme slice implemented; remainder not ported |
+| `FormSetKeyChord` | Settings / Input | Implemented as the unified binding editor with normalized keyboard, button, trigger, and eight-way POV chords plus default restore |
+| `FormSettings` | Settings pages | Raven themes, migration, and global keyboard/controller input implemented; overlay, privacy, and remaining legacy options remain |
 | `FormShareData` | Settings / Privacy | Not ported |
 | `FormShowCodex` | Exobiology / Codex | Not ported |
 | `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
@@ -109,6 +109,13 @@ requirements, scan state, and Ram Tah mission status. Site-type, heading,
 origin/alignment, POI marking input, glide/approach guidance, and
 `PlotGuardianSystem` remain open. The other plotter surfaces remain unported,
 and the new Windows/X11 adapters still require live Elite runtime validation.
+
+Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
+opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,
+joystick, and HOTAS input on Windows and Linux. The Settings page preserves and
+edits every legacy action binding; controller chords retain the original
+first-release dispatch behavior. Wayland keyboard capture remains disabled,
+while SDL controller input can operate when the Avalonia app itself is active.
 
 ## Raven Colonial theme contract
 
@@ -176,6 +183,10 @@ check at 1182 by 790, using a live journal folder:
   paths, refresh action, and update time.
 - Settings rendered all five palette previews. Switching from Blue (dark) to
   Blue (light) updated the complete window and saved the choice.
+- Settings rendered the opt-in keyboard card, all 30 editable binding rows, and
+  the SDL controller picker/status card. The Windows keyboard hook reached its
+  active state during a controlled check and was disabled afterward. SDL device
+  discovery initialized without hardware and reported the empty state cleanly.
 - A pending navigation item rendered the explicit incomplete-feature message.
 - Windows UI Automation exposed all nine navigation destinations, five theme
   buttons, Refresh actions, and the visible page text.
