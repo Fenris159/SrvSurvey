@@ -34,7 +34,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, journeys and routes | Ground-target editor, clipboard/current actions, persistence, and live guidance implemented; journeys/routes remain pending |
 | Search | `Main` Search menu, sphere/boxel forms | Spatial and boxel searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest-system workflow remains pending |
-| Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, and clipboard actions implemented; Ram Tah, survey maps/editors, live site events, writes, and overlays remain |
+| Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, and clipboard actions implemented; both Ram Tah mission states, complete categorized checklists, progress, persistence, resets, and guide links implemented; survey maps/editors, live site events, writes, current-obelisk actions, and overlays remain |
 | Colonisation | `Main` Colonise menu and project forms | Raven projects and construction state | Not ported |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
 | Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes plus checksum-verified legacy profile import implemented; remaining settings not ported |
@@ -71,7 +71,7 @@ system/body and platform behavior is ported.
 | `FormPlayJournal` | Diagnostics / Journal tools | Not ported |
 | `FormPostProcess` | Diagnostics / Journal tools | Not ported |
 | `FormPredictions` | Exobiology / Predictions | Not ported |
-| `FormRamTah` | Guardian / Ram Tah | Not ported |
+| `FormRamTah` | Guardian / Ram Tah | Partially implemented with both journal-driven mission states, all 101 + 28 categorized log controls, compatible commander persistence, progress, manual toggles, guarded resets, and both Canonn guide links; live current-obelisk display/highlight/toggle and survey recalculation remain with the Guardian site-state port; Windows visually checked |
 | `FormRavenUpdater` | Update flow | Not ported |
 | `FormRoute` | Travel / Routes | Not ported |
 | `FormRuins` | Guardian / Survey maps | Not ported |
@@ -152,6 +152,11 @@ check at 1182 by 790, using a live journal folder:
   copy controls. List scrolling and full coordinate layout were visually checked
   at 1182 by 790; no refresh, clipboard, survey, or profile-changing action was
   invoked. UI Automation data was unavailable for this check.
+- The Guardian Ram Tah tab rendered both mission cards and all 129 log controls
+  in the original ten category groupings, with mission status, progress bars,
+  disabled empty reset actions, guide actions, and the profile status footer.
+  The full page was scrolled at 1182 by 790 without invoking any action that
+  changes commander data. UI Automation data was unavailable for this check.
 - Diagnostics rendered the selected journal folder, parsed state, candidate
   paths, refresh action, and update time.
 - Settings rendered all five palette previews. Switching from Blue (dark) to
