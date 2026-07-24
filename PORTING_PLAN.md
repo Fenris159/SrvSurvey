@@ -145,6 +145,8 @@ on Windows and Linux.
 - [ ] Inventory every file under the current versioned data folder.
 - [ ] Define OS-appropriate config/data/cache locations.
 - [ ] Implement a backup-first legacy data importer.
+- [x] Add the five Raven Colonial shell themes with native light/dark modes and
+  an isolated persisted preference.
 - [ ] Port theme, localization, and static JSON/image resource loading.
 - [ ] Test unknown fields, corrupt files, concurrent writes, and upgrades.
 
@@ -218,9 +220,10 @@ not expected to run as a headless container service.
 
 | Feature | Core | Desktop UI | Windows runtime | Linux runtime |
 | --- | --- | --- | --- | --- |
-| Application shell | Not applicable | Builds cleanly | Startup smoke passed | Not tested |
+| Application shell | Not applicable | Modern navigation plus Overview, Diagnostics, Settings, and explicit pending states | Blue dark/light visual and accessibility smoke passed | Not tested |
 | Journal folder discovery | Implemented; 3 tests | Paths and errors shown | Missing and default paths smoke-tested | Not tested |
-| Journal ingestion/state | Bootstrap reader; 3 tests | Manual refresh summary | Live-folder startup passed; state not inspected | Not tested |
+| Journal ingestion/state | Bootstrap reader; 3 tests | Overview and Diagnostics projections | Live bootstrap state inspected | Not tested |
+| Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
 | Settings/data migration | Not implemented | Not implemented | Not tested | Not tested |
 | Organic scans | Not implemented | Not implemented | Not tested | Not tested |
 | Ground target tracking | Not implemented | Not implemented | Not tested | Not tested |
@@ -239,14 +242,20 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release` passed all
-  6 tests.
+  17 tests: 6 core tests and 11 desktop theme/navigation tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
-- Self-contained `win-x64` and `linux-x64` publish commands completed.
+- Self-contained `win-x64` and `linux-x64` publish commands completed after the
+  shell and theme changes.
 - The Windows development shell remained healthy during startup smoke tests with
   a deliberately missing journal directory and with the default live journal
   folder (455 journal files present), then was stopped after each check.
+- The rebuilt 1180 by 760 Windows shell was visually inspected in Blue (dark)
+  and Blue (light). Overview, Diagnostics, Settings, pending-feature disclosure,
+  live theme switching, and the exposed accessibility tree were checked. All
+  five Raven theme previews rendered; the runtime switch was exercised for the
+  two blue variants.
 - The workflow YAML and `global.json` parsed successfully.
 
 Not validated in this environment:
@@ -255,6 +264,7 @@ Not validated in this environment:
 - The Dockerfile (`docker` is not installed on the validation machine).
 - Linux X11 or Wayland startup, live journals, overlays, input, or AppImage.
 - A live Elite Dangerous session or parity comparison with real commander data.
+- Minimum-width, OS high-contrast, and non-blue runtime theme rendering.
 
 ## Review and commit strategy
 

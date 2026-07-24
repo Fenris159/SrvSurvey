@@ -29,15 +29,15 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 
 | Avalonia area | Legacy source | Purpose | Current status |
 | --- | --- | --- | --- |
-| Overview | `Main` commander group | Commander, game/session, system and body state | Journal bootstrap data available |
+| Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Core data not ported |
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | Core data not ported |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, journeys and routes | Not ported |
 | Search | `Main` Search menu, sphere/boxel forms | Spatial and boxel searches | Not ported |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Not ported |
 | Colonisation | `Main` Colonise menu and project forms | Raven projects and construction state | Not ported |
-| Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source data available |
-| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Theme selection in this UI slice; remainder not ported |
+| Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
+| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven theme selection implemented; remainder not ported |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
@@ -71,7 +71,7 @@ must be labelled as pending and must not imply working behavior.
 | `FormRoute` | Travel / Routes | Not ported |
 | `FormRuins` | Guardian / Survey maps | Not ported |
 | `FormSetKeyChord` | Settings / Input | Not ported |
-| `FormSettings` | Settings pages | Theme slice in progress |
+| `FormSettings` | Settings pages | Raven theme slice implemented; remainder not ported |
 | `FormShareData` | Settings / Privacy | Not ported |
 | `FormShowCodex` | Exobiology / Codex | Not ported |
 | `FormSphereLimit` | Search / Spherical | Not ported |
@@ -112,6 +112,28 @@ using platform-native focus, disabled, hover, and accessibility behavior.
 The cross-platform shell should default to Blue (dark), expose all five choices,
 and persist the selection in the cross-platform application settings directory.
 This does not yet replace the legacy custom `theme.json` overlay importer.
+
+Implementation status: all five definitions are present in
+`RavenThemeCatalog`, application resources switch at runtime, Avalonia's native
+light/dark control mode follows the selected definition, and the selection is
+stored via a temporary file in `cross-platform-ui.json`. Catalog, switching, fallback,
+corrupt-settings, and persistence behavior have automated tests.
+
+## Windows visual evidence
+
+Checked on 2026-07-24 at 1180 by 760 logical pixels with a live journal folder:
+
+- Overview rendered real commander, game, mode, system, body, and session state.
+- Diagnostics rendered the selected journal folder, parsed state, candidate
+  paths, refresh action, and update time.
+- Settings rendered all five palette previews. Switching from Blue (dark) to
+  Blue (light) updated the complete window and saved the choice.
+- A pending navigation item rendered the explicit incomplete-feature message.
+- Windows UI Automation exposed all nine navigation destinations, five theme
+  buttons, Refresh actions, and the visible page text.
+
+Not yet checked: minimum-width and high-contrast rendering, Linux X11/Wayland,
+or any overlay surface.
 
 ## UI completion gates
 
