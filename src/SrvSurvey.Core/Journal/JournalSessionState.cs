@@ -1,4 +1,5 @@
 using System.Text.Json;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Journal;
 
@@ -19,6 +20,8 @@ public sealed class JournalSessionState
     public string? SystemName { get; private set; }
 
     public long? SystemAddress { get; private set; }
+
+    public GalacticCoordinate? StarPosition { get; private set; }
 
     public string? BodyName { get; private set; }
 
@@ -69,6 +72,8 @@ public sealed class JournalSessionState
             case "CarrierJump":
                 SystemName = GetString(root, "StarSystem") ?? SystemName;
                 SystemAddress = GetInt64(root, "SystemAddress") ?? SystemAddress;
+                StarPosition = GetGalacticCoordinate(root, "StarPos")
+                    ?? StarPosition;
                 BodyName = GetCurrentPlanetName(root);
                 IsShutdown = false;
                 break;
@@ -108,6 +113,7 @@ public sealed class JournalSessionState
             GameMode,
             SystemName,
             SystemAddress,
+            StarPosition,
             BodyName,
             IsShutdown,
             LastEventTimestamp,
@@ -156,5 +162,31 @@ public sealed class JournalSessionState
             && long.TryParse(value.GetString(), out number)
                 ? number
                 : null;
+    }
+
+    private static GalacticCoordinate? GetGalacticCoordinate(
+        JsonElement root,
+        string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out var value)
+            || value.ValueKind != JsonValueKind.Array
+            || value.GetArrayLength() < 3)
+        {
+            return null;
+        }
+
+        var coordinates = value.EnumerateArray().Take(3).ToArray();
+        if (coordinates.Any(coordinate =>
+                coordinate.ValueKind != JsonValueKind.Number
+                || !coordinate.TryGetDouble(out var number)
+                || !double.IsFinite(number)))
+        {
+            return null;
+        }
+
+        return new GalacticCoordinate(
+            coordinates[0].GetDouble(),
+            coordinates[1].GetDouble(),
+            coordinates[2].GetDouble());
     }
 }

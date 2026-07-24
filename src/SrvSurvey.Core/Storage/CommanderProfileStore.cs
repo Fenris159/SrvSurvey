@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Storage;
 
@@ -39,7 +40,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
                     null,
                     isOdyssey,
                     ExplorationSnapshot.Empty,
-                    ExobiologySnapshot.Empty),
+                    ExobiologySnapshot.Empty,
+                    SphereLimitSnapshot.Empty),
                 null);
         }
 
@@ -66,7 +68,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
                 GetInt32(root, "countScans") ?? 0,
                 GetInt32(root, "countDSS") ?? 0,
                 GetInt32(root, "countLanded") ?? 0),
-            ReadExobiology(root));
+            ReadExobiology(root),
+            ReadSphereLimit(root));
         return new CommanderProfileLoadResult(path, true, data, null);
     }
 
@@ -121,6 +124,22 @@ public sealed class CommanderProfileStore(string profileDirectory)
                 root["scannedBioEntryIds"] = scannedIds;
                 root["countRadicoidaUnica"] = exobiology.CountRadicoidaUnica;
             },
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SaveSphereLimitAsync(
+        string frontierId,
+        string? commanderName,
+        bool isOdyssey,
+        SphereLimitSnapshot sphereLimit,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(sphereLimit);
+        await SaveFieldsAsync(
+            frontierId,
+            commanderName,
+            isOdyssey,
+            root => WriteSphereLimit(root, sphereLimit),
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -205,6 +224,61 @@ public sealed class CommanderProfileStore(string profileDirectory)
             GetInt64(root, "organicRewards") ?? 0,
             ReadStringArray(root, "scannedBioEntryIds"),
             GetInt32(root, "countRadicoidaUnica") ?? 0);
+    }
+
+    private static SphereLimitSnapshot ReadSphereLimit(JsonObject root)
+    {
+        if (root["sphereLimit"] is not JsonObject sphere)
+        {
+            return SphereLimitSnapshot.Empty;
+        }
+
+        var radius = GetDouble(sphere, "radius")
+            ?? SphereLimitState.DefaultRadius;
+        return new SphereLimitSnapshot(
+            GetBoolean(sphere, "active") ?? false,
+            GetString(sphere, "centerSystemName"),
+            ReadGalacticCoordinate(sphere, "centerStarPos"),
+            radius);
+    }
+
+    private static GalacticCoordinate? ReadGalacticCoordinate(
+        JsonObject root,
+        string propertyName)
+    {
+        if (root[propertyName] is not JsonArray array || array.Count < 3)
+        {
+            return null;
+        }
+
+        var values = array
+            .Take(3)
+            .Select(node => node is JsonValue value
+                && value.TryGetValue<double>(out var number)
+                    ? number
+                    : double.NaN)
+            .ToArray();
+        return values.All(double.IsFinite)
+            ? new GalacticCoordinate(values[0], values[1], values[2])
+            : null;
+    }
+
+    private static void WriteSphereLimit(
+        JsonObject root,
+        SphereLimitSnapshot sphereLimit)
+    {
+        if (root["sphereLimit"] is not JsonObject node)
+        {
+            node = [];
+            root["sphereLimit"] = node;
+        }
+
+        node["active"] = sphereLimit.Active;
+        node["centerSystemName"] = sphereLimit.CenterSystemName;
+        node["centerStarPos"] = sphereLimit.Center is { } center
+            ? new JsonArray(center.X, center.Y, center.Z)
+            : null;
+        node["radius"] = sphereLimit.Radius;
     }
 
     private static BioSampleSnapshot? ReadBioSample(
@@ -378,7 +452,8 @@ public sealed record CommanderProfileData(
     string? CommanderName,
     bool IsOdyssey,
     ExplorationSnapshot Exploration,
-    ExobiologySnapshot Exobiology);
+    ExobiologySnapshot Exobiology,
+    SphereLimitSnapshot SphereLimit);
 
 public sealed record CommanderProfileLoadResult(
     string Path,

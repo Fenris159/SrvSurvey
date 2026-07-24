@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Tests.Storage;
 
@@ -201,6 +202,84 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.Equal(99, result.Data.Exploration.EstimatedRewards);
         Assert.Equal(42, result.Data.Exobiology.OrganicRewards);
         Assert.Single(result.Data.Exobiology.ScannedBioEntryIds);
+    }
+
+    [Fact]
+    public async Task LoadAndSavePreserveLegacySphereLimitFields()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "fid": "F123",
+              "sphereLimit": {
+                "active": true,
+                "centerSystemName": "Sol",
+                "centerStarPos": [0, 0, 0],
+                "radius": 250,
+                "futureSphereOption": "preserve"
+              }
+            }
+            """);
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        var loaded = await store.LoadAsync("F123", true);
+
+        Assert.NotNull(loaded.Data);
+        Assert.Equal(
+            new SphereLimitSnapshot(
+                true,
+                "Sol",
+                new GalacticCoordinate(0, 0, 0),
+                250),
+            loaded.Data.SphereLimit);
+
+        await store.SaveSphereLimitAsync(
+            "F123",
+            "Drew",
+            true,
+            new SphereLimitSnapshot(
+                false,
+                "Colonia",
+                new GalacticCoordinate(-9530.5, -910.28125, 19808.125),
+                100));
+
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        var sphere = root["sphereLimit"]!.AsObject();
+        Assert.False(sphere["active"]!.GetValue<bool>());
+        Assert.Equal("Colonia", sphere["centerSystemName"]!.GetValue<string>());
+        Assert.Equal(-9530.5, sphere["centerStarPos"]![0]!.GetValue<double>());
+        Assert.Equal("preserve", sphere["futureSphereOption"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task ConcurrentSphereAndFeatureSavesDoNotLoseUpdates()
+    {
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        await Task.WhenAll(
+            store.SaveExplorationAsync(
+                "F123",
+                "Drew",
+                true,
+                new ExplorationSnapshot(99, 10, 1, 2, 3, 4)),
+            store.SaveSphereLimitAsync(
+                "F123",
+                "Drew",
+                true,
+                new SphereLimitSnapshot(
+                    true,
+                    "Sol",
+                    new GalacticCoordinate(0, 0, 0),
+                    100)));
+
+        var result = await store.LoadAsync("F123", true);
+        Assert.NotNull(result.Data);
+        Assert.Equal(99, result.Data.Exploration.EstimatedRewards);
+        Assert.True(result.Data.SphereLimit.Active);
+        Assert.Equal("Sol", result.Data.SphereLimit.CenterSystemName);
     }
 
     public void Dispose()
