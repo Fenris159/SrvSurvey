@@ -74,6 +74,36 @@ public sealed class LegacySystemDataReaderTests : IDisposable
     }
 
     [Fact]
+    public async Task ReadFindsHandAuthoredSystemByDecodedAddress()
+    {
+        var systemDirectory = Path.Combine(temporaryDirectory, "systems", "F123");
+        Directory.CreateDirectory(systemDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(systemDirectory, "Sol_10477373803.json"),
+            """
+            {
+              "name": "Sol",
+              "address": 10477373803,
+              "starPos": [0, 0, 0],
+              "lastVisited": "2026-07-24T12:00:00Z",
+              "fssAllBodies": true
+            }
+            """);
+        Assert.True(BoxelAddress.TryFromSystemAddress(
+            10477373803,
+            "Sol",
+            out var sol));
+        var reader = new LegacySystemDataReader(temporaryDirectory);
+
+        var result = await reader.ReadAsync("F123", sol!);
+
+        var system = Assert.Single(result.Systems);
+        Assert.Equal("Sol", system.Boxel.Name);
+        Assert.Equal(sol?.GeneratedName, system.Boxel.GeneratedName);
+        Assert.True(system.FssAllBodies);
+    }
+
+    [Fact]
     public async Task FrontierIdCannotEscapeTheSystemsDirectory()
     {
         var reader = new LegacySystemDataReader(temporaryDirectory);

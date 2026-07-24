@@ -261,13 +261,22 @@ public sealed class BoxelSearchState
         bool isComplete,
         out string? error)
     {
-        if (!systems.TryGetValue(systemName, out var system))
+        var entry = systems.FirstOrDefault(candidate =>
+            string.Equals(
+                candidate.Value.Boxel.Name,
+                systemName,
+                StringComparison.Ordinal)
+            || string.Equals(
+                candidate.Value.Boxel.GeneratedName,
+                systemName,
+                StringComparison.Ordinal));
+        if (entry.Value is null)
         {
             error = "Systems must be discovered or visited before completion can be changed.";
             return false;
         }
 
-        systems[systemName] = system with { IsComplete = isComplete };
+        systems[entry.Key] = entry.Value with { IsComplete = isComplete };
         UpdateCurrentCompletion();
         SetNextSystem();
         Version++;
@@ -353,7 +362,14 @@ public sealed class BoxelSearchState
         var root = journalEvent.Payload;
         var nameProperty = allBodiesFound ? "SystemName" : "StarSystem";
         var systemName = GetString(root, nameProperty);
-        if (!BoxelAddress.TryParse(systemName, out var boxel)
+        var systemAddress = GetInt64(root, "SystemAddress") ?? 0;
+        var resolved = systemAddress > 0
+            ? BoxelAddress.TryFromSystemAddress(
+                systemAddress,
+                systemName,
+                out var boxel)
+            : BoxelAddress.TryParse(systemName, out boxel);
+        if (!resolved
             || boxel is null
             || Current is null
             || !string.Equals(boxel.Prefix, Current.Prefix, StringComparison.Ordinal))
@@ -362,7 +378,7 @@ public sealed class BoxelSearchState
         }
 
         var observation = new BoxelSystemObservation(
-            boxel with { SystemAddress = GetInt64(root, "SystemAddress") ?? 0 },
+            boxel,
             GetGalacticCoordinate(root, "StarPos"),
             journalEvent.Timestamp,
             null,
@@ -371,8 +387,8 @@ public sealed class BoxelSearchState
         if ((CompletionMode == BoxelCompletionMode.EnterSystem && !allBodiesFound)
             || (CompletionMode == BoxelCompletionMode.FssAllBodies && allBodiesFound))
         {
-            var system = systems[boxel.Name];
-            systems[boxel.Name] = system with { IsComplete = true };
+            var system = systems[boxel.GeneratedName];
+            systems[boxel.GeneratedName] = system with { IsComplete = true };
         }
 
         UpdateCurrentCompletion();
@@ -415,7 +431,7 @@ public sealed class BoxelSearchState
             return false;
         }
 
-        systems.TryGetValue(observation.Boxel.Name, out var existing);
+        systems.TryGetValue(observation.Boxel.GeneratedName, out var existing);
         var isComplete = existing?.IsComplete ?? false;
         if (source == BoxelObservationSource.LocalProfile)
         {
@@ -432,8 +448,17 @@ public sealed class BoxelSearchState
             isComplete |= observation.SpanshUpdatedAt < StartedOn;
         }
 
-        systems[observation.Boxel.Name] = new BoxelSystemState(
-            observation.Boxel,
+        var observedBoxel = observation.Boxel.PublicName is not null
+            || existing is null
+                ? observation.Boxel
+                : existing.Boxel with
+                {
+                    SystemAddress = observation.Boxel.SystemAddress > 0
+                        ? observation.Boxel.SystemAddress
+                        : existing.Boxel.SystemAddress,
+                };
+        systems[observation.Boxel.GeneratedName] = new BoxelSystemState(
+            observedBoxel,
             isComplete,
             observation.Position ?? existing?.Position,
             Max(existing?.VisitedAt, observation.VisitedAt),
@@ -524,7 +549,7 @@ public sealed class BoxelSearchState
                     continue;
                 }
 
-                next = Current.WithSystemNumber(number).Name;
+                next = system?.Boxel.Name ?? Current.WithSystemNumber(number).Name;
                 break;
             }
         }

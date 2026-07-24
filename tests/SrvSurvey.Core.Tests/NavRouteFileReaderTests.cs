@@ -10,7 +10,7 @@ public sealed class NavRouteFileReaderTests : IDisposable
         $"SrvSurvey-nav-route-tests-{Guid.NewGuid():N}");
 
     [Fact]
-    public async Task ReadAsyncPortsRouteEntriesAndGeneratedBoxelData()
+    public async Task ReadAsyncPortsGeneratedAndHandAuthoredBoxelData()
     {
         Directory.CreateDirectory(temporaryDirectory);
         var path = Path.Combine(temporaryDirectory, NavRouteFileReader.FileName);
@@ -46,7 +46,11 @@ public sealed class NavRouteFileReaderTests : IDisposable
         Assert.Equal(new GalacticCoordinate(1.5, 2.5, 3.5), entry?.Position);
         var boxel = Assert.IsType<BoxelSystemObservation>(entry?.ToBoxelObservation());
         Assert.Equal(102, boxel.Boxel.SystemAddress);
-        Assert.Null(result.Snapshot?.Route[1].ToBoxelObservation());
+        var handAuthored = Assert.IsType<BoxelSystemObservation>(
+            result.Snapshot?.Route[1].ToBoxelObservation());
+        Assert.Equal("Sol", handAuthored.Boxel.Name);
+        Assert.NotEqual("Sol", handAuthored.Boxel.GeneratedName);
+        Assert.Equal(10477373803, handAuthored.Boxel.SystemAddress);
         Assert.NotNull(result.ContentHash);
     }
 

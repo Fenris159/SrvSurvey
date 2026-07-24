@@ -181,6 +181,34 @@ public sealed class BoxelSearchStateTests
         Assert.Equal(9, state.Boxels.Count);
     }
 
+    [Fact]
+    public void HandAuthoredJournalSystemCompletesDecodedBoxel()
+    {
+        Assert.True(BoxelAddress.TryFromSystemAddress(
+            10477373803,
+            "Sol",
+            out var sol));
+        var state = new BoxelSearchState();
+        Assert.True(state.TryActivate(
+            sol,
+            sol!.MassCode,
+            DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            false,
+            false,
+            BoxelCompletionMode.EnterSystem,
+            true,
+            out var error), error);
+
+        var handled = state.Apply(Parse(
+            """{"timestamp":"2026-07-24T12:00:00Z","event":"FSDJump","StarSystem":"Sol","SystemAddress":10477373803,"StarPos":[0,0,0]}"""));
+
+        Assert.True(handled);
+        var system = Assert.Single(state.Systems);
+        Assert.Equal("Sol", system.Boxel.Name);
+        Assert.Equal(sol.GeneratedName, system.Boxel.GeneratedName);
+        Assert.True(system.IsComplete);
+    }
+
     private static BoxelSearchState CreateActiveState(BoxelCompletionMode mode)
     {
         var state = new BoxelSearchState();

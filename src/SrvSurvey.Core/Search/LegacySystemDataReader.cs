@@ -41,7 +41,7 @@ public sealed class LegacySystemDataReader(string dataDirectory)
         var errors = new List<string>();
         foreach (var path in Directory.EnumerateFiles(
                      systemDirectory,
-                     boxel.Prefix + "*.json",
+                     "*.json",
                      SearchOption.TopDirectoryOnly))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -70,8 +70,14 @@ public sealed class LegacySystemDataReader(string dataDirectory)
                 continue;
             }
 
+            var resolved = data?.Address > 0
+                ? BoxelAddress.TryFromSystemAddress(
+                    data.Address,
+                    data.Name,
+                    out var systemBoxel)
+                : BoxelAddress.TryParse(data?.Name, out systemBoxel);
             if (data is null
-                || !BoxelAddress.TryParse(data.Name, out var systemBoxel)
+                || !resolved
                 || systemBoxel is null
                 || !string.Equals(
                     systemBoxel.Prefix,
@@ -82,12 +88,7 @@ public sealed class LegacySystemDataReader(string dataDirectory)
             }
 
             systems.Add(new BoxelSystemObservation(
-                systemBoxel with
-                {
-                    SystemAddress = data.Address > 0
-                        ? data.Address
-                        : systemBoxel.SystemAddress,
-                },
+                systemBoxel,
                 GetCoordinate(data.StarPos),
                 data.LastVisited,
                 null,

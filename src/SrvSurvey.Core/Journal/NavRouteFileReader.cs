@@ -117,10 +117,16 @@ public sealed record NavRouteEntry(
 {
     public BoxelSystemObservation? ToBoxelObservation()
     {
-        return BoxelAddress.TryParse(StarSystem, out var boxel)
+        var resolved = SystemAddress > 0
+            ? BoxelAddress.TryFromSystemAddress(
+                SystemAddress,
+                StarSystem,
+                out var boxel)
+            : BoxelAddress.TryParse(StarSystem, out boxel);
+        return resolved
             && boxel is not null
                 ? new BoxelSystemObservation(
-                    boxel with { SystemAddress = SystemAddress },
+                    boxel,
                     Position,
                     null,
                     null,

@@ -61,7 +61,13 @@ public sealed class SpanshBoxelClient : IBoxelSystemResolver
 
             foreach (var result in results)
             {
-                if (!BoxelAddress.TryParse(result.Name, out var resultBoxel)
+                var resolved = result.Id64 > 0
+                    ? BoxelAddress.TryFromSystemAddress(
+                        result.Id64,
+                        result.Name,
+                        out var resultBoxel)
+                    : BoxelAddress.TryParse(result.Name, out resultBoxel);
+                if (!resolved
                     || resultBoxel is null
                     || !string.Equals(
                         resultBoxel.Prefix,
@@ -74,14 +80,13 @@ public sealed class SpanshBoxelClient : IBoxelSystemResolver
                     continue;
                 }
 
-                var address = result.Id64 > 0 ? result.Id64 : resultBoxel.SystemAddress;
                 var observation = new BoxelSystemObservation(
-                    resultBoxel with { SystemAddress = address },
+                    resultBoxel,
                     new GalacticCoordinate(result.X, result.Y, result.Z),
                     null,
                     result.UpdatedAt,
                     result.Bodies is { Count: > 0 });
-                observations[resultBoxel.Name] = observation;
+                observations[resultBoxel.GeneratedName] = observation;
             }
 
             if (results.Count == 0
