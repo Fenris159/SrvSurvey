@@ -1,0 +1,209 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.GuardianView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="32" Spacing="20" MaxWidth="1050">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="eyebrow" Text="GUARDIAN" />
+          <TextBlock Classes="page-title" Text="Sites and surveys" />
+          <TextBlock Classes="muted"
+                     Text="Browse Guardian beacons, ruins, and structures with commander visit and survey state." />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="primary"
+                MinWidth="116"
+                VerticalAlignment="Center"
+                Command="{Binding Guardian.RefreshCommand}"
+                Content="{Binding Guardian.RefreshButtonText}" />
+      </Grid>
+
+      <Border Classes="card raised">
+        <Grid ColumnDefinitions="2*,*,*,*" ColumnSpacing="12">
+          <StackPanel Spacing="6">
+            <TextBlock Classes="muted" Text="SEARCH" />
+            <TextBox Text="{Binding Guardian.FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     PlaceholderText="System, body, ID, address, type, or notes" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="6">
+            <TextBlock Classes="muted" Text="SITE KIND" />
+            <ComboBox ItemsSource="{Binding Guardian.KindFilters}"
+                      SelectedItem="{Binding Guardian.SelectedKindFilter, Mode=TwoWay}" />
+          </StackPanel>
+          <StackPanel Grid.Column="2" Spacing="6">
+            <TextBlock Classes="muted" Text="VISIT STATE" />
+            <ComboBox ItemsSource="{Binding Guardian.VisitFilters}"
+                      SelectedItem="{Binding Guardian.SelectedVisitFilter, Mode=TwoWay}" />
+          </StackPanel>
+          <StackPanel Grid.Column="3" Spacing="6">
+            <TextBlock Classes="muted" Text="SITE TYPE" />
+            <ComboBox ItemsSource="{Binding Guardian.SiteTypeFilters}"
+                      SelectedItem="{Binding Guardian.SelectedSiteTypeFilter, Mode=TwoWay}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <Border Classes="card" Padding="0">
+        <Grid RowDefinitions="Auto,Auto,*">
+          <Grid Margin="18,15,18,10"
+                ColumnDefinitions="72,3*,110,90,100,96"
+                ColumnSpacing="10">
+            <TextBlock Classes="muted" Text="ID" />
+            <TextBlock Grid.Column="1" Classes="muted" Text="SYSTEM / BODY" />
+            <TextBlock Grid.Column="2" Classes="muted" Text="TYPE" />
+            <TextBlock Grid.Column="3" Classes="muted" Text="DISTANCE" />
+            <TextBlock Grid.Column="4" Classes="muted" Text="VISITED" />
+            <TextBlock Grid.Column="5" Classes="muted" Text="SURVEY" />
+          </Grid>
+          <Separator Grid.Row="1" />
+          <ListBox Grid.Row="2"
+                   Height="370"
+                   BorderThickness="0"
+                   Background="Transparent"
+                   ItemsSource="{Binding Guardian.Rows}"
+                   SelectedItem="{Binding Guardian.SelectedSite, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:GuardianSiteRowViewModel">
+                <Grid Margin="10,5"
+                      ColumnDefinitions="72,3*,110,90,100,96"
+                      ColumnSpacing="10">
+                  <TextBlock Classes="monospace"
+                             VerticalAlignment="Center"
+                             Text="{Binding DisplayId}" />
+                  <StackPanel Grid.Column="1" Spacing="2">
+                    <TextBlock FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding Reference.SystemName}" />
+                    <TextBlock Classes="muted"
+                               FontSize="11"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding Reference.BodyName}" />
+                  </StackPanel>
+                  <TextBlock Grid.Column="2"
+                             VerticalAlignment="Center"
+                             TextTrimming="CharacterEllipsis"
+                             Text="{Binding SiteDescription}" />
+                  <TextBlock Grid.Column="3"
+                             VerticalAlignment="Center"
+                             Text="{Binding DistanceText}" />
+                  <TextBlock Grid.Column="4"
+                             VerticalAlignment="Center"
+                             Text="{Binding VisitText}" />
+                  <TextBlock Grid.Column="5"
+                             VerticalAlignment="Center"
+                             Foreground="{DynamicResource RavenAccentBrush}"
+                             FontWeight="SemiBold"
+                             Text="{Binding SurveyText}" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="3*,2*" ColumnSpacing="18">
+        <Border Classes="card">
+          <StackPanel Spacing="15">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="card-title"
+                           Text="{Binding Guardian.SelectedSite.Reference.SystemName}" />
+                <TextBlock Classes="muted"
+                           Text="{Binding Guardian.SelectedSite.Reference.BodyName}" />
+              </StackPanel>
+              <Border Grid.Column="1" Classes="badge" VerticalAlignment="Top">
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontSize="11"
+                           Text="{Binding Guardian.SelectedSite.SiteDescription}" />
+              </Border>
+            </Grid>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="muted" Text="SYSTEM ADDRESS" />
+                <TextBlock Classes="monospace"
+                           Text="{Binding Guardian.SelectedSite.Reference.SystemAddress}" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="4">
+                <TextBlock Classes="muted" Text="ARRIVAL DISTANCE" />
+                <TextBlock Text="{Binding Guardian.SelectedSite.ArrivalText}" />
+              </StackPanel>
+            </Grid>
+            <StackPanel Spacing="4">
+              <TextBlock Classes="muted" Text="GALACTIC POSITION" />
+              <TextBlock Classes="monospace"
+                         Text="{Binding Guardian.SelectedSite.GalacticPosition}" />
+            </StackPanel>
+            <StackPanel Spacing="4">
+              <TextBlock Classes="muted" Text="SURFACE LOCATION" />
+              <TextBlock Classes="monospace"
+                         Text="{Binding Guardian.SelectedSite.SurfaceLocation}" />
+            </StackPanel>
+            <WrapPanel>
+              <Button Classes="secondary"
+                      Margin="0,0,8,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSite}"
+                      Click="CopySystem_Click"
+                      Content="Copy system" />
+              <Button Classes="secondary"
+                      Margin="0,0,8,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSite}"
+                      Click="CopyAddress_Click"
+                      Content="Copy address" />
+              <Button Classes="secondary"
+                      Margin="0,0,8,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSite}"
+                      Click="CopyPosition_Click"
+                      Content="Copy position" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSite}"
+                      Click="CopySurface_Click"
+                      Content="Copy lat/long" />
+            </WrapPanel>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel Spacing="14">
+            <TextBlock Classes="card-title" Text="Commander record" />
+            <StackPanel Spacing="4">
+              <TextBlock Classes="muted" Text="VISIT" />
+              <TextBlock Text="{Binding Guardian.SelectedSite.VisitText}" />
+            </StackPanel>
+            <StackPanel Spacing="4">
+              <TextBlock Classes="muted" Text="SURVEY" />
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontWeight="SemiBold"
+                         Text="{Binding Guardian.SelectedSite.SurveyText}" />
+            </StackPanel>
+            <StackPanel Spacing="4">
+              <TextBlock Classes="muted" Text="NOTES / RELATED SITE" />
+              <TextBlock TextWrapping="Wrap"
+                         Text="{Binding Guardian.SelectedSite.Notes}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Border Classes="card">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="card-title" Text="Guardian data status" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding Guardian.Summary}" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding Guardian.OriginStatus}" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding Guardian.StatusMessage}" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

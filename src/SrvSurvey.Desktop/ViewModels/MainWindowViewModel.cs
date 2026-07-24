@@ -88,6 +88,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             boxelSystemResolver ?? new SpanshBoxelClient());
         GroundTarget = new GroundTargetViewModel(
             new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
+        Guardian = new GuardianViewModel(AppDataPaths.DataDirectory);
         exobiologyState = new ExobiologyState(
             exobiologyCatalog ?? ExobiologyReferenceCatalog.LoadEmbedded());
         ProfileBackupDirectory = Path.Combine(
@@ -143,7 +144,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             new("exobiology", "Exobiology", "03", "Organic scans and unclaimed rewards", true),
             new("travel", "Travel", "04", "Ground targets, journeys, and routes", true),
             new("search", "Search", "05", "Spherical and boxel searches", true),
-            new("guardian", "Guardian", "06", "Sites, maps, and Ram Tah", false),
+            new("guardian", "Guardian", "06", "Sites, maps, and Ram Tah", true),
             new("colonisation", "Colonisation", "07", "Raven Colonial projects", false),
             new("diagnostics", "Diagnostics", "08", "Journal source and parsed state", true),
             new("settings", "Settings", "09", "Appearance and application options", true),
@@ -172,6 +173,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public SphereLimitViewModel Search { get; }
 
     public BoxelSearchViewModel BoxelSearch { get; }
+
+    public GuardianViewModel Guardian { get; }
 
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
 
@@ -237,6 +240,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsExobiologySelected));
             OnPropertyChanged(nameof(IsTravelSelected));
             OnPropertyChanged(nameof(IsSearchSelected));
+            OnPropertyChanged(nameof(IsGuardianSelected));
             OnPropertyChanged(nameof(IsDiagnosticsSelected));
             OnPropertyChanged(nameof(IsSettingsSelected));
             OnPropertyChanged(nameof(IsPendingSelected));
@@ -255,6 +259,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsTravelSelected => SelectedNavigation.Key == "travel";
 
     public bool IsSearchSelected => SelectedNavigation.Key == "search";
+
+    public bool IsGuardianSelected => SelectedNavigation.Key == "guardian";
 
     public bool IsDiagnosticsSelected => SelectedNavigation.Key == "diagnostics";
 
@@ -687,6 +693,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         BoxelSearch.UpdateCurrentSystem(
             journalState.SystemName,
             journalState.StarPosition);
+        Guardian.UpdateCurrentSystem(
+            journalState.SystemName,
+            journalState.StarPosition);
 
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
         var explorationBefore = explorationState.CreateSnapshot();
@@ -811,6 +820,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                 result.Error ?? "The commander profile could not be loaded.");
             BoxelSearch.SetProfileError(
                 result.Error ?? "The commander profile could not be loaded.");
+            Guardian.SetProfileError(
+                result.Error ?? "The commander profile could not be loaded.");
             return false;
         }
 
@@ -826,6 +837,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             activeProfileCommanderName,
             result.Data.IsOdyssey,
             result.Data.BoxelSearch);
+        await Guardian.LoadProfileAsync(
+            result.Data.FrontierId,
+            result.Data.IsOdyssey);
         UpdateExplorationDisplay(result.Data.Exploration);
         UpdateExobiologyDisplay(result.Data.Exobiology);
         ExplorationStatusMessage = result.Exists

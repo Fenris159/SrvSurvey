@@ -16,7 +16,7 @@ public sealed class MainWindowViewModelTests
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
         Assert.Equal(9, viewModel.NavigationItems.Count);
-        Assert.Equal(7, viewModel.NavigationItems.Count(item => item.IsImplemented));
+        Assert.Equal(8, viewModel.NavigationItems.Count(item => item.IsImplemented));
         Assert.True(viewModel.IsOverviewSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
@@ -35,6 +35,12 @@ public sealed class MainWindowViewModelTests
             item => item.Key == "search");
 
         Assert.True(viewModel.IsSearchSelected);
+        Assert.False(viewModel.IsPendingSelected);
+
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
+            item => item.Key == "guardian");
+
+        Assert.True(viewModel.IsGuardianSelected);
         Assert.False(viewModel.IsPendingSelected);
     }
 
