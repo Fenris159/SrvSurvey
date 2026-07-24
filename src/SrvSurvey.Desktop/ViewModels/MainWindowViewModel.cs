@@ -1,12 +1,14 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Theming;
@@ -76,7 +78,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         ExobiologyReferenceCatalog? exobiologyCatalog = null,
         IStarSystemResolver? starSystemResolver = null,
         IBoxelSystemResolver? boxelSystemResolver = null,
-        GlobalInputSettingsViewModel? inputSettings = null)
+        GlobalInputSettingsViewModel? inputSettings = null,
+        ColonizationViewModel? colonization = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -84,6 +87,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
             OverlayPlatformCapabilities.DetectCurrent());
+        Colonization = colonization ?? new ColonizationViewModel(
+            new ColonizationSettingsStore(AppDataPaths.UiSettingsPath));
         commanderProfileStore = new CommanderProfileStore(AppDataPaths.DataDirectory);
         Search = new SphereLimitViewModel(
             commanderProfileStore,
@@ -155,7 +160,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             new("travel", "Travel", "04", "Ground targets, journeys, and routes", true),
             new("search", "Search", "05", "Spherical and boxel searches", true),
             new("guardian", "Guardian", "06", "Sites, maps, and Ram Tah", true),
-            new("colonisation", "Colonisation", "07", "Raven Colonial projects", false),
+            new("colonisation", "Colonisation", "07", "Raven Colonial projects", true),
             new("diagnostics", "Diagnostics", "08", "Journal source and parsed state", true),
             new("settings", "Settings", "09", "Appearance and application options", true),
         ];
@@ -189,6 +194,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public GuardianViewModel Guardian { get; }
 
     public RamTahViewModel RamTah { get; }
+
+    public ColonizationViewModel Colonization { get; }
 
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
 
@@ -255,6 +262,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsTravelSelected));
             OnPropertyChanged(nameof(IsSearchSelected));
             OnPropertyChanged(nameof(IsGuardianSelected));
+            OnPropertyChanged(nameof(IsColonizationSelected));
             OnPropertyChanged(nameof(IsDiagnosticsSelected));
             OnPropertyChanged(nameof(IsSettingsSelected));
             OnPropertyChanged(nameof(IsPendingSelected));
@@ -275,6 +283,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsSearchSelected => SelectedNavigation.Key == "search";
 
     public bool IsGuardianSelected => SelectedNavigation.Key == "guardian";
+
+    public bool IsColonizationSelected =>
+        SelectedNavigation.Key == "colonisation";
 
     public bool IsDiagnosticsSelected => SelectedNavigation.Key == "diagnostics";
 
@@ -700,6 +711,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             journalState.Apply(journalEvent);
         }
+
+        Colonization.ApplyJournalEvents(update.JournalEvents);
+        await Colonization.SetCommanderAsync(journalState.CommanderName);
 
         Search.UpdateCurrentSystem(
             journalState.SystemName,

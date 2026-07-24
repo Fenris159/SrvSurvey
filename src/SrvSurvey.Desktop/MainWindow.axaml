@@ -94,6 +94,7 @@
       <views:TravelView IsVisible="{Binding IsTravelSelected}" />
       <views:SearchView IsVisible="{Binding IsSearchSelected}" />
       <views:GuardianView IsVisible="{Binding IsGuardianSelected}" />
+      <views:ColonizationView IsVisible="{Binding IsColonizationSelected}" />
       <views:DiagnosticsView IsVisible="{Binding IsDiagnosticsSelected}" />
       <views:SettingsView IsVisible="{Binding IsSettingsSelected}" />
       <views:PendingView IsVisible="{Binding IsPendingSelected}" />

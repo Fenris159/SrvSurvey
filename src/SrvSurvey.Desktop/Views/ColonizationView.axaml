@@ -1,0 +1,176 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.ColonizationView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="32" Spacing="24" MaxWidth="1100">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="eyebrow" Text="RAVEN COLONIAL" />
+          <TextBlock Classes="page-title" Text="Colonisation projects" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Track active builds, choose which projects feed the cargo list, and inspect live construction requirements." />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="primary"
+                MinWidth="132"
+                VerticalAlignment="Center"
+                Command="{Binding Colonization.RefreshCommand}"
+                Content="{Binding Colonization.RefreshButtonText}" />
+      </Grid>
+
+      <Border Classes="card raised" Padding="0">
+        <Grid ColumnDefinitions="6,*">
+          <Border Classes="accent-line" CornerRadius="12,0,0,12" />
+          <Grid Grid.Column="1"
+                Margin="26"
+                ColumnDefinitions="*,Auto"
+                ColumnSpacing="20">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="card-title" Text="External data consent" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="When enabled, SrvSurvey can fetch your commander projects from Raven Colonial. Saving project selection or creating a project sends only that requested change. This is off by default." />
+              <TextBlock FontWeight="SemiBold"
+                         Text="{Binding Colonization.CommanderStatus}" />
+            </StackPanel>
+            <CheckBox Grid.Column="1"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding Colonization.IsEnabled, Mode=TwoWay}"
+                      Content="Enable Raven Colonial" />
+          </Grid>
+        </Grid>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+            <StackPanel Spacing="3">
+              <TextBlock Classes="card-title" Text="My build projects" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Selected projects appear in aggregate cargo requirements. Changes are sent only when you choose Save selection." />
+            </StackPanel>
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Click="OpenRavenBuilds_Click"
+                    Content="Open Raven builds" />
+            <Button Grid.Column="2"
+                    Classes="primary"
+                    Command="{Binding Colonization.SaveProjectsCommand}"
+                    Content="{Binding Colonization.SaveButtonText}" />
+          </Grid>
+
+          <Border Background="{DynamicResource RavenSurfaceBrush}"
+                  CornerRadius="8"
+                  Padding="12">
+            <TextBlock FontWeight="SemiBold"
+                       Foreground="{DynamicResource RavenAccentBrush}"
+                       Text="{Binding Colonization.ProjectSummary}" />
+          </Border>
+
+          <Grid ColumnDefinitions="Auto,*,150,220,150"
+                ColumnSpacing="12"
+                Margin="4,0">
+            <TextBlock Classes="muted" Text="SHOW" />
+            <TextBlock Grid.Column="1" Classes="muted" Text="PROJECT" />
+            <TextBlock Grid.Column="2" Classes="muted" Text="PROGRESS" />
+            <TextBlock Grid.Column="3" Classes="muted" Text="TYPE" />
+            <TextBlock Grid.Column="4" Classes="muted" Text="SYSTEM" />
+          </Grid>
+
+          <ItemsControl ItemsSource="{Binding Colonization.Projects}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ColonizationProjectRowViewModel">
+                <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                        BorderThickness="0,1,0,0"
+                        Padding="4,12">
+                  <Grid ColumnDefinitions="Auto,*,150,220,150"
+                        ColumnSpacing="12">
+                    <CheckBox VerticalAlignment="Center"
+                              IsChecked="{Binding IsShown, Mode=TwoWay}" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                      <TextBlock FontWeight="SemiBold"
+                                 Text="{Binding BuildName}" />
+                      <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                 FontSize="10"
+                                 FontWeight="Bold"
+                                 Text="{Binding PrimaryLabel}" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="2"
+                               VerticalAlignment="Center"
+                               Text="{Binding ProgressText}" />
+                    <TextBlock Grid.Column="3"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding TypeDescription}" />
+                    <TextBlock Grid.Column="4"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding SystemName}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <TextBlock Classes="muted"
+                     IsVisible="{Binding Colonization.HasNoProjects}"
+                     TextWrapping="Wrap"
+                     Text="No active project rows are loaded." />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     TextWrapping="Wrap"
+                     Text="{Binding Colonization.StatusMessage}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="eyebrow" Text="LIVE DEPOT" />
+            <TextBlock Classes="card-title"
+                       Text="{Binding Colonization.ConstructionTitle}" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding Colonization.ConstructionStatus}" />
+          </StackPanel>
+
+          <ItemsControl ItemsSource="{Binding Colonization.ConstructionResources}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ColonizationResourceRowViewModel">
+                <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                        BorderThickness="0,1,0,0"
+                        Padding="4,10">
+                  <Grid ColumnDefinitions="*,150,150,110" ColumnSpacing="14">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                    <TextBlock Grid.Column="1"
+                               Foreground="{DynamicResource RavenAccentBrush}"
+                               Text="{Binding RemainingText}" />
+                    <TextBlock Grid.Column="2" Text="{Binding ProgressText}" />
+                    <TextBlock Grid.Column="3"
+                               Classes="muted"
+                               Text="{Binding PaymentText}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="6">
+          <TextBlock Classes="card-title" Text="Create a project" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="The new-project workflow is the next Colonisation increment. It will require a current construction depot, planned-site matching, build layout/body selection, and an explicit final publish action." />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
