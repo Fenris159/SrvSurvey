@@ -134,6 +134,9 @@ public sealed class MainWindowViewModelTests
             Assert.Equal("Sol", viewModel.NearestSystems.ReferenceSystemName);
             Assert.Equal("[ 0, 0, 0 ]", viewModel.NearestSystems.ReferencePosition);
             Assert.Equal("Searching from Sol", viewModel.NearestSystems.ReferenceSummary);
+            Assert.True(viewModel.SystemNotes.HasCurrentSystem);
+            Assert.Equal("Sol", viewModel.SystemNotes.SystemName);
+            Assert.Equal("10477373803", viewModel.SystemNotes.SystemAddress);
         }
         finally
         {

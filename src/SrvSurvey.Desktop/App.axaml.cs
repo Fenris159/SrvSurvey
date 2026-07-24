@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Input;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Theming;
 using SrvSurvey.Desktop.ViewModels;
@@ -15,6 +16,7 @@ public sealed partial class App : Application
     private GuardianOverlayCoordinator? guardianOverlayCoordinator;
     private ColonizationCommodityOverlayCoordinator?
         colonizationCommodityOverlayCoordinator;
+    private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private GlobalKeyboardHookService? globalKeyboardHookService;
     private GlobalControllerInputService? globalControllerInputService;
 
@@ -46,6 +48,9 @@ public sealed partial class App : Application
                 inputSettings: inputSettings);
             var mainWindow = new MainWindow(viewModel);
             desktop.MainWindow = mainWindow;
+            systemNotesWindowCoordinator = new SystemNotesWindowCoordinator(
+                viewModel.SystemNotes,
+                mainWindow);
             guardianOverlayCoordinator = new GuardianOverlayCoordinator(
                 viewModel.Guardian,
                 OverlayPlatformService.CreateCurrent(),
@@ -87,7 +92,7 @@ public sealed partial class App : Application
 
             void HandleAction(GlobalInputActionTriggeredEventArgs eventArgs)
             {
-                Dispatcher.UIThread.Post(() =>
+                Dispatcher.UIThread.Post(async () =>
                 {
                     var handled = false;
                     switch (eventArgs.Action)
@@ -107,6 +112,12 @@ public sealed partial class App : Application
                             colonizationCommodityOverlayCoordinator
                                 ?.ToggleVisibility();
                             handled = true;
+                            break;
+
+                        case GlobalInputAction.ShowSystemNotes:
+                            handled = systemNotesWindowCoordinator is not null
+                                && await systemNotesWindowCoordinator
+                                    .ShowOrActivateAsync();
                             break;
 
                         case GlobalInputAction.RefreshColonyData:
@@ -152,6 +163,8 @@ public sealed partial class App : Application
                 globalKeyboardHookService = null;
                 colonizationCommodityOverlayCoordinator?.Dispose();
                 colonizationCommodityOverlayCoordinator = null;
+                systemNotesWindowCoordinator?.Dispose();
+                systemNotesWindowCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();
                 guardianOverlayCoordinator = null;
             };

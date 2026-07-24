@@ -1,0 +1,114 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.SystemNotesWindow"
+        x:DataType="vm:SystemNotesViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="720"
+        d:DesignHeight="600"
+        Width="720"
+        Height="600"
+        MinWidth="500"
+        MinHeight="420"
+        Topmost="{Binding AlwaysOnTop}"
+        WindowStartupLocation="CenterOwner"
+        Title="System notes - SrvSurvey">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Border Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="24,20">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="eyebrow" Text="SYSTEM NOTES" />
+          <TextBlock Classes="page-title"
+                     FontSize="24"
+                     Text="{Binding SystemName}"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Classes="muted"
+                     Text="{Binding SystemAddress, StringFormat='System address: {0}'}" />
+        </StackPanel>
+        <CheckBox x:Name="AlwaysOnTopCheckBox"
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  IsChecked="{Binding AlwaysOnTop, Mode=OneWay}"
+                  Click="AlwaysOnTop_Click"
+                  Content="Always on top" />
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1"
+          Margin="24"
+          RowDefinitions="Auto,*,Auto"
+          RowSpacing="14">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="card-title" Text="Commander notes" />
+          <TextBlock Classes="muted"
+                     Text="Saved in the legacy-compatible system data file." />
+        </StackPanel>
+        <Border Grid.Column="1"
+                Classes="badge"
+                IsVisible="{Binding IsDirty}"
+                VerticalAlignment="Center">
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontSize="10"
+                     FontWeight="SemiBold"
+                     Text="UNSAVED" />
+        </Border>
+      </Grid>
+
+      <TextBox Grid.Row="1"
+               Padding="14"
+               AcceptsReturn="True"
+               TextWrapping="Wrap"
+               VerticalContentAlignment="Top"
+               ScrollViewer.VerticalScrollBarVisibility="Auto"
+               PlaceholderText="Add anything useful about this system..."
+               Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+      <WrapPanel Grid.Row="2" Orientation="Horizontal">
+        <Button Classes="secondary"
+                Margin="0,0,10,10"
+                Command="{Binding OpenCanonnCommand}"
+                Content="Canonn Signals" />
+        <Button Classes="secondary"
+                Margin="0,0,10,10"
+                Command="{Binding OpenSpanshCommand}"
+                Content="Spansh" />
+        <Button Classes="secondary"
+                Margin="0,0,10,10"
+                Command="{Binding OpenEdsmCommand}"
+                Content="EDSM" />
+        <Button Classes="secondary"
+                Margin="0,0,0,10"
+                IsVisible="{Binding HasImagesDirectory}"
+                Command="{Binding OpenImagesCommand}"
+                Content="Open screenshots" />
+      </WrapPanel>
+    </Grid>
+
+    <Border Grid.Row="2"
+            Background="{DynamicResource RavenSurfaceBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="24,16">
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+        <TextBlock Classes="muted"
+                   VerticalAlignment="Center"
+                   Text="{Binding StatusMessage}"
+                   TextTrimming="CharacterEllipsis" />
+        <Button Grid.Column="1"
+                Classes="secondary"
+                Click="Cancel_Click"
+                Content="Cancel" />
+        <Button Grid.Column="2"
+                Classes="primary"
+                Click="Save_Click"
+                Content="{Binding SaveButtonText}" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

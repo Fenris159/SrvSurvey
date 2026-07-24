@@ -108,6 +108,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             boxelSystemResolver ?? new SpanshBoxelClient());
         GroundTarget = new GroundTargetViewModel(
             new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
+        SystemNotes = new SystemNotesViewModel(
+            new SystemNoteStore(AppDataPaths.DataDirectory),
+            new SystemNotesSettingsStore(AppDataPaths.DataDirectory));
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,
@@ -194,6 +197,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public AppDataPaths AppDataPaths { get; }
 
     public GroundTargetViewModel GroundTarget { get; }
+
+    public SystemNotesViewModel SystemNotes { get; }
 
     public SphereLimitViewModel Search { get; }
 
@@ -736,6 +741,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             journalState.SystemName,
             journalState.StarPosition,
             journalState.CommanderName);
+        SystemNotes.UpdateContext(
+            journalState.FrontierId,
+            journalState.CommanderName,
+            journalState.SystemName,
+            journalState.SystemAddress,
+            journalState.StarPosition);
         BoxelSearch.UpdateCurrentSystem(
             journalState.SystemName,
             journalState.StarPosition);
