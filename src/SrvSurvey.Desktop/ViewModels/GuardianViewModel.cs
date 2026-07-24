@@ -19,15 +19,21 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private readonly GuardianSiteTemplateCatalog templates;
     private readonly GuardianSurveyCompletionCalculator completionCalculator;
     private readonly GuardianSiteMapProjector mapProjector = new();
+    private readonly GuardianSiteProximityEvaluator proximityEvaluator = new();
+    private readonly GuardianArtifactInventoryState artifactInventory = new();
     private readonly GuardianCommanderDataReader commanderDataReader;
     private readonly GuardianCommanderSurveyStore commanderSurveyStore;
+    private readonly RamTahViewModel? ramTah;
     private readonly AsyncCommand refreshCommand;
+    private readonly AsyncCommand toggleCurrentObeliskScannedCommand;
     private GuardianLiveSiteState liveSiteState;
     private GuardianCommanderDataReadResult commanderData =
         GuardianCommanderDataReadResult.Empty;
     private GuardianSiteVisitCatalog visits;
     private IReadOnlyList<GuardianSiteRowViewModel> rows = [];
     private GuardianSiteMapProjection? mapProjection;
+    private GuardianSiteProximitySnapshot? proximity;
+    private EliteStatus? currentStatus;
     private string filterText = string.Empty;
     private string selectedKindFilter = AllKinds;
     private string selectedVisitFilter = AllVisits;
@@ -46,12 +52,18 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         string dataDirectory,
         GuardianSiteCatalog? references = null,
         GuardianPublishedSiteCatalog? publishedSites = null,
-        GuardianSiteTemplateCatalog? templates = null)
+        GuardianSiteTemplateCatalog? templates = null,
+        RamTahViewModel? ramTah = null)
     {
         this.references = references ?? GuardianSiteCatalog.LoadEmbedded();
         this.publishedSites = publishedSites
             ?? GuardianPublishedSiteCatalog.LoadEmbedded();
         this.templates = templates ?? GuardianSiteTemplateCatalog.LoadEmbedded();
+        this.ramTah = ramTah;
+        if (this.ramTah is not null)
+        {
+            this.ramTah.PropertyChanged += (_, _) => NotifyCurrentObeliskChanged();
+        }
         completionCalculator = new GuardianSurveyCompletionCalculator(this.templates);
         commanderDataReader = new GuardianCommanderDataReader(dataDirectory);
         commanderSurveyStore = new GuardianCommanderSurveyStore(dataDirectory);
@@ -88,7 +100,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         statusMessage = "Reference data loaded. Commander visits will appear "
             + "after a journal profile is available.";
         refreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
+        toggleCurrentObeliskScannedCommand = new AsyncCommand(
+            ToggleCurrentObeliskScannedAsync,
+            () => CurrentObelisk is not null && activeFrontierId is not null);
         RefreshCommand = refreshCommand;
+        ToggleCurrentObeliskScannedCommand = toggleCurrentObeliskScannedCommand;
         ApplyFilters();
     }
 
@@ -101,6 +117,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     public IReadOnlyList<string> SiteTypeFilters { get; }
 
     public ICommand RefreshCommand { get; }
+
+    public ICommand ToggleCurrentObeliskScannedCommand { get; }
 
     public GuardianSurveyEditorViewModel SurveyEditor { get; }
 
@@ -177,6 +195,67 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     public string ActiveSiteVisit => ActiveSite is { } site
         ? $"Last approach {site.LastVisited.ToLocalTime():g}"
         : "Journal monitoring is active.";
+
+    public GuardianSiteProximitySnapshot? Proximity => proximity;
+
+    public GuardianObelisk? CurrentObelisk => Proximity?.CurrentObelisk;
+
+    public bool HasCurrentObelisk => CurrentObelisk is not null;
+
+    public string SiteDistanceText => Proximity is { } value
+        ? $"{value.DistanceFromSite:N1} m from survey origin"
+        : HasActiveSite
+            ? "Waiting for surface position, body radius, and site heading."
+            : "No live Guardian site detected.";
+
+    public string NearbyPointText => Proximity?.NearestPoint is { } nearby
+        ? $"Nearest: {nearby.Point.Name} Â· {nearby.Point.Type} Â· "
+            + $"{nearby.Distance:N1} m"
+        : HasActiveSite
+            ? "No selectable mapped object is available."
+            : "Approach a Guardian site to begin proximity tracking.";
+
+    public string CurrentObeliskTitle => CurrentObelisk is { } obelisk
+        ? $"{obelisk.Name} Â· active obelisk"
+        : "No current active obelisk";
+
+    public string CurrentObeliskLogText => CurrentObelisk is { } obelisk
+        ? $"Log: {GetLogDisplayName(obelisk.LogCode)}"
+        : "Move within 25 m of an active obelisk in an SRV or on foot.";
+
+    public string CurrentObeliskRequirementsText => CurrentObelisk is { } obelisk
+        ? artifactInventory.GetRequirements(obelisk.ItemCodes) is { Count: > 0 }
+            requirements
+                ? string.Join(
+                    " + ",
+                    requirements.Select(requirement =>
+                        $"{requirement.DisplayName} "
+                        + $"{requirement.Available}/{requirement.Required}"))
+                : "No artifact requirement is recorded."
+        : "Artifact requirements will appear here.";
+
+    public bool HasCurrentObeliskArtifacts => CurrentObelisk is { } obelisk
+        && artifactInventory.HasItems(obelisk.ItemCodes);
+
+    public string CurrentObeliskArtifactStatus => CurrentObelisk is null
+        ? "INACTIVE"
+        : HasCurrentObeliskArtifacts
+            ? "ARTIFACTS READY"
+            : "ARTIFACTS MISSING";
+
+    public string CurrentObeliskMissionStatus => CurrentObelisk is not { } obelisk
+        ? "No current obelisk is available for mission tracking."
+        : ramTah is null
+            ? "Ram Tah tracking is unavailable."
+            : !ramTah.IsAnyMissionActive
+                ? "No Ram Tah mission is active."
+                : ramTah.IsLogCompleted(GetMission(), obelisk.LogCode)
+                    ? "Ram Tah log already acquired."
+                    : "Needed for the active Ram Tah mission.";
+
+    public string ToggleCurrentObeliskScannedText => CurrentObelisk?.Scanned == true
+        ? "Mark not scanned"
+        : "Mark scanned";
 
     public string FilterText
     {
@@ -282,6 +361,21 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         ApplyFilters();
     }
 
+    public void UpdateStatus(EliteStatus status)
+    {
+        ArgumentNullException.ThrowIfNull(status);
+        currentStatus = status;
+        UpdateProximity();
+    }
+
+    public void UpdateCargo(CargoSnapshot? cargo)
+    {
+        if (cargo is not null && artifactInventory.Reset(cargo))
+        {
+            NotifyCurrentObeliskChanged();
+        }
+    }
+
     public async Task LoadProfileAsync(
         string frontierId,
         bool isOdyssey,
@@ -295,6 +389,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         {
             liveSiteState = new GuardianLiveSiteState(references);
             NotifyActiveSiteChanged();
+            UpdateProximity();
         }
 
         activeFrontierId = frontierId;
@@ -310,9 +405,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(journalEvents);
         var activeSiteChanged = false;
         var surveyChanged = false;
+        var inventoryChanged = false;
         string? saveStatus = null;
         foreach (var journalEvent in journalEvents)
         {
+            inventoryChanged |= artifactInventory.Apply(journalEvent);
             var previous = liveSiteState.CurrentSite;
             var recognized = liveSiteState.Apply(journalEvent);
             if (liveSiteState.CurrentSite != previous)
@@ -359,6 +456,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         if (activeSiteChanged)
         {
             NotifyActiveSiteChanged();
+            UpdateProximity();
         }
 
         if (surveyChanged)
@@ -370,6 +468,12 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 completionCalculator);
             ApplyFilters();
             SelectActiveReference();
+            UpdateProximity();
+        }
+
+        if (inventoryChanged)
+        {
+            NotifyCurrentObeliskChanged();
         }
 
         if (saveStatus is not null)
@@ -380,7 +484,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
     public void SetProfileError(string error)
     {
+        activeFrontierId = null;
         StatusMessage = error;
+        toggleCurrentObeliskScannedCommand.RaiseCanExecuteChanged();
     }
 
     public Task CopySystemNameAsync()
@@ -412,6 +518,89 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         return CopyAsync(text, "surface location");
     }
 
+    public async Task ToggleCurrentObeliskScannedAsync()
+    {
+        var site = ActiveSite;
+        var currentObelisk = CurrentObelisk;
+        if (site is null
+            || currentObelisk is null
+            || activeFrontierId is null)
+        {
+            StatusMessage = "Approach an active Guardian obelisk before changing its scan state.";
+            return;
+        }
+
+        var existing = FindSurvey(site);
+        if (existing is null)
+        {
+            StatusMessage = "The current Guardian survey is not available to save.";
+            return;
+        }
+
+        var scanned = !currentObelisk.Scanned;
+        var updatedObelisk = currentObelisk with { Scanned = scanned };
+        var updated = existing with
+        {
+            ActiveObelisks = existing.ActiveObelisks
+                .Where(obelisk => !string.Equals(
+                    obelisk.Name,
+                    currentObelisk.Name,
+                    StringComparison.OrdinalIgnoreCase))
+                .Append(updatedObelisk)
+                .OrderBy(obelisk => obelisk.Name)
+                .ToArray(),
+        };
+
+        try
+        {
+            var path = await commanderSurveyStore.SaveAsync(
+                activeFrontierId,
+                activeIsOdyssey,
+                updated);
+            updated = updated with { Path = path };
+            ReplaceSurvey(updated, existing);
+            visits = GuardianSiteVisitCatalog.Merge(
+                references,
+                commanderData,
+                publishedSites,
+                completionCalculator);
+            ApplyFilters();
+            SelectActiveReference();
+            UpdateProximity();
+
+            var action = scanned ? "scanned" : "not scanned";
+            if (!artifactInventory.HasItems(currentObelisk.ItemCodes))
+            {
+                StatusMessage = $"Marked {currentObelisk.Name} {action}. Ram Tah "
+                    + "progress was not changed because the required artifacts are missing.";
+                return;
+            }
+
+            if (ramTah is null || !ramTah.IsAnyMissionActive)
+            {
+                StatusMessage = $"Marked {currentObelisk.Name} {action}. No active "
+                    + "Ram Tah mission required a checklist update.";
+                return;
+            }
+
+            await ramTah.SetLogCompletedAsync(
+                GetMission(),
+                currentObelisk.LogCode,
+                scanned);
+            StatusMessage = $"Marked {currentObelisk.Name} {action} and updated "
+                + $"Ram Tah log {currentObelisk.LogCode}.";
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or ArgumentException)
+        {
+            StatusMessage = "The current obelisk scan state could not be saved: "
+                + exception.Message;
+        }
+    }
+
     private async Task RefreshAsync()
     {
         await RefreshAsync(CancellationToken.None);
@@ -438,6 +627,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 publishedSites,
                 completionCalculator);
             ApplyFilters();
+            UpdateProximity();
             StatusMessage = commanderData.Errors.Count == 0
                 ? $"Loaded {commanderData.Surveys.Count} site survey file(s) and "
                     + $"{commanderData.Beacons.Count} beacon file(s)."
@@ -539,6 +729,34 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             || survey.Path.Contains("-ruins-", StringComparison.OrdinalIgnoreCase);
     }
 
+    private RamTahMission GetMission()
+    {
+        return ActiveSite?.Kind == GuardianSiteKind.Ruins
+            ? RamTahMission.AncientRuins
+            : RamTahMission.GuardianLogs;
+    }
+
+    private static string GetLogDisplayName(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return "Unknown";
+        }
+
+        var category = code[0] switch
+        {
+            'B' => "Biology",
+            'C' => "Culture",
+            'H' => "History",
+            'L' => "Language",
+            'T' => "Technology",
+            '#' => "Guardian",
+            _ => "Log",
+        };
+        var number = code[0] == '#' ? code : $"#{code[1..]}";
+        return $"{category} {number}";
+    }
+
     private void NotifyActiveSiteChanged()
     {
         OnPropertyChanged(nameof(ActiveSite));
@@ -548,6 +766,69 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ActiveSiteReference));
         OnPropertyChanged(nameof(ActiveSiteLocation));
         OnPropertyChanged(nameof(ActiveSiteVisit));
+    }
+
+    private void NotifyCurrentObeliskChanged()
+    {
+        OnPropertyChanged(nameof(Proximity));
+        OnPropertyChanged(nameof(CurrentObelisk));
+        OnPropertyChanged(nameof(HasCurrentObelisk));
+        OnPropertyChanged(nameof(SiteDistanceText));
+        OnPropertyChanged(nameof(NearbyPointText));
+        OnPropertyChanged(nameof(CurrentObeliskTitle));
+        OnPropertyChanged(nameof(CurrentObeliskLogText));
+        OnPropertyChanged(nameof(CurrentObeliskRequirementsText));
+        OnPropertyChanged(nameof(HasCurrentObeliskArtifacts));
+        OnPropertyChanged(nameof(CurrentObeliskArtifactStatus));
+        OnPropertyChanged(nameof(CurrentObeliskMissionStatus));
+        OnPropertyChanged(nameof(ToggleCurrentObeliskScannedText));
+        toggleCurrentObeliskScannedCommand.RaiseCanExecuteChanged();
+    }
+
+    private void UpdateProximity()
+    {
+        proximity = null;
+        var site = ActiveSite;
+        if (site is null || currentStatus is null)
+        {
+            NotifyCurrentObeliskChanged();
+            return;
+        }
+
+        var survey = FindSurvey(site);
+        var reference = site.Reference;
+        var published = reference is null ? null : publishedSites.Find(reference);
+        var siteType = survey is not null
+            && !string.Equals(
+                survey.SiteType,
+                "Unknown",
+                StringComparison.OrdinalIgnoreCase)
+                    ? survey.SiteType
+                    : site.SiteType;
+        var template = templates.Find(siteType);
+        var location = survey?.Survey.Location
+            ?? published?.Location
+            ?? site.Location;
+        var siteHeading = survey?.Survey.SiteHeading is >= 0 and <= 359
+            ? survey.Survey.SiteHeading
+            : published?.SiteHeading is >= 0 and <= 359
+                ? published.SiteHeading
+                : reference?.SiteHeading ?? -1;
+        if (template is null || location is null)
+        {
+            NotifyCurrentObeliskChanged();
+            return;
+        }
+
+        proximity = proximityEvaluator.Evaluate(
+            currentStatus,
+            location.Value,
+            siteHeading,
+            template,
+            survey?.Survey,
+            GetMergedActiveObelisks(reference, survey),
+            GetObeliskGroups(published, survey));
+        NotifyCurrentObeliskChanged();
     }
 
     private void UpdateMapProjection()
@@ -570,14 +851,44 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                     : row.Reference.SiteType;
         var template = templates.Find(siteType)
             ?? templates.Find(row.Reference.SiteType);
+        var published = publishedSites.Find(row.Reference);
         MapProjection = template is null
             ? null
             : mapProjector.Project(
                 template,
                 survey?.Survey,
-                survey?.ActiveObelisks,
-                survey?.ObeliskGroups);
+                GetMergedActiveObelisks(row.Reference, survey),
+                GetObeliskGroups(published, survey));
         NotifyMapTextChanged();
+    }
+
+    private IReadOnlyList<GuardianObelisk> GetMergedActiveObelisks(
+        GuardianSiteReference? reference,
+        GuardianCommanderSiteSurvey? survey)
+    {
+        var merged = new Dictionary<string, GuardianObelisk>(
+            StringComparer.OrdinalIgnoreCase);
+        var published = reference is null ? null : publishedSites.Find(reference);
+        foreach (var obelisk in published?.ActiveObelisks ?? [])
+        {
+            merged[obelisk.Name] = obelisk;
+        }
+
+        foreach (var obelisk in survey?.ActiveObelisks ?? [])
+        {
+            merged[obelisk.Name] = obelisk;
+        }
+
+        return merged.Values.OrderBy(obelisk => obelisk.Name).ToArray();
+    }
+
+    private static IReadOnlySet<char> GetObeliskGroups(
+        GuardianPublishedSite? published,
+        GuardianCommanderSiteSurvey? survey)
+    {
+        return survey?.ObeliskGroups is { Count: > 0 } commanderGroups
+            ? commanderGroups
+            : published?.ObeliskGroups.ToHashSet() ?? new HashSet<char>();
     }
 
     private void UpdateSurveyEditor()
@@ -616,6 +927,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 row => row.Reference == selectedReference)
                 ?? SelectedSite;
         }
+
+        UpdateProximity();
 
         return Task.CompletedTask;
     }

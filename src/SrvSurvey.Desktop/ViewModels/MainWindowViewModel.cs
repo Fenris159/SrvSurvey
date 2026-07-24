@@ -89,8 +89,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             boxelSystemResolver ?? new SpanshBoxelClient());
         GroundTarget = new GroundTargetViewModel(
             new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
-        Guardian = new GuardianViewModel(AppDataPaths.DataDirectory);
         RamTah = new RamTahViewModel(commanderProfileStore);
+        Guardian = new GuardianViewModel(
+            AppDataPaths.DataDirectory,
+            ramTah: RamTah);
         exobiologyState = new ExobiologyState(
             exobiologyCatalog ?? ExobiologyReferenceCatalog.LoadEmbedded());
         ProfileBackupDirectory = Path.Combine(
@@ -720,9 +722,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             update.JournalEvents,
             activeProfileCommanderName);
         await RamTah.ApplyJournalEventsAsync(update.JournalEvents);
+        Guardian.UpdateCargo(update.Cargo);
 
         if (update.Status is not null)
         {
+            Guardian.UpdateStatus(update.Status);
             await BoxelSearch.UpdateStatusAsync(update.Status);
         }
 
@@ -783,6 +787,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         if (update.JournalEvents.Count > 0
             || update.Status is not null
             || update.NavRoute is not null
+            || update.Cargo is not null
             || update.Errors.Count > 0
             || isManualRefresh)
         {

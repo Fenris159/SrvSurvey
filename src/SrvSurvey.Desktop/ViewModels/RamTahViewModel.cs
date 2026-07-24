@@ -140,6 +140,8 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
 
     public double GuardianLogsProgress => state.GuardianLogsProgress;
 
+    public bool IsAnyMissionActive => state.IsAnyMissionActive;
+
     public void LoadProfile(
         string profileFrontierId,
         string? profileCommanderName,
@@ -207,6 +209,35 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
             state.ToggleLog(mission, code);
             UpdateDisplay();
             await SaveAsync($"Saved {code} Ram Tah progress.");
+        }
+        finally
+        {
+            operationLock.Release();
+        }
+    }
+
+    public async Task<bool> SetLogCompletedAsync(
+        RamTahMission mission,
+        string code,
+        bool completed)
+    {
+        if (frontierId is null)
+        {
+            StatusMessage = "A commander profile is required to change mission progress.";
+            return false;
+        }
+
+        await operationLock.WaitAsync();
+        try
+        {
+            var changed = state.SetLog(mission, code, completed);
+            if (changed)
+            {
+                UpdateDisplay();
+                await SaveAsync($"Saved {code} Ram Tah progress.");
+            }
+
+            return changed;
         }
         finally
         {

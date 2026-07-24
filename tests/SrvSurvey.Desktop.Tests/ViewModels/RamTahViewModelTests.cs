@@ -72,6 +72,35 @@ public sealed class RamTahViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task SetLogCompletedIsIdempotentAndPersistsRequestedState()
+    {
+        var store = new CommanderProfileStore(temporaryDirectory);
+        var viewModel = new RamTahViewModel(store);
+        viewModel.LoadProfile(
+            "F123",
+            "Drew",
+            true,
+            new RamTahSnapshot(
+                RamTahMissionStatus.Active,
+                RamTahMissionStatus.NotStarted,
+                [],
+                []));
+
+        Assert.True(await viewModel.SetLogCompletedAsync(
+            RamTahMission.AncientRuins,
+            "H1",
+            true));
+        Assert.False(await viewModel.SetLogCompletedAsync(
+            RamTahMission.AncientRuins,
+            "H1",
+            true));
+        Assert.True(viewModel.IsLogCompleted(RamTahMission.AncientRuins, "H1"));
+
+        var loaded = await store.LoadAsync("F123", true);
+        Assert.Contains("H1", loaded.Data!.RamTah.AncientRuinsLogs);
+    }
+
+    [Fact]
     public async Task ResetRequiresConfirmationAndClearsOnlySelectedMission()
     {
         var store = new CommanderProfileStore(temporaryDirectory);

@@ -1,6 +1,7 @@
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -245,6 +246,123 @@ public sealed class GuardianViewModelTests
         }
     }
 
+    [Fact]
+    public async Task LiveObeliskTracksArtifactsScanStateAndRamTahProgress()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference();
+            var publishedObelisk = new GuardianObelisk(
+                "A01",
+                "H1",
+                false,
+                ["ca", "ca"]);
+            var ramTah = new RamTahViewModel(new CommanderProfileStore(root));
+            ramTah.LoadProfile(
+                "F123",
+                "Drew",
+                true,
+                new RamTahSnapshot(
+                    RamTahMissionStatus.Active,
+                    RamTahMissionStatus.NotStarted,
+                    [],
+                    []));
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([reference]),
+                new GuardianPublishedSiteCatalog(
+                [
+                    new GuardianPublishedSite(
+                        1,
+                        GuardianSiteKind.Ruins,
+                        reference.FullBodyName,
+                        "Test",
+                        1,
+                        0,
+                        -1,
+                        new GuardianSurfaceLocation(0, 0),
+                        new Dictionary<string, GuardianPoiStatus>(),
+                        new Dictionary<string, int>(),
+                        [publishedObelisk],
+                        "A",
+                        "test-ruins-1.json"),
+                ]),
+                new GuardianSiteTemplateCatalog(
+                [
+                    new GuardianSiteTemplate(
+                        "Test",
+                        "Test",
+                        string.Empty,
+                        new GuardianMapPoint(0, 0),
+                        1,
+                        [
+                            new GuardianPointOfInterest(
+                                "A01",
+                                GuardianPoiType.Obelisk,
+                                180,
+                                10,
+                                0),
+                        ],
+                        [],
+                        new Dictionary<string, GuardianMapPoint>()),
+                ]),
+                ramTah);
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+            [
+                Parse(
+                    """{"timestamp":"2026-07-24T10:05:00Z","event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}"""),
+            ],
+            "Drew");
+            viewModel.UpdateCargo(new CargoSnapshot(
+                DateTimeOffset.UtcNow,
+                "Cargo",
+                "SRV",
+                1,
+                [new CargoItem("ancientcasket", "Guardian Casket", 1, 0)]));
+            viewModel.UpdateStatus(StatusNorthOfSite(10));
+
+            Assert.Equal("A01", viewModel.CurrentObelisk?.Name);
+            Assert.Contains("0.0 m", viewModel.NearbyPointText);
+            Assert.Contains("Guardian Casket 1/2", viewModel.CurrentObeliskRequirementsText);
+            Assert.False(viewModel.HasCurrentObeliskArtifacts);
+            Assert.True(viewModel.MapProjection?.Points.Single().IsActiveObelisk);
+
+            await viewModel.ToggleCurrentObeliskScannedAsync();
+
+            Assert.True(viewModel.CurrentObelisk?.Scanned);
+            Assert.False(ramTah.IsLogCompleted(RamTahMission.AncientRuins, "H1"));
+            Assert.Contains("required artifacts are missing", viewModel.StatusMessage);
+
+            viewModel.UpdateCargo(new CargoSnapshot(
+                DateTimeOffset.UtcNow,
+                "Cargo",
+                "SRV",
+                2,
+                [new CargoItem("ancientcasket", "Guardian Casket", 2, 0)]));
+            await viewModel.ToggleCurrentObeliskScannedAsync();
+            await viewModel.ToggleCurrentObeliskScannedAsync();
+
+            Assert.True(viewModel.CurrentObelisk?.Scanned);
+            Assert.True(ramTah.IsLogCompleted(RamTahMission.AncientRuins, "H1"));
+            var saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            Assert.True(Assert.Single(saved.Surveys).ActiveObelisks.Single().Scanned);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"timestamp":"2026-07-24T10:10:00Z","event":"SupercruiseEntry"}""")],
+                "Drew");
+
+            Assert.Null(viewModel.CurrentObelisk);
+            Assert.Null(viewModel.Proximity);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
     private static string CreateTemporaryDirectory()
     {
         var path = Path.Combine(
@@ -252,6 +370,41 @@ public sealed class GuardianViewModelTests
             $"SrvSurvey-guardian-vm-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static GuardianSiteReference CreateProximityReference()
+    {
+        return new GuardianSiteReference(
+            1,
+            GuardianSiteKind.Ruins,
+            "Test",
+            42,
+            "A 1",
+            7,
+            "Test",
+            1,
+            0,
+            new GalacticCoordinate(0, 0, 0),
+            0,
+            0,
+            0,
+            -1,
+            0,
+            null,
+            null,
+            null);
+    }
+
+    private static EliteStatus StatusNorthOfSite(double distance)
+    {
+        const double radius = 1_000_000;
+        return new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
+            Latitude = distance / radius * 180 / Math.PI,
+            Longitude = 0,
+            PlanetRadius = (decimal)radius,
+        };
     }
 
     private static JournalEventEnvelope Parse(string json)
