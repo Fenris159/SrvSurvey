@@ -224,7 +224,7 @@ not expected to run as a headless container service.
 | --- | --- | --- | --- | --- |
 | Application shell | Not applicable | Modern navigation plus Overview, Exploration, Exobiology, Travel, Search, Diagnostics, Settings, and explicit pending states | Blue dark/light shell plus current Overview, Exobiology, Travel, and Search visual/accessibility smoke passed; Exploration page needs current visual recheck | Not tested |
 | Journal folder discovery | Implemented; 3 tests | Paths and errors shown | Missing and default paths smoke-tested | Not tested |
-| Journal ingestion/state | Retrying status reader plus polling journal append/partial-line/rotation monitor; shared bootstrap/live reducer | Overview and Diagnostics projections update live | Earlier bootstrap state inspected; current live monitor not exercised with Elite | Not tested |
+| Journal ingestion/state | Retrying status/cargo readers plus polling journal append/partial-line/rotation and `Status.json`/`Cargo.json`/`NavRoute.json` change monitor; shared bootstrap/live reducer | Overview and Diagnostics projections update live; cargo changes feed Guardian artifact state | Earlier bootstrap state and cargo-backed inactive Guardian state inspected; current live monitor not exercised with Elite | Not tested |
 | Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
 | Settings/data migration | OS paths, legacy discovery, manifests, verified backup/staging/import, and lossless commander profile updates implemented | Explicit backup-and-import workflow in Settings | Automated only; real profile restart comparison not run | Not tested |
 | Exploration totals | Legacy valuation and six counters plus compatible, atomic profile persistence implemented | Live Overview/Exploration projections and two-step reset | Automated only | Not tested |
@@ -232,7 +232,7 @@ not expected to run as a headless container service.
 | Ground target tracking | Legacy coordinate parsing plus cardinal formats, validated settings, great-circle distance/bearing, relative heading, and approach bands implemented | Travel target editor supports typed, current, clipboard, clear, and live guidance; overlay remains pending | Inactive/live-profile page visually and accessibility checked; active surface guidance not run | Not tested |
 | Spherical search limit | Legacy-compatible center/radius state, strict boundary rule, lossless commander persistence, journal galactic position, and current Spansh response contract implemented | Search supports center lookup and selection, 1–1000 ly radius, enable/disable, and current-system distance/result; `PlotSphericalSearch` remains pending | Live profile page and Sol lookup visually/accessibility checked; save action enabled but profile was not changed | Not tested |
 | Boxel search | Generated-name hierarchy, ID64 decoding for generated and hand-authored names, completion/skip rules, lossless commander fields, legacy local-system and empty-boxel files, paged Spansh search, live `NavRoute.json`/journal updates, and cancellable full-area completion audit with partial results implemented | Search supports activation, mass-code/date options, current/parent/sibling/child navigation, expected counts, manual completion, empty marking, current-system highlighting, refresh, manual/Galaxy Map clipboard copy, audit progress/cancellation, and a large-audit confirmation guard | Inactive live-profile page and audit controls visually and accessibility checked at 1182 by 790; automated ID64, source-merge, live-completion, audit, cancellation, and confirmation integration passed; no search/profile/audit action was invoked | Not tested |
-| Guardian surveys | All 759 shipped sites, 13 map templates, 729 published surveys, exact completion scoring, duplicate-ID/full-body matching, legacy/current commander files, compact/old POI and obelisk formats, visits, notes, beacon scan locations, both Ram Tah mission states, all 129 mission logs, journal transitions, and compatible commander persistence implemented; live site journal state, survey writes, maps/editing, current-obelisk context, and overlays remain | Guardian site browser supports distance ordering, text/kind/visit/type filters, reference and commander status, details, and system/address/position/lat-long clipboard actions; Ram Tah workspace supports both categorized checklists, mission status/progress, manual toggles, guarded resets, and guide links; survey map, editor, current-obelisk actions, and overlay surfaces remain | Live-profile browser and Ram Tah tabs, nearest-site ordering, unique address filtering, both complete checklist layouts, scrolling, disabled reset states, and details visually checked at 1182 by 790; no refresh, clipboard, guide, checklist, reset, survey, or profile-changing action was invoked; UI Automation data was unavailable | Not tested |
+| Guardian surveys | All 759 shipped sites, 13 map templates, 729 published surveys, exact completion scoring, duplicate-ID/full-body matching, legacy/current commander files, compact/old POI and obelisk formats, visits, notes, beacon locations, live site transitions/writes, native map projection, lossless survey editing, cargo artifact aliases, 25 m obelisk proximity, scan persistence, and both Ram Tah missions implemented; detached overlay/platform behavior remains | Browser, clipboard actions, native maps, survey editor, live-site/scanner cards, artifact requirements, scan toggle, and both complete Ram Tah workspaces implemented; advanced map authoring and detached overlays remain | Live-profile browser, maps/editor, Ram Tah tabs, and inactive scanner card visually checked at 1182 by 790; scanner checked in Blue dark/light without changing commander state; active in-game proximity not run | Not tested |
 | Overlays/input | Not implemented | Not implemented | Not tested | Not tested |
 | Secondary features | Not implemented | Not implemented | Not tested | Not tested |
 | Packaging/AppImage | Self-contained publish configured; no AppImage | Not applicable | `win-x64` publish passed | Cross-publish passed; runtime not tested |
@@ -246,8 +246,8 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
-- `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release` passed all
-  176 tests: 141 Core tests and 35 Desktop tests.
+- `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
+  passed all 226 tests: 184 Core tests and 42 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
@@ -310,6 +310,16 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   controls, progress/status presentation, scrolling, guide actions, disabled
   empty reset states, and the status footer were visually checked without
   changing the live commander profile. UI Automation data was unavailable.
+- Automated Guardian live coverage now includes multi-digit settlement indexes,
+  travel clearing, lossless approach writes, all 13 finite map projections,
+  survey-editor validation/round-tripping, retry-safe `Cargo.json` monitoring,
+  all six Guardian artifact aliases and duplicate quantities, site-heading
+  proximity, the legacy 25 m current-obelisk rule, scan persistence, and
+  artifact-gated Ram Tah updates.
+- The Guardian live scanner card was rendered at 1182 by 790 in Blue (dark) and
+  Blue (light). Its inactive proximity, artifact, mission, and disabled scan
+  states were visually checked and exposed through UI Automation. Blue (dark)
+  was restored, and no commander survey or Ram Tah state was changed.
 - The workflow YAML and `global.json` parsed successfully.
 
 Not validated in this environment:
