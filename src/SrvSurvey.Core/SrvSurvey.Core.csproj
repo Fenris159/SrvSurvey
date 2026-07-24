@@ -11,6 +11,12 @@
   <ItemGroup>
     <EmbeddedResource Include="..\..\docs\codexRef.json"
                       LogicalName="SrvSurvey.Core.Resources.codexRef.json" />
+    <EmbeddedResource Include="..\..\SrvSurvey\allRuins.json"
+                      LogicalName="SrvSurvey.Core.Resources.allRuins.json" />
+    <EmbeddedResource Include="..\..\SrvSurvey\allStructures.json"
+                      LogicalName="SrvSurvey.Core.Resources.allStructures.json" />
+    <EmbeddedResource Include="..\..\SrvSurvey\allBeacons.json"
+                      LogicalName="SrvSurvey.Core.Resources.allBeacons.json" />
   </ItemGroup>
 
 </Project>
