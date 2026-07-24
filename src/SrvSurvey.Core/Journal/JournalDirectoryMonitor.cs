@@ -10,6 +10,7 @@ public sealed class JournalDirectoryMonitor
     private long currentJournalOffset;
     private byte[] pendingJournalBytes = [];
     private string? statusContentHash;
+    private string? navRouteContentHash;
     private bool hasCompletedFirstPoll;
 
     public JournalDirectoryMonitor(string journalDirectory)
@@ -22,9 +23,13 @@ public sealed class JournalDirectoryMonitor
 
     public event EventHandler<EliteStatus>? StatusUpdated;
 
+    public event EventHandler<NavRouteSnapshot>? NavRouteUpdated;
+
     public event EventHandler<string>? ReadError;
 
     public EliteStatus? CurrentStatus { get; private set; }
+
+    public NavRouteSnapshot? CurrentNavRoute { get; private set; }
 
     public string? CurrentJournalPath => currentJournalPath;
 
@@ -83,10 +88,38 @@ public sealed class JournalDirectoryMonitor
                 }
             }
 
+            NavRouteSnapshot? navRoute = null;
+            var navRoutePath = Path.Combine(
+                journalDirectory,
+                NavRouteFileReader.FileName);
+            if (File.Exists(navRoutePath))
+            {
+                var navRouteResult = await NavRouteFileReader.ReadAsync(
+                        navRoutePath,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+                if (navRouteResult.Snapshot is not null
+                    && navRouteResult.ContentHash is not null
+                    && !string.Equals(
+                        navRouteResult.ContentHash,
+                        navRouteContentHash,
+                        StringComparison.Ordinal))
+                {
+                    navRouteContentHash = navRouteResult.ContentHash;
+                    CurrentNavRoute = navRouteResult.Snapshot;
+                    navRoute = navRouteResult.Snapshot;
+                }
+                else if (navRouteResult.Error is not null)
+                {
+                    errors.Add(navRouteResult.Error);
+                }
+            }
+
             update = new JournalMonitorUpdate(
                 currentJournalPath,
                 events,
                 status,
+                navRoute,
                 errors,
                 IsBootstrapRead: !hasCompletedFirstPoll);
             hasCompletedFirstPoll = true;
@@ -104,6 +137,11 @@ public sealed class JournalDirectoryMonitor
         if (update.Status is not null)
         {
             StatusUpdated?.Invoke(this, update.Status);
+        }
+
+        if (update.NavRoute is not null)
+        {
+            NavRouteUpdated?.Invoke(this, update.NavRoute);
         }
 
         foreach (var error in update.Errors)
@@ -271,5 +309,6 @@ public sealed record JournalMonitorUpdate(
     string? JournalPath,
     IReadOnlyList<JournalEventEnvelope> JournalEvents,
     EliteStatus? Status,
+    NavRouteSnapshot? NavRoute,
     IReadOnlyList<string> Errors,
     bool IsBootstrapRead);

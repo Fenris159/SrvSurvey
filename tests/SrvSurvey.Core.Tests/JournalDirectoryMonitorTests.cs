@@ -25,6 +25,14 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         await File.WriteAllTextAsync(
             statusPath,
             "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Status\",\"Flags\":67108864,\"Flags2\":0}");
+        var navRoutePath = Path.Combine(
+            temporaryDirectory,
+            NavRouteFileReader.FileName);
+        await File.WriteAllTextAsync(
+            navRoutePath,
+            "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"NavRoute\","
+                + "\"Route\":[{\"StarSystem\":\"Praea Euq IL-P c5-2\","
+                + "\"SystemAddress\":102,\"StarPos\":[1,2,3],\"StarClass\":\"M\"}]}");
         var monitor = new JournalDirectoryMonitor(temporaryDirectory);
 
         var initial = await monitor.PollAsync();
@@ -32,6 +40,10 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         Assert.Equal("Commander", Assert.Single(initial.JournalEvents).EventName);
         Assert.NotNull(initial.Status);
         Assert.True(initial.Status.InSrv);
+        Assert.NotNull(initial.NavRoute);
+        Assert.Equal(
+            "Praea Euq IL-P c5-2",
+            Assert.Single(initial.NavRoute.Route).StarSystem);
         Assert.Empty(initial.Errors);
         Assert.True(initial.IsBootstrapRead);
 
@@ -40,12 +52,20 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
             "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Future");
         var partial = await monitor.PollAsync();
         Assert.Empty(partial.JournalEvents);
+        Assert.Null(partial.NavRoute);
         Assert.Empty(partial.Errors);
 
         await File.AppendAllTextAsync(firstJournal, "Event\",\"Value\":42}\n");
         var completed = await monitor.PollAsync();
         Assert.Equal("FutureEvent", Assert.Single(completed.JournalEvents).EventName);
         Assert.Empty(completed.Errors);
+
+        await File.WriteAllTextAsync(
+            navRoutePath,
+            "{\"timestamp\":\"2026-07-24T10:01:00Z\",\"event\":\"NavRouteClear\",\"Route\":[]}");
+        var routeCleared = await monitor.PollAsync();
+        Assert.Equal("NavRouteClear", routeCleared.NavRoute?.EventName);
+        Assert.Empty(Assert.IsType<NavRouteSnapshot>(routeCleared.NavRoute).Route);
 
         var secondJournal = Path.Combine(
             temporaryDirectory,
