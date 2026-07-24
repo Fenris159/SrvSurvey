@@ -52,6 +52,51 @@
                 IsExpanded="False">
         <Expander.Header>
           <StackPanel Spacing="3">
+            <TextBlock Classes="card-title" Text="Fleet Carrier cargo sync" />
+            <TextBlock Classes="muted"
+                       Text="Configure the commander-scoped Raven credential and opt-in Market.json publishing." />
+          </StackPanel>
+        </Expander.Header>
+        <Border Margin="0,12,0,0" Classes="card">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="The API key is stored in the active commander profile. When sync is enabled, only cargo counts from a freshly opened market on a linked Fleet Carrier are sent to Raven Colonial." />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBox Text="{Binding Colonization.RavenApiKey, Mode=TwoWay}"
+                       PasswordChar="*"
+                       IsEnabled="{Binding Colonization.HasCommanderProfile}"
+                       PlaceholderText="Raven Colonial API key" />
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      Command="{Binding Colonization.SaveRavenApiKeyCommand}"
+                      Content="Save key" />
+            </Grid>
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding Colonization.RavenCredentialStatus}" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <CheckBox VerticalAlignment="Center"
+                        IsChecked="{Binding Colonization.FleetCarrierCargoSyncEnabled, Mode=TwoWay}"
+                        IsEnabled="{Binding Colonization.HasStoredRavenApiKey}"
+                        Content="Sync linked Fleet Carrier cargo automatically" />
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      Command="{Binding Colonization.SyncFleetCarrierCargoCommand}"
+                      Content="{Binding Colonization.FleetCarrierSyncButtonText}" />
+            </Grid>
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       TextWrapping="Wrap"
+                       Text="{Binding Colonization.FleetCarrierSyncStatus}" />
+          </StackPanel>
+        </Border>
+      </Expander>
+
+      <Expander HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                IsExpanded="False">
+        <Expander.Header>
+          <StackPanel Spacing="3">
             <TextBlock Classes="card-title" Text="Shopping overlay" />
             <TextBlock Classes="muted"
                        Text="Configure the passive in-game commodity list and linked Fleet Carrier columns." />

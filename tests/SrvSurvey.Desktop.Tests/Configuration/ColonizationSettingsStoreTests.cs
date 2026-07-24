@@ -80,6 +80,24 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         Assert.Equal(preferences, store.LoadOverlayPreferences());
     }
 
+    [Fact]
+    public void FleetCarrierCargoSyncDefaultsOffAndPreservesConsent()
+    {
+        var path = Path.Combine(directory, "ui.json");
+        var store = new ColonizationSettingsStore(path);
+
+        Assert.False(store.LoadFleetCarrierCargoSyncEnabled());
+
+        store.SaveEnabled(true);
+        store.SaveFleetCarrierCargoSyncEnabled(true);
+
+        Assert.True(store.LoadEnabled());
+        Assert.True(store.LoadFleetCarrierCargoSyncEnabled());
+        Assert.Equal(
+            ColonizationOverlayPreferences.Default,
+            store.LoadOverlayPreferences());
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(directory))

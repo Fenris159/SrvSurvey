@@ -39,10 +39,17 @@
         <Border Grid.Column="1"
                 Classes="badge"
                 VerticalAlignment="Top">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="10"
-                     FontWeight="SemiBold"
-                     Text="{Binding InputMode}" />
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                       FontSize="10"
+                       FontWeight="Bold"
+                       IsVisible="{Binding HasPendingCargo}"
+                       Text="SYNCING" />
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="10"
+                       FontWeight="SemiBold"
+                       Text="{Binding InputMode}" />
+          </StackPanel>
         </Border>
       </Grid>
 

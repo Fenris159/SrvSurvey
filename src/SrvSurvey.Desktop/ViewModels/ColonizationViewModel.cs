@@ -4,6 +4,7 @@ using System.Windows.Input;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -13,10 +14,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private readonly IRavenColonialClient client;
     private readonly ColonizationBuildCatalog buildCatalog;
     private readonly ColonizationSettingsStore settingsStore;
+    private readonly CommanderProfileStore? commanderProfileStore;
     private ColonizationOverlayPreferences overlayPreferences;
     private readonly ColonizationConstructionState constructionState = new();
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand saveProjectsCommand;
+    private readonly AsyncCommand saveRavenApiKeyCommand;
+    private readonly AsyncCommand syncFleetCarrierCargoCommand;
     private IReadOnlyList<ColonizationProjectRowViewModel> projects = [];
     private IReadOnlyList<ColonizationResourceRowViewModel> constructionResources =
         [];
@@ -33,6 +37,17 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private bool isEnabled;
     private bool isBusy;
     private bool hasUnsavedProjectVisibility;
+    private bool fleetCarrierCargoSyncEnabled;
+    private bool isFleetCarrierSyncBusy;
+    private string ravenApiKey = string.Empty;
+    private string? storedRavenApiKey;
+    private string? profileFrontierId;
+    private bool profileIsOdyssey = true;
+    private (long MarketId, DateTimeOffset Timestamp)? lastSyncedMarket;
+    private string ravenCredentialStatus =
+        "Load a commander profile to configure a Raven API key.";
+    private string fleetCarrierSyncStatus =
+        "Automatic Fleet Carrier cargo sync is off.";
     private string statusMessage;
     private string projectSummary = "No projects loaded.";
     private string constructionTitle = "No construction depot active";
@@ -42,14 +57,18 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     public ColonizationViewModel(
         ColonizationSettingsStore settingsStore,
         IRavenColonialClient? client = null,
-        ColonizationBuildCatalog? buildCatalog = null)
+        ColonizationBuildCatalog? buildCatalog = null,
+        CommanderProfileStore? commanderProfileStore = null)
     {
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
         this.client = client ?? new RavenColonialClient();
+        this.commanderProfileStore = commanderProfileStore;
         this.buildCatalog = buildCatalog
             ?? ColonizationBuildCatalog.LoadEmbedded();
         overlayPreferences = settingsStore.LoadOverlayPreferences();
+        fleetCarrierCargoSyncEnabled =
+            settingsStore.LoadFleetCarrierCargoSyncEnabled();
         isEnabled = settingsStore.LoadEnabled();
         statusMessage = isEnabled
             ? "Raven Colonial access is enabled. Waiting for a commander profile."
@@ -63,8 +82,16 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 && !IsBusy
                 && HasUnsavedProjectVisibility
                 && CommanderName is not null);
+        saveRavenApiKeyCommand = new AsyncCommand(
+            SaveRavenApiKeyAsync,
+            CanSaveRavenApiKey);
+        syncFleetCarrierCargoCommand = new AsyncCommand(
+            () => SyncFleetCarrierCargoAsync(force: true),
+            CanSyncFleetCarrierCargo);
         RefreshCommand = refreshCommand;
         SaveProjectsCommand = saveProjectsCommand;
+        SaveRavenApiKeyCommand = saveRavenApiKeyCommand;
+        SyncFleetCarrierCargoCommand = syncFleetCarrierCargoCommand;
         ProjectEditor = new ColonizationProjectEditorViewModel(
             this.client,
             this.buildCatalog,
@@ -80,6 +107,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     public ICommand RefreshCommand { get; }
 
     public ICommand SaveProjectsCommand { get; }
+
+    public ICommand SaveRavenApiKeyCommand { get; }
+
+    public ICommand SyncFleetCarrierCargoCommand { get; }
 
     public ColonizationProjectEditorViewModel ProjectEditor { get; }
 
@@ -135,6 +166,85 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             {
                 HighlightAlmostCoveredFleetCarrierLoads = value,
             });
+    }
+
+    public string RavenApiKey
+    {
+        get => ravenApiKey;
+        set
+        {
+            if (SetField(ref ravenApiKey, value ?? string.Empty))
+            {
+                saveRavenApiKeyCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool HasCommanderProfile => profileFrontierId is not null;
+
+    public bool HasStoredRavenApiKey =>
+        !string.IsNullOrWhiteSpace(storedRavenApiKey);
+
+    public string RavenCredentialStatus
+    {
+        get => ravenCredentialStatus;
+        private set => SetField(ref ravenCredentialStatus, value);
+    }
+
+    public bool FleetCarrierCargoSyncEnabled
+    {
+        get => fleetCarrierCargoSyncEnabled;
+        set
+        {
+            if (value == fleetCarrierCargoSyncEnabled)
+            {
+                return;
+            }
+
+            try
+            {
+                settingsStore.SaveFleetCarrierCargoSyncEnabled(value);
+                fleetCarrierCargoSyncEnabled = value;
+                OnPropertyChanged();
+                FleetCarrierSyncStatus = value
+                    ? HasStoredRavenApiKey
+                        ? "Fleet Carrier cargo will sync from matching Market.json updates."
+                        : "Save a Raven API key before Fleet Carrier cargo can sync."
+                    : "Automatic Fleet Carrier cargo sync is off.";
+                syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or InvalidOperationException)
+            {
+                FleetCarrierSyncStatus =
+                    "The Fleet Carrier sync preference could not be saved: "
+                    + exception.Message;
+            }
+        }
+    }
+
+    public bool IsFleetCarrierSyncBusy
+    {
+        get => isFleetCarrierSyncBusy;
+        private set
+        {
+            if (SetField(ref isFleetCarrierSyncBusy, value))
+            {
+                OnPropertyChanged(nameof(FleetCarrierSyncButtonText));
+                RaiseCommandStates();
+            }
+        }
+    }
+
+    public string FleetCarrierSyncButtonText =>
+        IsFleetCarrierSyncBusy ? "Syncing..." : "Sync current market";
+
+    public string FleetCarrierSyncStatus
+    {
+        get => fleetCarrierSyncStatus;
+        private set => SetField(ref fleetCarrierSyncStatus, value);
     }
 
     public bool IsEnabled
@@ -290,6 +400,35 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
 
     public bool HasConstructionResources => ConstructionResources.Count > 0;
 
+    public void SetCommanderProfile(
+        string? frontierId,
+        bool isOdyssey,
+        string? apiKey)
+    {
+        profileFrontierId = string.IsNullOrWhiteSpace(frontierId)
+            ? null
+            : frontierId.Trim();
+        profileIsOdyssey = isOdyssey;
+        storedRavenApiKey = string.IsNullOrWhiteSpace(apiKey)
+            ? null
+            : apiKey.Trim();
+        RavenApiKey = storedRavenApiKey ?? string.Empty;
+        lastSyncedMarket = null;
+        RavenCredentialStatus = profileFrontierId is null
+            ? "Load a commander profile to configure a Raven API key."
+            : storedRavenApiKey is null
+                ? "No Raven API key is saved for this commander."
+                : "A Raven API key is saved for this commander.";
+        FleetCarrierSyncStatus = FleetCarrierCargoSyncEnabled
+            ? storedRavenApiKey is null
+                ? "Save a Raven API key before Fleet Carrier cargo can sync."
+                : "Fleet Carrier cargo will sync from matching Market.json updates."
+            : "Automatic Fleet Carrier cargo sync is off.";
+        OnPropertyChanged(nameof(HasCommanderProfile));
+        OnPropertyChanged(nameof(HasStoredRavenApiKey));
+        RaiseCommandStates();
+    }
+
     public async Task SetCommanderAsync(string? value)
     {
         var normalized = string.IsNullOrWhiteSpace(value)
@@ -333,6 +472,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             UpdateConstructionDisplay();
             UpdateProjectSummary();
             UpdateProjectEditorContext();
+            syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
         }
     }
 
@@ -347,7 +487,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         UpdateCommodityPlan();
     }
 
-    public void UpdateMarket(MarketSnapshot? market)
+    public async Task UpdateMarketAsync(MarketSnapshot? market)
     {
         if (market is null)
         {
@@ -356,6 +496,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
 
         currentMarket = market;
         UpdateCommodityPlan();
+        syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
+        if (FleetCarrierCargoSyncEnabled)
+        {
+            await SyncFleetCarrierCargoAsync(force: false);
+        }
     }
 
     public void UpdateStatus(EliteStatus? status)
@@ -385,6 +530,139 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     public void ReportLinkFailure(string message)
     {
         StatusMessage = "Raven Colonial could not be opened: " + message;
+    }
+
+    public async Task SaveRavenApiKeyAsync()
+    {
+        if (!CanSaveRavenApiKey()
+            || commanderProfileStore is null
+            || profileFrontierId is null)
+        {
+            return;
+        }
+
+        IsFleetCarrierSyncBusy = true;
+        try
+        {
+            var normalized = string.IsNullOrWhiteSpace(RavenApiKey)
+                ? null
+                : RavenApiKey.Trim();
+            await commanderProfileStore.SaveRavenColonialApiKeyAsync(
+                profileFrontierId,
+                CommanderName,
+                profileIsOdyssey,
+                normalized);
+            storedRavenApiKey = normalized;
+            RavenApiKey = normalized ?? string.Empty;
+            RavenCredentialStatus = normalized is null
+                ? "The Raven API key was removed from this commander profile."
+                : "The Raven API key was saved to this commander profile.";
+            OnPropertyChanged(nameof(HasStoredRavenApiKey));
+            if (normalized is null && FleetCarrierCargoSyncEnabled)
+            {
+                FleetCarrierCargoSyncEnabled = false;
+            }
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            RavenCredentialStatus =
+                "The Raven API key was not saved: " + exception.Message;
+        }
+        finally
+        {
+            IsFleetCarrierSyncBusy = false;
+            RaiseCommandStates();
+        }
+    }
+
+    public async Task SyncFleetCarrierCargoAsync(bool force = true)
+    {
+        if (!CanSyncFleetCarrierCargo()
+            || currentMarket is null
+            || storedRavenApiKey is null)
+        {
+            if (force)
+            {
+                FleetCarrierSyncStatus = GetFleetCarrierSyncBlockReason();
+            }
+
+            return;
+        }
+
+        var identity = (currentMarket.MarketId, currentMarket.Timestamp);
+        if (!force && lastSyncedMarket == identity)
+        {
+            return;
+        }
+
+        var localCarrier = fleetCarriers.First(carrier =>
+            carrier.MarketId == currentMarket.MarketId);
+        IsFleetCarrierSyncBusy = true;
+        FleetCarrierSyncStatus =
+            $"Checking {GetCarrierName(localCarrier)} market cargo...";
+        try
+        {
+            var serverCarrier = await client.GetFleetCarrierAsync(
+                currentMarket.MarketId);
+            if (serverCarrier is null)
+            {
+                FleetCarrierSyncStatus =
+                    "Raven Colonial does not have this Fleet Carrier.";
+                return;
+            }
+
+            var replacements =
+                ColonizationFleetCarrierCargoSynchronizer
+                    .CreateMarketReplacement(currentMarket, serverCarrier);
+            if (replacements.Count == 0)
+            {
+                ReplaceLocalFleetCarrier(serverCarrier);
+                lastSyncedMarket = identity;
+                FleetCarrierSyncStatus =
+                    $"{GetCarrierName(serverCarrier)} cargo is already current.";
+                return;
+            }
+
+            CommodityOverlay.ApplyPendingFleetCarrierCargo(
+                replacements.Keys);
+            FleetCarrierSyncStatus =
+                $"Updating {replacements.Count:N0} cargo entries for "
+                + GetCarrierName(serverCarrier)
+                + "...";
+            var updatedCargo = await client.ReplaceFleetCarrierCargoAsync(
+                currentMarket.MarketId,
+                replacements,
+                storedRavenApiKey);
+            ReplaceLocalFleetCarrier(serverCarrier with
+            {
+                Cargo = updatedCargo.ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value,
+                    StringComparer.OrdinalIgnoreCase),
+            });
+            lastSyncedMarket = identity;
+            FleetCarrierSyncStatus =
+                $"Updated {replacements.Count:N0} cargo entries for "
+                + GetCarrierName(serverCarrier)
+                + ".";
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or InvalidDataException
+                or TaskCanceledException
+                or ArgumentException)
+        {
+            FleetCarrierSyncStatus =
+                "Fleet Carrier cargo was not updated: " + exception.Message;
+        }
+        finally
+        {
+            CommodityOverlay.ApplyPendingFleetCarrierCargo(null);
+            IsFleetCarrierSyncBusy = false;
+        }
     }
 
     public async Task RefreshAsync()
@@ -603,6 +881,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         primaryProjectId = null;
         HasUnsavedProjectVisibility = false;
         UpdateProjectSummary();
+        syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
     }
 
     private void UpdateCommodityPlan()
@@ -618,6 +897,99 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 constructionState.CreateSnapshot(),
                 currentMarket),
             latestStatus);
+    }
+
+    private bool CanSaveRavenApiKey()
+    {
+        var normalized = string.IsNullOrWhiteSpace(RavenApiKey)
+            ? null
+            : RavenApiKey.Trim();
+        return commanderProfileStore is not null
+            && profileFrontierId is not null
+            && !IsFleetCarrierSyncBusy
+            && !string.Equals(
+                normalized,
+                storedRavenApiKey,
+                StringComparison.Ordinal);
+    }
+
+    private bool CanSyncFleetCarrierCargo()
+    {
+        if (!IsEnabled
+            || !FleetCarrierCargoSyncEnabled
+            || !HasStoredRavenApiKey
+            || IsFleetCarrierSyncBusy
+            || currentMarket is null
+            || !string.Equals(
+                currentMarket.StationType,
+                "FleetCarrier",
+                StringComparison.OrdinalIgnoreCase)
+            || !fleetCarriers.Any(carrier =>
+                carrier.MarketId == currentMarket.MarketId))
+        {
+            return false;
+        }
+
+        var dock = constructionState.CurrentDock;
+        return dock?.Timestamp is not null
+            && dock.MarketId == currentMarket.MarketId
+            && currentMarket.Timestamp > dock.Timestamp;
+    }
+
+    private string GetFleetCarrierSyncBlockReason()
+    {
+        if (!IsEnabled)
+        {
+            return "Enable Raven Colonial before syncing Fleet Carrier cargo.";
+        }
+
+        if (!FleetCarrierCargoSyncEnabled)
+        {
+            return "Automatic Fleet Carrier cargo sync is off.";
+        }
+
+        if (!HasStoredRavenApiKey)
+        {
+            return "Save a Raven API key before syncing Fleet Carrier cargo.";
+        }
+
+        if (currentMarket is null)
+        {
+            return "Open a Fleet Carrier commodity market in Elite first.";
+        }
+
+        if (!string.Equals(
+                currentMarket.StationType,
+                "FleetCarrier",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return "The current market is not a Fleet Carrier market.";
+        }
+
+        if (!fleetCarriers.Any(carrier =>
+                carrier.MarketId == currentMarket.MarketId))
+        {
+            return "The current Fleet Carrier is not linked to this commander in Raven Colonial.";
+        }
+
+        return "Dock at the Fleet Carrier and reopen its commodity market before syncing.";
+    }
+
+    private void ReplaceLocalFleetCarrier(
+        ColonizationFleetCarrier updatedCarrier)
+    {
+        fleetCarriers = fleetCarriers
+            .Where(carrier => carrier.MarketId != updatedCarrier.MarketId)
+            .Append(updatedCarrier)
+            .ToArray();
+        UpdateCommodityPlan();
+    }
+
+    private static string GetCarrierName(ColonizationFleetCarrier carrier)
+    {
+        return string.IsNullOrWhiteSpace(carrier.DisplayName)
+            ? carrier.Name
+            : carrier.DisplayName;
     }
 
     private void SaveOverlayPreferences(
@@ -651,6 +1023,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     {
         refreshCommand.RaiseCanExecuteChanged();
         saveProjectsCommand.RaiseCanExecuteChanged();
+        saveRavenApiKeyCommand.RaiseCanExecuteChanged();
+        syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
     }
 
     private bool SetField<T>(

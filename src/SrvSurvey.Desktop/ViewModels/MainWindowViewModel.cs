@@ -84,12 +84,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        commanderProfileStore = new CommanderProfileStore(
+            AppDataPaths.DataDirectory);
         InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
             OverlayPlatformCapabilities.DetectCurrent());
         Colonization = colonization ?? new ColonizationViewModel(
-            new ColonizationSettingsStore(AppDataPaths.UiSettingsPath));
-        commanderProfileStore = new CommanderProfileStore(AppDataPaths.DataDirectory);
+            new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
+            commanderProfileStore: commanderProfileStore);
         Search = new SphereLimitViewModel(
             commanderProfileStore,
             starSystemResolver ?? new SpanshStarSystemResolver());
@@ -750,7 +752,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         await RamTah.ApplyJournalEventsAsync(update.JournalEvents);
         Guardian.UpdateCargo(update.Cargo);
         Colonization.UpdateCargo(update.Cargo);
-        Colonization.UpdateMarket(update.Market);
+        await Colonization.UpdateMarketAsync(update.Market);
 
         if (update.Status is not null)
         {
@@ -816,6 +818,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             || update.Status is not null
             || update.NavRoute is not null
             || update.Cargo is not null
+            || update.Market is not null
             || update.Errors.Count > 0
             || isManualRefresh)
         {
@@ -854,6 +857,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         if (result.Data is null)
         {
+            Colonization.SetCommanderProfile(null, isOdyssey, apiKey: null);
             ExplorationStatusMessage = result.Error
                 ?? "The commander profile could not be loaded.";
             ExobiologyStatusMessage = result.Error
@@ -868,6 +872,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                 result.Error ?? "The commander profile could not be loaded.");
             return false;
         }
+
+        Colonization.SetCommanderProfile(
+            result.Data.FrontierId,
+            result.Data.IsOdyssey,
+            result.Data.RavenColonialApiKey);
 
         explorationState.Reset(result.Data.Exploration);
         exobiologyState.Reset(result.Data.Exobiology);

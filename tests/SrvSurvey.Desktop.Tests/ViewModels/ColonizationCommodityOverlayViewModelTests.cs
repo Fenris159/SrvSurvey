@@ -178,6 +178,28 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         Assert.Equal(0.48, water.RowOpacity);
     }
 
+    [Fact]
+    public void PendingCarrierSyncReplacesCountsWithProgressMarkers()
+    {
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+        viewModel.Apply(Plan(), Status(GuiFocus.StationServices));
+
+        viewModel.ApplyPendingFleetCarrierCargo(["steel"]);
+
+        var pending = Assert.Single(Assert.Single(viewModel.Groups).Rows);
+        Assert.True(viewModel.HasPendingCargo);
+        Assert.True(pending.IsPending);
+        Assert.Equal("...", pending.NeededText);
+        Assert.Equal("...", pending.OnFleetCarriersText);
+
+        viewModel.ApplyPendingFleetCarrierCargo(null);
+
+        var complete = Assert.Single(Assert.Single(viewModel.Groups).Rows);
+        Assert.False(viewModel.HasPendingCargo);
+        Assert.False(complete.IsPending);
+        Assert.Equal("100", complete.NeededText);
+    }
+
     private static ColonizationCommodityPlan Plan()
     {
         return new ColonizationCommodityPlan(

@@ -15,6 +15,8 @@ public sealed class ColonizationCommodityOverlayViewModel
     private ColonizationOverlayPreferences preferences =
         ColonizationOverlayPreferences.Default;
     private IReadOnlyList<ColonizationCommodityGroupViewModel> groups = [];
+    private IReadOnlySet<string> pendingCommodities =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private bool showSatisfiedGroups;
     private string platformStatus = string.Empty;
     private bool isClickThrough;
@@ -41,6 +43,8 @@ public sealed class ColonizationCommodityOverlayViewModel
     }
 
     public bool HasRows => Plan.Rows.Count > 0;
+
+    public bool HasPendingCargo => pendingCommodities.Count > 0;
 
     public bool HasFleetCarriers => preferences.ShowFleetCarrierCargo
         && Plan.FleetCarriers.Count > 0;
@@ -168,6 +172,17 @@ public sealed class ColonizationCommodityOverlayViewModel
         OnPropertyChanged(nameof(ShipColumnHeader));
     }
 
+    public void ApplyPendingFleetCarrierCargo(
+        IEnumerable<string>? commodities)
+    {
+        pendingCommodities = commodities?
+            .Where(commodity => !string.IsNullOrWhiteSpace(commodity))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase)
+            ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        RebuildGroups();
+        OnPropertyChanged(nameof(HasPendingCargo));
+    }
+
     public void ApplyPreparation(OverlayPreparationResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -189,7 +204,8 @@ public sealed class ColonizationCommodityOverlayViewModel
                             preferences.ShowFleetCarrierDelta,
                             preferences.InlineFleetCarrierCargo,
                             preferences
-                                .HighlightAlmostCoveredFleetCarrierLoads))
+                                .HighlightAlmostCoveredFleetCarrierLoads,
+                            pendingCommodities.Contains(row.Commodity)))
                     .ToArray();
                 var canCollapse = !Plan.IsAtConstructionSite
                     && preferences.ShowFleetCarrierCargo
@@ -287,14 +303,16 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
     bool ShowFleetCarrierCargo,
     bool ShowFleetCarrierDelta,
     bool InlineFleetCarrierCargo,
-    bool HighlightAlmostCoveredFleetCarrierLoads)
+    bool HighlightAlmostCoveredFleetCarrierLoads,
+    bool IsPending)
 {
     public ColonizationCommodityOverlayRowViewModel(
         ColonizationCommodityPlanRow row,
         bool showFleetCarrierCargo,
         bool showFleetCarrierDelta,
         bool inlineFleetCarrierCargo,
-        bool highlightAlmostCoveredFleetCarrierLoads)
+        bool highlightAlmostCoveredFleetCarrierLoads,
+        bool isPending)
         : this(
             row.Commodity,
             row.DisplayName,
@@ -309,7 +327,8 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
             showFleetCarrierCargo,
             showFleetCarrierDelta,
             inlineFleetCarrierCargo,
-            highlightAlmostCoveredFleetCarrierLoads)
+            highlightAlmostCoveredFleetCarrierLoads,
+            isPending)
     {
         IsAvailableAtCurrentMarket = row.IsAvailableAtCurrentMarket;
         IsUnavailableAtCurrentMarket = row.IsUnavailableAtCurrentMarket;
@@ -342,7 +361,7 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
 
     public double RowOpacity => IsUnavailableAtCurrentMarket ? 0.48 : 1;
 
-    public string NeededText => Needed.ToString("N0");
+    public string NeededText => IsPending ? "..." : Needed.ToString("N0");
 
     public string InShipText => !InlineFleetCarrierCargo && InShip > 0
         ? InShip.ToString("N0")
@@ -352,6 +371,11 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
     {
         get
         {
+            if (IsPending)
+            {
+                return "...";
+            }
+
             if (InlineFleetCarrierCargo && InShip > 0)
             {
                 return InShip.ToString("N0");

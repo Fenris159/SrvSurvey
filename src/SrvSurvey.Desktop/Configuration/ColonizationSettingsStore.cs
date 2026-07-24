@@ -54,6 +54,16 @@ public sealed class ColonizationSettingsStore
                 defaults.HighlightAlmostCoveredFleetCarrierLoads));
     }
 
+    public bool LoadFleetCarrierCargoSyncEnabled()
+    {
+        var root = documentStore.Load();
+        return root["Colonization"] is JsonObject colonization
+            && colonization["FleetCarrierCargoSyncEnabled"]
+                is JsonValue enabled
+            && enabled.TryGetValue<bool>(out var value)
+            && value;
+    }
+
     public void SaveEnabled(bool enabled)
     {
         documentStore.Update(root =>
@@ -103,6 +113,22 @@ public sealed class ColonizationSettingsStore
                 preferences.CollapseCoveredGroups;
             overlay["HighlightAlmostCoveredFleetCarrierLoads"] =
                 preferences.HighlightAlmostCoveredFleetCarrierLoads;
+        });
+    }
+
+    public void SaveFleetCarrierCargoSyncEnabled(bool enabled)
+    {
+        documentStore.Update(root =>
+        {
+            var colonization = root["Colonization"] as JsonObject;
+            if (colonization is null)
+            {
+                colonization = [];
+                root["Colonization"] = colonization;
+            }
+
+            root["Version"] = 1;
+            colonization["FleetCarrierCargoSyncEnabled"] = enabled;
         });
     }
 

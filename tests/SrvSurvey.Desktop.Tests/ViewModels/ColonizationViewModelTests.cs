@@ -1,6 +1,7 @@
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -264,7 +265,7 @@ public sealed class ColonizationViewModelTests : IDisposable
                 "StationName":"Supply Station","StationServices":["commodities"]
                 """),
         ]);
-        viewModel.UpdateMarket(new MarketSnapshot(
+        await viewModel.UpdateMarketAsync(new MarketSnapshot(
             DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
             "Market",
             900,
@@ -296,6 +297,109 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.True(row.CanCompleteFleetCarrierLoad);
     }
 
+    [Fact]
+    public async Task SavesCommanderKeyWithoutExposingItInStatus()
+    {
+        var client = new StubRavenColonialClient();
+        var viewModel = Create(client);
+        viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: null);
+        viewModel.RavenApiKey = "secret-key";
+
+        await viewModel.SaveRavenApiKeyAsync();
+
+        var store = new CommanderProfileStore(directory);
+        var profile = await store.LoadAsync("F123", isOdyssey: true);
+        Assert.Equal("secret-key", profile.Data?.RavenColonialApiKey);
+        Assert.True(viewModel.HasStoredRavenApiKey);
+        Assert.DoesNotContain("secret-key", viewModel.RavenCredentialStatus);
+    }
+
+    [Fact]
+    public async Task SyncsLinkedCarrierOnlyAfterExplicitOptIn()
+    {
+        var project = Project("build-1", "Port", remaining: 100) with
+        {
+            Commodities = new Dictionary<string, int> { ["steel"] = 100 },
+            LinkedFleetCarriers =
+            [
+                new ColonizationProjectFleetCarrier { MarketId = 42 },
+            ],
+        };
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "ABC-123",
+            DisplayName = "Supply carrier",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [project],
+                [],
+                null,
+                [carrier]),
+            FleetCarrierResponse = carrier,
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "secret-key");
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"Supply carrier ABC-123","StationType":"FleetCarrier",
+                "StationServices":["commodities"]
+                """),
+        ]);
+        var market = new MarketSnapshot(
+            DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
+            "Market",
+            42,
+            "Supply carrier ABC-123",
+            "FleetCarrier",
+            "all",
+            "Test",
+            [
+                new MarketItem(
+                    1,
+                    "$Steel_Name;",
+                    "Steel",
+                    "$MARKET_category_metals;",
+                    "Metals",
+                    1,
+                    1,
+                    1,
+                    1,
+                    0,
+                    80,
+                    0,
+                    true,
+                    false,
+                    false),
+            ]);
+
+        await viewModel.UpdateMarketAsync(market);
+        Assert.Equal(0, client.ReplaceCargoCount);
+
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        await viewModel.UpdateMarketAsync(market with
+        {
+            Timestamp = market.Timestamp.AddSeconds(1),
+        });
+
+        Assert.Equal(1, client.ReplaceCargoCount);
+        Assert.Equal(80, client.LastReplacement?["steel"]);
+        Assert.Contains("Updated 1 cargo", viewModel.FleetCarrierSyncStatus);
+        Assert.False(viewModel.CommodityOverlay.HasPendingCargo);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(directory))
@@ -310,7 +414,8 @@ public sealed class ColonizationViewModelTests : IDisposable
             new ColonizationSettingsStore(
                 Path.Combine(directory, "ui.json")),
             client,
-            ColonizationBuildCatalog.LoadEmbedded());
+            ColonizationBuildCatalog.LoadEmbedded(),
+            new CommanderProfileStore(directory));
     }
 
     private static ColonizationProject Project(
@@ -355,6 +460,16 @@ public sealed class ColonizationViewModelTests : IDisposable
         public int LoadCount { get; private set; }
 
         public int SaveCount { get; private set; }
+
+        public int ReplaceCargoCount { get; private set; }
+
+        public ColonizationFleetCarrier? FleetCarrierResponse { get; set; }
+
+        public IReadOnlyDictionary<string, int>? LastReplacement
+        {
+            get;
+            private set;
+        }
 
         public IReadOnlyList<string> LastSavedHiddenIds { get; private set; } =
             [];
@@ -411,7 +526,7 @@ public sealed class ColonizationViewModelTests : IDisposable
             long marketId,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<ColonizationFleetCarrier?>(null);
+            return Task.FromResult(FleetCarrierResponse);
         }
 
         public Task<IReadOnlyDictionary<string, int>>
@@ -421,7 +536,18 @@ public sealed class ColonizationViewModelTests : IDisposable
                 string apiKey,
                 CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(cargo);
+            ReplaceCargoCount++;
+            LastReplacement = cargo;
+            var updated = new Dictionary<string, int>(
+                FleetCarrierResponse?.Cargo
+                    ?? new Dictionary<string, int>(),
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var pair in cargo)
+            {
+                updated[pair.Key] = pair.Value;
+            }
+
+            return Task.FromResult<IReadOnlyDictionary<string, int>>(updated);
         }
 
         public Task<IReadOnlyDictionary<string, int>>
