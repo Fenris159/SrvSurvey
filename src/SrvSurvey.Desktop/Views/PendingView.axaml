@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.PendingView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <Grid Margin="32">
+    <Border Classes="card"
+            MaxWidth="680"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Padding="36">
+      <StackPanel Spacing="18">
+        <Border Width="54" Height="54"
+                HorizontalAlignment="Left"
+                Background="{DynamicResource RavenAccentMutedBrush}"
+                CornerRadius="27">
+          <TextBlock HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="22"
+                     FontWeight="Bold"
+                     Text="{Binding PendingPageGlyph}" />
+        </Border>
+        <StackPanel Spacing="6">
+          <TextBlock Classes="eyebrow" Text="MAPPED LEGACY SURFACE" />
+          <TextBlock Classes="page-title" Text="{Binding PendingPageTitle}" />
+          <TextBlock Classes="muted"
+                     FontSize="15"
+                     TextWrapping="Wrap"
+                     Text="{Binding PendingPageDescription}" />
+        </StackPanel>
+        <Separator />
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontWeight="Bold"
+                     Text="!" />
+          <TextBlock Grid.Column="1"
+                     Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="The navigation destination is intentional, but no working behavior is claimed until its core slice and parity tests are complete." />
+        </Grid>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

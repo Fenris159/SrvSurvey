@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.DiagnosticsView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="32" Spacing="24" MaxWidth="1000">
+      <StackPanel Spacing="5">
+        <TextBlock Classes="eyebrow" Text="DIAGNOSTICS" />
+        <TextBlock Classes="page-title" Text="Journal source" />
+        <TextBlock Classes="muted"
+                   Text="The active bootstrap source and the locations checked on this platform." />
+      </StackPanel>
+
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="card-title" Text="Selected folder" />
+          <TextBlock Classes="monospace"
+                     TextWrapping="Wrap"
+                     Text="{Binding JournalFolderPath}" />
+          <Separator Margin="0,4" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding StatusMessage}" />
+          <Button Classes="primary"
+                  HorizontalAlignment="Left"
+                  MinWidth="116"
+                  Command="{Binding RefreshCommand}"
+                  Content="{Binding RefreshButtonText}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <Grid ColumnDefinitions="Auto,*"
+              RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+              RowSpacing="10"
+              ColumnSpacing="28">
+          <TextBlock Grid.ColumnSpan="2"
+                     Classes="card-title"
+                     Margin="0,0,0,6"
+                     Text="Latest parsed state" />
+          <TextBlock Grid.Row="1" Classes="muted" Text="Commander" />
+          <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CommanderName}" />
+          <TextBlock Grid.Row="2" Classes="muted" Text="Frontier ID" />
+          <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding FrontierId}" />
+          <TextBlock Grid.Row="3" Classes="muted" Text="Game" />
+          <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding GameDescription}" />
+          <TextBlock Grid.Row="4" Classes="muted" Text="Mode" />
+          <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding GameMode}" />
+          <TextBlock Grid.Row="5" Classes="muted" Text="System" />
+          <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Text="{Binding SystemDescription}" />
+          <TextBlock Grid.Row="6" Classes="muted" Text="Body" />
+          <TextBlock Grid.Row="6" Grid.Column="1" TextWrapping="Wrap" Text="{Binding BodyName}" />
+          <TextBlock Grid.Row="7" Classes="muted" Text="Session" />
+          <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SessionState}" />
+        </Grid>
+      </Border>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="card-title" Text="Candidate paths" />
+          <TextBlock Classes="monospace muted"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Text="{Binding CandidatePaths}" />
+        </StackPanel>
+      </Border>
+
+      <TextBlock Classes="muted"
+                 HorizontalAlignment="Right"
+                 Text="{Binding LastUpdated}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

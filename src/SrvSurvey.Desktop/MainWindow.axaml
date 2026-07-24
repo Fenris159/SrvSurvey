@@ -3,117 +3,95 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        xmlns:views="using:SrvSurvey.Desktop.Views"
         x:Class="SrvSurvey.Desktop.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         mc:Ignorable="d"
-        d:DesignWidth="820"
-        d:DesignHeight="620"
-        Width="820"
-        Height="620"
-        MinWidth="680"
-        MinHeight="520"
-        Title="SrvSurvey cross-platform development">
-  <Window.Styles>
-    <Style Selector="TextBlock.heading">
-      <Setter Property="FontSize" Value="24" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-    </Style>
-    <Style Selector="TextBlock.section">
-      <Setter Property="FontSize" Value="17" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-    </Style>
-    <Style Selector="TextBlock.label">
-      <Setter Property="FontWeight" Value="SemiBold" />
-      <Setter Property="Margin" Value="0,2,18,2" />
-    </Style>
-    <Style Selector="TextBlock.value">
-      <Setter Property="TextWrapping" Value="Wrap" />
-      <Setter Property="Margin" Value="0,2" />
-    </Style>
-  </Window.Styles>
+        d:DesignWidth="1180"
+        d:DesignHeight="760"
+        Width="1180"
+        Height="760"
+        MinWidth="860"
+        MinHeight="600"
+        Title="SrvSurvey">
+  <Grid ColumnDefinitions="248,*">
+    <Border Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,0,1,0">
+      <Grid Margin="18"
+            RowDefinitions="Auto,Auto,*,Auto"
+            RowSpacing="18">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <Border Width="38" Height="38"
+                  Background="{DynamicResource RavenAccentBrush}"
+                  CornerRadius="10">
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource RavenAccentForegroundBrush}"
+                       FontSize="16"
+                       FontWeight="Bold"
+                       Text="SRV" />
+          </Border>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+            <TextBlock FontSize="17" FontWeight="SemiBold" Text="SrvSurvey" />
+            <TextBlock Classes="muted" FontSize="11" Text="CROSS-PLATFORM" />
+          </StackPanel>
+        </Grid>
 
-  <Grid Margin="24" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="16">
-    <Grid ColumnDefinitions="*,Auto">
-      <StackPanel Spacing="4">
-        <TextBlock Classes="heading" Text="SrvSurvey journal bootstrap" />
-        <TextBlock Opacity="0.72"
-                   Text="Development shell — feature and overlay parity are not complete." />
-      </StackPanel>
-      <Button Grid.Column="1"
-              MinWidth="100"
-              Padding="18,8"
-              Command="{Binding RefreshCommand}"
-              Content="Refresh" />
-    </Grid>
-
-    <Border Grid.Row="1"
-            Padding="14"
-            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-            BorderThickness="1"
-            CornerRadius="6">
-      <StackPanel Spacing="6">
-        <TextBlock Classes="section" Text="Journal source" />
-        <TextBlock Classes="value" Text="{Binding JournalFolderPath}" />
-        <TextBlock Opacity="0.72"
-                   TextWrapping="Wrap"
-                   Text="{Binding StatusMessage}" />
-      </StackPanel>
-    </Border>
-
-    <ScrollViewer Grid.Row="2">
-      <StackPanel Spacing="16">
-        <Border Padding="14"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                BorderThickness="1"
-                CornerRadius="6">
-          <Grid ColumnDefinitions="Auto,*"
-                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-            <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
-                       Classes="section"
-                       Margin="0,0,0,8"
-                       Text="Latest journal state" />
-
-            <TextBlock Grid.Row="1" Classes="label" Text="Commander" />
-            <TextBlock Grid.Row="1" Grid.Column="1" Classes="value" Text="{Binding CommanderName}" />
-
-            <TextBlock Grid.Row="2" Classes="label" Text="Frontier ID" />
-            <TextBlock Grid.Row="2" Grid.Column="1" Classes="value" Text="{Binding FrontierId}" />
-
-            <TextBlock Grid.Row="3" Classes="label" Text="Game" />
-            <TextBlock Grid.Row="3" Grid.Column="1" Classes="value" Text="{Binding GameDescription}" />
-
-            <TextBlock Grid.Row="4" Classes="label" Text="Mode" />
-            <TextBlock Grid.Row="4" Grid.Column="1" Classes="value" Text="{Binding GameMode}" />
-
-            <TextBlock Grid.Row="5" Classes="label" Text="System" />
-            <TextBlock Grid.Row="5" Grid.Column="1" Classes="value" Text="{Binding SystemDescription}" />
-
-            <TextBlock Grid.Row="6" Classes="label" Text="Body" />
-            <TextBlock Grid.Row="6" Grid.Column="1" Classes="value" Text="{Binding BodyName}" />
-
-            <TextBlock Grid.Row="7" Classes="label" Text="Session" />
-            <TextBlock Grid.Row="7" Grid.Column="1" Classes="value" Text="{Binding SessionState}" />
-          </Grid>
-        </Border>
-
-        <Border Padding="14"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                BorderThickness="1"
-                CornerRadius="6">
-          <StackPanel Spacing="6">
-            <TextBlock Classes="section" Text="Searched locations" />
-            <TextBlock FontFamily="Consolas,monospace"
-                       FontSize="12"
-                       TextWrapping="Wrap"
-                       Text="{Binding CandidatePaths}" />
+        <Border Grid.Row="1"
+                Background="{DynamicResource RavenSurfaceBrush}"
+                CornerRadius="9"
+                Padding="12">
+          <StackPanel Spacing="3">
+            <TextBlock Classes="muted" FontSize="10" Text="ACTIVE COMMANDER" />
+            <TextBlock FontWeight="SemiBold"
+                       TextTrimming="CharacterEllipsis"
+                       Text="{Binding CommanderName}" />
+            <TextBlock Classes="muted"
+                       FontSize="11"
+                       TextTrimming="CharacterEllipsis"
+                       Text="{Binding SystemDescription}" />
           </StackPanel>
         </Border>
-      </StackPanel>
-    </ScrollViewer>
 
-    <TextBlock Grid.Row="3"
-               HorizontalAlignment="Right"
-               Opacity="0.65"
-               Text="{Binding LastUpdated}" />
+        <ListBox Grid.Row="2"
+                 Classes="nav"
+                 ItemsSource="{Binding NavigationItems}"
+                 SelectedItem="{Binding SelectedNavigation}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:NavigationItemViewModel">
+              <Grid ColumnDefinitions="28,*,Auto" ColumnSpacing="8">
+                <TextBlock Foreground="{Binding $parent[ListBoxItem].Foreground}"
+                           FontWeight="SemiBold"
+                           Text="{Binding Glyph}" />
+                <TextBlock Grid.Column="1"
+                           Foreground="{Binding $parent[ListBoxItem].Foreground}"
+                           FontWeight="SemiBold"
+                           Text="{Binding Label}" />
+                <TextBlock Grid.Column="2"
+                           Foreground="{DynamicResource RavenMutedTextBrush}"
+                           FontSize="9"
+                           Text="{Binding StatusLabel}" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="3" Spacing="10">
+          <Separator />
+          <TextBlock Classes="muted"
+                     FontSize="10"
+                     TextWrapping="Wrap"
+                     Text="Avalonia migration build • feature parity in progress" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Column="1">
+      <views:OverviewView IsVisible="{Binding IsOverviewSelected}" />
+      <views:DiagnosticsView IsVisible="{Binding IsDiagnosticsSelected}" />
+      <views:SettingsView IsVisible="{Binding IsSettingsSelected}" />
+      <views:PendingView IsVisible="{Binding IsPendingSelected}" />
+    </Grid>
   </Grid>
 </Window>

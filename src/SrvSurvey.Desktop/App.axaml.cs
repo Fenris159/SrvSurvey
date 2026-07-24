@@ -25,7 +25,7 @@ public sealed partial class App : Application
             var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
                 Program.StartupArguments);
             desktop.MainWindow = new MainWindow(
-                new MainWindowViewModel(configuredJournalDirectory));
+                new MainWindowViewModel(configuredJournalDirectory, themeService));
         }
 
         base.OnFrameworkInitializationCompleted();

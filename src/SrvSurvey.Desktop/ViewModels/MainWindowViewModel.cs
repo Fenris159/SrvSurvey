@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Desktop.Theming;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -10,6 +11,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private const string Unavailable = "—";
 
     private readonly JournalFolderResolution folderResolution;
+    private readonly RavenThemeService? themeService;
     private bool isBusy;
     private string statusMessage;
     private string commanderName = Unavailable;
@@ -18,11 +20,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private string gameMode = Unavailable;
     private string systemDescription = Unavailable;
     private string bodyName = Unavailable;
-    private string sessionState = "Not loaded";
+    private string sessionState = "Waiting for journal";
     private string lastUpdated = string.Empty;
+    private string themeStatusMessage = string.Empty;
+    private NavigationItemViewModel selectedNavigation;
+    private ThemeOptionViewModel selectedTheme;
 
-    public MainWindowViewModel(string? configuredJournalDirectory)
+    public MainWindowViewModel(
+        string? configuredJournalDirectory,
+        RavenThemeService? themeService = null)
     {
+        this.themeService = themeService;
         folderResolution = JournalFolderLocator.ResolveCurrent(configuredJournalDirectory);
         JournalFolderPath = folderResolution.SelectedPath
             ?? folderResolution.CandidatePaths.FirstOrDefault()
@@ -35,15 +43,83 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             : $"Journal folder not found. Set {JournalFolderLocator.EnvironmentVariableName} "
                 + "or start with --journal-directory <path>.";
         RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
+
+        NavigationItems =
+        [
+            new("overview", "Overview", "01", "Commander and current journal state", true),
+            new("exploration", "Exploration", "02", "Trip totals and body scans", false),
+            new("exobiology", "Exobiology", "03", "Organic scans, rewards, and Codex", false),
+            new("travel", "Travel", "04", "Targets, journeys, and routes", false),
+            new("search", "Search", "05", "Spherical and boxel searches", false),
+            new("guardian", "Guardian", "06", "Sites, maps, and Ram Tah", false),
+            new("colonisation", "Colonisation", "07", "Raven Colonial projects", false),
+            new("diagnostics", "Diagnostics", "08", "Journal source and parsed state", true),
+            new("settings", "Settings", "09", "Appearance and application options", true),
+        ];
+        selectedNavigation = NavigationItems[0];
+
+        var currentTheme = themeService?.Current
+            ?? RavenThemeCatalog.Get(RavenThemeCatalog.DefaultThemeKey);
+        ThemeOptions = RavenThemeCatalog.All
+            .Select(theme => new ThemeOptionViewModel(theme, SelectTheme))
+            .ToArray();
+        selectedTheme = ThemeOptions.Single(
+            option => option.Definition.Key == currentTheme.Key);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public IReadOnlyList<NavigationItemViewModel> NavigationItems { get; }
+
+    public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; }
 
     public string JournalFolderPath { get; }
 
     public string CandidatePaths { get; }
 
     public ICommand RefreshCommand { get; }
+
+    public NavigationItemViewModel SelectedNavigation
+    {
+        get => selectedNavigation;
+        set
+        {
+            if (!SetField(ref selectedNavigation, value))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(IsOverviewSelected));
+            OnPropertyChanged(nameof(IsDiagnosticsSelected));
+            OnPropertyChanged(nameof(IsSettingsSelected));
+            OnPropertyChanged(nameof(IsPendingSelected));
+            OnPropertyChanged(nameof(PendingPageTitle));
+            OnPropertyChanged(nameof(PendingPageDescription));
+            OnPropertyChanged(nameof(PendingPageGlyph));
+        }
+    }
+
+    public bool IsOverviewSelected => SelectedNavigation.Key == "overview";
+
+    public bool IsDiagnosticsSelected => SelectedNavigation.Key == "diagnostics";
+
+    public bool IsSettingsSelected => SelectedNavigation.Key == "settings";
+
+    public bool IsPendingSelected => !SelectedNavigation.IsImplemented;
+
+    public string PendingPageTitle => SelectedNavigation.Label;
+
+    public string PendingPageDescription => SelectedNavigation.Description;
+
+    public string PendingPageGlyph => SelectedNavigation.Glyph;
+
+    public string SelectedThemeName => selectedTheme.DisplayName;
+
+    public string ThemeStatusMessage
+    {
+        get => themeStatusMessage;
+        private set => SetField(ref themeStatusMessage, value);
+    }
 
     public bool IsBusy
     {
@@ -53,9 +129,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             if (SetField(ref isBusy, value))
             {
                 ((AsyncCommand)RefreshCommand).RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(RefreshButtonText));
             }
         }
     }
+
+    public string RefreshButtonText => IsBusy ? "Refreshing…" : "Refresh";
 
     public string StatusMessage
     {
@@ -148,6 +227,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
     }
 
+    private void SelectTheme(ThemeOptionViewModel option)
+    {
+        try
+        {
+            themeService?.Select(option.Definition.Key);
+            selectedTheme = option;
+            ThemeStatusMessage = string.Empty;
+            OnPropertyChanged(nameof(SelectedThemeName));
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidOperationException)
+        {
+            ThemeStatusMessage = $"The theme changed for this session but could not be saved: "
+                + exception.Message;
+        }
+    }
+
     private void ApplySnapshot(JournalSnapshot snapshot)
     {
         CommanderName = Display(snapshot.CommanderName);
@@ -175,7 +273,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             ? Display(snapshot.SystemName)
             : $"{Display(snapshot.SystemName)} ({snapshot.SystemAddress})";
         BodyName = Display(snapshot.BodyName);
-        SessionState = snapshot.IsShutdown ? "Shut down" : "Active or unclosed";
+        SessionState = snapshot.IsShutdown ? "Session closed" : "Session active";
 
         var malformedSuffix = snapshot.MalformedLineCount == 0
             ? string.Empty
@@ -203,8 +301,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        OnPropertyChanged(propertyName);
         return true;
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     private sealed class AsyncCommand(

@@ -1,0 +1,159 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.OverviewView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="32" Spacing="24" MaxWidth="1180">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="eyebrow" Text="COMMANDER CONSOLE" />
+          <TextBlock Classes="page-title" Text="Overview" />
+          <TextBlock Classes="muted"
+                     Text="Live identity and location from the newest Elite journal." />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="primary"
+                MinWidth="116"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Command="{Binding RefreshCommand}"
+                Content="{Binding RefreshButtonText}" />
+      </Grid>
+
+      <Border Classes="card raised" Padding="18,14">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <Border Width="8" Height="8" CornerRadius="4"
+                  Background="{DynamicResource RavenAccentBrush}"
+                  VerticalAlignment="Top" Margin="0,5,0,0" />
+          <StackPanel Grid.Column="1" Spacing="3">
+            <TextBlock FontWeight="SemiBold" Text="Journal status" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding StatusMessage}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <Border Classes="card" Padding="0">
+        <Grid ColumnDefinitions="6,*">
+          <Border Classes="accent-line" CornerRadius="12,0,0,12" />
+          <Grid Grid.Column="1"
+                Margin="24"
+                RowDefinitions="Auto,Auto"
+                ColumnDefinitions="2*,*"
+                RowSpacing="22"
+                ColumnSpacing="26">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="muted" FontSize="12" Text="COMMANDER" />
+              <TextBlock FontSize="26"
+                         FontWeight="SemiBold"
+                         Text="{Binding CommanderName}" />
+              <TextBlock Classes="muted" Text="{Binding FrontierId, StringFormat=Frontier ID: {0}}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Spacing="8">
+              <Border Classes="badge" HorizontalAlignment="Right">
+                <TextBlock FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource RavenAccentBrush}"
+                           Text="{Binding SessionState}" />
+              </Border>
+              <TextBlock Classes="muted"
+                         HorizontalAlignment="Right"
+                         Text="{Binding GameDescription}" />
+            </StackPanel>
+
+            <Grid Grid.Row="1"
+                  Grid.ColumnSpan="2"
+                  ColumnDefinitions="2*,*,*"
+                  ColumnSpacing="28">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="muted" FontSize="12" Text="LOCATION" />
+                <TextBlock Classes="card-title"
+                           TextWrapping="Wrap"
+                           Text="{Binding SystemDescription}" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="4">
+                <TextBlock Classes="muted" FontSize="12" Text="BODY" />
+                <TextBlock FontWeight="SemiBold"
+                           TextWrapping="Wrap"
+                           Text="{Binding BodyName}" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="4">
+                <TextBlock Classes="muted" FontSize="12" Text="MODE" />
+                <TextBlock FontWeight="SemiBold" Text="{Binding GameMode}" />
+              </StackPanel>
+            </Grid>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+        <Border Classes="card">
+          <StackPanel Spacing="16">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="card-title" Text="Exploration trip" />
+              <Border Grid.Column="1" Classes="badge">
+                <TextBlock Classes="muted" FontSize="11" Text="CORE PENDING" />
+              </Border>
+            </Grid>
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="metric" Text="—" />
+                <TextBlock Classes="muted" FontSize="12" Text="Jumps" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="3">
+                <TextBlock Classes="metric" Text="—" />
+                <TextBlock Classes="muted" FontSize="12" Text="Distance" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="3">
+                <TextBlock Classes="metric" Text="—" />
+                <TextBlock Classes="muted" FontSize="12" Text="Bodies" />
+              </StackPanel>
+            </Grid>
+            <TextBlock Classes="muted"
+                       FontSize="12"
+                       TextWrapping="Wrap"
+                       Text="The legacy counter is mapped here; journal aggregation is not ported yet." />
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel Spacing="16">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="card-title" Text="Exobiology" />
+              <Border Grid.Column="1" Classes="badge">
+                <TextBlock Classes="muted" FontSize="11" Text="CORE PENDING" />
+              </Border>
+            </Grid>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="metric" Text="—" />
+                <TextBlock Classes="muted" FontSize="12" Text="System signals" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="3">
+                <TextBlock Classes="metric" Text="—" />
+                <TextBlock Classes="muted" FontSize="12" Text="Unclaimed rewards" />
+              </StackPanel>
+            </Grid>
+            <TextBlock Classes="muted"
+                       FontSize="12"
+                       TextWrapping="Wrap"
+                       Text="Scan progress, first-footfall state, and predictions await the domain slice." />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <StackPanel Spacing="10">
+        <TextBlock Classes="card-title" Text="Legacy tools" />
+        <TextBlock Classes="muted"
+                   Text="The original launchers remain visible in navigation while their behavior is ported." />
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

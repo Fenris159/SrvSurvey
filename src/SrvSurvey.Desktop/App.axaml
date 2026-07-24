@@ -2,7 +2,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="SrvSurvey.Desktop.App"
              RequestedThemeVariant="Dark">
+  <Application.Resources>
+    <SolidColorBrush x:Key="RavenWindowBrush" Color="#000012" />
+    <SolidColorBrush x:Key="RavenSidebarBrush" Color="#01011C" />
+    <SolidColorBrush x:Key="RavenSurfaceBrush" Color="#030325" />
+    <SolidColorBrush x:Key="RavenRaisedSurfaceBrush" Color="#00324D" />
+    <SolidColorBrush x:Key="RavenAccentBrush" Color="#3F87D4" />
+    <SolidColorBrush x:Key="RavenAccentHoverBrush" Color="#5092D8" />
+    <SolidColorBrush x:Key="RavenAccentMutedBrush" Color="#13293F" />
+    <SolidColorBrush x:Key="RavenAccentForegroundBrush" Color="#000012" />
+    <SolidColorBrush x:Key="RavenTextBrush" Color="#E5E5E5" />
+    <SolidColorBrush x:Key="RavenMutedTextBrush" Color="#C8C8C8" />
+    <SolidColorBrush x:Key="RavenBorderBrush" Color="#195494" />
+    <SolidColorBrush x:Key="RavenSuccessBrush" Color="#6CCB72" />
+    <SolidColorBrush x:Key="RavenWarningBrush" Color="#F7C948" />
+    <SolidColorBrush x:Key="RavenDangerBrush" Color="#FF7B72" />
+  </Application.Resources>
   <Application.Styles>
     <FluentTheme />
+    <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/RavenStyles.axaml" />
   </Application.Styles>
 </Application>

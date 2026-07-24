@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.SettingsView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="32" Spacing="24" MaxWidth="1100">
+      <StackPanel Spacing="5">
+        <TextBlock Classes="eyebrow" Text="APPEARANCE" />
+        <TextBlock Classes="page-title" Text="Themes" />
+        <TextBlock Classes="muted"
+                   Text="Use the same five visual identities available on Raven Colonial." />
+      </StackPanel>
+
+      <Border Classes="card raised">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Current theme" />
+            <TextBlock Classes="muted" Text="{Binding SelectedThemeName}" />
+          </StackPanel>
+          <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontWeight="SemiBold"
+                       Text="SAVED LOCALLY" />
+          </Border>
+        </Grid>
+      </Border>
+
+      <ItemsControl ItemsSource="{Binding ThemeOptions}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal" ItemWidth="250" ItemHeight="184" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:ThemeOptionViewModel">
+            <Button Classes="secondary"
+                    Width="238"
+                    Height="172"
+                    Margin="0,0,12,12"
+                    Padding="0"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"
+                    Command="{Binding SelectCommand}">
+              <Border Background="{Binding WindowBrush}"
+                      BorderBrush="{Binding AccentBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      Padding="16">
+                <Grid RowDefinitions="*,Auto" RowSpacing="14">
+                  <StackPanel Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Foreground="{Binding TextBrush}"
+                                 FontSize="15"
+                                 FontWeight="SemiBold"
+                                 Text="{Binding DisplayName}" />
+                      <TextBlock Grid.Column="1"
+                                 Foreground="{Binding AccentBrush}"
+                                 FontSize="10"
+                                 FontWeight="Bold"
+                                 Text="{Binding ModeLabel}" />
+                    </Grid>
+                    <Border Height="48"
+                            Background="{Binding SurfaceBrush}"
+                            CornerRadius="6"
+                            Padding="10">
+                      <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                        <Border Width="72" Height="7"
+                                HorizontalAlignment="Left"
+                                Background="{Binding TextBrush}"
+                                CornerRadius="4" />
+                        <Border Grid.Column="1" Width="38" Height="20"
+                                Background="{Binding AccentBrush}"
+                                CornerRadius="5" />
+                      </Grid>
+                    </Border>
+                  </StackPanel>
+                  <Border Grid.Row="1" Height="4"
+                          Background="{Binding AccentBrush}"
+                          CornerRadius="2" />
+                </Grid>
+              </Border>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Classes="card-title" Text="Theme compatibility" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="These choices style the Avalonia shell and use native light/dark control behavior. Importing legacy custom orange/cyan theme.json values for game overlays remains part of the overlay port." />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     TextWrapping="Wrap"
+                     Text="{Binding ThemeStatusMessage}" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

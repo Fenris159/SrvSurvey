@@ -1,0 +1,109 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource RavenWindowBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="FontFamily" Value="Inter, Segoe UI, sans-serif" />
+  </Style>
+
+  <Style Selector="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+  <Style Selector="TextBlock.muted">
+    <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+  </Style>
+  <Style Selector="TextBlock.eyebrow">
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LetterSpacing" Value="1.2" />
+  </Style>
+  <Style Selector="TextBlock.page-title">
+    <Setter Property="FontSize" Value="28" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.card-title">
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.metric">
+    <Setter Property="FontSize" Value="22" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.monospace">
+    <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, monospace" />
+  </Style>
+
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Padding" Value="20" />
+  </Style>
+  <Style Selector="Border.card.raised">
+    <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
+  </Style>
+  <Style Selector="Border.accent-line">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="CornerRadius" Value="2" />
+  </Style>
+  <Style Selector="Border.badge">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Padding" Value="10,4" />
+  </Style>
+
+  <Style Selector="Button">
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="14,9" />
+  </Style>
+  <Style Selector="Button.primary">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.primary:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentHoverBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentHoverBrush}" />
+  </Style>
+  <Style Selector="Button.secondary">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+  </Style>
+  <Style Selector="Button.secondary:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.nav">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="ListBox.nav ListBoxItem">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="12,10" />
+    <Setter Property="Margin" Value="0,2" />
+  </Style>
+  <Style Selector="ListBox.nav ListBoxItem:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+  <Style Selector="ListBox.nav ListBoxItem:selected">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+
+  <Style Selector="ComboBox">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+  <Style Selector="Separator">
+    <Setter Property="Background" Value="{DynamicResource RavenBorderBrush}" />
+  </Style>
+</Styles>
