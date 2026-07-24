@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 
@@ -12,6 +13,7 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
 
     private readonly SystemNoteStore noteStore;
     private readonly SystemNotesSettingsStore settingsStore;
+    private readonly JourneyService? journeyService;
     private readonly AsyncCommand openWindowCommand;
     private readonly AsyncCommand openCanonnCommand;
     private readonly AsyncCommand openSpanshCommand;
@@ -32,12 +34,14 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
 
     public SystemNotesViewModel(
         SystemNoteStore noteStore,
-        SystemNotesSettingsStore settingsStore)
+        SystemNotesSettingsStore settingsStore,
+        JourneyService? journeyService = null)
     {
         this.noteStore = noteStore
             ?? throw new ArgumentNullException(nameof(noteStore));
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
+        this.journeyService = journeyService;
         var settings = settingsStore.Load();
         alwaysOnTop = settings.Snapshot?.AlwaysOnTop ?? false;
         statusMessage = settings.IsSuccess
@@ -268,6 +272,12 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             var path = await noteStore.SaveAsync(context, Notes);
+            if (journeyService is not null)
+            {
+                await journeyService.IncrementNoteCountAsync(
+                    context.SystemAddress);
+            }
+
             IsDirty = false;
             StatusMessage = $"Saved notes to {Path.GetFileName(path)}.";
             return true;

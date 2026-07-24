@@ -6,6 +6,7 @@ using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
@@ -85,6 +86,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        folderResolution = JournalFolderLocator.ResolveCurrent(
+            configuredJournalDirectory);
         commanderProfileStore = new CommanderProfileStore(
             AppDataPaths.DataDirectory);
         InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
@@ -95,6 +98,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             commanderProfileStore: commanderProfileStore);
         var sharedSystemResolver = starSystemResolver
             ?? new SpanshStarSystemResolver();
+        var sharedExobiologyCatalog = exobiologyCatalog
+            ?? ExobiologyReferenceCatalog.LoadEmbedded();
+        var systemNoteStore = new SystemNoteStore(AppDataPaths.DataDirectory);
+        var systemNotesSettingsStore = new SystemNotesSettingsStore(
+            AppDataPaths.DataDirectory);
+        var journeyService = new JourneyService(
+            new JourneyStore(AppDataPaths.DataDirectory),
+            new JourneyJournalHistoryReader(
+                folderResolution.SelectedPath
+                    ?? folderResolution.CandidatePaths.FirstOrDefault()
+                    ?? Path.Combine(AppDataPaths.DataDirectory, "journals")),
+            commanderProfileStore,
+            sharedExobiologyCatalog);
         Search = new SphereLimitViewModel(
             commanderProfileStore,
             sharedSystemResolver);
@@ -109,14 +125,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         GroundTarget = new GroundTargetViewModel(
             new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
         SystemNotes = new SystemNotesViewModel(
-            new SystemNoteStore(AppDataPaths.DataDirectory),
-            new SystemNotesSettingsStore(AppDataPaths.DataDirectory));
+            systemNoteStore,
+            systemNotesSettingsStore,
+            journeyService);
+        Journey = new JourneyWorkspaceViewModel(
+            journeyService,
+            sharedSystemResolver,
+            systemNoteStore,
+            systemNotesSettingsStore);
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,
             ramTah: RamTah);
-        exobiologyState = new ExobiologyState(
-            exobiologyCatalog ?? ExobiologyReferenceCatalog.LoadEmbedded());
+        exobiologyState = new ExobiologyState(sharedExobiologyCatalog);
         ProfileBackupDirectory = Path.Combine(
             Path.GetDirectoryName(AppDataPaths.DataDirectory)
                 ?? AppDataPaths.ConfigDirectory,
@@ -131,7 +152,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             ImportLegacyProfileAsync,
             CanImportLegacyProfile);
         ImportLegacyProfileCommand = importLegacyProfileCommand;
-        folderResolution = JournalFolderLocator.ResolveCurrent(configuredJournalDirectory);
         JournalFolderPath = folderResolution.SelectedPath
             ?? folderResolution.CandidatePaths.FirstOrDefault()
             ?? "No journal location is configured.";
@@ -199,6 +219,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public GroundTargetViewModel GroundTarget { get; }
 
     public SystemNotesViewModel SystemNotes { get; }
+
+    public JourneyWorkspaceViewModel Journey { get; }
 
     public SphereLimitViewModel Search { get; }
 
@@ -755,6 +777,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             journalState.StarPosition);
 
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
+        var initializedJourney = await Journey.UpdateContextAsync(
+            journalState.FrontierId,
+            journalState.CommanderName,
+            journalState.IsOdyssey ?? true,
+            journalState.SystemName,
+            journalState.SystemAddress);
+        if (!initializedJourney)
+        {
+            await Journey.ApplyJournalEventsAsync(update.JournalEvents);
+        }
+
         var explorationBefore = explorationState.CreateSnapshot();
         var exobiologyVersionBefore = exobiologyState.Version;
         var skipPersistedBootstrapEvents = update.IsBootstrapRead
