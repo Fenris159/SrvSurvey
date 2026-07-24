@@ -6,6 +6,8 @@ namespace SrvSurvey.Core.Search;
 public sealed class BoxelSearchState
 {
     private readonly Dictionary<string, int> progress = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> progressIds = new(
+        StringComparer.Ordinal);
     private readonly Dictionary<string, BoxelSystemState> systems = new(
         StringComparer.Ordinal);
     private readonly HashSet<string> completed = new(StringComparer.Ordinal);
@@ -64,6 +66,10 @@ public sealed class BoxelSearchState
         .OrderBy(system => system.Boxel.N2)
         .ToArray();
 
+    public IReadOnlyList<BoxelAddress> Boxels => progress.Keys
+        .Select(prefix => BoxelAddress.Parse(prefix + "0"))
+        .ToArray();
+
     public void Reset(BoxelSearchSnapshot? seed = null)
     {
         seed ??= BoxelSearchSnapshot.Empty;
@@ -106,6 +112,7 @@ public sealed class BoxelSearchState
         else
         {
             progress.Clear();
+            progressIds.Clear();
             Current = null;
         }
 
@@ -169,6 +176,46 @@ public sealed class BoxelSearchState
         }
 
         IsActive = false;
+        Version++;
+    }
+
+    public void SetAutoCopy(bool enabled)
+    {
+        if (AutoCopy == enabled)
+        {
+            return;
+        }
+
+        AutoCopy = enabled;
+        Version++;
+    }
+
+    public void ApplyEmptyBoxels(IEnumerable<string> emptyBoxelIds)
+    {
+        ArgumentNullException.ThrowIfNull(emptyBoxelIds);
+        var emptyIds = emptyBoxelIds.ToHashSet(StringComparer.Ordinal);
+        var changed = false;
+        foreach (var entry in progressIds)
+        {
+            var shouldBeEmpty = emptyIds.Contains(entry.Key);
+            var isEmpty = progress.GetValueOrDefault(entry.Value) == -1;
+            if (shouldBeEmpty == isEmpty)
+            {
+                continue;
+            }
+
+            progress[entry.Value] = shouldBeEmpty ? -1 : 0;
+            changed = true;
+        }
+
+        if (!changed)
+        {
+            return;
+        }
+
+        CurrentIsEmpty = Current is not null
+            && progress.GetValueOrDefault(Current.Prefix) == -1;
+        SetNextSystem();
         Version++;
     }
 
@@ -400,6 +447,7 @@ public sealed class BoxelSearchState
     private void InitializeProgress()
     {
         progress.Clear();
+        progressIds.Clear();
         if (TopBoxel is null)
         {
             return;
@@ -411,6 +459,7 @@ public sealed class BoxelSearchState
     private void InitializeProgress(BoxelAddress boxel)
     {
         progress[boxel.Prefix] = 0;
+        progressIds[boxel.Id] = boxel.Prefix;
         if (boxel.MassCode > LowMassCode)
         {
             foreach (var child in boxel.Children)

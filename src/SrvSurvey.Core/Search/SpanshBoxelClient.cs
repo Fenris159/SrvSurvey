@@ -3,7 +3,14 @@ using System.Text.Json.Serialization;
 
 namespace SrvSurvey.Core.Search;
 
-public sealed class SpanshBoxelClient
+public interface IBoxelSystemResolver
+{
+    Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
+        BoxelAddress boxel,
+        CancellationToken cancellationToken = default);
+}
+
+public sealed class SpanshBoxelClient : IBoxelSystemResolver
 {
     private const int PageSize = 50;
     private const int MaximumPages = 1_000;

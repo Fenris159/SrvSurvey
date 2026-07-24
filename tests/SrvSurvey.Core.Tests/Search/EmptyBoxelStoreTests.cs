@@ -20,6 +20,7 @@ public sealed class EmptyBoxelStoreTests : IDisposable
         Assert.True(await store.SetEmptyAsync(boxel, true));
         Assert.False(await store.SetEmptyAsync(boxel, true));
         Assert.True(await new EmptyBoxelStore(temporaryDirectory).IsEmptyAsync(boxel));
+        Assert.Contains(boxel.Id, await store.LoadGroupAsync(boxel));
 
         var path = store.GetFilePath(boxel);
         Assert.Equal(

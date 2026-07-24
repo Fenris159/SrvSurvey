@@ -30,6 +30,16 @@ public sealed class EmptyBoxelStore
         return emptyBoxels.Contains(boxel.Id);
     }
 
+    public async Task<IReadOnlySet<string>> LoadGroupAsync(
+        BoxelAddress boxel,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(boxel);
+        var emptyBoxels = await LoadAsync(boxel, cancellationToken)
+            .ConfigureAwait(false);
+        return emptyBoxels;
+    }
+
     public async Task<bool> SetEmptyAsync(
         BoxelAddress boxel,
         bool isEmpty,

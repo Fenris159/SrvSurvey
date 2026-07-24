@@ -157,6 +157,30 @@ public sealed class BoxelSearchStateTests
         Assert.Equal("Praea Euq IL-P c5-", state.NextSystem);
     }
 
+    [Fact]
+    public void LegacyEmptyIdsAreAppliedAcrossTheWholeSearchTree()
+    {
+        var state = new BoxelSearchState();
+        state.TryActivate(
+            BoxelAddress.Parse("Praea Euq RS-U d2-0"),
+            'c',
+            DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+            false,
+            false,
+            BoxelCompletionMode.EnterSystem,
+            true,
+            out _);
+        var firstChild = state.TopBoxel!.Children[0];
+
+        state.ApplyEmptyBoxels([state.TopBoxel.Id, firstChild.Id]);
+
+        Assert.True(state.CurrentIsEmpty);
+        Assert.DoesNotContain(state.TopBoxel.Prefix, state.NextSystem);
+        state.SetAutoCopy(false);
+        Assert.False(state.AutoCopy);
+        Assert.Equal(9, state.Boxels.Count);
+    }
+
     private static BoxelSearchState CreateActiveState(BoxelCompletionMode mode)
     {
         var state = new BoxelSearchState();
