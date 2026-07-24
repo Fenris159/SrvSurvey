@@ -10,8 +10,8 @@ public sealed class JournalSnapshotReaderTests
         var journal = """
             {"timestamp":"2026-07-24T10:00:00Z","event":"Fileheader","gameversion":"4.2.0","build":"r123","Odyssey":true}
             {"timestamp":"2026-07-24T10:00:01Z","event":"Commander","Name":"Drew","FID":"F123"}
-            {"timestamp":"2026-07-24T10:00:02Z","event":"LoadGame","Commander":"Drew","FID":"F123","GameMode":"Open","Odyssey":true}
-            {"timestamp":"2026-07-24T10:00:03Z","event":"Location","StarSystem":"Sol","SystemAddress":10477373803,"Body":"Earth"}
+            {"timestamp":"2026-07-24T10:00:02Z","event":"LoadGame","Commander":"Drew","FID":"F123","GameMode":"Open","Odyssey":true,"gameversion":"4.2.1","build":"r124"}
+            {"timestamp":"2026-07-24T10:00:03Z","event":"Location","StarSystem":"Sol","SystemAddress":10477373803,"Body":"Earth","BodyType":"Planet"}
             {"timestamp":"2026-07-24T10:00:04Z","event":"ApproachBody","Body":"Earth"}
             {"timestamp":"2026-07-24T10:00:05Z","event":"FutureEvent","Value":42}
             {"timestamp":"2026-07-24T10:00:06Z","event":"Partial"
@@ -22,8 +22,8 @@ public sealed class JournalSnapshotReaderTests
             "Journal.fixture.log");
 
         Assert.Equal("Journal.fixture.log", snapshot.SourcePath);
-        Assert.Equal("4.2.0", snapshot.GameVersion);
-        Assert.Equal("r123", snapshot.GameBuild);
+        Assert.Equal("4.2.1", snapshot.GameVersion);
+        Assert.Equal("r124", snapshot.GameBuild);
         Assert.True(snapshot.IsOdyssey);
         Assert.Equal("Drew", snapshot.CommanderName);
         Assert.Equal("F123", snapshot.FrontierId);
@@ -39,11 +39,11 @@ public sealed class JournalSnapshotReaderTests
     }
 
     [Fact]
-    public async Task ReadAsyncTracksTravelBodyDepartureAndShutdown()
+    public async Task ReadAsyncTracksLegacyCurrentBodyAndShutdownSemantics()
     {
         var journal = """
-            {"timestamp":"2026-07-24T11:00:00Z","event":"Location","StarSystem":"Sol","SystemAddress":1,"Body":"Earth"}
-            {"timestamp":"2026-07-24T11:00:01Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":2}
+            {"timestamp":"2026-07-24T11:00:00Z","event":"Location","StarSystem":"Sol","SystemAddress":1,"Body":"Earth","BodyType":"Planet"}
+            {"timestamp":"2026-07-24T11:00:01Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":2,"Body":"Achenar A","BodyType":"Star"}
             {"timestamp":"2026-07-24T11:00:02Z","event":"ApproachBody","Body":"Achenar 3"}
             {"timestamp":"2026-07-24T11:00:03Z","event":"LeaveBody","Body":"Achenar 3"}
             {"timestamp":"2026-07-24T11:00:04Z","event":"Shutdown"}
@@ -53,7 +53,7 @@ public sealed class JournalSnapshotReaderTests
 
         Assert.Equal("Achenar", snapshot.SystemName);
         Assert.Equal(2, snapshot.SystemAddress);
-        Assert.Null(snapshot.BodyName);
+        Assert.Equal("Achenar 3", snapshot.BodyName);
         Assert.True(snapshot.IsShutdown);
         Assert.Equal(5, snapshot.ValidLineCount);
         Assert.Equal(5, snapshot.RecognizedEventCount);

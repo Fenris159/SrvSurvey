@@ -121,6 +121,8 @@ public static class JournalSnapshotReader
                         commanderName = GetString(root, "Commander") ?? commanderName;
                         frontierId = GetString(root, "FID") ?? frontierId;
                         gameMode = GetString(root, "GameMode") ?? gameMode;
+                        gameVersion = GetString(root, "gameversion") ?? gameVersion;
+                        gameBuild = GetString(root, "build") ?? gameBuild;
                         isOdyssey = GetBoolean(root, "Odyssey") ?? isOdyssey;
                         isShutdown = false;
                         recognizedEventCount++;
@@ -130,7 +132,7 @@ public static class JournalSnapshotReader
                     case "SupercruiseExit":
                         systemName = GetString(root, "StarSystem") ?? systemName;
                         systemAddress = GetInt64(root, "SystemAddress") ?? systemAddress;
-                        bodyName = GetString(root, "Body") ?? bodyName;
+                        bodyName = GetCurrentPlanetName(root);
                         isShutdown = false;
                         recognizedEventCount++;
                         break;
@@ -139,7 +141,7 @@ public static class JournalSnapshotReader
                     case "CarrierJump":
                         systemName = GetString(root, "StarSystem") ?? systemName;
                         systemAddress = GetInt64(root, "SystemAddress") ?? systemAddress;
-                        bodyName = null;
+                        bodyName = GetCurrentPlanetName(root);
                         isShutdown = false;
                         recognizedEventCount++;
                         break;
@@ -150,7 +152,8 @@ public static class JournalSnapshotReader
                         break;
 
                     case "LeaveBody":
-                        bodyName = null;
+                        // The legacy application clears touchdown/SRV coordinates
+                        // but retains the current planet until another location event.
                         recognizedEventCount++;
                         break;
 
@@ -194,6 +197,13 @@ public static class JournalSnapshotReader
             && (value.ValueKind == JsonValueKind.True || value.ValueKind == JsonValueKind.False)
                 ? value.GetBoolean()
                 : null;
+    }
+
+    private static string? GetCurrentPlanetName(JsonElement root)
+    {
+        return GetString(root, "BodyType") == "Planet"
+            ? GetString(root, "Body")
+            : null;
     }
 
     private static long? GetInt64(JsonElement root, string propertyName)
