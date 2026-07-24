@@ -145,6 +145,41 @@ public sealed class CommanderProfileStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task LoadsSavesAndClearsActiveJourneyLosslessly()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        await File.WriteAllTextAsync(
+            path,
+            "{\"fid\":\"F123\",\"activeJourney\":\"20260701_120000\",\"futureSetting\":42}");
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        var loaded = await store.LoadAsync("F123", isOdyssey: true);
+
+        Assert.Equal("20260701_120000", loaded.Data?.ActiveJourneyFileName);
+
+        await store.SaveActiveJourneyAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            "20260724_123456");
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Equal(
+            "20260724_123456",
+            root["activeJourney"]!.GetValue<string>());
+        Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
+
+        await store.SaveActiveJourneyAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            null);
+        root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.False(root.ContainsKey("activeJourney"));
+        Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
+    }
+
+    [Fact]
     public async Task LoadAndSavePreserveLegacyExobiologyFields()
     {
         Directory.CreateDirectory(temporaryDirectory);
