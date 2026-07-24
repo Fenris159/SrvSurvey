@@ -59,6 +59,26 @@
         </Grid>
       </Border>
 
+      <Border Classes="card">
+        <Grid ColumnDefinitions="Auto,*"
+              RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+              RowSpacing="10"
+              ColumnSpacing="28">
+          <TextBlock Grid.ColumnSpan="2"
+                     Classes="card-title"
+                     Margin="0,0,0,6"
+                     Text="Live Status.json state" />
+          <TextBlock Grid.Row="1" Classes="muted" Text="Vehicle" />
+          <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding VehicleState}" />
+          <TextBlock Grid.Row="2" Classes="muted" Text="Latitude / longitude" />
+          <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SurfacePosition}" />
+          <TextBlock Grid.Row="3" Classes="muted" Text="Heading / altitude" />
+          <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding HeadingAndAltitude}" />
+          <TextBlock Grid.Row="4" Classes="muted" Text="Game UI focus" />
+          <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding GameUiFocus}" />
+        </Grid>
+      </Border>
+
       <Border Classes="card raised">
         <StackPanel Spacing="10">
           <TextBlock Classes="card-title" Text="Candidate paths" />

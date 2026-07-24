@@ -12,6 +12,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private const string Unavailable = "—";
 
     private readonly JournalFolderResolution folderResolution;
+    private readonly JournalDirectoryMonitor? journalMonitor;
+    private readonly JournalSessionState journalState = new();
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
     private readonly AsyncCommand importLegacyProfileCommand;
@@ -27,6 +29,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private string sessionState = "Waiting for journal";
     private string lastUpdated = string.Empty;
     private string themeStatusMessage = string.Empty;
+    private string vehicleState = Unavailable;
+    private string surfacePosition = Unavailable;
+    private string headingAndAltitude = Unavailable;
+    private string gameUiFocus = Unavailable;
     private NavigationItemViewModel selectedNavigation;
     private ThemeOptionViewModel selectedTheme;
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
@@ -66,6 +72,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             ? "Ready to read the newest Journal.*.log file."
             : $"Journal folder not found. Set {JournalFolderLocator.EnvironmentVariableName} "
                 + "or start with --journal-directory <path>.";
+        journalMonitor = folderResolution.SelectedPath is null
+            ? null
+            : new JournalDirectoryMonitor(folderResolution.SelectedPath);
         RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
 
         NavigationItems =
@@ -259,6 +268,30 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         private set => SetField(ref lastUpdated, value);
     }
 
+    public string VehicleState
+    {
+        get => vehicleState;
+        private set => SetField(ref vehicleState, value);
+    }
+
+    public string SurfacePosition
+    {
+        get => surfacePosition;
+        private set => SetField(ref surfacePosition, value);
+    }
+
+    public string HeadingAndAltitude
+    {
+        get => headingAndAltitude;
+        private set => SetField(ref headingAndAltitude, value);
+    }
+
+    public string GameUiFocus
+    {
+        get => gameUiFocus;
+        private set => SetField(ref gameUiFocus, value);
+    }
+
     public async Task RefreshAsync()
     {
         if (IsBusy)
@@ -266,7 +299,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (folderResolution.SelectedPath is null)
+        if (journalMonitor is null)
         {
             StatusMessage = $"Journal folder not found. Set "
                 + $"{JournalFolderLocator.EnvironmentVariableName} or use "
@@ -277,11 +310,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            StatusMessage = "Reading the newest journal…";
+            StatusMessage = "Reading journal and status updates…";
 
-            var snapshot = await JournalSnapshotReader.ReadLatestAsync(
-                folderResolution.SelectedPath);
-            ApplySnapshot(snapshot);
+            var update = await journalMonitor.PollAsync();
+            ApplyMonitorUpdate(update, isManualRefresh: true);
         }
         catch (Exception exception) when (
             exception is IOException
@@ -293,6 +325,38 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
             LastUpdated = $"Last refresh: {DateTimeOffset.Now:G}";
+        }
+    }
+
+    public async Task MonitorAsync(
+        TimeSpan? pollingInterval = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (journalMonitor is null)
+        {
+            return;
+        }
+
+        var interval = pollingInterval ?? TimeSpan.FromMilliseconds(250);
+        try
+        {
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var update = await journalMonitor.PollAsync(cancellationToken);
+                ApplyMonitorUpdate(update, isManualRefresh: false);
+                await Task.Delay(interval, cancellationToken);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Normal desktop shutdown.
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException)
+        {
+            StatusMessage = "Live journal monitoring stopped: " + exception.Message;
         }
     }
 
@@ -409,6 +473,67 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             + $"{snapshot.RecognizedEventCount} bootstrap events recognized"
             + malformedSuffix
             + ".";
+    }
+
+    private void ApplyMonitorUpdate(
+        JournalMonitorUpdate update,
+        bool isManualRefresh)
+    {
+        foreach (var journalEvent in update.JournalEvents)
+        {
+            journalState.Apply(journalEvent);
+        }
+
+        if (update.JournalEvents.Count > 0)
+        {
+            ApplySnapshot(journalState.CreateSnapshot(update.JournalPath));
+        }
+        else if (isManualRefresh)
+        {
+            StatusMessage = update.JournalPath is null
+                ? $"No Journal.*.log files were found in {JournalFolderPath}."
+                : $"Monitoring {Path.GetFileName(update.JournalPath)}; no new events.";
+        }
+
+        if (update.Status is not null)
+        {
+            ApplyStatus(update.Status);
+        }
+
+        if (update.Errors.Count > 0)
+        {
+            StatusMessage = string.Join(Environment.NewLine, update.Errors);
+        }
+
+        if (update.JournalEvents.Count > 0
+            || update.Status is not null
+            || update.Errors.Count > 0
+            || isManualRefresh)
+        {
+            LastUpdated = $"Last update: {DateTimeOffset.Now:G}";
+        }
+    }
+
+    private void ApplyStatus(EliteStatus status)
+    {
+        VehicleState = status.OnFoot
+            ? "On foot"
+            : status.InSrv
+                ? "SRV"
+                : status.InFighter
+                    ? "Fighter"
+                    : status.InMainShip
+                        ? "Main ship"
+                        : status.InTaxi
+                            ? "Taxi / shuttle"
+                            : "Unknown";
+        SurfacePosition = status.HasLatitudeLongitude
+            ? $"{status.Latitude:F6}, {status.Longitude:F6}"
+            : Unavailable;
+        HeadingAndAltitude = status.HasLatitudeLongitude
+            ? $"{status.NormalizedHeading}° / {status.Altitude:N0} m"
+            : Unavailable;
+        GameUiFocus = status.GuiFocus.ToString();
     }
 
     private static string Display(string? value)

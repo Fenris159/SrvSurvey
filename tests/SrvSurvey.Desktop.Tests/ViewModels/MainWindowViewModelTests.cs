@@ -1,4 +1,5 @@
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -60,6 +61,42 @@ public sealed class MainWindowViewModelTests
             Assert.True(File.Exists(Path.Combine(data, "settings.json")));
             Assert.Contains("Imported 1 files", viewModel.ProfileStatusMessage);
             Assert.True(Directory.Exists(viewModel.ProfileBackupDirectory));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task RefreshAppliesLiveJournalAndStatusState()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-live-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(root);
+            await File.WriteAllTextAsync(
+                Path.Combine(root, "Journal.2026-07-24T100000.01.log"),
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\",\"SystemAddress\":10477373803,\"Body\":\"Earth\",\"BodyType\":\"Planet\"}\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(root, StatusFileReader.FileName),
+                "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":12.5,\"Longitude\":-44.25,\"Heading\":-1,\"Altitude\":123.4}");
+            var viewModel = new MainWindowViewModel(root);
+
+            await viewModel.RefreshAsync();
+
+            Assert.Equal("Drew", viewModel.CommanderName);
+            Assert.Contains("Sol", viewModel.SystemDescription);
+            Assert.Equal("Earth", viewModel.BodyName);
+            Assert.Equal("SRV", viewModel.VehicleState);
+            Assert.Equal("12.500000, -44.250000", viewModel.SurfacePosition);
+            Assert.Equal("359° / 123 m", viewModel.HeadingAndAltitude);
         }
         finally
         {
