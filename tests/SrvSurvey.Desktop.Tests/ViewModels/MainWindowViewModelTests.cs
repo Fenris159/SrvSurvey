@@ -3,6 +3,7 @@ using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -118,6 +119,89 @@ public sealed class MainWindowViewModelTests
             Assert.Equal("359° / 123 m", viewModel.HeadingAndAltitude);
             Assert.Equal("Sol", viewModel.Search.CurrentSystemName);
             Assert.Equal("[ 0, 0, 0 ]", viewModel.Search.CurrentPosition);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task RefreshConnectsPersistedBoxelSearchRouteAndLiveCompletion()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-live-boxel-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-24T100000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"event\":\"Location\",\"StarSystem\":\"Praea Euq IL-P c5-0\","
+                    + "\"SystemAddress\":100,\"StarPos\":[1,2,3]}\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, NavRouteFileReader.FileName),
+                "{\"event\":\"NavRoute\",\"Route\":[{"
+                    + "\"StarSystem\":\"Praea Euq IL-P c5-1\","
+                    + "\"SystemAddress\":101,\"StarPos\":[4,5,6]}]}");
+            var store = new CommanderProfileStore(profile);
+            var top = BoxelAddress.Parse("Praea Euq IL-P c5-0");
+            await store.SaveBoxelSearchAsync(
+                "F123",
+                "Drew",
+                true,
+                new BoxelSearchSnapshot(
+                    true,
+                    top,
+                    DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                    top,
+                    2,
+                    'c',
+                    [],
+                    true,
+                    false,
+                    false,
+                    false,
+                    BoxelCompletionMode.EnterSystem));
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                boxelSystemResolver: new StubBoxelResolver(
+                [
+                    BoxelObservation("Praea Euq IL-P c5-0", 100),
+                ]));
+
+            await viewModel.RefreshAsync();
+
+            Assert.True(viewModel.BoxelSearch.IsActive);
+            Assert.Equal(2, viewModel.BoxelSearch.Systems.Count);
+            Assert.True(viewModel.BoxelSearch.Systems[1].IsKnown);
+            Assert.False(viewModel.BoxelSearch.Systems[1].IsComplete);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-24T12:00:00Z\",\"event\":\"FSDJump\","
+                    + "\"StarSystem\":\"Praea Euq IL-P c5-1\","
+                    + "\"SystemAddress\":101,\"StarPos\":[4,5,6]}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.True(viewModel.BoxelSearch.Systems[1].IsComplete);
+            Assert.Equal("Praea Euq IL-P c5-0", viewModel.BoxelSearch.NextSystem);
         }
         finally
         {
@@ -275,6 +359,34 @@ public sealed class MainWindowViewModelTests
             {
                 Directory.Delete(root, true);
             }
+        }
+    }
+
+    private static BoxelSystemObservation BoxelObservation(
+        string name,
+        long address)
+    {
+        return new BoxelSystemObservation(
+            BoxelAddress.Parse(name) with { SystemAddress = address },
+            new GalacticCoordinate(address, 0, 0),
+            null,
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+            true);
+    }
+
+    private sealed class StubBoxelResolver(
+        IReadOnlyList<BoxelSystemObservation> systems) : IBoxelSystemResolver
+    {
+        public Task<IReadOnlyList<BoxelSystemObservation>> SearchAsync(
+            BoxelAddress boxel,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<BoxelSystemObservation>>(
+                systems.Where(system => string.Equals(
+                        system.Boxel.Prefix,
+                        boxel.Prefix,
+                        StringComparison.Ordinal))
+                    .ToArray());
         }
     }
 }

@@ -11,6 +11,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 {
     private const string Unavailable = "\u2014";
+    private const int MaximumVisibleSystemRows = 500;
 
     private readonly CommanderProfileStore profileStore;
     private readonly LegacySystemDataReader localSystemReader;
@@ -44,6 +45,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private string boxelProgress = "0 of 0 boxels complete";
     private string searchSize = "Enter a generated system name.";
     private string currentSystemName = Unavailable;
+    private string systemListNote = string.Empty;
     private GalacticCoordinate? currentPosition;
     private IReadOnlyList<BoxelSystemRowViewModel> systems = [];
     private IReadOnlyList<BoxelNavigationOptionViewModel> childBoxels = [];
@@ -258,6 +260,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     }
 
     public bool HasSystems => Systems.Count > 0;
+
+    public string SystemListNote
+    {
+        get => systemListNote;
+        private set => SetField(ref systemListNote, value);
+    }
 
     public IReadOnlyList<BoxelNavigationOptionViewModel> ChildBoxels
     {
@@ -897,7 +905,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         var rowCount = Math.Max(
             state.CurrentCount,
             state.CurrentMaximumSystemNumber + 1);
-        Systems = Enumerable.Range(0, Math.Max(1, rowCount))
+        var rowNumbers = Enumerable.Range(
+                0,
+                Math.Min(Math.Max(1, rowCount), MaximumVisibleSystemRows))
+            .Concat(knownSystems.Keys)
+            .Distinct()
+            .Order()
+            .ToArray();
+        SystemListNote = rowCount > rowNumbers.Length
+            ? $"Showing the first {MaximumVisibleSystemRows:N0} rows plus all known systems "
+                + $"from {rowCount:N0} expected systems."
+            : string.Empty;
+        Systems = rowNumbers
             .Select(number =>
             {
                 knownSystems.TryGetValue(number, out var system);
@@ -1073,6 +1092,8 @@ public sealed class BoxelSystemRowViewModel
     public string SpanshUpdatedAt { get; }
 
     public string Status { get; }
+
+    public string ToggleButtonText => IsComplete ? "Reopen" : "Complete";
 
     public ICommand ToggleCommand { get; }
 

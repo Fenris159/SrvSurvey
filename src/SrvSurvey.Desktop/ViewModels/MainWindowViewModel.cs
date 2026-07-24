@@ -71,7 +71,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         AppDataPaths? appDataPaths = null,
         LegacyProfileImporter? profileImporter = null,
         ExobiologyReferenceCatalog? exobiologyCatalog = null,
-        IStarSystemResolver? starSystemResolver = null)
+        IStarSystemResolver? starSystemResolver = null,
+        IBoxelSystemResolver? boxelSystemResolver = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -80,6 +81,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Search = new SphereLimitViewModel(
             commanderProfileStore,
             starSystemResolver ?? new SpanshStarSystemResolver());
+        BoxelSearch = new BoxelSearchViewModel(
+            commanderProfileStore,
+            new LegacySystemDataReader(AppDataPaths.DataDirectory),
+            new EmptyBoxelStore(AppDataPaths.DataDirectory),
+            boxelSystemResolver ?? new SpanshBoxelClient());
         GroundTarget = new GroundTargetViewModel(
             new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
         exobiologyState = new ExobiologyState(
@@ -164,6 +170,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public GroundTargetViewModel GroundTarget { get; }
 
     public SphereLimitViewModel Search { get; }
+
+    public BoxelSearchViewModel BoxelSearch { get; }
 
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
 
@@ -676,12 +684,30 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Search.UpdateCurrentSystem(
             journalState.SystemName,
             journalState.StarPosition);
+        BoxelSearch.UpdateCurrentSystem(
+            journalState.SystemName,
+            journalState.StarPosition);
 
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
         var explorationBefore = explorationState.CreateSnapshot();
         var exobiologyVersionBefore = exobiologyState.Version;
         var skipPersistedBootstrapEvents = update.IsBootstrapRead
             && loadedExistingProfile;
+        if (update.NavRoute is not null)
+        {
+            await BoxelSearch.UpdateRouteAsync(update.NavRoute);
+        }
+
+        if (!skipPersistedBootstrapEvents)
+        {
+            await BoxelSearch.ApplyJournalEventsAsync(update.JournalEvents);
+        }
+
+        if (update.Status is not null)
+        {
+            await BoxelSearch.UpdateStatusAsync(update.Status);
+        }
+
         foreach (var journalEvent in update.JournalEvents)
         {
             if (!skipPersistedBootstrapEvents
@@ -738,6 +764,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         if (update.JournalEvents.Count > 0
             || update.Status is not null
+            || update.NavRoute is not null
             || update.Errors.Count > 0
             || isManualRefresh)
         {
@@ -782,6 +809,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                 ?? "The commander profile could not be loaded.";
             Search.SetProfileError(
                 result.Error ?? "The commander profile could not be loaded.");
+            BoxelSearch.SetProfileError(
+                result.Error ?? "The commander profile could not be loaded.");
             return false;
         }
 
@@ -792,6 +821,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             activeProfileCommanderName,
             result.Data.IsOdyssey,
             result.Data.SphereLimit);
+        await BoxelSearch.LoadProfileAsync(
+            result.Data.FrontierId,
+            activeProfileCommanderName,
+            result.Data.IsOdyssey,
+            result.Data.BoxelSearch);
         UpdateExplorationDisplay(result.Data.Exploration);
         UpdateExobiologyDisplay(result.Data.Exobiology);
         ExplorationStatusMessage = result.Exists
