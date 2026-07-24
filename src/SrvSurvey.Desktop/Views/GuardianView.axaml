@@ -56,6 +56,50 @@
         </Grid>
       </Border>
 
+      <Border Classes="card">
+        <Grid ColumnDefinitions="8,3*,2*" ColumnSpacing="18">
+          <Border Background="{DynamicResource RavenAccentBrush}"
+                  CornerRadius="4" />
+          <StackPanel Grid.Column="1" Spacing="7">
+            <TextBlock Classes="eyebrow" Text="LIVE SCANNER" />
+            <TextBlock Classes="card-title"
+                       Text="{Binding Guardian.CurrentObeliskTitle}" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding Guardian.CurrentObeliskLogText}" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding Guardian.NearbyPointText}" />
+            <TextBlock Classes="monospace"
+                       FontSize="11"
+                       Text="{Binding Guardian.SiteDistanceText}" />
+          </StackPanel>
+
+          <StackPanel Grid.Column="2" Spacing="10">
+            <Border Classes="badge"
+                    HorizontalAlignment="Left">
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontWeight="SemiBold"
+                         FontSize="11"
+                         Text="{Binding Guardian.CurrentObeliskArtifactStatus}" />
+            </Border>
+            <StackPanel Spacing="4">
+              <TextBlock Classes="muted" Text="REQUIRED ARTIFACTS" />
+              <TextBlock TextWrapping="Wrap"
+                         Text="{Binding Guardian.CurrentObeliskRequirementsText}" />
+            </StackPanel>
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding Guardian.CurrentObeliskMissionStatus}" />
+            <Button Classes="primary"
+                    HorizontalAlignment="Left"
+                    IsEnabled="{Binding Guardian.HasCurrentObelisk}"
+                    Command="{Binding Guardian.ToggleCurrentObeliskScannedCommand}"
+                    Content="{Binding Guardian.ToggleCurrentObeliskScannedText}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
       <Border Classes="card raised">
         <Grid ColumnDefinitions="2*,*,*,*" ColumnSpacing="12">
           <StackPanel Spacing="6">
