@@ -7,6 +7,8 @@ using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Input;
+using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Theming;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -73,11 +75,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         LegacyProfileImporter? profileImporter = null,
         ExobiologyReferenceCatalog? exobiologyCatalog = null,
         IStarSystemResolver? starSystemResolver = null,
-        IBoxelSystemResolver? boxelSystemResolver = null)
+        IBoxelSystemResolver? boxelSystemResolver = null,
+        GlobalInputSettingsViewModel? inputSettings = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
+            new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
+            OverlayPlatformCapabilities.DetectCurrent());
         commanderProfileStore = new CommanderProfileStore(AppDataPaths.DataDirectory);
         Search = new SphereLimitViewModel(
             commanderProfileStore,
@@ -169,6 +175,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public IReadOnlyList<NavigationItemViewModel> NavigationItems { get; }
 
     public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; }
+
+    public GlobalInputSettingsViewModel InputSettings { get; }
 
     public AppDataPaths AppDataPaths { get; }
 

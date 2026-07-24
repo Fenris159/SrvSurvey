@@ -103,6 +103,104 @@
       <Separator />
 
       <StackPanel Spacing="5">
+        <TextBlock Classes="eyebrow" Text="INPUT" />
+        <TextBlock Classes="page-title" Text="Global shortcuts" />
+        <TextBlock Classes="muted"
+                   TextWrapping="Wrap"
+                   Text="Use the original SrvSurvey shortcuts while either this application or Elite Dangerous has focus." />
+      </StackPanel>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Keyboard hook" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Keyboard capture stays off until you enable it here. Synthetic key events are ignored." />
+            </StackPanel>
+            <CheckBox Grid.Column="1"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding InputSettings.KeyboardEnabled, Mode=TwoWay}"
+                      IsEnabled="{Binding InputSettings.IsKeyboardAvailable}"
+                      Content="Enabled" />
+          </Grid>
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     TextWrapping="Wrap"
+                     Text="{Binding InputSettings.RuntimeStatus}" />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="{Binding InputSettings.HasPersistenceStatus}"
+                     TextWrapping="Wrap"
+                     Text="{Binding InputSettings.PersistenceStatus}" />
+          <TextBlock Classes="muted"
+                     IsVisible="{Binding InputSettings.HasLastActionStatus}"
+                     TextWrapping="Wrap"
+                     Text="{Binding InputSettings.LastActionStatus}" />
+        </StackPanel>
+      </Border>
+
+      <Expander HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                IsExpanded="False">
+        <Expander.Header>
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="3">
+              <TextBlock Classes="card-title" Text="Shortcut bindings" />
+              <TextBlock Classes="muted"
+                         Text="Expand to edit all original keyboard actions." />
+            </StackPanel>
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Command="{Binding InputSettings.ResetBindingsCommand}"
+                    Content="Restore defaults" />
+          </Grid>
+        </Expander.Header>
+        <ItemsControl Margin="0,14,0,0"
+                      ItemsSource="{Binding InputSettings.Bindings}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:InputBindingViewModel">
+              <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                      BorderThickness="0,1,0,0"
+                      Padding="4,12">
+                <Grid ColumnDefinitions="*,220" ColumnSpacing="20">
+                  <StackPanel Spacing="3">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding DisplayName}" />
+                    <TextBlock Classes="muted"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Text="{Binding Description}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="3">
+                    <TextBox Text="{Binding Chord, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                             PlaceholderText="Leave blank to disable" />
+                    <TextBlock Classes="muted"
+                               FontSize="10"
+                               Text="{Binding DefaultChord}" />
+                    <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                               FontSize="10"
+                               IsVisible="{Binding HasValidationError}"
+                               TextWrapping="Wrap"
+                               Text="{Binding ValidationMessage}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Expander>
+
+      <Border Classes="card">
+        <StackPanel Spacing="6">
+          <TextBlock Classes="card-title" Text="Controller input" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Imported controller bindings are preserved. The SDL controller adapter and device picker are the next input increment." />
+        </StackPanel>
+      </Border>
+
+      <Separator />
+
+      <StackPanel Spacing="5">
         <TextBlock Classes="eyebrow" Text="DATA &amp; MIGRATION" />
         <TextBlock Classes="page-title" Text="Legacy profile" />
         <TextBlock Classes="muted"

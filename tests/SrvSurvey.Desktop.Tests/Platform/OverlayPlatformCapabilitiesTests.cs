@@ -13,8 +13,8 @@ public sealed class OverlayPlatformCapabilitiesTests
         Assert.True(capabilities.SupportsPassiveOverlay);
         Assert.True(capabilities.SupportsClickThrough);
         Assert.True(capabilities.SupportsGameWindowTracking);
-        Assert.False(capabilities.SupportsGlobalInput);
-        Assert.Contains("pending", capabilities.StatusText);
+        Assert.True(capabilities.SupportsGlobalInput);
+        Assert.Contains("global keyboard input", capabilities.StatusText);
     }
 
     [Fact]
@@ -26,7 +26,8 @@ public sealed class OverlayPlatformCapabilitiesTests
         Assert.True(capabilities.SupportsPassiveOverlay);
         Assert.True(capabilities.SupportsClickThrough);
         Assert.True(capabilities.SupportsGameWindowTracking);
-        Assert.Contains("global input", capabilities.StatusText);
+        Assert.True(capabilities.SupportsGlobalInput);
+        Assert.Contains("global keyboard input", capabilities.StatusText);
     }
 
     [Fact]

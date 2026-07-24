@@ -15,12 +15,12 @@ public sealed record OverlayPlatformCapabilities(
     {
         OverlayHostKind.Windows => SupportsClickThrough
             ? SupportsGameWindowTracking
-                ? "Windows topmost transparency, native click-through, and game-window tracking are available; global input is pending."
-                : "Windows topmost transparency and native click-through are available; game-window following and global input are pending."
+                ? "Windows topmost transparency, native click-through, game-window tracking, and global keyboard input are available."
+                : "Windows topmost transparency, native click-through, and global keyboard input are available; game-window following is pending."
             : "Windows overlay input pass-through could not be enabled.",
         OverlayHostKind.LinuxX11 =>
             SupportsClickThrough && SupportsGameWindowTracking
-                ? "X11 topmost transparency, XShape click-through, and game-window tracking are available; global input is pending."
+                ? "X11 topmost transparency, XShape click-through, game-window tracking, and global keyboard input are available."
                 : "X11 is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
         OverlayHostKind.LinuxWayland =>
             "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
@@ -58,14 +58,14 @@ public sealed record OverlayPlatformCapabilities(
                 SupportsTransparency: true,
                 SupportsClickThrough: true,
                 SupportsGameWindowTracking: true,
-                SupportsGlobalInput: false),
+                SupportsGlobalInput: true),
             OverlayHostKind.LinuxX11 => new OverlayPlatformCapabilities(
                 host,
                 SupportsTopmost: true,
                 SupportsTransparency: true,
                 SupportsClickThrough: true,
                 SupportsGameWindowTracking: true,
-                SupportsGlobalInput: false),
+                SupportsGlobalInput: true),
             OverlayHostKind.LinuxWayland => new OverlayPlatformCapabilities(
                 host,
                 SupportsTopmost: false,

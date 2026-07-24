@@ -14,6 +14,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private GuardianOverlayWindow? window;
+    private bool isSuppressed;
     private bool disposed;
 
     public GuardianOverlayCoordinator(
@@ -40,6 +41,19 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     public bool IsVisible => window is not null;
 
     public string PlatformStatus => platform.Capabilities.StatusText;
+
+    public bool IsSuppressed => isSuppressed;
+
+    public void ToggleVisibility()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        isSuppressed = !isSuppressed;
+        SynchronizeWindow();
+    }
 
     public void Dispose()
     {
@@ -80,7 +94,8 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        if (!guardian.HasActiveSite
+        if (isSuppressed
+            || !guardian.HasActiveSite
             || !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
             || !platform.Capabilities.SupportsGameWindowTracking
