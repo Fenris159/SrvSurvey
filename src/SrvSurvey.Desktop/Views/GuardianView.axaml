@@ -244,7 +244,9 @@
           <Grid Margin="0,16,0,0"
                 ColumnDefinitions="3*,2*"
                 ColumnSpacing="18">
-            <Border Classes="card" Padding="12">
+            <Border Classes="card"
+                    Padding="12"
+                    VerticalAlignment="Top">
               <controls:GuardianSiteMapControl
                   Height="640"
                   Projection="{Binding Guardian.MapProjection}"
@@ -270,6 +272,121 @@
                   <TextBlock Classes="muted"
                              TextWrapping="Wrap"
                              Text="{Binding Guardian.MapStatus}" />
+                </StackPanel>
+              </Border>
+
+              <Border Classes="card">
+                <StackPanel Spacing="14">
+                  <TextBlock Classes="card-title" Text="Survey editor" />
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="{Binding Guardian.SurveyEditor.AvailabilityMessage}" />
+
+                  <StackPanel Spacing="14"
+                              IsEnabled="{Binding Guardian.SurveyEditor.IsAvailable}">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                      <StackPanel Spacing="5">
+                        <TextBlock Classes="muted" Text="SITE HEADING" />
+                        <NumericUpDown Minimum="-1"
+                                       Maximum="359"
+                                       Increment="1"
+                                       FormatString="0"
+                                       Value="{Binding Guardian.SurveyEditor.SiteHeading, Mode=TwoWay}" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" Spacing="5">
+                        <TextBlock Classes="muted" Text="RUINS RELIC HEADING" />
+                        <NumericUpDown Minimum="-1"
+                                       Maximum="359"
+                                       Increment="1"
+                                       FormatString="0"
+                                       Value="{Binding Guardian.SurveyEditor.RelicTowerHeading, Mode=TwoWay}" />
+                      </StackPanel>
+                    </Grid>
+
+                    <StackPanel Spacing="5">
+                      <TextBlock Classes="muted" Text="NOTES" />
+                      <TextBox MinHeight="76"
+                               AcceptsReturn="True"
+                               TextWrapping="Wrap"
+                               Text="{Binding Guardian.SurveyEditor.Notes, Mode=TwoWay}" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                      <TextBlock Classes="muted" Text="OBELISK GROUPS" />
+                      <ItemsControl ItemsSource="{Binding Guardian.SurveyEditor.ObeliskGroups}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <WrapPanel />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:GuardianObeliskGroupViewModel">
+                            <CheckBox MinWidth="42"
+                                      Margin="0,0,8,8"
+                                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                      Content="{Binding Name}" />
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6">
+                      <TextBlock Classes="muted" Text="SURVEY POINTS" />
+                      <ListBox Height="210"
+                               ItemsSource="{Binding Guardian.SurveyEditor.Points}"
+                               SelectedItem="{Binding Guardian.SurveyEditor.SelectedPoint, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                          <DataTemplate x:DataType="vm:GuardianSurveyPoiViewModel">
+                            <Grid Margin="6,3"
+                                  ColumnDefinitions="70,*,Auto"
+                                  ColumnSpacing="8">
+                              <TextBlock Classes="monospace" Text="{Binding Name}" />
+                              <TextBlock Grid.Column="1"
+                                         Classes="muted"
+                                         Text="{Binding TypeText}" />
+                              <TextBlock Grid.Column="2" Text="{Binding Status}" />
+                            </Grid>
+                          </DataTemplate>
+                        </ListBox.ItemTemplate>
+                      </ListBox>
+                    </StackPanel>
+
+                    <Border Classes="card raised"
+                            IsVisible="{Binding Guardian.SurveyEditor.HasSelectedPoint}">
+                      <StackPanel Spacing="10">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                          <TextBlock FontWeight="SemiBold"
+                                     Text="{Binding Guardian.SurveyEditor.SelectedPoint.Name}" />
+                          <TextBlock Grid.Column="1"
+                                     Classes="muted"
+                                     Text="{Binding Guardian.SurveyEditor.SelectedPoint.TypeText}" />
+                        </Grid>
+                        <StackPanel Spacing="5">
+                          <TextBlock Classes="muted" Text="STATUS" />
+                          <ComboBox ItemsSource="{Binding Guardian.SurveyEditor.SelectedPoint.AllowedStatuses}"
+                                    SelectedItem="{Binding Guardian.SurveyEditor.SelectedPoint.Status, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Spacing="5"
+                                    IsVisible="{Binding Guardian.SurveyEditor.SelectedPoint.SupportsRelicHeading}">
+                          <TextBlock Classes="muted" Text="RELIC HEADING" />
+                          <NumericUpDown Minimum="-1"
+                                         Maximum="359"
+                                         Increment="1"
+                                         FormatString="0"
+                                         Value="{Binding Guardian.SurveyEditor.SelectedPoint.RelicHeading, Mode=TwoWay}" />
+                        </StackPanel>
+                      </StackPanel>
+                    </Border>
+
+                    <Button Classes="primary"
+                            HorizontalAlignment="Left"
+                            Command="{Binding Guardian.SurveyEditor.SaveCommand}"
+                            Content="{Binding Guardian.SurveyEditor.SaveButtonText}" />
+                  </StackPanel>
+
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="{Binding Guardian.SurveyEditor.StatusMessage}" />
                 </StackPanel>
               </Border>
 

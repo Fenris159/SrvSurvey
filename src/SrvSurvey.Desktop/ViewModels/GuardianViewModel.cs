@@ -55,6 +55,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         completionCalculator = new GuardianSurveyCompletionCalculator(this.templates);
         commanderDataReader = new GuardianCommanderDataReader(dataDirectory);
         commanderSurveyStore = new GuardianCommanderSurveyStore(dataDirectory);
+        SurveyEditor = new GuardianSurveyEditorViewModel(
+            commanderSurveyStore,
+            OnSurveySavedAsync);
         liveSiteState = new GuardianLiveSiteState(this.references);
         visits = GuardianSiteVisitCatalog.Merge(
             this.references,
@@ -99,6 +102,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
     public ICommand RefreshCommand { get; }
 
+    public GuardianSurveyEditorViewModel SurveyEditor { get; }
+
     public IReadOnlyList<GuardianSiteRowViewModel> Rows
     {
         get => rows;
@@ -114,6 +119,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             {
                 OnPropertyChanged(nameof(HasSelectedSite));
                 UpdateMapProjection();
+                UpdateSurveyEditor();
             }
         }
     }
@@ -334,7 +340,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                     activeIsOdyssey,
                     survey,
                     cancellationToken);
-                ReplaceSurvey(survey with { Path = path });
+                ReplaceSurvey(survey with { Path = path }, existing);
                 surveyChanged = true;
                 saveStatus = $"Recorded the live Guardian site in "
                     + $"{Path.GetFileName(path)}.";
@@ -485,9 +491,10 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             && IsRuins(survey) == (site.Kind == GuardianSiteKind.Ruins));
     }
 
-    private void ReplaceSurvey(GuardianCommanderSiteSurvey survey)
+    private void ReplaceSurvey(
+        GuardianCommanderSiteSurvey survey,
+        GuardianCommanderSiteSurvey? replaced)
     {
-        var replaced = FindSurvey(liveSiteState.CurrentSite!);
         var surveys = commanderData.Surveys
             .Where(candidate => candidate != replaced)
             .Append(survey)
@@ -571,6 +578,46 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 survey?.ActiveObelisks,
                 survey?.ObeliskGroups);
         NotifyMapTextChanged();
+    }
+
+    private void UpdateSurveyEditor()
+    {
+        var row = SelectedSite;
+        var survey = row is null ? null : FindSurvey(row.Reference);
+        var siteType = survey is not null
+            && !string.Equals(
+                survey.SiteType,
+                "Unknown",
+                StringComparison.OrdinalIgnoreCase)
+                    ? survey.SiteType
+                    : row?.Reference.SiteType;
+        SurveyEditor.Load(
+            activeFrontierId,
+            activeIsOdyssey,
+            survey,
+            templates.Find(siteType));
+    }
+
+    private Task OnSurveySavedAsync(
+        GuardianCommanderSiteSurvey previous,
+        GuardianCommanderSiteSurvey saved)
+    {
+        var selectedReference = SelectedSite?.Reference;
+        ReplaceSurvey(saved, previous);
+        visits = GuardianSiteVisitCatalog.Merge(
+            references,
+            commanderData,
+            publishedSites,
+            completionCalculator);
+        ApplyFilters();
+        if (selectedReference is not null)
+        {
+            SelectedSite = Rows.FirstOrDefault(
+                row => row.Reference == selectedReference)
+                ?? SelectedSite;
+        }
+
+        return Task.CompletedTask;
     }
 
     private GuardianCommanderSiteSurvey? FindSurvey(

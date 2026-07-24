@@ -104,6 +104,8 @@ public sealed class GuardianViewModelTests
             Assert.True(row.Visit.IsVisited);
             Assert.Equal("commander note", row.Notes);
             Assert.Contains("1 site survey file", viewModel.StatusMessage);
+            Assert.True(viewModel.SurveyEditor.IsAvailable);
+            Assert.NotEmpty(viewModel.SurveyEditor.Points);
 
             string? copied = null;
             viewModel.SetClipboardWriter(text =>
