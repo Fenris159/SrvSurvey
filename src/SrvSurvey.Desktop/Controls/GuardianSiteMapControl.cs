@@ -11,6 +11,10 @@ public sealed class GuardianSiteMapControl : Control
     public static readonly StyledProperty<GuardianSiteMapProjection?> ProjectionProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, GuardianSiteMapProjection?>(
             nameof(Projection));
+    public static readonly StyledProperty<GuardianSiteProximitySnapshot?>
+        ProximityProperty = AvaloniaProperty.Register<
+            GuardianSiteMapControl,
+            GuardianSiteProximitySnapshot?>(nameof(Proximity));
     public static readonly StyledProperty<IBrush?> MapBackgroundProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, IBrush?>(
             nameof(MapBackground));
@@ -37,6 +41,7 @@ public sealed class GuardianSiteMapControl : Control
     {
         AffectsRender<GuardianSiteMapControl>(
             ProjectionProperty,
+            ProximityProperty,
             MapBackgroundProperty,
             GridBrushProperty,
             AccentBrushProperty,
@@ -50,6 +55,12 @@ public sealed class GuardianSiteMapControl : Control
     {
         get => GetValue(ProjectionProperty);
         set => SetValue(ProjectionProperty, value);
+    }
+
+    public GuardianSiteProximitySnapshot? Proximity
+    {
+        get => GetValue(ProximityProperty);
+        set => SetValue(ProximityProperty, value);
     }
 
     public IBrush? MapBackground
@@ -158,6 +169,44 @@ public sealed class GuardianSiteMapControl : Control
                     center.X + group.X * scale,
                     center.Y + group.Y * scale));
         }
+
+        if (Proximity is { } proximity)
+        {
+            DrawCommander(
+                context,
+                bounds,
+                center,
+                radius,
+                scale,
+                proximity);
+        }
+    }
+
+    private void DrawCommander(
+        DrawingContext context,
+        Rect bounds,
+        Point center,
+        double radius,
+        double scale,
+        GuardianSiteProximitySnapshot proximity)
+    {
+        var x = proximity.MapX * scale;
+        var y = proximity.MapY * scale;
+        var length = Math.Sqrt((x * x) + (y * y));
+        if (length > radius && length > 0)
+        {
+            var clamp = radius / length;
+            x *= clamp;
+            y *= clamp;
+        }
+
+        var location = new Point(
+            Math.Clamp(center.X + x, bounds.Left + 12, bounds.Right - 12),
+            Math.Clamp(center.Y + y, bounds.Top + 12, bounds.Bottom - 12));
+        var brush = PresentBrush ?? Brushes.LimeGreen;
+        var pen = new Pen(brush, 2);
+        context.DrawEllipse(MapBackground, pen, location, 7, 7);
+        context.DrawEllipse(brush, null, location, 2.5, 2.5);
     }
 
     private void DrawPoint(

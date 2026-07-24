@@ -32,6 +32,8 @@ public sealed class GuardianSiteProximityEvaluatorTests
         var proximity = Assert.IsType<GuardianSiteProximitySnapshot>(result);
         var nearby = Assert.IsType<GuardianNearbyPoint>(proximity.NearestPoint);
         Assert.Equal(0, nearby.Distance, precision: 5);
+        Assert.Equal(0, proximity.MapX, precision: 5);
+        Assert.Equal(-10, proximity.MapY, precision: 5);
         Assert.Same(obelisk, proximity.CurrentObelisk);
     }
 
@@ -58,6 +60,8 @@ public sealed class GuardianSiteProximityEvaluatorTests
         var proximity = Assert.IsType<GuardianSiteProximitySnapshot>(result);
         var nearby = Assert.IsType<GuardianNearbyPoint>(proximity.NearestPoint);
         Assert.Equal(0, nearby.Distance, precision: 5);
+        Assert.Equal(0, proximity.MapX, precision: 5);
+        Assert.Equal(-10, proximity.MapY, precision: 5);
         Assert.Same(obelisk, proximity.CurrentObelisk);
     }
 

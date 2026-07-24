@@ -328,6 +328,7 @@ public sealed class GuardianViewModelTests
             Assert.Contains("Guardian Casket 1/2", viewModel.CurrentObeliskRequirementsText);
             Assert.False(viewModel.HasCurrentObeliskArtifacts);
             Assert.True(viewModel.MapProjection?.Points.Single().IsActiveObelisk);
+            Assert.True(viewModel.ActiveMapProjection?.Points.Single().IsActiveObelisk);
 
             await viewModel.ToggleCurrentObeliskScannedAsync();
 

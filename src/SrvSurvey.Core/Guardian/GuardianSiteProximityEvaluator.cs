@@ -39,6 +39,10 @@ public sealed class GuardianSiteProximityEvaluator
         var siteBearingRadians = DegreesToRadians(siteBearing);
         var commanderX = Math.Sin(siteBearingRadians) * siteDistance;
         var commanderY = -Math.Cos(siteBearingRadians) * siteDistance;
+        var mapBearing = SurfaceNavigation.GetBearing(site, commander);
+        var mapAngleRadians = DegreesToRadians(mapBearing - siteHeading);
+        var mapX = Math.Sin(mapAngleRadians) * siteDistance;
+        var mapY = -Math.Cos(mapAngleRadians) * siteDistance;
         var activeByName = (activeObelisks ?? [])
             .GroupBy(obelisk => obelisk.Name, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(
@@ -92,6 +96,8 @@ public sealed class GuardianSiteProximityEvaluator
             siteDistance,
             commanderX,
             commanderY,
+            mapX,
+            mapY,
             nearest,
             currentObelisk);
     }
@@ -159,6 +165,8 @@ public sealed record GuardianSiteProximitySnapshot(
     double DistanceFromSite,
     double CommanderX,
     double CommanderY,
+    double MapX,
+    double MapY,
     GuardianNearbyPoint? NearestPoint,
     GuardianObelisk? CurrentObelisk);
 

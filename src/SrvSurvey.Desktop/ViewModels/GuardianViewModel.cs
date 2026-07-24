@@ -32,6 +32,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private GuardianSiteVisitCatalog visits;
     private IReadOnlyList<GuardianSiteRowViewModel> rows = [];
     private GuardianSiteMapProjection? mapProjection;
+    private GuardianSiteMapProjection? activeMapProjection;
     private GuardianSiteProximitySnapshot? proximity;
     private EliteStatus? currentStatus;
     private string filterText = string.Empty;
@@ -150,6 +151,18 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         private set => SetField(ref mapProjection, value);
     }
 
+    public GuardianSiteMapProjection? ActiveMapProjection => activeMapProjection;
+
+    public string ActiveMapTitle => ActiveSite is { } site
+        ? $"{site.SiteType} · {site.BodyName}"
+        : "Guardian site map";
+
+    public string ActiveMapSummary => ActiveMapProjection is { } projection
+        ? $"{projection.Points.Count:N0} mapped objects · "
+            + $"{projection.ConfirmedPointCount:N0}/"
+            + $"{projection.SurveyablePointCount:N0} confirmed"
+        : "No active Guardian map is available.";
+
     public string MapTitle => SelectedSite is { } row
         ? $"{row.DisplayId} · {row.SiteDescription}"
         : "Select a Guardian site";
@@ -209,14 +222,14 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             : "No live Guardian site detected.";
 
     public string NearbyPointText => Proximity?.NearestPoint is { } nearby
-        ? $"Nearest: {nearby.Point.Name} Â· {nearby.Point.Type} Â· "
+        ? $"Nearest: {nearby.Point.Name} · {nearby.Point.Type} · "
             + $"{nearby.Distance:N1} m"
         : HasActiveSite
             ? "No selectable mapped object is available."
             : "Approach a Guardian site to begin proximity tracking.";
 
     public string CurrentObeliskTitle => CurrentObelisk is { } obelisk
-        ? $"{obelisk.Name} Â· active obelisk"
+        ? $"{obelisk.Name} · active obelisk"
         : "No current active obelisk";
 
     public string CurrentObeliskLogText => CurrentObelisk is { } obelisk
@@ -256,6 +269,12 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     public string ToggleCurrentObeliskScannedText => CurrentObelisk?.Scanned == true
         ? "Mark not scanned"
         : "Mark scanned";
+
+    public string CurrentObeliskScanStatus => CurrentObelisk is { } obelisk
+        ? obelisk.Scanned
+            ? "SCANNED"
+            : "NOT SCANNED"
+        : "NO OBELISK";
 
     public string FilterText
     {
@@ -782,14 +801,19 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CurrentObeliskArtifactStatus));
         OnPropertyChanged(nameof(CurrentObeliskMissionStatus));
         OnPropertyChanged(nameof(ToggleCurrentObeliskScannedText));
+        OnPropertyChanged(nameof(CurrentObeliskScanStatus));
+        OnPropertyChanged(nameof(ActiveMapProjection));
+        OnPropertyChanged(nameof(ActiveMapTitle));
+        OnPropertyChanged(nameof(ActiveMapSummary));
         toggleCurrentObeliskScannedCommand.RaiseCanExecuteChanged();
     }
 
     private void UpdateProximity()
     {
         proximity = null;
+        activeMapProjection = null;
         var site = ActiveSite;
-        if (site is null || currentStatus is null)
+        if (site is null)
         {
             NotifyCurrentObeliskChanged();
             return;
@@ -814,7 +838,20 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             : published?.SiteHeading is >= 0 and <= 359
                 ? published.SiteHeading
                 : reference?.SiteHeading ?? -1;
-        if (template is null || location is null)
+        if (template is null)
+        {
+            NotifyCurrentObeliskChanged();
+            return;
+        }
+
+        var activeObelisks = GetMergedActiveObelisks(reference, survey);
+        var obeliskGroups = GetObeliskGroups(published, survey);
+        activeMapProjection = mapProjector.Project(
+            template,
+            survey?.Survey,
+            activeObelisks,
+            obeliskGroups);
+        if (currentStatus is null || location is null)
         {
             NotifyCurrentObeliskChanged();
             return;
@@ -826,8 +863,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             siteHeading,
             template,
             survey?.Survey,
-            GetMergedActiveObelisks(reference, survey),
-            GetObeliskGroups(published, survey));
+            activeObelisks,
+            obeliskGroups);
         NotifyCurrentObeliskChanged();
     }
 
