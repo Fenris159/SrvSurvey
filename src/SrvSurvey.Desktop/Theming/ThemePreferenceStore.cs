@@ -1,79 +1,50 @@
-using System.Text.Json;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
+using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Desktop.Theming;
 
 public sealed class ThemePreferenceStore
 {
     private const int CurrentVersion = 1;
+    private readonly UiSettingsDocumentStore documentStore;
 
     public ThemePreferenceStore(string? settingsPath = null)
     {
         SettingsPath = settingsPath ?? GetDefaultSettingsPath();
+        documentStore = new UiSettingsDocumentStore(SettingsPath);
     }
 
     public string SettingsPath { get; }
 
     public string? LoadThemeKey()
     {
-        if (!File.Exists(SettingsPath))
+        var settings = documentStore.Load();
+        if (settings["Version"] is not JsonValue version
+            || !version.TryGetValue<int>(out var versionNumber)
+            || versionNumber != CurrentVersion
+            || settings["Theme"] is not JsonValue theme
+            || !theme.TryGetValue<string>(out var themeKey))
         {
             return null;
         }
 
-        try
-        {
-            using var stream = File.OpenRead(SettingsPath);
-            var settings = JsonSerializer.Deserialize<UiSettings>(stream);
-            return settings?.Version == CurrentVersion ? settings.Theme : null;
-        }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or JsonException)
-        {
-            return null;
-        }
+        return themeKey;
     }
 
     public void SaveThemeKey(string themeKey)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(themeKey);
 
-        var directory = Path.GetDirectoryName(SettingsPath)
-            ?? throw new InvalidOperationException("The UI settings path has no directory.");
-        Directory.CreateDirectory(directory);
-
-        var temporaryPath = $"{SettingsPath}.{Guid.NewGuid():N}.tmp";
-        try
+        documentStore.Update(settings =>
         {
-            using (var stream = new FileStream(
-                       temporaryPath,
-                       FileMode.CreateNew,
-                       FileAccess.Write,
-                       FileShare.None))
-            {
-                JsonSerializer.Serialize(
-                    stream,
-                    new UiSettings(CurrentVersion, themeKey),
-                    new JsonSerializerOptions { WriteIndented = true });
-            }
-
-            File.Move(temporaryPath, SettingsPath, true);
-        }
-        finally
-        {
-            if (File.Exists(temporaryPath))
-            {
-                File.Delete(temporaryPath);
-            }
-        }
+            settings["Version"] = CurrentVersion;
+            settings["Theme"] = themeKey;
+        });
     }
 
     private static string GetDefaultSettingsPath()
     {
         return AppDataPaths.ResolveCurrent().UiSettingsPath;
     }
-
-    private sealed record UiSettings(int Version, string Theme);
 }
