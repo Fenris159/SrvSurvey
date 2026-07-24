@@ -19,6 +19,9 @@ public sealed partial class SearchView : UserControl
         if (DataContext is MainWindowViewModel viewModel)
         {
             viewModel.BoxelSearch.SetClipboardWriter(WriteClipboardAsync);
+            viewModel.NearestSystems.SetPlatformServices(
+                WriteClipboardAsync,
+                LaunchUriAsync);
         }
     }
 
@@ -27,6 +30,7 @@ public sealed partial class SearchView : UserControl
         if (DataContext is MainWindowViewModel viewModel)
         {
             viewModel.BoxelSearch.SetClipboardWriter(null);
+            viewModel.NearestSystems.SetPlatformServices(null, null);
         }
     }
 
@@ -37,5 +41,13 @@ public sealed partial class SearchView : UserControl
                 "The desktop clipboard is not available.");
         await clipboard.SetTextAsync(text);
         await clipboard.FlushAsync();
+    }
+
+    private Task<bool> LaunchUriAsync(Uri uri)
+    {
+        var launcher = TopLevel.GetTopLevel(this)?.Launcher
+            ?? throw new InvalidOperationException(
+                "The desktop link launcher is not available.");
+        return launcher.LaunchUriAsync(uri);
     }
 }

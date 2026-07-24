@@ -79,7 +79,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         IStarSystemResolver? starSystemResolver = null,
         IBoxelSystemResolver? boxelSystemResolver = null,
         GlobalInputSettingsViewModel? inputSettings = null,
-        ColonizationViewModel? colonization = null)
+        ColonizationViewModel? colonization = null,
+        INearestSystemsClient? nearestSystemsClient = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -92,9 +93,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Colonization = colonization ?? new ColonizationViewModel(
             new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
             commanderProfileStore: commanderProfileStore);
+        var sharedSystemResolver = starSystemResolver
+            ?? new SpanshStarSystemResolver();
         Search = new SphereLimitViewModel(
             commanderProfileStore,
-            starSystemResolver ?? new SpanshStarSystemResolver());
+            sharedSystemResolver);
+        NearestSystems = new NearestSystemsViewModel(
+            nearestSystemsClient ?? new NearestSystemsClient(),
+            sharedSystemResolver);
         BoxelSearch = new BoxelSearchViewModel(
             commanderProfileStore,
             new LegacySystemDataReader(AppDataPaths.DataDirectory),
@@ -192,6 +198,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public SphereLimitViewModel Search { get; }
 
     public BoxelSearchViewModel BoxelSearch { get; }
+
+    public NearestSystemsViewModel NearestSystems { get; }
 
     public GuardianViewModel Guardian { get; }
 
@@ -724,6 +732,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Search.UpdateCurrentSystem(
             journalState.SystemName,
             journalState.StarPosition);
+        NearestSystems.UpdateContext(
+            journalState.SystemName,
+            journalState.StarPosition,
+            journalState.CommanderName);
         BoxelSearch.UpdateCurrentSystem(
             journalState.SystemName,
             journalState.StarPosition);

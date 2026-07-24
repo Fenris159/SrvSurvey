@@ -14,7 +14,7 @@
           <TextBlock Classes="eyebrow" Text="SEARCH" />
           <TextBlock Classes="page-title" Text="Galactic search tools" />
           <TextBlock Classes="muted"
-                     Text="Define a spherical boundary or work a generated boxel one system at a time." />
+                     Text="Define a spherical boundary, work a generated boxel, or find nearby biology." />
         </StackPanel>
         <Button Grid.Column="1"
                 Classes="primary"
@@ -416,18 +416,202 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card">
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-          <StackPanel Spacing="5">
-            <TextBlock Classes="card-title" Text="Nearby systems" />
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
+        <TextBlock Classes="eyebrow"
+                   VerticalAlignment="Center"
+                   Text="NEARBY BIOLOGY" />
+        <Separator Grid.Column="1" VerticalAlignment="Center" />
+      </Grid>
+
+      <Border Classes="card raised" Padding="0">
+        <Grid ColumnDefinitions="6,*">
+          <Border Classes="accent-line" CornerRadius="12,0,0,12" />
+          <Grid Grid.Column="1"
+                Margin="28"
+                ColumnDefinitions="2*,2*,Auto"
+                ColumnSpacing="24">
+            <StackPanel Spacing="5">
+              <TextBlock Classes="muted" Text="REFERENCE SYSTEM" />
+              <TextBlock FontSize="24"
+                         FontWeight="SemiBold"
+                         Foreground="{DynamicResource RavenAccentBrush}"
+                         TextWrapping="Wrap"
+                         Text="{Binding NearestSystems.ReferenceSystemName}" />
+              <TextBlock Classes="muted monospace"
+                         TextWrapping="Wrap"
+                         Text="{Binding NearestSystems.ReferencePosition}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="5">
+              <TextBlock Classes="muted" Text="SEARCH MODE" />
+              <TextBlock Classes="card-title"
+                         Text="{Binding NearestSystems.SelectedMode.Label}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding NearestSystems.SelectedMode.Description}" />
+            </StackPanel>
+            <Border Grid.Column="2"
+                    Classes="badge"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top">
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontSize="11"
+                         Text="{Binding NearestSystems.Results.Count, StringFormat='{}{0} RESULTS'}" />
+            </Border>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="3*,2*" ColumnSpacing="18">
+        <Border Classes="card">
+          <StackPanel Spacing="16">
+            <TextBlock Classes="card-title" Text="Find nearby biological systems" />
+            <StackPanel Spacing="6">
+              <TextBlock Classes="muted" Text="SEARCH TYPE" />
+              <ComboBox ItemsSource="{Binding NearestSystems.Modes}"
+                        SelectedItem="{Binding NearestSystems.SelectedMode, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:NearestSystemsSearchModeOptionViewModel">
+                    <StackPanel Spacing="2">
+                      <TextBlock FontWeight="SemiBold" Text="{Binding Label}" />
+                      <TextBlock Classes="muted" Text="{Binding Description}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel Spacing="6" IsVisible="{Binding NearestSystems.IsCanonnMode}">
+              <TextBlock Classes="muted" Text="BIOLOGICAL SIGNAL" />
+              <TextBox Text="{Binding NearestSystems.BiologicalSignal, Mode=TwoWay}"
+                       PlaceholderText="Stratum, Bacterium, or another codex signal" />
+            </StackPanel>
+            <StackPanel Spacing="12" IsVisible="{Binding NearestSystems.IsVariantMode}">
+              <Grid ColumnDefinitions="*,2*" ColumnSpacing="12">
+                <StackPanel Spacing="6">
+                  <TextBlock Classes="muted" Text="GENUS" />
+                  <TextBox Text="{Binding NearestSystems.Genus, Mode=TwoWay}"
+                           PlaceholderText="Tussock" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6">
+                  <TextBlock Classes="muted" Text="SPECIES" />
+                  <TextBox Text="{Binding NearestSystems.Species, Mode=TwoWay}"
+                           PlaceholderText="Tussock Capillum" />
+                </StackPanel>
+              </Grid>
+              <StackPanel Spacing="6">
+                <TextBlock Classes="muted" Text="MISSING VARIANT COLORS" />
+                <TextBox Text="{Binding NearestSystems.VariantColors, Mode=TwoWay}"
+                         PlaceholderText="Emerald, Teal" />
+                <TextBlock Classes="muted"
+                           Text="Separate multiple colors with commas or semicolons." />
+              </StackPanel>
+            </StackPanel>
+            <Button Classes="primary"
+                    HorizontalAlignment="Left"
+                    MinWidth="132"
+                    Command="{Binding NearestSystems.SearchCommand}"
+                    Content="{Binding NearestSystems.SearchButtonText}" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Nearest-system queries remain pending until their cache and result workflow is ported." />
+                       Text="{Binding NearestSystems.StatusMessage}" />
           </StackPanel>
-          <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
-            <TextBlock Classes="muted" FontSize="11" Text="PENDING" />
+        </Border>
+
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel Spacing="16">
+            <TextBlock Classes="card-title" Text="Selected result" />
+            <StackPanel Spacing="5">
+              <TextBlock Classes="muted" Text="SYSTEM" />
+              <TextBlock FontWeight="SemiBold"
+                         TextWrapping="Wrap"
+                         Text="{Binding NearestSystems.SelectedResult.SystemName, FallbackValue='Select a result'}" />
+            </StackPanel>
+            <StackPanel Spacing="5">
+              <TextBlock Classes="muted" Text="GALACTIC POSITION" />
+              <TextBlock Classes="monospace"
+                         TextWrapping="Wrap"
+                         Text="{Binding NearestSystems.SelectedResult.Coordinate, FallbackValue='—'}" />
+            </StackPanel>
+            <WrapPanel Orientation="Horizontal">
+              <Button Classes="secondary"
+                      Margin="0,0,10,10"
+                      Command="{Binding NearestSystems.CopySystemCommand}"
+                      Content="Copy system" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,10"
+                      Command="{Binding NearestSystems.CopyCoordinatesCommand}"
+                      Content="Copy coordinates" />
+            </WrapPanel>
+            <WrapPanel Orientation="Horizontal">
+              <Button Classes="secondary"
+                      Margin="0,0,10,10"
+                      Command="{Binding NearestSystems.OpenCanonnCommand}"
+                      Content="Open Canonn" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,10"
+                      Command="{Binding NearestSystems.OpenSpanshCommand}"
+                      Content="Open Spansh" />
+            </WrapPanel>
+            <Button Classes="secondary"
+                    HorizontalAlignment="Left"
+                    IsVisible="{Binding NearestSystems.HasSpanshSearchReference}"
+                    Command="{Binding NearestSystems.OpenSpanshSearchCommand}"
+                    Content="Open original Spansh search" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Border Classes="card" IsVisible="{Binding NearestSystems.HasResults}">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Nearest systems" />
+              <TextBlock Classes="muted"
+                         Text="Select a row to copy it or inspect it on Canonn and Spansh." />
+            </StackPanel>
+            <TextBlock Grid.Column="1"
+                       Classes="muted"
+                       VerticalAlignment="Center"
+                       Text="{Binding NearestSystems.Results.Count, StringFormat='{}{0} unique systems'}" />
+          </Grid>
+          <Border Background="{DynamicResource RavenSurfaceBrush}"
+                  CornerRadius="8"
+                  Padding="12,8">
+            <Grid ColumnDefinitions="2*,*,4*,Auto" ColumnSpacing="12">
+              <TextBlock Classes="muted" Text="SYSTEM" />
+              <TextBlock Grid.Column="1" Classes="muted" Text="DISTANCE" />
+              <TextBlock Grid.Column="2" Classes="muted" Text="NOTES" />
+              <TextBlock Grid.Column="3" Classes="muted" Text="SOURCE" />
+            </Grid>
           </Border>
-        </Grid>
+          <ListBox ItemsSource="{Binding NearestSystems.Results}"
+                   SelectedItem="{Binding NearestSystems.SelectedResult, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:NearestSystemRowViewModel">
+                <Grid Margin="8,10" ColumnDefinitions="2*,*,4*,Auto" ColumnSpacing="12">
+                  <TextBlock Classes="monospace"
+                             FontWeight="SemiBold"
+                             TextWrapping="Wrap"
+                             Text="{Binding SystemName}" />
+                  <TextBlock Grid.Column="1"
+                             Classes="muted"
+                             VerticalAlignment="Center"
+                             Text="{Binding Distance}" />
+                  <TextBlock Grid.Column="2"
+                             Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="{Binding Notes}" />
+                  <Border Grid.Column="3"
+                          Classes="badge"
+                          VerticalAlignment="Center">
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                               FontSize="10"
+                               Text="{Binding Source}" />
+                  </Border>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </StackPanel>
       </Border>
     </StackPanel>
   </ScrollViewer>

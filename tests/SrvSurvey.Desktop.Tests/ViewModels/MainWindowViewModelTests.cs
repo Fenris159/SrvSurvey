@@ -131,6 +131,9 @@ public sealed class MainWindowViewModelTests
             Assert.Equal("359° / 123 m", viewModel.HeadingAndAltitude);
             Assert.Equal("Sol", viewModel.Search.CurrentSystemName);
             Assert.Equal("[ 0, 0, 0 ]", viewModel.Search.CurrentPosition);
+            Assert.Equal("Sol", viewModel.NearestSystems.ReferenceSystemName);
+            Assert.Equal("[ 0, 0, 0 ]", viewModel.NearestSystems.ReferencePosition);
+            Assert.Equal("Searching from Sol", viewModel.NearestSystems.ReferenceSummary);
         }
         finally
         {
