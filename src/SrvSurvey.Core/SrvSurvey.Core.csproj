@@ -21,6 +21,8 @@
                       LogicalName="SrvSurvey.Core.Resources.guardianSiteTemplates.json" />
     <EmbeddedResource Include="..\..\data\guardian.zip"
                       LogicalName="SrvSurvey.Core.Resources.guardian.zip" />
+    <EmbeddedResource Include="..\..\SrvSurvey\colonization-costs2.json"
+                      LogicalName="SrvSurvey.Core.Resources.colonization-costs2.json" />
   </ItemGroup>
 
 </Project>
