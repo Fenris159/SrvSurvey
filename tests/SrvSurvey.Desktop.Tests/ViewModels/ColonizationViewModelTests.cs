@@ -38,7 +38,8 @@ public sealed class ColonizationViewModelTests : IDisposable
                 Project("hidden", "Hub", remaining: 100),
             ],
             ["hidden"],
-            "shown"),
+            "shown",
+            []),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -66,7 +67,8 @@ public sealed class ColonizationViewModelTests : IDisposable
             Workspace = new ColonizationCommanderProjects(
                 [Project("build-1", "Port", remaining: 100)],
                 [],
-                null),
+                null,
+                []),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -160,7 +162,8 @@ public sealed class ColonizationViewModelTests : IDisposable
             Workspace = new ColonizationCommanderProjects(
                 [Project("build-1", "Port", remaining: 100)],
                 [],
-                null),
+                null,
+                []),
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
@@ -224,7 +227,8 @@ public sealed class ColonizationViewModelTests : IDisposable
         public ColonizationCommanderProjects Workspace { get; set; } = new(
             [],
             [],
-            null);
+            null,
+            []);
 
         public Exception? Failure { get; set; }
 

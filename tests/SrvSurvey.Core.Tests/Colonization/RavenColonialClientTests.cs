@@ -8,7 +8,7 @@ namespace SrvSurvey.Core.Tests.Colonization;
 public sealed class RavenColonialClientTests
 {
     [Fact]
-    public async Task LoadsCommanderWorkspaceFromThreeLegacyEndpoints()
+    public async Task LoadsCommanderWorkspaceFromFourLegacyEndpoints()
     {
         var requested = new List<string>();
         var handler = new StubHandler(request =>
@@ -26,6 +26,8 @@ public sealed class RavenColonialClientTests
                     "[\"build-2\"]"),
                 "/root/api/cmdr/Test%20Cmdr/primary" => Json(
                     "\"build-1\""),
+                "/root/api/cmdr/Test%20Cmdr/fc/all" => Json(
+                    "[{\"marketId\":42,\"name\":\"ABC-123\",\"displayName\":\"Supply\",\"cargo\":{\"steel\":75}}]"),
                 _ => new HttpResponseMessage(HttpStatusCode.NotFound),
             };
         });
@@ -37,7 +39,10 @@ public sealed class RavenColonialClientTests
         Assert.Equal("build-1", result.Projects[0].BuildId);
         Assert.Equal(["build-2"], result.HiddenProjectIds);
         Assert.Equal("build-1", result.PrimaryProjectId);
-        Assert.Equal(3, requested.Count);
+        var carrier = Assert.Single(result.FleetCarriers);
+        Assert.Equal(42, carrier.MarketId);
+        Assert.Equal(75, carrier.Cargo["steel"]);
+        Assert.Equal(4, requested.Count);
     }
 
     [Fact]

@@ -80,12 +80,21 @@ public sealed class RavenColonialClient : IRavenColonialClient
             $"api/cmdr/{commander}/primary",
             "load the primary colonisation project",
             cancellationToken);
-        await Task.WhenAll(projectsTask, hiddenTask, primaryTask)
+        var fleetCarriersTask = GetAsync<ColonizationFleetCarrier[]>(
+            $"api/cmdr/{commander}/fc/all",
+            "load commander Fleet Carriers",
+            cancellationToken);
+        await Task.WhenAll(
+                projectsTask,
+                hiddenTask,
+                primaryTask,
+                fleetCarriersTask)
             .ConfigureAwait(false);
         return new ColonizationCommanderProjects(
             await projectsTask.ConfigureAwait(false) ?? [],
             await hiddenTask.ConfigureAwait(false) ?? [],
-            await primaryTask.ConfigureAwait(false));
+            await primaryTask.ConfigureAwait(false),
+            await fleetCarriersTask.ConfigureAwait(false) ?? []);
     }
 
     public async Task<IReadOnlyList<string>> SaveHiddenProjectIdsAsync(
@@ -298,7 +307,8 @@ public sealed class RavenColonialServiceException : HttpRequestException
 public sealed record ColonizationCommanderProjects(
     IReadOnlyList<ColonizationProject> Projects,
     IReadOnlyList<string> HiddenProjectIds,
-    string? PrimaryProjectId);
+    string? PrimaryProjectId,
+    IReadOnlyList<ColonizationFleetCarrier> FleetCarriers);
 
 public sealed record ColonizationProjectCreate
 {

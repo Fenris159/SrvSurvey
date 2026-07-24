@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Colonization;
@@ -416,12 +417,16 @@ public sealed record ColonizationCommodityPlanRow(
 
 public sealed record ColonizationFleetCarrier
 {
+    [JsonPropertyName("marketId")]
     public long MarketId { get; init; }
 
+    [JsonPropertyName("name")]
     public string Name { get; init; } = string.Empty;
 
+    [JsonPropertyName("displayName")]
     public string DisplayName { get; init; } = string.Empty;
 
+    [JsonPropertyName("cargo")]
     public Dictionary<string, int> Cargo { get; init; } = new(
         StringComparer.OrdinalIgnoreCase);
 }

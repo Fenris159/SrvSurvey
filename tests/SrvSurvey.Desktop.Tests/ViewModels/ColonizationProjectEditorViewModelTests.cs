@@ -223,7 +223,8 @@ public sealed class ColonizationProjectEditorViewModelTests
             return Task.FromResult(new ColonizationCommanderProjects(
                 [],
                 [],
-                null));
+                null,
+                []));
         }
 
         public Task<IReadOnlyList<string>> SaveHiddenProjectIdsAsync(
