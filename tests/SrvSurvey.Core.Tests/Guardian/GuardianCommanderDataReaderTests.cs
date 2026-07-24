@@ -152,11 +152,16 @@ public sealed class GuardianCommanderDataReaderTests
             await File.WriteAllTextAsync(
                 Path.Combine(legacy, "legacy-beacon.json"),
                 "{\"systemAddress\":2}");
+            await File.WriteAllTextAsync(
+                Path.Combine(legacy, "legacy-body-ruins-1.json"),
+                "{\"type\":\"Alpha\",\"index\":1,\"bodyName\":\"legacy-body\"}");
             var reader = new GuardianCommanderDataReader(root);
 
             var result = await reader.ReadAsync("F123", isOdyssey: false);
 
             Assert.Equal(2, Assert.Single(result.Beacons).SystemAddress);
+            Assert.True(Assert.Single(result.Beacons).Legacy);
+            Assert.True(Assert.Single(result.Surveys).Legacy);
             await Assert.ThrowsAsync<ArgumentException>(
                 () => reader.ReadAsync("../F123", isOdyssey: true));
         }

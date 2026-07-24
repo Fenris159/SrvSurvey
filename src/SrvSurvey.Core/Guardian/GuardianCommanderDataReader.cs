@@ -41,6 +41,7 @@ public sealed class GuardianCommanderDataReader(string dataDirectory)
                 var beacon = await ReadBeaconAsync(
                         path,
                         errors,
+                        isLegacy: !isOdyssey,
                         cancellationToken)
                     .ConfigureAwait(false);
                 if (beacon is not null)
@@ -58,6 +59,7 @@ public sealed class GuardianCommanderDataReader(string dataDirectory)
                 var survey = await ReadSurveyAsync(
                         path,
                         errors,
+                        isLegacy: !isOdyssey,
                         cancellationToken)
                     .ConfigureAwait(false);
                 if (survey is not null)
@@ -81,6 +83,7 @@ public sealed class GuardianCommanderDataReader(string dataDirectory)
     private static async Task<GuardianCommanderSiteSurvey?> ReadSurveyAsync(
         string path,
         ICollection<string> errors,
+        bool isLegacy,
         CancellationToken cancellationToken)
     {
         var document = await ReadDocumentAsync(path, errors, cancellationToken)
@@ -117,7 +120,7 @@ public sealed class GuardianCommanderDataReader(string dataDirectory)
                     GetInt32(root, "bodyId") ?? -1,
                     GetString(root, "bodyName") ?? string.Empty,
                     GetString(root, "notes") ?? string.Empty,
-                    GetBoolean(root, "legacy") ?? false,
+                    GetBoolean(root, "legacy") ?? isLegacy,
                     new GuardianSurveyData
                     {
                         SiteType = GetString(root, "type") ?? "Unknown",
@@ -148,6 +151,7 @@ public sealed class GuardianCommanderDataReader(string dataDirectory)
     private static async Task<GuardianCommanderBeaconVisit?> ReadBeaconAsync(
         string path,
         ICollection<string> errors,
+        bool isLegacy,
         CancellationToken cancellationToken)
     {
         var document = await ReadDocumentAsync(path, errors, cancellationToken)
@@ -179,7 +183,7 @@ public sealed class GuardianCommanderDataReader(string dataDirectory)
                     GetString(root, "bodyName") ?? string.Empty,
                     GetInt32(root, "bodyId") ?? -1,
                     GetString(root, "notes") ?? string.Empty,
-                    GetBoolean(root, "legacy") ?? false,
+                    GetBoolean(root, "legacy") ?? isLegacy,
                     ReadScannedLocations(root));
             }
             catch (Exception exception) when (
