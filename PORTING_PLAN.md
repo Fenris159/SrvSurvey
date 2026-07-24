@@ -231,7 +231,7 @@ not expected to run as a headless container service.
 | Organic scans | Codex reference, three-sample state, surface separation, first-footfall reward, sale, death, reset, and compatible profile fields implemented; system/body organism history remains | Live Overview/Exobiology projections and two-step unclaimed reset; predictions/Codex remain pending | Empty/live-profile page visually and accessibility checked; active Elite sampling not run | Not tested |
 | Ground target tracking | Legacy coordinate parsing plus cardinal formats, validated settings, great-circle distance/bearing, relative heading, and approach bands implemented | Travel target editor supports typed, current, clipboard, clear, and live guidance; overlay remains pending | Inactive/live-profile page visually and accessibility checked; active surface guidance not run | Not tested |
 | Spherical search limit | Legacy-compatible center/radius state, strict boundary rule, lossless commander persistence, journal galactic position, and current Spansh response contract implemented | Search supports center lookup and selection, 1–1000 ly radius, enable/disable, and current-system distance/result; `PlotSphericalSearch` remains pending | Live profile page and Sol lookup visually/accessibility checked; save action enabled but profile was not changed | Not tested |
-| Boxel search | Generated-name hierarchy, completion/skip rules, lossless commander fields, legacy local-system and empty-boxel files, paged Spansh search, and live `NavRoute.json`/journal updates implemented; legacy ID64 decoding for hand-authored system names and full-area background completion audit remain | Search supports activation, mass-code/date options, current/parent/sibling/child navigation, expected counts, manual completion, empty marking, current-system highlighting, refresh, and manual/Galaxy Map clipboard copy | Inactive live-profile page visually and accessibility checked at 1180 by 760; automated source-merge and live-completion integration passed; no search/profile action was invoked | Not tested |
+| Boxel search | Generated-name hierarchy, ID64 decoding for generated and hand-authored names, completion/skip rules, lossless commander fields, legacy local-system and empty-boxel files, paged Spansh search, live `NavRoute.json`/journal updates, and cancellable full-area completion audit with partial results implemented | Search supports activation, mass-code/date options, current/parent/sibling/child navigation, expected counts, manual completion, empty marking, current-system highlighting, refresh, manual/Galaxy Map clipboard copy, audit progress/cancellation, and a large-audit confirmation guard | Inactive live-profile page and audit controls visually and accessibility checked at 1182 by 790; automated ID64, source-merge, live-completion, audit, cancellation, and confirmation integration passed; no search/profile/audit action was invoked | Not tested |
 | Guardian surveys | Not implemented | Not implemented | Not tested | Not tested |
 | Overlays/input | Not implemented | Not implemented | Not tested | Not tested |
 | Secondary features | Not implemented | Not implemented | Not tested | Not tested |
@@ -247,7 +247,7 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release` passed all
-  128 tests: 103 Core tests and 25 Desktop tests.
+  142 tests: 115 Core tests and 27 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
@@ -275,15 +275,19 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   the expected 131.09 ly distance from the journal position for Facece. UI
   Automation exposed the center, matches, radius, enable, and disable controls;
   the live commander profile was not changed.
-- The rebuilt Search page was rendered at 1180 by 760 after the Boxel slice. Its
+- The rebuilt Search page was rendered at 1182 by 790 after the Boxel slice. Its
   status card, generated-system input, mass-code and date options, skip/FSS
   rules, auto-copy option, expected-count editor, current-boxel actions, and
+  full-area audit description, progress state, audit/cancel controls, and
   disabled inactive states were visually checked and exposed through UI
-  Automation. No Boxel action was invoked against the live commander profile.
+  Automation. No Boxel or audit action was invoked against the live commander
+  profile.
 - Automated Boxel coverage exercises legacy profile round-tripping, local
   discovery files, grouped empty-boxel files, paged Spansh responses,
-  `NavRoute.json` hashing/updates, bootstrap replay suppression, live jump/FSS
-  completion, Galaxy Map auto-copy, tree navigation, and source merging.
+  real generated-name/ID64 pairs, hand-authored system names, `NavRoute.json`
+  hashing/updates, bootstrap replay suppression, live jump/FSS completion,
+  Galaxy Map auto-copy, tree navigation, source merging, full-area completion,
+  partial-result cancellation, and the large-audit confirmation guard.
 - The workflow YAML and `global.json` parsed successfully.
 
 Not validated in this environment:

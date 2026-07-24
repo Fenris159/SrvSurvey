@@ -33,7 +33,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, journeys and routes | Ground-target editor, clipboard/current actions, persistence, and live guidance implemented; journeys/routes remain pending |
-| Search | `Main` Search menu, sphere/boxel forms | Spatial and boxel searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; boxel and nearest-system workflows remain pending |
+| Search | `Main` Search menu, sphere/boxel forms | Spatial and boxel searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest-system workflow remains pending |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Not ported |
 | Colonisation | `Main` Colonise menu and project forms | Raven projects and construction state | Not ported |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
@@ -53,7 +53,7 @@ system/body and platform behavior is ported.
 | --- | --- | --- |
 | `FormAdjustOverlay` | Settings / Overlays | Not ported |
 | `FormBeacons` | Guardian / Beacons | Not ported |
-| `FormBoxelSearch` | Search / Boxel | Not ported |
+| `FormBoxelSearch` | Search / Boxel | Implemented with activation/options, hierarchy, current systems, completion/empty rules, route/journal updates, ID64 decoding, clipboard actions, and cancellable full-area audit; Windows visually checked |
 | `FormBuilder` | Guardian / Map editor | Not ported |
 | `FormCodexBingo` | Exobiology / Codex | Not ported |
 | `FormEditMap` | Guardian / Map editor | Not ported |
@@ -126,7 +126,8 @@ corrupt-settings, and persistence behavior have automated tests.
 
 ## Windows visual evidence
 
-Checked on 2026-07-24 at 1180 by 760 logical pixels with a live journal folder:
+Checked on 2026-07-24 at 1180 by 760 logical pixels, with the later Boxel audit
+check at 1182 by 790, using a live journal folder:
 
 - Overview rendered real commander, game, mode, system, body, and session state.
 - The updated Overview rendered live Exploration and Exobiology summary cards.
@@ -138,11 +139,13 @@ Checked on 2026-07-24 at 1180 by 760 logical pixels with a live journal folder:
   coordinate fields and Set, current-location, Paste, and Clear actions with
   correct disabled state.
 - Search rendered the spherical limit, live current-system coordinates,
-  configuration editor, and explicit boxel/nearby pending cards. A live Spansh
-  lookup for Sol returned five matches, selected the exact system, calculated
-  131.09 ly from Facece, and enabled the save action without changing the live
-  commander profile. UI Automation exposed lookup, match selection, radius,
-  enable, and disable controls.
+  configuration editor, Boxel status/options/hierarchy, current-boxel actions,
+  full-area audit controls, and an explicit nearby-systems pending card. A live
+  Spansh lookup for Sol returned five matches, selected the exact system,
+  calculated 131.09 ly from Facece, and enabled the save action without changing
+  the live commander profile. UI Automation exposed the spherical and Boxel
+  controls, including the inactive audit/cancel states; no Boxel action or audit
+  was invoked.
 - Diagnostics rendered the selected journal folder, parsed state, candidate
   paths, refresh action, and update time.
 - Settings rendered all five palette previews. Switching from Blue (dark) to
