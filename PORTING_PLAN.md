@@ -222,14 +222,14 @@ not expected to run as a headless container service.
 
 | Feature | Core | Desktop UI | Windows runtime | Linux runtime |
 | --- | --- | --- | --- | --- |
-| Application shell | Not applicable | Modern navigation plus Overview, Exploration, Exobiology, Diagnostics, Settings, and explicit pending states | Blue dark/light shell plus current Overview and Exobiology visual/accessibility smoke passed; Exploration page needs current visual recheck | Not tested |
+| Application shell | Not applicable | Modern navigation plus Overview, Exploration, Exobiology, Travel, Diagnostics, Settings, and explicit pending states | Blue dark/light shell plus current Overview, Exobiology, and Travel visual/accessibility smoke passed; Exploration page needs current visual recheck | Not tested |
 | Journal folder discovery | Implemented; 3 tests | Paths and errors shown | Missing and default paths smoke-tested | Not tested |
 | Journal ingestion/state | Retrying status reader plus polling journal append/partial-line/rotation monitor; shared bootstrap/live reducer | Overview and Diagnostics projections update live | Earlier bootstrap state inspected; current live monitor not exercised with Elite | Not tested |
 | Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
 | Settings/data migration | OS paths, legacy discovery, manifests, verified backup/staging/import, and lossless commander profile updates implemented | Explicit backup-and-import workflow in Settings | Automated only; real profile restart comparison not run | Not tested |
 | Exploration totals | Legacy valuation and six counters plus compatible, atomic profile persistence implemented | Live Overview/Exploration projections and two-step reset | Automated only | Not tested |
 | Organic scans | Codex reference, three-sample state, surface separation, first-footfall reward, sale, death, reset, and compatible profile fields implemented; system/body organism history remains | Live Overview/Exobiology projections and two-step unclaimed reset; predictions/Codex remain pending | Empty/live-profile page visually and accessibility checked; active Elite sampling not run | Not tested |
-| Ground target tracking | Not implemented | Not implemented | Not tested | Not tested |
+| Ground target tracking | Legacy coordinate parsing plus cardinal formats, validated settings, great-circle distance/bearing, relative heading, and approach bands implemented | Travel target editor supports typed, current, clipboard, clear, and live guidance; overlay remains pending | Inactive/live-profile page visually and accessibility checked; active surface guidance not run | Not tested |
 | Guardian surveys | Not implemented | Not implemented | Not tested | Not tested |
 | Overlays/input | Not implemented | Not implemented | Not tested | Not tested |
 | Secondary features | Not implemented | Not implemented | Not tested | Not tested |
@@ -245,7 +245,7 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release` passed all
-  60 tests: 45 Core tests and 15 Desktop tests.
+  75 tests: 58 Core tests and 17 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
@@ -264,6 +264,10 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   by 760, and UI Automation exposed the navigation, Refresh, and Clear
   unclaimed actions. No active genetic-sampler event occurred during this smoke
   test.
+- The Travel surface-navigation page was rendered in the current Windows build.
+  Its editor and inactive guidance layout were visually checked, and UI
+  Automation exposed both coordinate fields and all four target actions with
+  the expected enabled/disabled state. No active surface target was changed.
 - The workflow YAML and `global.json` parsed successfully.
 
 Not validated in this environment:

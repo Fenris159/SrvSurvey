@@ -1,0 +1,140 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.TravelView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="32" Spacing="24" MaxWidth="1050">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="eyebrow" Text="TRAVEL" />
+          <TextBlock Classes="page-title" Text="Surface navigation" />
+          <TextBlock Classes="muted"
+                     Text="Set planetary coordinates and follow live distance, bearing, and approach guidance." />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="primary"
+                MinWidth="116"
+                VerticalAlignment="Center"
+                Command="{Binding RefreshCommand}"
+                Content="{Binding RefreshButtonText}" />
+      </Grid>
+
+      <Border Classes="card raised" Padding="0">
+        <Grid ColumnDefinitions="6,*">
+          <Border Classes="accent-line" CornerRadius="12,0,0,12" />
+          <Grid Grid.Column="1"
+                Margin="28"
+                ColumnDefinitions="2*,*,*"
+                ColumnSpacing="24">
+            <StackPanel Spacing="5">
+              <TextBlock Classes="muted" Text="DISTANCE TO TARGET" />
+              <TextBlock FontSize="38"
+                         FontWeight="SemiBold"
+                         Foreground="{DynamicResource RavenAccentBrush}"
+                         Text="{Binding GroundTarget.DistanceToTarget}" />
+              <TextBlock Classes="muted"
+                         Text="{Binding GroundTarget.ApproachStatus}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="5">
+              <TextBlock Classes="muted" Text="BEARING" />
+              <TextBlock Classes="metric"
+                         Text="{Binding GroundTarget.TargetBearing}" />
+              <TextBlock Classes="muted"
+                         Text="{Binding GroundTarget.RelativeHeading}" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="5">
+              <TextBlock Classes="muted" Text="APPROACH" />
+              <TextBlock Classes="metric"
+                         Text="{Binding GroundTarget.ApproachAngle}" />
+              <Border Classes="badge" HorizontalAlignment="Left">
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontSize="11"
+                           Text="{Binding GroundTarget.TargetStatusLabel}" />
+              </Border>
+            </StackPanel>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="3*,2*" ColumnSpacing="18">
+        <Border Classes="card">
+          <StackPanel Spacing="16">
+            <TextBlock Classes="card-title" Text="Ground target" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="muted" Text="LATITUDE" />
+                <TextBox Text="{Binding GroundTarget.TargetLatitude, Mode=TwoWay}"
+                         PlaceholderText="-90 to 90" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="6">
+                <TextBlock Classes="muted" Text="LONGITUDE" />
+                <TextBox Text="{Binding GroundTarget.TargetLongitude, Mode=TwoWay}"
+                         PlaceholderText="-180 to 180" />
+              </StackPanel>
+            </Grid>
+            <WrapPanel Orientation="Horizontal">
+              <Button Classes="primary"
+                      Margin="0,0,10,10"
+                      Command="{Binding GroundTarget.SetTargetCommand}"
+                      Content="Set target" />
+              <Button Classes="secondary"
+                      Margin="0,0,10,10"
+                      Command="{Binding GroundTarget.UseCurrentLocationCommand}"
+                      Content="Use current location" />
+              <Button Classes="secondary"
+                      Margin="0,0,10,10"
+                      Click="PasteTarget_Click"
+                      Content="Paste" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,10"
+                      Command="{Binding GroundTarget.ClearTargetCommand}"
+                      Content="Clear target" />
+            </WrapPanel>
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding GroundTarget.StatusMessage}" />
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel Spacing="16">
+            <TextBlock Classes="card-title" Text="Live position" />
+            <StackPanel Spacing="5">
+              <TextBlock Classes="muted" Text="CURRENT COORDINATES" />
+              <TextBlock FontWeight="SemiBold"
+                         TextWrapping="Wrap"
+                         Text="{Binding GroundTarget.CurrentCoordinates}" />
+            </StackPanel>
+            <StackPanel Spacing="5">
+              <TextBlock Classes="muted" Text="BODY" />
+              <TextBlock FontWeight="SemiBold"
+                         TextWrapping="Wrap"
+                         Text="{Binding BodyName}" />
+            </StackPanel>
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Paste accepts decimal pairs separated by spaces, commas, pipes, backticks, or slashes, plus N/S/E/W coordinates." />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Border Classes="card">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+          <StackPanel Spacing="5">
+            <TextBlock Classes="card-title" Text="Journeys and routes" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Journey history, route viewing, system notes, and their secondary windows remain in the next Travel slices." />
+          </StackPanel>
+          <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+            <TextBlock Classes="muted" FontSize="11" Text="PENDING" />
+          </Border>
+        </Grid>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

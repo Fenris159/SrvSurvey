@@ -32,7 +32,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
-| Travel | `Main` Travel menu, journey/route forms | Ground target, journeys and routes | Not ported |
+| Travel | `Main` Travel menu, journey/route forms | Ground target, journeys and routes | Ground-target editor, clipboard/current actions, persistence, and live guidance implemented; journeys/routes remain pending |
 | Search | `Main` Search menu, sphere/boxel forms | Spatial and boxel searches | Not ported |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Not ported |
 | Colonisation | `Main` Colonise menu and project forms | Raven projects and construction state | Not ported |
@@ -58,7 +58,7 @@ system/body and platform behavior is ported.
 | `FormCodexBingo` | Exobiology / Codex | Not ported |
 | `FormEditMap` | Guardian / Map editor | Not ported |
 | `FormErrorSubmit` | Diagnostics / Report issue | Not ported |
-| `FormGroundTarget` | Travel / Ground target | Not ported |
+| `FormGroundTarget` | Travel / Ground target | Implemented in Travel with typed, current, clipboard, clear, and guidance actions; Windows visually checked |
 | `FormJourneyBegin` | Travel / Journeys | Not ported |
 | `FormJourneyEdit` | Travel / Journeys | Not ported |
 | `FormJourneyList` | Travel / Journeys | Not ported |
@@ -133,6 +133,10 @@ Checked on 2026-07-24 at 1180 by 760 logical pixels with a live journal folder:
 - Exobiology rendered the unclaimed-value, current-body, active sampler,
   three-stage progress, profile status, and compatibility cards; UI Automation
   exposed Refresh and Clear unclaimed.
+- Travel rendered the surface-navigation metrics, coordinate editor, live
+  position, and explicit pending journey/route card. UI Automation exposed both
+  coordinate fields and Set, current-location, Paste, and Clear actions with
+  correct disabled state.
 - Diagnostics rendered the selected journal folder, parsed state, candidate
   paths, refresh action, and update time.
 - Settings rendered all five palette previews. Switching from Blue (dark) to

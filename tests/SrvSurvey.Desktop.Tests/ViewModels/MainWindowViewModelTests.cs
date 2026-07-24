@@ -15,13 +15,19 @@ public sealed class MainWindowViewModelTests
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
         Assert.Equal(9, viewModel.NavigationItems.Count);
-        Assert.Equal(5, viewModel.NavigationItems.Count(item => item.IsImplemented));
+        Assert.Equal(6, viewModel.NavigationItems.Count(item => item.IsImplemented));
         Assert.True(viewModel.IsOverviewSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "exobiology");
 
         Assert.True(viewModel.IsExobiologySelected);
+        Assert.False(viewModel.IsPendingSelected);
+
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
+            item => item.Key == "travel");
+
+        Assert.True(viewModel.IsTravelSelected);
         Assert.False(viewModel.IsPendingSelected);
     }
 

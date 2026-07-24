@@ -1,0 +1,287 @@
+using System.ComponentModel;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
+using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Storage;
+
+namespace SrvSurvey.Desktop.ViewModels;
+
+public sealed class GroundTargetViewModel : INotifyPropertyChanged
+{
+    private const string Unavailable = "—";
+
+    private readonly GroundTargetSettingsStore settingsStore;
+    private readonly GroundTargetState state;
+    private readonly AsyncCommand useCurrentLocationCommand;
+    private string targetLatitude = "0";
+    private string targetLongitude = "0";
+    private string statusMessage;
+    private string currentCoordinates = Unavailable;
+    private string distanceToTarget = Unavailable;
+    private string targetBearing = Unavailable;
+    private string relativeHeading = Unavailable;
+    private string approachAngle = Unavailable;
+    private string approachStatus = "Waiting for surface status";
+
+    public GroundTargetViewModel(GroundTargetSettingsStore settingsStore)
+    {
+        this.settingsStore = settingsStore
+            ?? throw new ArgumentNullException(nameof(settingsStore));
+        var loadResult = settingsStore.Load();
+        state = new GroundTargetState(
+            loadResult.Snapshot ?? GroundTargetSnapshot.Empty);
+        if (loadResult.Snapshot is not null)
+        {
+            UpdateTargetInputs(loadResult.Snapshot.Target);
+        }
+
+        statusMessage = loadResult.Error
+            ?? (loadResult.Exists
+                ? $"Loaded the legacy ground target from "
+                    + System.IO.Path.GetFileName(loadResult.Path)
+                    + "."
+                : "No saved ground target is active.");
+        SetTargetCommand = new AsyncCommand(SetTargetAsync, () => true);
+        ClearTargetCommand = new AsyncCommand(ClearTargetAsync, () => state.IsActive);
+        useCurrentLocationCommand = new AsyncCommand(
+            UseCurrentLocationAsync,
+            () => state.CurrentLocation is not null);
+        UseCurrentLocationCommand = useCurrentLocationCommand;
+        UpdateDisplay();
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string TargetLatitude
+    {
+        get => targetLatitude;
+        set => SetField(ref targetLatitude, value);
+    }
+
+    public string TargetLongitude
+    {
+        get => targetLongitude;
+        set => SetField(ref targetLongitude, value);
+    }
+
+    public string StatusMessage
+    {
+        get => statusMessage;
+        private set => SetField(ref statusMessage, value);
+    }
+
+    public string CurrentCoordinates
+    {
+        get => currentCoordinates;
+        private set => SetField(ref currentCoordinates, value);
+    }
+
+    public string DistanceToTarget
+    {
+        get => distanceToTarget;
+        private set => SetField(ref distanceToTarget, value);
+    }
+
+    public string TargetBearing
+    {
+        get => targetBearing;
+        private set => SetField(ref targetBearing, value);
+    }
+
+    public string RelativeHeading
+    {
+        get => relativeHeading;
+        private set => SetField(ref relativeHeading, value);
+    }
+
+    public string ApproachAngle
+    {
+        get => approachAngle;
+        private set => SetField(ref approachAngle, value);
+    }
+
+    public string ApproachStatus
+    {
+        get => approachStatus;
+        private set => SetField(ref approachStatus, value);
+    }
+
+    public bool IsTargetActive => state.IsActive;
+
+    public string TargetStatusLabel => state.IsActive ? "ACTIVE" : "INACTIVE";
+
+    public ICommand SetTargetCommand { get; }
+
+    public ICommand ClearTargetCommand { get; }
+
+    public ICommand UseCurrentLocationCommand { get; }
+
+    public void UpdateStatus(EliteStatus status)
+    {
+        state.UpdateStatus(status);
+        useCurrentLocationCommand.RaiseCanExecuteChanged();
+        UpdateDisplay();
+    }
+
+    public async Task SetTargetAsync()
+    {
+        if (!state.TrySetTarget(
+                TargetLatitude,
+                TargetLongitude,
+                out var error))
+        {
+            StatusMessage = error ?? "The ground target is invalid.";
+            return;
+        }
+
+        UpdateTargetInputs(state.Target);
+        await SaveAsync("Ground target saved.");
+    }
+
+    public async Task ApplyPastedTextAsync(string? text)
+    {
+        if (!state.TrySetTarget(text ?? string.Empty, out var error))
+        {
+            StatusMessage = error ?? "The clipboard does not contain coordinates.";
+            return;
+        }
+
+        UpdateTargetInputs(state.Target);
+        await SaveAsync("Pasted coordinates saved as the active target.");
+    }
+
+    public async Task UseCurrentLocationAsync()
+    {
+        if (!state.TryUseCurrentLocation(out var error))
+        {
+            StatusMessage = error ?? "Current coordinates are unavailable.";
+            return;
+        }
+
+        UpdateTargetInputs(state.Target);
+        await SaveAsync("The current surface location is now the active target.");
+    }
+
+    public async Task ClearTargetAsync()
+    {
+        state.Clear();
+        UpdateTargetInputs(state.Target);
+        await SaveAsync("Ground target cleared.");
+    }
+
+    private async Task SaveAsync(string successMessage)
+    {
+        UpdateDisplay();
+        try
+        {
+            await settingsStore.SaveAsync(state.CreateSnapshot());
+            StatusMessage = successMessage;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException)
+        {
+            StatusMessage = "The target changed for this session but could not be saved: "
+                + exception.Message;
+        }
+    }
+
+    private void UpdateTargetInputs(SurfaceCoordinate target)
+    {
+        TargetLatitude = target.Latitude.ToString("G", CultureInfo.CurrentCulture);
+        TargetLongitude = target.Longitude.ToString("G", CultureInfo.CurrentCulture);
+    }
+
+    private void UpdateDisplay()
+    {
+        CurrentCoordinates = state.CurrentLocation is SurfaceCoordinate current
+            ? $"{current.Latitude:F6}, {current.Longitude:F6}"
+            : Unavailable;
+        OnPropertyChanged(nameof(IsTargetActive));
+        OnPropertyChanged(nameof(TargetStatusLabel));
+        ((AsyncCommand)ClearTargetCommand).RaiseCanExecuteChanged();
+
+        var solution = state.Solution;
+        if (solution is null)
+        {
+            DistanceToTarget = Unavailable;
+            TargetBearing = Unavailable;
+            RelativeHeading = Unavailable;
+            ApproachAngle = Unavailable;
+            ApproachStatus = state.IsActive
+                ? "Move to a body surface to begin guidance"
+                : "Set a target to begin guidance";
+            return;
+        }
+
+        DistanceToTarget = FormatDistance(solution.Distance);
+        TargetBearing = $"{solution.Bearing:N0}°";
+        RelativeHeading = $"{solution.RelativeBearing:N0}° relative";
+        ApproachAngle = $"{solution.AttackAngle:N0}°";
+        ApproachStatus = solution.Approach switch
+        {
+            GroundTargetApproach.Level => "Level with target",
+            GroundTargetApproach.Shallow => "Shallow approach",
+            GroundTargetApproach.Ideal => "Ideal approach",
+            GroundTargetApproach.Steep => "Steep approach",
+            GroundTargetApproach.TooSteep => "Too steep",
+            _ => solution.Approach.ToString(),
+        };
+    }
+
+    private static string FormatDistance(double distance)
+    {
+        return distance >= 1_000
+            ? $"{distance / 1_000:N2} km"
+            : $"{distance:N0} m";
+    }
+
+    private bool SetField<T>(
+        ref T field,
+        T value,
+        [CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+
+        field = value;
+        OnPropertyChanged(propertyName);
+        return true;
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private sealed class AsyncCommand(
+        Func<Task> execute,
+        Func<bool> canExecute) : ICommand
+    {
+        public event EventHandler? CanExecuteChanged;
+
+        public bool CanExecute(object? parameter)
+        {
+            return canExecute();
+        }
+
+        public async void Execute(object? parameter)
+        {
+            if (CanExecute(parameter))
+            {
+                await execute();
+            }
+        }
+
+        public void RaiseCanExecuteChanged()
+        {
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+}

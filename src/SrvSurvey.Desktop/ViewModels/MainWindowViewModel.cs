@@ -75,6 +75,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
         commanderProfileStore = new CommanderProfileStore(AppDataPaths.DataDirectory);
+        GroundTarget = new GroundTargetViewModel(
+            new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
         exobiologyState = new ExobiologyState(
             exobiologyCatalog ?? ExobiologyReferenceCatalog.LoadEmbedded());
         ProfileBackupDirectory = Path.Combine(
@@ -128,7 +130,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             new("overview", "Overview", "01", "Commander and current journal state", true),
             new("exploration", "Exploration", "02", "Trip totals and body scans", true),
             new("exobiology", "Exobiology", "03", "Organic scans and unclaimed rewards", true),
-            new("travel", "Travel", "04", "Targets, journeys, and routes", false),
+            new("travel", "Travel", "04", "Ground targets, journeys, and routes", true),
             new("search", "Search", "05", "Spherical and boxel searches", false),
             new("guardian", "Guardian", "06", "Sites, maps, and Ram Tah", false),
             new("colonisation", "Colonisation", "07", "Raven Colonial projects", false),
@@ -153,6 +155,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; }
 
     public AppDataPaths AppDataPaths { get; }
+
+    public GroundTargetViewModel GroundTarget { get; }
 
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
 
@@ -216,6 +220,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsOverviewSelected));
             OnPropertyChanged(nameof(IsExplorationSelected));
             OnPropertyChanged(nameof(IsExobiologySelected));
+            OnPropertyChanged(nameof(IsTravelSelected));
             OnPropertyChanged(nameof(IsDiagnosticsSelected));
             OnPropertyChanged(nameof(IsSettingsSelected));
             OnPropertyChanged(nameof(IsPendingSelected));
@@ -230,6 +235,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsExplorationSelected => SelectedNavigation.Key == "exploration";
 
     public bool IsExobiologySelected => SelectedNavigation.Key == "exobiology";
+
+    public bool IsTravelSelected => SelectedNavigation.Key == "travel";
 
     public bool IsDiagnosticsSelected => SelectedNavigation.Key == "diagnostics";
 
@@ -648,6 +655,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         if (update.Status is not null)
         {
             exobiologyState.UpdateStatus(update.Status);
+            GroundTarget.UpdateStatus(update.Status);
         }
 
         foreach (var journalEvent in update.JournalEvents)
