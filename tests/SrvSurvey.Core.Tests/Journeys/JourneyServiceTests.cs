@@ -133,6 +133,11 @@ public sealed class JourneyServiceTests : IDisposable
 
         Assert.True(await service.IncrementNoteCountAsync(42));
         Assert.False(await service.IncrementNoteCountAsync(999));
+        await service.ApplyLiveAsync(
+        [
+            Parse("""{"timestamp":"2026-07-01T00:06:00Z","event":"FSDJump","StarSystem":"Achenar","SystemAddress":43,"StarPos":[1,2,3]}"""),
+        ]);
+        Assert.False(await service.IncrementNoteCountAsync(42));
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => service.BeginAsync(request));
 

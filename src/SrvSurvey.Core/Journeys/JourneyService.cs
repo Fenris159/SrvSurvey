@@ -281,15 +281,15 @@ public sealed class JourneyService
                 return false;
             }
 
-            var visits = activeProcessor.Journey.VisitedSystems.ToArray();
-            var index = Array.FindLastIndex(
-                visits,
-                visit => visit.StarSystem.SystemAddress == systemAddress);
-            if (index < 0)
+            var current = activeProcessor.Journey.CurrentSystem;
+            if (current is null
+                || current.StarSystem.SystemAddress != systemAddress)
             {
                 return false;
             }
 
+            var visits = activeProcessor.Journey.VisitedSystems.ToArray();
+            var index = Array.LastIndexOf(visits, current);
             var visit = visits[index];
             visits[index] = visit with
             {
