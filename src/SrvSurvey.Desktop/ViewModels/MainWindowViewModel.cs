@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
@@ -89,6 +90,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         GroundTarget = new GroundTargetViewModel(
             new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
         Guardian = new GuardianViewModel(AppDataPaths.DataDirectory);
+        RamTah = new RamTahViewModel(commanderProfileStore);
         exobiologyState = new ExobiologyState(
             exobiologyCatalog ?? ExobiologyReferenceCatalog.LoadEmbedded());
         ProfileBackupDirectory = Path.Combine(
@@ -175,6 +177,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public BoxelSearchViewModel BoxelSearch { get; }
 
     public GuardianViewModel Guardian { get; }
+
+    public RamTahViewModel RamTah { get; }
 
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
 
@@ -712,6 +716,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             await BoxelSearch.ApplyJournalEventsAsync(update.JournalEvents);
         }
 
+        await RamTah.ApplyJournalEventsAsync(update.JournalEvents);
+
         if (update.Status is not null)
         {
             await BoxelSearch.UpdateStatusAsync(update.Status);
@@ -822,6 +828,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                 result.Error ?? "The commander profile could not be loaded.");
             Guardian.SetProfileError(
                 result.Error ?? "The commander profile could not be loaded.");
+            RamTah.SetProfileError(
+                result.Error ?? "The commander profile could not be loaded.");
             return false;
         }
 
@@ -840,6 +848,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         await Guardian.LoadProfileAsync(
             result.Data.FrontierId,
             result.Data.IsOdyssey);
+        RamTah.LoadProfile(
+            result.Data.FrontierId,
+            activeProfileCommanderName,
+            result.Data.IsOdyssey,
+            result.Data.RamTah);
         UpdateExplorationDisplay(result.Data.Exploration);
         UpdateExobiologyDisplay(result.Data.Exobiology);
         ExplorationStatusMessage = result.Exists

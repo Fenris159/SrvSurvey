@@ -79,4 +79,44 @@ public sealed partial class GuardianView : UserControl
             await viewModel.Guardian.CopySurfaceLocationAsync();
         }
     }
+
+    private async void OpenRuinsGuide_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        await OpenGuideAsync(
+            "https://canonn.science/codex/ram-tahs-mission/",
+            "mission 1");
+    }
+
+    private async void OpenLogsGuide_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        await OpenGuideAsync(
+            "https://canonn.science/codex/ram-tah-decrypting-the-guardian-logs/",
+            "mission 2");
+    }
+
+    private async Task OpenGuideAsync(string address, string label)
+    {
+        try
+        {
+            var launcher = TopLevel.GetTopLevel(this)?.Launcher
+                ?? throw new InvalidOperationException(
+                    "The desktop link launcher is not available.");
+            await launcher.LaunchUriAsync(new Uri(address));
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or UriFormatException
+                or NotSupportedException)
+        {
+            if (DataContext is MainWindowViewModel viewModel)
+            {
+                viewModel.RamTah.ReportGuideLaunchFailure(
+                    $"The {label} guide could not be opened: {exception.Message}");
+            }
+        }
+    }
 }

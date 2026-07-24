@@ -11,9 +11,9 @@
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
         <StackPanel Spacing="5">
           <TextBlock Classes="eyebrow" Text="GUARDIAN" />
-          <TextBlock Classes="page-title" Text="Sites and surveys" />
+          <TextBlock Classes="page-title" Text="Guardian operations" />
           <TextBlock Classes="muted"
-                     Text="Browse Guardian beacons, ruins, and structures with commander visit and survey state." />
+                     Text="Explore sites, review surveys, and track both Ram Tah research missions." />
         </StackPanel>
         <Button Grid.Column="1"
                 Classes="primary"
@@ -23,6 +23,9 @@
                 Content="{Binding Guardian.RefreshButtonText}" />
       </Grid>
 
+      <TabControl>
+        <TabItem Header="Sites &amp; surveys">
+          <StackPanel Margin="0,16,0,0" Spacing="20">
       <Border Classes="card raised">
         <Grid ColumnDefinitions="2*,*,*,*" ColumnSpacing="12">
           <StackPanel Spacing="6">
@@ -204,6 +207,206 @@
                      Text="{Binding Guardian.StatusMessage}" />
         </StackPanel>
       </Border>
+          </StackPanel>
+        </TabItem>
+
+        <TabItem Header="Ram Tah missions">
+          <StackPanel Margin="0,16,0,0" Spacing="20">
+            <Border Classes="card raised">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+                <StackPanel Spacing="5">
+                  <TextBlock Classes="card-title" Text="Research mission tracker" />
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="Mission states follow the live journal. Checklists use the same commander profile fields as the WinForms application." />
+                </StackPanel>
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Spacing="8">
+                  <Button Classes="secondary"
+                          Click="OpenRuinsGuide_Click"
+                          Content="Mission 1 guide" />
+                  <Button Classes="secondary"
+                          Click="OpenLogsGuide_Click"
+                          Content="Mission 2 guide" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Classes="card">
+              <StackPanel Spacing="18">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                  <StackPanel Spacing="4">
+                    <TextBlock Classes="eyebrow" Text="MISSION 1" />
+                    <TextBlock Classes="card-title"
+                               Text="Decoding the Ancient Ruins" />
+                    <TextBlock Classes="muted"
+                               Text="Biology, culture, history, language, and technology records" />
+                  </StackPanel>
+                  <Border Grid.Column="1"
+                          Classes="badge"
+                          VerticalAlignment="Center">
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                               FontWeight="SemiBold"
+                               Text="{Binding RamTah.AncientRuinsMissionStatus}" />
+                  </Border>
+                </Grid>
+                <StackPanel Spacing="6">
+                  <ProgressBar Height="7"
+                               Minimum="0"
+                               Maximum="100"
+                               Value="{Binding RamTah.AncientRuinsProgress}" />
+                  <TextBlock Classes="muted"
+                             Text="{Binding RamTah.AncientRuinsProgressText}" />
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding RamTah.AncientRuinsGroups}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:RamTahLogGroupViewModel">
+                      <StackPanel Margin="0,0,0,15" Spacing="7">
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                        <ItemsControl ItemsSource="{Binding Logs}">
+                          <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                              <WrapPanel />
+                            </ItemsPanelTemplate>
+                          </ItemsControl.ItemsPanel>
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:RamTahLogViewModel">
+                              <CheckBox MinWidth="64"
+                                        Margin="0,0,8,8"
+                                        IsChecked="{Binding IsCompleted, Mode=OneWay}"
+                                        Command="{Binding ToggleCommand}"
+                                        Content="{Binding Code}" />
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Classes="secondary"
+                        HorizontalAlignment="Left"
+                        Command="{Binding RamTah.RequestAncientRuinsResetCommand}"
+                        Content="Clear mission 1 progress" />
+                <Border Classes="card raised"
+                        IsVisible="{Binding RamTah.IsAncientRuinsResetPending}">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                    <StackPanel Spacing="3">
+                      <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                 FontWeight="SemiBold"
+                                 Text="Clear Decoding the Ancient Ruins progress?" />
+                      <TextBlock Classes="muted"
+                                 Text="This removes the 101-log checklist state but does not change the journal mission status." />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Spacing="8">
+                      <Button Classes="secondary"
+                              Command="{Binding RamTah.CancelAncientRuinsResetCommand}"
+                              Content="Keep progress" />
+                      <Button Classes="primary"
+                              Command="{Binding RamTah.ConfirmAncientRuinsResetCommand}"
+                              Content="Confirm clear" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+              <StackPanel Spacing="18">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                  <StackPanel Spacing="4">
+                    <TextBlock Classes="eyebrow" Text="MISSION 2" />
+                    <TextBlock Classes="card-title"
+                               Text="Decrypting the Guardian Logs" />
+                    <TextBlock Classes="muted"
+                               Text="Thargoids, civil war, technology, language, and Body Protectorate records" />
+                  </StackPanel>
+                  <Border Grid.Column="1"
+                          Classes="badge"
+                          VerticalAlignment="Center">
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                               FontWeight="SemiBold"
+                               Text="{Binding RamTah.GuardianLogsMissionStatus}" />
+                  </Border>
+                </Grid>
+                <StackPanel Spacing="6">
+                  <ProgressBar Height="7"
+                               Minimum="0"
+                               Maximum="100"
+                               Value="{Binding RamTah.GuardianLogsProgress}" />
+                  <TextBlock Classes="muted"
+                             Text="{Binding RamTah.GuardianLogsProgressText}" />
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding RamTah.GuardianLogsGroups}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:RamTahLogGroupViewModel">
+                      <StackPanel Margin="0,0,0,15" Spacing="7">
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                        <ItemsControl ItemsSource="{Binding Logs}">
+                          <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                              <WrapPanel />
+                            </ItemsPanelTemplate>
+                          </ItemsControl.ItemsPanel>
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:RamTahLogViewModel">
+                              <CheckBox MinWidth="64"
+                                        Margin="0,0,8,8"
+                                        IsChecked="{Binding IsCompleted, Mode=OneWay}"
+                                        Command="{Binding ToggleCommand}"
+                                        Content="{Binding Code}" />
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Classes="secondary"
+                        HorizontalAlignment="Left"
+                        Command="{Binding RamTah.RequestGuardianLogsResetCommand}"
+                        Content="Clear mission 2 progress" />
+                <Border Classes="card raised"
+                        IsVisible="{Binding RamTah.IsGuardianLogsResetPending}">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                    <StackPanel Spacing="3">
+                      <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                 FontWeight="SemiBold"
+                                 Text="Clear Decrypting the Guardian Logs progress?" />
+                      <TextBlock Classes="muted"
+                                 Text="This removes the 28-log checklist state but does not change the journal mission status." />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Spacing="8">
+                      <Button Classes="secondary"
+                              Command="{Binding RamTah.CancelGuardianLogsResetCommand}"
+                              Content="Keep progress" />
+                      <Button Classes="primary"
+                              Command="{Binding RamTah.ConfirmGuardianLogsResetCommand}"
+                              Content="Confirm clear" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+              <StackPanel Spacing="5">
+                <TextBlock Classes="card-title" Text="Ram Tah status" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="{Binding RamTah.StatusMessage}" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </TabItem>
+      </TabControl>
     </StackPanel>
   </ScrollViewer>
 </UserControl>
