@@ -1,0 +1,147 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.ExobiologyView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="32" Spacing="24" MaxWidth="1050">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="eyebrow" Text="EXOBIOLOGY" />
+          <TextBlock Classes="page-title" Text="Organic sampling" />
+          <TextBlock Classes="muted"
+                     Text="Live sample progress and legacy-compatible unclaimed Vista Genomics rewards." />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="primary"
+                MinWidth="116"
+                VerticalAlignment="Center"
+                Command="{Binding RefreshCommand}"
+                Content="{Binding RefreshButtonText}" />
+      </Grid>
+
+      <Border Classes="card raised" Padding="0">
+        <Grid ColumnDefinitions="6,*">
+          <Border Classes="accent-line" CornerRadius="12,0,0,12" />
+          <Grid Grid.Column="1"
+                Margin="28"
+                ColumnDefinitions="2*,*"
+                ColumnSpacing="28">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="muted" Text="UNCLAIMED VALUE" />
+              <TextBlock FontSize="38"
+                         FontWeight="SemiBold"
+                         Foreground="{DynamicResource RavenAccentBrush}"
+                         Text="{Binding UnclaimedBioRewards}" />
+              <TextBlock Classes="muted"
+                         Text="{Binding UnclaimedBioScans}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="6">
+              <TextBlock Classes="muted" Text="CURRENT BODY" />
+              <TextBlock Classes="card-title"
+                         TextWrapping="Wrap"
+                         Text="{Binding BodyName}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding BioFirstFootfall}" />
+            </StackPanel>
+          </Grid>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="2*,*" ColumnSpacing="18">
+        <Border Classes="card">
+          <StackPanel Spacing="18">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="card-title" Text="Active genetic sampler" />
+              <Border Grid.Column="1" Classes="badge">
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontSize="11"
+                           Text="LIVE" />
+              </Border>
+            </Grid>
+            <StackPanel Spacing="5">
+              <TextBlock FontSize="22"
+                         FontWeight="SemiBold"
+                         TextWrapping="Wrap"
+                         Text="{Binding ActiveOrganicSpecies}" />
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontWeight="SemiBold"
+                         Text="{Binding OrganicScanProgress}" />
+              <TextBlock Classes="muted"
+                         Text="{Binding OrganicSampleRange}" />
+            </StackPanel>
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+              <Border Classes="card" Padding="12">
+                <StackPanel Spacing="3">
+                  <TextBlock HorizontalAlignment="Center"
+                             FontSize="20"
+                             Foreground="{DynamicResource RavenAccentBrush}"
+                             Text="01" />
+                  <TextBlock Classes="muted"
+                             HorizontalAlignment="Center"
+                             FontSize="11"
+                             Text="SAMPLE" />
+                </StackPanel>
+              </Border>
+              <Border Grid.Column="1" Classes="card" Padding="12">
+                <StackPanel Spacing="3">
+                  <TextBlock HorizontalAlignment="Center"
+                             FontSize="20"
+                             Foreground="{DynamicResource RavenAccentBrush}"
+                             Text="02" />
+                  <TextBlock Classes="muted"
+                             HorizontalAlignment="Center"
+                             FontSize="11"
+                             Text="SAMPLE" />
+                </StackPanel>
+              </Border>
+              <Border Grid.Column="2" Classes="card" Padding="12">
+                <StackPanel Spacing="3">
+                  <TextBlock HorizontalAlignment="Center"
+                             FontSize="20"
+                             Foreground="{DynamicResource RavenAccentBrush}"
+                             Text="03" />
+                  <TextBlock Classes="muted"
+                             HorizontalAlignment="Center"
+                             FontSize="11"
+                             Text="ANALYSE" />
+                </StackPanel>
+              </Border>
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel Spacing="16">
+            <TextBlock Classes="card-title" Text="Commander profile" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding ExobiologyStatusMessage}" />
+            <Button Classes="secondary"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding ResetExobiologyCommand}"
+                    Content="{Binding ResetExobiologyButtonText}" />
+            <Button Classes="secondary"
+                    HorizontalAlignment="Stretch"
+                    IsVisible="{Binding IsResetExobiologyPending}"
+                    Command="{Binding CancelResetExobiologyCommand}"
+                    Content="Cancel" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Border Classes="card">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="card-title" Text="Compatibility" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Rewards, first-footfall multipliers, sale removal, death rollback, and active sample fields use the WinForms commander profile contract. Body predictions and Codex browsing are being ported as separate reviewable surfaces." />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -134,7 +134,7 @@ Linux. Launching the desktop shell is manually smoke-tested on both platforms.
   present in the newest file, including the legacy current-planet semantics.
 - [ ] Rebuild bootstrap state across rotated/prior journals when the newest file
   does not contain all session-identifying events.
-- [ ] Watch journal rotation and `Status.json` with cancellation and retry logic.
+- [x] Watch journal rotation and `Status.json` with cancellation and retry logic.
 - [x] Show the state and any path/parse errors in the desktop shell.
 
 Exit gate: shared fixtures and a live journal session produce the expected state
@@ -142,9 +142,11 @@ on Windows and Linux.
 
 ### Phase 2 — Settings, commander data, and resources
 
-- [ ] Inventory every file under the current versioned data folder.
-- [ ] Define OS-appropriate config/data/cache locations.
-- [ ] Implement a backup-first legacy data importer.
+- [x] Inventory every imported file recursively with size and SHA-256 evidence.
+- [x] Define OS-appropriate config/data/cache locations while discovering the
+  desktop and Microsoft Store legacy locations on Windows.
+- [x] Implement a backup-first legacy data importer that verifies the backup and
+  staged destination before activation and never mutates the source.
 - [x] Add the five Raven Colonial shell themes with native light/dark modes and
   an isolated persisted preference.
 - [ ] Port theme, localization, and static JSON/image resource loading.
@@ -220,12 +222,13 @@ not expected to run as a headless container service.
 
 | Feature | Core | Desktop UI | Windows runtime | Linux runtime |
 | --- | --- | --- | --- | --- |
-| Application shell | Not applicable | Modern navigation plus Overview, Diagnostics, Settings, and explicit pending states | Blue dark/light visual and accessibility smoke passed | Not tested |
+| Application shell | Not applicable | Modern navigation plus Overview, Exploration, Exobiology, Diagnostics, Settings, and explicit pending states | Blue dark/light shell plus current Overview and Exobiology visual/accessibility smoke passed; Exploration page needs current visual recheck | Not tested |
 | Journal folder discovery | Implemented; 3 tests | Paths and errors shown | Missing and default paths smoke-tested | Not tested |
-| Journal ingestion/state | Bootstrap reader; 3 tests | Overview and Diagnostics projections | Live bootstrap state inspected | Not tested |
+| Journal ingestion/state | Retrying status reader plus polling journal append/partial-line/rotation monitor; shared bootstrap/live reducer | Overview and Diagnostics projections update live | Earlier bootstrap state inspected; current live monitor not exercised with Elite | Not tested |
 | Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
-| Settings/data migration | Not implemented | Not implemented | Not tested | Not tested |
-| Organic scans | Not implemented | Not implemented | Not tested | Not tested |
+| Settings/data migration | OS paths, legacy discovery, manifests, verified backup/staging/import, and lossless commander profile updates implemented | Explicit backup-and-import workflow in Settings | Automated only; real profile restart comparison not run | Not tested |
+| Exploration totals | Legacy valuation and six counters plus compatible, atomic profile persistence implemented | Live Overview/Exploration projections and two-step reset | Automated only | Not tested |
+| Organic scans | Codex reference, three-sample state, surface separation, first-footfall reward, sale, death, reset, and compatible profile fields implemented; system/body organism history remains | Live Overview/Exobiology projections and two-step unclaimed reset; predictions/Codex remain pending | Empty/live-profile page visually and accessibility checked; active Elite sampling not run | Not tested |
 | Ground target tracking | Not implemented | Not implemented | Not tested | Not tested |
 | Guardian surveys | Not implemented | Not implemented | Not tested | Not tested |
 | Overlays/input | Not implemented | Not implemented | Not tested | Not tested |
@@ -242,7 +245,7 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release` passed all
-  17 tests: 6 core tests and 11 desktop theme/navigation tests.
+  60 tests: 45 Core tests and 15 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
@@ -256,6 +259,11 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   live theme switching, and the exposed accessibility tree were checked. All
   five Raven theme previews rendered; the runtime switch was exercised for the
   two blue variants.
+- The current Windows build was launched against the default live journal
+  folder after the Exobiology slice. Overview and Exobiology rendered at 1180
+  by 760, and UI Automation exposed the navigation, Refresh, and Clear
+  unclaimed actions. No active genetic-sampler event occurred during this smoke
+  test.
 - The workflow YAML and `global.json` parsed successfully.
 
 Not validated in this environment:

@@ -73,6 +73,32 @@ public sealed class ExobiologyStateTests
     }
 
     [Fact]
+    public void StatusComputesDistanceRemainingFromNearestActiveSample()
+    {
+        var state = CreateState();
+        state.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong,
+            Latitude = 0,
+            Longitude = 0,
+            PlanetRadius = 1_000,
+        });
+        state.Apply(Event(Organic("Log")));
+
+        state.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong,
+            Latitude = 0,
+            Longitude = 1,
+            PlanetRadius = 1_000,
+        });
+
+        Assert.Equal(17.453, state.NearestActiveSampleDistance!.Value, 3);
+        Assert.Equal(150, state.RequiredSampleDistance);
+        Assert.Equal(132.547, state.RemainingSampleDistance!.Value, 3);
+    }
+
+    [Fact]
     public void SaleRemovesOnlyMatchingUnclaimedSpeciesAndRecalculates()
     {
         var radicoida = new ExobiologyReference(

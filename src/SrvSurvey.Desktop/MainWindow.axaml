@@ -90,6 +90,7 @@
     <Grid Grid.Column="1">
       <views:OverviewView IsVisible="{Binding IsOverviewSelected}" />
       <views:ExplorationView IsVisible="{Binding IsExplorationSelected}" />
+      <views:ExobiologyView IsVisible="{Binding IsExobiologySelected}" />
       <views:DiagnosticsView IsVisible="{Binding IsDiagnosticsSelected}" />
       <views:SettingsView IsVisible="{Binding IsSettingsSelected}" />
       <views:PendingView IsVisible="{Binding IsPendingSelected}" />

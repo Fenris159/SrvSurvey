@@ -12,10 +12,11 @@ public sealed class ExobiologyState
     private readonly ExobiologyReferenceCatalog catalog;
     private readonly Dictionary<BodyKey, BodyState> bodies = [];
     private readonly HashSet<string> scannedBioEntryIds = new(StringComparer.Ordinal);
-    private long currentSystemAddress;
     private long currentSystemPopulation;
     private string? currentBodyName;
     private SurfaceLocation currentLocation = new(0, 0);
+    private BodyKey? currentBodyKey;
+    private double currentPlanetRadius;
 
     public ExobiologyState(
         ExobiologyReferenceCatalog catalog,
@@ -39,6 +40,22 @@ public sealed class ExobiologyState
 
     public int UnclaimedScanCount => scannedBioEntryIds.Count;
 
+    public bool? CurrentBodyFirstFootfall => currentBodyKey is not null
+        && bodies.TryGetValue(currentBodyKey.Value, out var body)
+            ? body.FirstFootfall
+            : null;
+
+    public string? ActiveSpeciesDisplayName { get; private set; }
+
+    public double? NearestActiveSampleDistance { get; private set; }
+
+    public double? RequiredSampleDistance => (ScanTwo ?? ScanOne)?.Radius;
+
+    public double? RemainingSampleDistance => RequiredSampleDistance is not null
+        && NearestActiveSampleDistance is not null
+            ? Math.Max(0, RequiredSampleDistance.Value - NearestActiveSampleDistance.Value)
+            : null;
+
     public void UpdateStatus(EliteStatus status)
     {
         ArgumentNullException.ThrowIfNull(status);
@@ -48,6 +65,8 @@ public sealed class ExobiologyState
         }
 
         currentBodyName = status.BodyName ?? currentBodyName;
+        currentPlanetRadius = (double)status.PlanetRadius;
+        UpdateSampleDistance();
     }
 
     public bool Apply(JournalEventEnvelope journalEvent)
@@ -59,16 +78,12 @@ public sealed class ExobiologyState
             case "Location":
             case "FSDJump":
             case "CarrierJump":
-                currentSystemAddress = GetInt64(root, "SystemAddress")
-                    ?? currentSystemAddress;
                 currentSystemPopulation = GetInt64(root, "Population")
                     ?? currentSystemPopulation;
                 currentBodyName = GetString(root, "Body") ?? currentBodyName;
                 return true;
 
             case "ApproachBody":
-                currentSystemAddress = GetInt64(root, "SystemAddress")
-                    ?? currentSystemAddress;
                 currentBodyName = GetString(root, "Body") ?? currentBodyName;
                 return true;
 
@@ -115,6 +130,9 @@ public sealed class ExobiologyState
         ScanTwo = seed.ScanTwo;
         OrganicRewards = seed.OrganicRewards;
         CountRadicoidaUnica = seed.CountRadicoidaUnica;
+        ActiveSpeciesDisplayName = catalog.FindBySpecies(
+            seed.ScanTwo?.Species ?? seed.ScanOne?.Species)?.DisplayName;
+        UpdateSampleDistance();
         scannedBioEntryIds.Clear();
         scannedBioEntryIds.UnionWith(seed.ScannedBioEntryIds);
         bodies.Clear();
@@ -183,7 +201,7 @@ public sealed class ExobiologyState
         }
 
         bodies[key.Value] = body;
-        currentSystemAddress = key.Value.SystemAddress;
+        currentBodyKey = key;
         currentBodyName = GetString(root, "BodyName") ?? currentBodyName;
     }
 
@@ -208,7 +226,7 @@ public sealed class ExobiologyState
         }
 
         bodies[key.Value] = body;
-        currentSystemAddress = key.Value.SystemAddress;
+        currentBodyKey = key;
     }
 
     private bool ApplyOrganicScan(JsonElement root)
@@ -238,7 +256,10 @@ public sealed class ExobiologyState
         }
 
         LastOrganicScan = activeHash;
-        currentSystemAddress = systemAddress.Value;
+        currentBodyKey = new BodyKey(systemAddress.Value, bodyId.Value);
+        ActiveSpeciesDisplayName = GetString(root, "Variant_Localised")
+            ?? GetString(root, "Species_Localised")
+            ?? reference.DisplayName;
         var genus = GetString(root, "Genus") ?? string.Empty;
         var sample = new BioSampleSnapshot(
             currentLocation,
@@ -267,6 +288,7 @@ public sealed class ExobiologyState
             LastOrganicScan = null;
             ScanOne = null;
             ScanTwo = null;
+            ActiveSpeciesDisplayName = null;
         }
 
         if (scanType == "Analyse")
@@ -296,6 +318,7 @@ public sealed class ExobiologyState
             RecalculateRewards();
         }
 
+        UpdateSampleDistance();
         Version++;
         return true;
     }
@@ -348,9 +371,57 @@ public sealed class ExobiologyState
         LastOrganicScan = null;
         ScanOne = null;
         ScanTwo = null;
+        ActiveSpeciesDisplayName = null;
         OrganicRewards = 0;
         scannedBioEntryIds.Clear();
+        UpdateSampleDistance();
         Version++;
+    }
+
+    private void UpdateSampleDistance()
+    {
+        if (currentPlanetRadius <= 0)
+        {
+            NearestActiveSampleDistance = null;
+            return;
+        }
+
+        var activeSamples = new[] { ScanOne, ScanTwo }
+            .Where(sample => sample is not null)
+            .Cast<BioSampleSnapshot>()
+            .ToArray();
+        NearestActiveSampleDistance = activeSamples.Length == 0
+            ? null
+            : activeSamples.Min(sample => GetSurfaceDistance(
+                sample.Location,
+                currentLocation,
+                currentPlanetRadius));
+    }
+
+    private static double GetSurfaceDistance(
+        SurfaceLocation first,
+        SurfaceLocation second,
+        double radius)
+    {
+        if (first == second)
+        {
+            return 0;
+        }
+
+        var firstLatitude = DegreesToRadians(first.Latitude);
+        var secondLatitude = DegreesToRadians(second.Latitude);
+        var longitudeDelta = DegreesToRadians(
+            second.Longitude - first.Longitude);
+        var cosine = (Math.Sin(firstLatitude) * Math.Sin(secondLatitude))
+            + (Math.Cos(firstLatitude)
+                * Math.Cos(secondLatitude)
+                * Math.Cos(longitudeDelta));
+        return Math.Acos(Math.Clamp(cosine, -1, 1)) * radius;
+    }
+
+    private static double DegreesToRadians(double degrees)
+    {
+        return degrees * Math.PI / 180d;
     }
 
     private void RecalculateRewards()

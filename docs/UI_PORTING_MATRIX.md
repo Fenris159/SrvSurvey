@@ -30,17 +30,22 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Avalonia area | Legacy source | Purpose | Current status |
 | --- | --- | --- | --- |
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
-| Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Core data not ported |
-| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | Core data not ported |
+| Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
+| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, journeys and routes | Not ported |
 | Search | `Main` Search menu, sphere/boxel forms | Spatial and boxel searches | Not ported |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Not ported |
 | Colonisation | `Main` Colonise menu and project forms | Raven projects and construction state | Not ported |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
-| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven theme selection implemented; remainder not ported |
+| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes plus checksum-verified legacy profile import implemented; remaining settings not ported |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
+
+The implemented Exobiology page covers the original `Main` dashboard workflow,
+not the separate prediction, Codex browser, prior-scan, or overlay surfaces.
+Those rows remain open below and keep their pending labels until their backing
+system/body and platform behavior is ported.
 
 ## Secondary forms
 
@@ -124,6 +129,10 @@ corrupt-settings, and persistence behavior have automated tests.
 Checked on 2026-07-24 at 1180 by 760 logical pixels with a live journal folder:
 
 - Overview rendered real commander, game, mode, system, body, and session state.
+- The updated Overview rendered live Exploration and Exobiology summary cards.
+- Exobiology rendered the unclaimed-value, current-body, active sampler,
+  three-stage progress, profile status, and compatibility cards; UI Automation
+  exposed Refresh and Clear unclaimed.
 - Diagnostics rendered the selected journal folder, parsed state, candidate
   paths, refresh action, and update time.
 - Settings rendered all five palette previews. Switching from Blue (dark) to
@@ -132,8 +141,8 @@ Checked on 2026-07-24 at 1180 by 760 logical pixels with a live journal folder:
 - Windows UI Automation exposed all nine navigation destinations, five theme
   buttons, Refresh actions, and the visible page text.
 
-Not yet checked: minimum-width and high-contrast rendering, Linux X11/Wayland,
-or any overlay surface.
+Not yet checked: active in-game sample transitions, minimum-width and
+high-contrast rendering, Linux X11/Wayland, or any overlay surface.
 
 ## UI completion gates
 

@@ -130,23 +130,25 @@
             <Grid ColumnDefinitions="*,Auto">
               <TextBlock Classes="card-title" Text="Exobiology" />
               <Border Grid.Column="1" Classes="badge">
-                <TextBlock Classes="muted" FontSize="11" Text="CORE PENDING" />
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontSize="11"
+                           Text="LIVE" />
               </Border>
             </Grid>
             <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
               <StackPanel Spacing="3">
-                <TextBlock Classes="metric" Text="—" />
-                <TextBlock Classes="muted" FontSize="12" Text="System signals" />
+                <TextBlock Classes="metric" Text="{Binding UnclaimedBioScans}" />
+                <TextBlock Classes="muted" FontSize="12" Text="Unclaimed scans" />
               </StackPanel>
               <StackPanel Grid.Column="1" Spacing="3">
-                <TextBlock Classes="metric" Text="—" />
+                <TextBlock Classes="metric" Text="{Binding UnclaimedBioRewards}" />
                 <TextBlock Classes="muted" FontSize="12" Text="Unclaimed rewards" />
               </StackPanel>
             </Grid>
             <TextBlock Classes="muted"
                        FontSize="12"
                        TextWrapping="Wrap"
-                       Text="Scan progress, first-footfall state, and predictions await the domain slice." />
+                       Text="{Binding OrganicScanProgress}" />
           </StackPanel>
         </Border>
       </Grid>

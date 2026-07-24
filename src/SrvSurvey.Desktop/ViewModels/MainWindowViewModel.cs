@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
@@ -16,12 +17,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private readonly JournalDirectoryMonitor? journalMonitor;
     private readonly JournalSessionState journalState = new();
     private readonly ExplorationState explorationState = new();
+    private readonly ExobiologyState exobiologyState;
     private readonly CommanderProfileStore commanderProfileStore;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
     private readonly AsyncCommand importLegacyProfileCommand;
     private readonly AsyncCommand resetExplorationCommand;
     private readonly AsyncCommand cancelResetExplorationCommand;
+    private readonly AsyncCommand resetExobiologyCommand;
+    private readonly AsyncCommand cancelResetExobiologyCommand;
     private bool isBusy;
     private bool isImportingProfile;
     private string statusMessage;
@@ -44,6 +48,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private string explorationBodies = "Scanned: 0, DSS: 0, Landed: 0";
     private string explorationStatusMessage = "Waiting for commander profile.";
     private bool isResetExplorationPending;
+    private string unclaimedBioRewards = "0 CR";
+    private string unclaimedBioScans = "0 samples";
+    private string organicScanProgress = "Ready for sample 1 of 3";
+    private string activeOrganicSpecies = Unavailable;
+    private string organicSampleRange = Unavailable;
+    private string bioFirstFootfall = "Unknown";
+    private string exobiologyStatusMessage = "Waiting for commander profile.";
+    private bool isResetExobiologyPending;
     private string? activeProfileFrontierId;
     private string? activeProfileCommanderName;
     private bool activeProfileIsOdyssey = true;
@@ -56,12 +68,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         string? configuredJournalDirectory,
         RavenThemeService? themeService = null,
         AppDataPaths? appDataPaths = null,
-        LegacyProfileImporter? profileImporter = null)
+        LegacyProfileImporter? profileImporter = null,
+        ExobiologyReferenceCatalog? exobiologyCatalog = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
         commanderProfileStore = new CommanderProfileStore(AppDataPaths.DataDirectory);
+        exobiologyState = new ExobiologyState(
+            exobiologyCatalog ?? ExobiologyReferenceCatalog.LoadEmbedded());
         ProfileBackupDirectory = Path.Combine(
             Path.GetDirectoryName(AppDataPaths.DataDirectory)
                 ?? AppDataPaths.ConfigDirectory,
@@ -99,12 +114,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             CancelResetExplorationAsync,
             () => IsResetExplorationPending);
         CancelResetExplorationCommand = cancelResetExplorationCommand;
+        resetExobiologyCommand = new AsyncCommand(
+            ResetExobiologyAsync,
+            () => activeProfileFrontierId is not null);
+        ResetExobiologyCommand = resetExobiologyCommand;
+        cancelResetExobiologyCommand = new AsyncCommand(
+            CancelResetExobiologyAsync,
+            () => IsResetExobiologyPending);
+        CancelResetExobiologyCommand = cancelResetExobiologyCommand;
 
         NavigationItems =
         [
             new("overview", "Overview", "01", "Commander and current journal state", true),
             new("exploration", "Exploration", "02", "Trip totals and body scans", true),
-            new("exobiology", "Exobiology", "03", "Organic scans, rewards, and Codex", false),
+            new("exobiology", "Exobiology", "03", "Organic scans and unclaimed rewards", true),
             new("travel", "Travel", "04", "Targets, journeys, and routes", false),
             new("search", "Search", "05", "Spherical and boxel searches", false),
             new("guardian", "Guardian", "06", "Sites, maps, and Ram Tah", false),
@@ -192,6 +215,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
             OnPropertyChanged(nameof(IsOverviewSelected));
             OnPropertyChanged(nameof(IsExplorationSelected));
+            OnPropertyChanged(nameof(IsExobiologySelected));
             OnPropertyChanged(nameof(IsDiagnosticsSelected));
             OnPropertyChanged(nameof(IsSettingsSelected));
             OnPropertyChanged(nameof(IsPendingSelected));
@@ -204,6 +228,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public bool IsOverviewSelected => SelectedNavigation.Key == "overview";
 
     public bool IsExplorationSelected => SelectedNavigation.Key == "exploration";
+
+    public bool IsExobiologySelected => SelectedNavigation.Key == "exobiology";
 
     public bool IsDiagnosticsSelected => SelectedNavigation.Key == "diagnostics";
 
@@ -368,6 +394,69 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public string ResetExplorationButtonText => IsResetExplorationPending
         ? "Confirm reset"
         : "Reset totals";
+
+    public string UnclaimedBioRewards
+    {
+        get => unclaimedBioRewards;
+        private set => SetField(ref unclaimedBioRewards, value);
+    }
+
+    public string UnclaimedBioScans
+    {
+        get => unclaimedBioScans;
+        private set => SetField(ref unclaimedBioScans, value);
+    }
+
+    public string OrganicScanProgress
+    {
+        get => organicScanProgress;
+        private set => SetField(ref organicScanProgress, value);
+    }
+
+    public string ActiveOrganicSpecies
+    {
+        get => activeOrganicSpecies;
+        private set => SetField(ref activeOrganicSpecies, value);
+    }
+
+    public string OrganicSampleRange
+    {
+        get => organicSampleRange;
+        private set => SetField(ref organicSampleRange, value);
+    }
+
+    public string BioFirstFootfall
+    {
+        get => bioFirstFootfall;
+        private set => SetField(ref bioFirstFootfall, value);
+    }
+
+    public string ExobiologyStatusMessage
+    {
+        get => exobiologyStatusMessage;
+        private set => SetField(ref exobiologyStatusMessage, value);
+    }
+
+    public ICommand ResetExobiologyCommand { get; }
+
+    public ICommand CancelResetExobiologyCommand { get; }
+
+    public bool IsResetExobiologyPending
+    {
+        get => isResetExobiologyPending;
+        private set
+        {
+            if (SetField(ref isResetExobiologyPending, value))
+            {
+                OnPropertyChanged(nameof(ResetExobiologyButtonText));
+                cancelResetExobiologyCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string ResetExobiologyButtonText => IsResetExobiologyPending
+        ? "Confirm clear"
+        : "Clear unclaimed";
 
     public async Task RefreshAsync()
     {
@@ -556,6 +645,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         JournalMonitorUpdate update,
         bool isManualRefresh)
     {
+        if (update.Status is not null)
+        {
+            exobiologyState.UpdateStatus(update.Status);
+        }
+
         foreach (var journalEvent in update.JournalEvents)
         {
             journalState.Apply(journalEvent);
@@ -563,6 +657,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
         var explorationBefore = explorationState.CreateSnapshot();
+        var exobiologyVersionBefore = exobiologyState.Version;
         var skipPersistedBootstrapEvents = update.IsBootstrapRead
             && loadedExistingProfile;
         foreach (var journalEvent in update.JournalEvents)
@@ -572,6 +667,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             {
                 explorationState.Apply(journalEvent);
             }
+
+            if (!skipPersistedBootstrapEvents
+                || IsExobiologyContextEvent(journalEvent.EventName))
+            {
+                exobiologyState.Apply(journalEvent);
+            }
         }
 
         var explorationAfter = explorationState.CreateSnapshot();
@@ -579,6 +680,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             UpdateExplorationDisplay(explorationAfter);
             await SaveExplorationAsync(explorationAfter);
+        }
+
+        var exobiologyAfter = exobiologyState.CreateSnapshot();
+        if (exobiologyState.Version != exobiologyVersionBefore)
+        {
+            await SaveExobiologyAsync(exobiologyAfter);
+        }
+
+        if (update.JournalEvents.Count > 0 || update.Status is not null)
+        {
+            UpdateExobiologyDisplay(exobiologyAfter);
         }
 
         if (update.JournalEvents.Count > 0)
@@ -638,19 +750,31 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             ?? result.Data?.CommanderName;
         activeProfileIsOdyssey = isOdyssey;
         resetExplorationCommand.RaiseCanExecuteChanged();
+        resetExobiologyCommand.RaiseCanExecuteChanged();
 
         if (result.Data is null)
         {
             ExplorationStatusMessage = result.Error
                 ?? "The commander profile could not be loaded.";
+            ExobiologyStatusMessage = result.Error
+                ?? "The commander profile could not be loaded.";
             return false;
         }
 
         explorationState.Reset(result.Data.Exploration);
+        exobiologyState.Reset(result.Data.Exobiology);
         UpdateExplorationDisplay(result.Data.Exploration);
+        UpdateExobiologyDisplay(result.Data.Exobiology);
         ExplorationStatusMessage = result.Exists
             ? $"Loaded compatible totals from {Path.GetFileName(result.Path)}."
             : $"No existing profile was found; session totals will be saved to "
+                + Path.GetFileName(result.Path)
+                + ".";
+        ExobiologyStatusMessage = result.Exists
+            ? $"Loaded legacy-compatible organic scan state from "
+                + Path.GetFileName(result.Path)
+                + "."
+            : $"No existing profile was found; organic scan state will be saved to "
                 + Path.GetFileName(result.Path)
                 + ".";
         return result.Exists;
@@ -696,6 +820,79 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             + $"Landed: {snapshot.LandedBodyCount:N0}";
     }
 
+    private async Task SaveExobiologyAsync(ExobiologySnapshot snapshot)
+    {
+        if (activeProfileFrontierId is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await commanderProfileStore.SaveExobiologyAsync(
+                activeProfileFrontierId,
+                activeProfileCommanderName,
+                activeProfileIsOdyssey,
+                snapshot);
+            ExobiologyStatusMessage = $"Organic scan state saved to "
+                + Path.GetFileName(commanderProfileStore.GetProfilePath(
+                    activeProfileFrontierId,
+                    activeProfileIsOdyssey))
+                + ".";
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            ExobiologyStatusMessage =
+                "Organic scan state changed for this session but could not be saved: "
+                + exception.Message;
+        }
+    }
+
+    private void UpdateExobiologyDisplay(ExobiologySnapshot snapshot)
+    {
+        UnclaimedBioRewards = $"{snapshot.OrganicRewards:N0} CR";
+        UnclaimedBioScans = snapshot.ScannedBioEntryIds.Count == 1
+            ? "1 organism"
+            : $"{snapshot.ScannedBioEntryIds.Count:N0} organisms";
+        var activeSample = snapshot.ScanTwo ?? snapshot.ScanOne;
+        ActiveOrganicSpecies = activeSample is null
+            ? Unavailable
+            : exobiologyState.ActiveSpeciesDisplayName
+                ?? activeSample.Species;
+        OrganicSampleRange = activeSample is null
+            ? Unavailable
+            : exobiologyState.NearestActiveSampleDistance is double distance
+                ? exobiologyState.RemainingSampleDistance is > 0
+                    ? $"{distance:N0} m from nearest sample · "
+                        + $"{exobiologyState.RemainingSampleDistance:N0} m remaining"
+                    : $"{distance:N0} m from nearest sample · clear to sample"
+                : $"{activeSample.Radius:N0} m minimum separation";
+        OrganicScanProgress = snapshot.ScanOne is null
+            ? "Ready for sample 1 of 3"
+            : snapshot.ScanTwo is null
+                ? "Sample 1 of 3 recorded"
+                : "Samples 1 and 2 of 3 recorded";
+        BioFirstFootfall = exobiologyState.CurrentBodyFirstFootfall switch
+        {
+            true => "Confirmed; 5x reward applies",
+            false => "Not first footfall",
+            null => "Unknown for current body",
+        };
+    }
+
+    private static bool IsExobiologyContextEvent(string eventName)
+    {
+        return eventName is "Location"
+            or "FSDJump"
+            or "CarrierJump"
+            or "ApproachBody"
+            or "Scan"
+            or "Disembark";
+    }
+
     public async Task ResetExplorationAsync()
     {
         if (!IsResetExplorationPending)
@@ -716,6 +913,30 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     {
         IsResetExplorationPending = false;
         ExplorationStatusMessage = "Reset cancelled; totals were not changed.";
+        return Task.CompletedTask;
+    }
+
+    public async Task ResetExobiologyAsync()
+    {
+        if (!IsResetExobiologyPending)
+        {
+            IsResetExobiologyPending = true;
+            ExobiologyStatusMessage = "Select Confirm clear to remove all unclaimed "
+                + "organic rewards. Active sample progress will be kept.";
+            return;
+        }
+
+        exobiologyState.ClearUnclaimedRewards();
+        var snapshot = exobiologyState.CreateSnapshot();
+        UpdateExobiologyDisplay(snapshot);
+        IsResetExobiologyPending = false;
+        await SaveExobiologyAsync(snapshot);
+    }
+
+    private Task CancelResetExobiologyAsync()
+    {
+        IsResetExobiologyPending = false;
+        ExobiologyStatusMessage = "Clear cancelled; unclaimed rewards were not changed.";
         return Task.CompletedTask;
     }
 

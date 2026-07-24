@@ -1,4 +1,5 @@
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
@@ -14,14 +15,14 @@ public sealed class MainWindowViewModelTests
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
         Assert.Equal(9, viewModel.NavigationItems.Count);
-        Assert.Equal(4, viewModel.NavigationItems.Count(item => item.IsImplemented));
+        Assert.Equal(5, viewModel.NavigationItems.Count(item => item.IsImplemented));
         Assert.True(viewModel.IsOverviewSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "exobiology");
 
-        Assert.True(viewModel.IsPendingSelected);
-        Assert.Equal("Exobiology", viewModel.PendingPageTitle);
+        Assert.True(viewModel.IsExobiologySelected);
+        Assert.False(viewModel.IsPendingSelected);
     }
 
     [Fact]
@@ -172,6 +173,87 @@ public sealed class MainWindowViewModelTests
             Assert.Equal("0", viewModel.ExplorationJumps);
             saved = await store.LoadAsync("F123", isOdyssey: true);
             Assert.Equal(ExplorationSnapshot.Empty, saved.Data!.Exploration);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ExobiologyUsesImportedStateThenPersistsLiveScanAndClear()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-exobiology-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            Directory.CreateDirectory(profile);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-24T100000.01.log");
+            const string variant = "$Codex_Ent_Aleoids_01_B_Name;";
+            const string species = "$Codex_Ent_Aleoids_01_Name;";
+            const string genus = "$Codex_Ent_Aleoids_Genus_Name;";
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Log\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":123,\"Body\":1}}\n"
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Sample\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":123,\"Body\":1}}\n"
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":123,\"Body\":1}}\n");
+            var store = new CommanderProfileStore(profile);
+            await store.SaveExobiologyAsync(
+                "F123",
+                "Drew",
+                true,
+                new ExobiologySnapshot(
+                    null,
+                    null,
+                    null,
+                    500,
+                    ["999_1_2310101_500_False"],
+                    0));
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(journals, appDataPaths: paths);
+
+            await viewModel.RefreshAsync();
+
+            Assert.Equal("500 CR", viewModel.UnclaimedBioRewards);
+            Assert.Equal("1 organism", viewModel.UnclaimedBioScans);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Log\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":456,\"Body\":2}}\n"
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Sample\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":456,\"Body\":2}}\n"
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":456,\"Body\":2}}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Equal("7,253,000 CR", viewModel.UnclaimedBioRewards);
+            Assert.Equal("2 organisms", viewModel.UnclaimedBioScans);
+            var saved = await store.LoadAsync("F123", true);
+            Assert.Equal(7_253_000, saved.Data!.Exobiology.OrganicRewards);
+            Assert.Equal(2, saved.Data.Exobiology.ScannedBioEntryIds.Count);
+
+            await viewModel.ResetExobiologyAsync();
+            Assert.True(viewModel.IsResetExobiologyPending);
+            await viewModel.ResetExobiologyAsync();
+
+            Assert.False(viewModel.IsResetExobiologyPending);
+            Assert.Equal("0 CR", viewModel.UnclaimedBioRewards);
+            saved = await store.LoadAsync("F123", true);
+            Assert.Equal(0, saved.Data!.Exobiology.OrganicRewards);
+            Assert.Empty(saved.Data.Exobiology.ScannedBioEntryIds);
         }
         finally
         {
