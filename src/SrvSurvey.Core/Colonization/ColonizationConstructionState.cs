@@ -10,6 +10,7 @@ public sealed class ColonizationConstructionState
     private ColonizationContributionSnapshot? lastContribution;
     private ColonizationSystemClaimSnapshot? lastClaim;
     private DateTimeOffset? lastBeaconDeployment;
+    private int shipCargoCapacity;
 
     public long Version { get; private set; }
 
@@ -23,6 +24,8 @@ public sealed class ColonizationConstructionState
     public ColonizationSystemClaimSnapshot? LastClaim => lastClaim;
 
     public DateTimeOffset? LastBeaconDeployment => lastBeaconDeployment;
+
+    public int ShipCargoCapacity => shipCargoCapacity;
 
     public bool Apply(JournalEventEnvelope journalEvent)
     {
@@ -42,6 +45,7 @@ public sealed class ColonizationConstructionState
                 journalEvent.Timestamp),
             "ColonisationBeaconDeployed" => ApplyBeacon(
                 journalEvent.Timestamp),
+            "Loadout" => ApplyShipLoadout(journalEvent.Payload),
             "Shutdown" => ClearDocking(),
             _ => false,
         };
@@ -60,7 +64,8 @@ public sealed class ColonizationConstructionState
             currentDepot,
             lastContribution,
             lastClaim,
-            lastBeaconDeployment);
+            lastBeaconDeployment,
+            shipCargoCapacity);
     }
 
     public static string NormalizeCommodityName(string? journalName)
@@ -216,6 +221,18 @@ public sealed class ColonizationConstructionState
         }
 
         lastBeaconDeployment = timestamp;
+        return true;
+    }
+
+    private bool ApplyShipLoadout(JsonElement root)
+    {
+        var capacity = GetInt32(root, "CargoCapacity");
+        if (capacity is null || capacity < 0 || capacity == shipCargoCapacity)
+        {
+            return false;
+        }
+
+        shipCargoCapacity = capacity.Value;
         return true;
     }
 
@@ -394,7 +411,8 @@ public sealed record ColonizationConstructionSnapshot(
     ColonizationConstructionDepotSnapshot? CurrentDepot,
     ColonizationContributionSnapshot? LastContribution,
     ColonizationSystemClaimSnapshot? LastClaim,
-    DateTimeOffset? LastBeaconDeployment);
+    DateTimeOffset? LastBeaconDeployment,
+    int ShipCargoCapacity);
 
 public sealed record ColonizationDockingSnapshot(
     long MarketId,

@@ -115,6 +115,26 @@ public sealed class ColonizationConstructionStateTests
     }
 
     [Fact]
+    public void TracksCurrentShipCargoCapacityFromLoadout()
+    {
+        var state = new ColonizationConstructionState();
+
+        Assert.True(state.Apply(Event(
+            "Loadout",
+            """
+            "Ship":"typex","CargoCapacity":384
+            """)));
+        Assert.False(state.Apply(Event(
+            "Loadout",
+            """
+            "Ship":"typex","CargoCapacity":384
+            """)));
+
+        Assert.Equal(384, state.ShipCargoCapacity);
+        Assert.Equal(384, state.CreateSnapshot().ShipCargoCapacity);
+    }
+
+    [Fact]
     public void ReplayedEquivalentEventsDoNotAdvanceVersion()
     {
         var state = new ColonizationConstructionState();
