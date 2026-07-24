@@ -24,6 +24,26 @@ public sealed class JourneyJournalProcessor
 
     public JourneyDocument Journey { get; private set; }
 
+    public void UpdateJourney(JourneyDocument journey)
+    {
+        ArgumentNullException.ThrowIfNull(journey);
+        if (!string.Equals(
+                journey.FrontierId,
+                Journey.FrontierId,
+                StringComparison.Ordinal)
+            || !string.Equals(
+                journey.FileName,
+                Journey.FileName,
+                StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "The replacement document must represent the same journey.",
+                nameof(journey));
+        }
+
+        Journey = journey;
+    }
+
     public bool Apply(JournalEventEnvelope journalEvent)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
