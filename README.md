@@ -25,6 +25,25 @@ The existing WinForms application remains the production implementation. Work on
 
 See [PORTING_PLAN.md](PORTING_PLAN.md) for the validated status, architecture, milestones, and platform-specific risks.
 
+The current development shell requires the .NET 10 SDK:
+
+```console
+dotnet restore SrvSurvey.CrossPlatform.slnx
+dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore
+dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-build --no-restore
+dotnet run --project src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj
+```
+
+Journal discovery can be overridden with either
+`SRVSURVEY_JOURNAL_DIR=/path/to/journals` or:
+
+```console
+dotnet run --project src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj -- --journal-directory "/path/to/journals"
+```
+
+The shell currently reads a bootstrap snapshot from the newest journal. It does
+not yet watch live changes or provide the production overlays and tools.
+
 ## Feedback
 
 Feedback, suggestions or bug reports are always welcome. Please [use this form](https://github.com/njthomson/SrvSurvey/issues/new?template=bug_report.md&title=) for bugs or suggestions.

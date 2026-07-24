@@ -116,10 +116,10 @@ they must not fail silently.
 
 - [x] Audit the existing branch claims against committed files.
 - [x] Restore the project README and replace the placeholder plan.
-- [ ] Remove case-colliding repository paths.
-- [ ] Create buildable Core, Desktop, and test projects.
-- [ ] Add a cross-platform solution that excludes Windows packaging projects.
-- [ ] Add Windows and Linux CI restore, build, test, and publish smoke checks.
+- [x] Remove case-colliding repository paths.
+- [x] Create buildable Core, Desktop, and test projects.
+- [x] Add a cross-platform solution that excludes Windows packaging projects.
+- [x] Add Windows and Linux CI restore, build, test, and publish smoke checks.
 - [ ] Make the Dockerfile a reproducible Linux build environment, or remove it.
 
 Exit gate: a clean clone restores, builds, tests, and publishes on Windows and
@@ -127,12 +127,15 @@ Linux. Launching the desktop shell is manually smoke-tested on both platforms.
 
 ### Phase 1 — Journal bootstrap vertical slice
 
-- [ ] Resolve the journal folder from an explicit setting first.
-- [ ] Offer platform-specific candidate locations without assuming one exists.
-- [ ] Read the newest journal safely, including an incomplete final line.
-- [ ] Reproduce commander, game version, mode, system, body, and shutdown state.
+- [x] Resolve the journal folder from an explicit setting first.
+- [x] Offer platform-specific candidate locations without assuming one exists.
+- [x] Read the newest journal safely, including an incomplete final line.
+- [x] Extract commander, game version, mode, system, body, and shutdown state
+  present in the newest file, including the legacy current-planet semantics.
+- [ ] Rebuild bootstrap state across rotated/prior journals when the newest file
+  does not contain all session-identifying events.
 - [ ] Watch journal rotation and `Status.json` with cancellation and retry logic.
-- [ ] Show the state and any path/parse errors in the desktop shell.
+- [x] Show the state and any path/parse errors in the desktop shell.
 
 Exit gate: shared fixtures and a live journal session produce the expected state
 on Windows and Linux.
@@ -215,18 +218,43 @@ not expected to run as a headless container service.
 
 | Feature | Core | Desktop UI | Windows runtime | Linux runtime |
 | --- | --- | --- | --- | --- |
-| Application shell | Not applicable | Not implemented | Not tested | Not tested |
-| Journal folder discovery | Not implemented | Not implemented | Not tested | Not tested |
-| Journal ingestion/state | Not implemented | Not implemented | Not tested | Not tested |
+| Application shell | Not applicable | Builds cleanly | Startup smoke passed | Not tested |
+| Journal folder discovery | Implemented; 3 tests | Paths and errors shown | Missing and default paths smoke-tested | Not tested |
+| Journal ingestion/state | Bootstrap reader; 3 tests | Manual refresh summary | Live-folder startup passed; state not inspected | Not tested |
 | Settings/data migration | Not implemented | Not implemented | Not tested | Not tested |
 | Organic scans | Not implemented | Not implemented | Not tested | Not tested |
 | Ground target tracking | Not implemented | Not implemented | Not tested | Not tested |
 | Guardian surveys | Not implemented | Not implemented | Not tested | Not tested |
 | Overlays/input | Not implemented | Not implemented | Not tested | Not tested |
 | Secondary features | Not implemented | Not implemented | Not tested | Not tested |
-| Packaging/AppImage | Not implemented | Not applicable | Not tested | Not tested |
+| Packaging/AppImage | Self-contained publish configured; no AppImage | Not applicable | `win-x64` publish passed | Cross-publish passed; runtime not tested |
 
 Update this table only with evidence from the relevant exit gate.
+
+## Latest validation evidence
+
+Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
+`10.0.103`:
+
+- `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
+  completed with zero warnings and zero errors.
+- `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release` passed all
+  6 tests.
+- `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
+- The direct and transitive NuGet vulnerability audit reported no known
+  vulnerable packages.
+- Self-contained `win-x64` and `linux-x64` publish commands completed.
+- The Windows development shell remained healthy during startup smoke tests with
+  a deliberately missing journal directory and with the default live journal
+  folder (455 journal files present), then was stopped after each check.
+- The workflow YAML and `global.json` parsed successfully.
+
+Not validated in this environment:
+
+- A hosted GitHub Actions run of the new workflow.
+- The Dockerfile (`docker` is not installed on the validation machine).
+- Linux X11 or Wayland startup, live journals, overlays, input, or AppImage.
+- A live Elite Dangerous session or parity comparison with real commander data.
 
 ## Review and commit strategy
 
