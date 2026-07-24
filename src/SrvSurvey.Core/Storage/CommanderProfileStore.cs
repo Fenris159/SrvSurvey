@@ -41,7 +41,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
                     isOdyssey,
                     ExplorationSnapshot.Empty,
                     ExobiologySnapshot.Empty,
-                    SphereLimitSnapshot.Empty),
+                    SphereLimitSnapshot.Empty,
+                    BoxelSearchSnapshot.Empty),
                 null);
         }
 
@@ -69,7 +70,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
                 GetInt32(root, "countDSS") ?? 0,
                 GetInt32(root, "countLanded") ?? 0),
             ReadExobiology(root),
-            ReadSphereLimit(root));
+            ReadSphereLimit(root),
+            ReadBoxelSearch(root));
         return new CommanderProfileLoadResult(path, true, data, null);
     }
 
@@ -140,6 +142,22 @@ public sealed class CommanderProfileStore(string profileDirectory)
             commanderName,
             isOdyssey,
             root => WriteSphereLimit(root, sphereLimit),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SaveBoxelSearchAsync(
+        string frontierId,
+        string? commanderName,
+        bool isOdyssey,
+        BoxelSearchSnapshot boxelSearch,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(boxelSearch);
+        await SaveFieldsAsync(
+            frontierId,
+            commanderName,
+            isOdyssey,
+            root => WriteBoxelSearch(root, boxelSearch),
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -242,6 +260,41 @@ public sealed class CommanderProfileStore(string profileDirectory)
             radius);
     }
 
+    private static BoxelSearchSnapshot ReadBoxelSearch(JsonObject root)
+    {
+        if (root["boxelSearch"] is not JsonObject boxelSearch)
+        {
+            return BoxelSearchSnapshot.Empty;
+        }
+
+        BoxelAddress.TryParse(
+            GetString(boxelSearch, "boxel"),
+            out var topBoxel);
+        BoxelAddress.TryParse(
+            GetString(boxelSearch, "current"),
+            out var current);
+        var lowMassCodeText = GetString(boxelSearch, "lowMassCode");
+        var lowMassCode = string.IsNullOrWhiteSpace(lowMassCodeText)
+            ? 'c'
+            : char.ToLowerInvariant(lowMassCodeText[0]);
+        return new BoxelSearchSnapshot(
+            GetBoolean(boxelSearch, "active") ?? false,
+            topBoxel,
+            GetDateTimeOffset(boxelSearch, "startedOn")
+                ?? DateTimeOffset.MinValue,
+            current,
+            GetInt32(boxelSearch, "currentCount") ?? 0,
+            lowMassCode,
+            ReadStringArray(boxelSearch, "completed"),
+            GetBoolean(boxelSearch, "autoCopy") ?? false,
+            GetBoolean(boxelSearch, "collapsed") ?? false,
+            GetBoolean(boxelSearch, "skipAlreadyVisited") ?? false,
+            GetBoolean(boxelSearch, "skipKnownToSpansh") ?? false,
+            GetBoolean(boxelSearch, "completeOnFssAllBodies") == true
+                ? BoxelCompletionMode.FssAllBodies
+                : BoxelCompletionMode.EnterSystem);
+    }
+
     private static GalacticCoordinate? ReadGalacticCoordinate(
         JsonObject root,
         string propertyName)
@@ -279,6 +332,45 @@ public sealed class CommanderProfileStore(string profileDirectory)
             ? new JsonArray(center.X, center.Y, center.Z)
             : null;
         node["radius"] = sphereLimit.Radius;
+    }
+
+    private static void WriteBoxelSearch(
+        JsonObject root,
+        BoxelSearchSnapshot boxelSearch)
+    {
+        if (boxelSearch.TopBoxel is null)
+        {
+            root["boxelSearch"] = null;
+            return;
+        }
+
+        if (root["boxelSearch"] is not JsonObject node)
+        {
+            node = [];
+            root["boxelSearch"] = node;
+        }
+
+        node["active"] = boxelSearch.Active;
+        node["startedOn"] = boxelSearch.StartedOn;
+        node["boxel"] = boxelSearch.TopBoxel.ToStoredString();
+        node["current"] = boxelSearch.Current?.ToStoredString();
+        node["currentCount"] = boxelSearch.CurrentCount;
+        node["lowMassCode"] = boxelSearch.LowMassCode.ToString();
+        var completed = new JsonArray();
+        foreach (var prefix in boxelSearch.CompletedPrefixes
+                     .Distinct(StringComparer.Ordinal)
+                     .Order(StringComparer.Ordinal))
+        {
+            completed.Add(prefix);
+        }
+
+        node["completed"] = completed;
+        node["autoCopy"] = boxelSearch.AutoCopy;
+        node["collapsed"] = boxelSearch.Collapsed;
+        node["skipAlreadyVisited"] = boxelSearch.SkipAlreadyVisited;
+        node["skipKnownToSpansh"] = boxelSearch.SkipKnownToSpansh;
+        node["completeOnFssAllBodies"] =
+            boxelSearch.CompletionMode == BoxelCompletionMode.FssAllBodies;
     }
 
     private static BioSampleSnapshot? ReadBioSample(
@@ -444,6 +536,26 @@ public sealed class CommanderProfileStore(string profileDirectory)
         return value.TryGetValue<long>(out var longResult) ? longResult : null;
     }
 
+    private static DateTimeOffset? GetDateTimeOffset(
+        JsonObject root,
+        string propertyName)
+    {
+        if (root[propertyName] is not JsonValue value)
+        {
+            return null;
+        }
+
+        if (value.TryGetValue<DateTimeOffset>(out var dateTimeOffset))
+        {
+            return dateTimeOffset;
+        }
+
+        return value.TryGetValue<string>(out var text)
+            && DateTimeOffset.TryParse(text, out dateTimeOffset)
+                ? dateTimeOffset
+                : null;
+    }
+
     private sealed record JsonObjectReadResult(JsonObject? Root, string? Error);
 }
 
@@ -453,7 +565,8 @@ public sealed record CommanderProfileData(
     bool IsOdyssey,
     ExplorationSnapshot Exploration,
     ExobiologySnapshot Exobiology,
-    SphereLimitSnapshot SphereLimit);
+    SphereLimitSnapshot SphereLimit,
+    BoxelSearchSnapshot BoxelSearch);
 
 public sealed record CommanderProfileLoadResult(
     string Path,

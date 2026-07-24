@@ -282,6 +282,66 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.Equal("Sol", result.Data.SphereLimit.CenterSystemName);
     }
 
+    [Fact]
+    public async Task LoadAndSavePreserveLegacyBoxelSearchFields()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "fid": "F123",
+              "boxelSearch": {
+                "active": true,
+                "startedOn": "2026-07-01T00:00:00-05:00",
+                "boxel": "Praea Euq IL-P c5-19|84456510258",
+                "current": "Praea Euq IL-P c5-0",
+                "currentCount": 45,
+                "lowMassCode": "b",
+                "completed": ["Praea Euq IL-P c5-"],
+                "autoCopy": true,
+                "collapsed": false,
+                "skipAlreadyVisited": true,
+                "skipKnownToSpansh": true,
+                "completeOnFssAllBodies": false,
+                "futureBoxelOption": 42
+              }
+            }
+            """);
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        var loaded = await store.LoadAsync("F123", true);
+
+        Assert.NotNull(loaded.Data);
+        var boxelSearch = loaded.Data.BoxelSearch;
+        Assert.True(boxelSearch.Active);
+        Assert.Equal("Praea Euq IL-P c5-19", boxelSearch.TopBoxel?.Name);
+        Assert.Equal(84456510258, boxelSearch.TopBoxel?.SystemAddress);
+        Assert.Equal(45, boxelSearch.CurrentCount);
+        Assert.Equal('b', boxelSearch.LowMassCode);
+        Assert.Equal(BoxelCompletionMode.EnterSystem, boxelSearch.CompletionMode);
+
+        await store.SaveBoxelSearchAsync(
+            "F123",
+            "Drew",
+            true,
+            boxelSearch with
+            {
+                Active = false,
+                CompletionMode = BoxelCompletionMode.FssAllBodies,
+            });
+
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        var saved = root["boxelSearch"]!.AsObject();
+        Assert.False(saved["active"]!.GetValue<bool>());
+        Assert.True(saved["completeOnFssAllBodies"]!.GetValue<bool>());
+        Assert.Equal(42, saved["futureBoxelOption"]!.GetValue<int>());
+        Assert.Equal(
+            "Praea Euq IL-P c5-19|84456510258",
+            saved["boxel"]!.GetValue<string>());
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
