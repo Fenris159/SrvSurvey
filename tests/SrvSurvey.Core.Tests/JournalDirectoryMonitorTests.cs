@@ -41,6 +41,15 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
             "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Cargo\","
                 + "\"Vessel\":\"SRV\",\"Count\":1,\"Inventory\":[{\"Name\":"
                 + "\"ancientorb\",\"Count\":1,\"Stolen\":0}]}");
+        var marketPath = Path.Combine(
+            temporaryDirectory,
+            MarketFileReader.FileName);
+        await File.WriteAllTextAsync(
+            marketPath,
+            "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Market\","
+                + "\"MarketId\":3700123456,\"StationName\":\"Raven's Rest\","
+                + "\"StationType\":\"FleetCarrier\",\"StarSystem\":\"Facece\","
+                + "\"Items\":[{\"Name\":\"$Steel_Name;\",\"Stock\":125}]}");
         var monitor = new JournalDirectoryMonitor(temporaryDirectory);
 
         var initial = await monitor.PollAsync();
@@ -53,6 +62,7 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
             "Praea Euq IL-P c5-2",
             Assert.Single(initial.NavRoute.Route).StarSystem);
         Assert.Equal(1, initial.Cargo?.GetCount("ancientorb"));
+        Assert.Equal(125, initial.Market?.FindItem("steel")?.Stock);
         Assert.Empty(initial.Errors);
         Assert.True(initial.IsBootstrapRead);
 
@@ -68,6 +78,7 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         var completed = await monitor.PollAsync();
         Assert.Equal("FutureEvent", Assert.Single(completed.JournalEvents).EventName);
         Assert.Null(completed.Cargo);
+        Assert.Null(completed.Market);
         Assert.Empty(completed.Errors);
 
         await File.WriteAllTextAsync(
@@ -78,6 +89,16 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         var cargoChanged = await monitor.PollAsync();
         Assert.Equal(2, cargoChanged.Cargo?.GetCount("ancientorb"));
         Assert.Equal(2, monitor.CurrentCargo?.Count);
+
+        await File.WriteAllTextAsync(
+            marketPath,
+            "{\"timestamp\":\"2026-07-24T10:00:03Z\",\"event\":\"Market\","
+                + "\"MarketId\":3700123456,\"StationName\":\"Raven's Rest\","
+                + "\"StationType\":\"FleetCarrier\",\"StarSystem\":\"Facece\","
+                + "\"Items\":[{\"Name\":\"$Steel_Name;\",\"Stock\":200}]}");
+        var marketChanged = await monitor.PollAsync();
+        Assert.Equal(200, marketChanged.Market?.FindItem("steel")?.Stock);
+        Assert.Equal(200, monitor.CurrentMarket?.FindItem("steel")?.Stock);
 
         await File.WriteAllTextAsync(
             navRoutePath,

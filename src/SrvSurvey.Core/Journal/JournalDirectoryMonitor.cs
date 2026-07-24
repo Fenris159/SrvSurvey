@@ -12,6 +12,7 @@ public sealed class JournalDirectoryMonitor
     private string? statusContentHash;
     private string? navRouteContentHash;
     private string? cargoContentHash;
+    private string? marketContentHash;
     private bool hasCompletedFirstPoll;
 
     public JournalDirectoryMonitor(string journalDirectory)
@@ -28,6 +29,8 @@ public sealed class JournalDirectoryMonitor
 
     public event EventHandler<CargoSnapshot>? CargoUpdated;
 
+    public event EventHandler<MarketSnapshot>? MarketUpdated;
+
     public event EventHandler<string>? ReadError;
 
     public EliteStatus? CurrentStatus { get; private set; }
@@ -35,6 +38,8 @@ public sealed class JournalDirectoryMonitor
     public NavRouteSnapshot? CurrentNavRoute { get; private set; }
 
     public CargoSnapshot? CurrentCargo { get; private set; }
+
+    public MarketSnapshot? CurrentMarket { get; private set; }
 
     public string? CurrentJournalPath => currentJournalPath;
 
@@ -145,12 +150,40 @@ public sealed class JournalDirectoryMonitor
                 }
             }
 
+            MarketSnapshot? market = null;
+            var marketPath = Path.Combine(
+                journalDirectory,
+                MarketFileReader.FileName);
+            if (File.Exists(marketPath))
+            {
+                var marketResult = await MarketFileReader.ReadAsync(
+                        marketPath,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+                if (marketResult.Snapshot is not null
+                    && marketResult.ContentHash is not null
+                    && !string.Equals(
+                        marketResult.ContentHash,
+                        marketContentHash,
+                        StringComparison.Ordinal))
+                {
+                    marketContentHash = marketResult.ContentHash;
+                    CurrentMarket = marketResult.Snapshot;
+                    market = marketResult.Snapshot;
+                }
+                else if (marketResult.Error is not null)
+                {
+                    errors.Add(marketResult.Error);
+                }
+            }
+
             update = new JournalMonitorUpdate(
                 currentJournalPath,
                 events,
                 status,
                 navRoute,
                 cargo,
+                market,
                 errors,
                 IsBootstrapRead: !hasCompletedFirstPoll);
             hasCompletedFirstPoll = true;
@@ -178,6 +211,11 @@ public sealed class JournalDirectoryMonitor
         if (update.Cargo is not null)
         {
             CargoUpdated?.Invoke(this, update.Cargo);
+        }
+
+        if (update.Market is not null)
+        {
+            MarketUpdated?.Invoke(this, update.Market);
         }
 
         foreach (var error in update.Errors)
@@ -347,5 +385,6 @@ public sealed record JournalMonitorUpdate(
     EliteStatus? Status,
     NavRouteSnapshot? NavRoute,
     CargoSnapshot? Cargo,
+    MarketSnapshot? Market,
     IReadOnlyList<string> Errors,
     bool IsBootstrapRead);
