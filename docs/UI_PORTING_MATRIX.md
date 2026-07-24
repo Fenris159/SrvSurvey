@@ -34,7 +34,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, journeys and routes | Ground-target editor, clipboard/current actions, persistence, and live guidance implemented; journeys/routes remain pending |
 | Search | `Main` Search menu, sphere/boxel forms | Spatial and boxel searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest-system workflow remains pending |
-| Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Not ported |
+| Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, and clipboard actions implemented; Ram Tah, survey maps/editors, live site events, writes, and overlays remain |
 | Colonisation | `Main` Colonise menu and project forms | Raven projects and construction state | Not ported |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
 | Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes plus checksum-verified legacy profile import implemented; remaining settings not ported |
@@ -52,7 +52,7 @@ system/body and platform behavior is ported.
 | Legacy surface | Avalonia destination | Status |
 | --- | --- | --- |
 | `FormAdjustOverlay` | Settings / Overlays | Not ported |
-| `FormBeacons` | Guardian / Beacons | Not ported |
+| `FormBeacons` | Guardian / Sites | Partially implemented with all shipped beacons/ruins/structures, commander visits/survey progress/notes, distance and text/kind/visit/type filters, details, and copy actions; Ram Tah-needed filtering, custom-origin lookup, external links, sharing, and open-survey actions remain |
 | `FormBoxelSearch` | Search / Boxel | Implemented with activation/options, hierarchy, current systems, completion/empty rules, route/journal updates, ID64 decoding, clipboard actions, and cancellable full-area audit; Windows visually checked |
 | `FormBuilder` | Guardian / Map editor | Not ported |
 | `FormCodexBingo` | Exobiology / Codex | Not ported |
@@ -146,6 +146,12 @@ check at 1182 by 790, using a live journal folder:
   the live commander profile. UI Automation exposed the spherical and Boxel
   controls, including the inactive audit/cancel states; no Boxel action or audit
   was invoked.
+- Guardian rendered all 759 shipped sites ordered from the live Facece position,
+  filtered immediately to the unique `GR 1` system address, and exposed selected
+  site/commander details plus system, address, galactic-position, and lat/long
+  copy controls. List scrolling and full coordinate layout were visually checked
+  at 1182 by 790; no refresh, clipboard, survey, or profile-changing action was
+  invoked. UI Automation data was unavailable for this check.
 - Diagnostics rendered the selected journal folder, parsed state, candidate
   paths, refresh action, and update time.
 - Settings rendered all five palette previews. Switching from Blue (dark) to
