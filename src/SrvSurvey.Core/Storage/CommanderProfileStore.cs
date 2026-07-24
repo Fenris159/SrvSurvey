@@ -74,7 +74,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
             ReadExobiology(root),
             ReadSphereLimit(root),
             ReadBoxelSearch(root),
-            ReadRamTah(root));
+            ReadRamTah(root),
+            GetString(root, "rccApiKey"));
         return new CommanderProfileLoadResult(path, true, data, null);
     }
 
@@ -177,6 +178,34 @@ public sealed class CommanderProfileStore(string profileDirectory)
             commanderName,
             isOdyssey,
             root => WriteRamTah(root, ramTah),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SaveRavenColonialApiKeyAsync(
+        string frontierId,
+        string? commanderName,
+        bool isOdyssey,
+        string? apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        var normalized = string.IsNullOrWhiteSpace(apiKey)
+            ? null
+            : apiKey.Trim();
+        await SaveFieldsAsync(
+            frontierId,
+            commanderName,
+            isOdyssey,
+            root =>
+            {
+                if (normalized is null)
+                {
+                    root.Remove("rccApiKey");
+                }
+                else
+                {
+                    root["rccApiKey"] = normalized;
+                }
+            },
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -635,7 +664,8 @@ public sealed record CommanderProfileData(
     ExobiologySnapshot Exobiology,
     SphereLimitSnapshot SphereLimit,
     BoxelSearchSnapshot BoxelSearch,
-    RamTahSnapshot RamTah);
+    RamTahSnapshot RamTah,
+    string? RavenColonialApiKey = null);
 
 public sealed record CommanderProfileLoadResult(
     string Path,
