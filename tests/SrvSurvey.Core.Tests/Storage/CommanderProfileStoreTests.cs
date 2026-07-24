@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Search;
 
@@ -340,6 +341,58 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.Equal(
             "Praea Euq IL-P c5-19|84456510258",
             saved["boxel"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task LoadAndSavePreserveLegacyRamTahFields()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "fid": "F123",
+              "commander": "Drew",
+              "decodeTheRuinsMissionActive": "Active",
+              "decodeTheLogsMissionActive": 2,
+              "decodeTheRuins": ["B2", "B1", "B2"],
+              "decodeTheLogs": ["#28", "#1"],
+              "futureRamTahOption": { "enabled": true }
+            }
+            """);
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        var loaded = await store.LoadAsync("F123", true);
+
+        Assert.NotNull(loaded.Data);
+        Assert.Equal(RamTahMissionStatus.Active, loaded.Data.RamTah.AncientRuinsMissionStatus);
+        Assert.Equal(RamTahMissionStatus.Complete, loaded.Data.RamTah.GuardianLogsMissionStatus);
+        Assert.Equal(["B1", "B2"], loaded.Data.RamTah.AncientRuinsLogs);
+        Assert.Equal(["#1", "#28"], loaded.Data.RamTah.GuardianLogs);
+
+        var updated = new RamTahSnapshot(
+            RamTahMissionStatus.Complete,
+            RamTahMissionStatus.Active,
+            ["T20", "B1"],
+            ["#2", "#1"]);
+        await store.SaveRamTahAsync("F123", "Drew", true, updated);
+
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.True(root["futureRamTahOption"]!["enabled"]!.GetValue<bool>());
+        Assert.Equal("Complete", root["decodeTheRuinsMissionActive"]!.GetValue<string>());
+        Assert.Equal("Active", root["decodeTheLogsMissionActive"]!.GetValue<string>());
+        Assert.Equal(["B1", "T20"], root["decodeTheRuins"]!.AsArray()
+            .Select(value => value!.GetValue<string>()));
+        Assert.Equal(["#1", "#2"], root["decodeTheLogs"]!.AsArray()
+            .Select(value => value!.GetValue<string>()));
+
+        loaded = await store.LoadAsync("F123", true);
+        Assert.NotNull(loaded.Data);
+        Assert.Equal(updated.AncientRuinsMissionStatus, loaded.Data.RamTah.AncientRuinsMissionStatus);
+        Assert.Equal(updated.GuardianLogsMissionStatus, loaded.Data.RamTah.GuardianLogsMissionStatus);
+        Assert.Equal(["B1", "T20"], loaded.Data.RamTah.AncientRuinsLogs);
+        Assert.Equal(["#1", "#2"], loaded.Data.RamTah.GuardianLogs);
     }
 
     public void Dispose()

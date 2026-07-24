@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Storage;
@@ -42,7 +43,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
                     ExplorationSnapshot.Empty,
                     ExobiologySnapshot.Empty,
                     SphereLimitSnapshot.Empty,
-                    BoxelSearchSnapshot.Empty),
+                    BoxelSearchSnapshot.Empty,
+                    RamTahSnapshot.Empty),
                 null);
         }
 
@@ -71,7 +73,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
                 GetInt32(root, "countLanded") ?? 0),
             ReadExobiology(root),
             ReadSphereLimit(root),
-            ReadBoxelSearch(root));
+            ReadBoxelSearch(root),
+            ReadRamTah(root));
         return new CommanderProfileLoadResult(path, true, data, null);
     }
 
@@ -158,6 +161,22 @@ public sealed class CommanderProfileStore(string profileDirectory)
             commanderName,
             isOdyssey,
             root => WriteBoxelSearch(root, boxelSearch),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SaveRamTahAsync(
+        string frontierId,
+        string? commanderName,
+        bool isOdyssey,
+        RamTahSnapshot ramTah,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(ramTah);
+        await SaveFieldsAsync(
+            frontierId,
+            commanderName,
+            isOdyssey,
+            root => WriteRamTah(root, ramTah),
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -295,6 +314,32 @@ public sealed class CommanderProfileStore(string profileDirectory)
                 : BoxelCompletionMode.EnterSystem);
     }
 
+    private static RamTahSnapshot ReadRamTah(JsonObject root)
+    {
+        return new RamTahSnapshot(
+            ReadRamTahStatus(root, "decodeTheRuinsMissionActive"),
+            ReadRamTahStatus(root, "decodeTheLogsMissionActive"),
+            ReadStringArray(root, "decodeTheRuins"),
+            ReadStringArray(root, "decodeTheLogs"));
+    }
+
+    private static RamTahMissionStatus ReadRamTahStatus(
+        JsonObject root,
+        string propertyName)
+    {
+        var text = GetString(root, propertyName);
+        if (Enum.TryParse<RamTahMissionStatus>(text, true, out var status))
+        {
+            return status;
+        }
+
+        var number = GetInt32(root, propertyName);
+        return number is not null
+            && Enum.IsDefined(typeof(RamTahMissionStatus), number.Value)
+                ? (RamTahMissionStatus)number.Value
+                : RamTahMissionStatus.NotStarted;
+    }
+
     private static GalacticCoordinate? ReadGalacticCoordinate(
         JsonObject root,
         string propertyName)
@@ -371,6 +416,29 @@ public sealed class CommanderProfileStore(string profileDirectory)
         node["skipKnownToSpansh"] = boxelSearch.SkipKnownToSpansh;
         node["completeOnFssAllBodies"] =
             boxelSearch.CompletionMode == BoxelCompletionMode.FssAllBodies;
+    }
+
+    private static void WriteRamTah(JsonObject root, RamTahSnapshot ramTah)
+    {
+        root["decodeTheRuinsMissionActive"] =
+            ramTah.AncientRuinsMissionStatus.ToString();
+        root["decodeTheLogsMissionActive"] =
+            ramTah.GuardianLogsMissionStatus.ToString();
+        root["decodeTheRuins"] = WriteStringArray(ramTah.AncientRuinsLogs);
+        root["decodeTheLogs"] = WriteStringArray(ramTah.GuardianLogs);
+    }
+
+    private static JsonArray WriteStringArray(IEnumerable<string> values)
+    {
+        var array = new JsonArray();
+        foreach (var value in values
+                     .Distinct(StringComparer.Ordinal)
+                     .Order(StringComparer.Ordinal))
+        {
+            array.Add(value);
+        }
+
+        return array;
     }
 
     private static BioSampleSnapshot? ReadBioSample(
@@ -566,7 +634,8 @@ public sealed record CommanderProfileData(
     ExplorationSnapshot Exploration,
     ExobiologySnapshot Exobiology,
     SphereLimitSnapshot SphereLimit,
-    BoxelSearchSnapshot BoxelSearch);
+    BoxelSearchSnapshot BoxelSearch,
+    RamTahSnapshot RamTah);
 
 public sealed record CommanderProfileLoadResult(
     string Path,
