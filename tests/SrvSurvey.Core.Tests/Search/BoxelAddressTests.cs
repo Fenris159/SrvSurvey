@@ -36,6 +36,54 @@ public sealed class BoxelAddressTests
     }
 
     [Theory]
+    [InlineData(685451322393, "Wregoe BU-Y b2-0")]
+    [InlineData(1184840454858, "Synuefe NL-N c23-4")]
+    [InlineData(9420415411, "Pyraea Euq ZK-P d5-0")]
+    public void SystemAddressDecodesGeneratedBoxelGeometry(
+        long systemAddress,
+        string expectedName)
+    {
+        var decoded = BoxelAddress.TryFromSystemAddress(
+            systemAddress,
+            null,
+            out var boxel);
+
+        Assert.True(decoded);
+        Assert.Equal(expectedName, boxel?.GeneratedName);
+        Assert.Equal(systemAddress, boxel?.SystemAddress);
+    }
+
+    [Fact]
+    public void SystemAddressPreservesHandAuthoredPublicName()
+    {
+        var decoded = BoxelAddress.TryFromSystemAddress(
+            10477373803,
+            "Sol",
+            out var boxel);
+
+        Assert.True(decoded);
+        Assert.Equal("Sol", boxel?.Name);
+        Assert.NotEqual("Sol", boxel?.GeneratedName);
+        Assert.Equal(10477373803, boxel?.SystemAddress);
+    }
+
+    [Fact]
+    public void SystemAddressDecodesGeneratedShapedHandAuthoredSectorName()
+    {
+        const string publicName = "Col 173 Sector JX-K b24-0";
+
+        var decoded = BoxelAddress.TryFromSystemAddress(
+            684107179361,
+            publicName,
+            out var boxel);
+
+        Assert.True(decoded);
+        Assert.Equal(publicName, boxel?.Name);
+        Assert.NotEqual(publicName, boxel?.GeneratedName);
+        Assert.NotEqual("Col 173 Sector", boxel?.Sector);
+    }
+
+    [Theory]
     [InlineData("")]
     [InlineData("Sol")]
     [InlineData("Praea Euq IL-P z5-19")]

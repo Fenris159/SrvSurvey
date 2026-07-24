@@ -9,7 +9,8 @@ public sealed partial record BoxelAddress(
     char MassCode,
     int N1,
     int N2,
-    long SystemAddress = 0)
+    long SystemAddress = 0,
+    string? PublicName = null)
 {
     public const char MinimumMassCode = 'a';
     public const char MaximumMassCode = 'h';
@@ -22,7 +23,9 @@ public sealed partial record BoxelAddress(
         ? $"{Sector} {Letters} {MassCode}"
         : $"{Sector} {Letters} {MassCode}{N1}-";
 
-    public string Name => $"{Prefix}{N2}";
+    public string GeneratedName => $"{Prefix}{N2}";
+
+    public string Name => PublicName ?? GeneratedName;
 
     public int CubeSize => GetCubeSize(MassCode);
 
@@ -149,6 +152,66 @@ public sealed partial record BoxelAddress(
             : throw new FormatException($"'{value}' is not a generated boxel name.");
     }
 
+    public static bool TryFromSystemAddress(
+        long systemAddress,
+        string? publicName,
+        out BoxelAddress? boxel)
+    {
+        boxel = null;
+        if (systemAddress <= 0)
+        {
+            return false;
+        }
+
+        if (TryParse(publicName, out var parsed)
+            && parsed is not null
+            && BoxelSectorNameResolver.IsValidSectorName(parsed.Sector))
+        {
+            boxel = parsed with { SystemAddress = systemAddress };
+            return true;
+        }
+
+        var remaining = (ulong)systemAddress;
+        var massCodeValue = TakeBits(ref remaining, 3);
+        var massCode = (char)(MinimumMassCode + massCodeValue);
+        if (!IsValidMassCode(massCode))
+        {
+            return false;
+        }
+
+        var relativeBitCount = MaximumMassCode - massCode;
+        var relativeZ = TakeBits(ref remaining, relativeBitCount);
+        var sectorZ = TakeBits(ref remaining, 7);
+        var relativeY = TakeBits(ref remaining, relativeBitCount);
+        var sectorY = TakeBits(ref remaining, 6);
+        var relativeX = TakeBits(ref remaining, relativeBitCount);
+        var sectorX = TakeBits(ref remaining, 7);
+        if (remaining > int.MaxValue)
+        {
+            return false;
+        }
+
+        var sector = BoxelSectorNameResolver.GetSectorName(
+            sectorX,
+            sectorY,
+            sectorZ);
+        if (string.IsNullOrWhiteSpace(sector))
+        {
+            return false;
+        }
+
+        boxel = FromCoordinates(
+            sector,
+            relativeX,
+            relativeY,
+            relativeZ,
+            massCode,
+            (int)remaining,
+            systemAddress,
+            publicName?.Trim());
+        return true;
+    }
+
     public static bool IsValidMassCode(char massCode)
     {
         return massCode is >= MinimumMassCode and <= MaximumMassCode;
@@ -187,7 +250,12 @@ public sealed partial record BoxelAddress(
             throw new ArgumentOutOfRangeException(nameof(systemNumber));
         }
 
-        return this with { N2 = systemNumber, SystemAddress = 0 };
+        return this with
+        {
+            N2 = systemNumber,
+            SystemAddress = 0,
+            PublicName = null,
+        };
     }
 
     public bool Contains(BoxelAddress? child)
@@ -247,7 +315,10 @@ public sealed partial record BoxelAddress(
         int x,
         int y,
         int z,
-        char massCode)
+        char massCode,
+        int systemNumber = 0,
+        long systemAddress = 0,
+        string? publicName = null)
     {
         var value = x + (y * 128) + (z * 16384);
         var first = value % 26;
@@ -261,7 +332,22 @@ public sealed partial record BoxelAddress(
             $"{(char)(first + 'A')}{(char)(second + 'A')}-{(char)(third + 'A')}",
             massCode,
             value,
-            0);
+            systemNumber,
+            systemAddress,
+            publicName);
+    }
+
+    private static int TakeBits(ref ulong value, int count)
+    {
+        if (count == 0)
+        {
+            return 0;
+        }
+
+        var mask = (1UL << count) - 1;
+        var result = (int)(value & mask);
+        value >>= count;
+        return result;
     }
 
     [GeneratedRegex(
