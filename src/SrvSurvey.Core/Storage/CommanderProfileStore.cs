@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 
 namespace SrvSurvey.Core.Storage;
@@ -10,6 +11,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
     {
         WriteIndented = true,
     };
+
+    private readonly SemaphoreSlim saveLock = new(1, 1);
 
     public string ProfileDirectory { get; } = Path.GetFullPath(profileDirectory);
 
@@ -35,7 +38,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
                     frontierId,
                     null,
                     isOdyssey,
-                    ExplorationSnapshot.Empty),
+                    ExplorationSnapshot.Empty,
+                    ExobiologySnapshot.Empty),
                 null);
         }
 
@@ -61,7 +65,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
                 GetInt32(root, "countJumps") ?? 0,
                 GetInt32(root, "countScans") ?? 0,
                 GetInt32(root, "countDSS") ?? 0,
-                GetInt32(root, "countLanded") ?? 0));
+                GetInt32(root, "countLanded") ?? 0),
+            ReadExobiology(root));
         return new CommanderProfileLoadResult(path, true, data, null);
     }
 
@@ -73,66 +78,207 @@ public sealed class CommanderProfileStore(string profileDirectory)
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(exploration);
-        var path = GetProfilePath(frontierId, isOdyssey);
-        JsonObject root;
-        if (File.Exists(path))
-        {
-            var readResult = await ReadObjectAsync(path, cancellationToken)
-                .ConfigureAwait(false);
-            root = readResult.Root
-                ?? throw new InvalidDataException(
-                    $"The commander profile is malformed and was not overwritten: "
-                        + readResult.Error);
-        }
-        else
-        {
-            root = [];
-        }
+        await SaveFieldsAsync(
+            frontierId,
+            commanderName,
+            isOdyssey,
+            root =>
+            {
+                root["explRewards"] = exploration.EstimatedRewards;
+                root["distanceTravelled"] = exploration.DistanceTravelled;
+                root["countJumps"] = exploration.JumpCount;
+                root["countScans"] = exploration.ScanCount;
+                root["countDSS"] = exploration.DetailedSurfaceScanCount;
+                root["countLanded"] = exploration.LandedBodyCount;
+            },
+            cancellationToken).ConfigureAwait(false);
+    }
 
-        root["fid"] = frontierId;
-        if (!string.IsNullOrWhiteSpace(commanderName))
-        {
-            root["commander"] = commanderName;
-        }
+    public async Task SaveExobiologyAsync(
+        string frontierId,
+        string? commanderName,
+        bool isOdyssey,
+        ExobiologySnapshot exobiology,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(exobiology);
+        await SaveFieldsAsync(
+            frontierId,
+            commanderName,
+            isOdyssey,
+            root =>
+            {
+                root["lastOrganicScan"] = exobiology.LastOrganicScan;
+                WriteBioSample(root, "scanOne", exobiology.ScanOne);
+                WriteBioSample(root, "scanTwo", exobiology.ScanTwo);
+                root["organicRewards"] = exobiology.OrganicRewards;
+                var scannedIds = new JsonArray();
+                foreach (var entry in exobiology.ScannedBioEntryIds)
+                {
+                    scannedIds.Add(entry);
+                }
 
-        root["isOdyssey"] = isOdyssey;
-        root["explRewards"] = exploration.EstimatedRewards;
-        root["distanceTravelled"] = exploration.DistanceTravelled;
-        root["countJumps"] = exploration.JumpCount;
-        root["countScans"] = exploration.ScanCount;
-        root["countDSS"] = exploration.DetailedSurfaceScanCount;
-        root["countLanded"] = exploration.LandedBodyCount;
+                root["scannedBioEntryIds"] = scannedIds;
+                root["countRadicoidaUnica"] = exobiology.CountRadicoidaUnica;
+            },
+            cancellationToken).ConfigureAwait(false);
+    }
 
-        Directory.CreateDirectory(ProfileDirectory);
-        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+    private async Task SaveFieldsAsync(
+        string frontierId,
+        string? commanderName,
+        bool isOdyssey,
+        Action<JsonObject> update,
+        CancellationToken cancellationToken)
+    {
+        await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await using (var stream = new FileStream(
-                             temporaryPath,
-                             FileMode.CreateNew,
-                             FileAccess.Write,
-                             FileShare.None,
-                             16 * 1024,
-                             FileOptions.Asynchronous))
+            var path = GetProfilePath(frontierId, isOdyssey);
+            JsonObject root;
+            if (File.Exists(path))
             {
-                await JsonSerializer.SerializeAsync(
-                        stream,
-                        root,
-                        SerializerOptions,
-                        cancellationToken)
+                var readResult = await ReadObjectAsync(path, cancellationToken)
                     .ConfigureAwait(false);
-                await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+                root = readResult.Root
+                    ?? throw new InvalidDataException(
+                        $"The commander profile is malformed and was not overwritten: "
+                            + readResult.Error);
+            }
+            else
+            {
+                root = [];
             }
 
-            File.Move(temporaryPath, path, true);
+            root["fid"] = frontierId;
+            if (!string.IsNullOrWhiteSpace(commanderName))
+            {
+                root["commander"] = commanderName;
+            }
+
+            root["isOdyssey"] = isOdyssey;
+            update(root);
+
+            Directory.CreateDirectory(ProfileDirectory);
+            var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+            try
+            {
+                await using (var stream = new FileStream(
+                                 temporaryPath,
+                                 FileMode.CreateNew,
+                                 FileAccess.Write,
+                                 FileShare.None,
+                                 16 * 1024,
+                                 FileOptions.Asynchronous))
+                {
+                    await JsonSerializer.SerializeAsync(
+                            stream,
+                            root,
+                            SerializerOptions,
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                    await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                File.Move(temporaryPath, path, true);
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    File.Delete(temporaryPath);
+                }
+            }
         }
         finally
         {
-            if (File.Exists(temporaryPath))
-            {
-                File.Delete(temporaryPath);
-            }
+            saveLock.Release();
         }
+    }
+
+    private static ExobiologySnapshot ReadExobiology(JsonObject root)
+    {
+        return new ExobiologySnapshot(
+            GetString(root, "lastOrganicScan"),
+            ReadBioSample(root, "scanOne"),
+            ReadBioSample(root, "scanTwo"),
+            GetInt64(root, "organicRewards") ?? 0,
+            ReadStringArray(root, "scannedBioEntryIds"),
+            GetInt32(root, "countRadicoidaUnica") ?? 0);
+    }
+
+    private static BioSampleSnapshot? ReadBioSample(
+        JsonObject root,
+        string propertyName)
+    {
+        if (root[propertyName] is not JsonObject sample)
+        {
+            return null;
+        }
+
+        var location = sample["location"] as JsonObject;
+        return new BioSampleSnapshot(
+            new SurfaceLocation(
+                location is null ? 0 : GetDouble(location, "lat") ?? 0,
+                location is null ? 0 : GetDouble(location, "long") ?? 0),
+            (float)(GetDouble(sample, "radius") ?? 0),
+            GetString(sample, "genus") ?? string.Empty,
+            GetString(sample, "species") ?? string.Empty,
+            GetString(sample, "status") ?? "Active",
+            GetInt64(sample, "entryId") ?? 0,
+            GetString(sample, "body"));
+    }
+
+    private static IReadOnlyList<string> ReadStringArray(
+        JsonObject root,
+        string propertyName)
+    {
+        if (root[propertyName] is not JsonArray array)
+        {
+            return [];
+        }
+
+        return array
+            .OfType<JsonValue>()
+            .Select(value => value.TryGetValue<string>(out var text) ? text : null)
+            .Where(text => text is not null)
+            .Cast<string>()
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static void WriteBioSample(
+        JsonObject root,
+        string propertyName,
+        BioSampleSnapshot? sample)
+    {
+        if (sample is null)
+        {
+            root[propertyName] = null;
+            return;
+        }
+
+        if (root[propertyName] is not JsonObject node)
+        {
+            node = [];
+            root[propertyName] = node;
+        }
+
+        if (node["location"] is not JsonObject location)
+        {
+            location = [];
+            node["location"] = location;
+        }
+
+        location["lat"] = sample.Location.Latitude;
+        location["long"] = sample.Location.Longitude;
+        node["radius"] = sample.Radius;
+        node["genus"] = sample.Genus;
+        node["species"] = sample.Species;
+        node["status"] = sample.Status;
+        node["entryId"] = sample.EntryId;
+        node["body"] = sample.Body;
     }
 
     private static async Task<JsonObjectReadResult> ReadObjectAsync(
@@ -231,7 +377,8 @@ public sealed record CommanderProfileData(
     string FrontierId,
     string? CommanderName,
     bool IsOdyssey,
-    ExplorationSnapshot Exploration);
+    ExplorationSnapshot Exploration,
+    ExobiologySnapshot Exobiology);
 
 public sealed record CommanderProfileLoadResult(
     string Path,

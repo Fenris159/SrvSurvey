@@ -8,4 +8,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\docs\codexRef.json"
+                      LogicalName="SrvSurvey.Core.Resources.codexRef.json" />
+  </ItemGroup>
+
 </Project>
