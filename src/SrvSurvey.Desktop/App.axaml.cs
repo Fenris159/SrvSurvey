@@ -14,6 +14,7 @@ public sealed partial class App : Application
 {
     private GuardianOverlayCoordinator? guardianOverlayCoordinator;
     private GlobalKeyboardHookService? globalKeyboardHookService;
+    private GlobalControllerInputService? globalControllerInputService;
 
     public override void Initialize()
     {
@@ -52,6 +53,11 @@ public sealed partial class App : Application
                 capabilities.Host,
                 GameWindowTracker.CreateCurrent(),
                 () => mainWindow.InputContext.AreShortcutsActive);
+            globalControllerInputService = new GlobalControllerInputService(
+                inputSettings.CurrentSettings,
+                capabilities.Host,
+                GameWindowTracker.CreateCurrent(),
+                () => mainWindow.InputContext.AreShortcutsActive);
             globalKeyboardHookService.StatusChanged += (_, _) =>
             {
                 var status = globalKeyboardHookService?.Status;
@@ -61,7 +67,19 @@ public sealed partial class App : Application
                         () => inputSettings.UpdateRuntimeStatus(status));
                 }
             };
-            globalKeyboardHookService.ActionTriggered += (_, eventArgs) =>
+            globalControllerInputService.StatusChanged += (_, _) =>
+            {
+                var status = globalControllerInputService?.Status;
+                if (status is not null)
+                {
+                    Dispatcher.UIThread.Post(
+                        () => inputSettings.UpdateControllerRuntimeStatus(
+                            status));
+                }
+            };
+
+            void HandleAction(GlobalInputActionTriggeredEventArgs eventArgs)
+            {
                 Dispatcher.UIThread.Post(() =>
                 {
                     var handled = eventArgs.Action
@@ -73,13 +91,27 @@ public sealed partial class App : Application
 
                     inputSettings.ReportAction(eventArgs.Action, handled);
                 });
+            }
+
+            globalKeyboardHookService.ActionTriggered += (_, eventArgs) =>
+                HandleAction(eventArgs);
+            globalControllerInputService.ActionTriggered += (_, eventArgs) =>
+                HandleAction(eventArgs);
             inputSettings.SettingsChanged += (_, eventArgs) =>
+            {
                 globalKeyboardHookService?.Update(eventArgs.Settings);
+                globalControllerInputService?.Update(eventArgs.Settings);
+            };
             inputSettings.UpdateRuntimeStatus(
                 globalKeyboardHookService.Status);
+            inputSettings.UpdateControllerRuntimeStatus(
+                globalControllerInputService.Status);
             globalKeyboardHookService.Start();
+            globalControllerInputService.Start();
             desktop.Exit += (_, _) =>
             {
+                globalControllerInputService?.Dispose();
+                globalControllerInputService = null;
                 globalKeyboardHookService?.Dispose();
                 globalKeyboardHookService = null;
                 guardianOverlayCoordinator?.Dispose();

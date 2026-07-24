@@ -189,12 +189,52 @@
         </ItemsControl>
       </Expander>
 
-      <Border Classes="card">
-        <StackPanel Spacing="6">
-          <TextBlock Classes="card-title" Text="Controller input" />
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Controller input" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="SDL supports standard gamepads, joysticks, and HOTAS devices. Input is accepted while SrvSurvey or Elite Dangerous has focus." />
+            </StackPanel>
+            <CheckBox Grid.Column="1"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding InputSettings.ControllerEnabled, Mode=TwoWay}"
+                      IsEnabled="{Binding InputSettings.CanEnableControllerInput}"
+                      Content="Enabled" />
+          </Grid>
+
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <ComboBox MinWidth="360"
+                      ItemsSource="{Binding InputSettings.ControllerDevices}"
+                      SelectedItem="{Binding InputSettings.SelectedController, Mode=TwoWay}"
+                      PlaceholderText="Select a connected controller">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ControllerDeviceOptionViewModel">
+                  <StackPanel Margin="4" Spacing="2">
+                    <TextBlock FontWeight="SemiBold"
+                               Text="{Binding DisplayName}" />
+                    <TextBlock Classes="muted"
+                               FontSize="11"
+                               Text="{Binding Description}"
+                               TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Command="{Binding InputSettings.RefreshControllersCommand}"
+                    Content="Refresh devices" />
+          </Grid>
+
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="Imported controller bindings are preserved. The SDL controller adapter and device picker are the next input increment." />
+                     Text="{Binding InputSettings.ControllerDiscoveryStatus}" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     TextWrapping="Wrap"
+                     Text="{Binding InputSettings.ControllerRuntimeStatus}" />
         </StackPanel>
       </Border>
 

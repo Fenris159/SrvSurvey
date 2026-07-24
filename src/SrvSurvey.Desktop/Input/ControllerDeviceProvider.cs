@@ -79,7 +79,7 @@ public sealed class SdlControllerDeviceProvider : IControllerDeviceProvider
             : $"usb:{vendor:x4}:{product:x4}:{version:x4}:{name}";
     }
 
-    private static ControllerDeviceInfo CreateDevice(uint instanceId)
+    internal static ControllerDeviceInfo CreateDevice(uint instanceId)
     {
         var name = SDL.GetJoystickNameForID(instanceId)
             ?? $"Controller {instanceId}";

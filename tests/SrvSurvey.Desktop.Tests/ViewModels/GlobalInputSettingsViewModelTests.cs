@@ -18,7 +18,8 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
         var store = new GlobalInputSettingsStore(path);
         var viewModel = new GlobalInputSettingsViewModel(
             store,
-            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows),
+            new StubControllerDeviceProvider());
         var changed = 0;
         viewModel.SettingsChanged += (_, _) => changed++;
 
@@ -78,6 +79,67 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
             viewModel.Bindings[0].Chord);
     }
 
+    [Fact]
+    public void SelectsAndEnablesDiscoveredController()
+    {
+        var path = Path.Combine(temporaryDirectory, "controller.json");
+        var store = new GlobalInputSettingsStore(path);
+        var provider = new StubControllerDeviceProvider(
+            new ControllerDeviceInfo(
+                "path:controller-1",
+                "Test HOTAS",
+                "FlightStick - USB 1234:5678",
+                7));
+        var viewModel = new GlobalInputSettingsViewModel(
+            store,
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows),
+            provider);
+
+        viewModel.SelectedController = Assert.Single(
+            viewModel.ControllerDevices);
+        viewModel.ControllerEnabled = true;
+
+        var loaded = store.Load();
+        Assert.True(loaded.ControllerEnabled);
+        Assert.True(viewModel.CanEnableControllerInput);
+        Assert.Equal("path:controller-1", loaded.ControllerDeviceId);
+        Assert.Equal("Found 1 connected controller.",
+            viewModel.ControllerDiscoveryStatus);
+    }
+
+    [Fact]
+    public void PreservesDisconnectedConfiguredControllerForReconnect()
+    {
+        var path = Path.Combine(temporaryDirectory, "reconnect.json");
+        var store = new GlobalInputSettingsStore(path);
+        store.Save(GlobalInputSettings.Default with
+        {
+            ControllerEnabled = true,
+            ControllerDeviceId = "path:missing-controller",
+        });
+
+        var viewModel = new GlobalInputSettingsViewModel(
+            store,
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.LinuxX11),
+            new StubControllerDeviceProvider());
+
+        var device = Assert.Single(viewModel.ControllerDevices);
+        Assert.False(device.IsConnected);
+        Assert.Equal(device, viewModel.SelectedController);
+        Assert.True(viewModel.ControllerEnabled);
+    }
+
+    [Fact]
+    public void ControllerCannotBeEnabledWithoutSelection()
+    {
+        var viewModel = Create(OverlayHostKind.Windows);
+
+        viewModel.ControllerEnabled = true;
+
+        Assert.False(viewModel.ControllerEnabled);
+        Assert.False(viewModel.CanEnableControllerInput);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -91,6 +153,18 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
         return new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(
                 Path.Combine(temporaryDirectory, "ui-settings.json")),
-            OverlayPlatformCapabilities.ForHost(host));
+            OverlayPlatformCapabilities.ForHost(host),
+            new StubControllerDeviceProvider());
+    }
+
+    private sealed class StubControllerDeviceProvider(
+        params ControllerDeviceInfo[] devices) : IControllerDeviceProvider
+    {
+        public ControllerDeviceDiscoveryResult Discover()
+        {
+            return new ControllerDeviceDiscoveryResult(
+                devices,
+                ErrorMessage: null);
+        }
     }
 }
