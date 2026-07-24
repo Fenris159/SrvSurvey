@@ -70,6 +70,28 @@ public sealed class SystemNotesSettingsStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task LoadsAndSavesLegacyJourneyViewerPreferencesLosslessly()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "settings.json");
+        await File.WriteAllTextAsync(
+            path,
+            "{\"viewJourneyTopMost\":true,\"viewJourneyGalacticTime\":true,\"futureSetting\":42}");
+        var store = new SystemNotesSettingsStore(temporaryDirectory);
+
+        var loaded = store.Load();
+
+        Assert.True(loaded.Snapshot?.JourneyAlwaysOnTop);
+        Assert.True(loaded.Snapshot?.JourneyUseGalacticTime);
+
+        await store.SaveJourneyPreferencesAsync(false, true);
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.False(root["viewJourneyTopMost"]!.GetValue<bool>());
+        Assert.True(root["viewJourneyGalacticTime"]!.GetValue<bool>());
+        Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
+    }
+
+    [Fact]
     public async Task ResolvesLegacyImagesDirectoryWithSafeSystemName()
     {
         Directory.CreateDirectory(temporaryDirectory);

@@ -49,7 +49,9 @@ public sealed class SystemNotesSettingsStore(string dataDirectory)
                 true,
                 new SystemNotesSettingsSnapshot(
                     GetBoolean(root, "systemNotesTopMost") ?? false,
-                    GetString(root, "screenshotTargetFolder")),
+                    GetString(root, "screenshotTargetFolder"),
+                    GetBoolean(root, "viewJourneyTopMost") ?? false,
+                    GetBoolean(root, "viewJourneyGalacticTime") ?? false),
                 null);
         }
         catch (Exception exception) when (
@@ -68,6 +70,29 @@ public sealed class SystemNotesSettingsStore(string dataDirectory)
     public async Task SaveAlwaysOnTopAsync(
         bool alwaysOnTop,
         CancellationToken cancellationToken = default)
+    {
+        await SaveSettingsAsync(
+            root => root["systemNotesTopMost"] = alwaysOnTop,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SaveJourneyPreferencesAsync(
+        bool alwaysOnTop,
+        bool useGalacticTime,
+        CancellationToken cancellationToken = default)
+    {
+        await SaveSettingsAsync(
+            root =>
+            {
+                root["viewJourneyTopMost"] = alwaysOnTop;
+                root["viewJourneyGalacticTime"] = useGalacticTime;
+            },
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task SaveSettingsAsync(
+        Action<JsonObject> update,
+        CancellationToken cancellationToken)
     {
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -105,7 +130,7 @@ public sealed class SystemNotesSettingsStore(string dataDirectory)
                 root = [];
             }
 
-            root["systemNotesTopMost"] = alwaysOnTop;
+            update(root);
             await WriteObjectAsync(root, cancellationToken).ConfigureAwait(false);
         }
         finally
@@ -187,9 +212,15 @@ public sealed class SystemNotesSettingsStore(string dataDirectory)
 
 public sealed record SystemNotesSettingsSnapshot(
     bool AlwaysOnTop,
-    string? ScreenshotTargetFolder)
+    string? ScreenshotTargetFolder,
+    bool JourneyAlwaysOnTop = false,
+    bool JourneyUseGalacticTime = false)
 {
-    public static SystemNotesSettingsSnapshot Default { get; } = new(false, null);
+    public static SystemNotesSettingsSnapshot Default { get; } = new(
+        false,
+        null,
+        false,
+        false);
 }
 
 public sealed record SystemNotesSettingsLoadResult(
