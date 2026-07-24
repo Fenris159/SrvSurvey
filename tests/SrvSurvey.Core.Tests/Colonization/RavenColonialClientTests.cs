@@ -171,6 +171,83 @@ public sealed class RavenColonialClientTests
         Assert.Null(await client.GetProjectAsync("missing"));
     }
 
+    [Fact]
+    public async Task LoadsFleetCarrierByLegacyMarketEndpoint()
+    {
+        var client = Create(new StubHandler(request =>
+        {
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.Equal(
+                "/root/api/fc/3700123456",
+                request.RequestUri!.AbsolutePath);
+            return Json(
+                "{\"marketId\":3700123456,\"name\":\"ABC-123\",\"cargo\":{\"steel\":75}}");
+        }));
+
+        var carrier = await client.GetFleetCarrierAsync(3700123456);
+
+        Assert.Equal("ABC-123", carrier?.Name);
+        Assert.Equal(75, carrier?.Cargo["steel"]);
+    }
+
+    [Theory]
+    [InlineData("POST", false)]
+    [InlineData("PATCH", true)]
+    public async Task WritesFleetCarrierCargoWithApiKey(
+        string method,
+        bool adjust)
+    {
+        string? body = null;
+        var handler = new StubHandler(async request =>
+        {
+            Assert.Equal(method, request.Method.Method);
+            Assert.Equal(
+                "/root/api/fc/3700123456/cargo",
+                request.RequestUri!.AbsolutePath);
+            Assert.Equal(
+                "secret-key",
+                Assert.Single(request.Headers.GetValues("rcc-key")));
+            body = await request.Content!.ReadAsStringAsync();
+            return Json("{\"steel\":80}");
+        });
+        var client = Create(handler);
+
+        var result = adjust
+            ? await client.AdjustFleetCarrierCargoAsync(
+                3700123456,
+                new Dictionary<string, int> { ["steel"] = -5 },
+                "secret-key")
+            : await client.ReplaceFleetCarrierCargoAsync(
+                3700123456,
+                new Dictionary<string, int> { ["steel"] = 75 },
+                "secret-key");
+
+        Assert.Equal(80, result["STEEL"]);
+        Assert.Equal(
+            adjust ? -5 : 75,
+            JsonDocument.Parse(body!).RootElement
+                .GetProperty("steel")
+                .GetInt32());
+    }
+
+    [Fact]
+    public async Task RejectsNegativeReplacementCargoBeforeSending()
+    {
+        var sent = false;
+        var client = Create(new StubHandler(_ =>
+        {
+            sent = true;
+            return Json("{}");
+        }));
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            client.ReplaceFleetCarrierCargoAsync(
+                42,
+                new Dictionary<string, int> { ["steel"] = -1 },
+                "secret-key"));
+        Assert.False(sent);
+    }
+
     private static RavenColonialClient Create(HttpMessageHandler handler)
     {
         return new RavenColonialClient(

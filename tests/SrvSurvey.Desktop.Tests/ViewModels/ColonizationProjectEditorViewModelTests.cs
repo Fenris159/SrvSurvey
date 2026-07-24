@@ -280,5 +280,32 @@ public sealed class ColonizationProjectEditorViewModelTests
                     Commodities = project.Commodities,
                 });
         }
+
+        public Task<ColonizationFleetCarrier?> GetFleetCarrierAsync(
+            long marketId,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<ColonizationFleetCarrier?>(null);
+        }
+
+        public Task<IReadOnlyDictionary<string, int>>
+            ReplaceFleetCarrierCargoAsync(
+                long marketId,
+                IReadOnlyDictionary<string, int> cargo,
+                string apiKey,
+                CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(cargo);
+        }
+
+        public Task<IReadOnlyDictionary<string, int>>
+            AdjustFleetCarrierCargoAsync(
+                long marketId,
+                IReadOnlyDictionary<string, int> cargoChanges,
+                string apiKey,
+                CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(cargoChanges);
+        }
     }
 }

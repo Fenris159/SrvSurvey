@@ -31,6 +31,22 @@ public interface IRavenColonialClient
     Task<ColonizationProject?> CreateProjectAsync(
         ColonizationProjectCreate project,
         CancellationToken cancellationToken = default);
+
+    Task<ColonizationFleetCarrier?> GetFleetCarrierAsync(
+        long marketId,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyDictionary<string, int>> ReplaceFleetCarrierCargoAsync(
+        long marketId,
+        IReadOnlyDictionary<string, int> cargo,
+        string apiKey,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyDictionary<string, int>> AdjustFleetCarrierCargoAsync(
+        long marketId,
+        IReadOnlyDictionary<string, int> cargoChanges,
+        string apiKey,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed class RavenColonialClient : IRavenColonialClient
@@ -196,6 +212,105 @@ public sealed class RavenColonialClient : IRavenColonialClient
                 "create a colonisation project",
                 cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    public async Task<ColonizationFleetCarrier?> GetFleetCarrierAsync(
+        long marketId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(marketId);
+        using var response = await httpClient.GetAsync(
+            CreateUri($"api/fc/{marketId}"),
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        return await ReadRequiredAsync<ColonizationFleetCarrier>(
+                response,
+                "load Fleet Carrier cargo",
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public Task<IReadOnlyDictionary<string, int>>
+        ReplaceFleetCarrierCargoAsync(
+            long marketId,
+            IReadOnlyDictionary<string, int> cargo,
+            string apiKey,
+            CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(cargo);
+        if (cargo.Any(pair => pair.Value < 0))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(cargo),
+                "Replacement cargo counts cannot be negative.");
+        }
+
+        return SendFleetCarrierCargoAsync(
+            HttpMethod.Post,
+            marketId,
+            cargo,
+            apiKey,
+            "replace Fleet Carrier cargo",
+            cancellationToken);
+    }
+
+    public Task<IReadOnlyDictionary<string, int>> AdjustFleetCarrierCargoAsync(
+        long marketId,
+        IReadOnlyDictionary<string, int> cargoChanges,
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(cargoChanges);
+        return SendFleetCarrierCargoAsync(
+            HttpMethod.Patch,
+            marketId,
+            cargoChanges,
+            apiKey,
+            "adjust Fleet Carrier cargo",
+            cancellationToken);
+    }
+
+    private async Task<IReadOnlyDictionary<string, int>>
+        SendFleetCarrierCargoAsync(
+            HttpMethod method,
+            long marketId,
+            IReadOnlyDictionary<string, int> cargo,
+            string apiKey,
+            string operation,
+            CancellationToken cancellationToken)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(marketId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
+        var normalizedCargo = cargo
+            .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
+            .ToDictionary(
+                pair => pair.Key.Trim(),
+                pair => pair.Value,
+                StringComparer.OrdinalIgnoreCase);
+        using var request = new HttpRequestMessage(
+            method,
+            CreateUri($"api/fc/{marketId}/cargo"))
+        {
+            Content = JsonContent.Create(normalizedCargo, options: JsonOptions),
+        };
+        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        using var response = await httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
+        var result = await ReadRequiredAsync<Dictionary<string, int>>(
+                response,
+                operation,
+                cancellationToken)
+            .ConfigureAwait(false);
+        return new Dictionary<string, int>(
+            result,
+            StringComparer.OrdinalIgnoreCase);
     }
 
     private async Task<T?> GetAsync<T>(
