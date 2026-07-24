@@ -36,6 +36,9 @@ public sealed class ColonizationConstructionStateTests
         var snapshot = state.CreateSnapshot();
         Assert.NotNull(snapshot.CurrentDock);
         Assert.True(snapshot.CurrentDock.IsConstructionSite);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+            snapshot.CurrentDock.Timestamp);
         Assert.Equal("Far Reach", snapshot.CurrentDock.DefaultProjectName);
         Assert.NotNull(snapshot.CurrentDepot);
         Assert.Equal(140, snapshot.CurrentDepot.TotalRequired);

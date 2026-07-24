@@ -243,6 +243,115 @@ public sealed class ColonizationCommodityPlannerTests
         Assert.Empty(plan.Rows);
     }
 
+    [Fact]
+    public void UsesOnlyCurrentPostDockMarketStockForCarrierLoadGuidance()
+    {
+        var dockedAt = DateTimeOffset.Parse("2026-07-24T12:00:00Z");
+        var project = Project(
+            "tracked",
+            42,
+            99,
+            new Dictionary<string, int>
+            {
+                ["steel"] = 100,
+                ["water"] = 50,
+            }) with
+        {
+            LinkedFleetCarriers =
+            [
+                new ColonizationProjectFleetCarrier { MarketId = 500 },
+            ],
+        };
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 500,
+            Cargo = new Dictionary<string, int> { ["steel"] = 80 },
+        };
+        var construction = EmptyConstruction() with
+        {
+            CurrentDock = new ColonizationDockingSnapshot(
+                900,
+                99,
+                "Test System",
+                "Supply Station",
+                "Test Faction",
+                ["commodities"],
+                dockedAt),
+            ShipCargoCapacity = 64,
+        };
+        var market = new MarketSnapshot(
+            dockedAt.AddSeconds(1),
+            "Market",
+            900,
+            "Supply Station",
+            "Coriolis",
+            string.Empty,
+            "Test System",
+            [
+                MarketItem("$Steel_Name;", "Localized Steel", stock: 40),
+                MarketItem("$Water_Name;", "Localized Water", stock: 0),
+            ]);
+
+        var plan = ColonizationCommodityPlanner.Create(
+            [project],
+            [],
+            primaryBuildId: null,
+            "Test Cmdr",
+            [carrier],
+            shipCargo: null,
+            construction,
+            market);
+
+        var steel = plan.Rows.Single(row => row.Commodity == "steel");
+        var water = plan.Rows.Single(row => row.Commodity == "water");
+        Assert.True(steel.IsAvailableAtCurrentMarket);
+        Assert.False(steel.IsUnavailableAtCurrentMarket);
+        Assert.True(steel.CanCompleteFleetCarrierLoad);
+        Assert.Equal("Localized Steel", steel.DisplayName);
+        Assert.False(water.IsAvailableAtCurrentMarket);
+        Assert.True(water.IsUnavailableAtCurrentMarket);
+        Assert.False(water.CanCompleteFleetCarrierLoad);
+
+        var stalePlan = ColonizationCommodityPlanner.Create(
+            [project],
+            [],
+            primaryBuildId: null,
+            "Test Cmdr",
+            [carrier],
+            shipCargo: null,
+            construction,
+            market with { Timestamp = dockedAt });
+        Assert.All(stalePlan.Rows, row =>
+        {
+            Assert.False(row.IsAvailableAtCurrentMarket);
+            Assert.False(row.IsUnavailableAtCurrentMarket);
+            Assert.False(row.CanCompleteFleetCarrierLoad);
+        });
+    }
+
+    private static MarketItem MarketItem(
+        string name,
+        string localizedName,
+        int stock)
+    {
+        return new MarketItem(
+            1,
+            name,
+            localizedName,
+            "$MARKET_category_metals;",
+            "Metals",
+            1,
+            1,
+            1,
+            1,
+            0,
+            stock,
+            0,
+            Producer: stock > 0,
+            Consumer: false,
+            Rare: false);
+    }
+
     private static ColonizationProject Project(
         string id,
         long marketId,

@@ -32,7 +32,9 @@ public sealed class ColonizationConstructionState
         ArgumentNullException.ThrowIfNull(journalEvent);
         var changed = journalEvent.EventName switch
         {
-            "Docked" => ApplyDocked(journalEvent.Payload),
+            "Docked" => ApplyDocked(
+                journalEvent.Payload,
+                journalEvent.Timestamp),
             "Undocked" => ClearDocking(),
             "ColonisationConstructionDepot" => ApplyDepot(
                 journalEvent.Payload,
@@ -91,7 +93,9 @@ public sealed class ColonizationConstructionState
         return normalized.ToLowerInvariant();
     }
 
-    private bool ApplyDocked(JsonElement root)
+    private bool ApplyDocked(
+        JsonElement root,
+        DateTimeOffset? timestamp)
     {
         var marketId = GetInt64(root, "MarketID");
         var systemAddress = GetInt64(root, "SystemAddress");
@@ -115,7 +119,8 @@ public sealed class ColonizationConstructionState
             GetString(root, "StarSystem") ?? string.Empty,
             stationName,
             factionName,
-            services);
+            services,
+            timestamp);
         var changed = !DockEquals(updated, currentDock)
             || currentDepot is not null;
         currentDock = updated;
@@ -286,6 +291,7 @@ public sealed class ColonizationConstructionState
                 left.FactionName,
                 right.FactionName,
                 StringComparison.Ordinal)
+            && left.Timestamp == right.Timestamp
             && left.StationServices.SequenceEqual(
                 right.StationServices,
                 StringComparer.OrdinalIgnoreCase);
@@ -420,7 +426,8 @@ public sealed record ColonizationDockingSnapshot(
     string SystemName,
     string StationName,
     string? FactionName,
-    IReadOnlyList<string> StationServices)
+    IReadOnlyList<string> StationServices,
+    DateTimeOffset? Timestamp = null)
 {
     public const string SystemColonisationShip = "System Colonisation Ship";
     public const string ExternalPanelColonisationShip =
