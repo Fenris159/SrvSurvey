@@ -32,7 +32,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
-| Travel | `Main` Travel menu, journey/route forms | Ground target, journeys and routes | Ground-target editor, clipboard/current actions, persistence, and live guidance implemented; journeys/routes remain pending |
+| Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance, and the system-notes secondary window implemented; journeys/routes remain pending |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
@@ -82,7 +82,7 @@ system/body and platform behavior is ported.
 | `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
 | `FormStartNewCmdr` | Commander onboarding | Not ported |
 | `FormSwapStarCache` | Diagnostics / Reference data | Not ported |
-| `FormSystemNotes` | Travel / System notes | Not ported |
+| `FormSystemNotes` | Travel / System notes | Implemented with current journal context, lossless legacy system-file updates/creation, save/cancel, persistent always-on-top, screenshot-folder detection, exact Canonn/Spansh/EDSM actions, Travel launcher, and `Ctrl+Shift+N`; Windows visually checked in Blue dark/light. Journey note-count updates remain coupled to the unported Journey workflow |
 | `ViewJourneySystem` | Travel / Journeys | Not ported |
 | `ViewLogs` | Diagnostics / Logs | Not ported |
 
@@ -114,8 +114,10 @@ Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
 opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,
 joystick, and HOTAS input on Windows and Linux. The Settings page preserves and
 edits every legacy action binding; controller chords retain the original
-first-release dispatch behavior. Wayland keyboard capture remains disabled,
-while SDL controller input can operate when the Avalonia app itself is active.
+first-release dispatch behavior. The legacy `showSystemNotes` action now opens
+or activates the current-system notes window. Wayland keyboard capture remains
+disabled, while SDL controller input can operate when the Avalonia app itself
+is active.
 
 The code-rendered legacy `PlotBuildCommodities` surface is not part of the 22
 designer count above. Its Avalonia replacement is implemented as the detached
@@ -161,9 +163,12 @@ check at 1182 by 790, using a live journal folder:
   three-stage progress, profile status, and compatibility cards; UI Automation
   exposed Refresh and Clear unclaimed.
 - Travel rendered the surface-navigation metrics, coordinate editor, live
-  position, and explicit pending journey/route card. UI Automation exposed both
-  coordinate fields and Set, current-location, Paste, and Clear actions with
-  correct disabled state.
+  position, system-notes launcher, and explicit pending journey/route card. UI
+  Automation exposed both coordinate fields and Set, current-location, Paste,
+  and Clear actions with correct disabled state. The resizable system-notes
+  window rendered the live Facece system/address, empty-note state, topmost
+  control, three external links, and cancel/save actions in Blue (dark) and Blue
+  (light); it was cancelled without writing live profile data.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live
