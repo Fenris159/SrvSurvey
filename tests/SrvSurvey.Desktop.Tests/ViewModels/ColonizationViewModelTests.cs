@@ -221,6 +221,81 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Equal(60, row.OnFleetCarriers);
     }
 
+    [Fact]
+    public async Task FeedsPostDockMarketStockIntoOverlay()
+    {
+        var project = Project("build-1", "Port", remaining: 100) with
+        {
+            Commodities = new Dictionary<string, int> { ["steel"] = 100 },
+            LinkedFleetCarriers =
+            [
+                new ColonizationProjectFleetCarrier { MarketId = 42 },
+            ],
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [project],
+                [],
+                null,
+                [
+                    new ColonizationFleetCarrier
+                    {
+                        MarketId = 42,
+                        Cargo = new Dictionary<string, int>
+                        {
+                            ["steel"] = 80,
+                        },
+                    },
+                ]),
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Loadout",
+                "\"CargoCapacity\":64"),
+            Event(
+                "Docked",
+                """
+                "MarketID":900,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"Supply Station","StationServices":["commodities"]
+                """),
+        ]);
+        viewModel.UpdateMarket(new MarketSnapshot(
+            DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
+            "Market",
+            900,
+            "Supply Station",
+            "Coriolis",
+            string.Empty,
+            "Test",
+            [
+                new MarketItem(
+                    1,
+                    "$Steel_Name;",
+                    "Steel",
+                    "$MARKET_category_metals;",
+                    "Metals",
+                    1,
+                    1,
+                    1,
+                    1,
+                    0,
+                    50,
+                    0,
+                    true,
+                    false,
+                    false),
+            ]));
+
+        var row = Assert.Single(viewModel.CommodityOverlay.Plan.Rows);
+        Assert.True(row.IsAvailableAtCurrentMarket);
+        Assert.True(row.CanCompleteFleetCarrierLoad);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(directory))

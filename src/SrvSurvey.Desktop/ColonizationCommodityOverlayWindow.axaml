@@ -124,6 +124,7 @@
                     <DataTemplate x:DataType="vm:ColonizationCommodityOverlayRowViewModel">
                       <Border BorderBrush="{DynamicResource RavenBorderBrush}"
                               BorderThickness="0,1,0,0"
+                              Opacity="{Binding RowOpacity}"
                               Padding="4,7">
                         <Grid ColumnDefinitions="*,70,70,70,44"
                               ColumnSpacing="8">
@@ -136,6 +137,11 @@
                                        FontWeight="Bold"
                                        IsVisible="{Binding HasAssignment}"
                                        Text="{Binding AssignmentText}" />
+                            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                       FontSize="9"
+                                       FontWeight="Bold"
+                                       IsVisible="{Binding HasMarketBadge}"
+                                       Text="{Binding MarketBadgeText}" />
                           </StackPanel>
                           <TextBlock Grid.Column="1"
                                      HorizontalAlignment="Right"
@@ -143,6 +149,13 @@
                           <TextBlock Grid.Column="2"
                                      Foreground="{DynamicResource RavenAccentBrush}"
                                      HorizontalAlignment="Right"
+                                     IsVisible="{Binding IsFleetCarrierValueNormal}"
+                                     Text="{Binding OnFleetCarriersText}" />
+                          <TextBlock Grid.Column="2"
+                                     Foreground="{DynamicResource RavenWarningBrush}"
+                                     FontWeight="Bold"
+                                     HorizontalAlignment="Right"
+                                     IsVisible="{Binding IsFleetCarrierLoadHighlighted}"
                                      Text="{Binding OnFleetCarriersText}" />
                           <TextBlock Grid.Column="3"
                                      Foreground="{DynamicResource RavenSuccessBrush}"

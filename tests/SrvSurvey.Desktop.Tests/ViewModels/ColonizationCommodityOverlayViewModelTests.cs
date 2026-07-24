@@ -126,6 +126,58 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         Assert.Empty(viewModel.ShipColumnHeader);
     }
 
+    [Fact]
+    public void MarketGuidanceDimsUnavailableRowsAndHighlightsCarrierLoads()
+    {
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+        var plan = Plan() with
+        {
+            Rows =
+            [
+                new ColonizationCommodityPlanRow(
+                    "steel",
+                    "Steel",
+                    "Metals",
+                    100,
+                    20,
+                    80,
+                    false,
+                    false,
+                    IsAvailableAtCurrentMarket: true,
+                    IsUnavailableAtCurrentMarket: false,
+                    CanCompleteFleetCarrierLoad: true),
+                new ColonizationCommodityPlanRow(
+                    "water",
+                    "Water",
+                    "Chemicals",
+                    50,
+                    0,
+                    0,
+                    false,
+                    false,
+                    IsAvailableAtCurrentMarket: false,
+                    IsUnavailableAtCurrentMarket: true,
+                    CanCompleteFleetCarrierLoad: false),
+            ],
+        };
+        viewModel.Apply(plan, Status(GuiFocus.StationServices));
+        viewModel.ApplyPreferences(
+            ColonizationOverlayPreferences.Default with
+            {
+                HighlightAlmostCoveredFleetCarrierLoads = true,
+            });
+
+        var rows = viewModel.Groups.SelectMany(group => group.Rows).ToArray();
+        var steel = rows.Single(row => row.Commodity == "steel");
+        var water = rows.Single(row => row.Commodity == "water");
+        Assert.True(steel.IsFleetCarrierLoadHighlighted);
+        Assert.Equal("FC READY", steel.MarketBadgeText);
+        Assert.Equal("-20", steel.OnFleetCarriersText);
+        Assert.Equal(1, steel.RowOpacity);
+        Assert.False(water.HasMarketBadge);
+        Assert.Equal(0.48, water.RowOpacity);
+    }
+
     private static ColonizationCommodityPlan Plan()
     {
         return new ColonizationCommodityPlan(

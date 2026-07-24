@@ -76,6 +76,9 @@
               <CheckBox IsChecked="{Binding Colonization.InlineFleetCarrierCargo, Mode=TwoWay}"
                         IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
                         Content="Combine FC and ship counts" />
+              <CheckBox IsChecked="{Binding Colonization.HighlightAlmostCoveredFleetCarrierLoads, Mode=TwoWay}"
+                        IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
+                        Content="Highlight one-trip FC restocks" />
             </StackPanel>
           </Grid>
         </Border>

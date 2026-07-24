@@ -750,6 +750,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         await RamTah.ApplyJournalEventsAsync(update.JournalEvents);
         Guardian.UpdateCargo(update.Cargo);
         Colonization.UpdateCargo(update.Cargo);
+        Colonization.UpdateMarket(update.Market);
 
         if (update.Status is not null)
         {

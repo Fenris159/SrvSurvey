@@ -56,6 +56,7 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
             ShowFleetCarrierDelta = true,
             InlineFleetCarrierCargo = true,
             CollapseCoveredGroups = false,
+            HighlightAlmostCoveredFleetCarrierLoads = true,
         };
         store.SaveOverlayPreferences(updated);
 

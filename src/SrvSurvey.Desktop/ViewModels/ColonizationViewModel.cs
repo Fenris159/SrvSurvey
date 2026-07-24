@@ -24,6 +24,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<ColonizationFleetCarrier> fleetCarriers = [];
     private CargoSnapshot? shipCargo;
+    private MarketSnapshot? currentMarket;
     private EliteStatus? latestStatus;
     private string? commanderName;
     private string? currentSystemName;
@@ -124,6 +125,16 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         get => overlayPreferences.CollapseCoveredGroups;
         set => SaveOverlayPreferences(
             overlayPreferences with { CollapseCoveredGroups = value });
+    }
+
+    public bool HighlightAlmostCoveredFleetCarrierLoads
+    {
+        get => overlayPreferences.HighlightAlmostCoveredFleetCarrierLoads;
+        set => SaveOverlayPreferences(
+            overlayPreferences with
+            {
+                HighlightAlmostCoveredFleetCarrierLoads = value,
+            });
     }
 
     public bool IsEnabled
@@ -333,6 +344,17 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         }
 
         shipCargo = cargo;
+        UpdateCommodityPlan();
+    }
+
+    public void UpdateMarket(MarketSnapshot? market)
+    {
+        if (market is null)
+        {
+            return;
+        }
+
+        currentMarket = market;
         UpdateCommodityPlan();
     }
 
@@ -593,7 +615,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 CommanderName,
                 fleetCarriers,
                 shipCargo,
-                constructionState.CreateSnapshot()),
+                constructionState.CreateSnapshot(),
+                currentMarket),
             latestStatus);
     }
 

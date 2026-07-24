@@ -187,7 +187,9 @@ public sealed class ColonizationCommodityOverlayViewModel
                             row,
                             preferences.ShowFleetCarrierCargo,
                             preferences.ShowFleetCarrierDelta,
-                            preferences.InlineFleetCarrierCargo))
+                            preferences.InlineFleetCarrierCargo,
+                            preferences
+                                .HighlightAlmostCoveredFleetCarrierLoads))
                     .ToArray();
                 var canCollapse = !Plan.IsAtConstructionSite
                     && preferences.ShowFleetCarrierCargo
@@ -284,13 +286,15 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
     bool HasSurplusInShip,
     bool ShowFleetCarrierCargo,
     bool ShowFleetCarrierDelta,
-    bool InlineFleetCarrierCargo)
+    bool InlineFleetCarrierCargo,
+    bool HighlightAlmostCoveredFleetCarrierLoads)
 {
     public ColonizationCommodityOverlayRowViewModel(
         ColonizationCommodityPlanRow row,
         bool showFleetCarrierCargo,
         bool showFleetCarrierDelta,
-        bool inlineFleetCarrierCargo)
+        bool inlineFleetCarrierCargo,
+        bool highlightAlmostCoveredFleetCarrierLoads)
         : this(
             row.Commodity,
             row.DisplayName,
@@ -304,9 +308,39 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
             row.HasSurplusInShip,
             showFleetCarrierCargo,
             showFleetCarrierDelta,
-            inlineFleetCarrierCargo)
+            inlineFleetCarrierCargo,
+            highlightAlmostCoveredFleetCarrierLoads)
     {
+        IsAvailableAtCurrentMarket = row.IsAvailableAtCurrentMarket;
+        IsUnavailableAtCurrentMarket = row.IsUnavailableAtCurrentMarket;
+        CanCompleteFleetCarrierLoad = row.CanCompleteFleetCarrierLoad;
     }
+
+    public bool IsAvailableAtCurrentMarket { get; }
+
+    public bool IsUnavailableAtCurrentMarket { get; }
+
+    public bool CanCompleteFleetCarrierLoad { get; }
+
+    public int FleetCarrierDeficit => Math.Max(0, Needed - OnFleetCarriers);
+
+    public bool IsFleetCarrierLoadHighlighted =>
+        HighlightAlmostCoveredFleetCarrierLoads
+        && CanCompleteFleetCarrierLoad
+        && (!InlineFleetCarrierCargo || InShip == 0);
+
+    public bool IsFleetCarrierValueNormal =>
+        !IsFleetCarrierLoadHighlighted;
+
+    public bool HasMarketBadge => IsAvailableAtCurrentMarket;
+
+    public string MarketBadgeText => IsFleetCarrierLoadHighlighted
+        ? InShip >= FleetCarrierDeficit
+            ? "FC READY"
+            : "FC LOAD"
+        : "MARKET";
+
+    public double RowOpacity => IsUnavailableAtCurrentMarket ? 0.48 : 1;
 
     public string NeededText => Needed.ToString("N0");
 
@@ -328,7 +362,8 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
                 return string.Empty;
             }
 
-            if (!ShowFleetCarrierDelta)
+            if (!ShowFleetCarrierDelta
+                && !IsFleetCarrierLoadHighlighted)
             {
                 return OnFleetCarriers.ToString("N0");
             }
