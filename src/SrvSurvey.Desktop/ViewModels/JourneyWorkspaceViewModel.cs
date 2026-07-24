@@ -684,6 +684,14 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             {
                 StatusMessage = string.Join(Environment.NewLine, result.Errors);
             }
+            else
+            {
+                StatusMessage = SelectedJourney is null
+                    ? "No Journey history has been recorded for this commander."
+                    : SelectedJourney.Document.IsActive
+                        ? $"Active journey: {SelectedJourney.Document.Name}."
+                        : $"Loaded journey: {SelectedJourney.Document.Name}.";
+            }
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {

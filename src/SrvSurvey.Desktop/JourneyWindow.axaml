@@ -1,0 +1,446 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.JourneyWindow"
+        x:DataType="vm:JourneyWorkspaceViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="1160"
+        d:DesignHeight="780"
+        Width="1160"
+        Height="780"
+        MinWidth="900"
+        MinHeight="620"
+        Topmost="{Binding AlwaysOnTop}"
+        WindowStartupLocation="CenterOwner"
+        Title="Journeys - SrvSurvey">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Border Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="24,18">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="COMMANDER JOURNEYS" />
+          <TextBlock Classes="page-title" FontSize="24" Text="Expedition workspace" />
+          <TextBlock Classes="muted"
+                     Text="Browse history, inspect every visited system, and keep the active expedition current." />
+        </StackPanel>
+        <StackPanel Grid.Column="1"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Spacing="16">
+          <CheckBox x:Name="GalacticTimeCheckBox"
+                    IsChecked="{Binding UseGalacticTime, Mode=OneWay}"
+                    Click="Preferences_Click"
+                    Content="Galactic time" />
+          <CheckBox x:Name="AlwaysOnTopCheckBox"
+                    IsChecked="{Binding AlwaysOnTop, Mode=OneWay}"
+                    Click="Preferences_Click"
+                    Content="Always on top" />
+          <Button Classes="secondary" Click="Close_Click" Content="Close" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="292,*">
+      <Border Background="{DynamicResource RavenSidebarBrush}"
+              BorderBrush="{DynamicResource RavenBorderBrush}"
+              BorderThickness="0,0,1,0"
+              Padding="16">
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Button Classes="primary"
+                    Command="{Binding NewJourneyCommand}"
+                    Content="New journey" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Command="{Binding RefreshCommand}"
+                    Content="Refresh" />
+          </Grid>
+
+          <Grid Grid.Row="1">
+            <TextBlock Classes="muted"
+                       Margin="8"
+                       IsVisible="{Binding !HasJourneys}"
+                       TextWrapping="Wrap"
+                       Text="No journeys have been recorded for this commander." />
+            <ListBox ItemsSource="{Binding Journeys}"
+                     SelectedItem="{Binding SelectedJourney, Mode=TwoWay}"
+                     Background="Transparent"
+                     BorderThickness="0">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:JourneyListItemViewModel">
+                  <Border Classes="card" Padding="12" Margin="0,0,0,8">
+                    <StackPanel Spacing="5">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBlock FontWeight="SemiBold"
+                                   Text="{Binding Name}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <Border Grid.Column="1" Classes="badge" Padding="7,2">
+                          <TextBlock FontSize="9"
+                                     Foreground="{DynamicResource RavenAccentBrush}"
+                                     Text="{Binding State}" />
+                        </Border>
+                      </Grid>
+                      <TextBlock Classes="muted"
+                                 FontSize="11"
+                                 Text="{Binding Started, StringFormat='Started {0}'}" />
+                      <TextBlock Classes="muted"
+                                 FontSize="11"
+                                 MaxLines="2"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding Description}" />
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+
+          <Border Grid.Row="2" Classes="card raised" Padding="12">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="muted" FontSize="10" Text="ACTIVE JOURNEY" />
+              <TextBlock FontWeight="SemiBold"
+                         Text="{Binding ActiveJourneyName}"
+                         TextTrimming="CharacterEllipsis" />
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Text="{Binding ActiveJourneySummary}" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </Border>
+
+      <Grid Grid.Column="1">
+        <Grid Margin="20" IsVisible="{Binding HasSelectedJourney}">
+          <TabControl>
+            <TabItem Header="Overview">
+              <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="4,18,4,4" Spacing="18">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                    <StackPanel Spacing="6">
+                      <TextBlock Classes="muted" Text="JOURNEY NAME" />
+                      <TextBox FontSize="22"
+                               FontWeight="SemiBold"
+                               Text="{Binding JourneyName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                      <TextBlock Classes="muted" Text="{Binding JourneyByline}" />
+                    </StackPanel>
+                    <Border Grid.Column="1"
+                            Classes="badge"
+                            VerticalAlignment="Top"
+                            IsVisible="{Binding IsDirty}">
+                      <TextBlock FontSize="10"
+                                 Foreground="{DynamicResource RavenWarningBrush}"
+                                 Text="UNSAVED" />
+                    </Border>
+                  </Grid>
+
+                  <StackPanel Spacing="6">
+                    <TextBlock Classes="muted" Text="DESCRIPTION" />
+                    <TextBox MinHeight="92"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalContentAlignment="Top"
+                             Text="{Binding JourneyDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="What is this expedition for?" />
+                  </StackPanel>
+
+                  <StackPanel Spacing="10">
+                    <TextBlock Classes="card-title" Text="Quick statistics" />
+                    <ItemsControl ItemsSource="{Binding QuickStatistics}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <WrapPanel />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:JourneyStatisticViewModel">
+                          <Border Classes="card"
+                                  Width="184"
+                                  Margin="0,0,10,10"
+                                  Padding="12">
+                            <StackPanel Spacing="3">
+                              <TextBlock Classes="muted" FontSize="10" Text="{Binding Label}" />
+                              <TextBlock FontWeight="SemiBold" FontSize="17" Text="{Binding Value}" />
+                            </StackPanel>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </StackPanel>
+              </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Visited systems">
+              <Grid Margin="4,18,4,4" ColumnDefinitions="300,*" ColumnSpacing="16">
+                <Border Classes="card" Padding="8">
+                  <ListBox ItemsSource="{Binding VisitedSystems}"
+                           SelectedItem="{Binding SelectedSystem, Mode=TwoWay}"
+                           Background="Transparent"
+                           BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:JourneySystemItemViewModel">
+                        <Grid Margin="4,7" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                          <StackPanel Spacing="2">
+                            <TextBlock FontWeight="SemiBold"
+                                       Text="{Binding Name}"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Classes="muted"
+                                       FontSize="10"
+                                       Text="{Binding Arrived}" />
+                          </StackPanel>
+                          <TextBlock Grid.Column="1"
+                                     Foreground="{DynamicResource RavenAccentBrush}"
+                                     FontWeight="SemiBold"
+                                     Text="{Binding InterestFlags}" />
+                        </Grid>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </Border>
+
+                <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Disabled">
+                  <StackPanel Spacing="16" IsVisible="{Binding HasSelectedSystem}">
+                    <StackPanel Spacing="3">
+                      <TextBlock Classes="eyebrow" Text="SELECTED SYSTEM" />
+                      <TextBlock Classes="page-title"
+                                 FontSize="23"
+                                 Text="{Binding SelectedSystem.Name}" />
+                      <TextBlock Classes="muted"
+                                 Text="{Binding SelectedSystem.Address, StringFormat='System address {0}'}" />
+                    </StackPanel>
+
+                    <Border Classes="card raised">
+                      <TextBlock Classes="monospace"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding SelectedSystemDetails}" />
+                    </Border>
+
+                    <StackPanel Spacing="6">
+                      <TextBlock Classes="card-title" Text="System notes" />
+                      <TextBox MinHeight="130"
+                               AcceptsReturn="True"
+                               TextWrapping="Wrap"
+                               VerticalContentAlignment="Top"
+                               Text="{Binding SelectedSystemNotes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                               PlaceholderText="Add notes about this visit..." />
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                      <StackPanel Spacing="3">
+                        <TextBlock Classes="card-title" Text="Screenshots" />
+                        <TextBlock Classes="muted"
+                                   Text="Double-click a PNG to open it with the operating system." />
+                      </StackPanel>
+                      <Button Grid.Column="1"
+                              Classes="secondary"
+                              Command="{Binding OpenImagesCommand}"
+                              IsVisible="{Binding HasImagesDirectory}"
+                              Content="Open folder" />
+                    </Grid>
+                    <TextBlock Classes="muted"
+                               IsVisible="{Binding !HasScreenshots}"
+                               Text="No PNG screenshots were found for this system." />
+                    <ListBox x:Name="ScreenshotListBox"
+                             IsVisible="{Binding HasScreenshots}"
+                             ItemsSource="{Binding ScreenshotFiles}"
+                             DoubleTapped="ScreenshotListBox_DoubleTapped" />
+                  </StackPanel>
+                </ScrollViewer>
+              </Grid>
+            </TabItem>
+          </TabControl>
+        </Grid>
+
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="8"
+                    IsVisible="{Binding !HasSelectedJourney}">
+          <TextBlock Classes="page-title" FontSize="22" Text="No journey selected" />
+          <TextBlock Classes="muted"
+                     Text="Choose a journey from the history list or begin a new one." />
+        </StackPanel>
+      </Grid>
+    </Grid>
+
+    <Border Grid.Row="2"
+            Background="{DynamicResource RavenSurfaceBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="20,13">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+        <TextBlock Classes="muted"
+                   VerticalAlignment="Center"
+                   Text="{Binding StatusMessage}"
+                   TextTrimming="CharacterEllipsis" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+          <Button Classes="secondary"
+                  Command="{Binding RequestReprocessCommand}"
+                  Content="Reprocess journals" />
+          <Button Classes="secondary"
+                  Command="{Binding RequestConcludeCommand}"
+                  Content="Conclude" />
+          <Button Classes="secondary"
+                  Command="{Binding DiscardCommand}"
+                  Content="Discard" />
+          <Button Classes="primary"
+                  Command="{Binding SaveCommand}"
+                  Content="Save changes" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.RowSpan="3"
+          Panel.ZIndex="10"
+          Background="#99000000"
+          IsVisible="{Binding IsCreating}">
+      <Border Classes="card raised"
+              Width="650"
+              MaxHeight="700"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="18">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="eyebrow" Text="NEW JOURNEY" />
+              <TextBlock Classes="page-title" FontSize="24" Text="Begin an expedition" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Choose the last visit to a system as the starting point. Existing journals are replayed from there." />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Classes="muted" Text="NAME" />
+              <TextBox Text="{Binding NewJourneyName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       PlaceholderText="Expedition name" />
+            </StackPanel>
+            <StackPanel Spacing="6">
+              <TextBlock Classes="muted" Text="DESCRIPTION" />
+              <TextBox MinHeight="80"
+                       AcceptsReturn="True"
+                       TextWrapping="Wrap"
+                       Text="{Binding NewJourneyDescription, Mode=TwoWay}"
+                       PlaceholderText="Optional description" />
+            </StackPanel>
+
+            <Border Classes="card">
+              <StackPanel Spacing="12">
+                <RadioButton GroupName="JourneyStart"
+                             Click="CurrentStart_Click"
+                             IsChecked="{Binding UseCurrentStart, Mode=TwoWay}"
+                             Content="Start from the current system" />
+                <TextBlock Classes="muted"
+                           Margin="26,0,0,0"
+                           Text="{Binding CurrentStartSystem}" />
+                <RadioButton GroupName="JourneyStart"
+                             Click="PriorStart_Click"
+                             IsChecked="{Binding UsePriorStart, Mode=TwoWay}"
+                             Content="Start from a previously visited system" />
+                <StackPanel Margin="26,0,0,0"
+                            Spacing="8"
+                            IsVisible="{Binding !UseCurrentStart}">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBox Text="{Binding StartSystemQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="Search by system name" />
+                    <Button Grid.Column="1"
+                            Classes="secondary"
+                            Command="{Binding SearchSystemsCommand}"
+                            Content="Search" />
+                  </Grid>
+                  <ComboBox ItemsSource="{Binding StartSystemResults}"
+                            SelectedItem="{Binding SelectedStartSystem, Mode=TwoWay}"
+                            PlaceholderText="Select a matching system">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:JourneyStartSystemViewModel">
+                        <TextBlock Text="{Binding DisplayName}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+              <TextBlock Classes="muted"
+                         VerticalAlignment="Center"
+                         TextWrapping="Wrap"
+                         Text="{Binding StartStatus}" />
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      Command="{Binding FindStartCommand}"
+                      Content="Find last visit" />
+            </Grid>
+
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8">
+              <Button Classes="secondary"
+                      Command="{Binding CancelNewJourneyCommand}"
+                      Content="Cancel" />
+              <Button Classes="primary"
+                      Command="{Binding BeginJourneyCommand}"
+                      Content="Begin journey" />
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+    </Grid>
+
+    <Grid Grid.RowSpan="3"
+          Panel.ZIndex="11"
+          Background="#99000000"
+          IsVisible="{Binding IsConcludePending}">
+      <Border Classes="card raised"
+              Width="500"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="16">
+          <TextBlock Classes="page-title" FontSize="22" Text="Conclude this journey?" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="The current time becomes the expedition end. The history remains available and can still be edited." />
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button Classes="secondary"
+                    Command="{Binding CancelConcludeCommand}"
+                    Content="Keep travelling" />
+            <Button Classes="primary"
+                    Command="{Binding ConfirmConcludeCommand}"
+                    Content="Conclude journey" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Grid.RowSpan="3"
+          Panel.ZIndex="11"
+          Background="#99000000"
+          IsVisible="{Binding IsReprocessPending}">
+      <Border Classes="card raised"
+              Width="540"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="16">
+          <TextBlock Classes="page-title" FontSize="22" Text="Reprocess journal history?" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="This rebuilds all visit statistics from the starting journal. Legacy note and screenshot tags in the journey timeline are removed, while the underlying system notes and PNG files remain untouched." />
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button Classes="secondary"
+                    Command="{Binding CancelReprocessCommand}"
+                    Content="Cancel" />
+            <Button Classes="primary"
+                    Command="{Binding ConfirmReprocessCommand}"
+                    Content="Reprocess" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</Window>

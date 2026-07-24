@@ -17,6 +17,7 @@ public sealed partial class App : Application
     private ColonizationCommodityOverlayCoordinator?
         colonizationCommodityOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
+    private JourneyWindowCoordinator? journeyWindowCoordinator;
     private GlobalKeyboardHookService? globalKeyboardHookService;
     private GlobalControllerInputService? globalControllerInputService;
 
@@ -50,6 +51,9 @@ public sealed partial class App : Application
             desktop.MainWindow = mainWindow;
             systemNotesWindowCoordinator = new SystemNotesWindowCoordinator(
                 viewModel.SystemNotes,
+                mainWindow);
+            journeyWindowCoordinator = new JourneyWindowCoordinator(
+                viewModel.Journey,
                 mainWindow);
             guardianOverlayCoordinator = new GuardianOverlayCoordinator(
                 viewModel.Guardian,
@@ -165,6 +169,8 @@ public sealed partial class App : Application
                 colonizationCommodityOverlayCoordinator = null;
                 systemNotesWindowCoordinator?.Dispose();
                 systemNotesWindowCoordinator = null;
+                journeyWindowCoordinator?.Dispose();
+                journeyWindowCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();
                 guardianOverlayCoordinator = null;
             };

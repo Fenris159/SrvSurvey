@@ -53,6 +53,10 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
             .LoadAsync("F123", "Sol", 42);
         Assert.Equal("Remember this system", note.Notes);
 
+        await viewModel.RefreshAsync();
+
+        Assert.Equal("Active journey: Across the black.", viewModel.StatusMessage);
+
         await viewModel.ApplyJournalEventsAsync(
         [
             Parse("""{"timestamp":"2026-07-01T00:06:00Z","event":"Screenshot"}"""),

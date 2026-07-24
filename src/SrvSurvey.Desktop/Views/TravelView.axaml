@@ -157,17 +157,42 @@
           </Grid>
         </Border>
 
-        <Border Grid.Column="1" Classes="card">
-          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
-            <StackPanel Spacing="5">
-              <TextBlock Classes="card-title" Text="Journeys and routes" />
-              <TextBlock Classes="muted"
-                         TextWrapping="Wrap"
-                         Text="Journey history, route viewing, and their secondary windows remain in the next Travel slices." />
-            </StackPanel>
-            <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
-              <TextBlock Classes="muted" FontSize="11" Text="PENDING" />
-            </Border>
+        <Border Grid.Column="1" Classes="card raised">
+          <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="card-title" Text="Commander journeys" />
+                <TextBlock Classes="muted"
+                           Text="{Binding Journey.ActiveJourneyName}" />
+              </StackPanel>
+              <Border Grid.Column="1"
+                      Classes="badge"
+                      VerticalAlignment="Top"
+                      IsVisible="{Binding Journey.HasActiveJourney}">
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontSize="10"
+                           FontWeight="SemiBold"
+                           Text="ACTIVE" />
+              </Border>
+              <Border Grid.Column="1"
+                      Classes="badge"
+                      VerticalAlignment="Top"
+                      IsVisible="{Binding !Journey.HasActiveJourney}">
+                <TextBlock Classes="muted"
+                           FontSize="10"
+                           FontWeight="SemiBold"
+                           Text="READY" />
+              </Border>
+            </Grid>
+            <TextBlock Grid.Row="1"
+                       Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding Journey.ActiveJourneySummary}" />
+            <Button Grid.Row="2"
+                    Classes="primary"
+                    HorizontalAlignment="Left"
+                    Command="{Binding Journey.OpenWindowCommand}"
+                    Content="Open Journey workspace" />
           </Grid>
         </Border>
       </Grid>
