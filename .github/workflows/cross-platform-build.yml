@@ -1,1 +1,66 @@
-# CI workflow for Windows + Linux AppImage + Container
+name: Cross-platform foundation
+
+on:
+  push:
+    branches:
+      - cross-platform-development
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+
+jobs:
+  build-test-publish:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64
+            os: windows-latest
+            rid: win-x64
+          - name: Linux x64
+            os: ubuntu-latest
+            rid: linux-x64
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore SrvSurvey.CrossPlatform.slnx
+
+      - name: Build
+        run: dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-build --no-restore
+
+      - name: Publish self-contained desktop shell
+        run: >-
+          dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj
+          --configuration Release
+          --runtime ${{ matrix.rid }}
+          --self-contained true
+          --output artifacts/${{ matrix.rid }}
+          -p:DebugType=None
+          -p:DebugSymbols=false
+
+      - name: Upload publish directory
+        uses: actions/upload-artifact@v6
+        with:
+          name: SrvSurvey-development-${{ matrix.rid }}
+          path: artifacts/${{ matrix.rid }}
+          if-no-files-found: error
+          retention-days: 14

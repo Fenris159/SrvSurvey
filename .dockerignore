@@ -1,0 +1,11 @@
+.git
+.github
+.vs
+**/bin
+**/obj
+artifacts
+docs
+SrvSurvey
+SrvSurvey.Package
+BlinkMeasure
+JournalViewer
