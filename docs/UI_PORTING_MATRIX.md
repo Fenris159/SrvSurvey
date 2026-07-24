@@ -34,7 +34,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, journeys and routes | Ground-target editor, clipboard/current actions, persistence, and live guidance implemented; journeys/routes remain pending |
 | Search | `Main` Search menu, sphere/boxel forms | Spatial and boxel searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest-system workflow remains pending |
-| Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, and both Ram Tah missions implemented; detached overlays and advanced map-authoring tools remain |
+| Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
 | Colonisation | `Main` Colonise menu and project forms | Raven projects and construction state | Not ported |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
 | Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes plus checksum-verified legacy profile import implemented; remaining settings not ported |
@@ -98,6 +98,17 @@ Windows, X11, and Wayland:
 `PlotJumpInfo`, `PlotMassacre`, `PlotPriorScans`, `PlotRamTah`,
 `PlotSphericalSearch`, `PlotSysStatus`, `PlotTrackers`, `PlotTrackTarget`, and
 the shared `PlotBase`.
+
+The shared passive-window infrastructure now provides monitor-aware physical
+placement, focus/minimize lifecycle, Windows native click-through and Elite
+client tracking, X11 XShape click-through and EWMH/Xlib tracking, and explicit
+Wayland disablement. The detached Guardian window is a partial consolidation of
+`PlotGuardians` and the active-obelisk slice of `PlotGuardianStatus`: it renders
+the live native map, commander marker, nearest/current obelisk, artifact
+requirements, scan state, and Ram Tah mission status. Site-type, heading,
+origin/alignment, POI marking input, glide/approach guidance, and
+`PlotGuardianSystem` remain open. The other plotter surfaces remain unported,
+and the new Windows/X11 adapters still require live Elite runtime validation.
 
 ## Raven Colonial theme contract
 

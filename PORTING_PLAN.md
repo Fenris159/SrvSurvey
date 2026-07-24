@@ -169,14 +169,23 @@ events remain non-fatal and observable.
 
 ### Phase 4 — Overlay and input infrastructure
 
-- [ ] Implement Avalonia overlay primitives, scaling, theme, and multi-monitor
+- [x] Implement Avalonia overlay primitives, scaling, theme, and multi-monitor
   coordinates.
-- [ ] Add platform adapters for topmost/click-through behavior and game-window
+- [x] Add platform adapters for topmost/click-through behavior and game-window
   tracking.
 - [ ] Replace SharpDX input with maintained APIs and preserve configurable
   bindings.
-- [ ] Define behavior for unsupported Wayland capabilities.
+- [x] Define behavior for unsupported Wayland capabilities.
 - [ ] Measure overlay update cost while the game is active.
+
+The first consumer is the detached Guardian live map/current-obelisk surface.
+Windows uses native extended window styles plus client-area tracking; X11 uses
+XShape input regions plus EWMH/Xlib window discovery. Both follow the active
+Elite client area, account for monitor scaling, hide when Elite is minimized or
+not foreground, and fail closed if click-through cannot be enabled. Wayland
+keeps detached overlays disabled because absolute placement and input regions
+are compositor-controlled. Native Elite runtime checks on Windows and X11,
+global input, and the remaining plotter surfaces are still required.
 
 Exit gate: overlay positioning, DPI scaling, focus, click-through behavior, and
 input are recorded on the supported platform matrix.
@@ -232,8 +241,8 @@ not expected to run as a headless container service.
 | Ground target tracking | Legacy coordinate parsing plus cardinal formats, validated settings, great-circle distance/bearing, relative heading, and approach bands implemented | Travel target editor supports typed, current, clipboard, clear, and live guidance; overlay remains pending | Inactive/live-profile page visually and accessibility checked; active surface guidance not run | Not tested |
 | Spherical search limit | Legacy-compatible center/radius state, strict boundary rule, lossless commander persistence, journal galactic position, and current Spansh response contract implemented | Search supports center lookup and selection, 1–1000 ly radius, enable/disable, and current-system distance/result; `PlotSphericalSearch` remains pending | Live profile page and Sol lookup visually/accessibility checked; save action enabled but profile was not changed | Not tested |
 | Boxel search | Generated-name hierarchy, ID64 decoding for generated and hand-authored names, completion/skip rules, lossless commander fields, legacy local-system and empty-boxel files, paged Spansh search, live `NavRoute.json`/journal updates, and cancellable full-area completion audit with partial results implemented | Search supports activation, mass-code/date options, current/parent/sibling/child navigation, expected counts, manual completion, empty marking, current-system highlighting, refresh, manual/Galaxy Map clipboard copy, audit progress/cancellation, and a large-audit confirmation guard | Inactive live-profile page and audit controls visually and accessibility checked at 1182 by 790; automated ID64, source-merge, live-completion, audit, cancellation, and confirmation integration passed; no search/profile/audit action was invoked | Not tested |
-| Guardian surveys | All 759 shipped sites, 13 map templates, 729 published surveys, exact completion scoring, duplicate-ID/full-body matching, legacy/current commander files, compact/old POI and obelisk formats, visits, notes, beacon locations, live site transitions/writes, native map projection, lossless survey editing, cargo artifact aliases, 25 m obelisk proximity, scan persistence, and both Ram Tah missions implemented; detached overlay/platform behavior remains | Browser, clipboard actions, native maps, survey editor, live-site/scanner cards, artifact requirements, scan toggle, and both complete Ram Tah workspaces implemented; advanced map authoring and detached overlays remain | Live-profile browser, maps/editor, Ram Tah tabs, and inactive scanner card visually checked at 1182 by 790; scanner checked in Blue dark/light without changing commander state; active in-game proximity not run | Not tested |
-| Overlays/input | Not implemented | Not implemented | Not tested | Not tested |
+| Guardian surveys | All 759 shipped sites, 13 map templates, 729 published surveys, exact completion scoring, duplicate-ID/full-body matching, legacy/current commander files, compact/old POI and obelisk formats, visits, notes, beacon locations, live site transitions/writes, native map projection, lossless survey editing, cargo artifact aliases, 25 m obelisk proximity, scan persistence, and both Ram Tah missions implemented; advanced authoring and remaining Guardian plotter modes remain | Browser, clipboard actions, native maps, survey editor, live-site/scanner cards, artifact requirements, scan toggle, both complete Ram Tah workspaces, and a detached live map/current-obelisk overlay implemented | Live-profile browser, maps/editor, Ram Tah tabs, and inactive scanner card visually checked at 1182 by 790; scanner checked in Blue dark/light without changing commander state; detached overlay compiled and automated but active in-game proximity was not run | Not tested |
+| Overlays/input | Passive overlay contract, monitor-aware placement, Windows native click-through/client tracking, X11 XShape click-through/EWMH tracking, and Wayland capability gating implemented; global input and remaining plotters pending | Guardian live map/current-obelisk overlay automatically follows foreground Elite and closes on unsafe/unavailable states | Placement, capability, identity, view-model, and Linux publish checks passed; no live Elite overlay session run | Linux runtime not tested |
 | Secondary features | Not implemented | Not implemented | Not tested | Not tested |
 | Packaging/AppImage | Self-contained publish configured; no AppImage | Not applicable | `win-x64` publish passed | Cross-publish passed; runtime not tested |
 
@@ -247,12 +256,12 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 226 tests: 184 Core tests and 42 Desktop tests.
+  passed all 243 tests: 184 Core tests and 59 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
-- Self-contained `win-x64` and `linux-x64` publish commands completed after the
-  shell and theme changes.
+- Self-contained `win-x64` and `linux-x64` publish commands completed; the
+  Linux publish was repeated after adding the X11 native adapters.
 - The Windows development shell remained healthy during startup smoke tests with
   a deliberately missing journal directory and with the default live journal
   folder (455 journal files present), then was stopped after each check.
@@ -320,6 +329,12 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   Blue (light). Its inactive proximity, artifact, mission, and disabled scan
   states were visually checked and exposed through UI Automation. Blue (dark)
   was restored, and no commander survey or Ram Tah state was changed.
+- Automated overlay coverage now includes Windows/X11/Wayland capability
+  matrices, Windows and Wine/X11 Elite window identities, negative-coordinate
+  multi-monitor placement, the Guardian overlay preparation state, and
+  commander map projection. The Windows and X11 adapters are compiled into
+  self-contained publish outputs, but have not yet been exercised over a live
+  Elite window; Wayland remains intentionally disabled.
 - The workflow YAML and `global.json` parsed successfully.
 
 Not validated in this environment:
