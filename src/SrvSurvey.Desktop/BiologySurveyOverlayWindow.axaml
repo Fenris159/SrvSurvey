@@ -1,0 +1,273 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.BiologySurveyOverlayWindow"
+        x:DataType="vm:SystemSurveyOverlayViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="390"
+        d:DesignHeight="680"
+        Width="390"
+        MinHeight="150"
+        MaxHeight="780"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey biology survey overlay">
+  <Border Margin="8"
+          Padding="15"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="12"
+          Opacity="0.97">
+    <StackPanel IsVisible="{Binding Survey.HasBiologySurvey}"
+                Spacing="10">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="EXOBIOLOGY SURVEY" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="20"
+                     FontWeight="SemiBold"
+                     Text="{Binding Survey.BiologySurvey.Heading}"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Classes="muted"
+                     FontSize="10"
+                     Text="{Binding Survey.BiologySurvey.ProgressText}" />
+        </StackPanel>
+        <Border Grid.Column="1"
+                Classes="badge"
+                VerticalAlignment="Top">
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="9"
+                     FontWeight="SemiBold"
+                     Text="{Binding InputMode}" />
+        </Border>
+      </Grid>
+
+      <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+
+      <ScrollViewer MaxHeight="610"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="9">
+          <ItemsControl IsVisible="{Binding Survey.BiologySurvey.IsSystemOverview}"
+                        ItemsSource="{Binding Survey.BiologySurvey.Bodies}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BiologyBodyRowViewModel">
+                <Border Margin="0,0,0,6"
+                        Padding="10"
+                        Background="{DynamicResource RavenSurfaceBrush}"
+                        BorderBrush="{DynamicResource RavenBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                  <Grid RowDefinitions="Auto,Auto" RowSpacing="7">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                      <StackPanel Orientation="Horizontal" Spacing="7">
+                        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding Name}" />
+                        <Border Classes="badge"
+                                IsVisible="{Binding IsDestination}">
+                          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                     FontSize="8"
+                                     FontWeight="Bold"
+                                     Text="TARGET" />
+                        </Border>
+                        <Border Classes="badge"
+                                IsVisible="{Binding IsCurrentBody}">
+                          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                     FontSize="8"
+                                     FontWeight="Bold"
+                                     Text="LOCAL" />
+                        </Border>
+                      </StackPanel>
+                      <StackPanel Grid.Column="1"
+                                  HorizontalAlignment="Right"
+                                  Spacing="2">
+                        <TextBlock Classes="monospace"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding ProgressText}" />
+                        <TextBlock Classes="monospace"
+                                   FontSize="9"
+                                   HorizontalAlignment="Right"
+                                   IsVisible="{Binding HasReward}"
+                                   Text="{Binding RewardText}" />
+                      </StackPanel>
+                    </Grid>
+                    <ProgressBar Grid.Row="1"
+                                 Height="4"
+                                 Minimum="0"
+                                 Maximum="{Binding SignalCount}"
+                                 Value="{Binding AnalyzedSignalCount}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Border Padding="10"
+                  Background="{DynamicResource RavenAccentMutedBrush}"
+                  CornerRadius="8"
+                  IsVisible="{Binding Survey.BiologySurvey.RequiresDss}">
+            <StackPanel Spacing="2">
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontWeight="SemiBold"
+                         Text="DSS scan required" />
+              <TextBlock Classes="muted"
+                         FontSize="10"
+                         Text="Map the body to identify its biological genera."
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <ItemsControl IsVisible="{Binding Survey.BiologySurvey.IsBodyDetail}"
+                        ItemsSource="{Binding Survey.BiologySurvey.Organisms}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BiologyOrganismRowViewModel">
+                <Grid Margin="0,0,0,7"
+                      ColumnDefinitions="Auto,*">
+                  <Border Width="3"
+                          Margin="0,3,8,3"
+                          Background="{DynamicResource RavenAccentBrush}"
+                          CornerRadius="2"
+                          IsVisible="{Binding IsCurrentSample}" />
+                  <Border Grid.Column="1"
+                          Padding="10"
+                          Background="{DynamicResource RavenSurfaceBrush}"
+                          BorderBrush="{DynamicResource RavenBorderBrush}"
+                          BorderThickness="1"
+                          CornerRadius="8"
+                          Opacity="{Binding RowOpacity}">
+                    <StackPanel Spacing="6">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <StackPanel Spacing="2">
+                          <TextBlock FontWeight="SemiBold"
+                                     IsVisible="{Binding !IsHighlightedFirst}"
+                                     Text="{Binding DisplayName}"
+                                     TextTrimming="CharacterEllipsis" />
+                          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                     FontWeight="Bold"
+                                     IsVisible="{Binding IsHighlightedFirst}"
+                                     Text="{Binding DisplayName}"
+                                     TextTrimming="CharacterEllipsis" />
+                          <TextBlock Classes="muted"
+                                     FontSize="9"
+                                     Text="{Binding GenusName}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1"
+                                   Classes="monospace"
+                                   Foreground="{DynamicResource RavenAccentBrush}"
+                                   FontSize="10"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding RewardText}" />
+                      </Grid>
+                      <WrapPanel Orientation="Horizontal">
+                        <Border Margin="0,0,5,0"
+                                Classes="badge"
+                                IsVisible="{Binding IsCurrentSample}">
+                          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                     FontSize="8"
+                                     FontWeight="Bold"
+                                     Text="ACTIVE SAMPLE" />
+                        </Border>
+                        <Border Margin="0,0,5,0"
+                                Classes="badge"
+                                IsVisible="{Binding IsAnalyzed}">
+                          <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
+                                     FontSize="8"
+                                     FontWeight="Bold"
+                                     Text="ANALYZED" />
+                        </Border>
+                        <Border Margin="0,0,5,0"
+                                Classes="badge"
+                                IsVisible="{Binding IsRegionalFirst}">
+                          <Grid>
+                            <TextBlock Classes="muted"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       IsVisible="{Binding !IsHighlightedFirst}"
+                                       Text="REGIONAL FIRST" />
+                            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       IsVisible="{Binding IsHighlightedFirst}"
+                                       Text="REGIONAL FIRST" />
+                          </Grid>
+                        </Border>
+                        <Border Margin="0,0,5,0"
+                                Classes="badge"
+                                IsVisible="{Binding IsPrediction}">
+                          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                     FontSize="8"
+                                     FontWeight="Bold"
+                                     Text="GENUS IDENTIFIED" />
+                        </Border>
+                        <Border Classes="badge"
+                                IsVisible="{Binding IsUnknown}">
+                          <TextBlock Classes="muted"
+                                     FontSize="8"
+                                     FontWeight="Bold"
+                                     Text="UNIDENTIFIED" />
+                        </Border>
+                      </WrapPanel>
+                    </StackPanel>
+                  </Border>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <StackPanel IsVisible="{Binding Survey.BiologySurvey.HasGeologicalSignals}"
+                      Spacing="6">
+            <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                       FontSize="10"
+                       FontWeight="SemiBold"
+                       Text="{Binding Survey.BiologySurvey.GeologicalSignalCount, StringFormat=GEOLOGICAL SIGNALS: {0}}" />
+            <ItemsControl ItemsSource="{Binding Survey.BiologySurvey.GeologicalSignals}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Margin="8,0,0,2"
+                             Classes="muted"
+                             FontSize="10"
+                             Text="{Binding}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Margin="8,0,0,0"
+                       Classes="muted"
+                       FontSize="10"
+                       FontStyle="Italic"
+                       IsVisible="{Binding Survey.BiologySurvey.HasUnidentifiedGeologicalSignals}"
+                       Text="{Binding Survey.BiologySurvey.UnidentifiedGeologicalSignalsText}" />
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="10"
+                   FontWeight="SemiBold"
+                   IsVisible="{Binding Survey.BiologySurvey.HasRewardSummary}"
+                   Text="{Binding Survey.BiologySurvey.RewardSummary}" />
+        <TextBlock Grid.Column="1"
+                   Foreground="{DynamicResource RavenWarningBrush}"
+                   FontSize="10"
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Right"
+                   IsVisible="{Binding Survey.BiologySurvey.HasFirstFootfallRewardSummary}"
+                   Text="{Binding Survey.BiologySurvey.FirstFootfallRewardSummary}" />
+      </Grid>
+    </StackPanel>
+  </Border>
+</Window>

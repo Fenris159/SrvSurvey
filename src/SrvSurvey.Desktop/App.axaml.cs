@@ -85,6 +85,8 @@ public sealed partial class App : Application
                     guardianOverlayCoordinator?.IsVisible == true);
                 systemSurveyOverlayCoordinator?.SetBodyInfoObscured(
                     guardianOverlayCoordinator?.IsVisible == true);
+                systemSurveyOverlayCoordinator?.SetBiologyObscured(
+                    guardianOverlayCoordinator?.IsVisible == true);
                 guardianOverlayCoordinator?.SetObscured(
                     jumpInfoOverlayCoordinator?.IsVisible == true
                     || (systemSurveyOverlayCoordinator?.IsFssVisible == true

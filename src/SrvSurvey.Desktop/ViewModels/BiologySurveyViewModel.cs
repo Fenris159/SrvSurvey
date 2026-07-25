@@ -31,6 +31,18 @@ public sealed record BiologySurveyViewModel(
 
     public bool HasGeologicalSignals => GeologicalSignalCount > 0;
 
+    public int UnidentifiedGeologicalSignalCount => Math.Max(
+        0,
+        GeologicalSignalCount - GeologicalSignals.Count);
+
+    public bool HasUnidentifiedGeologicalSignals =>
+        UnidentifiedGeologicalSignalCount > 0;
+
+    public string UnidentifiedGeologicalSignalsText =>
+        UnidentifiedGeologicalSignalCount == 1
+            ? "1 geological signal unidentified"
+            : $"{UnidentifiedGeologicalSignalCount:N0} geological signals unidentified";
+
     public static BiologySurveyViewModel? Create(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
@@ -323,6 +335,8 @@ public sealed record BiologyOrganismRowViewModel(
     bool IsUnknown,
     bool ShouldDim)
 {
+    public double RowOpacity => ShouldDim ? 0.48 : 1;
+
     public string RewardText => HasReward
         ? Reward >= 1_000_000
             ? $"{Reward / 1_000_000d:N2} M CR"
