@@ -1372,7 +1372,10 @@ public sealed record BodyCompositionRowViewModel(
     string Value,
     bool IsRare);
 
-public sealed record BodyRingRowViewModel(string Name, string RingClass);
+public sealed record BodyRingRowViewModel(string Name, string RingClass)
+{
+    public string DisplayText => $"{Name} · {RingClass}";
+}
 
 internal sealed record BodyInfoTarget(
     int BodyId,

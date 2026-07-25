@@ -83,10 +83,14 @@ public sealed partial class App : Application
             {
                 systemSurveyOverlayCoordinator?.SetFssObscured(
                     guardianOverlayCoordinator?.IsVisible == true);
+                systemSurveyOverlayCoordinator?.SetBodyInfoObscured(
+                    guardianOverlayCoordinator?.IsVisible == true);
                 guardianOverlayCoordinator?.SetObscured(
                     jumpInfoOverlayCoordinator?.IsVisible == true
-                    || systemSurveyOverlayCoordinator?.IsFssVisible == true
-                        && viewModel.SystemSurvey.IsFssInfoForced);
+                    || (systemSurveyOverlayCoordinator?.IsFssVisible == true
+                        && viewModel.SystemSurvey.IsFssInfoForced)
+                    || (systemSurveyOverlayCoordinator?.IsBodyInfoVisible == true
+                        && viewModel.SystemSurvey.IsBodyInfoForced));
             }
 
             jumpInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
@@ -162,6 +166,11 @@ public sealed partial class App : Application
                         case GlobalInputAction.ShowFssInfo:
                             handled = viewModel.SystemSurvey
                                 .ToggleFssInfoVisibility();
+                            break;
+
+                        case GlobalInputAction.ShowBodyInfo:
+                            handled = viewModel.SystemSurvey
+                                .ToggleBodyInfoVisibility();
                             break;
 
                         case GlobalInputAction.ShowColonyShopping:
