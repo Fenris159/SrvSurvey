@@ -43,6 +43,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             ShowCanonnSignalsOnRadar: false,
             UseSmallCanonnRadarCircles: false,
             AutoShowSurfaceRadar: false,
+            AutoShowMiniTrack: true,
             SurfaceRadarSize: 4,
             AutoHideSurfaceRadarWithoutLandingGear: true,
             AutoRemoveTrackerOnSampling: false,

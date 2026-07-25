@@ -24,6 +24,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private FlightWarningOverlayWindow? flightWarningWindow;
     private FssInfoOverlayWindow? fssWindow;
     private LastFssBodyOverlayWindow? lastFssBodyWindow;
+    private MiniTrackOverlayWindow? miniTrackWindow;
     private PriorScansOverlayWindow? priorScansWindow;
     private SurfaceSurveyOverlayWindow? surfaceWindow;
     private SystemStatusOverlayWindow? statusWindow;
@@ -85,6 +86,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         || flightWarningWindow is not null
         || fssWindow is not null
         || lastFssBodyWindow is not null
+        || miniTrackWindow is not null
         || priorScansWindow is not null
         || surfaceWindow is not null
         || statusWindow is not null;
@@ -102,6 +104,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     public bool IsBiologyStatusVisible => biologyStatusWindow is not null;
 
     public bool IsPriorScansVisible => priorScansWindow is not null;
+
+    public bool IsMiniTrackVisible => miniTrackWindow is not null;
 
     public bool IsSurfaceVisible => surfaceWindow is not null;
 
@@ -226,6 +230,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         CloseFlightWarningWindow();
         CloseFssWindow();
         CloseLastFssBodyWindow();
+        CloseMiniTrackWindow();
         ClosePriorScansWindow();
         CloseSurfaceWindow();
         CloseStatusWindow();
@@ -257,6 +262,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName is nameof(SurfaceSurveyViewModel.ShouldShow)
+            or nameof(SurfaceSurveyViewModel.ShouldShowMiniTrack)
             or nameof(SurfaceSurveyViewModel.RadarSize))
         {
             SynchronizeWindows();
@@ -320,6 +326,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         var showSurface = platformReady
             && surfaceSurvey.ShouldShow
             && !isSurfaceObscured;
+        var showMiniTrack = platformReady
+            && surfaceSurvey.ShouldShowMiniTrack;
 
         SynchronizeBodyInfoWindow(showBodyInfo);
         SynchronizeFssWindow(showFss);
@@ -330,6 +338,39 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         SynchronizeBiologyStatusWindow(showBiologyStatus);
         SynchronizePriorScansWindow(showPriorScans);
         SynchronizeSurfaceWindow(showSurface);
+        SynchronizeMiniTrackWindow(showMiniTrack);
+    }
+
+    private void SynchronizeMiniTrackWindow(bool show)
+    {
+        if (!show)
+        {
+            CloseMiniTrackWindow();
+            return;
+        }
+
+        if (miniTrackWindow is not null)
+        {
+            PositionMiniTrack(miniTrackWindow, gameWindow.ClientBounds);
+            return;
+        }
+
+        var overlay = new MiniTrackOverlayWindow(surfaceViewModel);
+        overlay.Opened += (_, _) => PrepareWindow(
+            overlay,
+            PositionMiniTrack,
+            CloseMiniTrackWindow);
+        overlay.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(miniTrackWindow, overlay))
+            {
+                miniTrackWindow = null;
+                VisibilityChanged?.Invoke(this, EventArgs.Empty);
+            }
+        };
+        miniTrackWindow = overlay;
+        overlay.Show();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void SynchronizeFlightWarningWindow(bool show)
@@ -647,6 +688,15 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         PositionWindow(window, gameBounds, OverlayWindowPlacement.TopCenter);
     }
 
+    private static void PositionMiniTrack(Window window, PixelRect gameBounds)
+    {
+        PositionWindow(
+            window,
+            gameBounds,
+            OverlayWindowPlacement.TopRight,
+            margin: 8);
+    }
+
     private static void PositionBottomLeft(Window window, PixelRect gameBounds)
     {
         PositionWindow(window, gameBounds, OverlayWindowPlacement.BottomLeft);
@@ -681,7 +731,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private static void PositionWindow(
         Window window,
         PixelRect gameBounds,
-        Func<PixelRect, PixelSize, int, PixelPoint> calculate)
+        Func<PixelRect, PixelSize, int, PixelPoint> calculate,
+        int margin = 20)
     {
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
@@ -698,7 +749,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         var position = calculate(
             gameBounds,
             new PixelSize(width, Math.Max(height, 1)),
-            20);
+            margin);
         if (window.Position != position)
         {
             window.Position = position;
@@ -727,6 +778,19 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         flightWarningWindow = null;
+        overlay.Close();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void CloseMiniTrackWindow()
+    {
+        var overlay = miniTrackWindow;
+        if (overlay is null)
+        {
+            return;
+        }
+
+        miniTrackWindow = null;
         overlay.Close();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }

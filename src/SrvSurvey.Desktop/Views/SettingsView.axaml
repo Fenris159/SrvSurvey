@@ -324,6 +324,8 @@
               <TextBlock Classes="eyebrow" Text="SURFACE RADAR" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoShowSurfaceRadar, Mode=TwoWay}"
                         Content="Show surface history and trackers automatically" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoShowMiniTrack, Mode=TwoWay}"
+                        Content="Show the compact quick-tracker overlay" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear, Mode=TwoWay}"
                         Content="Hide in surface flight until landing gear is down" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnSampling, Mode=TwoWay}"

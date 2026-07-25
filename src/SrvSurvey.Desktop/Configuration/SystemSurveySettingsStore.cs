@@ -94,6 +94,10 @@ public sealed class SystemSurveySettingsStore
                 settings,
                 "AutoShowSurfaceRadar",
                 defaults.AutoShowSurfaceRadar),
+            GetBoolean(
+                settings,
+                "AutoShowMiniTrack",
+                defaults.AutoShowMiniTrack),
             GetInt32(
                 settings,
                 "SurfaceRadarSize",
@@ -235,6 +239,7 @@ public sealed class SystemSurveySettingsStore
             settings["UseSmallCanonnRadarCircles"] =
                 preferences.UseSmallCanonnRadarCircles;
             settings["AutoShowSurfaceRadar"] = preferences.AutoShowSurfaceRadar;
+            settings["AutoShowMiniTrack"] = preferences.AutoShowMiniTrack;
             settings["SurfaceRadarSize"] = preferences.SurfaceRadarSize;
             settings["AutoHideSurfaceRadarWithoutLandingGear"] =
                 preferences.AutoHideSurfaceRadarWithoutLandingGear;
@@ -336,6 +341,7 @@ public sealed record SystemSurveyPreferences(
     bool ShowCanonnSignalsOnRadar,
     bool UseSmallCanonnRadarCircles,
     bool AutoShowSurfaceRadar,
+    bool AutoShowMiniTrack,
     int SurfaceRadarSize,
     bool AutoHideSurfaceRadarWithoutLandingGear,
     bool AutoRemoveTrackerOnSampling,
@@ -382,6 +388,7 @@ public sealed record SystemSurveyPreferences(
         ShowCanonnSignalsOnRadar: true,
         UseSmallCanonnRadarCircles: true,
         AutoShowSurfaceRadar: true,
+        AutoShowMiniTrack: false,
         SurfaceRadarSize: 3,
         AutoHideSurfaceRadarWithoutLandingGear: false,
         AutoRemoveTrackerOnSampling: true,

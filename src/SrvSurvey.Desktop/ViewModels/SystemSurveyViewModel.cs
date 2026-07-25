@@ -43,6 +43,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool showCanonnSignalsOnRadar;
     private bool useSmallCanonnRadarCircles;
     private bool autoShowSurfaceRadar;
+    private bool autoShowMiniTrack;
     private int surfaceRadarSize;
     private bool autoHideSurfaceRadarWithoutLandingGear;
     private bool autoRemoveTrackerOnSampling;
@@ -102,6 +103,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         showCanonnSignalsOnRadar = preferences.ShowCanonnSignalsOnRadar;
         useSmallCanonnRadarCircles = preferences.UseSmallCanonnRadarCircles;
         autoShowSurfaceRadar = preferences.AutoShowSurfaceRadar;
+        autoShowMiniTrack = preferences.AutoShowMiniTrack;
         surfaceRadarSize = preferences.SurfaceRadarSize;
         autoHideSurfaceRadarWithoutLandingGear =
             preferences.AutoHideSurfaceRadarWithoutLandingGear;
@@ -260,6 +262,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get => autoShowSurfaceRadar;
         set => SetPreference(ref autoShowSurfaceRadar, value);
+    }
+
+    public bool AutoShowMiniTrack
+    {
+        get => autoShowMiniTrack;
+        set => SetPreference(ref autoShowMiniTrack, value);
     }
 
     public int SurfaceRadarSize
@@ -1630,6 +1638,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 ShowCanonnSignalsOnRadar,
                 UseSmallCanonnRadarCircles,
                 AutoShowSurfaceRadar,
+                AutoShowMiniTrack,
                 SurfaceRadarSize,
                 AutoHideSurfaceRadarWithoutLandingGear,
                 AutoRemoveTrackerOnSampling,

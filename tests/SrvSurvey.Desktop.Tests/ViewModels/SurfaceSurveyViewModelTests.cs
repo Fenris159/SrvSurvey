@@ -153,6 +153,47 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task MiniTrackUsesQuickTargetsAndLegacyModes()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            "#1",
+            new SurfaceCoordinate(0, 2));
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        Assert.False(viewModel.ShouldShowMiniTrack);
+        survey.AutoShowMiniTrack = true;
+        Assert.True(viewModel.ShouldShowMiniTrack);
+        Assert.Equal("#1", Assert.Single(viewModel.QuickTrackerGroups).Name);
+
+        ApplySurveyContext(
+            survey,
+            Status(StatusFlags.InSrv, focus: GuiFocus.ExternalPanel));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+        Assert.False(viewModel.ShouldShowMiniTrack);
+
+        ApplySurveyContext(
+            survey,
+            Status(StatusFlags.InSrv, focus: GuiFocus.RolePanel));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+        Assert.True(viewModel.ShouldShowMiniTrack);
+    }
+
+    [Fact]
     public void RadarZoomUsesLegacyFactorBoundsAndAutomaticReset()
     {
         var (viewModel, _, _) = CreateViewModel();

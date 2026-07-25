@@ -63,6 +63,9 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             if (SetField(ref trackerGroups, value))
             {
                 OnPropertyChanged(nameof(HasTrackers));
+                OnPropertyChanged(nameof(QuickTrackerGroups));
+                OnPropertyChanged(nameof(HasQuickTrackers));
+                OnPropertyChanged(nameof(ShouldShowMiniTrack));
             }
         }
     }
@@ -93,6 +96,13 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
 
     public bool HasTrackers => TrackerGroups.Count > 0;
 
+    public IReadOnlyList<SurfaceTrackerGroupViewModel> QuickTrackerGroups =>
+        TrackerGroups
+            .Where(group => group.Name.StartsWith('#'))
+            .ToArray();
+
+    public bool HasQuickTrackers => QuickTrackerGroups.Count > 0;
+
     public bool HasNavigationMarkers => NavigationMarkers.Count > 0;
 
     public int RadarSize => survey.SurfaceRadarSize;
@@ -110,6 +120,10 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         && (HasRadarContent() || HasTrackerTargets());
 
     public bool IsTrackerOnly => ShouldShow && !ShouldShowRadar;
+
+    public bool ShouldShowMiniTrack => survey.AutoShowMiniTrack
+        && HasQuickTrackers
+        && IsMiniTrackStatusEligible();
 
     public SystemSurfaceBodySnapshot? CurrentSurface => surface;
 
@@ -590,6 +604,35 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         return surface?.Bookmarks.Any(group => group.Value.Count > 0) == true;
     }
 
+    private bool IsMiniTrackStatusEligible()
+    {
+        if (surface is null
+            || survey.CurrentStatus is not { } status
+            || !status.HasLatitudeLongitude)
+        {
+            return false;
+        }
+
+        if (status.GuiFocus != GuiFocus.NoFocus)
+        {
+            return status.GuiFocus is GuiFocus.CommsPanel or GuiFocus.RolePanel;
+        }
+
+        var flying = status.InMainShip
+            && !status.Docked
+            && !status.Landed
+            && !status.Flags.HasFlag(StatusFlags.Supercruise)
+            && !status.GlideMode;
+        return status.Flags.HasFlag(StatusFlags.Supercruise)
+            || flying
+            || status.Landed
+            || status.InSrv
+            || status.OnFoot
+            || status.GlideMode
+            || status.InFighter
+            || status.InTaxi;
+    }
+
     private string GetTrackerDisplayName(string name)
     {
         var body = survey.Snapshot.Bodies.FirstOrDefault(candidate =>
@@ -625,6 +668,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.AutoShowSurfaceRadar)
+            or nameof(SystemSurveyViewModel.AutoShowMiniTrack)
             or nameof(SystemSurveyViewModel.SurfaceRadarSize)
             or nameof(SystemSurveyViewModel.AutoHideSurfaceRadarWithoutLandingGear)
             or nameof(SystemSurveyViewModel.Snapshot)
@@ -645,6 +689,9 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(ShouldShowRadar));
         OnPropertyChanged(nameof(ShouldShow));
         OnPropertyChanged(nameof(IsTrackerOnly));
+        OnPropertyChanged(nameof(QuickTrackerGroups));
+        OnPropertyChanged(nameof(HasQuickTrackers));
+        OnPropertyChanged(nameof(ShouldShowMiniTrack));
     }
 
     private static bool TryGetCurrentCoordinate(
