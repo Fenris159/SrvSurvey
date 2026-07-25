@@ -1246,6 +1246,17 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 FormatRingClass(ring.RingClass)))
             .ToArray();
         var gravity = body.SurfaceGravity / 10d;
+        var biologyReward = body.BiologicalSignalCount > 0
+            ? BiologySurveyViewModel.CreateBodyDetail(
+                    snapshot,
+                    body.BodyId,
+                    exobiology,
+                    HighlightRegionalFirsts,
+                    DimAnalyzedOrganisms,
+                    HideGeoCountInBioSystem,
+                    DisableBioPredictions)
+                ?.RewardSummary ?? string.Empty
+            : string.Empty;
 
         return new BodyInformationViewModel(
             body.BodyId,
@@ -1275,6 +1286,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 : $"{body.SurfacePressure / 100_000d:N4} bar",
             planetish,
             FormatSignalCount(body.BiologicalSignalCount, "biological"),
+            biologyReward,
             FormatSignalCount(body.GeologicalSignalCount, "geological"),
             planetish && body.Kind != SystemBodyKind.GasGiant
                 ? FormatVolcanism(body.Volcanism)
@@ -1745,6 +1757,7 @@ public sealed record BodyInformationViewModel(
     string Pressure,
     bool IsPlanet,
     string BiologicalSignals,
+    string BiologicalReward,
     string GeologicalSignals,
     string Volcanism,
     string Atmosphere,
@@ -1759,6 +1772,9 @@ public sealed record BodyInformationViewModel(
 
     public bool HasBiologicalSignals => !string.IsNullOrWhiteSpace(
         BiologicalSignals);
+
+    public bool HasBiologicalReward => !string.IsNullOrWhiteSpace(
+        BiologicalReward);
 
     public bool HasGeologicalSignals => !string.IsNullOrWhiteSpace(
         GeologicalSignals);
@@ -1789,6 +1805,7 @@ public sealed record BodyInformationViewModel(
             false,
             string.Empty,
             false,
+            string.Empty,
             string.Empty,
             string.Empty,
             string.Empty,

@@ -145,12 +145,18 @@
         </Grid>
 
         <WrapPanel Orientation="Horizontal">
-          <TextBlock Margin="0,0,14,0"
-                     Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="10"
-                     FontWeight="SemiBold"
-                     IsVisible="{Binding Survey.BodyInformation.HasBiologicalSignals}"
-                     Text="{Binding Survey.BodyInformation.BiologicalSignals}" />
+          <StackPanel Margin="0,0,14,0"
+                      IsVisible="{Binding Survey.BodyInformation.HasBiologicalSignals}"
+                      Spacing="2">
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="10"
+                       FontWeight="SemiBold"
+                       Text="{Binding Survey.BodyInformation.BiologicalSignals}" />
+            <TextBlock Classes="monospace"
+                       FontSize="9"
+                       IsVisible="{Binding Survey.BodyInformation.HasBiologicalReward}"
+                       Text="{Binding Survey.BodyInformation.BiologicalReward}" />
+          </StackPanel>
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      FontSize="10"
                      FontWeight="SemiBold"

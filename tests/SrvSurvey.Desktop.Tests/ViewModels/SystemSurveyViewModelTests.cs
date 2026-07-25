@@ -501,13 +501,28 @@ public sealed class SystemSurveyViewModelTests : IDisposable
                 Parse(PredictableAleoidaScan),
                 Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
             ],
-            new EliteStatus { GuiFocus = GuiFocus.SystemMap });
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.SystemMap,
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 1,
+                    Name = "Test 1",
+                },
+            });
 
         var systemSurvey = Assert.IsType<BiologySurveyViewModel>(
             viewModel.BiologySurvey);
         var bodySummary = Assert.Single(systemSurvey.Bodies);
         Assert.True(bodySummary.HasPredictedReward);
         Assert.StartsWith("Estimated reward:", systemSurvey.RewardSummary);
+        var bodyInformation = Assert.IsType<BodyInformationViewModel>(
+            viewModel.BodyInformation);
+        Assert.StartsWith(
+            "Estimated reward:",
+            bodyInformation.BiologicalReward);
+        Assert.True(bodyInformation.HasBiologicalReward);
 
         viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.Fss });
 
