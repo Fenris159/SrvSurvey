@@ -33,6 +33,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly ExobiologyState exobiologyState;
     private readonly CommanderProfileStore commanderProfileStore;
     private readonly CommanderCodexJournalTracker commanderCodexJournalTracker;
+    private readonly GreenGasGiantPublicationCoordinator
+        greenGasGiantPublicationCoordinator;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
     private readonly QuestRuntimeCoordinator questRuntimeCoordinator;
@@ -117,7 +119,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         string? targetFrontierId = null,
         ICommanderInstanceLauncher? commanderInstanceLauncher = null,
         IGameWindowSwitcher? gameWindowSwitcher = null,
-        VisitedStarsCacheViewModel? visitedStarsCache = null)
+        VisitedStarsCacheViewModel? visitedStarsCache = null,
+        GreenGasGiantPublicationCoordinator?
+            greenGasGiantPublicationCoordinator = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -160,6 +164,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             screenshotProcessingService);
         NetworkPrivacy = new NetworkPrivacyViewModel(
             new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
+        this.greenGasGiantPublicationCoordinator =
+            greenGasGiantPublicationCoordinator
+                ?? new GreenGasGiantPublicationCoordinator(
+                    GreenGasGiantCriteriaCatalog.LoadEmbedded(),
+                    new GreenGasGiantClient());
         Colonization = colonization ?? new ColonizationViewModel(
             new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
             commanderProfileStore: commanderProfileStore,
@@ -1097,6 +1106,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         var scansLostToDeath = new HashSet<string>(StringComparer.Ordinal);
+        var greenGasGiantResult =
+            await greenGasGiantPublicationCoordinator.ApplyAsync(
+                update.JournalEvents,
+                NetworkPrivacy.UploadGreenGasGiantCandidates,
+                allowPublishing: !update.IsBootstrapRead);
+        NetworkPrivacy.ReportPublicationResult(greenGasGiantResult);
+        foreach (var warning in greenGasGiantResult.Warnings)
+        {
+            applicationLogService?.Append(warning);
+        }
         foreach (var journalEvent in update.JournalEvents)
         {
             journalState.Apply(journalEvent);

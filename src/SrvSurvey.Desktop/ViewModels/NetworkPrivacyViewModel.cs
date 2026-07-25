@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -64,6 +65,26 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
     }
 
     public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
+
+    public void ReportPublicationResult(
+        GreenGasGiantPublicationResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        if (result.Warnings.Count > 0)
+        {
+            StatusMessage = string.Join(Environment.NewLine, result.Warnings);
+        }
+        else if (result.Published.Count == 1)
+        {
+            StatusMessage =
+                $"Uploaded a {result.Published[0].Tag} Green Gas Giant candidate.";
+        }
+        else if (result.Published.Count > 1)
+        {
+            StatusMessage =
+                $"Uploaded {result.Published.Count:N0} Green Gas Giant candidates.";
+        }
+    }
 
     private void Update(NetworkPrivacyPreferences updated)
     {

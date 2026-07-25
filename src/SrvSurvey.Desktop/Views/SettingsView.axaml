@@ -775,7 +775,7 @@
                         Content="Upload matching candidates to Raven Colonial" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="When enabled, matching Scan journal events may include commander name, system coordinates, and the original scan payload. Runtime publication parity is tracked separately." />
+                         Text="When enabled, matching live Scan journal events include commander name, system coordinates, and the original scan payload. Startup history is never uploaded." />
             </StackPanel>
           </Grid>
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"

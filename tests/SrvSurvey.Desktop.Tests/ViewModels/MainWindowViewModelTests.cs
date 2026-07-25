@@ -71,6 +71,65 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task GreenGasGiantOptInPublishesOnlyNewLiveScans()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-ggg-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-25T120000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"event\":\"Commander\",\"Name\":\"Test Cmdr\"}\n"
+                    + "{\"event\":\"Location\",\"StarPos\":[1,2,3]}\n"
+                    + GreenGasGiantScanJson + "\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
+                new NetworkPrivacyPreferences(true, "dev", true));
+            var client = new RecordingGreenGasGiantClient();
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                greenGasGiantPublicationCoordinator:
+                    new GreenGasGiantPublicationCoordinator(
+                        GreenGasGiantCriteriaCatalog.LoadEmbedded(),
+                        client));
+
+            await viewModel.RefreshAsync();
+
+            Assert.Empty(client.Candidates);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                GreenGasGiantScanJson + "\n");
+            await viewModel.RefreshAsync();
+
+            var candidate = Assert.Single(client.Candidates);
+            Assert.Equal("Test Cmdr", candidate.CommanderName);
+            Assert.Equal("potential", candidate.Tag);
+            Assert.Contains(
+                "Uploaded a potential Green Gas Giant candidate",
+                viewModel.NetworkPrivacy.StatusMessage);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public void GuardianOverlayPreferencesAreWiredIntoMainViewModel()
     {
         var root = Path.Combine(
@@ -1039,6 +1098,11 @@ public sealed class MainWindowViewModelTests
             """);
     }
 
+    private const string GreenGasGiantScanJson =
+        "{\"event\":\"Scan\","
+        + "\"PlanetClass\":\"Sudarsky class III gas giant\","
+        + "\"SurfaceTemperature\":310}";
+
     private static BoxelSystemObservation BoxelObservation(
         string name,
         long address)
@@ -1064,6 +1128,20 @@ public sealed class MainWindowViewModelTests
                         boxel.Prefix,
                         StringComparison.Ordinal))
                     .ToArray());
+        }
+    }
+
+    private sealed class RecordingGreenGasGiantClient
+        : IGreenGasGiantClient
+    {
+        public List<GreenGasGiantCandidate> Candidates { get; } = [];
+
+        public Task PublishAsync(
+            GreenGasGiantCandidate candidate,
+            CancellationToken cancellationToken = default)
+        {
+            Candidates.Add(candidate);
+            return Task.CompletedTask;
         }
     }
 
