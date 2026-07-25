@@ -9,6 +9,7 @@ public static class OverlayLayoutCatalog
         Define("PlotBodyInfo", "Body information", LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8),
         Define("PlotBuildCommodities", "Colonization commodities", LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8),
         Define("PlotFlightWarning", "Flight warning", LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 90),
+        Define("PlotFloatie", "Notifications", LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Bottom, 24),
         Define("PlotFootCombat", "Ground combat", LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8),
         Define("PlotFSS", "FSS body feed", LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8),
         Define("PlotFSSInfo", "FSS information", LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8),

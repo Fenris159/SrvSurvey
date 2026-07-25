@@ -241,6 +241,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public bool IsActive => state.IsActive;
 
+    public BoxelSearchNotificationState CreateNotificationState()
+    {
+        return new BoxelSearchNotificationState(
+            state.IsActive,
+            state.CompletionMode,
+            state.CompletedSystemCount,
+            Math.Max(state.CurrentCount, state.Systems.Count),
+            state.CurrentSystemsComplete,
+            state.NextSystem);
+    }
+
     public bool ShouldShowGalaxyMapOverlay =>
         lastGuiFocus == GuiFocus.GalaxyMap && state.IsActive;
 

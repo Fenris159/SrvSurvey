@@ -121,7 +121,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         IGameWindowSwitcher? gameWindowSwitcher = null,
         VisitedStarsCacheViewModel? visitedStarsCache = null,
         GreenGasGiantPublicationCoordinator?
-            greenGasGiantPublicationCoordinator = null)
+            greenGasGiantPublicationCoordinator = null,
+        NotificationSettingsStore? notificationSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -164,6 +165,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         ScreenshotProcessing = new ScreenshotProcessingViewModel(
             new ScreenshotProcessingSettingsStore(AppDataPaths.UiSettingsPath),
             screenshotProcessingService);
+        Notifications = new NotificationViewModel(
+            notificationSettingsStore
+                ?? new NotificationSettingsStore(AppDataPaths.UiSettingsPath));
         NetworkPrivacy = new NetworkPrivacyViewModel(
             new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
         this.greenGasGiantPublicationCoordinator =
@@ -415,6 +419,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public OverlayLayoutSettingsViewModel OverlayLayout { get; }
 
     public ScreenshotProcessingViewModel ScreenshotProcessing { get; }
+
+    public NotificationViewModel Notifications { get; }
 
     public NetworkPrivacyViewModel NetworkPrivacy { get; }
 
@@ -1160,6 +1166,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 NetworkPrivacy.UploadGreenGasGiantCandidates,
                 allowPublishing: !update.IsBootstrapRead);
         NetworkPrivacy.ReportPublicationResult(greenGasGiantResult);
+        if (!update.IsBootstrapRead)
+        {
+            Notifications.ReportGreenGasGiantUploads(greenGasGiantResult);
+        }
+
         foreach (var warning in greenGasGiantResult.Warnings)
         {
             applicationLogService?.Append(warning);
@@ -1254,6 +1265,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         var explorationBefore = explorationState.CreateSnapshot();
         var exobiologyVersionBefore = exobiologyState.Version;
+        var boxelBefore = BoxelSearch.CreateNotificationState();
         var skipPersistedBootstrapEvents = update.IsBootstrapRead
             && loadedExistingProfile;
         if (update.NavRoute is not null)
@@ -1267,6 +1279,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             await BoxelSearch.ApplyJournalEventsAsync(update.JournalEvents);
         }
+
+        Notifications.ApplyJournalEvents(
+            update.JournalEvents,
+            allowNotifications: !update.IsBootstrapRead);
+        Notifications.ReportBoxelUpdate(
+            boxelBefore,
+            BoxelSearch.CreateNotificationState(),
+            update.JournalEvents.Any(journalEvent =>
+                journalEvent.EventName == "FSSAllBodiesFound"),
+            allowNotifications: !update.IsBootstrapRead);
 
         await Guardian.ApplyJournalEventsAsync(
             update.JournalEvents,
@@ -1309,10 +1331,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                         siteProximity.DistanceFromSite,
                         altitude)
                     : null;
-            await ScreenshotProcessing.ProcessJournalEventsAsync(
+            var screenshotResult =
+                await ScreenshotProcessing.ProcessJournalEventsAsync(
                 update.JournalEvents,
                 journalState.CommanderName,
                 guardianScreenshotContext);
+            Notifications.ReportScreenshotResult(
+                screenshotResult,
+                ScreenshotProcessing.AddBanner);
         }
 
         JumpInfo.ApplyUpdate(

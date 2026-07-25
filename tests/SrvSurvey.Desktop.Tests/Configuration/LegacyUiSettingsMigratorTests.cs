@@ -83,6 +83,14 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "aerialAltAlpha": 1100,
               "aerialAltBeta": 1500,
               "aerialAltGamma": 1700,
+              "autoShowFloatie_TEST": false,
+              "allowNotifications": {
+                "materialCountAfterPickup": false,
+                "cargoMissionRemaining": false,
+                "currentBoxelSearchStatus": false,
+                "showNextBoxelToSearch": false,
+                "showScreenshot": false
+              },
               "buildProjects_TEST": true,
               "autoShowPlotBuildCommodities": false,
               "buildProjectsOnRightScreen": false,
@@ -200,6 +208,15 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
                 1500,
                 1700),
             new ScreenshotProcessingSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            new NotificationPreferences(
+                false,
+                false,
+                false,
+                false,
+                false,
+                false),
+            new NotificationSettingsStore(paths.UiSettingsPath).Load());
 
         var colonization = new ColonizationSettingsStore(paths.UiSettingsPath);
         Assert.True(colonization.LoadEnabled());

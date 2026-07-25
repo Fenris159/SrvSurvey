@@ -209,6 +209,56 @@
       <Separator />
 
       <StackPanel Spacing="5">
+        <TextBlock Classes="eyebrow" Text="NOTIFICATIONS" />
+        <TextBlock Classes="page-title" Text="In-game messages" />
+        <TextBlock Classes="muted"
+                   TextWrapping="Wrap"
+                   Text="Show the original six-second PlotFloatie messages without taking focus from Elite." />
+      </StackPanel>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Passive notification overlay" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Messages are de-duplicated, expire automatically, and never replay from startup journal history." />
+            </StackPanel>
+            <CheckBox Grid.Column="1"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding Notifications.Enabled, Mode=TwoWay}"
+                      Content="Enabled" />
+          </Grid>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="10">
+              <CheckBox IsChecked="{Binding Notifications.MaterialCountAfterPickup, Mode=TwoWay}"
+                        Content="Show material totals after pickup" />
+              <CheckBox IsChecked="{Binding Notifications.CargoMissionRemaining, Mode=TwoWay}"
+                        Content="Show remaining cargo mission units" />
+              <CheckBox IsChecked="{Binding Notifications.ShowScreenshot, Mode=TwoWay}"
+                        Content="Show saved screenshot names" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="10">
+              <CheckBox IsChecked="{Binding Notifications.CurrentBoxelSearchStatus, Mode=TwoWay}"
+                        Content="Show current Boxel completion" />
+              <CheckBox IsChecked="{Binding Notifications.ShowNextBoxelToSearch, Mode=TwoWay}"
+                        Content="Show the next Boxel target" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Successful Green Gas Giant uploads and the screenshot-banner shortcut use this overlay when it is enabled." />
+            </StackPanel>
+          </Grid>
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="{Binding Notifications.HasSettingsStatus}"
+                     TextWrapping="Wrap"
+                     Text="{Binding Notifications.SettingsStatus}" />
+        </StackPanel>
+      </Border>
+
+      <Separator />
+
+      <StackPanel Spacing="5">
         <TextBlock Classes="eyebrow" Text="OVERLAYS" />
         <TextBlock Classes="page-title" Text="Next-jump intelligence" />
         <TextBlock Classes="muted"

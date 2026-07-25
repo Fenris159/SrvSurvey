@@ -37,7 +37,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, custom distance origins, external/share actions, live site detection/writes, native survey maps, lossless survey/raw-POI editing, guarded master-template authoring/export, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, detached commander-centered/heading-up live map with all five sizes, legacy zoom behavior, site identification/heading prompts, ruins/structure alignment reticles, altitude fade, glide site/blueprint guidance, obelisk targeting, and the original safe survey commands, current-system summary, and Ram Tah log/artifact overlays implemented |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay with the legacy Market-after-docking, construction-site, right-panel, and Squadron-bank music rules implemented |
 | Diagnostics | `ViewLogs`, `FormErrorSubmit`, journal development tools | Journal source, candidate paths, logs, error reporting, and reference-data tools | Journal source/parsed state, persistent live application logs, retention, copy/clear/folder actions, crash-report capture/actions, journal playback/inspection, safe visited-stars cache swap/restore, and guarded post-processing tools implemented |
-| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import with live-monitor shutdown, concurrent-write rollback, and immediate non-destructive preference translation, unknown-field-preserving screenshot/Guardian setting saves, lossless live overlay position/opacity editing, cross-platform verified BMP-to-PNG screenshot conversion, persisted next-jump/system-survey/prior-scan/surface-radar/combat/Guardian/human-settlement/station-information preferences, migrated external-biology/EDDN/Green-Gas-Giant privacy choices, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; remaining legacy options remain |
+| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import with live-monitor shutdown, concurrent-write rollback, and immediate non-destructive preference translation, unknown-field-preserving screenshot/notification/Guardian setting saves, lossless live overlay position/opacity editing, cross-platform verified BMP-to-PNG screenshot conversion, persisted next-jump/system-survey/prior-scan/surface-radar/combat/Guardian/human-settlement/station-information/notification preferences, migrated external-biology/EDDN/Green-Gas-Giant privacy choices, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; remaining legacy options remain |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
@@ -69,7 +69,7 @@ same coordinator; remaining biology-specific auxiliary cues stay open.
 
 | Legacy surface | Avalonia destination | Status |
 | --- | --- | --- |
-| `FormAdjustOverlay` | Settings / Overlay positions | Implemented for all 21 Avalonia overlays with live anchors, offsets, opacity, legacy defaults, verified backups, and VR-suffix preservation |
+| `FormAdjustOverlay` | Settings / Overlay positions | Implemented for all 22 Avalonia overlays with live anchors, offsets, opacity, legacy defaults, verified backups, and VR-suffix preservation |
 | `FormBeacons` | Guardian / Sites | Implemented with all shipped beacons/ruins/structures, commander visits/survey progress/notes, current or looked-up custom distance origins, text/kind/visit/type filters, optional all/needed-only Ram Tah catalog logs, details, copy actions, Canonn/Spansh/EDSM links, direct survey navigation, and the guarded share-bundle workspace |
 | `FormBoxelSearch` | Search / Boxel | Implemented with activation/options, hierarchy, current systems, completion/empty rules, route/journal updates, ID64 decoding, clipboard actions, and cancellable full-area audit; Windows visually checked |
 | `FormBuilder` | Human settlements / Template authoring | Implemented as a collapsed developer workspace with live commander-offset capture, manual and shield-toggle polygon points, renderer-compatible circles, multi-path buildings, named points, terminals, secure doors with relative rotation, floor/security metadata, draft preview/undo/discard, and explicit checksum-verified atomic catalog export with concurrent-write refusal and byte-identical backup; final visual testing remains deferred |
@@ -95,7 +95,7 @@ same coordinator; remaining biology-specific auxiliary cues stay open.
 | `FormRoute` | Travel / Routes | Implemented with lossless legacy route files, manual-name and current Spansh imports, active/auto-copy controls, per-hop progress, distances/notes/refuel/neutron guidance, save/discard, live FSDJump progression, and a Galaxy Map overlay; Windows visually checked in Blue dark/light |
 | `FormRuins` | Guardian / Survey maps | Implemented through the unified site browser with direct selected-survey navigation, native map renderer and live draft preview, live-site card, lossless survey/raw-POI editor, master-template authoring, and guarded share-bundle workflow |
 | `FormSetKeyChord` | Settings / Input | Implemented as the unified binding editor with normalized keyboard, button, trigger, and eight-way POV chords plus default restore |
-| `FormSettings` | Settings pages | Raven themes, checksum-backed profile import with immediate guarded preference translation, next-jump/system-survey/Canonn prior-scan/radar/combat/Guardian preferences, migrated external-biology/EDDN/Green-Gas-Giant privacy choices, opt-in live-only Green Gas Giant candidate publication, live overlay adjustment, verified screenshot conversion/banner/source-deletion controls, and global keyboard/controller input implemented; malformed legacy settings are retained byte-for-byte and leave current Avalonia settings unchanged; remaining legacy options remain |
+| `FormSettings` | Settings pages | Raven themes, checksum-backed profile import with immediate guarded preference translation, next-jump/system-survey/Canonn prior-scan/radar/combat/Guardian/notification preferences, migrated external-biology/EDDN/Green-Gas-Giant privacy choices, opt-in live-only Green Gas Giant candidate publication, live overlay adjustment, verified screenshot conversion/banner/source-deletion controls, and global keyboard/controller input implemented; malformed legacy settings are retained byte-for-byte and leave current Avalonia settings unchanged; remaining legacy options remain |
 | `FormShareData` | Guardian / Share data | Implemented with published-survey comparison, new heading/location/POI/relic/group/raw-point detection, content-addressed ZIP packaging, path copy, folder launch, and Guardian survey Discord handoff; packaging avoids the legacy destructive staging-folder reset |
 | `FormShowCodex` | Exobiology / Codex | Implemented as a single-instance Raven browser with biological-body and entry navigation, reported/confirmed/analyzed/predicted states, entry IDs, rewards, sample separation, live temperature guidance, bounded cached reference images with credit/refresh/fit/zoom/pan, and Canonn/Bioforge/Spansh/submission actions; Windows visually checked in Blue dark/light |
 | `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
@@ -112,7 +112,7 @@ separately against the Phase 4 overlay/window infrastructure and must be
 validated independently for Windows, X11, and Wayland:
 
 `PlotBioStatus`, `PlotBioSystem`, `PlotBodyInfo`, `PlotFlightWarning`,
-`PlotFootCombat`, `PlotFSS`, `PlotFSSInfo`, `PlotGalMap`, `PlotGrounded`,
+`PlotFloatie`, `PlotFootCombat`, `PlotFSS`, `PlotFSSInfo`, `PlotGalMap`, `PlotGrounded`,
 `PlotGuardians`, `PlotGuardianStatus`, `PlotGuardianSystem`, `PlotHumanSite`,
 `PlotJumpInfo`, `PlotMassacre`, `PlotPriorScans`, `PlotRamTah`,
 `PlotSphericalSearch`, `PlotSysStatus`, `PlotTrackers`, `PlotTrackTarget`, and
@@ -149,6 +149,14 @@ grouping, obelisk names, artifact inventory counts, and persisted preferences.
 Both auxiliary windows participate in the shared click-through lifecycle and
 global visibility control. Their automated state, placement, settings, and XAML
 checks pass; visual/theme QA is intentionally deferred to the final UI pass.
+`PlotFloatie` is implemented as a bottom-center passive notification surface.
+It restores cargo-depot remainder, material pickup totals, Boxel progress/next-
+target, screenshot save, Green Gas Giant upload, and banner-toggle messages,
+including de-duplication, the original six-second lifetime, all five nested
+notification preferences, and global enablement. Bootstrap journal history
+hydrates material totals without replaying messages. Its settings preserve
+unknown imported fields. Automated reducer, migration, persistence, placement,
+and XAML checks pass; visual/theme QA is held for the final pass.
 `PlotHumanSite` is implemented as a left-middle passive vector map backed by all
 28 shipped settlement templates. It preserves compatible-site filtering,
 landing-pad subtype and heading inference, explicit `.settlement` foot

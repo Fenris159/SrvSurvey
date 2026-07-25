@@ -26,6 +26,7 @@ public sealed partial class App : Application
     private HumanSiteOverlayCoordinator? humanSiteOverlayCoordinator;
     private SystemSurveyOverlayCoordinator? systemSurveyOverlayCoordinator;
     private QuestIndicatorOverlayCoordinator? questIndicatorOverlayCoordinator;
+    private NotificationOverlayCoordinator? notificationOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
@@ -210,6 +211,11 @@ public sealed partial class App : Application
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent(),
                 overlayLayout);
+            notificationOverlayCoordinator = new NotificationOverlayCoordinator(
+                viewModel.Notifications,
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent(),
+                overlayLayout);
 
             void SynchronizeOverlayPriority()
             {
@@ -342,7 +348,8 @@ public sealed partial class App : Application
                                 || sphericalSearchOverlayCoordinator?.IsVisible == true
                                 || colonizationCommodityOverlayCoordinator
                                     ?.IsVisible == true
-                                || questIndicatorOverlayCoordinator?.IsVisible == true;
+                                || questIndicatorOverlayCoordinator?.IsVisible == true
+                                || notificationOverlayCoordinator?.IsVisible == true;
                             jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
                             systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
                             groundTargetOverlayCoordinator?.SetSuppressed(suppress);
@@ -354,6 +361,7 @@ public sealed partial class App : Application
                             colonizationCommodityOverlayCoordinator
                                 ?.SetSuppressed(suppress);
                             questIndicatorOverlayCoordinator?.SetSuppressed(suppress);
+                            notificationOverlayCoordinator?.SetSuppressed(suppress);
                             handled = true;
                             break;
 
@@ -441,6 +449,12 @@ public sealed partial class App : Application
                         case GlobalInputAction.ToggleImageEmbed:
                             handled = viewModel.ScreenshotProcessing
                                 .ToggleBanner();
+                            if (handled)
+                            {
+                                viewModel.Notifications.ShowBannerPreference(
+                                    viewModel.ScreenshotProcessing.AddBanner);
+                            }
+
                             break;
                     }
 
@@ -511,6 +525,8 @@ public sealed partial class App : Application
                 humanSiteOverlayCoordinator = null;
                 questIndicatorOverlayCoordinator?.Dispose();
                 questIndicatorOverlayCoordinator = null;
+                notificationOverlayCoordinator?.Dispose();
+                notificationOverlayCoordinator = null;
                 systemSurveyOverlayCoordinator?.Dispose();
                 systemSurveyOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();

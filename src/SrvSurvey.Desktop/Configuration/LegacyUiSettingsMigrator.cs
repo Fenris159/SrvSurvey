@@ -172,6 +172,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("aerialAltBeta", "AerialAltitudeBeta"),
                     ("aerialAltGamma", "AerialAltitudeGamma"),
                 ]);
+                mappedCount += MapNotifications(legacy, root);
                 mappedCount += MapColonization(legacy, root);
                 mappedCount += MapSection(legacy, root, "NetworkPrivacy",
                 [
@@ -236,6 +237,43 @@ public sealed class LegacyUiSettingsMigrator
         count += Copy(legacy, "buildProjectsInlineSumFC_TEST", overlay, "InlineFleetCarrierCargo");
         count += Copy(legacy, "buildProjectsCollapseGroupsWithFCEnough_TEST", overlay, "CollapseCoveredGroups");
         count += Copy(legacy, "buildProjectsHighlightAlmostFC_TEST", overlay, "HighlightAlmostCoveredFleetCarrierLoads");
+        return count;
+    }
+
+    private static int MapNotifications(JsonObject legacy, JsonObject target)
+    {
+        var section = GetOrCreateObject(target, "Notifications");
+        var count = Copy(legacy, "autoShowFloatie_TEST", section, "Enabled");
+        if (legacy["allowNotifications"] is not JsonObject notifications)
+        {
+            return count;
+        }
+
+        count += Copy(
+            notifications,
+            "materialCountAfterPickup",
+            section,
+            "MaterialCountAfterPickup");
+        count += Copy(
+            notifications,
+            "cargoMissionRemaining",
+            section,
+            "CargoMissionRemaining");
+        count += Copy(
+            notifications,
+            "currentBoxelSearchStatus",
+            section,
+            "CurrentBoxelSearchStatus");
+        count += Copy(
+            notifications,
+            "showNextBoxelToSearch",
+            section,
+            "ShowNextBoxelToSearch");
+        count += Copy(
+            notifications,
+            "showScreenshot",
+            section,
+            "ShowScreenshot");
         return count;
     }
 

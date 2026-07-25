@@ -82,6 +82,27 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
     }
 
     [Fact]
+    public void NotificationOverlayUsesTheLegacyBottomCenterDefault()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var viewModel = new OverlayLayoutSettingsViewModel(store, store.Load());
+
+        var notification = viewModel.Overlays.Single(
+            overlay => overlay.Name == "PlotFloatie");
+
+        Assert.Equal(
+            new LegacyOverlayPlacement(
+                LegacyHorizontalAnchor.Center,
+                0,
+                LegacyVerticalAnchor.Bottom,
+                24,
+                null),
+            notification.Placement);
+        Assert.Equal(22, viewModel.Overlays.Count);
+    }
+
+    [Fact]
     public void MalformedLegacyLayoutCannotBeOverwrittenFromEditor()
     {
         Directory.CreateDirectory(temporaryDirectory);

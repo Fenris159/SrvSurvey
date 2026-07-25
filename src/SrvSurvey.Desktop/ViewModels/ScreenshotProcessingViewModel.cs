@@ -132,7 +132,7 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         return true;
     }
 
-    public async Task ProcessJournalEventsAsync(
+    public async Task<ScreenshotProcessingResult> ProcessJournalEventsAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         string? commanderName,
         ScreenshotGuardianContext? guardianContext = null,
@@ -146,7 +146,7 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
             guardianContext);
         if (result.Conversions.Count == 0 && result.Warnings.Count == 0)
         {
-            return;
+            return result;
         }
 
         var converted = result.Conversions.Count switch
@@ -160,6 +160,7 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         StatusMessage = result.Warnings.Count == 0
             ? converted
             : converted + " " + string.Join(" ", result.Warnings);
+        return result;
     }
 
     private void Update(ScreenshotProcessingPreferences updated)
