@@ -22,11 +22,26 @@ public sealed class GuardianSiteTemplateCatalog
     public IReadOnlyCollection<GuardianSiteTemplate> Templates =>
         templates.Values;
 
+    public int Count => templates.Count;
+
     public GuardianSiteTemplate? Find(string? siteType)
     {
         return siteType is not null
             ? templates.GetValueOrDefault(siteType)
             : null;
+    }
+
+    public GuardianSiteTemplateCatalog WithTemplate(
+        GuardianSiteTemplate template)
+    {
+        ArgumentNullException.ThrowIfNull(template);
+        return new GuardianSiteTemplateCatalog(
+            templates.Values
+                .Where(candidate => !string.Equals(
+                    candidate.SiteType,
+                    template.SiteType,
+                    StringComparison.OrdinalIgnoreCase))
+                .Append(template));
     }
 
     public static GuardianSiteTemplateCatalog LoadEmbedded()
