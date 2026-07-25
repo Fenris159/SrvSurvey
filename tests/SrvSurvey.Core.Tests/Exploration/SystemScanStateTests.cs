@@ -60,6 +60,9 @@ public sealed class SystemScanStateTests
         Assert.Equal(2, planet.AtmosphereComposition.Count);
         Assert.Equal(2, planet.Materials.Count);
         Assert.Single(planet.Rings);
+        Assert.Equal(
+            new SystemBodyParentSnapshot(SystemBodyParentKind.Planet, 0),
+            Assert.Single(planet.Parents));
         Assert.True(planet.EstimatedMappedValue > planet.ScanValue);
         Assert.Equal(planet.EstimatedMappedValue, planet.CurrentScanValue);
         Assert.Equal(
@@ -141,6 +144,39 @@ public sealed class SystemScanStateTests
         state.Apply(Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 1 A Ring","BodyID":3,"PlanetClass":"Rocky body","MassEM":0.1,"Parents":[{"Ring":1}]}"""));
 
         Assert.Equal(1, state.CreateSnapshot().LastDetailedBodyId);
+    }
+
+    [Fact]
+    public void ScanRetainsOrderedParentChainForStellarCalculations()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse(
+            """{"event":"ScanBaryCentre","SystemAddress":42,"BodyID":3,"Parents":[{"Null":1}]}"""));
+        state.Apply(Parse(
+            """{"event":"Scan","SystemAddress":42,"BodyName":"Test 4","BodyID":4,"PlanetClass":"Rocky body","Parents":[{"Ring":8},{"Planet":7},{"Null":3},{"Star":0}]}"""));
+
+        var snapshot = state.CreateSnapshot();
+        var barycentre = Assert.Single(
+            snapshot.Bodies,
+            body => body.BodyId == 3);
+        var planet = Assert.Single(
+            snapshot.Bodies,
+            body => body.BodyId == 4);
+
+        Assert.Equal(
+            [new SystemBodyParentSnapshot(SystemBodyParentKind.Null, 1)],
+            barycentre.Parents);
+        Assert.Equal(
+            [
+                new SystemBodyParentSnapshot(SystemBodyParentKind.Ring, 8),
+                new SystemBodyParentSnapshot(SystemBodyParentKind.Planet, 7),
+                new SystemBodyParentSnapshot(SystemBodyParentKind.Null, 3),
+                new SystemBodyParentSnapshot(SystemBodyParentKind.Star, 0),
+            ],
+            planet.Parents);
+        Assert.True(planet.HasRingParent);
     }
 
     [Fact]

@@ -255,7 +255,14 @@ public sealed class SystemScanState
         body.WasDiscovered = GetBoolean(root, "WasDiscovered") ?? false;
         body.WasMapped = GetBoolean(root, "WasMapped") ?? false;
         body.WasFootfalled = GetBoolean(root, "WasFootfalled");
-        body.HasRingParent = HasParentType(root, "Ring");
+        var parents = ReadParents(root);
+        if (parents is not null)
+        {
+            body.Parents = parents;
+            body.HasRingParent = parents.FirstOrDefault()?.Kind
+                == SystemBodyParentKind.Ring;
+        }
+
         body.AtmosphereComposition = ReadComposition(root, "AtmosphereComposition");
         body.Materials = ReadComposition(root, "Materials");
         body.Rings = ReadRings(root);
@@ -288,6 +295,7 @@ public sealed class SystemScanState
         body.IsScanned = true;
         body.Kind = SystemBodyKind.Barycentre;
         body.SemiMajorAxis = GetDouble(root, "SemiMajorAxis") ?? 0;
+        body.Parents = ReadParents(root) ?? body.Parents;
     }
 
     private void ApplyDssComplete(JsonElement root)
@@ -636,17 +644,38 @@ public sealed class SystemScanState
             .ToArray();
     }
 
-    private static bool HasParentType(JsonElement root, string parentType)
+    private static IReadOnlyList<SystemBodyParentSnapshot>? ReadParents(
+        JsonElement root)
     {
         if (!root.TryGetProperty("Parents", out var parents)
             || parents.ValueKind != JsonValueKind.Array)
         {
-            return false;
+            return null;
         }
 
-        var firstParent = parents.EnumerateArray().FirstOrDefault();
-        return firstParent.ValueKind == JsonValueKind.Object
-            && firstParent.TryGetProperty(parentType, out _);
+        var result = new List<SystemBodyParentSnapshot>();
+        foreach (var parent in parents.EnumerateArray())
+        {
+            if (parent.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            var entry = parent.EnumerateObject().FirstOrDefault();
+            if (entry.Value.ValueKind != JsonValueKind.Number
+                || !entry.Value.TryGetInt32(out var bodyId)
+                || !Enum.TryParse<SystemBodyParentKind>(
+                    entry.Name,
+                    ignoreCase: false,
+                    out var kind))
+            {
+                continue;
+            }
+
+            result.Add(new SystemBodyParentSnapshot(kind, bodyId));
+        }
+
+        return result;
     }
 
     private static string? GetString(JsonElement root, string propertyName)
@@ -788,6 +817,8 @@ public sealed class SystemScanState
 
         public IReadOnlyList<SystemRingSnapshot> Rings { get; set; } = [];
 
+        public IReadOnlyList<SystemBodyParentSnapshot> Parents { get; set; } = [];
+
         public Dictionary<string, OrganismState> Organisms { get; } =
             new(StringComparer.Ordinal);
 
@@ -874,6 +905,7 @@ public sealed class SystemScanState
                 new Dictionary<string, double>(AtmosphereComposition),
                 new Dictionary<string, double>(Materials),
                 Rings.ToArray(),
+                Parents.ToArray(),
                 Organisms.Values
                     .OrderBy(organism => organism.Genus, StringComparer.Ordinal)
                     .Select(organism => organism.CreateSnapshot())
@@ -1033,6 +1065,7 @@ public sealed record SystemScanBodySnapshot(
     IReadOnlyDictionary<string, double> AtmosphereComposition,
     IReadOnlyDictionary<string, double> Materials,
     IReadOnlyList<SystemRingSnapshot> Rings,
+    IReadOnlyList<SystemBodyParentSnapshot> Parents,
     IReadOnlyList<SystemOrganismSnapshot> Organisms,
     IReadOnlyList<string> AnalyzedGeologicalSignals)
 {
@@ -1067,6 +1100,19 @@ public sealed record SystemRingSnapshot(
     string? RingClass,
     double InnerRadius,
     double OuterRadius);
+
+public sealed record SystemBodyParentSnapshot(
+    SystemBodyParentKind Kind,
+    int BodyId);
+
+public enum SystemBodyParentKind
+{
+    Null,
+    Star,
+    Planet,
+    Ring,
+    Asteroid,
+}
 
 public enum SystemBodyKind
 {
