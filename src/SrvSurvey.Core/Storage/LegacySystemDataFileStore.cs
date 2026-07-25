@@ -13,6 +13,8 @@ internal sealed class LegacySystemDataFileStore
     };
     private static readonly ConcurrentDictionary<string, SemaphoreSlim>
         UpdateLocks = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim>
+        ProfileWriteLocks = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly string dataDirectory;
 
@@ -54,38 +56,45 @@ internal sealed class LegacySystemDataFileStore
     {
         ValidateContext(context);
         ArgumentNullException.ThrowIfNull(update);
-        var path = FindSystemPath(context)
-            ?? GetNewSystemPath(context);
-        var updateLock = UpdateLocks.GetOrAdd(
-            Path.GetFullPath(path),
-            static _ => new SemaphoreSlim(1, 1));
-        await updateLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            JsonObject root;
-            if (File.Exists(path))
-            {
-                var readResult = await ReadObjectAsync(path, cancellationToken)
-                    .ConfigureAwait(false);
-                root = readResult.Root
-                    ?? throw new InvalidDataException(
-                        "The system data file is malformed and was not overwritten: "
-                            + readResult.Error);
-            }
-            else
-            {
-                root = CreateSystemData(context);
-            }
+        return await ExecuteProfileWriteAsync(
+                context.FrontierId,
+                async token =>
+                {
+                    var path = FindSystemPath(context)
+                        ?? GetNewSystemPath(context);
+                    var updateLock = UpdateLocks.GetOrAdd(
+                        Path.GetFullPath(path),
+                        static _ => new SemaphoreSlim(1, 1));
+                    await updateLock.WaitAsync(token).ConfigureAwait(false);
+                    try
+                    {
+                        JsonObject root;
+                        if (File.Exists(path))
+                        {
+                            var readResult = await ReadObjectAsync(path, token)
+                                .ConfigureAwait(false);
+                            root = readResult.Root
+                                ?? throw new InvalidDataException(
+                                    "The system data file is malformed and was not overwritten: "
+                                        + readResult.Error);
+                        }
+                        else
+                        {
+                            root = CreateSystemData(context);
+                        }
 
-            update(root);
-            await WriteObjectAsync(path, root, cancellationToken)
-                .ConfigureAwait(false);
-            return path;
-        }
-        finally
-        {
-            updateLock.Release();
-        }
+                        update(root);
+                        await WriteObjectAsync(path, root, token)
+                            .ConfigureAwait(false);
+                        return path;
+                    }
+                    finally
+                    {
+                        updateLock.Release();
+                    }
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public async Task<LegacySystemDataFileUpdateResult> UpdateExistingAsync(
@@ -95,53 +104,85 @@ internal sealed class LegacySystemDataFileStore
     {
         ValidateContext(context);
         ArgumentNullException.ThrowIfNull(update);
-        var path = FindSystemPath(context)
-            ?? GetNewSystemPath(context);
-        var updateLock = UpdateLocks.GetOrAdd(
-            Path.GetFullPath(path),
+        return await ExecuteProfileWriteAsync(
+                context.FrontierId,
+                async token =>
+                {
+                    var path = FindSystemPath(context)
+                        ?? GetNewSystemPath(context);
+                    var updateLock = UpdateLocks.GetOrAdd(
+                        Path.GetFullPath(path),
+                        static _ => new SemaphoreSlim(1, 1));
+                    await updateLock.WaitAsync(token).ConfigureAwait(false);
+                    try
+                    {
+                        if (!File.Exists(path))
+                        {
+                            return new LegacySystemDataFileUpdateResult(
+                                path,
+                                false,
+                                false,
+                                null);
+                        }
+
+                        var readResult = await ReadObjectAsync(path, token)
+                            .ConfigureAwait(false);
+                        if (readResult.Root is null)
+                        {
+                            return new LegacySystemDataFileUpdateResult(
+                                path,
+                                true,
+                                false,
+                                readResult.Error);
+                        }
+
+                        var changed = update(readResult.Root);
+                        if (changed)
+                        {
+                            await WriteObjectAsync(
+                                    path,
+                                    readResult.Root,
+                                    token)
+                                .ConfigureAwait(false);
+                        }
+
+                        return new LegacySystemDataFileUpdateResult(
+                            path,
+                            true,
+                            changed,
+                            null);
+                    }
+                    finally
+                    {
+                        updateLock.Release();
+                    }
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    internal async Task<T> ExecuteProfileWriteAsync<T>(
+        string frontierId,
+        Func<CancellationToken, Task<T>> operation,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateFrontierId(frontierId);
+        ArgumentNullException.ThrowIfNull(operation);
+        var key = Path.GetFullPath(Path.Combine(
+            dataDirectory,
+            "systems",
+            frontierId));
+        var profileLock = ProfileWriteLocks.GetOrAdd(
+            key,
             static _ => new SemaphoreSlim(1, 1));
-        await updateLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await profileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (!File.Exists(path))
-            {
-                return new LegacySystemDataFileUpdateResult(
-                    path,
-                    false,
-                    false,
-                    null);
-            }
-
-            var readResult = await ReadObjectAsync(path, cancellationToken)
-                .ConfigureAwait(false);
-            if (readResult.Root is null)
-            {
-                return new LegacySystemDataFileUpdateResult(
-                    path,
-                    true,
-                    false,
-                    readResult.Error);
-            }
-
-            var changed = update(readResult.Root);
-            if (changed)
-            {
-                await WriteObjectAsync(
-                        path,
-                        readResult.Root,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            return new LegacySystemDataFileUpdateResult(
-                path,
-                true,
-                changed,
-                null);
+            return await operation(cancellationToken).ConfigureAwait(false);
         }
         finally
         {
-            updateLock.Release();
+            profileLock.Release();
         }
     }
 
@@ -228,19 +269,24 @@ internal sealed class LegacySystemDataFileStore
     private static void ValidateContext(LegacySystemDataFileContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentException.ThrowIfNullOrWhiteSpace(context.FrontierId);
         ArgumentException.ThrowIfNullOrWhiteSpace(context.SystemName);
-        if (context.FrontierId is "." or ".."
+        ValidateFrontierId(context.FrontierId);
+    }
+
+    private static void ValidateFrontierId(string frontierId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
+        if (frontierId is "." or ".."
             || !string.Equals(
-                Path.GetFileName(context.FrontierId),
-                context.FrontierId,
+                Path.GetFileName(frontierId),
+                frontierId,
                 StringComparison.Ordinal)
-            || context.FrontierId.IndexOfAny(
+            || frontierId.IndexOfAny(
                 [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0)
         {
             throw new ArgumentException(
                 "The Frontier ID must be a folder name, not a path.",
-                nameof(context));
+                nameof(frontierId));
         }
     }
 
