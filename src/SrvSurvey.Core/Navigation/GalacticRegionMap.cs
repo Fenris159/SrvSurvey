@@ -6,6 +6,9 @@ namespace SrvSurvey.Core.Navigation
 
     public static class GalacticRegionMap
     {
+        public static IReadOnlyList<GalacticRegion> Regions =>
+            EliteDangerousRegionMap.RegionMap.Regions;
+
         public static GalacticRegion? Find(GalacticCoordinate position)
         {
             return EliteDangerousRegionMap.RegionMap.FindRegion(
@@ -25,6 +28,24 @@ namespace EliteDangerousRegionMap
     {
         private const double XOrigin = -49985;
         private const double ZOrigin = -24105;
+        private static readonly Lazy<IReadOnlyList<
+            SrvSurvey.Core.Navigation.GalacticRegion>> regions =
+                new(CreateRegions);
+
+        public static IReadOnlyList<SrvSurvey.Core.Navigation.GalacticRegion>
+            Regions => regions.Value;
+
+        private static IReadOnlyList<SrvSurvey.Core.Navigation.GalacticRegion>
+            CreateRegions()
+        {
+            return RegionNames
+                .Select((name, id) => new { name, id })
+                .Where(item => item.id > 0)
+                .Select(item => new SrvSurvey.Core.Navigation.GalacticRegion(
+                    item.id,
+                    item.name))
+                .ToArray();
+        }
 
         public static SrvSurvey.Core.Navigation.GalacticRegion? FindRegion(
             double x,

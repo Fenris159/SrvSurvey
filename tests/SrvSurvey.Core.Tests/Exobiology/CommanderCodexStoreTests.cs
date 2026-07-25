@@ -147,6 +147,56 @@ public sealed class CommanderCodexStoreTests : IDisposable
         Assert.True(loaded.Data.IsDiscovered(2310101));
     }
 
+    [Fact]
+    public async Task ManualOverridesAreLosslessAndCannotRemoveJournalFirsts()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-codex.json");
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "future":{"keep":true},
+              "codexFirsts":{
+                "2310101":"2024-01-02T00:00:00_42_7"
+              }
+            }
+            """);
+        var store = new CommanderCodexStore(temporaryDirectory);
+        var timestamp = DateTimeOffset.Parse("2026-07-24T12:00:00Z");
+
+        var added = await store.SetManualDiscoveryAsync(
+            "F123",
+            "Cmdr Test",
+            2310206,
+            true,
+            timestamp);
+        var protectedFirst = await store.SetManualDiscoveryAsync(
+            "F123",
+            "Cmdr Test",
+            2310101,
+            false);
+        var removed = await store.SetManualDiscoveryAsync(
+            "F123",
+            "Cmdr Test",
+            2310206,
+            false);
+
+        Assert.True(added.IsSuccess);
+        Assert.True(added.Changed);
+        Assert.True(protectedFirst.IsSuccess);
+        Assert.False(protectedFirst.Changed);
+        Assert.True(protectedFirst.IsDiscovered);
+        Assert.True(removed.Changed);
+        Assert.False(removed.IsDiscovered);
+        var loaded = await store.LoadAsync("F123", null);
+        var first = Assert.Single(loaded.Data!.Firsts).Value;
+        Assert.Equal(42, first.SystemAddress);
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.True(root["future"]!["keep"]!.GetValue<bool>());
+        Assert.Equal("Cmdr Test", root["commander"]!.GetValue<string>());
+    }
+
     [Theory]
     [InlineData("../escape")]
     [InlineData("folder/name")]

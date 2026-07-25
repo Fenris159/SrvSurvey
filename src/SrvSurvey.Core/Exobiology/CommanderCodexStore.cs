@@ -117,6 +117,100 @@ public sealed class CommanderCodexStore(string dataDirectory)
             result.Error);
     }
 
+    public async Task<CommanderCodexManualUpdateResult> SetManualDiscoveryAsync(
+        string frontierId,
+        string? commanderName,
+        long entryId,
+        bool isDiscovered,
+        DateTimeOffset? timestamp = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (entryId <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(entryId),
+                "A positive Codex entry ID is required.");
+        }
+
+        var path = ResolvePath(frontierId);
+        JsonObject root;
+        try
+        {
+            root = File.Exists(path)
+                ? await ReadRootAsync(path, cancellationToken)
+                    .ConfigureAwait(false) ?? []
+                : [];
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or JsonException)
+        {
+            return CommanderCodexManualUpdateResult.Failed(
+                path,
+                exception.Message);
+        }
+
+        var firsts = root["codexFirsts"] as JsonObject;
+        if (firsts is null)
+        {
+            firsts = [];
+            root["codexFirsts"] = firsts;
+        }
+
+        var key = entryId.ToString(CultureInfo.InvariantCulture);
+        var hasExisting = TryParseFirst(firsts[key], out var existing);
+        if (isDiscovered == hasExisting
+            || !isDiscovered && existing.SystemAddress != -1)
+        {
+            return new CommanderCodexManualUpdateResult(
+                path,
+                false,
+                hasExisting,
+                true,
+                null);
+        }
+
+        if (isDiscovered)
+        {
+            firsts[key] = FormatFirst(new CommanderCodexFirst(
+                timestamp ?? DateTimeOffset.Now,
+                -1,
+                -1));
+        }
+        else
+        {
+            firsts.Remove(key);
+        }
+
+        root["fid"] = frontierId;
+        if (!string.IsNullOrWhiteSpace(commanderName))
+        {
+            root["commander"] = commanderName;
+        }
+
+        try
+        {
+            await WriteAtomicAsync(path, root, cancellationToken)
+                .ConfigureAwait(false);
+            return new CommanderCodexManualUpdateResult(
+                path,
+                true,
+                isDiscovered,
+                true,
+                null);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or JsonException)
+        {
+            return CommanderCodexManualUpdateResult.Failed(
+                path,
+                exception.Message);
+        }
+    }
+
     public async Task<CommanderCodexBatchTrackResult> TrackBatchAsync(
         string frontierId,
         string? commanderName,
@@ -466,6 +560,26 @@ public sealed record CommanderCodexTrackResult(
     bool Changed,
     bool IsSuccess,
     string? Error);
+
+public sealed record CommanderCodexManualUpdateResult(
+    string Path,
+    bool Changed,
+    bool IsDiscovered,
+    bool IsSuccess,
+    string? Error)
+{
+    public static CommanderCodexManualUpdateResult Failed(
+        string path,
+        string error)
+    {
+        return new CommanderCodexManualUpdateResult(
+            path,
+            false,
+            false,
+            false,
+            error);
+    }
+}
 
 public sealed record CommanderCodexDiscovery(
     long EntryId,
