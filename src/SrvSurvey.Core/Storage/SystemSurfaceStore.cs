@@ -160,6 +160,82 @@ public sealed class SystemSurfaceStore
             .ConfigureAwait(false);
     }
 
+    public async Task<SurfaceBookmarkMutationResult> RemoveBookmarkAsync(
+        SystemSurfaceContext context,
+        string name,
+        SurfaceCoordinate location,
+        bool nearest = true,
+        double? maximumDistanceMeters = null,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateContext(context);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        if (maximumDistanceMeters is { } maximum
+            && (!double.IsFinite(maximum) || maximum < 0))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(maximumDistanceMeters));
+        }
+
+        var outcome = SurfaceBookmarkMutation.NotFound;
+        var path = await fileStore.UpdateAsync(
+                ToFileContext(context),
+                root =>
+                {
+                    var body = FindBody(root, context);
+                    if (body?["bookmarks"] is not JsonObject bookmarks
+                        || bookmarks[name] is not JsonArray locations)
+                    {
+                        return;
+                    }
+
+                    var candidates = locations
+                        .Select((node, index) => new
+                        {
+                            Index = index,
+                            Coordinate = ReadCoordinate(node),
+                        })
+                        .Where(candidate => candidate.Coordinate is not null)
+                        .Select(candidate => new
+                        {
+                            candidate.Index,
+                            Distance = GetDistance(
+                                candidate.Coordinate!.Value,
+                                location,
+                                context.RadiusMeters),
+                        })
+                        .OrderBy(candidate => candidate.Distance)
+                        .ToArray();
+                    if (candidates.Length == 0)
+                    {
+                        return;
+                    }
+
+                    var selected = nearest ? candidates[0] : candidates[^1];
+                    if (maximumDistanceMeters is { } limit
+                        && selected.Distance >= limit)
+                    {
+                        return;
+                    }
+
+                    locations.RemoveAt(selected.Index);
+                    if (locations.Count == 0)
+                    {
+                        bookmarks.Remove(name);
+                    }
+
+                    if (bookmarks.Count == 0)
+                    {
+                        body.Remove("bookmarks");
+                    }
+
+                    outcome = SurfaceBookmarkMutation.Removed;
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
+        return new SurfaceBookmarkMutationResult(path, outcome);
+    }
+
     public async Task<string> AppendBioScansAsync(
         SystemSurfaceContext context,
         IReadOnlyList<SurfaceBioScan> scans,
@@ -476,8 +552,20 @@ public sealed class SystemSurfaceStore
             return first == second;
         }
 
-        return SurfaceNavigation.GetDistance(first, second, radiusMeters)
+        return GetDistance(first, second, radiusMeters)
             < minimumSeparationMeters;
+    }
+
+    private static double GetDistance(
+        SurfaceCoordinate first,
+        SurfaceCoordinate second,
+        double radiusMeters)
+    {
+        return radiusMeters > 0
+            ? SurfaceNavigation.GetDistance(first, second, radiusMeters)
+            : first == second
+                ? 0
+                : double.PositiveInfinity;
     }
 
     private static string? GetString(JsonNode? node)
@@ -633,4 +721,6 @@ public enum SurfaceBookmarkMutation
 {
     Added,
     TooClose,
+    Removed,
+    NotFound,
 }

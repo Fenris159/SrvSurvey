@@ -179,6 +179,38 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task RemovesNearestBookmarkOnlyInsideSamplingThreshold()
+    {
+        var store = new SystemSurfaceStore(temporaryDirectory);
+        await store.AddBookmarkAsync(
+            Context(),
+            "Aleoida",
+            new SurfaceCoordinate(0, 0));
+        await store.AddBookmarkAsync(
+            Context(),
+            "Aleoida",
+            new SurfaceCoordinate(0, 10));
+
+        var removed = await store.RemoveBookmarkAsync(
+            Context(),
+            "Aleoida",
+            new SurfaceCoordinate(0, 1),
+            maximumDistanceMeters: 150);
+        var outside = await store.RemoveBookmarkAsync(
+            Context(),
+            "Aleoida",
+            new SurfaceCoordinate(0, -90),
+            maximumDistanceMeters: 150);
+
+        Assert.Equal(SurfaceBookmarkMutation.Removed, removed.Mutation);
+        Assert.Equal(SurfaceBookmarkMutation.NotFound, outside.Mutation);
+        var loaded = await store.LoadBodyAsync(Context());
+        Assert.Equal(
+            new SurfaceCoordinate(0, 10),
+            Assert.Single(loaded.Snapshot!.Bookmarks["Aleoida"]));
+    }
+
+    [Fact]
     public async Task NoteAndSurfaceStoresSerializeUpdatesToTheSameFile()
     {
         var noteStore = new SystemNoteStore(temporaryDirectory);
