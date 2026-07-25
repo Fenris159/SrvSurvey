@@ -92,6 +92,22 @@ public sealed class CanonnSystemPoiClientTests
         Assert.Equal("System", result.SystemName);
     }
 
+    [Fact]
+    public async Task GetAsyncRejectsResponseForAnotherSystem()
+    {
+        var handler = new RecordingHandler(
+            """{"system":"Other","codex":[]}""");
+        var client = new CanonnSystemPoiClient(
+            new HttpClient(handler),
+            new Uri("https://example.test/"));
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(
+            () => client.GetAsync("Expected", string.Empty));
+
+        Assert.Contains("Other", exception.Message);
+        Assert.Contains("Expected", exception.Message);
+    }
+
     private sealed class RecordingHandler(string payload) : HttpMessageHandler
     {
         public Uri? RequestUri { get; private set; }

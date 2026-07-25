@@ -58,6 +58,18 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
         }
 
         var returnedSystem = GetString(root, "system");
+        if (!string.IsNullOrWhiteSpace(returnedSystem)
+            && !string.Equals(
+                returnedSystem.Trim(),
+                systemName.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                $"Canonn returned POIs for {returnedSystem.Trim()} instead of "
+                    + systemName.Trim()
+                    + ".");
+        }
+
         var signals = new List<CanonnSurfaceBiologySignal>();
         if (root.TryGetProperty("codex", out var codex)
             && codex.ValueKind == JsonValueKind.Array)
@@ -74,7 +86,7 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
         return new CanonnSystemPoiResult(
             string.IsNullOrWhiteSpace(returnedSystem)
                 ? systemName.Trim()
-                : returnedSystem,
+                : returnedSystem.Trim(),
             signals);
     }
 
