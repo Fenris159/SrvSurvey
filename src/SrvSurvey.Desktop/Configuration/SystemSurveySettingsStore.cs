@@ -55,6 +55,10 @@ public sealed class SystemSurveySettingsStore
                 defaults.AutoShowBioSystem),
             GetBoolean(
                 settings,
+                "AutoShowBioStatus",
+                defaults.AutoShowBioStatus),
+            GetBoolean(
+                settings,
                 "DrawBodyBiosOnlyWhenNear",
                 defaults.DrawBodyBiosOnlyWhenNear),
             GetBoolean(
@@ -152,6 +156,7 @@ public sealed class SystemSurveySettingsStore
             settings["HighGravityWarningLevel"] =
                 preferences.HighGravityWarningLevel;
             settings["AutoShowBioSystem"] = preferences.AutoShowBioSystem;
+            settings["AutoShowBioStatus"] = preferences.AutoShowBioStatus;
             settings["DrawBodyBiosOnlyWhenNear"] =
                 preferences.DrawBodyBiosOnlyWhenNear;
             settings["HighlightRegionalFirsts"] =
@@ -231,6 +236,7 @@ public sealed record SystemSurveyPreferences(
     bool HideBodyInfoMaterials,
     double HighGravityWarningLevel,
     bool AutoShowBioSystem,
+    bool AutoShowBioStatus,
     bool DrawBodyBiosOnlyWhenNear,
     bool HighlightRegionalFirsts,
     bool DimAnalyzedOrganisms,
@@ -261,6 +267,7 @@ public sealed record SystemSurveyPreferences(
         HideBodyInfoMaterials: false,
         HighGravityWarningLevel: 1,
         AutoShowBioSystem: true,
+        AutoShowBioStatus: true,
         DrawBodyBiosOnlyWhenNear: true,
         HighlightRegionalFirsts: false,
         DimAnalyzedOrganisms: true,

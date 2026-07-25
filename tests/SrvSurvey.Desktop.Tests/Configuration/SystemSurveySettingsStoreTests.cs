@@ -33,6 +33,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             true,
             2.5,
             false,
+            true,
             false,
             true,
             false,

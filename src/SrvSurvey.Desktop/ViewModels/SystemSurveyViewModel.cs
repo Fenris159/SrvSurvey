@@ -23,6 +23,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private IReadOnlyList<SurveyBodyReferenceViewModel> biologicalBodies = [];
     private BodyInformationViewModel? bodyInformation;
     private BiologySurveyViewModel? biologySurvey;
+    private BiologyStatusViewModel? biologyStatus;
     private bool autoShowBodyInfo;
     private bool showBodyInfoInSystemMap;
     private bool showBodyInfoInOrbit;
@@ -32,6 +33,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool hideBodyInfoMaterials;
     private double highGravityWarningLevel;
     private bool autoShowBioSystem;
+    private bool autoShowBioStatus;
     private bool drawBodyBiosOnlyWhenNear;
     private bool highlightRegionalFirsts;
     private bool dimAnalyzedOrganisms;
@@ -75,6 +77,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         hideBodyInfoMaterials = preferences.HideBodyInfoMaterials;
         highGravityWarningLevel = preferences.HighGravityWarningLevel;
         autoShowBioSystem = preferences.AutoShowBioSystem;
+        autoShowBioStatus = preferences.AutoShowBioStatus;
         drawBodyBiosOnlyWhenNear = preferences.DrawBodyBiosOnlyWhenNear;
         highlightRegionalFirsts = preferences.HighlightRegionalFirsts;
         dimAnalyzedOrganisms = preferences.DimAnalyzedOrganisms;
@@ -164,6 +167,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get => autoShowBioSystem;
         set => SetPreference(ref autoShowBioSystem, value);
+    }
+
+    public bool AutoShowBioStatus
+    {
+        get => autoShowBioStatus;
+        set => SetPreference(ref autoShowBioStatus, value);
     }
 
     public bool DrawBodyBiosOnlyWhenNear
@@ -415,6 +424,20 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     }
 
     public bool HasBiologySurvey => BiologySurvey is not null;
+
+    public BiologyStatusViewModel? BiologyStatus
+    {
+        get => biologyStatus;
+        private set
+        {
+            if (SetField(ref biologyStatus, value))
+            {
+                OnPropertyChanged(nameof(HasBiologyStatus));
+            }
+        }
+    }
+
+    public bool HasBiologyStatus => BiologyStatus is not null;
 
     public bool IsBodyInfoForced => forceShowBodyInfo;
 
@@ -741,6 +764,35 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool ShouldShowBioStatus
+    {
+        get
+        {
+            if (!AutoShowBioStatus
+                || BiologyStatus is null
+                || status is null
+                || status.Docked
+                || status.InTaxi
+                || status.FsdChargingJump
+                || fsdJumping)
+            {
+                return false;
+            }
+
+            var allowedFocus = status.GuiFocus is GuiFocus.NoFocus
+                or GuiFocus.CommsPanel
+                or GuiFocus.Saa
+                or GuiFocus.Codex;
+            var allowedMode = status.Flags.HasFlag(StatusFlags.Supercruise)
+                || status.InMainShip
+                || status.Landed
+                || status.InSrv
+                || status.OnFoot
+                || status.GlideMode;
+            return allowedFocus && allowedMode;
+        }
+    }
+
     public void ApplyUpdate(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? nextStatus,
@@ -880,6 +932,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             DimAnalyzedOrganisms,
             HideGeoCountInBioSystem,
             DisableBioPredictions);
+        BiologyStatus = BiologyStatusViewModel.Create(
+            snapshot,
+            status,
+            exobiology,
+            HideGeoCountInBioSystem);
         BodyInformation = CreateBodyInformation(
             ResolveBodyInfoTarget(forceShowBodyInfo
                 || status?.GuiFocus is GuiFocus.SystemMap or GuiFocus.Orrery));
@@ -1368,6 +1425,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 HideBodyInfoMaterials,
                 HighGravityWarningLevel,
                 AutoShowBioSystem,
+                AutoShowBioStatus,
                 DrawBodyBiosOnlyWhenNear,
                 HighlightRegionalFirsts,
                 DimAnalyzedOrganisms,
@@ -1406,6 +1464,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShouldShowLastFssBody));
         OnPropertyChanged(nameof(ShouldShowBodyInfo));
         OnPropertyChanged(nameof(ShouldShowBioSystem));
+        OnPropertyChanged(nameof(ShouldShowBioStatus));
         OnPropertyChanged(nameof(ShouldShowSystemStatus));
     }
 
