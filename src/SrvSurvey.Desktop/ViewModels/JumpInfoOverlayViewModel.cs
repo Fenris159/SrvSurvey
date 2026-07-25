@@ -4,26 +4,37 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class JumpInfoOverlayViewModel : INotifyPropertyChanged
+public sealed class JumpInfoOverlayViewModel : INotifyPropertyChanged, IDisposable
 {
+    private readonly SystemNicknameViewModel? systemNicknames;
     private string platformStatus;
     private string inputMode;
 
     public JumpInfoOverlayViewModel(
         JumpInfoViewModel jumpInfo,
-        OverlayPlatformCapabilities capabilities)
+        OverlayPlatformCapabilities capabilities,
+        SystemNicknameViewModel? systemNicknames = null)
     {
         JumpInfo = jumpInfo ?? throw new ArgumentNullException(nameof(jumpInfo));
+        this.systemNicknames = systemNicknames;
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
         inputMode = capabilities.SupportsClickThrough
             ? "PASSIVE"
             : "UNAVAILABLE";
+        JumpInfo.PropertyChanged += OnJumpInfoPropertyChanged;
+        if (systemNicknames is not null)
+        {
+            systemNicknames.NamesChanged += OnNamesChanged;
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public JumpInfoViewModel JumpInfo { get; }
+
+    public string TargetName => systemNicknames?.Resolve(JumpInfo.TargetName)
+        ?? JumpInfo.TargetName;
 
     public string PlatformStatus
     {
@@ -42,6 +53,34 @@ public sealed class JumpInfoOverlayViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(result);
         PlatformStatus = result.Status;
         InputMode = result.IsClickThrough ? "PASSIVE" : "BLOCKED";
+    }
+
+    public void Dispose()
+    {
+        JumpInfo.PropertyChanged -= OnJumpInfoPropertyChanged;
+        if (systemNicknames is not null)
+        {
+            systemNicknames.NamesChanged -= OnNamesChanged;
+        }
+    }
+
+    private void OnJumpInfoPropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs eventArgs)
+    {
+        if (eventArgs.PropertyName == nameof(JumpInfoViewModel.TargetName))
+        {
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(TargetName)));
+        }
+    }
+
+    private void OnNamesChanged(object? sender, EventArgs eventArgs)
+    {
+        PropertyChanged?.Invoke(
+            this,
+            new PropertyChangedEventArgs(nameof(TargetName)));
     }
 
     private bool SetField<T>(

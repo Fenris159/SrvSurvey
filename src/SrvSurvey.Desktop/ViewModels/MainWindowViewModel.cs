@@ -102,6 +102,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        SystemNicknames = new SystemNicknameViewModel(
+            SystemNicknameCatalog.Load(AppDataPaths.DataDirectory),
+            new SystemNicknameSettingsStore(AppDataPaths.UiSettingsPath));
         DiagnosticsLog = new DiagnosticsLogViewModel(applicationLogService);
         folderResolution = JournalFolderLocator.ResolveCurrent(
             configuredJournalDirectory);
@@ -338,6 +341,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public RamTahViewModel RamTah { get; }
 
     public ColonizationViewModel Colonization { get; }
+
+    public SystemNicknameViewModel SystemNicknames { get; }
 
     public DiagnosticsLogViewModel DiagnosticsLog { get; }
 

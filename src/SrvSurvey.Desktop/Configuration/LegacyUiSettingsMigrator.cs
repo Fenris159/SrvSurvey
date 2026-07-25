@@ -143,6 +143,10 @@ public sealed class LegacyUiSettingsMigrator
                 [
                     ("autoShowPlotStationInfo_TEST", "AutoShow"),
                 ]);
+                mappedCount += MapSection(legacy, root, "SystemNicknames",
+                [
+                    ("useSystemNickNames", "Enabled"),
+                ]);
                 mappedCount += MapColonization(legacy, root);
                 mappedCount += MapInput(legacy, root);
                 root["LegacyImport"] = new JsonObject

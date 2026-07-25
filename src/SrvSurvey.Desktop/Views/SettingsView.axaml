@@ -93,10 +93,30 @@
           <TextBlock Classes="card-title" Text="Theme compatibility" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="These choices style the Avalonia shell and use native light/dark control behavior. Importing legacy custom orange/cyan theme.json values for game overlays remains part of the overlay port." />
+                     Text="These choices style the Avalonia shell with native light/dark controls. Detached game overlays retain imported theme.json colours independently." />
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      TextWrapping="Wrap"
                      Text="{Binding ThemeStatusMessage}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="10">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="System nicknames" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Show personal system-nick-names.json labels first, then imported Raven Colonial public names, in Galaxy Map guidance overlays." />
+            </StackPanel>
+            <CheckBox Grid.Column="1"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding SystemNicknames.Enabled, Mode=TwoWay}"
+                      Content="Enabled" />
+          </Grid>
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding SystemNicknames.StatusMessage}" />
         </StackPanel>
       </Border>
 

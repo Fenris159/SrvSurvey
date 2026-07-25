@@ -158,7 +158,8 @@ public sealed partial class App : Application
                 viewModel.Route,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent(),
-                overlayLayout);
+                overlayLayout,
+                viewModel.SystemNicknames);
             guardianOverlayCoordinator = new GuardianOverlayCoordinator(
                 viewModel.Guardian,
                 OverlayPlatformService.CreateCurrent(),
@@ -168,7 +169,8 @@ public sealed partial class App : Application
                 viewModel.JumpInfo,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent(),
-                overlayLayout);
+                overlayLayout,
+                viewModel.SystemNicknames);
             groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
                 viewModel.GroundTarget,
                 OverlayPlatformService.CreateCurrent(),

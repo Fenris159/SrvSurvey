@@ -60,13 +60,13 @@
                 ColumnSpacing="10" RowSpacing="5">
             <TextBlock Classes="muted" Text="FROM" />
             <TextBlock Grid.Column="1"
-                       Text="{Binding Sphere.CenterSystemName}"
+                       Text="{Binding SphereCenterSystemName}"
                        TextTrimming="CharacterEllipsis" />
             <TextBlock Grid.Row="1" Classes="muted" Text="TO" />
             <TextBlock Grid.Row="1" Grid.Column="1"
                        Foreground="{DynamicResource RavenAccentBrush}"
                        FontWeight="SemiBold"
-                       Text="{Binding Sphere.DestinationSystemName}"
+                       Text="{Binding SphereDestinationSystemName}"
                        TextTrimming="CharacterEllipsis" />
             <TextBlock Grid.Row="2" Classes="muted" Text="DISTANCE" />
             <StackPanel Grid.Row="2" Grid.Column="1"
@@ -110,7 +110,7 @@
                        Foreground="{DynamicResource RavenAccentBrush}"
                        FontSize="17"
                        FontWeight="SemiBold"
-                       Text="{Binding Boxel.NextSystem}"
+                       Text="{Binding BoxelNextSystem}"
                        TextTrimming="CharacterEllipsis" />
           </Grid>
           <Border Padding="9,6"
@@ -144,7 +144,7 @@
           <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                      FontSize="21"
                      FontWeight="SemiBold"
-                     Text="{Binding Route.NextHopName}"
+                     Text="{Binding RouteNextHopName}"
                      TextTrimming="CharacterEllipsis" />
           <TextBlock Classes="monospace"
                      FontSize="10"

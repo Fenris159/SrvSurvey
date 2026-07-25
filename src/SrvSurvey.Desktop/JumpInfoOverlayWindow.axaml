@@ -51,7 +51,7 @@
         <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                    FontSize="27"
                    FontWeight="SemiBold"
-                   Text="{Binding JumpInfo.TargetName}"
+                   Text="{Binding TargetName}"
                    TextTrimming="CharacterEllipsis" />
         <TextBlock Grid.Column="1"
                    Classes="monospace"

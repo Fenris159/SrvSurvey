@@ -23,7 +23,8 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
         JumpInfoViewModel jumpInfo,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null,
+        SystemNicknameViewModel? systemNicknames = null)
     {
         this.jumpInfo = jumpInfo
             ?? throw new ArgumentNullException(nameof(jumpInfo));
@@ -34,7 +35,8 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new JumpInfoOverlayViewModel(
             jumpInfo,
-            platform.Capabilities);
+            platform.Capabilities,
+            systemNicknames);
         jumpInfo.PropertyChanged += OnJumpInfoPropertyChanged;
         timer = new DispatcherTimer
         {
@@ -73,6 +75,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
         timer.Stop();
         timer.Tick -= OnTimerTick;
         jumpInfo.PropertyChanged -= OnJumpInfoPropertyChanged;
+        viewModel.Dispose();
         CloseWindow();
         gameWindowTracker.Dispose();
         platform.Dispose();

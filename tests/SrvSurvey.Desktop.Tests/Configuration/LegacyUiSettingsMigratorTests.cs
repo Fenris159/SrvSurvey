@@ -60,6 +60,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "humanSiteDotsOnCollection": false,
               "collectMatsCollectionStatsTest": true,
               "autoShowPlotStationInfo_TEST": false,
+              "useSystemNickNames": true,
               "buildProjects_TEST": true,
               "autoShowPlotBuildCommodities": false,
               "buildProjectsOnRightScreen": false,
@@ -146,6 +147,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new StationInfoPreferences(false),
             new StationInfoSettingsStore(paths.UiSettingsPath).Load());
+        Assert.True(
+            new SystemNicknameSettingsStore(paths.UiSettingsPath).LoadEnabled());
 
         var colonization = new ColonizationSettingsStore(paths.UiSettingsPath);
         Assert.True(colonization.LoadEnabled());
