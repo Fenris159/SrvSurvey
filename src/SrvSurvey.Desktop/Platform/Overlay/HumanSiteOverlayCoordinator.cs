@@ -12,6 +12,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
     private readonly HumanSiteOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
+    private readonly LegacyOverlayLayout overlayLayout;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private HumanSiteOverlayWindow? window;
@@ -21,7 +22,8 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
     public HumanSiteOverlayCoordinator(
         HumanSiteViewModel humanSite,
         IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker)
+        IGameWindowTracker gameWindowTracker,
+        LegacyOverlayLayout? overlayLayout = null)
     {
         this.humanSite = humanSite
             ?? throw new ArgumentNullException(nameof(humanSite));
@@ -29,6 +31,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new HumanSiteOverlayViewModel(
             humanSite,
             platform.Capabilities);
@@ -153,7 +156,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         }
 
         var overlay = new HumanSiteOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotHumanSite");
         overlay.Opened += (_, _) =>
         {
             SizeAndPositionWindow(overlay, gameWindow.ClientBounds);
@@ -206,10 +209,14 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         var pixelSize = new PixelSize(
             Math.Max(1, (int)Math.Ceiling(logicalWidth * screen.Scaling)),
             Math.Max(1, (int)Math.Ceiling(logicalHeight * screen.Scaling)));
-        var position = OverlayWindowPlacement.MiddleLeft(
-            gameBounds,
-            pixelSize,
-            margin: 8);
+        var position = overlayLayout.GetPosition(
+                "PlotHumanSite",
+                gameBounds,
+                pixelSize)
+            ?? OverlayWindowPlacement.MiddleLeft(
+                gameBounds,
+                pixelSize,
+                margin: 8);
         if (overlay.Position != position)
         {
             overlay.Position = position;

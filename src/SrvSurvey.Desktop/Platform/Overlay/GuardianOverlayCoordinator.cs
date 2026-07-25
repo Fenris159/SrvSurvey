@@ -12,6 +12,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     private readonly GuardianOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
+    private readonly LegacyOverlayLayout overlayLayout;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private GuardianOverlayWindow? liveSiteWindow;
@@ -24,7 +25,8 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     public GuardianOverlayCoordinator(
         GuardianViewModel guardian,
         IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker)
+        IGameWindowTracker gameWindowTracker,
+        LegacyOverlayLayout? overlayLayout = null)
     {
         this.guardian = guardian
             ?? throw new ArgumentNullException(nameof(guardian));
@@ -32,6 +34,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new GuardianOverlayViewModel(
             guardian,
             platform.Capabilities);
@@ -180,7 +183,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         var overlay = new GuardianOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotGuardians");
         overlay.Opened += (_, _) => PrepareWindow(overlay, PositionLiveSite);
         overlay.Closed += (_, _) =>
         {
@@ -210,7 +213,10 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         var overlay = new GuardianSystemOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotGuardianSystem");
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionSystemSummary);
@@ -242,7 +248,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         var overlay = new RamTahOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotRamTah");
         overlay.Opened += (_, _) => PrepareWindow(overlay, PositionRamTah);
         overlay.Closed += (_, _) =>
         {
@@ -273,27 +279,34 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
     }
 
-    private static void PositionLiveSite(Window window, PixelRect gameBounds)
+    private void PositionLiveSite(Window window, PixelRect gameBounds)
     {
         PositionWindow(
             window,
             gameBounds,
+            "PlotGuardians",
             OverlayWindowPlacement.BottomRight,
             margin: 20);
     }
 
-    private static void PositionSystemSummary(
+    private void PositionSystemSummary(
         Window window,
         PixelRect gameBounds)
-    {
-        PositionWindow(window, gameBounds, PlaceGuardianSystem, margin: 0);
-    }
-
-    private static void PositionRamTah(Window window, PixelRect gameBounds)
     {
         PositionWindow(
             window,
             gameBounds,
+            "PlotGuardianSystem",
+            PlaceGuardianSystem,
+            margin: 0);
+    }
+
+    private void PositionRamTah(Window window, PixelRect gameBounds)
+    {
+        PositionWindow(
+            window,
+            gameBounds,
+            "PlotRamTah",
             OverlayWindowPlacement.MiddleRight,
             margin: 8);
     }
@@ -306,9 +319,10 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         return new PixelPoint(gameBounds.X + 10, gameBounds.Y + 8);
     }
 
-    private static void PositionWindow(
+    private void PositionWindow(
         Window window,
         PixelRect gameBounds,
+        string plotterName,
         Func<PixelRect, PixelSize, int, PixelPoint> placement,
         int margin)
     {
@@ -326,10 +340,9 @@ public sealed class GuardianOverlayCoordinator : IDisposable
                 ? window.MinHeight
                 : window.Height;
         var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var position = placement(
-            gameBounds,
-            new PixelSize(Math.Max(width, 1), Math.Max(height, 1)),
-            margin);
+        var size = new PixelSize(Math.Max(width, 1), Math.Max(height, 1));
+        var position = overlayLayout.GetPosition(plotterName, gameBounds, size)
+            ?? placement(gameBounds, size, margin);
         if (window.Position != position)
         {
             window.Position = position;

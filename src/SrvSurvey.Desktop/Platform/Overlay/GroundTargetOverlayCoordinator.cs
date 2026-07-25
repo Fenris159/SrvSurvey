@@ -12,6 +12,7 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
     private readonly GroundTargetOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
+    private readonly LegacyOverlayLayout overlayLayout;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private GroundTargetOverlayWindow? window;
@@ -21,7 +22,8 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
     public GroundTargetOverlayCoordinator(
         GroundTargetViewModel groundTarget,
         IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker)
+        IGameWindowTracker gameWindowTracker,
+        LegacyOverlayLayout? overlayLayout = null)
     {
         this.groundTarget = groundTarget
             ?? throw new ArgumentNullException(nameof(groundTarget));
@@ -29,6 +31,7 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new GroundTargetOverlayViewModel(
             groundTarget,
             platform.Capabilities);
@@ -118,7 +121,7 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
         }
 
         var overlay = new GroundTargetOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotTrackTarget");
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -143,7 +146,7 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private static void PositionWindow(Window window, PixelRect gameBounds)
+    private void PositionWindow(Window window, PixelRect gameBounds)
     {
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
@@ -157,9 +160,9 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
             ? window.Bounds.Height
             : window.MinHeight;
         var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var position = OverlayWindowPlacement.BottomCenter(
-            gameBounds,
-            new PixelSize(width, Math.Max(height, 1)));
+        var size = new PixelSize(width, Math.Max(height, 1));
+        var position = overlayLayout.GetPosition("PlotTrackTarget", gameBounds, size)
+            ?? OverlayWindowPlacement.BottomCenter(gameBounds, size);
         if (window.Position != position)
         {
             window.Position = position;

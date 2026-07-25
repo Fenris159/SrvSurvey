@@ -11,6 +11,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
     private readonly ColonizationCommodityOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
+    private readonly LegacyOverlayLayout overlayLayout;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private ColonizationCommodityOverlayWindow? window;
@@ -21,7 +22,8 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
     public ColonizationCommodityOverlayCoordinator(
         ColonizationCommodityOverlayViewModel viewModel,
         IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker)
+        IGameWindowTracker gameWindowTracker,
+        LegacyOverlayLayout? overlayLayout = null)
     {
         this.viewModel = viewModel
             ?? throw new ArgumentNullException(nameof(viewModel));
@@ -29,6 +31,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         this.viewModel.PropertyChanged += OnViewModelPropertyChanged;
         timer = new DispatcherTimer
         {
@@ -136,7 +139,10 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         }
 
         var overlay = new ColonizationCommodityOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotBuildCommodities");
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -159,7 +165,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         overlay.Show();
     }
 
-    private static void PositionWindow(Window window, PixelRect gameBounds)
+    private void PositionWindow(Window window, PixelRect gameBounds)
     {
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
@@ -170,9 +176,12 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
 
         var width = (int)Math.Ceiling(window.Width * screen.Scaling);
         var height = (int)Math.Ceiling(window.Height * screen.Scaling);
-        var position = OverlayWindowPlacement.TopRight(
-            gameBounds,
-            new PixelSize(width, height));
+        var size = new PixelSize(width, height);
+        var position = overlayLayout.GetPosition(
+                "PlotBuildCommodities",
+                gameBounds,
+                size)
+            ?? OverlayWindowPlacement.TopRight(gameBounds, size);
         if (window.Position != position)
         {
             window.Position = position;

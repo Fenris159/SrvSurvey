@@ -12,6 +12,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
     private readonly JumpInfoOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
+    private readonly LegacyOverlayLayout overlayLayout;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private JumpInfoOverlayWindow? window;
@@ -21,7 +22,8 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
     public JumpInfoOverlayCoordinator(
         JumpInfoViewModel jumpInfo,
         IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker)
+        IGameWindowTracker gameWindowTracker,
+        LegacyOverlayLayout? overlayLayout = null)
     {
         this.jumpInfo = jumpInfo
             ?? throw new ArgumentNullException(nameof(jumpInfo));
@@ -29,6 +31,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new JumpInfoOverlayViewModel(
             jumpInfo,
             platform.Capabilities);
@@ -118,7 +121,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
         }
 
         var overlay = new JumpInfoOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotJumpInfo");
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -143,7 +146,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private static void PositionWindow(Window window, PixelRect gameBounds)
+    private void PositionWindow(Window window, PixelRect gameBounds)
     {
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
@@ -157,9 +160,9 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
             ? window.Bounds.Height
             : window.MinHeight;
         var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var position = OverlayWindowPlacement.TopCenter(
-            gameBounds,
-            new PixelSize(width, Math.Max(height, 1)));
+        var size = new PixelSize(width, Math.Max(height, 1));
+        var position = overlayLayout.GetPosition("PlotJumpInfo", gameBounds, size)
+            ?? OverlayWindowPlacement.TopCenter(gameBounds, size);
         if (window.Position != position)
         {
             window.Position = position;

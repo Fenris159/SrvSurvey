@@ -75,6 +75,13 @@ public sealed partial class App : Application
                 applicationLog.Append(overlayTheme.Error);
             }
 
+            var overlayLayout = new LegacyOverlayLayoutStore(
+                appDataPaths.DataDirectory).Load();
+            if (overlayLayout.Error is not null)
+            {
+                applicationLog.Append(overlayLayout.Error);
+            }
+
             var themeService = new RavenThemeService(
                 this,
                 new ThemePreferenceStore(appDataPaths.UiSettingsPath),
@@ -150,37 +157,45 @@ public sealed partial class App : Application
                 viewModel.BoxelSearch,
                 viewModel.Route,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent());
+                GameWindowTracker.CreateCurrent(),
+                overlayLayout);
             guardianOverlayCoordinator = new GuardianOverlayCoordinator(
                 viewModel.Guardian,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent());
+                GameWindowTracker.CreateCurrent(),
+                overlayLayout);
             jumpInfoOverlayCoordinator = new JumpInfoOverlayCoordinator(
                 viewModel.JumpInfo,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent());
+                GameWindowTracker.CreateCurrent(),
+                overlayLayout);
             groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
                 viewModel.GroundTarget,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent());
+                GameWindowTracker.CreateCurrent(),
+                overlayLayout);
             combatOverlayCoordinator = new CombatOverlayCoordinator(
                 viewModel.Combat,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent());
+                GameWindowTracker.CreateCurrent(),
+                overlayLayout);
             stationInfoOverlayCoordinator = new StationInfoOverlayCoordinator(
                 viewModel.StationInfo,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent());
+                GameWindowTracker.CreateCurrent(),
+                overlayLayout);
             humanSiteOverlayCoordinator = new HumanSiteOverlayCoordinator(
                 viewModel.HumanSite,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent());
+                GameWindowTracker.CreateCurrent(),
+                overlayLayout);
             systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
                 viewModel.SystemSurvey,
                 viewModel.SurfaceSurvey,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent(),
-                () => viewModel.CommanderName);
+                () => viewModel.CommanderName,
+                overlayLayout: overlayLayout);
 
             void SynchronizeOverlayPriority()
             {
@@ -230,7 +245,8 @@ public sealed partial class App : Application
                 new ColonizationCommodityOverlayCoordinator(
                     viewModel.Colonization.CommodityOverlay,
                     OverlayPlatformService.CreateCurrent(),
-                    GameWindowTracker.CreateCurrent());
+                    GameWindowTracker.CreateCurrent(),
+                    overlayLayout);
             globalKeyboardHookService = new GlobalKeyboardHookService(
                 inputSettings.CurrentSettings,
                 capabilities.Host,

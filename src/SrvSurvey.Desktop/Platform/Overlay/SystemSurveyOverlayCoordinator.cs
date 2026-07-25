@@ -16,6 +16,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private readonly PriorScansOverlayViewModel priorScansViewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
+    private readonly LegacyOverlayLayout overlayLayout;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private BiologySurveyOverlayWindow? biologyWindow;
@@ -44,7 +45,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         IGameWindowTracker gameWindowTracker,
         Func<string?>? commanderNameProvider = null,
         ICanonnSystemPoiClient? canonnSystemPoiClient = null,
-        ExobiologyReferenceCatalog? exobiologyCatalog = null)
+        ExobiologyReferenceCatalog? exobiologyCatalog = null,
+        LegacyOverlayLayout? overlayLayout = null)
     {
         this.survey = survey ?? throw new ArgumentNullException(nameof(survey));
         this.surfaceSurvey = surfaceSurvey
@@ -53,6 +55,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new SystemSurveyOverlayViewModel(
             survey,
             platform.Capabilities);
@@ -356,7 +359,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new MiniTrackOverlayWindow(surfaceViewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotMiniTrack");
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionMiniTrack,
@@ -389,7 +392,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new FlightWarningOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFlightWarning");
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopCenter,
@@ -422,7 +425,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new SurfaceSurveyOverlayWindow(surfaceViewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotGrounded");
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionBottomCenter,
@@ -455,7 +458,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new PriorScansOverlayWindow(priorScansViewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotPriorScans");
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionBottomRight,
@@ -488,7 +491,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new BiologyStatusOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotBioStatus");
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopCenter,
@@ -521,7 +524,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new BiologySurveyOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotBioSystem");
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionBiologyWindow,
@@ -554,7 +557,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new BodyInformationOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotBodyInfo");
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopLeft,
@@ -587,7 +590,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new LastFssBodyOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFSS");
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopCenter,
@@ -620,7 +623,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new FssInfoOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotFSSInfo");
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopLeft,
@@ -653,7 +656,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new SystemStatusOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotSysStatus");
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionBottomLeft,
@@ -688,59 +691,100 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
     }
 
-    private static void PositionTopLeft(Window window, PixelRect gameBounds)
+    private void PositionTopLeft(Window window, PixelRect gameBounds)
     {
-        PositionWindow(window, gameBounds, OverlayWindowPlacement.TopLeft);
+        var plotterName = window switch
+        {
+            BodyInformationOverlayWindow => "PlotBodyInfo",
+            FssInfoOverlayWindow => "PlotFSSInfo",
+            _ => throw new InvalidOperationException(
+                $"No legacy top-left layout maps to {window.GetType().Name}."),
+        };
+        PositionWindow(
+            window,
+            gameBounds,
+            plotterName,
+            OverlayWindowPlacement.TopLeft);
     }
 
-    private static void PositionTopCenter(Window window, PixelRect gameBounds)
+    private void PositionTopCenter(Window window, PixelRect gameBounds)
     {
-        PositionWindow(window, gameBounds, OverlayWindowPlacement.TopCenter);
+        var plotterName = window switch
+        {
+            FlightWarningOverlayWindow => "PlotFlightWarning",
+            BiologyStatusOverlayWindow => "PlotBioStatus",
+            LastFssBodyOverlayWindow => "PlotFSS",
+            _ => throw new InvalidOperationException(
+                $"No legacy top-center layout maps to {window.GetType().Name}."),
+        };
+        PositionWindow(
+            window,
+            gameBounds,
+            plotterName,
+            OverlayWindowPlacement.TopCenter);
     }
 
-    private static void PositionMiniTrack(Window window, PixelRect gameBounds)
+    private void PositionMiniTrack(Window window, PixelRect gameBounds)
     {
         PositionWindow(
             window,
             gameBounds,
+            "PlotMiniTrack",
             OverlayWindowPlacement.TopRight,
             margin: 8);
     }
 
-    private static void PositionBottomLeft(Window window, PixelRect gameBounds)
+    private void PositionBottomLeft(Window window, PixelRect gameBounds)
     {
-        PositionWindow(window, gameBounds, OverlayWindowPlacement.BottomLeft);
+        PositionWindow(
+            window,
+            gameBounds,
+            "PlotSysStatus",
+            OverlayWindowPlacement.BottomLeft);
     }
 
-    private static void PositionBottomRight(Window window, PixelRect gameBounds)
+    private void PositionBottomRight(Window window, PixelRect gameBounds)
     {
-        PositionWindow(window, gameBounds, OverlayWindowPlacement.BottomRight);
+        PositionWindow(
+            window,
+            gameBounds,
+            "PlotPriorScans",
+            OverlayWindowPlacement.BottomRight);
     }
 
-    private static void PositionBottomCenter(Window window, PixelRect gameBounds)
+    private void PositionBottomCenter(Window window, PixelRect gameBounds)
     {
-        PositionWindow(window, gameBounds, OverlayWindowPlacement.BottomCenter);
+        PositionWindow(
+            window,
+            gameBounds,
+            "PlotGrounded",
+            OverlayWindowPlacement.BottomCenter);
     }
 
     private void PositionBiologyWindow(Window window, PixelRect gameBounds)
     {
-        PositionWindow(window, gameBounds, (bounds, size, margin) =>
-        {
-            var statusOffset = statusWindow is null
-                || statusWindow.Bounds.Height <= 0
-                ? 0
-                : Math.Max(0, bounds.Bottom - statusWindow.Position.Y) + 12;
-            return new PixelPoint(
-                bounds.X + margin,
-                Math.Max(
-                    bounds.Y + margin,
-                    bounds.Bottom - size.Height - margin - statusOffset));
-        });
+        PositionWindow(
+            window,
+            gameBounds,
+            "PlotBioSystem",
+            (bounds, size, margin) =>
+            {
+                var statusOffset = statusWindow is null
+                    || statusWindow.Bounds.Height <= 0
+                    ? 0
+                    : Math.Max(0, bounds.Bottom - statusWindow.Position.Y) + 12;
+                return new PixelPoint(
+                    bounds.X + margin,
+                    Math.Max(
+                        bounds.Y + margin,
+                        bounds.Bottom - size.Height - margin - statusOffset));
+            });
     }
 
-    private static void PositionWindow(
+    private void PositionWindow(
         Window window,
         PixelRect gameBounds,
+        string plotterName,
         Func<PixelRect, PixelSize, int, PixelPoint> calculate,
         int margin = 20)
     {
@@ -756,10 +800,9 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             ? window.Bounds.Height
             : window.MinHeight;
         var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var position = calculate(
-            gameBounds,
-            new PixelSize(width, Math.Max(height, 1)),
-            margin);
+        var size = new PixelSize(width, Math.Max(height, 1));
+        var position = overlayLayout.GetPosition(plotterName, gameBounds, size)
+            ?? calculate(gameBounds, size, margin);
         if (window.Position != position)
         {
             window.Position = position;

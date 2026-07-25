@@ -14,6 +14,7 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
     private readonly SphericalSearchOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
+    private readonly LegacyOverlayLayout overlayLayout;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private SphericalSearchOverlayWindow? window;
@@ -25,7 +26,8 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         BoxelSearchViewModel boxel,
         RouteWorkspaceViewModel route,
         IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker)
+        IGameWindowTracker gameWindowTracker,
+        LegacyOverlayLayout? overlayLayout = null)
     {
         this.sphere = sphere ?? throw new ArgumentNullException(nameof(sphere));
         this.boxel = boxel ?? throw new ArgumentNullException(nameof(boxel));
@@ -34,6 +36,7 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new SphericalSearchOverlayViewModel(
             sphere,
             boxel,
@@ -135,7 +138,10 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         }
 
         var overlay = new SphericalSearchOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotSphericalSearch");
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -162,7 +168,7 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         || boxel.ShouldShowGalaxyMapOverlay
         || route.ShouldShowGalaxyMapOverlay;
 
-    private static void PositionWindow(Window window, PixelRect gameBounds)
+    private void PositionWindow(Window window, PixelRect gameBounds)
     {
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
@@ -176,10 +182,12 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
             ? window.Bounds.Height
             : window.MinHeight;
         var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var position = OverlayWindowPlacement.TopRight(
-            gameBounds,
-            new PixelSize(width, Math.Max(height, 1)),
-            8);
+        var size = new PixelSize(width, Math.Max(height, 1));
+        var position = overlayLayout.GetPosition(
+                "PlotSphericalSearch",
+                gameBounds,
+                size)
+            ?? OverlayWindowPlacement.TopRight(gameBounds, size, 8);
         if (window.Position != position)
         {
             window.Position = position;

@@ -41,4 +41,17 @@ public static class OverlayThemeResources
             }
         }
     }
+
+    public static void Apply(
+        Window window,
+        LegacyOverlayLayout layout,
+        string plotterName)
+    {
+        ArgumentNullException.ThrowIfNull(layout);
+        Apply(window);
+        if (layout.GetOpacity(plotterName) is { } opacity)
+        {
+            window.Opacity = opacity;
+        }
+    }
 }

@@ -12,6 +12,7 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
     private readonly StationInfoOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
+    private readonly LegacyOverlayLayout overlayLayout;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private StationInfoOverlayWindow? window;
@@ -21,7 +22,8 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
     public StationInfoOverlayCoordinator(
         StationInfoViewModel stationInfo,
         IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker)
+        IGameWindowTracker gameWindowTracker,
+        LegacyOverlayLayout? overlayLayout = null)
     {
         this.stationInfo = stationInfo
             ?? throw new ArgumentNullException(nameof(stationInfo));
@@ -29,6 +31,7 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new StationInfoOverlayViewModel(
             stationInfo,
             platform.Capabilities);
@@ -118,7 +121,7 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
         }
 
         var overlay = new StationInfoOverlayWindow(viewModel);
-        OverlayThemeResources.Apply(overlay);
+        OverlayThemeResources.Apply(overlay, overlayLayout, "PlotStationInfo");
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -143,7 +146,7 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private static void PositionWindow(Window window, PixelRect gameBounds)
+    private void PositionWindow(Window window, PixelRect gameBounds)
     {
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
@@ -157,10 +160,12 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
             ? window.Bounds.Height
             : window.MinHeight;
         var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
-        var position = OverlayWindowPlacement.MiddleLeft(
-            gameBounds,
-            new PixelSize(width, Math.Max(height, 1)),
-            margin: 8);
+        var size = new PixelSize(width, Math.Max(height, 1));
+        var position = overlayLayout.GetPosition(
+                "PlotStationInfo",
+                gameBounds,
+                size)
+            ?? OverlayWindowPlacement.MiddleLeft(gameBounds, size, margin: 8);
         if (window.Position != position)
         {
             window.Position = position;
