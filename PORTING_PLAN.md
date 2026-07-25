@@ -264,6 +264,17 @@ window was exercised in Blue dark/light, including focus, row-size, expand,
 and collapse interactions. Commander-Codex first-discovery flags, live Elite
 attachment, and Linux remain open.
 
+`FormCodexBingo` now has a single-instance Raven-themed workspace backed by the
+complete 1,070-entry Codex hierarchy. It reads the same global and 42-region
+commander ledgers populated by live journals, can import the Canonn Challenge
+and bounded historical journal files, and retains explicit confirmation for
+manual discoveries. Commander and region selectors, recursive progress,
+entry/location detail, Canonn/Bioforge/EDAstro/Spansh actions, and handoff to
+the integrated nearest-signal or missing-variant search are implemented. An
+isolated three-entry ledger was exercised in Blue dark/light, including tree
+expansion, selection details, retained window state, disabled actions, and
+cleanup. Live Elite updates, interactive remote imports, and Linux remain open.
+
 `PlotBioStatus` now has a compact top-center passive replacement with its
 separate default-on preference. It retains current-body gating, DSS-required
 guidance, genus and geology summaries, analyzed progress, stale-body sample
@@ -334,7 +345,7 @@ not expected to run as a headless container service.
 | Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
 | Settings/data migration | OS paths, legacy discovery, manifests, verified backup/staging/import, lossless commander profile updates, and all 30 legacy input binding names/defaults implemented | Explicit backup-and-import workflow plus opt-in global keyboard/controller settings, validation, default restore, SDL device picker, refresh, and reconnect status | Settings/input UI visually and accessibility checked in Blue light; native keyboard hook reached active; SDL initialized without connected hardware; real profile restart comparison and physical controller input not run | Not tested |
 | Exploration totals | Legacy valuation and six counters plus compatible, atomic profile persistence implemented | Live Overview/Exploration projections and two-step reset | Automated only | Not tested |
-| Organic scans | Complete 1,070-entry Codex reference, commander discovery history, three-sample state, surface separation, first-footfall reward, sale, death, reset, compatible profile fields, current-system organism/geology history, sample-distance catalog, and the complete embedded v4 prediction evaluator with region/star/nebula/Guardian context implemented | Live Overview/Exobiology projections, two-step unclaimed reset, passive `PlotBioSystem`, compact `PlotBioStatus`, single-instance `FormPredictions`, and single-instance `FormShowCodex` replacement with body/entry navigation, confirmed/reported/analyzed/predicted states, rewards, sample separation, temperature guidance, external research actions, and a bounded zoomable reference-image cache; Codex Bingo and prior-scan tools remain pending | Empty/live-profile page, dense body/system predictions, the standalone predictions workspace, compact active/summary/DSS overlay states, and the Codex browser with a real cached reference image checked in Blue dark/light; active Elite sampling/attachment not run | Not tested |
+| Organic scans | Complete 1,070-entry Codex reference, global and 42-region commander discovery ledgers, live and historical journal ingestion, Canonn Challenge import, confirmed manual overrides, discovery-location resolution, three-sample state, surface separation, first-footfall reward, sale, death, reset, compatible profile fields, current-system organism/geology history, sample-distance catalog, and the complete embedded v4 prediction evaluator with region/star/nebula/Guardian context implemented | Live Overview/Exobiology projections, two-step unclaimed reset, passive `PlotBioSystem`, compact `PlotBioStatus`, single-instance `FormPredictions`, single-instance `FormShowCodex` browser with bounded image cache, and single-instance `FormCodexBingo` workspace with commander/region progress, imports, locations, external research, guarded manual state, and nearest-search handoff; prior-scan tools remain pending | Empty/live-profile page, dense body/system predictions, the standalone predictions workspace, compact active/summary/DSS overlay states, the Codex browser with a real cached reference image, and a three-entry Codex Bingo hierarchy checked in Blue dark/light; active Elite sampling/attachment, interactive remote imports, and Linux not run | Not tested |
 | Ground target tracking | Legacy coordinate parsing plus cardinal formats, validated settings, great-circle distance/bearing, relative heading, and approach bands implemented | Travel target editor supports typed, current, clipboard, clear, and live guidance; overlay remains pending | Inactive/live-profile page visually and accessibility checked; active surface guidance not run | Not tested |
 | System notes | Lossless legacy per-system JSON lookup/update/creation plus legacy topmost and screenshot-folder settings implemented; saves against the active Journey system update that visit's note counter | Single-instance resizable notes window, current-system context, save/cancel, always-on-top, Canonn/Spansh/EDSM, screenshots, Travel launcher, and `Ctrl+Shift+N` implemented | Travel card and notes window visually checked in Blue dark/light without changing live notes | Not tested |
 | Commander journeys | Lossless legacy journey JSON and active-pointer persistence, historic journal replay, all legacy counters/rewards/flags, current and prior-system starts, live updates, note coupling, conclude, and bounded reprocess implemented | Single-instance responsive workspace unifies begin, list, edit, viewer, and per-system details; supports history, preferences, notes, screenshots, dirty-state handling, and guarded destructive actions | Isolated QA journey exercised in Blue dark/light, including both start modes, begin, overview, visited systems, note edit/discard, refresh, and conclude/reprocess confirmations; no live commander Journey data changed | Not tested |
@@ -360,7 +371,7 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 579 tests: 375 Core tests and 204 Desktop tests.
+  passed all 594 tests: 387 Core tests and 207 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
@@ -509,6 +520,16 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   rendered and behaved correctly; the isolated profile/cache entry was removed
   and Blue dark restored. Live Elite updates, remote image-failure presentation,
   and Linux remain untested.
+- Automated Codex-Bingo coverage validates the 1,070-entry hierarchy, all 42
+  galactic regions, commander/region ledgers, safe manual overrides, live and
+  bounded historical journal ingestion, Canonn Challenge response mapping,
+  idempotent imports, location resolution, progress/selection actions, and
+  nearest-search inputs. The single-instance `FormCodexBingo` replacement was
+  exercised with an isolated three-entry Sol ledger in Blue (dark) and Blue
+  (light). Tree expansion, selected-node details, state retention, progress,
+  and disabled actions rendered correctly; the exact preview ledgers were
+  removed and Blue (dark) restored. Interactive remote imports, live Elite
+  updates, and Linux remain untested.
 - Automated global-input coverage now validates all 30 legacy action names and
   default chords, keyboard formatting/routing and text-entry suppression,
   controller button/trigger/eight-way POV chords, first-release dispatch,

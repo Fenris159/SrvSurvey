@@ -31,7 +31,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | --- | --- | --- | --- |
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
-| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, the standalone system/body prediction workspace, and `FormShowCodex` browser implemented; Codex Bingo and prior-scan tools remain pending |
+| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, the standalone system/body prediction workspace, `FormShowCodex` browser, and full commander/region `FormCodexBingo` workspace implemented; prior-scan tools remain pending |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
@@ -50,8 +50,10 @@ first-footfall estimates. The compact `PlotBioStatus` replacement covers live
 sampler progress and body summaries. The single-instance `FormShowCodex`
 replacement covers confirmed and predicted biological entries, reference
 images, navigation, temperature and reward guidance, and research links. Codex
-Bingo, prior-scan, and remaining biology surfaces stay open below until their
-backing behavior is ported.
+Bingo now covers the complete hierarchy, commander and regional progress,
+journal/Canonn imports, guarded manual state, discovery locations, research
+links, and integrated nearest searches. Prior-scan and remaining biology
+surfaces stay open below until their backing behavior is ported.
 
 ## Secondary forms
 
@@ -61,7 +63,7 @@ backing behavior is ported.
 | `FormBeacons` | Guardian / Sites | Partially implemented with all shipped beacons/ruins/structures, commander visits/survey progress/notes, distance and text/kind/visit/type filters, details, and copy actions; Ram Tah-needed filtering, custom-origin lookup, external links, sharing, and open-survey actions remain |
 | `FormBoxelSearch` | Search / Boxel | Implemented with activation/options, hierarchy, current systems, completion/empty rules, route/journal updates, ID64 decoding, clipboard actions, and cancellable full-area audit; Windows visually checked |
 | `FormBuilder` | Guardian / Map editor | Not ported |
-| `FormCodexBingo` | Exobiology / Codex | Not ported |
+| `FormCodexBingo` | Exobiology / Codex | Implemented as a single-instance Raven workspace with the complete 1,070-entry hierarchy, global and 42-region commander progress, live and historical journal ledgers, Canonn Challenge import, confirmed manual overrides, discovery locations, Canonn/Bioforge/EDAstro/Spansh actions, and nearest-signal/missing-variant search handoff; Windows visually checked in Blue dark/light |
 | `FormEditMap` | Guardian / Map editor | Partially implemented with native template rendering plus site/relic headings, notes, POI states, relic headings, and obelisk-group editing; raw POI add/remove, origin measurement, and template-authoring tools remain |
 | `FormErrorSubmit` | Diagnostics / Report issue | Not ported |
 | `FormGroundTarget` | Travel / Ground target | Implemented in Travel with typed, current, clipboard, clear, and guidance actions; Windows visually checked |
@@ -297,6 +299,13 @@ check at 1182 by 790, using a live journal folder:
   image/credit rendered cleanly. Fit, wheel zoom, and drag pan were exercised;
   the isolated profile/cache entry was removed and Blue (dark) restored. Live
   Elite updates, remote image-failure presentation, and Linux remain untested.
+- The single-instance `FormCodexBingo` replacement was exercised with an
+  isolated three-entry Sol ledger in Blue (dark) and Blue (light). Its
+  1,070-entry hierarchy, aggregate progress, commander/region selectors, tree
+  expansion, selected-node detail, retained state, and disabled actions
+  rendered correctly. The exact preview ledgers were removed and Blue (dark)
+  restored; interactive remote imports, live Elite updates, and Linux remain
+  untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live
