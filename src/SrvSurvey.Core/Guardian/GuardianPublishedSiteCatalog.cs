@@ -44,6 +44,15 @@ public sealed class GuardianPublishedSiteCatalog
         return matches.Length == 1 ? matches[0] : null;
     }
 
+    public GuardianPublishedSite? Find(
+        GuardianSiteKind kind,
+        string fullBodyName,
+        int index)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fullBodyName);
+        return sites.GetValueOrDefault(GetIdentity(kind, fullBodyName, index));
+    }
+
     public static GuardianPublishedSiteCatalog LoadEmbedded()
     {
         var assembly = typeof(GuardianPublishedSiteCatalog).Assembly;
