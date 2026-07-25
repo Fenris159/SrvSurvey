@@ -6,6 +6,28 @@ namespace SrvSurvey.Core.Tests.Colonization;
 public sealed class ColonizationConstructionStateTests
 {
     [Fact]
+    public void TracksSquadronBankMusicContext()
+    {
+        var state = new ColonizationConstructionState();
+        Assert.True(state.Apply(Event(
+            "Docked",
+            """
+            "MarketID":42,"SystemAddress":7,"StarSystem":"Test",
+            "StationName":"Squadron carrier","StationServices":["squadronBank"]
+            """)));
+        Assert.True(state.Apply(Event(
+            "Music",
+            "\"MusicTrack\":\"Squadrons\"")));
+
+        Assert.True(state.CreateSnapshot().IsSquadronBankOpen);
+
+        Assert.True(state.Apply(Event(
+            "Music",
+            "\"MusicTrack\":\"DockingComputer\"")));
+        Assert.False(state.CreateSnapshot().IsSquadronBankOpen);
+    }
+
+    [Fact]
     public void TracksConstructionDockAndDepotRequirements()
     {
         var state = new ColonizationConstructionState();

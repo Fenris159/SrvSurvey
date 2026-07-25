@@ -13,7 +13,10 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         var viewModel = new ColonizationCommodityOverlayViewModel();
         var plan = Plan();
 
-        viewModel.Apply(plan, Status(GuiFocus.StationServices));
+        viewModel.Apply(
+            plan,
+            Status(GuiFocus.StationServices),
+            updatedHasMarketSinceDocking: true);
         Assert.True(viewModel.ShouldAutoShow);
 
         viewModel.Apply(plan, Status(GuiFocus.InternalPanel));
@@ -29,6 +32,36 @@ public sealed class ColonizationCommodityOverlayViewModelTests
                 Flags = StatusFlags.Docked | StatusFlags.FsdJump,
             });
         Assert.False(viewModel.ShouldAutoShow);
+    }
+
+    [Fact]
+    public void StationServicesRequiresMarketOrConstructionSite()
+    {
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+
+        viewModel.Apply(Plan(), Status(GuiFocus.StationServices));
+
+        Assert.False(viewModel.ShouldAutoShow);
+
+        viewModel.Apply(
+            Plan(),
+            Status(GuiFocus.StationServices),
+            updatedHasMarketSinceDocking: true);
+
+        Assert.True(viewModel.ShouldAutoShow);
+    }
+
+    [Fact]
+    public void SquadronBankMusicShowsLinkedProjectCargo()
+    {
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+
+        viewModel.Apply(
+            Plan(),
+            Status(GuiFocus.NoFocus),
+            updatedIsSquadronBankOpen: true);
+
+        Assert.True(viewModel.ShouldAutoShow);
     }
 
     [Fact]

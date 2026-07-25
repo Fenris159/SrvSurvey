@@ -17,6 +17,8 @@ public sealed class ColonizationCommodityOverlayViewModel
     private IReadOnlyList<ColonizationCommodityGroupViewModel> groups = [];
     private IReadOnlySet<string> pendingCommodities =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    private bool hasMarketSinceDocking;
+    private bool isSquadronBankOpen;
     private bool showSatisfiedGroups;
     private string platformStatus = string.Empty;
     private bool isClickThrough;
@@ -104,11 +106,15 @@ public sealed class ColonizationCommodityOverlayViewModel
         && status.GuiFocus is not GuiFocus.GalaxyMap
             and not GuiFocus.ExternalPanel
         && (status.GuiFocus == GuiFocus.StationServices
+                && ((hasMarketSinceDocking && Plan.ProjectNames.Count > 0)
+                    || Plan.IsAtConstructionSite)
             || preferences.ShowOnRightPanel
                 && status.GuiFocus == GuiFocus.InternalPanel
+                && Plan.ProjectNames.Count > 0
             || Plan.IsAtConstructionSite
                 && status.Docked
-                && status.GuiFocus == GuiFocus.NoFocus);
+                && status.GuiFocus == GuiFocus.NoFocus
+            || isSquadronBankOpen);
 
     public string CollapseModeText =>
         preferences.CollapseCoveredGroups ^ showSatisfiedGroups
@@ -144,11 +150,15 @@ public sealed class ColonizationCommodityOverlayViewModel
 
     public void Apply(
         ColonizationCommodityPlan updatedPlan,
-        EliteStatus? updatedStatus)
+        EliteStatus? updatedStatus,
+        bool updatedHasMarketSinceDocking = false,
+        bool updatedIsSquadronBankOpen = false)
     {
         ArgumentNullException.ThrowIfNull(updatedPlan);
         Plan = updatedPlan;
         status = updatedStatus;
+        hasMarketSinceDocking = updatedHasMarketSinceDocking;
+        isSquadronBankOpen = updatedIsSquadronBankOpen;
         RebuildGroups();
         RaisePlanProperties();
     }

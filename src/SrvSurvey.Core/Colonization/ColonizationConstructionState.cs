@@ -11,6 +11,7 @@ public sealed class ColonizationConstructionState
     private ColonizationSystemClaimSnapshot? lastClaim;
     private DateTimeOffset? lastBeaconDeployment;
     private int shipCargoCapacity;
+    private string? musicTrack;
 
     public long Version { get; private set; }
 
@@ -26,6 +27,8 @@ public sealed class ColonizationConstructionState
     public DateTimeOffset? LastBeaconDeployment => lastBeaconDeployment;
 
     public int ShipCargoCapacity => shipCargoCapacity;
+
+    public string? MusicTrack => musicTrack;
 
     public bool Apply(JournalEventEnvelope journalEvent)
     {
@@ -48,6 +51,7 @@ public sealed class ColonizationConstructionState
             "ColonisationBeaconDeployed" => ApplyBeacon(
                 journalEvent.Timestamp),
             "Loadout" => ApplyShipLoadout(journalEvent.Payload),
+            "Music" => ApplyMusic(journalEvent.Payload),
             "Shutdown" => ClearDocking(),
             _ => false,
         };
@@ -67,7 +71,8 @@ public sealed class ColonizationConstructionState
             lastContribution,
             lastClaim,
             lastBeaconDeployment,
-            shipCargoCapacity);
+            shipCargoCapacity,
+            musicTrack);
     }
 
     public static string NormalizeCommodityName(string? journalName)
@@ -238,6 +243,18 @@ public sealed class ColonizationConstructionState
         }
 
         shipCargoCapacity = capacity.Value;
+        return true;
+    }
+
+    private bool ApplyMusic(JsonElement root)
+    {
+        var updated = GetString(root, "MusicTrack");
+        if (string.Equals(updated, musicTrack, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        musicTrack = updated;
         return true;
     }
 
@@ -418,7 +435,17 @@ public sealed record ColonizationConstructionSnapshot(
     ColonizationContributionSnapshot? LastContribution,
     ColonizationSystemClaimSnapshot? LastClaim,
     DateTimeOffset? LastBeaconDeployment,
-    int ShipCargoCapacity);
+    int ShipCargoCapacity,
+    string? MusicTrack = null)
+{
+    public bool IsSquadronBankOpen => string.Equals(
+            MusicTrack,
+            "Squadrons",
+            StringComparison.Ordinal)
+        && CurrentDock?.StationServices.Contains(
+            "squadronBank",
+            StringComparer.OrdinalIgnoreCase) == true;
+}
 
 public sealed record ColonizationDockingSnapshot(
     long MarketId,

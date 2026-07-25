@@ -35,8 +35,8 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance and passive overlay, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; their combined `PlotSphericalSearch` Galaxy Map guidance is implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, custom distance origins, external/share actions, live site detection/writes, native survey maps, lossless survey/raw-POI editing, guarded master-template authoring/export, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, detached live map/current-obelisk, current-system summary, and Ram Tah log/artifact overlays implemented |
-| Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
-| Diagnostics | `ViewLogs`, `FormErrorSubmit`, journal development tools | Journal source, candidate paths, logs, error reporting, and reference-data tools | Journal source/parsed state, persistent live application logs, retention, copy/clear/folder actions, crash-report capture/actions, and safe visited-stars cache swap/restore implemented; journal playback and post-processing tools remain |
+| Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay with the legacy Market-after-docking, construction-site, right-panel, and Squadron-bank music rules implemented |
+| Diagnostics | `ViewLogs`, `FormErrorSubmit`, journal development tools | Journal source, candidate paths, logs, error reporting, and reference-data tools | Journal source/parsed state, persistent live application logs, retention, copy/clear/folder actions, crash-report capture/actions, journal playback/inspection, safe visited-stars cache swap/restore, and guarded post-processing tools implemented |
 | Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import with live-monitor shutdown, concurrent-write rollback, and immediate non-destructive preference translation, lossless live overlay position/opacity editing, cross-platform verified BMP-to-PNG screenshot conversion, persisted next-jump/system-survey/prior-scan/surface-radar/combat/Guardian/human-settlement/station-information preferences, migrated external-biology/EDDN/Green-Gas-Giant privacy choices, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; remaining legacy options remain |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
@@ -187,8 +187,8 @@ as a top-left passive surface with map/orrery, DSS, orbit/glide, optional
 surface-analysis, Sol-bubble, `Alt+B`, and Guardian-priority rules. It supports
 unscanned destinations and shows discovery/mapping, scan/DSS values,
 temperature, gravity, pressure, signals, volcanism, atmosphere, materials, and
-rings. Its biological reward range has not yet been connected to the shared
-prediction engine. The journal-backed `PlotBioSystem` surface is
+rings. Its biological reward range uses the same exact prediction engine and
+incomplete-input rules as the biology surfaces. The journal-backed `PlotBioSystem` surface is
 now implemented as a bottom-left passive overlay. It preserves whole-system and
 near-body/FSS modes, current/target selection, analyzed progress, active sample
 emphasis, confirmed organism identities and rewards, regional-first
@@ -280,8 +280,9 @@ designer count above. Its Avalonia replacement is implemented as the detached
 construction shopping overlay with project grouping, ship and linked Fleet
 Carrier quantities, pending-sync state, market availability guidance,
 completion/collapse modes, and persisted display preferences. It uses the same
-passive-window lifecycle as the Guardian overlay. Legacy squadron Fleet Carrier
-and music-state auto-show special cases still remain open.
+passive-window lifecycle as the Guardian overlay. Its auto-show lifecycle now
+matches the legacy Market-after-docking, tracked/untracked construction-site,
+right-panel, manual-force, and Squadron Fleet Carrier bank music cases.
 
 ## Raven Colonial theme contract
 

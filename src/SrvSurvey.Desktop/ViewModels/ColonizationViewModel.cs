@@ -963,6 +963,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
 
     private void UpdateCommodityPlan()
     {
+        var construction = constructionState.CreateSnapshot();
+        var dock = construction.CurrentDock;
+        var hasMarketSinceDocking = currentMarket is not null
+            && dock?.Timestamp is not null
+            && dock.MarketId == currentMarket.MarketId
+            && currentMarket.Timestamp > dock.Timestamp;
         CommodityOverlay.Apply(
             ColonizationCommodityPlanner.Create(
                 Projects.Select(row => row.Project),
@@ -971,9 +977,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 CommanderName,
                 fleetCarriers,
                 shipCargo,
-                constructionState.CreateSnapshot(),
+                construction,
                 currentMarket),
-            latestStatus);
+            latestStatus,
+            hasMarketSinceDocking,
+            construction.IsSquadronBankOpen);
     }
 
     private bool CanSaveRavenApiKey()
