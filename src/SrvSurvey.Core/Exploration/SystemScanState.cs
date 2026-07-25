@@ -417,7 +417,7 @@ public sealed class SystemScanState
             ?? reference.DisplayName;
         organism.EntryId = reference.EntryId;
         organism.Reward = reference.Reward;
-        organism.IsCommanderFirst |= GetBoolean(root, "IsNewEntry") ?? false;
+        organism.IsRegionalFirst |= GetBoolean(root, "IsNewEntry") ?? false;
     }
 
     private void ApplySignalDiscovered(JsonElement root)
@@ -924,7 +924,7 @@ public sealed class SystemScanState
 
         public bool IsAnalyzed { get; set; }
 
-        public bool IsCommanderFirst { get; set; }
+        public bool IsRegionalFirst { get; set; }
 
         public SystemOrganismSnapshot CreateSnapshot()
         {
@@ -938,7 +938,7 @@ public sealed class SystemScanState
                 EntryId,
                 Reward,
                 IsAnalyzed,
-                IsCommanderFirst);
+                IsRegionalFirst);
         }
     }
 
@@ -1060,7 +1060,7 @@ public sealed record SystemOrganismSnapshot(
     long? EntryId,
     long? Reward,
     bool IsAnalyzed,
-    bool IsCommanderFirst);
+    bool IsRegionalFirst);
 
 public sealed record SystemRingSnapshot(
     string Name,

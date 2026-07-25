@@ -91,7 +91,7 @@ public sealed class SystemScanStateTests
         Assert.Equal(2310101, organism.EntryId);
         Assert.Equal(7_252_500, organism.Reward);
         Assert.True(organism.IsAnalyzed);
-        Assert.True(organism.IsCommanderFirst);
+        Assert.True(organism.IsRegionalFirst);
         Assert.Equal(1, body.AnalyzedBiologicalSignalCount);
     }
 
