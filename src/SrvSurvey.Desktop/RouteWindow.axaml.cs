@@ -23,8 +23,6 @@ public sealed partial class RouteWindow : Window
             ?? throw new ArgumentNullException(nameof(viewModel));
         InitializeComponent();
         DataContext = viewModel;
-        viewModel.SetClipboardWriter(WriteClipboardAsync);
-        Closed += OnClosed;
     }
 
     private void Close_Click(object? sender, RoutedEventArgs eventArgs)
@@ -113,21 +111,6 @@ public sealed partial class RouteWindow : Window
                 "The clipboard could not be read: " + exception.Message);
             return null;
         }
-    }
-
-    private async Task WriteClipboardAsync(string text)
-    {
-        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard
-            ?? throw new InvalidOperationException(
-                "The desktop clipboard is not available.");
-        await clipboard.SetTextAsync(text);
-        await clipboard.FlushAsync();
-    }
-
-    private void OnClosed(object? sender, EventArgs eventArgs)
-    {
-        Closed -= OnClosed;
-        viewModel.SetClipboardWriter(null);
     }
 
     private static RouteWorkspaceViewModel CreateDesignViewModel()

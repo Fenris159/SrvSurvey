@@ -831,7 +831,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         if (update.Status is not null)
         {
             Guardian.UpdateStatus(update.Status);
-            await BoxelSearch.UpdateStatusAsync(update.Status);
+            await Route.UpdateStatusAsync(update.Status);
+            await BoxelSearch.UpdateStatusAsync(
+                update.Status,
+                allowAutoCopy: !Route.ShouldAutoCopyNextHop);
         }
 
         foreach (var journalEvent in update.JournalEvents)

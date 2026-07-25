@@ -107,6 +107,52 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task RoutePrioritySuppressesBoxelCopyForTheSameMapEntry()
+    {
+        var copied = new List<string>();
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        var viewModel = new BoxelSearchViewModel(
+            profileStore,
+            new LegacySystemDataReader(temporaryDirectory),
+            new EmptyBoxelStore(temporaryDirectory),
+            new StubResolver(
+            [
+                Observation("Praea Euq IL-P c5-0", 100),
+                Observation("Praea Euq IL-P c5-1", 101),
+            ]),
+            text =>
+            {
+                copied.Add(text);
+                return Task.CompletedTask;
+            });
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        viewModel.LowMassCode = "c";
+        await viewModel.ActivateAsync();
+        viewModel.UpdateCurrentSystem(
+            "Praea Euq IL-P c5-0",
+            new GalacticCoordinate(1, 2, 3));
+
+        await viewModel.UpdateStatusAsync(
+            new EliteStatus { GuiFocus = GuiFocus.GalaxyMap },
+            allowAutoCopy: false);
+        await viewModel.UpdateStatusAsync(
+            new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+
+        Assert.Empty(copied);
+
+        await viewModel.UpdateStatusAsync(new EliteStatus());
+        await viewModel.UpdateStatusAsync(
+            new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
+
+        Assert.Single(copied);
+    }
+
+    [Fact]
     public async Task EmptyMarkerUsesLegacyStoreAndAdvancesToTheNextChild()
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);

@@ -32,6 +32,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private bool isActive;
     private bool autoCopy = true;
     private bool isBusy;
+    private GuiFocus lastGuiFocus;
     private string statusMessage = "Waiting for a commander profile.";
     private Func<Task<bool>>? windowOpener;
     private Func<string, Task>? clipboardWriter;
@@ -168,6 +169,10 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     public string AutoCopySummary => AutoCopy
         ? "Next-hop clipboard guidance is enabled."
         : "Next-hop clipboard guidance is disabled.";
+
+    public bool ShouldAutoCopyNextHop => IsActive
+        && AutoCopy
+        && NextHop is not null;
 
     public string CurrentSystem => string.IsNullOrWhiteSpace(currentSystemName)
         ? Unavailable
@@ -311,6 +316,18 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         {
             StatusMessage = "Route progress could not be saved: "
                 + exception.Message;
+        }
+    }
+
+    public async Task UpdateStatusAsync(EliteStatus status)
+    {
+        ArgumentNullException.ThrowIfNull(status);
+        var enteredGalaxyMap = lastGuiFocus != GuiFocus.GalaxyMap
+            && status.GuiFocus == GuiFocus.GalaxyMap;
+        lastGuiFocus = status.GuiFocus;
+        if (enteredGalaxyMap && ShouldAutoCopyNextHop)
+        {
+            await CopyNextHopAsync();
         }
     }
 
@@ -617,6 +634,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(NextHopName));
         OnPropertyChanged(nameof(ProgressSummary));
         OnPropertyChanged(nameof(AutoCopySummary));
+        OnPropertyChanged(nameof(ShouldAutoCopyNextHop));
         RaiseCommands();
     }
 

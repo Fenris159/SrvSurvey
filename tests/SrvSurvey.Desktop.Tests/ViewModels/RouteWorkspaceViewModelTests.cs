@@ -198,6 +198,64 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task GalaxyMapEntryAutoCopiesRouteBeforeOtherNavigationTools()
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
+        var copied = new List<string>();
+        var viewModel = CreateViewModel();
+        viewModel.SetClipboardWriter(text =>
+        {
+            copied.Add(text);
+            return Task.CompletedTask;
+        });
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+
+        Assert.True(viewModel.ShouldAutoCopyNextHop);
+
+        await viewModel.UpdateStatusAsync(new EliteStatus
+        {
+            GuiFocus = GuiFocus.GalaxyMap,
+        });
+        await viewModel.UpdateStatusAsync(new EliteStatus
+        {
+            GuiFocus = GuiFocus.GalaxyMap,
+        });
+
+        Assert.Equal(["Second"], copied);
+
+        await viewModel.UpdateStatusAsync(new EliteStatus());
+        await viewModel.UpdateStatusAsync(new EliteStatus
+        {
+            GuiFocus = GuiFocus.GalaxyMap,
+        });
+
+        Assert.Equal(["Second", "Second"], copied);
+    }
+
+    [Fact]
+    public async Task PausedOrManualRouteDoesNotAutoCopyInGalaxyMap()
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
+        var copied = new List<string>();
+        var viewModel = CreateViewModel();
+        viewModel.SetClipboardWriter(text =>
+        {
+            copied.Add(text);
+            return Task.CompletedTask;
+        });
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+        viewModel.AutoCopy = false;
+
+        await viewModel.UpdateStatusAsync(new EliteStatus
+        {
+            GuiFocus = GuiFocus.GalaxyMap,
+        });
+
+        Assert.False(viewModel.ShouldAutoCopyNextHop);
+        Assert.Empty(copied);
+    }
+
+    [Fact]
     public async Task MalformedRouteIsReportedWithoutCreatingAnEditableDraft()
     {
         var directory = Path.Combine(temporaryDirectory, "routes");

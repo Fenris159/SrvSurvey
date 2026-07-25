@@ -526,13 +526,16 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         }
     }
 
-    public async Task UpdateStatusAsync(EliteStatus status)
+    public async Task UpdateStatusAsync(
+        EliteStatus status,
+        bool allowAutoCopy = true)
     {
         ArgumentNullException.ThrowIfNull(status);
         var enteredGalaxyMap = lastGuiFocus != GuiFocus.GalaxyMap
             && status.GuiFocus == GuiFocus.GalaxyMap;
         lastGuiFocus = status.GuiFocus;
         if (!enteredGalaxyMap
+            || !allowAutoCopy
             || !state.IsActive
             || !state.AutoCopy
             || !IsCurrentSystemInsideSearch())
