@@ -98,14 +98,47 @@ public sealed class CommanderCodexStore(string dataDirectory)
         string? regionName = null,
         CancellationToken cancellationToken = default)
     {
-        if (entryId <= 0)
+        var result = await TrackBatchAsync(
+                frontierId,
+                commanderName,
+                [new CommanderCodexDiscovery(
+                    entryId,
+                    timestamp,
+                    systemAddress,
+                    bodyId ?? -1)],
+                regionId,
+                regionName,
+                cancellationToken)
+            .ConfigureAwait(false);
+        return new CommanderCodexTrackResult(
+            result.Path,
+            result.ChangedEntryCount > 0,
+            result.IsSuccess,
+            result.Error);
+    }
+
+    public async Task<CommanderCodexBatchTrackResult> TrackBatchAsync(
+        string frontierId,
+        string? commanderName,
+        IReadOnlyList<CommanderCodexDiscovery> discoveries,
+        int regionId = 0,
+        string? regionName = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(discoveries);
+        if (discoveries.Any(discovery => discovery.EntryId <= 0))
         {
             throw new ArgumentOutOfRangeException(
-                nameof(entryId),
-                "A positive Codex entry ID is required.");
+                nameof(discoveries),
+                "Every Codex discovery requires a positive entry ID.");
         }
 
         var path = ResolvePath(frontierId, regionId);
+        if (discoveries.Count == 0)
+        {
+            return new CommanderCodexBatchTrackResult(path, 0, true, null);
+        }
+
         JsonObject root;
         try
         {
@@ -119,9 +152,9 @@ public sealed class CommanderCodexStore(string dataDirectory)
                 or UnauthorizedAccessException
                 or JsonException)
         {
-            return new CommanderCodexTrackResult(
+            return new CommanderCodexBatchTrackResult(
                 path,
-                false,
+                0,
                 false,
                 exception.Message);
         }
@@ -133,12 +166,28 @@ public sealed class CommanderCodexStore(string dataDirectory)
             root["codexFirsts"] = firsts;
         }
 
-        var key = entryId.ToString(CultureInfo.InvariantCulture);
-        if (TryParseFirst(firsts[key], out var existing)
-            && existing.SystemAddress != -1
-            && timestamp.DateTime >= existing.Timestamp.DateTime)
+        var changedEntryIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var discovery in discoveries)
         {
-            return new CommanderCodexTrackResult(path, false, true, null);
+            var key = discovery.EntryId.ToString(CultureInfo.InvariantCulture);
+            if (TryParseFirst(firsts[key], out var existing)
+                && existing.SystemAddress != -1
+                && discovery.Timestamp.DateTime >= existing.Timestamp.DateTime)
+            {
+                continue;
+            }
+
+            firsts[key] = FormatFirst(new CommanderCodexFirst(
+                discovery.Timestamp,
+                discovery.SystemAddress,
+                discovery.BodyId));
+            changedEntryIds.Add(key);
+        }
+
+        var changedEntryCount = changedEntryIds.Count;
+        if (changedEntryCount == 0)
+        {
+            return new CommanderCodexBatchTrackResult(path, 0, true, null);
         }
 
         root["fid"] = frontierId;
@@ -152,25 +201,24 @@ public sealed class CommanderCodexStore(string dataDirectory)
             root["region"] = regionName;
         }
 
-        var first = new CommanderCodexFirst(
-            timestamp,
-            systemAddress,
-            bodyId ?? -1);
-        firsts[key] = FormatFirst(first);
         try
         {
             await WriteAtomicAsync(path, root, cancellationToken)
                 .ConfigureAwait(false);
-            return new CommanderCodexTrackResult(path, true, true, null);
+            return new CommanderCodexBatchTrackResult(
+                path,
+                changedEntryCount,
+                true,
+                null);
         }
         catch (Exception exception) when (
             exception is IOException
                 or UnauthorizedAccessException
                 or JsonException)
         {
-            return new CommanderCodexTrackResult(
+            return new CommanderCodexBatchTrackResult(
                 path,
-                false,
+                0,
                 false,
                 exception.Message);
         }
@@ -416,5 +464,17 @@ public sealed record CommanderCodexLoadResult(
 public sealed record CommanderCodexTrackResult(
     string Path,
     bool Changed,
+    bool IsSuccess,
+    string? Error);
+
+public sealed record CommanderCodexDiscovery(
+    long EntryId,
+    DateTimeOffset Timestamp,
+    long SystemAddress,
+    int BodyId);
+
+public sealed record CommanderCodexBatchTrackResult(
+    string Path,
+    int ChangedEntryCount,
     bool IsSuccess,
     string? Error);
