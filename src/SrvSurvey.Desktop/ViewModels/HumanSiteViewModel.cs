@@ -165,6 +165,18 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     public double RelativeHeading { get; private set; }
 
+    public string DistanceText => ActiveSite is null
+        ? string.Empty
+        : $"{DistanceToOriginMeters:N0} m from origin";
+
+    public string ApproachDistanceText => ActiveSite is null
+        ? string.Empty
+        : $"{ApproachDistanceMeters:N0} m approach distance";
+
+    public string CommanderPositionText => CommanderOffset is { } offset
+        ? $"x {offset.X:N1} m · y {offset.Y:N1} m · {RelativeHeading:N0}°"
+        : "Settlement-relative position unavailable";
+
     public bool ShowOriginWarning => HasKnownGeometry
         && DistanceToOriginMeters > OriginWarningDistanceMeters;
 
@@ -779,6 +791,9 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(DistanceToOriginMeters));
         OnPropertyChanged(nameof(ApproachDistanceMeters));
         OnPropertyChanged(nameof(RelativeHeading));
+        OnPropertyChanged(nameof(DistanceText));
+        OnPropertyChanged(nameof(ApproachDistanceText));
+        OnPropertyChanged(nameof(CommanderPositionText));
         OnPropertyChanged(nameof(ShowOriginWarning));
         OnPropertyChanged(nameof(ShouldShow));
     }
