@@ -163,6 +163,26 @@
             </Grid>
           </Border>
 
+          <Border BorderBrush="{DynamicResource RavenWarningBrush}"
+                  BorderThickness="1"
+                  CornerRadius="6"
+                  Padding="12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+              <StackPanel Spacing="4">
+                <CheckBox IsChecked="{Binding JournalPostProcessor.SystemRebuildConfirmed, Mode=TwoWay}"
+                          Content="Confirm a verified historical system rebuild" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="Reconstructed facts are merged without deleting unknown fields. Every existing file is checksum-backed up before atomic activation, and an activation failure rolls back completed files." />
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      VerticalAlignment="Center"
+                      Command="{Binding JournalPostProcessor.RebuildSystemsCommand}"
+                      Content="Rebuild systems" />
+            </Grid>
+          </Border>
+
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
                      Text="{Binding JournalPostProcessor.StatusMessage}" />

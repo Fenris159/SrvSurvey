@@ -93,6 +93,42 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         Assert.Equal(original, await File.ReadAllBytesAsync(systemPath));
     }
 
+    [Fact]
+    public async Task HistoricalSystemRebuildRequiresConfirmationAndBacksUpOriginal()
+    {
+        var viewModel = CreateViewModel(out var dataDirectory);
+        var systemDirectory = Path.Combine(dataDirectory, "systems", "F123");
+        Directory.CreateDirectory(systemDirectory);
+        var systemPath = Path.Combine(systemDirectory, "Sol_42.json");
+        await File.WriteAllTextAsync(
+            systemPath,
+            """{"name":"Sol","address":42,"future":7,"bodies":[]}""");
+        var original = await File.ReadAllBytesAsync(systemPath);
+        await viewModel.RefreshCommandersAsync();
+        viewModel.SetBeginningOfTime();
+
+        await viewModel.RebuildSystemsAsync();
+
+        Assert.Equal(original, await File.ReadAllBytesAsync(systemPath));
+        Assert.Contains("confirm", viewModel.StatusMessage);
+
+        viewModel.SystemRebuildConfirmed = true;
+        await viewModel.RebuildSystemsAsync();
+
+        Assert.False(viewModel.SystemRebuildConfirmed);
+        Assert.Contains("updated 1", viewModel.StatusMessage);
+        Assert.Contains("Verified backup:", viewModel.StatusMessage);
+        Assert.Contains("\"future\": 7", await File.ReadAllTextAsync(systemPath));
+        var backupRoot = Path.Combine(temporaryDirectory, "rebuild-backups");
+        var backup = Assert.Single(Directory.GetDirectories(backupRoot));
+        Assert.Equal(
+            original,
+            await File.ReadAllBytesAsync(Path.Combine(
+                backup,
+                "originals",
+                "Sol_42.json")));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -114,10 +150,12 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         File.WriteAllText(
             Path.Combine(
                 journalDirectory,
-                "Journal.2026-07-20T120000.01.log"),
+            "Journal.2026-07-20T120000.01.log"),
             """
+            {"timestamp":"2026-07-20T11:59:00Z","event":"Fileheader","Odyssey":true}
             {"timestamp":"2026-07-20T12:00:00Z","event":"Commander","Name":"Drew","FID":"F123"}
             {"timestamp":"2026-07-20T12:01:00Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
+            {"timestamp":"2026-07-20T12:01:30Z","event":"Scan","SystemAddress":42,"BodyName":"Sol A","BodyID":0,"StarType":"G","StellarMass":1}
             {"timestamp":"2026-07-20T12:02:00Z","event":"FSDJump","JumpDist":12.4}
             {"timestamp":"2026-07-20T12:03:00Z","event":"MarketBuy","Count":12}
             {"timestamp":"2026-07-20T12:04:00Z","event":"CodexEntry","EntryID":2310101,"SystemAddress":42,"BodyID":3}
@@ -129,6 +167,11 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
             new CommanderProfileCatalog(dataDirectory),
             new JournalHistoryAnalyzer(journalDirectory),
             new LegacySystemBiologyAnalyzer(dataDirectory),
+            new HistoricalSystemRebuildService(
+                dataDirectory,
+                journalDirectory,
+                Path.Combine(temporaryDirectory, "rebuild-backups"),
+                () => DateTimeOffset.Parse("2026-07-25T12:00:00Z")),
             new CommanderCodexJournalImporter(journalDirectory, store));
     }
 }

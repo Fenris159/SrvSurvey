@@ -261,6 +261,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var journalImportDirectory = folderResolution.SelectedPath
             ?? folderResolution.CandidatePaths.FirstOrDefault()
             ?? Path.Combine(AppDataPaths.DataDirectory, "journals");
+        ProfileBackupDirectory = Path.Combine(
+            Path.GetDirectoryName(AppDataPaths.DataDirectory)
+                ?? AppDataPaths.ConfigDirectory,
+            "legacy-backups");
         CodexBingo = new BiologyCodexBingoViewModel(
             commanderCodexStore,
             sharedExobiologyCatalog,
@@ -276,6 +280,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             new CommanderProfileCatalog(AppDataPaths.DataDirectory),
             new JournalHistoryAnalyzer(journalImportDirectory),
             new LegacySystemBiologyAnalyzer(AppDataPaths.DataDirectory),
+            new HistoricalSystemRebuildService(
+                AppDataPaths.DataDirectory,
+                journalImportDirectory,
+                Path.Combine(
+                    ProfileBackupDirectory,
+                    "historical-systems")),
             new CommanderCodexJournalImporter(
                 journalImportDirectory,
                 commanderCodexStore));
@@ -287,10 +297,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 ?? new GuardianOverlaySettingsStore(
                     AppDataPaths.UiSettingsPath));
         exobiologyState = new ExobiologyState(sharedExobiologyCatalog);
-        ProfileBackupDirectory = Path.Combine(
-            Path.GetDirectoryName(AppDataPaths.DataDirectory)
-                ?? AppDataPaths.ConfigDirectory,
-            "legacy-backups");
         LegacyProfiles = LegacyProfileLocator.Discover(
                 AppDataPaths.LegacyProfileCandidates)
             .Select(discovery => new LegacyProfileOptionViewModel(discovery))

@@ -13,9 +13,11 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     private readonly CommanderProfileCatalog commanderCatalog;
     private readonly JournalHistoryAnalyzer analyzer;
     private readonly LegacySystemBiologyAnalyzer systemBiologyAnalyzer;
+    private readonly HistoricalSystemRebuildService systemRebuildService;
     private readonly CommanderCodexJournalImporter codexImporter;
     private readonly AsyncCommand analyzeCommand;
     private readonly AsyncCommand analyzeSystemsCommand;
+    private readonly AsyncCommand rebuildSystemsCommand;
     private readonly AsyncCommand rebuildCodexCommand;
     private readonly AsyncCommand refreshCommandersCommand;
     private readonly DelegateCommand cancelCommand;
@@ -32,12 +34,14 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     private double progressMaximum = 1;
     private bool isBusy;
     private bool codexRebuildConfirmed;
+    private bool systemRebuildConfirmed;
     private CancellationTokenSource? operationCancellation;
 
     public JournalPostProcessorViewModel(
         CommanderProfileCatalog commanderCatalog,
         JournalHistoryAnalyzer analyzer,
         LegacySystemBiologyAnalyzer systemBiologyAnalyzer,
+        HistoricalSystemRebuildService systemRebuildService,
         CommanderCodexJournalImporter codexImporter)
     {
         this.commanderCatalog = commanderCatalog
@@ -45,6 +49,8 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         this.analyzer = analyzer ?? throw new ArgumentNullException(nameof(analyzer));
         this.systemBiologyAnalyzer = systemBiologyAnalyzer
             ?? throw new ArgumentNullException(nameof(systemBiologyAnalyzer));
+        this.systemRebuildService = systemRebuildService
+            ?? throw new ArgumentNullException(nameof(systemRebuildService));
         this.codexImporter = codexImporter
             ?? throw new ArgumentNullException(nameof(codexImporter));
         var localNow = DateTimeOffset.Now;
@@ -53,6 +59,9 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             localNow.Offset);
         analyzeCommand = new AsyncCommand(AnalyzeAsync, CanRun);
         analyzeSystemsCommand = new AsyncCommand(AnalyzeSystemsAsync, CanRun);
+        rebuildSystemsCommand = new AsyncCommand(
+            RebuildSystemsAsync,
+            CanRebuildSystems);
         rebuildCodexCommand = new AsyncCommand(
             RebuildCodexAsync,
             CanRebuildCodex);
@@ -65,6 +74,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             () => !IsBusy);
         AnalyzeCommand = analyzeCommand;
         AnalyzeSystemsCommand = analyzeSystemsCommand;
+        RebuildSystemsCommand = rebuildSystemsCommand;
         RebuildCodexCommand = rebuildCodexCommand;
         RefreshCommandersCommand = refreshCommandersCommand;
         CancelCommand = cancelCommand;
@@ -76,6 +86,8 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     public ICommand AnalyzeCommand { get; }
 
     public ICommand AnalyzeSystemsCommand { get; }
+
+    public ICommand RebuildSystemsCommand { get; }
 
     public ICommand RebuildCodexCommand { get; }
 
@@ -99,6 +111,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             if (SetField(ref selectedCommander, value))
             {
                 CodexRebuildConfirmed = false;
+                SystemRebuildConfirmed = false;
                 RaiseCommandStates();
             }
         }
@@ -117,6 +130,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             if (SetField(ref startDate, normalized))
             {
                 CodexRebuildConfirmed = false;
+                SystemRebuildConfirmed = false;
             }
         }
     }
@@ -183,6 +197,18 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             if (SetField(ref codexRebuildConfirmed, value))
             {
                 rebuildCodexCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool SystemRebuildConfirmed
+    {
+        get => systemRebuildConfirmed;
+        set
+        {
+            if (SetField(ref systemRebuildConfirmed, value))
+            {
+                rebuildSystemsCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -427,6 +453,81 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         }
     }
 
+    public async Task RebuildSystemsAsync()
+    {
+        if (!CanRebuildSystems() || SelectedCommander is null)
+        {
+            StatusMessage =
+                "Select a commander and confirm the verified historical system rebuild first.";
+            return;
+        }
+
+        operationCancellation = new CancellationTokenSource();
+        try
+        {
+            IsBusy = true;
+            ProgressValue = 0;
+            ProgressMaximum = 1;
+            StatusMessage =
+                "Reconstructing exploration history before creating verified backups...";
+            var progress = new Progress<HistoricalSystemRebuildProgress>(value =>
+            {
+                ProgressMaximum = value.TotalCount;
+                ProgressValue = value.ProcessedCount;
+                StatusMessage = $"{value.Stage}: {value.ProcessedCount:N0} of "
+                    + $"{value.TotalCount:N0}"
+                    + (string.IsNullOrWhiteSpace(value.CurrentFile)
+                        ? string.Empty
+                        : $" - {value.CurrentFile}");
+            });
+            var result = await systemRebuildService.RebuildAsync(
+                SelectedCommander.FrontierId,
+                SelectedCommander.CommanderName,
+                StartDate,
+                progress,
+                operationCancellation.Token);
+            ProgressMaximum = Math.Max(1, result.CandidateJournalFileCount);
+            ProgressValue = result.CandidateJournalFileCount;
+            StatusMessage = $"Replayed {result.AppliedExplorationEventCount:N0} exploration "
+                + $"event(s) into {result.ReconstructedSystemCount:N0} system(s); updated "
+                + $"{result.UpdatedSystemFileCount:N0} and created "
+                + $"{result.CreatedSystemFileCount:N0} system file(s)."
+                + (string.IsNullOrWhiteSpace(result.BackupDirectory)
+                    ? " No system files required activation."
+                    : $" Verified backup: {result.BackupDirectory}")
+                + (result.SkippedRecentFileCount > 0
+                    ? $" Skipped {result.SkippedRecentFileCount:N0} recent active journal(s)."
+                    : string.Empty)
+                + (result.SkippedLegacyFileCount > 0
+                    ? $" Skipped {result.SkippedLegacyFileCount:N0} pre-Odyssey journal(s); their Codex firsts remain available through the separate Codex merge."
+                    : string.Empty)
+                + (result.Warnings.Count > 0
+                    ? " " + string.Join(" ", result.Warnings)
+                    : string.Empty);
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage =
+                "Historical system reconstruction was cancelled before activation; active system files did not change.";
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException)
+        {
+            StatusMessage = "Historical system reconstruction could not finish: "
+                + exception.Message;
+        }
+        finally
+        {
+            SystemRebuildConfirmed = false;
+            operationCancellation.Dispose();
+            operationCancellation = null;
+            IsBusy = false;
+        }
+    }
+
     public void Cancel()
     {
         operationCancellation?.Cancel();
@@ -441,6 +542,8 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     private bool CanRun() => !IsBusy && SelectedCommander is not null;
 
     private bool CanRebuildCodex() => CanRun() && CodexRebuildConfirmed;
+
+    private bool CanRebuildSystems() => CanRun() && SystemRebuildConfirmed;
 
     private static string FormatAtmospheres(
         IReadOnlyList<LegacyAtmosphereCompositionSummary> atmospheres)
@@ -504,6 +607,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     {
         analyzeCommand.RaiseCanExecuteChanged();
         analyzeSystemsCommand.RaiseCanExecuteChanged();
+        rebuildSystemsCommand.RaiseCanExecuteChanged();
         rebuildCodexCommand.RaiseCanExecuteChanged();
         refreshCommandersCommand.RaiseCanExecuteChanged();
         cancelCommand.RaiseCanExecuteChanged();
