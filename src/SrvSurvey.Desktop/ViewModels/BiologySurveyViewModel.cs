@@ -89,6 +89,51 @@ public sealed record BiologySurveyViewModel(
                 disablePredictions);
     }
 
+    public static BiologySurveyViewModel? CreateSystemOverview(
+        SystemScanSnapshot snapshot,
+        EliteStatus? status,
+        bool disablePredictions)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        var biologicalBodies = snapshot.Bodies
+            .Where(body => body.BiologicalSignalCount > 0)
+            .OrderBy(body => body.BodyId)
+            .ToArray();
+        return snapshot.SystemAddress is null || biologicalBodies.Length == 0
+            ? null
+            : CreateSystem(
+                snapshot,
+                status,
+                biologicalBodies,
+                disablePredictions);
+    }
+
+    public static BiologySurveyViewModel? CreateBodyDetail(
+        SystemScanSnapshot snapshot,
+        int bodyId,
+        ExobiologySnapshot exobiology,
+        bool highlightRegionalFirsts,
+        bool dimAnalyzedOrganisms,
+        bool hideGeoCount,
+        bool disablePredictions)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(exobiology);
+        var body = snapshot.Bodies.FirstOrDefault(candidate =>
+            candidate.BodyId == bodyId
+            && candidate.BiologicalSignalCount > 0);
+        return snapshot.SystemAddress is null || body is null
+            ? null
+            : CreateBody(
+                snapshot,
+                body,
+                exobiology,
+                highlightRegionalFirsts,
+                dimAnalyzedOrganisms,
+                hideGeoCount,
+                disablePredictions);
+    }
+
     private static BiologySurveyViewModel CreateSystem(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
@@ -109,6 +154,7 @@ public sealed record BiologySurveyViewModel(
                     disablePredictions);
                 var estimate = CreateRewardEstimate(body, predictions);
                 var row = new BiologyBodyRowViewModel(
+                    body.BodyId,
                     body.ShortName,
                     body.AnalyzedBiologicalSignalCount,
                     body.BiologicalSignalCount,
@@ -285,6 +331,8 @@ public sealed record BiologySurveyViewModel(
         return new BiologyOrganismRowViewModel(
             displayName,
             genusName,
+            ExobiologyReferenceCatalog.GetSampleDistanceMeters(
+                organism.GenusLocalized ?? organism.Genus),
             organism.Reward ?? 0,
             organism.Reward is not null,
             organism.IsAnalyzed,
@@ -317,6 +365,8 @@ public sealed record BiologySurveyViewModel(
         return new BiologyOrganismRowViewModel(
             prediction.Prediction.Name,
             prediction.Prediction.Genus,
+            ExobiologyReferenceCatalog.GetSampleDistanceMeters(
+                prediction.Prediction.Genus),
             reward,
             reward > 0,
             false,
@@ -566,6 +616,7 @@ public enum BiologySurveyMode
 }
 
 public sealed record BiologyBodyRowViewModel(
+    int BodyId,
     string Name,
     int AnalyzedSignalCount,
     int SignalCount,
@@ -598,6 +649,7 @@ public sealed record BiologyBodyRowViewModel(
 public sealed record BiologyOrganismRowViewModel(
     string DisplayName,
     string GenusName,
+    int SampleDistanceMeters,
     long Reward,
     bool HasReward,
     bool IsAnalyzed,
@@ -610,6 +662,12 @@ public sealed record BiologyOrganismRowViewModel(
     bool ShouldDim)
 {
     public double RowOpacity => ShouldDim ? 0.48 : 1;
+
+    public bool HasSampleDistance => SampleDistanceMeters > 0;
+
+    public string SampleDistanceText => HasSampleDistance
+        ? $"{SampleDistanceMeters:N0} m sample separation"
+        : string.Empty;
 
     public string RewardText => HasReward
         ? Reward >= 1_000_000
@@ -624,6 +682,7 @@ public sealed record BiologyOrganismRowViewModel(
         return new BiologyOrganismRowViewModel(
             $"Unidentified biological signal {index:N0}",
             "Genus unknown",
+            0,
             0,
             false,
             false,

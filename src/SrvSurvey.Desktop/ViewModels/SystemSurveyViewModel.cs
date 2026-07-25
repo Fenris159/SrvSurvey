@@ -384,6 +384,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public SystemScanSnapshot Snapshot => snapshot;
 
+    public EliteStatus? CurrentStatus => status;
+
+    public ExobiologySnapshot CurrentExobiology => exobiology;
+
     public BodyInformationViewModel? BodyInformation
     {
         get => bodyInformation;
