@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Tests.Exploration;
 
@@ -11,7 +12,7 @@ public sealed class SystemScanStateTests
         var state = new SystemScanState();
 
         state.Apply(Parse("""{"event":"Fileheader","Odyssey":true}"""));
-        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""));
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0,"StarPos":[1,2,3]}"""));
         state.Apply(Parse("""{"event":"FSSDiscoveryScan","SystemName":"Test","SystemAddress":42,"BodyCount":2,"NonBodyCount":4}"""));
         state.Apply(Parse("""{"event":"FSSSignalDiscovered","SystemAddress":42,"SignalName":"Port","SignalType":"Outpost"}"""));
         state.Apply(Parse("""{"event":"FSSSignalDiscovered","SystemAddress":42,"SignalName":"Beacon","SignalType":"NavBeacon"}"""));
@@ -28,6 +29,7 @@ public sealed class SystemScanStateTests
         var snapshot = state.CreateSnapshot();
         Assert.Equal("Test", snapshot.SystemName);
         Assert.Equal(42, snapshot.SystemAddress);
+        Assert.Equal(new GalacticCoordinate(1, 2, 3), snapshot.StarPosition);
         Assert.Equal(2, snapshot.ExpectedBodyCount);
         Assert.True(snapshot.HasDiscoveryScan);
         Assert.True(snapshot.AllBodiesFound);
@@ -66,12 +68,13 @@ public sealed class SystemScanStateTests
         state.Apply(Parse("""{"event":"Location","StarSystem":"First","SystemAddress":1}"""));
         state.Apply(Parse("""{"event":"Scan","SystemAddress":1,"BodyName":"First A","BodyID":0,"StarType":"G","StellarMass":1}"""));
 
-        state.Apply(Parse("""{"event":"FSDJump","StarSystem":"Second","SystemAddress":2}"""));
+        state.Apply(Parse("""{"event":"FSDJump","StarSystem":"Second","SystemAddress":2,"StarPos":[4,5,6]}"""));
         state.Apply(Parse("""{"event":"FSSBodySignals","SystemAddress":1,"BodyName":"First 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":3}]}"""));
 
         var snapshot = state.CreateSnapshot();
         Assert.Equal("Second", snapshot.SystemName);
         Assert.Equal(2, snapshot.SystemAddress);
+        Assert.Equal(new GalacticCoordinate(4, 5, 6), snapshot.StarPosition);
         Assert.Empty(snapshot.Bodies);
     }
 

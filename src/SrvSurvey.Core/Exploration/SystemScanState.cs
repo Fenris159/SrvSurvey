@@ -1,5 +1,6 @@
 using System.Text.Json;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Exploration;
 
@@ -19,6 +20,8 @@ public sealed class SystemScanState
     public string? SystemName { get; private set; }
 
     public long? SystemAddress { get; private set; }
+
+    public GalacticCoordinate? StarPosition { get; private set; }
 
     public long Population { get; private set; }
 
@@ -122,6 +125,7 @@ public sealed class SystemScanState
         return new SystemScanSnapshot(
             SystemName,
             SystemAddress,
+            StarPosition,
             Population,
             ExpectedBodyCount,
             HasDiscoveryScan,
@@ -152,6 +156,8 @@ public sealed class SystemScanState
         }
 
         Population = GetInt64(root, "Population") ?? Population;
+        StarPosition = GetGalacticCoordinate(root, "StarPos")
+            ?? StarPosition;
         var bodyId = GetInt32(root, "BodyID");
         if (bodyId is not null && GetString(root, "BodyType") == "Planet")
         {
@@ -442,6 +448,7 @@ public sealed class SystemScanState
         {
             SystemAddress = address;
             SystemName = name;
+            StarPosition = null;
             Population = 0;
             ExpectedBodyCount = 0;
             HasDiscoveryScan = false;
@@ -599,6 +606,32 @@ public sealed class SystemScanState
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
                 ? value.GetBoolean()
                 : null;
+    }
+
+    private static GalacticCoordinate? GetGalacticCoordinate(
+        JsonElement root,
+        string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out var value)
+            || value.ValueKind != JsonValueKind.Array
+            || value.GetArrayLength() < 3)
+        {
+            return null;
+        }
+
+        var coordinates = value.EnumerateArray().Take(3).ToArray();
+        if (coordinates.Any(coordinate =>
+                coordinate.ValueKind != JsonValueKind.Number
+                || !coordinate.TryGetDouble(out var number)
+                || !double.IsFinite(number)))
+        {
+            return null;
+        }
+
+        return new GalacticCoordinate(
+            coordinates[0].GetDouble(),
+            coordinates[1].GetDouble(),
+            coordinates[2].GetDouble());
     }
 
     private static double? GetDouble(JsonElement root, string propertyName)
@@ -805,6 +838,7 @@ public sealed class SystemScanState
 public sealed record SystemScanSnapshot(
     string? SystemName,
     long? SystemAddress,
+    GalacticCoordinate? StarPosition,
     long Population,
     int ExpectedBodyCount,
     bool HasDiscoveryScan,
@@ -820,6 +854,7 @@ public sealed record SystemScanSnapshot(
     IReadOnlyList<SystemScanBodySnapshot> Bodies)
 {
     public static SystemScanSnapshot Empty { get; } = new(
+        null,
         null,
         null,
         0,
