@@ -42,22 +42,26 @@ public sealed class ScreenshotProcessingSettingsStore
         documentStore.Update(root =>
         {
             root["Version"] = 1;
-            root["Screenshots"] = new JsonObject
+            var settings = root["Screenshots"] as JsonObject;
+            if (settings is null)
             {
-                ["Enabled"] = preferences.Enabled,
-                ["AddBanner"] = preferences.AddBanner,
-                ["DeleteOriginal"] = preferences.DeleteOriginal,
-                ["UseGuardianAerialFolder"] =
-                    preferences.UseGuardianAerialFolder,
-                ["SourceFolder"] = preferences.SourceFolder,
-                ["TargetFolder"] = preferences.TargetFolder,
-                ["RotateAlphaAerial"] = preferences.RotateAlphaAerial,
-                ["BannerColor"] = preferences.BannerColor,
-                ["BannerLocalTime"] = preferences.BannerLocalTime,
-                ["AerialAltitudeAlpha"] = preferences.AerialAltitudeAlpha,
-                ["AerialAltitudeBeta"] = preferences.AerialAltitudeBeta,
-                ["AerialAltitudeGamma"] = preferences.AerialAltitudeGamma,
-            };
+                settings = [];
+                root["Screenshots"] = settings;
+            }
+
+            settings["Enabled"] = preferences.Enabled;
+            settings["AddBanner"] = preferences.AddBanner;
+            settings["DeleteOriginal"] = preferences.DeleteOriginal;
+            settings["UseGuardianAerialFolder"] =
+                preferences.UseGuardianAerialFolder;
+            settings["SourceFolder"] = preferences.SourceFolder;
+            settings["TargetFolder"] = preferences.TargetFolder;
+            settings["RotateAlphaAerial"] = preferences.RotateAlphaAerial;
+            settings["BannerColor"] = preferences.BannerColor;
+            settings["BannerLocalTime"] = preferences.BannerLocalTime;
+            settings["AerialAltitudeAlpha"] = preferences.AerialAltitudeAlpha;
+            settings["AerialAltitudeBeta"] = preferences.AerialAltitudeBeta;
+            settings["AerialAltitudeGamma"] = preferences.AerialAltitudeGamma;
         });
     }
 

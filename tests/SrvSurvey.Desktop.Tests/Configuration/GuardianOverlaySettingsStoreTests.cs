@@ -22,6 +22,8 @@ public sealed class GuardianOverlaySettingsStoreTests : IDisposable
         Assert.True(store.Load().AutoZoomNearObelisks);
         Assert.False(store.Load().AutoZoomInSrvTurret);
         Assert.Equal(0, store.Load().OverlaySizeIndex);
+        Assert.False(store.Load().DisableRuinsMeasurementGrid);
+        Assert.False(store.Load().DisableAerialAlignmentGrid);
     }
 
     [Fact]
@@ -40,7 +42,9 @@ public sealed class GuardianOverlaySettingsStoreTests : IDisposable
             SuppressForActiveBuildProjects: true,
             AutoZoomNearObelisks: false,
             AutoZoomInSrvTurret: true,
-            OverlaySizeIndex: 4);
+            OverlaySizeIndex: 4,
+            DisableRuinsMeasurementGrid: true,
+            DisableAerialAlignmentGrid: true);
         store.Save(expected);
 
         Assert.Equal(expected, store.Load());

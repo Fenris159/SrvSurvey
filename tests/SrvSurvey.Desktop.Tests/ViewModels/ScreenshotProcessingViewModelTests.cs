@@ -27,6 +27,9 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
         viewModel.SourceFolder = source;
         viewModel.TargetFolder = Path.Combine(temporaryDirectory, "target");
         viewModel.DeleteOriginal = true;
+        viewModel.AerialAltitudeAlpha = 1_100;
+        viewModel.AerialAltitudeBeta = 1_500;
+        viewModel.AerialAltitudeGamma = 6_000;
         Assert.True(viewModel.ToggleBanner());
 
         var saved = store.Load();
@@ -37,6 +40,9 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
             saved.TargetFolder);
         Assert.True(saved.DeleteOriginal);
         Assert.False(saved.AddBanner);
+        Assert.Equal(1_100, saved.AerialAltitudeAlpha);
+        Assert.Equal(1_500, saved.AerialAltitudeBeta);
+        Assert.Equal(5_000, saved.AerialAltitudeGamma);
         Assert.Contains("disabled", viewModel.StatusMessage);
     }
 

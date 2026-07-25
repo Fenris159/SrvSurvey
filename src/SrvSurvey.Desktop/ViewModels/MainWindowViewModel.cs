@@ -296,7 +296,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             ramTah: RamTah,
             overlaySettingsStore: guardianOverlaySettingsStore
                 ?? new GuardianOverlaySettingsStore(
-                    AppDataPaths.UiSettingsPath));
+                    AppDataPaths.UiSettingsPath),
+            aerialAltitudeProvider: () => new GuardianAerialAltitudes(
+                ScreenshotProcessing.AerialAltitudeAlpha,
+                ScreenshotProcessing.AerialAltitudeBeta,
+                ScreenshotProcessing.AerialAltitudeGamma));
+        ScreenshotProcessing.PropertyChanged += (_, _) =>
+            Guardian.RefreshAerialGuidance();
         exobiologyState = new ExobiologyState(sharedExobiologyCatalog);
         LegacyProfiles = LegacyProfileLocator.Discover(
                 AppDataPaths.LegacyProfileCandidates)

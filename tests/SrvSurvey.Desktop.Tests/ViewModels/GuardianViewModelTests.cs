@@ -9,6 +9,20 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class GuardianViewModelTests
 {
     [Theory]
+    [InlineData("Robolobster", "Fighter blueprint")]
+    [InlineData("Turtle", "Module blueprint")]
+    [InlineData("Bowl", "Weapon blueprint")]
+    [InlineData("Lacrosse", "no blueprint category")]
+    public void StructureApproachIdentifiesLegacyBlueprintCategory(
+        string siteType,
+        string expected)
+    {
+        Assert.Contains(
+            expected,
+            GuardianViewModel.GetGuardianBlueprintText(siteType));
+    }
+
+    [Theory]
     [InlineData(GuardianSiteKind.Ruins, 1_001, 0.2)]
     [InlineData(GuardianSiteKind.Ruins, 801, 0.5)]
     [InlineData(GuardianSiteKind.Ruins, 800, 0.65)]
@@ -623,6 +637,7 @@ public sealed class GuardianViewModelTests
             viewModel.UpdateStatus(StatusNorthOfSite(10));
 
             Assert.Equal("A01", viewModel.CurrentObelisk?.Name);
+            Assert.True(viewModel.ShouldShowLiveSiteOverlay);
             Assert.Equal(3, viewModel.ActiveMapScale);
             Assert.True(viewModel.IsAutomaticMapZoom);
             Assert.Contains("0.0 m", viewModel.NearbyPointText);
@@ -703,6 +718,12 @@ public sealed class GuardianViewModelTests
             Assert.True(Assert.Single(saved.Surveys).ActiveObelisks.Single().Scanned);
 
             Assert.Equal(GuardianLiveMapMode.Heading, viewModel.LiveMapMode);
+            Assert.Equal(GuardianAlignmentMode.Buttress, viewModel.AlignmentMode);
+            Assert.Equal(20, viewModel.AlignmentTargetAltitude);
+            Assert.True(viewModel.IsAlignmentVisible);
+            viewModel.ShowRuinsMeasurementGrid = false;
+            Assert.False(viewModel.IsAlignmentVisible);
+            viewModel.ShowRuinsMeasurementGrid = true;
             await viewModel.ApplyJournalEventsAsync(
             [
                 Parse("""{"event":"SendText","Message":".heading 90"}"""),
@@ -764,21 +785,74 @@ public sealed class GuardianViewModelTests
             [
                 Parse("""{"event":"SendText","Message":".remove"}"""),
                 Parse("""{"event":"SendText","Message":".site Alpha"}"""),
-                Parse("""{"event":"SendText","Message":".site Test"}"""),
-                Parse("""{"event":"SendText","Message":".aerial"}"""),
             ],
             "Drew");
-            Assert.Equal(GuardianLiveMapMode.Origin, viewModel.LiveMapMode);
             saved = await new GuardianCommanderDataReader(root)
                 .ReadAsync("F123", isOdyssey: true);
             commandSurvey = Assert.Single(saved.Surveys);
-            Assert.Equal("Test", commandSurvey.SiteType);
+            Assert.Equal("Alpha", commandSurvey.SiteType);
             Assert.Null(commandSurvey.Survey.RawPointsOfInterest);
             Assert.DoesNotContain("x1", commandSurvey.Survey.PoiStatuses.Keys);
 
             await viewModel.ApplyJournalEventsAsync(
-                [Parse("""{"event":"SendText","Message":".map"}""")],
+                [Parse("""{"event":"SendText","Message":".aerial"}""")],
                 "Drew");
+            Assert.Equal(GuardianLiveMapMode.Origin, viewModel.LiveMapMode);
+            viewModel.UpdateStatus(StatusNorthOfSite(20) with
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip,
+                Altitude = 1_200,
+                Heading = 45,
+            });
+            Assert.Equal(GuardianAlignmentMode.Alpha, viewModel.AlignmentMode);
+            Assert.Equal(1_200, viewModel.AlignmentTargetAltitude);
+            Assert.Equal(0.8, viewModel.AlignmentOpacity);
+            Assert.True(viewModel.IsAlignmentVisible);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(20) with
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip,
+                Flags2 = StatusFlags2.GlideMode,
+                Altitude = 1_000,
+                Heading = 45,
+            });
+            Assert.Equal(0.1, viewModel.AlignmentOpacity, precision: 6);
+            Assert.True(viewModel.IsGlideApproach);
+            Assert.True(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.Contains("RUINS", viewModel.GlideApproachTitle);
+            Assert.Contains("Alpha", viewModel.GlideApproachText);
+            viewModel.SuppressForActiveBuildProjects = true;
+            viewModel.SetActiveBuildProjects(true);
+            Assert.False(viewModel.ShouldShowLiveSiteOverlay);
+            viewModel.SetActiveBuildProjects(false);
+            Assert.True(viewModel.ShouldShowLiveSiteOverlay);
+            viewModel.ShowAerialAlignmentGrid = false;
+            Assert.False(viewModel.IsAlignmentVisible);
+            viewModel.ShowAerialAlignmentGrid = true;
+
+            viewModel.UpdateStatus(StatusNorthOfSite(20) with
+            {
+                Flags = StatusFlags.HasLatLong
+                    | StatusFlags.InMainShip
+                    | StatusFlags.Supercruise,
+                Altitude = 1_000,
+            });
+            Assert.False(viewModel.ShouldShowLiveSiteOverlay);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(20) with
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip,
+                Flags2 = StatusFlags2.GlideMode,
+                Altitude = 1_000,
+            });
+            Assert.True(viewModel.ShouldShowLiveSiteOverlay);
+
+            await viewModel.ApplyJournalEventsAsync(
+            [
+                Parse("""{"event":"SendText","Message":".site Test"}"""),
+                Parse("""{"event":"SendText","Message":".map"}"""),
+            ],
+            "Drew");
             Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
 
             await viewModel.ApplyJournalEventsAsync(

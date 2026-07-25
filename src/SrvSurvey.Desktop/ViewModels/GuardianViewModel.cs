@@ -37,6 +37,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private readonly GuardianSurveyShareService surveyShareService;
     private readonly RamTahViewModel? ramTah;
     private readonly GuardianOverlaySettingsStore? overlaySettingsStore;
+    private readonly Func<GuardianAerialAltitudes> aerialAltitudeProvider;
     private readonly IStarSystemResolver systemResolver;
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand toggleCurrentObeliskScannedCommand;
@@ -81,6 +82,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private bool suppressForActiveBuildProjects;
     private bool autoZoomNearObelisks;
     private bool autoZoomInSrvTurret;
+    private bool showRuinsMeasurementGrid;
+    private bool showAerialAlignmentGrid;
     private GuardianOverlaySizeOption selectedOverlaySize;
     private bool automaticMapZoom = true;
     private double activeMapScale = 1;
@@ -103,7 +106,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         GuardianSiteTemplateCatalog? templates = null,
         RamTahViewModel? ramTah = null,
         GuardianOverlaySettingsStore? overlaySettingsStore = null,
-        IStarSystemResolver? systemResolver = null)
+        IStarSystemResolver? systemResolver = null,
+        Func<GuardianAerialAltitudes>? aerialAltitudeProvider = null)
     {
         this.references = references ?? GuardianSiteCatalog.LoadEmbedded();
         this.publishedSites = publishedSites
@@ -111,6 +115,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         this.templates = templates ?? GuardianSiteTemplateCatalog.LoadEmbedded();
         this.ramTah = ramTah;
         this.overlaySettingsStore = overlaySettingsStore;
+        this.aerialAltitudeProvider = aerialAltitudeProvider
+            ?? (() => GuardianAerialAltitudes.Default);
         this.systemResolver = systemResolver ?? new SpanshStarSystemResolver();
         var overlayPreferences = overlaySettingsStore?.Load()
             ?? GuardianOverlayPreferences.Default;
@@ -121,6 +127,10 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             overlayPreferences.SuppressForActiveBuildProjects;
         autoZoomNearObelisks = overlayPreferences.AutoZoomNearObelisks;
         autoZoomInSrvTurret = overlayPreferences.AutoZoomInSrvTurret;
+        showRuinsMeasurementGrid =
+            !overlayPreferences.DisableRuinsMeasurementGrid;
+        showAerialAlignmentGrid =
+            !overlayPreferences.DisableAerialAlignmentGrid;
         selectedOverlaySize = OverlaySizes[overlayPreferences.OverlaySizeIndex];
         if (this.ramTah is not null)
         {
@@ -352,6 +362,32 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool ShowRuinsMeasurementGrid
+    {
+        get => showRuinsMeasurementGrid;
+        set
+        {
+            if (SetField(ref showRuinsMeasurementGrid, value))
+            {
+                SaveOverlayPreferences();
+                NotifyGuardianGuidanceChanged();
+            }
+        }
+    }
+
+    public bool ShowAerialAlignmentGrid
+    {
+        get => showAerialAlignmentGrid;
+        set
+        {
+            if (SetField(ref showAerialAlignmentGrid, value))
+            {
+                SaveOverlayPreferences();
+                NotifyGuardianGuidanceChanged();
+            }
+        }
+    }
+
     public GuardianOverlaySizeOption SelectedOverlaySize
     {
         get => selectedOverlaySize;
@@ -389,6 +425,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 OnPropertyChanged(nameof(HasLiveMapPrompt));
                 OnPropertyChanged(nameof(LiveMapPromptTitle));
                 OnPropertyChanged(nameof(LiveMapPromptText));
+                NotifyGuardianGuidanceChanged();
             }
         }
     }
@@ -413,6 +450,96 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             "Use the origin guidance to align an aerial screenshot. Type .map to return.",
         _ => string.Empty,
     };
+
+    public GuardianAlignmentMode? AlignmentMode => LiveMapMode switch
+    {
+        GuardianLiveMapMode.Heading => GuardianAlignmentMode.Buttress,
+        GuardianLiveMapMode.Origin when currentStatus?.OnFoot == true =>
+            GuardianAlignmentMode.RelicTower,
+        GuardianLiveMapMode.Origin => ParseAlignmentMode(GetActiveSiteType()),
+        _ => null,
+    };
+
+    public double AlignmentTargetAltitude => AlignmentMode switch
+    {
+        GuardianAlignmentMode.Buttress => 20,
+        GuardianAlignmentMode.RelicTower => 0,
+        GuardianAlignmentMode.Alpha => aerialAltitudeProvider().Alpha,
+        GuardianAlignmentMode.Beta => aerialAltitudeProvider().Beta,
+        GuardianAlignmentMode.Gamma => aerialAltitudeProvider().Gamma,
+        GuardianAlignmentMode.Robolobster => 1_000,
+        GuardianAlignmentMode.Crossroads => 500,
+        GuardianAlignmentMode.Fistbump => 450,
+        null => 0,
+        _ => 650,
+    };
+
+    public double AlignmentOpacity
+    {
+        get
+        {
+            if (AlignmentMode is not { } mode
+                || currentStatus?.Landed == true
+                || mode == GuardianAlignmentMode.Buttress
+                    && !ShowRuinsMeasurementGrid
+                || LiveMapMode == GuardianLiveMapMode.Origin
+                    && (!ShowAerialAlignmentGrid
+                        || currentStatus?.InSrv == true))
+            {
+                return 0;
+            }
+
+            if (mode == GuardianAlignmentMode.RelicTower)
+            {
+                return 0.8;
+            }
+
+            var altitude = Math.Max(0, currentStatus?.Altitude ?? 0);
+            var delta = Math.Abs(altitude - AlignmentTargetAltitude);
+            return delta > 220
+                ? 0
+                : delta < 20
+                    ? 0.8
+                    : (220 - delta) / 200;
+        }
+    }
+
+    public bool IsAlignmentVisible => AlignmentOpacity > 0;
+
+    public double AlignmentHeading => currentStatus?.NormalizedHeading ?? 0;
+
+    public string AlignmentStatusText => AlignmentMode switch
+    {
+        GuardianAlignmentMode.Buttress =>
+            $"Heading {AlignmentHeading:N0}° - align with the site buttress.",
+        GuardianAlignmentMode.RelicTower =>
+            $"Heading {AlignmentHeading:N0}° - align the relic tower.",
+        not null => $"Heading {AlignmentHeading:N0}° - altitude "
+            + $"{Math.Max(0, currentStatus?.Altitude ?? 0):N0} / "
+            + $"{AlignmentTargetAltitude:N0} m.",
+        _ => string.Empty,
+    };
+
+    public bool IsGlideApproach => currentStatus?.GlideMode == true
+        && ActiveSite is not null;
+
+    public string GlideApproachTitle => ActiveSite?.Kind == GuardianSiteKind.Ruins
+        ? "APPROACHING GUARDIAN RUINS"
+        : "APPROACHING GUARDIAN STRUCTURE";
+
+    public string GlideApproachText => ActiveSite is not { } site
+        ? string.Empty
+        : site.Kind == GuardianSiteKind.Ruins
+            ? $"Ruins #{site.Index} - {GetActiveSiteType() ?? "unknown layout"}"
+            : GetGuardianBlueprintText(GetActiveSiteType());
+
+    public string GlideApproachFooter =>
+        "Remain in glide; the live survey map will continue after approach.";
+
+    public void RefreshAerialGuidance()
+    {
+        NotifyGuardianGuidanceChanged();
+    }
 
     public string? TargetObeliskName => targetObeliskName;
 
@@ -610,6 +737,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     public GuardianLiveSiteSnapshot? ActiveSite => liveSiteState.CurrentSite;
 
     public bool HasActiveSite => ActiveSite is not null;
+
+    public bool ShouldShowLiveSiteOverlay => EnableGuardianSites
+        && HasActiveSite
+        && !(SuppressForActiveBuildProjects && hasActiveBuildProjects)
+        && IsLiveSiteStatusEligible(currentStatus);
 
     public string ActiveSiteTitle => ActiveSite is { } site
         ? string.IsNullOrWhiteSpace(site.LocalizedName)
@@ -976,6 +1108,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         }
 
         hasActiveBuildProjects = hasProjects;
+        OnPropertyChanged(nameof(ShouldShowLiveSiteOverlay));
         NotifyAuxiliaryOverlayState();
     }
 
@@ -1515,6 +1648,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             await OnSurveySavedAsync(existing, saved);
             UpdateSurveyEditor();
             OnPropertyChanged(nameof(ActiveSiteDescription));
+            NotifyGuardianGuidanceChanged();
             StatusMessage = successMessage;
             return true;
         }
@@ -1998,6 +2132,41 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 && status.Flags.HasFlag(StatusFlags.Supercruise);
     }
 
+    private static bool IsLiveSiteStatusEligible(EliteStatus? status)
+    {
+        if (status is null
+            || !status.HasLatitudeLongitude
+            || status.FsdChargingJump)
+        {
+            return false;
+        }
+
+        if (status.GlideMode)
+        {
+            return true;
+        }
+
+        if (status.GuiFocus is GuiFocus.CommsPanel or GuiFocus.InternalPanel)
+        {
+            return true;
+        }
+
+        if (status.GuiFocus != GuiFocus.NoFocus)
+        {
+            return false;
+        }
+
+        var flying = status.InMainShip
+            && !status.Docked
+            && !status.Landed
+            && !status.Flags.HasFlag(StatusFlags.Supercruise);
+        return status.InSrv
+            || status.OnFoot
+            || status.Landed
+            || status.InFighter
+            || flying;
+    }
+
     private static bool IsRamTahStatusEligible(EliteStatus? status)
     {
         if (status is null)
@@ -2043,7 +2212,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 SuppressForActiveBuildProjects,
                 AutoZoomNearObelisks,
                 AutoZoomInSrvTurret,
-                SelectedOverlaySize.Index));
+                SelectedOverlaySize.Index,
+                DisableRuinsMeasurementGrid: !ShowRuinsMeasurementGrid,
+                DisableAerialAlignmentGrid: !ShowAerialAlignmentGrid));
             OverlaySettingsStatus = string.Empty;
         }
         catch (Exception exception) when (
@@ -2058,6 +2229,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
     private void NotifyAuxiliaryOverlayState()
     {
+        OnPropertyChanged(nameof(ShouldShowLiveSiteOverlay));
         OnPropertyChanged(nameof(CurrentSystemSites));
         OnPropertyChanged(nameof(HasCurrentSystemSites));
         OnPropertyChanged(nameof(CurrentSystemGuardianTitle));
@@ -2077,6 +2249,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ActiveSiteReference));
         OnPropertyChanged(nameof(ActiveSiteLocation));
         OnPropertyChanged(nameof(ActiveSiteVisit));
+        OnPropertyChanged(nameof(ShouldShowLiveSiteOverlay));
         NotifyAuxiliaryOverlayState();
     }
 
@@ -2103,6 +2276,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ActiveMapScaleText));
         OnPropertyChanged(nameof(ActiveMapRelativeHeading));
         OnPropertyChanged(nameof(TargetObeliskText));
+        OnPropertyChanged(nameof(ShouldShowLiveSiteOverlay));
+        NotifyGuardianGuidanceChanged();
         OnPropertyChanged(nameof(CurrentRamTahLogs));
         OnPropertyChanged(nameof(HasCurrentRamTahLogs));
         OnPropertyChanged(nameof(CurrentRamTahTitle));
@@ -2205,6 +2380,52 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             template.SiteType,
             normalized,
             StringComparison.OrdinalIgnoreCase));
+    }
+
+    private string? GetActiveSiteType()
+    {
+        return ActiveSite is { } site
+            ? FindSurvey(site)?.SiteType ?? site.SiteType
+            : null;
+    }
+
+    private static GuardianAlignmentMode? ParseAlignmentMode(string? siteType)
+    {
+        return Enum.TryParse<GuardianAlignmentMode>(
+            siteType,
+            ignoreCase: true,
+            out var mode)
+                ? mode
+                : null;
+    }
+
+    internal static string GetGuardianBlueprintText(string? siteType)
+    {
+        var blueprint = siteType?.ToLowerInvariant() switch
+        {
+            "robolobster" or "squid" or "stickyhand" =>
+                "Fighter blueprint",
+            "turtle" => "Module blueprint",
+            "bear" or "hammerbot" or "bowl" => "Weapon blueprint",
+            _ => null,
+        };
+        return blueprint is null
+            ? $"{siteType ?? "Unknown"} layout - no blueprint category recorded"
+            : $"{siteType} layout - {blueprint}";
+    }
+
+    private void NotifyGuardianGuidanceChanged()
+    {
+        OnPropertyChanged(nameof(AlignmentMode));
+        OnPropertyChanged(nameof(AlignmentTargetAltitude));
+        OnPropertyChanged(nameof(AlignmentOpacity));
+        OnPropertyChanged(nameof(IsAlignmentVisible));
+        OnPropertyChanged(nameof(AlignmentHeading));
+        OnPropertyChanged(nameof(AlignmentStatusText));
+        OnPropertyChanged(nameof(IsGlideApproach));
+        OnPropertyChanged(nameof(GlideApproachTitle));
+        OnPropertyChanged(nameof(GlideApproachText));
+        OnPropertyChanged(nameof(GlideApproachFooter));
     }
 
     private void SetLiveMapModeFromSurvey(bool forceMap = false)
@@ -2806,6 +3027,34 @@ public enum GuardianLiveMapMode
     Heading,
     Map,
     Origin,
+}
+
+public enum GuardianAlignmentMode
+{
+    Buttress,
+    RelicTower,
+    Alpha,
+    Beta,
+    Gamma,
+    Bear,
+    Bowl,
+    Crossroads,
+    Fistbump,
+    Hammerbot,
+    Lacrosse,
+    Robolobster,
+    Squid,
+    Stickyhand,
+    Turtle,
+}
+
+public sealed record GuardianAerialAltitudes(
+    double Alpha,
+    double Beta,
+    double Gamma)
+{
+    public static GuardianAerialAltitudes Default { get; } =
+        new(1_200, 1_550, 1_600);
 }
 
 public sealed class GuardianSiteRowViewModel(

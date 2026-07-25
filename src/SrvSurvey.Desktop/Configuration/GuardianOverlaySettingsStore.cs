@@ -43,7 +43,15 @@ public sealed class GuardianOverlaySettingsStore
             GetInteger(
                 settings,
                 "OverlaySizeIndex",
-                defaults.OverlaySizeIndex));
+                defaults.OverlaySizeIndex),
+            GetBoolean(
+                settings,
+                "DisableRuinsMeasurementGrid",
+                defaults.DisableRuinsMeasurementGrid),
+            GetBoolean(
+                settings,
+                "DisableAerialAlignmentGrid",
+                defaults.DisableAerialAlignmentGrid));
     }
 
     public void Save(GuardianOverlayPreferences preferences)
@@ -73,6 +81,10 @@ public sealed class GuardianOverlaySettingsStore
                 preferences.OverlaySizeIndex,
                 0,
                 4);
+            settings["DisableRuinsMeasurementGrid"] =
+                preferences.DisableRuinsMeasurementGrid;
+            settings["DisableAerialAlignmentGrid"] =
+                preferences.DisableAerialAlignmentGrid;
         });
     }
 
@@ -106,7 +118,9 @@ public sealed record GuardianOverlayPreferences(
     bool SuppressForActiveBuildProjects,
     bool AutoZoomNearObelisks,
     bool AutoZoomInSrvTurret,
-    int OverlaySizeIndex)
+    int OverlaySizeIndex,
+    bool DisableRuinsMeasurementGrid,
+    bool DisableAerialAlignmentGrid)
 {
     public static GuardianOverlayPreferences Default { get; } = new(
         EnableGuardianSites: true,
@@ -115,5 +129,7 @@ public sealed record GuardianOverlayPreferences(
         SuppressForActiveBuildProjects: false,
         AutoZoomNearObelisks: true,
         AutoZoomInSrvTurret: false,
-        OverlaySizeIndex: 0);
+        OverlaySizeIndex: 0,
+        DisableRuinsMeasurementGrid: false,
+        DisableAerialAlignmentGrid: false);
 }

@@ -152,6 +152,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     {
         if (eventArgs.PropertyName is nameof(GuardianViewModel.HasActiveSite)
             or nameof(GuardianViewModel.EnableGuardianSites)
+            or nameof(GuardianViewModel.ShouldShowLiveSiteOverlay)
             or nameof(GuardianViewModel.ShouldShowGuardianSystemSummary)
             or nameof(GuardianViewModel.ShouldShowRamTahOverlay))
         {
@@ -177,8 +178,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
         SynchronizeLiveSiteWindow(
             platformReady
-            && guardian.EnableGuardianSites
-            && guardian.HasActiveSite
+            && guardian.ShouldShowLiveSiteOverlay
             && !isObscured);
         SynchronizeSystemSummaryWindow(
             platformReady && guardian.ShouldShowGuardianSystemSummary);

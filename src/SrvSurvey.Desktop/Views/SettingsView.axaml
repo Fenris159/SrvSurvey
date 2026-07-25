@@ -403,6 +403,42 @@
               </ComboBox.ItemTemplate>
             </ComboBox>
           </Grid>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="eyebrow" Text="ALIGNMENT GUIDES" />
+              <CheckBox IsChecked="{Binding Guardian.ShowRuinsMeasurementGrid, Mode=TwoWay}"
+                        Content="Show the ruins heading-measurement guide" />
+              <CheckBox IsChecked="{Binding Guardian.ShowAerialAlignmentGrid, Mode=TwoWay}"
+                        Content="Show the aerial origin-alignment guide" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="8">
+              <TextBlock Classes="eyebrow" Text="RUINS AERIAL ALTITUDES" />
+              <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*"
+                    ColumnSpacing="8">
+                <TextBlock VerticalAlignment="Center" Text="A" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="0"
+                               Maximum="5000"
+                               Increment="10"
+                               FormatString="0"
+                               Value="{Binding ScreenshotProcessing.AerialAltitudeAlpha, Mode=TwoWay}" />
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="B" />
+                <NumericUpDown Grid.Column="3"
+                               Minimum="0"
+                               Maximum="5000"
+                               Increment="10"
+                               FormatString="0"
+                               Value="{Binding ScreenshotProcessing.AerialAltitudeBeta, Mode=TwoWay}" />
+                <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="G" />
+                <NumericUpDown Grid.Column="5"
+                               Minimum="0"
+                               Maximum="5000"
+                               Increment="10"
+                               FormatString="0"
+                               Value="{Binding ScreenshotProcessing.AerialAltitudeGamma, Mode=TwoWay}" />
+              </Grid>
+            </StackPanel>
+          </Grid>
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="{Binding Guardian.HasOverlaySettingsStatus}"
                      TextWrapping="Wrap"

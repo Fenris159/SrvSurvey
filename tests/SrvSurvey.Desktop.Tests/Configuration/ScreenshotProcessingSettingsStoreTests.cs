@@ -37,6 +37,7 @@ public sealed class ScreenshotProcessingSettingsStoreTests : IDisposable
         Assert.Equal(preferences, store.Load());
         var root = Assert.IsType<JsonObject>(JsonNode.Parse(File.ReadAllText(path)));
         Assert.Equal(42, root["Future"]?.GetValue<int>());
+        Assert.True(root["Screenshots"]?["FutureOption"]?.GetValue<bool>());
     }
 
     [Fact]

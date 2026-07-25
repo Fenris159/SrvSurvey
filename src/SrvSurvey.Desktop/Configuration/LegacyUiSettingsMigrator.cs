@@ -123,6 +123,8 @@ public sealed class LegacyUiSettingsMigrator
                     ("autoZoomGuardianNearObelisks", "AutoZoomNearObelisks"),
                     ("autoZoomGuardianInTurret", "AutoZoomInSrvTurret"),
                     ("idxGuardianPlotter", "OverlaySizeIndex"),
+                    ("disableRuinsMeasurementGrid", "DisableRuinsMeasurementGrid"),
+                    ("disableAerialAlignmentGrid", "DisableAerialAlignmentGrid"),
                 ]);
                 mappedCount += MapSection(legacy, root, "HumanSite",
                 [

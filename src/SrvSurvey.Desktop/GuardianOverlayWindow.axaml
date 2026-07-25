@@ -63,6 +63,32 @@
             PresentBrush="{DynamicResource RavenSuccessBrush}"
             AbsentBrush="{DynamicResource RavenDangerBrush}"
             EmptyBrush="{DynamicResource RavenWarningBrush}" />
+        <controls:GuardianAlignmentControl
+            Margin="10"
+            Mode="{Binding Guardian.AlignmentMode}"
+            GuideBrush="{DynamicResource RavenWarningBrush}"
+            ShadowBrush="{DynamicResource RavenWindowBrush}"
+            Opacity="{Binding Guardian.AlignmentOpacity}"
+            IsVisible="{Binding Guardian.IsAlignmentVisible}" />
+        <Border Margin="18"
+                Padding="16"
+                Classes="card raised"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                IsVisible="{Binding Guardian.IsGlideApproach}">
+          <StackPanel MaxWidth="440" Spacing="6">
+            <TextBlock Classes="eyebrow"
+                       Text="{Binding Guardian.GlideApproachTitle}" />
+            <TextBlock FontSize="16"
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap"
+                       Text="{Binding Guardian.GlideApproachText}" />
+            <TextBlock Classes="muted"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Text="{Binding Guardian.GlideApproachFooter}" />
+          </StackPanel>
+        </Border>
         <Border Margin="22"
                 Padding="18"
                 Classes="card raised"
@@ -74,6 +100,10 @@
                        Text="{Binding Guardian.LiveMapPromptTitle}" />
             <TextBlock TextWrapping="Wrap"
                        Text="{Binding Guardian.LiveMapPromptText}" />
+            <TextBlock Classes="monospace"
+                       FontSize="11"
+                       IsVisible="{Binding Guardian.IsAlignmentVisible}"
+                       Text="{Binding Guardian.AlignmentStatusText}" />
           </StackPanel>
         </Border>
       </Grid>

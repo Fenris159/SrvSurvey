@@ -90,6 +90,33 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         set => Update(preferences with { BannerLocalTime = value });
     }
 
+    public double AerialAltitudeAlpha
+    {
+        get => preferences.AerialAltitudeAlpha;
+        set => Update(preferences with
+        {
+            AerialAltitudeAlpha = NormalizeAerialAltitude(value),
+        });
+    }
+
+    public double AerialAltitudeBeta
+    {
+        get => preferences.AerialAltitudeBeta;
+        set => Update(preferences with
+        {
+            AerialAltitudeBeta = NormalizeAerialAltitude(value),
+        });
+    }
+
+    public double AerialAltitudeGamma
+    {
+        get => preferences.AerialAltitudeGamma;
+        set => Update(preferences with
+        {
+            AerialAltitudeGamma = NormalizeAerialAltitude(value),
+        });
+    }
+
     public string StatusMessage
     {
         get => statusMessage;
@@ -180,6 +207,11 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         }
 
         return "New Elite BMP screenshots will be converted to verified PNG files.";
+    }
+
+    private static double NormalizeAerialAltitude(double value)
+    {
+        return double.IsFinite(value) ? Math.Clamp(value, 0, 5_000) : 0;
     }
 
     private bool SetField<T>(
