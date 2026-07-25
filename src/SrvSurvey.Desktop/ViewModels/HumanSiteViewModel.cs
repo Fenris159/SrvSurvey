@@ -20,8 +20,10 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private readonly HumanSiteMapProjector mapProjector;
     private readonly HumanSiteNavigation navigation;
     private readonly HumanSiteVehicleTracker vehicleTracker = new();
+    private readonly HumanSiteActivityTracker activityTracker = new();
     private readonly HumanSiteSettingsStore? settingsStore;
     private readonly HumanSiteKnowledgeStore? knowledgeStore;
+    private readonly HumanSiteMaterialStore? materialStore;
     private EliteStatus? status;
     private string? frontierId;
     private string? commanderName;
@@ -30,6 +32,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private GalacticCoordinate? starPosition;
     private string? vehicle;
     private string? loadedSiteKey;
+    private string? loadedMaterialSiteKey;
     private bool activeBuildProjects;
     private bool stationInfoVisible;
     private bool autoZoom = true;
@@ -49,6 +52,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private bool showBatteries;
     private bool showDataTerminals;
     private bool showCollectedMaterials;
+    private bool trackMaterialCollection;
     private bool suppressForActiveBuildProjects;
     private string statusMessage = "Waiting to approach a human settlement.";
     private string settingsStatus = string.Empty;
@@ -56,10 +60,12 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     public HumanSiteViewModel(
         HumanSiteSettingsStore? settingsStore = null,
         HumanSiteKnowledgeStore? knowledgeStore = null,
+        HumanSiteMaterialStore? materialStore = null,
         HumanSiteTemplateCatalog? templateCatalog = null)
     {
         this.settingsStore = settingsStore;
         this.knowledgeStore = knowledgeStore;
+        this.materialStore = materialStore;
         var templates = templateCatalog
             ?? HumanSiteTemplateCatalog.LoadEmbedded();
         state = new HumanSiteLiveState(templates);
@@ -81,6 +87,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         showBatteries = preferences.ShowBatteries;
         showDataTerminals = preferences.ShowDataTerminals;
         showCollectedMaterials = preferences.ShowCollectedMaterials;
+        trackMaterialCollection = preferences.TrackMaterialCollection;
         suppressForActiveBuildProjects =
             preferences.SuppressForActiveBuildProjects;
         zoom = shipZoom;
@@ -161,6 +168,26 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     public bool HasDockingStatus => !string.IsNullOrWhiteSpace(DockingStatusText);
 
     public HumanSiteMapPoint? CommanderOffset { get; private set; }
+
+    public IReadOnlySet<int> ProcessedTerminalIndexes =>
+        activityTracker.ProcessedTerminalIndexes;
+
+    public IReadOnlyList<HumanSiteMapPoint> ProcessedTerminalOffsets =>
+        ActiveSite?.Template is { } template
+            ? activityTracker.ProcessedTerminalIndexes
+                .Where(index => index >= 0
+                    && index < template.DataTerminals.Count)
+                .Select(index => template.DataTerminals[index].Offset)
+                .ToArray()
+            : [];
+
+    public IReadOnlyList<HumanSiteCollectedMaterial> CollectedMaterials =>
+        ShowCollectedMaterials
+            ? activityTracker.CollectedMaterials
+            : [];
+
+    public int CollectedMaterialLocationCount =>
+        activityTracker.CollectedMaterials.Count;
 
     public HumanSiteMapPoint? ShipOffset { get; private set; }
 
@@ -291,7 +318,20 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     public bool ShowCollectedMaterials
     {
         get => showCollectedMaterials;
-        set => SetPreference(ref showCollectedMaterials, value);
+        set
+        {
+            if (SetField(ref showCollectedMaterials, value))
+            {
+                SavePreferences();
+                OnPropertyChanged(nameof(CollectedMaterials));
+            }
+        }
+    }
+
+    public bool TrackMaterialCollection
+    {
+        get => trackMaterialCollection;
+        set => SetPreference(ref trackMaterialCollection, value);
     }
 
     public bool SuppressForActiveBuildProjects
@@ -364,6 +404,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                 StringComparison.OrdinalIgnoreCase))
         {
             loadedSiteKey = null;
+            loadedMaterialSiteKey = null;
         }
 
         frontierId = currentFrontierId;
@@ -386,6 +427,9 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
         vehicle = currentVehicle ?? vehicle;
         var versionBefore = state.Version;
+        var source = HumanSiteGeometrySource.Unknown;
+        var addedMaterials = new List<HumanSiteCollectedMaterial>();
+        var completeMaterialSurvey = false;
         foreach (var journalEvent in journalEvents)
         {
             state.Apply(journalEvent);
@@ -395,14 +439,50 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             {
                 await LoadKnowledgeAsync();
             }
+
+            var inferredSource = TryInferGeometry();
+            if (inferredSource != HumanSiteGeometrySource.Unknown)
+            {
+                source = inferredSource;
+            }
+
+            var activity = activityTracker.Apply(
+                journalEvent,
+                state.CurrentSite,
+                status,
+                TrackMaterialCollection);
+            addedMaterials.AddRange(activity.AddedMaterials);
+            if (journalEvent.EventName == "ApproachSettlement"
+                && state.CurrentSite is not null)
+            {
+                await LoadMaterialSurveyAsync();
+            }
+
+            completeMaterialSurvey |= IsStopMaterialSurveyCommand(journalEvent);
         }
 
         if (state.CurrentSite is null)
         {
             loadedSiteKey = null;
+            loadedMaterialSiteKey = null;
         }
 
-        var source = TryInferGeometry();
+        var finalSource = TryInferGeometry();
+        if (finalSource != HumanSiteGeometrySource.Unknown)
+        {
+            source = finalSource;
+        }
+
+        if (addedMaterials.Count > 0)
+        {
+            await SaveMaterialActivityAsync(addedMaterials);
+        }
+
+        if (completeMaterialSurvey)
+        {
+            await CompleteMaterialSurveyAsync();
+        }
+
         UpdateNavigation();
         if (AutoZoom)
         {
@@ -655,6 +735,118 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         }
     }
 
+    private async Task LoadMaterialSurveyAsync()
+    {
+        if (materialStore is null
+            || ActiveSite is not { } site
+            || CreateMaterialContext(site) is not { } context)
+        {
+            return;
+        }
+
+        var key = $"{site.SystemAddress}/{site.MarketId}";
+        if (string.Equals(key, loadedMaterialSiteKey, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        loadedMaterialSiteKey = key;
+        try
+        {
+            var result = await materialStore.LoadActiveAsync(context);
+            if (result.Survey is { } survey)
+            {
+                activityTracker.ReplaceCollectedMaterials(survey.Materials);
+            }
+
+            if (result.Error is not null)
+            {
+                StatusMessage = result.Error;
+            }
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            StatusMessage =
+                $"Settlement material survey could not be loaded: {exception.Message}";
+        }
+    }
+
+    private async Task SaveMaterialActivityAsync(
+        IReadOnlyList<HumanSiteCollectedMaterial> materials)
+    {
+        if (materialStore is null
+            || !TrackMaterialCollection
+            || ActiveSite is not { } site
+            || CreateMaterialContext(site) is not { } context)
+        {
+            return;
+        }
+
+        try
+        {
+            await materialStore.AppendAsync(context, materials);
+            StatusMessage =
+                $"Recorded {materials.Count:N0} settlement material location(s).";
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            StatusMessage =
+                $"Settlement material survey could not be saved: {exception.Message}";
+        }
+    }
+
+    private async Task CompleteMaterialSurveyAsync()
+    {
+        if (materialStore is null
+            || !TrackMaterialCollection
+            || ActiveSite is not { } site
+            || CreateMaterialContext(site) is not { } context)
+        {
+            return;
+        }
+
+        try
+        {
+            await materialStore.CompleteAsync(context);
+            loadedMaterialSiteKey = null;
+            StatusMessage = "Settlement material survey completed.";
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            StatusMessage =
+                $"Settlement material survey could not be completed: {exception.Message}";
+        }
+    }
+
+    private HumanSiteMaterialContext? CreateMaterialContext(
+        HumanSiteLiveSnapshot site)
+    {
+        return !string.IsNullOrWhiteSpace(frontierId)
+            ? new HumanSiteMaterialContext(frontierId, site)
+            : null;
+    }
+
+    private static bool IsStopMaterialSurveyCommand(
+        JournalEventEnvelope journalEvent)
+    {
+        return journalEvent.EventName == "SendText"
+            && journalEvent.Payload.TryGetProperty("Message", out var message)
+            && message.ValueKind == System.Text.Json.JsonValueKind.String
+            && string.Equals(
+                message.GetString()?.Trim(),
+                ".stop",
+                StringComparison.OrdinalIgnoreCase);
+    }
+
     private HumanSiteKnowledgeContext? CreateKnowledgeContext()
     {
         return !string.IsNullOrWhiteSpace(frontierId)
@@ -823,6 +1015,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                 ShowBatteries,
                 ShowDataTerminals,
                 ShowCollectedMaterials,
+                TrackMaterialCollection,
                 SuppressForActiveBuildProjects));
             SettingsStatus = string.Empty;
         }
@@ -853,6 +1046,10 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(DockingStatusText));
         OnPropertyChanged(nameof(HasDockingStatus));
         OnPropertyChanged(nameof(CommanderOffset));
+        OnPropertyChanged(nameof(ProcessedTerminalIndexes));
+        OnPropertyChanged(nameof(ProcessedTerminalOffsets));
+        OnPropertyChanged(nameof(CollectedMaterials));
+        OnPropertyChanged(nameof(CollectedMaterialLocationCount));
         OnPropertyChanged(nameof(ShipOffset));
         OnPropertyChanged(nameof(SrvOffset));
         OnPropertyChanged(nameof(HasShipDeparted));

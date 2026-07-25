@@ -41,6 +41,10 @@ public sealed class HumanSiteSettingsStore
                 defaults.ShowCollectedMaterials),
             GetBoolean(
                 settings,
+                "TrackMaterialCollection",
+                defaults.TrackMaterialCollection),
+            GetBoolean(
+                settings,
                 "SuppressForActiveBuildProjects",
                 defaults.SuppressForActiveBuildProjects));
     }
@@ -73,6 +77,8 @@ public sealed class HumanSiteSettingsStore
             settings["ShowDataTerminals"] = preferences.ShowDataTerminals;
             settings["ShowCollectedMaterials"] =
                 preferences.ShowCollectedMaterials;
+            settings["TrackMaterialCollection"] =
+                preferences.TrackMaterialCollection;
             settings["SuppressForActiveBuildProjects"] =
                 preferences.SuppressForActiveBuildProjects;
         });
@@ -132,6 +138,7 @@ public sealed record HumanSitePreferences(
     bool ShowBatteries,
     bool ShowDataTerminals,
     bool ShowCollectedMaterials,
+    bool TrackMaterialCollection,
     bool SuppressForActiveBuildProjects)
 {
     public static HumanSitePreferences Default { get; } = new(
@@ -149,5 +156,6 @@ public sealed record HumanSitePreferences(
         ShowBatteries: true,
         ShowDataTerminals: true,
         ShowCollectedMaterials: true,
+        TrackMaterialCollection: false,
         SuppressForActiveBuildProjects: true);
 }

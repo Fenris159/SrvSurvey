@@ -69,6 +69,8 @@
             SrvOffset="{Binding HumanSite.SrvOffset}"
             HasShipDeparted="{Binding HumanSite.HasShipDeparted}"
             ShowShipDismissalBoundary="{Binding HumanSite.ShowShipDismissalBoundary}"
+            ProcessedTerminalOffsets="{Binding HumanSite.ProcessedTerminalOffsets}"
+            CollectedMaterials="{Binding HumanSite.CollectedMaterials}"
             CommanderHeading="{Binding HumanSite.RelativeHeading}"
             ScaleMultiplier="{Binding HumanSite.Zoom}"
             ShowOriginWarning="{Binding HumanSite.ShowOriginWarning}"

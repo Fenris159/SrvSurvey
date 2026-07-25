@@ -27,6 +27,12 @@ public sealed class HumanSiteMapControl : Control
     public static readonly StyledProperty<bool> ShowShipDismissalBoundaryProperty =
         AvaloniaProperty.Register<HumanSiteMapControl, bool>(
             nameof(ShowShipDismissalBoundary));
+    public static readonly StyledProperty<IReadOnlyList<HumanSiteMapPoint>?> ProcessedTerminalOffsetsProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, IReadOnlyList<HumanSiteMapPoint>?>(
+            nameof(ProcessedTerminalOffsets));
+    public static readonly StyledProperty<IReadOnlyList<HumanSiteCollectedMaterial>?> CollectedMaterialsProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, IReadOnlyList<HumanSiteCollectedMaterial>?>(
+            nameof(CollectedMaterials));
     public static readonly StyledProperty<double> CommanderHeadingProperty =
         AvaloniaProperty.Register<HumanSiteMapControl, double>(
             nameof(CommanderHeading));
@@ -71,6 +77,8 @@ public sealed class HumanSiteMapControl : Control
             SrvOffsetProperty,
             HasShipDepartedProperty,
             ShowShipDismissalBoundaryProperty,
+            ProcessedTerminalOffsetsProperty,
+            CollectedMaterialsProperty,
             CommanderHeadingProperty,
             ScaleMultiplierProperty,
             ShowOriginWarningProperty,
@@ -119,6 +127,18 @@ public sealed class HumanSiteMapControl : Control
     {
         get => GetValue(ShowShipDismissalBoundaryProperty);
         set => SetValue(ShowShipDismissalBoundaryProperty, value);
+    }
+
+    public IReadOnlyList<HumanSiteMapPoint>? ProcessedTerminalOffsets
+    {
+        get => GetValue(ProcessedTerminalOffsetsProperty);
+        set => SetValue(ProcessedTerminalOffsetsProperty, value);
+    }
+
+    public IReadOnlyList<HumanSiteCollectedMaterial>? CollectedMaterials
+    {
+        get => GetValue(CollectedMaterialsProperty);
+        set => SetValue(CollectedMaterialsProperty, value);
     }
 
     public double CommanderHeading
@@ -235,9 +255,16 @@ public sealed class HumanSiteMapControl : Control
             DrawNamedPoint(context, point, center, commander, scale);
         }
 
-        foreach (var terminal in projection.DataTerminals)
+        for (var index = 0; index < projection.DataTerminals.Count; index++)
         {
-            DrawTerminal(context, terminal, center, commander, scale);
+            DrawTerminal(
+                context,
+                projection.DataTerminals[index],
+                ProcessedTerminalOffsets?.Contains(
+                    projection.DataTerminals[index].Offset) == true,
+                center,
+                commander,
+                scale);
         }
 
         foreach (var point in projection.ConflictZonePoints)
@@ -246,6 +273,7 @@ public sealed class HumanSiteMapControl : Control
         }
 
         DrawVehicleMarkers(context, center, commander, scale);
+        DrawCollectedMaterials(context, center, commander, scale);
         DrawCommander(context, center);
         if (ShowOriginWarning)
         {
@@ -518,12 +546,15 @@ public sealed class HumanSiteMapControl : Control
     private void DrawTerminal(
         DrawingContext context,
         HumanSiteProjectedPoint terminal,
+        bool processed,
         Point center,
         HumanSiteMapPoint commander,
         double scale)
     {
         var location = Transform(terminal.Offset, center, commander, scale);
-        var brush = GetSecurityBrush(terminal.SecurityLevel);
+        var brush = processed
+            ? MutedBrush ?? Brushes.DimGray
+            : GetSecurityBrush(terminal.SecurityLevel);
         var radius = Math.Clamp(3 * scale, 3, 9);
         context.DrawRectangle(
             null,
@@ -540,6 +571,39 @@ public sealed class HumanSiteMapControl : Control
             new Point(location.X - radius / 2, location.Y),
             new Point(location.X + radius / 2, location.Y));
         DrawFloorChevron(context, location, terminal.Floor);
+    }
+
+    private void DrawCollectedMaterials(
+        DrawingContext context,
+        Point center,
+        HumanSiteMapPoint commander,
+        double scale)
+    {
+        if (CollectedMaterials is null)
+        {
+            return;
+        }
+
+        var brush = TextBrush ?? Brushes.White;
+        foreach (var material in CollectedMaterials)
+        {
+            if (!material.Offset.IsFinite)
+            {
+                continue;
+            }
+
+            var location = Transform(
+                material.Offset,
+                center,
+                commander,
+                scale);
+            context.DrawEllipse(
+                MapBackground,
+                new Pen(brush, 1.25),
+                location,
+                2.5,
+                2.5);
+        }
     }
 
     private void DrawConflictZonePoint(

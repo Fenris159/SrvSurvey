@@ -221,6 +221,8 @@
                         Content="Show data terminals" />
               <CheckBox IsChecked="{Binding HumanSite.ShowCollectedMaterials, Mode=TwoWay}"
                         Content="Show collected materials" />
+              <CheckBox IsChecked="{Binding HumanSite.TrackMaterialCollection, Mode=TwoWay}"
+                        Content="Record material collection surveys" />
               <CheckBox IsChecked="{Binding HumanSite.AutoZoomInside, Mode=TwoWay}"
                         Content="Zoom automatically inside buildings" />
               <CheckBox IsChecked="{Binding HumanSite.AutoZoomTool, Mode=TwoWay}"

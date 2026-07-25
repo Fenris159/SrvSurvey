@@ -1,6 +1,7 @@
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Settlements;
+using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -213,6 +214,109 @@ public sealed class HumanSiteViewModelTests
         Assert.True(viewModel.HasShipDeparted);
         Assert.False(viewModel.ShowShipDismissalBoundary);
         Assert.False(viewModel.ShowShipDismissalWarning);
+    }
+
+    [Fact]
+    public async Task SettlementActivityProcessesTerminalPersistsDotsAndCompletesSurvey()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-human-activity-view-model-{Guid.NewGuid():N}");
+        try
+        {
+            const double radius = 6_000_000;
+            const double siteHeading = 231;
+            var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
+            var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
+            var origin = new SurfaceCoordinate(-12.5, 44.25);
+            var pad = Assert.Single(template.LandingPads);
+            var padHeading = SurfaceNavigation.NormalizeDegrees(
+                siteHeading + pad.Rotation);
+            var padLocation = HumanSiteNavigation.GetSurfaceLocation(
+                origin,
+                pad.Offset,
+                radius,
+                siteHeading);
+            var viewModel = new HumanSiteViewModel(
+                materialStore: new HumanSiteMaterialStore(root),
+                templateCatalog: catalog);
+            viewModel.UpdateContext(
+                "F123",
+                "Drew",
+                "Test",
+                42,
+                null);
+            viewModel.TrackMaterialCollection = true;
+            await viewModel.ApplyUpdateAsync(
+                [
+                    Parse(Approach(
+                        economy: "$economy_Extraction;",
+                        economyLocalized: "Extraction",
+                        latitude: origin.Latitude,
+                        longitude: origin.Longitude)),
+                    Parse(
+                        """
+                        {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
+                        """),
+                ],
+                OnFootStatus(
+                    padLocation.Latitude,
+                    padLocation.Longitude,
+                    (int)Math.Round(padHeading)) with
+                {
+                    PlanetRadius = (decimal)radius,
+                },
+                "foot");
+            var terminal = template.DataTerminals[0];
+            var terminalLocation = HumanSiteNavigation.GetSurfaceLocation(
+                origin,
+                terminal.Offset,
+                radius,
+                siteHeading);
+
+            await viewModel.ApplyUpdateAsync(
+                [
+                    Parse(
+                        """
+                        {"event":"BackpackChange","Added":[{"Name":"opinionpolls","Name_Localised":"Opinion Polls","Count":1,"Type":"Data"}]}
+                        """),
+                ],
+                OnFootStatus(
+                    terminalLocation.Latitude,
+                    terminalLocation.Longitude,
+                    (int)siteHeading) with
+                {
+                    PlanetRadius = (decimal)radius,
+                },
+                "foot");
+
+            Assert.Contains(terminal.Offset, viewModel.ProcessedTerminalOffsets);
+            Assert.Single(viewModel.CollectedMaterials);
+            Assert.Equal(1, viewModel.CollectedMaterialLocationCount);
+            var context = new HumanSiteMaterialContext(
+                "F123",
+                viewModel.ActiveSite!);
+            var store = new HumanSiteMaterialStore(root);
+            var saved = await store.LoadActiveAsync(context);
+            Assert.True(saved.IsActive);
+            Assert.Single(saved.Survey!.Materials);
+
+            await viewModel.ApplyUpdateAsync(
+                [Parse("""{"event":"SendText","Message":".stop"}""")],
+                null,
+                "foot");
+
+            Assert.Equal("Settlement material survey completed.",
+                viewModel.StatusMessage);
+            Assert.False((await store.LoadActiveAsync(context)).Exists);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
     }
 
     private static EliteStatus OnFootStatus(

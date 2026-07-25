@@ -169,7 +169,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         HumanSite = new HumanSiteViewModel(
             humanSiteSettingsStore
                 ?? new HumanSiteSettingsStore(AppDataPaths.UiSettingsPath),
-            new HumanSiteKnowledgeStore(AppDataPaths.DataDirectory));
+            new HumanSiteKnowledgeStore(AppDataPaths.DataDirectory),
+            new HumanSiteMaterialStore(AppDataPaths.DataDirectory));
         SystemSurvey = new SystemSurveyViewModel(
             systemSurveySettingsStore
                 ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath));

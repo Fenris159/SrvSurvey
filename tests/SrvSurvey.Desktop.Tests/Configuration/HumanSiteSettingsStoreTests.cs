@@ -20,6 +20,7 @@ public sealed class HumanSiteSettingsStoreTests : IDisposable
         Assert.Equal(600, settings.Height);
         Assert.Equal(1.5, settings.SrvZoom);
         Assert.Equal(6, settings.ToolZoom);
+        Assert.False(settings.TrackMaterialCollection);
     }
 
     [Fact]
@@ -35,6 +36,7 @@ public sealed class HumanSiteSettingsStoreTests : IDisposable
             Height = 800,
             ShipZoom = 1.2,
             ShowMedkits = false,
+            TrackMaterialCollection = true,
             SuppressForActiveBuildProjects = false,
         };
 
