@@ -25,6 +25,29 @@ public sealed class CommanderCodexStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task DiscoversOnlyGlobalCommanderLedgers()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(temporaryDirectory, "F2-codex.json"),
+            """{"fid":"F2","commander":"Zulu","codexFirsts":{}}""");
+        await File.WriteAllTextAsync(
+            Path.Combine(temporaryDirectory, "F1-codex.json"),
+            """{"fid":"F1","commander":"Alpha","codexFirsts":{}}""");
+        await File.WriteAllTextAsync(
+            Path.Combine(temporaryDirectory, "F1-codex-18.json"),
+            """{"fid":"F1","commander":"Alpha","codexFirsts":{}}""");
+        var store = new CommanderCodexStore(temporaryDirectory);
+
+        var result = await store.DiscoverCommandersAsync();
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(["F1", "F2"],
+            result.Commanders.Select(commander => commander.FrontierId));
+        Assert.Equal("Alpha", result.Commanders[0].CommanderName);
+    }
+
+    [Fact]
     public async Task LoadsLegacyStringsAndIsolatesMalformedEntries()
     {
         Directory.CreateDirectory(temporaryDirectory);

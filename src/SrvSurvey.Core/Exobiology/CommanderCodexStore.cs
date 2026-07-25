@@ -87,6 +87,65 @@ public sealed class CommanderCodexStore(string dataDirectory)
         }
     }
 
+    public async Task<CommanderCodexCommanderCatalogResult>
+        DiscoverCommandersAsync(CancellationToken cancellationToken = default)
+    {
+        if (!Directory.Exists(dataDirectory))
+        {
+            return new CommanderCodexCommanderCatalogResult([], []);
+        }
+
+        FileInfo[] files;
+        try
+        {
+            files = new DirectoryInfo(dataDirectory)
+                .EnumerateFiles("*-codex.json", SearchOption.TopDirectoryOnly)
+                .OrderBy(file => file.Name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            return new CommanderCodexCommanderCatalogResult(
+                [],
+                [exception.Message]);
+        }
+
+        var commanders = new List<CommanderCodexData>();
+        var warnings = new List<string>();
+        const string suffix = "-codex.json";
+        foreach (var file in files)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var frontierId = file.Name[..^suffix.Length];
+            var loaded = await LoadAsync(
+                    frontierId,
+                    null,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            if (loaded.Data is not null)
+            {
+                commanders.Add(loaded.Data);
+            }
+
+            warnings.AddRange(loaded.Warnings.Select(warning =>
+                $"{file.Name}: {warning}"));
+        }
+
+        return new CommanderCodexCommanderCatalogResult(
+            commanders
+                .GroupBy(
+                    commander => commander.FrontierId,
+                    StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.First())
+                .OrderBy(
+                    commander => commander.CommanderName
+                        ?? commander.FrontierId,
+                    StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            warnings);
+    }
+
     public async Task<CommanderCodexTrackResult> TrackAsync(
         string frontierId,
         string? commanderName,
@@ -565,6 +624,13 @@ public sealed record CommanderCodexLoadResult(
     {
         return new CommanderCodexLoadResult(path, true, null, [error]);
     }
+}
+
+public sealed record CommanderCodexCommanderCatalogResult(
+    IReadOnlyList<CommanderCodexData> Commanders,
+    IReadOnlyList<string> Warnings)
+{
+    public bool IsSuccess => Warnings.Count == 0;
 }
 
 public sealed record CommanderCodexTrackResult(
