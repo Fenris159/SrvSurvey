@@ -24,6 +24,12 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
     private string relativeHeading = Unavailable;
     private string approachAngle = Unavailable;
     private string approachStatus = "Waiting for surface status";
+    private string targetCoordinates = Unavailable;
+    private string descentAngle = Unavailable;
+    private double relativeBearingDegrees;
+    private double attackAngleDegrees;
+    private bool isStatusEligible;
+    private GroundTargetApproach? approach;
 
     public GroundTargetViewModel(GroundTargetSettingsStore settingsStore)
     {
@@ -108,9 +114,47 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         private set => SetField(ref approachStatus, value);
     }
 
+    public string TargetCoordinates
+    {
+        get => targetCoordinates;
+        private set => SetField(ref targetCoordinates, value);
+    }
+
+    public string DescentAngle
+    {
+        get => descentAngle;
+        private set => SetField(ref descentAngle, value);
+    }
+
+    public double RelativeBearingDegrees
+    {
+        get => relativeBearingDegrees;
+        private set => SetField(ref relativeBearingDegrees, value);
+    }
+
+    public double AttackAngleDegrees
+    {
+        get => attackAngleDegrees;
+        private set => SetField(ref attackAngleDegrees, value);
+    }
+
     public bool IsTargetActive => state.IsActive;
 
     public string TargetStatusLabel => state.IsActive ? "ACTIVE" : "INACTIVE";
+
+    public bool ShouldShow => state.IsActive
+        && state.Solution is not null
+        && isStatusEligible;
+
+    public bool HasLevelApproach => approach == GroundTargetApproach.Level;
+
+    public bool HasShallowApproach => approach == GroundTargetApproach.Shallow;
+
+    public bool HasIdealApproach => approach == GroundTargetApproach.Ideal;
+
+    public bool HasSteepApproach => approach == GroundTargetApproach.Steep;
+
+    public bool HasTooSteepApproach => approach == GroundTargetApproach.TooSteep;
 
     public ICommand SetTargetCommand { get; }
 
@@ -121,6 +165,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
     public void UpdateStatus(EliteStatus status)
     {
         state.UpdateStatus(status);
+        isStatusEligible = IsOverlayStatusEligible(status);
         useCurrentLocationCommand.RaiseCanExecuteChanged();
         UpdateDisplay();
     }
@@ -201,8 +246,12 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         CurrentCoordinates = state.CurrentLocation is SurfaceCoordinate current
             ? $"{current.Latitude:F6}, {current.Longitude:F6}"
             : Unavailable;
+        TargetCoordinates = state.IsActive
+            ? $"{state.Target.Latitude:F6}, {state.Target.Longitude:F6}"
+            : Unavailable;
         OnPropertyChanged(nameof(IsTargetActive));
         OnPropertyChanged(nameof(TargetStatusLabel));
+        OnPropertyChanged(nameof(ShouldShow));
         ((AsyncCommand)ClearTargetCommand).RaiseCanExecuteChanged();
 
         var solution = state.Solution;
@@ -212,9 +261,14 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
             TargetBearing = Unavailable;
             RelativeHeading = Unavailable;
             ApproachAngle = Unavailable;
+            DescentAngle = Unavailable;
+            RelativeBearingDegrees = 0;
+            AttackAngleDegrees = 0;
+            approach = null;
             ApproachStatus = state.IsActive
                 ? "Move to a body surface to begin guidance"
                 : "Set a target to begin guidance";
+            RaiseApproachPropertiesChanged();
             return;
         }
 
@@ -222,6 +276,10 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         TargetBearing = $"{solution.Bearing:N0}°";
         RelativeHeading = $"{solution.RelativeBearing:N0}° relative";
         ApproachAngle = $"{solution.AttackAngle:N0}°";
+        DescentAngle = $"-{solution.AttackAngle:N0}°";
+        RelativeBearingDegrees = solution.RelativeBearing;
+        AttackAngleDegrees = solution.AttackAngle;
+        approach = solution.Approach;
         ApproachStatus = solution.Approach switch
         {
             GroundTargetApproach.Level => "Level with target",
@@ -231,6 +289,39 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
             GroundTargetApproach.TooSteep => "Too steep",
             _ => solution.Approach.ToString(),
         };
+        RaiseApproachPropertiesChanged();
+    }
+
+    private void RaiseApproachPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(HasLevelApproach));
+        OnPropertyChanged(nameof(HasShallowApproach));
+        OnPropertyChanged(nameof(HasIdealApproach));
+        OnPropertyChanged(nameof(HasSteepApproach));
+        OnPropertyChanged(nameof(HasTooSteepApproach));
+    }
+
+    private static bool IsOverlayStatusEligible(EliteStatus status)
+    {
+        if (!status.HasLatitudeLongitude
+            || status.PlanetRadius <= 0
+            || status.InTaxi)
+        {
+            return false;
+        }
+
+        if (status.GuiFocus != GuiFocus.NoFocus)
+        {
+            return status.GuiFocus == GuiFocus.CommsPanel;
+        }
+
+        return status.Flags.HasFlag(StatusFlags.Supercruise)
+            || status.InMainShip
+            || status.Landed
+            || status.InSrv
+            || status.OnFoot
+            || status.GlideMode
+            || status.InFighter;
     }
 
     private static string FormatDistance(double distance)
