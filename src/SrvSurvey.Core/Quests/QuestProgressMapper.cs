@@ -13,9 +13,10 @@ public static class QuestProgressMapper
             Publisher = progress.Reference.Publisher,
             Id = progress.Reference.Id,
             Version = progress.Reference.Version,
-            Quest = progress.Definition is null
-                ? null
-                : FromLegacy(progress.Definition),
+            Quest = progress.PortableDefinition
+                ?? (progress.Definition is null
+                    ? null
+                    : FromLegacy(progress.Definition)),
             Objectives = progress.Objectives.ToDictionary(
                 pair => pair.Key,
                 pair => FormatObjective(pair.Value),

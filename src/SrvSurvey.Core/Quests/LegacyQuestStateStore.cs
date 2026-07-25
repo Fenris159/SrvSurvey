@@ -3,11 +3,25 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace SrvSurvey.Core.Quests;
 
 public sealed class LegacyQuestStateStore
 {
+    private static readonly JsonSerializerOptions PortableJsonOptions = new()
+    {
+        AllowTrailingCommas = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        PropertyNameCaseInsensitive = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters =
+        {
+            new JsonStringEnumConverter(),
+        },
+    };
+
     private readonly SemaphoreSlim saveLock = new(1, 1);
     private readonly string questDirectory;
 
@@ -70,12 +84,21 @@ public sealed class LegacyQuestStateStore
                 }
                 else
                 {
-                    var definition = LoadDefinition(reference, warnings);
+                    var portableDefinition = ParsePortableDefinition(
+                        progress["quest"],
+                        reference,
+                        warnings);
+                    var definition = portableDefinition is null
+                        ? LoadDefinition(reference, warnings)
+                        : null;
                     devQuest = ParseProgress(
                         reference,
                         definition,
                         progress,
-                        warnings);
+                        warnings) with
+                    {
+                        PortableDefinition = portableDefinition,
+                    };
                 }
             }
             else if (reference is not null)
@@ -195,6 +218,17 @@ public sealed class LegacyQuestStateStore
         RavenCommanderQuest progress)
     {
         MergeExtensionData(root, progress.ExtensionData);
+        if (progress.Quest is null)
+        {
+            root.Remove("quest");
+        }
+        else
+        {
+            root["quest"] = JsonSerializer.SerializeToNode(
+                progress.Quest,
+                PortableJsonOptions);
+        }
+
         root["objectives"] = ToStringObject(progress.Objectives);
         SetOrRemove(root, "startTime", progress.StartTime);
         SetOrRemove(root, "endTime", progress.EndTime);
@@ -589,6 +623,60 @@ public sealed class LegacyQuestStateStore
             warnings.Add(
                 $"Development quest definition '{fileName}' could not be loaded: "
                 + exception.Message);
+            return null;
+        }
+    }
+
+    private static RavenQuestDefinition? ParsePortableDefinition(
+        JsonNode? node,
+        LegacyQuestReference reference,
+        ICollection<string> warnings)
+    {
+        if (node is null)
+        {
+            return null;
+        }
+
+        if (node is not JsonObject)
+        {
+            warnings.Add(
+                "The embedded development quest definition is not a JSON object.");
+            return null;
+        }
+
+        try
+        {
+            var definition = node.Deserialize<RavenQuestDefinition>(
+                PortableJsonOptions);
+            if (definition is null)
+            {
+                warnings.Add(
+                    "The embedded development quest definition contains JSON null.");
+                return null;
+            }
+
+            if (!string.Equals(
+                    definition.Publisher,
+                    reference.Publisher,
+                    StringComparison.Ordinal)
+                || !string.Equals(
+                    definition.Id,
+                    reference.Id,
+                    StringComparison.Ordinal)
+                || definition.Version != reference.Version)
+            {
+                warnings.Add(
+                    $"Embedded development quest definition identity '{definition.Reference}' does not match '{reference}'.");
+                return null;
+            }
+
+            return definition;
+        }
+        catch (JsonException exception)
+        {
+            warnings.Add(
+                "The embedded development quest definition could not be loaded: "
+                    + exception.Message);
             return null;
         }
     }
@@ -1168,6 +1256,8 @@ public sealed record LegacyQuestProgress(
     IReadOnlyDictionary<string, JsonElement> Variables,
     IReadOnlyDictionary<string, JsonElement> KeptJournalEvents)
 {
+    public RavenQuestDefinition? PortableDefinition { get; init; }
+
     public int UnreadMessageCount => Messages.Count(message => !message.Read);
 }
 

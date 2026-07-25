@@ -323,6 +323,71 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task EmbeddedPortableDefinitionSurvivesWithoutLegacySidecar()
+    {
+        var extension = JsonSerializer.SerializeToElement(new { retain = true });
+        var definition = new RavenQuestDefinition
+        {
+            Publisher = "publisher",
+            Id = "portable",
+            Version = 3,
+            Title = "Portable Quest",
+            FirstChapter = "start",
+            Chapters = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["start"] = "counter = 1",
+            },
+            ExtensionData = new Dictionary<string, JsonElement>(
+                StringComparer.Ordinal)
+            {
+                ["futureDefinition"] = extension,
+            },
+        };
+        var progress = new RavenCommanderQuest
+        {
+            Publisher = definition.Publisher,
+            Id = definition.Id,
+            Version = definition.Version,
+            Quest = definition,
+            Chapters =
+            [
+                new RavenQuestChapterState { Id = "start" },
+            ],
+        };
+        var store = new LegacyQuestStateStore(temporaryDirectory);
+
+        await store.SaveDevelopmentQuestAsync(
+            "F123",
+            "Test Cmdr",
+            progress);
+        var loaded = store.Load("F123");
+        var mapped = QuestProgressMapper.FromLegacy(
+            Assert.IsType<LegacyQuestProgress>(
+                loaded.Data?.DevelopmentQuest));
+
+        Assert.Null(loaded.Error);
+        Assert.DoesNotContain(
+            loaded.Warnings,
+            warning => warning.Contains("sidecar", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal("Portable Quest", mapped.Quest?.Title);
+        Assert.True(mapped.Quest?.ExtensionData["futureDefinition"]
+            .GetProperty("retain")
+            .GetBoolean());
+        Assert.False(File.Exists(Path.Combine(
+            temporaryDirectory,
+            "quests",
+            "dev-portable.json")));
+
+        await store.SaveDevelopmentQuestAsync("F123", "Test Cmdr", mapped);
+        var reopened = QuestProgressMapper.FromLegacy(
+            Assert.IsType<LegacyQuestProgress>(
+                store.Load("F123").Data?.DevelopmentQuest));
+        Assert.True(reopened.Quest?.ExtensionData["futureDefinition"]
+            .GetProperty("retain")
+            .GetBoolean());
+    }
+
+    [Fact]
     public async Task MalformedStateIsNeverOverwrittenBySave()
     {
         var questDirectory = Path.Combine(temporaryDirectory, "quests");
