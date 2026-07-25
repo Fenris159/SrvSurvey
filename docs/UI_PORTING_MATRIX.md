@@ -265,8 +265,9 @@ visual/theme QA is intentionally deferred until the final UI pass.
 top-center passive surface with current-body/DSS gating, genus/geology summary,
 analyzed and active sample progress, stale-sample warnings, three-stage sampler,
 separation distance, reward/first-footfall value, a separate persisted auto-show
-preference, and jump/Guardian priority. Its last Codex notification/image action
-and experimental temperature range remain open. The Windows/X11 adapters still
+preference, jump/Guardian priority, the last Composition Scanner Codex entry,
+image availability, and the original live `.show` handoff to the selected Codex
+detail window. Only its `_TEST` temperature debug display remains open. The Windows/X11 adapters still
 require live Elite runtime validation.
 
 Global input no longer depends on SharpDX/DirectInput. SharpHook provides the

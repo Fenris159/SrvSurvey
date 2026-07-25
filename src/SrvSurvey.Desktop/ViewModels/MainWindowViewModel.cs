@@ -235,7 +235,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             new HumanSiteMaterialStore(AppDataPaths.DataDirectory));
         SystemSurvey = new SystemSurveyViewModel(
             systemSurveySettingsStore
-                ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath));
+                ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath),
+            biologyCatalog: sharedExobiologyCatalog);
         Combat = new CombatViewModel(
             combatSettingsStore
                 ?? new CombatSettingsStore(AppDataPaths.UiSettingsPath),
@@ -1349,6 +1350,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.JournalEvents,
             update.Status,
             exobiologyAfter);
+        if (!update.IsBootstrapRead
+            && SystemSurvey.LatestBiologyEntryId is { } entryId
+            && update.JournalEvents.Any(IsShowCodexCommand))
+        {
+            await BiologyCodex.OpenEntryAsync(entryId);
+        }
         SurfaceSurveySessionContext? surfaceSession = null;
         if (!string.IsNullOrWhiteSpace(activeProfileFrontierId)
             && !string.IsNullOrWhiteSpace(journalState.SystemName)
@@ -1815,6 +1822,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         HumanSite.UpdateQuests(questRuntimeCoordinator.Snapshot);
         OnPropertyChanged(nameof(Quests));
         OnPropertyChanged(nameof(QuestUnreadMessageCount));
+    }
+
+    private static bool IsShowCodexCommand(JournalEventEnvelope journalEvent)
+    {
+        return journalEvent.EventName == "SendText"
+            && journalEvent.Payload.TryGetProperty("Message", out var message)
+            && message.ValueKind == System.Text.Json.JsonValueKind.String
+            && string.Equals(
+                message.GetString()?.Trim(),
+                ".show",
+                StringComparison.OrdinalIgnoreCase);
     }
 
     private bool SetField<T>(

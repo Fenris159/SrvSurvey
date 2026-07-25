@@ -216,6 +216,18 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         RaiseCommands();
     }
 
+    public Task<bool> OpenEntryAsync(long entryId)
+    {
+        var body = Bodies.FirstOrDefault(candidate =>
+            candidate.Organisms.Any(organism => organism.EntryId == entryId));
+        if (body is not null)
+        {
+            SelectBody(body, entryId);
+        }
+
+        return OpenWindowAsync();
+    }
+
     public Task<bool> OpenSubmitImageAsync()
     {
         if (SelectedOrganism is not { } organism)

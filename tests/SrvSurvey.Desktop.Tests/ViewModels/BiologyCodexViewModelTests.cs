@@ -140,6 +140,35 @@ public sealed class BiologyCodexViewModelTests : IDisposable
         Assert.Equal(1, viewModel.SelectedBody.BodyId);
     }
 
+    [Fact]
+    public async Task OpenEntrySelectsTheCompositionScannerTargetBeforeOpening()
+    {
+        var survey = CreateSurvey();
+        using var viewModel = new BiologyCodexViewModel(
+            survey,
+            ExobiologyReferenceCatalog.LoadEmbedded(),
+            BiologyCriteriaCatalog.LoadEmbedded());
+        survey.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}]}"""),
+            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Yellow","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
+            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2320101,"Name_Localised":"Bacterium Aurasus - Teal","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
+        ],
+        null);
+        long? selectedAtOpen = null;
+        viewModel.SetWindowOpener(() =>
+        {
+            selectedAtOpen = viewModel.SelectedOrganism?.EntryId;
+            return Task.FromResult(true);
+        });
+
+        Assert.True(await viewModel.OpenEntryAsync(2320101));
+
+        Assert.Equal(2320101, selectedAtOpen);
+        Assert.Equal(2320101, viewModel.SelectedOrganism!.EntryId);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

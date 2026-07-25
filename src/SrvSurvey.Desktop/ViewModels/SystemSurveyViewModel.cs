@@ -11,10 +11,13 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 {
     private const int MaximumDisplayedFssBodies = 8;
+    private const string OrganicCodexCategory =
+        "$Codex_SubCategory_Organic_Structures;";
     private static readonly GalacticCoordinate Sol = new(0, 0, 0);
 
     private readonly SystemSurveySettingsStore settingsStore;
     private readonly SystemScanState state;
+    private readonly ExobiologyReferenceCatalog biologyCatalog;
     private EliteStatus? status;
     private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
     private SystemScanSnapshot snapshot = SystemScanSnapshot.Empty;
@@ -24,6 +27,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private BodyInformationViewModel? bodyInformation;
     private BiologySurveyViewModel? biologySurvey;
     private BiologyStatusViewModel? biologyStatus;
+    private BiologyCodexNotificationViewModel? biologyCodexNotification;
+    private long? latestBiologyEntryId;
     private bool autoShowBodyInfo;
     private bool showBodyInfoInSystemMap;
     private bool showBodyInfoInOrbit;
@@ -79,11 +84,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public SystemSurveyViewModel(
         SystemSurveySettingsStore settingsStore,
-        SystemScanState? state = null)
+        SystemScanState? state = null,
+        ExobiologyReferenceCatalog? biologyCatalog = null)
     {
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
         this.state = state ?? new SystemScanState();
+        this.biologyCatalog = biologyCatalog
+            ?? ExobiologyReferenceCatalog.LoadEmbedded();
         var preferences = settingsStore.Load();
         autoShowBodyInfo = preferences.AutoShowBodyInfo;
         showBodyInfoInSystemMap = preferences.ShowBodyInfoInSystemMap;
@@ -580,6 +588,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public bool HasBiologyStatus => BiologyStatus is not null;
 
+    public long? LatestBiologyEntryId => latestBiologyEntryId;
+
     public bool IsBodyInfoForced => forceShowBodyInfo;
 
     public bool IsWithinBodyInfoBubble => snapshot.StarPosition is { } position
@@ -1059,11 +1069,17 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         snapshot = state.CreateSnapshot();
         if (snapshot.SystemAddress != previousAddress)
         {
+            biologyCodexNotification = null;
             forceShowFssInfo = false;
             manuallyHideFssInfo = false;
             forceShowBodyInfo = false;
             manuallyHideBodyInfo = false;
             OnPropertyChanged(nameof(IsBodyInfoForced));
+        }
+
+        foreach (var journalEvent in journalEvents)
+        {
+            ApplyBiologyCodexCue(journalEvent);
         }
 
         RefreshDisplay();
@@ -1145,7 +1161,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             snapshot,
             status,
             exobiology,
-            HideGeoCountInBioSystem);
+            HideGeoCountInBioSystem,
+            biologyCodexNotification);
         BodyInformation = CreateBodyInformation(
             ResolveBodyInfoTarget(forceShowBodyInfo
                 || status?.GuiFocus is GuiFocus.SystemMap or GuiFocus.Orrery));
@@ -1168,6 +1185,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             .ToArray();
 
         OnPropertyChanged(nameof(Snapshot));
+        OnPropertyChanged(nameof(LatestBiologyEntryId));
         OnPropertyChanged(nameof(SystemTitle));
         OnPropertyChanged(nameof(ScanSummary));
         OnPropertyChanged(nameof(FssFilterDescription));
@@ -1190,6 +1208,65 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsWithinBodyInfoBubble));
         OnPropertyChanged(nameof(ShouldShowFlightWarning));
         OnPropertyChanged(nameof(FlightWarningText));
+    }
+
+    private void ApplyBiologyCodexCue(JournalEventEnvelope journalEvent)
+    {
+        var root = journalEvent.Payload;
+        if (journalEvent.EventName == "ScanOrganic")
+        {
+            biologyCodexNotification = null;
+            if (biologyCatalog.FindByVariant(GetString(root, "Variant"))
+                is { IsBiology: true } scanned)
+            {
+                latestBiologyEntryId = scanned.EntryId;
+            }
+
+            return;
+        }
+
+        if (journalEvent.EventName != "CodexEntry"
+            || !string.Equals(
+                GetString(root, "SubCategory"),
+                OrganicCodexCategory,
+                StringComparison.Ordinal)
+            || GetInt64(root, "EntryID") is not { } entryId
+            || biologyCatalog.FindByEntryId(entryId)
+                is not { IsBiology: true } reference)
+        {
+            return;
+        }
+
+        latestBiologyEntryId = reference.EntryId;
+        if (status?.HasLatitudeLongitude != true)
+        {
+            return;
+        }
+
+        var bodyId = GetInt64(root, "BodyID") is { } parsedBodyId
+            && parsedBodyId is >= int.MinValue and <= int.MaxValue
+                ? (int)parsedBodyId
+                : snapshot.CurrentBodyId;
+        if (bodyId is null)
+        {
+            return;
+        }
+
+        var body = snapshot.Bodies.FirstOrDefault(candidate =>
+            candidate.BodyId == bodyId);
+        var isFirstFootfall = body?.IsFirstFootfall == true;
+        var reward = isFirstFootfall
+            ? reference.Reward * 5
+            : reference.Reward;
+        biologyCodexNotification = new BiologyCodexNotificationViewModel(
+            reference.EntryId,
+            bodyId.Value,
+            GetString(root, "Name_Localised")
+                ?? reference.DisplayName
+                ?? reference.VariantName,
+            reward,
+            isFirstFootfall,
+            !string.IsNullOrWhiteSpace(reference.ImageUrl));
     }
 
     private BodyInformationViewModel? CreateBodyInformation(
@@ -1727,6 +1804,27 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         return root.TryGetProperty(propertyName, out var value)
             && value.ValueKind == System.Text.Json.JsonValueKind.String
                 ? value.GetString()
+                : null;
+    }
+
+    private static long? GetInt64(
+        System.Text.Json.JsonElement root,
+        string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out var value))
+        {
+            return null;
+        }
+
+        if (value.ValueKind == System.Text.Json.JsonValueKind.Number
+            && value.TryGetInt64(out var number))
+        {
+            return number;
+        }
+
+        return value.ValueKind == System.Text.Json.JsonValueKind.String
+            && long.TryParse(value.GetString(), out number)
+                ? number
                 : null;
     }
 

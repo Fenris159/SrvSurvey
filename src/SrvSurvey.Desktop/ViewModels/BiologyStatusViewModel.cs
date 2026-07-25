@@ -12,6 +12,7 @@ public sealed record BiologyStatusViewModel(
     int SignalCount,
     IReadOnlyList<BiologyStatusSignalViewModel> Signals,
     BiologyActiveSampleViewModel? ActiveSample,
+    BiologyCodexNotificationViewModel? CodexNotification,
     bool RequiresDss,
     string Warning,
     string Footer)
@@ -19,6 +20,8 @@ public sealed record BiologyStatusViewModel(
     public bool HasSignals => Signals.Count > 0;
 
     public bool HasActiveSample => ActiveSample is not null;
+
+    public bool HasCodexNotification => CodexNotification is not null;
 
     public bool ShowSignalSummary => HasSignals && !HasActiveSample;
 
@@ -48,7 +51,8 @@ public sealed record BiologyStatusViewModel(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
         ExobiologySnapshot exobiology,
-        bool hideGeologicalSignals)
+        bool hideGeologicalSignals,
+        BiologyCodexNotificationViewModel? codexNotification = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
@@ -96,12 +100,17 @@ public sealed record BiologyStatusViewModel(
             : string.Empty;
         var allAnalyzed = body.AnalyzedBiologicalSignalCount
             >= body.BiologicalSignalCount;
+        var currentNotification = codexNotification?.BodyId == body.BodyId
+            ? codexNotification
+            : null;
         var footer = activeSample is not null || !string.IsNullOrEmpty(warning)
             ? string.Empty
             : allAnalyzed && body.IsFirstFootfall
                 ? "All signals analyzed with the first-footfall bonus applied."
                 : allAnalyzed
                     ? "All biological signals analyzed."
+                    : currentNotification is not null
+                        ? currentNotification.SummaryText
                     : body.Organisms.Count == 0
                         ? string.Empty
                         : body.IsFirstFootfall
@@ -115,6 +124,7 @@ public sealed record BiologyStatusViewModel(
             body.BiologicalSignalCount,
             signals,
             activeSample,
+            currentNotification,
             body.Organisms.Count == 0,
             warning,
             footer);
@@ -262,6 +272,32 @@ public sealed record BiologyStatusViewModel(
         return string.IsNullOrWhiteSpace(normalized)
             ? "Unidentified organism"
             : normalized;
+    }
+}
+
+public sealed record BiologyCodexNotificationViewModel(
+    long EntryId,
+    int BodyId,
+    string DisplayName,
+    long Reward,
+    bool IsFirstFootfall,
+    bool HasImage)
+{
+    public string SummaryText => DisplayName + " Â· " + FormatCredits(Reward)
+        + (IsFirstFootfall ? " Â· FF bonus" : string.Empty);
+
+    public string ActionText => HasImage
+        ? "Reference image available Â· type .show"
+        : "Codex details available Â· type .show";
+
+    private static string FormatCredits(long value)
+    {
+        return value switch
+        {
+            >= 1_000_000 => $"{value / 1_000_000d:N2} M CR",
+            >= 1_000 => $"{value / 1_000d:N1} K CR",
+            _ => $"{value:N0} CR",
+        };
     }
 }
 

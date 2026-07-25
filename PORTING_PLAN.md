@@ -293,11 +293,12 @@ cleanup. Live Elite updates, interactive remote imports, and Linux remain open.
 separate default-on preference. It retains current-body gating, DSS-required
 guidance, genus and geology summaries, analyzed progress, stale-body sample
 warnings, the active one/two/three sample state, required and live separation
-distance, reward and first-footfall value, and jump/Guardian priority. Active,
+distance, reward and first-footfall value, jump/Guardian priority, the most
+recent Composition Scanner Codex cue and image availability, and the original
+live `.show` command handoff with entry selection. Active,
 summary, and DSS states were checked at the legacy 480-pixel width in Blue
-dark/light. The last Composition Scanner Codex notification/image action, the
-experimental temperature-range display, live Elite attachment, and Linux
-remain open.
+dark/light. The explicitly `_TEST` temperature-range debug display, live Elite
+attachment, and Linux remain open.
 
 Exit gate: overlay positioning, DPI scaling, focus, click-through behavior, and
 input are recorded on the supported platform matrix.

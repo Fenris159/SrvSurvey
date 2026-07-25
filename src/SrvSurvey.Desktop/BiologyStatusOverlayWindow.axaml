@@ -202,6 +202,13 @@
                  IsVisible="{Binding Survey.BiologyStatus.HasFooter}"
                  Text="{Binding Survey.BiologyStatus.Footer}"
                  TextWrapping="Wrap" />
+      <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                 FontSize="8"
+                 FontWeight="SemiBold"
+                 HorizontalAlignment="Center"
+                 IsVisible="{Binding Survey.BiologyStatus.HasCodexNotification}"
+                 Text="{Binding Survey.BiologyStatus.CodexNotification.ActionText}"
+                 TextWrapping="Wrap" />
     </StackPanel>
   </Border>
 </Window>

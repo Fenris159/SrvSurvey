@@ -114,6 +114,52 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     }
 
     [Fact]
+    public void CompositionScannerCodexCueShowsRewardAndClearsOnSampling()
+    {
+        var viewModel = CreateViewModel();
+        var status = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            PlanetRadius = 6_000_000,
+        };
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+            Parse(BodyScan),
+            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+            Parse("""{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""),
+            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
+        ],
+        status);
+
+        var biologyStatus = Assert.IsType<BiologyStatusViewModel>(
+            viewModel.BiologyStatus);
+        var notification = Assert.IsType<BiologyCodexNotificationViewModel>(
+            biologyStatus.CodexNotification);
+        Assert.True(biologyStatus.HasCodexNotification);
+        Assert.Equal(2310101, viewModel.LatestBiologyEntryId);
+        Assert.Equal(2310101, notification.EntryId);
+        Assert.True(notification.IsFirstFootfall);
+        Assert.True(notification.HasImage);
+        Assert.Equal(36_262_500, notification.Reward);
+        Assert.Contains("Aleoida Arcus - Green", biologyStatus.Footer);
+        Assert.Contains("36.26 M CR", biologyStatus.Footer);
+        Assert.Contains(".show", notification.ActionText);
+
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;"}"""),
+        ],
+        null);
+
+        biologyStatus = Assert.IsType<BiologyStatusViewModel>(
+            viewModel.BiologyStatus);
+        Assert.False(biologyStatus.HasCodexNotification);
+        Assert.Equal(2310101, viewModel.LatestBiologyEntryId);
+    }
+
+    [Fact]
     public void VisibilityAndDssGuidanceFollowLegacyModesAndPreference()
     {
         var viewModel = CreateViewModel();
