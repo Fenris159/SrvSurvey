@@ -110,6 +110,14 @@ public sealed class SystemSurveySettingsStore
                 defaults.AutoRemoveTrackerOnFinalSample),
             GetBoolean(
                 settings,
+                "AutoTrackCompositionScans",
+                defaults.AutoTrackCompositionScans),
+            GetBoolean(
+                settings,
+                "SkipAnalyzedCompositionScans",
+                defaults.SkipAnalyzedCompositionScans),
+            GetBoolean(
+                settings,
                 "DrawBodyBiosOnlyWhenNear",
                 defaults.DrawBodyBiosOnlyWhenNear),
             GetBoolean(
@@ -228,6 +236,10 @@ public sealed class SystemSurveySettingsStore
                 preferences.AutoRemoveTrackerOnSampling;
             settings["AutoRemoveTrackerOnFinalSample"] =
                 preferences.AutoRemoveTrackerOnFinalSample;
+            settings["AutoTrackCompositionScans"] =
+                preferences.AutoTrackCompositionScans;
+            settings["SkipAnalyzedCompositionScans"] =
+                preferences.SkipAnalyzedCompositionScans;
             settings["DrawBodyBiosOnlyWhenNear"] =
                 preferences.DrawBodyBiosOnlyWhenNear;
             settings["HighlightRegionalFirsts"] =
@@ -321,6 +333,8 @@ public sealed record SystemSurveyPreferences(
     bool AutoHideSurfaceRadarWithoutLandingGear,
     bool AutoRemoveTrackerOnSampling,
     bool AutoRemoveTrackerOnFinalSample,
+    bool AutoTrackCompositionScans,
+    bool SkipAnalyzedCompositionScans,
     bool DrawBodyBiosOnlyWhenNear,
     bool HighlightRegionalFirsts,
     bool DimAnalyzedOrganisms,
@@ -364,6 +378,8 @@ public sealed record SystemSurveyPreferences(
         AutoHideSurfaceRadarWithoutLandingGear: false,
         AutoRemoveTrackerOnSampling: true,
         AutoRemoveTrackerOnFinalSample: false,
+        AutoTrackCompositionScans: true,
+        SkipAnalyzedCompositionScans: true,
         DrawBodyBiosOnlyWhenNear: true,
         HighlightRegionalFirsts: false,
         DimAnalyzedOrganisms: true,

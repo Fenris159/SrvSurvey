@@ -46,6 +46,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool autoHideSurfaceRadarWithoutLandingGear;
     private bool autoRemoveTrackerOnSampling;
     private bool autoRemoveTrackerOnFinalSample;
+    private bool autoTrackCompositionScans;
+    private bool skipAnalyzedCompositionScans;
     private bool drawBodyBiosOnlyWhenNear;
     private bool highlightRegionalFirsts;
     private bool dimAnalyzedOrganisms;
@@ -104,6 +106,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         autoRemoveTrackerOnSampling = preferences.AutoRemoveTrackerOnSampling;
         autoRemoveTrackerOnFinalSample =
             preferences.AutoRemoveTrackerOnFinalSample;
+        autoTrackCompositionScans = preferences.AutoTrackCompositionScans;
+        skipAnalyzedCompositionScans =
+            preferences.SkipAnalyzedCompositionScans;
         drawBodyBiosOnlyWhenNear = preferences.DrawBodyBiosOnlyWhenNear;
         highlightRegionalFirsts = preferences.HighlightRegionalFirsts;
         dimAnalyzedOrganisms = preferences.DimAnalyzedOrganisms;
@@ -271,6 +276,18 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get => autoRemoveTrackerOnFinalSample;
         set => SetPreference(ref autoRemoveTrackerOnFinalSample, value);
+    }
+
+    public bool AutoTrackCompositionScans
+    {
+        get => autoTrackCompositionScans;
+        set => SetPreference(ref autoTrackCompositionScans, value);
+    }
+
+    public bool SkipAnalyzedCompositionScans
+    {
+        get => skipAnalyzedCompositionScans;
+        set => SetPreference(ref skipAnalyzedCompositionScans, value);
     }
 
     public bool DrawBodyBiosOnlyWhenNear
@@ -1572,6 +1589,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 AutoHideSurfaceRadarWithoutLandingGear,
                 AutoRemoveTrackerOnSampling,
                 AutoRemoveTrackerOnFinalSample,
+                AutoTrackCompositionScans,
+                SkipAnalyzedCompositionScans,
                 DrawBodyBiosOnlyWhenNear,
                 HighlightRegionalFirsts,
                 DimAnalyzedOrganisms,

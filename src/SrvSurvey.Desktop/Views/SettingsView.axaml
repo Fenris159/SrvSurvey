@@ -243,6 +243,10 @@
                         Content="Remove a nearby tracker when sampling" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnFinalSample, Mode=TwoWay}"
                         Content="Remove the tracker group after analysis" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoTrackCompositionScans, Mode=TwoWay}"
+                        Content="Add a tracker from Composition Scanner discoveries" />
+              <CheckBox IsChecked="{Binding SystemSurvey.SkipAnalyzedCompositionScans, Mode=TwoWay}"
+                        Content="Skip Composition Scanner trackers already analyzed" />
               <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
                 <TextBlock VerticalAlignment="Center"
                            Text="Radar size" />

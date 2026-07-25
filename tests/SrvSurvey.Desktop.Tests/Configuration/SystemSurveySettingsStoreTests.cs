@@ -46,6 +46,8 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             AutoHideSurfaceRadarWithoutLandingGear: true,
             AutoRemoveTrackerOnSampling: false,
             AutoRemoveTrackerOnFinalSample: true,
+            AutoTrackCompositionScans: false,
+            SkipAnalyzedCompositionScans: false,
             DrawBodyBiosOnlyWhenNear: false,
             HighlightRegionalFirsts: true,
             DimAnalyzedOrganisms: false,
