@@ -29,6 +29,44 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
 
     public IReadOnlyList<QuestRuntimeSnapshot> Snapshot { get; private set; } = [];
 
+    public async Task<IReadOnlyList<RavenQuestDefinition>>
+        GetPublishedQuestsAsync(CancellationToken cancellationToken = default)
+    {
+        await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            return await ravenClient.GetPublishedQuestsAsync(
+                    configuration?.RavenApiKey,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            coordinatorLock.Release();
+        }
+    }
+
+    public async Task<IReadOnlyList<RavenCommanderQuestStatus>>
+        GetCommanderQuestStatusesAsync(
+            CancellationToken cancellationToken = default)
+    {
+        await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            var current = RequireRemoteConfiguration();
+            return await ravenClient.GetCommanderQuestStatusesAsync(
+                    current.RavenApiKey!,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            coordinatorLock.Release();
+        }
+    }
+
     public async Task<QuestRuntimeUpdateResult> ApplyUpdateAsync(
         QuestRuntimeConfiguration nextConfiguration,
         string journalDirectory,
@@ -115,6 +153,164 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             Snapshot,
             warnings,
             processedEvents);
+    }
+
+    public async Task<QuestRuntimeUpdateResult> RefreshAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var warnings = new List<string>();
+        await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            var current = configuration
+                ?? throw new InvalidOperationException(
+                    "A commander journal session is required to refresh quests.");
+            await ClearRuntimesAsync().ConfigureAwait(false);
+            if (current.Enabled)
+            {
+                await LoadRuntimesAsync(
+                        current,
+                        contextTracker.CreateContext(
+                            current.CommanderName,
+                            current.Status),
+                        warnings,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            Snapshot = CreateSnapshot();
+        }
+        finally
+        {
+            coordinatorLock.Release();
+        }
+
+        Changed?.Invoke(this, EventArgs.Empty);
+        return new QuestRuntimeUpdateResult(Snapshot, warnings, 0);
+    }
+
+    public async Task ActivateQuestAsync(
+        string publisher,
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(publisher);
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            var current = RequireRemoteConfiguration();
+            var definition = await ravenClient.ActivateQuestAsync(
+                    publisher,
+                    id,
+                    current.RavenApiKey!,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            var progress = new RavenCommanderQuest
+            {
+                Publisher = definition.Publisher,
+                Id = definition.Id,
+                Version = definition.Version,
+                Quest = definition,
+                StartTime = DateTimeOffset.UtcNow,
+                Chapters = definition.Chapters.Keys.Select(chapterId =>
+                    new RavenQuestChapterState { Id = chapterId }).ToList(),
+            };
+            var warnings = new List<string>();
+            await TryAddRuntimeAsync(
+                    progress,
+                    isDevelopment: false,
+                    current,
+                    contextTracker.CreateContext(
+                        current.CommanderName,
+                        current.Status),
+                    warnings,
+                    cancellationToken,
+                    startFirstChapter: true)
+                .ConfigureAwait(false);
+            if (warnings.Count > 0)
+            {
+                throw new InvalidOperationException(string.Join(
+                    Environment.NewLine,
+                    warnings));
+            }
+
+            Snapshot = CreateSnapshot();
+        }
+        finally
+        {
+            coordinatorLock.Release();
+        }
+
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    public Task PauseQuestAsync(
+        RavenQuestReference reference,
+        CancellationToken cancellationToken = default)
+    {
+        return RemoveOrPauseQuestAsync(
+            reference,
+            pause: true,
+            cancellationToken);
+    }
+
+    public Task RemoveQuestAsync(
+        RavenQuestReference reference,
+        CancellationToken cancellationToken = default)
+    {
+        return RemoveOrPauseQuestAsync(
+            reference,
+            pause: false,
+            cancellationToken);
+    }
+
+    public async Task ResumeQuestAsync(
+        RavenQuestReference reference,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            var current = RequireRemoteConfiguration();
+            if (!await ravenClient.SetQuestStateAsync(
+                    reference.Publisher,
+                    reference.Id,
+                    RavenQuestState.active,
+                    current.RavenApiKey!,
+                    cancellationToken).ConfigureAwait(false))
+            {
+                throw new InvalidOperationException(
+                    $"Raven quest '{reference}' was not found while resuming it.");
+            }
+
+            var warnings = new List<string>();
+            await ClearRuntimesAsync().ConfigureAwait(false);
+            await LoadRuntimesAsync(
+                    current,
+                    contextTracker.CreateContext(
+                        current.CommanderName,
+                        current.Status),
+                    warnings,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (warnings.Count > 0)
+            {
+                log?.Invoke(string.Join(Environment.NewLine, warnings));
+            }
+
+            Snapshot = CreateSnapshot();
+        }
+        finally
+        {
+            coordinatorLock.Release();
+        }
+
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public async Task MarkMessageReadAsync(
@@ -292,7 +488,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         QuestRuntimeConfiguration current,
         QuestCommanderContext context,
         ICollection<string> warnings,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool startFirstChapter = false)
     {
         QuestScriptRuntime? runtime = null;
         try
@@ -326,7 +523,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                         token),
                 log: log);
             await runtime.InitializeAsync(
-                    startFirstChapter: false,
+                    startFirstChapter,
                     cancellationToken)
                 .ConfigureAwait(false);
 
@@ -410,6 +607,78 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 await registration.Runtime.DisposeAsync().ConfigureAwait(false);
             }
 
+            Snapshot = CreateSnapshot();
+        }
+        finally
+        {
+            coordinatorLock.Release();
+        }
+
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private async Task RemoveOrPauseQuestAsync(
+        RavenQuestReference reference,
+        bool pause,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            var identity = QuestIdentity.From(reference);
+            if (!runtimes.TryGetValue(identity, out var registration))
+            {
+                throw new KeyNotFoundException(
+                    $"Quest '{reference}' is not active.");
+            }
+
+            var current = configuration
+                ?? throw new InvalidOperationException(
+                    "A commander journal session is required to change quests.");
+            if (registration.IsDevelopment)
+            {
+                if (pause)
+                {
+                    throw new InvalidOperationException(
+                        "A development quest cannot be paused.");
+                }
+
+                await legacyStore.SaveDevelopmentQuestAsync(
+                        current.FrontierId,
+                        current.CommanderName,
+                        null,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                var remote = RequireRemoteConfiguration();
+                var changed = pause
+                    ? await ravenClient.SetQuestStateAsync(
+                            reference.Publisher,
+                            reference.Id,
+                            RavenQuestState.paused,
+                            remote.RavenApiKey!,
+                            cancellationToken)
+                        .ConfigureAwait(false)
+                    : await ravenClient.DeleteQuestAsync(
+                            reference.Publisher,
+                            reference.Id,
+                            remote.RavenApiKey!,
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                if (!changed)
+                {
+                    throw new InvalidOperationException(
+                        $"Raven quest '{reference}' was not found while "
+                            + (pause ? "pausing it." : "removing it."));
+                }
+            }
+
+            runtimes.Remove(identity);
+            await registration.Runtime.DisposeAsync().ConfigureAwait(false);
             Snapshot = CreateSnapshot();
         }
         finally
@@ -526,6 +795,25 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 prior.RavenApiKey,
                 current.RavenApiKey,
                 StringComparison.Ordinal);
+    }
+
+    private QuestRuntimeConfiguration RequireRemoteConfiguration()
+    {
+        var current = configuration
+            ?? throw new InvalidOperationException(
+                "A commander journal session is required to use Raven quests.");
+        if (!current.Enabled)
+        {
+            throw new InvalidOperationException("Quests are disabled.");
+        }
+
+        if (string.IsNullOrWhiteSpace(current.RavenApiKey))
+        {
+            throw new InvalidOperationException(
+                "A Raven Colonial API key is required for commander quests.");
+        }
+
+        return current;
     }
 
     private static bool IsRecoverable(Exception exception)

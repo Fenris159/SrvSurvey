@@ -177,6 +177,89 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         Assert.Equal(cargoBytes, await File.ReadAllBytesAsync(cargoPath));
     }
 
+    [Fact]
+    public async Task CatalogActivationAndCommanderLifecycleUseLiveCoordinator()
+    {
+        var definition = CreateDefinition(
+            "function onStart() quest:set('started', true); return true end");
+        var client = new FakeRavenQuestClient
+        {
+            PublishedQuests = [definition],
+            CommanderStatuses =
+            [
+                new RavenCommanderQuestStatus
+                {
+                    Publisher = "Raven",
+                    Id = "older",
+                    Version = 1,
+                    State = RavenQuestState.complete,
+                },
+            ],
+            ActivatedDefinition = definition,
+        };
+        await using var coordinator = CreateCoordinator(client);
+        await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+
+        Assert.Single(await coordinator.GetPublishedQuestsAsync());
+        Assert.Single(await coordinator.GetCommanderQuestStatusesAsync());
+
+        await coordinator.ActivateQuestAsync("Raven", "sample");
+
+        Assert.Single(coordinator.Snapshot);
+        Assert.Equal(1, client.ActivateCount);
+        Assert.Equal(1, client.SaveCount);
+        Assert.True(client.LastSaved!.Variables["started"].GetBoolean());
+
+        await coordinator.PauseQuestAsync(definition.Reference);
+
+        Assert.Empty(coordinator.Snapshot);
+        Assert.Contains(RavenQuestState.paused, client.StateChanges);
+
+        client.ActiveQuests = [CreateRemoteProgress(definition)];
+        await coordinator.ResumeQuestAsync(definition.Reference);
+
+        Assert.Single(coordinator.Snapshot);
+        Assert.Contains(RavenQuestState.active, client.StateChanges);
+
+        await coordinator.RemoveQuestAsync(definition.Reference);
+
+        Assert.Empty(coordinator.Snapshot);
+        Assert.Equal(1, client.DeleteCount);
+    }
+
+    [Fact]
+    public async Task RemovingDevelopmentQuestClearsItThroughVerifiedSave()
+    {
+        WriteDevelopmentQuest();
+        var statePath = Path.Combine(temporaryDirectory, "quests", "F123.json");
+        var sourceBytes = await File.ReadAllBytesAsync(statePath);
+        await using var coordinator = CreateCoordinator(
+            new FakeRavenQuestClient());
+        await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+        var reference = Assert.Single(coordinator.Snapshot).Reference;
+
+        await coordinator.RemoveQuestAsync(reference);
+
+        Assert.Empty(coordinator.Snapshot);
+        var saved = await File.ReadAllTextAsync(statePath);
+        Assert.DoesNotContain("devRef", saved, StringComparison.Ordinal);
+        Assert.DoesNotContain("devQuest", saved, StringComparison.Ordinal);
+        Assert.Contains("futureRoot", saved, StringComparison.Ordinal);
+        var backup = Assert.Single(Directory.GetFiles(Path.Combine(
+            temporaryDirectory,
+            "quests",
+            "quest-state-backups")));
+        Assert.Equal(sourceBytes, await File.ReadAllBytesAsync(backup));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -287,9 +370,19 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
 
     private sealed class FakeRavenQuestClient : IRavenQuestClient
     {
-        public IReadOnlyList<RavenCommanderQuest> ActiveQuests { get; init; } = [];
+        public IReadOnlyList<RavenCommanderQuest> ActiveQuests { get; set; } = [];
+
+        public IReadOnlyList<RavenQuestDefinition> PublishedQuests { get; init; } = [];
+
+        public IReadOnlyList<RavenCommanderQuestStatus> CommanderStatuses
+        {
+            get;
+            init;
+        } = [];
 
         public RavenQuestDefinition? Definition { get; init; }
+
+        public RavenQuestDefinition? ActivatedDefinition { get; init; }
 
         public int LoadCount { get; private set; }
 
@@ -297,12 +390,18 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
 
         public int SaveCount { get; private set; }
 
+        public int ActivateCount { get; private set; }
+
+        public int DeleteCount { get; private set; }
+
+        public List<RavenQuestState> StateChanges { get; } = [];
+
         public RavenCommanderQuest? LastSaved { get; private set; }
 
         public Task<IReadOnlyList<RavenQuestDefinition>> GetPublishedQuestsAsync(
             string? apiKey = null,
             CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<RavenQuestDefinition>>([]);
+            Task.FromResult(PublishedQuests);
 
         public Task<RavenQuestDefinition?> GetQuestAsync(
             RavenQuestReference reference,
@@ -342,29 +441,41 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             GetCommanderQuestStatusesAsync(
                 string apiKey,
                 CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<RavenCommanderQuestStatus>>([]);
+            Task.FromResult(CommanderStatuses);
 
         public Task<RavenQuestDefinition> ActivateQuestAsync(
             string publisher,
             string id,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default)
+        {
+            ActivateCount++;
+            return Task.FromResult(
+                ActivatedDefinition
+                    ?? throw new InvalidOperationException(
+                        "No activation definition was configured."));
+        }
 
         public Task<bool> DeleteQuestAsync(
             string publisher,
             string id,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default)
+        {
+            DeleteCount++;
+            return Task.FromResult(true);
+        }
 
         public Task<bool> SetQuestStateAsync(
             string publisher,
             string id,
             RavenQuestState state,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(true);
+            CancellationToken cancellationToken = default)
+        {
+            StateChanges.Add(state);
+            return Task.FromResult(true);
+        }
 
         public Task<string?> GetQuestChapterAsync(
             RavenQuestReference reference,
