@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -50,5 +51,48 @@ public sealed partial class DiagnosticsView : UserControl
             ?? throw new InvalidOperationException(
                 "The desktop launcher is not available.");
         return launcher.LaunchDirectoryInfoAsync(directory);
+    }
+
+    private async void ChooseVisitedStarsCache_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel?.StorageProvider is null
+            || DataContext is not MainWindowViewModel viewModel)
+        {
+            return;
+        }
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(
+            new FilePickerOpenOptions
+            {
+                Title = "Choose Elite VisitedStarsCache.dat",
+                AllowMultiple = false,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType("Elite visited-stars cache")
+                    {
+                        Patterns = ["VisitedStarsCache.dat"],
+                    },
+                ],
+            });
+        var file = files.FirstOrDefault();
+        if (file is not null)
+        {
+            viewModel.VisitedStarsCache.TargetPath = file.Path.LocalPath;
+        }
+    }
+
+    private async void OpenVisitedStarsWebsite_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        var launcher = TopLevel.GetTopLevel(this)?.Launcher;
+        if (launcher is not null)
+        {
+            await launcher.LaunchUriAsync(
+                new Uri("https://edgalaxy.net/visitedstars"));
+        }
     }
 }

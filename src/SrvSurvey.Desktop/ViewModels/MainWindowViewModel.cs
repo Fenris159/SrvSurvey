@@ -37,6 +37,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly LegacyProfileImporter profileImporter;
     private readonly QuestRuntimeCoordinator questRuntimeCoordinator;
     private readonly QuestSettingsStore questSettingsStore;
+    private readonly HttpClient? visitedStarsHttpClient;
     private readonly ApplicationLogService? applicationLogService;
     private readonly AsyncCommand importLegacyProfileCommand;
     private readonly AsyncCommand resetExplorationCommand;
@@ -115,7 +116,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         QuestSettingsStore? questSettingsStore = null,
         string? targetFrontierId = null,
         ICommanderInstanceLauncher? commanderInstanceLauncher = null,
-        IGameWindowSwitcher? gameWindowSwitcher = null)
+        IGameWindowSwitcher? gameWindowSwitcher = null,
+        VisitedStarsCacheViewModel? visitedStarsCache = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -296,6 +298,26 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             JournalFolderPath,
             TargetFrontierId,
             gameWindowSwitcher);
+        if (visitedStarsCache is null)
+        {
+            var processDetector = new EliteGameProcessDetector();
+            visitedStarsHttpClient = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(45),
+            };
+            VisitedStarsCache = new VisitedStarsCacheViewModel(
+                new CommanderProfileCatalog(AppDataPaths.DataDirectory),
+                new VisitedStarsCacheService(
+                    visitedStarsHttpClient,
+                    Path.Combine(AppDataPaths.CacheDirectory, "star-cache"),
+                    processDetector.IsRunning),
+                VisitedStarsCacheTargetLocator.ResolveCurrent,
+                processDetector.IsRunning);
+        }
+        else
+        {
+            VisitedStarsCache = visitedStarsCache;
+        }
         statusMessage = folderResolution.IsFound
             ? TargetFrontierId is null
                 ? "Ready to read the newest Journal.*.log file."
@@ -366,6 +388,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public QuestIndicatorViewModel QuestIndicator { get; }
 
     public CommanderInstancesViewModel CommanderInstances { get; }
+
+    public VisitedStarsCacheViewModel VisitedStarsCache { get; }
 
     public IReadOnlyList<QuestRuntimeSnapshot> Quests =>
         questRuntimeCoordinator.Snapshot;
@@ -833,7 +857,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        await CommanderInstances.RefreshAsync();
+        await Task.WhenAll(
+            CommanderInstances.RefreshAsync(),
+            VisitedStarsCache.RefreshAsync());
         if (journalMonitor is null)
         {
             StatusMessage = $"Journal folder not found. Set "
@@ -1005,6 +1031,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         CommanderInstances.UpdateCurrent(
             snapshot.FrontierId,
             snapshot.CommanderName);
+        VisitedStarsCache.UpdateContext(
+            snapshot.FrontierId,
+            snapshot.CommanderName,
+            snapshot.SystemName);
         CommanderName = Display(snapshot.CommanderName);
         FrontierId = Display(snapshot.FrontierId);
         GameDescription = string.Join(
@@ -1669,6 +1699,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         disposed = true;
         CommanderInstances.Dispose();
+        visitedStarsHttpClient?.Dispose();
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }

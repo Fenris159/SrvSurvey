@@ -4,10 +4,23 @@ using System.Text;
 
 namespace SrvSurvey.Core.Storage;
 
+public interface IVisitedStarsCacheService
+{
+    Task<VisitedStarsCacheSwapResult> SwapAsync(
+        string systemName,
+        string targetPath,
+        CancellationToken cancellationToken = default);
+
+    Task<VisitedStarsCacheRestoreResult> RestoreAsync(
+        string targetPath,
+        CancellationToken cancellationToken = default);
+}
+
 public sealed class VisitedStarsCacheService(
     HttpClient httpClient,
     string downloadDirectory,
     Func<bool>? isGameRunning = null)
+    : IVisitedStarsCacheService
 {
     public const string CacheFileName = "VisitedStarsCache.dat";
     public const string BackupFileName = "backup-VisitedStarsCache.dat";
@@ -57,6 +70,7 @@ public sealed class VisitedStarsCacheService(
             var rollback = $"{target}.{Guid.NewGuid():N}.rollback";
             var activationStage = $"{target}.{Guid.NewGuid():N}.tmp";
             var activated = false;
+            var retainRollback = false;
             try
             {
                 await CopyAndVerifyAsync(
@@ -79,21 +93,39 @@ public sealed class VisitedStarsCacheService(
                 await VerifyHashAsync(target, download.Sha256, cancellationToken)
                     .ConfigureAwait(false);
                 activated = false;
-                File.Delete(rollback);
+                TryDeleteIfExists(rollback);
             }
             catch
             {
-                if (activated && File.Exists(rollback))
+                if (activated)
                 {
-                    File.Move(rollback, target, true);
+                    if (File.Exists(rollback))
+                    {
+                        try
+                        {
+                            File.Move(rollback, target, true);
+                        }
+                        catch
+                        {
+                            retainRollback = true;
+                            throw;
+                        }
+                    }
+                    else
+                    {
+                        DeleteIfExists(target);
+                    }
                 }
 
                 throw;
             }
             finally
             {
-                DeleteIfExists(activationStage);
-                DeleteIfExists(rollback);
+                TryDeleteIfExists(activationStage);
+                if (!retainRollback)
+                {
+                    TryDeleteIfExists(rollback);
+                }
             }
 
             return new VisitedStarsCacheSwapResult(
@@ -133,6 +165,7 @@ public sealed class VisitedStarsCacheService(
             var rollback = $"{target}.{Guid.NewGuid():N}.rollback";
             var activationStage = $"{target}.{Guid.NewGuid():N}.tmp";
             var activated = false;
+            var retainRollback = false;
             try
             {
                 if (File.Exists(target))
@@ -163,21 +196,39 @@ public sealed class VisitedStarsCacheService(
                 await VerifyHashAsync(target, backupHash, cancellationToken)
                     .ConfigureAwait(false);
                 activated = false;
-                DeleteIfExists(rollback);
+                TryDeleteIfExists(rollback);
             }
             catch
             {
-                if (activated && File.Exists(rollback))
+                if (activated)
                 {
-                    File.Move(rollback, target, true);
+                    if (File.Exists(rollback))
+                    {
+                        try
+                        {
+                            File.Move(rollback, target, true);
+                        }
+                        catch
+                        {
+                            retainRollback = true;
+                            throw;
+                        }
+                    }
+                    else
+                    {
+                        DeleteIfExists(target);
+                    }
                 }
 
                 throw;
             }
             finally
             {
-                DeleteIfExists(activationStage);
-                DeleteIfExists(rollback);
+                TryDeleteIfExists(activationStage);
+                if (!retainRollback)
+                {
+                    TryDeleteIfExists(rollback);
+                }
             }
 
             return new VisitedStarsCacheRestoreResult(target, backup, backupHash);
@@ -490,6 +541,20 @@ public sealed class VisitedStarsCacheService(
         if (File.Exists(path))
         {
             File.Delete(path);
+        }
+    }
+
+    private static void TryDeleteIfExists(string path)
+    {
+        try
+        {
+            DeleteIfExists(path);
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            // A verified target/backup or failed rollback is safer with a
+            // redundant artifact than with cleanup replacing the real result.
         }
     }
 

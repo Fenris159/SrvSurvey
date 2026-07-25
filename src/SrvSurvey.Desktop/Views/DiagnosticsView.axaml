@@ -98,6 +98,92 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Visited stars reference cache" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Back up and replace Elite's VisitedStarsCache.dat with the 3,500 closest known systems from EDGalaxy." />
+            </StackPanel>
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Command="{Binding VisitedStarsCache.RefreshCommand}"
+                    Content="Refresh state" />
+          </Grid>
+
+          <Grid ColumnDefinitions="Auto,*"
+                RowDefinitions="Auto,Auto"
+                ColumnSpacing="12"
+                RowSpacing="10">
+            <TextBlock VerticalAlignment="Center"
+                       Classes="muted"
+                       Text="Commander" />
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding VisitedStarsCache.Commanders}"
+                      SelectedItem="{Binding VisitedStarsCache.SelectedCommander}"
+                      PlaceholderText="Choose a saved commander">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:VisitedStarsCommanderOptionViewModel">
+                  <TextBlock Margin="4" Text="{Binding DisplayName}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Grid.Row="1"
+                       VerticalAlignment="Center"
+                       Classes="muted"
+                       Text="Reference system" />
+            <TextBox Grid.Row="1"
+                     Grid.Column="1"
+                     Text="{Binding VisitedStarsCache.SystemName, Mode=TwoWay}"
+                     PlaceholderText="Sol" />
+          </Grid>
+
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <TextBox Text="{Binding VisitedStarsCache.TargetPath, Mode=TwoWay}"
+                     PlaceholderText="Path to VisitedStarsCache.dat" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Click="ChooseVisitedStarsCache_Click"
+                    Content="Choose file" />
+          </Grid>
+
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <TextBlock Classes="muted" Text="Original backup" />
+            <TextBlock Grid.Column="1"
+                       Classes="monospace muted"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Text="{Binding VisitedStarsCache.BackupPath}" />
+          </Grid>
+
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontWeight="SemiBold"
+                     TextWrapping="Wrap"
+                     Text="{Binding VisitedStarsCache.GameStateMessage}" />
+
+          <WrapPanel Orientation="Horizontal">
+            <Button Classes="primary"
+                    Margin="0,0,8,8"
+                    Command="{Binding VisitedStarsCache.SwapCommand}"
+                    Content="{Binding VisitedStarsCache.SwapButtonText}" />
+            <Button Classes="secondary"
+                    Margin="0,0,8,8"
+                    Command="{Binding VisitedStarsCache.RestoreCommand}"
+                    Content="{Binding VisitedStarsCache.RestoreButtonText}" />
+            <Button Classes="secondary"
+                    Margin="0,0,0,8"
+                    Click="OpenVisitedStarsWebsite_Click"
+                    Content="Open EDGalaxy" />
+          </WrapPanel>
+
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding VisitedStarsCache.StatusMessage}" />
+        </StackPanel>
+      </Border>
+
       <Border Classes="card">
         <StackPanel Spacing="12">
           <StackPanel Spacing="4">
