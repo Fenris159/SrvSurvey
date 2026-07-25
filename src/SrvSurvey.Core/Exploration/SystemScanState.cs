@@ -381,6 +381,7 @@ public sealed class SystemScanState
             organism.Reward = reference.Reward;
         }
 
+        organism.IsScanned = true;
         organism.IsAnalyzed |= GetString(root, "ScanType") == "Analyse";
         body.BiologicalSignalCount = Math.Max(
             body.BiologicalSignalCount,
@@ -954,6 +955,8 @@ public sealed class SystemScanState
 
         public long? Reward { get; set; }
 
+        public bool IsScanned { get; set; }
+
         public bool IsAnalyzed { get; set; }
 
         public bool IsRegionalFirst { get; set; }
@@ -969,6 +972,7 @@ public sealed class SystemScanState
                 VariantLocalized,
                 EntryId,
                 Reward,
+                IsScanned,
                 IsAnalyzed,
                 IsRegionalFirst);
         }
@@ -1092,6 +1096,7 @@ public sealed record SystemOrganismSnapshot(
     string? VariantLocalized,
     long? EntryId,
     long? Reward,
+    bool IsScanned,
     bool IsAnalyzed,
     bool IsRegionalFirst);
 
