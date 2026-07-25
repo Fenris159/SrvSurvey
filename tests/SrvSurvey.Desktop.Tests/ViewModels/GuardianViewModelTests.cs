@@ -73,6 +73,56 @@ public sealed class GuardianViewModelTests
     }
 
     [Fact]
+    public void GuardianSystemSummaryUsesLegacyModesAndDestinationState()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var viewModel = new GuardianViewModel(root);
+            var target = viewModel.Rows.First(
+                row => row.Reference.Kind == GuardianSiteKind.Ruins);
+            viewModel.UpdateCurrentSystem(
+                target.Reference.SystemName,
+                target.Reference.Position);
+            viewModel.UpdateStatus(new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+                Destination = new StatusDestination
+                {
+                    System = target.Reference.SystemAddress,
+                    Body = target.Reference.BodyId,
+                },
+            });
+
+            Assert.True(viewModel.ShouldShowGuardianSystemSummary);
+            Assert.NotEmpty(viewModel.CurrentSystemSites);
+            Assert.Contains(
+                viewModel.CurrentSystemSites,
+                row => row.Reference == target.Reference && row.IsDestination);
+
+            viewModel.SuppressForActiveBuildProjects = true;
+            viewModel.SetActiveBuildProjects(true);
+            Assert.False(viewModel.ShouldShowGuardianSystemSummary);
+
+            viewModel.SetActiveBuildProjects(false);
+            viewModel.SetSystemSummaryObscured(true);
+            Assert.False(viewModel.ShouldShowGuardianSystemSummary);
+
+            viewModel.SetSystemSummaryObscured(false);
+            viewModel.UpdateStatus(new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip,
+                GuiFocus = GuiFocus.RolePanel,
+            });
+            Assert.False(viewModel.ShouldShowGuardianSystemSummary);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public async Task LoadsCommanderVisitsAndCopiesSelectedSiteFields()
     {
         var root = CreateTemporaryDirectory();
@@ -329,6 +379,11 @@ public sealed class GuardianViewModelTests
             Assert.False(viewModel.HasCurrentObeliskArtifacts);
             Assert.True(viewModel.MapProjection?.Points.Single().IsActiveObelisk);
             Assert.True(viewModel.ActiveMapProjection?.Points.Single().IsActiveObelisk);
+            Assert.True(viewModel.ShouldShowRamTahOverlay);
+            var ramTahLog = Assert.Single(viewModel.CurrentRamTahLogs);
+            Assert.Equal("H1", ramTahLog.LogCode);
+            Assert.Equal("MISSING", ramTahLog.ArtifactStatus);
+            Assert.Equal("A01", ramTahLog.ObeliskNamesText);
 
             await viewModel.ToggleCurrentObeliskScannedAsync();
 
@@ -342,11 +397,15 @@ public sealed class GuardianViewModelTests
                 "SRV",
                 2,
                 [new CargoItem("ancientcasket", "Guardian Casket", 2, 0)]));
+            Assert.Equal(
+                "READY",
+                Assert.Single(viewModel.CurrentRamTahLogs).ArtifactStatus);
             await viewModel.ToggleCurrentObeliskScannedAsync();
             await viewModel.ToggleCurrentObeliskScannedAsync();
 
             Assert.True(viewModel.CurrentObelisk?.Scanned);
             Assert.True(ramTah.IsLogCompleted(RamTahMission.AncientRuins, "H1"));
+            Assert.Empty(viewModel.CurrentRamTahLogs);
             var saved = await new GuardianCommanderDataReader(root)
                 .ReadAsync("F123", isOdyssey: true);
             Assert.True(Assert.Single(saved.Surveys).ActiveObelisks.Single().Scanned);

@@ -142,6 +142,12 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
 
     public bool IsAnyMissionActive => state.IsAnyMissionActive;
 
+    public bool IsAncientRuinsMissionActive =>
+        state.AncientRuinsMissionStatus == RamTahMissionStatus.Active;
+
+    public bool IsGuardianLogsMissionActive =>
+        state.GuardianLogsMissionStatus == RamTahMissionStatus.Active;
+
     public void LoadProfile(
         string profileFrontierId,
         string? profileCommanderName,
@@ -396,6 +402,9 @@ public sealed class RamTahViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(GuardianLogsProgressText));
         OnPropertyChanged(nameof(AncientRuinsProgress));
         OnPropertyChanged(nameof(GuardianLogsProgress));
+        OnPropertyChanged(nameof(IsAnyMissionActive));
+        OnPropertyChanged(nameof(IsAncientRuinsMissionActive));
+        OnPropertyChanged(nameof(IsGuardianLogsMissionActive));
         RaiseCommandStates();
     }
 

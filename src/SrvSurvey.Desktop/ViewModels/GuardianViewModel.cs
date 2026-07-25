@@ -5,6 +5,7 @@ using System.Windows.Input;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -24,6 +25,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private readonly GuardianCommanderDataReader commanderDataReader;
     private readonly GuardianCommanderSurveyStore commanderSurveyStore;
     private readonly RamTahViewModel? ramTah;
+    private readonly GuardianOverlaySettingsStore? overlaySettingsStore;
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand toggleCurrentObeliskScannedCommand;
     private GuardianLiveSiteState liveSiteState;
@@ -48,22 +50,42 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private string statusMessage;
     private string summary = string.Empty;
     private Func<string, Task>? clipboardWriter;
+    private bool enableGuardianSites;
+    private bool autoShowGuardianSummary;
+    private bool autoShowRamTah;
+    private bool suppressForActiveBuildProjects;
+    private bool hasActiveBuildProjects;
+    private bool isSystemSummaryObscured;
+    private string overlaySettingsStatus = string.Empty;
 
     public GuardianViewModel(
         string dataDirectory,
         GuardianSiteCatalog? references = null,
         GuardianPublishedSiteCatalog? publishedSites = null,
         GuardianSiteTemplateCatalog? templates = null,
-        RamTahViewModel? ramTah = null)
+        RamTahViewModel? ramTah = null,
+        GuardianOverlaySettingsStore? overlaySettingsStore = null)
     {
         this.references = references ?? GuardianSiteCatalog.LoadEmbedded();
         this.publishedSites = publishedSites
             ?? GuardianPublishedSiteCatalog.LoadEmbedded();
         this.templates = templates ?? GuardianSiteTemplateCatalog.LoadEmbedded();
         this.ramTah = ramTah;
+        this.overlaySettingsStore = overlaySettingsStore;
+        var overlayPreferences = overlaySettingsStore?.Load()
+            ?? GuardianOverlayPreferences.Default;
+        enableGuardianSites = overlayPreferences.EnableGuardianSites;
+        autoShowGuardianSummary = overlayPreferences.AutoShowGuardianSummary;
+        autoShowRamTah = overlayPreferences.AutoShowRamTah;
+        suppressForActiveBuildProjects =
+            overlayPreferences.SuppressForActiveBuildProjects;
         if (this.ramTah is not null)
         {
-            this.ramTah.PropertyChanged += (_, _) => NotifyCurrentObeliskChanged();
+            this.ramTah.PropertyChanged += (_, _) =>
+            {
+                NotifyCurrentObeliskChanged();
+                NotifyAuxiliaryOverlayState();
+            };
         }
         completionCalculator = new GuardianSurveyCompletionCalculator(this.templates);
         commanderDataReader = new GuardianCommanderDataReader(dataDirectory);
@@ -122,6 +144,127 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     public ICommand ToggleCurrentObeliskScannedCommand { get; }
 
     public GuardianSurveyEditorViewModel SurveyEditor { get; }
+
+    public bool EnableGuardianSites
+    {
+        get => enableGuardianSites;
+        set
+        {
+            if (SetField(ref enableGuardianSites, value))
+            {
+                SaveOverlayPreferences();
+                NotifyAuxiliaryOverlayState();
+            }
+        }
+    }
+
+    public bool AutoShowGuardianSummary
+    {
+        get => autoShowGuardianSummary;
+        set
+        {
+            if (SetField(ref autoShowGuardianSummary, value))
+            {
+                SaveOverlayPreferences();
+                NotifyAuxiliaryOverlayState();
+            }
+        }
+    }
+
+    public bool AutoShowRamTah
+    {
+        get => autoShowRamTah;
+        set
+        {
+            if (SetField(ref autoShowRamTah, value))
+            {
+                SaveOverlayPreferences();
+                NotifyAuxiliaryOverlayState();
+            }
+        }
+    }
+
+    public bool SuppressForActiveBuildProjects
+    {
+        get => suppressForActiveBuildProjects;
+        set
+        {
+            if (SetField(ref suppressForActiveBuildProjects, value))
+            {
+                SaveOverlayPreferences();
+                NotifyAuxiliaryOverlayState();
+            }
+        }
+    }
+
+    public string OverlaySettingsStatus
+    {
+        get => overlaySettingsStatus;
+        private set
+        {
+            if (SetField(ref overlaySettingsStatus, value))
+            {
+                OnPropertyChanged(nameof(HasOverlaySettingsStatus));
+            }
+        }
+    }
+
+    public bool HasOverlaySettingsStatus =>
+        !string.IsNullOrWhiteSpace(OverlaySettingsStatus);
+
+    public IReadOnlyList<GuardianSiteRowViewModel> CurrentSystemSites => visits
+        .Visits
+        .Where(visit => visit.Reference.Kind != GuardianSiteKind.Beacon
+            && string.Equals(
+                visit.Reference.SystemName,
+                currentSystemName,
+                StringComparison.OrdinalIgnoreCase))
+        .Select(visit => new GuardianSiteRowViewModel(
+            visit,
+            0,
+            IsCurrentDestination(visit.Reference)))
+        .OrderBy(row => row.Reference.BodyName, StringComparer.OrdinalIgnoreCase)
+        .ThenBy(row => row.Reference.Index)
+        .ToArray();
+
+    public bool HasCurrentSystemSites => CurrentSystemSites.Count > 0;
+
+    public string CurrentSystemGuardianTitle => CurrentSystemSites.Count switch
+    {
+        1 => "1 Guardian site in this system",
+        var count => $"{count:N0} Guardian sites in this system",
+    };
+
+    public IReadOnlyList<GuardianRamTahLogViewModel> CurrentRamTahLogs =>
+        BuildCurrentRamTahLogs();
+
+    public bool HasCurrentRamTahLogs => CurrentRamTahLogs.Count > 0;
+
+    public string CurrentRamTahTitle => CurrentRamTahLogs.Count switch
+    {
+        0 => "No new Ram Tah logs at this site",
+        1 => "1 Ram Tah log needed at this site",
+        var count => $"{count:N0} Ram Tah logs needed at this site",
+    };
+
+    public bool ShouldShowGuardianSystemSummary => EnableGuardianSites
+        && AutoShowGuardianSummary
+        && !ShouldSuppressAuxiliaryOverlays
+        && !isSystemSummaryObscured
+        && HasCurrentSystemSites
+        && IsGuardianSummaryStatusEligible(currentStatus);
+
+    public bool ShouldShowRamTahOverlay => EnableGuardianSites
+        && AutoShowRamTah
+        && !ShouldSuppressAuxiliaryOverlays
+        && ActiveSite is not null
+        && ramTah?.IsAnyMissionActive == true
+        && IsActiveSiteRelevantToRamTahMission()
+        && currentStatus?.HasLatitudeLongitude == true
+        && IsRamTahStatusEligible(currentStatus);
+
+    private bool ShouldSuppressAuxiliaryOverlays =>
+        SuppressForActiveBuildProjects && hasActiveBuildProjects;
 
     public IReadOnlyList<GuardianSiteRowViewModel> Rows
     {
@@ -360,6 +503,28 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         clipboardWriter = writer;
     }
 
+    public void SetActiveBuildProjects(bool hasProjects)
+    {
+        if (hasActiveBuildProjects == hasProjects)
+        {
+            return;
+        }
+
+        hasActiveBuildProjects = hasProjects;
+        NotifyAuxiliaryOverlayState();
+    }
+
+    public void SetSystemSummaryObscured(bool obscured)
+    {
+        if (isSystemSummaryObscured == obscured)
+        {
+            return;
+        }
+
+        isSystemSummaryObscured = obscured;
+        OnPropertyChanged(nameof(ShouldShowGuardianSystemSummary));
+    }
+
     public void UpdateCurrentSystem(
         string? systemName,
         GalacticCoordinate? position)
@@ -378,6 +543,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(OriginStatus));
         SelectedSite = null;
         ApplyFilters();
+        NotifyAuxiliaryOverlayState();
     }
 
     public void UpdateStatus(EliteStatus status)
@@ -385,6 +551,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(status);
         currentStatus = status;
         UpdateProximity();
+        NotifyAuxiliaryOverlayState();
     }
 
     public void UpdateCargo(CargoSnapshot? cargo)
@@ -392,6 +559,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         if (cargo is not null && artifactInventory.Reset(cargo))
         {
             NotifyCurrentObeliskChanged();
+            NotifyAuxiliaryOverlayState();
         }
     }
 
@@ -493,6 +661,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         if (inventoryChanged)
         {
             NotifyCurrentObeliskChanged();
+            NotifyAuxiliaryOverlayState();
         }
 
         if (saveStatus is not null)
@@ -776,6 +945,152 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         return $"{category} {number}";
     }
 
+    private IReadOnlyList<GuardianRamTahLogViewModel> BuildCurrentRamTahLogs()
+    {
+        var site = ActiveSite;
+        var reference = site?.Reference;
+        if (site is null
+            || reference is null
+            || ramTah is null
+            || !IsActiveSiteRelevantToRamTahMission())
+        {
+            return [];
+        }
+
+        var mission = GetMission();
+        var survey = FindSurvey(site);
+        return GetMergedActiveObelisks(reference, survey)
+            .Where(obelisk => !string.IsNullOrWhiteSpace(obelisk.LogCode)
+                && !ramTah.IsLogCompleted(mission, obelisk.LogCode))
+            .GroupBy(
+                obelisk => obelisk.LogCode,
+                StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                var obelisks = group
+                    .OrderBy(obelisk => obelisk.Name)
+                    .ToArray();
+                var requirements = artifactInventory.GetRequirements(
+                    obelisks[0].ItemCodes);
+                return new GuardianRamTahLogViewModel(
+                    group.Key,
+                    GetLogDisplayName(group.Key),
+                    requirements.Count == 0
+                        ? "No artifact requirement recorded"
+                        : string.Join(
+                            " + ",
+                            requirements.Select(requirement =>
+                                $"{requirement.DisplayName} "
+                                + $"{requirement.Available}/"
+                                + $"{requirement.Required}")),
+                    requirements.All(requirement => requirement.IsMet),
+                    string.Join(", ", obelisks.Select(obelisk => obelisk.Name)));
+            })
+            .OrderBy(log => log.LogCode, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private bool IsActiveSiteRelevantToRamTahMission()
+    {
+        return ActiveSite?.Kind switch
+        {
+            GuardianSiteKind.Ruins =>
+                ramTah?.IsAncientRuinsMissionActive == true,
+            GuardianSiteKind.Structure =>
+                ramTah?.IsGuardianLogsMissionActive == true,
+            _ => false,
+        };
+    }
+
+    private bool IsCurrentDestination(GuardianSiteReference reference)
+    {
+        var destination = currentStatus?.Destination;
+        return destination is not null
+            && destination.System == reference.SystemAddress
+            && destination.Body == reference.BodyId;
+    }
+
+    private static bool IsGuardianSummaryStatusEligible(EliteStatus? status)
+    {
+        if (status is null)
+        {
+            return false;
+        }
+
+        return status.GuiFocus is GuiFocus.ExternalPanel
+                or GuiFocus.Orrery
+                or GuiFocus.SystemMap
+            || status.GuiFocus == GuiFocus.NoFocus
+                && status.Flags.HasFlag(StatusFlags.Supercruise);
+    }
+
+    private static bool IsRamTahStatusEligible(EliteStatus? status)
+    {
+        if (status is null)
+        {
+            return false;
+        }
+
+        if (status.GuiFocus is GuiFocus.CommsPanel or GuiFocus.InternalPanel)
+        {
+            return true;
+        }
+
+        if (status.GuiFocus != GuiFocus.NoFocus)
+        {
+            return false;
+        }
+
+        var flying = status.InMainShip
+            && !status.Docked
+            && !status.Landed
+            && !status.Flags.HasFlag(StatusFlags.Supercruise)
+            && !status.GlideMode;
+        return status.InSrv
+            || status.OnFoot
+            || status.Landed
+            || flying
+            || status.InFighter;
+    }
+
+    private void SaveOverlayPreferences()
+    {
+        if (overlaySettingsStore is null)
+        {
+            return;
+        }
+
+        try
+        {
+            overlaySettingsStore.Save(new GuardianOverlayPreferences(
+                EnableGuardianSites,
+                AutoShowGuardianSummary,
+                AutoShowRamTah,
+                SuppressForActiveBuildProjects));
+            OverlaySettingsStatus = string.Empty;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            OverlaySettingsStatus =
+                $"Guardian overlay settings could not be saved: {exception.Message}";
+        }
+    }
+
+    private void NotifyAuxiliaryOverlayState()
+    {
+        OnPropertyChanged(nameof(CurrentSystemSites));
+        OnPropertyChanged(nameof(HasCurrentSystemSites));
+        OnPropertyChanged(nameof(CurrentSystemGuardianTitle));
+        OnPropertyChanged(nameof(CurrentRamTahLogs));
+        OnPropertyChanged(nameof(HasCurrentRamTahLogs));
+        OnPropertyChanged(nameof(CurrentRamTahTitle));
+        OnPropertyChanged(nameof(ShouldShowGuardianSystemSummary));
+        OnPropertyChanged(nameof(ShouldShowRamTahOverlay));
+    }
+
     private void NotifyActiveSiteChanged()
     {
         OnPropertyChanged(nameof(ActiveSite));
@@ -785,6 +1100,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ActiveSiteReference));
         OnPropertyChanged(nameof(ActiveSiteLocation));
         OnPropertyChanged(nameof(ActiveSiteVisit));
+        NotifyAuxiliaryOverlayState();
     }
 
     private void NotifyCurrentObeliskChanged()
@@ -805,6 +1121,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ActiveMapProjection));
         OnPropertyChanged(nameof(ActiveMapTitle));
         OnPropertyChanged(nameof(ActiveMapSummary));
+        OnPropertyChanged(nameof(CurrentRamTahLogs));
+        OnPropertyChanged(nameof(HasCurrentRamTahLogs));
+        OnPropertyChanged(nameof(CurrentRamTahTitle));
         toggleCurrentObeliskScannedCommand.RaiseCanExecuteChanged();
     }
 
@@ -1053,6 +1372,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         Summary = $"{Rows.Count:N0} of {references.Count:N0} sites"
             + $" | visited: {visited:N0}"
             + $" | surveys complete: {surveyed:N0}";
+        NotifyAuxiliaryOverlayState();
     }
 
     private static bool MatchesText(GuardianSiteVisit visit, string text)
@@ -1126,13 +1446,16 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
 public sealed class GuardianSiteRowViewModel(
     GuardianSiteVisit visit,
-    double? distance)
+    double? distance,
+    bool isDestination = false)
 {
     public GuardianSiteVisit Visit { get; } = visit;
 
     public GuardianSiteReference Reference => Visit.Reference;
 
     public double? Distance { get; } = distance;
+
+    public bool IsDestination { get; } = isDestination;
 
     public string DisplayId => Reference.DisplayId;
 
@@ -1170,4 +1493,14 @@ public sealed class GuardianSiteRowViewModel(
             ? "No commander notes."
             : $"Related structure: {Reference.RelatedStructure}"
         : Visit.Notes;
+}
+
+public sealed record GuardianRamTahLogViewModel(
+    string LogCode,
+    string LogName,
+    string RequirementsText,
+    bool HasArtifacts,
+    string ObeliskNamesText)
+{
+    public string ArtifactStatus => HasArtifacts ? "READY" : "MISSING";
 }
