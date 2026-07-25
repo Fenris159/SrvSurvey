@@ -52,6 +52,7 @@ public sealed class LegacyProfileImporter(TimeProvider? timeProvider = null)
         var previousDestinationStage = Path.Combine(
             backupStage,
             "previous-destination");
+        var profileActivated = false;
 
         Directory.CreateDirectory(backupParent);
 
@@ -133,7 +134,33 @@ public sealed class LegacyProfileImporter(TimeProvider? timeProvider = null)
                 destination,
                 destinationStage,
                 rollbackDirectory);
+            profileActivated = true;
+            await VerifyMergedProfileAsync(
+                    destination,
+                    sourceInventory,
+                    destinationInventory,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            await VerifyManifestCopyAsync(
+                    Path.Combine(finalBackup, ManifestFileName),
+                    Path.Combine(destination, ManifestFileName),
+                    cancellationToken)
+                .ConfigureAwait(false);
+            // The activated profile is now independently verified. A failure
+            // while pruning the redundant rollback must never replace it with
+            // a partially deleted rollback directory.
+            profileActivated = false;
+            TryDeleteVerifiedRollback(rollbackDirectory);
             return new ProfileImportResult(destination, finalBackup, manifest);
+        }
+        catch
+        {
+            if (profileActivated)
+            {
+                RollBackActivatedProfile(destination, rollbackDirectory);
+            }
+
+            throw;
         }
         finally
         {
@@ -245,6 +272,29 @@ public sealed class LegacyProfileImporter(TimeProvider? timeProvider = null)
         }
     }
 
+    private static async Task VerifyManifestCopyAsync(
+        string expectedPath,
+        string activatedPath,
+        CancellationToken cancellationToken)
+    {
+        var expectedHash = await ProfileInventory.ComputeSha256Async(
+                expectedPath,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var activatedHash = await ProfileInventory.ComputeSha256Async(
+                activatedPath,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (!string.Equals(
+                expectedHash,
+                activatedHash,
+                StringComparison.Ordinal))
+        {
+            throw new IOException(
+                "The activated profile import manifest did not match its verified backup.");
+        }
+    }
+
     private static IReadOnlyList<ProfileImportConflict> FindConflicts(
         ProfileInventory source,
         ProfileInventory destination)
@@ -291,12 +341,22 @@ public sealed class LegacyProfileImporter(TimeProvider? timeProvider = null)
         try
         {
             Directory.Move(destinationStage, destination);
-            DeleteStagingDirectory(rollbackDirectory);
         }
         catch
         {
             RestoreRollbackIfRequired(destination, rollbackDirectory);
             throw;
+        }
+    }
+
+    private static void RollBackActivatedProfile(
+        string destination,
+        string rollbackDirectory)
+    {
+        DeleteStagingDirectory(destination);
+        if (Directory.Exists(rollbackDirectory))
+        {
+            Directory.Move(rollbackDirectory, destination);
         }
     }
 
@@ -377,6 +437,21 @@ public sealed class LegacyProfileImporter(TimeProvider? timeProvider = null)
         if (Directory.Exists(path))
         {
             Directory.Delete(path, true);
+        }
+    }
+
+    private static void TryDeleteVerifiedRollback(string path)
+    {
+        try
+        {
+            DeleteStagingDirectory(path);
+        }
+        catch (Exception exception) when (exception is IOException
+            or UnauthorizedAccessException)
+        {
+            // The new destination and permanent backup are already verified.
+            // Retaining this redundant rollback is safer than reporting a
+            // failed import after activation succeeded.
         }
     }
 }

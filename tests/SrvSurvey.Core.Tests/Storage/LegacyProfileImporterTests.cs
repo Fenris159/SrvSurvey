@@ -48,6 +48,13 @@ public sealed class LegacyProfileImporterTests : IDisposable
             Path.Combine(destination, LegacyProfileImporter.ManifestFileName)));
         Assert.True(File.Exists(
             Path.Combine(result.BackupDirectory, LegacyProfileImporter.ManifestFileName)));
+        Assert.Equal(
+            await File.ReadAllBytesAsync(Path.Combine(
+                result.BackupDirectory,
+                LegacyProfileImporter.ManifestFileName)),
+            await File.ReadAllBytesAsync(Path.Combine(
+                destination,
+                LegacyProfileImporter.ManifestFileName)));
         Assert.Equal(2, result.Manifest.Entries.Count);
         Assert.All(result.Manifest.Entries, entry => Assert.Equal(64, entry.Sha256.Length));
     }
