@@ -17,6 +17,8 @@ public sealed class JournalSessionState
 
     public string? GameMode { get; private set; }
 
+    public string? ShipType { get; private set; }
+
     public string? SystemName { get; private set; }
 
     public long? SystemAddress { get; private set; }
@@ -63,7 +65,16 @@ public sealed class JournalSessionState
                 GameVersion = GetString(root, "gameversion") ?? GameVersion;
                 GameBuild = GetString(root, "build") ?? GameBuild;
                 IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
+                ShipType = GetString(root, "Ship") ?? ShipType;
                 IsShutdown = false;
+                break;
+
+            case "Loadout":
+                ShipType = GetString(root, "Ship") ?? ShipType;
+                break;
+
+            case "ShipyardSwap":
+                ShipType = GetString(root, "ShipType") ?? ShipType;
                 break;
 
             case "Location":

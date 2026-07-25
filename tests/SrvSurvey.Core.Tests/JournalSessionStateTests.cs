@@ -14,6 +14,8 @@ public sealed class JournalSessionStateTests
             """{"timestamp":"2026-07-24T10:00:00Z","event":"Commander","Name":"Drew","FID":"F123"}""")));
         Assert.True(state.Apply(Parse(
             """{"timestamp":"2026-07-24T10:00:01Z","event":"Location","StarSystem":"Sol","SystemAddress":"10477373803","StarPos":[0,0,0],"Body":"Earth","BodyType":"Planet"}""")));
+        Assert.True(state.Apply(Parse(
+            """{"timestamp":"2026-07-24T10:00:01Z","event":"Loadout","Ship":"mandalay"}""")));
         Assert.False(state.Apply(Parse(
             """{"timestamp":"2026-07-24T10:00:02Z","event":"FutureEvent","Value":42}""")));
         Assert.True(state.Apply(Parse(
@@ -27,8 +29,9 @@ public sealed class JournalSessionStateTests
         Assert.Equal(new GalacticCoordinate(0, 0, 0), snapshot.StarPosition);
         Assert.Equal("Earth", snapshot.BodyName);
         Assert.True(snapshot.IsShutdown);
-        Assert.Equal(4, snapshot.ValidLineCount);
-        Assert.Equal(3, snapshot.RecognizedEventCount);
+        Assert.Equal("mandalay", state.ShipType);
+        Assert.Equal(5, snapshot.ValidLineCount);
+        Assert.Equal(4, snapshot.RecognizedEventCount);
         Assert.Equal(1, state.UnhandledEventCount);
         Assert.Equal(
             DateTimeOffset.Parse("2026-07-24T10:00:03Z"),
