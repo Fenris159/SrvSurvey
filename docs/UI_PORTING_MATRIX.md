@@ -33,7 +33,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, standalone system/body predictions, `FormShowCodex`, full commander/region `FormCodexBingo`, `PlotPriorScans`, and consolidated `PlotGrounded`/`PlotTrackers` history, tracking, zoom, and quick-location workflow implemented; the experimental `PlotMiniTrack` variant and Human-site arbitration remain open |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance and passive overlay, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
-| Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
+| Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; their combined `PlotSphericalSearch` Galaxy Map guidance is implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
@@ -125,11 +125,17 @@ Wayland disablement. The detached Guardian window is a partial consolidation of
 the live native map, commander marker, nearest/current obelisk, artifact
 requirements, scan state, and Ram Tah mission status. Site-type, heading,
 origin/alignment, POI marking input, glide/approach guidance, and
-`PlotGuardianSystem` remain open. The followed-route slice of
-`PlotSphericalSearch` is implemented as a compact Galaxy Map overlay with route
-priority, one-copy-per-entry behavior, destination state, distance, progress,
-and notes/refuel/neutron guidance. Its spherical-limit and Boxel slices remain
-open. `PlotJumpInfo` is implemented as a modern top-center passive overlay with
+`PlotGuardianSystem` remain open. `PlotSphericalSearch` is implemented as a
+combined top-right Galaxy Map overlay at the original 8-pixel anchor. It stacks
+every enabled legacy slice: spherical-limit center/final-route destination/
+distance and inside/outside evaluation; Boxel prefix, visited progress, next
+system, outside/low-mass/already-surveyed destination validation and clipboard
+state; and followed-route priority, one-copy-per-entry behavior, destination
+state, distance, progress, and notes/refuel/neutron guidance. The earlier
+route-only top-left window was removed. Automated state, precedence,
+passive-preparation, XAML compilation, and full-suite checks passed; the
+corrected combined layout intentionally awaits the final visual/theme pass.
+`PlotJumpInfo` is implemented as a modern top-center passive overlay with
 the original automatic FSD-charge/witchspace/selected-next-hop lifecycle and
 `Alt+D` toggle. It preserves target precedence, nav-route/followed-route
 fallback, proportional distance/progress, scoopable and boosted-hop cues,
