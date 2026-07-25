@@ -349,6 +349,22 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
+    public Task ImportNamesTextAsync(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            StatusMessage = "No system names were available to import.";
+            return Task.CompletedTask;
+        }
+
+        return ImportNamesAsync(RouteNameImporter.ParseNames(text));
+    }
+
+    public void ReportImportError(string message)
+    {
+        StatusMessage = message;
+    }
+
     public async Task ImportSpanshUrlAsync(string? text)
     {
         if (!HasProfile || IsBusy)

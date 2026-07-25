@@ -7,6 +7,7 @@ using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
+using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
@@ -133,6 +134,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             sharedSystemResolver,
             systemNoteStore,
             systemNotesSettingsStore);
+        Route = new RouteWorkspaceViewModel(
+            new FollowRouteService(
+                new FollowRouteStore(AppDataPaths.DataDirectory)),
+            new RouteNameImporter(sharedSystemResolver),
+            new SpanshRouteClient());
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,
@@ -221,6 +227,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public SystemNotesViewModel SystemNotes { get; }
 
     public JourneyWorkspaceViewModel Journey { get; }
+
+    public RouteWorkspaceViewModel Route { get; }
 
     public SphereLimitViewModel Search { get; }
 
@@ -786,6 +794,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         if (!initializedJourney)
         {
             await Journey.ApplyJournalEventsAsync(update.JournalEvents);
+        }
+
+        await Route.UpdateContextAsync(
+            journalState.FrontierId,
+            journalState.SystemName,
+            journalState.SystemAddress,
+            journalState.StarPosition);
+        if (!update.IsBootstrapRead)
+        {
+            await Route.ApplyJournalEventsAsync(update.JournalEvents);
         }
 
         var explorationBefore = explorationState.CreateSnapshot();

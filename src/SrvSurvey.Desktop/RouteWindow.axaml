@@ -1,0 +1,212 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.RouteWindow"
+        x:DataType="vm:RouteWorkspaceViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="1100"
+        d:DesignHeight="760"
+        Width="1100"
+        Height="760"
+        MinWidth="880"
+        MinHeight="560"
+        WindowStartupLocation="CenterOwner"
+        Title="Follow route - SrvSurvey">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Border Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="24,18">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="FOLLOWED ROUTE" />
+          <TextBlock Classes="page-title" FontSize="24" Text="Navigation itinerary" />
+          <TextBlock Classes="muted"
+                     Text="Import a route, track each arrival, and keep the next system ready for the Galaxy Map." />
+        </StackPanel>
+        <StackPanel Grid.Column="1"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Spacing="10">
+          <Button Classes="secondary"
+                  Command="{Binding RefreshCommand}"
+                  Content="Reload" />
+          <Button Classes="secondary" Click="Close_Click" Content="Close" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="310,*">
+      <Border Background="{DynamicResource RavenSidebarBrush}"
+              BorderBrush="{DynamicResource RavenBorderBrush}"
+              BorderThickness="0,0,1,0"
+              Padding="18">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="16">
+            <Border Classes="card raised" Padding="18">
+              <StackPanel Spacing="11">
+                <TextBlock Classes="muted" FontSize="10" Text="NEXT SYSTEM" />
+                <TextBlock FontSize="22"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource RavenAccentBrush}"
+                           Text="{Binding NextHopName}"
+                           TextWrapping="Wrap" />
+                <TextBlock Classes="muted"
+                           Text="{Binding ProgressSummary}"
+                           TextWrapping="Wrap" />
+                <Button Classes="primary"
+                        HorizontalAlignment="Left"
+                        Command="{Binding CopyNextHopCommand}"
+                        Content="Copy next hop" />
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card" Padding="18">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="card-title" Text="Route behavior" />
+                <CheckBox IsChecked="{Binding IsActive, Mode=TwoWay}"
+                          IsEnabled="{Binding CanActivate}"
+                          Content="Actively follow this route" />
+                <CheckBox IsChecked="{Binding AutoCopy, Mode=TwoWay}"
+                          Content="Auto-copy the next hop" />
+                <TextBlock Classes="muted"
+                           FontSize="11"
+                           Text="{Binding AutoCopySummary}"
+                           TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card" Padding="18">
+              <StackPanel Spacing="11">
+                <TextBlock Classes="card-title" Text="Replace from import" />
+                <TextBlock Classes="muted"
+                           FontSize="11"
+                           TextWrapping="Wrap"
+                           Text="Imports replace the on-screen draft. Nothing is written until Save route." />
+                <Button Classes="secondary"
+                        Click="ImportSpansh_Click"
+                        IsEnabled="{Binding !IsBusy}"
+                        Content="Spansh URL from clipboard" />
+                <Button Classes="secondary"
+                        Click="ImportNames_Click"
+                        IsEnabled="{Binding !IsBusy}"
+                        Content="System names from clipboard" />
+                <Button Classes="secondary"
+                        Click="ImportFile_Click"
+                        IsEnabled="{Binding !IsBusy}"
+                        Content="System names from file" />
+              </StackPanel>
+            </Border>
+
+            <StackPanel Spacing="4">
+              <TextBlock Classes="muted" FontSize="10" Text="COMMANDER CONTEXT" />
+              <TextBlock FontWeight="SemiBold" Text="{Binding CurrentSystem}" />
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         Text="{Binding RouteFileName}" />
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+
+      <Grid Grid.Column="1" Margin="20" RowDefinitions="Auto,*" RowSpacing="10">
+        <Border Classes="card" Padding="12,9">
+          <Grid ColumnDefinitions="48,*,112,2*" ColumnSpacing="12">
+            <TextBlock Classes="muted" Text="DONE" />
+            <TextBlock Grid.Column="1" Classes="muted" Text="SYSTEM" />
+            <TextBlock Grid.Column="2" Classes="muted" Text="DISTANCE" />
+            <TextBlock Grid.Column="3" Classes="muted" Text="GUIDANCE / NOTES" />
+          </Grid>
+        </Border>
+
+        <Grid Grid.Row="1">
+          <StackPanel HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Spacing="7"
+                      IsVisible="{Binding !HasRoute}">
+            <TextBlock Classes="page-title" FontSize="22" Text="No route loaded" />
+            <TextBlock Classes="muted"
+                       Text="Import a Spansh route or a list of system names." />
+          </StackPanel>
+
+          <ListBox ItemsSource="{Binding Hops}"
+                   IsVisible="{Binding HasRoute}"
+                   Background="Transparent"
+                   BorderThickness="0">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:RouteHopItemViewModel">
+                <Border Classes="card" Padding="12" Margin="0,0,0,8">
+                  <Grid ColumnDefinitions="48,*,112,2*" ColumnSpacing="12">
+                    <CheckBox HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding IsReached, Mode=OneWay}"
+                              Click="HopCheckBox_Click" />
+                    <StackPanel Grid.Column="1" Spacing="3">
+                      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <TextBlock Classes="muted"
+                                   Text="{Binding Number, StringFormat='#{0}'}" />
+                        <TextBlock Grid.Column="1"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding Name}"
+                                   TextTrimming="CharacterEllipsis" />
+                      </Grid>
+                      <Border Classes="badge"
+                              HorizontalAlignment="Left"
+                              IsVisible="{Binding HasState}"
+                              Padding="7,2">
+                        <TextBlock FontSize="9"
+                                   Foreground="{DynamicResource RavenAccentBrush}"
+                                   Text="{Binding State}" />
+                      </Border>
+                    </StackPanel>
+                    <TextBlock Grid.Column="2"
+                               VerticalAlignment="Center"
+                               Classes="monospace"
+                               Text="{Binding Distance}" />
+                    <TextBlock Grid.Column="3"
+                               VerticalAlignment="Center"
+                               Classes="muted"
+                               Text="{Binding Notes}"
+                               TextWrapping="Wrap" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </Grid>
+    </Grid>
+
+    <Border Grid.Row="2"
+            Background="{DynamicResource RavenSurfaceBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="20,13">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Border Classes="badge"
+                  IsVisible="{Binding IsDirty}"
+                  Padding="8,3">
+            <TextBlock FontSize="9"
+                       Foreground="{DynamicResource RavenWarningBrush}"
+                       Text="UNSAVED" />
+          </Border>
+          <TextBlock Classes="muted"
+                     VerticalAlignment="Center"
+                     Text="{Binding StatusMessage}"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+          <Button Classes="secondary"
+                  Command="{Binding DiscardCommand}"
+                  Content="Discard" />
+          <Button Classes="primary"
+                  Command="{Binding SaveCommand}"
+                  Content="Save route" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

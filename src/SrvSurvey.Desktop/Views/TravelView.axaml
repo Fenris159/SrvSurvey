@@ -122,7 +122,7 @@
         </Border>
       </Grid>
 
-      <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18">
         <Border Classes="card raised">
           <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
@@ -193,6 +193,46 @@
                     HorizontalAlignment="Left"
                     Command="{Binding Journey.OpenWindowCommand}"
                     Content="Open Journey workspace" />
+          </Grid>
+        </Border>
+
+        <Border Grid.Column="2" Classes="card raised">
+          <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="card-title" Text="Followed route" />
+                <TextBlock Classes="muted"
+                           Text="{Binding Route.NextHopName}"
+                           TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+              <Border Grid.Column="1"
+                      Classes="badge"
+                      VerticalAlignment="Top"
+                      IsVisible="{Binding Route.IsActive}">
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontSize="10"
+                           FontWeight="SemiBold"
+                           Text="ACTIVE" />
+              </Border>
+              <Border Grid.Column="1"
+                      Classes="badge"
+                      VerticalAlignment="Top"
+                      IsVisible="{Binding !Route.IsActive}">
+                <TextBlock Classes="muted"
+                           FontSize="10"
+                           FontWeight="SemiBold"
+                           Text="READY" />
+              </Border>
+            </Grid>
+            <TextBlock Grid.Row="1"
+                       Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding Route.ProgressSummary}" />
+            <Button Grid.Row="2"
+                    Classes="primary"
+                    HorizontalAlignment="Left"
+                    Command="{Binding Route.OpenWindowCommand}"
+                    Content="Open route workspace" />
           </Grid>
         </Border>
       </Grid>

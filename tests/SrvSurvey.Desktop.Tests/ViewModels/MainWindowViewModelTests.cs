@@ -2,6 +2,7 @@ using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Search;
 
@@ -137,6 +138,86 @@ public sealed class MainWindowViewModelTests
             Assert.True(viewModel.SystemNotes.HasCurrentSystem);
             Assert.Equal("Sol", viewModel.SystemNotes.SystemName);
             Assert.Equal("10477373803", viewModel.SystemNotes.SystemAddress);
+            Assert.True(viewModel.Route.HasProfile);
+            Assert.Equal("Sol", viewModel.Route.CurrentSystem);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task RefreshConnectsFollowedRouteAndLiveFsdProgress()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-live-route-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-24T100000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"event\":\"Location\",\"StarSystem\":\"Sol\","
+                    + "\"SystemAddress\":1,\"StarPos\":[0,0,0]}\n");
+            var store = new FollowRouteStore(profile);
+            await store.SaveAsync(new FollowRouteDocument(
+                "F123",
+                store.GetPath("F123"),
+                true,
+                true,
+                0,
+                [
+                    new FollowRouteHop(
+                        "Sol",
+                        1,
+                        new GalacticCoordinate(0, 0, 0),
+                        null,
+                        false,
+                        false),
+                    new FollowRouteHop(
+                        "Second",
+                        2,
+                        new GalacticCoordinate(3, 4, 0),
+                        null,
+                        false,
+                        false),
+                ]));
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths);
+
+            await viewModel.RefreshAsync();
+
+            Assert.Equal("Second", viewModel.Route.NextHopName);
+            Assert.Equal(1, viewModel.Route.ReachedCount);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-24T12:00:00Z\","
+                    + "\"event\":\"FSDJump\",\"StarSystem\":\"Second\","
+                    + "\"SystemAddress\":2,\"StarPos\":[3,4,0]}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.True(viewModel.Route.IsComplete);
+            Assert.False(viewModel.Route.IsActive);
+            Assert.Equal(2, viewModel.Route.ReachedCount);
+            Assert.True((await store.LoadAsync("F123")).Route!.IsComplete);
         }
         finally
         {
