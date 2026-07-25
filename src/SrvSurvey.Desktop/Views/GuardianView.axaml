@@ -24,7 +24,7 @@
                 Content="{Binding Guardian.RefreshButtonText}" />
       </Grid>
 
-      <TabControl>
+      <TabControl SelectedIndex="{Binding Guardian.SelectedWorkspaceTabIndex, Mode=TwoWay}">
         <TabItem Header="Sites &amp; surveys">
           <StackPanel Margin="0,16,0,0" Spacing="20">
       <Border Classes="card raised">
@@ -53,6 +53,48 @@
                        FontWeight="SemiBold"
                        Text="{Binding Guardian.ActiveSiteReference}" />
           </Border>
+        </Grid>
+      </Border>
+
+      <Border Classes="card">
+        <Grid ColumnDefinitions="2*,3*" ColumnSpacing="24">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="muted" Text="DISTANCE ORIGIN" />
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+              <TextBox Text="{Binding Guardian.OriginSystemName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       PlaceholderText="Star-system name" />
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      Command="{Binding Guardian.LookupOriginCommand}"
+                      Content="{Binding Guardian.OriginLookupButtonText}" />
+              <Button Grid.Column="2"
+                      Classes="secondary"
+                      IsVisible="{Binding Guardian.HasCustomOrigin}"
+                      Command="{Binding Guardian.ClearOriginCommand}"
+                      Content="Use current" />
+            </Grid>
+            <TextBlock Classes="muted"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Text="{Binding Guardian.OriginLookupStatus}" />
+          </StackPanel>
+
+          <StackPanel Grid.Column="1" Spacing="8">
+            <TextBlock Classes="muted" Text="RAM TAH CATALOG DATA" />
+            <WrapPanel>
+              <CheckBox Margin="0,0,18,6"
+                        IsChecked="{Binding Guardian.IncludeRamTahLogs, Mode=TwoWay}"
+                        Content="Show logs available at each site" />
+              <CheckBox Margin="0,0,0,6"
+                        IsEnabled="{Binding Guardian.IncludeRamTahLogs}"
+                        IsChecked="{Binding Guardian.ShowOnlyNeededRamTahLogs, Mode=TwoWay}"
+                        Content="Show only logs still needed" />
+            </WrapPanel>
+            <TextBlock Classes="muted"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Text="Needed-only mode follows the active Ram Tah mission and commander checklist; inactive mission types show no log codes." />
+          </StackPanel>
         </Grid>
       </Border>
 
@@ -221,6 +263,16 @@
                          Text="{Binding Guardian.SelectedSite.SurfaceLocation}" />
             </StackPanel>
             <WrapPanel>
+              <Button Classes="primary"
+                      Margin="0,0,8,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSurvey}"
+                      Command="{Binding Guardian.OpenSelectedSurveyCommand}"
+                      Content="Open survey" />
+              <Button Classes="secondary"
+                      Margin="0,0,8,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSite}"
+                      Command="{Binding Guardian.OpenShareWorkspaceCommand}"
+                      Content="Share data" />
               <Button Classes="secondary"
                       Margin="0,0,8,8"
                       IsEnabled="{Binding Guardian.HasSelectedSite}"
@@ -242,6 +294,23 @@
                       Click="CopySurface_Click"
                       Content="Copy lat/long" />
             </WrapPanel>
+            <WrapPanel>
+              <Button Classes="secondary"
+                      Margin="0,0,8,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSite}"
+                      Click="OpenCanonn_Click"
+                      Content="Canonn Signals" />
+              <Button Classes="secondary"
+                      Margin="0,0,8,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSite}"
+                      Click="OpenSpansh_Click"
+                      Content="Spansh" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSite}"
+                      Click="OpenEdsm_Click"
+                      Content="EDSM" />
+            </WrapPanel>
           </StackPanel>
         </Border>
 
@@ -262,6 +331,12 @@
               <TextBlock Classes="muted" Text="NOTES / RELATED SITE" />
               <TextBlock TextWrapping="Wrap"
                          Text="{Binding Guardian.SelectedSite.Notes}" />
+            </StackPanel>
+            <StackPanel Spacing="4"
+                        IsVisible="{Binding Guardian.IncludeRamTahLogs}">
+              <TextBlock Classes="muted" Text="RAM TAH LOGS" />
+              <TextBlock TextWrapping="Wrap"
+                         Text="{Binding Guardian.SelectedSite.RamTahLogsText}" />
             </StackPanel>
           </StackPanel>
         </Border>

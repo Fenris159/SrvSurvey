@@ -110,6 +110,144 @@ public sealed class GuardianViewModelTests
     }
 
     [Fact]
+    public async Task CustomOriginLookupReordersRowsAndClearRestoresJournalOrigin()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var near = CreateReference(
+                1,
+                GuardianSiteKind.Beacon,
+                "Near",
+                1,
+                new GalacticCoordinate(0, 0, 0));
+            var far = CreateReference(
+                2,
+                GuardianSiteKind.Beacon,
+                "Far",
+                2,
+                new GalacticCoordinate(100, 0, 0));
+            var resolver = new StubStarSystemResolver(
+            [
+                new StarSystemReference(
+                    "Far Origin",
+                    100,
+                    new GalacticCoordinate(100, 0, 0)),
+            ]);
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([near, far]),
+                new GuardianPublishedSiteCatalog([]),
+                new GuardianSiteTemplateCatalog([]),
+                systemResolver: resolver);
+            viewModel.UpdateCurrentSystem("Near Origin", near.Position);
+
+            Assert.Equal(near, viewModel.Rows[0].Reference);
+
+            viewModel.OriginSystemName = "Far Origin";
+            await viewModel.LookupOriginAsync();
+
+            Assert.True(viewModel.HasCustomOrigin);
+            Assert.Equal(far, viewModel.Rows[0].Reference);
+            Assert.Equal(0, viewModel.Rows[0].Distance);
+            Assert.Contains("custom origin Far Origin", viewModel.OriginStatus);
+            Assert.Equal("Far Origin", Assert.Single(resolver.Queries));
+
+            await viewModel.ClearCustomOriginAsync();
+
+            Assert.False(viewModel.HasCustomOrigin);
+            Assert.Equal(near, viewModel.Rows[0].Reference);
+            Assert.Contains("Near Origin", viewModel.OriginStatus);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void RamTahCatalogLogsSupportNeededOnlySearchAndSurveyNavigation()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var ruins = CreateReference(
+                1,
+                GuardianSiteKind.Ruins,
+                "Ruins",
+                1,
+                new GalacticCoordinate(0, 0, 0));
+            var structure = CreateReference(
+                2,
+                GuardianSiteKind.Structure,
+                "Structure",
+                2,
+                new GalacticCoordinate(1, 0, 0));
+            var published = new GuardianPublishedSiteCatalog(
+            [
+                CreatePublishedSite(
+                    ruins,
+                    [
+                        new GuardianObelisk("A01", "H1", false, []),
+                        new GuardianObelisk("A02", "B1", false, []),
+                    ]),
+                CreatePublishedSite(
+                    structure,
+                    [new GuardianObelisk("A01", "#1", false, [])]),
+            ]);
+            var ramTah = new RamTahViewModel(new CommanderProfileStore(root));
+            ramTah.LoadProfile(
+                "F123",
+                "Drew",
+                true,
+                new RamTahSnapshot(
+                    RamTahMissionStatus.Active,
+                    RamTahMissionStatus.NotStarted,
+                    ["H1"],
+                    []));
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([ruins, structure]),
+                published,
+                new GuardianSiteTemplateCatalog([]),
+                ramTah);
+
+            viewModel.IncludeRamTahLogs = true;
+
+            Assert.Equal(
+                ["B1", "H1"],
+                viewModel.Rows.Single(row => row.Reference == ruins).RamTahLogCodes);
+            Assert.Equal(
+                ["#1"],
+                viewModel.Rows.Single(row => row.Reference == structure).RamTahLogCodes);
+
+            viewModel.ShowOnlyNeededRamTahLogs = true;
+
+            Assert.Equal(
+                ["B1"],
+                viewModel.Rows.Single(row => row.Reference == ruins).RamTahLogCodes);
+            Assert.Empty(
+                viewModel.Rows.Single(row => row.Reference == structure).RamTahLogCodes);
+
+            viewModel.FilterText = "Biology #1";
+            Assert.Equal(ruins, Assert.Single(viewModel.Rows).Reference);
+            Assert.True(viewModel.HasSelectedSurvey);
+            Assert.Contains("canonn-signals", viewModel.SelectedCanonnUri?.ToString());
+            Assert.Contains("/1", viewModel.SelectedSpanshUri?.ToString());
+            Assert.Contains("systemID64=1", viewModel.SelectedEdsmUri?.ToString());
+
+            viewModel.OpenSelectedSurveyCommand.Execute(null);
+            Assert.Equal(1, viewModel.SelectedWorkspaceTabIndex);
+            viewModel.OpenShareWorkspaceCommand.Execute(null);
+            Assert.Equal(2, viewModel.SelectedWorkspaceTabIndex);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public void GuardianSystemSummaryUsesLegacyModesAndDestinationState()
     {
         var root = CreateTemporaryDirectory();
@@ -492,6 +630,54 @@ public sealed class GuardianViewModelTests
             null);
     }
 
+    private static GuardianSiteReference CreateReference(
+        int siteId,
+        GuardianSiteKind kind,
+        string systemName,
+        long systemAddress,
+        GalacticCoordinate position)
+    {
+        return new GuardianSiteReference(
+            siteId,
+            kind,
+            systemName,
+            systemAddress,
+            "A 1",
+            1,
+            kind == GuardianSiteKind.Beacon ? "Beacon" : "Test",
+            1,
+            100,
+            position,
+            0,
+            0,
+            0,
+            -1,
+            0,
+            null,
+            null,
+            null);
+    }
+
+    private static GuardianPublishedSite CreatePublishedSite(
+        GuardianSiteReference reference,
+        IReadOnlyList<GuardianObelisk> obelisks)
+    {
+        return new GuardianPublishedSite(
+            reference.SiteId,
+            reference.Kind,
+            reference.FullBodyName,
+            reference.SiteType,
+            reference.Index,
+            0,
+            -1,
+            new GuardianSurfaceLocation(0, 0),
+            new Dictionary<string, GuardianPoiStatus>(),
+            new Dictionary<string, int>(),
+            obelisks,
+            string.Empty,
+            $"{reference.SiteId}.json");
+    }
+
     private static EliteStatus StatusNorthOfSite(double distance)
     {
         const double radius = 1_000_000;
@@ -512,5 +698,19 @@ public sealed class GuardianViewModelTests
             out var error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
+    }
+
+    private sealed class StubStarSystemResolver(
+        IReadOnlyList<StarSystemReference> results) : IStarSystemResolver
+    {
+        public List<string> Queries { get; } = [];
+
+        public Task<IReadOnlyList<StarSystemReference>> SearchAsync(
+            string query,
+            CancellationToken cancellationToken = default)
+        {
+            Queries.Add(query);
+            return Task.FromResult(results);
+        }
     }
 }

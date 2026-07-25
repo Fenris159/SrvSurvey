@@ -27,9 +27,14 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private readonly GuardianSurveyShareService surveyShareService;
     private readonly RamTahViewModel? ramTah;
     private readonly GuardianOverlaySettingsStore? overlaySettingsStore;
+    private readonly IStarSystemResolver systemResolver;
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand toggleCurrentObeliskScannedCommand;
     private readonly AsyncCommand prepareShareBundleCommand;
+    private readonly AsyncCommand lookupOriginCommand;
+    private readonly AsyncCommand clearOriginCommand;
+    private readonly AsyncCommand openSelectedSurveyCommand;
+    private readonly AsyncCommand openShareWorkspaceCommand;
     private GuardianLiveSiteState liveSiteState;
     private GuardianCommanderDataReadResult commanderData =
         GuardianCommanderDataReadResult.Empty;
@@ -46,6 +51,14 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private GuardianSiteRowViewModel? selectedSite;
     private GalacticCoordinate? currentPosition;
     private string? currentSystemName;
+    private string originSystemName = string.Empty;
+    private StarSystemReference? customOrigin;
+    private bool isOriginLookupBusy;
+    private string originLookupStatus =
+        "Distances use the current journal system until a custom origin is selected.";
+    private bool includeRamTahLogs;
+    private bool showOnlyNeededRamTahLogs;
+    private int selectedWorkspaceTabIndex;
     private string? activeFrontierId;
     private bool activeIsOdyssey = true;
     private bool isBusy;
@@ -71,7 +84,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         GuardianPublishedSiteCatalog? publishedSites = null,
         GuardianSiteTemplateCatalog? templates = null,
         RamTahViewModel? ramTah = null,
-        GuardianOverlaySettingsStore? overlaySettingsStore = null)
+        GuardianOverlaySettingsStore? overlaySettingsStore = null,
+        IStarSystemResolver? systemResolver = null)
     {
         this.references = references ?? GuardianSiteCatalog.LoadEmbedded();
         this.publishedSites = publishedSites
@@ -79,6 +93,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         this.templates = templates ?? GuardianSiteTemplateCatalog.LoadEmbedded();
         this.ramTah = ramTah;
         this.overlaySettingsStore = overlaySettingsStore;
+        this.systemResolver = systemResolver ?? new SpanshStarSystemResolver();
         var overlayPreferences = overlaySettingsStore?.Load()
             ?? GuardianOverlayPreferences.Default;
         enableGuardianSites = overlayPreferences.EnableGuardianSites;
@@ -92,6 +107,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             {
                 NotifyCurrentObeliskChanged();
                 NotifyAuxiliaryOverlayState();
+                OnPropertyChanged(nameof(HasActiveRamTahMission));
+                if (IncludeRamTahLogs)
+                {
+                    ApplyFilters();
+                }
             };
         }
         completionCalculator = new GuardianSurveyCompletionCalculator(this.templates);
@@ -139,9 +159,27 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         prepareShareBundleCommand = new AsyncCommand(
             PrepareShareBundleAsync,
             () => activeFrontierId is not null && !isPreparingShareBundle);
+        lookupOriginCommand = new AsyncCommand(
+            LookupOriginAsync,
+            () => !IsOriginLookupBusy
+                && !string.IsNullOrWhiteSpace(OriginSystemName));
+        clearOriginCommand = new AsyncCommand(
+            ClearCustomOriginAsync,
+            () => HasCustomOrigin);
+        openSelectedSurveyCommand = new AsyncCommand(
+            OpenSelectedSurveyAsync,
+            () => SelectedSite?.Reference.Kind is GuardianSiteKind.Ruins
+                or GuardianSiteKind.Structure);
+        openShareWorkspaceCommand = new AsyncCommand(
+            OpenShareWorkspaceAsync,
+            () => true);
         RefreshCommand = refreshCommand;
         ToggleCurrentObeliskScannedCommand = toggleCurrentObeliskScannedCommand;
         PrepareShareBundleCommand = prepareShareBundleCommand;
+        LookupOriginCommand = lookupOriginCommand;
+        ClearOriginCommand = clearOriginCommand;
+        OpenSelectedSurveyCommand = openSelectedSurveyCommand;
+        OpenShareWorkspaceCommand = openShareWorkspaceCommand;
         ApplyFilters();
     }
 
@@ -158,6 +196,14 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     public ICommand ToggleCurrentObeliskScannedCommand { get; }
 
     public ICommand PrepareShareBundleCommand { get; }
+
+    public ICommand LookupOriginCommand { get; }
+
+    public ICommand ClearOriginCommand { get; }
+
+    public ICommand OpenSelectedSurveyCommand { get; }
+
+    public ICommand OpenShareWorkspaceCommand { get; }
 
     public GuardianSurveyEditorViewModel SurveyEditor { get; }
 
@@ -334,6 +380,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             if (SetField(ref selectedSite, value))
             {
                 OnPropertyChanged(nameof(HasSelectedSite));
+                OnPropertyChanged(nameof(HasSelectedSurvey));
+                OnPropertyChanged(nameof(SelectedCanonnUri));
+                OnPropertyChanged(nameof(SelectedSpanshUri));
+                OnPropertyChanged(nameof(SelectedEdsmUri));
+                openSelectedSurveyCommand.RaiseCanExecuteChanged();
                 UpdateMapProjection();
                 UpdateSurveyEditor();
             }
@@ -341,6 +392,30 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     }
 
     public bool HasSelectedSite => SelectedSite is not null;
+
+    public bool HasSelectedSurvey => SelectedSite?.Reference.Kind
+        is GuardianSiteKind.Ruins or GuardianSiteKind.Structure;
+
+    public int SelectedWorkspaceTabIndex
+    {
+        get => selectedWorkspaceTabIndex;
+        set => SetField(ref selectedWorkspaceTabIndex, value);
+    }
+
+    public Uri? SelectedCanonnUri => SelectedSite is { } row
+        ? new Uri(
+            "https://canonn-science.github.io/canonn-signals/?system="
+                + Uri.EscapeDataString(row.Reference.SystemName))
+        : null;
+
+    public Uri? SelectedSpanshUri => SelectedSite is { } row
+        ? new Uri($"https://spansh.co.uk/system/{row.Reference.SystemAddress}")
+        : null;
+
+    public Uri? SelectedEdsmUri => SelectedSite is { } row
+        ? new Uri(
+            $"https://www.edsm.net/en/system?systemID64={row.Reference.SystemAddress}")
+        : null;
 
     public GuardianSiteMapProjection? MapProjection
     {
@@ -523,6 +598,69 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool IncludeRamTahLogs
+    {
+        get => includeRamTahLogs;
+        set
+        {
+            if (SetField(ref includeRamTahLogs, value))
+            {
+                ApplyFilters();
+            }
+        }
+    }
+
+    public bool ShowOnlyNeededRamTahLogs
+    {
+        get => showOnlyNeededRamTahLogs;
+        set
+        {
+            if (SetField(ref showOnlyNeededRamTahLogs, value))
+            {
+                ApplyFilters();
+            }
+        }
+    }
+
+    public bool HasActiveRamTahMission => ramTah?.IsAnyMissionActive == true;
+
+    public string OriginSystemName
+    {
+        get => originSystemName;
+        set
+        {
+            if (SetField(ref originSystemName, value))
+            {
+                lookupOriginCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool HasCustomOrigin => customOrigin is not null;
+
+    public bool IsOriginLookupBusy
+    {
+        get => isOriginLookupBusy;
+        private set
+        {
+            if (SetField(ref isOriginLookupBusy, value))
+            {
+                lookupOriginCommand.RaiseCanExecuteChanged();
+                OnPropertyChanged(nameof(OriginLookupButtonText));
+            }
+        }
+    }
+
+    public string OriginLookupButtonText => IsOriginLookupBusy
+        ? "Looking up..."
+        : "Use origin";
+
+    public string OriginLookupStatus
+    {
+        get => originLookupStatus;
+        private set => SetField(ref originLookupStatus, value);
+    }
+
     public bool IsBusy
     {
         get => isBusy;
@@ -550,9 +688,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         private set => SetField(ref summary, value);
     }
 
-    public string OriginStatus => currentPosition is null
-        ? "Distances unavailable until a journal supplies galactic coordinates."
-        : $"Distances from {currentSystemName ?? "current system"}.";
+    public string OriginStatus => customOrigin is { } origin
+        ? $"Distances from custom origin {origin.Name}."
+        : currentPosition is null
+            ? "Distances unavailable until a journal supplies galactic coordinates."
+            : $"Distances from {currentSystemName ?? "current system"}.";
 
     public void SetClipboardWriter(Func<string, Task>? writer)
     {
@@ -587,6 +727,88 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     public void ReportShareLaunch(string message)
     {
         ShareStatusMessage = message;
+    }
+
+    public void ReportSelectedSiteLaunch(string message)
+    {
+        StatusMessage = message;
+    }
+
+    public async Task LookupOriginAsync()
+    {
+        var query = OriginSystemName.Trim();
+        if (query.Length == 0)
+        {
+            OriginLookupStatus = "Enter a star-system name to set a custom origin.";
+            return;
+        }
+
+        IsOriginLookupBusy = true;
+        try
+        {
+            var matches = await systemResolver.SearchAsync(query);
+            var match = matches.FirstOrDefault(candidate => string.Equals(
+                    candidate.Name,
+                    query,
+                    StringComparison.OrdinalIgnoreCase))
+                ?? matches.FirstOrDefault();
+            if (match is null)
+            {
+                OriginLookupStatus = $"No star system matched '{query}'.";
+                return;
+            }
+
+            customOrigin = match;
+            OriginSystemName = match.Name;
+            OnPropertyChanged(nameof(HasCustomOrigin));
+            OnPropertyChanged(nameof(OriginStatus));
+            clearOriginCommand.RaiseCanExecuteChanged();
+            OriginLookupStatus = $"Using {match.Name} {match.Position} as the distance origin.";
+            ApplyFilters();
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or InvalidDataException
+                or TaskCanceledException)
+        {
+            OriginLookupStatus = "The star-system lookup failed: "
+                + exception.Message;
+        }
+        finally
+        {
+            IsOriginLookupBusy = false;
+        }
+    }
+
+    public Task ClearCustomOriginAsync()
+    {
+        customOrigin = null;
+        OriginSystemName = string.Empty;
+        OnPropertyChanged(nameof(HasCustomOrigin));
+        OnPropertyChanged(nameof(OriginStatus));
+        clearOriginCommand.RaiseCanExecuteChanged();
+        OriginLookupStatus = currentPosition is null
+            ? "Custom origin cleared. Distances will appear when the journal supplies coordinates."
+            : $"Custom origin cleared. Distances now use {currentSystemName ?? "the current system"}.";
+        ApplyFilters();
+        return Task.CompletedTask;
+    }
+
+    private Task OpenSelectedSurveyAsync()
+    {
+        if (HasSelectedSurvey)
+        {
+            SelectedWorkspaceTabIndex = 1;
+            StatusMessage = $"Opened the {SelectedSite!.DisplayId} survey workspace.";
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task OpenShareWorkspaceAsync()
+    {
+        SelectedWorkspaceTabIndex = 2;
+        return Task.CompletedTask;
     }
 
     public void SetActiveBuildProjects(bool hasProjects)
@@ -1451,6 +1673,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private void ApplyFilters()
     {
         var previousReference = SelectedSite?.Reference;
+        var origin = customOrigin?.Position ?? currentPosition;
         IEnumerable<GuardianSiteVisit> filtered = visits.Visits;
         filtered = selectedKindFilter switch
         {
@@ -1489,10 +1712,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         var projected = filtered
             .Select(visit => new GuardianSiteRowViewModel(
                 visit,
-                currentPosition is GalacticCoordinate origin
-                    ? origin.DistanceTo(visit.Reference.Position)
-                    : null));
-        projected = currentPosition is null
+                origin is GalacticCoordinate coordinate
+                    ? coordinate.DistanceTo(visit.Reference.Position)
+                    : null,
+                ramTahLogCodes: GetRamTahLogCodes(visit.Reference)));
+        projected = origin is null
             ? projected
                 .OrderBy(row => row.Reference.SystemName)
                 .ThenBy(row => row.Reference.BodyName)
@@ -1512,7 +1736,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         NotifyAuxiliaryOverlayState();
     }
 
-    private static bool MatchesText(GuardianSiteVisit visit, string text)
+    private bool MatchesText(GuardianSiteVisit visit, string text)
     {
         var reference = visit.Reference;
         return reference.SystemName.Contains(
@@ -1532,7 +1756,44 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             || visit.Notes.Contains(text, StringComparison.OrdinalIgnoreCase)
             || reference.RelatedStructure?.Contains(
                 text,
-                StringComparison.OrdinalIgnoreCase) == true;
+                StringComparison.OrdinalIgnoreCase) == true
+            || GetRamTahLogCodes(reference).Any(code =>
+                code.Contains(text, StringComparison.OrdinalIgnoreCase)
+                || GetLogDisplayName(code).Contains(
+                    text,
+                    StringComparison.OrdinalIgnoreCase));
+    }
+
+    private IReadOnlyList<string> GetRamTahLogCodes(
+        GuardianSiteReference reference)
+    {
+        if (!IncludeRamTahLogs || reference.Kind == GuardianSiteKind.Beacon)
+        {
+            return [];
+        }
+
+        var mission = reference.Kind == GuardianSiteKind.Ruins
+            ? RamTahMission.AncientRuins
+            : RamTahMission.GuardianLogs;
+        var missionIsActive = reference.Kind == GuardianSiteKind.Ruins
+            ? ramTah?.IsAncientRuinsMissionActive == true
+            : ramTah?.IsGuardianLogsMissionActive == true;
+        if (ShowOnlyNeededRamTahLogs && ramTah?.IsAnyMissionActive == true
+            && !missionIsActive)
+        {
+            return [];
+        }
+
+        var survey = FindSurvey(reference);
+        return GetMergedActiveObelisks(reference, survey)
+            .Where(obelisk => !string.IsNullOrWhiteSpace(obelisk.LogCode)
+                && (!ShowOnlyNeededRamTahLogs
+                    || ramTah?.IsAnyMissionActive != true
+                    || !ramTah.IsLogCompleted(mission, obelisk.LogCode)))
+            .Select(obelisk => obelisk.LogCode)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(code => code, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private bool SetField<T>(
@@ -1584,7 +1845,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 public sealed class GuardianSiteRowViewModel(
     GuardianSiteVisit visit,
     double? distance,
-    bool isDestination = false)
+    bool isDestination = false,
+    IReadOnlyList<string>? ramTahLogCodes = null)
 {
     public GuardianSiteVisit Visit { get; } = visit;
 
@@ -1593,6 +1855,16 @@ public sealed class GuardianSiteRowViewModel(
     public double? Distance { get; } = distance;
 
     public bool IsDestination { get; } = isDestination;
+
+    public IReadOnlyList<string> RamTahLogCodes { get; } = ramTahLogCodes ?? [];
+
+    public bool HasRamTahLogs => RamTahLogCodes.Count > 0;
+
+    public string RamTahLogsText => RamTahLogCodes.Count == 0
+        ? "No Ram Tah logs"
+        : string.Join(
+            ", ",
+            RamTahLogCodes.Select(code => $"{code} ({GetRamTahLogName(code)})"));
 
     public string DisplayId => Reference.DisplayId;
 
@@ -1630,6 +1902,27 @@ public sealed class GuardianSiteRowViewModel(
             ? "No commander notes."
             : $"Related structure: {Reference.RelatedStructure}"
         : Visit.Notes;
+
+    private static string GetRamTahLogName(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return "Unknown";
+        }
+
+        var category = code[0] switch
+        {
+            'B' => "Biology",
+            'C' => "Culture",
+            'H' => "History",
+            'L' => "Language",
+            'T' => "Technology",
+            '#' => "Guardian",
+            _ => "Log",
+        };
+        var number = code[0] == '#' ? code : $"#{code[1..]}";
+        return $"{category} {number}";
+    }
 }
 
 public sealed record GuardianRamTahLogViewModel(

@@ -99,6 +99,33 @@ public sealed partial class GuardianView : UserControl
             "mission 2");
     }
 
+    private async void OpenCanonn_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        await OpenSelectedSiteLinkAsync(
+            viewModel => viewModel.SelectedCanonnUri,
+            "Canonn Signals");
+    }
+
+    private async void OpenSpansh_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        await OpenSelectedSiteLinkAsync(
+            viewModel => viewModel.SelectedSpanshUri,
+            "Spansh");
+    }
+
+    private async void OpenEdsm_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        await OpenSelectedSiteLinkAsync(
+            viewModel => viewModel.SelectedEdsmUri,
+            "EDSM");
+    }
+
     private async void CopyShareBundle_Click(
         object? sender,
         RoutedEventArgs eventArgs)
@@ -191,6 +218,37 @@ public sealed partial class GuardianView : UserControl
                 viewModel.RamTah.ReportGuideLaunchFailure(
                     $"The {label} guide could not be opened: {exception.Message}");
             }
+        }
+    }
+
+    private async Task OpenSelectedSiteLinkAsync(
+        Func<GuardianViewModel, Uri?> addressSelector,
+        string label)
+    {
+        if (DataContext is not MainWindowViewModel main
+            || addressSelector(main.Guardian) is not { } address)
+        {
+            return;
+        }
+
+        try
+        {
+            var launcher = TopLevel.GetTopLevel(this)?.Launcher
+                ?? throw new InvalidOperationException(
+                    "The desktop link launcher is not available.");
+            var launched = await launcher.LaunchUriAsync(address);
+            main.Guardian.ReportSelectedSiteLaunch(launched
+                ? $"Opened the selected system at {label}."
+                : $"The selected system could not be opened at {label}.");
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or UriFormatException
+                or NotSupportedException)
+        {
+            main.Guardian.ReportSelectedSiteLaunch(
+                $"The selected system could not be opened at {label}: "
+                    + exception.Message);
         }
     }
 }
