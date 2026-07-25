@@ -133,6 +133,102 @@
       <Border Classes="card raised">
         <StackPanel Spacing="14">
           <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Overlay positions" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Place each detached overlay relative to the Elite window or at an absolute screen coordinate. Imported VR calibration remains unchanged." />
+          </StackPanel>
+
+          <ComboBox ItemsSource="{Binding OverlayLayout.Overlays}"
+                    SelectedItem="{Binding OverlayLayout.SelectedOverlay, Mode=TwoWay}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:OverlayPlacementEditorViewModel">
+                <Grid Margin="4" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                  <TextBlock FontWeight="SemiBold" Text="{Binding DisplayName}" />
+                  <TextBlock Grid.Column="1"
+                             Classes="muted"
+                             FontSize="11"
+                             Text="{Binding Description}" />
+                </Grid>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+
+          <Grid DataContext="{Binding OverlayLayout.SelectedOverlay}"
+                x:DataType="vm:OverlayPlacementEditorViewModel"
+                ColumnDefinitions="*,*"
+                ColumnSpacing="28">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="eyebrow" Text="HORIZONTAL" />
+              <ComboBox ItemsSource="{Binding HorizontalAnchorOptions}"
+                        SelectedItem="{Binding HorizontalAnchor, Mode=TwoWay}" />
+              <Grid ColumnDefinitions="*,140" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center" Text="Offset (px)" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="-10000"
+                               Maximum="10000"
+                               Increment="1"
+                               FormatString="N0"
+                               Value="{Binding HorizontalOffset, Mode=TwoWay}" />
+              </Grid>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="10">
+              <TextBlock Classes="eyebrow" Text="VERTICAL" />
+              <ComboBox ItemsSource="{Binding VerticalAnchorOptions}"
+                        SelectedItem="{Binding VerticalAnchor, Mode=TwoWay}" />
+              <Grid ColumnDefinitions="*,140" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center" Text="Offset (px)" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="-10000"
+                               Maximum="10000"
+                               Increment="1"
+                               FormatString="N0"
+                               Value="{Binding VerticalOffset, Mode=TwoWay}" />
+              </Grid>
+            </StackPanel>
+          </Grid>
+
+          <Grid DataContext="{Binding OverlayLayout.SelectedOverlay}"
+                x:DataType="vm:OverlayPlacementEditorViewModel"
+                ColumnDefinitions="*,140"
+                ColumnSpacing="12">
+            <CheckBox VerticalAlignment="Center"
+                      IsChecked="{Binding UseCustomOpacity, Mode=TwoWay}"
+                      Content="Override the global overlay opacity" />
+            <NumericUpDown Grid.Column="1"
+                           IsEnabled="{Binding IsCustomOpacityEnabled}"
+                           Minimum="0"
+                           Maximum="100"
+                           Increment="1"
+                           FormatString="N0"
+                           Value="{Binding CustomOpacityPercent, Mode=TwoWay}" />
+          </Grid>
+
+          <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+            <TextBlock VerticalAlignment="Center"
+                       Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding OverlayLayout.StatusMessage}" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Command="{Binding OverlayLayout.ReloadCommand}"
+                    Content="Discard changes" />
+            <Button Grid.Column="2"
+                    Classes="secondary"
+                    Command="{Binding OverlayLayout.ResetSelectedCommand}"
+                    Content="Reset selected" />
+            <Button Grid.Column="3"
+                    Classes="primary"
+                    Command="{Binding OverlayLayout.SaveCommand}"
+                    Content="Save positions" />
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Combat overlays" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"

@@ -223,6 +223,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
         string plotterName,
         Func<PixelRect, PixelSize, int, PixelPoint> placement)
     {
+        OverlayThemeResources.ApplyOpacity(window, overlayLayout, plotterName);
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
         if (screen is null)

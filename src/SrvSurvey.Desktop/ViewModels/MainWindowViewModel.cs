@@ -98,7 +98,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         GuardianOverlaySettingsStore? guardianOverlaySettingsStore = null,
         StationInfoSettingsStore? stationInfoSettingsStore = null,
         HumanSiteSettingsStore? humanSiteSettingsStore = null,
-        ApplicationLogService? applicationLogService = null)
+        ApplicationLogService? applicationLogService = null,
+        LegacyOverlayLayoutStore? overlayLayoutStore = null,
+        LegacyOverlayLayout? overlayLayout = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -118,6 +120,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
             OverlayPlatformCapabilities.DetectCurrent());
+        var sharedOverlayLayoutStore = overlayLayoutStore
+            ?? new LegacyOverlayLayoutStore(AppDataPaths.DataDirectory);
+        OverlayLayout = new OverlayLayoutSettingsViewModel(
+            sharedOverlayLayoutStore,
+            overlayLayout ?? sharedOverlayLayoutStore.Load());
         Colonization = colonization ?? new ColonizationViewModel(
             new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
             commanderProfileStore: commanderProfileStore,
@@ -303,6 +310,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; }
 
     public GlobalInputSettingsViewModel InputSettings { get; }
+
+    public OverlayLayoutSettingsViewModel OverlayLayout { get; }
 
     public AppDataPaths AppDataPaths { get; }
 

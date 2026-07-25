@@ -112,7 +112,7 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         Assert.NotNull(result.BackupPath);
         Assert.Equal(original, File.ReadAllText(result.BackupPath!));
         var savedText = File.ReadAllText(path);
-        Assert.Contains("screen:-120, middle:45, 0", savedText);
+        Assert.Contains("os:-120, middle:45, 0", savedText);
         Assert.Contains(
             "{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}",
             savedText);

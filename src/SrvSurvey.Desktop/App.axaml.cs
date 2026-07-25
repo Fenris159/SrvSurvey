@@ -75,8 +75,9 @@ public sealed partial class App : Application
                 applicationLog.Append(overlayTheme.Error);
             }
 
-            var overlayLayout = new LegacyOverlayLayoutStore(
-                appDataPaths.DataDirectory).Load();
+            var overlayLayoutStore = new LegacyOverlayLayoutStore(
+                appDataPaths.DataDirectory);
+            var overlayLayout = overlayLayoutStore.Load();
             if (overlayLayout.Error is not null)
             {
                 applicationLog.Append(overlayLayout.Error);
@@ -98,7 +99,9 @@ public sealed partial class App : Application
                 themeService,
                 appDataPaths,
                 inputSettings: inputSettings,
-                applicationLogService: applicationLog);
+                applicationLogService: applicationLog,
+                overlayLayoutStore: overlayLayoutStore,
+                overlayLayout: overlayLayout);
             var mainWindow = new MainWindow(viewModel);
             desktop.MainWindow = mainWindow;
             var errorReports = new ErrorReportWindowCoordinator(

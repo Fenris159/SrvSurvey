@@ -167,6 +167,10 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
 
     private void PositionWindow(Window window, PixelRect gameBounds)
     {
+        OverlayThemeResources.ApplyOpacity(
+            window,
+            overlayLayout,
+            "PlotBuildCommodities");
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
         if (screen is null)

@@ -183,6 +183,10 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
 
     private void SizeAndPositionWindow(Window overlay, PixelRect gameBounds)
     {
+        OverlayThemeResources.ApplyOpacity(
+            overlay,
+            overlayLayout,
+            "PlotHumanSite");
         var screen = overlay.Screens.ScreenFromBounds(gameBounds)
             ?? overlay.Screens.Primary;
         if (screen is null)

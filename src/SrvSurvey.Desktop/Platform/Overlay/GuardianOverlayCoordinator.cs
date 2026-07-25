@@ -326,6 +326,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         Func<PixelRect, PixelSize, int, PixelPoint> placement,
         int margin)
     {
+        OverlayThemeResources.ApplyOpacity(window, overlayLayout, plotterName);
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
         if (screen is null)

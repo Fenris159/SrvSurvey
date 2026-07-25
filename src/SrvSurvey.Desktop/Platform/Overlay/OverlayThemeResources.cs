@@ -49,7 +49,19 @@ public static class OverlayThemeResources
     {
         ArgumentNullException.ThrowIfNull(layout);
         Apply(window);
-        if (layout.GetOpacity(plotterName) is { } opacity)
+        ApplyOpacity(window, layout, plotterName);
+    }
+
+    public static void ApplyOpacity(
+        Window window,
+        LegacyOverlayLayout layout,
+        string plotterName)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentNullException.ThrowIfNull(layout);
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        var opacity = layout.GetOpacity(plotterName) ?? 1d;
+        if (Math.Abs(window.Opacity - opacity) > 0.0001d)
         {
             window.Opacity = opacity;
         }

@@ -222,14 +222,14 @@ public sealed class LegacyOverlayLayoutStore
             LegacyHorizontalAnchor.Left => "left",
             LegacyHorizontalAnchor.Center => "center",
             LegacyHorizontalAnchor.Right => "right",
-            _ => "screen",
+            _ => "os",
         };
         var vertical = placement.Vertical switch
         {
             LegacyVerticalAnchor.Top => "top",
             LegacyVerticalAnchor.Middle => "middle",
             LegacyVerticalAnchor.Bottom => "bottom",
-            _ => "screen",
+            _ => "os",
         };
         var opacity = placement.Opacity is null
             ? string.Empty
@@ -393,15 +393,55 @@ public sealed class LegacyOverlayLayoutStore
     }
 }
 
-public sealed record LegacyOverlayLayout(
-    IReadOnlyDictionary<string, LegacyOverlayPlacement> Placements,
-    double? DefaultOpacity,
-    string? Error)
+public sealed class LegacyOverlayLayout
 {
+    private LayoutState state;
+
+    public LegacyOverlayLayout(
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements,
+        double? defaultOpacity,
+        string? error)
+    {
+        ArgumentNullException.ThrowIfNull(placements);
+        state = new LayoutState(
+            new Dictionary<string, LegacyOverlayPlacement>(
+                placements,
+                StringComparer.Ordinal),
+            defaultOpacity,
+            error);
+    }
+
     public static LegacyOverlayLayout Empty { get; } = new(
         new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal),
         null,
         null);
+
+    public IReadOnlyDictionary<string, LegacyOverlayPlacement> Placements =>
+        Volatile.Read(ref state).Placements;
+
+    public double? DefaultOpacity => Volatile.Read(ref state).DefaultOpacity;
+
+    public string? Error => Volatile.Read(ref state).Error;
+
+    public void ReplaceWith(LegacyOverlayLayout updated)
+    {
+        ArgumentNullException.ThrowIfNull(updated);
+        if (ReferenceEquals(this, Empty))
+        {
+            throw new InvalidOperationException(
+                "The shared empty overlay layout cannot be changed.");
+        }
+
+        var updatedState = Volatile.Read(ref updated.state);
+        Volatile.Write(
+            ref state,
+            new LayoutState(
+                new Dictionary<string, LegacyOverlayPlacement>(
+                    updatedState.Placements,
+                    StringComparer.Ordinal),
+                updatedState.DefaultOpacity,
+                updatedState.Error));
+    }
 
     public PixelPoint? GetPosition(
         string plotterName,
@@ -409,7 +449,8 @@ public sealed record LegacyOverlayLayout(
         PixelSize overlaySize)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        if (!Placements.TryGetValue(plotterName, out var placement))
+        var snapshot = Volatile.Read(ref state);
+        if (!snapshot.Placements.TryGetValue(plotterName, out var placement))
         {
             return null;
         }
@@ -444,11 +485,17 @@ public sealed record LegacyOverlayLayout(
     public double? GetOpacity(string plotterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        return Placements.TryGetValue(plotterName, out var placement)
+        var snapshot = Volatile.Read(ref state);
+        return snapshot.Placements.TryGetValue(plotterName, out var placement)
             && placement.Opacity is not null
                 ? placement.Opacity
-                : DefaultOpacity;
+                : snapshot.DefaultOpacity;
     }
+
+    private sealed record LayoutState(
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> Placements,
+        double? DefaultOpacity,
+        string? Error);
 }
 
 public sealed record LegacyOverlayPlacement(

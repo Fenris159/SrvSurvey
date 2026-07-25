@@ -788,6 +788,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         Func<PixelRect, PixelSize, int, PixelPoint> calculate,
         int margin = 20)
     {
+        OverlayThemeResources.ApplyOpacity(window, overlayLayout, plotterName);
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
         if (screen is null)

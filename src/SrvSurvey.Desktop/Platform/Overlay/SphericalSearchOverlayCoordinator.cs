@@ -173,6 +173,10 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
 
     private void PositionWindow(Window window, PixelRect gameBounds)
     {
+        OverlayThemeResources.ApplyOpacity(
+            window,
+            overlayLayout,
+            "PlotSphericalSearch");
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
         if (screen is null)
