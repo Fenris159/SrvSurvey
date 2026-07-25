@@ -118,6 +118,20 @@
             </Grid>
           </Grid>
 
+          <Border BorderBrush="{DynamicResource RavenWarningBrush}"
+                  BorderThickness="1"
+                  CornerRadius="6"
+                  Padding="12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+              <CheckBox IsChecked="{Binding JournalInspector.ReplayConfirmed, Mode=TwoWay}"
+                        Content="I understand replay may change and save active quest progress" />
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      Command="{Binding JournalInspector.ReplayCommand}"
+                      Content="Replay selected event" />
+            </Grid>
+          </Border>
+
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
             <TextBox MinHeight="110"
                      AcceptsReturn="True"

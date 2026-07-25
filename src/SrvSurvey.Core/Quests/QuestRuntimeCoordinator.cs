@@ -190,6 +190,49 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         return new QuestRuntimeUpdateResult(Snapshot, warnings, 0);
     }
 
+    public async Task<QuestRuntimeUpdateResult> ReplayEventAsync(
+        string journalDirectory,
+        JournalEventEnvelope journalEvent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
+        ArgumentNullException.ThrowIfNull(journalEvent);
+        var warnings = new List<string>();
+        await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            var current = configuration
+                ?? throw new InvalidOperationException(
+                    "A commander journal session is required to replay an event.");
+            if (!current.Enabled)
+            {
+                throw new InvalidOperationException(
+                    "Quests must be enabled before replaying an event.");
+            }
+
+            var resolved = await QuestJournalPayloadResolver.ResolveAsync(
+                    journalDirectory,
+                    journalEvent,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            AddWarning(warnings, resolved.Warning);
+            await ProcessEventAsync(
+                    resolved.Payload,
+                    warnings,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            Snapshot = CreateSnapshot();
+        }
+        finally
+        {
+            coordinatorLock.Release();
+        }
+
+        Changed?.Invoke(this, EventArgs.Empty);
+        return new QuestRuntimeUpdateResult(Snapshot, warnings, 1);
+    }
+
     public async Task<QuestRuntimeUpdateResult> SetEnabledAsync(
         bool enabled,
         CancellationToken cancellationToken = default)

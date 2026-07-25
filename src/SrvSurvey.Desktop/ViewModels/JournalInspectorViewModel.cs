@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Windows.Input;
 using Avalonia;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Quests;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -14,6 +15,9 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
     private const int MaximumEventCount = 120;
     private readonly AsyncCommand copyCodeCommand;
     private readonly AsyncCommand copyCoordinatesCommand;
+    private readonly AsyncCommand replayCommand;
+    private readonly Func<JournalEventEnvelope, Task<QuestRuntimeUpdateResult>>?
+        replayEvent;
     private Func<string, Task>? clipboardWriter;
     private IReadOnlyList<JournalInspectorEventViewModel> events = [];
     private IReadOnlyList<JournalInspectorPropertyViewModel> properties = [];
@@ -21,15 +25,21 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
     private EliteStatus? status;
     private string codeText = string.Empty;
     private string statusMessage = string.Empty;
+    private bool replayConfirmed;
 
-    public JournalInspectorViewModel()
+    public JournalInspectorViewModel(
+        Func<JournalEventEnvelope, Task<QuestRuntimeUpdateResult>>?
+            replayEvent = null)
     {
+        this.replayEvent = replayEvent;
         copyCodeCommand = new AsyncCommand(CopyCodeAsync, CanCopyCode);
         copyCoordinatesCommand = new AsyncCommand(
             CopyCoordinatesAsync,
             CanCopyCoordinates);
+        replayCommand = new AsyncCommand(ReplayAsync, CanReplay);
         CopyCodeCommand = copyCodeCommand;
         CopyCoordinatesCommand = copyCoordinatesCommand;
+        ReplayCommand = replayCommand;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -37,6 +47,8 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
     public ICommand CopyCodeCommand { get; }
 
     public ICommand CopyCoordinatesCommand { get; }
+
+    public ICommand ReplayCommand { get; }
 
     public IReadOnlyList<JournalInspectorEventViewModel> Events
     {
@@ -55,6 +67,8 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
             }
 
             BuildProperties();
+            ReplayConfirmed = false;
+            replayCommand.RaiseCanExecuteChanged();
             OnPropertyChanged(nameof(RawJson));
         }
     }
@@ -95,6 +109,18 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
 
     public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
 
+    public bool ReplayConfirmed
+    {
+        get => replayConfirmed;
+        set
+        {
+            if (SetField(ref replayConfirmed, value))
+            {
+                replayCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
     public void SetClipboardWriter(Func<string, Task>? writer)
     {
         clipboardWriter = writer;
@@ -117,7 +143,10 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
                 .Take(MaximumEventCount)
                 .ToArray();
             Events = retained;
-            SelectedEvent ??= retained.FirstOrDefault();
+            if (SelectedEvent is null || !retained.Contains(SelectedEvent))
+            {
+                SelectedEvent = retained.FirstOrDefault();
+            }
         }
 
         if (latestStatus is not null)
@@ -263,6 +292,45 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         await CopyAsync(
             FormattableString.Invariant($"{status.Latitude}, {status.Longitude}"),
             "The current latitude and longitude were copied.");
+    }
+
+    private bool CanReplay()
+    {
+        return replayEvent is not null
+            && SelectedEvent is not null
+            && ReplayConfirmed;
+    }
+
+    public async Task ReplayAsync()
+    {
+        if (!CanReplay() || replayEvent is null || SelectedEvent is null)
+        {
+            StatusMessage =
+                "Select an event and confirm that replay may change active quest progress.";
+            return;
+        }
+
+        var selected = SelectedEvent;
+        try
+        {
+            var result = await replayEvent(selected.JournalEvent);
+            ReplayConfirmed = false;
+            StatusMessage = result.Warnings.Count > 0
+                ? string.Join(Environment.NewLine, result.Warnings)
+                : $"Replayed {selected.EventName} into the active quest runtime.";
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException
+                or ArgumentException
+                or HttpRequestException)
+        {
+            ReplayConfirmed = false;
+            StatusMessage = "The journal event was not replayed: "
+                + exception.Message;
+        }
     }
 
     private async Task CopyAsync(string text, string successMessage)

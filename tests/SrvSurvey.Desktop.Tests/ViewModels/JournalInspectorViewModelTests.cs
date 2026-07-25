@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Quests;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -100,6 +101,40 @@ public sealed class JournalInspectorViewModelTests
         Assert.Contains("Lat/Long: 12.5, -45.25, Heading: 1 deg", viewModel.StatusText);
         Assert.Equal("12.5, -45.25", copied[0]);
         Assert.Equal(viewModel.CodeText, copied[1]);
+    }
+
+    [Fact]
+    public async Task ReplayRequiresFreshConfirmationAndReportsResult()
+    {
+        var replayed = new List<JournalEventEnvelope>();
+        var viewModel = new JournalInspectorViewModel(journalEvent =>
+        {
+            replayed.Add(journalEvent);
+            return Task.FromResult(new QuestRuntimeUpdateResult([], [], 1));
+        });
+        viewModel.ApplyUpdate(
+            [Event("{\"event\":\"Scan\",\"BodyName\":\"Body A\"}")],
+            null);
+
+        await viewModel.ReplayAsync();
+
+        Assert.Empty(replayed);
+        Assert.Contains("confirm", viewModel.StatusMessage);
+
+        viewModel.ReplayConfirmed = true;
+        await viewModel.ReplayAsync();
+
+        Assert.Single(replayed);
+        Assert.False(viewModel.ReplayConfirmed);
+        Assert.Contains("Replayed Scan", viewModel.StatusMessage);
+
+        viewModel.ReplayConfirmed = true;
+        viewModel.ApplyUpdate(Enumerable.Range(0, 120)
+            .Select(index => Event($"{{\"event\":\"Live{index}\"}}"))
+            .ToArray(), null);
+
+        Assert.False(viewModel.ReplayConfirmed);
+        Assert.Equal("Live119", viewModel.SelectedEvent!.EventName);
     }
 
     private static JournalEventEnvelope Event(string json)

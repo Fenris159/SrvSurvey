@@ -53,6 +53,53 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
     }
 
     [Fact]
+    public async Task ConfirmedReplayUsesActiveRuntimeAndPersistence()
+    {
+        var client = new FakeRavenQuestClient
+        {
+            ActiveQuests = [CreateRemoteProgress(quest: null)],
+            Definition = CreateDefinition(
+                "function on_Scan(entry) quest:set('body', entry.BodyName); return true end"),
+        };
+        await using var coordinator = CreateCoordinator(client);
+        await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+
+        var replay = await coordinator.ReplayEventAsync(
+            temporaryDirectory,
+            Parse("""{"event":"Scan","BodyName":"Replay body"}"""));
+
+        Assert.Equal(1, replay.ProcessedEventCount);
+        Assert.Equal(1, client.SaveCount);
+        Assert.Equal(
+            "Replay body",
+            client.LastSaved!.Variables["body"].GetString());
+    }
+
+    [Fact]
+    public async Task ReplayRequiresEnabledCommanderSession()
+    {
+        await using var coordinator = CreateCoordinator(
+            new FakeRavenQuestClient());
+        var journalEvent = Parse("""{"event":"Scan"}""");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            coordinator.ReplayEventAsync(temporaryDirectory, journalEvent));
+        await coordinator.ApplyUpdateAsync(
+            Configuration(enabled: false),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+        var disabled = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            coordinator.ReplayEventAsync(temporaryDirectory, journalEvent));
+
+        Assert.Contains("enabled", disabled.Message);
+    }
+
+    [Fact]
     public async Task DevelopmentQuestOverridesRemoteAndSavesWithVerifiedBackup()
     {
         WriteDevelopmentQuest();

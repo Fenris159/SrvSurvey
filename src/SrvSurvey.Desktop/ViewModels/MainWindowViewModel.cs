@@ -143,7 +143,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             SystemNicknameCatalog.Load(AppDataPaths.DataDirectory),
             new SystemNicknameSettingsStore(AppDataPaths.UiSettingsPath));
         DiagnosticsLog = new DiagnosticsLogViewModel(applicationLogService);
-        JournalInspector = new JournalInspectorViewModel();
+        JournalInspector = new JournalInspectorViewModel(
+            ReplayQuestJournalEventAsync);
         folderResolution = JournalFolderLocator.ResolveCurrent(
             configuredJournalDirectory);
         commanderProfileStore = new CommanderProfileStore(
@@ -1430,6 +1431,39 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 + "source data: " + exception.Message;
             applicationLogService?.Append(QuestStatusMessage);
         }
+    }
+
+    private async Task<QuestRuntimeUpdateResult> ReplayQuestJournalEventAsync(
+        JournalEventEnvelope journalEvent)
+    {
+        if (folderResolution.SelectedPath is null)
+        {
+            throw new InvalidOperationException(
+                "A journal folder is required to replay quest events.");
+        }
+
+        var enabled = questSettingsStore.LoadEnabled();
+        if (!enabled)
+        {
+            throw new InvalidOperationException(
+                "Quests must be enabled before replaying an event.");
+        }
+
+        var result = await questRuntimeCoordinator.ReplayEventAsync(
+            folderResolution.SelectedPath,
+            journalEvent);
+        QuestWorkspace.ApplyRuntimeResult(result, enabled);
+        QuestIndicator.Update(result.Quests, latestStatus, enabled);
+        OnPropertyChanged(nameof(Quests));
+        OnPropertyChanged(nameof(QuestUnreadMessageCount));
+        QuestStatusMessage = result.Warnings.Count > 0
+            ? string.Join(Environment.NewLine, result.Warnings)
+            : result.Quests.Count == 0
+                ? "No active quests received the replayed event."
+                : $"Replayed {journalEvent.EventName}; "
+                    + $"{result.Quests.Count:N0} active quest(s), "
+                    + $"{QuestUnreadMessageCount:N0} unread message(s).";
+        return result;
     }
 
     private async Task<bool> EnsureCommanderProfileAsync()

@@ -1072,9 +1072,27 @@ public sealed class MainWindowViewModelTests
                 "futureRoot",
                 await File.ReadAllTextAsync(statePath),
                 StringComparison.Ordinal);
-            Assert.Single(Directory.GetFiles(Path.Combine(
+            Assert.True(JournalEventEnvelope.TryParse(
+                "{\"event\":\"Scan\",\"BodyName\":\"Replay body\"}",
+                out var replayEvent,
+                out var replayError), replayError);
+            viewModel.JournalInspector.ApplyUpdate([replayEvent!], null);
+            viewModel.JournalInspector.SelectedEvent =
+                viewModel.JournalInspector.Events[0];
+            viewModel.JournalInspector.ReplayConfirmed = true;
+
+            await viewModel.JournalInspector.ReplayAsync();
+
+            Assert.Contains(
+                "Replay body",
+                await File.ReadAllTextAsync(statePath),
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "Replayed Scan",
+                viewModel.JournalInspector.StatusMessage);
+            Assert.Equal(2, Directory.GetFiles(Path.Combine(
                 questDirectory,
-                "quest-state-backups")));
+                "quest-state-backups")).Length);
             Assert.Contains("1 active quest", viewModel.QuestStatusMessage);
         }
         finally
