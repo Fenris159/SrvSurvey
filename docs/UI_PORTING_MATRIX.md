@@ -36,7 +36,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; their combined `PlotSphericalSearch` Galaxy Map guidance is implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, detached live map/current-obelisk, current-system summary, and Ram Tah log/artifact overlays implemented; advanced map-authoring and remaining site-guidance modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
-| Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
+| Diagnostics | `ViewLogs`, `FormErrorSubmit`, journal development tools | Journal source, candidate paths, logs, and error reporting | Journal source/parsed state, persistent live application logs, retention, copy/clear/folder actions, and crash-report capture/actions implemented; journal playback and post-processing tools remain |
 | Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump/system-survey/prior-scan/surface-radar/combat/Guardian/human-settlement/station-information preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
@@ -75,7 +75,7 @@ same coordinator; remaining biology-specific auxiliary cues stay open.
 | `FormBuilder` | Guardian / Map editor | Not ported |
 | `FormCodexBingo` | Exobiology / Codex | Implemented as a single-instance Raven workspace with the complete 1,070-entry hierarchy, global and 42-region commander progress, live and historical journal ledgers, Canonn Challenge import, confirmed manual overrides, discovery locations, Canonn/Bioforge/EDAstro/Spansh actions, and nearest-signal/missing-variant search handoff; Windows visually checked in Blue dark/light |
 | `FormEditMap` | Guardian / Map editor | Partially implemented with native template rendering plus site/relic headings, notes, POI states, relic headings, and obelisk-group editing; raw POI add/remove, origin measurement, and template-authoring tools remain |
-| `FormErrorSubmit` | Diagnostics / Report issue | Not ported |
+| `FormErrorSubmit` | Diagnostics / Report issue | Implemented as a Raven error window with UI-thread and unobserved-task interception, exception/stack details, a frozen last-20-log snapshot, current-journal actions, prepared GitHub crash-template submission, issue tracker and Discord actions, and failure-safe reporting |
 | `FormGroundTarget` | Travel / Ground target | Implemented in Travel with typed, current, clipboard, clear, and guidance actions plus a passive Raven-themed `PlotTrackTarget` replacement; editor visually checked, overlay visual QA deferred to the final UI pass |
 | `FormJourneyBegin` | Travel / Journeys | Implemented in the unified Journey workspace with current/prior-system selection, system search, exact last-visit lookup, journal replay, validation, and begin action; Windows visually checked |
 | `FormJourneyEdit` | Travel / Journeys | Implemented in the unified Journey workspace with editable name, description, per-system notes, dirty/save/discard state, conclude, and guarded reprocess; Windows visually checked |
@@ -95,14 +95,14 @@ same coordinator; remaining biology-specific auxiliary cues stay open.
 | `FormRuins` | Guardian / Survey maps | Partially implemented through the unified site browser, native map renderer, live-site card, and lossless survey editor; dedicated open/share workflows and advanced map authoring remain |
 | `FormSetKeyChord` | Settings / Input | Implemented as the unified binding editor with normalized keyboard, button, trigger, and eight-way POV chords plus default restore |
 | `FormSettings` | Settings pages | Raven themes, migration, next-jump/system-survey/Canonn prior-scan/radar/combat/Guardian preferences, and global keyboard/controller input implemented; general overlay adjustment, privacy, and remaining legacy options remain |
-| `FormShareData` | Settings / Privacy | Not ported |
+| `FormShareData` | Guardian / Share data | Implemented with published-survey comparison, new heading/location/POI/relic/group/raw-point detection, content-addressed ZIP packaging, path copy, folder launch, and Guardian survey Discord handoff; packaging avoids the legacy destructive staging-folder reset |
 | `FormShowCodex` | Exobiology / Codex | Implemented as a single-instance Raven browser with biological-body and entry navigation, reported/confirmed/analyzed/predicted states, entry IDs, rewards, sample separation, live temperature guidance, bounded cached reference images with credit/refresh/fit/zoom/pan, and Canonn/Bioforge/Spansh/submission actions; Windows visually checked in Blue dark/light |
 | `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
 | `FormStartNewCmdr` | Commander onboarding | Not ported |
 | `FormSwapStarCache` | Diagnostics / Reference data | Not ported |
 | `FormSystemNotes` | Travel / System notes | Implemented with current journal context, lossless legacy system-file updates/creation, save/cancel, persistent always-on-top, screenshot-folder detection, exact Canonn/Spansh/EDSM actions, Travel launcher, `Ctrl+Shift+N`, and active-Journey note-count updates; Windows visually checked in Blue dark/light |
 | `ViewJourneySystem` | Travel / Journeys | Implemented in the Journey workspace with recent-first visits, legacy interest flags, arrival/departure and scan/reward details, system notes, screenshot listing, folder opening, and OS file launch; Windows visually checked |
-| `ViewLogs` | Diagnostics / Logs | Not ported |
+| `ViewLogs` | Diagnostics / Logs | Implemented in Diagnostics with timestamped session files, live framework/startup entries, in-memory fallback, newest-ten retention, copy, legacy-compatible clear, and cross-platform folder launch |
 
 ## Overlay and plotter surfaces
 
@@ -145,8 +145,9 @@ material pickup dots. Geometry remains lossless in the legacy system JSON, and
 material surveys use the legacy `footMatStats/<FID>` layout with corrupt-file
 protection and `.stop` completion. The coordinator preserves station-info and
 surface/biology overlay priority plus the global map and visibility actions.
-Template authoring (`FormBuilder`/advanced `FormEditMap`), quest routes and
-markers, and threat-level survey metadata remain open. Automated reducer,
+Template authoring (`FormBuilder`/advanced `FormEditMap`) plus quest routes and
+markers remain open. Threat-level survey metadata and the `.threat` command are
+implemented independently of material tracking. Automated reducer,
 persistence, settings, placement, control-transform, integration, and XAML
 checks pass; per request, the window has not been opened and awaits the final
 visual/theme pass.
