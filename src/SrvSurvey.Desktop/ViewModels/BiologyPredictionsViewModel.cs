@@ -269,6 +269,7 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
     {
         if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.Snapshot)
             or nameof(SystemSurveyViewModel.BiologySurvey)
+            or nameof(SystemSurveyViewModel.CurrentBiologyDiscoveryContext)
             or nameof(SystemSurveyViewModel.DisableBioPredictions))
         {
             Refresh();
@@ -321,7 +322,8 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
                 survey.HighlightRegionalFirsts,
                 survey.DimAnalyzedOrganisms,
                 survey.HideGeoCountInBioSystem,
-                survey.DisableBioPredictions)!;
+                survey.DisableBioPredictions,
+                survey.CurrentBiologyDiscoveryContext)!;
             var isExpanded = expandedState.GetValueOrDefault(
                 body.BodyId,
                 !CurrentBodyOnly || row.IsCurrentBody);
@@ -694,6 +696,7 @@ public sealed record BiologyPredictionOrganismViewModel(
     string SampleDistanceText,
     string RewardText,
     bool IsAnalyzed,
+    bool IsCommanderFirst,
     bool IsRegionalFirst,
     bool IsHighlightedFirst,
     bool IsCurrentSample,
@@ -719,6 +722,7 @@ public sealed record BiologyPredictionOrganismViewModel(
             source.SampleDistanceText,
             source.RewardText,
             source.IsAnalyzed,
+            source.IsCommanderFirst,
             source.IsRegionalFirst,
             source.IsHighlightedFirst,
             source.IsCurrentSample,

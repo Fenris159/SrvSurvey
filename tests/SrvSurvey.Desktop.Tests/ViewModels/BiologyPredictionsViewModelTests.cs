@@ -1,3 +1,4 @@
+using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
@@ -48,6 +49,26 @@ public sealed class BiologyPredictionsViewModelTests : IDisposable
         Assert.Equal("150 m sample separation", prediction.SampleDistanceText);
         Assert.True(prediction.IsPrediction);
         Assert.True(currentBody.IsFirstFootfall);
+
+        survey.UpdateCommanderCodexContext(
+            new CommanderCodexData(
+                "fid",
+                "Cmdr Test",
+                0,
+                null,
+                new Dictionary<long, CommanderCodexFirst>()),
+            new CommanderCodexData(
+                "fid",
+                "Cmdr Test",
+                18,
+                "Inner Orion Spur",
+                new Dictionary<long, CommanderCodexFirst>()));
+        currentBody = Assert.Single(
+            viewModel.Bodies,
+            body => body.BodyId == 1);
+        prediction = Assert.Single(currentBody.Organisms);
+        Assert.True(prediction.IsCommanderFirst);
+        Assert.True(prediction.IsHighlightedFirst);
 
         viewModel.CurrentBodyOnly = true;
 

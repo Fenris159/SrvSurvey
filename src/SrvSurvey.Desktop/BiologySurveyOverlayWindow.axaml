@@ -192,6 +192,14 @@
                       <WrapPanel Orientation="Horizontal">
                         <Border Margin="0,0,5,0"
                                 Classes="badge"
+                                IsVisible="{Binding IsCommanderFirst}">
+                          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                     FontSize="8"
+                                     FontWeight="Bold"
+                                     Text="COMMANDER FIRST" />
+                        </Border>
+                        <Border Margin="0,0,5,0"
+                                Classes="badge"
                                 IsVisible="{Binding IsCurrentSample}">
                           <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                                      FontSize="8"

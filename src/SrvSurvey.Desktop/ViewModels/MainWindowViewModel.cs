@@ -32,6 +32,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly ExplorationState explorationState = new();
     private readonly ExobiologyState exobiologyState;
     private readonly CommanderProfileStore commanderProfileStore;
+    private readonly CommanderCodexStore commanderCodexStore;
     private readonly CommanderCodexJournalTracker commanderCodexJournalTracker;
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
@@ -88,6 +89,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private string profileStatusMessage;
     private string questStatusMessage = "Quests are disabled.";
     private string? activeProfileRavenApiKey;
+    private string? surveyCodexFrontierId;
+    private int? surveyCodexRegionId;
+    private long? surveyCodexSystemAddress;
     private EliteStatus? latestStatus;
     private bool disposed;
 
@@ -150,7 +154,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             configuredJournalDirectory);
         commanderProfileStore = new CommanderProfileStore(
             AppDataPaths.DataDirectory);
-        var commanderCodexStore = new CommanderCodexStore(
+        commanderCodexStore = new CommanderCodexStore(
             AppDataPaths.DataDirectory);
         commanderCodexJournalTracker = new CommanderCodexJournalTracker(
             commanderCodexStore);
@@ -1383,6 +1387,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.JournalEvents,
             update.Status,
             exobiologyAfter);
+        await RefreshSystemSurveyCommanderCodexAsync(
+            forceRefresh: commanderCodexResult.DiscoveryEventCount > 0);
         if (!update.IsBootstrapRead
             && SystemSurvey.LatestBiologyEntryId is { } entryId
             && update.JournalEvents.Any(IsShowCodexCommand))
@@ -1449,6 +1455,64 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             || isManualRefresh)
         {
             LastUpdated = $"Last update: {DateTimeOffset.Now:G}";
+        }
+    }
+
+    private async Task RefreshSystemSurveyCommanderCodexAsync(
+        bool forceRefresh)
+    {
+        var frontierId = activeProfileFrontierId ?? journalState.FrontierId;
+        var commanderName = activeProfileCommanderName
+            ?? journalState.CommanderName;
+        var systemAddress = journalState.SystemAddress;
+        var regionId = journalState.StarPosition is { } position
+            ? GalacticRegionMap.Find(position)?.Id
+            : null;
+        if (string.IsNullOrWhiteSpace(frontierId)
+            || systemAddress is null)
+        {
+            surveyCodexFrontierId = null;
+            surveyCodexRegionId = null;
+            surveyCodexSystemAddress = null;
+            SystemSurvey.UpdateCommanderCodexContext(null, null);
+            return;
+        }
+
+        if (!forceRefresh
+            && string.Equals(
+                surveyCodexFrontierId,
+                frontierId,
+                StringComparison.OrdinalIgnoreCase)
+            && surveyCodexRegionId == regionId
+            && surveyCodexSystemAddress == systemAddress)
+        {
+            return;
+        }
+
+        var global = await commanderCodexStore.LoadAsync(
+            frontierId,
+            commanderName);
+        var regional = regionId is > 0
+            ? await commanderCodexStore.LoadAsync(
+                frontierId,
+                commanderName,
+                regionId.Value)
+            : null;
+        surveyCodexFrontierId = frontierId;
+        surveyCodexRegionId = regionId;
+        surveyCodexSystemAddress = systemAddress;
+        SystemSurvey.UpdateCommanderCodexContext(
+            global.Data,
+            regional?.Data);
+
+        var warnings = global.Warnings
+            .Concat(regional?.Warnings ?? [])
+            .ToArray();
+        if (warnings.Length > 0)
+        {
+            CommanderCodexStatusMessage = string.Join(
+                Environment.NewLine,
+                warnings);
         }
     }
 

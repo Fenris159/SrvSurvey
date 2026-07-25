@@ -563,6 +563,75 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void BiologySurveyInfersCommanderAndRegionalFirstsFromLedgers()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+                Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
+                Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.Fss });
+
+        var unavailable = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        Assert.False(unavailable.IsCommanderFirst);
+        Assert.False(unavailable.IsRegionalFirst);
+
+        var globalOtherLocation = new CommanderCodexData(
+            "fid",
+            "Cmdr Test",
+            0,
+            null,
+            new Dictionary<long, CommanderCodexFirst>
+            {
+                [2310101] = new(
+                    DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+                    99,
+                    7),
+            });
+        var emptyRegional = new CommanderCodexData(
+            "fid",
+            "Cmdr Test",
+            18,
+            "Inner Orion Spur",
+            new Dictionary<long, CommanderCodexFirst>());
+        viewModel.UpdateCommanderCodexContext(
+            globalOtherLocation,
+            emptyRegional);
+
+        var regional = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        Assert.False(regional.IsCommanderFirst);
+        Assert.True(regional.IsRegionalFirst);
+        Assert.False(regional.IsHighlightedFirst);
+
+        viewModel.HighlightRegionalFirsts = true;
+        Assert.True(Assert.Single(
+            viewModel.BiologySurvey!.Organisms).IsHighlightedFirst);
+
+        var globalCurrentLocation = globalOtherLocation with
+        {
+            Firsts = new Dictionary<long, CommanderCodexFirst>
+            {
+                [2310101] = new(
+                    DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+                    42,
+                    1),
+            },
+        };
+        viewModel.UpdateCommanderCodexContext(
+            globalCurrentLocation,
+            emptyRegional);
+
+        var commander = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        Assert.True(commander.IsCommanderFirst);
+        Assert.False(commander.IsRegionalFirst);
+        Assert.True(commander.IsHighlightedFirst);
+    }
+
+    [Fact]
     public void BiologySurveyHonorsNearBodySelectionPreference()
     {
         var viewModel = CreateViewModel();
@@ -642,6 +711,23 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(prediction.HasReward);
         Assert.False(bodySurvey.HasPredictionStatus);
         Assert.StartsWith("Estimated reward:", bodySurvey.RewardSummary);
+
+        viewModel.UpdateCommanderCodexContext(
+            new CommanderCodexData(
+                "fid",
+                "Cmdr Test",
+                0,
+                null,
+                new Dictionary<long, CommanderCodexFirst>()),
+            new CommanderCodexData(
+                "fid",
+                "Cmdr Test",
+                18,
+                "Inner Orion Spur",
+                new Dictionary<long, CommanderCodexFirst>()));
+        prediction = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        Assert.True(prediction.IsCommanderFirst);
+        Assert.True(prediction.IsHighlightedFirst);
 
         viewModel.DisableBioPredictions = true;
 

@@ -224,8 +224,9 @@ loads all 21 shipped criteria resources and resolves exact species/variant
 predictions with galactic-region, parent-star/barycentre/brightness, offline
 nebula, Guardian-bubble, inheritance, and known-organism context. It exposes
 predicted reward ranges only for complete inputs and otherwise shows the
-missing context explicitly. Commander-Codex first-discovery inference and
-Canonn signal hints remain open. Of the other
+missing context explicitly. Its confirmed and predicted rows now infer
+commander and regional firsts from the active global/current-region ledgers;
+only the auxiliary Canonn signal hint remains open. Of the other
 plotter surfaces, `PlotPriorScans` is now a
 bottom-right passive guidance and radar surface. It uses the current Canonn
 `getSystemPoi` response, rejects malformed/bodyless/mismatched records, caches

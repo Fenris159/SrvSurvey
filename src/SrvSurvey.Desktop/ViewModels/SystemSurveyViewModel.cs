@@ -21,6 +21,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private readonly Func<DateTimeOffset> utcNow;
     private EliteStatus? status;
     private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
+    private BiologyDiscoveryContext biologyDiscoveryContext =
+        BiologyDiscoveryContext.Unavailable;
     private SystemScanSnapshot snapshot = SystemScanSnapshot.Empty;
     private IReadOnlyList<FssBodyRowViewModel> fssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> dssBodies = [];
@@ -551,6 +553,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public EliteStatus? CurrentStatus => status;
 
     public ExobiologySnapshot CurrentExobiology => exobiology;
+
+    public BiologyDiscoveryContext CurrentBiologyDiscoveryContext =>
+        biologyDiscoveryContext;
 
     public BodyInformationViewModel? BodyInformation
     {
@@ -1096,6 +1101,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         if (snapshot.SystemAddress != previousAddress)
         {
             ClearTimedBiologySelection(refreshDisplay: false);
+            biologyDiscoveryContext = BiologyDiscoveryContext.Unavailable;
             biologyCodexNotification = null;
             forceShowFssInfo = false;
             manuallyHideFssInfo = false;
@@ -1113,6 +1119,17 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
         RefreshDisplay();
         RaiseVisibilityProperties();
+    }
+
+    public void UpdateCommanderCodexContext(
+        CommanderCodexData? global,
+        CommanderCodexData? regional)
+    {
+        biologyDiscoveryContext = snapshot.SystemAddress is { } systemAddress
+            ? new BiologyDiscoveryContext(systemAddress, global, regional)
+            : BiologyDiscoveryContext.Unavailable;
+        OnPropertyChanged(nameof(CurrentBiologyDiscoveryContext));
+        RefreshDisplay();
     }
 
     public bool RefreshTransientState()
@@ -1205,7 +1222,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     HighlightRegionalFirsts,
                     DimAnalyzedOrganisms,
                     HideGeoCountInBioSystem,
-                    DisableBioPredictions)
+                    DisableBioPredictions,
+                    biologyDiscoveryContext)
                 : BiologySurveyViewModel.Create(
                     snapshot,
                     status,
@@ -1214,7 +1232,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     HighlightRegionalFirsts,
                     DimAnalyzedOrganisms,
                     HideGeoCountInBioSystem,
-                    DisableBioPredictions);
+                    DisableBioPredictions,
+                    biologyDiscoveryContext);
         BiologyStatus = BiologyStatusViewModel.Create(
             snapshot,
             status,
@@ -1309,7 +1328,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             HighlightRegionalFirsts,
             DimAnalyzedOrganisms,
             HideGeoCountInBioSystem,
-            DisableBioPredictions);
+            DisableBioPredictions,
+            biologyDiscoveryContext);
         var signalCount = Math.Max(
             1,
             details?.Organisms.Count ?? body.BiologicalSignalCount);
@@ -1476,7 +1496,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     HighlightRegionalFirsts,
                     DimAnalyzedOrganisms,
                     HideGeoCountInBioSystem,
-                    DisableBioPredictions)
+                    DisableBioPredictions,
+                    biologyDiscoveryContext)
                 ?.RewardSummary ?? string.Empty
             : string.Empty;
 
