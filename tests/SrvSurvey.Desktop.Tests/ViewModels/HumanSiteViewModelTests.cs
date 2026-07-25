@@ -37,7 +37,7 @@ public sealed class HumanSiteViewModelTests
     }
 
     [Fact]
-    public async Task FootPositionAtKnownPadInfersAlignedSettlementMap()
+    public async Task FootPositionAtKnownPadRequiresSettlementCommandToAlignMap()
     {
         const double radius = 6_000_000;
         const double siteHeading = 231;
@@ -76,6 +76,13 @@ public sealed class HumanSiteViewModelTests
             status,
             "foot");
 
+        Assert.False(viewModel.HasKnownGeometry);
+
+        await viewModel.ApplyUpdateAsync(
+            [Parse("""{"event":"SendText","Message":".settlement"}""")],
+            status,
+            "foot");
+
         Assert.True(viewModel.HasKnownGeometry);
         Assert.Equal(5, viewModel.ActiveSite!.SubType);
         Assert.Equal("Ourea", viewModel.ActiveSite.Template!.Name);
@@ -84,6 +91,52 @@ public sealed class HumanSiteViewModelTests
         Assert.NotNull(viewModel.CommanderOffset);
         Assert.InRange(viewModel.DistanceToOriginMeters, 0, 500);
         Assert.Equal(2, viewModel.Zoom);
+    }
+
+    [Fact]
+    public async Task DockedShipAlignsSettlementWithoutManualCommand()
+    {
+        const double radius = 6_000_000;
+        const double siteHeading = 231;
+        var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
+        var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
+        var origin = new SurfaceCoordinate(-12.5, 44.25);
+        var pad = Assert.Single(template.LandingPads);
+        var observerHeading = SurfaceNavigation.NormalizeDegrees(
+            siteHeading + pad.Rotation);
+        var cockpitLocation = HumanSiteNavigation.GetSurfaceLocation(
+            origin,
+            pad.Offset,
+            radius,
+            siteHeading);
+        var status = new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong
+                | StatusFlags.Docked
+                | StatusFlags.InMainShip,
+            Latitude = cockpitLocation.Latitude,
+            Longitude = cockpitLocation.Longitude,
+            Heading = (int)Math.Round(observerHeading),
+            PlanetRadius = (decimal)radius,
+        };
+        var viewModel = new HumanSiteViewModel(templateCatalog: catalog);
+
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse(Approach(
+                    economy: "$economy_Extraction;",
+                    economyLocalized: "Extraction",
+                    latitude: origin.Latitude,
+                    longitude: origin.Longitude)),
+                Parse(
+                    """
+                    {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
+                    """),
+            ],
+            status);
+
+        Assert.True(viewModel.HasKnownGeometry);
+        Assert.Equal(siteHeading, viewModel.ActiveSite!.Heading!.Value, 0);
     }
 
     [Fact]
@@ -176,6 +229,7 @@ public sealed class HumanSiteViewModelTests
                 Parse($$"""
                     {"event":"Touchdown","Latitude":{{shipLocation.Latitude}},"Longitude":{{shipLocation.Longitude}}}
                     """),
+                Parse("""{"event":"SendText","Message":".settlement"}"""),
             ],
             landedStatus,
             "sidewinder");
@@ -258,6 +312,7 @@ public sealed class HumanSiteViewModelTests
                         """
                         {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
                         """),
+                    Parse("""{"event":"SendText","Message":".settlement"}"""),
                 ],
                 OnFootStatus(
                     padLocation.Latitude,

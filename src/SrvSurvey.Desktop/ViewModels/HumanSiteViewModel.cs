@@ -440,7 +440,8 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                 await LoadKnowledgeAsync();
             }
 
-            var inferredSource = TryInferGeometry();
+            var inferredSource = TryInferGeometry(
+                IsSettlementAlignmentCommand(journalEvent));
             if (inferredSource != HumanSiteGeometrySource.Unknown)
             {
                 source = inferredSource;
@@ -553,16 +554,17 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         IsHuge = !IsHuge;
     }
 
-    private HumanSiteGeometrySource TryInferGeometry()
+    private HumanSiteGeometrySource TryInferGeometry(
+        bool allowManualFootAlignment = false)
     {
+        var manualFootAlignment = status?.OnFootExterior == true
+            && allowManualFootAlignment;
+        var automaticDockAlignment = status?.Docked == true
+            && status.OnFoot == false;
         if (state.CurrentSite is not { } site
             || status is not { HasLatitudeLongitude: true } currentStatus
             || currentStatus.PlanetRadius <= 0
-            || !(currentStatus.Docked
-                || currentStatus.Landed
-                || currentStatus.OnFoot
-                || currentStatus.InSrv
-                || currentStatus.InTaxi))
+            || !(manualFootAlignment || automaticDockAlignment))
         {
             return HumanSiteGeometrySource.Unknown;
         }
@@ -574,7 +576,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                 : vehicle;
         var source = currentStatus.InTaxi
             ? HumanSiteGeometrySource.TaxiDock
-            : currentStatus.OnFoot || currentStatus.InSrv
+            : manualFootAlignment
                 ? HumanSiteGeometrySource.ManualFoot
                 : HumanSiteGeometrySource.AutoDock;
         var geometry = navigation.InferGeometry(
@@ -844,6 +846,18 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             && string.Equals(
                 message.GetString()?.Trim(),
                 ".stop",
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsSettlementAlignmentCommand(
+        JournalEventEnvelope journalEvent)
+    {
+        return journalEvent.EventName == "SendText"
+            && journalEvent.Payload.TryGetProperty("Message", out var message)
+            && message.ValueKind == System.Text.Json.JsonValueKind.String
+            && string.Equals(
+                message.GetString()?.Trim(),
+                ".settlement",
                 StringComparison.OrdinalIgnoreCase);
     }
 
