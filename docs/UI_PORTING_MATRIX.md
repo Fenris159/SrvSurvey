@@ -46,8 +46,10 @@ The implemented Exobiology page covers the original `Main` dashboard workflow.
 The journal-backed `PlotBioSystem` overlay and its exact environmental
 prediction engine are also implemented. The standalone predictions workspace
 uses that evaluator for exact body rows, rewards, sample distances, and
-first-footfall estimates. The Codex browser, prior-scan, and remaining biology
-surfaces stay open below until their backing behavior is ported.
+first-footfall estimates. The compact `PlotBioStatus` replacement covers live
+sampler progress and body summaries. The Codex browser, prior-scan, and
+remaining biology surfaces stay open below until their backing behavior is
+ported.
 
 ## Secondary forms
 
@@ -151,8 +153,13 @@ nebula, Guardian-bubble, inheritance, and known-organism context. It exposes
 predicted reward ranges only for complete inputs and otherwise shows the
 missing context explicitly. Commander-Codex first-discovery inference, Canonn
 signal hints, and the transient map-selection timer remain open. The other
-plotter surfaces remain unported, and the Windows/X11 adapters still require
-live Elite runtime validation.
+plotter surfaces remain unported, except `PlotBioStatus`, which is now a compact
+top-center passive surface with current-body/DSS gating, genus/geology summary,
+analyzed and active sample progress, stale-sample warnings, three-stage sampler,
+separation distance, reward/first-footfall value, a separate persisted auto-show
+preference, and jump/Guardian priority. Its last Codex notification/image action
+and experimental temperature range remain open. The Windows/X11 adapters still
+require live Elite runtime validation.
 
 Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
 opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,
@@ -273,6 +280,14 @@ check at 1182 by 790, using a live journal folder:
   rendered cleanly at 1040 by 760 logical pixels (1042 by 790 including the
   Windows frame). The temporary preview hook and isolated settings were removed;
   live Elite updates and Linux remain untested.
+- The compact `PlotBioStatus` replacement was exercised at its legacy
+  480-pixel width in Blue (dark) and Blue (light). Its active two-sample state
+  rendered three-stage progress, exact species, first-footfall reward, current
+  and remaining separation distance, and the required-distance bar. The compact
+  no-active-sample view rendered genus ranges plus analyzed and unidentified
+  geology, while the DSS-required state stayed readable without duplicated
+  guidance. The temporary preview hook and isolated settings were removed;
+  live Elite attachment, click-through, and Linux remain untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live
