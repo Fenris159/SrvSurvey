@@ -8,6 +8,7 @@ using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.Theming;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -253,7 +254,8 @@ public sealed class MainWindowViewModelTests
             Directory.CreateDirectory(source);
             await File.WriteAllTextAsync(
                 Path.Combine(source, "settings.json"),
-                "{\"unknownFutureField\":42}");
+                "{\"unknownFutureField\":42,\"darkTheme\":true,"
+                    + "\"autoShowPlotJumpInfo\":false}");
             Directory.CreateDirectory(Path.Combine(data, "logs"));
             await File.WriteAllTextAsync(
                 Path.Combine(data, "logs", "startup.txt"),
@@ -274,10 +276,69 @@ public sealed class MainWindowViewModelTests
             Assert.True(File.Exists(Path.Combine(data, "logs", "startup.txt")));
             Assert.Contains("Imported 1 legacy files", viewModel.ProfileStatusMessage);
             Assert.Contains("retained 1 current-only files", viewModel.ProfileStatusMessage);
+            Assert.Contains("Translated 2 legacy UI preferences", viewModel.ProfileStatusMessage);
             Assert.Contains("Restart SrvSurvey", viewModel.ProfileStatusMessage);
+            Assert.Equal(
+                "blue-dark",
+                new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+            Assert.False(
+                new JumpInfoSettingsStore(paths.UiSettingsPath).Load().AutoShow);
             Assert.True(viewModel.HasCompletedLegacyImport);
             Assert.False(viewModel.ImportLegacyProfileCommand.CanExecute(null));
             Assert.True(Directory.Exists(viewModel.ProfileBackupDirectory));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LegacyProfileImportPreservesCurrentUiSettingsWhenLegacySettingsAreMalformed()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-profile-malformed-settings-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var source = Path.Combine(root, "legacy");
+            var data = Path.Combine(root, "current");
+            var config = Path.Combine(root, "config");
+            Directory.CreateDirectory(source);
+            Directory.CreateDirectory(config);
+            await File.WriteAllTextAsync(
+                Path.Combine(source, "settings.json"),
+                "{\"darkTheme\":true,");
+            var paths = new AppDataPaths(
+                config,
+                data,
+                Path.Combine(root, "cache"),
+                [new LegacyProfileCandidate(
+                    LegacyProfileLocationKind.Desktop,
+                    source)]);
+            const string currentSettings =
+                "{\"Version\":1,\"Theme\":\"green-light\"}";
+            await File.WriteAllTextAsync(paths.UiSettingsPath, currentSettings);
+            var viewModel = new MainWindowViewModel(
+                Path.Combine(root, "missing-journals"),
+                appDataPaths: paths);
+
+            await viewModel.ImportLegacyProfileAsync();
+
+            Assert.True(viewModel.HasCompletedLegacyImport);
+            Assert.Contains(
+                "legacy UI preferences could not be translated",
+                viewModel.ProfileStatusMessage);
+            Assert.Equal(
+                currentSettings,
+                await File.ReadAllTextAsync(paths.UiSettingsPath));
+            Assert.Equal(
+                "{\"darkTheme\":true,",
+                await File.ReadAllTextAsync(
+                    Path.Combine(paths.DataDirectory, "settings.json")));
         }
         finally
         {

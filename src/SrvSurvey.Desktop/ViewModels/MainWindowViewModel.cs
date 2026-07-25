@@ -971,12 +971,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 LegacyProfileSourcePath,
                 AppDataPaths.DataDirectory,
                 ProfileBackupDirectory);
+            var settingsMigration = new LegacyUiSettingsMigrator()
+                .MigrateIfNeeded(AppDataPaths);
             var retainedFiles = result.Manifest.PreviousDestinationEntries.Count
                 - result.Manifest.Conflicts.Count;
             ProfileStatusMessage = $"Imported {result.Manifest.Entries.Count:N0} legacy files, "
                 + $"retained {retainedFiles:N0} current-only files, and recorded "
-                + $"{result.Manifest.Conflicts.Count:N0} path collisions. Restart SrvSurvey "
-                + $"to load the migrated profile. Verified backups: {result.BackupDirectory}";
+                + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
+                + GetSettingsMigrationStatus(settingsMigration)
+                + " Restart SrvSurvey to load the migrated profile. "
+                + $"Verified backups: {result.BackupDirectory}";
             OnPropertyChanged(nameof(HasCompletedLegacyImport));
             OnPropertyChanged(nameof(ImportProfileButtonText));
         }
@@ -1007,6 +1011,21 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             await handler();
         }
+    }
+
+    private static string GetSettingsMigrationStatus(
+        LegacyUiSettingsMigrationResult migration)
+    {
+        if (migration.Error is not null)
+        {
+            return "Player data is byte-verified, but legacy UI preferences could "
+                + "not be translated; the current Avalonia settings were left "
+                + $"unchanged. {migration.Error}";
+        }
+
+        return migration.Migrated
+            ? $"Translated {migration.MappedPreferenceCount:N0} legacy UI preferences."
+            : "No legacy UI preference translation was required.";
     }
 
     private bool CanImportLegacyProfile()
