@@ -6,30 +6,42 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-public sealed class RouteOverlayCoordinator : IDisposable
+public sealed class SphericalSearchOverlayCoordinator : IDisposable
 {
+    private readonly SphereLimitViewModel sphere;
+    private readonly BoxelSearchViewModel boxel;
     private readonly RouteWorkspaceViewModel route;
-    private readonly RouteOverlayViewModel viewModel;
+    private readonly SphericalSearchOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private RouteOverlayWindow? window;
+    private SphericalSearchOverlayWindow? window;
     private bool isSuppressed;
     private bool disposed;
 
-    public RouteOverlayCoordinator(
+    public SphericalSearchOverlayCoordinator(
+        SphereLimitViewModel sphere,
+        BoxelSearchViewModel boxel,
         RouteWorkspaceViewModel route,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker)
     {
+        this.sphere = sphere ?? throw new ArgumentNullException(nameof(sphere));
+        this.boxel = boxel ?? throw new ArgumentNullException(nameof(boxel));
         this.route = route ?? throw new ArgumentNullException(nameof(route));
         this.platform = platform
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        viewModel = new RouteOverlayViewModel(route, platform.Capabilities);
-        route.PropertyChanged += OnRoutePropertyChanged;
+        viewModel = new SphericalSearchOverlayViewModel(
+            sphere,
+            boxel,
+            route,
+            platform.Capabilities);
+        sphere.PropertyChanged += OnSearchPropertyChanged;
+        boxel.PropertyChanged += OnSearchPropertyChanged;
+        route.PropertyChanged += OnSearchPropertyChanged;
         timer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
@@ -69,7 +81,9 @@ public sealed class RouteOverlayCoordinator : IDisposable
         disposed = true;
         timer.Stop();
         timer.Tick -= OnTimerTick;
-        route.PropertyChanged -= OnRoutePropertyChanged;
+        sphere.PropertyChanged -= OnSearchPropertyChanged;
+        boxel.PropertyChanged -= OnSearchPropertyChanged;
+        route.PropertyChanged -= OnSearchPropertyChanged;
         CloseWindow();
         gameWindowTracker.Dispose();
         platform.Dispose();
@@ -80,12 +94,14 @@ public sealed class RouteOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnRoutePropertyChanged(
+    private void OnSearchPropertyChanged(
         object? sender,
         PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName
-            == nameof(RouteWorkspaceViewModel.ShouldShowGalaxyMapOverlay))
+        if (eventArgs.PropertyName is nameof(
+                SphereLimitViewModel.ShouldShowGalaxyMapOverlay)
+            or nameof(BoxelSearchViewModel.ShouldShowGalaxyMapOverlay)
+            or nameof(RouteWorkspaceViewModel.ShouldShowGalaxyMapOverlay))
         {
             SynchronizeWindow();
         }
@@ -100,7 +116,7 @@ public sealed class RouteOverlayCoordinator : IDisposable
 
         gameWindow = gameWindowTracker.GetSnapshot();
         if (isSuppressed
-            || !route.ShouldShowGalaxyMapOverlay
+            || !ShouldShow
             || !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
             || !platform.Capabilities.SupportsGameWindowTracking
@@ -118,7 +134,7 @@ public sealed class RouteOverlayCoordinator : IDisposable
             return;
         }
 
-        var overlay = new RouteOverlayWindow(viewModel);
+        var overlay = new SphericalSearchOverlayWindow(viewModel);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -141,6 +157,10 @@ public sealed class RouteOverlayCoordinator : IDisposable
         overlay.Show();
     }
 
+    private bool ShouldShow => sphere.ShouldShowGalaxyMapOverlay
+        || boxel.ShouldShowGalaxyMapOverlay
+        || route.ShouldShowGalaxyMapOverlay;
+
     private static void PositionWindow(Window window, PixelRect gameBounds)
     {
         var screen = window.Screens.ScreenFromBounds(gameBounds)
@@ -151,10 +171,14 @@ public sealed class RouteOverlayCoordinator : IDisposable
         }
 
         var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var height = (int)Math.Ceiling(window.Height * screen.Scaling);
-        var position = OverlayWindowPlacement.TopLeft(
+        var logicalHeight = window.Bounds.Height > 0
+            ? window.Bounds.Height
+            : window.MinHeight;
+        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
+        var position = OverlayWindowPlacement.TopRight(
             gameBounds,
-            new PixelSize(width, height));
+            new PixelSize(width, Math.Max(height, 1)),
+            8);
         if (window.Position != position)
         {
             window.Position = position;

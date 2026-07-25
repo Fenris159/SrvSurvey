@@ -16,7 +16,7 @@ public sealed partial class App : Application
     private GuardianOverlayCoordinator? guardianOverlayCoordinator;
     private ColonizationCommodityOverlayCoordinator?
         colonizationCommodityOverlayCoordinator;
-    private RouteOverlayCoordinator? routeOverlayCoordinator;
+    private SphericalSearchOverlayCoordinator? sphericalSearchOverlayCoordinator;
     private JumpInfoOverlayCoordinator? jumpInfoOverlayCoordinator;
     private GroundTargetOverlayCoordinator? groundTargetOverlayCoordinator;
     private CombatOverlayCoordinator? combatOverlayCoordinator;
@@ -82,7 +82,9 @@ public sealed partial class App : Application
                     viewModel.CodexBingo,
                     mainWindow,
                     viewModel.OpenCodexBingoNearestSearchAsync);
-            routeOverlayCoordinator = new RouteOverlayCoordinator(
+            sphericalSearchOverlayCoordinator = new SphericalSearchOverlayCoordinator(
+                viewModel.Search,
+                viewModel.BoxelSearch,
                 viewModel.Route,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent());
@@ -203,7 +205,7 @@ public sealed partial class App : Application
                                 || systemSurveyOverlayCoordinator?.IsVisible == true
                                 || groundTargetOverlayCoordinator?.IsVisible == true
                                 || combatOverlayCoordinator?.IsVisible == true
-                                || routeOverlayCoordinator?.IsVisible == true
+                                || sphericalSearchOverlayCoordinator?.IsVisible == true
                                 || colonizationCommodityOverlayCoordinator
                                     ?.IsVisible == true;
                             jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
@@ -211,7 +213,7 @@ public sealed partial class App : Application
                             groundTargetOverlayCoordinator?.SetSuppressed(suppress);
                             combatOverlayCoordinator?.SetSuppressed(suppress);
                             guardianOverlayCoordinator?.SetSuppressed(suppress);
-                            routeOverlayCoordinator?.SetSuppressed(suppress);
+                            sphericalSearchOverlayCoordinator?.SetSuppressed(suppress);
                             colonizationCommodityOverlayCoordinator
                                 ?.SetSuppressed(suppress);
                             handled = true;
@@ -326,8 +328,8 @@ public sealed partial class App : Application
                 biologyCodexBingoWindowCoordinator?.Dispose();
                 biologyCodexBingoWindowCoordinator = null;
                 viewModel.CodexBingo.Dispose();
-                routeOverlayCoordinator?.Dispose();
-                routeOverlayCoordinator = null;
+                sphericalSearchOverlayCoordinator?.Dispose();
+                sphericalSearchOverlayCoordinator = null;
                 jumpInfoOverlayCoordinator?.Dispose();
                 jumpInfoOverlayCoordinator = null;
                 groundTargetOverlayCoordinator?.Dispose();

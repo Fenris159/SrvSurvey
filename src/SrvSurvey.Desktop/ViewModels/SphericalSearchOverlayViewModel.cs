@@ -4,15 +4,19 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class RouteOverlayViewModel : INotifyPropertyChanged
+public sealed class SphericalSearchOverlayViewModel : INotifyPropertyChanged
 {
     private string platformStatus;
     private string inputMode;
 
-    public RouteOverlayViewModel(
+    public SphericalSearchOverlayViewModel(
+        SphereLimitViewModel sphere,
+        BoxelSearchViewModel boxel,
         RouteWorkspaceViewModel route,
         OverlayPlatformCapabilities capabilities)
     {
+        Sphere = sphere ?? throw new ArgumentNullException(nameof(sphere));
+        Boxel = boxel ?? throw new ArgumentNullException(nameof(boxel));
         Route = route ?? throw new ArgumentNullException(nameof(route));
         ArgumentNullException.ThrowIfNull(capabilities);
         platformStatus = capabilities.StatusText;
@@ -22,6 +26,10 @@ public sealed class RouteOverlayViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public SphereLimitViewModel Sphere { get; }
+
+    public BoxelSearchViewModel Boxel { get; }
 
     public RouteWorkspaceViewModel Route { get; }
 
