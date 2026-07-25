@@ -31,7 +31,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | --- | --- | --- | --- |
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
-| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow plus exact `PlotBioSystem` species/variant predictions implemented; standalone predictions and Codex forms remain pending |
+| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, and the standalone system/body prediction workspace implemented; Codex forms remain pending |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
@@ -44,9 +44,10 @@ must be labelled as pending and must not imply working behavior.
 
 The implemented Exobiology page covers the original `Main` dashboard workflow.
 The journal-backed `PlotBioSystem` overlay and its exact environmental
-prediction engine are also implemented, while the standalone predictions UI,
-Codex browser, prior-scan, and remaining biology surfaces stay open below until
-their backing behavior is ported.
+prediction engine are also implemented. The standalone predictions workspace
+uses that evaluator for exact body rows, rewards, sample distances, and
+first-footfall estimates. The Codex browser, prior-scan, and remaining biology
+surfaces stay open below until their backing behavior is ported.
 
 ## Secondary forms
 
@@ -71,7 +72,7 @@ their backing behavior is ported.
 | `FormPlayDev` | Developer tools | Deferred |
 | `FormPlayJournal` | Diagnostics / Journal tools | Not ported |
 | `FormPostProcess` | Diagnostics / Journal tools | Not ported |
-| `FormPredictions` | Exobiology / Predictions | Not ported |
+| `FormPredictions` | Exobiology / Predictions | Implemented as a single-instance Raven workspace with system totals, confirmed/estimated/first-footfall rewards, expandable body rows, exact species/variant and genus-only states, sample separation distances, incomplete-scan guidance, current-body focus, persisted row sizing, and Canonn/Spansh/EDSM actions; Windows visually checked in Blue dark/light |
 | `FormRamTah` | Guardian / Ram Tah | Implemented with both journal-driven mission states, all 101 + 28 categorized log controls, compatible commander persistence, progress, manual toggles, guarded resets, both Canonn guide links, and artifact-gated current-obelisk scan updates; detached `PlotRamTah` remains; Windows visually checked |
 | `FormRavenUpdater` | Update flow | Not ported |
 | `FormRoute` | Travel / Routes | Implemented with lossless legacy route files, manual-name and current Spansh imports, active/auto-copy controls, per-hop progress, distances/notes/refuel/neutron guidance, save/discard, live FSDJump progression, and a Galaxy Map overlay; Windows visually checked in Blue dark/light |
@@ -264,6 +265,14 @@ check at 1182 by 790, using a live journal folder:
   passive card at the active Windows scaling. The temporary preview hook and QA
   settings were removed; live Elite attachment, click-through, and Linux remain
   untested.
+- The standalone predictions workspace was exercised with exact and genus-only
+  organisms across three bodies in Blue (dark) and Blue (light). Its system,
+  confirmed, estimated, and first-footfall totals, sample separation, incomplete
+  scan notice, current/first-footfall badges, full-width expandable body cards,
+  large row size, focus-current-body, expand-all, and collapse-all states
+  rendered cleanly at 1040 by 760 logical pixels (1042 by 790 including the
+  Windows frame). The temporary preview hook and isolated settings were removed;
+  live Elite updates and Linux remain untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live

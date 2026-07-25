@@ -254,6 +254,16 @@ prediction card were checked in Blue dark/light. Commander-Codex firsts,
 Canonn hints, the transient map-selection timer, live Elite attachment, and
 Linux remain open.
 
+`FormPredictions` now has a single-instance Raven-themed workspace backed by
+the same exact evaluator. It shows system totals, confirmed and estimated
+rewards, first-footfall estimates, expandable per-body organism rows, sample
+separation distances, incomplete-scan guidance, current/target state, and
+Canonn, Spansh, and EDSM actions. Current-body focus and compact, comfortable,
+or large row sizing persist across launches. The 1040 by 760 logical-pixel
+window was exercised in Blue dark/light, including focus, row-size, expand,
+and collapse interactions. Commander-Codex first-discovery flags, live Elite
+attachment, and Linux remain open.
+
 Exit gate: overlay positioning, DPI scaling, focus, click-through behavior, and
 input are recorded on the supported platform matrix.
 
@@ -276,11 +286,12 @@ UI tests where practical, and live Windows/Linux evidence.
   `PlotSysStatus` are implemented. The journal-backed `PlotFSS` card is
   implemented, while its experimental pixel tuning detector remains open;
   `PlotBodyInfo` selection, visibility, and presentation are implemented while
-  its biological reward range remains tied to the open `PlotBioSystem`
-  prediction work. The journal-backed `PlotBioSystem` presentation and lifecycle
-  are implemented, while its exact prediction inputs and auxiliary Canonn/Codex
-  cues remain open. `PlotPriorScans` and the remaining route/search plotter modes
-  are still open.
+  wiring its biological reward range to the shared prediction engine remains
+  open. The journal-backed `PlotBioSystem` presentation, lifecycle, and exact
+  prediction inputs are implemented, while its auxiliary Canonn/Codex cues
+  remain open. `FormPredictions` is implemented as a standalone system/body
+  workspace. `PlotPriorScans` and the remaining route/search plotter modes are
+  still open.
 - [ ] Human settlements and post-processing tools.
 - [ ] Cargo, missions, massacre/foot combat, and colonization projects.
 - [ ] Quest communications and controller navigation.
@@ -313,7 +324,7 @@ not expected to run as a headless container service.
 | Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
 | Settings/data migration | OS paths, legacy discovery, manifests, verified backup/staging/import, lossless commander profile updates, and all 30 legacy input binding names/defaults implemented | Explicit backup-and-import workflow plus opt-in global keyboard/controller settings, validation, default restore, SDL device picker, refresh, and reconnect status | Settings/input UI visually and accessibility checked in Blue light; native keyboard hook reached active; SDL initialized without connected hardware; real profile restart comparison and physical controller input not run | Not tested |
 | Exploration totals | Legacy valuation and six counters plus compatible, atomic profile persistence implemented | Live Overview/Exploration projections and two-step reset | Automated only | Not tested |
-| Organic scans | Codex reference, three-sample state, surface separation, first-footfall reward, sale, death, reset, compatible profile fields, current-system organism/geology history, and the complete embedded v4 prediction evaluator with region/star/nebula/Guardian context implemented | Live Overview/Exobiology projections, two-step unclaimed reset, and passive `PlotBioSystem` replacement with system/body modes, active/analyzed/first states, confirmed and exact predicted species/variant rewards, first-footfall value, DSS/geology details, incomplete-input disclosure, and persisted preferences; standalone prediction and Codex forms remain pending | Empty/live-profile page visually/accessibility checked; dense body, three-body system, and exact-prediction overlay states checked in Blue dark/light; active Elite sampling/attachment not run | Not tested |
+| Organic scans | Codex reference, three-sample state, surface separation, first-footfall reward, sale, death, reset, compatible profile fields, current-system organism/geology history, sample-distance catalog, and the complete embedded v4 prediction evaluator with region/star/nebula/Guardian context implemented | Live Overview/Exobiology projections, two-step unclaimed reset, passive `PlotBioSystem`, and single-instance `FormPredictions` workspace with system/body totals, exact species/variant rows, sample separation, first-footfall estimates, incomplete-input disclosure, current-body focus, persisted row sizing, and external links; Codex forms remain pending | Empty/live-profile page plus dense body, three-body system, exact-prediction overlay, and standalone prediction workspace states checked in Blue dark/light; active Elite sampling/attachment not run | Not tested |
 | Ground target tracking | Legacy coordinate parsing plus cardinal formats, validated settings, great-circle distance/bearing, relative heading, and approach bands implemented | Travel target editor supports typed, current, clipboard, clear, and live guidance; overlay remains pending | Inactive/live-profile page visually and accessibility checked; active surface guidance not run | Not tested |
 | System notes | Lossless legacy per-system JSON lookup/update/creation plus legacy topmost and screenshot-folder settings implemented; saves against the active Journey system update that visit's note counter | Single-instance resizable notes window, current-system context, save/cancel, always-on-top, Canonn/Spansh/EDSM, screenshots, Travel launcher, and `Ctrl+Shift+N` implemented | Travel card and notes window visually checked in Blue dark/light without changing live notes | Not tested |
 | Commander journeys | Lossless legacy journey JSON and active-pointer persistence, historic journal replay, all legacy counters/rewards/flags, current and prior-system starts, live updates, note coupling, conclude, and bounded reprocess implemented | Single-instance responsive workspace unifies begin, list, edit, viewer, and per-system details; supports history, preferences, notes, screenshots, dirty-state handling, and guarded destructive actions | Isolated QA journey exercised in Blue dark/light, including both start modes, begin, overview, visited systems, note edit/discard, refresh, and conclude/reprocess confirmations; no live commander Journey data changed | Not tested |
@@ -339,7 +350,7 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 543 tests: 354 Core tests and 189 Desktop tests.
+  passed all 560 tests: 365 Core tests and 195 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
@@ -462,6 +473,14 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   Dense body, three-body whole-system, and exact-prediction presentation were
   checked in Blue dark/light; the temporary preview hook and QA settings were
   removed.
+- Automated prediction-workspace coverage now includes current-body filtering,
+  expansion state, persisted compact/comfortable/large row sizing, exact and
+  genus-only organism rows, system and first-footfall totals, sample separation,
+  incomplete scan context, external-link routing, and single-instance opening.
+  A three-body workspace was exercised at 1040 by 760 logical pixels (1042 by
+  790 including the Windows frame) in Blue dark/light. Large rows, current-body
+  focus, expand all, and collapse all rendered and behaved correctly; the
+  temporary preview hook and isolated settings were removed.
 - Automated global-input coverage now validates all 30 legacy action names and
   default chords, keyboard formatting/routing and text-entry suppression,
   controller button/trigger/eight-way POV chords, first-release dispatch,
