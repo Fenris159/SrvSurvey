@@ -596,6 +596,15 @@ public sealed class GuardianViewModelTests
                         ],
                         [],
                         new Dictionary<string, GuardianMapPoint>()),
+                    new GuardianSiteTemplate(
+                        "Alpha",
+                        "Alpha",
+                        string.Empty,
+                        new GuardianMapPoint(0, 0),
+                        1,
+                        [],
+                        [],
+                        new Dictionary<string, GuardianMapPoint>()),
                 ]),
                 ramTah);
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
@@ -666,7 +675,9 @@ public sealed class GuardianViewModelTests
             Assert.Equal(0.2, viewModel.ActiveMapScale);
             viewModel.UpdateStatus(StatusNorthOfSite(10));
 
-            await viewModel.ToggleCurrentObeliskScannedAsync();
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"SendText","Message":".os"}""")],
+                "Drew");
 
             Assert.True(viewModel.CurrentObelisk?.Scanned);
             Assert.False(ramTah.IsLogCompleted(RamTahMission.AncientRuins, "H1"));
@@ -691,12 +702,92 @@ public sealed class GuardianViewModelTests
                 .ReadAsync("F123", isOdyssey: true);
             Assert.True(Assert.Single(saved.Surveys).ActiveObelisks.Single().Scanned);
 
+            Assert.Equal(GuardianLiveMapMode.Heading, viewModel.LiveMapMode);
+            await viewModel.ApplyJournalEventsAsync(
+            [
+                Parse("""{"event":"SendText","Message":".heading 90"}"""),
+                Parse("""{"event":"SendText","Message":".note Mixed Case Note"}"""),
+                Parse("""{"event":"SendText","Message":".tower"}"""),
+                Parse("""{"event":"SendText","Message":".to A01"}"""),
+                Parse("""{"event":"SendText","Message":"z 18"}"""),
+            ],
+            "Drew");
+
+            Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
+            Assert.Equal("A01", viewModel.TargetObeliskName);
+            Assert.Equal(18, viewModel.ActiveMapScale);
+            Assert.False(viewModel.IsAutomaticMapZoom);
+            saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            var commandSurvey = Assert.Single(saved.Surveys);
+            Assert.Equal(90, commandSurvey.Survey.SiteHeading);
+            Assert.Equal(0, commandSurvey.Survey.RelicTowerHeading);
+            Assert.Contains("Mixed Case Note", commandSurvey.Notes);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"SendText","Message":".note ignored bootstrap"}""")],
+                "Drew",
+                allowLiveCommands: false);
+            saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            Assert.DoesNotContain("ignored bootstrap", Assert.Single(saved.Surveys).Notes);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"SendText","Message":"z"}""")],
+                "Drew");
+            Assert.True(viewModel.IsAutomaticMapZoom);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(20) with { Heading = 123 });
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"SendText","Message":".add orb"}""")],
+                "Drew");
+            saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            var rawPoint = Assert.Single(
+                Assert.Single(saved.Surveys).Survey.RawPointsOfInterest!);
+            Assert.Equal("x1", rawPoint.Name);
+            Assert.Equal(GuardianPoiType.Orb, rawPoint.Type);
+            Assert.Equal(90, rawPoint.Angle, precision: 6);
+            Assert.Equal(20, rawPoint.Distance, precision: 1);
+            Assert.Equal(33, rawPoint.Rotation, precision: 6);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"SendText","Message":".empty"}""")],
+                "Drew");
+            saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            Assert.Equal(
+                GuardianPoiStatus.Empty,
+                Assert.Single(saved.Surveys).Survey.PoiStatuses["x1"]);
+
+            await viewModel.ApplyJournalEventsAsync(
+            [
+                Parse("""{"event":"SendText","Message":".remove"}"""),
+                Parse("""{"event":"SendText","Message":".site Alpha"}"""),
+                Parse("""{"event":"SendText","Message":".site Test"}"""),
+                Parse("""{"event":"SendText","Message":".aerial"}"""),
+            ],
+            "Drew");
+            Assert.Equal(GuardianLiveMapMode.Origin, viewModel.LiveMapMode);
+            saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            commandSurvey = Assert.Single(saved.Surveys);
+            Assert.Equal("Test", commandSurvey.SiteType);
+            Assert.Null(commandSurvey.Survey.RawPointsOfInterest);
+            Assert.DoesNotContain("x1", commandSurvey.Survey.PoiStatuses.Keys);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"SendText","Message":".map"}""")],
+                "Drew");
+            Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
+
             await viewModel.ApplyJournalEventsAsync(
                 [Parse("""{"timestamp":"2026-07-24T10:10:00Z","event":"SupercruiseEntry"}""")],
                 "Drew");
 
             Assert.Null(viewModel.CurrentObelisk);
             Assert.Null(viewModel.Proximity);
+            Assert.Null(viewModel.TargetObeliskName);
         }
         finally
         {

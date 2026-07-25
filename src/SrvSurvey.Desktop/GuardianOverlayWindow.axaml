@@ -49,19 +49,34 @@
         </Border>
       </Grid>
 
-      <controls:GuardianSiteMapControl
-          Grid.Row="1"
-          Projection="{Binding Guardian.ActiveMapProjection}"
-          Proximity="{Binding Guardian.Proximity}"
-          MapScale="{Binding Guardian.ActiveMapScale}"
-          CommanderHeading="{Binding Guardian.ActiveMapRelativeHeading}"
-          MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
-          GridBrush="{DynamicResource RavenBorderBrush}"
-          AccentBrush="{DynamicResource RavenAccentBrush}"
-          MutedBrush="{DynamicResource RavenMutedTextBrush}"
-          PresentBrush="{DynamicResource RavenSuccessBrush}"
-          AbsentBrush="{DynamicResource RavenDangerBrush}"
-          EmptyBrush="{DynamicResource RavenWarningBrush}" />
+      <Grid Grid.Row="1">
+        <controls:GuardianSiteMapControl
+            Projection="{Binding Guardian.ActiveMapProjection}"
+            Proximity="{Binding Guardian.Proximity}"
+            MapScale="{Binding Guardian.ActiveMapScale}"
+            CommanderHeading="{Binding Guardian.ActiveMapRelativeHeading}"
+            TargetPointName="{Binding Guardian.TargetObeliskName}"
+            MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
+            GridBrush="{DynamicResource RavenBorderBrush}"
+            AccentBrush="{DynamicResource RavenAccentBrush}"
+            MutedBrush="{DynamicResource RavenMutedTextBrush}"
+            PresentBrush="{DynamicResource RavenSuccessBrush}"
+            AbsentBrush="{DynamicResource RavenDangerBrush}"
+            EmptyBrush="{DynamicResource RavenWarningBrush}" />
+        <Border Margin="22"
+                Padding="18"
+                Classes="card raised"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsVisible="{Binding Guardian.HasLiveMapPrompt}">
+          <StackPanel MaxWidth="420" Spacing="8">
+            <TextBlock Classes="eyebrow"
+                       Text="{Binding Guardian.LiveMapPromptTitle}" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="{Binding Guardian.LiveMapPromptText}" />
+          </StackPanel>
+        </Border>
+      </Grid>
 
       <Border Grid.Row="2" Classes="card raised">
         <Grid ColumnDefinitions="3*,2*" ColumnSpacing="14">
@@ -102,7 +117,7 @@
         <TextBlock Grid.Column="2"
                    Classes="monospace"
                    FontSize="10"
-                   Text="{Binding Guardian.SiteDistanceText}" />
+                   Text="{Binding Guardian.TargetObeliskText}" />
       </Grid>
     </Grid>
   </Border>

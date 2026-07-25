@@ -22,6 +22,9 @@ public sealed class GuardianSiteMapControl : Control
     public static readonly StyledProperty<double> CommanderHeadingProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, double>(
             nameof(CommanderHeading));
+    public static readonly StyledProperty<string?> TargetPointNameProperty =
+        AvaloniaProperty.Register<GuardianSiteMapControl, string?>(
+            nameof(TargetPointName));
     public static readonly StyledProperty<IBrush?> MapBackgroundProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, IBrush?>(
             nameof(MapBackground));
@@ -51,6 +54,7 @@ public sealed class GuardianSiteMapControl : Control
             ProximityProperty,
             MapScaleProperty,
             CommanderHeadingProperty,
+            TargetPointNameProperty,
             MapBackgroundProperty,
             GridBrushProperty,
             AccentBrushProperty,
@@ -82,6 +86,12 @@ public sealed class GuardianSiteMapControl : Control
     {
         get => GetValue(CommanderHeadingProperty);
         set => SetValue(CommanderHeadingProperty, value);
+    }
+
+    public string? TargetPointName
+    {
+        get => GetValue(TargetPointNameProperty);
+        set => SetValue(TargetPointNameProperty, value);
     }
 
     public IBrush? MapBackground
@@ -151,7 +161,7 @@ public sealed class GuardianSiteMapControl : Control
             Math.Min(bounds.Width, bounds.Height) / 2 - 30);
         var fittedScale = radius / projection.MaximumDistance;
         var scale = double.IsFinite(MapScale) && MapScale > 0
-            ? Math.Clamp(MapScale, 0.1, 15)
+            ? Math.Clamp(MapScale, 0.1, 20)
             : fittedScale;
         var mapOrigin = TransformMapPoint(
             0,
@@ -284,10 +294,16 @@ public sealed class GuardianSiteMapControl : Control
         Point location)
     {
         var brush = GetPointBrush(point);
-        var pen = new Pen(brush, point.IsActiveObelisk ? 2.5 : 1.5);
-        if (point.IsActiveObelisk)
+        var isTarget = string.Equals(
+            point.Name,
+            TargetPointName,
+            StringComparison.OrdinalIgnoreCase);
+        var pen = new Pen(
+            isTarget ? AccentBrush ?? Brushes.Cyan : brush,
+            point.IsActiveObelisk || isTarget ? 2.5 : 1.5);
+        if (point.IsActiveObelisk || isTarget)
         {
-            context.DrawEllipse(null, pen, location, 8, 8);
+            context.DrawEllipse(null, pen, location, isTarget ? 11 : 8, isTarget ? 11 : 8);
         }
 
         switch (point.Type)

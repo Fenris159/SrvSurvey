@@ -1264,7 +1264,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         await Guardian.ApplyJournalEventsAsync(
             update.JournalEvents,
-            activeProfileCommanderName);
+            activeProfileCommanderName,
+            allowLiveCommands: !update.IsBootstrapRead);
         await RamTah.ApplyJournalEventsAsync(update.JournalEvents);
         Guardian.UpdateCargo(update.Cargo);
         Colonization.UpdateCargo(update.Cargo);
