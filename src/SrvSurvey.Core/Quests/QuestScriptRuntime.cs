@@ -305,6 +305,41 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         }
     }
 
+    public async Task SetChapterActiveAsync(
+        string chapterId,
+        bool active,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(chapterId);
+        await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            var chapter = RequireChapterState(chapterId);
+            if (IsActive(chapter) == active)
+            {
+                return;
+            }
+
+            if (active)
+            {
+                RequestStartChapter(chapterId);
+            }
+            else
+            {
+                RequestStopChapter(chapterId);
+            }
+
+            await ApplyPendingChapterChangesAsync(cancellationToken)
+                .ConfigureAwait(false);
+            await SaveIfDirtyAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            runtimeLock.Release();
+        }
+    }
+
     public bool IsTagged(string tag)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tag);

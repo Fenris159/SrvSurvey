@@ -136,6 +136,39 @@ public sealed class QuestScriptRuntimeTests
     }
 
     [Fact]
+    public async Task DeveloperCanStartDebugAndStopChapterWithSavedVariables()
+    {
+        var saves = 0;
+        var progress = CreateProgress(
+            "function noop() end",
+            new Dictionary<string, string>
+            {
+                ["second"] = "counter = 2",
+            });
+        await using var runtime = new QuestScriptRuntime(
+            progress,
+            saveProgress: (_, _) =>
+            {
+                saves++;
+                return Task.CompletedTask;
+            });
+        await runtime.InitializeAsync();
+
+        await runtime.SetChapterActiveAsync("second", active: true);
+        var result = await runtime.RunDebugAsync(
+            "second",
+            "counter = counter + 3; return counter");
+        await runtime.SetChapterActiveAsync("second", active: false);
+
+        var chapter = progress.Chapters.Single(item => item.Id == "second");
+        Assert.NotNull(chapter.StartTime);
+        Assert.NotNull(chapter.EndTime);
+        Assert.Equal(5, chapter.Variables["counter"].GetDouble());
+        Assert.Equal(5, result.GetDouble());
+        Assert.Equal(2, saves);
+    }
+
+    [Fact]
     public async Task ImportedChapterVariablesResumeBeforeJournalDispatch()
     {
         var progress = CreateProgress(

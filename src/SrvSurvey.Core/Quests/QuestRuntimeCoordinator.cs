@@ -1,3 +1,4 @@
+using System.Text.Json;
 using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Quests;
@@ -434,6 +435,38 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             .ConfigureAwait(false);
     }
 
+    public Task<JsonElement> RunDevelopmentDebugAsync(
+        RavenQuestReference reference,
+        string chapterId,
+        string code,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        ArgumentException.ThrowIfNullOrWhiteSpace(chapterId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(code);
+        return InvokeDevelopmentRuntimeAsync(
+            reference,
+            (runtime, token) => runtime.RunDebugAsync(chapterId, code, token),
+            cancellationToken);
+    }
+
+    public Task SetDevelopmentChapterActiveAsync(
+        RavenQuestReference reference,
+        string chapterId,
+        bool active,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        ArgumentException.ThrowIfNullOrWhiteSpace(chapterId);
+        return InvokeDevelopmentRuntimeAsync(
+            reference,
+            (runtime, token) => runtime.SetChapterActiveAsync(
+                chapterId,
+                active,
+                token),
+            cancellationToken);
+    }
+
     public async ValueTask DisposeAsync()
     {
         await coordinatorLock.WaitAsync().ConfigureAwait(false);
@@ -674,6 +707,55 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         Func<QuestScriptRuntime, CancellationToken, Task> action,
         CancellationToken cancellationToken)
     {
+        await InvokeRuntimeAsync<object?>(
+                reference,
+                async (runtime, token) =>
+                {
+                    await action(runtime, token).ConfigureAwait(false);
+                    return null;
+                },
+                developmentOnly: false,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<TResult> InvokeDevelopmentRuntimeAsync<TResult>(
+        RavenQuestReference reference,
+        Func<QuestScriptRuntime, CancellationToken, Task<TResult>> action,
+        CancellationToken cancellationToken)
+    {
+        return await InvokeRuntimeAsync(
+                reference,
+                action,
+                developmentOnly: true,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task InvokeDevelopmentRuntimeAsync(
+        RavenQuestReference reference,
+        Func<QuestScriptRuntime, CancellationToken, Task> action,
+        CancellationToken cancellationToken)
+    {
+        await InvokeRuntimeAsync<object?>(
+                reference,
+                async (runtime, token) =>
+                {
+                    await action(runtime, token).ConfigureAwait(false);
+                    return null;
+                },
+                developmentOnly: true,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<TResult> InvokeRuntimeAsync<TResult>(
+        RavenQuestReference reference,
+        Func<QuestScriptRuntime, CancellationToken, Task<TResult>> action,
+        bool developmentOnly,
+        CancellationToken cancellationToken)
+    {
+        TResult result;
         await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -685,7 +767,13 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                     $"Quest '{reference}' is not active.");
             }
 
-            await action(registration.Runtime, cancellationToken)
+            if (developmentOnly && !registration.IsDevelopment)
+            {
+                throw new InvalidOperationException(
+                    $"Quest '{reference}' is not a development quest.");
+            }
+
+            result = await action(registration.Runtime, cancellationToken)
                 .ConfigureAwait(false);
             if (registration.Runtime.TerminalState is not null)
             {
@@ -701,6 +789,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         }
 
         Changed?.Invoke(this, EventArgs.Empty);
+        return result;
     }
 
     private async Task RemoveOrPauseQuestAsync(

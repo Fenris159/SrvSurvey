@@ -308,6 +308,55 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
     }
 
     [Fact]
+    public async Task DevelopmentControlsRunLocallyAndRejectRemoteQuests()
+    {
+        WriteDevelopmentQuest();
+        var remoteDefinition = CreateDefinition("counter = 10") with
+        {
+            Id = "remote",
+        };
+        var client = new FakeRavenQuestClient
+        {
+            ActiveQuests = [CreateRemoteProgress(remoteDefinition)],
+        };
+        await using var coordinator = CreateCoordinator(client);
+        await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+        var development = coordinator.Snapshot.Single(item => item.IsDevelopment);
+        var remote = coordinator.Snapshot.Single(item => !item.IsDevelopment);
+
+        await coordinator.SetDevelopmentChapterActiveAsync(
+            development.Reference,
+            "second",
+            active: true);
+        var result = await coordinator.RunDevelopmentDebugAsync(
+            development.Reference,
+            "second",
+            "counter = counter + 4; return counter");
+        await coordinator.SetDevelopmentChapterActiveAsync(
+            development.Reference,
+            "second",
+            active: false);
+        var rejected = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            coordinator.RunDevelopmentDebugAsync(
+                remote.Reference,
+                "start",
+                "return counter"));
+
+        Assert.Equal(6, result.GetDouble());
+        Assert.Contains("not a development quest", rejected.Message);
+        Assert.Equal(0, client.SaveCount);
+        var saved = await File.ReadAllTextAsync(Path.Combine(
+            temporaryDirectory,
+            "quests",
+            "F123.json"));
+        Assert.Contains("\"counter\": 6", saved, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task SnapshotHydratesDefinitionBackedMessageAndObjectiveText()
     {
         var definition = CreateDefinition("function noop() end") with
@@ -462,7 +511,8 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
               "strings":{},
               "msgs":[],
               "chapters":{
-                "start":"function on_Scan(entry) quest:set('body', entry.BodyName); return true end"
+                "start":"function on_Scan(entry) quest:set('body', entry.BodyName); return true end",
+                "second":"counter = 2"
               }
             }
             """);
@@ -473,9 +523,9 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
     {
         return new RavenCommanderQuest
         {
-            Publisher = "Raven",
-            Id = "sample",
-            Version = 1,
+            Publisher = quest?.Publisher ?? "Raven",
+            Id = quest?.Id ?? "sample",
+            Version = quest?.Version ?? 1,
             Quest = quest,
             StartTime = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
             Chapters =
