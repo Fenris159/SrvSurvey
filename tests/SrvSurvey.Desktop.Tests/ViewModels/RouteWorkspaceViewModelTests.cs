@@ -208,22 +208,41 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             copied.Add(text);
             return Task.CompletedTask;
         });
-        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+        await viewModel.UpdateContextAsync(
+            "F123",
+            "Sol",
+            1,
+            new GalacticCoordinate(0, 0, 0));
 
         Assert.True(viewModel.ShouldAutoCopyNextHop);
 
         await viewModel.UpdateStatusAsync(new EliteStatus
         {
             GuiFocus = GuiFocus.GalaxyMap,
+            Destination = new StatusDestination
+            {
+                System = 2,
+                Name = "Second",
+            },
         });
         await viewModel.UpdateStatusAsync(new EliteStatus
         {
             GuiFocus = GuiFocus.GalaxyMap,
+            Destination = new StatusDestination
+            {
+                System = 2,
+                Name = "Second",
+            },
         });
 
         Assert.Equal(["Second"], copied);
+        Assert.True(viewModel.ShouldShowGalaxyMapOverlay);
+        Assert.Equal("5.00 ly from Sol", viewModel.NextHopDistance);
+        Assert.Equal("SELECTED IN GALAXY MAP", viewModel.NextHopDestinationStatus);
+        Assert.Equal("NEXT SYSTEM COPIED", viewModel.NextHopClipboardStatus);
 
         await viewModel.UpdateStatusAsync(new EliteStatus());
+        Assert.False(viewModel.ShouldShowGalaxyMapOverlay);
         await viewModel.UpdateStatusAsync(new EliteStatus
         {
             GuiFocus = GuiFocus.GalaxyMap,
@@ -253,6 +272,24 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
 
         Assert.False(viewModel.ShouldAutoCopyNextHop);
         Assert.Empty(copied);
+    }
+
+    [Fact]
+    public async Task GalaxyMapClipboardFailureIsReportedWithoutEscaping()
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
+        var viewModel = CreateViewModel();
+        viewModel.SetClipboardWriter(_ =>
+            throw new Exception("clipboard locked"));
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+
+        await viewModel.UpdateStatusAsync(new EliteStatus
+        {
+            GuiFocus = GuiFocus.GalaxyMap,
+        });
+
+        Assert.Contains("clipboard locked", viewModel.StatusMessage);
+        Assert.Equal("AUTO-COPY READY", viewModel.NextHopClipboardStatus);
     }
 
     [Fact]

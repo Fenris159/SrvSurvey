@@ -4,6 +4,17 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public static class OverlayWindowPlacement
 {
+    public static PixelPoint TopLeft(
+        PixelRect hostBounds,
+        PixelSize overlaySize,
+        int margin = 20)
+    {
+        Validate(hostBounds, overlaySize, margin);
+        return new PixelPoint(
+            hostBounds.X + margin,
+            hostBounds.Y + margin);
+    }
+
     public static PixelPoint TopRight(
         PixelRect hostBounds,
         PixelSize overlaySize,
@@ -55,6 +66,5 @@ public static class OverlayWindowPlacement
         {
             throw new ArgumentOutOfRangeException(nameof(margin));
         }
-
     }
 }

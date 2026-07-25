@@ -33,6 +33,9 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private bool autoCopy = true;
     private bool isBusy;
     private GuiFocus lastGuiFocus;
+    private bool destinationMatchesNextHop;
+    private string? lastCopiedHopName;
+    private StatusDestination? lastDestination;
     private string statusMessage = "Waiting for a commander profile.";
     private Func<Task<bool>>? windowOpener;
     private Func<string, Task>? clipboardWriter;
@@ -173,6 +176,44 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     public bool ShouldAutoCopyNextHop => IsActive
         && AutoCopy
         && NextHop is not null;
+
+    public bool ShouldShowGalaxyMapOverlay => lastGuiFocus == GuiFocus.GalaxyMap
+        && IsActive
+        && NextHop is not null;
+
+    public string NextHopDistance
+    {
+        get
+        {
+            var distance = currentPosition is { } start
+                && NextHop?.Position is { } end
+                    ? start.DistanceTo(end)
+                    : (double?)null;
+            return distance is null
+                ? "Distance unavailable"
+                : $"{distance:N2} ly from {CurrentSystem}";
+        }
+    }
+
+    public string NextHopGuidance => NextHop is { } hop
+        ? CreateNotes(hop)
+        : Unavailable;
+
+    public bool HasNextHopGuidance => NextHop is { } hop
+        && (hop.Refuel || hop.Neutron || !string.IsNullOrWhiteSpace(hop.Notes));
+
+    public string NextHopDestinationStatus => destinationMatchesNextHop
+        ? "SELECTED IN GALAXY MAP"
+        : "ROUTE TARGET";
+
+    public string NextHopClipboardStatus => string.Equals(
+        lastCopiedHopName,
+        NextHop?.Name,
+        StringComparison.Ordinal)
+            ? "NEXT SYSTEM COPIED"
+            : AutoCopy
+                ? "AUTO-COPY READY"
+                : "MANUAL COPY";
 
     public string CurrentSystem => string.IsNullOrWhiteSpace(currentSystemName)
         ? Unavailable
@@ -325,6 +366,15 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         var enteredGalaxyMap = lastGuiFocus != GuiFocus.GalaxyMap
             && status.GuiFocus == GuiFocus.GalaxyMap;
         lastGuiFocus = status.GuiFocus;
+        lastDestination = status.Destination;
+        destinationMatchesNextHop = status.GuiFocus == GuiFocus.GalaxyMap
+            && IsNextHop(lastDestination);
+        if (status.GuiFocus != GuiFocus.GalaxyMap)
+        {
+            lastCopiedHopName = null;
+        }
+
+        RaiseOverlayProperties();
         if (enteredGalaxyMap && ShouldAutoCopyNextHop)
         {
             await CopyNextHopAsync();
@@ -489,9 +539,11 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         try
         {
             await clipboardWriter(nextHop.Name);
+            lastCopiedHopName = nextHop.Name;
             StatusMessage = $"Copied {nextHop.Name} to the clipboard.";
+            RaiseOverlayProperties();
         }
-        catch (Exception exception) when (IsExpectedException(exception))
+        catch (Exception exception)
         {
             StatusMessage = "The next hop could not be copied: "
                 + exception.Message;
@@ -598,6 +650,16 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     private void RefreshPresentation()
     {
+        destinationMatchesNextHop = lastGuiFocus == GuiFocus.GalaxyMap
+            && IsNextHop(lastDestination);
+        if (!string.Equals(
+            lastCopiedHopName,
+            NextHop?.Name,
+            StringComparison.Ordinal))
+        {
+            lastCopiedHopName = null;
+        }
+
         var rows = new List<RouteHopItemViewModel>(draftHops.Count);
         for (var index = 0; index < draftHops.Count; index++)
         {
@@ -635,7 +697,34 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ProgressSummary));
         OnPropertyChanged(nameof(AutoCopySummary));
         OnPropertyChanged(nameof(ShouldAutoCopyNextHop));
+        RaiseOverlayProperties();
         RaiseCommands();
+    }
+
+    private bool IsNextHop(StatusDestination? destination)
+    {
+        if (destination is null || NextHop is not { } nextHop)
+        {
+            return false;
+        }
+
+        return (destination.System > 0
+                && nextHop.SystemAddress == destination.System)
+            || (!string.IsNullOrWhiteSpace(destination.Name)
+                && string.Equals(
+                    nextHop.Name,
+                    destination.Name,
+                    StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void RaiseOverlayProperties()
+    {
+        OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
+        OnPropertyChanged(nameof(NextHopDistance));
+        OnPropertyChanged(nameof(NextHopGuidance));
+        OnPropertyChanged(nameof(HasNextHopGuidance));
+        OnPropertyChanged(nameof(NextHopDestinationStatus));
+        OnPropertyChanged(nameof(NextHopClipboardStatus));
     }
 
     private bool IsCurrentSystem(FollowRouteHop hop)

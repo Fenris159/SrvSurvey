@@ -16,6 +16,7 @@ public sealed partial class App : Application
     private GuardianOverlayCoordinator? guardianOverlayCoordinator;
     private ColonizationCommodityOverlayCoordinator?
         colonizationCommodityOverlayCoordinator;
+    private RouteOverlayCoordinator? routeOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
@@ -59,6 +60,10 @@ public sealed partial class App : Application
             routeWindowCoordinator = new RouteWindowCoordinator(
                 viewModel.Route,
                 mainWindow);
+            routeOverlayCoordinator = new RouteOverlayCoordinator(
+                viewModel.Route,
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent());
             guardianOverlayCoordinator = new GuardianOverlayCoordinator(
                 viewModel.Guardian,
                 OverlayPlatformService.CreateCurrent(),
@@ -108,9 +113,11 @@ public sealed partial class App : Application
                         case GlobalInputAction.ToggleAllVisibility:
                             var suppress =
                                 guardianOverlayCoordinator?.IsVisible == true
+                                || routeOverlayCoordinator?.IsVisible == true
                                 || colonizationCommodityOverlayCoordinator
                                     ?.IsVisible == true;
                             guardianOverlayCoordinator?.SetSuppressed(suppress);
+                            routeOverlayCoordinator?.SetSuppressed(suppress);
                             colonizationCommodityOverlayCoordinator
                                 ?.SetSuppressed(suppress);
                             handled = true;
@@ -177,6 +184,8 @@ public sealed partial class App : Application
                 journeyWindowCoordinator = null;
                 routeWindowCoordinator?.Dispose();
                 routeWindowCoordinator = null;
+                routeOverlayCoordinator?.Dispose();
+                routeOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();
                 guardianOverlayCoordinator = null;
             };
