@@ -95,7 +95,8 @@ public sealed partial class App : Application
             systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
                 viewModel.SystemSurvey,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent());
+                GameWindowTracker.CreateCurrent(),
+                () => viewModel.CommanderName);
 
             void SynchronizeGuardianPriority()
             {
@@ -108,6 +109,8 @@ public sealed partial class App : Application
                 systemSurveyOverlayCoordinator?.SetBiologyStatusObscured(
                     guardianOverlayCoordinator?.IsVisible == true
                     || jumpInfoOverlayCoordinator?.IsVisible == true);
+                systemSurveyOverlayCoordinator?.SetPriorScansObscured(
+                    guardianOverlayCoordinator?.IsVisible == true);
                 guardianOverlayCoordinator?.SetObscured(
                     jumpInfoOverlayCoordinator?.IsVisible == true
                     || (systemSurveyOverlayCoordinator?.IsFssVisible == true

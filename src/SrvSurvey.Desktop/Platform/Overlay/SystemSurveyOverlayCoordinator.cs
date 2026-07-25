@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -10,6 +11,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 {
     private readonly SystemSurveyViewModel survey;
     private readonly SystemSurveyOverlayViewModel viewModel;
+    private readonly PriorScansOverlayViewModel priorScansViewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly DispatcherTimer timer;
@@ -19,18 +21,23 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private BodyInformationOverlayWindow? bodyInfoWindow;
     private FssInfoOverlayWindow? fssWindow;
     private LastFssBodyOverlayWindow? lastFssBodyWindow;
+    private PriorScansOverlayWindow? priorScansWindow;
     private SystemStatusOverlayWindow? statusWindow;
     private bool isSuppressed;
     private bool isBiologyObscured;
     private bool isBiologyStatusObscured;
     private bool isBodyInfoObscured;
     private bool isFssObscured;
+    private bool isPriorScansObscured;
     private bool disposed;
 
     public SystemSurveyOverlayCoordinator(
         SystemSurveyViewModel survey,
         IOverlayPlatformService platform,
-        IGameWindowTracker gameWindowTracker)
+        IGameWindowTracker gameWindowTracker,
+        Func<string?>? commanderNameProvider = null,
+        ICanonnSystemPoiClient? canonnSystemPoiClient = null,
+        ExobiologyReferenceCatalog? exobiologyCatalog = null)
     {
         this.survey = survey ?? throw new ArgumentNullException(nameof(survey));
         this.platform = platform
@@ -40,7 +47,15 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         viewModel = new SystemSurveyOverlayViewModel(
             survey,
             platform.Capabilities);
+        priorScansViewModel = new PriorScansOverlayViewModel(
+            survey,
+            canonnSystemPoiClient ?? new CanonnSystemPoiClient(),
+            exobiologyCatalog ?? ExobiologyReferenceCatalog.LoadEmbedded(),
+            commanderNameProvider ?? (() => null),
+            platform.Capabilities);
         survey.PropertyChanged += OnSurveyPropertyChanged;
+        priorScansViewModel.PropertyChanged +=
+            OnPriorScansPropertyChanged;
         timer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
@@ -57,6 +72,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         || bodyInfoWindow is not null
         || fssWindow is not null
         || lastFssBodyWindow is not null
+        || priorScansWindow is not null
         || statusWindow is not null;
 
     public bool IsFssVisible => fssWindow is not null;
@@ -68,6 +84,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     public bool IsBiologyVisible => biologyWindow is not null;
 
     public bool IsBiologyStatusVisible => biologyStatusWindow is not null;
+
+    public bool IsPriorScansVisible => priorScansWindow is not null;
 
     public bool IsSuppressed => isSuppressed;
 
@@ -126,6 +144,17 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         SynchronizeWindows();
     }
 
+    public void SetPriorScansObscured(bool value)
+    {
+        if (disposed || value == isPriorScansObscured)
+        {
+            return;
+        }
+
+        isPriorScansObscured = value;
+        SynchronizeWindows();
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -137,19 +166,35 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         timer.Stop();
         timer.Tick -= OnTimerTick;
         survey.PropertyChanged -= OnSurveyPropertyChanged;
+        priorScansViewModel.PropertyChanged -=
+            OnPriorScansPropertyChanged;
         CloseBiologyWindow();
         CloseBiologyStatusWindow();
         CloseBodyInfoWindow();
         CloseFssWindow();
         CloseLastFssBodyWindow();
+        ClosePriorScansWindow();
         CloseStatusWindow();
+        priorScansViewModel.Dispose();
         gameWindowTracker.Dispose();
         platform.Dispose();
     }
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
+        _ = priorScansViewModel.RefreshAsync();
         SynchronizeWindows();
+    }
+
+    private void OnPriorScansPropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs eventArgs)
+    {
+        if (eventArgs.PropertyName == nameof(
+                PriorScansOverlayViewModel.ShouldShow))
+        {
+            SynchronizeWindows();
+        }
     }
 
     private void OnSurveyPropertyChanged(
@@ -161,6 +206,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             or nameof(SystemSurveyViewModel.ShouldShowBodyInfo)
             or nameof(SystemSurveyViewModel.ShouldShowBioSystem)
             or nameof(SystemSurveyViewModel.ShouldShowBioStatus)
+            or nameof(SystemSurveyViewModel.ShouldLoadPriorScans)
             or nameof(SystemSurveyViewModel.ShouldShowSystemStatus)
             or nameof(SystemSurveyViewModel.IsFssInfoForced)
             or nameof(SystemSurveyViewModel.IsBodyInfoForced))
@@ -199,6 +245,9 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         var showBiologyStatus = platformReady
             && survey.ShouldShowBioStatus
             && !isBiologyStatusObscured;
+        var showPriorScans = platformReady
+            && priorScansViewModel.ShouldShow
+            && !isPriorScansObscured;
 
         SynchronizeBodyInfoWindow(showBodyInfo);
         SynchronizeFssWindow(showFss);
@@ -206,6 +255,39 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         SynchronizeStatusWindow(showStatus);
         SynchronizeBiologyWindow(showBiology);
         SynchronizeBiologyStatusWindow(showBiologyStatus);
+        SynchronizePriorScansWindow(showPriorScans);
+    }
+
+    private void SynchronizePriorScansWindow(bool show)
+    {
+        if (!show)
+        {
+            ClosePriorScansWindow();
+            return;
+        }
+
+        if (priorScansWindow is not null)
+        {
+            PositionBottomRight(priorScansWindow, gameWindow.ClientBounds);
+            return;
+        }
+
+        var overlay = new PriorScansOverlayWindow(priorScansViewModel);
+        overlay.Opened += (_, _) => PrepareWindow(
+            overlay,
+            PositionBottomRight,
+            ClosePriorScansWindow);
+        overlay.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(priorScansWindow, overlay))
+            {
+                priorScansWindow = null;
+                VisibilityChanged?.Invoke(this, EventArgs.Empty);
+            }
+        };
+        priorScansWindow = overlay;
+        overlay.Show();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void SynchronizeBiologyStatusWindow(bool show)
@@ -408,6 +490,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         position(window, gameWindow.ClientBounds);
         var preparation = platform.PreparePassiveWindow(window);
         viewModel.ApplyPreparation(preparation);
+        priorScansViewModel.ApplyPreparation(preparation);
         if (!preparation.IsClickThrough)
         {
             isSuppressed = true;
@@ -428,6 +511,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private static void PositionBottomLeft(Window window, PixelRect gameBounds)
     {
         PositionWindow(window, gameBounds, OverlayWindowPlacement.BottomLeft);
+    }
+
+    private static void PositionBottomRight(Window window, PixelRect gameBounds)
+    {
+        PositionWindow(window, gameBounds, OverlayWindowPlacement.BottomRight);
     }
 
     private void PositionBiologyWindow(Window window, PixelRect gameBounds)
@@ -547,6 +635,19 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         statusWindow = null;
+        overlay.Close();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void ClosePriorScansWindow()
+    {
+        var overlay = priorScansWindow;
+        if (overlay is null)
+        {
+            return;
+        }
+
+        priorScansWindow = null;
         overlay.Close();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
