@@ -172,6 +172,7 @@ public sealed partial class App : Application
             globalControllerInputService.Start();
             desktop.Exit += (_, _) =>
             {
+                viewModel.JumpInfo.Dispose();
                 globalControllerInputService?.Dispose();
                 globalControllerInputService = null;
                 globalKeyboardHookService?.Dispose();

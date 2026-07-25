@@ -154,6 +154,19 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
+    public FollowRouteDocument? CreateSnapshot()
+    {
+        return loadedRoute is null
+            ? null
+            : loadedRoute with
+            {
+                Hops = draftHops.ToArray(),
+                LastReachedIndex = lastReachedIndex,
+                IsActive = IsActive,
+                AutoCopy = AutoCopy,
+            };
+    }
+
     public string NextHopName => NextHop?.Name
         ?? (IsComplete
             ? "Route complete"

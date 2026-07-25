@@ -103,6 +103,43 @@
       <Separator />
 
       <StackPanel Spacing="5">
+        <TextBlock Classes="eyebrow" Text="OVERLAYS" />
+        <TextBlock Classes="page-title" Text="Next-jump intelligence" />
+        <TextBlock Classes="muted"
+                   TextWrapping="Wrap"
+                   Text="Control the passive overlay shown while charging or travelling through hyperspace." />
+      </StackPanel>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <CheckBox IsChecked="{Binding JumpInfo.AutoShow, Mode=TwoWay}"
+                    Content="Show next-jump information automatically" />
+          <TextBlock Margin="28,-8,0,0"
+                     Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Displays target, route progress, discovery, traffic, services, Guardian sites, and followed-route notes while the FSD is charging or jumping." />
+          <CheckBox IsChecked="{Binding JumpInfo.Minimal, Mode=TwoWay}"
+                    Content="Use the compact overlay" />
+          <TextBlock Margin="28,-8,0,0"
+                     Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Keeps the target and route visualization while hiding network metadata and special locations." />
+          <CheckBox IsChecked="{Binding JumpInfo.ShowWhenNextHopSelected, Mode=TwoWay}"
+                    Content="Show when the followed-route next hop is selected" />
+          <TextBlock Margin="28,-8,0,0"
+                     Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Also displays the overlay in supercruise when the navigation destination matches the next followed-route system." />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="{Binding JumpInfo.HasSettingsStatus}"
+                     TextWrapping="Wrap"
+                     Text="{Binding JumpInfo.SettingsStatus}" />
+        </StackPanel>
+      </Border>
+
+      <Separator />
+
+      <StackPanel Spacing="5">
         <TextBlock Classes="eyebrow" Text="INPUT" />
         <TextBlock Classes="page-title" Text="Global shortcuts" />
         <TextBlock Classes="muted"

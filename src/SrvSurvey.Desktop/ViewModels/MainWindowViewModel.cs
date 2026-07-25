@@ -7,6 +7,7 @@ using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
+using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
@@ -82,7 +83,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         IBoxelSystemResolver? boxelSystemResolver = null,
         GlobalInputSettingsViewModel? inputSettings = null,
         ColonizationViewModel? colonization = null,
-        INearestSystemsClient? nearestSystemsClient = null)
+        INearestSystemsClient? nearestSystemsClient = null,
+        ISystemSummaryClient? systemSummaryClient = null,
+        JumpInfoSettingsStore? jumpInfoSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -139,6 +142,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                 new FollowRouteStore(AppDataPaths.DataDirectory)),
             new RouteNameImporter(sharedSystemResolver),
             new SpanshRouteClient());
+        JumpInfo = new JumpInfoViewModel(
+            systemSummaryClient ?? new SystemSummaryClient(),
+            jumpInfoSettingsStore
+                ?? new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath));
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,
@@ -229,6 +236,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public JourneyWorkspaceViewModel Journey { get; }
 
     public RouteWorkspaceViewModel Route { get; }
+
+    public JumpInfoViewModel JumpInfo { get; }
 
     public SphereLimitViewModel Search { get; }
 
@@ -836,6 +845,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                 update.Status,
                 allowAutoCopy: !Route.ShouldAutoCopyNextHop);
         }
+
+        JumpInfo.ApplyUpdate(
+            journalState.SystemName,
+            journalState.SystemAddress,
+            journalState.StarPosition,
+            update.NavRoute,
+            update.JournalEvents,
+            update.Status,
+            Route.CreateSnapshot(),
+            update.IsBootstrapRead);
 
         foreach (var journalEvent in update.JournalEvents)
         {
