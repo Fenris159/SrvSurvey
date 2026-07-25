@@ -1,0 +1,99 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.GuardianSystemOverlayWindow"
+        x:DataType="vm:GuardianOverlayViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="390"
+        d:DesignHeight="420"
+        Width="390"
+        MinHeight="112"
+        MaxHeight="720"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey Guardian system overlay">
+  <Border Padding="14,12"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="12"
+          Opacity="0.97">
+    <StackPanel Spacing="10">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="eyebrow" Text="GUARDIAN SYSTEM" />
+          <TextBlock FontSize="16"
+                     FontWeight="SemiBold"
+                     Text="{Binding Guardian.CurrentSystemGuardianTitle}" />
+        </StackPanel>
+        <Border Grid.Column="1" Classes="badge">
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="8"
+                     FontWeight="Bold"
+                     Text="{Binding InputMode}" />
+        </Border>
+      </Grid>
+
+      <ScrollViewer MaxHeight="610"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Guardian.CurrentSystemSites}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:GuardianSiteRowViewModel">
+              <Border Margin="0,0,0,6"
+                      Padding="10,8"
+                      Background="{DynamicResource RavenSurfaceBrush}"
+                      CornerRadius="8">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="9">
+                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                             FontWeight="Bold"
+                             Text="›"
+                             IsVisible="{Binding IsDestination}" />
+                  <StackPanel Grid.Column="1" Spacing="2">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                      <TextBlock Classes="monospace"
+                                 Foreground="{DynamicResource RavenAccentBrush}"
+                                 FontWeight="Bold"
+                                 Text="{Binding DisplayId}" />
+                      <TextBlock Grid.Column="1"
+                                 FontWeight="SemiBold"
+                                 Text="{Binding SiteDescription}"
+                                 TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                    <TextBlock Classes="muted"
+                               FontSize="10"
+                               Text="{Binding Reference.BodyName}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="muted"
+                               FontSize="9"
+                               Text="{Binding Notes}"
+                               TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                  <Border Grid.Column="2"
+                          Padding="7,4"
+                          Background="{DynamicResource RavenAccentMutedBrush}"
+                          CornerRadius="6">
+                    <TextBlock Classes="monospace"
+                               Foreground="{DynamicResource RavenWarningBrush}"
+                               FontSize="10"
+                               FontWeight="Bold"
+                               Text="{Binding SurveyText}" />
+                  </Border>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </StackPanel>
+  </Border>
+</Window>

@@ -1,0 +1,98 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.RamTahOverlayWindow"
+        x:DataType="vm:GuardianOverlayViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="390"
+        d:DesignHeight="360"
+        Width="390"
+        MinHeight="112"
+        MaxHeight="720"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey Ram Tah overlay">
+  <Border Padding="14,12"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="12"
+          Opacity="0.97">
+    <StackPanel Spacing="10">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="eyebrow" Text="RAM TAH MISSION" />
+          <TextBlock FontSize="16"
+                     FontWeight="SemiBold"
+                     Text="{Binding Guardian.CurrentRamTahTitle}" />
+          <TextBlock Classes="muted"
+                     FontSize="10"
+                     Text="{Binding Guardian.ActiveSiteTitle}"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <Border Grid.Column="1" Classes="badge">
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="8"
+                     FontWeight="Bold"
+                     Text="{Binding InputMode}" />
+        </Border>
+      </Grid>
+
+      <ScrollViewer MaxHeight="600"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Guardian.CurrentRamTahLogs}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:GuardianRamTahLogViewModel">
+              <Border Margin="0,0,0,6"
+                      Padding="10,8"
+                      Background="{DynamicResource RavenSurfaceBrush}"
+                      CornerRadius="8">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                  <StackPanel Spacing="3">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                      <TextBlock Classes="monospace"
+                                 Foreground="{DynamicResource RavenAccentBrush}"
+                                 FontWeight="Bold"
+                                 Text="{Binding LogCode}" />
+                      <TextBlock Grid.Column="1"
+                                 FontWeight="SemiBold"
+                                 Text="{Binding LogName}" />
+                    </Grid>
+                    <TextBlock FontSize="10"
+                               Text="{Binding RequirementsText}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Classes="muted"
+                               FontSize="9"
+                               Text="{Binding ObeliskNamesText}"
+                               TextWrapping="Wrap" />
+                  </StackPanel>
+                  <Border Grid.Column="1"
+                          Padding="7,4"
+                          Background="{DynamicResource RavenAccentMutedBrush}"
+                          CornerRadius="6"
+                          VerticalAlignment="Top">
+                    <TextBlock Classes="monospace"
+                               Foreground="{DynamicResource RavenWarningBrush}"
+                               FontSize="9"
+                               FontWeight="Bold"
+                               Text="{Binding ArtifactStatus}" />
+                  </Border>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </StackPanel>
+  </Border>
+</Window>

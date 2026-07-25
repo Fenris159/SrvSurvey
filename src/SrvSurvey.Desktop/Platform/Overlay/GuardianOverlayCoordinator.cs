@@ -9,11 +9,14 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 public sealed class GuardianOverlayCoordinator : IDisposable
 {
     private readonly GuardianViewModel guardian;
+    private readonly GuardianOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private GuardianOverlayWindow? window;
+    private GuardianOverlayWindow? liveSiteWindow;
+    private GuardianSystemOverlayWindow? systemSummaryWindow;
+    private RamTahOverlayWindow? ramTahWindow;
     private bool isSuppressed;
     private bool isObscured;
     private bool disposed;
@@ -29,6 +32,9 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        viewModel = new GuardianOverlayViewModel(
+            guardian,
+            platform.Capabilities);
         this.guardian.PropertyChanged += OnGuardianPropertyChanged;
         timer = new DispatcherTimer
         {
@@ -36,10 +42,18 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         };
         timer.Tick += OnTimerTick;
         timer.Start();
-        SynchronizeWindow();
+        SynchronizeWindows();
     }
 
-    public bool IsVisible => window is not null;
+    public bool IsVisible => IsLiveSiteVisible
+        || IsSystemSummaryVisible
+        || IsRamTahVisible;
+
+    public bool IsLiveSiteVisible => liveSiteWindow is not null;
+
+    public bool IsSystemSummaryVisible => systemSummaryWindow is not null;
+
+    public bool IsRamTahVisible => ramTahWindow is not null;
 
     public event EventHandler? VisibilityChanged;
 
@@ -55,7 +69,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         isSuppressed = !isSuppressed;
-        SynchronizeWindow();
+        SynchronizeWindows();
     }
 
     public void SetSuppressed(bool value)
@@ -66,7 +80,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizeWindow();
+        SynchronizeWindows();
     }
 
     public void SetObscured(bool value)
@@ -77,7 +91,15 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         isObscured = value;
-        SynchronizeWindow();
+        SynchronizeWindows();
+    }
+
+    public void SetSystemSummaryObscured(bool value)
+    {
+        if (!disposed)
+        {
+            guardian.SetSystemSummaryObscured(value);
+        }
     }
 
     public void Dispose()
@@ -91,27 +113,32 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         timer.Stop();
         timer.Tick -= OnTimerTick;
         guardian.PropertyChanged -= OnGuardianPropertyChanged;
-        CloseWindow();
+        CloseLiveSiteWindow();
+        CloseSystemSummaryWindow();
+        CloseRamTahWindow();
         gameWindowTracker.Dispose();
         platform.Dispose();
     }
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
-        SynchronizeWindow();
+        SynchronizeWindows();
     }
 
     private void OnGuardianPropertyChanged(
         object? sender,
         PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName == nameof(GuardianViewModel.HasActiveSite))
+        if (eventArgs.PropertyName is nameof(GuardianViewModel.HasActiveSite)
+            or nameof(GuardianViewModel.EnableGuardianSites)
+            or nameof(GuardianViewModel.ShouldShowGuardianSystemSummary)
+            or nameof(GuardianViewModel.ShouldShowRamTahOverlay))
         {
-            SynchronizeWindow();
+            SynchronizeWindows();
         }
     }
 
-    private void SynchronizeWindow()
+    private void SynchronizeWindows()
     {
         if (disposed)
         {
@@ -119,55 +146,168 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        if (isSuppressed
-            || isObscured
-            || !guardian.HasActiveSite
-            || !platform.Capabilities.SupportsPassiveOverlay
-            || !platform.Capabilities.SupportsClickThrough
-            || !platform.Capabilities.SupportsGameWindowTracking
-            || !gameWindow.IsAvailable
-            || !gameWindow.IsVisible
-            || !gameWindow.IsForeground)
+        var platformReady = !isSuppressed
+            && platform.Capabilities.SupportsPassiveOverlay
+            && platform.Capabilities.SupportsClickThrough
+            && platform.Capabilities.SupportsGameWindowTracking
+            && gameWindow.IsAvailable
+            && gameWindow.IsVisible
+            && gameWindow.IsForeground;
+
+        SynchronizeLiveSiteWindow(
+            platformReady
+            && guardian.EnableGuardianSites
+            && guardian.HasActiveSite
+            && !isObscured);
+        SynchronizeSystemSummaryWindow(
+            platformReady && guardian.ShouldShowGuardianSystemSummary);
+        SynchronizeRamTahWindow(
+            platformReady && guardian.ShouldShowRamTahOverlay);
+    }
+
+    private void SynchronizeLiveSiteWindow(bool shouldShow)
+    {
+        if (!shouldShow)
         {
-            CloseWindow();
+            CloseLiveSiteWindow();
             return;
         }
 
-        if (window is not null)
+        if (liveSiteWindow is not null)
         {
-            PositionWindow(window, gameWindow.ClientBounds);
+            PositionLiveSite(liveSiteWindow, gameWindow.ClientBounds);
             return;
         }
 
-        var viewModel = new GuardianOverlayViewModel(
-            guardian,
-            platform.Capabilities);
         var overlay = new GuardianOverlayWindow(viewModel);
-        overlay.Opened += (_, _) =>
-        {
-            PositionWindow(overlay, gameWindow.ClientBounds);
-            var preparation = platform.PreparePassiveWindow(overlay);
-            viewModel.ApplyPreparation(preparation);
-            if (!preparation.IsClickThrough)
-            {
-                isSuppressed = true;
-                CloseWindow();
-            }
-        };
+        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionLiveSite);
         overlay.Closed += (_, _) =>
         {
-            if (ReferenceEquals(window, overlay))
+            if (ReferenceEquals(liveSiteWindow, overlay))
             {
-                window = null;
+                liveSiteWindow = null;
                 VisibilityChanged?.Invoke(this, EventArgs.Empty);
             }
         };
-        window = overlay;
+        liveSiteWindow = overlay;
         overlay.Show();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private static void PositionWindow(Window window, PixelRect gameBounds)
+    private void SynchronizeSystemSummaryWindow(bool shouldShow)
+    {
+        if (!shouldShow)
+        {
+            CloseSystemSummaryWindow();
+            return;
+        }
+
+        if (systemSummaryWindow is not null)
+        {
+            PositionSystemSummary(systemSummaryWindow, gameWindow.ClientBounds);
+            return;
+        }
+
+        var overlay = new GuardianSystemOverlayWindow(viewModel);
+        overlay.Opened += (_, _) => PrepareWindow(
+            overlay,
+            PositionSystemSummary);
+        overlay.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(systemSummaryWindow, overlay))
+            {
+                systemSummaryWindow = null;
+                VisibilityChanged?.Invoke(this, EventArgs.Empty);
+            }
+        };
+        systemSummaryWindow = overlay;
+        overlay.Show();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void SynchronizeRamTahWindow(bool shouldShow)
+    {
+        if (!shouldShow)
+        {
+            CloseRamTahWindow();
+            return;
+        }
+
+        if (ramTahWindow is not null)
+        {
+            PositionRamTah(ramTahWindow, gameWindow.ClientBounds);
+            return;
+        }
+
+        var overlay = new RamTahOverlayWindow(viewModel);
+        overlay.Opened += (_, _) => PrepareWindow(overlay, PositionRamTah);
+        overlay.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(ramTahWindow, overlay))
+            {
+                ramTahWindow = null;
+                VisibilityChanged?.Invoke(this, EventArgs.Empty);
+            }
+        };
+        ramTahWindow = overlay;
+        overlay.Show();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void PrepareWindow(
+        Window window,
+        Action<Window, PixelRect> position)
+    {
+        position(window, gameWindow.ClientBounds);
+        var preparation = platform.PreparePassiveWindow(window);
+        viewModel.ApplyPreparation(preparation);
+        if (!preparation.IsClickThrough)
+        {
+            isSuppressed = true;
+            CloseLiveSiteWindow();
+            CloseSystemSummaryWindow();
+            CloseRamTahWindow();
+        }
+    }
+
+    private static void PositionLiveSite(Window window, PixelRect gameBounds)
+    {
+        PositionWindow(
+            window,
+            gameBounds,
+            OverlayWindowPlacement.BottomRight,
+            margin: 20);
+    }
+
+    private static void PositionSystemSummary(
+        Window window,
+        PixelRect gameBounds)
+    {
+        PositionWindow(window, gameBounds, PlaceGuardianSystem, margin: 0);
+    }
+
+    private static void PositionRamTah(Window window, PixelRect gameBounds)
+    {
+        PositionWindow(
+            window,
+            gameBounds,
+            OverlayWindowPlacement.MiddleRight,
+            margin: 8);
+    }
+
+    private static PixelPoint PlaceGuardianSystem(
+        PixelRect gameBounds,
+        PixelSize overlaySize,
+        int margin)
+    {
+        return new PixelPoint(gameBounds.X + 10, gameBounds.Y + 8);
+    }
+
+    private static void PositionWindow(
+        Window window,
+        PixelRect gameBounds,
+        Func<PixelRect, PixelSize, int, PixelPoint> placement,
+        int margin)
     {
         var screen = window.Screens.ScreenFromBounds(gameBounds)
             ?? window.Screens.Primary;
@@ -177,25 +317,57 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var height = (int)Math.Ceiling(window.Height * screen.Scaling);
-        var position = OverlayWindowPlacement.BottomRight(
+        var logicalHeight = window.Bounds.Height > 0
+            ? window.Bounds.Height
+            : window.MinHeight > 0
+                ? window.MinHeight
+                : window.Height;
+        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
+        var position = placement(
             gameBounds,
-            new PixelSize(width, height));
+            new PixelSize(Math.Max(width, 1), Math.Max(height, 1)),
+            margin);
         if (window.Position != position)
         {
             window.Position = position;
         }
     }
 
-    private void CloseWindow()
+    private void CloseLiveSiteWindow()
     {
-        var overlay = window;
+        var overlay = liveSiteWindow;
         if (overlay is null)
         {
             return;
         }
 
-        window = null;
+        liveSiteWindow = null;
+        overlay.Close();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void CloseSystemSummaryWindow()
+    {
+        var overlay = systemSummaryWindow;
+        if (overlay is null)
+        {
+            return;
+        }
+
+        systemSummaryWindow = null;
+        overlay.Close();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void CloseRamTahWindow()
+    {
+        var overlay = ramTahWindow;
+        if (overlay is null)
+        {
+            return;
+        }
+
+        ramTahWindow = null;
         overlay.Close();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }

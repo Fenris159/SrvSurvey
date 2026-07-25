@@ -56,6 +56,23 @@ public static class OverlayWindowPlacement
                 hostBounds.Bottom - overlaySize.Height - margin));
     }
 
+    public static PixelPoint MiddleRight(
+        PixelRect hostBounds,
+        PixelSize overlaySize,
+        int margin = 20)
+    {
+        Validate(hostBounds, overlaySize, margin);
+        var availableHeight = Math.Max(0, hostBounds.Height - (margin * 2));
+        var centeredOffset = Math.Max(
+            0,
+            (availableHeight - overlaySize.Height) / 2);
+        return new PixelPoint(
+            Math.Max(
+                hostBounds.X + margin,
+                hostBounds.Right - overlaySize.Width - margin),
+            hostBounds.Y + margin + centeredOffset);
+    }
+
     public static PixelPoint BottomLeft(
         PixelRect hostBounds,
         PixelSize overlaySize,
