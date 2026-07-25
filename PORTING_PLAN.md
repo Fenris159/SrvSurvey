@@ -359,9 +359,12 @@ UI tests where practical, and live Windows/Linux evidence.
   byte-identical verified backup.
   Raven catalog, definition, publish, commander progress/status, activation,
   deletion, state-transition, and chapter endpoints are ported with the
-  original authentication and unavailable-read behavior. Lua chapter
-  execution, journal dispatch, communications UI, and the compact quest
-  indicator remain.
+  original authentication and unavailable-read behavior. The LuaCSharp runtime
+  now restores chapter/quest variables, runs local or remotely fetched scripts,
+  dispatches journal events and emotes, exposes the original quest/objective/
+  chapter/commander libraries, applies chapter and terminal transitions, and
+  supports message read/reply callbacks with cancellable execution. Runtime
+  composition, communications UI, and the compact quest indicator remain.
 - [ ] Network integrations, update behavior, diagnostics, and remaining tools.
 - [ ] Localization review for every migrated surface.
 
@@ -406,7 +409,7 @@ not expected to run as a headless container service.
 | Overlays/input | Passive overlay contract, monitor-aware placement, Windows native click-through/client tracking, X11 XShape click-through/EWMH tracking, Wayland overlay gating, SharpHook keyboard input, and SDL3 controller input implemented; remaining plotters pending | Guardian live map/current-obelisk, Guardian system summary, Ram Tah site guidance, human settlements, followed-route Galaxy Map, next-jump intelligence, FSS/body/system survey, high-gravity warning, biology survey, compact genetic-sampler, Canonn prior-scan/radar, surface-history/tracker radar, compact trackers, station information, ground-target, ground-combat, and massacre-mission overlays follow foreground Elite and close on unsafe states; all 30 legacy chords are editable and keyboard/controller events share focus-aware routing | Placement, capability, identity, route/jump/system-survey/biology/prior-scan/surface-radar/human-site/station-info/ground-target/combat/Guardian auxiliary state, hook, controller lifecycle, and chord tests passed; route, jump, FSS, body, system-status, biology survey, and compact sampler overlays were visually previewed in Blue dark/light, while all newly ported overlay visual QA is deferred to the final UI pass; no live Elite overlay or physical controller session run | Native libraries present in Linux publish; runtime not tested |
 | Combat missions | Journal state preserves ground-CZ session kills/bonds and active massacre mission acceptance, completion/failure/abandonment, mission-list reconciliation, expiry, and legacy one-credit-per-mission-giver bounty behavior; massacre state uses the compatible commander profile | Persisted opt-in settings plus modern Raven-themed top-left `PlotFootCombat` and top-right `PlotMassacre` replacements implement the exact legacy altitude, settlement-war, vehicle, panel, and build-project suppression gates | All state, persistence, settings, passive preparation, binding, and XAML compilation checks passed; per request, visual/theme QA is held until the final whole-application pass and no live combat session was run | Not tested |
 | Colonisation projects | Shipped build costs, construction depot state, commander Raven profile, project creation validation, aggregate commodity planning, Cargo/Market readers, carrier inventories, Raven cargo reconciliation/endpoints, and lossless API-key persistence implemented | Opt-in project workspace and creation review, depot progress, market/ship/FC shopping overlay, overlay preferences, and credential-gated linked-carrier sync implemented | Main workspace and shopping overlay visually checked in Blue dark; automated core/UI coverage passed; no external publish or live Elite overlay session was run | Not tested |
-| Quest communications | Legacy commander development-quest state and definition loading preserves objectives, chapters, messages, variables, kept journal events, routes, tags, and unknown fields; malformed files and unsafe identities are isolated; development updates merge atomically after verified byte-identical backups; the legacy opt-in preference migrates independently; Raven catalog/definition/publish, progress/status, activation/deletion/state, and chapter contracts are implemented with authenticated, future-field-preserving payloads; an invariant mapper converts every known local field into that shared runtime/transport model | Not implemented; Lua runtime, journal dispatch, communications workspace, and compact indicator remain | Automated migration, lossless-save, mapping, preference, and nine endpoint-contract fixtures only; visual testing intentionally deferred | Not tested |
+| Quest communications | Legacy state/definition loading and verified atomic updates preserve known and unknown data; the opt-in migrates; Raven catalog, lifecycle, progress, and chapter contracts are implemented; the LuaCSharp runtime restores variables, loads local/remote chapters, dispatches journal/emote/message callbacks, exposes quest/objective/chapter/commander helpers, applies lifecycle mutations, and supports cancellable execution with structured errors | Runtime composition into the live journal coordinator, communications workspace, and compact indicator remain | Automated migration, lossless-save, mapping, preference, nine endpoint-contract, and eight end-to-end script fixtures; visual testing intentionally deferred | Not tested |
 | Secondary features | Nearest systems, colonisation project forms, system notes, Commander Journeys, and followed routes are implemented; remaining rows are tracked in `docs/UI_PORTING_MATRIX.md` | Implemented slices are integrated into Search, Travel, and Colonisation; other secondary forms remain open | See per-feature rows and UI matrix | Not tested |
 | Packaging/AppImage | Self-contained publish configured; no AppImage | Not applicable | `win-x64` publish passed | Cross-publish passed; runtime not tested |
 
@@ -420,7 +423,7 @@ Validation performed on 2026-07-25 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 820 tests: 506 Core tests and 314 Desktop tests.
+  passed all 828 tests: 514 Core tests and 314 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - Automated quest migration coverage loads known legacy commander,
   development-definition, objective, chapter, message, variable, retained
@@ -438,6 +441,11 @@ Validation performed on 2026-07-25 using Windows build `10.0.26200` and .NET SDK
   retain unknown root and nested fields, preserve definition files, verify a
   byte-identical SHA-256 backup before atomic replacement, reopen the staged
   JSON, and refuse malformed input without writing.
+- Eight Lua runtime fixtures execute local and remotely supplied chapters,
+  restore imported variables, cover the quest/objective/chapter/commander APIs,
+  journal and humanoid-emote dispatch, message reads/replies, prior journal
+  state, chapter and terminal transitions, structured failures, persistence
+  callbacks, and cooperative cancellation of an infinite script.
 - Automated human-settlement coverage validates all 28 embedded templates,
   compatibility filtering, docking transitions, unique pad inference, manual
   foot and automatic dock alignment, cockpit offsets, coordinate projection,

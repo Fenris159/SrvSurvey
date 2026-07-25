@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="LuaCSharp" Version="0.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\..\SrvSurvey\EliteDangerousRegionMap\RegionMapData.cs"
              Link="Navigation\RegionMapData.cs" />
     <EmbeddedResource Include="..\..\docs\codexRef.json"
