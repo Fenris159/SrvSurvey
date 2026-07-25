@@ -15,6 +15,18 @@ public sealed class HumanSiteMapControl : Control
     public static readonly StyledProperty<HumanSiteMapPoint?> CommanderOffsetProperty =
         AvaloniaProperty.Register<HumanSiteMapControl, HumanSiteMapPoint?>(
             nameof(CommanderOffset));
+    public static readonly StyledProperty<HumanSiteMapPoint?> ShipOffsetProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, HumanSiteMapPoint?>(
+            nameof(ShipOffset));
+    public static readonly StyledProperty<HumanSiteMapPoint?> SrvOffsetProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, HumanSiteMapPoint?>(
+            nameof(SrvOffset));
+    public static readonly StyledProperty<bool> HasShipDepartedProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, bool>(
+            nameof(HasShipDeparted));
+    public static readonly StyledProperty<bool> ShowShipDismissalBoundaryProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, bool>(
+            nameof(ShowShipDismissalBoundary));
     public static readonly StyledProperty<double> CommanderHeadingProperty =
         AvaloniaProperty.Register<HumanSiteMapControl, double>(
             nameof(CommanderHeading));
@@ -55,6 +67,10 @@ public sealed class HumanSiteMapControl : Control
         AffectsRender<HumanSiteMapControl>(
             ProjectionProperty,
             CommanderOffsetProperty,
+            ShipOffsetProperty,
+            SrvOffsetProperty,
+            HasShipDepartedProperty,
+            ShowShipDismissalBoundaryProperty,
             CommanderHeadingProperty,
             ScaleMultiplierProperty,
             ShowOriginWarningProperty,
@@ -79,6 +95,30 @@ public sealed class HumanSiteMapControl : Control
     {
         get => GetValue(CommanderOffsetProperty);
         set => SetValue(CommanderOffsetProperty, value);
+    }
+
+    public HumanSiteMapPoint? ShipOffset
+    {
+        get => GetValue(ShipOffsetProperty);
+        set => SetValue(ShipOffsetProperty, value);
+    }
+
+    public HumanSiteMapPoint? SrvOffset
+    {
+        get => GetValue(SrvOffsetProperty);
+        set => SetValue(SrvOffsetProperty, value);
+    }
+
+    public bool HasShipDeparted
+    {
+        get => GetValue(HasShipDepartedProperty);
+        set => SetValue(HasShipDepartedProperty, value);
+    }
+
+    public bool ShowShipDismissalBoundary
+    {
+        get => GetValue(ShowShipDismissalBoundaryProperty);
+        set => SetValue(ShowShipDismissalBoundaryProperty, value);
     }
 
     public double CommanderHeading
@@ -205,6 +245,7 @@ public sealed class HumanSiteMapControl : Control
             DrawConflictZonePoint(context, point, center, commander, scale);
         }
 
+        DrawVehicleMarkers(context, center, commander, scale);
         DrawCommander(context, center);
         if (ShowOriginWarning)
         {
@@ -343,13 +384,59 @@ public sealed class HumanSiteMapControl : Control
         double scale)
     {
         var origin = Transform(default, center, commander, scale);
-        var radius = HumanSiteViewModel.ShipDismissalLimitMeters * scale;
+        var radius = HumanSiteViewModel.ShipCallLimitMeters * scale;
         context.DrawEllipse(
             null,
             new Pen(DangerBrush ?? Brushes.OrangeRed, 1, DashStyle.Dash),
             origin,
             radius,
             radius);
+    }
+
+    private void DrawVehicleMarkers(
+        DrawingContext context,
+        Point center,
+        HumanSiteMapPoint commander,
+        double scale)
+    {
+        if (ShipOffset is { } ship)
+        {
+            var location = Transform(ship, center, commander, scale);
+            if (ShowShipDismissalBoundary)
+            {
+                var radius = HumanSiteViewModel.ShipDismissalLimitMeters * scale;
+                context.DrawEllipse(
+                    null,
+                    new Pen(WarningBrush ?? Brushes.Gold, 1, DashStyle.Dash),
+                    location,
+                    radius,
+                    radius);
+            }
+
+            var brush = HasShipDeparted
+                ? MutedBrush ?? Brushes.DimGray
+                : AccentBrush ?? Brushes.Cyan;
+            context.DrawEllipse(
+                MapBackground,
+                new Pen(brush, 2),
+                location,
+                24,
+                24);
+            DrawLabel(context, "SHIP", location, brush, 8);
+        }
+
+        if (SrvOffset is { } srv)
+        {
+            var location = Transform(srv, center, commander, scale);
+            var brush = WarningBrush ?? Brushes.Gold;
+            context.DrawRectangle(
+                MapBackground,
+                new Pen(brush, 2),
+                new Rect(location.X - 10, location.Y - 10, 20, 20),
+                3,
+                3);
+            DrawLabel(context, "SRV", location, brush, 7);
+        }
     }
 
     private void DrawLandingPad(

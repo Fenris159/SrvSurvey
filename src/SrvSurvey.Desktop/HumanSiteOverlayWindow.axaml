@@ -65,6 +65,10 @@
             IsVisible="{Binding HumanSite.HasKnownGeometry}"
             Projection="{Binding HumanSite.MapProjection}"
             CommanderOffset="{Binding HumanSite.CommanderOffset}"
+            ShipOffset="{Binding HumanSite.ShipOffset}"
+            SrvOffset="{Binding HumanSite.SrvOffset}"
+            HasShipDeparted="{Binding HumanSite.HasShipDeparted}"
+            ShowShipDismissalBoundary="{Binding HumanSite.ShowShipDismissalBoundary}"
             CommanderHeading="{Binding HumanSite.RelativeHeading}"
             ScaleMultiplier="{Binding HumanSite.Zoom}"
             ShowOriginWarning="{Binding HumanSite.ShowOriginWarning}"
@@ -77,6 +81,21 @@
             WarningBrush="{DynamicResource RavenWarningBrush}"
             DangerBrush="{DynamicResource RavenDangerBrush}"
             TextBrush="{DynamicResource RavenTextBrush}" />
+
+        <Border Margin="18"
+                Padding="10,7"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Background="{DynamicResource RavenWindowBrush}"
+                BorderBrush="{DynamicResource RavenDangerBrush}"
+                BorderThickness="2"
+                CornerRadius="8"
+                IsVisible="{Binding HumanSite.ShowShipDismissalWarning}">
+          <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                     FontSize="11"
+                     FontWeight="Bold"
+                     Text="{Binding HumanSite.ShipDismissalWarningText}" />
+        </Border>
 
         <Border Padding="16"
                 Background="{DynamicResource RavenRaisedSurfaceBrush}"

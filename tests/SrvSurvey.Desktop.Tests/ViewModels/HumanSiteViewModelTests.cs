@@ -137,6 +137,84 @@ public sealed class HumanSiteViewModelTests
         Assert.False(viewModel.ShowDataTerminals);
     }
 
+    [Fact]
+    public async Task SettlementMapTracksShipSrvAndDismissalBoundary()
+    {
+        const double radius = 6_000_000;
+        const double siteHeading = 231;
+        var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
+        var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
+        var origin = new SurfaceCoordinate(-12.5, 44.25);
+        var pad = Assert.Single(template.LandingPads);
+        var observerHeading = SurfaceNavigation.NormalizeDegrees(
+            siteHeading + pad.Rotation);
+        var shipLocation = HumanSiteNavigation.GetSurfaceLocation(
+            origin,
+            pad.Offset,
+            radius,
+            siteHeading);
+        var landedStatus = OnFootStatus(
+            shipLocation.Latitude,
+            shipLocation.Longitude,
+            (int)Math.Round(observerHeading)) with
+        {
+            PlanetRadius = (decimal)radius,
+        };
+        var viewModel = new HumanSiteViewModel(templateCatalog: catalog);
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse(Approach(
+                    economy: "$economy_Extraction;",
+                    economyLocalized: "Extraction",
+                    latitude: origin.Latitude,
+                    longitude: origin.Longitude)),
+                Parse(
+                    """
+                    {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
+                    """),
+                Parse($$"""
+                    {"event":"Touchdown","Latitude":{{shipLocation.Latitude}},"Longitude":{{shipLocation.Longitude}}}
+                    """),
+            ],
+            landedStatus,
+            "sidewinder");
+
+        Assert.NotNull(viewModel.ShipOffset);
+        Assert.False(viewModel.HasShipDeparted);
+        Assert.True(viewModel.ShowShipDismissalBoundary);
+
+        var distantLocation = HumanSiteNavigation.GetSurfaceLocation(
+            shipLocation,
+            new HumanSiteMapPoint(0, 1_900),
+            radius,
+            siteHeading: 0);
+        viewModel.UpdateStatus(landedStatus with
+        {
+            Latitude = distantLocation.Latitude,
+            Longitude = distantLocation.Longitude,
+        });
+        Assert.InRange(viewModel.DistanceToShipMeters, 1_899, 1_901);
+        Assert.True(viewModel.ShowShipDismissalWarning);
+
+        await viewModel.ApplyUpdateAsync(
+            [Parse("""{"event":"Disembark","SRV":true}""")],
+            landedStatus with
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
+                Flags2 = StatusFlags2.None,
+            },
+            "sidewinder");
+        Assert.NotNull(viewModel.SrvOffset);
+
+        await viewModel.ApplyUpdateAsync(
+            [Parse("""{"event":"Liftoff"}""")],
+            landedStatus,
+            "sidewinder");
+        Assert.True(viewModel.HasShipDeparted);
+        Assert.False(viewModel.ShowShipDismissalBoundary);
+        Assert.False(viewModel.ShowShipDismissalWarning);
+    }
+
     private static EliteStatus OnFootStatus(
         double latitude,
         double longitude,

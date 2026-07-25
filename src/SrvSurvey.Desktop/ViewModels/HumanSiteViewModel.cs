@@ -11,12 +11,15 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class HumanSiteViewModel : INotifyPropertyChanged
 {
-    public const double ShipDismissalLimitMeters = 500;
+    public const double ShipCallLimitMeters = 500;
+    public const double ShipDismissalWarningMeters = 1_800;
+    public const double ShipDismissalLimitMeters = 2_000;
     public const double OriginWarningDistanceMeters = 300;
     private const string ProfileAnalyser = "$humanoid_companalyser_name;";
     private readonly HumanSiteLiveState state;
     private readonly HumanSiteMapProjector mapProjector;
     private readonly HumanSiteNavigation navigation;
+    private readonly HumanSiteVehicleTracker vehicleTracker = new();
     private readonly HumanSiteSettingsStore? settingsStore;
     private readonly HumanSiteKnowledgeStore? knowledgeStore;
     private EliteStatus? status;
@@ -158,6 +161,26 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     public bool HasDockingStatus => !string.IsNullOrWhiteSpace(DockingStatusText);
 
     public HumanSiteMapPoint? CommanderOffset { get; private set; }
+
+    public HumanSiteMapPoint? ShipOffset { get; private set; }
+
+    public HumanSiteMapPoint? SrvOffset { get; private set; }
+
+    public bool HasShipDeparted => vehicleTracker.HasShipDeparted;
+
+    public double DistanceToShipMeters { get; private set; }
+
+    public bool ShowShipDismissalBoundary => ShipOffset is not null
+        && !HasShipDeparted
+        && status is { } currentStatus
+        && (currentStatus.OnFoot || currentStatus.InSrv);
+
+    public bool ShowShipDismissalWarning => ShowShipDismissalBoundary
+        && DistanceToShipMeters > ShipDismissalWarningMeters;
+
+    public string ShipDismissalWarningText =>
+        $"Ship dismissal range nearby · {DistanceToShipMeters:N0} m / "
+        + $"{ShipDismissalLimitMeters:N0} m";
 
     public double DistanceToOriginMeters { get; private set; }
 
@@ -366,6 +389,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         foreach (var journalEvent in journalEvents)
         {
             state.Apply(journalEvent);
+            vehicleTracker.Apply(journalEvent, status);
             if (journalEvent.EventName == "ApproachSettlement"
                 && state.CurrentSite is not null)
             {
@@ -490,6 +514,9 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private void UpdateNavigation()
     {
         CommanderOffset = null;
+        ShipOffset = null;
+        SrvOffset = null;
+        DistanceToShipMeters = 0;
         DistanceToOriginMeters = 0;
         ApproachDistanceMeters = 0;
         RelativeHeading = 0;
@@ -522,6 +549,44 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                 heading);
             RelativeHeading = SurfaceNavigation.NormalizeDegrees(
                 currentStatus.NormalizedHeading - heading);
+            UpdateVehicleNavigation(currentStatus, origin, current, heading);
+        }
+    }
+
+    private void UpdateVehicleNavigation(
+        EliteStatus currentStatus,
+        SurfaceCoordinate origin,
+        SurfaceCoordinate current,
+        double heading)
+    {
+        var bodyRadius = (double)currentStatus.PlanetRadius;
+        if (vehicleTracker.ShipLocation is { } observedShip)
+        {
+            var shipLocation = vehicleTracker.ShipHeading is { } shipHeading
+                ? HumanSiteNavigation.AdjustForVehicle(
+                    observedShip,
+                    shipHeading,
+                    bodyRadius,
+                    vehicle)
+                : observedShip;
+            ShipOffset = HumanSiteNavigation.GetSiteOffset(
+                origin,
+                shipLocation,
+                bodyRadius,
+                heading);
+            DistanceToShipMeters = SurfaceNavigation.GetDistance(
+                current,
+                observedShip,
+                bodyRadius);
+        }
+
+        if (vehicleTracker.SrvLocation is { } srvLocation)
+        {
+            SrvOffset = HumanSiteNavigation.GetSiteOffset(
+                origin,
+                srvLocation,
+                bodyRadius,
+                heading);
         }
     }
 
@@ -788,6 +853,13 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(DockingStatusText));
         OnPropertyChanged(nameof(HasDockingStatus));
         OnPropertyChanged(nameof(CommanderOffset));
+        OnPropertyChanged(nameof(ShipOffset));
+        OnPropertyChanged(nameof(SrvOffset));
+        OnPropertyChanged(nameof(HasShipDeparted));
+        OnPropertyChanged(nameof(DistanceToShipMeters));
+        OnPropertyChanged(nameof(ShowShipDismissalBoundary));
+        OnPropertyChanged(nameof(ShowShipDismissalWarning));
+        OnPropertyChanged(nameof(ShipDismissalWarningText));
         OnPropertyChanged(nameof(DistanceToOriginMeters));
         OnPropertyChanged(nameof(ApproachDistanceMeters));
         OnPropertyChanged(nameof(RelativeHeading));
