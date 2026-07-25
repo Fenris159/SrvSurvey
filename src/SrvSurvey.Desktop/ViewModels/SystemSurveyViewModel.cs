@@ -18,6 +18,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private readonly SystemSurveySettingsStore settingsStore;
     private readonly SystemScanState state;
     private readonly ExobiologyReferenceCatalog biologyCatalog;
+    private readonly Func<DateTimeOffset> utcNow;
     private EliteStatus? status;
     private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
     private SystemScanSnapshot snapshot = SystemScanSnapshot.Empty;
@@ -80,18 +81,23 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool forceShowBodyInfo;
     private bool manuallyHideBodyInfo;
     private bool fsdJumping;
+    private int? timedBiologyBodyId;
+    private DateTimeOffset timedBiologyStartedAt;
+    private DateTimeOffset timedBiologyExpiresAt;
     private string settingsStatus = string.Empty;
 
     public SystemSurveyViewModel(
         SystemSurveySettingsStore settingsStore,
         SystemScanState? state = null,
-        ExobiologyReferenceCatalog? biologyCatalog = null)
+        ExobiologyReferenceCatalog? biologyCatalog = null,
+        Func<DateTimeOffset>? utcNow = null)
     {
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
         this.state = state ?? new SystemScanState();
         this.biologyCatalog = biologyCatalog
             ?? ExobiologyReferenceCatalog.LoadEmbedded();
+        this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         var preferences = settingsStore.Load();
         autoShowBodyInfo = preferences.AutoShowBodyInfo;
         showBodyInfoInSystemMap = preferences.ShowBodyInfoInSystemMap;
@@ -574,6 +580,25 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public bool HasBiologySurvey => BiologySurvey is not null;
 
+    public bool HasTimedBiologySelection => timedBiologyBodyId is not null;
+
+    public double TimedBiologySelectionProgressPercent
+    {
+        get
+        {
+            if (timedBiologyBodyId is null
+                || timedBiologyExpiresAt <= timedBiologyStartedAt)
+            {
+                return 0;
+            }
+
+            var remaining = timedBiologyExpiresAt - utcNow();
+            var total = timedBiologyExpiresAt - timedBiologyStartedAt;
+            return Math.Clamp(remaining.TotalMilliseconds
+                / total.TotalMilliseconds * 100d, 0d, 100d);
+        }
+    }
+
     public BiologyStatusViewModel? BiologyStatus
     {
         get => biologyStatus;
@@ -1019,6 +1044,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         var previousAddress = snapshot.SystemAddress;
+        var previousStatus = status;
         foreach (var journalEvent in journalEvents)
         {
             state.Apply(journalEvent);
@@ -1069,6 +1095,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         snapshot = state.CreateSnapshot();
         if (snapshot.SystemAddress != previousAddress)
         {
+            ClearTimedBiologySelection(refreshDisplay: false);
             biologyCodexNotification = null;
             forceShowFssInfo = false;
             manuallyHideFssInfo = false;
@@ -1077,6 +1104,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsBodyInfoForced));
         }
 
+        UpdateTimedBiologySelection(previousStatus, nextStatus);
+
         foreach (var journalEvent in journalEvents)
         {
             ApplyBiologyCodexCue(journalEvent);
@@ -1084,6 +1113,24 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
         RefreshDisplay();
         RaiseVisibilityProperties();
+    }
+
+    public bool RefreshTransientState()
+    {
+        if (timedBiologyBodyId is null)
+        {
+            return false;
+        }
+
+        if (!IsBiologyMapMode(status) || utcNow() >= timedBiologyExpiresAt)
+        {
+            ClearTimedBiologySelection(refreshDisplay: true);
+            RaiseVisibilityProperties();
+            return true;
+        }
+
+        OnPropertyChanged(nameof(TimedBiologySelectionProgressPercent));
+        return false;
     }
 
     public bool ToggleFssInfoVisibility()
@@ -1148,15 +1195,26 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private void RefreshDisplay()
     {
-        BiologySurvey = BiologySurveyViewModel.Create(
-            snapshot,
-            status,
-            exobiology,
-            DrawBodyBiosOnlyWhenNear,
-            HighlightRegionalFirsts,
-            DimAnalyzedOrganisms,
-            HideGeoCountInBioSystem,
-            DisableBioPredictions);
+        BiologySurvey = timedBiologyBodyId is { } selectedBodyId
+            && IsBiologyMapMode(status)
+            && utcNow() < timedBiologyExpiresAt
+                ? BiologySurveyViewModel.CreateBodyDetail(
+                    snapshot,
+                    selectedBodyId,
+                    exobiology,
+                    HighlightRegionalFirsts,
+                    DimAnalyzedOrganisms,
+                    HideGeoCountInBioSystem,
+                    DisableBioPredictions)
+                : BiologySurveyViewModel.Create(
+                    snapshot,
+                    status,
+                    exobiology,
+                    DrawBodyBiosOnlyWhenNear,
+                    HighlightRegionalFirsts,
+                    DimAnalyzedOrganisms,
+                    HideGeoCountInBioSystem,
+                    DisableBioPredictions);
         BiologyStatus = BiologyStatusViewModel.Create(
             snapshot,
             status,
@@ -1208,6 +1266,85 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsWithinBodyInfoBubble));
         OnPropertyChanged(nameof(ShouldShowFlightWarning));
         OnPropertyChanged(nameof(FlightWarningText));
+        OnPropertyChanged(nameof(HasTimedBiologySelection));
+        OnPropertyChanged(nameof(TimedBiologySelectionProgressPercent));
+    }
+
+    private void UpdateTimedBiologySelection(
+        EliteStatus? previousStatus,
+        EliteStatus? nextStatus)
+    {
+        if (!IsBiologyMapMode(nextStatus))
+        {
+            ClearTimedBiologySelection(refreshDisplay: false);
+            return;
+        }
+
+        if (previousStatus is null
+            || string.Equals(
+                previousStatus.Destination?.Name,
+                nextStatus?.Destination?.Name,
+                StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var destination = nextStatus?.Destination;
+        var body = destination is not null
+            && destination.System == snapshot.SystemAddress
+                ? snapshot.Bodies.FirstOrDefault(candidate =>
+                    candidate.BodyId == destination.Body
+                    && candidate.BiologicalSignalCount > 0)
+                : null;
+        if (body is null)
+        {
+            ClearTimedBiologySelection(refreshDisplay: false);
+            return;
+        }
+
+        var details = BiologySurveyViewModel.CreateBodyDetail(
+            snapshot,
+            body.BodyId,
+            exobiology,
+            HighlightRegionalFirsts,
+            DimAnalyzedOrganisms,
+            HideGeoCountInBioSystem,
+            DisableBioPredictions);
+        var signalCount = Math.Max(
+            1,
+            details?.Organisms.Count ?? body.BiologicalSignalCount);
+        timedBiologyBodyId = body.BodyId;
+        timedBiologyStartedAt = utcNow();
+        timedBiologyExpiresAt = timedBiologyStartedAt
+            + TimeSpan.FromSeconds(2 * signalCount);
+    }
+
+    private void ClearTimedBiologySelection(bool refreshDisplay)
+    {
+        if (timedBiologyBodyId is null)
+        {
+            return;
+        }
+
+        timedBiologyBodyId = null;
+        timedBiologyStartedAt = default;
+        timedBiologyExpiresAt = default;
+        if (refreshDisplay)
+        {
+            RefreshDisplay();
+        }
+        else
+        {
+            OnPropertyChanged(nameof(HasTimedBiologySelection));
+            OnPropertyChanged(nameof(TimedBiologySelectionProgressPercent));
+        }
+    }
+
+    private static bool IsBiologyMapMode(EliteStatus? value)
+    {
+        return value?.GuiFocus is GuiFocus.ExternalPanel
+            or GuiFocus.SystemMap
+            or GuiFocus.Orrery;
     }
 
     private void ApplyBiologyCodexCue(JournalEventEnvelope journalEvent)

@@ -54,6 +54,12 @@
 
       <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
 
+      <ProgressBar Height="2"
+                   IsVisible="{Binding Survey.HasTimedBiologySelection}"
+                   Minimum="0"
+                   Maximum="100"
+                   Value="{Binding Survey.TimedBiologySelectionProgressPercent}" />
+
       <ScrollViewer MaxHeight="610"
                     HorizontalScrollBarVisibility="Disabled"
                     VerticalScrollBarVisibility="Auto">

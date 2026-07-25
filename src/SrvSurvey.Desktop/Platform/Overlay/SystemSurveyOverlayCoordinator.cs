@@ -245,6 +245,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
+        survey.RefreshTransientState();
         _ = priorScansViewModel.RefreshAsync();
         SynchronizeWindows();
     }

@@ -264,7 +264,9 @@ Codex IDs, rewards, analyzed state, regional-first state, and geological names.
 The overlay renders active sampling, analyzed dimming, partial and confirmed
 reward totals, first-footfall value, DSS guidance, geology, and unknown slots;
 its persisted settings and Guardian suppression are wired into the shared
-coordinator. The embedded v4 criteria catalog now supplies exact species and
+coordinator. Selecting a biological body in the System Map, Orrery, or
+navigation panel now retains its detail card for two seconds per organism with
+the original countdown behavior. The embedded v4 criteria catalog now supplies exact species and
 variant predictions plus body/system reward ranges when scan context is
 complete. It covers all 21 shipped criteria resources, galactic regions,
 parent/barycentre ancestry and relative brightness, legacy star aliases, the
@@ -273,8 +275,8 @@ genus/species suppression. Missing inputs stay explicit instead of producing
 false exact matches, and disabling predictions refreshes the overlay
 immediately. Dense body views, a three-body system overview, and an exact
 prediction card were checked in Blue dark/light. Commander-Codex firsts,
-Canonn hints, the transient map-selection timer, live Elite attachment, and
-Linux remain open.
+Canonn hints, live Elite attachment, and Linux remain open; the restored
+transient selection behavior intentionally awaits the final visual pass.
 
 `FormPredictions` now has a single-instance Raven-themed workspace backed by
 the same exact evaluator. It shows system totals, confirmed and estimated
@@ -333,9 +335,9 @@ UI tests where practical, and live Windows/Linux evidence.
   reward prediction range are implemented. `PlotFlightWarning` is implemented
   with the exact landable-body,
   gravity-threshold, flight-mode, and persisted auto-show rules. The
-  journal-backed `PlotBioSystem` presentation, lifecycle, and exact
-  prediction inputs are implemented, while its auxiliary Canonn/Codex cues
-  remain open. `FormPredictions` is implemented as a standalone system/body
+  journal-backed `PlotBioSystem` presentation, lifecycle, timed map selection,
+  and exact prediction inputs are implemented, while its auxiliary
+  Canonn/Codex cues remain open. `FormPredictions` is implemented as a standalone system/body
   workspace. `PlotPriorScans` and its Canonn slice of the grounded radar are
   implemented with validated current-body coordinates, commander/analyzed and
   value filtering, continuously recalculated surface bearing/distance,
@@ -488,7 +490,7 @@ Validation performed on 2026-07-25 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 1,010 tests: 613 Core tests and 397 Desktop tests.
+  passed all 1,012 tests: 613 Core tests and 399 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - Automated quest migration coverage loads known legacy commander,
   development-definition, objective, chapter, message, variable, retained

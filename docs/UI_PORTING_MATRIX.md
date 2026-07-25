@@ -215,7 +215,8 @@ temperature, gravity, pressure, signals, volcanism, atmosphere, materials, and
 rings. Its biological reward range uses the same exact prediction engine and
 incomplete-input rules as the biology surfaces. The journal-backed `PlotBioSystem` surface is
 now implemented as a bottom-left passive overlay. It preserves whole-system and
-near-body/FSS modes, current/target selection, analyzed progress, active sample
+near-body/FSS modes, current/target selection, the two-seconds-per-organism
+transient System Map selection and countdown, analyzed progress, active sample
 emphasis, confirmed organism identities and rewards, regional-first
 highlighting, first-footfall value, DSS guidance, geological details, Guardian
 priority, and the original display preferences. Its embedded v4 evaluator
@@ -223,8 +224,8 @@ loads all 21 shipped criteria resources and resolves exact species/variant
 predictions with galactic-region, parent-star/barycentre/brightness, offline
 nebula, Guardian-bubble, inheritance, and known-organism context. It exposes
 predicted reward ranges only for complete inputs and otherwise shows the
-missing context explicitly. Commander-Codex first-discovery inference, Canonn
-signal hints, and the transient map-selection timer remain open. Of the other
+missing context explicitly. Commander-Codex first-discovery inference and
+Canonn signal hints remain open. Of the other
 plotter surfaces, `PlotPriorScans` is now a
 bottom-right passive guidance and radar surface. It uses the current Canonn
 `getSystemPoi` response, rejects malformed/bodyless/mismatched records, caches

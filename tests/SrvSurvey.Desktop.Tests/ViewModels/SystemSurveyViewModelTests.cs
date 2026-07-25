@@ -406,6 +406,112 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void BiologySurveyTemporarilyShowsNewMapSelectionPerSignal()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "timed-ui-settings.json")),
+            utcNow: () => now);
+        var firstStatus = new EliteStatus
+        {
+            GuiFocus = GuiFocus.SystemMap,
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 1,
+                Name = "Test 1",
+            },
+        };
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}]}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"PlanetClass":"Rocky body","MassEM":0.1,"Landable":true}"""),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":3}]}"""),
+            ],
+            firstStatus);
+
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.False(viewModel.HasTimedBiologySelection);
+
+        viewModel.ApplyUpdate([], firstStatus with
+        {
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 2,
+                Name = "Test 2",
+            },
+        });
+
+        Assert.True(viewModel.HasTimedBiologySelection);
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.Equal("Test 2 biology", viewModel.BiologySurvey.Heading);
+        Assert.Equal(100, viewModel.TimedBiologySelectionProgressPercent);
+
+        now = now.AddSeconds(3);
+        Assert.False(viewModel.RefreshTransientState());
+        Assert.Equal(50, viewModel.TimedBiologySelectionProgressPercent);
+
+        now = now.AddSeconds(3);
+        Assert.True(viewModel.RefreshTransientState());
+        Assert.False(viewModel.HasTimedBiologySelection);
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+    }
+
+    [Fact]
+    public void BiologySurveyCancelsTimedSelectionWhenMapCloses()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "cancel-timed-ui-settings.json")),
+            utcNow: () => now);
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+            ],
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.SystemMap,
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 0,
+                    Name = "Test",
+                },
+            });
+        viewModel.ApplyUpdate(
+            [],
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.SystemMap,
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 1,
+                    Name = "Test 1",
+                },
+            });
+        Assert.True(viewModel.HasTimedBiologySelection);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            Flags = StatusFlags.Supercruise,
+            GuiFocus = GuiFocus.NoFocus,
+        });
+
+        Assert.False(viewModel.HasTimedBiologySelection);
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+    }
+
+    [Fact]
     public void BiologySurveyShowsBodySamplesRewardsFootfallAndGeology()
     {
         var viewModel = CreateViewModel();
