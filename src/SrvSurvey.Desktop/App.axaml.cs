@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform;
@@ -52,6 +53,8 @@ public sealed partial class App : Application
             var inputSettings = new GlobalInputSettingsViewModel(
                 new GlobalInputSettingsStore(appDataPaths.UiSettingsPath),
                 capabilities);
+            var applicationLog = Program.ApplicationLog
+                ?? new ApplicationLogService(appDataPaths.DataDirectory);
 
             var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
                 Program.StartupArguments);
@@ -59,7 +62,8 @@ public sealed partial class App : Application
                 configuredJournalDirectory,
                 themeService,
                 appDataPaths,
-                inputSettings: inputSettings);
+                inputSettings: inputSettings,
+                applicationLogService: applicationLog);
             var mainWindow = new MainWindow(viewModel);
             desktop.MainWindow = mainWindow;
             systemNotesWindowCoordinator = new SystemNotesWindowCoordinator(
@@ -349,6 +353,8 @@ public sealed partial class App : Application
             globalControllerInputService.Start();
             desktop.Exit += (_, _) =>
             {
+                applicationLog.Append("Application exit");
+                viewModel.DiagnosticsLog.Dispose();
                 viewModel.JumpInfo.Dispose();
                 globalControllerInputService?.Dispose();
                 globalControllerInputService = null;

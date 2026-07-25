@@ -98,6 +98,54 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Application logs" />
+            <TextBlock Classes="muted"
+                       Text="{Binding DiagnosticsLog.SessionDescription}" />
+          </StackPanel>
+
+          <TextBox MinHeight="260"
+                   MaxHeight="420"
+                   AcceptsReturn="True"
+                   IsReadOnly="True"
+                   TextWrapping="NoWrap"
+                   FontFamily="Consolas, Menlo, monospace"
+                   FontSize="12"
+                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                   ScrollViewer.VerticalScrollBarVisibility="Auto"
+                   Text="{Binding DiagnosticsLog.LogText, Mode=OneWay}" />
+
+          <WrapPanel Orientation="Horizontal">
+            <Button Classes="primary"
+                    Margin="0,0,8,8"
+                    Command="{Binding DiagnosticsLog.CopyCommand}"
+                    Content="Copy logs" />
+            <Button Classes="secondary"
+                    Margin="0,0,8,8"
+                    Command="{Binding DiagnosticsLog.ClearCommand}"
+                    Content="Clear view" />
+            <Button Classes="secondary"
+                    Margin="0,0,0,8"
+                    Command="{Binding DiagnosticsLog.OpenFolderCommand}"
+                    Content="Open log folder" />
+          </WrapPanel>
+
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding DiagnosticsLog.PersistenceStatus}" />
+          <TextBlock Classes="monospace muted"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Text="{Binding DiagnosticsLog.CurrentLogPath}" />
+          <TextBlock Classes="muted"
+                     IsVisible="{Binding DiagnosticsLog.HasStatusMessage}"
+                     TextWrapping="Wrap"
+                     Text="{Binding DiagnosticsLog.StatusMessage}" />
+        </StackPanel>
+      </Border>
+
       <TextBlock Classes="muted"
                  HorizontalAlignment="Right"
                  Text="{Binding LastUpdated}" />

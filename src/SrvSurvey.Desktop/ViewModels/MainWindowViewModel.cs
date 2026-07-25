@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Colonization;
+using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
@@ -95,11 +96,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         CombatSettingsStore? combatSettingsStore = null,
         GuardianOverlaySettingsStore? guardianOverlaySettingsStore = null,
         StationInfoSettingsStore? stationInfoSettingsStore = null,
-        HumanSiteSettingsStore? humanSiteSettingsStore = null)
+        HumanSiteSettingsStore? humanSiteSettingsStore = null,
+        ApplicationLogService? applicationLogService = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        DiagnosticsLog = new DiagnosticsLogViewModel(applicationLogService);
         folderResolution = JournalFolderLocator.ResolveCurrent(
             configuredJournalDirectory);
         commanderProfileStore = new CommanderProfileStore(
@@ -333,6 +336,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public RamTahViewModel RamTah { get; }
 
     public ColonizationViewModel Colonization { get; }
+
+    public DiagnosticsLogViewModel DiagnosticsLog { get; }
 
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
 
