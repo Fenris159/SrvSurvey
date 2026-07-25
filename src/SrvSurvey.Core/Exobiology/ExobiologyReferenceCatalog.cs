@@ -17,6 +17,10 @@ public sealed class ExobiologyReferenceCatalog
     {
         ArgumentNullException.ThrowIfNull(entries);
         var materialized = entries.ToArray();
+        Entries = Array.AsReadOnly(materialized);
+        BiologyEntries = Array.AsReadOnly(materialized
+            .Where(entry => entry.IsBiology)
+            .ToArray());
         byVariant = materialized
             .GroupBy(entry => entry.VariantName, StringComparer.Ordinal)
             .ToDictionary(
@@ -43,7 +47,11 @@ public sealed class ExobiologyReferenceCatalog
             .ToDictionary(group => group.Key, group => group.First());
     }
 
-    public int Count => byVariant.Count;
+    public IReadOnlyList<ExobiologyReference> Entries { get; }
+
+    public IReadOnlyList<ExobiologyReference> BiologyEntries { get; }
+
+    public int Count => Entries.Count;
 
     public ExobiologyReference? FindByVariant(string? variantName)
     {
@@ -99,8 +107,7 @@ public sealed class ExobiologyReferenceCatalog
             var reward = GetInt64(value, "reward");
             var entryId = GetInt64(value, "entryid");
             var variantName = GetString(value, "name");
-            if (reward is not > 0
-                || entryId is not > 0
+            if (entryId is not > 0
                 || string.IsNullOrWhiteSpace(variantName))
             {
                 continue;
@@ -108,7 +115,7 @@ public sealed class ExobiologyReferenceCatalog
 
             var platform = GetString(value, "platform");
             var hudCategory = GetString(value, "hud_category");
-            var speciesName = platform == "odyssey" && hudCategory != "Thargoid"
+            var speciesName = platform == "odyssey" && hudCategory == "Biology"
                 ? GetSpeciesName(variantName)
                 : variantName;
             entries.Add(new ExobiologyReference(
@@ -116,7 +123,15 @@ public sealed class ExobiologyReferenceCatalog
                 variantName,
                 speciesName,
                 GetString(value, "english_name"),
-                reward.Value));
+                reward ?? 0,
+                GetString(value, "category"),
+                hudCategory,
+                GetString(value, "sub_category"),
+                GetString(value, "sub_class"),
+                platform,
+                GetString(value, "image_url"),
+                GetString(value, "image_cmdr"),
+                GetString(value, "dump")));
         }
 
         return new ExobiologyReferenceCatalog(entries);
@@ -217,7 +232,20 @@ public sealed record ExobiologyReference(
     string VariantName,
     string SpeciesName,
     string? DisplayName,
-    long Reward)
+    long Reward,
+    string? Category = null,
+    string? HudCategory = null,
+    string? SubCategory = null,
+    string? SubClass = null,
+    string? Platform = null,
+    string? ImageUrl = null,
+    string? ImageCommander = null,
+    string? DumpUrl = null)
 {
     public string EntryIdPrefix => EntryId.ToString()[..5];
+
+    public bool IsBiology => string.Equals(
+        HudCategory,
+        "Biology",
+        StringComparison.OrdinalIgnoreCase);
 }

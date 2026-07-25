@@ -14,10 +14,19 @@ public sealed class ExobiologyReferenceCatalogTests
         var bySpecies = catalog.FindBySpecies(
             "$Codex_Ent_Aleoids_01_Name;");
 
-        Assert.True(catalog.Count > 100);
+        Assert.Equal(1070, catalog.Count);
+        Assert.Equal(814, catalog.BiologyEntries.Count);
         Assert.NotNull(byVariant);
         Assert.Equal(2310101, byVariant.EntryId);
         Assert.Equal(7_252_500, byVariant.Reward);
+        Assert.True(byVariant.IsBiology);
+        Assert.Equal("Biology", byVariant.HudCategory);
+        Assert.Equal("odyssey", byVariant.Platform);
+        Assert.Equal("Aleoids", byVariant.SubClass);
+        Assert.Equal("LCU No Fool Like One", byVariant.ImageCommander);
+        Assert.Equal(
+            "https://storage.googleapis.com/canonn-downloads/codex_images/Fool/Boerth%20GR-W%20e1-134(A%2010%20e)_00002.png",
+            byVariant.ImageUrl);
         Assert.Equal(byVariant, bySpecies);
         Assert.Equal(byVariant, catalog.FindByEntryId(2310101));
         Assert.Equal(
@@ -28,6 +37,16 @@ public sealed class ExobiologyReferenceCatalogTests
             "$Codex_Ent_Aleoids_Genus_Name;",
             ExobiologyReferenceCatalog.GetGenusName(
                 byVariant.SpeciesName));
+
+        var touristEntry = catalog.FindByEntryId(1200102);
+        Assert.NotNull(touristEntry);
+        Assert.False(touristEntry.IsBiology);
+        Assert.Equal("Green Water Giant", touristEntry.DisplayName);
+        Assert.Equal("Tourist", touristEntry.HudCategory);
+        Assert.Equal("Planets", touristEntry.SubClass);
+        Assert.Equal(0, touristEntry.Reward);
+        Assert.Contains(touristEntry, catalog.Entries);
+        Assert.DoesNotContain(touristEntry, catalog.BiologyEntries);
     }
 
     [Fact]
