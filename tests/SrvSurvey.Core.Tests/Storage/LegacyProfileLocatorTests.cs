@@ -31,6 +31,33 @@ public sealed class LegacyProfileLocatorTests : IDisposable
         Assert.True(File.Exists(Path.Combine(desktopPath, "settings.json")));
     }
 
+    [Fact]
+    public void DiscoverFindsOlderSiblingVersionProfiles()
+    {
+        var productRoot = Path.Combine(temporaryDirectory, "SrvSurvey");
+        var olderProfile = Path.Combine(productRoot, "1.0.0.0");
+        var newestProfile = Path.Combine(productRoot, "1.2.0.0");
+        Directory.CreateDirectory(olderProfile);
+        Directory.CreateDirectory(newestProfile);
+        File.WriteAllText(Path.Combine(olderProfile, "settings.json"), "{}");
+        File.WriteAllText(Path.Combine(newestProfile, "settings.json"), "{}");
+
+        var result = LegacyProfileLocator.Discover(
+        [
+            new LegacyProfileCandidate(
+                LegacyProfileLocationKind.Desktop,
+                Path.Combine(productRoot, "1.1.0.0")),
+        ]);
+
+        Assert.Equal(2, result.Count);
+        Assert.Equal(
+            Path.GetFullPath(newestProfile),
+            result[0].Path);
+        Assert.Equal(
+            Path.GetFullPath(olderProfile),
+            result[1].Path);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
