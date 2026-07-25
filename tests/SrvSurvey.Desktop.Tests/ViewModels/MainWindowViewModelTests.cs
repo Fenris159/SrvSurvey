@@ -201,6 +201,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "missing-journals"),
                 appDataPaths: paths);
 
+            Assert.Equal(source, viewModel.LegacyProfileSourcePath);
             await viewModel.ImportLegacyProfileAsync();
 
             Assert.True(File.Exists(Path.Combine(data, "settings.json")));
@@ -211,6 +212,52 @@ public sealed class MainWindowViewModelTests
             Assert.True(viewModel.HasCompletedLegacyImport);
             Assert.False(viewModel.ImportLegacyProfileCommand.CanExecute(null));
             Assert.True(Directory.Exists(viewModel.ProfileBackupDirectory));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task LegacyProfileCanBeImportedFromManuallySelectedFolder()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-manual-profile-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var source = Path.Combine(root, "copied-windows-profile");
+            var data = Path.Combine(root, "current");
+            Directory.CreateDirectory(source);
+            await File.WriteAllTextAsync(
+                Path.Combine(source, "F123-live.json"),
+                "{\"fid\":\"F123\",\"commander\":\"Drew\"}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                data,
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(
+                Path.Combine(root, "missing-journals"),
+                appDataPaths: paths);
+
+            Assert.Empty(viewModel.LegacyProfiles);
+            Assert.False(viewModel.ImportLegacyProfileCommand.CanExecute(null));
+
+            viewModel.LegacyProfileSourcePath = source;
+
+            Assert.True(viewModel.ImportLegacyProfileCommand.CanExecute(null));
+            await viewModel.ImportLegacyProfileAsync();
+
+            Assert.Equal(
+                "{\"fid\":\"F123\",\"commander\":\"Drew\"}",
+                await File.ReadAllTextAsync(
+                    Path.Combine(data, "F123-live.json")));
+            Assert.True(viewModel.HasCompletedLegacyImport);
         }
         finally
         {

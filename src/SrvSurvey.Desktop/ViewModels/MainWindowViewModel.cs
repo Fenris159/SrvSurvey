@@ -76,6 +76,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private NavigationItemViewModel selectedNavigation;
     private ThemeOptionViewModel selectedTheme;
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
+    private string legacyProfileSourcePath;
     private string profileStatusMessage;
 
     public MainWindowViewModel(
@@ -235,6 +236,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             .Select(discovery => new LegacyProfileOptionViewModel(discovery))
             .ToArray();
         selectedLegacyProfile = LegacyProfiles.FirstOrDefault();
+        legacyProfileSourcePath = selectedLegacyProfile?.Path ?? string.Empty;
         profileStatusMessage = GetInitialProfileStatus();
         importLegacyProfileCommand = new AsyncCommand(
             ImportLegacyProfileAsync,
@@ -361,8 +363,37 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         {
             if (SetField(ref selectedLegacyProfile, value))
             {
+                if (value is not null)
+                {
+                    LegacyProfileSourcePath = value.Path;
+                }
+
                 importLegacyProfileCommand.RaiseCanExecuteChanged();
             }
+        }
+    }
+
+    public string LegacyProfileSourcePath
+    {
+        get => legacyProfileSourcePath;
+        set
+        {
+            var normalized = value?.Trim() ?? string.Empty;
+            if (!SetField(ref legacyProfileSourcePath, normalized))
+            {
+                return;
+            }
+
+            if (!HasCompletedLegacyImport && !IsImportingProfile)
+            {
+                ProfileStatusMessage = string.IsNullOrWhiteSpace(normalized)
+                    ? "Choose the original SrvSurvey profile folder to import."
+                    : Directory.Exists(normalized)
+                        ? "The selected legacy profile is ready for verified import."
+                        : "The selected legacy profile folder does not exist or is unavailable.";
+            }
+
+            importLegacyProfileCommand.RaiseCanExecuteChanged();
         }
     }
 
@@ -777,7 +808,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     public async Task ImportLegacyProfileAsync()
     {
-        if (!CanImportLegacyProfile() || SelectedLegacyProfile is null)
+        if (!CanImportLegacyProfile())
         {
             return;
         }
@@ -788,7 +819,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             ProfileStatusMessage =
                 "Creating verified backups of the legacy and current profiles...";
             var result = await profileImporter.ImportAsync(
-                SelectedLegacyProfile.Path,
+                LegacyProfileSourcePath,
                 AppDataPaths.DataDirectory,
                 ProfileBackupDirectory);
             var retainedFiles = result.Manifest.PreviousDestinationEntries.Count
@@ -819,7 +850,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private bool CanImportLegacyProfile()
     {
         return !IsImportingProfile
-            && SelectedLegacyProfile is not null
+            && Directory.Exists(LegacyProfileSourcePath)
             && !HasCompletedLegacyImport
             && !File.Exists(AppDataPaths.DataDirectory);
     }
@@ -840,7 +871,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
 
         return LegacyProfiles.Count == 0
-            ? "No legacy Windows profile was found in the desktop or Microsoft Store locations."
+            ? "No legacy Windows profile was detected automatically. Choose its profile "
+                + "folder manually; copied Windows profiles can also be imported on Linux."
             : $"Found {LegacyProfiles.Count:N0} legacy profile source(s). "
                 + "Import creates checksum-verified backups, preserves current-only files, "
                 + "records collisions, and activates the merged copy transactionally.";

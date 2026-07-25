@@ -727,6 +727,18 @@
                   </DataTemplate>
                 </ComboBox.ItemTemplate>
               </ComboBox>
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <TextBox Text="{Binding LegacyProfileSourcePath, Mode=TwoWay}"
+                         PlaceholderText="Path to the original SrvSurvey profile" />
+                <Button Grid.Column="1"
+                        Classes="secondary"
+                        Click="ChooseLegacyProfileFolder_Click"
+                        Content="Choose folder" />
+              </Grid>
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Text="Automatic detection is available on Windows. Use Choose folder for copied profiles, older installs, or migration on Linux." />
             </StackPanel>
             <Button Grid.Column="1"
                     Classes="primary"
