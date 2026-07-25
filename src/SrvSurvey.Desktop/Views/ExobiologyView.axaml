@@ -134,12 +134,32 @@
         </Border>
       </Grid>
 
+      <Border Classes="card raised">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+          <StackPanel Spacing="6">
+            <TextBlock Classes="card-title" Text="System predictions" />
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontWeight="SemiBold"
+                       Text="{Binding BiologyPredictions.SystemName}" />
+            <TextBlock Classes="muted"
+                       Text="{Binding BiologyPredictions.StatusMessage}"
+                       TextWrapping="Wrap" />
+          </StackPanel>
+          <Button Grid.Column="1"
+                  Classes="primary"
+                  MinWidth="170"
+                  VerticalAlignment="Center"
+                  Command="{Binding BiologyPredictions.OpenWindowCommand}"
+                  Content="Open predictions" />
+        </Grid>
+      </Border>
+
       <Border Classes="card">
         <StackPanel Spacing="5">
           <TextBlock Classes="card-title" Text="Compatibility" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="Rewards, first-footfall multipliers, sale removal, death rollback, and active sample fields use the WinForms commander profile contract. Body predictions and Codex browsing are being ported as separate reviewable surfaces." />
+                     Text="Rewards, first-footfall multipliers, sale removal, death rollback, active samples, and exact body predictions use the WinForms contracts. Codex browsing and prior-scan tools remain separate reviewable surfaces." />
         </StackPanel>
       </Border>
     </StackPanel>

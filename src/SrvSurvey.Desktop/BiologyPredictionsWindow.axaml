@@ -1,0 +1,335 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.BiologyPredictionsWindow"
+        x:DataType="vm:BiologyPredictionsViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="1040"
+        d:DesignHeight="760"
+        Width="1040"
+        Height="760"
+        MinWidth="760"
+        MinHeight="520"
+        WindowStartupLocation="CenterOwner"
+        Title="Biology predictions - SrvSurvey">
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+    <Border Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="24,18">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="BIOLOGY PREDICTIONS" />
+          <TextBlock Classes="page-title"
+                     FontSize="24"
+                     Text="{Binding SystemName}"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Classes="muted"
+                     Text="{Binding ScanProgress}" />
+        </StackPanel>
+        <StackPanel Grid.Column="1"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Spacing="8">
+          <Button Classes="secondary"
+                  Command="{Binding OpenCanonnCommand}"
+                  Content="Canonn" />
+          <Button Classes="secondary"
+                  Command="{Binding OpenSpanshCommand}"
+                  Content="Spansh" />
+          <Button Classes="secondary"
+                  Command="{Binding OpenEdsmCommand}"
+                  Content="EDSM" />
+          <Button Classes="secondary"
+                  Click="Close_Click"
+                  Content="Close" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1"
+          Margin="20,18,20,10"
+          ColumnDefinitions="*,*,*,*"
+          ColumnSpacing="10">
+      <Border Classes="card raised" Padding="14">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="muted" FontSize="9" Text="SCANNED SIGNALS" />
+          <TextBlock FontSize="15"
+                     FontWeight="SemiBold"
+                     Text="{Binding ScanProgress}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="1" Classes="card" Padding="14">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="muted" FontSize="9" Text="CONFIRMED VALUE" />
+          <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
+                     FontSize="15"
+                     FontWeight="SemiBold"
+                     Text="{Binding ConfirmedReward}" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="2" Classes="card" Padding="14">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="muted" FontSize="9" Text="SYSTEM ESTIMATE" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="15"
+                     FontWeight="SemiBold"
+                     Text="{Binding EstimatedReward}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="3" Classes="card" Padding="14">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="muted" FontSize="9" Text="WITH FIRST FOOTFALL" />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontSize="15"
+                     FontWeight="SemiBold"
+                     Text="{Binding FirstFootfallEstimate}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Border Grid.Row="2"
+            Margin="20,0,20,10"
+            Classes="card"
+            Padding="12,9">
+      <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,180"
+            ColumnSpacing="9">
+        <Button Classes="secondary"
+                Command="{Binding ExpandAllCommand}"
+                Content="Expand all" />
+        <Button Grid.Column="1"
+                Classes="secondary"
+                Command="{Binding CollapseAllCommand}"
+                Content="Collapse all" />
+        <CheckBox Grid.Column="2"
+                  VerticalAlignment="Center"
+                  IsChecked="{Binding CurrentBodyOnly, Mode=TwoWay}"
+                  Content="Focus current body" />
+        <TextBlock Grid.Column="4"
+                   Classes="muted"
+                   VerticalAlignment="Center"
+                   Text="Row size" />
+        <ComboBox Grid.Column="5"
+                  ItemsSource="{Binding RowSizeOptions}"
+                  SelectedItem="{Binding SelectedRowSize, Mode=TwoWay}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:BiologyPredictionRowSizeOption">
+              <TextBlock Text="{Binding Label}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="3" Margin="20,0,20,12">
+      <StackPanel HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Spacing="7"
+                  IsVisible="{Binding !HasBodies}">
+        <TextBlock Classes="page-title"
+                   FontSize="22"
+                   Text="No biological signals loaded" />
+        <TextBlock Classes="muted"
+                   Text="Enter or scan a system with biological signals." />
+      </StackPanel>
+
+      <ScrollViewer IsVisible="{Binding HasBodies}"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsControl HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Bodies}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:BiologyPredictionBodyViewModel">
+              <Border Margin="0,0,0,10"
+                      Classes="card"
+                      HorizontalAlignment="Stretch"
+                      Padding="0">
+                <Expander HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Stretch"
+                          IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
+                  <Expander.Header>
+                    <Grid Margin="14,11"
+                          ColumnDefinitions="*,Auto"
+                          ColumnSpacing="16">
+                      <StackPanel Spacing="5">
+                        <StackPanel Orientation="Horizontal" Spacing="7">
+                          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                     FontSize="16"
+                                     FontWeight="SemiBold"
+                                     Text="{Binding Name}" />
+                          <Border Classes="badge" IsVisible="{Binding IsCurrent}">
+                            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       Text="CURRENT" />
+                          </Border>
+                          <Border Classes="badge" IsVisible="{Binding IsDestination}">
+                            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       Text="TARGET" />
+                          </Border>
+                          <Border Classes="badge" IsVisible="{Binding IsFirstFootfall}">
+                            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                       FontSize="8"
+                                       FontWeight="Bold"
+                                       Text="FIRST FOOTFALL" />
+                          </Border>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                          <TextBlock Classes="muted" Text="{Binding ProgressText}" />
+                          <TextBlock Classes="muted" Text="{Binding DistanceText}" />
+                        </StackPanel>
+                      </StackPanel>
+                      <TextBlock Grid.Column="1"
+                                 Classes="monospace"
+                                 Foreground="{DynamicResource RavenAccentBrush}"
+                                 FontWeight="SemiBold"
+                                 HorizontalAlignment="Right"
+                                 Text="{Binding RewardText}"
+                                 TextWrapping="Wrap" />
+                    </Grid>
+                  </Expander.Header>
+
+                  <StackPanel Margin="14,0,14,14"
+                              HorizontalAlignment="Stretch"
+                              Spacing="7">
+                    <Border Padding="10"
+                            Background="{DynamicResource RavenAccentMutedBrush}"
+                            CornerRadius="7"
+                            IsVisible="{Binding RequiresDss}">
+                      <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                 Text="A DSS scan is required before genus and species rows are available."
+                                 TextWrapping="Wrap" />
+                    </Border>
+                    <Border Padding="10"
+                            Background="{DynamicResource RavenAccentMutedBrush}"
+                            CornerRadius="7"
+                            IsVisible="{Binding HasPredictionStatus}">
+                      <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                 Text="{Binding PredictionStatus}"
+                                 TextWrapping="Wrap" />
+                    </Border>
+
+                    <ItemsControl HorizontalAlignment="Stretch"
+                                  ItemsSource="{Binding Organisms}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:BiologyPredictionOrganismViewModel">
+                          <Border Margin="0,0,0,5"
+                                  Padding="12,8"
+                                  Background="{DynamicResource RavenSurfaceBrush}"
+                                  BorderBrush="{DynamicResource RavenBorderBrush}"
+                                  BorderThickness="1"
+                                  CornerRadius="7"
+                                  HorizontalAlignment="Stretch"
+                                  Opacity="{Binding RowOpacity}">
+                            <Grid ColumnDefinitions="*,Auto"
+                                  ColumnSpacing="14">
+                              <StackPanel Spacing="3">
+                                <TextBlock FontSize="{Binding RowFontSize}"
+                                           FontWeight="SemiBold"
+                                           Text="{Binding DisplayName}"
+                                           TextWrapping="Wrap" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                  <TextBlock Classes="muted"
+                                             FontSize="10"
+                                             Text="{Binding GenusName}" />
+                                  <TextBlock Classes="muted"
+                                             FontSize="10"
+                                             IsVisible="{Binding HasSampleDistance}"
+                                             Text="{Binding SampleDistanceText}" />
+                                </StackPanel>
+                                <WrapPanel Orientation="Horizontal">
+                                  <Border Margin="0,2,5,0"
+                                          Classes="badge"
+                                          IsVisible="{Binding IsPrediction}">
+                                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                               FontSize="8"
+                                               FontWeight="Bold"
+                                               Text="PREDICTED" />
+                                  </Border>
+                                  <Border Margin="0,2,5,0"
+                                          Classes="badge"
+                                          IsVisible="{Binding IsAnalyzed}">
+                                    <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
+                                               FontSize="8"
+                                               FontWeight="Bold"
+                                               Text="ANALYZED" />
+                                  </Border>
+                                  <Border Margin="0,2,5,0"
+                                          Classes="badge"
+                                          IsVisible="{Binding IsCurrentSample}">
+                                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                               FontSize="8"
+                                               FontWeight="Bold"
+                                               Text="ACTIVE SAMPLE" />
+                                  </Border>
+                                  <Border Margin="0,2,5,0"
+                                          Classes="badge"
+                                          IsVisible="{Binding IsRegionalFirst}">
+                                    <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                               FontSize="8"
+                                               FontWeight="Bold"
+                                               Text="REGIONAL FIRST" />
+                                  </Border>
+                                  <Border Margin="0,2,5,0"
+                                          Classes="badge"
+                                          IsVisible="{Binding IsGenusIdentified}">
+                                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                               FontSize="8"
+                                               FontWeight="Bold"
+                                               Text="GENUS IDENTIFIED" />
+                                  </Border>
+                                  <Border Margin="0,2,5,0"
+                                          Classes="badge"
+                                          IsVisible="{Binding IsUnknown}">
+                                    <TextBlock Classes="muted"
+                                               FontSize="8"
+                                               FontWeight="Bold"
+                                               Text="UNIDENTIFIED" />
+                                  </Border>
+                                </WrapPanel>
+                              </StackPanel>
+                              <TextBlock Grid.Column="1"
+                                         Classes="monospace"
+                                         Foreground="{DynamicResource RavenAccentBrush}"
+                                         FontSize="11"
+                                         FontWeight="SemiBold"
+                                         HorizontalAlignment="Right"
+                                         Text="{Binding RewardText}" />
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </Expander>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Grid>
+
+    <Border Grid.Row="4"
+            Background="{DynamicResource RavenSurfaceBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="20,12">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+        <TextBlock Classes="muted"
+                   Text="{Binding StatusMessage}"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="1"
+                   Foreground="{DynamicResource RavenAccentBrush}"
+                   IsVisible="{Binding HasLaunchStatus}"
+                   Text="{Binding LaunchStatus}" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

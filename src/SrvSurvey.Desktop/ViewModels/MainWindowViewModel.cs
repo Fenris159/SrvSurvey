@@ -86,7 +86,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         INearestSystemsClient? nearestSystemsClient = null,
         ISystemSummaryClient? systemSummaryClient = null,
         JumpInfoSettingsStore? jumpInfoSettingsStore = null,
-        SystemSurveySettingsStore? systemSurveySettingsStore = null)
+        SystemSurveySettingsStore? systemSurveySettingsStore = null,
+        BiologyPredictionsSettingsStore? biologyPredictionsSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -150,6 +151,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         SystemSurvey = new SystemSurveyViewModel(
             systemSurveySettingsStore
                 ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath));
+        BiologyPredictions = new BiologyPredictionsViewModel(
+            SystemSurvey,
+            biologyPredictionsSettingsStore
+                ?? new BiologyPredictionsSettingsStore(
+                    AppDataPaths.UiSettingsPath));
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,
@@ -244,6 +250,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public JumpInfoViewModel JumpInfo { get; }
 
     public SystemSurveyViewModel SystemSurvey { get; }
+
+    public BiologyPredictionsViewModel BiologyPredictions { get; }
 
     public SphereLimitViewModel Search { get; }
 

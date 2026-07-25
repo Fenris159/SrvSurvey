@@ -22,6 +22,8 @@ public sealed partial class App : Application
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
+    private BiologyPredictionsWindowCoordinator?
+        biologyPredictionsWindowCoordinator;
     private GlobalKeyboardHookService? globalKeyboardHookService;
     private GlobalControllerInputService? globalControllerInputService;
 
@@ -62,6 +64,10 @@ public sealed partial class App : Application
             routeWindowCoordinator = new RouteWindowCoordinator(
                 viewModel.Route,
                 mainWindow);
+            biologyPredictionsWindowCoordinator =
+                new BiologyPredictionsWindowCoordinator(
+                    viewModel.BiologyPredictions,
+                    mainWindow);
             routeOverlayCoordinator = new RouteOverlayCoordinator(
                 viewModel.Route,
                 OverlayPlatformService.CreateCurrent(),
@@ -237,6 +243,9 @@ public sealed partial class App : Application
                 journeyWindowCoordinator = null;
                 routeWindowCoordinator?.Dispose();
                 routeWindowCoordinator = null;
+                biologyPredictionsWindowCoordinator?.Dispose();
+                biologyPredictionsWindowCoordinator = null;
+                viewModel.BiologyPredictions.Dispose();
                 routeOverlayCoordinator?.Dispose();
                 routeOverlayCoordinator = null;
                 jumpInfoOverlayCoordinator?.Dispose();
