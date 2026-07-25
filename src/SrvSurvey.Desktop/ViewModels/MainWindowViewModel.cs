@@ -939,6 +939,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             await BoxelSearch.UpdateRouteAsync(update.NavRoute);
         }
 
+        await Search.UpdateNavigationAsync(update.NavRoute, update.Status);
+
         if (!skipPersistedBootstrapEvents)
         {
             await BoxelSearch.ApplyJournalEventsAsync(update.JournalEvents);

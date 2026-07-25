@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -117,6 +118,120 @@ public sealed class SphereLimitViewModelTests : IDisposable
         Assert.True(viewModel.IsActive);
         Assert.Equal("100 ly around Sol", viewModel.LimitSummary);
         Assert.Contains("failed without changing", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task GalaxyMapOverlayEvaluatesFinalRouteDestination()
+    {
+        var viewModel = new SphereLimitViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver([]));
+        viewModel.LoadProfile(
+            "F123",
+            "Drew",
+            true,
+            new SphereLimitSnapshot(
+                true,
+                "Sol",
+                new GalacticCoordinate(0, 0, 0),
+                50));
+        var route = new NavRouteSnapshot(
+            DateTimeOffset.Parse("2026-07-25T01:00:00Z"),
+            "NavRoute",
+        [
+            new NavRouteEntry(
+                "Current",
+                1,
+                new GalacticCoordinate(1, 0, 0),
+                "G"),
+            new NavRouteEntry(
+                "First hop",
+                2,
+                new GalacticCoordinate(10, 0, 0),
+                "K"),
+            new NavRouteEntry(
+                "Final target",
+                3,
+                new GalacticCoordinate(75, 0, 0),
+                "M"),
+        ]);
+
+        await viewModel.UpdateNavigationAsync(
+            route,
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.GalaxyMap,
+                Destination = new StatusDestination
+                {
+                    System = 2,
+                    Name = "First hop",
+                },
+            });
+
+        Assert.True(viewModel.ShouldShowGalaxyMapOverlay);
+        Assert.Equal("Final target", viewModel.DestinationSystemName);
+        Assert.Equal("75.00 ly", viewModel.DestinationDistance);
+        Assert.Contains("Exceeds", viewModel.DestinationResult);
+        Assert.False(viewModel.IsDestinationInside);
+
+        await viewModel.UpdateNavigationAsync(
+            route,
+            new EliteStatus { GuiFocus = GuiFocus.NoFocus });
+        Assert.False(viewModel.ShouldShowGalaxyMapOverlay);
+    }
+
+    [Fact]
+    public async Task GalaxyMapDestinationFallsBackToResolverAndReportsUnknown()
+    {
+        var resolver = new StubResolver(
+        [
+            new StarSystemReference(
+                "Resolved target",
+                42,
+                new GalacticCoordinate(25, 0, 0)),
+        ]);
+        var viewModel = new SphereLimitViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            resolver);
+        viewModel.LoadProfile(
+            "F123",
+            "Drew",
+            true,
+            new SphereLimitSnapshot(
+                true,
+                "Sol",
+                new GalacticCoordinate(0, 0, 0),
+                50));
+
+        await viewModel.UpdateNavigationAsync(
+            null,
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.GalaxyMap,
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Name = "Resolved target",
+                },
+            });
+
+        Assert.Equal("25.00 ly", viewModel.DestinationDistance);
+        Assert.True(viewModel.IsDestinationInside);
+
+        await viewModel.UpdateNavigationAsync(
+            null,
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.GalaxyMap,
+                Destination = new StatusDestination
+                {
+                    System = 43,
+                    Name = "Unknown target",
+                },
+            });
+
+        Assert.True(viewModel.IsDestinationUnknown);
+        Assert.Contains("unknown", viewModel.DestinationResult);
     }
 
     public void Dispose()

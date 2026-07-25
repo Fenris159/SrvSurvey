@@ -153,6 +153,55 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task GalaxyMapOverlayValidatesFinalRouteDestination()
+    {
+        var viewModel = CreateViewModel(
+            new CommanderProfileStore(temporaryDirectory),
+            new StubResolver(
+            [
+                Observation("Praea Euq IL-P c5-0", 100),
+                Observation("Praea Euq IL-P c5-1", 101),
+            ]));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Praea Euq IL-P c5-0";
+        viewModel.LowMassCode = "c";
+        await viewModel.ActivateAsync();
+        await viewModel.UpdateRouteAsync(new NavRouteSnapshot(
+            DateTimeOffset.Parse("2026-07-25T01:00:00Z"),
+            "NavRoute",
+        [
+            new NavRouteEntry("Praea Euq IL-P c5-0", 0, null, "K"),
+            new NavRouteEntry("Praea Euq IL-P c5-1", 0, null, "K"),
+        ]));
+
+        await viewModel.UpdateStatusAsync(
+            new EliteStatus { GuiFocus = GuiFocus.GalaxyMap },
+            allowAutoCopy: false);
+
+        Assert.True(viewModel.ShouldShowGalaxyMapOverlay);
+        Assert.True(viewModel.IsDestinationValid);
+        Assert.Contains("destination is valid", viewModel.DestinationStatus);
+
+        await viewModel.UpdateRouteAsync(new NavRouteSnapshot(
+            DateTimeOffset.Parse("2026-07-25T01:01:00Z"),
+            "NavRoute",
+        [
+            new NavRouteEntry("Praea Euq IL-P c5-0", 0, null, "K"),
+            new NavRouteEntry("Synuefe XE-Y c17-0", 0, null, "K"),
+        ]));
+
+        Assert.False(viewModel.IsDestinationValid);
+        Assert.Contains("outside", viewModel.DestinationStatus);
+
+        await viewModel.UpdateStatusAsync(new EliteStatus());
+        Assert.False(viewModel.ShouldShowGalaxyMapOverlay);
+    }
+
+    [Fact]
     public async Task EmptyMarkerUsesLegacyStoreAndAdvancesToTheNextChild()
     {
         var profileStore = new CommanderProfileStore(temporaryDirectory);

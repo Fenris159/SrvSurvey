@@ -64,6 +64,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private bool isOdyssey = true;
     private NavRouteSnapshot? latestRoute;
     private GuiFocus lastGuiFocus;
+    private StatusDestination? lastDestination;
+    private string destinationStatus = "No Galaxy Map destination selected";
+    private bool isDestinationValid;
+    private string? lastCopiedSystemName;
     private Func<string, Task>? clipboardWriter;
     private CancellationTokenSource? auditCancellation;
 
@@ -236,6 +240,30 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     }
 
     public bool IsActive => state.IsActive;
+
+    public bool ShouldShowGalaxyMapOverlay =>
+        lastGuiFocus == GuiFocus.GalaxyMap && state.IsActive;
+
+    public string DestinationStatus
+    {
+        get => destinationStatus;
+        private set => SetField(ref destinationStatus, value);
+    }
+
+    public bool IsDestinationValid
+    {
+        get => isDestinationValid;
+        private set => SetField(ref isDestinationValid, value);
+    }
+
+    public string NextSystemClipboardStatus => string.Equals(
+        lastCopiedSystemName,
+        state.NextSystem,
+        StringComparison.Ordinal)
+            ? "NEXT SEARCH COPIED"
+            : state.AutoCopy
+                ? "AUTO-COPY READY"
+                : "MANUAL COPY";
 
     public bool IsCurrentEmpty => state.CurrentIsEmpty;
 
@@ -473,6 +501,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public async Task UpdateRouteAsync(NavRouteSnapshot? route)
     {
         latestRoute = route;
+        UpdateDestinationStatus();
         if (!state.IsActive || route is null)
         {
             return;
@@ -534,6 +563,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         var enteredGalaxyMap = lastGuiFocus != GuiFocus.GalaxyMap
             && status.GuiFocus == GuiFocus.GalaxyMap;
         lastGuiFocus = status.GuiFocus;
+        lastDestination = status.Destination;
+        if (lastGuiFocus != GuiFocus.GalaxyMap)
+        {
+            lastCopiedSystemName = null;
+        }
+
+        UpdateDestinationStatus();
+        RaiseOverlayProperties();
         if (!enteredGalaxyMap
             || !allowAutoCopy
             || !state.IsActive
@@ -878,7 +915,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         try
         {
             await clipboardWriter(state.NextSystem);
+            lastCopiedSystemName = state.NextSystem;
             StatusMessage = $"Copied {state.NextSystem} to the clipboard.";
+            OnPropertyChanged(nameof(NextSystemClipboardStatus));
         }
         catch (Exception exception)
         {
@@ -1114,6 +1153,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 + "boxels, one request at a time. You can cancel safely and keep partial progress."
             : "Activate a boxel search to audit its full area.";
         OnPropertyChanged(nameof(IsActive));
+        RaiseOverlayProperties();
         OnPropertyChanged(nameof(IsCurrentEmpty));
         OnPropertyChanged(nameof(StatusLabel));
         OnPropertyChanged(nameof(EmptyButtonText));
@@ -1121,6 +1161,75 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         UpdateSystemRows();
         UpdateNavigation();
         RaiseCommandStates();
+    }
+
+    private void UpdateDestinationStatus()
+    {
+        BoxelAddress? destinationBoxel = null;
+        var routeDestination = latestRoute?.Route.Count > 1
+            ? latestRoute.Route[^1]
+            : null;
+        if (routeDestination is not null)
+        {
+            destinationBoxel = routeDestination.ToBoxelObservation()?.Boxel;
+        }
+        else if (lastDestination is { Body: 0 } destination)
+        {
+            var resolved = destination.System > 0
+                ? BoxelAddress.TryFromSystemAddress(
+                    destination.System,
+                    destination.Name ?? string.Empty,
+                    out destinationBoxel)
+                : BoxelAddress.TryParse(
+                    destination.Name,
+                    out destinationBoxel);
+            if (!resolved)
+            {
+                destinationBoxel = null;
+            }
+        }
+
+        if (destinationBoxel is null)
+        {
+            DestinationStatus = "No generated-system destination selected";
+            IsDestinationValid = false;
+            return;
+        }
+
+        if (state.TopBoxel is null || !state.TopBoxel.Contains(destinationBoxel))
+        {
+            DestinationStatus = $"{destinationBoxel.Prefix} · outside search boxel";
+            IsDestinationValid = false;
+            return;
+        }
+
+        if (destinationBoxel.MassCode < state.LowMassCode)
+        {
+            DestinationStatus = $"{destinationBoxel.Prefix} · mass code too low";
+            IsDestinationValid = false;
+            return;
+        }
+
+        if (state.Systems.Any(system =>
+                system.IsComplete
+                && string.Equals(
+                    system.Boxel.Name,
+                    destinationBoxel.Name,
+                    StringComparison.Ordinal)))
+        {
+            DestinationStatus = $"{destinationBoxel.Name} · already surveyed";
+            IsDestinationValid = false;
+            return;
+        }
+
+        DestinationStatus = $"{destinationBoxel.Name} · destination is valid";
+        IsDestinationValid = true;
+    }
+
+    private void RaiseOverlayProperties()
+    {
+        OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
+        OnPropertyChanged(nameof(NextSystemClipboardStatus));
     }
 
     private void UpdateSystemRows()

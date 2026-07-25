@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 
@@ -30,6 +31,15 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
     private string distanceToCenter = Unavailable;
     private string limitSummary = "No spherical limit configured";
     private string currentSystemResult = "Waiting for system coordinates";
+    private string destinationSystemName = "n/a";
+    private string destinationDistance = Unavailable;
+    private string destinationResult = "No Galaxy Map destination selected";
+    private bool isDestinationInside;
+    private bool isDestinationUnknown;
+    private GuiFocus lastGuiFocus;
+    private long destinationSystemAddress;
+    private GalacticCoordinate? resolvedDestinationPosition;
+    private NavRouteSnapshot? latestNavRoute;
     private bool isSearching;
     private string? frontierId;
     private string? commanderName;
@@ -154,6 +164,39 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     public bool IsActive => state.IsActive;
 
+    public bool ShouldShowGalaxyMapOverlay =>
+        lastGuiFocus == GuiFocus.GalaxyMap && state.IsActive;
+
+    public string DestinationSystemName
+    {
+        get => destinationSystemName;
+        private set => SetField(ref destinationSystemName, value);
+    }
+
+    public string DestinationDistance
+    {
+        get => destinationDistance;
+        private set => SetField(ref destinationDistance, value);
+    }
+
+    public string DestinationResult
+    {
+        get => destinationResult;
+        private set => SetField(ref destinationResult, value);
+    }
+
+    public bool IsDestinationInside
+    {
+        get => isDestinationInside;
+        private set => SetField(ref isDestinationInside, value);
+    }
+
+    public bool IsDestinationUnknown
+    {
+        get => isDestinationUnknown;
+        private set => SetField(ref isDestinationUnknown, value);
+    }
+
     public string StatusLabel => state.IsActive ? "ACTIVE" : "INACTIVE";
 
     public string SearchButtonText => IsSearching ? "Searching…" : "Find system";
@@ -236,6 +279,124 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         currentPosition = position;
         OnPropertyChanged(nameof(CurrentPosition));
         UpdateDisplay();
+    }
+
+    public async Task UpdateNavigationAsync(
+        NavRouteSnapshot? navRoute,
+        EliteStatus? status)
+    {
+        if (navRoute is not null)
+        {
+            latestNavRoute = navRoute;
+        }
+
+        if (status is not null)
+        {
+            lastGuiFocus = status.GuiFocus;
+            OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
+        }
+
+        var routeDestination = latestNavRoute?.Route.Count > 1
+            ? latestNavRoute.Route[^1]
+            : null;
+        var destinationName = routeDestination?.StarSystem
+            ?? status?.Destination?.Name;
+        var destinationAddress = routeDestination?.SystemAddress
+            ?? status?.Destination?.System
+            ?? 0;
+        var destinationPosition = routeDestination?.Position;
+        if (string.IsNullOrWhiteSpace(destinationName))
+        {
+            destinationSystemAddress = 0;
+            resolvedDestinationPosition = null;
+            DestinationSystemName = "n/a";
+            DestinationDistance = Unavailable;
+            DestinationResult = "No Galaxy Map destination selected";
+            IsDestinationInside = false;
+            IsDestinationUnknown = false;
+            return;
+        }
+
+        var targetChanged = destinationSystemAddress != destinationAddress
+            || !string.Equals(
+                DestinationSystemName,
+                destinationName,
+                StringComparison.OrdinalIgnoreCase);
+        if (targetChanged)
+        {
+            resolvedDestinationPosition = null;
+        }
+
+        destinationSystemAddress = destinationAddress;
+        DestinationSystemName = destinationName;
+        resolvedDestinationPosition = destinationPosition
+            ?? resolvedDestinationPosition;
+        destinationPosition = resolvedDestinationPosition;
+        if (!state.IsActive)
+        {
+            DestinationDistance = Unavailable;
+            DestinationResult = "The spherical limit is disabled";
+            IsDestinationInside = false;
+            IsDestinationUnknown = false;
+            return;
+        }
+
+        if (destinationPosition is null && targetChanged)
+        {
+            DestinationDistance = Unavailable;
+            DestinationResult = "Resolving destination coordinates…";
+            IsDestinationInside = false;
+            IsDestinationUnknown = false;
+            try
+            {
+                var matches = await systemResolver.SearchAsync(destinationName);
+                destinationPosition = matches.FirstOrDefault(candidate =>
+                        destinationAddress > 0
+                        && candidate.SystemAddress == destinationAddress)
+                    ?.Position
+                    ?? matches.FirstOrDefault(candidate => string.Equals(
+                        candidate.Name,
+                        destinationName,
+                        StringComparison.OrdinalIgnoreCase))
+                    ?.Position;
+                resolvedDestinationPosition = destinationPosition;
+            }
+            catch (Exception exception) when (
+                exception is HttpRequestException
+                    or TaskCanceledException
+                    or System.Text.Json.JsonException)
+            {
+                DestinationResult = "Destination coordinates are unavailable: "
+                    + exception.Message;
+            }
+        }
+
+        if (destinationPosition is null)
+        {
+            DestinationDistance = Unavailable;
+            if (!DestinationResult.StartsWith(
+                    "Destination coordinates are unavailable:",
+                    StringComparison.Ordinal))
+            {
+                DestinationResult = "Destination distance is unknown";
+            }
+
+            IsDestinationInside = false;
+            IsDestinationUnknown = true;
+            return;
+        }
+
+        var evaluation = state.Evaluate(destinationName, destinationPosition.Value);
+        DestinationDistance = evaluation is null
+            ? Unavailable
+            : $"{evaluation.Distance:N2} ly";
+        DestinationResult = evaluation is null
+            ? "The spherical limit is disabled"
+            : evaluation.IsInside
+                ? $"Within the {state.Radius:N2} ly limit"
+                : $"Exceeds the {state.Radius:N2} ly limit";
+        IsDestinationInside = evaluation?.IsInside == true;
+        IsDestinationUnknown = false;
     }
 
     public async Task SearchSystemsAsync()
@@ -363,6 +524,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CenterSystemName));
         OnPropertyChanged(nameof(IsActive));
         OnPropertyChanged(nameof(StatusLabel));
+        OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
 
         var distanceCenter = state.IsActive ? state.Center : resolvedCenter;
         var distance = distanceCenter is { } center
