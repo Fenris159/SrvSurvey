@@ -113,7 +113,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         IScreenshotProcessingService? screenshotProcessingService = null,
         QuestRuntimeCoordinator? questRuntimeCoordinator = null,
         QuestSettingsStore? questSettingsStore = null,
-        string? targetFrontierId = null)
+        string? targetFrontierId = null,
+        ICommanderInstanceLauncher? commanderInstanceLauncher = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -287,6 +288,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         TargetFrontierId = string.IsNullOrWhiteSpace(targetFrontierId)
             ? null
             : targetFrontierId.Trim();
+        CommanderInstances = new CommanderInstancesViewModel(
+            new CommanderProfileCatalog(AppDataPaths.DataDirectory),
+            commanderInstanceLauncher
+                ?? new ApplicationCommanderInstanceLauncher(),
+            JournalFolderPath,
+            TargetFrontierId);
         statusMessage = folderResolution.IsFound
             ? TargetFrontierId is null
                 ? "Ready to read the newest Journal.*.log file."
@@ -355,6 +362,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public QuestWorkspaceViewModel QuestWorkspace { get; }
 
     public QuestIndicatorViewModel QuestIndicator { get; }
+
+    public CommanderInstancesViewModel CommanderInstances { get; }
 
     public IReadOnlyList<QuestRuntimeSnapshot> Quests =>
         questRuntimeCoordinator.Snapshot;
@@ -822,6 +831,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
+        await CommanderInstances.RefreshAsync();
         if (journalMonitor is null)
         {
             StatusMessage = $"Journal folder not found. Set "
@@ -990,6 +1000,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     private void ApplySnapshot(JournalSnapshot snapshot)
     {
+        CommanderInstances.UpdateCurrent(
+            snapshot.FrontierId,
+            snapshot.CommanderName);
         CommanderName = Display(snapshot.CommanderName);
         FrontierId = Display(snapshot.FrontierId);
         GameDescription = string.Join(

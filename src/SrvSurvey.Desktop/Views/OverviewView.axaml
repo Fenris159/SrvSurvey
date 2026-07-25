@@ -153,11 +153,58 @@
         </Border>
       </Grid>
 
-      <StackPanel Spacing="10">
-        <TextBlock Classes="card-title" Text="Legacy tools" />
-        <TextBlock Classes="muted"
-                   Text="The original launchers remain visible in navigation while their behavior is ported." />
-      </StackPanel>
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Multiple commanders" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Launch another isolated SrvSurvey process for a saved commander profile." />
+            </StackPanel>
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Command="{Binding CommanderInstances.RefreshCommand}"
+                    Content="Refresh profiles" />
+          </Grid>
+
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <TextBlock Classes="muted"
+                       VerticalAlignment="Center"
+                       Text="Current" />
+            <TextBlock Grid.Column="1"
+                       FontWeight="SemiBold"
+                       Text="{Binding CommanderInstances.CurrentCommander}" />
+          </Grid>
+
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <ComboBox ItemsSource="{Binding CommanderInstances.Commanders}"
+                      SelectedItem="{Binding CommanderInstances.SelectedCommander}"
+                      PlaceholderText="Choose another commander">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:CommanderInstanceOptionViewModel">
+                  <StackPanel Margin="4" Spacing="2">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding DisplayName}" />
+                    <TextBlock Classes="muted"
+                               FontSize="11"
+                               Text="{Binding Modes}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Grid.Column="1"
+                    Classes="primary"
+                    MinWidth="150"
+                    Command="{Binding CommanderInstances.LaunchCommand}"
+                    Content="Launch instance" />
+          </Grid>
+
+          <TextBlock Classes="muted"
+                     FontSize="12"
+                     TextWrapping="Wrap"
+                     Text="{Binding CommanderInstances.StatusMessage}" />
+        </StackPanel>
+      </Border>
     </StackPanel>
   </ScrollViewer>
 </UserControl>
