@@ -2,12 +2,26 @@ using System.Text.Json;
 
 namespace SrvSurvey.Core.Storage;
 
-public sealed class LegacyProfileImporter(TimeProvider? timeProvider = null)
+public sealed class LegacyProfileImporter
 {
     public const string ManifestFileName = ".srv-survey-import.json";
 
     private const int ManifestVersion = 2;
-    private readonly TimeProvider timeProvider = timeProvider ?? TimeProvider.System;
+    private readonly TimeProvider timeProvider;
+    private readonly Action<ProfileImportCheckpoint>? checkpoint;
+
+    public LegacyProfileImporter(TimeProvider? timeProvider = null)
+        : this(timeProvider, null)
+    {
+    }
+
+    internal LegacyProfileImporter(
+        TimeProvider? timeProvider,
+        Action<ProfileImportCheckpoint>? checkpoint)
+    {
+        this.timeProvider = timeProvider ?? TimeProvider.System;
+        this.checkpoint = checkpoint;
+    }
 
     public async Task<ProfileImportResult> ImportAsync(
         string sourceDirectory,
@@ -36,7 +50,8 @@ public sealed class LegacyProfileImporter(TimeProvider? timeProvider = null)
                 source,
                 cancellationToken)
             .ConfigureAwait(false);
-        var destinationInventory = Directory.Exists(destination)
+        var destinationExisted = Directory.Exists(destination);
+        var destinationInventory = destinationExisted
             ? await ProfileInventory.CreateAsync(destination, cancellationToken)
                 .ConfigureAwait(false)
             : EmptyInventory(destination);
@@ -130,11 +145,35 @@ public sealed class LegacyProfileImporter(TimeProvider? timeProvider = null)
                     cancellationToken)
                 .ConfigureAwait(false);
 
+            checkpoint?.Invoke(ProfileImportCheckpoint.BeforeActivationValidation);
+            await VerifyInventoryUnchangedAsync(
+                    source,
+                    sourceInventory,
+                    expectedToExist: true,
+                    "The legacy profile changed while it was being imported",
+                    cancellationToken)
+                .ConfigureAwait(false);
+            await VerifyInventoryUnchangedAsync(
+                    destination,
+                    destinationInventory,
+                    destinationExisted,
+                    "The current cross-platform profile changed while the import was staged",
+                    cancellationToken)
+                .ConfigureAwait(false);
+
             ActivateStagedProfile(
                 destination,
                 destinationStage,
                 rollbackDirectory);
             profileActivated = true;
+            checkpoint?.Invoke(ProfileImportCheckpoint.AfterProfileActivation);
+            await VerifyInventoryUnchangedAsync(
+                    rollbackDirectory,
+                    destinationInventory,
+                    destinationExisted,
+                    "The current cross-platform profile changed during import activation",
+                    cancellationToken)
+                .ConfigureAwait(false);
             await VerifyMergedProfileAsync(
                     destination,
                     sourceInventory,
@@ -293,6 +332,75 @@ public sealed class LegacyProfileImporter(TimeProvider? timeProvider = null)
             throw new IOException(
                 "The activated profile import manifest did not match its verified backup.");
         }
+    }
+
+    private static async Task VerifyInventoryUnchangedAsync(
+        string root,
+        ProfileInventory expected,
+        bool expectedToExist,
+        string errorMessage,
+        CancellationToken cancellationToken)
+    {
+        if (Directory.Exists(root) != expectedToExist)
+        {
+            throw new IOException($"{errorMessage}: the profile directory changed.");
+        }
+
+        if (!expectedToExist)
+        {
+            return;
+        }
+
+        ProfileInventory current;
+        try
+        {
+            current = await ProfileInventory.CreateAsync(root, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            throw new IOException($"{errorMessage}: {exception.Message}", exception);
+        }
+
+        if (!expected.RelativeDirectories.SequenceEqual(
+                current.RelativeDirectories,
+                PathComparer)
+            || !EntriesMatch(expected.Entries, current.Entries))
+        {
+            throw new IOException($"{errorMessage}; retry after closing the other instance.");
+        }
+    }
+
+    private static bool EntriesMatch(
+        IReadOnlyList<ProfileInventoryEntry> expected,
+        IReadOnlyList<ProfileInventoryEntry> current)
+    {
+        if (expected.Count != current.Count)
+        {
+            return false;
+        }
+
+        var currentByPath = current.ToDictionary(
+            entry => entry.RelativePath,
+            PathComparer);
+        foreach (var entry in expected)
+        {
+            if (!currentByPath.TryGetValue(entry.RelativePath, out var currentEntry)
+                || entry.Length != currentEntry.Length
+                || entry.LastWriteTimeUtc != currentEntry.LastWriteTimeUtc
+                || !string.Equals(
+                    entry.Sha256,
+                    currentEntry.Sha256,
+                    StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static IReadOnlyList<ProfileImportConflict> FindConflicts(
@@ -454,6 +562,12 @@ public sealed class LegacyProfileImporter(TimeProvider? timeProvider = null)
             // failed import after activation succeeded.
         }
     }
+}
+
+internal enum ProfileImportCheckpoint
+{
+    BeforeActivationValidation,
+    AfterProfileActivation,
 }
 
 public sealed record ProfileImportManifest(

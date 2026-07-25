@@ -230,6 +230,55 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task LegacyProfileImportWaitsForJournalMonitorShutdown()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-profile-monitor-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var source = Path.Combine(root, "legacy");
+            var data = Path.Combine(root, "current");
+            Directory.CreateDirectory(source);
+            await File.WriteAllTextAsync(
+                Path.Combine(source, "settings.json"),
+                "before monitor shutdown");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                data,
+                Path.Combine(root, "cache"),
+                [new LegacyProfileCandidate(LegacyProfileLocationKind.Desktop, source)]);
+            var viewModel = new MainWindowViewModel(
+                Path.Combine(root, "missing-journals"),
+                appDataPaths: paths);
+            var monitorStopped = false;
+            viewModel.ProfileImportPreparing += async () =>
+            {
+                await Task.Yield();
+                monitorStopped = true;
+                await File.WriteAllTextAsync(
+                    Path.Combine(source, "settings.json"),
+                    "after monitor shutdown");
+            };
+
+            await viewModel.ImportLegacyProfileAsync();
+
+            Assert.True(monitorStopped);
+            Assert.Equal(
+                "after monitor shutdown",
+                await File.ReadAllTextAsync(
+                    Path.Combine(data, "settings.json")));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task LegacyProfileCanBeImportedFromManuallySelectedFolder()
     {
         var root = Path.Combine(

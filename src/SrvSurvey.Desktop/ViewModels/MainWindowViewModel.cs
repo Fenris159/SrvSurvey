@@ -412,6 +412,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public ICommand ImportLegacyProfileCommand { get; }
 
+    public event Func<Task>? ProfileImportPreparing;
+
     public LegacyProfileOptionViewModel? SelectedLegacyProfile
     {
         get => selectedLegacyProfile;
@@ -883,6 +885,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             IsImportingProfile = true;
             ProfileStatusMessage =
                 "Creating verified backups of the legacy and current profiles...";
+            await PrepareForProfileImportAsync();
             var result = await profileImporter.ImportAsync(
                 LegacyProfileSourcePath,
                 AppDataPaths.DataDirectory,
@@ -909,6 +912,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             IsImportingProfile = false;
             importLegacyProfileCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    private async Task PrepareForProfileImportAsync()
+    {
+        if (ProfileImportPreparing is not { } handlers)
+        {
+            return;
+        }
+
+        foreach (var handler in handlers.GetInvocationList().Cast<Func<Task>>())
+        {
+            await handler();
         }
     }
 

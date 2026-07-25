@@ -127,6 +127,93 @@ public sealed class LegacyProfileImporterTests : IDisposable
     }
 
     [Fact]
+    public async Task ImportAbortsBeforeSwapWhenCurrentProfileChanges()
+    {
+        var source = Path.Combine(temporaryDirectory, "legacy");
+        var destination = Path.Combine(temporaryDirectory, "current");
+        var backups = Path.Combine(temporaryDirectory, "backups");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(destination);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "legacy settings");
+        await File.WriteAllTextAsync(
+            Path.Combine(destination, "settings.json"),
+            "current settings");
+        var importer = new LegacyProfileImporter(
+            null,
+            checkpoint =>
+            {
+                if (checkpoint == ProfileImportCheckpoint.BeforeActivationValidation)
+                {
+                    File.WriteAllText(
+                        Path.Combine(destination, "late-journal-write.json"),
+                        "preserve me");
+                }
+            });
+
+        var exception = await Assert.ThrowsAsync<IOException>(() =>
+            importer.ImportAsync(source, destination, backups));
+
+        Assert.Contains("changed while the import was staged", exception.Message);
+        Assert.Equal(
+            "current settings",
+            await File.ReadAllTextAsync(Path.Combine(destination, "settings.json")));
+        Assert.Equal(
+            "preserve me",
+            await File.ReadAllTextAsync(
+                Path.Combine(destination, "late-journal-write.json")));
+        Assert.False(File.Exists(
+            Path.Combine(destination, LegacyProfileImporter.ManifestFileName)));
+    }
+
+    [Fact]
+    public async Task ImportRestoresCurrentProfileWhenItChangesDuringSwap()
+    {
+        var source = Path.Combine(temporaryDirectory, "legacy");
+        var destination = Path.Combine(temporaryDirectory, "current");
+        var backups = Path.Combine(temporaryDirectory, "backups");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(destination);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "legacy settings");
+        await File.WriteAllTextAsync(
+            Path.Combine(destination, "settings.json"),
+            "current settings");
+        var importer = new LegacyProfileImporter(
+            null,
+            checkpoint =>
+            {
+                if (checkpoint != ProfileImportCheckpoint.AfterProfileActivation)
+                {
+                    return;
+                }
+
+                var rollback = Assert.Single(Directory.EnumerateDirectories(
+                    temporaryDirectory,
+                    "current.rollback-*"));
+                File.WriteAllText(
+                    Path.Combine(rollback, "late-journal-write.json"),
+                    "preserve me");
+            });
+
+        var exception = await Assert.ThrowsAsync<IOException>(() =>
+            importer.ImportAsync(source, destination, backups));
+
+        Assert.Contains("changed during import activation", exception.Message);
+        Assert.Equal(
+            "current settings",
+            await File.ReadAllTextAsync(Path.Combine(destination, "settings.json")));
+        Assert.Equal(
+            "preserve me",
+            await File.ReadAllTextAsync(
+                Path.Combine(destination, "late-journal-write.json")));
+        Assert.False(File.Exists(
+            Path.Combine(destination, LegacyProfileImporter.ManifestFileName)));
+    }
+
+    [Fact]
     public async Task ImportRefusesToLayerOverCompletedImport()
     {
         var source = Path.Combine(temporaryDirectory, "legacy");
