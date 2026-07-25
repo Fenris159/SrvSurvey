@@ -357,6 +357,33 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
     }
 
     [Fact]
+    public async Task DevelopmentPublishRequiresConfirmationAndUsesLocalDefinition()
+    {
+        WriteDevelopmentQuest();
+        var client = new FakeRavenQuestClient();
+        await using var coordinator = CreateCoordinator(client);
+        await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+        var development = Assert.Single(coordinator.Snapshot);
+
+        var confirmation = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            coordinator.PublishDevelopmentQuestAsync(
+                development.Reference,
+                overwriteConfirmed: false));
+        var status = await coordinator.PublishDevelopmentQuestAsync(
+            development.Reference,
+            overwriteConfirmed: true);
+
+        Assert.Contains("confirmation", confirmation.Message);
+        Assert.Equal("Published", status);
+        Assert.Equal(1, client.PublishCount);
+        Assert.Equal("Development Quest", client.LastPublished?.Title);
+    }
+
+    [Fact]
     public async Task DevelopmentFolderImportPreservesMatchingProgressAndSourceBytes()
     {
         WriteDevelopmentQuest();
@@ -728,9 +755,13 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
 
         public int DeleteCount { get; private set; }
 
+        public int PublishCount { get; private set; }
+
         public List<RavenQuestState> StateChanges { get; } = [];
 
         public RavenCommanderQuest? LastSaved { get; private set; }
+
+        public RavenQuestDefinition? LastPublished { get; private set; }
 
         public Task<IReadOnlyList<RavenQuestDefinition>> GetPublishedQuestsAsync(
             string? apiKey = null,
@@ -749,8 +780,12 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         public Task<string> PublishQuestAsync(
             RavenQuestDefinition quest,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult("OK");
+            CancellationToken cancellationToken = default)
+        {
+            PublishCount++;
+            LastPublished = quest;
+            return Task.FromResult("Published");
+        }
 
         public Task SaveCommanderQuestAsync(
             RavenCommanderQuest quest,

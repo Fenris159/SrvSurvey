@@ -530,6 +530,31 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             cancellationToken);
     }
 
+    public Task<string> PublishDevelopmentQuestAsync(
+        RavenQuestReference reference,
+        bool overwriteConfirmed,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        if (!overwriteConfirmed)
+        {
+            throw new InvalidOperationException(
+                "Publishing a development quest requires explicit overwrite confirmation.");
+        }
+
+        return InvokeDevelopmentRuntimeAsync(
+            reference,
+            (runtime, token) =>
+            {
+                var current = RequireRemoteConfiguration();
+                return ravenClient.PublishQuestAsync(
+                    runtime.Definition,
+                    current.RavenApiKey!,
+                    token);
+            },
+            cancellationToken);
+    }
+
     public async Task<QuestDevelopmentImportResult> ImportDevelopmentQuestAsync(
         string sourceDirectory,
         CancellationToken cancellationToken = default)
