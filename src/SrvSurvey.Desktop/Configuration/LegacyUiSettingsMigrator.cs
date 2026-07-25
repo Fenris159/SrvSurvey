@@ -147,6 +147,10 @@ public sealed class LegacyUiSettingsMigrator
                 [
                     ("useSystemNickNames", "Enabled"),
                 ]);
+                mappedCount += MapSection(legacy, root, "Quests",
+                [
+                    ("enableQuests", "Enabled"),
+                ]);
                 mappedCount += MapSection(legacy, root, "Screenshots",
                 [
                     ("processScreenshots", "Enabled"),

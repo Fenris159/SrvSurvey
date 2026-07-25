@@ -61,6 +61,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "collectMatsCollectionStatsTest": true,
               "autoShowPlotStationInfo_TEST": false,
               "useSystemNickNames": true,
+              "enableQuests": true,
               "processScreenshots": true,
               "addBannerToScreenshots": false,
               "deleteScreenshotOriginal": true,
@@ -161,6 +162,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             new StationInfoSettingsStore(paths.UiSettingsPath).Load());
         Assert.True(
             new SystemNicknameSettingsStore(paths.UiSettingsPath).LoadEnabled());
+        Assert.True(new QuestSettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.Equal(
             new ScreenshotProcessingPreferences(
                 true,
