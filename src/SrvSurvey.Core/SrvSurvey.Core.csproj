@@ -23,6 +23,8 @@
                       LogicalName="SrvSurvey.Core.Resources.allBeacons.json" />
     <EmbeddedResource Include="..\..\SrvSurvey\guardianSiteTemplates.json"
                       LogicalName="SrvSurvey.Core.Resources.guardianSiteTemplates.json" />
+    <EmbeddedResource Include="..\..\SrvSurvey\settlements\humanSiteTemplates.json"
+                      LogicalName="SrvSurvey.Core.Resources.humanSiteTemplates.json" />
     <EmbeddedResource Include="..\..\data\guardian.zip"
                       LogicalName="SrvSurvey.Core.Resources.guardian.zip" />
     <EmbeddedResource Include="..\..\SrvSurvey\colonization-costs2.json"
