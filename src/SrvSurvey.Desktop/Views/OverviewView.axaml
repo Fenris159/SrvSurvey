@@ -168,13 +168,17 @@
                     Content="Refresh profiles" />
           </Grid>
 
-          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
             <TextBlock Classes="muted"
                        VerticalAlignment="Center"
                        Text="Current" />
             <TextBlock Grid.Column="1"
                        FontWeight="SemiBold"
                        Text="{Binding CommanderInstances.CurrentCommander}" />
+            <Button Grid.Column="2"
+                    Classes="secondary"
+                    Command="{Binding CommanderInstances.SwitchWindowCommand}"
+                    Content="Focus next Elite window" />
           </Grid>
 
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">

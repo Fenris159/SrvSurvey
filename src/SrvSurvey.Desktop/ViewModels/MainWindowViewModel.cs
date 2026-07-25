@@ -114,7 +114,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         QuestRuntimeCoordinator? questRuntimeCoordinator = null,
         QuestSettingsStore? questSettingsStore = null,
         string? targetFrontierId = null,
-        ICommanderInstanceLauncher? commanderInstanceLauncher = null)
+        ICommanderInstanceLauncher? commanderInstanceLauncher = null,
+        IGameWindowSwitcher? gameWindowSwitcher = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -293,7 +294,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             commanderInstanceLauncher
                 ?? new ApplicationCommanderInstanceLauncher(),
             JournalFolderPath,
-            TargetFrontierId);
+            TargetFrontierId,
+            gameWindowSwitcher);
         statusMessage = folderResolution.IsFound
             ? TargetFrontierId is null
                 ? "Ready to read the newest Journal.*.log file."
@@ -1666,6 +1668,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         disposed = true;
+        CommanderInstances.Dispose();
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }

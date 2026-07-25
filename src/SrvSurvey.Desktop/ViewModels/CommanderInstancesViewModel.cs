@@ -3,14 +3,16 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class CommanderInstancesViewModel : INotifyPropertyChanged
+public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly CommanderProfileCatalog catalog;
     private readonly ICommanderInstanceLauncher launcher;
     private readonly string journalDirectory;
+    private readonly IGameWindowSwitcher gameWindowSwitcher;
     private readonly AsyncCommand launchCommand;
     private readonly AsyncCommand refreshCommand;
     private IReadOnlyList<CommanderProfileIdentity> catalogProfiles = [];
@@ -25,16 +27,20 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged
         CommanderProfileCatalog catalog,
         ICommanderInstanceLauncher launcher,
         string journalDirectory,
-        string? currentFrontierId = null)
+        string? currentFrontierId = null,
+        IGameWindowSwitcher? gameWindowSwitcher = null)
     {
         this.catalog = catalog;
         this.launcher = launcher;
         this.journalDirectory = journalDirectory;
+        this.gameWindowSwitcher = gameWindowSwitcher
+            ?? GameWindowSwitcher.CreateCurrent();
         this.currentFrontierId = currentFrontierId;
         launchCommand = new AsyncCommand(LaunchSelectedAsync, CanLaunchSelected);
         refreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
         LaunchCommand = launchCommand;
         RefreshCommand = refreshCommand;
+        SwitchWindowCommand = new RelayCommand(SwitchToNextGameWindow);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -85,6 +91,22 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged
     public ICommand LaunchCommand { get; }
 
     public ICommand RefreshCommand { get; }
+
+    public ICommand SwitchWindowCommand { get; }
+
+    public bool SwitchToNextGameWindow()
+    {
+        var switched = gameWindowSwitcher.TryActivateNext();
+        StatusMessage = switched
+            ? "Focused the next Elite Dangerous window; overlays will follow it."
+            : "No available Elite Dangerous window could be focused.";
+        return switched;
+    }
+
+    public void Dispose()
+    {
+        gameWindowSwitcher.Dispose();
+    }
 
     public void UpdateCurrent(string? frontierId, string? commanderName)
     {
@@ -229,6 +251,20 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged
         public void RaiseCanExecuteChanged()
         {
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private sealed class RelayCommand(Func<bool> execute) : ICommand
+    {
+#pragma warning disable CS0067
+        public event EventHandler? CanExecuteChanged;
+#pragma warning restore CS0067
+
+        public bool CanExecute(object? parameter) => true;
+
+        public void Execute(object? parameter)
+        {
+            _ = execute();
         }
     }
 }

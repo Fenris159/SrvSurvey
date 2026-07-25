@@ -370,6 +370,11 @@ public sealed partial class App : Application
                                 .ToggleForcedVisibility();
                             break;
 
+                        case GlobalInputAction.NextWindow:
+                            handled = viewModel.CommanderInstances
+                                .SwitchToNextGameWindow();
+                            break;
+
                         case GlobalInputAction.QuestShow:
                             viewModel.ShowQuests();
                             mainWindow.Show();

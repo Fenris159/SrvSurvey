@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -21,17 +22,20 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
             Path.Combine(temporaryDirectory, "F456-live.json"),
             "{\"fid\":\"F456\",\"commander\":\"Raven\"}");
         var launcher = new RecordingLauncher();
+        var switcher = new RecordingSwitcher();
         var journalDirectory = Path.Combine(temporaryDirectory, "journals");
         Directory.CreateDirectory(journalDirectory);
         var viewModel = new CommanderInstancesViewModel(
             new CommanderProfileCatalog(temporaryDirectory),
             launcher,
             journalDirectory,
-            "F123");
+            "F123",
+            switcher);
         viewModel.UpdateCurrent("F123", "Drew");
 
         await viewModel.RefreshAsync();
         await viewModel.LaunchSelectedAsync();
+        var switched = viewModel.SwitchToNextGameWindow();
 
         var option = Assert.Single(viewModel.Commanders);
         Assert.Equal("F456", option.FrontierId);
@@ -39,7 +43,9 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
         Assert.Equal("Drew (F123)", viewModel.CurrentCommander);
         Assert.Equal("F456", launcher.FrontierId);
         Assert.Equal(journalDirectory, launcher.JournalDirectory);
-        Assert.Contains("Started another", viewModel.StatusMessage);
+        Assert.True(switched);
+        Assert.Equal(1, switcher.ActivationCount);
+        Assert.Contains("Focused the next", viewModel.StatusMessage);
     }
 
     public void Dispose()
@@ -64,6 +70,21 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
             FrontierId = frontierId;
             JournalDirectory = journalDirectory;
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class RecordingSwitcher : IGameWindowSwitcher
+    {
+        public int ActivationCount { get; private set; }
+
+        public bool TryActivateNext()
+        {
+            ActivationCount++;
+            return true;
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

@@ -83,6 +83,16 @@ internal static partial class X11Native
     [LibraryImport("libX11.so.6")]
     internal static partial int XFlush(nint display);
 
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XMapRaised(nint display, nuint window);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XSetInputFocus(
+        nint display,
+        nuint focusWindow,
+        int revertTo,
+        nuint time);
+
     [LibraryImport("libXext.so.6")]
     internal static partial int XShapeQueryExtension(
         nint display,
