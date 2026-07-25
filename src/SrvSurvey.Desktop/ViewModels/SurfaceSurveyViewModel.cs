@@ -1,0 +1,566 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Storage;
+
+namespace SrvSurvey.Desktop.ViewModels;
+
+public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
+{
+    private readonly SystemSurveyViewModel survey;
+    private readonly SystemSurfaceStore store;
+    private readonly SurfaceSurveyJournalTracker journalTracker;
+    private readonly SemaphoreSlim updateLock = new(1, 1);
+    private SystemSurfaceContext? context;
+    private SystemSurfaceBodySnapshot? surface;
+    private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
+    private IReadOnlyList<SurfaceRadarMarkerViewModel> radarMarkers = [];
+    private IReadOnlyList<SurfaceTrackerGroupViewModel> trackerGroups = [];
+    private string statusText = "Waiting for surface survey context.";
+    private bool disposed;
+
+    public SurfaceSurveyViewModel(
+        SystemSurveyViewModel survey,
+        SystemSurfaceStore store,
+        SurfaceSurveyJournalTracker journalTracker)
+    {
+        this.survey = survey ?? throw new ArgumentNullException(nameof(survey));
+        this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.journalTracker = journalTracker
+            ?? throw new ArgumentNullException(nameof(journalTracker));
+        survey.PropertyChanged += OnSurveyPropertyChanged;
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public IReadOnlyList<SurfaceRadarMarkerViewModel> RadarMarkers
+    {
+        get => radarMarkers;
+        private set => SetField(ref radarMarkers, value);
+    }
+
+    public IReadOnlyList<SurfaceTrackerGroupViewModel> TrackerGroups
+    {
+        get => trackerGroups;
+        private set
+        {
+            if (SetField(ref trackerGroups, value))
+            {
+                OnPropertyChanged(nameof(HasTrackers));
+            }
+        }
+    }
+
+    public string StatusText
+    {
+        get => statusText;
+        private set => SetField(ref statusText, value);
+    }
+
+    public string BodyName => surface?.BodyName
+        ?? survey.CurrentStatus?.BodyName
+        ?? "Current body";
+
+    public string HeadingText => survey.CurrentStatus is { } status
+        ? $"HEADING {status.NormalizedHeading:000}°"
+        : "HEADING —";
+
+    public string HistoryText
+    {
+        get
+        {
+            var scans = surface?.BioScans.Count ?? 0;
+            var trackers = surface?.Bookmarks.Values.Sum(group => group.Count) ?? 0;
+            return $"{scans:N0} scan circles · {trackers:N0} trackers";
+        }
+    }
+
+    public bool HasTrackers => TrackerGroups.Count > 0;
+
+    public int RadarSize => survey.SurfaceRadarSize;
+
+    public bool ShouldShow => IsEligibleStatus()
+        && HasDisplayContent();
+
+    public SystemSurfaceBodySnapshot? CurrentSurface => surface;
+
+    public void Reset(ExobiologySnapshot? seed = null)
+    {
+        journalTracker.Reset(seed);
+        exobiology = seed ?? ExobiologySnapshot.Empty;
+        context = null;
+        surface = null;
+        RadarMarkers = [];
+        TrackerGroups = [];
+        StatusText = "Waiting for surface survey context.";
+        RaisePresentationProperties();
+    }
+
+    public async Task ApplyUpdateAsync(
+        SurfaceSurveySessionContext? session,
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        EliteStatus? status,
+        ExobiologySnapshot currentExobiology,
+        bool processOrganicEvents = true,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(journalEvents);
+        ArgumentNullException.ThrowIfNull(currentExobiology);
+        await updateLock.WaitAsync(cancellationToken).ConfigureAwait(true);
+        try
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            exobiology = currentExobiology;
+            var events = processOrganicEvents
+                ? journalEvents
+                : journalEvents
+                    .Where(item => item.EventName != "ScanOrganic")
+                    .ToArray();
+            SurfaceSurveyJournalUpdateResult? journalResult = null;
+            if (session is not null)
+            {
+                journalResult = await journalTracker.ApplyAsync(
+                        session,
+                        events,
+                        status,
+                        new SurfaceSurveyTrackingOptions(
+                            survey.AutoRemoveTrackerOnSampling,
+                            survey.AutoRemoveTrackerOnFinalSample),
+                        cancellationToken)
+                    .ConfigureAwait(true);
+            }
+
+            var nextContext = session is null
+                ? null
+                : CreateBodyContext(session);
+            var contextChanged = !Equals(context, nextContext);
+            context = nextContext;
+            if (context is null)
+            {
+                surface = null;
+                RadarMarkers = [];
+                TrackerGroups = [];
+                StatusText = journalResult?.Warnings.Count > 0
+                    ? string.Join(Environment.NewLine, journalResult.Warnings)
+                    : "Waiting for a scanned body and surface coordinates.";
+                RaisePresentationProperties();
+                return;
+            }
+
+            if (contextChanged
+                || surface is null
+                || journalResult?.MutationCount > 0)
+            {
+                var loadResult = await store.LoadBodyAsync(
+                        context,
+                        cancellationToken)
+                    .ConfigureAwait(true);
+                surface = loadResult.Snapshot;
+                var messages = new[]
+                    {
+                        loadResult.Error,
+                        loadResult.Warnings.Count > 0
+                            ? string.Join(Environment.NewLine, loadResult.Warnings)
+                            : null,
+                        journalResult?.Warnings.Count > 0
+                            ? string.Join(Environment.NewLine, journalResult.Warnings)
+                            : null,
+                    }
+                    .Where(message => !string.IsNullOrWhiteSpace(message))
+                    .ToArray();
+                StatusText = messages.Length > 0
+                    ? string.Join(Environment.NewLine, messages)
+                    : loadResult.BodyExists
+                        ? $"Loaded surface history from {Path.GetFileName(loadResult.Path)}."
+                        : "No saved surface history exists for this body yet.";
+            }
+
+            Recalculate();
+        }
+        finally
+        {
+            updateLock.Release();
+        }
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        survey.PropertyChanged -= OnSurveyPropertyChanged;
+        updateLock.Dispose();
+    }
+
+    private void Recalculate()
+    {
+        if (surface is null
+            || survey.CurrentStatus is not { } status
+            || !TryGetCurrentCoordinate(status, out var current)
+            || surface.RadiusMeters <= 0)
+        {
+            RadarMarkers = [];
+            TrackerGroups = [];
+            RaisePresentationProperties();
+            return;
+        }
+
+        var markers = new List<SurfaceRadarMarkerViewModel>();
+        foreach (var scan in surface.BioScans.Where(scan =>
+                     string.IsNullOrWhiteSpace(scan.BodyName)
+                     || BodyNamesMatch(scan.BodyName, surface.BodyName)))
+        {
+            markers.Add(CreateMarker(
+                scan.Species,
+                scan.Location,
+                string.Equals(scan.Status, "Died", StringComparison.OrdinalIgnoreCase)
+                    ? 40
+                    : scan.RadiusMeters,
+                SurfaceRadarMarkerKind.HistoricalScan,
+                scan.Status,
+                current,
+                status));
+        }
+
+        var activeGenus = exobiology.ScanOne is { } active
+            && BodyNamesMatch(active.Body, surface.BodyName)
+                ? active.Genus
+                : null;
+        var trackerRows = new List<SurfaceTrackerGroupViewModel>();
+        foreach (var group in surface.Bookmarks.OrderBy(
+                     pair => pair.Key,
+                     StringComparer.Ordinal))
+        {
+            var targets = group.Value
+                .Select(location => CreateMarker(
+                    group.Key,
+                    location,
+                    ExobiologyReferenceCatalog.GetSampleDistanceMeters(group.Key),
+                    SurfaceRadarMarkerKind.Bookmark,
+                    "Tracker",
+                    current,
+                    status))
+                .OrderBy(marker => marker.DistanceMeters)
+                .ToArray();
+            markers.AddRange(targets);
+            trackerRows.Add(new SurfaceTrackerGroupViewModel(
+                GetTrackerDisplayName(group.Key),
+                string.IsNullOrWhiteSpace(activeGenus)
+                    || string.Equals(
+                        activeGenus,
+                        group.Key,
+                        StringComparison.Ordinal),
+                targets));
+        }
+
+        foreach (var sample in new[] { exobiology.ScanOne, exobiology.ScanTwo }
+                     .Where(sample => sample is not null)
+                     .Cast<BioSampleSnapshot>()
+                     .Where(sample => BodyNamesMatch(
+                         sample.Body,
+                         surface.BodyName)))
+        {
+            markers.Add(CreateMarker(
+                sample.Species,
+                new SurfaceCoordinate(
+                    sample.Location.Latitude,
+                    sample.Location.Longitude),
+                sample.Radius,
+                SurfaceRadarMarkerKind.ActiveSample,
+                "Active",
+                current,
+                status));
+        }
+
+        var shipLocation = journalTracker.ShipLocation
+            ?? surface.LastTouchdown;
+        if (shipLocation is { } ship)
+        {
+            markers.Add(CreateMarker(
+                "Ship",
+                ship,
+                0,
+                SurfaceRadarMarkerKind.Ship,
+                "Ship",
+                current,
+                status));
+        }
+
+        if (journalTracker.SrvLocation is { } srv)
+        {
+            markers.Add(CreateMarker(
+                "SRV",
+                srv,
+                0,
+                SurfaceRadarMarkerKind.Srv,
+                "SRV",
+                current,
+                status));
+        }
+
+        RadarMarkers = markers
+            .OrderBy(marker => marker.Kind)
+            .ThenBy(marker => marker.DistanceMeters)
+            .ToArray();
+        TrackerGroups = trackerRows;
+        RaisePresentationProperties();
+    }
+
+    private SurfaceRadarMarkerViewModel CreateMarker(
+        string name,
+        SurfaceCoordinate location,
+        double radiusMeters,
+        SurfaceRadarMarkerKind kind,
+        string statusText,
+        SurfaceCoordinate current,
+        EliteStatus status)
+    {
+        var distance = SurfaceNavigation.GetDistance(
+            current,
+            location,
+            surface!.RadiusMeters);
+        var bearing = SurfaceNavigation.GetBearing(current, location);
+        return new SurfaceRadarMarkerViewModel(
+            name,
+            kind,
+            statusText,
+            distance,
+            bearing,
+            SurfaceNavigation.NormalizeDegrees(
+                bearing - status.NormalizedHeading),
+            Math.Max(0, radiusMeters),
+            distance < radiusMeters,
+            location);
+    }
+
+    private SystemSurfaceContext? CreateBodyContext(
+        SurfaceSurveySessionContext session)
+    {
+        var status = survey.CurrentStatus;
+        var body = status?.BodyName is { Length: > 0 } bodyName
+            ? survey.Snapshot.Bodies.FirstOrDefault(candidate =>
+                BodyNamesMatch(candidate.Name, bodyName))
+            : null;
+        body ??= survey.Snapshot.CurrentBodyId is { } bodyId
+            ? survey.Snapshot.Bodies.FirstOrDefault(candidate =>
+                candidate.BodyId == bodyId)
+            : null;
+        if (body is null)
+        {
+            return null;
+        }
+
+        var radius = status?.PlanetRadius is > 0
+            ? (double)status.PlanetRadius
+            : body.RadiusMeters;
+        return new SystemSurfaceContext(
+            session.FrontierId,
+            session.CommanderName,
+            session.SystemName,
+            session.SystemAddress,
+            session.StarPosition,
+            body.BodyId,
+            body.Name,
+            radius);
+    }
+
+    private bool IsEligibleStatus()
+    {
+        if (!survey.AutoShowSurfaceRadar
+            || surface is null
+            || survey.CurrentStatus is not { } status
+            || !status.HasLatitudeLongitude
+            || status.PlanetRadius <= 0
+            || status.Docked
+            || status.Altitude >= 10_000
+            || status.InTaxi
+            || status.FsdChargingJump
+            || survey.IsFsdJumping)
+        {
+            return false;
+        }
+
+        if (status.GuiFocus != GuiFocus.NoFocus)
+        {
+            return status.GuiFocus is GuiFocus.CommsPanel or GuiFocus.RolePanel;
+        }
+
+        var allowedMode = status.Flags.HasFlag(StatusFlags.Supercruise)
+            || status.InMainShip
+            || status.Landed
+            || status.InSrv
+            || status.OnFootOnPlanet
+            || status.GlideMode
+            || status.InFighter;
+        if (!allowedMode)
+        {
+            return false;
+        }
+
+        var flying = status.InMainShip
+            && !status.Flags.HasFlag(StatusFlags.Supercruise)
+            && !status.GlideMode
+            && !status.Landed;
+        return !survey.AutoHideSurfaceRadarWithoutLandingGear
+            || !flying
+            || status.LandingGearDown;
+    }
+
+    private bool HasDisplayContent()
+    {
+        return surface is not null
+            && (surface.BioScans.Count > 0
+                || surface.Bookmarks.Any(group =>
+                    !group.Key.StartsWith('#') && group.Value.Count > 0)
+                || exobiology.ScanOne is { } sample
+                    && BodyNamesMatch(sample.Body, surface.BodyName));
+    }
+
+    private string GetTrackerDisplayName(string name)
+    {
+        var body = survey.Snapshot.Bodies.FirstOrDefault(candidate =>
+            surface is not null
+            && candidate.BodyId == surface.BodyId);
+        var organism = body?.Organisms.FirstOrDefault(candidate =>
+            string.Equals(candidate.Genus, name, StringComparison.Ordinal));
+        if (!string.IsNullOrWhiteSpace(organism?.GenusLocalized))
+        {
+            return organism.GenusLocalized;
+        }
+
+        if (!name.StartsWith("$Codex_Ent_", StringComparison.Ordinal))
+        {
+            return name;
+        }
+
+        return ExobiologyReferenceCatalog.GetGenusDisplayName(name);
+    }
+
+    private void OnSurveyPropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs eventArgs)
+    {
+        if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.AutoShowSurfaceRadar)
+            or nameof(SystemSurveyViewModel.SurfaceRadarSize)
+            or nameof(SystemSurveyViewModel.AutoHideSurfaceRadarWithoutLandingGear)
+            or nameof(SystemSurveyViewModel.Snapshot)
+            or nameof(SystemSurveyViewModel.CurrentStatus))
+        {
+            Recalculate();
+        }
+    }
+
+    private void RaisePresentationProperties()
+    {
+        OnPropertyChanged(nameof(BodyName));
+        OnPropertyChanged(nameof(HeadingText));
+        OnPropertyChanged(nameof(HistoryText));
+        OnPropertyChanged(nameof(RadarSize));
+        OnPropertyChanged(nameof(ShouldShow));
+    }
+
+    private static bool TryGetCurrentCoordinate(
+        EliteStatus status,
+        out SurfaceCoordinate coordinate)
+    {
+        coordinate = default;
+        if (!status.HasLatitudeLongitude)
+        {
+            return false;
+        }
+
+        try
+        {
+            coordinate = new SurfaceCoordinate(status.Latitude, status.Longitude);
+            return true;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return false;
+        }
+    }
+
+    private static bool BodyNamesMatch(string? first, string? second)
+    {
+        return !string.IsNullOrWhiteSpace(first)
+            && !string.IsNullOrWhiteSpace(second)
+            && string.Equals(
+                first.Replace(" ", string.Empty, StringComparison.Ordinal),
+                second.Replace(" ", string.Empty, StringComparison.Ordinal),
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool SetField<T>(
+        ref T field,
+        T value,
+        [CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return false;
+        }
+
+        field = value;
+        OnPropertyChanged(propertyName);
+        return true;
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+public sealed record SurfaceRadarMarkerViewModel(
+    string Name,
+    SurfaceRadarMarkerKind Kind,
+    string Status,
+    double DistanceMeters,
+    double BearingDegrees,
+    double RelativeBearingDegrees,
+    double RadiusMeters,
+    bool IsInsideRadius,
+    SurfaceCoordinate Location)
+{
+    public string DistanceText => DistanceMeters >= 1_000
+        ? $"{DistanceMeters / 1_000:N2} km"
+        : $"{DistanceMeters:N0} m";
+
+    public string BearingText => $"{BearingDegrees:N0}°";
+
+    public bool IsHistoricalScan => Kind == SurfaceRadarMarkerKind.HistoricalScan;
+
+    public bool IsBookmark => Kind == SurfaceRadarMarkerKind.Bookmark;
+
+    public bool IsActiveSample => Kind == SurfaceRadarMarkerKind.ActiveSample;
+
+    public bool IsVehicle => Kind is SurfaceRadarMarkerKind.Ship
+        or SurfaceRadarMarkerKind.Srv;
+}
+
+public sealed record SurfaceTrackerGroupViewModel(
+    string Name,
+    bool IsActive,
+    IReadOnlyList<SurfaceRadarMarkerViewModel> Targets)
+{
+    public double RowOpacity => IsActive ? 1 : 0.58;
+}
+
+public enum SurfaceRadarMarkerKind
+{
+    HistoricalScan,
+    Bookmark,
+    ActiveSample,
+    Ship,
+    Srv,
+}

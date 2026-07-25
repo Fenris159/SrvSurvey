@@ -491,6 +491,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public SystemScanSnapshot Snapshot => snapshot;
 
+    public bool IsFsdJumping => fsdJumping;
+
     public EliteStatus? CurrentStatus => status;
 
     public ExobiologySnapshot CurrentExobiology => exobiology;

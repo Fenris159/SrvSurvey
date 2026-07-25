@@ -78,4 +78,19 @@ public sealed class ExobiologyReferenceCatalogTests
             expected,
             ExobiologyReferenceCatalog.GetSampleDistanceMeters(genusName));
     }
+
+    [Theory]
+    [InlineData("$Codex_Ent_Aleoids_Genus_Name;", "Aleoida")]
+    [InlineData("$Codex_Ent_Bacterial_Genus_Name;", "Bacterium")]
+    [InlineData("$Codex_Ent_Ground_Struct_Ice_Name;", "Crystalline Shards")]
+    [InlineData("$Codex_Ent_Ingensradices_Genus_Name;", "Radicoida")]
+    [InlineData("custom_tracker", "Custom Tracker")]
+    public void GenusDisplayNameMatchesLegacyLabels(
+        string genusName,
+        string expected)
+    {
+        Assert.Equal(
+            expected,
+            ExobiologyReferenceCatalog.GetGenusDisplayName(genusName));
+    }
 }

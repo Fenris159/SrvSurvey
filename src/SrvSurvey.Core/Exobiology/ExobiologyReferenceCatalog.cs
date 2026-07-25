@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 
@@ -197,6 +198,47 @@ public sealed class ExobiologyReferenceCatalog
             "OSSEUS" or "TUBUS" => 800,
             "ELECTRICAE" => 1_000,
             _ => 50,
+        };
+    }
+
+    public static string GetGenusDisplayName(string? genusName)
+    {
+        if (string.IsNullOrWhiteSpace(genusName))
+        {
+            return "Unknown genus";
+        }
+
+        var normalized = genusName
+            .Replace("$Codex_Ent_", string.Empty, StringComparison.Ordinal)
+            .Replace("_Genus_Name;", string.Empty, StringComparison.Ordinal)
+            .Replace("_Name;", string.Empty, StringComparison.Ordinal)
+            .ToUpperInvariant();
+        return normalized switch
+        {
+            "ALEOIDS" => "Aleoida",
+            "BACTERIAL" => "Bacterium",
+            "CACTOID" => "Cactoida",
+            "CLYPEUS" => "Clypeus",
+            "CONCHAS" => "Concha",
+            "ELECTRICAE" => "Electricae",
+            "FONTICULUS" => "Fonticulua",
+            "SHRUBS" => "Frutexa",
+            "FUMEROLAS" => "Fumerola",
+            "FUNGOIDS" => "Fungoida",
+            "OSSEUS" => "Osseus",
+            "RECEPTA" => "Recepta",
+            "STRATUM" => "Stratum",
+            "TUBUS" => "Tubus",
+            "TUSSOCKS" => "Tussock",
+            "VENTS" => "Amphora Plant",
+            "SPHERE" => "Anemone",
+            "CONE" => "Bark Mounds",
+            "BRANCAE" => "Brain Tree",
+            "GROUND_STRUCT_ICE" => "Crystalline Shards",
+            "TUBE" => "Sinuous Tubers",
+            "INGENSRADICES" => "Radicoida",
+            _ => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(
+                normalized.Replace('_', ' ').ToLowerInvariant()),
         };
     }
 
