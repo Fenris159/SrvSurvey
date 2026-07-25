@@ -10,6 +10,7 @@ public sealed class ExobiologyReferenceCatalog
 
     private readonly Dictionary<string, ExobiologyReference> byVariant;
     private readonly Dictionary<string, ExobiologyReference> bySpecies;
+    private readonly Dictionary<long, ExobiologyReference> byEntryId;
 
     public ExobiologyReferenceCatalog(IEnumerable<ExobiologyReference> entries)
     {
@@ -27,6 +28,9 @@ public sealed class ExobiologyReferenceCatalog
                 group => group.Key,
                 group => group.First(),
                 StringComparer.Ordinal);
+        byEntryId = materialized
+            .GroupBy(entry => entry.EntryId)
+            .ToDictionary(group => group.Key, group => group.First());
     }
 
     public int Count => byVariant.Count;
@@ -45,6 +49,11 @@ public sealed class ExobiologyReferenceCatalog
             && bySpecies.TryGetValue(speciesName, out var result)
                 ? result
                 : null;
+    }
+
+    public ExobiologyReference? FindByEntryId(long entryId)
+    {
+        return byEntryId.GetValueOrDefault(entryId);
     }
 
     public static ExobiologyReferenceCatalog LoadEmbedded()
@@ -107,6 +116,20 @@ public sealed class ExobiologyReferenceCatalog
         }
 
         return $"$Codex_Ent_{species}_Name;";
+    }
+
+    public static string GetGenusName(string speciesName)
+    {
+        var genus = speciesName
+            .Replace("$Codex_Ent_", string.Empty, StringComparison.Ordinal)
+            .Replace("_Name;", string.Empty, StringComparison.Ordinal);
+        var separator = genus.IndexOf('_');
+        if (separator >= 0)
+        {
+            genus = genus[..separator];
+        }
+
+        return $"$Codex_Ent_{genus}_Genus_Name;";
     }
 
     private static string? GetString(JsonElement root, string propertyName)

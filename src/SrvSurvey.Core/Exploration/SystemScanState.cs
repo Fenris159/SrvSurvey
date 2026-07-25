@@ -1,4 +1,5 @@
 using System.Text.Json;
+using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 
@@ -10,12 +11,22 @@ public sealed class SystemScanState
     private const string GeologicalSignal = "$SAA_SignalType_Geological;";
     private const string GeologicalCodexCategory =
         "$Codex_SubCategory_Geology_and_Anomalies;";
+    private const string OrganicCodexCategory =
+        "$Codex_SubCategory_Organic_Structures;";
+    private static readonly Lazy<ExobiologyReferenceCatalog> DefaultBioCatalog =
+        new(ExobiologyReferenceCatalog.LoadEmbedded);
 
     private readonly Dictionary<int, BodyState> bodies = [];
     private readonly Dictionary<string, SignalState> signals =
         new(StringComparer.Ordinal);
     private long scanSequence;
     private bool isOdyssey = true;
+    private readonly ExobiologyReferenceCatalog bioCatalog;
+
+    public SystemScanState(ExobiologyReferenceCatalog? bioCatalog = null)
+    {
+        this.bioCatalog = bioCatalog ?? DefaultBioCatalog.Value;
+    }
 
     public string? SystemName { get; private set; }
 
@@ -311,56 +322,102 @@ public sealed class SystemScanState
         {
             foreach (var genus in genuses.EnumerateArray())
             {
-                var name = GetString(genus, "Genus")
-                    ?? GetString(genus, "Genus_Localised");
+                var name = GetString(genus, "Genus");
                 if (!string.IsNullOrWhiteSpace(name))
                 {
-                    body.KnownGenuses.Add(name);
+                    var organism = body.GetOrCreateOrganism(name);
+                    organism.GenusLocalized = GetString(
+                            genus,
+                            "Genus_Localised")
+                        ?? organism.GenusLocalized;
                 }
             }
 
             body.BiologicalSignalCount = Math.Max(
                 body.BiologicalSignalCount,
-                body.KnownGenuses.Count);
+                body.Organisms.Count);
         }
     }
 
     private void ApplyOrganicScan(JsonElement root)
     {
-        if (GetString(root, "ScanType") != "Analyse"
-            || !TryGetBody(root, "Body", null, out var body))
+        if (!TryGetBody(root, "Body", null, out var body))
         {
             return;
         }
 
+        var reference = bioCatalog.FindByVariant(GetString(root, "Variant"))
+            ?? bioCatalog.FindBySpecies(GetString(root, "Species"));
         var genus = GetString(root, "Genus")
-            ?? GetString(root, "Genus_Localised")
-            ?? GetString(root, "Species")
-            ?? GetString(root, "Variant");
-        if (!string.IsNullOrWhiteSpace(genus))
+            ?? (reference is null
+                ? null
+                : ExobiologyReferenceCatalog.GetGenusName(
+                    reference.SpeciesName));
+        if (string.IsNullOrWhiteSpace(genus))
         {
-            body.AnalyzedGenuses.Add(genus);
-            body.BiologicalSignalCount = Math.Max(
-                body.BiologicalSignalCount,
-                body.AnalyzedGenuses.Count);
+            return;
         }
+
+        var organism = body.GetOrCreateOrganism(genus);
+        organism.GenusLocalized = GetString(root, "Genus_Localised")
+            ?? organism.GenusLocalized;
+        organism.Species = GetString(root, "Species") ?? organism.Species;
+        organism.SpeciesLocalized = GetString(root, "Species_Localised")
+            ?? organism.SpeciesLocalized;
+        organism.Variant = GetString(root, "Variant") ?? organism.Variant;
+        organism.VariantLocalized = GetString(root, "Variant_Localised")
+            ?? organism.VariantLocalized;
+        if (reference is not null)
+        {
+            organism.EntryId = reference.EntryId;
+            organism.Reward = reference.Reward;
+        }
+
+        organism.IsAnalyzed |= GetString(root, "ScanType") == "Analyse";
+        body.BiologicalSignalCount = Math.Max(
+            body.BiologicalSignalCount,
+            body.Organisms.Count);
     }
 
     private void ApplyCodexEntry(JsonElement root)
     {
-        if (GetString(root, "SubCategory") != GeologicalCodexCategory
-            || !TryGetBody(root, "BodyID", null, out var body))
+        if (!TryGetBody(root, "BodyID", null, out var body))
         {
             return;
         }
 
-        var name = GetString(root, "Name_Localised")
-            ?? GetString(root, "Name")
-            ?? GetInt64(root, "EntryID")?.ToString();
-        if (!string.IsNullOrWhiteSpace(name))
+        var category = GetString(root, "SubCategory");
+        if (category == GeologicalCodexCategory)
         {
-            body.AnalyzedGeologicalSignals.Add(name);
+            var name = GetString(root, "Name_Localised")
+                ?? GetString(root, "Name")
+                ?? GetInt64(root, "EntryID")?.ToString();
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                body.AnalyzedGeologicalSignals.Add(name);
+            }
+
+            return;
         }
+
+        if (category != OrganicCodexCategory
+            || GetInt64(root, "EntryID") is not { } entryId
+            || bioCatalog.FindByEntryId(entryId) is not { } reference)
+        {
+            return;
+        }
+
+        var genus = ExobiologyReferenceCatalog.GetGenusName(
+            reference.SpeciesName);
+        var organism = body.GetOrCreateOrganism(genus);
+        organism.Species = reference.SpeciesName;
+        organism.Variant = reference.VariantName;
+        organism.VariantLocalized = GetString(root, "Name_Localised")
+            ?? organism.VariantLocalized
+            ?? reference.DisplayName;
+        organism.EntryId = reference.EntryId;
+        organism.Reward = reference.Reward;
+        organism.IsCommanderFirst |= GetBoolean(root, "IsNewEntry") ?? false;
     }
 
     private void ApplySignalDiscovered(JsonElement root)
@@ -731,9 +788,8 @@ public sealed class SystemScanState
 
         public IReadOnlyList<SystemRingSnapshot> Rings { get; set; } = [];
 
-        public HashSet<string> KnownGenuses { get; } = new(StringComparer.Ordinal);
-
-        public HashSet<string> AnalyzedGenuses { get; } = new(StringComparer.Ordinal);
+        public Dictionary<string, OrganismState> Organisms { get; } =
+            new(StringComparer.Ordinal);
 
         public HashSet<string> AnalyzedGeologicalSignals { get; } =
             new(StringComparer.Ordinal);
@@ -806,7 +862,9 @@ public sealed class SystemScanState
                 AtmosphereType,
                 Volcanism,
                 BiologicalSignalCount,
-                Math.Min(BiologicalSignalCount, AnalyzedGenuses.Count),
+                Math.Min(
+                    BiologicalSignalCount,
+                    Organisms.Values.Count(organism => organism.IsAnalyzed)),
                 GeologicalSignalCount,
                 Math.Min(GeologicalSignalCount, AnalyzedGeologicalSignals.Count),
                 scanValue,
@@ -815,7 +873,22 @@ public sealed class SystemScanState
                 ScanSequence,
                 new Dictionary<string, double>(AtmosphereComposition),
                 new Dictionary<string, double>(Materials),
-                Rings.ToArray());
+                Rings.ToArray(),
+                Organisms.Values
+                    .OrderBy(organism => organism.Genus, StringComparer.Ordinal)
+                    .Select(organism => organism.CreateSnapshot())
+                    .ToArray());
+        }
+
+        public OrganismState GetOrCreateOrganism(string genus)
+        {
+            if (!Organisms.TryGetValue(genus, out var organism))
+            {
+                organism = new OrganismState(genus);
+                Organisms.Add(genus, organism);
+            }
+
+            return organism;
         }
 
         private static string GetShortName(string bodyName, string? systemName)
@@ -825,6 +898,44 @@ public sealed class SystemScanState
                     ? bodyName[systemName.Length..]
                     : bodyName;
             return shortName.Replace(" ", string.Empty, StringComparison.Ordinal);
+        }
+    }
+
+    private sealed class OrganismState(string genus)
+    {
+        public string Genus { get; } = genus;
+
+        public string? GenusLocalized { get; set; }
+
+        public string? Species { get; set; }
+
+        public string? SpeciesLocalized { get; set; }
+
+        public string? Variant { get; set; }
+
+        public string? VariantLocalized { get; set; }
+
+        public long? EntryId { get; set; }
+
+        public long? Reward { get; set; }
+
+        public bool IsAnalyzed { get; set; }
+
+        public bool IsCommanderFirst { get; set; }
+
+        public SystemOrganismSnapshot CreateSnapshot()
+        {
+            return new SystemOrganismSnapshot(
+                Genus,
+                GenusLocalized,
+                Species,
+                SpeciesLocalized,
+                Variant,
+                VariantLocalized,
+                EntryId,
+                Reward,
+                IsAnalyzed,
+                IsCommanderFirst);
         }
     }
 
@@ -918,7 +1029,8 @@ public sealed record SystemScanBodySnapshot(
     long ScanSequence,
     IReadOnlyDictionary<string, double> AtmosphereComposition,
     IReadOnlyDictionary<string, double> Materials,
-    IReadOnlyList<SystemRingSnapshot> Rings)
+    IReadOnlyList<SystemRingSnapshot> Rings,
+    IReadOnlyList<SystemOrganismSnapshot> Organisms)
 {
     public bool CountsTowardFss => Kind is SystemBodyKind.Star
         or SystemBodyKind.GasGiant
@@ -933,6 +1045,18 @@ public sealed record SystemScanBodySnapshot(
         "Earth",
         StringComparison.Ordinal) == true;
 }
+
+public sealed record SystemOrganismSnapshot(
+    string Genus,
+    string? GenusLocalized,
+    string? Species,
+    string? SpeciesLocalized,
+    string? Variant,
+    string? VariantLocalized,
+    long? EntryId,
+    long? Reward,
+    bool IsAnalyzed,
+    bool IsCommanderFirst);
 
 public sealed record SystemRingSnapshot(
     string Name,

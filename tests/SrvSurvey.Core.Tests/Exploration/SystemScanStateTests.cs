@@ -49,6 +49,10 @@ public sealed class SystemScanStateTests
         Assert.True(planet.IsFirstFootfall);
         Assert.Equal(2, planet.BiologicalSignalCount);
         Assert.Equal(1, planet.AnalyzedBiologicalSignalCount);
+        Assert.Equal(2, planet.Organisms.Count);
+        Assert.True(Assert.Single(
+            planet.Organisms,
+            organism => organism.Genus == "$Genus_A;").IsAnalyzed);
         Assert.Equal(1, planet.GeologicalSignalCount);
         Assert.Equal(1, planet.AnalyzedGeologicalSignalCount);
         Assert.Equal(2, planet.AtmosphereComposition.Count);
@@ -59,6 +63,34 @@ public sealed class SystemScanStateTests
         Assert.Equal(
             snapshot.Bodies.Sum(body => (long)body.CurrentScanValue),
             snapshot.CurrentScanValue);
+    }
+
+    [Fact]
+    public void OrganicEventsRetainCodexIdentityRewardAndDiscoveryState()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse(
+            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""));
+        state.Apply(Parse(
+            """{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","IsNewEntry":true}"""));
+        state.Apply(Parse(
+            """{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""));
+
+        var body = Assert.Single(state.CreateSnapshot().Bodies);
+        var organism = Assert.Single(body.Organisms);
+        Assert.Equal("$Codex_Ent_Aleoids_Genus_Name;", organism.Genus);
+        Assert.Equal("Aleoida", organism.GenusLocalized);
+        Assert.Equal("$Codex_Ent_Aleoids_01_Name;", organism.Species);
+        Assert.Equal("Aleoida Arcus", organism.SpeciesLocalized);
+        Assert.Equal("$Codex_Ent_Aleoids_01_B_Name;", organism.Variant);
+        Assert.Equal("Aleoida Arcus - Green", organism.VariantLocalized);
+        Assert.Equal(2310101, organism.EntryId);
+        Assert.Equal(7_252_500, organism.Reward);
+        Assert.True(organism.IsAnalyzed);
+        Assert.True(organism.IsCommanderFirst);
+        Assert.Equal(1, body.AnalyzedBiologicalSignalCount);
     }
 
     [Fact]
