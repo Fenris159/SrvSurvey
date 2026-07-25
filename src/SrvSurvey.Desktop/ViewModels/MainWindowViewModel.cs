@@ -275,6 +275,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         JournalPostProcessor = new JournalPostProcessorViewModel(
             new CommanderProfileCatalog(AppDataPaths.DataDirectory),
             new JournalHistoryAnalyzer(journalImportDirectory),
+            new LegacySystemBiologyAnalyzer(AppDataPaths.DataDirectory),
             new CommanderCodexJournalImporter(
                 journalImportDirectory,
                 commanderCodexStore));

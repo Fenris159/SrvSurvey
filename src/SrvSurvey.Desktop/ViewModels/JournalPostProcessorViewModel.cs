@@ -12,8 +12,10 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
 {
     private readonly CommanderProfileCatalog commanderCatalog;
     private readonly JournalHistoryAnalyzer analyzer;
+    private readonly LegacySystemBiologyAnalyzer systemBiologyAnalyzer;
     private readonly CommanderCodexJournalImporter codexImporter;
     private readonly AsyncCommand analyzeCommand;
+    private readonly AsyncCommand analyzeSystemsCommand;
     private readonly AsyncCommand rebuildCodexCommand;
     private readonly AsyncCommand refreshCommandersCommand;
     private readonly DelegateCommand cancelCommand;
@@ -21,9 +23,11 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     private IReadOnlyList<JournalPostProcessorCommanderViewModel> commanders = [];
     private JournalPostProcessorCommanderViewModel? selectedCommander;
     private IReadOnlyList<JournalPostProcessorStatisticViewModel> statistics = [];
+    private IReadOnlyList<JournalPostProcessorSpeciesViewModel> systemSpecies = [];
     private DateTimeOffset startDate;
     private string statusMessage = "Refresh commanders to prepare historical journal analysis.";
     private string trailblazersSummary = string.Empty;
+    private string systemAnalysisSummary = string.Empty;
     private double progressValue;
     private double progressMaximum = 1;
     private bool isBusy;
@@ -33,11 +37,14 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     public JournalPostProcessorViewModel(
         CommanderProfileCatalog commanderCatalog,
         JournalHistoryAnalyzer analyzer,
+        LegacySystemBiologyAnalyzer systemBiologyAnalyzer,
         CommanderCodexJournalImporter codexImporter)
     {
         this.commanderCatalog = commanderCatalog
             ?? throw new ArgumentNullException(nameof(commanderCatalog));
         this.analyzer = analyzer ?? throw new ArgumentNullException(nameof(analyzer));
+        this.systemBiologyAnalyzer = systemBiologyAnalyzer
+            ?? throw new ArgumentNullException(nameof(systemBiologyAnalyzer));
         this.codexImporter = codexImporter
             ?? throw new ArgumentNullException(nameof(codexImporter));
         var localNow = DateTimeOffset.Now;
@@ -45,6 +52,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             localNow.Date.AddDays(-7),
             localNow.Offset);
         analyzeCommand = new AsyncCommand(AnalyzeAsync, CanRun);
+        analyzeSystemsCommand = new AsyncCommand(AnalyzeSystemsAsync, CanRun);
         rebuildCodexCommand = new AsyncCommand(
             RebuildCodexAsync,
             CanRebuildCodex);
@@ -56,6 +64,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             SetBeginningOfTime,
             () => !IsBusy);
         AnalyzeCommand = analyzeCommand;
+        AnalyzeSystemsCommand = analyzeSystemsCommand;
         RebuildCodexCommand = rebuildCodexCommand;
         RefreshCommandersCommand = refreshCommandersCommand;
         CancelCommand = cancelCommand;
@@ -65,6 +74,8 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand AnalyzeCommand { get; }
+
+    public ICommand AnalyzeSystemsCommand { get; }
 
     public ICommand RebuildCodexCommand { get; }
 
@@ -116,10 +127,22 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         private set => SetField(ref statistics, value);
     }
 
+    public IReadOnlyList<JournalPostProcessorSpeciesViewModel> SystemSpecies
+    {
+        get => systemSpecies;
+        private set => SetField(ref systemSpecies, value);
+    }
+
     public string TrailblazersSummary
     {
         get => trailblazersSummary;
         private set => SetField(ref trailblazersSummary, value);
+    }
+
+    public string SystemAnalysisSummary
+    {
+        get => systemAnalysisSummary;
+        private set => SetField(ref systemAnalysisSummary, value);
     }
 
     public string StatusMessage
@@ -335,6 +358,75 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         }
     }
 
+    public async Task AnalyzeSystemsAsync()
+    {
+        if (!CanRun() || SelectedCommander is null)
+        {
+            return;
+        }
+
+        operationCancellation = new CancellationTokenSource();
+        try
+        {
+            IsBusy = true;
+            SystemSpecies = [];
+            SystemAnalysisSummary = string.Empty;
+            ProgressValue = 0;
+            ProgressMaximum = 1;
+            StatusMessage =
+                "Reading copied system files without changing them...";
+            var progress = new Progress<LegacySystemBiologyAnalysisProgress>(value =>
+            {
+                ProgressMaximum = value.TotalFileCount;
+                ProgressValue = value.ProcessedFileCount;
+                StatusMessage = $"Reading system file {value.ProcessedFileCount:N0} of "
+                    + $"{value.TotalFileCount:N0}: {value.CurrentFile}";
+            });
+            var result = await systemBiologyAnalyzer.AnalyzeAsync(
+                SelectedCommander.FrontierId,
+                progress,
+                operationCancellation.Token);
+            SystemSpecies = result.Species
+                .Select(species => new JournalPostProcessorSpeciesViewModel(
+                    species.Name,
+                    species.Count,
+                    FormatAtmospheres(species.AtmosphereCompositions)))
+                .ToArray();
+            ProgressMaximum = Math.Max(1, result.CandidateFileCount);
+            ProgressValue = result.CandidateFileCount;
+            SystemAnalysisSummary = $"Read {result.ProcessedFileCount:N0} of "
+                + $"{result.CandidateFileCount:N0} system file(s), "
+                + $"{result.BodyCount:N0} bodies, and {result.OrganismCount:N0} organisms; "
+                + $"found {result.Species.Count:N0} localized species."
+                + (result.Warnings.Count > 0
+                    ? $" {result.Warnings.Count:N0} file warning(s) are shown in the status."
+                    : string.Empty);
+            StatusMessage = SystemAnalysisSummary
+                + (result.Warnings.Count > 0
+                    ? " " + string.Join(" ", result.Warnings)
+                    : string.Empty);
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage =
+                "System-file analysis was cancelled; no system or profile data changed.";
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            StatusMessage = "System files could not be analyzed: "
+                + exception.Message;
+        }
+        finally
+        {
+            operationCancellation.Dispose();
+            operationCancellation = null;
+            IsBusy = false;
+        }
+    }
+
     public void Cancel()
     {
         operationCancellation?.Cancel();
@@ -349,6 +441,17 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     private bool CanRun() => !IsBusy && SelectedCommander is not null;
 
     private bool CanRebuildCodex() => CanRun() && CodexRebuildConfirmed;
+
+    private static string FormatAtmospheres(
+        IReadOnlyList<LegacyAtmosphereCompositionSummary> atmospheres)
+    {
+        return atmospheres.Count == 0
+            ? "No atmosphere composition recorded"
+            : string.Join(
+                "; ",
+                atmospheres.Select(atmosphere =>
+                    $"{(string.IsNullOrEmpty(atmosphere.Components) ? "Empty composition" : atmosphere.Components)} x{atmosphere.Count:N0}"));
+    }
 
     private void ApplyResult(JournalHistoryAnalysisResult result)
     {
@@ -400,6 +503,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     private void RaiseCommandStates()
     {
         analyzeCommand.RaiseCanExecuteChanged();
+        analyzeSystemsCommand.RaiseCanExecuteChanged();
         rebuildCodexCommand.RaiseCanExecuteChanged();
         refreshCommandersCommand.RaiseCanExecuteChanged();
         cancelCommand.RaiseCanExecuteChanged();
@@ -490,3 +594,11 @@ public sealed record JournalPostProcessorCommanderViewModel(
 public sealed record JournalPostProcessorStatisticViewModel(
     string Name,
     string Value);
+
+public sealed record JournalPostProcessorSpeciesViewModel(
+    string Name,
+    int Count,
+    string AtmosphereSummary)
+{
+    public string CountText => $"{Count:N0} observation(s)";
+}

@@ -58,6 +58,41 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         Assert.Equal(originalProfile, await File.ReadAllBytesAsync(profilePath));
     }
 
+    [Fact]
+    public async Task AnalyzesSystemBiologyWithoutChangingCopiedFiles()
+    {
+        var viewModel = CreateViewModel(out var dataDirectory);
+        var systemDirectory = Path.Combine(dataDirectory, "systems", "F123");
+        Directory.CreateDirectory(systemDirectory);
+        var systemPath = Path.Combine(systemDirectory, "Sol_42.json");
+        await File.WriteAllTextAsync(
+            systemPath,
+            """
+            {
+              "future": 42,
+              "bodies": [
+                {
+                  "atmosphereComposition": { "CarbonDioxide": 100 },
+                  "organisms": [
+                    { "speciesLocalized": "Aleoida Arcus" }
+                  ]
+                }
+              ]
+            }
+            """);
+        var original = await File.ReadAllBytesAsync(systemPath);
+        await viewModel.RefreshCommandersAsync();
+
+        await viewModel.AnalyzeSystemsAsync();
+
+        var species = Assert.Single(viewModel.SystemSpecies);
+        Assert.Equal("Aleoida Arcus", species.Name);
+        Assert.Equal("1 observation(s)", species.CountText);
+        Assert.Equal("CarbonDioxide x1", species.AtmosphereSummary);
+        Assert.Contains("1 bodies, and 1 organisms", viewModel.SystemAnalysisSummary);
+        Assert.Equal(original, await File.ReadAllBytesAsync(systemPath));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -93,6 +128,7 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         return new JournalPostProcessorViewModel(
             new CommanderProfileCatalog(dataDirectory),
             new JournalHistoryAnalyzer(journalDirectory),
+            new LegacySystemBiologyAnalyzer(dataDirectory),
             new CommanderCodexJournalImporter(journalDirectory, store));
     }
 }
