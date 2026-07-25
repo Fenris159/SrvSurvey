@@ -37,7 +37,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
-| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; overlay adjustment and privacy settings remain |
+| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump overlay preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
@@ -76,7 +76,7 @@ system/body and platform behavior is ported.
 | `FormRoute` | Travel / Routes | Implemented with lossless legacy route files, manual-name and current Spansh imports, active/auto-copy controls, per-hop progress, distances/notes/refuel/neutron guidance, save/discard, live FSDJump progression, and a Galaxy Map overlay; Windows visually checked in Blue dark/light |
 | `FormRuins` | Guardian / Survey maps | Partially implemented through the unified site browser, native map renderer, live-site card, and lossless survey editor; dedicated open/share workflows and advanced map authoring remain |
 | `FormSetKeyChord` | Settings / Input | Implemented as the unified binding editor with normalized keyboard, button, trigger, and eight-way POV chords plus default restore |
-| `FormSettings` | Settings pages | Raven themes, migration, and global keyboard/controller input implemented; overlay, privacy, and remaining legacy options remain |
+| `FormSettings` | Settings pages | Raven themes, migration, next-jump overlay preferences, and global keyboard/controller input implemented; general overlay adjustment, privacy, and remaining legacy options remain |
 | `FormShareData` | Settings / Privacy | Not ported |
 | `FormShowCodex` | Exobiology / Codex | Not ported |
 | `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
@@ -111,9 +111,16 @@ origin/alignment, POI marking input, glide/approach guidance, and
 `PlotSphericalSearch` is implemented as a compact Galaxy Map overlay with route
 priority, one-copy-per-entry behavior, destination state, distance, progress,
 and notes/refuel/neutron guidance. Its spherical-limit and Boxel slices remain
-open, as does the system-rich `PlotJumpInfo` surface. The other plotter surfaces
-remain unported, and the new Windows/X11 adapters still require live Elite
-runtime validation.
+open. `PlotJumpInfo` is implemented as a modern top-center passive overlay with
+the original automatic FSD-charge/witchspace/selected-next-hop lifecycle and
+`Alt+D` toggle. It preserves target precedence, nav-route/followed-route
+fallback, proportional distance/progress, scoopable and boosted-hop cues,
+compact mode, EDSM discovery/traffic, Spansh system/station summaries, material
+traders, technology brokers, engineers, Guardian sites, route notes, and new
+galactic-region notices. Provider failures degrade independently. It temporarily
+obscures the Guardian status overlay as the legacy plotter did. The other
+plotter surfaces remain unported, and the new Windows/X11 adapters still require
+live Elite runtime validation.
 
 Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
 opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,
@@ -188,6 +195,12 @@ check at 1182 by 790, using a live journal folder:
   Map route overlay was also visually checked in both modes through a temporary
   preview hook. The hook and exact QA files were removed and Blue (dark) was
   restored afterward; live Elite window tracking and Linux remain untested.
+- The next-jump overlay was exercised through a temporary preview hook with live
+  EDSM and Spansh data for Sol and a two-hop 64.9 ly route. Blue (dark) and Blue
+  (light) both rendered the target/star class, proportional current-leg line,
+  scoopable markers, boost emphasis, body/station totals, traffic, and engineer
+  details cleanly. The hook was removed and Blue (dark) restored afterward;
+  live Elite attachment, click-through, and Linux remain untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live
