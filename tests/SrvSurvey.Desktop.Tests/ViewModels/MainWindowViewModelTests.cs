@@ -189,6 +189,9 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(10477373803, first.SystemAddress);
             Assert.Equal(3, first.BodyId);
             Assert.Single(Directory.GetFiles(profile, "F123-codex-*.json"));
+            Assert.Equal("F123", viewModel.CodexBingo.SelectedCommander?.FrontierId);
+            Assert.Equal(1, viewModel.CodexBingo.DiscoveredCount);
+            viewModel.CodexBingo.Dispose();
         }
         finally
         {

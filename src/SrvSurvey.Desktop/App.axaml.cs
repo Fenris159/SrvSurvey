@@ -25,6 +25,8 @@ public sealed partial class App : Application
     private BiologyPredictionsWindowCoordinator?
         biologyPredictionsWindowCoordinator;
     private BiologyCodexWindowCoordinator? biologyCodexWindowCoordinator;
+    private BiologyCodexBingoWindowCoordinator?
+        biologyCodexBingoWindowCoordinator;
     private GlobalKeyboardHookService? globalKeyboardHookService;
     private GlobalControllerInputService? globalControllerInputService;
 
@@ -73,6 +75,11 @@ public sealed partial class App : Application
                 viewModel.BiologyCodex,
                 mainWindow,
                 Path.Combine(appDataPaths.CacheDirectory, "codex-images"));
+            biologyCodexBingoWindowCoordinator =
+                new BiologyCodexBingoWindowCoordinator(
+                    viewModel.CodexBingo,
+                    mainWindow,
+                    viewModel.OpenCodexBingoNearestSearchAsync);
             routeOverlayCoordinator = new RouteOverlayCoordinator(
                 viewModel.Route,
                 OverlayPlatformService.CreateCurrent(),
@@ -257,6 +264,9 @@ public sealed partial class App : Application
                 biologyCodexWindowCoordinator?.Dispose();
                 biologyCodexWindowCoordinator = null;
                 viewModel.BiologyCodex.Dispose();
+                biologyCodexBingoWindowCoordinator?.Dispose();
+                biologyCodexBingoWindowCoordinator = null;
+                viewModel.CodexBingo.Dispose();
                 routeOverlayCoordinator?.Dispose();
                 routeOverlayCoordinator = null;
                 jumpInfoOverlayCoordinator?.Dispose();

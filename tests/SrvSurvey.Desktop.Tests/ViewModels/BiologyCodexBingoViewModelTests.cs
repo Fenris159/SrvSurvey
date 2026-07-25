@@ -58,8 +58,8 @@ public sealed class BiologyCodexBingoViewModelTests : IDisposable
             {
                 launched.Add(uri);
                 return Task.FromResult(true);
-            },
-            request =>
+            });
+        viewModel.SetNearestSearchHandler(request =>
             {
                 nearest = request;
                 return Task.CompletedTask;

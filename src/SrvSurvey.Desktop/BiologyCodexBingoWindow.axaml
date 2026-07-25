@@ -1,0 +1,342 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.BiologyCodexBingoWindow"
+        x:DataType="vm:BiologyCodexBingoViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="1260"
+        d:DesignHeight="820"
+        Width="1260"
+        Height="820"
+        MinWidth="980"
+        MinHeight="680"
+        WindowStartupLocation="CenterOwner"
+        Title="{Binding WindowTitle}">
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+    <Border Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="24,16">
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="18">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="CODEX BINGO" />
+          <TextBlock Classes="page-title"
+                     FontSize="24"
+                     Text="The Codex" />
+          <TextBlock Classes="muted"
+                     Text="Commander and regional discovery completion" />
+        </StackPanel>
+        <StackPanel Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Spacing="3">
+          <TextBlock HorizontalAlignment="Right"
+                     FontSize="24"
+                     FontWeight="SemiBold"
+                     Foreground="{DynamicResource RavenAccentBrush}"
+                     Text="{Binding CompletionText}" />
+          <TextBlock Classes="muted"
+                     HorizontalAlignment="Right"
+                     Text="{Binding RemainingText}" />
+        </StackPanel>
+        <Button Grid.Column="2"
+                Classes="secondary"
+                VerticalAlignment="Center"
+                Click="Close_Click"
+                Content="Close" />
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="1"
+            Background="{DynamicResource RavenSurfaceBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="20,12">
+      <Grid ColumnDefinitions="2*,2*,Auto,Auto,Auto"
+            ColumnSpacing="10">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="muted" Text="COMMANDER" />
+          <ComboBox ItemsSource="{Binding Commanders}"
+                    SelectedItem="{Binding SelectedCommander, Mode=TwoWay}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:CommanderCodexOptionViewModel">
+                <TextBlock Text="{Binding DisplayName}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="4">
+          <TextBlock Classes="muted" Text="REGION" />
+          <ComboBox ItemsSource="{Binding Regions}"
+                    SelectedItem="{Binding SelectedRegion, Mode=TwoWay}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:CodexBingoRegionOptionViewModel">
+                <TextBlock Text="{Binding DisplayName}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </StackPanel>
+        <Button Grid.Column="2"
+                Classes="secondary"
+                MinWidth="92"
+                VerticalAlignment="Bottom"
+                Command="{Binding RefreshCommand}"
+                Content="Refresh" />
+        <Button Grid.Column="3"
+                Classes="secondary"
+                MinWidth="150"
+                VerticalAlignment="Bottom"
+                Command="{Binding ImportCanonnCommand}"
+                Content="Import Canonn" />
+        <Button Grid.Column="4"
+                Classes="secondary"
+                MinWidth="150"
+                VerticalAlignment="Bottom"
+                Command="{Binding ImportJournalsCommand}"
+                Content="Scan old journals" />
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="2"
+          Margin="20"
+          ColumnDefinitions="3*,2*"
+          ColumnSpacing="16">
+      <Border Classes="card" Padding="8">
+        <Grid RowDefinitions="Auto,*" RowSpacing="8">
+          <Grid Margin="8,4"
+                ColumnDefinitions="*,Auto"
+                ColumnSpacing="12">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="card-title" Text="Discovery hierarchy" />
+              <TextBlock Classes="muted" Text="{Binding RegionSummary}" />
+            </StackPanel>
+            <Border Grid.Column="1"
+                    Classes="badge"
+                    VerticalAlignment="Center">
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         Text="{Binding DiscoveredCount, StringFormat='{}{0:N0} FOUND'}" />
+            </Border>
+          </Grid>
+          <TreeView Grid.Row="1"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    ItemsSource="{Binding RootNodes}"
+                    SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
+            <TreeView.Styles>
+              <Style Selector="TreeViewItem" x:CompileBindings="False">
+                <Setter Property="IsExpanded"
+                        Value="{Binding IsExpanded, Mode=TwoWay}" />
+                <Setter Property="Padding" Value="2" />
+              </Style>
+            </TreeView.Styles>
+            <TreeView.ItemTemplate>
+              <TreeDataTemplate x:DataType="vm:CodexBingoTreeNodeViewModel"
+                                ItemsSource="{Binding Children}">
+                <Grid MinWidth="540"
+                      ColumnDefinitions="*,Auto,110"
+                      ColumnSpacing="10"
+                      Margin="0,2">
+                  <StackPanel Spacing="1">
+                    <TextBlock FontWeight="SemiBold"
+                               Text="{Binding Name}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="muted monospace"
+                               FontSize="10"
+                               IsVisible="{Binding IsEntry}"
+                               Text="{Binding EntryId}" />
+                  </StackPanel>
+                  <Border Grid.Column="1"
+                          Classes="badge"
+                          VerticalAlignment="Center"
+                          IsVisible="{Binding IsComplete}">
+                    <TextBlock FontSize="10"
+                               Foreground="{DynamicResource RavenSuccessBrush}"
+                               Text="COMPLETE" />
+                  </Border>
+                  <Grid Grid.Column="2"
+                        RowDefinitions="Auto,Auto"
+                        VerticalAlignment="Center"
+                        RowSpacing="3">
+                    <TextBlock Classes="muted"
+                               FontSize="10"
+                               HorizontalAlignment="Right"
+                               Text="{Binding CompletionText}" />
+                    <ProgressBar Grid.Row="1"
+                                 Height="5"
+                                 Maximum="100"
+                                 Value="{Binding CompletionPercent}" />
+                  </Grid>
+                </Grid>
+              </TreeDataTemplate>
+            </TreeView.ItemTemplate>
+          </TreeView>
+        </Grid>
+      </Border>
+
+      <ScrollViewer Grid.Column="1"
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="14">
+          <Border Classes="card raised">
+            <StackPanel Spacing="14">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="eyebrow" Text="SELECTED NODE" />
+                <TextBlock FontSize="23"
+                           FontWeight="SemiBold"
+                           Text="{Binding SelectedTitle}"
+                           TextWrapping="Wrap" />
+                <TextBlock Classes="muted" Text="{Binding SelectedKind}" />
+              </StackPanel>
+              <ProgressBar Height="8"
+                           Maximum="100"
+                           Value="{Binding SelectedNode.CompletionPercent}" />
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <StackPanel Spacing="3">
+                  <TextBlock Classes="muted" Text="COMPLETION" />
+                  <TextBlock FontWeight="SemiBold"
+                             Text="{Binding SelectedProgress}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="3">
+                  <TextBlock Classes="muted" Text="STATE" />
+                  <TextBlock FontWeight="SemiBold"
+                             Foreground="{DynamicResource RavenAccentBrush}"
+                             Text="{Binding SelectedState}" />
+                </StackPanel>
+              </Grid>
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                <StackPanel Spacing="3">
+                  <TextBlock Classes="muted" Text="ENTRY ID" />
+                  <TextBlock Classes="monospace" Text="{Binding SelectedEntryId}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="3">
+                  <TextBlock Classes="muted" Text="REWARD" />
+                  <TextBlock Text="{Binding SelectedReward}" />
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card">
+            <StackPanel Spacing="12">
+              <TextBlock Classes="card-title" Text="Entry actions" />
+              <WrapPanel Orientation="Horizontal">
+                <Button Classes="secondary"
+                        Margin="0,0,8,8"
+                        Command="{Binding CopyNameCommand}"
+                        Content="Copy name" />
+                <Button Classes="secondary"
+                        Margin="0,0,8,8"
+                        Command="{Binding CopyEntryIdCommand}"
+                        Content="Copy entry ID" />
+                <Button Classes="secondary"
+                        Margin="0,0,8,8"
+                        Command="{Binding OpenCanonnResearchCommand}"
+                        Content="Canonn Research" />
+                <Button Classes="secondary"
+                        Margin="0,0,8,8"
+                        Command="{Binding OpenBioforgeCommand}"
+                        Content="Bioforge" />
+                <Button Classes="secondary"
+                        Margin="0,0,8,8"
+                        Command="{Binding OpenEdAstroCommand}"
+                        Content="EDAstro map" />
+                <Button Classes="secondary"
+                        Margin="0,0,8,8"
+                        Command="{Binding FindNearestCommand}"
+                        Content="Find nearest" />
+                <Button Classes="secondary"
+                        Margin="0,0,8,8"
+                        Command="{Binding FindMissingVariantsCommand}"
+                        Content="Find missing variants" />
+              </WrapPanel>
+              <Button Classes="secondary"
+                      HorizontalAlignment="Left"
+                      Command="{Binding RequestManualCommand}"
+                      Content="{Binding ManualActionText}" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card"
+                  BorderBrush="{DynamicResource RavenWarningBrush}"
+                  IsVisible="{Binding IsManualConfirmationPending}">
+            <StackPanel Spacing="12">
+              <TextBlock FontWeight="SemiBold"
+                         TextWrapping="Wrap"
+                         Text="{Binding ManualConfirmationText}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Manual overrides are only for discoveries whose original journal files are no longer available." />
+              <WrapPanel Orientation="Horizontal">
+                <Button Classes="primary"
+                        Margin="0,0,8,0"
+                        Command="{Binding ConfirmManualCommand}"
+                        Content="Confirm" />
+                <Button Classes="secondary"
+                        Command="{Binding CancelManualCommand}"
+                        Content="Cancel" />
+              </WrapPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card">
+            <StackPanel Spacing="12">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <TextBlock Classes="card-title" Text="Discovery location" />
+                <Button Grid.Column="1"
+                        Classes="secondary"
+                        Command="{Binding OpenLocationCommand}"
+                        Content="Open Spansh" />
+              </Grid>
+              <StackPanel Spacing="3">
+                <TextBlock Classes="muted" Text="BODY / SYSTEM" />
+                <TextBlock Text="{Binding DiscoveryBody}"
+                           TextWrapping="Wrap" />
+              </StackPanel>
+              <StackPanel Spacing="3">
+                <TextBlock Classes="muted" Text="GALACTIC REGION" />
+                <TextBlock Text="{Binding DiscoveryRegion}"
+                           TextWrapping="Wrap" />
+              </StackPanel>
+              <StackPanel Spacing="3">
+                <TextBlock Classes="muted" Text="FIRST RECORDED" />
+                <TextBlock Text="{Binding DiscoveryDate}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="card-title" Text="Canonn tools" />
+              <WrapPanel Orientation="Horizontal">
+                <Button Classes="secondary"
+                        Margin="0,0,8,0"
+                        Command="{Binding OpenCanonnChallengeCommand}"
+                        Content="Canonn Challenge" />
+                <Button Classes="secondary"
+                        Command="{Binding OpenUndiscoveredCommand}"
+                        Content="Undiscovered map" />
+              </WrapPanel>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+
+    <Border Grid.Row="3"
+            Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="20,10">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+        <TextBlock Classes="muted"
+                   Text="{Binding StatusMessage}"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="1"
+                   Classes="monospace muted"
+                   Text="{Binding CommanderSummary}" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

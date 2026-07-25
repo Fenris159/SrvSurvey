@@ -158,6 +158,37 @@ public sealed class NearestSystemsViewModelTests
     }
 
     [Fact]
+    public async Task CodexRequestsSelectModePopulateInputsAndSearch()
+    {
+        var client = new StubNearestSystemsClient();
+        var viewModel = new NearestSystemsViewModel(
+            client,
+            new StubSystemResolver([]));
+        viewModel.UpdateContext(
+            "Reference",
+            new GalacticCoordinate(10, 20, 30),
+            "Cmdr Test");
+
+        await viewModel.SearchCodexSignalAsync("  Stratum  ");
+
+        Assert.True(viewModel.IsCanonnMode);
+        Assert.Equal("Stratum", viewModel.BiologicalSignal);
+        Assert.Equal("Stratum", client.CanonnSignal);
+
+        await viewModel.SearchCodexVariantsAsync(
+            "  Tussock  ",
+            "  Tussock Capillum  ",
+            [" emerald ", "", "teal"]);
+
+        Assert.True(viewModel.IsVariantMode);
+        Assert.Equal("Tussock", viewModel.Genus);
+        Assert.Equal("Tussock Capillum", viewModel.Species);
+        Assert.Equal(["emerald", "teal"], client.VariantColors);
+        Assert.Equal("Tussock", client.Genus);
+        Assert.Equal("Tussock Capillum", client.Species);
+    }
+
+    [Fact]
     public async Task SearchRequiresCurrentCoordinates()
     {
         var viewModel = new NearestSystemsViewModel(
@@ -187,6 +218,10 @@ public sealed class NearestSystemsViewModelTests
 
         public string? CommanderName { get; private set; }
 
+        public string? Genus { get; private set; }
+
+        public string? Species { get; private set; }
+
         public IReadOnlyList<string> VariantColors { get; private set; } = [];
 
         public Task<NearestSystemsSearchResult> SearchCanonnAsync(
@@ -210,6 +245,8 @@ public sealed class NearestSystemsViewModelTests
             CancellationToken cancellationToken = default)
         {
             Reference = reference;
+            Genus = genus;
+            Species = species;
             VariantColors = variantColors;
             return Task.FromResult(VariantResult);
         }

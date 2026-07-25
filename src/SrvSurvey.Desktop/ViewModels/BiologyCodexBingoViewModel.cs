@@ -415,11 +415,16 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     public void SetPlatformServices(
         Func<string, Task>? writer,
-        Func<Uri, Task<bool>>? launcher,
-        Func<CodexBingoNearestRequest, Task>? searchHandler)
+        Func<Uri, Task<bool>>? launcher)
     {
         clipboardWriter = writer;
         uriLauncher = launcher;
+        RaiseCommands();
+    }
+
+    public void SetNearestSearchHandler(
+        Func<CodexBingoNearestRequest, Task>? searchHandler)
+    {
         nearestSearchHandler = searchHandler;
         RaiseCommands();
     }
@@ -687,9 +692,9 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         disposed = true;
         locationCancellation?.Cancel();
         locationCancellation?.Dispose();
-        refreshLock.Dispose();
         SetWindowOpener(null);
-        SetPlatformServices(null, null, null);
+        SetPlatformServices(null, null);
+        SetNearestSearchHandler(null);
     }
 
     private async Task LoadLedgerCoreAsync(bool preserveStatus = false)
@@ -1261,6 +1266,8 @@ public sealed class CodexBingoTreeNodeViewModel : INotifyPropertyChanged
 
     public bool IsComplete => TotalCount > 0 && DiscoveredCount == TotalCount;
 
+    public bool IsIncomplete => TotalCount > 0 && !IsComplete;
+
     public string CompletionText => IsEntry
         ? IsComplete ? "Discovered" : "Missing"
         : $"{DiscoveredCount:N0}/{TotalCount:N0} · {Completion:P1}";
@@ -1278,6 +1285,7 @@ public sealed class CodexBingoTreeNodeViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(Completion));
         OnPropertyChanged(nameof(CompletionPercent));
         OnPropertyChanged(nameof(IsComplete));
+        OnPropertyChanged(nameof(IsIncomplete));
         OnPropertyChanged(nameof(CompletionText));
         for (var index = 0; index < Children.Count; index++)
         {

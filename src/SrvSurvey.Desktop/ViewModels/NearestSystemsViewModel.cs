@@ -261,6 +261,32 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         uriLauncher = launcher;
     }
 
+    public async Task SearchCodexSignalAsync(string signal)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(signal);
+        SelectedMode = Modes.Single(option =>
+            option.Mode == NearestSystemsSearchMode.CanonnSignal);
+        BiologicalSignal = signal.Trim();
+        await SearchAsync();
+    }
+
+    public async Task SearchCodexVariantsAsync(
+        string genus,
+        string species,
+        IReadOnlyList<string> variants)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(genus);
+        ArgumentException.ThrowIfNullOrWhiteSpace(species);
+        ArgumentNullException.ThrowIfNull(variants);
+        SelectedMode = Modes.Single(option =>
+            option.Mode == NearestSystemsSearchMode.MissingVariants);
+        Genus = genus.Trim();
+        Species = species.Trim();
+        VariantColors = string.Join(", ", variants.Where(
+            variant => !string.IsNullOrWhiteSpace(variant)));
+        await SearchAsync();
+    }
+
     public async Task SearchAsync()
     {
         if (referencePosition is not { } position)

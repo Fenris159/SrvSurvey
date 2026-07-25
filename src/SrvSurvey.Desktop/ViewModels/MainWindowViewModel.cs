@@ -99,8 +99,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             configuredJournalDirectory);
         commanderProfileStore = new CommanderProfileStore(
             AppDataPaths.DataDirectory);
+        var commanderCodexStore = new CommanderCodexStore(
+            AppDataPaths.DataDirectory);
         commanderCodexJournalTracker = new CommanderCodexJournalTracker(
-            new CommanderCodexStore(AppDataPaths.DataDirectory));
+            commanderCodexStore);
         InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
             OverlayPlatformCapabilities.DetectCurrent());
@@ -166,6 +168,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             sharedExobiologyCatalog,
             BiologyCriteriaCatalog.LoadEmbedded(),
             () => activeProfileCommanderName ?? journalState.CommanderName);
+        var journalImportDirectory = folderResolution.SelectedPath
+            ?? folderResolution.CandidatePaths.FirstOrDefault()
+            ?? Path.Combine(AppDataPaths.DataDirectory, "journals");
+        CodexBingo = new BiologyCodexBingoViewModel(
+            commanderCodexStore,
+            sharedExobiologyCatalog,
+            new CanonnCodexChallengeImporter(
+                new CanonnCodexChallengeClient(),
+                commanderCodexStore,
+                sharedExobiologyCatalog),
+            new CommanderCodexJournalImporter(
+                journalImportDirectory,
+                commanderCodexStore),
+            new CodexDiscoveryLocationClient());
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,
@@ -264,6 +280,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public BiologyPredictionsViewModel BiologyPredictions { get; }
 
     public BiologyCodexViewModel BiologyCodex { get; }
+
+    public BiologyCodexBingoViewModel CodexBingo { get; }
 
     public SphereLimitViewModel Search { get; }
 
@@ -378,6 +396,29 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public string PendingPageDescription => SelectedNavigation.Description;
 
     public string PendingPageGlyph => SelectedNavigation.Glyph;
+
+    public async Task OpenCodexBingoNearestSearchAsync(
+        CodexBingoNearestRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        SelectedNavigation = NavigationItems.Single(item => item.Key == "search");
+        if (request.Mode == CodexBingoNearestMode.Signal
+            && !string.IsNullOrWhiteSpace(request.Signal))
+        {
+            await NearestSystems.SearchCodexSignalAsync(request.Signal);
+            return;
+        }
+
+        if (request.Mode == CodexBingoNearestMode.MissingVariants
+            && !string.IsNullOrWhiteSpace(request.Genus)
+            && !string.IsNullOrWhiteSpace(request.Species))
+        {
+            await NearestSystems.SearchCodexVariantsAsync(
+                request.Genus,
+                request.Species,
+                request.Variants);
+        }
+    }
 
     public string SelectedThemeName => selectedTheme.DisplayName;
 
@@ -829,6 +870,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             journalState.SystemName,
             journalState.StarPosition,
             journalState.CommanderName);
+        await CodexBingo.UpdateContextAsync(
+            journalState.FrontierId,
+            journalState.CommanderName,
+            journalState.SystemName,
+            journalState.StarPosition,
+            forceRefresh: commanderCodexResult.DiscoveryEventCount > 0);
         SystemNotes.UpdateContext(
             journalState.FrontierId,
             journalState.CommanderName,
