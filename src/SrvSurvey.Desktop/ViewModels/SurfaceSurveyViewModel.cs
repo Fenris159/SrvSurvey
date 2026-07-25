@@ -118,7 +118,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? status,
         ExobiologySnapshot currentExobiology,
-        bool processOrganicEvents = true,
+        bool processJournalMutations = true,
+        IReadOnlyList<string>? scansLostToDeath = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
@@ -132,12 +133,14 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             }
 
             exobiology = currentExobiology;
-            var events = processOrganicEvents
+            var events = processJournalMutations
                 ? journalEvents
                 : journalEvents
-                    .Where(item => item.EventName != "ScanOrganic")
+                    .Where(item => item.EventName is not "ScanOrganic"
+                        and not "CodexEntry")
                     .ToArray();
             SurfaceSurveyJournalUpdateResult? journalResult = null;
+            SurfaceDeathMarkResult? deathResult = null;
             if (session is not null)
             {
                 journalResult = await journalTracker.ApplyAsync(
@@ -152,6 +155,29 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                             GetAnalyzedSpecies()),
                         cancellationToken)
                     .ConfigureAwait(true);
+                if (scansLostToDeath is { Count: > 0 })
+                {
+                    try
+                    {
+                        deathResult = await store.MarkBioScansDiedAsync(
+                                session.FrontierId,
+                                scansLostToDeath,
+                                cancellationToken)
+                            .ConfigureAwait(true);
+                    }
+                    catch (Exception exception) when (
+                        exception is IOException
+                            or UnauthorizedAccessException
+                            or InvalidDataException
+                            or InvalidOperationException)
+                    {
+                        deathResult = new SurfaceDeathMarkResult(
+                            0,
+                            0,
+                            ["Lost surface scans were not marked: "
+                                + exception.Message]);
+                    }
+                }
             }
 
             var nextContext = session is null
@@ -165,15 +191,20 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                 RadarMarkers = [];
                 TrackerGroups = [];
                 StatusText = journalResult?.Warnings.Count > 0
-                    ? string.Join(Environment.NewLine, journalResult.Warnings)
-                    : "Waiting for a scanned body and surface coordinates.";
+                    || deathResult?.Warnings.Count > 0
+                        ? string.Join(
+                            Environment.NewLine,
+                            (journalResult?.Warnings ?? [])
+                                .Concat(deathResult?.Warnings ?? []))
+                        : "Waiting for a scanned body and surface coordinates.";
                 RaisePresentationProperties();
                 return;
             }
 
             if (contextChanged
                 || surface is null
-                || journalResult?.MutationCount > 0)
+                || journalResult?.MutationCount > 0
+                || deathResult?.MarkedScanCount > 0)
             {
                 var loadResult = await store.LoadBodyAsync(
                         context,
@@ -188,6 +219,9 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                             : null,
                         journalResult?.Warnings.Count > 0
                             ? string.Join(Environment.NewLine, journalResult.Warnings)
+                            : null,
+                        deathResult?.Warnings.Count > 0
+                            ? string.Join(Environment.NewLine, deathResult.Warnings)
                             : null,
                     }
                     .Where(message => !string.IsNullOrWhiteSpace(message))

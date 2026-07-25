@@ -845,6 +845,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             Colonization.UpdateStatus(update.Status);
         }
 
+        var scansLostToDeath = new HashSet<string>(StringComparer.Ordinal);
         foreach (var journalEvent in update.JournalEvents)
         {
             journalState.Apply(journalEvent);
@@ -972,6 +973,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             if (!skipPersistedBootstrapEvents
                 || IsExobiologyContextEvent(journalEvent.EventName))
             {
+                if (journalEvent.EventName == "Died")
+                {
+                    scansLostToDeath.UnionWith(
+                        exobiologyState.CreateSnapshot().ScannedBioEntryIds);
+                }
+
                 exobiologyState.Apply(journalEvent);
             }
         }
@@ -1006,7 +1013,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             update.JournalEvents,
             update.Status,
             exobiologyAfter,
-            processOrganicEvents: !skipPersistedBootstrapEvents);
+            processJournalMutations: !skipPersistedBootstrapEvents,
+            scansLostToDeath: scansLostToDeath.ToArray());
         if (exobiologyState.Version != exobiologyVersionBefore)
         {
             await SaveExobiologyAsync(exobiologyAfter);

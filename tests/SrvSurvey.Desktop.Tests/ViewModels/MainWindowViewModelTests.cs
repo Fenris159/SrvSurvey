@@ -571,6 +571,18 @@ public sealed class MainWindowViewModelTests
                 ],
                 viewModel.SurfaceSurvey.CurrentSurface.BioScans
                     .Select(scan => scan.Location));
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"event\":\"Died\"}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.All(
+                viewModel.SurfaceSurvey.CurrentSurface!.BioScans,
+                scan => Assert.Equal("Died", scan.Status));
+            var savedProfile = await new CommanderProfileStore(profile)
+                .LoadAsync("F123", true);
+            Assert.Empty(savedProfile.Data!.Exobiology.ScannedBioEntryIds);
             viewModel.SurfaceSurvey.Dispose();
         }
         finally
