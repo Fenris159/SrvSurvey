@@ -865,6 +865,109 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    [Fact]
+    public async Task EnabledMigratedQuestRunsOnlyForLiveDesktopJournalEvents()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-quest-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            var config = Path.Combine(root, "config");
+            var questDirectory = Path.Combine(profile, "quests");
+            Directory.CreateDirectory(journals);
+            Directory.CreateDirectory(questDirectory);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-24T100000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"event\":\"Scan\",\"BodyName\":\"Historical body\"}\n");
+            var statePath = Path.Combine(questDirectory, "F123.json");
+            await File.WriteAllTextAsync(
+                statePath,
+                """
+                {
+                  "fid":"F123",
+                  "cmdr":"Drew",
+                  "devRef":"Raven|desktop|1",
+                  "devQuest":{
+                    "startTime":"2026-07-01T00:00:00Z",
+                    "chapters":[{"id":"start","startTime":"2026-07-01T00:00:00Z"}],
+                    "vars":{},
+                    "future":"preserve"
+                  },
+                  "futureRoot":true
+                }
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(questDirectory, "dev-desktop.json"),
+                """
+                {
+                  "publisher":"Raven",
+                  "id":"desktop",
+                  "ver":1,
+                  "title":"Desktop Integration Quest",
+                  "firstChapter":"start",
+                  "objectives":{},
+                  "strings":{},
+                  "msgs":[],
+                  "chapters":{
+                    "start":"function on_Scan(entry) quest:set('body', entry.BodyName); return true end"
+                  }
+                }
+                """);
+            var paths = new AppDataPaths(
+                config,
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            new QuestSettingsStore(paths.UiSettingsPath).SaveEnabled(true);
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths);
+
+            await viewModel.RefreshAsync();
+
+            var quest = Assert.Single(viewModel.Quests);
+            Assert.True(quest.IsDevelopment);
+            Assert.Equal("Desktop Integration Quest", quest.Title);
+            Assert.DoesNotContain(
+                "Historical body",
+                await File.ReadAllTextAsync(statePath),
+                StringComparison.Ordinal);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"event\":\"Scan\",\"BodyName\":\"Live body\"}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Contains(
+                "Live body",
+                await File.ReadAllTextAsync(statePath),
+                StringComparison.Ordinal);
+            Assert.Contains(
+                "futureRoot",
+                await File.ReadAllTextAsync(statePath),
+                StringComparison.Ordinal);
+            Assert.Single(Directory.GetFiles(Path.Combine(
+                questDirectory,
+                "quest-state-backups")));
+            Assert.Contains("1 active quest", viewModel.QuestStatusMessage);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     private static Task WriteSurfaceStatusAsync(
         string path,
         double latitude,

@@ -440,6 +440,7 @@ public sealed partial class App : Application
                 TaskScheduler.UnobservedTaskException -=
                     HandleUnobservedTaskException;
                 applicationLog.Append("Application exit");
+                viewModel.Dispose();
                 errorReportWindowCoordinator?.Dispose();
                 errorReportWindowCoordinator = null;
                 viewModel.DiagnosticsLog.Dispose();

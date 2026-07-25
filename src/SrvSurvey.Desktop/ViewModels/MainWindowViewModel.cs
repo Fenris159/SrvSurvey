@@ -10,6 +10,7 @@ using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Quests;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
@@ -21,7 +22,7 @@ using SrvSurvey.Desktop.Theming;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class MainWindowViewModel : INotifyPropertyChanged
+public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 {
     private const string Unavailable = "—";
 
@@ -34,6 +35,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private readonly CommanderCodexJournalTracker commanderCodexJournalTracker;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
+    private readonly QuestRuntimeCoordinator questRuntimeCoordinator;
+    private readonly QuestSettingsStore questSettingsStore;
+    private readonly ApplicationLogService? applicationLogService;
     private readonly AsyncCommand importLegacyProfileCommand;
     private readonly AsyncCommand resetExplorationCommand;
     private readonly AsyncCommand cancelResetExplorationCommand;
@@ -79,6 +83,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
     private string legacyProfileSourcePath;
     private string profileStatusMessage;
+    private string questStatusMessage = "Quests are disabled.";
+    private string? activeProfileRavenApiKey;
+    private EliteStatus? latestStatus;
+    private bool disposed;
 
     public MainWindowViewModel(
         string? configuredJournalDirectory,
@@ -102,11 +110,21 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         ApplicationLogService? applicationLogService = null,
         LegacyOverlayLayoutStore? overlayLayoutStore = null,
         LegacyOverlayLayout? overlayLayout = null,
-        IScreenshotProcessingService? screenshotProcessingService = null)
+        IScreenshotProcessingService? screenshotProcessingService = null,
+        QuestRuntimeCoordinator? questRuntimeCoordinator = null,
+        QuestSettingsStore? questSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
+        this.applicationLogService = applicationLogService;
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        this.questSettingsStore = questSettingsStore
+            ?? new QuestSettingsStore(AppDataPaths.UiSettingsPath);
+        this.questRuntimeCoordinator = questRuntimeCoordinator
+            ?? new QuestRuntimeCoordinator(
+                new LegacyQuestStateStore(AppDataPaths.DataDirectory),
+                new RavenQuestClient(),
+                message => applicationLogService?.Append(message));
         SystemNicknames = new SystemNicknameViewModel(
             SystemNicknameCatalog.Load(AppDataPaths.DataDirectory),
             new SystemNicknameSettingsStore(AppDataPaths.UiSettingsPath));
@@ -319,6 +337,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public OverlayLayoutSettingsViewModel OverlayLayout { get; }
 
     public ScreenshotProcessingViewModel ScreenshotProcessing { get; }
+
+    public IReadOnlyList<QuestRuntimeSnapshot> Quests =>
+        questRuntimeCoordinator.Snapshot;
+
+    public int QuestUnreadMessageCount => Quests.Sum(
+        quest => quest.UnreadMessageCount);
+
+    public string QuestStatusMessage
+    {
+        get => questStatusMessage;
+        private set => SetField(ref questStatusMessage, value);
+    }
 
     public AppDataPaths AppDataPaths { get; }
 
@@ -956,6 +986,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         JournalMonitorUpdate update,
         bool isManualRefresh)
     {
+        if (update.IsBootstrapRead)
+        {
+            latestStatus = update.Status;
+        }
+        else if (update.Status is not null)
+        {
+            latestStatus = update.Status;
+        }
+
         if (update.Status is not null)
         {
             exobiologyState.UpdateStatus(update.Status);
@@ -1027,6 +1066,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             journalState.SystemAddress ?? 0);
 
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
+        await ApplyQuestUpdateAsync(update);
         await Colonization.SetCommanderAsync(journalState.CommanderName);
         var initializedJourney = await Journey.UpdateContextAsync(
             journalState.FrontierId,
@@ -1216,6 +1256,62 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
     }
 
+    private async Task ApplyQuestUpdateAsync(JournalMonitorUpdate update)
+    {
+        if (string.IsNullOrWhiteSpace(journalState.FrontierId)
+            || string.IsNullOrWhiteSpace(journalState.CommanderName)
+            || folderResolution.SelectedPath is null)
+        {
+            QuestStatusMessage = "Waiting for a commander journal session.";
+            return;
+        }
+
+        try
+        {
+            var enabled = questSettingsStore.LoadEnabled();
+            var result = await questRuntimeCoordinator.ApplyUpdateAsync(
+                new QuestRuntimeConfiguration(
+                    enabled,
+                    journalState.FrontierId,
+                    journalState.CommanderName,
+                    activeProfileRavenApiKey,
+                    latestStatus),
+                folderResolution.SelectedPath,
+                update.JournalEvents,
+                update.IsBootstrapRead);
+            OnPropertyChanged(nameof(Quests));
+            OnPropertyChanged(nameof(QuestUnreadMessageCount));
+            if (!enabled)
+            {
+                QuestStatusMessage = "Quests are disabled.";
+            }
+            else if (result.Warnings.Count > 0)
+            {
+                QuestStatusMessage = string.Join(
+                    Environment.NewLine,
+                    result.Warnings);
+            }
+            else
+            {
+                QuestStatusMessage = result.Quests.Count == 0
+                    ? "No active quests."
+                    : $"{result.Quests.Count:N0} active quest(s); "
+                        + $"{QuestUnreadMessageCount:N0} unread message(s).";
+            }
+        }
+        catch (Exception exception) when (exception is IOException
+            or UnauthorizedAccessException
+            or InvalidDataException
+            or InvalidOperationException
+            or ArgumentException
+            or HttpRequestException)
+        {
+            QuestStatusMessage = "Quest update failed without changing imported "
+                + "source data: " + exception.Message;
+            applicationLogService?.Append(QuestStatusMessage);
+        }
+    }
+
     private async Task<bool> EnsureCommanderProfileAsync()
     {
         if (string.IsNullOrWhiteSpace(journalState.FrontierId))
@@ -1247,6 +1343,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         if (result.Data is null)
         {
+            activeProfileRavenApiKey = null;
             SurfaceSurvey.Reset();
             Combat.LoadProfile(null, null, isOdyssey, CombatSnapshot.Empty);
             Colonization.SetCommanderProfile(null, isOdyssey, apiKey: null);
@@ -1265,6 +1362,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return false;
         }
 
+        activeProfileRavenApiKey = result.Data.RavenColonialApiKey;
         Colonization.SetCommanderProfile(
             result.Data.FrontierId,
             result.Data.IsOdyssey,
@@ -1498,6 +1596,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private static string Display(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? Unavailable : value;
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 
     private bool SetField<T>(
