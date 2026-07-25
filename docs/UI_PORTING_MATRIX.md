@@ -32,7 +32,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, standalone system/body predictions, `FormShowCodex`, full commander/region `FormCodexBingo`, and `PlotPriorScans` with its Canonn grounded-radar slice implemented; full `PlotGrounded` remains open |
-| Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
+| Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance and passive overlay, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
@@ -68,7 +68,7 @@ circles. The rest of `PlotGrounded` and remaining biology surfaces stay open.
 | `FormCodexBingo` | Exobiology / Codex | Implemented as a single-instance Raven workspace with the complete 1,070-entry hierarchy, global and 42-region commander progress, live and historical journal ledgers, Canonn Challenge import, confirmed manual overrides, discovery locations, Canonn/Bioforge/EDAstro/Spansh actions, and nearest-signal/missing-variant search handoff; Windows visually checked in Blue dark/light |
 | `FormEditMap` | Guardian / Map editor | Partially implemented with native template rendering plus site/relic headings, notes, POI states, relic headings, and obelisk-group editing; raw POI add/remove, origin measurement, and template-authoring tools remain |
 | `FormErrorSubmit` | Diagnostics / Report issue | Not ported |
-| `FormGroundTarget` | Travel / Ground target | Implemented in Travel with typed, current, clipboard, clear, and guidance actions; Windows visually checked |
+| `FormGroundTarget` | Travel / Ground target | Implemented in Travel with typed, current, clipboard, clear, and guidance actions plus a passive Raven-themed `PlotTrackTarget` replacement; editor visually checked, overlay visual QA deferred to the final UI pass |
 | `FormJourneyBegin` | Travel / Journeys | Implemented in the unified Journey workspace with current/prior-system selection, system search, exact last-visit lookup, journal replay, validation, and begin action; Windows visually checked |
 | `FormJourneyEdit` | Travel / Journeys | Implemented in the unified Journey workspace with editable name, description, per-system notes, dirty/save/discard state, conclude, and guarded reprocess; Windows visually checked |
 | `FormJourneyList` | Travel / Journeys | Implemented as the Journey history sidebar with active/completed state, start time, description, selection, and refresh; Windows visually checked |
@@ -158,8 +158,8 @@ predictions with galactic-region, parent-star/barycentre/brightness, offline
 nebula, Guardian-bubble, inheritance, and known-organism context. It exposes
 predicted reward ranges only for complete inputs and otherwise shows the
 missing context explicitly. Commander-Codex first-discovery inference, Canonn
-signal hints, and the transient map-selection timer remain open. The other
-plotter surfaces remain unported, except `PlotPriorScans`, which is now a
+signal hints, and the transient map-selection timer remain open. Of the other
+plotter surfaces, `PlotPriorScans` is now a
 bottom-right passive guidance and radar surface. It uses the current Canonn
 `getSystemPoi` response, rejects malformed/bodyless/mismatched records, caches
 per system and commander with failure backoff, normalizes body identifiers,
@@ -169,6 +169,19 @@ bearing, distance, approach angle, active/near/distant/analyzed state, and
 compact or genus-radius radar circles. Its settings retain the legacy defaults,
 and it yields to the Guardian overlay. Automated coverage and XAML compilation
 passed; visual/theme QA is intentionally deferred until the final UI pass.
+
+`PlotTrackTarget` is now implemented as a compact bottom-center passive
+surface. It reuses the lossless legacy target settings and great-circle
+navigation state, preserves the original supercruise/glide/ship/SRV/fighter/
+on-foot/comms gating, closes for taxi, station panels, missing coordinates, or
+invalid body radius, and presents distance, absolute/relative bearing, target
+coordinates, approach band, and a Raven-themed bearing/descent instrument. It
+participates in the global overlay visibility toggle and follows the same
+foreground, scaling, click-through, and fail-closed platform contract.
+Automated state, placement, passive-preparation, XAML compilation, and
+full-suite checks passed; visual/theme QA is intentionally deferred until the
+final UI pass.
+
 `PlotBioStatus` is a compact
 top-center passive surface with current-body/DSS gating, genus/geology summary,
 analyzed and active sample progress, stale-sample warnings, three-stage sampler,
