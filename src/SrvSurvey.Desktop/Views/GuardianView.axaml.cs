@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
@@ -96,6 +97,79 @@ public sealed partial class GuardianView : UserControl
         await OpenGuideAsync(
             "https://canonn.science/codex/ram-tah-decrypting-the-guardian-logs/",
             "mission 2");
+    }
+
+    private async void CopyShareBundle_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            await viewModel.Guardian.CopyShareArchivePathAsync();
+        }
+    }
+
+    private async void OpenShareFolder_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel
+            || viewModel.Guardian.ShareArchivePath is not string archivePath)
+        {
+            return;
+        }
+
+        try
+        {
+            var launcher = TopLevel.GetTopLevel(this)?.Launcher
+                ?? throw new InvalidOperationException(
+                    "The desktop launcher is not available.");
+            var directory = new DirectoryInfo(Path.GetDirectoryName(archivePath)!);
+            var launched = await launcher.LaunchDirectoryInfoAsync(directory);
+            viewModel.Guardian.ReportShareLaunch(launched
+                ? "Opened the Guardian survey bundle folder."
+                : "The Guardian survey bundle folder could not be opened.");
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or IOException
+                or NotSupportedException
+                or UnauthorizedAccessException)
+        {
+            viewModel.Guardian.ReportShareLaunch(
+                "The Guardian survey bundle folder could not be opened: "
+                + exception.Message);
+        }
+    }
+
+    private async void OpenShareDiscord_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel)
+        {
+            return;
+        }
+
+        try
+        {
+            var launcher = TopLevel.GetTopLevel(this)?.Launcher
+                ?? throw new InvalidOperationException(
+                    "The desktop link launcher is not available.");
+            var launched = await launcher.LaunchUriAsync(
+                new Uri("https://discord.gg/9PhBwwDAbV"));
+            viewModel.Guardian.ReportShareLaunch(launched
+                ? "Opened the Guardian survey Discord invite."
+                : "The Guardian survey Discord invite could not be opened.");
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or NotSupportedException)
+        {
+            viewModel.Guardian.ReportShareLaunch(
+                "The Guardian survey Discord invite could not be opened: "
+                + exception.Message);
+        }
     }
 
     private async Task OpenGuideAsync(string address, string label)

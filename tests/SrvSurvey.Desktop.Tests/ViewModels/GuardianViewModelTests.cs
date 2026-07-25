@@ -9,6 +9,43 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class GuardianViewModelTests
 {
     [Fact]
+    public async Task GuardianSurveySharingPreparesAndCopiesBundle()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var surveyDirectory = Path.Combine(root, "guardian", "F123");
+            Directory.CreateDirectory(surveyDirectory);
+            await File.WriteAllTextAsync(
+                Path.Combine(surveyDirectory, "Unpublished Body-ruins-1.json"),
+                """
+                {"name":"GR Test","nameLocalised":"New Guardian Site","commander":"Drew","type":"Alpha","index":1,"systemAddress":42,"systemName":"Test","bodyId":1,"bodyName":"Unpublished Body","siteHeading":90}
+                """);
+            var viewModel = new GuardianViewModel(root);
+            string? copied = null;
+            viewModel.SetClipboardWriter(text =>
+            {
+                copied = text;
+                return Task.CompletedTask;
+            });
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+
+            await viewModel.PrepareShareBundleAsync();
+            await viewModel.CopyShareArchivePathAsync();
+
+            Assert.True(viewModel.HasShareArchive);
+            Assert.True(File.Exists(viewModel.ShareArchivePath));
+            Assert.Equal(viewModel.ShareArchivePath, copied);
+            Assert.Contains("New Guardian Site", Assert.Single(viewModel.ShareSiteNames));
+            Assert.Contains("copied to the clipboard", viewModel.ShareStatusMessage);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public void FiltersAllLegacyGuardianReferenceFields()
     {
         var root = CreateTemporaryDirectory();

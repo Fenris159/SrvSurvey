@@ -24,10 +24,12 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private readonly GuardianArtifactInventoryState artifactInventory = new();
     private readonly GuardianCommanderDataReader commanderDataReader;
     private readonly GuardianCommanderSurveyStore commanderSurveyStore;
+    private readonly GuardianSurveyShareService surveyShareService;
     private readonly RamTahViewModel? ramTah;
     private readonly GuardianOverlaySettingsStore? overlaySettingsStore;
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand toggleCurrentObeliskScannedCommand;
+    private readonly AsyncCommand prepareShareBundleCommand;
     private GuardianLiveSiteState liveSiteState;
     private GuardianCommanderDataReadResult commanderData =
         GuardianCommanderDataReadResult.Empty;
@@ -57,6 +59,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private bool hasActiveBuildProjects;
     private bool isSystemSummaryObscured;
     private string overlaySettingsStatus = string.Empty;
+    private IReadOnlyList<string> shareSiteNames = [];
+    private string? shareArchivePath;
+    private string shareStatusMessage =
+        "Prepare a bundle to find commander survey data not present in the published catalog.";
+    private bool isPreparingShareBundle;
 
     public GuardianViewModel(
         string dataDirectory,
@@ -90,6 +97,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         completionCalculator = new GuardianSurveyCompletionCalculator(this.templates);
         commanderDataReader = new GuardianCommanderDataReader(dataDirectory);
         commanderSurveyStore = new GuardianCommanderSurveyStore(dataDirectory);
+        surveyShareService = new GuardianSurveyShareService(
+            dataDirectory,
+            this.publishedSites);
         SurveyEditor = new GuardianSurveyEditorViewModel(
             commanderSurveyStore,
             OnSurveySavedAsync);
@@ -126,8 +136,12 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         toggleCurrentObeliskScannedCommand = new AsyncCommand(
             ToggleCurrentObeliskScannedAsync,
             () => CurrentObelisk is not null && activeFrontierId is not null);
+        prepareShareBundleCommand = new AsyncCommand(
+            PrepareShareBundleAsync,
+            () => activeFrontierId is not null && !isPreparingShareBundle);
         RefreshCommand = refreshCommand;
         ToggleCurrentObeliskScannedCommand = toggleCurrentObeliskScannedCommand;
+        PrepareShareBundleCommand = prepareShareBundleCommand;
         ApplyFilters();
     }
 
@@ -143,7 +157,47 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
     public ICommand ToggleCurrentObeliskScannedCommand { get; }
 
+    public ICommand PrepareShareBundleCommand { get; }
+
     public GuardianSurveyEditorViewModel SurveyEditor { get; }
+
+    public IReadOnlyList<string> ShareSiteNames
+    {
+        get => shareSiteNames;
+        private set
+        {
+            if (SetField(ref shareSiteNames, value))
+            {
+                OnPropertyChanged(nameof(HasShareSites));
+            }
+        }
+    }
+
+    public bool HasShareSites => ShareSiteNames.Count > 0;
+
+    public string? ShareArchivePath
+    {
+        get => shareArchivePath;
+        private set
+        {
+            if (SetField(ref shareArchivePath, value))
+            {
+                OnPropertyChanged(nameof(HasShareArchive));
+            }
+        }
+    }
+
+    public bool HasShareArchive => !string.IsNullOrWhiteSpace(ShareArchivePath);
+
+    public string ShareStatusMessage
+    {
+        get => shareStatusMessage;
+        private set => SetField(ref shareStatusMessage, value);
+    }
+
+    public string ShareButtonText => isPreparingShareBundle
+        ? "Preparing..."
+        : "Prepare survey bundle";
 
     public bool EnableGuardianSites
     {
@@ -503,6 +557,36 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         clipboardWriter = writer;
     }
 
+    public async Task CopyShareArchivePathAsync()
+    {
+        if (ShareArchivePath is null || clipboardWriter is null)
+        {
+            ShareStatusMessage = "The survey bundle path is not available to copy.";
+            return;
+        }
+
+        try
+        {
+            await clipboardWriter(ShareArchivePath);
+            ShareStatusMessage = "The survey bundle path was copied to the clipboard.";
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or IOException
+                or NotSupportedException
+                or System.Runtime.InteropServices.ExternalException
+                or UnauthorizedAccessException)
+        {
+            ShareStatusMessage = "The survey bundle path could not be copied: "
+                + exception.Message;
+        }
+    }
+
+    public void ReportShareLaunch(string message)
+    {
+        ShareStatusMessage = message;
+    }
+
     public void SetActiveBuildProjects(bool hasProjects)
     {
         if (hasActiveBuildProjects == hasProjects)
@@ -581,6 +665,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
         activeFrontierId = frontierId;
         activeIsOdyssey = isOdyssey;
+        ShareArchivePath = null;
+        ShareSiteNames = [];
+        ShareStatusMessage =
+            "Prepare a bundle to find commander survey data not present in the published catalog.";
+        prepareShareBundleCommand.RaiseCanExecuteChanged();
         await RefreshAsync(cancellationToken);
     }
 
@@ -792,6 +881,52 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private async Task RefreshAsync()
     {
         await RefreshAsync(CancellationToken.None);
+    }
+
+    public async Task PrepareShareBundleAsync()
+    {
+        if (activeFrontierId is null)
+        {
+            ShareStatusMessage = "A commander profile is required before sharing survey data.";
+            return;
+        }
+
+        isPreparingShareBundle = true;
+        prepareShareBundleCommand.RaiseCanExecuteChanged();
+        OnPropertyChanged(nameof(ShareButtonText));
+        try
+        {
+            var bundle = await surveyShareService.PrepareAsync(
+                activeFrontierId,
+                activeIsOdyssey,
+                commanderData);
+            ShareArchivePath = bundle.ArchivePath;
+            ShareSiteNames = bundle.Sites
+                .Select(site => site.DisplayName + " — "
+                    + string.Join(", ", site.Reasons))
+                .ToArray();
+            ShareStatusMessage = bundle.Sites.Count == 0
+                ? "No unpublished Guardian survey data was found. An empty bundle was prepared for parity with the legacy workflow."
+                : $"Prepared {bundle.Sites.Count:N0} Guardian survey "
+                    + (bundle.Sites.Count == 1 ? "file." : "files.");
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or ArgumentException)
+        {
+            ShareArchivePath = null;
+            ShareSiteNames = [];
+            ShareStatusMessage = "The Guardian survey bundle could not be prepared: "
+                + exception.Message;
+        }
+        finally
+        {
+            isPreparingShareBundle = false;
+            prepareShareBundleCommand.RaiseCanExecuteChanged();
+            OnPropertyChanged(nameof(ShareButtonText));
+        }
     }
 
     private async Task RefreshAsync(CancellationToken cancellationToken)

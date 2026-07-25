@@ -472,6 +472,60 @@
           </Grid>
         </TabItem>
 
+        <TabItem Header="Share data">
+          <StackPanel Margin="0,18,0,0" Spacing="16">
+            <Border Classes="card raised">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="card-title" Text="Share Guardian discoveries" />
+                <TextBlock Classes="muted"
+                           Text="Compare commander surveys with the published Guardian catalog, then package only new headings, locations, POI states, relic data, groups, and raw map points."
+                           TextWrapping="Wrap" />
+                <Button Classes="primary"
+                        HorizontalAlignment="Left"
+                        Command="{Binding Guardian.PrepareShareBundleCommand}"
+                        Content="{Binding Guardian.ShareButtonText}" />
+                <TextBlock Classes="muted"
+                           Text="{Binding Guardian.ShareStatusMessage}"
+                           TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card" IsVisible="{Binding Guardian.HasShareArchive}">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="card-title" Text="Prepared bundle" />
+                <TextBlock Classes="monospace muted"
+                           FontSize="12"
+                           Text="{Binding Guardian.ShareArchivePath}"
+                           TextWrapping="Wrap" />
+                <ItemsControl ItemsSource="{Binding Guardian.ShareSiteNames}"
+                              IsVisible="{Binding Guardian.HasShareSites}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Margin="0,0,0,6"
+                                 Text="{Binding}"
+                                 TextWrapping="Wrap" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <WrapPanel Orientation="Horizontal">
+                  <Button Classes="secondary"
+                          Margin="0,0,8,8"
+                          Click="OpenShareFolder_Click"
+                          Content="Open folder" />
+                  <Button Classes="secondary"
+                          Margin="0,0,8,8"
+                          Click="CopyShareBundle_Click"
+                          Content="Copy bundle path" />
+                  <Button Classes="primary"
+                          Margin="0,0,0,8"
+                          Click="OpenShareDiscord_Click"
+                          Content="Open Discord channel" />
+                </WrapPanel>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </TabItem>
+
         <TabItem Header="Ram Tah missions">
           <StackPanel Margin="0,16,0,0" Spacing="20">
             <Border Classes="card raised">
