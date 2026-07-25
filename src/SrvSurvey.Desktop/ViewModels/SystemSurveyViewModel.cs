@@ -41,6 +41,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool hideOwnCanonnSignals;
     private bool showCanonnSignalsOnRadar;
     private bool useSmallCanonnRadarCircles;
+    private bool autoShowSurfaceRadar;
+    private int surfaceRadarSize;
+    private bool autoHideSurfaceRadarWithoutLandingGear;
+    private bool autoRemoveTrackerOnSampling;
+    private bool autoRemoveTrackerOnFinalSample;
     private bool drawBodyBiosOnlyWhenNear;
     private bool highlightRegionalFirsts;
     private bool dimAnalyzedOrganisms;
@@ -92,6 +97,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         hideOwnCanonnSignals = preferences.HideOwnCanonnSignals;
         showCanonnSignalsOnRadar = preferences.ShowCanonnSignalsOnRadar;
         useSmallCanonnRadarCircles = preferences.UseSmallCanonnRadarCircles;
+        autoShowSurfaceRadar = preferences.AutoShowSurfaceRadar;
+        surfaceRadarSize = preferences.SurfaceRadarSize;
+        autoHideSurfaceRadarWithoutLandingGear =
+            preferences.AutoHideSurfaceRadarWithoutLandingGear;
+        autoRemoveTrackerOnSampling = preferences.AutoRemoveTrackerOnSampling;
+        autoRemoveTrackerOnFinalSample =
+            preferences.AutoRemoveTrackerOnFinalSample;
         drawBodyBiosOnlyWhenNear = preferences.DrawBodyBiosOnlyWhenNear;
         highlightRegionalFirsts = preferences.HighlightRegionalFirsts;
         dimAnalyzedOrganisms = preferences.DimAnalyzedOrganisms;
@@ -229,6 +241,36 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get => useSmallCanonnRadarCircles;
         set => SetPreference(ref useSmallCanonnRadarCircles, value);
+    }
+
+    public bool AutoShowSurfaceRadar
+    {
+        get => autoShowSurfaceRadar;
+        set => SetPreference(ref autoShowSurfaceRadar, value);
+    }
+
+    public int SurfaceRadarSize
+    {
+        get => surfaceRadarSize;
+        set => SetPreference(ref surfaceRadarSize, Math.Clamp(value, 0, 4));
+    }
+
+    public bool AutoHideSurfaceRadarWithoutLandingGear
+    {
+        get => autoHideSurfaceRadarWithoutLandingGear;
+        set => SetPreference(ref autoHideSurfaceRadarWithoutLandingGear, value);
+    }
+
+    public bool AutoRemoveTrackerOnSampling
+    {
+        get => autoRemoveTrackerOnSampling;
+        set => SetPreference(ref autoRemoveTrackerOnSampling, value);
+    }
+
+    public bool AutoRemoveTrackerOnFinalSample
+    {
+        get => autoRemoveTrackerOnFinalSample;
+        set => SetPreference(ref autoRemoveTrackerOnFinalSample, value);
     }
 
     public bool DrawBodyBiosOnlyWhenNear
@@ -1523,6 +1565,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 HideOwnCanonnSignals,
                 ShowCanonnSignalsOnRadar,
                 UseSmallCanonnRadarCircles,
+                AutoShowSurfaceRadar,
+                SurfaceRadarSize,
+                AutoHideSurfaceRadarWithoutLandingGear,
+                AutoRemoveTrackerOnSampling,
+                AutoRemoveTrackerOnFinalSample,
                 DrawBodyBiosOnlyWhenNear,
                 HighlightRegionalFirsts,
                 DimAnalyzedOrganisms,

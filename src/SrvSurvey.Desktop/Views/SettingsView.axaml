@@ -235,6 +235,24 @@
 
             <StackPanel Grid.Column="1" Spacing="12">
               <TextBlock Classes="eyebrow" Text="SURFACE RADAR" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoShowSurfaceRadar, Mode=TwoWay}"
+                        Content="Show surface history and trackers automatically" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear, Mode=TwoWay}"
+                        Content="Hide in surface flight until landing gear is down" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnSampling, Mode=TwoWay}"
+                        Content="Remove a nearby tracker when sampling" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnFinalSample, Mode=TwoWay}"
+                        Content="Remove the tracker group after analysis" />
+              <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center"
+                           Text="Radar size" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="0"
+                               Maximum="4"
+                               Increment="1"
+                               FormatString="N0"
+                               Value="{Binding SystemSurvey.SurfaceRadarSize, Mode=TwoWay}" />
+              </Grid>
               <CheckBox IsChecked="{Binding SystemSurvey.ShowCanonnSignalsOnRadar, Mode=TwoWay}"
                         Content="Show Canonn biology signals on the radar" />
               <CheckBox IsChecked="{Binding SystemSurvey.UseSmallCanonnRadarCircles, Mode=TwoWay}"

@@ -88,6 +88,28 @@ public sealed class SystemSurveySettingsStore
                 defaults.UseSmallCanonnRadarCircles),
             GetBoolean(
                 settings,
+                "AutoShowSurfaceRadar",
+                defaults.AutoShowSurfaceRadar),
+            GetInt32(
+                settings,
+                "SurfaceRadarSize",
+                defaults.SurfaceRadarSize,
+                0,
+                4),
+            GetBoolean(
+                settings,
+                "AutoHideSurfaceRadarWithoutLandingGear",
+                defaults.AutoHideSurfaceRadarWithoutLandingGear),
+            GetBoolean(
+                settings,
+                "AutoRemoveTrackerOnSampling",
+                defaults.AutoRemoveTrackerOnSampling),
+            GetBoolean(
+                settings,
+                "AutoRemoveTrackerOnFinalSample",
+                defaults.AutoRemoveTrackerOnFinalSample),
+            GetBoolean(
+                settings,
                 "DrawBodyBiosOnlyWhenNear",
                 defaults.DrawBodyBiosOnlyWhenNear),
             GetBoolean(
@@ -198,6 +220,14 @@ public sealed class SystemSurveySettingsStore
                 preferences.ShowCanonnSignalsOnRadar;
             settings["UseSmallCanonnRadarCircles"] =
                 preferences.UseSmallCanonnRadarCircles;
+            settings["AutoShowSurfaceRadar"] = preferences.AutoShowSurfaceRadar;
+            settings["SurfaceRadarSize"] = preferences.SurfaceRadarSize;
+            settings["AutoHideSurfaceRadarWithoutLandingGear"] =
+                preferences.AutoHideSurfaceRadarWithoutLandingGear;
+            settings["AutoRemoveTrackerOnSampling"] =
+                preferences.AutoRemoveTrackerOnSampling;
+            settings["AutoRemoveTrackerOnFinalSample"] =
+                preferences.AutoRemoveTrackerOnFinalSample;
             settings["DrawBodyBiosOnlyWhenNear"] =
                 preferences.DrawBodyBiosOnlyWhenNear;
             settings["HighlightRegionalFirsts"] =
@@ -244,11 +274,12 @@ public sealed class SystemSurveySettingsStore
         JsonObject? source,
         string propertyName,
         int fallback,
-        int minimum)
+        int minimum,
+        int maximum = int.MaxValue)
     {
         return source?[propertyName] is JsonValue value
             && value.TryGetValue<int>(out var result)
-                ? Math.Max(minimum, result)
+                ? Math.Clamp(result, minimum, maximum)
                 : fallback;
     }
 
@@ -285,6 +316,11 @@ public sealed record SystemSurveyPreferences(
     bool HideOwnCanonnSignals,
     bool ShowCanonnSignalsOnRadar,
     bool UseSmallCanonnRadarCircles,
+    bool AutoShowSurfaceRadar,
+    int SurfaceRadarSize,
+    bool AutoHideSurfaceRadarWithoutLandingGear,
+    bool AutoRemoveTrackerOnSampling,
+    bool AutoRemoveTrackerOnFinalSample,
     bool DrawBodyBiosOnlyWhenNear,
     bool HighlightRegionalFirsts,
     bool DimAnalyzedOrganisms,
@@ -323,6 +359,11 @@ public sealed record SystemSurveyPreferences(
         HideOwnCanonnSignals: true,
         ShowCanonnSignalsOnRadar: true,
         UseSmallCanonnRadarCircles: true,
+        AutoShowSurfaceRadar: true,
+        SurfaceRadarSize: 3,
+        AutoHideSurfaceRadarWithoutLandingGear: false,
+        AutoRemoveTrackerOnSampling: true,
+        AutoRemoveTrackerOnFinalSample: false,
         DrawBodyBiosOnlyWhenNear: true,
         HighlightRegionalFirsts: false,
         DimAnalyzedOrganisms: true,

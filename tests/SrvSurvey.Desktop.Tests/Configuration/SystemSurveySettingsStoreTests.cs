@@ -41,6 +41,11 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             HideOwnCanonnSignals: false,
             ShowCanonnSignalsOnRadar: false,
             UseSmallCanonnRadarCircles: false,
+            AutoShowSurfaceRadar: false,
+            SurfaceRadarSize: 4,
+            AutoHideSurfaceRadarWithoutLandingGear: true,
+            AutoRemoveTrackerOnSampling: false,
+            AutoRemoveTrackerOnFinalSample: true,
             DrawBodyBiosOnlyWhenNear: false,
             HighlightRegionalFirsts: true,
             DimAnalyzedOrganisms: false,
@@ -78,7 +83,8 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
                 + "\"DssValueFloor\":-2,\"DssDistanceLimitLs\":-3,"
                 + "\"BodyInfoBubbleSizeLy\":-4,"
                 + "\"PriorScanMinimumValue\":-5,"
-                + "\"HighGravityWarningLevel\":75}}");
+                + "\"HighGravityWarningLevel\":75,"
+                + "\"SurfaceRadarSize\":99}}");
 
         var preferences = new SystemSurveySettingsStore(path).Load();
 
@@ -88,6 +94,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         Assert.Equal(0, preferences.BodyInfoBubbleSizeLy);
         Assert.Equal(0, preferences.PriorScanMinimumValue);
         Assert.Equal(50, preferences.HighGravityWarningLevel);
+        Assert.Equal(4, preferences.SurfaceRadarSize);
     }
 
     public void Dispose()
