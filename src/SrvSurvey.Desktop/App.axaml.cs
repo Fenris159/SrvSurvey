@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -46,6 +47,26 @@ public sealed partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var appDataPaths = AppDataPaths.ResolveCurrent();
+            var applicationLog = Program.ApplicationLog
+                ?? new ApplicationLogService(appDataPaths.DataDirectory);
+            var settingsMigration = new LegacyUiSettingsMigrator()
+                .MigrateIfNeeded(appDataPaths);
+            if (settingsMigration.Migrated)
+            {
+                applicationLog.Append(
+                    $"Migrated {settingsMigration.MappedPreferenceCount:N0} legacy UI preferences."
+                    + (settingsMigration.PreviousSettingsBackupPath is null
+                        ? string.Empty
+                        : " Previous settings backup: "
+                            + settingsMigration.PreviousSettingsBackupPath));
+            }
+            else if (settingsMigration.Error is not null)
+            {
+                applicationLog.Append(
+                    "Legacy UI settings migration was skipped: "
+                    + settingsMigration.Error);
+            }
+
             var themeService = new RavenThemeService(
                 this,
                 new ThemePreferenceStore(appDataPaths.UiSettingsPath));
@@ -54,9 +75,6 @@ public sealed partial class App : Application
             var inputSettings = new GlobalInputSettingsViewModel(
                 new GlobalInputSettingsStore(appDataPaths.UiSettingsPath),
                 capabilities);
-            var applicationLog = Program.ApplicationLog
-                ?? new ApplicationLogService(appDataPaths.DataDirectory);
-
             var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
                 Program.StartupArguments);
             var viewModel = new MainWindowViewModel(

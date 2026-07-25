@@ -1,0 +1,365 @@
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using SrvSurvey.Core.Storage;
+
+namespace SrvSurvey.Desktop.Configuration;
+
+public sealed class LegacyUiSettingsMigrator
+{
+    public const string BackupFileName = "previous-cross-platform-ui.json";
+
+    public LegacyUiSettingsMigrationResult MigrateIfNeeded(AppDataPaths paths)
+    {
+        ArgumentNullException.ThrowIfNull(paths);
+        var manifestPath = Path.Combine(
+            paths.DataDirectory,
+            LegacyProfileImporter.ManifestFileName);
+        var legacySettingsPath = Path.Combine(paths.DataDirectory, "settings.json");
+        if (!File.Exists(manifestPath) || !File.Exists(legacySettingsPath))
+        {
+            return LegacyUiSettingsMigrationResult.NotRequired;
+        }
+
+        try
+        {
+            var manifest = JsonSerializer.Deserialize<ProfileImportManifest>(
+                File.ReadAllText(manifestPath))
+                ?? throw new InvalidDataException(
+                    "The legacy import manifest is empty.");
+            var legacy = JsonNode.Parse(File.ReadAllText(legacySettingsPath))
+                as JsonObject
+                ?? throw new InvalidDataException(
+                    "The imported legacy settings file is not a JSON object.");
+            var store = new UiSettingsDocumentStore(paths.UiSettingsPath);
+            var existing = store.Load();
+            if (HasMigrationMarker(existing, manifest))
+            {
+                return new LegacyUiSettingsMigrationResult(
+                    false,
+                    0,
+                    null,
+                    null);
+            }
+
+            var backupPath = BackupExistingSettings(paths.UiSettingsPath, manifest);
+            var mappedCount = 0;
+            store.Update(root =>
+            {
+                root["Version"] = 1;
+                mappedCount += MapTheme(legacy, root);
+                mappedCount += MapSection(legacy, root, "JumpInfo",
+                [
+                    ("autoShowPlotJumpInfo", "AutoShow"),
+                    ("plotJumpInfoMinimal", "Minimal"),
+                    ("showPlotJumpInfoIfNextHop", "ShowWhenNextHopSelected"),
+                ]);
+                mappedCount += MapSection(legacy, root, "SystemSurvey",
+                [
+                    ("autoShowPlotBodyInfo", "AutoShowBodyInfo"),
+                    ("autoShowPlotBodyInfoInMap", "ShowBodyInfoInSystemMap"),
+                    ("autoShowPlotBodyInfoInOrbit", "ShowBodyInfoInOrbit"),
+                    ("autoShowPlotBodyInfoAtSurface", "ShowBodyInfoAtSurface"),
+                    ("autoHidePlotBodyInfoInBubble", "HideBodyInfoInBubble"),
+                    ("bodyInfoBubbleSize", "BodyInfoBubbleSizeLy"),
+                    ("bodyInfoHideMats", "HideBodyInfoMaterials"),
+                    ("autoShowFlightWarnings", "AutoShowFlightWarnings"),
+                    ("highGravityWarningLevel", "HighGravityWarningLevel"),
+                    ("useExternalData", "UseExternalData"),
+                    ("autoShowPlotBioSystem", "AutoShowBioSystem"),
+                    ("autoShowBioSummary", "AutoShowBioStatus"),
+                    ("autoLoadPriorScans", "AutoShowPriorScans"),
+                    ("skipPriorScansLowValue", "SkipPriorScansLowValue"),
+                    ("skipPriorScansLowValueAmount", "PriorScanMinimumValue"),
+                    ("hideMyOwnCanonnSignals", "HideOwnCanonnSignals"),
+                    ("showCanonnSignalsOnRadar", "ShowCanonnSignalsOnRadar"),
+                    ("useSmallCirclesWithCanonn", "UseSmallCanonnRadarCircles"),
+                    ("autoShowBioPlot", "AutoShowSurfaceRadar"),
+                    ("autoShowPlotMiniTrack_TEST", "AutoShowMiniTrack"),
+                    ("bioPlotSize", "SurfaceRadarSize"),
+                    ("autoHideBioPlotNoGear", "AutoHideSurfaceRadarWithoutLandingGear"),
+                    ("autoRemoveTrackerOnSampling", "AutoRemoveTrackerOnSampling"),
+                    ("autoRemoveTrackerOnFinalSample", "AutoRemoveTrackerOnFinalSample"),
+                    ("autoTrackCompBioScans", "AutoTrackCompositionScans"),
+                    ("skipAnalyzedCompBioScans", "SkipAnalyzedCompositionScans"),
+                    ("drawBodyBiosOnlyWhenNear", "DrawBodyBiosOnlyWhenNear"),
+                    ("highlightRegionalFirsts", "HighlightRegionalFirsts"),
+                    ("dimIfAnalyzed", "DimAnalyzedOrganisms"),
+                    ("hideGeoCountInBioSystem", "HideGeoCountInBioSystem"),
+                    ("disableBioPredictions", "DisableBioPredictions"),
+                    ("autoShowPlotFSS", "AutoShowLastFssBody"),
+                    ("autoShowPlotFSSInfo", "AutoShowFssInfo"),
+                    ("autoShowPlotFSSInfoInSystemMap", "ShowFssInfoInSystemMap"),
+                    ("autoShowPlotFSSInfoInNavPanel", "ShowFssInfoInNavigationPanel"),
+                    ("autoShowPlotSysStatus", "AutoShowSystemStatus"),
+                    ("hideGeoCountInFssInfo", "HideGeoCount"),
+                    ("hideFssLowValueAmount", "FssBodyValueFloor"),
+                    ("skipLowValueDSS", "HighlightDssCandidates"),
+                    ("skipLowValueAmount", "DssValueFloor"),
+                    ("skipHighDistanceDSS", "SkipDistantDssCandidates"),
+                    ("skipHighDistanceDSSValue", "DssDistanceLimitLs"),
+                    ("skipGasGiantDSS", "SkipGasGiantsForDss"),
+                    ("skipRingsDSS", "SkipRingsForDss"),
+                    ("showNonBodySignals", "ShowNonBodySignals"),
+                ]);
+                mappedCount += MapSection(legacy, root, "BiologyPredictions",
+                [
+                    ("formPredictionsCurrentBodyOnly", "CurrentBodyOnly", 0),
+                    ("formPredictionsRowFontSize", "RowSize", 1),
+                ]);
+                mappedCount += MapSection(legacy, root, "Combat",
+                [
+                    ("autoShowFootCombat_TEST", "AutoShowFootCombat"),
+                    ("autoShowPlotMassacre_TEST", "AutoShowMassacreMissions"),
+                    ("buildProjectsSuppressOtherOverlays", "SuppressForActiveBuildProjects"),
+                ]);
+                mappedCount += MapSection(legacy, root, "GuardianOverlays",
+                [
+                    ("enableGuardianSites", "EnableGuardianSites"),
+                    ("autoShowGuardianSummary", "AutoShowGuardianSummary"),
+                    ("autoShowRamTah", "AutoShowRamTah"),
+                    ("buildProjectsSuppressOtherOverlays", "SuppressForActiveBuildProjects"),
+                ]);
+                mappedCount += MapSection(legacy, root, "HumanSite",
+                [
+                    ("autoShowHumanSitesTest", "AutoShow"),
+                    ("plotHumanSiteWidth", "Width"),
+                    ("plotHumanSiteHeight", "Height"),
+                    ("humanSiteZoomShip", "ShipZoom"),
+                    ("humanSiteZoomSRV", "SrvZoom"),
+                    ("humanSiteZoomFoot", "FootZoom"),
+                    ("humanSiteAutoZoomInside", "AutoZoomInside"),
+                    ("humanSiteZoomInside", "InsideZoom"),
+                    ("humanSiteAutoZoomTool", "AutoZoomTool"),
+                    ("humanSiteZoomTool", "ToolZoom"),
+                    ("humanSiteShow_Medkit", "ShowMedkits"),
+                    ("humanSiteShow_Battery", "ShowBatteries"),
+                    ("humanSiteShow_DataTerminal", "ShowDataTerminals"),
+                    ("humanSiteDotsOnCollection", "ShowCollectedMaterials"),
+                    ("collectMatsCollectionStatsTest", "TrackMaterialCollection"),
+                    ("buildProjectsSuppressOtherOverlays", "SuppressForActiveBuildProjects"),
+                ]);
+                mappedCount += MapSection(legacy, root, "StationInfo",
+                [
+                    ("autoShowPlotStationInfo_TEST", "AutoShow"),
+                ]);
+                mappedCount += MapColonization(legacy, root);
+                mappedCount += MapInput(legacy, root);
+                root["LegacyImport"] = new JsonObject
+                {
+                    ["ManifestVersion"] = manifest.Version,
+                    ["ImportedAtUtc"] = manifest.ImportedAtUtc,
+                    ["SourceDirectory"] = manifest.SourceDirectory,
+                    ["MappedPreferenceCount"] = mappedCount,
+                };
+            });
+
+            return new LegacyUiSettingsMigrationResult(
+                true,
+                mappedCount,
+                backupPath,
+                null);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or JsonException
+                or InvalidDataException
+                or InvalidOperationException)
+        {
+            return new LegacyUiSettingsMigrationResult(
+                false,
+                0,
+                null,
+                exception.Message);
+        }
+    }
+
+    private static int MapTheme(JsonObject legacy, JsonObject target)
+    {
+        if (!TryGetBoolean(legacy, "darkTheme", out var dark))
+        {
+            return 0;
+        }
+
+        var black = TryGetBoolean(legacy, "themeMainBlack", out var blackValue)
+            && blackValue;
+        target["Theme"] = black ? "orange-dark" : dark ? "blue-dark" : "blue-light";
+        return 1;
+    }
+
+    private static int MapColonization(JsonObject legacy, JsonObject target)
+    {
+        var count = 0;
+        var section = GetOrCreateObject(target, "Colonization");
+        count += Copy(legacy, "buildProjects_TEST", section, "Enabled");
+        var overlay = GetOrCreateObject(section, "Overlay");
+        count += Copy(legacy, "autoShowPlotBuildCommodities", overlay, "AutoShow");
+        count += Copy(legacy, "buildProjectsOnRightScreen", overlay, "ShowOnRightPanel");
+        count += Copy(legacy, "buildProjectsShowSumFC_TEST", overlay, "ShowFleetCarrierCargo");
+        count += Copy(legacy, "buildProjectsShowSumFCDelta_TEST", overlay, "ShowFleetCarrierDelta");
+        count += Copy(legacy, "buildProjectsInlineSumFC_TEST", overlay, "InlineFleetCarrierCargo");
+        count += Copy(legacy, "buildProjectsCollapseGroupsWithFCEnough_TEST", overlay, "CollapseCoveredGroups");
+        count += Copy(legacy, "buildProjectsHighlightAlmostFC_TEST", overlay, "HighlightAlmostCoveredFleetCarrierLoads");
+        return count;
+    }
+
+    private static int MapInput(JsonObject legacy, JsonObject target)
+    {
+        var count = 0;
+        var input = GetOrCreateObject(target, "Input");
+        count += Copy(legacy, "keyhook_TEST", input, "KeyboardEnabled");
+        count += Copy(legacy, "hookDirectX_TEST", input, "ControllerEnabled");
+        count += Copy(legacy, "hookDirectXDeviceId_TEST", input, "ControllerDeviceId");
+        if (legacy["keyActions_TEST"] is JsonObject bindings)
+        {
+            var targetBindings = GetOrCreateObject(input, "Bindings");
+            foreach (var binding in bindings)
+            {
+                targetBindings[binding.Key] = binding.Value?.DeepClone();
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    private static int MapSection(
+        JsonObject legacy,
+        JsonObject target,
+        string sectionName,
+        IReadOnlyList<(string Legacy, string Current, int Offset)> mappings)
+    {
+        var section = GetOrCreateObject(target, sectionName);
+        var count = 0;
+        foreach (var mapping in mappings)
+        {
+            count += Copy(
+                legacy,
+                mapping.Legacy,
+                section,
+                mapping.Current,
+                mapping.Offset);
+        }
+
+        return count;
+    }
+
+    private static int MapSection(
+        JsonObject legacy,
+        JsonObject target,
+        string sectionName,
+        IReadOnlyList<(string Legacy, string Current)> mappings)
+    {
+        return MapSection(
+            legacy,
+            target,
+            sectionName,
+            mappings.Select(mapping => (mapping.Legacy, mapping.Current, 0)).ToArray());
+    }
+
+    private static int Copy(
+        JsonObject source,
+        string sourceName,
+        JsonObject target,
+        string targetName,
+        int numericOffset = 0)
+    {
+        if (source[sourceName] is not JsonNode value)
+        {
+            return 0;
+        }
+
+        if (numericOffset != 0
+            && value is JsonValue numeric
+            && numeric.TryGetValue<int>(out var number))
+        {
+            target[targetName] = number + numericOffset;
+        }
+        else
+        {
+            target[targetName] = value.DeepClone();
+        }
+
+        return 1;
+    }
+
+    private static JsonObject GetOrCreateObject(JsonObject root, string name)
+    {
+        if (root[name] is JsonObject value)
+        {
+            return value;
+        }
+
+        value = [];
+        root[name] = value;
+        return value;
+    }
+
+    private static bool TryGetBoolean(
+        JsonObject root,
+        string name,
+        out bool result)
+    {
+        result = false;
+        return root[name] is JsonValue value
+            && value.TryGetValue(out result);
+    }
+
+    private static bool HasMigrationMarker(
+        JsonObject settings,
+        ProfileImportManifest manifest)
+    {
+        return settings["LegacyImport"] is JsonObject marker
+            && marker["ImportedAtUtc"] is JsonValue importedAt
+            && importedAt.TryGetValue<DateTimeOffset>(out var value)
+            && value == manifest.ImportedAtUtc;
+    }
+
+    private static string? BackupExistingSettings(
+        string settingsPath,
+        ProfileImportManifest manifest)
+    {
+        if (!File.Exists(settingsPath))
+        {
+            return null;
+        }
+
+        Directory.CreateDirectory(manifest.BackupDirectory);
+        var backupPath = Path.Combine(manifest.BackupDirectory, BackupFileName);
+        if (!File.Exists(backupPath))
+        {
+            File.Copy(settingsPath, backupPath, false);
+        }
+
+        var sourceHash = ComputeSha256(settingsPath);
+        var backupHash = ComputeSha256(backupPath);
+        if (!string.Equals(sourceHash, backupHash, StringComparison.Ordinal))
+        {
+            throw new IOException(
+                "The current Avalonia settings backup did not match its source.");
+        }
+
+        return backupPath;
+    }
+
+    private static string ComputeSha256(string path)
+    {
+        using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete);
+        return Convert.ToHexStringLower(SHA256.HashData(stream));
+    }
+}
+
+public sealed record LegacyUiSettingsMigrationResult(
+    bool Migrated,
+    int MappedPreferenceCount,
+    string? PreviousSettingsBackupPath,
+    string? Error)
+{
+    public static LegacyUiSettingsMigrationResult NotRequired { get; } =
+        new(false, 0, null, null);
+}
