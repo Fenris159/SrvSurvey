@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Navigation;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -663,6 +664,63 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
         Assert.Equal("Test 2 biology", viewModel.BiologySurvey.Heading);
         Assert.True(viewModel.ShouldShowBioSystem);
+    }
+
+    [Fact]
+    public void BiologySurveyShowsCanonnHintOnlyForNonlocalSelectedBody()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"PlanetClass":"Rocky body","MassEM":0.1,"Landable":true}"""),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip,
+                BodyName = "Test 1",
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 2,
+                    Name = "Test 2",
+                },
+            });
+        viewModel.UseExternalData = true;
+        viewModel.AutoShowPriorScans = true;
+        viewModel.DrawBodyBiosOnlyWhenNear = false;
+        viewModel.UpdateCanonnSystemPoi(new CanonnSystemPoiResult(
+            "Test",
+            [new CanonnSurfaceBiologySignal(
+                "2",
+                "Aleoida Arcus - Green",
+                2310101,
+                new SurfaceCoordinate(1, 2),
+                false)]));
+
+        Assert.Equal(2, viewModel.BiologySurvey!.SelectedBodyId);
+        Assert.True(viewModel.HasCanonnBiologyHint);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip,
+            BodyName = "Test 2",
+        });
+
+        Assert.False(viewModel.HasCanonnBiologyHint);
+
+        viewModel.UpdateCanonnSystemPoi(new CanonnSystemPoiResult(
+            "Different system",
+            [new CanonnSurfaceBiologySignal(
+                "2",
+                null,
+                2310101,
+                new SurfaceCoordinate(1, 2),
+                false)]));
+        Assert.False(viewModel.HasCanonnBiologyHint);
     }
 
     [Fact]

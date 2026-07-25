@@ -27,6 +27,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private IReadOnlyList<FssBodyRowViewModel> fssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> dssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> biologicalBodies = [];
+    private IReadOnlySet<int> canonnBiologyBodyIds = new HashSet<int>();
     private BodyInformationViewModel? bodyInformation;
     private BiologySurveyViewModel? biologySurvey;
     private BiologyStatusViewModel? biologyStatus;
@@ -225,7 +226,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool UseExternalData
     {
         get => useExternalData;
-        set => SetPreference(ref useExternalData, value);
+        set
+        {
+            if (SetPreference(ref useExternalData, value))
+            {
+                OnPropertyChanged(nameof(HasCanonnBiologyHint));
+            }
+        }
     }
 
     public bool UseExternalBioData
@@ -249,7 +256,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool AutoShowPriorScans
     {
         get => autoShowPriorScans;
-        set => SetPreference(ref autoShowPriorScans, value);
+        set
+        {
+            if (SetPreference(ref autoShowPriorScans, value))
+            {
+                OnPropertyChanged(nameof(HasCanonnBiologyHint));
+            }
+        }
     }
 
     public bool SkipPriorScansLowValue
@@ -584,6 +597,28 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     }
 
     public bool HasBiologySurvey => BiologySurvey is not null;
+
+    public bool HasCanonnBiologyHint
+    {
+        get
+        {
+            var selectedBodyId = BiologySurvey?.SelectedBodyId;
+            var currentBodyId = !string.IsNullOrWhiteSpace(status?.BodyName)
+                ? snapshot.Bodies.FirstOrDefault(body => string.Equals(
+                    body.Name,
+                    status.BodyName,
+                    StringComparison.OrdinalIgnoreCase))?.BodyId
+                : snapshot.CurrentBodyId;
+            return UseExternalData
+                && AutoShowPriorScans
+                && selectedBodyId is not null
+                && selectedBodyId != currentBodyId
+                && canonnBiologyBodyIds.Contains(selectedBodyId.Value);
+        }
+    }
+
+    public string CanonnBiologyHint =>
+        "Canonn has known biological signals for this body.";
 
     public bool HasTimedBiologySelection => timedBiologyBodyId is not null;
 
@@ -1102,6 +1137,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         {
             ClearTimedBiologySelection(refreshDisplay: false);
             biologyDiscoveryContext = BiologyDiscoveryContext.Unavailable;
+            canonnBiologyBodyIds = new HashSet<int>();
             biologyCodexNotification = null;
             forceShowFssInfo = false;
             manuallyHideFssInfo = false;
@@ -1130,6 +1166,30 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             : BiologyDiscoveryContext.Unavailable;
         OnPropertyChanged(nameof(CurrentBiologyDiscoveryContext));
         RefreshDisplay();
+    }
+
+    public void UpdateCanonnSystemPoi(CanonnSystemPoiResult? result)
+    {
+        if (result is null
+            || string.IsNullOrWhiteSpace(snapshot.SystemName)
+            || !string.Equals(
+                result.SystemName,
+                snapshot.SystemName,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            canonnBiologyBodyIds = new HashSet<int>();
+        }
+        else
+        {
+            canonnBiologyBodyIds = snapshot.Bodies
+                .Where(body => result.Signals.Any(signal =>
+                    IsMatchingCanonnBody(body, signal.BodyName)))
+                .Select(body => body.BodyId)
+                .ToHashSet();
+        }
+
+        OnPropertyChanged(nameof(HasCanonnBiologyHint));
+        OnPropertyChanged(nameof(CanonnBiologyHint));
     }
 
     public bool RefreshTransientState()
@@ -1287,6 +1347,27 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(FlightWarningText));
         OnPropertyChanged(nameof(HasTimedBiologySelection));
         OnPropertyChanged(nameof(TimedBiologySelectionProgressPercent));
+        OnPropertyChanged(nameof(HasCanonnBiologyHint));
+        OnPropertyChanged(nameof(CanonnBiologyHint));
+    }
+
+    private static bool IsMatchingCanonnBody(
+        SystemScanBodySnapshot body,
+        string bodyName)
+    {
+        var normalized = bodyName.Trim();
+        return normalized.Length > 0
+            && (string.Equals(
+                    body.ShortName,
+                    normalized,
+                    StringComparison.OrdinalIgnoreCase)
+                || string.Equals(
+                    body.Name,
+                    normalized,
+                    StringComparison.OrdinalIgnoreCase)
+                || body.Name.EndsWith(
+                    " " + normalized,
+                    StringComparison.OrdinalIgnoreCase));
     }
 
     private void UpdateTimedBiologySelection(

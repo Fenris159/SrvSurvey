@@ -140,6 +140,19 @@
                   BorderBrush="{DynamicResource RavenBorderBrush}"
                   BorderThickness="1"
                   CornerRadius="8"
+                  IsVisible="{Binding Survey.HasCanonnBiologyHint}">
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="10"
+                       FontWeight="SemiBold"
+                       Text="{Binding Survey.CanonnBiologyHint}"
+                       TextWrapping="Wrap" />
+          </Border>
+
+          <Border Padding="10"
+                  Background="{DynamicResource RavenSurfaceBrush}"
+                  BorderBrush="{DynamicResource RavenBorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="8"
                   IsVisible="{Binding Survey.BiologySurvey.HasPredictionStatus}">
             <TextBlock Classes="muted"
                        FontSize="10"

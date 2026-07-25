@@ -6,6 +6,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed record BiologySurveyViewModel(
     BiologySurveyMode Mode,
+    int? SelectedBodyId,
     string Heading,
     string ProgressText,
     IReadOnlyList<BiologyBodyRowViewModel> Bodies,
@@ -188,6 +189,7 @@ public sealed record BiologySurveyViewModel(
 
         return new BiologySurveyViewModel(
             BiologySurveyMode.System,
+            null,
             snapshot.SystemName ?? "Current system",
             $"{analyzed:N0} of {total:N0} biological signals analyzed",
             rows,
@@ -292,6 +294,7 @@ public sealed record BiologySurveyViewModel(
 
         return new BiologySurveyViewModel(
             BiologySurveyMode.Body,
+            body.BodyId,
             $"{body.Name} biology",
             body.BiologicalSignalCount == 1
                 ? "1 biological signal"

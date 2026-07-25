@@ -225,6 +225,84 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
     }
 }
 
+public sealed class CachingCanonnSystemPoiClient(
+    ICanonnSystemPoiClient inner) : ICanonnSystemPoiClient
+{
+    private readonly ICanonnSystemPoiClient inner = inner
+        ?? throw new ArgumentNullException(nameof(inner));
+    private readonly object gate = new();
+    private readonly Dictionary<string, Task<CanonnSystemPoiResult>> requests =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    public async Task<CanonnSystemPoiResult> GetAsync(
+        string systemName,
+        string commanderName,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
+        var normalizedSystem = systemName.Trim();
+        var normalizedCommander = commanderName?.Trim() ?? string.Empty;
+        var key = normalizedSystem + "\n" + normalizedCommander;
+        Task<CanonnSystemPoiResult> request;
+        lock (gate)
+        {
+            if (!requests.TryGetValue(key, out request!))
+            {
+                var completion = new TaskCompletionSource<CanonnSystemPoiResult>(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+                request = completion.Task;
+                requests.Add(key, request);
+                _ = LoadAsync(
+                    key,
+                    normalizedSystem,
+                    normalizedCommander,
+                    completion);
+            }
+        }
+
+        return await request.WaitAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task LoadAsync(
+        string key,
+        string systemName,
+        string commanderName,
+        TaskCompletionSource<CanonnSystemPoiResult> completion)
+    {
+        try
+        {
+            var result = await inner.GetAsync(
+                    systemName,
+                    commanderName,
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+            completion.TrySetResult(result);
+            lock (gate)
+            {
+                foreach (var oldKey in requests
+                             .Where(entry => entry.Key != key
+                                 && entry.Value.IsCompletedSuccessfully)
+                             .Select(entry => entry.Key)
+                             .Take(Math.Max(0, requests.Count - 8))
+                             .ToArray())
+                {
+                    requests.Remove(oldKey);
+                }
+            }
+
+        }
+        catch (Exception exception)
+        {
+            lock (gate)
+            {
+                requests.Remove(key);
+            }
+
+            completion.TrySetException(exception);
+        }
+    }
+}
+
 public sealed record CanonnSystemPoiResult(
     string SystemName,
     IReadOnlyList<CanonnSurfaceBiologySignal> Signals);

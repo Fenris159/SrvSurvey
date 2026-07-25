@@ -17,6 +17,10 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
+    private readonly ICanonnSystemPoiClient canonnSystemPoiClient;
+    private readonly Func<string?> commanderNameProvider;
+    private readonly SemaphoreSlim canonnRefreshLock = new(1, 1);
+    private readonly CancellationTokenSource disposalCancellation = new();
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private BiologySurveyOverlayWindow? biologyWindow;
@@ -36,6 +40,9 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private bool isFssObscured;
     private bool isPriorScansObscured;
     private bool isSurfaceObscured;
+    private string? canonnLoadedKey;
+    private string? canonnFailedKey;
+    private DateTimeOffset canonnRetryAfter;
     private bool disposed;
 
     public SystemSurveyOverlayCoordinator(
@@ -56,6 +63,9 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
+        this.commanderNameProvider = commanderNameProvider ?? (() => null);
+        this.canonnSystemPoiClient = new CachingCanonnSystemPoiClient(
+            canonnSystemPoiClient ?? new CanonnSystemPoiClient());
         viewModel = new SystemSurveyOverlayViewModel(
             survey,
             platform.Capabilities);
@@ -64,9 +74,9 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             platform.Capabilities);
         priorScansViewModel = new PriorScansOverlayViewModel(
             survey,
-            canonnSystemPoiClient ?? new CanonnSystemPoiClient(),
+            this.canonnSystemPoiClient,
             exobiologyCatalog ?? ExobiologyReferenceCatalog.LoadEmbedded(),
-            commanderNameProvider ?? (() => null),
+            this.commanderNameProvider,
             platform.Capabilities);
         survey.PropertyChanged += OnSurveyPropertyChanged;
         surfaceSurvey.PropertyChanged += OnSurfaceSurveyPropertyChanged;
@@ -221,6 +231,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         disposed = true;
+        disposalCancellation.Cancel();
         timer.Stop();
         timer.Tick -= OnTimerTick;
         survey.PropertyChanged -= OnSurveyPropertyChanged;
@@ -239,6 +250,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         CloseStatusWindow();
         surfaceViewModel.Dispose();
         priorScansViewModel.Dispose();
+        disposalCancellation.Dispose();
         gameWindowTracker.Dispose();
         platform.Dispose();
     }
@@ -246,8 +258,99 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private void OnTimerTick(object? sender, EventArgs eventArgs)
     {
         survey.RefreshTransientState();
+        _ = RefreshBiologyCanonnAsync();
         _ = priorScansViewModel.RefreshAsync();
         SynchronizeWindows();
+    }
+
+    private async Task RefreshBiologyCanonnAsync()
+    {
+        if (!TryCreateCanonnContext(out var systemName, out var commanderName))
+        {
+            if (canonnLoadedKey is not null)
+            {
+                canonnLoadedKey = null;
+                survey.UpdateCanonnSystemPoi(null);
+            }
+
+            return;
+        }
+
+        var key = systemName + "\n" + commanderName;
+        if (string.Equals(canonnLoadedKey, key, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(canonnFailedKey, key, StringComparison.OrdinalIgnoreCase)
+                && DateTimeOffset.UtcNow < canonnRetryAfter
+            || !await canonnRefreshLock.WaitAsync(0).ConfigureAwait(true))
+        {
+            return;
+        }
+
+        try
+        {
+            if (!TryCreateCanonnContext(out systemName, out commanderName))
+            {
+                return;
+            }
+
+            key = systemName + "\n" + commanderName;
+            if (string.Equals(
+                canonnLoadedKey,
+                key,
+                StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var result = await canonnSystemPoiClient.GetAsync(
+                systemName,
+                commanderName,
+                disposalCancellation.Token).ConfigureAwait(true);
+            if (disposed
+                || !TryCreateCanonnContext(
+                    out var currentSystem,
+                    out var currentCommander)
+                || !string.Equals(
+                    key,
+                    currentSystem + "\n" + currentCommander,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            canonnLoadedKey = key;
+            canonnFailedKey = null;
+            canonnRetryAfter = default;
+            survey.UpdateCanonnSystemPoi(result);
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or System.Text.Json.JsonException
+                or TaskCanceledException
+                or IOException
+                or InvalidOperationException)
+        {
+            if (!disposed)
+            {
+                canonnFailedKey = key;
+                canonnRetryAfter = DateTimeOffset.UtcNow.AddSeconds(30);
+            }
+        }
+        finally
+        {
+            canonnRefreshLock.Release();
+        }
+    }
+
+    private bool TryCreateCanonnContext(
+        out string systemName,
+        out string commanderName)
+    {
+        systemName = survey.Snapshot.SystemName?.Trim() ?? string.Empty;
+        commanderName = commanderNameProvider()?.Trim() ?? string.Empty;
+        return !disposed
+            && survey.UseExternalData
+            && survey.AutoShowPriorScans
+            && systemName.Length > 0;
     }
 
     private void OnPriorScansPropertyChanged(

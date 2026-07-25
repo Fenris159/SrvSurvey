@@ -226,7 +226,8 @@ nebula, Guardian-bubble, inheritance, and known-organism context. It exposes
 predicted reward ranges only for complete inputs and otherwise shows the
 missing context explicitly. Its confirmed and predicted rows now infer
 commander and regional firsts from the active global/current-region ledgers;
-only the auxiliary Canonn signal hint remains open. Of the other
+the original nonlocal-body Canonn signal hint shares a bounded request cache
+with the prior-scan radar. Of the other
 plotter surfaces, `PlotPriorScans` is now a
 bottom-right passive guidance and radar surface. It uses the current Canonn
 `getSystemPoi` response, rejects malformed/bodyless/mismatched records, caches
