@@ -1,4 +1,5 @@
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -296,6 +297,125 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(viewModel.ShouldShowBodyInfo);
     }
 
+    [Fact]
+    public void BiologySurveyUsesSystemOverviewInMapModes()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+                Parse("""{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""),
+            ],
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.SystemMap,
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 1,
+                    Name = "Test 1",
+                },
+            });
+
+        Assert.True(viewModel.ShouldShowBioSystem);
+        var biology = Assert.IsType<BiologySurveyViewModel>(
+            viewModel.BiologySurvey);
+        Assert.True(biology.IsSystemOverview);
+        Assert.Equal("1 of 2 biological signals analyzed", biology.ProgressText);
+        var body = Assert.Single(biology.Bodies);
+        Assert.True(body.IsDestination);
+        Assert.Equal(7_252_500, body.KnownReward);
+        Assert.True(body.HasUnknownReward);
+        Assert.Equal("Known reward: 7.25 M CR", biology.RewardSummary);
+    }
+
+    [Fact]
+    public void BiologySurveyShowsBodySamplesRewardsFootfallAndGeology()
+    {
+        var viewModel = CreateViewModel();
+        var scan = new BioSampleSnapshot(
+            new SurfaceLocation(1, 2),
+            150,
+            "$Codex_Ent_Aleoids_Genus_Name;",
+            "$Codex_Ent_Aleoids_01_Name;",
+            "Active",
+            2310101,
+            "Test 1");
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1},{"Type":"$SAA_SignalType_Geological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+                Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":100,"Name_Localised":"Silicate Vapour Fumarole","SubCategory":"$Codex_SubCategory_Geology_and_Anomalies;"}"""),
+                Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;","IsNewEntry":true}"""),
+                Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""),
+                Parse("""{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.Fss },
+            new ExobiologySnapshot(null, scan, null, 0, [], 0));
+
+        Assert.True(viewModel.ShouldShowBioSystem);
+        var biology = Assert.IsType<BiologySurveyViewModel>(
+            viewModel.BiologySurvey);
+        Assert.True(biology.IsBodyDetail);
+        Assert.Equal("Test 1 biology", biology.Heading);
+        var organism = Assert.Single(biology.Organisms);
+        Assert.Equal("Aleoida Arcus - Green", organism.DisplayName);
+        Assert.Equal("7.25 M CR", organism.RewardText);
+        Assert.True(organism.IsRegionalFirst);
+        Assert.False(organism.IsHighlightedFirst);
+        Assert.True(organism.IsCurrentSample);
+        Assert.False(organism.ShouldDim);
+        Assert.Equal(
+            "First-footfall value: 36.26 M CR",
+            biology.FirstFootfallRewardSummary);
+        Assert.Equal(2, biology.GeologicalSignalCount);
+        Assert.Equal("Silicate Vapour Fumarole", Assert.Single(
+            biology.GeologicalSignals));
+
+        viewModel.HideGeoCountInBioSystem = true;
+        Assert.False(viewModel.BiologySurvey!.HasGeologicalSignals);
+        viewModel.HighlightRegionalFirsts = true;
+        Assert.True(Assert.Single(
+            viewModel.BiologySurvey!.Organisms).IsHighlightedFirst);
+    }
+
+    [Fact]
+    public void BiologySurveyHonorsNearBodySelectionPreference()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+                Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"PlanetClass":"Rocky body","MassEM":0.1,"Landable":true}"""),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip,
+                BodyName = "Test 1",
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 2,
+                    Name = "Test 2",
+                },
+            });
+
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.False(viewModel.ShouldShowBioSystem);
+
+        viewModel.DrawBodyBiosOnlyWhenNear = false;
+
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.Equal("Test 2 biology", viewModel.BiologySurvey.Heading);
+        Assert.True(viewModel.ShouldShowBioSystem);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -369,7 +489,8 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             {"Name":"Test 1 A Ring","RingClass":"eRingClass_Rocky","InnerRad":1,"OuterRad":2}
           ],
           "WasDiscovered":false,
-          "WasMapped":false
+          "WasMapped":false,
+          "WasFootfalled":false
         }
         """;
 }

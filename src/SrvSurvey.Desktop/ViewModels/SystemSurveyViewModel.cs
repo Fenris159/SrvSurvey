@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
@@ -15,11 +16,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private readonly SystemSurveySettingsStore settingsStore;
     private readonly SystemScanState state;
     private EliteStatus? status;
+    private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
     private SystemScanSnapshot snapshot = SystemScanSnapshot.Empty;
     private IReadOnlyList<FssBodyRowViewModel> fssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> dssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> biologicalBodies = [];
     private BodyInformationViewModel? bodyInformation;
+    private BiologySurveyViewModel? biologySurvey;
     private bool autoShowBodyInfo;
     private bool showBodyInfoInSystemMap;
     private bool showBodyInfoInOrbit;
@@ -166,25 +169,49 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool DrawBodyBiosOnlyWhenNear
     {
         get => drawBodyBiosOnlyWhenNear;
-        set => SetPreference(ref drawBodyBiosOnlyWhenNear, value);
+        set
+        {
+            if (SetPreference(ref drawBodyBiosOnlyWhenNear, value))
+            {
+                RefreshDisplay();
+            }
+        }
     }
 
     public bool HighlightRegionalFirsts
     {
         get => highlightRegionalFirsts;
-        set => SetPreference(ref highlightRegionalFirsts, value);
+        set
+        {
+            if (SetPreference(ref highlightRegionalFirsts, value))
+            {
+                RefreshDisplay();
+            }
+        }
     }
 
     public bool DimAnalyzedOrganisms
     {
         get => dimAnalyzedOrganisms;
-        set => SetPreference(ref dimAnalyzedOrganisms, value);
+        set
+        {
+            if (SetPreference(ref dimAnalyzedOrganisms, value))
+            {
+                RefreshDisplay();
+            }
+        }
     }
 
     public bool HideGeoCountInBioSystem
     {
         get => hideGeoCountInBioSystem;
-        set => SetPreference(ref hideGeoCountInBioSystem, value);
+        set
+        {
+            if (SetPreference(ref hideGeoCountInBioSystem, value))
+            {
+                RefreshDisplay();
+            }
+        }
     }
 
     public bool DisableBioPredictions
@@ -364,6 +391,20 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     }
 
     public bool HasBodyInformation => BodyInformation is not null;
+
+    public BiologySurveyViewModel? BiologySurvey
+    {
+        get => biologySurvey;
+        private set
+        {
+            if (SetField(ref biologySurvey, value))
+            {
+                OnPropertyChanged(nameof(HasBiologySurvey));
+            }
+        }
+    }
+
+    public bool HasBiologySurvey => BiologySurvey is not null;
 
     public bool IsBodyInfoForced => forceShowBodyInfo;
 
@@ -658,9 +699,42 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool ShouldShowBioSystem
+    {
+        get
+        {
+            if (!AutoShowBioSystem
+                || BiologySurvey is null
+                || status is null
+                || status.InTaxi
+                || fsdJumping)
+            {
+                return false;
+            }
+
+            var overviewMode = status.Flags.HasFlag(StatusFlags.Supercruise)
+                || status.GuiFocus is GuiFocus.Saa
+                    or GuiFocus.Fss
+                    or GuiFocus.ExternalPanel
+                    or GuiFocus.Orrery
+                    or GuiFocus.SystemMap;
+            var localBodyMode = BiologySurvey.IsBodyDetail
+                && (status.GlideMode
+                    || status.InMainShip
+                    || status.Landed
+                    || status.InSrv
+                    || status.OnFoot
+                    || status.GuiFocus is GuiFocus.CommsPanel
+                        or GuiFocus.RolePanel
+                        or GuiFocus.Codex);
+            return overviewMode || localBodyMode;
+        }
+    }
+
     public void ApplyUpdate(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
-        EliteStatus? nextStatus)
+        EliteStatus? nextStatus,
+        ExobiologySnapshot? nextExobiology = null)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         var previousAddress = snapshot.SystemAddress;
@@ -704,6 +778,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             }
 
             status = nextStatus;
+        }
+
+        if (nextExobiology is not null)
+        {
+            exobiology = nextExobiology;
         }
 
         snapshot = state.CreateSnapshot();
@@ -782,6 +861,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private void RefreshDisplay()
     {
+        BiologySurvey = BiologySurveyViewModel.Create(
+            snapshot,
+            status,
+            exobiology,
+            DrawBodyBiosOnlyWhenNear,
+            HighlightRegionalFirsts,
+            DimAnalyzedOrganisms,
+            HideGeoCountInBioSystem);
         BodyInformation = CreateBodyInformation(
             ResolveBodyInfoTarget(forceShowBodyInfo
                 || status?.GuiFocus is GuiFocus.SystemMap or GuiFocus.Orrery));
@@ -1307,6 +1394,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShouldShowFssInfo));
         OnPropertyChanged(nameof(ShouldShowLastFssBody));
         OnPropertyChanged(nameof(ShouldShowBodyInfo));
+        OnPropertyChanged(nameof(ShouldShowBioSystem));
         OnPropertyChanged(nameof(ShouldShowSystemStatus));
     }
 

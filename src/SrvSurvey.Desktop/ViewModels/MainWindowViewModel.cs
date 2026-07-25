@@ -861,8 +861,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             update.Status,
             Route.CreateSnapshot(),
             update.IsBootstrapRead);
-        SystemSurvey.ApplyUpdate(update.JournalEvents, update.Status);
-
         foreach (var journalEvent in update.JournalEvents)
         {
             if (!skipPersistedBootstrapEvents
@@ -886,6 +884,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
 
         var exobiologyAfter = exobiologyState.CreateSnapshot();
+        SystemSurvey.ApplyUpdate(
+            update.JournalEvents,
+            update.Status,
+            exobiologyAfter);
         if (exobiologyState.Version != exobiologyVersionBefore)
         {
             await SaveExobiologyAsync(exobiologyAfter);
