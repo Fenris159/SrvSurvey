@@ -7,7 +7,8 @@ namespace SrvSurvey.Core.Exobiology;
 
 public sealed class CommanderCodexJournalTracker(
     CommanderCodexStore store,
-    JournalSessionState? session = null)
+    JournalSessionState? session = null,
+    string? frontierIdFilter = null)
 {
     private readonly CommanderCodexStore store = store
         ?? throw new ArgumentNullException(nameof(store));
@@ -25,6 +26,15 @@ public sealed class CommanderCodexJournalTracker(
         {
             session.Apply(journalEvent);
             if (journalEvent.EventName != "CodexEntry")
+            {
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(frontierIdFilter)
+                && !string.Equals(
+                    session.FrontierId,
+                    frontierIdFilter,
+                    StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }

@@ -265,8 +265,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
         {
             var key = discovery.EntryId.ToString(CultureInfo.InvariantCulture);
             if (TryParseFirst(firsts[key], out var existing)
-                && existing.SystemAddress != -1
-                && discovery.Timestamp.DateTime >= existing.Timestamp.DateTime)
+                && ShouldKeepExistingFirst(existing, discovery))
             {
                 continue;
             }
@@ -464,6 +463,19 @@ public sealed class CommanderCodexStore(string dataDirectory)
     {
         return first.Timestamp.ToString("s", CultureInfo.InvariantCulture)
             + $"_{first.SystemAddress}_{first.BodyId}";
+    }
+
+    private static bool ShouldKeepExistingFirst(
+        CommanderCodexFirst existing,
+        CommanderCodexDiscovery discovery)
+    {
+        if (discovery.SystemAddress == -1)
+        {
+            return true;
+        }
+
+        return existing.SystemAddress != -1
+            && discovery.Timestamp.DateTime >= existing.Timestamp.DateTime;
     }
 
     private static string? GetString(JsonObject root, string propertyName)
