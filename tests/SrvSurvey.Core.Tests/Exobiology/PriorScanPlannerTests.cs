@@ -32,7 +32,7 @@ public sealed class PriorScanPlannerTests
     {
         var request = Request(
         [
-            Signal("A 1", 2320101, 0, 0.02),
+            Signal("A1", 2320101, 0, 0.02),
             Signal("A 1", 2310101, 0, 0.01),
             Signal("A 1", 2310101, 0, -0.01),
             Signal("A 2", 2310101, 0, 0.001),
@@ -93,9 +93,23 @@ public sealed class PriorScanPlannerTests
                     new SurfaceCoordinate(0, 0.03)),
             ],
             skipLowValue: true,
-            hideAnalyzed: true));
+            hideOwn: true));
 
         Assert.Empty(filtered.Species);
+    }
+
+    [Fact]
+    public void CreatePlanHidesCanonnRowsAttributedToCommander()
+    {
+        var plan = planner.CreatePlan(Request(
+        [
+            Signal("A 1", 2310101, 0, 0.01, commanderScan: true),
+            Signal("A 1", 2310101, 0, 0.02),
+        ],
+        hideOwn: true));
+
+        var target = Assert.Single(Assert.Single(plan.Species).Targets);
+        Assert.Equal(349.066, target.DistanceMeters, 3);
     }
 
     [Fact]
@@ -134,7 +148,7 @@ public sealed class PriorScanPlannerTests
         IReadOnlyList<PriorScanPersonalSample>? personalSamples = null,
         string? activeSpecies = null,
         bool skipLowValue = false,
-        bool hideAnalyzed = false)
+        bool hideOwn = false)
     {
         return new PriorScanPlanRequest(
             "A 1",
@@ -147,20 +161,21 @@ public sealed class PriorScanPlannerTests
             activeSpecies,
             skipLowValue,
             1_000_000,
-            hideAnalyzed);
+            hideOwn);
     }
 
     private static CanonnSurfaceBiologySignal Signal(
         string body,
         long entryId,
         double latitude,
-        double longitude)
+        double longitude,
+        bool commanderScan = false)
     {
         return new CanonnSurfaceBiologySignal(
             body,
             null,
             entryId,
             new SurfaceCoordinate(latitude, longitude),
-            false);
+            commanderScan);
     }
 }

@@ -29,18 +29,18 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
 
         var analyzedEntryIds = request.AnalyzedEntryIds.ToHashSet();
         var candidates = request.Signals
-            .Where(signal => string.Equals(
+            .Where(signal => BodyNamesMatch(
                 signal.BodyName,
-                request.BodyName,
-                StringComparison.OrdinalIgnoreCase))
+                request.BodyName))
             .Select(signal => new Candidate(
                 signal,
                 catalog.FindByEntryId(signal.EntryId)))
             .Where(candidate => candidate.Reference is not null)
             .Where(candidate => !request.SkipLowValue
                 || candidate.Reference!.Reward >= request.MinimumReward)
-            .Where(candidate => !request.HideAnalyzedSignals
-                || !analyzedEntryIds.Contains(candidate.Signal.EntryId))
+            .Where(candidate => !request.HideOwnSignals
+                || !candidate.Signal.IsCommanderScan
+                    && !analyzedEntryIds.Contains(candidate.Signal.EntryId))
             .Where(candidate => !IsNearPersonalSample(
                 candidate,
                 request.PersonalSamples,
@@ -138,6 +138,14 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
                 bodyRadiusMeters) < highlightDistanceMeters);
     }
 
+    private static bool BodyNamesMatch(string first, string second)
+    {
+        return string.Equals(
+            first.Replace(" ", string.Empty, StringComparison.Ordinal),
+            second.Replace(" ", string.Empty, StringComparison.Ordinal),
+            StringComparison.OrdinalIgnoreCase);
+    }
+
     private static void RemoveNearbyDuplicates(
         List<PriorScanTarget> targets,
         double bodyRadiusMeters,
@@ -177,7 +185,7 @@ public sealed record PriorScanPlanRequest(
     string? ActiveSpeciesName = null,
     bool SkipLowValue = false,
     long MinimumReward = 1_000_000,
-    bool HideAnalyzedSignals = false,
+    bool HideOwnSignals = false,
     double HighlightDistanceMeters = 150,
     double FarDistanceMeters = 1_000_000);
 
