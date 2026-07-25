@@ -235,6 +235,19 @@ The legacy predicted biological reward range remains coupled to the unported
 `PlotBioSystem` prediction engine and is still open; live Elite attachment and
 Linux also remain open.
 
+`PlotBioSystem` now has a Raven-themed passive replacement with its legacy
+whole-system, FSS-last-body, and near/current/target-body selection rules. The
+shared reducer retains genus/species/variant identities, localized names,
+Codex IDs, rewards, analyzed state, regional-first state, and geological names.
+The overlay renders active sampling, analyzed dimming, partial and confirmed
+reward totals, first-footfall value, DSS guidance, geology, and unknown slots;
+its persisted settings and Guardian suppression are wired into the shared
+coordinator. Dense body views were checked in Blue dark/light and the system
+overview was checked with three bodies. The exact criteria engine still needs
+region, parent-star brightness, nebula, and Guardian-bubble inputs; commander
+Codex firsts, Canonn hints, the transient map-selection timer, live Elite
+attachment, and Linux remain open.
+
 Exit gate: overlay positioning, DPI scaling, focus, click-through behavior, and
 input are recorded on the supported platform matrix.
 
@@ -258,8 +271,10 @@ UI tests where practical, and live Windows/Linux evidence.
   implemented, while its experimental pixel tuning detector remains open;
   `PlotBodyInfo` selection, visibility, and presentation are implemented while
   its biological reward range remains tied to the open `PlotBioSystem`
-  prediction work. `PlotPriorScans` and the remaining route/search plotter
-  modes are still open.
+  prediction work. The journal-backed `PlotBioSystem` presentation and lifecycle
+  are implemented, while its exact prediction inputs and auxiliary Canonn/Codex
+  cues remain open. `PlotPriorScans` and the remaining route/search plotter modes
+  are still open.
 - [ ] Human settlements and post-processing tools.
 - [ ] Cargo, missions, massacre/foot combat, and colonization projects.
 - [ ] Quest communications and controller navigation.
@@ -292,7 +307,7 @@ not expected to run as a headless container service.
 | Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
 | Settings/data migration | OS paths, legacy discovery, manifests, verified backup/staging/import, lossless commander profile updates, and all 30 legacy input binding names/defaults implemented | Explicit backup-and-import workflow plus opt-in global keyboard/controller settings, validation, default restore, SDL device picker, refresh, and reconnect status | Settings/input UI visually and accessibility checked in Blue light; native keyboard hook reached active; SDL initialized without connected hardware; real profile restart comparison and physical controller input not run | Not tested |
 | Exploration totals | Legacy valuation and six counters plus compatible, atomic profile persistence implemented | Live Overview/Exploration projections and two-step reset | Automated only | Not tested |
-| Organic scans | Codex reference, three-sample state, surface separation, first-footfall reward, sale, death, reset, and compatible profile fields implemented; system/body organism history remains | Live Overview/Exobiology projections and two-step unclaimed reset; predictions/Codex remain pending | Empty/live-profile page visually and accessibility checked; active Elite sampling not run | Not tested |
+| Organic scans | Codex reference, three-sample state, surface separation, first-footfall reward, sale, death, reset, compatible profile fields, and current-system organism/geology history implemented | Live Overview/Exobiology projections, two-step unclaimed reset, and passive `PlotBioSystem` replacement with system/body modes, active/analyzed/first states, confirmed rewards, first-footfall value, DSS/geology details, and persisted preferences; exact environmental predictions and Codex forms remain pending | Empty/live-profile page visually/accessibility checked; dense body overlay checked in Blue dark/light and three-body system overview checked in Blue light; active Elite sampling/attachment not run | Not tested |
 | Ground target tracking | Legacy coordinate parsing plus cardinal formats, validated settings, great-circle distance/bearing, relative heading, and approach bands implemented | Travel target editor supports typed, current, clipboard, clear, and live guidance; overlay remains pending | Inactive/live-profile page visually and accessibility checked; active surface guidance not run | Not tested |
 | System notes | Lossless legacy per-system JSON lookup/update/creation plus legacy topmost and screenshot-folder settings implemented; saves against the active Journey system update that visit's note counter | Single-instance resizable notes window, current-system context, save/cancel, always-on-top, Canonn/Spansh/EDSM, screenshots, Travel launcher, and `Ctrl+Shift+N` implemented | Travel card and notes window visually checked in Blue dark/light without changing live notes | Not tested |
 | Commander journeys | Lossless legacy journey JSON and active-pointer persistence, historic journal replay, all legacy counters/rewards/flags, current and prior-system starts, live updates, note coupling, conclude, and bounded reprocess implemented | Single-instance responsive workspace unifies begin, list, edit, viewer, and per-system details; supports history, preferences, notes, screenshots, dirty-state handling, and guarded destructive actions | Isolated QA journey exercised in Blue dark/light, including both start modes, begin, overview, visited systems, note edit/discard, refresh, and conclude/reprocess confirmations; no live commander Journey data changed | Not tested |
@@ -303,7 +318,7 @@ not expected to run as a headless container service.
 | Boxel search | Generated-name hierarchy, ID64 decoding for generated and hand-authored names, completion/skip rules, lossless commander fields, legacy local-system and empty-boxel files, paged Spansh search, live `NavRoute.json`/journal updates, and cancellable full-area completion audit with partial results implemented | Search supports activation, mass-code/date options, current/parent/sibling/child navigation, expected counts, manual completion, empty marking, current-system highlighting, refresh, manual/Galaxy Map clipboard copy, audit progress/cancellation, and a large-audit confirmation guard | Inactive live-profile page and audit controls visually and accessibility checked at 1182 by 790; automated ID64, source-merge, live-completion, audit, cancellation, and confirmation integration passed; no search/profile/audit action was invoked | Not tested |
 | Nearby biological systems | Canonn nearest-codex and POI enrichment plus Spansh missing-variant request/response contracts implemented; malformed rows are excluded and Spansh results are limited to five unique systems | Search supports current journal reference coordinates, both legacy modes, validation, result selection, copy name/coordinates, Canonn/Spansh links, and the original Spansh result page | Both modes and conditional inputs visually checked in Blue dark at 1182 by 790 without issuing a live query; automated request, enrichment, selection, clipboard, address-resolution, and link coverage passed | Not tested |
 | Guardian surveys | All 759 shipped sites, 13 map templates, 729 published surveys, exact completion scoring, duplicate-ID/full-body matching, legacy/current commander files, compact/old POI and obelisk formats, visits, notes, beacon locations, live site transitions/writes, native map projection, lossless survey editing, cargo artifact aliases, 25 m obelisk proximity, scan persistence, and both Ram Tah missions implemented; advanced authoring and remaining Guardian plotter modes remain | Browser, clipboard actions, native maps, survey editor, live-site/scanner cards, artifact requirements, scan toggle, both complete Ram Tah workspaces, and a detached live map/current-obelisk overlay implemented | Live-profile browser, maps/editor, Ram Tah tabs, and inactive scanner card visually checked at 1182 by 790; scanner checked in Blue dark/light without changing commander state; detached overlay compiled and automated but active in-game proximity was not run | Not tested |
-| Overlays/input | Passive overlay contract, monitor-aware placement, Windows native click-through/client tracking, X11 XShape click-through/EWMH tracking, Wayland overlay gating, SharpHook keyboard input, and SDL3 controller input implemented; remaining plotters pending | Guardian live map/current-obelisk, followed-route Galaxy Map, next-jump intelligence, FSS body-feed, and system-status overlays follow foreground Elite and close on unsafe states; all 30 legacy chords are editable and keyboard/controller events share focus-aware routing | Placement, capability, identity, route/jump/system-survey state, hook, controller lifecycle, and chord tests passed; route, jump, FSS, and system-status overlays visually previewed in Blue dark/light; Windows keyboard hook reached active and SDL enumerated successfully without hardware; no live Elite overlay or physical controller session run | Native libraries present in Linux publish; runtime not tested |
+| Overlays/input | Passive overlay contract, monitor-aware placement, Windows native click-through/client tracking, X11 XShape click-through/EWMH tracking, Wayland overlay gating, SharpHook keyboard input, and SDL3 controller input implemented; remaining plotters pending | Guardian live map/current-obelisk, followed-route Galaxy Map, next-jump intelligence, FSS/body/system survey, and biology survey overlays follow foreground Elite and close on unsafe states; all 30 legacy chords are editable and keyboard/controller events share focus-aware routing | Placement, capability, identity, route/jump/system-survey/biology state, hook, controller lifecycle, and chord tests passed; route, jump, FSS, body, system-status, and biology overlays visually previewed in Blue dark/light; Windows keyboard hook reached active and SDL enumerated successfully without hardware; no live Elite overlay or physical controller session run | Native libraries present in Linux publish; runtime not tested |
 | Colonisation projects | Shipped build costs, construction depot state, commander Raven profile, project creation validation, aggregate commodity planning, Cargo/Market readers, carrier inventories, Raven cargo reconciliation/endpoints, and lossless API-key persistence implemented | Opt-in project workspace and creation review, depot progress, market/ship/FC shopping overlay, overlay preferences, and credential-gated linked-carrier sync implemented | Main workspace and shopping overlay visually checked in Blue dark; automated core/UI coverage passed; no external publish or live Elite overlay session was run | Not tested |
 | Secondary features | Nearest systems, colonisation project forms, system notes, Commander Journeys, and followed routes are implemented; remaining rows are tracked in `docs/UI_PORTING_MATRIX.md` | Implemented slices are integrated into Search, Travel, and Colonisation; other secondary forms remain open | See per-feature rows and UI matrix | Not tested |
 | Packaging/AppImage | Self-contained publish configured; no AppImage | Not applicable | `win-x64` publish passed | Cross-publish passed; runtime not tested |
@@ -318,7 +333,7 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 506 tests: 321 Core tests and 185 Desktop tests.
+  passed all 510 tests: 322 Core tests and 188 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
@@ -432,6 +447,12 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   bottom-left placement. Both new overlays were visually checked together in
   Blue (dark) and Blue (light); the temporary preview hook and settings were
   removed.
+- Automated biology-overlay coverage now includes persisted legacy defaults,
+  system/map versus body/FSS selection, near-body targeting, known and partial
+  reward totals, first-footfall value, active samples, analyzed dimming,
+  regional-first semantics, and geological details. Dense body presentation was
+  checked in Blue dark/light and three-body whole-system presentation in Blue
+  light; the temporary preview hook and QA settings were removed.
 - Automated global-input coverage now validates all 30 legacy action names and
   default chords, keyboard formatting/routing and text-entry suppression,
   controller button/trigger/eight-way POV chords, first-release dispatch,

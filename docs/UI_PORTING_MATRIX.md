@@ -42,10 +42,10 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
 
-The implemented Exobiology page covers the original `Main` dashboard workflow,
-not the separate prediction, Codex browser, prior-scan, or overlay surfaces.
-Those rows remain open below and keep their pending labels until their backing
-system/body and platform behavior is ported.
+The implemented Exobiology page covers the original `Main` dashboard workflow.
+The journal-backed `PlotBioSystem` overlay is also implemented, while its exact
+environmental prediction engine, the Codex browser, prior-scan, and remaining
+biology surfaces stay open below until their backing behavior is ported.
 
 ## Secondary forms
 
@@ -88,9 +88,9 @@ system/body and platform behavior is ported.
 
 ## Overlay and plotter surfaces
 
-The following 22 designers are not ordinary application pages. They depend on
-the overlay/window-tracking work in Phase 4 and must be validated separately for
-Windows, X11, and Wayland:
+The following 22 designers are not ordinary application pages. Each is tracked
+separately against the Phase 4 overlay/window infrastructure and must be
+validated independently for Windows, X11, and Wayland:
 
 `PlotBioStatus`, `PlotBioSystem`, `PlotBodyInfo`, `PlotFlightWarning`,
 `PlotFootCombat`, `PlotFSS`, `PlotFSSInfo`, `PlotGalMap`, `PlotGrounded`,
@@ -137,8 +137,17 @@ surface-analysis, Sol-bubble, `Alt+B`, and Guardian-priority rules. It supports
 unscanned destinations and shows discovery/mapping, scan/DSS values,
 temperature, gravity, pressure, signals, volcanism, atmosphere, materials, and
 rings. Its biological reward range remains pending with the broader
-`PlotBioSystem` prediction engine. The other plotter surfaces remain unported,
-and the new Windows/X11 adapters still require live Elite runtime validation.
+`PlotBioSystem` prediction engine. The journal-backed `PlotBioSystem` surface is
+now implemented as a bottom-left passive overlay. It preserves whole-system and
+near-body/FSS modes, current/target selection, analyzed progress, active sample
+emphasis, confirmed organism identities and rewards, regional-first
+highlighting, first-footfall value, DSS guidance, geological details, Guardian
+priority, and the original display preferences. Unknown organisms and partial
+rewards remain explicit rather than being guessed. Exact environment/region/
+star/nebula/Guardian prediction criteria, commander-Codex first-discovery
+inference, Canonn signal hints, and the transient map-selection timer remain
+open. The other plotter surfaces remain unported, and the Windows/X11 adapters
+still require live Elite runtime validation.
 
 Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
 opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,
@@ -242,6 +251,14 @@ check at 1182 by 790, using a live journal folder:
   scaling. The temporary preview hook and QA settings were removed; live Elite
   attachment, click-through, biological reward prediction, and Linux remain
   untested.
+- The `PlotBioSystem` replacement was exercised with a dense four-signal body
+  in Blue (dark) and Blue (light), plus a three-body whole-system view. Active,
+  analyzed, regional-first, genus-only, and unidentified organism states,
+  confirmed/partial rewards, first-footfall value, geological names/counts,
+  target/local badges, and progress bars rendered cleanly in a 390-pixel-wide
+  passive card at the active Windows scaling. The temporary preview hook and QA
+  settings were removed; exact biological predictions, live Elite attachment,
+  click-through, and Linux remain untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live
