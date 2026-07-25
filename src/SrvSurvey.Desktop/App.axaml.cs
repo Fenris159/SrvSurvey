@@ -18,6 +18,7 @@ public sealed partial class App : Application
         colonizationCommodityOverlayCoordinator;
     private RouteOverlayCoordinator? routeOverlayCoordinator;
     private JumpInfoOverlayCoordinator? jumpInfoOverlayCoordinator;
+    private SystemSurveyOverlayCoordinator? systemSurveyOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
@@ -73,11 +74,28 @@ public sealed partial class App : Application
                 viewModel.JumpInfo,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent());
-            jumpInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
+            systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
+                viewModel.SystemSurvey,
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent());
+
+            void SynchronizeGuardianPriority()
+            {
+                systemSurveyOverlayCoordinator?.SetFssObscured(
+                    guardianOverlayCoordinator?.IsVisible == true);
                 guardianOverlayCoordinator?.SetObscured(
-                    jumpInfoOverlayCoordinator?.IsVisible == true);
-            guardianOverlayCoordinator.SetObscured(
-                jumpInfoOverlayCoordinator.IsVisible);
+                    jumpInfoOverlayCoordinator?.IsVisible == true
+                    || systemSurveyOverlayCoordinator?.IsFssVisible == true
+                        && viewModel.SystemSurvey.IsFssInfoForced);
+            }
+
+            jumpInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
+                SynchronizeGuardianPriority();
+            systemSurveyOverlayCoordinator.VisibilityChanged += (_, _) =>
+                SynchronizeGuardianPriority();
+            guardianOverlayCoordinator.VisibilityChanged += (_, _) =>
+                SynchronizeGuardianPriority();
+            SynchronizeGuardianPriority();
             colonizationCommodityOverlayCoordinator =
                 new ColonizationCommodityOverlayCoordinator(
                     viewModel.Colonization.CommodityOverlay,
@@ -124,10 +142,12 @@ public sealed partial class App : Application
                             var suppress =
                                 guardianOverlayCoordinator?.IsVisible == true
                                 || jumpInfoOverlayCoordinator?.IsVisible == true
+                                || systemSurveyOverlayCoordinator?.IsVisible == true
                                 || routeOverlayCoordinator?.IsVisible == true
                                 || colonizationCommodityOverlayCoordinator
                                     ?.IsVisible == true;
                             jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
+                            systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
                             guardianOverlayCoordinator?.SetSuppressed(suppress);
                             routeOverlayCoordinator?.SetSuppressed(suppress);
                             colonizationCommodityOverlayCoordinator
@@ -137,6 +157,11 @@ public sealed partial class App : Application
 
                         case GlobalInputAction.ShowJumpInfo:
                             handled = viewModel.JumpInfo.ToggleForcedVisibility();
+                            break;
+
+                        case GlobalInputAction.ShowFssInfo:
+                            handled = viewModel.SystemSurvey
+                                .ToggleFssInfoVisibility();
                             break;
 
                         case GlobalInputAction.ShowColonyShopping:
@@ -205,6 +230,8 @@ public sealed partial class App : Application
                 routeOverlayCoordinator = null;
                 jumpInfoOverlayCoordinator?.Dispose();
                 jumpInfoOverlayCoordinator = null;
+                systemSurveyOverlayCoordinator?.Dispose();
+                systemSurveyOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();
                 guardianOverlayCoordinator = null;
             };

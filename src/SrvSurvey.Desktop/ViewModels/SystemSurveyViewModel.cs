@@ -8,6 +8,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 {
+    private const int MaximumDisplayedFssBodies = 8;
+
     private readonly SystemSurveySettingsStore settingsStore;
     private readonly SystemScanState state;
     private EliteStatus? status;
@@ -254,11 +256,23 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             if (SetField(ref fssBodies, value))
             {
                 OnPropertyChanged(nameof(HasFssBodies));
+                OnPropertyChanged(nameof(DisplayedFssBodies));
+                OnPropertyChanged(nameof(HasMoreFssBodies));
+                OnPropertyChanged(nameof(MoreFssBodiesText));
             }
         }
     }
 
     public bool HasFssBodies => FssBodies.Count > 0;
+
+    public IReadOnlyList<FssBodyRowViewModel> DisplayedFssBodies => FssBodies
+        .Take(MaximumDisplayedFssBodies)
+        .ToArray();
+
+    public bool HasMoreFssBodies => FssBodies.Count > MaximumDisplayedFssBodies;
+
+    public string MoreFssBodiesText =>
+        $"+ {FssBodies.Count - MaximumDisplayedFssBodies:N0} more qualifying bodies";
 
     public string FssEmptyText => "Scan a body in the FSS to populate this list.";
 

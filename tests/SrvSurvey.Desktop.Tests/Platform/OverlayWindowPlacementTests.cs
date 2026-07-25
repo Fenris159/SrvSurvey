@@ -36,6 +36,16 @@ public sealed class OverlayWindowPlacementTests
     }
 
     [Fact]
+    public void PlacesOverlayInsideBottomLeftOfGameClient()
+    {
+        var position = OverlayWindowPlacement.BottomLeft(
+            new PixelRect(100, 200, 1920, 1080),
+            new PixelSize(560, 210));
+
+        Assert.Equal(new PixelPoint(120, 1050), position);
+    }
+
+    [Fact]
     public void PlacesOverlayInsideTopRightOfGameClient()
     {
         var position = OverlayWindowPlacement.TopRight(

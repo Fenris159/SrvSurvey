@@ -41,6 +41,8 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
     public bool IsVisible => window is not null;
 
+    public event EventHandler? VisibilityChanged;
+
     public string PlatformStatus => platform.Capabilities.StatusText;
 
     public bool IsSuppressed => isSuppressed;
@@ -157,10 +159,12 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             if (ReferenceEquals(window, overlay))
             {
                 window = null;
+                VisibilityChanged?.Invoke(this, EventArgs.Empty);
             }
         };
         window = overlay;
         overlay.Show();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private static void PositionWindow(Window window, PixelRect gameBounds)
@@ -186,7 +190,13 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     private void CloseWindow()
     {
         var overlay = window;
+        if (overlay is null)
+        {
+            return;
+        }
+
         window = null;
-        overlay?.Close();
+        overlay.Close();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 }
