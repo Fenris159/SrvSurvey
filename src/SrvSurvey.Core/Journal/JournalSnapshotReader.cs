@@ -4,6 +4,8 @@ namespace SrvSurvey.Core.Journal;
 
 public static class JournalSnapshotReader
 {
+    private const int MaximumBootstrapJournalCount = 8;
+
     public static async Task<JournalSnapshot> ReadLatestAsync(
         string journalFolder,
         CancellationToken cancellationToken = default)
@@ -17,31 +19,53 @@ public static class JournalSnapshotReader
                 $"The journal folder does not exist: {journalFolder}");
         }
 
-        var latestJournal = directory
+        var journals = directory
             .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
             .OrderByDescending(file => file.LastWriteTimeUtc)
             .ThenByDescending(file => file.Name, StringComparer.Ordinal)
-            .FirstOrDefault();
+            .Take(MaximumBootstrapJournalCount)
+            .ToArray();
 
-        if (latestJournal is null)
+        if (journals.Length == 0)
         {
             throw new FileNotFoundException(
                 $"No Journal.*.log files were found in: {journalFolder}");
         }
 
-        await using var stream = new FileStream(
-            latestJournal.FullName,
-            FileMode.Open,
-            FileAccess.Read,
-            FileShare.ReadWrite | FileShare.Delete,
-            bufferSize: 16 * 1024,
-            FileOptions.Asynchronous | FileOptions.SequentialScan);
-        using var reader = new StreamReader(
-            stream,
-            Encoding.UTF8,
-            detectEncodingFromByteOrderMarks: true);
+        var latestOnly = await ReadFileAsync(
+                journals[0],
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (HasBootstrapIdentity(latestOnly))
+        {
+            return latestOnly;
+        }
 
-        return await ReadAsync(reader, latestJournal.FullName, cancellationToken);
+        var state = new JournalSessionState();
+        var malformedLineCount = 0;
+        foreach (var journal in journals.Reverse())
+        {
+            await using var stream = new FileStream(
+                journal.FullName,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete,
+                bufferSize: 16 * 1024,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+            using var reader = new StreamReader(
+                stream,
+                Encoding.UTF8,
+                detectEncodingFromByteOrderMarks: true);
+            malformedLineCount += await ApplyAsync(
+                    reader,
+                    state,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        return state.CreateSnapshot(
+            journals[0].FullName,
+            malformedLineCount);
     }
 
     public static async Task<JournalSnapshot> ReadAsync(
@@ -52,6 +76,20 @@ public static class JournalSnapshotReader
         ArgumentNullException.ThrowIfNull(reader);
 
         var state = new JournalSessionState();
+        var malformedLineCount = await ApplyAsync(
+                reader,
+                state,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        return state.CreateSnapshot(sourcePath, malformedLineCount);
+    }
+
+    private static async Task<int> ApplyAsync(
+        TextReader reader,
+        JournalSessionState state,
+        CancellationToken cancellationToken)
+    {
         var malformedLineCount = 0;
 
         while (await reader.ReadLineAsync(cancellationToken) is { } line)
@@ -74,6 +112,38 @@ public static class JournalSnapshotReader
             state.Apply(journalEvent);
         }
 
-        return state.CreateSnapshot(sourcePath, malformedLineCount);
+        return malformedLineCount;
+    }
+
+    private static async Task<JournalSnapshot> ReadFileAsync(
+        FileInfo journal,
+        CancellationToken cancellationToken)
+    {
+        await using var stream = new FileStream(
+            journal.FullName,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            bufferSize: 16 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        using var reader = new StreamReader(
+            stream,
+            Encoding.UTF8,
+            detectEncodingFromByteOrderMarks: true);
+        return await ReadAsync(
+                reader,
+                journal.FullName,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static bool HasBootstrapIdentity(JournalSnapshot snapshot)
+    {
+        return !string.IsNullOrWhiteSpace(snapshot.GameVersion)
+            && snapshot.IsOdyssey is not null
+            && !string.IsNullOrWhiteSpace(snapshot.CommanderName)
+            && !string.IsNullOrWhiteSpace(snapshot.FrontierId)
+            && !string.IsNullOrWhiteSpace(snapshot.SystemName)
+            && snapshot.SystemAddress is not null;
     }
 }

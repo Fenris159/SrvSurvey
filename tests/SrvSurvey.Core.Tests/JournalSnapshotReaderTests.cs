@@ -92,4 +92,59 @@ public sealed class JournalSnapshotReaderTests
             Directory.Delete(testDirectory, recursive: true);
         }
     }
+
+    [Fact]
+    public async Task ReadLatestAsyncFillsPartialLoginFromRecentJournals()
+    {
+        var testDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey.Core.Tests-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+
+        try
+        {
+            var olderPath = Path.Combine(
+                testDirectory,
+                "Journal.2026-07-23T000000.01.log");
+            var newerPath = Path.Combine(
+                testDirectory,
+                "Journal.2026-07-24T000000.01.log");
+            await File.WriteAllTextAsync(
+                olderPath,
+                """
+                {"timestamp":"2026-07-23T00:00:00Z","event":"Commander","Name":"Drew","FID":"F123"}
+                {"timestamp":"2026-07-23T00:00:01Z","event":"Location","StarSystem":"Sol","SystemAddress":10477373803,"StarPos":[0,0,0]}
+                {"timestamp":"2026-07-23T00:00:02Z","event":"Shutdown"}
+                """);
+            await File.WriteAllTextAsync(
+                newerPath,
+                """
+                {"timestamp":"2026-07-24T00:00:00Z","event":"Fileheader","gameversion":"4.2.0","build":"r123","Odyssey":true}
+                {"timestamp":"2026-07-24T00:00:01Z","event":"LoadGame","GameMode":"Solo"}
+                """);
+            File.SetLastWriteTimeUtc(
+                olderPath,
+                new DateTime(2026, 7, 23, 0, 0, 0, DateTimeKind.Utc));
+            File.SetLastWriteTimeUtc(
+                newerPath,
+                new DateTime(2026, 7, 24, 0, 0, 0, DateTimeKind.Utc));
+
+            var snapshot = await JournalSnapshotReader.ReadLatestAsync(
+                testDirectory);
+
+            Assert.Equal(newerPath, snapshot.SourcePath);
+            Assert.Equal("Drew", snapshot.CommanderName);
+            Assert.Equal("F123", snapshot.FrontierId);
+            Assert.Equal("Sol", snapshot.SystemName);
+            Assert.Equal(10477373803, snapshot.SystemAddress);
+            Assert.Equal("Solo", snapshot.GameMode);
+            Assert.Equal("4.2.0", snapshot.GameVersion);
+            Assert.False(snapshot.IsShutdown);
+            Assert.Equal(5, snapshot.ValidLineCount);
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
 }
