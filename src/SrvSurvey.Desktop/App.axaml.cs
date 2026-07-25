@@ -21,6 +21,7 @@ public sealed partial class App : Application
     private GroundTargetOverlayCoordinator? groundTargetOverlayCoordinator;
     private CombatOverlayCoordinator? combatOverlayCoordinator;
     private StationInfoOverlayCoordinator? stationInfoOverlayCoordinator;
+    private HumanSiteOverlayCoordinator? humanSiteOverlayCoordinator;
     private SystemSurveyOverlayCoordinator? systemSurveyOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
@@ -109,6 +110,10 @@ public sealed partial class App : Application
                 viewModel.StationInfo,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent());
+            humanSiteOverlayCoordinator = new HumanSiteOverlayCoordinator(
+                viewModel.HumanSite,
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent());
             systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
                 viewModel.SystemSurvey,
                 viewModel.SurfaceSurvey,
@@ -116,24 +121,28 @@ public sealed partial class App : Application
                 GameWindowTracker.CreateCurrent(),
                 () => viewModel.CommanderName);
 
-            void SynchronizeGuardianPriority()
+            void SynchronizeOverlayPriority()
             {
                 var liveGuardianSite =
                     guardianOverlayCoordinator?.IsLiveSiteVisible == true;
+                var humanSite =
+                    humanSiteOverlayCoordinator?.IsVisible == true;
                 systemSurveyOverlayCoordinator?.SetFssObscured(
                     liveGuardianSite);
                 systemSurveyOverlayCoordinator?.SetBodyInfoObscured(
                     liveGuardianSite);
                 systemSurveyOverlayCoordinator?.SetBiologyObscured(
-                    liveGuardianSite);
+                    liveGuardianSite || humanSite);
                 systemSurveyOverlayCoordinator?.SetBiologyStatusObscured(
                     liveGuardianSite
+                    || humanSite
                     || jumpInfoOverlayCoordinator?.IsVisible == true);
                 systemSurveyOverlayCoordinator?.SetPriorScansObscured(
                     liveGuardianSite
+                    || humanSite
                     || stationInfoOverlayCoordinator?.IsVisible == true);
                 systemSurveyOverlayCoordinator?.SetSurfaceObscured(
-                    liveGuardianSite);
+                    liveGuardianSite || humanSite);
                 guardianOverlayCoordinator?.SetObscured(
                     jumpInfoOverlayCoordinator?.IsVisible == true
                     || (systemSurveyOverlayCoordinator?.IsFssVisible == true
@@ -146,14 +155,16 @@ public sealed partial class App : Application
             }
 
             jumpInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
-                SynchronizeGuardianPriority();
+                SynchronizeOverlayPriority();
             systemSurveyOverlayCoordinator.VisibilityChanged += (_, _) =>
-                SynchronizeGuardianPriority();
+                SynchronizeOverlayPriority();
             guardianOverlayCoordinator.VisibilityChanged += (_, _) =>
-                SynchronizeGuardianPriority();
+                SynchronizeOverlayPriority();
             stationInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
-                SynchronizeGuardianPriority();
-            SynchronizeGuardianPriority();
+                SynchronizeOverlayPriority();
+            humanSiteOverlayCoordinator.VisibilityChanged += (_, _) =>
+                SynchronizeOverlayPriority();
+            SynchronizeOverlayPriority();
             colonizationCommodityOverlayCoordinator =
                 new ColonizationCommodityOverlayCoordinator(
                     viewModel.Colonization.CommodityOverlay,
@@ -197,18 +208,29 @@ public sealed partial class App : Application
                     switch (eventArgs.Action)
                     {
                         case GlobalInputAction.MapZoomIn:
-                            handled = systemSurveyOverlayCoordinator
-                                ?.AdjustSurfaceZoom(zoomIn: true) == true;
+                            handled = humanSiteOverlayCoordinator
+                                ?.AdjustZoom(zoomIn: true) == true
+                                || systemSurveyOverlayCoordinator
+                                    ?.AdjustSurfaceZoom(zoomIn: true) == true;
                             break;
 
                         case GlobalInputAction.MapZoomOut:
-                            handled = systemSurveyOverlayCoordinator
-                                ?.AdjustSurfaceZoom(zoomIn: false) == true;
+                            handled = humanSiteOverlayCoordinator
+                                ?.AdjustZoom(zoomIn: false) == true
+                                || systemSurveyOverlayCoordinator
+                                    ?.AdjustSurfaceZoom(zoomIn: false) == true;
                             break;
 
                         case GlobalInputAction.MapZoomAuto:
-                            handled = systemSurveyOverlayCoordinator
-                                ?.ResetSurfaceZoom() == true;
+                            handled = humanSiteOverlayCoordinator
+                                ?.ResetZoom() == true
+                                || systemSurveyOverlayCoordinator
+                                    ?.ResetSurfaceZoom() == true;
+                            break;
+
+                        case GlobalInputAction.MapBeHuge:
+                            handled = humanSiteOverlayCoordinator
+                                ?.ToggleHuge() == true;
                             break;
 
                         case GlobalInputAction.ToggleAllVisibility:
@@ -219,6 +241,7 @@ public sealed partial class App : Application
                                 || groundTargetOverlayCoordinator?.IsVisible == true
                                 || combatOverlayCoordinator?.IsVisible == true
                                 || stationInfoOverlayCoordinator?.IsVisible == true
+                                || humanSiteOverlayCoordinator?.IsVisible == true
                                 || sphericalSearchOverlayCoordinator?.IsVisible == true
                                 || colonizationCommodityOverlayCoordinator
                                     ?.IsVisible == true;
@@ -228,6 +251,7 @@ public sealed partial class App : Application
                             combatOverlayCoordinator?.SetSuppressed(suppress);
                             guardianOverlayCoordinator?.SetSuppressed(suppress);
                             stationInfoOverlayCoordinator?.SetSuppressed(suppress);
+                            humanSiteOverlayCoordinator?.SetSuppressed(suppress);
                             sphericalSearchOverlayCoordinator?.SetSuppressed(suppress);
                             colonizationCommodityOverlayCoordinator
                                 ?.SetSuppressed(suppress);
@@ -359,6 +383,8 @@ public sealed partial class App : Application
                 stationInfoOverlayCoordinator?.Dispose();
                 stationInfoOverlayCoordinator = null;
                 viewModel.StationInfo.Dispose();
+                humanSiteOverlayCoordinator?.Dispose();
+                humanSiteOverlayCoordinator = null;
                 systemSurveyOverlayCoordinator?.Dispose();
                 systemSurveyOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();

@@ -136,6 +136,45 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void HumanSitePreferencesAreWiredIntoMainViewModel()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-human-site-settings-{Guid.NewGuid():N}");
+        try
+        {
+            var settingsStore = new HumanSiteSettingsStore(
+                Path.Combine(root, "ui-settings.json"));
+            settingsStore.Save(HumanSitePreferences.Default with
+            {
+                AutoShow = false,
+                FootZoom = 3,
+                ShowMedkits = false,
+            });
+
+            var viewModel = new MainWindowViewModel(
+                Path.Combine(root, "missing-journals"),
+                appDataPaths: new AppDataPaths(
+                    Path.Combine(root, "config"),
+                    Path.Combine(root, "data"),
+                    Path.Combine(root, "cache"),
+                    []),
+                humanSiteSettingsStore: settingsStore);
+
+            Assert.False(viewModel.HumanSite.AutoShow);
+            Assert.Equal(3, viewModel.HumanSite.FootZoom);
+            Assert.False(viewModel.HumanSite.ShowMedkits);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task LegacyProfileCanBeImportedFromSettingsWorkflow()
     {
         var root = Path.Combine(
@@ -218,6 +257,51 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(
                 10477373803,
                 viewModel.SystemSurvey.Snapshot.SystemAddress);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task RefreshFeedsHumanSettlementJournalAndStatusPipeline()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-human-site-main-tests-{Guid.NewGuid():N}");
+        try
+        {
+            Directory.CreateDirectory(root);
+            await File.WriteAllTextAsync(
+                Path.Combine(root, "Journal.2026-07-25T030000.01.log"),
+                "{\"timestamp\":\"2026-07-25T03:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T03:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test System\",\"SystemAddress\":42,\"StarPos\":[1,2,3],\"Body\":\"Test System 1\",\"BodyType\":\"Planet\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T03:00:02Z\",\"event\":\"Loadout\",\"Ship\":\"sidewinder\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T03:00:03Z\",\"event\":\"ApproachSettlement\",\"Name\":\"Haberlandt Survey\",\"Name_Localised\":\"Haberlandt Survey\",\"MarketID\":12345,\"SystemAddress\":42,\"BodyID\":3,\"BodyName\":\"Test System 1\",\"Latitude\":0,\"Longitude\":0,\"StationEconomy\":\"$economy_Agri;\",\"StationEconomy_Localised\":\"Agriculture\",\"StationFaction\":{\"Name\":\"Raven Colonial\",\"FactionState\":\"Boom\"},\"StationGovernment\":\"$government_Democracy;\",\"StationGovernment_Localised\":\"Democracy\",\"StationServices\":[\"dock\",\"refuel\"]}\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(root, StatusFileReader.FileName),
+                "{\"timestamp\":\"2026-07-25T03:00:04Z\",\"event\":\"Status\",\"Flags\":2097152,\"Flags2\":32785,\"Latitude\":0,\"Longitude\":0,\"Heading\":0,\"Altitude\":10,\"PlanetRadius\":6000000}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(root, appDataPaths: paths);
+
+            await viewModel.RefreshAsync();
+
+            Assert.NotNull(viewModel.HumanSite.ActiveSite);
+            Assert.Equal("Haberlandt Survey", viewModel.HumanSite.SiteName);
+            Assert.True(viewModel.HumanSite.ShouldShow);
+            Assert.True(File.Exists(Path.Combine(
+                paths.DataDirectory,
+                "systems",
+                "F123",
+                "Test System_42.json")));
         }
         finally
         {

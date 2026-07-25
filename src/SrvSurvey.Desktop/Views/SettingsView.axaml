@@ -199,6 +199,102 @@
 
       <Border Classes="card raised">
         <StackPanel Spacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Human settlement map" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Navigate Odyssey settlements with the original site templates, docking guidance, and commander-relative map rendered in the active Raven theme." />
+          </StackPanel>
+          <CheckBox IsChecked="{Binding HumanSite.AutoShow, Mode=TwoWay}"
+                    Content="Show the settlement map automatically" />
+          <CheckBox IsChecked="{Binding HumanSite.SuppressForActiveBuildProjects, Mode=TwoWay}"
+                    Content="Hide the settlement map while Raven Colonial build projects are active" />
+
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="eyebrow" Text="MAP CONTENT" />
+              <CheckBox IsChecked="{Binding HumanSite.ShowMedkits, Mode=TwoWay}"
+                        Content="Show medical kits" />
+              <CheckBox IsChecked="{Binding HumanSite.ShowBatteries, Mode=TwoWay}"
+                        Content="Show energy cells" />
+              <CheckBox IsChecked="{Binding HumanSite.ShowDataTerminals, Mode=TwoWay}"
+                        Content="Show data terminals" />
+              <CheckBox IsChecked="{Binding HumanSite.ShowCollectedMaterials, Mode=TwoWay}"
+                        Content="Show collected materials" />
+              <CheckBox IsChecked="{Binding HumanSite.AutoZoomInside, Mode=TwoWay}"
+                        Content="Zoom automatically inside buildings" />
+              <CheckBox IsChecked="{Binding HumanSite.AutoZoomTool, Mode=TwoWay}"
+                        Content="Zoom automatically when a suit tool is active" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="10">
+              <TextBlock Classes="eyebrow" Text="WINDOW SIZE" />
+              <Grid ColumnDefinitions="*,132" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center" Text="Width" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="320"
+                               Maximum="1600"
+                               Increment="20"
+                               Value="{Binding HumanSite.PreferredWidth, Mode=TwoWay}" />
+              </Grid>
+              <Grid ColumnDefinitions="*,132" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center" Text="Height" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="320"
+                               Maximum="1400"
+                               Increment="20"
+                               Value="{Binding HumanSite.PreferredHeight, Mode=TwoWay}" />
+              </Grid>
+            </StackPanel>
+          </Grid>
+
+          <TextBlock Classes="eyebrow" Text="ZOOM BY ACTIVITY" />
+          <Grid ColumnDefinitions="*,132,*,132" ColumnSpacing="12" RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+            <TextBlock VerticalAlignment="Center" Text="Ship" />
+            <NumericUpDown Grid.Column="1"
+                           Minimum="0.2"
+                           Maximum="15"
+                           Increment="0.1"
+                           FormatString="0.0"
+                           Value="{Binding HumanSite.ShipZoom, Mode=TwoWay}" />
+            <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="SRV" />
+            <NumericUpDown Grid.Column="3"
+                           Minimum="0.2"
+                           Maximum="15"
+                           Increment="0.1"
+                           FormatString="0.0"
+                           Value="{Binding HumanSite.SrvZoom, Mode=TwoWay}" />
+            <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="On foot" />
+            <NumericUpDown Grid.Row="1" Grid.Column="1"
+                           Minimum="0.2"
+                           Maximum="15"
+                           Increment="0.1"
+                           FormatString="0.0"
+                           Value="{Binding HumanSite.FootZoom, Mode=TwoWay}" />
+            <TextBlock Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Text="Inside" />
+            <NumericUpDown Grid.Row="1" Grid.Column="3"
+                           Minimum="0.2"
+                           Maximum="15"
+                           Increment="0.1"
+                           FormatString="0.0"
+                           Value="{Binding HumanSite.InsideZoom, Mode=TwoWay}" />
+            <TextBlock Grid.Row="2" VerticalAlignment="Center" Text="Suit tool" />
+            <NumericUpDown Grid.Row="2" Grid.Column="1"
+                           Minimum="0.2"
+                           Maximum="15"
+                           Increment="0.1"
+                           FormatString="0.0"
+                           Value="{Binding HumanSite.ToolZoom, Mode=TwoWay}" />
+          </Grid>
+
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     TextWrapping="Wrap"
+                     Text="{Binding HumanSite.SettingsStatus}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
           <CheckBox IsChecked="{Binding JumpInfo.AutoShow, Mode=TwoWay}"
                     Content="Show next-jump information automatically" />
           <TextBlock Margin="28,-8,0,0"

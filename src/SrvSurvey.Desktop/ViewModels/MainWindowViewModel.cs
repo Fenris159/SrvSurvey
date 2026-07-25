@@ -94,7 +94,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         BiologyPredictionsSettingsStore? biologyPredictionsSettingsStore = null,
         CombatSettingsStore? combatSettingsStore = null,
         GuardianOverlaySettingsStore? guardianOverlaySettingsStore = null,
-        StationInfoSettingsStore? stationInfoSettingsStore = null)
+        StationInfoSettingsStore? stationInfoSettingsStore = null,
+        HumanSiteSettingsStore? humanSiteSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -165,6 +166,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             sharedSystemSummaryClient,
             stationInfoSettingsStore
                 ?? new StationInfoSettingsStore(AppDataPaths.UiSettingsPath));
+        HumanSite = new HumanSiteViewModel(
+            humanSiteSettingsStore
+                ?? new HumanSiteSettingsStore(AppDataPaths.UiSettingsPath),
+            new HumanSiteKnowledgeStore(AppDataPaths.DataDirectory));
         SystemSurvey = new SystemSurveyViewModel(
             systemSurveySettingsStore
                 ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath));
@@ -301,6 +306,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public JumpInfoViewModel JumpInfo { get; }
 
     public StationInfoViewModel StationInfo { get; }
+
+    public HumanSiteViewModel HumanSite { get; }
 
     public SystemSurveyViewModel SystemSurvey { get; }
 
@@ -920,6 +927,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Guardian.UpdateCurrentSystem(
             journalState.SystemName,
             journalState.StarPosition);
+        HumanSite.UpdateContext(
+            journalState.FrontierId,
+            journalState.CommanderName,
+            journalState.SystemName,
+            journalState.SystemAddress ?? 0,
+            journalState.StarPosition);
         _ = StationInfo.UpdateCurrentSystemAsync(
             journalState.SystemName,
             journalState.SystemAddress ?? 0);
@@ -971,6 +984,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         await Colonization.UpdateMarketAsync(update.Market);
         Combat.SetActiveBuildProjects(Colonization.HasProjects);
         Guardian.SetActiveBuildProjects(Colonization.HasProjects);
+        HumanSite.SetActiveBuildProjects(Colonization.HasProjects);
         await Combat.ApplyUpdateAsync(
             update.JournalEvents,
             update.Status,
@@ -985,6 +999,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                 update.Status,
                 allowAutoCopy: !Route.ShouldAutoCopyNextHop);
         }
+
+        HumanSite.SetStationInfoVisible(StationInfo.ShouldShow);
+        await HumanSite.ApplyUpdateAsync(
+            update.JournalEvents,
+            update.Status,
+            journalState.ShipType);
 
         JumpInfo.ApplyUpdate(
             journalState.SystemName,
