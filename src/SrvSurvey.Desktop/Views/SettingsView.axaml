@@ -317,6 +317,8 @@
 
             <StackPanel Grid.Column="1" Spacing="12">
               <TextBlock Classes="eyebrow" Text="BODY THRESHOLDS" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoShowFlightWarnings, Mode=TwoWay}"
+                        Content="Show high-gravity flight warnings" />
               <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
                 <TextBlock VerticalAlignment="Center"
                            Text="Sol bubble radius (ly)" />

@@ -31,6 +31,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             HideBodyInfoInBubble: false,
             BodyInfoBubbleSizeLy: 150,
             HideBodyInfoMaterials: true,
+            AutoShowFlightWarnings: false,
             HighGravityWarningLevel: 2.5,
             UseExternalData: false,
             AutoShowBioSystem: false,

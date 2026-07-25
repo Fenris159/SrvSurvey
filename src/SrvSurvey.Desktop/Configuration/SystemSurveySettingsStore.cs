@@ -43,6 +43,10 @@ public sealed class SystemSurveySettingsStore
                 settings,
                 "HideBodyInfoMaterials",
                 defaults.HideBodyInfoMaterials),
+            GetBoolean(
+                settings,
+                "AutoShowFlightWarnings",
+                defaults.AutoShowFlightWarnings),
             GetDouble(
                 settings,
                 "HighGravityWarningLevel",
@@ -212,6 +216,8 @@ public sealed class SystemSurveySettingsStore
             settings["BodyInfoBubbleSizeLy"] = preferences.BodyInfoBubbleSizeLy;
             settings["HideBodyInfoMaterials"] =
                 preferences.HideBodyInfoMaterials;
+            settings["AutoShowFlightWarnings"] =
+                preferences.AutoShowFlightWarnings;
             settings["HighGravityWarningLevel"] =
                 preferences.HighGravityWarningLevel;
             settings["UseExternalData"] = preferences.UseExternalData;
@@ -318,6 +324,7 @@ public sealed record SystemSurveyPreferences(
     bool HideBodyInfoInBubble,
     int BodyInfoBubbleSizeLy,
     bool HideBodyInfoMaterials,
+    bool AutoShowFlightWarnings,
     double HighGravityWarningLevel,
     bool UseExternalData,
     bool AutoShowBioSystem,
@@ -363,6 +370,7 @@ public sealed record SystemSurveyPreferences(
         HideBodyInfoInBubble: true,
         BodyInfoBubbleSizeLy: 200,
         HideBodyInfoMaterials: false,
+        AutoShowFlightWarnings: true,
         HighGravityWarningLevel: 1,
         UseExternalData: true,
         AutoShowBioSystem: true,

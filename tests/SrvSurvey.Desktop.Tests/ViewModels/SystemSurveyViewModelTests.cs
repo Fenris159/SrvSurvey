@@ -94,6 +94,47 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void FlightWarningMatchesLegacyGravityBodyAndModeRules()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip,
+                BodyName = "Test 1",
+            });
+
+        Assert.True(viewModel.ShouldShowFlightWarning);
+        Assert.Equal("WARNING: SURFACE GRAVITY 1.20 g", viewModel.FlightWarningText);
+
+        viewModel.AutoShowFlightWarnings = false;
+        Assert.False(viewModel.ShouldShowFlightWarning);
+        viewModel.AutoShowFlightWarnings = true;
+        viewModel.HighGravityWarningLevel = 2;
+        Assert.False(viewModel.ShouldShowFlightWarning);
+
+        viewModel.HighGravityWarningLevel = 1;
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
+            BodyName = "Test 1",
+        });
+        Assert.False(viewModel.ShouldShowFlightWarning);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            Flags = StatusFlags.InSrv,
+            BodyName = "Test 1",
+            GuiFocus = GuiFocus.RolePanel,
+        });
+        Assert.False(viewModel.ShouldShowFlightWarning);
+    }
+
+    [Fact]
     public void DisplayFiltersBodiesAndBuildsDssAndSignalProgress()
     {
         var viewModel = CreateViewModel();

@@ -31,6 +31,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool hideBodyInfoInBubble;
     private int bodyInfoBubbleSizeLy;
     private bool hideBodyInfoMaterials;
+    private bool autoShowFlightWarnings;
     private double highGravityWarningLevel;
     private bool useExternalData;
     private bool autoShowBioSystem;
@@ -89,6 +90,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         hideBodyInfoInBubble = preferences.HideBodyInfoInBubble;
         bodyInfoBubbleSizeLy = preferences.BodyInfoBubbleSizeLy;
         hideBodyInfoMaterials = preferences.HideBodyInfoMaterials;
+        autoShowFlightWarnings = preferences.AutoShowFlightWarnings;
         highGravityWarningLevel = preferences.HighGravityWarningLevel;
         useExternalData = preferences.UseExternalData;
         autoShowBioSystem = preferences.AutoShowBioSystem;
@@ -178,6 +180,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 RefreshDisplay();
             }
         }
+    }
+
+    public bool AutoShowFlightWarnings
+    {
+        get => autoShowFlightWarnings;
+        set => SetPreference(ref autoShowFlightWarnings, value);
     }
 
     public double HighGravityWarningLevel
@@ -849,6 +857,40 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool ShouldShowFlightWarning
+    {
+        get
+        {
+            var body = ResolveBodyInfoTarget(preferDestination: false)?.Body;
+            if (!AutoShowFlightWarnings
+                || status is null
+                || status.GuiFocus != GuiFocus.NoFocus
+                || body?.IsLandable != true
+                || body.SurfaceGravity / 10d < HighGravityWarningLevel)
+            {
+                return false;
+            }
+
+            return status.Landed
+                || status.Flags.HasFlag(StatusFlags.Supercruise)
+                || status.GlideMode
+                || status.InSrv
+                || status.InFighter
+                || status.InMainShip && !status.Docked && !status.InTaxi;
+        }
+    }
+
+    public string FlightWarningText
+    {
+        get
+        {
+            var body = ResolveBodyInfoTarget(preferDestination: false)?.Body;
+            return body is null
+                ? "HIGH-GRAVITY BODY"
+                : $"WARNING: SURFACE GRAVITY {body.SurfaceGravity / 10d:N2} g";
+        }
+    }
+
     public bool ShouldShowBioSystem
     {
         get
@@ -1130,6 +1172,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasNonBodySignals));
         OnPropertyChanged(nameof(NonBodySignalsText));
         OnPropertyChanged(nameof(IsWithinBodyInfoBubble));
+        OnPropertyChanged(nameof(ShouldShowFlightWarning));
+        OnPropertyChanged(nameof(FlightWarningText));
     }
 
     private BodyInformationViewModel? CreateBodyInformation(
@@ -1574,6 +1618,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 HideBodyInfoInBubble,
                 BodyInfoBubbleSizeLy,
                 HideBodyInfoMaterials,
+                AutoShowFlightWarnings,
                 HighGravityWarningLevel,
                 UseExternalData,
                 AutoShowBioSystem,
@@ -1632,6 +1677,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShouldShowBioStatus));
         OnPropertyChanged(nameof(ShouldLoadPriorScans));
         OnPropertyChanged(nameof(ShouldShowSystemStatus));
+        OnPropertyChanged(nameof(ShouldShowFlightWarning));
     }
 
     private static string FormatCredits(long value)
