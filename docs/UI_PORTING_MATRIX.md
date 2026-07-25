@@ -31,7 +31,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | --- | --- | --- | --- |
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
-| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, and the standalone system/body prediction workspace implemented; Codex forms remain pending |
+| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, the standalone system/body prediction workspace, and `FormShowCodex` browser implemented; Codex Bingo and prior-scan tools remain pending |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
@@ -47,9 +47,11 @@ The journal-backed `PlotBioSystem` overlay and its exact environmental
 prediction engine are also implemented. The standalone predictions workspace
 uses that evaluator for exact body rows, rewards, sample distances, and
 first-footfall estimates. The compact `PlotBioStatus` replacement covers live
-sampler progress and body summaries. The Codex browser, prior-scan, and
-remaining biology surfaces stay open below until their backing behavior is
-ported.
+sampler progress and body summaries. The single-instance `FormShowCodex`
+replacement covers confirmed and predicted biological entries, reference
+images, navigation, temperature and reward guidance, and research links. Codex
+Bingo, prior-scan, and remaining biology surfaces stay open below until their
+backing behavior is ported.
 
 ## Secondary forms
 
@@ -82,7 +84,7 @@ ported.
 | `FormSetKeyChord` | Settings / Input | Implemented as the unified binding editor with normalized keyboard, button, trigger, and eight-way POV chords plus default restore |
 | `FormSettings` | Settings pages | Raven themes, migration, next-jump and system-survey overlay preferences, and global keyboard/controller input implemented; general overlay adjustment, privacy, and remaining legacy options remain |
 | `FormShareData` | Settings / Privacy | Not ported |
-| `FormShowCodex` | Exobiology / Codex | Not ported |
+| `FormShowCodex` | Exobiology / Codex | Implemented as a single-instance Raven browser with biological-body and entry navigation, reported/confirmed/analyzed/predicted states, entry IDs, rewards, sample separation, live temperature guidance, bounded cached reference images with credit/refresh/fit/zoom/pan, and Canonn/Bioforge/Spansh/submission actions; Windows visually checked in Blue dark/light |
 | `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
 | `FormStartNewCmdr` | Commander onboarding | Not ported |
 | `FormSwapStarCache` | Diagnostics / Reference data | Not ported |
@@ -288,6 +290,13 @@ check at 1182 by 790, using a live journal folder:
   geology, while the DSS-required state stayed readable without duplicated
   guidance. The temporary preview hook and isolated settings were removed;
   live Elite attachment, click-through, and Linux remain untested.
+- The single-instance `FormShowCodex` replacement was exercised with an isolated
+  biological body and exact Aleoida variant prediction in Blue (dark) and Blue
+  (light). Its status, entry metadata, reward, sample separation, live
+  temperature comparison, research actions, and real cached Canonn reference
+  image/credit rendered cleanly. Fit, wheel zoom, and drag pan were exercised;
+  the isolated profile/cache entry was removed and Blue (dark) restored. Live
+  Elite updates, remote image-failure presentation, and Linux remain untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live
