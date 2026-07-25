@@ -272,6 +272,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 journalImportDirectory,
                 commanderCodexStore),
             new CodexDiscoveryLocationClient());
+        JournalPostProcessor = new JournalPostProcessorViewModel(
+            new CommanderProfileCatalog(AppDataPaths.DataDirectory),
+            new JournalHistoryAnalyzer(journalImportDirectory),
+            new CommanderCodexJournalImporter(
+                journalImportDirectory,
+                commanderCodexStore));
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,
@@ -463,6 +469,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public DiagnosticsLogViewModel DiagnosticsLog { get; }
 
     public JournalInspectorViewModel JournalInspector { get; }
+
+    public JournalPostProcessorViewModel JournalPostProcessor { get; }
 
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
 
@@ -876,7 +884,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         await Task.WhenAll(
             CommanderInstances.RefreshAsync(),
-            VisitedStarsCache.RefreshAsync());
+            VisitedStarsCache.RefreshAsync(),
+            JournalPostProcessor.RefreshCommandersAsync());
         if (journalMonitor is null)
         {
             StatusMessage = $"Journal folder not found. Set "
@@ -1126,6 +1135,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             journalState.Apply(journalEvent);
         }
+        JournalPostProcessor.SelectCommander(journalState.FrontierId);
 
         var commanderCodexResult =
             await commanderCodexJournalTracker.ApplyAsync(update.JournalEvents);

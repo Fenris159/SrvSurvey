@@ -33,6 +33,106 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Historical journal processor" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Analyze the original processor statistics without modifying profile data, or explicitly merge earlier Commander Codex first discoveries using atomic writes." />
+          </StackPanel>
+
+          <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="12">
+            <ComboBox ItemsSource="{Binding JournalPostProcessor.Commanders}"
+                      SelectedItem="{Binding JournalPostProcessor.SelectedCommander, Mode=TwoWay}"
+                      PlaceholderText="Choose a commander">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:JournalPostProcessorCommanderViewModel">
+                  <TextBlock Margin="4" Text="{Binding DisplayName}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <DatePicker Grid.Column="1"
+                        SelectedDate="{Binding JournalPostProcessor.StartDate, Mode=TwoWay}" />
+            <Button Grid.Column="2"
+                    Classes="secondary"
+                    Command="{Binding JournalPostProcessor.SetBeginningCommand}"
+                    Content="Beginning of time" />
+          </Grid>
+
+          <WrapPanel Orientation="Horizontal">
+            <Button Classes="primary"
+                    Margin="0,0,8,8"
+                    Command="{Binding JournalPostProcessor.AnalyzeCommand}"
+                    Content="Analyze journals" />
+            <Button Classes="secondary"
+                    Margin="0,0,8,8"
+                    Command="{Binding JournalPostProcessor.RefreshCommandersCommand}"
+                    Content="Refresh commanders" />
+            <Button Classes="secondary"
+                    Margin="0,0,0,8"
+                    Command="{Binding JournalPostProcessor.CancelCommand}"
+                    Content="Stop" />
+          </WrapPanel>
+
+          <ProgressBar Minimum="0"
+                       Maximum="{Binding JournalPostProcessor.ProgressMaximum}"
+                       Value="{Binding JournalPostProcessor.ProgressValue}" />
+
+          <ItemsControl ItemsSource="{Binding JournalPostProcessor.Statistics}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" ItemWidth="225" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:JournalPostProcessorStatisticViewModel">
+                <Border Margin="0,0,8,8"
+                        BorderBrush="{DynamicResource RavenBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="5"
+                        Padding="10">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <TextBlock Classes="muted" Text="{Binding Name}" />
+                    <TextBlock Grid.Column="1"
+                               FontWeight="SemiBold"
+                               Text="{Binding Value}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding JournalPostProcessor.TrailblazersSummary}" />
+
+          <Border BorderBrush="{DynamicResource RavenWarningBrush}"
+                  BorderThickness="1"
+                  CornerRadius="6"
+                  Padding="12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+              <StackPanel Spacing="4">
+                <CheckBox IsChecked="{Binding JournalPostProcessor.CodexRebuildConfirmed, Mode=TwoWay}"
+                          Content="Confirm an all-history Commander Codex merge" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="This merge never deletes existing firsts and does not upload historical events. Completed files remain valid if you stop early." />
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      VerticalAlignment="Center"
+                      Command="{Binding JournalPostProcessor.RebuildCodexCommand}"
+                      Content="Rebuild Codex firsts" />
+            </Grid>
+          </Border>
+
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding JournalPostProcessor.StatusMessage}" />
+        </StackPanel>
+      </Border>
+
       <Border Classes="card">
         <StackPanel Spacing="14">
           <StackPanel Spacing="4">
