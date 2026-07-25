@@ -142,6 +142,27 @@ public sealed class HumanSiteLiveStateTests
             state.CurrentSite.LastUpdated);
     }
 
+    [Fact]
+    public void InferredGeometryUpdatesTemplateAndNormalizesHeading()
+    {
+        var state = CreateState();
+        var template = HumanSiteTemplateCatalog.LoadEmbedded()
+            .Find(HumanSiteEconomy.Agriculture, 4)!;
+        state.Apply(Parse(ApproachJson));
+
+        var changed = state.ApplyGeometry(new HumanSiteGeometrySolution(
+            4,
+            template,
+            -10,
+            1,
+            0.5));
+
+        Assert.True(changed);
+        Assert.Equal(4, state.CurrentSite!.SubType);
+        Assert.Same(template, state.CurrentSite.Template);
+        Assert.Equal(350, state.CurrentSite.Heading);
+    }
+
     private static HumanSiteLiveState CreateState()
     {
         return new HumanSiteLiveState(

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Navigation;
 
 namespace SrvSurvey.Core.Settlements;
 
@@ -18,6 +19,34 @@ public sealed class HumanSiteLiveState(
     public HumanSiteLiveSnapshot? CurrentSite { get; private set; }
 
     public int Version { get; private set; }
+
+    public bool ApplyGeometry(HumanSiteGeometrySolution geometry)
+    {
+        ArgumentNullException.ThrowIfNull(geometry);
+        if (CurrentSite is null
+            || geometry.Template.Economy != CurrentSite.Economy
+            || geometry.Template.SubType != geometry.SubType
+            || !double.IsFinite(geometry.Heading))
+        {
+            return false;
+        }
+
+        var heading = SurfaceNavigation.NormalizeDegrees(geometry.Heading);
+        if (CurrentSite.SubType == geometry.SubType
+            && CurrentSite.Heading == heading)
+        {
+            return false;
+        }
+
+        CurrentSite = CurrentSite with
+        {
+            SubType = geometry.SubType,
+            Template = geometry.Template,
+            Heading = heading,
+        };
+        Version++;
+        return true;
+    }
 
     public bool Apply(JournalEventEnvelope journalEvent)
     {
