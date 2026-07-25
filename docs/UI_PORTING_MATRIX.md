@@ -34,10 +34,10 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, standalone system/body predictions, `FormShowCodex`, full commander/region `FormCodexBingo`, `PlotPriorScans`, and consolidated `PlotGrounded`/`PlotTrackers` history, tracking, zoom, and quick-location workflow implemented; the experimental `PlotMiniTrack` variant and Human-site arbitration remain open |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance and passive overlay, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; their combined `PlotSphericalSearch` Galaxy Map guidance is implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
-| Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
+| Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, detached live map/current-obelisk, current-system summary, and Ram Tah log/artifact overlays implemented; advanced map-authoring and remaining site-guidance modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
-| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump/system-survey/prior-scan/surface-radar/combat preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
+| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump/system-survey/prior-scan/surface-radar/combat/Guardian preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
@@ -89,12 +89,12 @@ biology surfaces stay open.
 | `FormPlayJournal` | Diagnostics / Journal tools | Not ported |
 | `FormPostProcess` | Diagnostics / Journal tools | Not ported |
 | `FormPredictions` | Exobiology / Predictions | Implemented as a single-instance Raven workspace with system totals, confirmed/estimated/first-footfall rewards, expandable body rows, exact species/variant and genus-only states, sample separation distances, incomplete-scan guidance, current-body focus, persisted row sizing, and Canonn/Spansh/EDSM actions; Windows visually checked in Blue dark/light |
-| `FormRamTah` | Guardian / Ram Tah | Implemented with both journal-driven mission states, all 101 + 28 categorized log controls, compatible commander persistence, progress, manual toggles, guarded resets, both Canonn guide links, and artifact-gated current-obelisk scan updates; detached `PlotRamTah` remains; Windows visually checked |
+| `FormRamTah` | Guardian / Ram Tah | Implemented with both journal-driven mission states, all 101 + 28 categorized log controls, compatible commander persistence, progress, manual toggles, guarded resets, both Canonn guide links, artifact-gated current-obelisk scan updates, and detached `PlotRamTah` log/artifact guidance; workspace visually checked, overlay visual QA deferred to the final pass |
 | `FormRavenUpdater` | Update flow | Not ported |
 | `FormRoute` | Travel / Routes | Implemented with lossless legacy route files, manual-name and current Spansh imports, active/auto-copy controls, per-hop progress, distances/notes/refuel/neutron guidance, save/discard, live FSDJump progression, and a Galaxy Map overlay; Windows visually checked in Blue dark/light |
 | `FormRuins` | Guardian / Survey maps | Partially implemented through the unified site browser, native map renderer, live-site card, and lossless survey editor; dedicated open/share workflows and advanced map authoring remain |
 | `FormSetKeyChord` | Settings / Input | Implemented as the unified binding editor with normalized keyboard, button, trigger, and eight-way POV chords plus default restore |
-| `FormSettings` | Settings pages | Raven themes, migration, next-jump/system-survey/Canonn prior-scan/radar/combat preferences, and global keyboard/controller input implemented; general overlay adjustment, privacy, and remaining legacy options remain |
+| `FormSettings` | Settings pages | Raven themes, migration, next-jump/system-survey/Canonn prior-scan/radar/combat/Guardian preferences, and global keyboard/controller input implemented; general overlay adjustment, privacy, and remaining legacy options remain |
 | `FormShareData` | Settings / Privacy | Not ported |
 | `FormShowCodex` | Exobiology / Codex | Implemented as a single-instance Raven browser with biological-body and entry navigation, reported/confirmed/analyzed/predicted states, entry IDs, rewards, sample separation, live temperature guidance, bounded cached reference images with credit/refresh/fit/zoom/pan, and Canonn/Bioforge/Spansh/submission actions; Windows visually checked in Blue dark/light |
 | `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
@@ -124,8 +124,17 @@ Wayland disablement. The detached Guardian window is a partial consolidation of
 `PlotGuardians` and the active-obelisk slice of `PlotGuardianStatus`: it renders
 the live native map, commander marker, nearest/current obelisk, artifact
 requirements, scan state, and Ram Tah mission status. Site-type, heading,
-origin/alignment, POI marking input, glide/approach guidance, and
-`PlotGuardianSystem` remain open. `PlotSphericalSearch` is implemented as a
+origin/alignment, POI marking input, and glide/approach guidance remain open.
+`PlotGuardianSystem` is implemented as a left/top passive summary with exact
+supercruise/navigation/system-map gates, current-system sites, destination
+marking, survey state, persisted preferences, and forced FSS/body priority.
+`PlotRamTah` is implemented as a right-middle passive guide with exact active
+mission/site pairing, surface-position and vehicle/panel gates, incomplete-log
+grouping, obelisk names, artifact inventory counts, and persisted preferences.
+Both auxiliary windows participate in the shared click-through lifecycle and
+global visibility control. Their automated state, placement, settings, and XAML
+checks pass; visual/theme QA is intentionally deferred to the final UI pass.
+`PlotSphericalSearch` is implemented as a
 combined top-right Galaxy Map overlay at the original 8-pixel anchor. It stacks
 every enabled legacy slice: spherical-limit center/final-route destination/
 distance and inside/outside evaluation; Boxel prefix, visited progress, next
