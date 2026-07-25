@@ -918,7 +918,8 @@ public sealed class MainWindowViewModelTests
             IReadOnlyList<JournalEventEnvelope> journalEvents,
             ScreenshotProcessingPreferences preferences,
             string? commanderName,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            ScreenshotGuardianContext? guardianContext = null)
         {
             CallCount++;
             Events = journalEvents;

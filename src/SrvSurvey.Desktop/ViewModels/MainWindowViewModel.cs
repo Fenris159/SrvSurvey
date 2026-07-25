@@ -1097,9 +1097,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             journalState.ShipType);
         if (!update.IsBootstrapRead)
         {
+            var guardianScreenshotContext = Guardian.ActiveSite is { } site
+                && Guardian.Proximity is { } siteProximity
+                && Guardian.CurrentAltitude is double altitude
+                    ? new ScreenshotGuardianContext(
+                        site.SiteType,
+                        siteProximity.DistanceFromSite,
+                        altitude)
+                    : null;
             await ScreenshotProcessing.ProcessJournalEventsAsync(
                 update.JournalEvents,
-                journalState.CommanderName);
+                journalState.CommanderName,
+                guardianScreenshotContext);
         }
 
         JumpInfo.ApplyUpdate(

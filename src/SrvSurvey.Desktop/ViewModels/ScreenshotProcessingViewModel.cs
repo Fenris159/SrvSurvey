@@ -45,6 +45,18 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         set => Update(preferences with { DeleteOriginal = value });
     }
 
+    public bool UseGuardianAerialFolder
+    {
+        get => preferences.UseGuardianAerialFolder;
+        set => Update(preferences with { UseGuardianAerialFolder = value });
+    }
+
+    public bool RotateAlphaAerial
+    {
+        get => preferences.RotateAlphaAerial;
+        set => Update(preferences with { RotateAlphaAerial = value });
+    }
+
     public string SourceFolder
     {
         get => preferences.SourceFolder;
@@ -96,13 +108,15 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
     public async Task ProcessJournalEventsAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         string? commanderName,
+        ScreenshotGuardianContext? guardianContext = null,
         CancellationToken cancellationToken = default)
     {
         var result = await processingService.ProcessAsync(
             journalEvents,
             preferences,
             commanderName,
-            cancellationToken);
+            cancellationToken,
+            guardianContext);
         if (result.Conversions.Count == 0 && result.Warnings.Count == 0)
         {
             return;

@@ -186,6 +186,11 @@
             <StackPanel Grid.Column="1" Spacing="10">
               <CheckBox IsChecked="{Binding ScreenshotProcessing.DeleteOriginal, Mode=TwoWay}"
                         Content="Delete the original BMP after verification" />
+              <CheckBox IsChecked="{Binding ScreenshotProcessing.UseGuardianAerialFolder, Mode=TwoWay}"
+                        Content="Create Guardian aerial-site copies" />
+              <CheckBox IsChecked="{Binding ScreenshotProcessing.RotateAlphaAerial, Mode=TwoWay}"
+                        IsEnabled="{Binding ScreenshotProcessing.UseGuardianAerialFolder}"
+                        Content="Crop and rotate Alpha-site aerial copies" />
               <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                          TextWrapping="Wrap"
                          Text="Deletion occurs only after the PNG has been written atomically and reopened with matching dimensions." />

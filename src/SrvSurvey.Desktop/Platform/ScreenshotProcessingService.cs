@@ -12,7 +12,8 @@ public interface IScreenshotProcessingService
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        ScreenshotGuardianContext? guardianContext = null);
 }
 
 public sealed class ScreenshotProcessingService : IScreenshotProcessingService
@@ -23,7 +24,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        ScreenshotGuardianContext? guardianContext = null)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         ArgumentNullException.ThrowIfNull(preferences);
@@ -47,6 +49,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                 screenshots,
                 preferences,
                 commanderName,
+                guardianContext,
                 cancellationToken).ConfigureAwait(false);
         }
         finally
@@ -59,6 +62,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         IReadOnlyList<JournalEventEnvelope> screenshots,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
+        ScreenshotGuardianContext? guardianContext,
         CancellationToken cancellationToken)
     {
         var conversions = new List<ScreenshotConversion>();
@@ -97,6 +101,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                     entry,
                     preferences,
                     commanderName,
+                    guardianContext,
                     sourceDirectory,
                     targetDirectory,
                     cancellationToken).ConfigureAwait(false);
@@ -126,6 +131,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         JournalEventEnvelope entry,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
+        ScreenshotGuardianContext? guardianContext,
         string sourceDirectory,
         string targetDirectory,
         CancellationToken cancellationToken)
@@ -153,45 +159,43 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         var baseName = SafeFileName(
             $"{bodyName} ({timestamp.UtcDateTime:yyyy-MM-dd HHmmss})");
         var outputPath = GetAvailablePath(folder, baseName, ".png");
-        var temporaryPath = $"{outputPath}.{Guid.NewGuid():N}.tmp";
-        try
-        {
-            using (var image = SKImage.FromBitmap(output))
-            using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
-            using (var stream = new FileStream(
-                       temporaryPath,
-                       FileMode.CreateNew,
-                       FileAccess.Write,
-                       FileShare.None))
-            {
-                data.SaveTo(stream);
-                stream.Flush(true);
-            }
-
-            using (var verified = SKBitmap.Decode(temporaryPath))
-            {
-                if (verified is null
-                    || verified.Width != output.Width
-                    || verified.Height != output.Height)
-                {
-                    throw new InvalidDataException(
-                        "The converted PNG could not be verified.");
-                }
-            }
-
-            File.Move(temporaryPath, outputPath, false);
-        }
-        finally
-        {
-            if (File.Exists(temporaryPath))
-            {
-                File.Delete(temporaryPath);
-            }
-        }
+        WritePngAtomically(output, outputPath);
 
         string? warning = null;
+        string? aerialOutputPath = null;
+        if (IsGuardianAerial(preferences, guardianContext))
+        {
+            try
+            {
+                using var aerial = CreateAerialBitmap(
+                    source,
+                    guardianContext!.SiteType,
+                    preferences.RotateAlphaAerial);
+                DrawBanner(aerial, entry, preferences, commanderName);
+                var aerialFolder = Path.Combine(
+                    targetDirectory,
+                    SafeFileName("Aerial " + guardianContext.SiteType));
+                Directory.CreateDirectory(aerialFolder);
+                aerialOutputPath = GetAvailablePath(
+                    aerialFolder,
+                    baseName,
+                    ".png");
+                WritePngAtomically(aerial, aerialOutputPath);
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or InvalidDataException
+                    or ArgumentException)
+            {
+                warning = $"Saved '{outputPath}', but the Guardian aerial copy failed; "
+                    + "the original BMP was retained: "
+                    + exception.Message;
+            }
+        }
+
         var sourceDeleted = false;
-        if (preferences.DeleteOriginal)
+        if (preferences.DeleteOriginal && warning is null)
         {
             try
             {
@@ -210,7 +214,97 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             sourcePath,
             outputPath,
             sourceDeleted,
-            warning);
+            warning,
+            aerialOutputPath);
+    }
+
+    private static void WritePngAtomically(SKBitmap bitmap, string outputPath)
+    {
+        var temporaryPath = $"{outputPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            using (var image = SKImage.FromBitmap(bitmap))
+            using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
+            using (var stream = new FileStream(
+                       temporaryPath,
+                       FileMode.CreateNew,
+                       FileAccess.Write,
+                       FileShare.None))
+            {
+                data.SaveTo(stream);
+                stream.Flush(true);
+            }
+
+            using (var verified = SKBitmap.Decode(temporaryPath))
+            {
+                if (verified is null
+                    || verified.Width != bitmap.Width
+                    || verified.Height != bitmap.Height)
+                {
+                    throw new InvalidDataException(
+                        "The converted PNG could not be verified.");
+                }
+            }
+
+            File.Move(temporaryPath, outputPath, false);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+    }
+
+    private static bool IsGuardianAerial(
+        ScreenshotProcessingPreferences preferences,
+        ScreenshotGuardianContext? context)
+    {
+        return preferences.UseGuardianAerialFolder
+            && context is not null
+            && !string.IsNullOrWhiteSpace(context.SiteType)
+            && context.DistanceFromOrigin is >= 0 and < 50
+            && context.Altitude is > 500 and < 2000;
+    }
+
+    private static SKBitmap CreateAerialBitmap(
+        SKBitmap source,
+        string siteType,
+        bool rotateAlpha)
+    {
+        if (!rotateAlpha
+            || !string.Equals(siteType, "Alpha", StringComparison.OrdinalIgnoreCase))
+        {
+            return source.Copy()
+                ?? throw new InvalidDataException(
+                    "The Guardian aerial bitmap could not be copied.");
+        }
+
+        var cropWidth = Math.Min(
+            source.Width,
+            Math.Max(1, (int)(source.Height * 1.3f)));
+        using var cropped = new SKBitmap(cropWidth, source.Height);
+        using (var cropCanvas = new SKCanvas(cropped))
+        {
+            cropCanvas.Clear(SKColors.Black);
+            var sourceX = (source.Width - cropWidth) / 2;
+            cropCanvas.DrawBitmap(
+                source,
+                new SKRect(sourceX, 0, sourceX + cropWidth, source.Height),
+                new SKRect(0, 0, cropWidth, source.Height));
+        }
+
+        var rotated = new SKBitmap(cropped.Height, cropped.Width);
+        using (var rotateCanvas = new SKCanvas(rotated))
+        {
+            rotateCanvas.Clear(SKColors.Black);
+            rotateCanvas.Translate(rotated.Width, 0);
+            rotateCanvas.RotateDegrees(90);
+            rotateCanvas.DrawBitmap(cropped, 0, 0);
+        }
+
+        return rotated;
     }
 
     private static string ResolveSourcePath(
@@ -438,4 +532,10 @@ public sealed record ScreenshotConversion(
     string SourcePath,
     string OutputPath,
     bool SourceDeleted,
-    string? Warning);
+    string? Warning,
+    string? AerialOutputPath = null);
+
+public sealed record ScreenshotGuardianContext(
+    string SiteType,
+    double DistanceFromOrigin,
+    double Altitude);

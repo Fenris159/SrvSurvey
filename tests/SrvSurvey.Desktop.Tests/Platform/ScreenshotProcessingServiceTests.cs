@@ -141,6 +141,46 @@ public sealed class ScreenshotProcessingServiceTests : IDisposable
                 "Earth (2026-07-25 010203).png")));
     }
 
+    [Fact]
+    public async Task QualifiedAlphaSiteCreatesVerifiedRotatedAerialCopy()
+    {
+        var sourceDirectory = Path.Combine(temporaryDirectory, "source");
+        var targetDirectory = Path.Combine(temporaryDirectory, "target");
+        Directory.CreateDirectory(sourceDirectory);
+        var sourcePath = Path.Combine(sourceDirectory, "Screenshot_0004.bmp");
+        CreateBitmap(sourcePath, SKColors.Purple);
+
+        var result = await new ScreenshotProcessingService().ProcessAsync(
+            [Parse(
+                """
+                {"timestamp":"2026-07-25T01:02:03Z","event":"Screenshot","Filename":"\\ED_Pictures\\Screenshot_0004.bmp","System":"Synuefe","Body":"Synuefe 1"}
+                """)],
+            Preferences(sourceDirectory, targetDirectory) with
+            {
+                AddBanner = false,
+                DeleteOriginal = true,
+                UseGuardianAerialFolder = true,
+                RotateAlphaAerial = true,
+            },
+            "Commander Test",
+            guardianContext: new ScreenshotGuardianContext(
+                "Alpha",
+                12.5,
+                1200));
+
+        var conversion = Assert.Single(result.Conversions);
+        Assert.Empty(result.Warnings);
+        Assert.True(conversion.SourceDeleted);
+        Assert.NotNull(conversion.AerialOutputPath);
+        Assert.Contains("Aerial Alpha", conversion.AerialOutputPath);
+        Assert.True(File.Exists(conversion.OutputPath));
+        Assert.True(File.Exists(conversion.AerialOutputPath));
+        using var aerial = SKBitmap.Decode(conversion.AerialOutputPath);
+        Assert.NotNull(aerial);
+        Assert.Equal(180, aerial.Width);
+        Assert.Equal(233, aerial.Height);
+    }
+
     private static ScreenshotProcessingPreferences Preferences(
         string sourceDirectory,
         string targetDirectory)

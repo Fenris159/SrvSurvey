@@ -408,6 +408,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
     public GuardianSiteProximitySnapshot? Proximity => proximity;
 
+    public double? CurrentAltitude => currentStatus?.Altitude;
+
     public GuardianObelisk? CurrentObelisk => Proximity?.CurrentObelisk;
 
     public bool HasCurrentObelisk => CurrentObelisk is not null;

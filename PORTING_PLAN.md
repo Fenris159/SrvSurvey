@@ -641,7 +641,9 @@ Validation performed on 2026-07-25 using Windows build `10.0.26200` and .NET SDK
 - Automated screenshot coverage uses generated BMP fixtures to verify portable
   decode, optional data banners, UTC filenames, cross-platform sanitization,
   collision-safe output, atomic PNG writes, decode/dimension verification, and
-  source deletion only after successful verification. Legacy folder, banner,
+  source deletion only after successful verification. Guardian shots within
+  50 m of the surveyed origin and 500-2000 m altitude also receive the legacy
+  aerial-site copy, including optional Alpha crop/rotation. Legacy folder, banner,
   colour, aerial, and deletion preferences migrate without changing the
   imported `settings.json`; runtime UI visual QA remains deferred.
 - Framework-dependent `win-x64` and `linux-x64` publishes include the expected
