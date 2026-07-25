@@ -508,6 +508,18 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                     "Followed route",
                     string.Join(" \u2022 ", routeDetails)));
             }
+
+            var targetPosition = routePlan.TargetPosition ?? summary?.Position;
+            if (currentPosition is { } origin
+                && targetPosition is { } destination
+                && GalacticRegionMap.Find(origin) is { } currentRegion
+                && GalacticRegionMap.Find(destination) is { } nextRegion
+                && currentRegion.Id != nextRegion.Id)
+            {
+                lines.Add(new JumpInfoDetailLineViewModel(
+                    "Now entering",
+                    nextRegion.Name));
+            }
         }
 
         DetailLines = lines;

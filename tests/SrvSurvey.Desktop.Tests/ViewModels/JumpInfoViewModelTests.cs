@@ -160,6 +160,33 @@ public sealed class JumpInfoViewModelTests : IDisposable
         Assert.Equal([("Beta", 3L)], client.Requests);
     }
 
+    [Fact]
+    public async Task DifferentDestinationRegionIsIncludedInSpecialDetails()
+    {
+        var colonia = CreateSummary() with
+        {
+            SystemName = "Colonia",
+            SystemAddress = 32_382_960_970_595,
+            Position = new GalacticCoordinate(-9530.5, -910.28125, 19808.125),
+        };
+        using var viewModel = CreateViewModel(new FakeSummaryClient(colonia));
+
+        viewModel.ApplyUpdate(
+            "Sol",
+            10_477_373_803,
+            new GalacticCoordinate(0, 0, 0),
+            null,
+            [FsdTarget("Colonia", 32_382_960_970_595, "K")],
+            new EliteStatus { Flags = StatusFlags.InMainShip },
+            null);
+        await viewModel.PendingSummaryLoad;
+
+        Assert.Contains(
+            viewModel.DetailLines,
+            line => line.Label == "Now entering"
+                && line.Value == "Inner Scutum-Centaurus Arm");
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
