@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:colonization="using:SrvSurvey.Core.Colonization"
              x:Class="SrvSurvey.Desktop.Views.ColonizationView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
@@ -126,6 +127,222 @@
                         Content="Highlight one-trip FC restocks" />
             </StackPanel>
           </Grid>
+        </Border>
+      </Expander>
+
+      <Expander HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                IsExpanded="False">
+        <Expander.Header>
+          <StackPanel Spacing="3">
+            <TextBlock Classes="card-title" Text="Raven system sites" />
+            <TextBlock Classes="muted"
+                       Text="Reconcile planned and completed sites with live journal discoveries." />
+          </StackPanel>
+        </Expander.Header>
+        <Border Margin="0,12,0,0" Classes="card">
+          <StackPanel Spacing="16">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="eyebrow" Text="SYSTEM EDITOR" />
+                <TextBlock Classes="card-title"
+                           Text="{Binding Colonization.SystemEditor.SystemTitle}" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="Load is read-only. Edits remain local until a fresh Raven comparison passes and you explicitly confirm the publish." />
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      VerticalAlignment="Center"
+                      Click="OpenRavenSystem_Click"
+                      IsEnabled="{Binding Colonization.SystemEditor.IsLoaded}"
+                      Content="Open on Raven" />
+              <Button Grid.Column="2"
+                      Classes="secondary"
+                      VerticalAlignment="Center"
+                      Click="OpenRavenUpdaterGuide_Click"
+                      Content="Guide" />
+              <Button Grid.Column="3"
+                      Classes="primary"
+                      VerticalAlignment="Center"
+                      Command="{Binding Colonization.SystemEditor.LoadCommand}"
+                      Content="Load system" />
+            </Grid>
+
+            <Border Background="{DynamicResource RavenSurfaceBrush}"
+                    CornerRadius="8"
+                    Padding="12">
+              <TextBlock TextWrapping="Wrap"
+                         Text="{Binding Colonization.SystemEditor.StatusMessage}" />
+            </Border>
+
+            <Border BorderBrush="{DynamicResource RavenWarningBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    IsVisible="{Binding Colonization.SystemEditor.NeedsBodyImport}"
+                    Padding="14">
+              <StackPanel Spacing="10">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                  <StackPanel Spacing="3">
+                    <TextBlock FontWeight="Bold"
+                               Text="Raven has no body catalog for this system" />
+                    <TextBlock Classes="muted"
+                               TextWrapping="Wrap"
+                               Text="Importing bodies is a separate Raven operation and never publishes the local site table." />
+                  </StackPanel>
+                  <Button Grid.Column="1"
+                          Classes="secondary"
+                          Command="{Binding Colonization.SystemEditor.RequestBodyImportCommand}"
+                          Content="Review body import" />
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto,Auto"
+                      ColumnSpacing="10"
+                      IsVisible="{Binding Colonization.SystemEditor.IsBodyImportConfirmationPending}">
+                  <TextBlock VerticalAlignment="Center"
+                             TextWrapping="Wrap"
+                             Text="Confirm the external body import request?" />
+                  <Button Grid.Column="1"
+                          Classes="secondary"
+                          Command="{Binding Colonization.SystemEditor.CancelBodyImportCommand}"
+                          Content="Cancel" />
+                  <Button Grid.Column="2"
+                          Classes="primary"
+                          Command="{Binding Colonization.SystemEditor.ConfirmBodyImportCommand}"
+                          Content="Confirm import" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <StackPanel Spacing="14"
+                        IsVisible="{Binding Colonization.SystemEditor.IsLoaded}">
+              <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="18">
+                <StackPanel Spacing="3">
+                  <TextBlock Classes="muted" Text="ARCHITECT" />
+                  <TextBlock FontWeight="SemiBold"
+                             Text="{Binding Colonization.SystemEditor.Architect}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="3">
+                  <TextBlock Classes="muted" Text="JOURNAL COVERAGE" />
+                  <TextBlock Text="{Binding Colonization.SystemEditor.ScanSummary}" />
+                </StackPanel>
+                <CheckBox Grid.Column="2"
+                          VerticalAlignment="Center"
+                          IsEnabled="{Binding Colonization.SystemEditor.CanEdit}"
+                          IsChecked="{Binding Colonization.SystemEditor.CaptureUnknownSurfaceSites, Mode=TwoWay}"
+                          Content="Capture selected surface sites" />
+              </Grid>
+
+              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                <TextBox Text="{Binding Colonization.SystemEditor.NewSiteName, Mode=TwoWay}"
+                         IsEnabled="{Binding Colonization.SystemEditor.CanEdit}"
+                         PlaceholderText="New site name" />
+                <Button Grid.Column="1"
+                        Classes="secondary"
+                        Command="{Binding Colonization.SystemEditor.AddSiteCommand}"
+                        Content="Add local site" />
+                <Button Grid.Column="2"
+                        Classes="secondary"
+                        Command="{Binding Colonization.SystemEditor.RemoveSiteCommand}"
+                        Content="Remove selected" />
+              </Grid>
+
+              <Grid ColumnDefinitions="2*,90,150,135,110"
+                    ColumnSpacing="10"
+                    Margin="12,0">
+                <TextBlock Classes="muted" Text="SITE" />
+                <TextBlock Grid.Column="1" Classes="muted" Text="BODY" />
+                <TextBlock Grid.Column="2" Classes="muted" Text="BUILD TYPE" />
+                <TextBlock Grid.Column="3" Classes="muted" Text="MARKET ID" />
+                <TextBlock Grid.Column="4" Classes="muted" Text="STATUS" />
+              </Grid>
+
+              <ListBox ItemsSource="{Binding Colonization.SystemEditor.Sites}"
+                       SelectedItem="{Binding Colonization.SystemEditor.SelectedSite, Mode=TwoWay}"
+                       IsEnabled="{Binding Colonization.SystemEditor.CanEdit}"
+                       MaxHeight="360">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ColonizationSystemSiteRowViewModel">
+                    <Grid ColumnDefinitions="2*,90,150,135,110"
+                          ColumnSpacing="10"
+                          Margin="4,5">
+                      <TextBox Text="{Binding Name, Mode=TwoWay}" />
+                      <NumericUpDown Grid.Column="1"
+                                     Minimum="-1"
+                                     Maximum="10000"
+                                     Increment="1"
+                                     FormatString="0"
+                                     Value="{Binding BodyNumber, Mode=TwoWay}" />
+                      <TextBox Grid.Column="2"
+                               Text="{Binding BuildType, Mode=TwoWay}"
+                               PlaceholderText="Unknown" />
+                      <TextBox Grid.Column="3"
+                               Text="{Binding MarketId, Mode=TwoWay}"
+                               PlaceholderText="Unknown" />
+                      <ComboBox Grid.Column="4"
+                                ItemsSource="{Binding AllowedStatuses}"
+                                SelectedItem="{Binding Status, Mode=TwoWay}" />
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         IsVisible="{Binding Colonization.SystemEditor.CanEdit}"
+                         Text="Journal signals, settlement approaches, docking details, and the opt-in destination capture update only this local workspace until review." />
+
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{DynamicResource RavenAccentBrush}"
+                           TextWrapping="Wrap"
+                           Text="{Binding Colonization.SystemEditor.ReviewSummary}" />
+                <Button Grid.Column="1"
+                        Classes="primary"
+                        Command="{Binding Colonization.SystemEditor.ReviewCommand}"
+                        Content="Review Raven changes" />
+              </Grid>
+
+              <ItemsControl ItemsSource="{Binding Colonization.SystemEditor.Conflicts}"
+                            IsVisible="{Binding Colonization.SystemEditor.HasConflicts}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="colonization:ColonizationSystemSiteConflict">
+                    <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                               TextWrapping="Wrap">
+                      <Run Text="{Binding Site}" />
+                      <Run Text=" · " />
+                      <Run Text="{Binding Field}" />
+                      <Run Text=": " />
+                      <Run Text="{Binding Message}" />
+                    </TextBlock>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <Border Background="{DynamicResource RavenSurfaceBrush}"
+                      BorderBrush="{DynamicResource RavenWarningBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      IsVisible="{Binding Colonization.SystemEditor.IsPublishConfirmationPending}"
+                      Padding="14">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                  <StackPanel Spacing="3">
+                    <TextBlock FontWeight="Bold" Text="Confirm external publish" />
+                    <TextBlock Classes="muted"
+                               TextWrapping="Wrap"
+                               Text="Only the reviewed updates and stable deletions will be sent. Concurrent and remote-only data is retained." />
+                  </StackPanel>
+                  <Button Grid.Column="1"
+                          Classes="secondary"
+                          Command="{Binding Colonization.SystemEditor.CancelPublishCommand}"
+                          Content="Cancel" />
+                  <Button Grid.Column="2"
+                          Classes="primary"
+                          Command="{Binding Colonization.SystemEditor.ConfirmPublishCommand}"
+                          Content="Confirm publish" />
+                </Grid>
+              </Border>
+            </StackPanel>
+          </StackPanel>
         </Border>
       </Expander>
 

@@ -156,6 +156,26 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task FeedsConsentedCommanderAndAddressIntoSystemEditor()
+    {
+        var viewModel = Create(new StubRavenColonialClient());
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "secret");
+        viewModel.UpdateSystemContext(
+            "Test System",
+            new GalacticCoordinate(1, 2, 3),
+            systemAddress: 42);
+
+        Assert.True(viewModel.SystemEditor.CanLoad);
+        Assert.True(viewModel.SystemEditor.LoadCommand.CanExecute(null));
+        Assert.Equal("Test System", viewModel.SystemEditor.SystemTitle);
+    }
+
+    [Fact]
     public async Task RefreshFailureKeepsExistingProjectRows()
     {
         var client = new StubRavenColonialClient

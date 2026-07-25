@@ -1164,7 +1164,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Colonization.ApplyJournalEvents(update.JournalEvents);
         Colonization.UpdateSystemContext(
             journalState.SystemName,
-            journalState.StarPosition);
+            journalState.StarPosition,
+            journalState.SystemAddress);
 
         Search.UpdateCurrentSystem(
             journalState.SystemName,

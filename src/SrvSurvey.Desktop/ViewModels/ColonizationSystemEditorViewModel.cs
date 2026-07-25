@@ -126,6 +126,9 @@ public sealed class ColonizationSystemEditorViewModel
 
     public IReadOnlyList<string> BuildTypes { get; }
 
+    public IReadOnlyList<ColonizationSystemSiteStatus> SiteStatuses { get; } =
+        Enum.GetValues<ColonizationSystemSiteStatus>();
+
     public IReadOnlyList<ColonizationSystemBodyOptionViewModel> Bodies =>
         system?.Bodies?
             .OrderBy(body => body.Number)
@@ -141,6 +144,8 @@ public sealed class ColonizationSystemEditorViewModel
             || context.SystemAddress is > 0);
 
     public bool IsLoaded => system is not null;
+
+    public long? LoadedSystemAddress => system?.SystemAddress;
 
     public string SystemTitle => system is null
         ? context.SystemName ?? "No live system"
@@ -328,6 +333,12 @@ public sealed class ColonizationSystemEditorViewModel
         OnPropertyChanged(nameof(SystemTitle));
         OnPropertyChanged(nameof(CanConfirmPublish));
         RaiseCommandStates();
+    }
+
+    public void ReportLinkFailure(string message)
+    {
+        StatusMessage = "The Raven system page could not be opened: "
+            + message;
     }
 
     public void ApplyJournalEvents(
@@ -642,6 +653,7 @@ public sealed class ColonizationSystemEditorViewModel
         IsBodyImportConfirmationPending = false;
         ClearReview();
         OnPropertyChanged(nameof(IsLoaded));
+        OnPropertyChanged(nameof(LoadedSystemAddress));
         OnPropertyChanged(nameof(SystemTitle));
         OnPropertyChanged(nameof(Architect));
         OnPropertyChanged(nameof(IsOpenSystem));
@@ -662,6 +674,7 @@ public sealed class ColonizationSystemEditorViewModel
         ReplaceRows([]);
         ClearReview();
         OnPropertyChanged(nameof(IsLoaded));
+        OnPropertyChanged(nameof(LoadedSystemAddress));
         OnPropertyChanged(nameof(SystemTitle));
         OnPropertyChanged(nameof(Architect));
         OnPropertyChanged(nameof(IsOpenSystem));
@@ -1105,6 +1118,9 @@ public sealed class ColonizationSystemSiteRowViewModel
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public IReadOnlyList<ColonizationSystemSiteStatus> AllowedStatuses { get; }
+        = Enum.GetValues<ColonizationSystemSiteStatus>();
 
     public string Id
     {

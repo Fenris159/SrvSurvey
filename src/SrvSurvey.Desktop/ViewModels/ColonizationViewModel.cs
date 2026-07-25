@@ -33,6 +33,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private EliteStatus? latestStatus;
     private string? commanderName;
     private string? currentSystemName;
+    private long? currentSystemAddress;
     private IReadOnlyList<double> currentStarPosition = [];
     private string? primaryProjectId;
     private bool isEnabled;
@@ -99,9 +100,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             this.client,
             this.buildCatalog,
             OnProjectCreatedAsync);
+        SystemEditor = new ColonizationSystemEditorViewModel(
+            this.client,
+            this.buildCatalog);
         CommodityOverlay = new ColonizationCommodityOverlayViewModel();
         CommodityOverlay.ApplyPreferences(overlayPreferences);
         UpdateProjectEditorContext();
+        UpdateSystemEditorContext();
         UpdateCommodityPlan();
     }
 
@@ -116,6 +121,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     public ICommand SyncFleetCarrierCargoCommand { get; }
 
     public ColonizationProjectEditorViewModel ProjectEditor { get; }
+
+    public ColonizationSystemEditorViewModel SystemEditor { get; }
 
     public ColonizationCommodityOverlayViewModel CommodityOverlay { get; }
 
@@ -279,6 +286,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 }
 
                 UpdateProjectEditorContext();
+                UpdateSystemEditorContext();
             }
             catch (Exception exception) when (
                 exception is IOException
@@ -430,6 +438,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasCommanderProfile));
         OnPropertyChanged(nameof(HasStoredRavenApiKey));
         RaiseCommandStates();
+        UpdateSystemEditorContext();
     }
 
     public async Task SetCommanderAsync(string? value)
@@ -448,6 +457,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         CommanderName = normalized;
         ClearProjects();
         UpdateProjectEditorContext();
+        UpdateSystemEditorContext();
         if (CommanderName is null)
         {
             StatusMessage = "No commander profile is active.";
@@ -464,6 +474,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
+        SystemEditor.ApplyJournalEvents(journalEvents);
         var before = constructionState.Version;
         foreach (var journalEvent in journalEvents)
         {
@@ -514,20 +525,26 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         }
 
         latestStatus = status;
+        SystemEditor.UpdateStatus(status);
         UpdateCommodityPlan();
     }
 
     public void UpdateSystemContext(
         string? systemName,
-        GalacticCoordinate? position)
+        GalacticCoordinate? position,
+        long? systemAddress = null)
     {
         currentSystemName = string.IsNullOrWhiteSpace(systemName)
             ? null
             : systemName.Trim();
+        currentSystemAddress = systemAddress is > 0
+            ? systemAddress
+            : null;
         currentStarPosition = position is GalacticCoordinate coordinate
             ? [coordinate.X, coordinate.Y, coordinate.Z]
             : [];
         UpdateProjectEditorContext();
+        UpdateSystemEditorContext();
     }
 
     public void ReportLinkFailure(string message)
@@ -565,6 +582,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             {
                 FleetCarrierCargoSyncEnabled = false;
             }
+
+            UpdateSystemEditorContext();
         }
         catch (Exception exception) when (
             exception is IOException
@@ -847,6 +866,16 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             currentStarPosition,
             snapshot.CurrentDock,
             snapshot.CurrentDepot));
+    }
+
+    private void UpdateSystemEditorContext()
+    {
+        SystemEditor.UpdateContext(new ColonizationSystemEditorContext(
+            IsEnabled,
+            CommanderName,
+            currentSystemName,
+            currentSystemAddress,
+            storedRavenApiKey));
     }
 
     private void OnProjectShownChanged(
