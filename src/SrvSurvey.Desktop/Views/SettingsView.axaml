@@ -183,6 +183,21 @@
       </Border>
 
       <Border Classes="card raised">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="card-title" Text="Station information" />
+          <CheckBox IsChecked="{Binding StationInfo.AutoShow, Mode=TwoWay}"
+                    Content="Show selected station details in the navigation panel" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Uses current Spansh station data for pads, economies, faction, relevant services, and prohibited commodities. Alt+I toggles the overlay manually." />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="{Binding StationInfo.HasSettingsStatus}"
+                     TextWrapping="Wrap"
+                     Text="{Binding StationInfo.SettingsStatus}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
         <StackPanel Spacing="14">
           <CheckBox IsChecked="{Binding JumpInfo.AutoShow, Mode=TwoWay}"
                     Content="Show next-jump information automatically" />

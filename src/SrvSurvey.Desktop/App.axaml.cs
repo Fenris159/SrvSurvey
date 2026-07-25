@@ -20,6 +20,7 @@ public sealed partial class App : Application
     private JumpInfoOverlayCoordinator? jumpInfoOverlayCoordinator;
     private GroundTargetOverlayCoordinator? groundTargetOverlayCoordinator;
     private CombatOverlayCoordinator? combatOverlayCoordinator;
+    private StationInfoOverlayCoordinator? stationInfoOverlayCoordinator;
     private SystemSurveyOverlayCoordinator? systemSurveyOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
@@ -104,6 +105,10 @@ public sealed partial class App : Application
                 viewModel.Combat,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent());
+            stationInfoOverlayCoordinator = new StationInfoOverlayCoordinator(
+                viewModel.StationInfo,
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent());
             systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
                 viewModel.SystemSurvey,
                 viewModel.SurfaceSurvey,
@@ -125,7 +130,8 @@ public sealed partial class App : Application
                     liveGuardianSite
                     || jumpInfoOverlayCoordinator?.IsVisible == true);
                 systemSurveyOverlayCoordinator?.SetPriorScansObscured(
-                    liveGuardianSite);
+                    liveGuardianSite
+                    || stationInfoOverlayCoordinator?.IsVisible == true);
                 systemSurveyOverlayCoordinator?.SetSurfaceObscured(
                     liveGuardianSite);
                 guardianOverlayCoordinator?.SetObscured(
@@ -144,6 +150,8 @@ public sealed partial class App : Application
             systemSurveyOverlayCoordinator.VisibilityChanged += (_, _) =>
                 SynchronizeGuardianPriority();
             guardianOverlayCoordinator.VisibilityChanged += (_, _) =>
+                SynchronizeGuardianPriority();
+            stationInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
                 SynchronizeGuardianPriority();
             SynchronizeGuardianPriority();
             colonizationCommodityOverlayCoordinator =
@@ -210,6 +218,7 @@ public sealed partial class App : Application
                                 || systemSurveyOverlayCoordinator?.IsVisible == true
                                 || groundTargetOverlayCoordinator?.IsVisible == true
                                 || combatOverlayCoordinator?.IsVisible == true
+                                || stationInfoOverlayCoordinator?.IsVisible == true
                                 || sphericalSearchOverlayCoordinator?.IsVisible == true
                                 || colonizationCommodityOverlayCoordinator
                                     ?.IsVisible == true;
@@ -218,6 +227,7 @@ public sealed partial class App : Application
                             groundTargetOverlayCoordinator?.SetSuppressed(suppress);
                             combatOverlayCoordinator?.SetSuppressed(suppress);
                             guardianOverlayCoordinator?.SetSuppressed(suppress);
+                            stationInfoOverlayCoordinator?.SetSuppressed(suppress);
                             sphericalSearchOverlayCoordinator?.SetSuppressed(suppress);
                             colonizationCommodityOverlayCoordinator
                                 ?.SetSuppressed(suppress);
@@ -236,6 +246,11 @@ public sealed partial class App : Application
                         case GlobalInputAction.ShowBodyInfo:
                             handled = viewModel.SystemSurvey
                                 .ToggleBodyInfoVisibility();
+                            break;
+
+                        case GlobalInputAction.ShowStationInfo:
+                            handled = viewModel.StationInfo
+                                .ToggleForcedVisibility();
                             break;
 
                         case GlobalInputAction.ShowColonyShopping:
@@ -341,6 +356,9 @@ public sealed partial class App : Application
                 groundTargetOverlayCoordinator = null;
                 combatOverlayCoordinator?.Dispose();
                 combatOverlayCoordinator = null;
+                stationInfoOverlayCoordinator?.Dispose();
+                stationInfoOverlayCoordinator = null;
+                viewModel.StationInfo.Dispose();
                 systemSurveyOverlayCoordinator?.Dispose();
                 systemSurveyOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();

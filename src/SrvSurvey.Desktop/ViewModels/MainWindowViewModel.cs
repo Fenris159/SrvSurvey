@@ -93,7 +93,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         SystemSurveySettingsStore? systemSurveySettingsStore = null,
         BiologyPredictionsSettingsStore? biologyPredictionsSettingsStore = null,
         CombatSettingsStore? combatSettingsStore = null,
-        GuardianOverlaySettingsStore? guardianOverlaySettingsStore = null)
+        GuardianOverlaySettingsStore? guardianOverlaySettingsStore = null,
+        StationInfoSettingsStore? stationInfoSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -154,10 +155,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
                 new FollowRouteStore(AppDataPaths.DataDirectory)),
             new RouteNameImporter(sharedSystemResolver),
             new SpanshRouteClient());
+        var sharedSystemSummaryClient = systemSummaryClient
+            ?? new SystemSummaryClient();
         JumpInfo = new JumpInfoViewModel(
-            systemSummaryClient ?? new SystemSummaryClient(),
+            sharedSystemSummaryClient,
             jumpInfoSettingsStore
                 ?? new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath));
+        StationInfo = new StationInfoViewModel(
+            sharedSystemSummaryClient,
+            stationInfoSettingsStore
+                ?? new StationInfoSettingsStore(AppDataPaths.UiSettingsPath));
         SystemSurvey = new SystemSurveyViewModel(
             systemSurveySettingsStore
                 ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath));
@@ -292,6 +299,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public RouteWorkspaceViewModel Route { get; }
 
     public JumpInfoViewModel JumpInfo { get; }
+
+    public StationInfoViewModel StationInfo { get; }
 
     public SystemSurveyViewModel SystemSurvey { get; }
 
@@ -911,6 +920,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Guardian.UpdateCurrentSystem(
             journalState.SystemName,
             journalState.StarPosition);
+        _ = StationInfo.UpdateCurrentSystemAsync(
+            journalState.SystemName,
+            journalState.SystemAddress ?? 0);
 
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
         var initializedJourney = await Journey.UpdateContextAsync(
@@ -967,6 +979,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         if (update.Status is not null)
         {
             Guardian.UpdateStatus(update.Status);
+            StationInfo.UpdateStatus(update.Status);
             await Route.UpdateStatusAsync(update.Status);
             await BoxelSearch.UpdateStatusAsync(
                 update.Status,

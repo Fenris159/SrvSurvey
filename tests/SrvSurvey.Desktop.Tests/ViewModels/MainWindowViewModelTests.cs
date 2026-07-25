@@ -103,6 +103,39 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void StationInfoPreferencesAreWiredIntoMainViewModel()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-station-settings-{Guid.NewGuid():N}");
+        try
+        {
+            var settingsStore = new StationInfoSettingsStore(
+                Path.Combine(root, "ui-settings.json"));
+            settingsStore.Save(new StationInfoPreferences(AutoShow: false));
+
+            var viewModel = new MainWindowViewModel(
+                Path.Combine(root, "missing-journals"),
+                appDataPaths: new AppDataPaths(
+                    Path.Combine(root, "config"),
+                    Path.Combine(root, "data"),
+                    Path.Combine(root, "cache"),
+                    []),
+                stationInfoSettingsStore: settingsStore);
+
+            Assert.False(viewModel.StationInfo.AutoShow);
+            viewModel.StationInfo.Dispose();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task LegacyProfileCanBeImportedFromSettingsWorkflow()
     {
         var root = Path.Combine(
