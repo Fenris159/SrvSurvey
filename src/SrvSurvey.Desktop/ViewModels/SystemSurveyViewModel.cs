@@ -17,6 +17,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private IReadOnlyList<FssBodyRowViewModel> fssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> dssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> biologicalBodies = [];
+    private bool autoShowLastFssBody;
     private bool autoShowFssInfo;
     private bool showFssInfoInSystemMap;
     private bool showFssInfoInNavigationPanel;
@@ -43,6 +44,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             ?? throw new ArgumentNullException(nameof(settingsStore));
         this.state = state ?? new SystemScanState();
         var preferences = settingsStore.Load();
+        autoShowLastFssBody = preferences.AutoShowLastFssBody;
         autoShowFssInfo = preferences.AutoShowFssInfo;
         showFssInfoInSystemMap = preferences.ShowFssInfoInSystemMap;
         showFssInfoInNavigationPanel = preferences.ShowFssInfoInNavigationPanel;
@@ -59,6 +61,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public bool AutoShowLastFssBody
+    {
+        get => autoShowLastFssBody;
+        set => SetPreference(ref autoShowLastFssBody, value);
+    }
 
     public bool AutoShowFssInfo
     {
@@ -276,6 +284,68 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public string FssEmptyText => "Scan a body in the FSS to populate this list.";
 
+    public SystemScanBodySnapshot? LastFssBody => snapshot.LastDetailedBodyId is { } id
+        ? snapshot.Bodies.FirstOrDefault(body => body.BodyId == id)
+        : null;
+
+    public bool HasLastFssBody => LastFssBody is not null;
+
+    public string LastFssBodyName => LastFssBody is { } body
+        ? (body.WasDiscovered ? string.Empty : "⚑ ") + body.Name
+        : "Waiting for a detailed body scan";
+
+    public string LastFssBodyClass => LastFssBody is { } body
+        ? body.PlanetClass ?? "Unknown body"
+        : "Tune the FSS to a planet";
+
+    public string LastFssBodyDistance => LastFssBody is { } body
+        ? $"{body.DistanceFromArrivalLs:N0} LS"
+        : string.Empty;
+
+    public string LastFssScanValue => LastFssBody is { } body
+        ? FormatCredits(body.ScanValue)
+        : "—";
+
+    public string LastFssMappedValue => LastFssBody is { } body
+        ? FormatCredits(body.EstimatedMappedValue)
+        : "—";
+
+    public string LastFssMarkers
+    {
+        get
+        {
+            if (LastFssBody is not { } body)
+            {
+                return string.Empty;
+            }
+
+            var markers = new List<string>();
+            if (body.IsTerraformable || body.IsEarthLike)
+            {
+                markers.Add("TERRAFORMABLE");
+            }
+
+            if (body.IsLandable)
+            {
+                markers.Add("LANDABLE");
+            }
+
+            return string.Join(" · ", markers);
+        }
+    }
+
+    public bool HasLastFssMarkers => !string.IsNullOrWhiteSpace(LastFssMarkers);
+
+    public string LastFssSignalsText => LastFssBody is
+    { BiologicalSignalCount: > 0 } body
+            ? body.BiologicalSignalCount == 1
+                ? "1 biological signal"
+                : $"{body.BiologicalSignalCount:N0} biological signals"
+            : string.Empty;
+
+    public bool HasLastFssSignals => !string.IsNullOrWhiteSpace(
+        LastFssSignalsText);
+
     public string SystemStatusText
     {
         get
@@ -369,6 +439,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return automatic || forced;
         }
     }
+
+    public bool ShouldShowLastFssBody => AutoShowLastFssBody
+        && snapshot.SystemAddress is not null
+        && status?.GuiFocus == GuiFocus.Fss;
 
     public bool ShouldShowSystemStatus
     {
@@ -484,6 +558,17 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ScanSummary));
         OnPropertyChanged(nameof(FssFilterDescription));
         OnPropertyChanged(nameof(FssEmptyText));
+        OnPropertyChanged(nameof(LastFssBody));
+        OnPropertyChanged(nameof(HasLastFssBody));
+        OnPropertyChanged(nameof(LastFssBodyName));
+        OnPropertyChanged(nameof(LastFssBodyClass));
+        OnPropertyChanged(nameof(LastFssBodyDistance));
+        OnPropertyChanged(nameof(LastFssScanValue));
+        OnPropertyChanged(nameof(LastFssMappedValue));
+        OnPropertyChanged(nameof(LastFssMarkers));
+        OnPropertyChanged(nameof(HasLastFssMarkers));
+        OnPropertyChanged(nameof(LastFssSignalsText));
+        OnPropertyChanged(nameof(HasLastFssSignals));
         OnPropertyChanged(nameof(SystemStatusText));
         OnPropertyChanged(nameof(BiologicalHeading));
         OnPropertyChanged(nameof(HasNonBodySignals));
@@ -656,6 +741,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         try
         {
             settingsStore.Save(new SystemSurveyPreferences(
+                AutoShowLastFssBody,
                 AutoShowFssInfo,
                 ShowFssInfoInSystemMap,
                 ShowFssInfoInNavigationPanel,
@@ -685,6 +771,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private void RaiseVisibilityProperties()
     {
         OnPropertyChanged(nameof(ShouldShowFssInfo));
+        OnPropertyChanged(nameof(ShouldShowLastFssBody));
         OnPropertyChanged(nameof(ShouldShowSystemStatus));
     }
 

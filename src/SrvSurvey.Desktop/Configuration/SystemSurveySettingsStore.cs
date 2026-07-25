@@ -17,6 +17,10 @@ public sealed class SystemSurveySettingsStore
         var settings = root["SystemSurvey"] as JsonObject;
         var defaults = SystemSurveyPreferences.Default;
         return new SystemSurveyPreferences(
+            GetBoolean(
+                settings,
+                "AutoShowLastFssBody",
+                defaults.AutoShowLastFssBody),
             GetBoolean(settings, "AutoShowFssInfo", defaults.AutoShowFssInfo),
             GetBoolean(
                 settings,
@@ -78,6 +82,7 @@ public sealed class SystemSurveySettingsStore
             }
 
             root["Version"] = 1;
+            settings["AutoShowLastFssBody"] = preferences.AutoShowLastFssBody;
             settings["AutoShowFssInfo"] = preferences.AutoShowFssInfo;
             settings["ShowFssInfoInSystemMap"] =
                 preferences.ShowFssInfoInSystemMap;
@@ -123,6 +128,7 @@ public sealed class SystemSurveySettingsStore
 }
 
 public sealed record SystemSurveyPreferences(
+    bool AutoShowLastFssBody,
     bool AutoShowFssInfo,
     bool ShowFssInfoInSystemMap,
     bool ShowFssInfoInNavigationPanel,
@@ -138,6 +144,7 @@ public sealed record SystemSurveyPreferences(
     bool ShowNonBodySignals)
 {
     public static SystemSurveyPreferences Default { get; } = new(
+        AutoShowLastFssBody: true,
         AutoShowFssInfo: true,
         ShowFssInfoInSystemMap: false,
         ShowFssInfoInNavigationPanel: false,

@@ -94,6 +94,19 @@ public sealed class SystemScanStateTests
     }
 
     [Fact]
+    public void LastDetailedBodyRemainsTheLatestStandalonePlanet()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","MassEM":1}"""));
+        state.Apply(Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"K","StellarMass":1}"""));
+        state.Apply(Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test A Belt Cluster 1","BodyID":2}"""));
+        state.Apply(Parse("""{"event":"Scan","ScanType":"Detailed","SystemAddress":42,"BodyName":"Test 1 A Ring","BodyID":3,"PlanetClass":"Rocky body","MassEM":0.1,"Parents":[{"Ring":1}]}"""));
+
+        Assert.Equal(1, state.CreateSnapshot().LastDetailedBodyId);
+    }
+
+    [Fact]
     public void UnknownEventsRemainAvailableToOtherReducers()
     {
         var state = new SystemScanState();

@@ -98,11 +98,44 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal(1, signalBody.AnalyzedBiologicalSignalCount);
         Assert.Equal(1, signalBody.GeologicalSignalCount);
 
+        Assert.True(viewModel.ShouldShowLastFssBody);
+        Assert.Equal("Test 3", viewModel.LastFssBodyName);
+        Assert.Equal("Sudarsky class II gas giant", viewModel.LastFssBodyClass);
+        Assert.Equal("0 LS", viewModel.LastFssBodyDistance);
+        Assert.Equal("18.3 K CR", viewModel.LastFssScanValue);
+        Assert.Equal("99.2 K CR", viewModel.LastFssMappedValue);
+        Assert.False(viewModel.HasLastFssMarkers);
+        Assert.False(viewModel.HasLastFssSignals);
+
         var dssBody = Assert.Single(viewModel.DssBodies);
         Assert.Equal("1", dssBody.Name);
         Assert.True(dssBody.IsDestination);
         Assert.Equal("1 biological signal remaining", viewModel.BiologicalHeading);
         Assert.Equal("2", Assert.Single(viewModel.BiologicalBodies).Name);
+    }
+
+    [Fact]
+    public void LastFssBodyVisibilityHonorsModeAndPreference()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(TerraformableScan),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.Fss });
+
+        Assert.True(viewModel.HasLastFssBody);
+        Assert.Equal("⚑ Test 1", viewModel.LastFssBodyName);
+        Assert.Equal("TERRAFORMABLE · LANDABLE", viewModel.LastFssMarkers);
+        Assert.True(viewModel.ShouldShowLastFssBody);
+
+        viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.NoFocus });
+        Assert.False(viewModel.ShouldShowLastFssBody);
+
+        viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.Fss });
+        viewModel.AutoShowLastFssBody = false;
+        Assert.False(viewModel.ShouldShowLastFssBody);
     }
 
     [Fact]

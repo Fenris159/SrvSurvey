@@ -25,6 +25,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         var store = new SystemSurveySettingsStore(path);
         var expected = new SystemSurveyPreferences(
             false,
+            false,
             true,
             true,
             false,

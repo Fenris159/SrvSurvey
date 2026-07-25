@@ -149,6 +149,8 @@
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
             <StackPanel Spacing="12">
               <TextBlock Classes="eyebrow" Text="FSS BODY FEED" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoShowLastFssBody, Mode=TwoWay}"
+                        Content="Show the last tuned body in FSS" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoShowFssInfo, Mode=TwoWay}"
                         Content="Show automatically in FSS" />
               <CheckBox IsChecked="{Binding SystemSurvey.ShowFssInfoInSystemMap, Mode=TwoWay}"
