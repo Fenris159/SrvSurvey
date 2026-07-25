@@ -61,6 +61,18 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "collectMatsCollectionStatsTest": true,
               "autoShowPlotStationInfo_TEST": false,
               "useSystemNickNames": true,
+              "processScreenshots": true,
+              "addBannerToScreenshots": false,
+              "deleteScreenshotOriginal": true,
+              "useGuardianAerialScreenshotsFolder": false,
+              "screenshotSourceFolder": "C:\\Legacy Shots",
+              "screenshotTargetFolder": "D:\\Converted Shots",
+              "rotateAndTruncateAlphaAerialScreenshots": false,
+              "screenshotBannerColor": {"A":255,"R":18,"G":171,"B":239},
+              "screenshotBannerLocalTime": true,
+              "aerialAltAlpha": 1100,
+              "aerialAltBeta": 1500,
+              "aerialAltGamma": 1700,
               "buildProjects_TEST": true,
               "autoShowPlotBuildCommodities": false,
               "buildProjectsOnRightScreen": false,
@@ -149,6 +161,21 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             new StationInfoSettingsStore(paths.UiSettingsPath).Load());
         Assert.True(
             new SystemNicknameSettingsStore(paths.UiSettingsPath).LoadEnabled());
+        Assert.Equal(
+            new ScreenshotProcessingPreferences(
+                true,
+                false,
+                true,
+                false,
+                "C:\\Legacy Shots",
+                "D:\\Converted Shots",
+                false,
+                "#12ABEF",
+                true,
+                1100,
+                1500,
+                1700),
+            new ScreenshotProcessingSettingsStore(paths.UiSettingsPath).Load());
 
         var colonization = new ColonizationSettingsStore(paths.UiSettingsPath);
         Assert.True(colonization.LoadEnabled());

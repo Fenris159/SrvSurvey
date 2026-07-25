@@ -147,6 +147,21 @@ public sealed class LegacyUiSettingsMigrator
                 [
                     ("useSystemNickNames", "Enabled"),
                 ]);
+                mappedCount += MapSection(legacy, root, "Screenshots",
+                [
+                    ("processScreenshots", "Enabled"),
+                    ("addBannerToScreenshots", "AddBanner"),
+                    ("deleteScreenshotOriginal", "DeleteOriginal"),
+                    ("useGuardianAerialScreenshotsFolder", "UseGuardianAerialFolder"),
+                    ("screenshotSourceFolder", "SourceFolder"),
+                    ("screenshotTargetFolder", "TargetFolder"),
+                    ("rotateAndTruncateAlphaAerialScreenshots", "RotateAlphaAerial"),
+                    ("screenshotBannerColor", "BannerColor"),
+                    ("screenshotBannerLocalTime", "BannerLocalTime"),
+                    ("aerialAltAlpha", "AerialAltitudeAlpha"),
+                    ("aerialAltBeta", "AerialAltitudeBeta"),
+                    ("aerialAltGamma", "AerialAltitudeGamma"),
+                ]);
                 mappedCount += MapColonization(legacy, root);
                 mappedCount += MapInput(legacy, root);
                 root["LegacyImport"] = new JsonObject
