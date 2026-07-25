@@ -212,6 +212,33 @@
 
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
             <StackPanel Spacing="12">
+              <TextBlock Classes="eyebrow" Text="EXOBIOLOGY SURVEY" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoShowBioSystem, Mode=TwoWay}"
+                        Content="Show system exobiology status automatically" />
+              <CheckBox IsChecked="{Binding SystemSurvey.DrawBodyBiosOnlyWhenNear, Mode=TwoWay}"
+                        Content="Show body details only when nearby" />
+              <CheckBox IsChecked="{Binding SystemSurvey.HideGeoCountInBioSystem, Mode=TwoWay}"
+                        Content="Hide geological signals in biology details" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="12">
+              <TextBlock Classes="eyebrow" Text="BIOLOGY PRESENTATION" />
+              <CheckBox IsChecked="{Binding SystemSurvey.HighlightRegionalFirsts, Mode=TwoWay}"
+                        Content="Highlight regional first discoveries" />
+              <CheckBox IsChecked="{Binding SystemSurvey.DimAnalyzedOrganisms, Mode=TwoWay}"
+                        Content="Dim fully analyzed organisms" />
+              <CheckBox IsChecked="{Binding SystemSurvey.DisableBioPredictions, Mode=TwoWay}"
+                        Content="Disable organism predictions" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Predictions use the bundled SrvSurvey Codex criteria; confirmed scans and rewards remain visible when predictions are disabled." />
+            </StackPanel>
+          </Grid>
+
+          <Separator />
+
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="12">
               <TextBlock Classes="eyebrow" Text="BODY INFORMATION" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoShowBodyInfo, Mode=TwoWay}"
                         Content="Show body information automatically" />
