@@ -471,6 +471,65 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             cancellationToken);
     }
 
+    public Task<QuestDevelopmentStateSnapshot> GetDevelopmentStateAsync(
+        RavenQuestReference reference,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        return InvokeDevelopmentRuntimeAsync(
+            reference,
+            (runtime, token) => runtime.GetDevelopmentStateAsync(token),
+            cancellationToken);
+    }
+
+    public Task UpdateDevelopmentObjectivesAsync(
+        RavenQuestReference reference,
+        IReadOnlyDictionary<string, string> objectives,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        ArgumentNullException.ThrowIfNull(objectives);
+        return InvokeDevelopmentRuntimeAsync(
+            reference,
+            (runtime, token) => runtime.UpdateDevelopmentObjectivesAsync(
+                objectives,
+                token),
+            cancellationToken);
+    }
+
+    public Task UpdateDevelopmentChapterVariablesAsync(
+        RavenQuestReference reference,
+        string chapterId,
+        IReadOnlyDictionary<string, JsonElement> variables,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        ArgumentException.ThrowIfNullOrWhiteSpace(chapterId);
+        ArgumentNullException.ThrowIfNull(variables);
+        return InvokeDevelopmentRuntimeAsync(
+            reference,
+            (runtime, token) => runtime.UpdateDevelopmentChapterVariablesAsync(
+                chapterId,
+                variables,
+                token),
+            cancellationToken);
+    }
+
+    public Task UpdateDevelopmentMessagesAsync(
+        RavenQuestReference reference,
+        IReadOnlyList<RavenQuestMessage> messages,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        ArgumentNullException.ThrowIfNull(messages);
+        return InvokeDevelopmentRuntimeAsync(
+            reference,
+            (runtime, token) => runtime.UpdateDevelopmentMessagesAsync(
+                messages,
+                token),
+            cancellationToken);
+    }
+
     public async Task<QuestDevelopmentImportResult> ImportDevelopmentQuestAsync(
         string sourceDirectory,
         CancellationToken cancellationToken = default)
@@ -510,6 +569,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 await validation.InitializeAsync(
                         startFirstChapter: !imported.Chapters.Any(IsActive),
                         cancellationToken)
+                    .ConfigureAwait(false);
+                await validation.PrepareDevelopmentChaptersAsync(cancellationToken)
                     .ConfigureAwait(false);
             }
 

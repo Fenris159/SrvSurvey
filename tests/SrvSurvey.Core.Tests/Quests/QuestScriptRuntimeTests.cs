@@ -169,6 +169,83 @@ public sealed class QuestScriptRuntimeTests
     }
 
     [Fact]
+    public async Task DevelopmentStateEditsValidateAndPersistTypedViews()
+    {
+        var saves = 0;
+        var progress = CreateProgress("counter = 1");
+        await using var runtime = new QuestScriptRuntime(
+            progress,
+            saveProgress: (_, _) =>
+            {
+                saves++;
+                return Task.CompletedTask;
+            });
+        await runtime.InitializeAsync(startFirstChapter: true);
+        var initial = await runtime.GetDevelopmentStateAsync();
+        var chapter = Assert.Single(initial.Chapters);
+        Assert.Equal(1, chapter.Variables["counter"].GetDouble());
+
+        await runtime.UpdateDevelopmentChapterVariablesAsync(
+            "start",
+            new Dictionary<string, JsonElement>
+            {
+                ["counter"] = JsonSerializer.SerializeToElement(5),
+            });
+        await runtime.UpdateDevelopmentObjectivesAsync(
+            new Dictionary<string, string>
+            {
+                ["scan"] = "complete,3,3",
+            });
+        await runtime.UpdateDevelopmentMessagesAsync(
+        [
+            new RavenQuestMessage
+            {
+                Id = "manual",
+                Received = DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
+                Body = "Test",
+            },
+        ]);
+        var unknown = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            runtime.UpdateDevelopmentChapterVariablesAsync(
+                "start",
+                new Dictionary<string, JsonElement>
+                {
+                    ["invented"] = JsonSerializer.SerializeToElement(true),
+                }));
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            runtime.UpdateDevelopmentObjectivesAsync(
+                new Dictionary<string, string>
+                {
+                    ["scan"] = "not-a-state",
+                }));
+
+        Assert.Contains("Cannot add", unknown.Message, StringComparison.Ordinal);
+        Assert.Equal(5, progress.Chapters[0].Variables["counter"].GetDouble());
+        Assert.Equal("complete,3,3", progress.Objectives["scan"]);
+        Assert.Equal("manual", Assert.Single(progress.Messages).Id);
+        Assert.True(saves >= 4);
+    }
+
+    [Fact]
+    public async Task DevelopmentPreparationValidatesInactiveChapterScripts()
+    {
+        var progress = CreateProgress(
+            "function noop() end",
+            new Dictionary<string, string>
+            {
+                ["broken"] = "this is not valid lua",
+            });
+        await using var runtime = new QuestScriptRuntime(progress);
+        await runtime.InitializeAsync(startFirstChapter: true);
+
+        var exception = await Assert.ThrowsAsync<QuestScriptException>(() =>
+            runtime.PrepareDevelopmentChaptersAsync());
+
+        Assert.Equal("broken", exception.ChapterId);
+        Assert.Equal("load", exception.FunctionName);
+    }
+
+    [Fact]
     public async Task ImportedChapterVariablesResumeBeforeJournalDispatch()
     {
         var progress = CreateProgress(

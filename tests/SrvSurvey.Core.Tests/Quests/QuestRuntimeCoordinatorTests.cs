@@ -447,8 +447,10 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         var sourceDirectory = await WriteDevelopmentSourceAsync(
             id: "replacement",
             version: 1,
-            title: "Broken Quest",
-            script: "this is not valid lua");
+            title: "Broken Quest");
+        await File.WriteAllTextAsync(
+            Path.Combine(sourceDirectory, "broken.lua"),
+            "this is not valid lua");
         await using var coordinator = CreateCoordinator(
             new FakeRavenQuestClient());
         await coordinator.ApplyUpdateAsync(

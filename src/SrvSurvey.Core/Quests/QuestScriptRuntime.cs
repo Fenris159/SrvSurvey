@@ -340,6 +340,163 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         }
     }
 
+    public async Task PrepareDevelopmentChaptersAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            foreach (var chapterId in Definition.Chapters.Keys)
+            {
+                var chapter = await LoadChapterAsync(chapterId, cancellationToken)
+                    .ConfigureAwait(false);
+                chapter.PullVariables();
+            }
+        }
+        finally
+        {
+            runtimeLock.Release();
+        }
+    }
+
+    public async Task<QuestDevelopmentStateSnapshot> GetDevelopmentStateAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            foreach (var chapterId in Definition.Chapters.Keys)
+            {
+                var chapter = await LoadChapterAsync(chapterId, cancellationToken)
+                    .ConfigureAwait(false);
+                chapter.PullVariables();
+            }
+
+            return new QuestDevelopmentStateSnapshot(
+                Progress.Reference,
+                Definition.Title,
+                Progress.Objectives.ToDictionary(StringComparer.Ordinal),
+                Progress.Chapters.Select(chapter =>
+                    new QuestDevelopmentChapterSnapshot(
+                        chapter.Id,
+                        IsActive(chapter),
+                        CloneJsonMap(chapter.Variables)))
+                    .ToArray(),
+                Progress.Messages.Select(CloneMessage).ToArray());
+        }
+        finally
+        {
+            runtimeLock.Release();
+        }
+    }
+
+    public async Task UpdateDevelopmentObjectivesAsync(
+        IReadOnlyDictionary<string, string> objectives,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(objectives);
+        foreach (var pair in objectives)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(pair.Key);
+            _ = ParseObjective(pair.Value);
+        }
+
+        await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            Progress.Objectives.Clear();
+            foreach (var pair in objectives)
+            {
+                Progress.Objectives[pair.Key] = pair.Value;
+            }
+
+            dirty = true;
+            await SaveIfDirtyAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            runtimeLock.Release();
+        }
+    }
+
+    public async Task UpdateDevelopmentChapterVariablesAsync(
+        string chapterId,
+        IReadOnlyDictionary<string, JsonElement> variables,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(chapterId);
+        ArgumentNullException.ThrowIfNull(variables);
+        await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            var runtime = await LoadChapterAsync(chapterId, cancellationToken)
+                .ConfigureAwait(false);
+            runtime.PullVariables();
+            var state = RequireChapterState(chapterId);
+            var unknown = variables.Keys.FirstOrDefault(key =>
+                !state.Variables.ContainsKey(key));
+            if (unknown is not null)
+            {
+                throw new InvalidDataException(
+                    $"Cannot add new chapter variable '{unknown}'.");
+            }
+
+            state.Variables.Clear();
+            foreach (var pair in variables)
+            {
+                state.Variables[pair.Key] = pair.Value.Clone();
+            }
+
+            runtime.PushVariables();
+            dirty = true;
+            await SaveIfDirtyAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            runtimeLock.Release();
+        }
+    }
+
+    public async Task UpdateDevelopmentMessagesAsync(
+        IReadOnlyList<RavenQuestMessage> messages,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(messages);
+        var duplicate = messages
+            .Where(message => !string.IsNullOrWhiteSpace(message.Id))
+            .GroupBy(message => message.Id, StringComparer.Ordinal)
+            .FirstOrDefault(group => group.Count() > 1);
+        if (messages.Any(message => string.IsNullOrWhiteSpace(message.Id)))
+        {
+            throw new InvalidDataException(
+                "Every delivered quest message must have an ID.");
+        }
+
+        if (duplicate is not null)
+        {
+            throw new InvalidDataException(
+                $"Delivered quest message ID '{duplicate.Key}' is duplicated.");
+        }
+
+        await runtimeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            Progress.Messages.Clear();
+            Progress.Messages.AddRange(messages.Select(CloneMessage));
+            dirty = true;
+            await SaveIfDirtyAsync(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            runtimeLock.Release();
+        }
+    }
+
     public bool IsTagged(string tag)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tag);
@@ -1013,6 +1170,24 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         return chapter.StartTime is not null && chapter.EndTime is null;
     }
 
+    private static RavenQuestMessage CloneMessage(RavenQuestMessage message)
+    {
+        return message with
+        {
+            Actions = message.Actions?.ToArray(),
+            ExtensionData = CloneJsonMap(message.ExtensionData),
+        };
+    }
+
+    private static Dictionary<string, JsonElement> CloneJsonMap(
+        IReadOnlyDictionary<string, JsonElement> source)
+    {
+        return source.ToDictionary(
+            pair => pair.Key,
+            pair => pair.Value.Clone(),
+            StringComparer.Ordinal);
+    }
+
     private static bool TryParseHumanoidEmote(
         JsonElement entry,
         out string actor,
@@ -1312,7 +1487,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             state = null;
         }
 
-        private void PushVariables()
+        public void PushVariables()
         {
             var current = RequireState();
             var chapter = owner.RequireChapterState(chapterId);
@@ -1341,6 +1516,18 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         }
     }
 }
+
+public sealed record QuestDevelopmentStateSnapshot(
+    RavenQuestReference Reference,
+    string Title,
+    IReadOnlyDictionary<string, string> Objectives,
+    IReadOnlyList<QuestDevelopmentChapterSnapshot> Chapters,
+    IReadOnlyList<RavenQuestMessage> Messages);
+
+public sealed record QuestDevelopmentChapterSnapshot(
+    string Id,
+    bool IsActive,
+    IReadOnlyDictionary<string, JsonElement> Variables);
 
 public sealed record QuestCommanderContext(
     string CommanderName,
