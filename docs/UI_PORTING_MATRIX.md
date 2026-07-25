@@ -126,9 +126,14 @@ geological progress, completion counts, destination, and non-body signals. The
 top-left FSS feed preserves value/signal filtering, recency, `Alt+F`, map/panel
 modes, and Guardian priority. The bottom-left status overlay preserves FSS
 completion, filtered DSS candidates, destination grouping, biological progress,
-and optional non-body counts. Both use bounded click-through layouts and all
-Raven themes. The other plotter surfaces remain unported, and the new
-Windows/X11 adapters still require live Elite runtime validation.
+and optional non-body counts. The journal-backed `PlotFSS` surface is now a
+top-center last-scan card with standalone-planet selection, discovery,
+terraformable/landable state, distance, scan/mapped values, and biological
+signals. These surfaces use bounded click-through layouts and all Raven themes.
+The legacy `PlotFSS.watchFssSettings_TEST` screen-pixel tuning detector remains
+open pending a platform capture abstraction. The other plotter surfaces remain
+unported, and the new Windows/X11 adapters still require live Elite runtime
+validation.
 
 Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
 opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,
@@ -216,6 +221,13 @@ check at 1182 by 790, using a live journal folder:
   rendered two DSS candidates, destination emphasis, three remaining biological
   signals, and four non-body signals. The temporary hook and QA settings were
   removed; live Elite attachment, click-through, and Linux remain untested.
+- The journal-backed `PlotFSS` replacement was exercised separately with a
+  long generated system/body name in Blue (dark) and Blue (light). Discovery,
+  class, 12,845 LS distance, terraformable/landable markers, scan and mapped
+  values, and four biological signals rendered cleanly at the active Windows
+  scaling. The temporary preview hook and QA settings were removed; live Elite
+  attachment, click-through, the experimental pixel watcher, and Linux remain
+  untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live
