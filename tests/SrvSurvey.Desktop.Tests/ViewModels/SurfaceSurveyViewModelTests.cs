@@ -174,6 +174,29 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.False(viewModel.AdjustRadarScale(zoomIn: true));
     }
 
+    [Fact]
+    public async Task QuickTrackerChordTogglesCurrentSurfaceLocation()
+    {
+        var (viewModel, survey, _) = CreateViewModel();
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        Assert.True(await viewModel.ToggleQuickTrackerAsync(1));
+        Assert.Equal(
+            new SurfaceCoordinate(0, 0),
+            Assert.Single(viewModel.CurrentSurface!.Bookmarks["#1"]));
+        Assert.Contains("added", viewModel.StatusText);
+        Assert.False(viewModel.ShouldShow);
+
+        Assert.True(await viewModel.ToggleQuickTrackerAsync(1));
+        Assert.Empty(viewModel.CurrentSurface!.Bookmarks);
+        Assert.Contains("removed", viewModel.StatusText);
+    }
+
     private (SurfaceSurveyViewModel ViewModel, SystemSurveyViewModel Survey,
         SystemSurfaceStore Store) CreateViewModel()
     {

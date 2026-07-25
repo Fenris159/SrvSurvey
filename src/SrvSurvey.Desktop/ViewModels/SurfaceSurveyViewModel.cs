@@ -137,6 +137,65 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         return true;
     }
 
+    public async Task<bool> ToggleQuickTrackerAsync(
+        int number,
+        CancellationToken cancellationToken = default)
+    {
+        if (number is < 1 or > 8)
+        {
+            throw new ArgumentOutOfRangeException(nameof(number));
+        }
+
+        await updateLock.WaitAsync(cancellationToken).ConfigureAwait(true);
+        try
+        {
+            if (disposed
+                || context is null
+                || survey.CurrentStatus is not { } status
+                || !TryGetCurrentCoordinate(status, out var location))
+            {
+                StatusText = "A scanned body and live surface coordinates are "
+                    + "required to toggle a quick tracker.";
+                return false;
+            }
+
+            var name = $"#{number}";
+            try
+            {
+                var mutation = await store.ToggleBookmarkGroupAsync(
+                        context,
+                        name,
+                        location,
+                        cancellationToken)
+                    .ConfigureAwait(true);
+                var loadResult = await store.LoadBodyAsync(
+                        context,
+                        cancellationToken)
+                    .ConfigureAwait(true);
+                surface = loadResult.Snapshot;
+                StatusText = mutation.Mutation == SurfaceBookmarkMutation.Added
+                    ? $"Quick tracker {name} added at the current location."
+                    : $"Quick tracker {name} removed.";
+                Recalculate();
+                return true;
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or InvalidDataException
+                    or InvalidOperationException)
+            {
+                StatusText = $"Quick tracker {name} was not changed: "
+                    + exception.Message;
+                return false;
+            }
+        }
+        finally
+        {
+            updateLock.Release();
+        }
+    }
+
     public void Reset(ExobiologySnapshot? seed = null)
     {
         journalTracker.Reset(seed);

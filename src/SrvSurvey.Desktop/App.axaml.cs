@@ -236,6 +236,29 @@ public sealed partial class App : Application
                                     .ShowOrActivateAsync();
                             break;
 
+                        case GlobalInputAction.Track1:
+                        case GlobalInputAction.Track2:
+                        case GlobalInputAction.Track3:
+                        case GlobalInputAction.Track4:
+                        case GlobalInputAction.Track5:
+                        case GlobalInputAction.Track6:
+                        case GlobalInputAction.Track7:
+                        case GlobalInputAction.Track8:
+                            var trackerNumber = eventArgs.Action switch
+                            {
+                                GlobalInputAction.Track1 => 1,
+                                GlobalInputAction.Track2 => 2,
+                                GlobalInputAction.Track3 => 3,
+                                GlobalInputAction.Track4 => 4,
+                                GlobalInputAction.Track5 => 5,
+                                GlobalInputAction.Track6 => 6,
+                                GlobalInputAction.Track7 => 7,
+                                _ => 8,
+                            };
+                            handled = await viewModel.SurfaceSurvey
+                                .ToggleQuickTrackerAsync(trackerNumber);
+                            break;
+
                         case GlobalInputAction.RefreshColonyData:
                             handled = viewModel.Colonization.IsEnabled;
                             if (handled)
