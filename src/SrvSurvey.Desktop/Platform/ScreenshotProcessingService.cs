@@ -6,7 +6,16 @@ using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Platform;
 
-public sealed class ScreenshotProcessingService
+public interface IScreenshotProcessingService
+{
+    Task<ScreenshotProcessingResult> ProcessAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        ScreenshotProcessingPreferences preferences,
+        string? commanderName,
+        CancellationToken cancellationToken = default);
+}
+
+public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 {
     private readonly SemaphoreSlim processingLock = new(1, 1);
 

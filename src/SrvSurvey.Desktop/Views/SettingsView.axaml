@@ -123,6 +123,87 @@
       <Separator />
 
       <StackPanel Spacing="5">
+        <TextBlock Classes="eyebrow" Text="SCREENSHOTS" />
+        <TextBlock Classes="page-title" Text="Automatic conversion" />
+        <TextBlock Classes="muted"
+                   TextWrapping="Wrap"
+                   Text="Convert Elite Dangerous BMP screenshots into organized PNG files on Windows or Linux." />
+      </StackPanel>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Screenshot processor" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Journal Screenshot events are matched to completed BMP files; each PNG is decoded and verified before it replaces or removes anything." />
+            </StackPanel>
+            <CheckBox Grid.Column="1"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding ScreenshotProcessing.Enabled, Mode=TwoWay}"
+                      Content="Enabled" />
+          </Grid>
+
+          <StackPanel Spacing="5">
+            <TextBlock Classes="eyebrow" Text="SOURCE BMP FOLDER" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBox Text="{Binding ScreenshotProcessing.SourceFolder, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                       PlaceholderText="Absolute folder containing Elite screenshots" />
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      Click="ChooseScreenshotSourceFolder_Click"
+                      Content="Choose folder" />
+            </Grid>
+          </StackPanel>
+
+          <StackPanel Spacing="5">
+            <TextBlock Classes="eyebrow" Text="TARGET PNG FOLDER" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBox Text="{Binding ScreenshotProcessing.TargetFolder, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                       PlaceholderText="Absolute destination for converted screenshots" />
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      Click="ChooseScreenshotTargetFolder_Click"
+                      Content="Choose folder" />
+            </Grid>
+          </StackPanel>
+
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="10">
+              <CheckBox IsChecked="{Binding ScreenshotProcessing.AddBanner, Mode=TwoWay}"
+                        Content="Add system, body, commander, and location banner" />
+              <CheckBox IsChecked="{Binding ScreenshotProcessing.BannerLocalTime, Mode=TwoWay}"
+                        Content="Show local time in the banner" />
+              <Grid ColumnDefinitions="*,140" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center" Text="Banner colour" />
+                <TextBox Grid.Column="1"
+                         Text="{Binding ScreenshotProcessing.BannerColor, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                         PlaceholderText="#FFFF00" />
+              </Grid>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="10">
+              <CheckBox IsChecked="{Binding ScreenshotProcessing.DeleteOriginal, Mode=TwoWay}"
+                        Content="Delete the original BMP after verification" />
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         TextWrapping="Wrap"
+                         Text="Deletion occurs only after the PNG has been written atomically and reopened with matching dimensions." />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Alt+Ctrl+I toggles data banners for future screenshots." />
+            </StackPanel>
+          </Grid>
+
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     TextWrapping="Wrap"
+                     Text="{Binding ScreenshotProcessing.StatusMessage}" />
+        </StackPanel>
+      </Border>
+
+      <Separator />
+
+      <StackPanel Spacing="5">
         <TextBlock Classes="eyebrow" Text="OVERLAYS" />
         <TextBlock Classes="page-title" Text="Next-jump intelligence" />
         <TextBlock Classes="muted"

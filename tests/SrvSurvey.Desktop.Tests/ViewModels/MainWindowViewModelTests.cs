@@ -7,6 +7,7 @@ using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -807,6 +808,63 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    [Fact]
+    public async Task ScreenshotsProcessOnlyAfterBootstrapReplay()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-screenshot-monitor-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-24T100000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"event\":\"Screenshot\",\"Filename\":\"\\\\ED_Pictures\\\\old.bmp\"}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            var processor = new CountingScreenshotProcessor();
+            var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                screenshotProcessingService: processor);
+
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(0, processor.CallCount);
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"event\":\"Screenshot\",\"Filename\":\"\\\\ED_Pictures\\\\new.bmp\"}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(1, processor.CallCount);
+            Assert.Equal("Drew", processor.CommanderName);
+            Assert.Equal(
+                "new.bmp",
+                Path.GetFileName(
+                    Assert.Single(processor.Events).Payload
+                        .GetProperty("Filename")
+                        .GetString()!
+                        .Replace('\\', '/')));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     private static Task WriteSurfaceStatusAsync(
         string path,
         double latitude,
@@ -844,6 +902,28 @@ public sealed class MainWindowViewModelTests
                         boxel.Prefix,
                         StringComparison.Ordinal))
                     .ToArray());
+        }
+    }
+
+    private sealed class CountingScreenshotProcessor
+        : IScreenshotProcessingService
+    {
+        public int CallCount { get; private set; }
+
+        public IReadOnlyList<JournalEventEnvelope> Events { get; private set; } = [];
+
+        public string? CommanderName { get; private set; }
+
+        public Task<ScreenshotProcessingResult> ProcessAsync(
+            IReadOnlyList<JournalEventEnvelope> journalEvents,
+            ScreenshotProcessingPreferences preferences,
+            string? commanderName,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            Events = journalEvents;
+            CommanderName = commanderName;
+            return Task.FromResult(ScreenshotProcessingResult.Empty);
         }
     }
 }

@@ -408,6 +408,11 @@ public sealed partial class App : Application
                                 .ToggleSatisfiedGroups();
                             handled = true;
                             break;
+
+                        case GlobalInputAction.ToggleImageEmbed:
+                            handled = viewModel.ScreenshotProcessing
+                                .ToggleBanner();
+                            break;
                     }
 
                     inputSettings.ReportAction(eventArgs.Action, handled);

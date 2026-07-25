@@ -15,6 +15,7 @@ using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
+using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Theming;
 
@@ -100,7 +101,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         HumanSiteSettingsStore? humanSiteSettingsStore = null,
         ApplicationLogService? applicationLogService = null,
         LegacyOverlayLayoutStore? overlayLayoutStore = null,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null,
+        IScreenshotProcessingService? screenshotProcessingService = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -125,6 +127,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         OverlayLayout = new OverlayLayoutSettingsViewModel(
             sharedOverlayLayoutStore,
             overlayLayout ?? sharedOverlayLayoutStore.Load());
+        ScreenshotProcessing = new ScreenshotProcessingViewModel(
+            new ScreenshotProcessingSettingsStore(AppDataPaths.UiSettingsPath),
+            screenshotProcessingService);
         Colonization = colonization ?? new ColonizationViewModel(
             new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
             commanderProfileStore: commanderProfileStore,
@@ -312,6 +317,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public GlobalInputSettingsViewModel InputSettings { get; }
 
     public OverlayLayoutSettingsViewModel OverlayLayout { get; }
+
+    public ScreenshotProcessingViewModel ScreenshotProcessing { get; }
 
     public AppDataPaths AppDataPaths { get; }
 
@@ -1088,6 +1095,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             update.JournalEvents,
             update.Status,
             journalState.ShipType);
+        if (!update.IsBootstrapRead)
+        {
+            await ScreenshotProcessing.ProcessJournalEventsAsync(
+                update.JournalEvents,
+                journalState.CommanderName);
+        }
 
         JumpInfo.ApplyUpdate(
             journalState.SystemName,
