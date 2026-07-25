@@ -21,6 +21,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private BiologySurveyOverlayWindow? biologyWindow;
     private BiologyStatusOverlayWindow? biologyStatusWindow;
     private BodyInformationOverlayWindow? bodyInfoWindow;
+    private FlightWarningOverlayWindow? flightWarningWindow;
     private FssInfoOverlayWindow? fssWindow;
     private LastFssBodyOverlayWindow? lastFssBodyWindow;
     private PriorScansOverlayWindow? priorScansWindow;
@@ -81,6 +82,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     public bool IsVisible => biologyWindow is not null
         || biologyStatusWindow is not null
         || bodyInfoWindow is not null
+        || flightWarningWindow is not null
         || fssWindow is not null
         || lastFssBodyWindow is not null
         || priorScansWindow is not null
@@ -92,6 +94,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     public bool IsLastFssBodyVisible => lastFssBodyWindow is not null;
 
     public bool IsBodyInfoVisible => bodyInfoWindow is not null;
+
+    public bool IsFlightWarningVisible => flightWarningWindow is not null;
 
     public bool IsBiologyVisible => biologyWindow is not null;
 
@@ -219,6 +223,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         CloseBiologyWindow();
         CloseBiologyStatusWindow();
         CloseBodyInfoWindow();
+        CloseFlightWarningWindow();
         CloseFssWindow();
         CloseLastFssBodyWindow();
         ClosePriorScansWindow();
@@ -265,6 +270,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.ShouldShowFssInfo)
             or nameof(SystemSurveyViewModel.ShouldShowLastFssBody)
             or nameof(SystemSurveyViewModel.ShouldShowBodyInfo)
+            or nameof(SystemSurveyViewModel.ShouldShowFlightWarning)
             or nameof(SystemSurveyViewModel.ShouldShowBioSystem)
             or nameof(SystemSurveyViewModel.ShouldShowBioStatus)
             or nameof(SystemSurveyViewModel.ShouldLoadPriorScans)
@@ -300,6 +306,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             && survey.ShouldShowBodyInfo
             && (!isBodyInfoObscured || survey.IsBodyInfoForced);
         var showStatus = platformReady && survey.ShouldShowSystemStatus;
+        var showFlightWarning = platformReady
+            && survey.ShouldShowFlightWarning;
         var showBiology = platformReady
             && survey.ShouldShowBioSystem
             && !isBiologyObscured;
@@ -317,10 +325,43 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         SynchronizeFssWindow(showFss);
         SynchronizeLastFssBodyWindow(showLastFssBody);
         SynchronizeStatusWindow(showStatus);
+        SynchronizeFlightWarningWindow(showFlightWarning);
         SynchronizeBiologyWindow(showBiology);
         SynchronizeBiologyStatusWindow(showBiologyStatus);
         SynchronizePriorScansWindow(showPriorScans);
         SynchronizeSurfaceWindow(showSurface);
+    }
+
+    private void SynchronizeFlightWarningWindow(bool show)
+    {
+        if (!show)
+        {
+            CloseFlightWarningWindow();
+            return;
+        }
+
+        if (flightWarningWindow is not null)
+        {
+            PositionTopCenter(flightWarningWindow, gameWindow.ClientBounds);
+            return;
+        }
+
+        var overlay = new FlightWarningOverlayWindow(viewModel);
+        overlay.Opened += (_, _) => PrepareWindow(
+            overlay,
+            PositionTopCenter,
+            CloseFlightWarningWindow);
+        overlay.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(flightWarningWindow, overlay))
+            {
+                flightWarningWindow = null;
+                VisibilityChanged?.Invoke(this, EventArgs.Empty);
+            }
+        };
+        flightWarningWindow = overlay;
+        overlay.Show();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void SynchronizeSurfaceWindow(bool show)
@@ -673,6 +714,19 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         fssWindow = null;
+        overlay.Close();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void CloseFlightWarningWindow()
+    {
+        var overlay = flightWarningWindow;
+        if (overlay is null)
+        {
+            return;
+        }
+
+        flightWarningWindow = null;
         overlay.Close();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }

@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.FlightWarningOverlayWindow"
+        x:DataType="vm:SystemSurveyOverlayViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="380"
+        d:DesignHeight="100"
+        Width="380"
+        MinHeight="88"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey high-gravity warning">
+  <Border Margin="8"
+          Padding="3"
+          Background="{DynamicResource RavenDangerBrush}"
+          CornerRadius="12"
+          Opacity="0.98">
+    <Border Padding="14,11"
+            Background="{DynamicResource RavenWindowBrush}"
+            CornerRadius="9">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+        <Border Width="34"
+                Height="34"
+                Background="{DynamicResource RavenDangerBrush}"
+                CornerRadius="17">
+          <TextBlock HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Foreground="White"
+                     FontSize="19"
+                     FontWeight="Bold"
+                     Text="!" />
+        </Border>
+        <StackPanel Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Spacing="2">
+          <TextBlock Classes="eyebrow" Text="FLIGHT WARNING" />
+          <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                     FontSize="16"
+                     FontWeight="Bold"
+                     Text="{Binding Survey.FlightWarningText}" />
+        </StackPanel>
+        <Border Grid.Column="2"
+                Classes="badge"
+                VerticalAlignment="Center">
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="8"
+                     FontWeight="SemiBold"
+                     Text="{Binding InputMode}" />
+        </Border>
+      </Grid>
+    </Border>
+  </Border>
+</Window>
