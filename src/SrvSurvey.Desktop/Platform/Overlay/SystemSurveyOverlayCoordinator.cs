@@ -15,6 +15,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private FssInfoOverlayWindow? fssWindow;
+    private LastFssBodyOverlayWindow? lastFssBodyWindow;
     private SystemStatusOverlayWindow? statusWindow;
     private bool isSuppressed;
     private bool isFssObscured;
@@ -45,9 +46,13 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     public event EventHandler? VisibilityChanged;
 
-    public bool IsVisible => fssWindow is not null || statusWindow is not null;
+    public bool IsVisible => fssWindow is not null
+        || lastFssBodyWindow is not null
+        || statusWindow is not null;
 
     public bool IsFssVisible => fssWindow is not null;
+
+    public bool IsLastFssBodyVisible => lastFssBodyWindow is not null;
 
     public bool IsSuppressed => isSuppressed;
 
@@ -85,6 +90,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         timer.Tick -= OnTimerTick;
         survey.PropertyChanged -= OnSurveyPropertyChanged;
         CloseFssWindow();
+        CloseLastFssBodyWindow();
         CloseStatusWindow();
         gameWindowTracker.Dispose();
         platform.Dispose();
@@ -100,6 +106,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.ShouldShowFssInfo)
+            or nameof(SystemSurveyViewModel.ShouldShowLastFssBody)
             or nameof(SystemSurveyViewModel.ShouldShowSystemStatus)
             or nameof(SystemSurveyViewModel.IsFssInfoForced))
         {
@@ -125,10 +132,45 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         var showFss = platformReady
             && survey.ShouldShowFssInfo
             && (!isFssObscured || survey.IsFssInfoForced);
+        var showLastFssBody = platformReady
+            && survey.ShouldShowLastFssBody;
         var showStatus = platformReady && survey.ShouldShowSystemStatus;
 
         SynchronizeFssWindow(showFss);
+        SynchronizeLastFssBodyWindow(showLastFssBody);
         SynchronizeStatusWindow(showStatus);
+    }
+
+    private void SynchronizeLastFssBodyWindow(bool show)
+    {
+        if (!show)
+        {
+            CloseLastFssBodyWindow();
+            return;
+        }
+
+        if (lastFssBodyWindow is not null)
+        {
+            PositionTopCenter(lastFssBodyWindow, gameWindow.ClientBounds);
+            return;
+        }
+
+        var overlay = new LastFssBodyOverlayWindow(viewModel);
+        overlay.Opened += (_, _) => PrepareWindow(
+            overlay,
+            PositionTopCenter,
+            CloseLastFssBodyWindow);
+        overlay.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(lastFssBodyWindow, overlay))
+            {
+                lastFssBodyWindow = null;
+                VisibilityChanged?.Invoke(this, EventArgs.Empty);
+            }
+        };
+        lastFssBodyWindow = overlay;
+        overlay.Show();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void SynchronizeFssWindow(bool show)
@@ -215,6 +257,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         PositionWindow(window, gameBounds, OverlayWindowPlacement.TopLeft);
     }
 
+    private static void PositionTopCenter(Window window, PixelRect gameBounds)
+    {
+        PositionWindow(window, gameBounds, OverlayWindowPlacement.TopCenter);
+    }
+
     private static void PositionBottomLeft(Window window, PixelRect gameBounds)
     {
         PositionWindow(window, gameBounds, OverlayWindowPlacement.BottomLeft);
@@ -256,6 +303,19 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         fssWindow = null;
+        overlay.Close();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void CloseLastFssBodyWindow()
+    {
+        var overlay = lastFssBodyWindow;
+        if (overlay is null)
+        {
+            return;
+        }
+
+        lastFssBodyWindow = null;
         overlay.Close();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
