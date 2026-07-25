@@ -51,6 +51,30 @@ public sealed class SystemSurveySettingsStore
                 50),
             GetBoolean(
                 settings,
+                "AutoShowBioSystem",
+                defaults.AutoShowBioSystem),
+            GetBoolean(
+                settings,
+                "DrawBodyBiosOnlyWhenNear",
+                defaults.DrawBodyBiosOnlyWhenNear),
+            GetBoolean(
+                settings,
+                "HighlightRegionalFirsts",
+                defaults.HighlightRegionalFirsts),
+            GetBoolean(
+                settings,
+                "DimAnalyzedOrganisms",
+                defaults.DimAnalyzedOrganisms),
+            GetBoolean(
+                settings,
+                "HideGeoCountInBioSystem",
+                defaults.HideGeoCountInBioSystem),
+            GetBoolean(
+                settings,
+                "DisableBioPredictions",
+                defaults.DisableBioPredictions),
+            GetBoolean(
+                settings,
                 "AutoShowLastFssBody",
                 defaults.AutoShowLastFssBody),
             GetBoolean(settings, "AutoShowFssInfo", defaults.AutoShowFssInfo),
@@ -127,6 +151,17 @@ public sealed class SystemSurveySettingsStore
                 preferences.HideBodyInfoMaterials;
             settings["HighGravityWarningLevel"] =
                 preferences.HighGravityWarningLevel;
+            settings["AutoShowBioSystem"] = preferences.AutoShowBioSystem;
+            settings["DrawBodyBiosOnlyWhenNear"] =
+                preferences.DrawBodyBiosOnlyWhenNear;
+            settings["HighlightRegionalFirsts"] =
+                preferences.HighlightRegionalFirsts;
+            settings["DimAnalyzedOrganisms"] =
+                preferences.DimAnalyzedOrganisms;
+            settings["HideGeoCountInBioSystem"] =
+                preferences.HideGeoCountInBioSystem;
+            settings["DisableBioPredictions"] =
+                preferences.DisableBioPredictions;
             settings["AutoShowLastFssBody"] = preferences.AutoShowLastFssBody;
             settings["AutoShowFssInfo"] = preferences.AutoShowFssInfo;
             settings["ShowFssInfoInSystemMap"] =
@@ -195,6 +230,12 @@ public sealed record SystemSurveyPreferences(
     int BodyInfoBubbleSizeLy,
     bool HideBodyInfoMaterials,
     double HighGravityWarningLevel,
+    bool AutoShowBioSystem,
+    bool DrawBodyBiosOnlyWhenNear,
+    bool HighlightRegionalFirsts,
+    bool DimAnalyzedOrganisms,
+    bool HideGeoCountInBioSystem,
+    bool DisableBioPredictions,
     bool AutoShowLastFssBody,
     bool AutoShowFssInfo,
     bool ShowFssInfoInSystemMap,
@@ -219,6 +260,12 @@ public sealed record SystemSurveyPreferences(
         BodyInfoBubbleSizeLy: 200,
         HideBodyInfoMaterials: false,
         HighGravityWarningLevel: 1,
+        AutoShowBioSystem: true,
+        DrawBodyBiosOnlyWhenNear: true,
+        HighlightRegionalFirsts: false,
+        DimAnalyzedOrganisms: true,
+        HideGeoCountInBioSystem: false,
+        DisableBioPredictions: false,
         AutoShowLastFssBody: true,
         AutoShowFssInfo: true,
         ShowFssInfoInSystemMap: false,

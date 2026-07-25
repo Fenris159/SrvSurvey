@@ -28,6 +28,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private int bodyInfoBubbleSizeLy;
     private bool hideBodyInfoMaterials;
     private double highGravityWarningLevel;
+    private bool autoShowBioSystem;
+    private bool drawBodyBiosOnlyWhenNear;
+    private bool highlightRegionalFirsts;
+    private bool dimAnalyzedOrganisms;
+    private bool hideGeoCountInBioSystem;
+    private bool disableBioPredictions;
     private bool autoShowLastFssBody;
     private bool autoShowFssInfo;
     private bool showFssInfoInSystemMap;
@@ -65,6 +71,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         bodyInfoBubbleSizeLy = preferences.BodyInfoBubbleSizeLy;
         hideBodyInfoMaterials = preferences.HideBodyInfoMaterials;
         highGravityWarningLevel = preferences.HighGravityWarningLevel;
+        autoShowBioSystem = preferences.AutoShowBioSystem;
+        drawBodyBiosOnlyWhenNear = preferences.DrawBodyBiosOnlyWhenNear;
+        highlightRegionalFirsts = preferences.HighlightRegionalFirsts;
+        dimAnalyzedOrganisms = preferences.DimAnalyzedOrganisms;
+        hideGeoCountInBioSystem = preferences.HideGeoCountInBioSystem;
+        disableBioPredictions = preferences.DisableBioPredictions;
         autoShowLastFssBody = preferences.AutoShowLastFssBody;
         autoShowFssInfo = preferences.AutoShowFssInfo;
         showFssInfoInSystemMap = preferences.ShowFssInfoInSystemMap;
@@ -143,6 +155,42 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 RefreshDisplay();
             }
         }
+    }
+
+    public bool AutoShowBioSystem
+    {
+        get => autoShowBioSystem;
+        set => SetPreference(ref autoShowBioSystem, value);
+    }
+
+    public bool DrawBodyBiosOnlyWhenNear
+    {
+        get => drawBodyBiosOnlyWhenNear;
+        set => SetPreference(ref drawBodyBiosOnlyWhenNear, value);
+    }
+
+    public bool HighlightRegionalFirsts
+    {
+        get => highlightRegionalFirsts;
+        set => SetPreference(ref highlightRegionalFirsts, value);
+    }
+
+    public bool DimAnalyzedOrganisms
+    {
+        get => dimAnalyzedOrganisms;
+        set => SetPreference(ref dimAnalyzedOrganisms, value);
+    }
+
+    public bool HideGeoCountInBioSystem
+    {
+        get => hideGeoCountInBioSystem;
+        set => SetPreference(ref hideGeoCountInBioSystem, value);
+    }
+
+    public bool DisableBioPredictions
+    {
+        get => disableBioPredictions;
+        set => SetPreference(ref disableBioPredictions, value);
     }
 
     public bool AutoShowLastFssBody
@@ -1221,6 +1269,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 BodyInfoBubbleSizeLy,
                 HideBodyInfoMaterials,
                 HighGravityWarningLevel,
+                AutoShowBioSystem,
+                DrawBodyBiosOnlyWhenNear,
+                HighlightRegionalFirsts,
+                DimAnalyzedOrganisms,
+                HideGeoCountInBioSystem,
+                DisableBioPredictions,
                 AutoShowLastFssBody,
                 AutoShowFssInfo,
                 ShowFssInfoInSystemMap,
