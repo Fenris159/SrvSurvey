@@ -7,7 +7,7 @@ using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged
+public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly QuestRuntimeCoordinator coordinator;
     private readonly QuestSettingsStore settingsStore;
@@ -41,6 +41,8 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged
             ?? throw new ArgumentNullException(nameof(coordinator));
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
+        Developer = new QuestDeveloperViewModel(coordinator);
+        Developer.RuntimeChanged += Developer_RuntimeChanged;
         isEnabled = settingsStore.LoadEnabled();
         statusMessage = isEnabled
             ? "Waiting for the commander journal session."
@@ -70,6 +72,8 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public QuestDeveloperViewModel Developer { get; }
 
     public bool IsEnabled
     {
@@ -310,6 +314,12 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
+    public void Dispose()
+    {
+        Developer.RuntimeChanged -= Developer_RuntimeChanged;
+        Developer.Dispose();
+    }
+
     private async Task ToggleEnabledAsync()
     {
         var enabled = !IsEnabled;
@@ -514,6 +524,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged
         ActiveQuests = snapshots.Select(snapshot =>
                 new QuestCardViewModel(snapshot))
             .ToArray();
+        Developer.ApplyRuntimeSnapshots(snapshots);
         Messages = snapshots.SelectMany(snapshot => snapshot.Messages)
             .OrderByDescending(message => message.Received)
             .Select(message => new QuestMessageRowViewModel(message))
@@ -533,6 +544,11 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged
         }
 
         RaiseCommandStates();
+    }
+
+    private void Developer_RuntimeChanged(object? sender, EventArgs eventArgs)
+    {
+        RebuildRuntimeRows(coordinator.Snapshot);
     }
 
     private void RaiseCommandStates()

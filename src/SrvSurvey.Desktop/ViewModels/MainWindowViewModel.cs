@@ -1777,6 +1777,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         disposed = true;
+        QuestWorkspace.Dispose();
         CommanderInstances.Dispose();
         visitedStarsHttpClient?.Dispose();
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
