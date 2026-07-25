@@ -304,6 +304,140 @@
                   Content="Resume paused quest" />
         </Grid>
       </TabItem>
+
+      <TabItem Header="Developer">
+        <ScrollViewer Margin="0,16,0,0"
+                      HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="16">
+            <Border Classes="card raised">
+              <Grid RowDefinitions="Auto,Auto,Auto"
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="12"
+                    RowSpacing="10">
+                <StackPanel Spacing="3">
+                  <TextBlock Classes="eyebrow" Text="QUEST DEBUGGER" />
+                  <TextBlock Classes="card-title"
+                             FontSize="21"
+                             Text="{Binding QuestWorkspace.Developer.Title}" />
+                  <TextBlock Classes="muted"
+                             Text="{Binding QuestWorkspace.Developer.VersionLabel, StringFormat='Version {0}'}" />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Classes="primary"
+                        VerticalAlignment="Top"
+                        Click="ImportDevelopmentFolder_Click"
+                        Content="Import folder" />
+                <TextBlock Grid.Row="1"
+                           Grid.ColumnSpan="2"
+                           Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="{Binding QuestWorkspace.Developer.SourceDirectory}" />
+                <Grid Grid.Row="2"
+                      Grid.ColumnSpan="2"
+                      ColumnDefinitions="Auto,*,Auto,Auto"
+                      ColumnSpacing="10">
+                  <CheckBox VerticalAlignment="Center"
+                            IsEnabled="{Binding QuestWorkspace.Developer.CanWatchSource}"
+                            IsChecked="{Binding QuestWorkspace.Developer.WatchSource, Mode=TwoWay}"
+                            Content="Watch source folder" />
+                  <TextBlock Grid.Column="1"
+                             Classes="muted"
+                             VerticalAlignment="Center"
+                             TextWrapping="Wrap"
+                             Text="{Binding QuestWorkspace.Developer.StatusMessage}" />
+                  <Button Grid.Column="2"
+                          Classes="secondary"
+                          Command="{Binding QuestWorkspace.Developer.ReloadSavedCommand}"
+                          Content="Reload saved state" />
+                  <Button Grid.Column="3"
+                          Classes="secondary"
+                          Command="{Binding QuestWorkspace.Developer.RemoveCommand}"
+                          Content="{Binding QuestWorkspace.Developer.RemoveButtonText}" />
+                </Grid>
+              </Grid>
+            </Border>
+
+            <Border Classes="card"
+                    IsVisible="{Binding QuestWorkspace.Developer.HasDevelopmentQuest}">
+              <Grid RowDefinitions="Auto,300,Auto,Auto,Auto"
+                    RowSpacing="12">
+                <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto"
+                      ColumnSpacing="8">
+                  <ComboBox ItemsSource="{Binding QuestWorkspace.Developer.Views}"
+                            SelectedItem="{Binding QuestWorkspace.Developer.SelectedView}"
+                            MinWidth="240">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:QuestDevelopmentViewOption">
+                        <TextBlock Text="{Binding Label}" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                  <Button Grid.Column="1"
+                          Classes="secondary"
+                          Command="{Binding QuestWorkspace.Developer.RefreshCommand}"
+                          Content="Refresh" />
+                  <Button Grid.Column="2"
+                          Classes="primary"
+                          Command="{Binding QuestWorkspace.Developer.ApplyCommand}"
+                          Content="Apply JSON" />
+                  <Button Grid.Column="3"
+                          Classes="secondary"
+                          IsVisible="{Binding QuestWorkspace.Developer.IsChapterSelected}"
+                          Command="{Binding QuestWorkspace.Developer.StartChapterCommand}"
+                          Content="Start chapter" />
+                  <Button Grid.Column="4"
+                          Classes="secondary"
+                          IsVisible="{Binding QuestWorkspace.Developer.IsChapterSelected}"
+                          Command="{Binding QuestWorkspace.Developer.StopChapterCommand}"
+                          Content="Stop chapter" />
+                </Grid>
+
+                <TextBox Grid.Row="1"
+                         AcceptsReturn="True"
+                         FontFamily="Cascadia Mono,Consolas,monospace"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         TextWrapping="NoWrap"
+                         Text="{Binding QuestWorkspace.Developer.EditorJson, Mode=TwoWay}" />
+
+                <Grid Grid.Row="2"
+                      IsVisible="{Binding QuestWorkspace.Developer.IsChapterSelected}"
+                      ColumnDefinitions="*,Auto"
+                      ColumnSpacing="8">
+                  <TextBox AcceptsReturn="True"
+                           MinHeight="90"
+                           PlaceholderText="Lua debug code"
+                           FontFamily="Cascadia Mono,Consolas,monospace"
+                           Text="{Binding QuestWorkspace.Developer.DebugCode, Mode=TwoWay}" />
+                  <Button Grid.Column="1"
+                          Classes="primary"
+                          VerticalAlignment="Bottom"
+                          Command="{Binding QuestWorkspace.Developer.RunDebugCommand}"
+                          Content="Run Lua" />
+                </Grid>
+
+                <TextBlock Grid.Row="3"
+                           Classes="muted"
+                           IsVisible="{Binding QuestWorkspace.Developer.IsChapterSelected}"
+                           TextWrapping="Wrap"
+                           Text="{Binding QuestWorkspace.Developer.DebugResult}" />
+
+                <Grid Grid.Row="4"
+                      ColumnDefinitions="*,Auto"
+                      ColumnSpacing="12">
+                  <CheckBox VerticalAlignment="Center"
+                            IsChecked="{Binding QuestWorkspace.Developer.PublishConfirmed, Mode=TwoWay}"
+                            Content="Confirm overwrite of the published Raven quest version" />
+                  <Button Grid.Column="1"
+                          Classes="primary"
+                          Command="{Binding QuestWorkspace.Developer.PublishCommand}"
+                          Content="Publish quest" />
+                </Grid>
+              </Grid>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
     </TabControl>
   </Grid>
 </UserControl>

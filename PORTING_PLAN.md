@@ -120,7 +120,7 @@ they must not fail silently.
 - [x] Create buildable Core, Desktop, and test projects.
 - [x] Add a cross-platform solution that excludes Windows packaging projects.
 - [x] Add Windows and Linux CI restore, build, test, and publish smoke checks.
-- [ ] Make the Dockerfile a reproducible Linux build environment, or remove it.
+- [x] Make the Dockerfile a reproducible Linux build environment, or remove it.
 
 Exit gate: a clean clone restores, builds, tests, and publishes on Windows and
 Linux. Launching the desktop shell is manually smoke-tested on both platforms.
@@ -132,7 +132,7 @@ Linux. Launching the desktop shell is manually smoke-tested on both platforms.
 - [x] Read the newest journal safely, including an incomplete final line.
 - [x] Extract commander, game version, mode, system, body, and shutdown state
   present in the newest file, including the legacy current-planet semantics.
-- [ ] Rebuild bootstrap state across rotated/prior journals when the newest file
+- [x] Rebuild bootstrap state across rotated/prior journals when the newest file
   does not contain all session-identifying events.
 - [x] Watch journal rotation and `Status.json` with cancellation and retry logic.
 - [x] Show the state and any path/parse errors in the desktop shell.
@@ -153,7 +153,8 @@ on Windows and Linux.
 - [x] Add the five Raven Colonial shell themes with native light/dark modes and
   an isolated persisted preference.
 - [ ] Port theme, localization, and static JSON/image resource loading.
-- [ ] Test unknown fields, corrupt files, concurrent writes, and upgrades.
+- [x] Test unknown fields, corrupt files, concurrent writes, and copied-profile
+  upgrades.
 
 Exit gate: a copied real user profile opens without mutation, and an imported
 profile matches the legacy application after restart.
@@ -345,9 +346,12 @@ UI tests where practical, and live Windows/Linux evidence.
   manual foot alignment, lossless saved geometry, commander navigation,
   vehicle markers and dismissal guidance, automatic/manual/large-map zoom,
   conflict-zone and terminal state, optional material pickup tracking, and
-  legacy-compatible material survey persistence. Template authoring, quest
-  route/marker presentation and post-processing tools remain; threat metadata
-  is persisted and exposed through the `.threat` command.
+  legacy-compatible material survey persistence. Template authoring and quest
+  route/marker presentation remain. Local post-processing is implemented with
+  historical statistics, Codex merging, biology analysis, and transactional
+  system reconstruction; historical network publication remains a separate
+  external operation. Threat metadata is persisted and exposed through the
+  `.threat` command.
 - [ ] Cargo, missions, massacre/foot combat, and colonization projects.
   `PlotFootCombat` and `PlotMassacre` are implemented with legacy settlement,
   altitude, vehicle/panel, active-project suppression, mission-lifecycle,
@@ -388,8 +392,16 @@ UI tests where practical, and live Windows/Linux evidence.
   `PlotQuestMini` replacement now shows visible objectives, unread messages,
   and tracked surface targets with distance, relative bearing, and target-radius
   completion; it follows legacy placement/opacity and the passive overlay safety
-  contract. Workspace and indicator visual verification is held for the final
-  pass.
+  rules. The `FormPlayDev` workflow is also ported: top-level legacy development
+  folders are hashed and loaded without source mutation, all Lua chapters are
+  validated before activation, matching progress is preserved, different quest
+  identities replace only quest-local state after a verified backup, and the
+  Avalonia Developer tab exposes watched reloads, objectives/messages/existing
+  chapter-variable editing, chapter start/stop, Lua debugging, saved-state
+  reload, guarded removal, and confirmation-gated Raven publishing. The portable
+  definition is embedded in the atomic commander-state update so a missing or
+  stale legacy sidecar cannot corrupt activation. Visual verification remains
+  intentionally deferred to the final parity pass.
 - [ ] Network integrations, update behavior, diagnostics, and remaining tools.
 - [ ] Localization review for every migrated surface.
 
