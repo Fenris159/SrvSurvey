@@ -31,7 +31,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | --- | --- | --- | --- |
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
-| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, standalone system/body predictions, `FormShowCodex`, full commander/region `FormCodexBingo`, `PlotPriorScans`, and the persisted surface-history/tracker slice of `PlotGrounded` implemented; Codex auto-tracking, death marking, and adjustable radar scale remain open |
+| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, standalone system/body predictions, `FormShowCodex`, full commander/region `FormCodexBingo`, `PlotPriorScans`, and consolidated `PlotGrounded`/`PlotTrackers` history, tracking, zoom, and quick-location workflow implemented; the experimental `PlotMiniTrack` variant and Human-site arbitration remain open |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance and passive overlay, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
@@ -59,8 +59,11 @@ circles. The journal-backed grounded radar now loads and atomically updates the
 legacy touchdown, bookmark, and completed-scan records; tracks active samples,
 ship and SRV locations; enforces the original surface/panel/landing-gear rules;
 and renders heading-relative exclusion and tracker circles in the five legacy
-window sizes. Codex auto-tracking, death marking, adjustable scale, and the
-remaining biology surfaces stay open.
+window sizes. It also restores Composition Scanner auto-tracking and analyzed
+filters, complete cross-system death marking, bounded zoom/reset, all eight
+quick-location chords, and a compact tracker-only state. The experimental
+dedicated `PlotMiniTrack` variant, Human-site arbitration, and remaining
+biology surfaces stay open.
 
 ## Secondary forms
 
@@ -175,17 +178,20 @@ compact or genus-radius radar circles. Its settings retain the legacy defaults,
 and it yields to the Guardian overlay. Automated coverage and XAML compilation
 passed; visual/theme QA is intentionally deferred until the final UI pass.
 
-The history/tracker slice of `PlotGrounded` is now implemented as a
+`PlotGrounded` and `PlotTrackers` are now implemented as a consolidated
 bottom-center passive surface. It atomically shares legacy per-system JSON with
 system notes, preserves unknown fields, rejects malformed files without
-overwriting them, and records touchdown, bookmarks, species changes, and
-completed three-sample scans. The presentation preserves the original
+overwriting them, and records touchdown, bookmarks, Composition Scanner
+discoveries, species changes, completed three-sample scans, and complete lost
+organism circles after death. The presentation preserves the original
 auto-show, altitude, focus panel, vehicle mode, landing-gear and hidden-tracker
 rules; renders heading-up historical, tracker, active-sample, ship and SRV
 markers; exposes active navigation bearings/distances; supports all five legacy
-sizes; and yields to Guardian overlays. Automated persistence, journal,
-presentation, preparation, lifecycle, XAML compilation, and full-suite checks
-passed; visual/theme QA is intentionally deferred until the final UI pass.
+sizes and bounded zoom/reset; handles `#1` through `#8`; falls back to a compact
+tracker-only state; and yields to Guardian overlays. Automated persistence,
+journal, presentation, preparation, lifecycle, XAML compilation, and full-suite
+checks passed; visual/theme QA is intentionally deferred until the final UI
+pass.
 
 `PlotTrackTarget` is now implemented as a compact bottom-center passive
 surface. It reuses the lossless legacy target settings and great-circle

@@ -315,12 +315,14 @@ UI tests where practical, and live Windows/Linux evidence.
   implemented with validated current-body coordinates, commander/analyzed and
   value filtering, continuously recalculated surface bearing/distance,
   approach angle, near/far state, and persisted radar-circle preferences. The
-  journal-backed `PlotGrounded` history/tracker slice now preserves legacy
+  journal-backed `PlotGrounded` and `PlotTrackers` replacement now preserves legacy
   touchdown, bookmark, and completed-scan records, active samples, sample
   removal rules, exact surface-mode gating, five radar sizes, heading-relative
-  circles, ship/SRV markers, and a passive Raven-themed overlay. Codex
-  auto-tracking, death marking, adjustable radar scale, and the remaining
-  route/search plotter modes stay open.
+  circles, ship/SRV markers, Composition Scanner auto-tracking, cross-system
+  death marking, adjustable radar scale, all eight quick-location chords, and a
+  compact tracker-only Raven state. The experimental dedicated `PlotMiniTrack`
+  variant, Human-site arbitration, and remaining route/search plotter modes
+  stay open.
 - [ ] Human settlements and post-processing tools.
 - [ ] Cargo, missions, massacre/foot combat, and colonization projects.
 - [ ] Quest communications and controller navigation.
@@ -353,7 +355,7 @@ not expected to run as a headless container service.
 | Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
 | Settings/data migration | OS paths, legacy discovery, manifests, verified backup/staging/import, lossless commander profile updates, and all 30 legacy input binding names/defaults implemented | Explicit backup-and-import workflow plus opt-in global keyboard/controller settings, validation, default restore, SDL device picker, refresh, and reconnect status | Settings/input UI visually and accessibility checked in Blue light; native keyboard hook reached active; SDL initialized without connected hardware; real profile restart comparison and physical controller input not run | Not tested |
 | Exploration totals | Legacy valuation and six counters plus compatible, atomic profile persistence implemented | Live Overview/Exploration projections and two-step reset | Automated only | Not tested |
-| Organic scans | Complete 1,070-entry Codex reference, global and 42-region commander discovery ledgers, live and historical journal ingestion, Canonn Challenge import, confirmed manual overrides, discovery-location resolution, three-sample state, surface separation, first-footfall reward, sale, death, reset, compatible profile fields, current-system organism/geology history, sample-distance catalog, exact Canonn surface-POI ingestion/planning, legacy surface-history/bookmark persistence and live three-sample mutations, and the complete embedded v4 prediction evaluator with region/star/nebula/Guardian context implemented | Live Overview/Exobiology projections, two-step unclaimed reset, passive `PlotBioSystem`, compact `PlotBioStatus`, single-instance `FormPredictions`, single-instance `FormShowCodex` browser with bounded image cache, single-instance `FormCodexBingo` workspace, passive `PlotPriorScans` guidance, and the history/tracker slice of `PlotGrounded` with heading-relative Raven radar are implemented | Empty/live-profile page, dense body/system predictions, the standalone predictions workspace, compact active/summary/DSS overlay states, the Codex browser with a real cached reference image, and a three-entry Codex Bingo hierarchy checked in Blue dark/light; prior-scan and grounded-radar visual QA is intentionally deferred to the final UI pass, and active Elite sampling/attachment, interactive remote imports, and Linux were not run | Not tested |
+| Organic scans | Complete 1,070-entry Codex reference, global and 42-region commander discovery ledgers, live and historical journal ingestion, Canonn Challenge import, confirmed manual overrides, discovery-location resolution, three-sample state, surface separation, first-footfall reward, sale, death, reset, compatible profile fields, current-system organism/geology history, sample-distance catalog, exact Canonn surface-POI ingestion/planning, legacy surface-history/bookmark persistence, Composition Scanner tracking, cross-system death marking, live three-sample mutations, and the complete embedded v4 prediction evaluator with region/star/nebula/Guardian context implemented | Live Overview/Exobiology projections, two-step unclaimed reset, passive `PlotBioSystem`, compact `PlotBioStatus`, single-instance `FormPredictions`, single-instance `FormShowCodex` browser with bounded image cache, single-instance `FormCodexBingo` workspace, passive `PlotPriorScans` guidance, and consolidated `PlotGrounded`/`PlotTrackers` heading-relative radar, tracker list, zoom, and quick-location workflow are implemented | Empty/live-profile page, dense body/system predictions, the standalone predictions workspace, compact active/summary/DSS overlay states, the Codex browser with a real cached reference image, and a three-entry Codex Bingo hierarchy checked in Blue dark/light; prior-scan and grounded-radar visual QA is intentionally deferred to the final UI pass, and active Elite sampling/attachment, interactive remote imports, and Linux were not run | Not tested |
 | Ground target tracking | Legacy coordinate parsing plus cardinal formats, validated settings, great-circle distance/bearing, relative heading, approach bands, and exact legacy mode gating implemented | Travel target editor supports typed, current, clipboard, clear, and live guidance; passive bottom-center `PlotTrackTarget` replacement adds Raven-themed bearing/descent instrumentation and global visibility control | Inactive/live-profile page visually and accessibility checked; overlay XAML and lifecycle are automated, while its visual/theme pass and active surface guidance are intentionally deferred to the final UI pass | Not tested |
 | System notes | Lossless legacy per-system JSON lookup/update/creation plus legacy topmost and screenshot-folder settings implemented; saves against the active Journey system update that visit's note counter | Single-instance resizable notes window, current-system context, save/cancel, always-on-top, Canonn/Spansh/EDSM, screenshots, Travel launcher, and `Ctrl+Shift+N` implemented | Travel card and notes window visually checked in Blue dark/light without changing live notes | Not tested |
 | Commander journeys | Lossless legacy journey JSON and active-pointer persistence, historic journal replay, all legacy counters/rewards/flags, current and prior-system starts, live updates, note coupling, conclude, and bounded reprocess implemented | Single-instance responsive workspace unifies begin, list, edit, viewer, and per-system details; supports history, preferences, notes, screenshots, dirty-state handling, and guarded destructive actions | Isolated QA journey exercised in Blue dark/light, including both start modes, begin, overview, visited systems, note edit/discard, refresh, and conclude/reprocess confirmations; no live commander Journey data changed | Not tested |
@@ -379,7 +381,7 @@ Validation performed on 2026-07-25 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 642 tests: 413 Core tests and 229 Desktop tests.
+  passed all 648 tests: 417 Core tests and 231 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - Automated prior-scan coverage validates the live Canonn string-valued POI
   contract, malformed and mismatched responses, normalized body matching,
@@ -397,8 +399,10 @@ Validation performed on 2026-07-25 using Windows build `10.0.26200` and .NET SDK
 - Automated grounded-radar coverage validates lossless legacy surface history,
   bookmark and completed-scan updates under shared per-file locking, sample and
   touchdown journal mutations, tracker-removal preferences, exact legacy
-  status/panel/landing-gear gating, marker navigation, five legacy window
-  sizes, passive preparation, Guardian arbitration, and XAML compilation. Per
+  status/panel/landing-gear gating, Composition Scanner filters, complete
+  cross-system death marking, all eight quick tracker actions, marker
+  navigation, tracker-only presentation, five legacy window sizes, bounded
+  zoom, passive preparation, Guardian arbitration, and XAML compilation. Per
   request, the overlay was not opened; its visual/theme pass remains held until
   the final whole-application UI review.
 - The direct and transitive NuGet vulnerability audit reported no known
