@@ -394,6 +394,226 @@
                 </StackPanel>
               </Border>
 
+              <Expander Header="Master template developer tools">
+                <Border Classes="card">
+                  <StackPanel Spacing="14">
+                    <TextBlock Classes="card-title"
+                               Text="{Binding Guardian.TemplateAuthoring.TemplateTitle}" />
+                    <TextBlock Classes="muted"
+                               TextWrapping="Wrap"
+                               Text="Edit the shared geometry used by every site of this type. Drafts preview locally; only an explicitly selected JSON export file is changed." />
+                    <Button Classes="secondary"
+                            HorizontalAlignment="Left"
+                            Command="{Binding Guardian.TemplateAuthoring.StartCommand}"
+                            Content="Start template draft" />
+
+                    <StackPanel Spacing="14"
+                                IsVisible="{Binding Guardian.TemplateAuthoring.IsAuthoring}">
+                      <Grid ColumnDefinitions="*,*"
+                            RowDefinitions="Auto,Auto,Auto"
+                            ColumnSpacing="8"
+                            RowSpacing="8">
+                        <StackPanel Spacing="4">
+                          <TextBlock Classes="muted" Text="TEMPLATE NAME" />
+                          <TextBox Text="{Binding Guardian.TemplateAuthoring.TemplateName, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                          <TextBlock Classes="muted" Text="BACKGROUND IMAGE" />
+                          <TextBox Text="{Binding Guardian.TemplateAuthoring.BackgroundImage, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Spacing="4">
+                          <TextBlock Classes="muted" Text="IMAGE X" />
+                          <NumericUpDown Minimum="-100000"
+                                         Maximum="100000"
+                                         Value="{Binding Guardian.TemplateAuthoring.ImageOffsetX, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
+                          <TextBlock Classes="muted" Text="IMAGE Y" />
+                          <NumericUpDown Minimum="-100000"
+                                         Maximum="100000"
+                                         Value="{Binding Guardian.TemplateAuthoring.ImageOffsetY, Mode=TwoWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Spacing="4">
+                          <TextBlock Classes="muted" Text="SCALE" />
+                          <NumericUpDown Minimum="0.0001"
+                                         Maximum="10000"
+                                         Increment="0.01"
+                                         Value="{Binding Guardian.TemplateAuthoring.ScaleFactor, Mode=TwoWay}" />
+                        </StackPanel>
+                      </Grid>
+                      <Button Classes="secondary"
+                              HorizontalAlignment="Left"
+                              Command="{Binding Guardian.TemplateAuthoring.ApplyMetadataCommand}"
+                              Content="Apply metadata to draft" />
+
+                      <Border Classes="card raised">
+                        <StackPanel Spacing="10">
+                          <TextBlock Classes="muted" Text="MEASURED MASTER POINT" />
+                          <TextBlock TextWrapping="Wrap"
+                                     Text="{Binding Guardian.TemplateAuthoring.LiveMeasurementText}" />
+                          <Grid ColumnDefinitions="2*,*,Auto" ColumnSpacing="8">
+                            <TextBox Text="{Binding Guardian.TemplateAuthoring.NewPointName, Mode=TwoWay}"
+                                     PlaceholderText="Unique point name" />
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding Guardian.TemplateAuthoring.PointTypes}"
+                                      SelectedItem="{Binding Guardian.TemplateAuthoring.NewPointType, Mode=TwoWay}" />
+                            <Button Grid.Column="2"
+                                    Classes="secondary"
+                                    Command="{Binding Guardian.TemplateAuthoring.AddMeasuredPointCommand}"
+                                    Content="Add measured point" />
+                          </Grid>
+                        </StackPanel>
+                      </Border>
+
+                      <Grid ColumnDefinitions="2*,3*" ColumnSpacing="12">
+                        <ListBox Height="230"
+                                 ItemsSource="{Binding Guardian.TemplateAuthoring.Points}"
+                                 SelectedItem="{Binding Guardian.TemplateAuthoring.SelectedPoint, Mode=TwoWay}">
+                          <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:GuardianTemplatePointViewModel">
+                              <StackPanel Margin="6,3" Spacing="2">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                                <TextBlock Classes="muted"
+                                           FontSize="11"
+                                           Text="{Binding TypeText}" />
+                                <TextBlock Classes="muted"
+                                           FontSize="11"
+                                           Text="{Binding GeometryText}" />
+                              </StackPanel>
+                            </DataTemplate>
+                          </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <StackPanel Grid.Column="1" Spacing="8">
+                          <Grid ColumnDefinitions="2*,*" ColumnSpacing="8">
+                            <TextBox Text="{Binding Guardian.TemplateAuthoring.PointName, Mode=TwoWay}"
+                                     PlaceholderText="Point name" />
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding Guardian.TemplateAuthoring.PointTypes}"
+                                      SelectedItem="{Binding Guardian.TemplateAuthoring.PointType, Mode=TwoWay}" />
+                          </Grid>
+                          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                            <NumericUpDown Minimum="0"
+                                           Maximum="359.999"
+                                           Increment="0.1"
+                                           Value="{Binding Guardian.TemplateAuthoring.PointAngle, Mode=TwoWay}" />
+                            <NumericUpDown Grid.Column="1"
+                                           Minimum="0"
+                                           Maximum="100000"
+                                           Increment="0.1"
+                                           Value="{Binding Guardian.TemplateAuthoring.PointDistance, Mode=TwoWay}" />
+                            <NumericUpDown Grid.Column="2"
+                                           Minimum="-1"
+                                           Maximum="359.999"
+                                           Increment="0.1"
+                                           Value="{Binding Guardian.TemplateAuthoring.PointRotation, Mode=TwoWay}" />
+                          </Grid>
+                          <TextBlock Classes="muted"
+                                     FontSize="11"
+                                     Text="Angle · distance · rotation" />
+                          <WrapPanel>
+                            <Button Classes="secondary"
+                                    Margin="0,0,8,8"
+                                    Command="{Binding Guardian.TemplateAuthoring.ApplySelectedPointCommand}"
+                                    Content="Apply point edit" />
+                            <Button Classes="secondary"
+                                    Margin="0,0,0,8"
+                                    Command="{Binding Guardian.TemplateAuthoring.RemoveSelectedPointCommand}"
+                                    Content="Remove point" />
+                          </WrapPanel>
+                        </StackPanel>
+                      </Grid>
+
+                      <Grid ColumnDefinitions="2*,3*" ColumnSpacing="12">
+                        <ListBox Height="150"
+                                 ItemsSource="{Binding Guardian.TemplateAuthoring.Groups}"
+                                 SelectedItem="{Binding Guardian.TemplateAuthoring.SelectedGroup, Mode=TwoWay}">
+                          <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:GuardianTemplateGroupViewModel">
+                              <Grid Margin="6,3"
+                                    ColumnDefinitions="Auto,*"
+                                    ColumnSpacing="10">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                                <TextBlock Grid.Column="1"
+                                           Classes="muted"
+                                           Text="{Binding GeometryText}" />
+                              </Grid>
+                            </DataTemplate>
+                          </ListBox.ItemTemplate>
+                        </ListBox>
+                        <StackPanel Grid.Column="1" Spacing="8">
+                          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                            <TextBox Text="{Binding Guardian.TemplateAuthoring.GroupName, Mode=TwoWay}"
+                                     PlaceholderText="Group label" />
+                            <NumericUpDown Grid.Column="1"
+                                           Minimum="0"
+                                           Maximum="359.999"
+                                           Increment="0.1"
+                                           Value="{Binding Guardian.TemplateAuthoring.GroupAngle, Mode=TwoWay}" />
+                            <NumericUpDown Grid.Column="2"
+                                           Minimum="0"
+                                           Maximum="100000"
+                                           Increment="0.1"
+                                           Value="{Binding Guardian.TemplateAuthoring.GroupDistance, Mode=TwoWay}" />
+                          </Grid>
+                          <TextBlock Classes="muted"
+                                     FontSize="11"
+                                     Text="Label · angle · distance" />
+                          <WrapPanel>
+                            <Button Classes="secondary"
+                                    Margin="0,0,8,8"
+                                    Command="{Binding Guardian.TemplateAuthoring.SetGroupCommand}"
+                                    Content="Set group label" />
+                            <Button Classes="secondary"
+                                    Margin="0,0,0,8"
+                                    Command="{Binding Guardian.TemplateAuthoring.RemoveSelectedGroupCommand}"
+                                    Content="Remove selected label" />
+                          </WrapPanel>
+                        </StackPanel>
+                      </Grid>
+
+                      <WrapPanel>
+                        <Button Classes="primary"
+                                Margin="0,0,8,8"
+                                Click="ExportGuardianTemplate_Click"
+                                Content="Export verified catalog..." />
+                        <Button Classes="secondary"
+                                Margin="0,0,0,8"
+                                Command="{Binding Guardian.TemplateAuthoring.RequestDiscardCommand}"
+                                Content="Discard draft" />
+                      </WrapPanel>
+
+                      <Border Classes="card raised"
+                              IsVisible="{Binding Guardian.TemplateAuthoring.IsDiscardConfirmationPending}">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                     TextWrapping="Wrap"
+                                     Text="Discard all unexported master-template changes?" />
+                          <StackPanel Grid.Column="1"
+                                      Orientation="Horizontal"
+                                      Spacing="8">
+                            <Button Classes="secondary"
+                                    Command="{Binding Guardian.TemplateAuthoring.CancelDiscardCommand}"
+                                    Content="Keep draft" />
+                            <Button Classes="primary"
+                                    Command="{Binding Guardian.TemplateAuthoring.ConfirmDiscardCommand}"
+                                    Content="Confirm discard" />
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+
+                    <TextBlock Classes="muted"
+                               TextWrapping="Wrap"
+                               Text="{Binding Guardian.TemplateAuthoring.StatusMessage}" />
+                    <TextBlock Classes="monospace muted"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Text="{Binding Guardian.TemplateAuthoring.LastExportPath}" />
+                  </StackPanel>
+                </Border>
+              </Expander>
+
               <Border Classes="card">
                 <StackPanel Spacing="14">
                   <TextBlock Classes="card-title" Text="Survey editor" />

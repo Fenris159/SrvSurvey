@@ -126,6 +126,36 @@ public sealed partial class GuardianView : UserControl
             "EDSM");
     }
 
+    private async void ExportGuardianTemplate_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel
+            || TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage)
+        {
+            return;
+        }
+
+        var file = await storage.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Export Guardian template catalog",
+            SuggestedFileName = "guardianSiteTemplates.json",
+            DefaultExtension = "json",
+            FileTypeChoices =
+            [
+                new FilePickerFileType("JSON catalog")
+                {
+                    Patterns = ["*.json"],
+                },
+            ],
+        });
+        var path = file?.TryGetLocalPath();
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            await viewModel.Guardian.TemplateAuthoring.ExportAsync(path);
+        }
+    }
+
     private async void CopyShareBundle_Click(
         object? sender,
         RoutedEventArgs eventArgs)

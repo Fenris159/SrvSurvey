@@ -18,8 +18,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
     private readonly GuardianSiteCatalog references;
     private readonly GuardianPublishedSiteCatalog publishedSites;
-    private readonly GuardianSiteTemplateCatalog templates;
-    private readonly GuardianSurveyCompletionCalculator completionCalculator;
+    private GuardianSiteTemplateCatalog templates;
+    private GuardianSurveyCompletionCalculator completionCalculator;
     private readonly GuardianSiteMapProjector mapProjector = new();
     private readonly GuardianSiteProximityEvaluator proximityEvaluator = new();
     private readonly GuardianArtifactInventoryState artifactInventory = new();
@@ -124,6 +124,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         SurveyEditor = new GuardianSurveyEditorViewModel(
             commanderSurveyStore,
             OnSurveySavedAsync);
+        TemplateAuthoring = new GuardianTemplateAuthoringViewModel(
+            this.templates,
+            OnTemplateDraftChanged);
         liveSiteState = new GuardianLiveSiteState(this.references);
         visits = GuardianSiteVisitCatalog.Merge(
             this.references,
@@ -207,6 +210,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     public ICommand OpenShareWorkspaceCommand { get; }
 
     public GuardianSurveyEditorViewModel SurveyEditor { get; }
+
+    public GuardianTemplateAuthoringViewModel TemplateAuthoring { get; }
 
     public IReadOnlyList<string> ShareSiteNames
     {
@@ -1493,6 +1498,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         proximity = null;
         activeMapProjection = null;
         SurveyEditor.UpdateLiveMeasurement(null);
+        TemplateAuthoring.UpdateContext(
+            GetSelectedBaseTemplate(),
+            measurement: null);
         var site = ActiveSite;
         if (site is null)
         {
@@ -1510,7 +1518,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 StringComparison.OrdinalIgnoreCase)
                     ? survey.SiteType
                     : site.SiteType;
-        var template = templates.Find(siteType);
+        var template = FindTemplate(siteType);
         var location = survey?.Survey.Location
             ?? published?.Location
             ?? site.Location;
@@ -1560,6 +1568,12 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 measurement.DistanceFromSite,
                 angle,
                 rotation));
+            TemplateAuthoring.UpdateContext(
+                GetSelectedBaseTemplate(),
+                new GuardianSurveyMeasurement(
+                    measurement.DistanceFromSite,
+                    angle,
+                    rotation));
         }
 
         NotifyCurrentObeliskChanged();
@@ -1583,8 +1597,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 StringComparison.OrdinalIgnoreCase)
                     ? survey.SiteType
                     : row.Reference.SiteType;
-        var template = templates.Find(siteType)
-            ?? templates.Find(row.Reference.SiteType);
+        var template = FindTemplate(siteType)
+            ?? FindTemplate(row.Reference.SiteType);
         var published = publishedSites.Find(row.Reference);
         MapProjection = template is null
             ? null
@@ -1636,11 +1650,63 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 StringComparison.OrdinalIgnoreCase)
                     ? survey.SiteType
                     : row?.Reference.SiteType;
+        var template = templates.Find(siteType);
         SurveyEditor.Load(
             activeFrontierId,
             activeIsOdyssey,
             survey,
-            templates.Find(siteType));
+            template);
+        TemplateAuthoring.UpdateContext(template, measurement: null);
+    }
+
+    private GuardianSiteTemplate? GetSelectedBaseTemplate()
+    {
+        var row = SelectedSite;
+        if (row is null)
+        {
+            return null;
+        }
+
+        var survey = FindSurvey(row.Reference);
+        var siteType = survey is not null
+            && !string.Equals(
+                survey.SiteType,
+                "Unknown",
+                StringComparison.OrdinalIgnoreCase)
+                    ? survey.SiteType
+                    : row.Reference.SiteType;
+        return templates.Find(siteType) ?? templates.Find(row.Reference.SiteType);
+    }
+
+    private GuardianSiteTemplate? FindTemplate(string? siteType)
+    {
+        var preview = TemplateAuthoring.PreviewTemplate;
+        return preview is not null
+            && string.Equals(
+                preview.SiteType,
+                siteType,
+                StringComparison.OrdinalIgnoreCase)
+                    ? preview
+                    : templates.Find(siteType);
+    }
+
+    private void OnTemplateDraftChanged(bool catalogChanged)
+    {
+        if (catalogChanged)
+        {
+            templates = TemplateAuthoring.Catalog;
+            completionCalculator = new GuardianSurveyCompletionCalculator(
+                templates);
+            visits = GuardianSiteVisitCatalog.Merge(
+                references,
+                commanderData,
+                publishedSites,
+                completionCalculator);
+            ApplyFilters();
+        }
+
+        UpdateMapProjection();
+        UpdateProximity();
     }
 
     private Task OnSurveySavedAsync(

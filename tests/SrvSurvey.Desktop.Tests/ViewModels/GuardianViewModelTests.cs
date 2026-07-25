@@ -110,6 +110,46 @@ public sealed class GuardianViewModelTests
     }
 
     [Fact]
+    public void GuardianTemplateDraftUpdatesMapPreviewAndDiscardRestoresIt()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var viewModel = new GuardianViewModel(root);
+            viewModel.SelectedSite = viewModel.Rows.First(row =>
+                row.Reference.Kind == GuardianSiteKind.Ruins);
+            var originalPoint = viewModel.MapProjection!.Points[0];
+
+            viewModel.TemplateAuthoring.StartCommand.Execute(null);
+            viewModel.TemplateAuthoring.SelectedPoint =
+                viewModel.TemplateAuthoring.Points.Single(point =>
+                    point.Name == originalPoint.Name);
+            viewModel.TemplateAuthoring.PointDistance =
+                (decimal)originalPoint.Distance + 25;
+            viewModel.TemplateAuthoring.ApplySelectedPointCommand.Execute(null);
+
+            Assert.Equal(
+                originalPoint.Distance + 25,
+                viewModel.MapProjection.Points.Single(point =>
+                    point.Name == originalPoint.Name).Distance,
+                precision: 6);
+
+            viewModel.TemplateAuthoring.RequestDiscardCommand.Execute(null);
+            viewModel.TemplateAuthoring.ConfirmDiscardCommand.Execute(null);
+
+            Assert.Equal(
+                originalPoint.Distance,
+                viewModel.MapProjection.Points.Single(point =>
+                    point.Name == originalPoint.Name).Distance,
+                precision: 6);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public async Task CustomOriginLookupReordersRowsAndClearRestoresJournalOrigin()
     {
         var root = CreateTemporaryDirectory();
