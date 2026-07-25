@@ -13,6 +13,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         GuardianCommanderSiteSurvey,
         Task> surveySaved;
     private readonly AsyncCommand saveCommand;
+    private readonly AsyncCommand addRawPointCommand;
+    private readonly AsyncCommand removeRawPointCommand;
     private string? frontierId;
     private bool isOdyssey = true;
     private GuardianCommanderSiteSurvey? originalSurvey;
@@ -24,6 +26,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private IReadOnlyList<GuardianSurveyPoiViewModel> points = [];
     private IReadOnlyList<GuardianObeliskGroupViewModel> obeliskGroups = [];
     private GuardianSurveyPoiViewModel? selectedPoint;
+    private GuardianPoiType newRawPointType = GuardianPoiType.Unknown;
+    private GuardianSurveyMeasurement? liveMeasurement;
     private string statusMessage =
         "Visit the selected site before editing its commander survey.";
 
@@ -38,12 +42,29 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         this.surveySaved = surveySaved
             ?? throw new ArgumentNullException(nameof(surveySaved));
         saveCommand = new AsyncCommand(SaveAsync, () => IsAvailable && !IsBusy);
+        addRawPointCommand = new AsyncCommand(
+            AddRawPointAsync,
+            () => IsAvailable && !IsBusy && liveMeasurement is not null);
+        removeRawPointCommand = new AsyncCommand(
+            RemoveSelectedRawPointAsync,
+            () => IsAvailable && !IsBusy && SelectedPoint?.IsRaw == true);
         SaveCommand = saveCommand;
+        AddRawPointCommand = addRawPointCommand;
+        RemoveRawPointCommand = removeRawPointCommand;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ICommand SaveCommand { get; }
+
+    public ICommand AddRawPointCommand { get; }
+
+    public ICommand RemoveRawPointCommand { get; }
+
+    public IReadOnlyList<GuardianPoiType> RawPointTypes { get; } =
+        Enum.GetValues<GuardianPoiType>()
+            .Where(type => type != GuardianPoiType.EmptyPuddle)
+            .ToArray();
 
     public bool IsAvailable
     {
@@ -53,6 +74,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             if (SetField(ref isAvailable, value))
             {
                 saveCommand.RaiseCanExecuteChanged();
+                addRawPointCommand.RaiseCanExecuteChanged();
+                removeRawPointCommand.RaiseCanExecuteChanged();
                 OnPropertyChanged(nameof(AvailabilityMessage));
             }
         }
@@ -70,6 +93,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             if (SetField(ref isBusy, value))
             {
                 saveCommand.RaiseCanExecuteChanged();
+                addRawPointCommand.RaiseCanExecuteChanged();
+                removeRawPointCommand.RaiseCanExecuteChanged();
                 OnPropertyChanged(nameof(SaveButtonText));
             }
         }
@@ -115,11 +140,29 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             if (SetField(ref selectedPoint, value))
             {
                 OnPropertyChanged(nameof(HasSelectedPoint));
+                OnPropertyChanged(nameof(HasSelectedRawPoint));
+                removeRawPointCommand.RaiseCanExecuteChanged();
             }
         }
     }
 
     public bool HasSelectedPoint => SelectedPoint is not null;
+
+    public bool HasSelectedRawPoint => SelectedPoint?.IsRaw == true;
+
+    public GuardianPoiType NewRawPointType
+    {
+        get => newRawPointType;
+        set => SetField(ref newRawPointType, value);
+    }
+
+    public bool HasLiveMeasurement => liveMeasurement is not null;
+
+    public string LiveMeasurementText => liveMeasurement is { } measurement
+        ? $"{measurement.Distance:N1} m from origin · "
+            + $"angle {measurement.Angle:N1}° · "
+            + $"rotation {measurement.Rotation:N0}°"
+        : "Stand at the new point in the active selected site with valid surface coordinates.";
 
     public string StatusMessage
     {
@@ -147,6 +190,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             Points = [];
             ObeliskGroups = [];
             SelectedPoint = null;
+            UpdateLiveMeasurement(null);
             StatusMessage = AvailabilityMessage;
             return;
         }
@@ -154,14 +198,24 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         SiteHeading = survey.Survey.SiteHeading;
         RelicTowerHeading = survey.Survey.RelicTowerHeading;
         Notes = survey.Notes;
+        var rawPoints = survey.Survey.RawPointsOfInterest ?? [];
         Points = template.SurveyPoints
-            .Concat(survey.Survey.RawPointsOfInterest ?? [])
             .Select(point => new GuardianSurveyPoiViewModel(
                 point,
                 survey.Survey.PoiStatuses.GetValueOrDefault(point.Name),
                 survey.Survey.RelicHeadings.GetValueOrDefault(
                     point.Name,
-                    -1)))
+                    -1),
+                isRaw: false))
+            .Concat(rawPoints.Select(point => new GuardianSurveyPoiViewModel(
+                point,
+                survey.Survey.PoiStatuses.GetValueOrDefault(
+                    point.Name,
+                    GuardianPoiStatus.Present),
+                point.Type == GuardianPoiType.Relic
+                    ? (int)point.Rotation
+                    : -1,
+                isRaw: true)))
             .OrderBy(point => point.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         ObeliskGroups = template.ObeliskGroupNameLocations.Keys
@@ -176,6 +230,75 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         SelectedPoint = Points.FirstOrDefault();
         StatusMessage = $"Loaded {Points.Count:N0} surveyable point(s) from "
             + $"{Path.GetFileName(survey.Path)}.";
+    }
+
+    public void UpdateLiveMeasurement(GuardianSurveyMeasurement? measurement)
+    {
+        if (liveMeasurement == measurement)
+        {
+            return;
+        }
+
+        liveMeasurement = measurement;
+        OnPropertyChanged(nameof(HasLiveMeasurement));
+        OnPropertyChanged(nameof(LiveMeasurementText));
+        addRawPointCommand.RaiseCanExecuteChanged();
+    }
+
+    public Task AddRawPointAsync()
+    {
+        if (!IsAvailable || liveMeasurement is not { } measurement)
+        {
+            StatusMessage = "A live commander measurement at the selected active site is required.";
+            return Task.CompletedTask;
+        }
+
+        var duplicate = Points.FirstOrDefault(point => IsTooClose(
+            point.Point,
+            NewRawPointType,
+            measurement.Angle,
+            measurement.Distance));
+        if (duplicate is not null)
+        {
+            StatusMessage = $"The measured point is too close to {duplicate.Name}; no raw point was added.";
+            return Task.CompletedTask;
+        }
+
+        var name = NextRawPointName(Points.Select(point => point.Name));
+        var point = new GuardianPointOfInterest(
+            name,
+            NewRawPointType,
+            measurement.Angle,
+            measurement.Distance,
+            NewRawPointType == GuardianPoiType.Relic
+                ? -1
+                : measurement.Rotation);
+        var row = new GuardianSurveyPoiViewModel(
+            point,
+            GuardianPoiStatus.Present,
+            point.Type == GuardianPoiType.Relic ? (int)point.Rotation : -1,
+            isRaw: true);
+        Points = Points
+            .Append(row)
+            .OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        SelectedPoint = row;
+        StatusMessage = $"Added {name} as a local raw {NewRawPointType} point. Save the survey to persist it.";
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveSelectedRawPointAsync()
+    {
+        if (SelectedPoint is not { IsRaw: true } selected)
+        {
+            StatusMessage = "Only commander-specific raw points can be removed.";
+            return Task.CompletedTask;
+        }
+
+        Points = Points.Where(point => !ReferenceEquals(point, selected)).ToArray();
+        SelectedPoint = Points.FirstOrDefault();
+        StatusMessage = $"Removed local raw point {selected.Name}. Save the survey to persist the removal.";
+        return Task.CompletedTask;
     }
 
     public async Task SaveAsync()
@@ -223,8 +346,25 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             var relicHeadings = new Dictionary<string, int>(
                 originalSurvey.Survey.RelicHeadings,
                 StringComparer.Ordinal);
+            var retainedRawNames = Points
+                .Where(point => point.IsRaw)
+                .Select(point => point.Name)
+                .ToHashSet(StringComparer.Ordinal);
+            foreach (var removedName in (originalSurvey.Survey.RawPointsOfInterest ?? [])
+                         .Select(point => point.Name)
+                         .Where(name => !retainedRawNames.Contains(name)))
+            {
+                statuses.Remove(removedName);
+                relicHeadings.Remove(removedName);
+            }
+
             foreach (var point in Points)
             {
+                if (point.IsRaw)
+                {
+                    continue;
+                }
+
                 if (point.Status == GuardianPoiStatus.Unknown)
                 {
                     statuses.Remove(point.Name);
@@ -246,6 +386,10 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 }
             }
 
+            var rawPoints = Points
+                .Where(point => point.IsRaw)
+                .Select(point => point.Point)
+                .ToArray();
             var updated = originalSurvey with
             {
                 Notes = Notes,
@@ -257,7 +401,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                     Location = originalSurvey.Survey.Location,
                     PoiStatuses = statuses,
                     RelicHeadings = relicHeadings,
-                    RawPointsOfInterest = originalSurvey.Survey.RawPointsOfInterest,
+                    RawPointsOfInterest = rawPoints.Length == 0
+                        ? null
+                        : rawPoints,
                 },
                 ObeliskGroups = ObeliskGroups
                     .Where(group => group.IsSelected)
@@ -295,6 +441,32 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
         heading = decimal.ToInt32(value);
         return true;
+    }
+
+    private static bool IsTooClose(
+        GuardianPointOfInterest point,
+        GuardianPoiType type,
+        double angle,
+        double distance)
+    {
+        var angleDelta = Math.Abs(point.Angle - angle);
+        angleDelta = Math.Min(angleDelta, 360 - angleDelta);
+        var distanceDelta = Math.Abs(point.Distance - distance);
+        return point.Type == type && angleDelta <= 3 && distanceDelta <= 10
+            || angleDelta <= 1 && distanceDelta <= 3;
+    }
+
+    private static string NextRawPointName(IEnumerable<string> names)
+    {
+        var used = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        for (var index = 1; ; index++)
+        {
+            var candidate = $"x{index}";
+            if (!used.Contains(candidate))
+            {
+                return candidate;
+            }
+        }
     }
 
     private bool SetField<T>(
@@ -343,6 +515,11 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     }
 }
 
+public sealed record GuardianSurveyMeasurement(
+    double Distance,
+    double Angle,
+    double Rotation);
+
 public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
 {
     private static readonly GuardianPoiStatus[] BasicStatuses =
@@ -359,22 +536,30 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
     public GuardianSurveyPoiViewModel(
         GuardianPointOfInterest point,
         GuardianPoiStatus status,
-        int relicHeading)
+        int relicHeading,
+        bool isRaw = false)
     {
         Point = point;
         this.status = status;
         this.relicHeading = relicHeading;
+        IsRaw = isRaw;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public GuardianPointOfInterest Point { get; }
 
+    public bool IsRaw { get; }
+
+    public bool IsStatusEditable => !IsRaw;
+
     public string Name => Point.Name;
 
     public GuardianPoiType Type => Point.Type;
 
     public string TypeText => Type.ToString();
+
+    public string PositionText => $"{Point.Distance:N1} m · {Point.Angle:N1}°";
 
     public bool SupportsRelicHeading => Type == GuardianPoiType.Relic;
 

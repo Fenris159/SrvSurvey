@@ -449,6 +449,26 @@
                       </ItemsControl>
                     </StackPanel>
 
+                    <Border Classes="card raised">
+                      <StackPanel Spacing="10">
+                        <TextBlock Classes="muted" Text="LIVE RAW-POINT MEASUREMENT" />
+                        <TextBlock TextWrapping="Wrap"
+                                   Text="{Binding Guardian.SurveyEditor.LiveMeasurementText}" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                          <ComboBox ItemsSource="{Binding Guardian.SurveyEditor.RawPointTypes}"
+                                    SelectedItem="{Binding Guardian.SurveyEditor.NewRawPointType, Mode=TwoWay}" />
+                          <Button Grid.Column="1"
+                                  Classes="secondary"
+                                  Command="{Binding Guardian.SurveyEditor.AddRawPointCommand}"
+                                  Content="Add measured point" />
+                        </Grid>
+                        <TextBlock Classes="muted"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"
+                                   Text="Raw points are commander-specific discoveries. The active site, selected survey, surface position, body radius, and site heading must all agree before a point can be measured." />
+                      </StackPanel>
+                    </Border>
+
                     <StackPanel Spacing="6">
                       <TextBlock Classes="muted" Text="SURVEY POINTS" />
                       <ListBox Height="210"
@@ -457,13 +477,16 @@
                         <ListBox.ItemTemplate>
                           <DataTemplate x:DataType="vm:GuardianSurveyPoiViewModel">
                             <Grid Margin="6,3"
-                                  ColumnDefinitions="70,*,Auto"
+                                  ColumnDefinitions="70,*,Auto,Auto"
                                   ColumnSpacing="8">
                               <TextBlock Classes="monospace" Text="{Binding Name}" />
                               <TextBlock Grid.Column="1"
                                          Classes="muted"
                                          Text="{Binding TypeText}" />
-                              <TextBlock Grid.Column="2" Text="{Binding Status}" />
+                              <TextBlock Grid.Column="2"
+                                         Classes="muted"
+                                         Text="{Binding PositionText}" />
+                              <TextBlock Grid.Column="3" Text="{Binding Status}" />
                             </Grid>
                           </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -480,9 +503,12 @@
                                      Classes="muted"
                                      Text="{Binding Guardian.SurveyEditor.SelectedPoint.TypeText}" />
                         </Grid>
+                        <TextBlock Classes="muted"
+                                   Text="{Binding Guardian.SurveyEditor.SelectedPoint.PositionText}" />
                         <StackPanel Spacing="5">
                           <TextBlock Classes="muted" Text="STATUS" />
-                          <ComboBox ItemsSource="{Binding Guardian.SurveyEditor.SelectedPoint.AllowedStatuses}"
+                          <ComboBox IsEnabled="{Binding Guardian.SurveyEditor.SelectedPoint.IsStatusEditable}"
+                                    ItemsSource="{Binding Guardian.SurveyEditor.SelectedPoint.AllowedStatuses}"
                                     SelectedItem="{Binding Guardian.SurveyEditor.SelectedPoint.Status, Mode=TwoWay}" />
                         </StackPanel>
                         <StackPanel Spacing="5"
@@ -494,6 +520,11 @@
                                          FormatString="0"
                                          Value="{Binding Guardian.SurveyEditor.SelectedPoint.RelicHeading, Mode=TwoWay}" />
                         </StackPanel>
+                        <Button Classes="secondary"
+                                HorizontalAlignment="Left"
+                                IsVisible="{Binding Guardian.SurveyEditor.HasSelectedRawPoint}"
+                                Command="{Binding Guardian.SurveyEditor.RemoveRawPointCommand}"
+                                Content="Remove local raw point" />
                       </StackPanel>
                     </Border>
 

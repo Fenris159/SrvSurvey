@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 
@@ -387,6 +388,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 openSelectedSurveyCommand.RaiseCanExecuteChanged();
                 UpdateMapProjection();
                 UpdateSurveyEditor();
+                UpdateProximity();
             }
         }
     }
@@ -1490,6 +1492,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     {
         proximity = null;
         activeMapProjection = null;
+        SurveyEditor.UpdateLiveMeasurement(null);
         var site = ActiveSite;
         if (site is null)
         {
@@ -1543,6 +1546,22 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             survey?.Survey,
             activeObelisks,
             obeliskGroups);
+        if (proximity is { } measurement
+            && reference is not null
+            && SelectedSite?.Reference == reference)
+        {
+            var angle = SurfaceNavigation.NormalizeDegrees(
+                Math.Atan2(measurement.MapX, -measurement.MapY)
+                    * 180
+                    / Math.PI);
+            var rotation = SurfaceNavigation.NormalizeDegrees(
+                currentStatus.NormalizedHeading - siteHeading);
+            SurveyEditor.UpdateLiveMeasurement(new GuardianSurveyMeasurement(
+                measurement.DistanceFromSite,
+                angle,
+                rotation));
+        }
+
         NotifyCurrentObeliskChanged();
     }
 

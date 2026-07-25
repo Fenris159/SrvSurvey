@@ -15,6 +15,7 @@ public sealed class GuardianSiteMapProjector
             .Select(point => ProjectPoint(
                 point,
                 survey?.PoiStatuses,
+                survey?.RawPointsOfInterest,
                 activeObelisks))
             .ToArray();
         var groups = template.ObeliskGroupNameLocations
@@ -41,14 +42,23 @@ public sealed class GuardianSiteMapProjector
     private static GuardianProjectedPoint ProjectPoint(
         GuardianPointOfInterest point,
         IReadOnlyDictionary<string, GuardianPoiStatus>? statuses,
+        IReadOnlyList<GuardianPointOfInterest>? rawPoints,
         IReadOnlyList<GuardianObelisk>? activeObelisks)
     {
         var active = activeObelisks?.FirstOrDefault(obelisk => string.Equals(
             obelisk.Name,
             point.Name,
             StringComparison.OrdinalIgnoreCase));
-        var status = statuses?.GetValueOrDefault(point.Name)
-            ?? GuardianPoiStatus.Unknown;
+        var status = statuses?.TryGetValue(point.Name, out var explicitStatus)
+            == true
+                ? explicitStatus
+                : rawPoints?.Any(raw => ReferenceEquals(raw, point)
+                    || string.Equals(
+                        raw.Name,
+                        point.Name,
+                        StringComparison.Ordinal)) == true
+                    ? GuardianPoiStatus.Present
+                    : GuardianPoiStatus.Unknown;
         var location = ProjectPolar(point.Angle, point.Distance);
         return new GuardianProjectedPoint(
             point.Name,

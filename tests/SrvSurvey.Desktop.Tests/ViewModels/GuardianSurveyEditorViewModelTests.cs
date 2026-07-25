@@ -126,6 +126,122 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         Assert.Contains("Visit the selected site", editor.StatusMessage);
     }
 
+    [Fact]
+    public async Task AddsAndRemovesMeasuredRawPointsWithoutRedundantStatusData()
+    {
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var initial = CreateSurvey();
+        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        var editor = new GuardianSurveyEditorViewModel(
+            store,
+            (_, _) => Task.CompletedTask);
+        editor.Load(
+            "F123",
+            isOdyssey: true,
+            initial with { Path = path },
+            CreateTemplate());
+        editor.NewRawPointType = GuardianPoiType.Orb;
+        editor.UpdateLiveMeasurement(new GuardianSurveyMeasurement(
+            123.4,
+            45.6,
+            78));
+
+        await editor.AddRawPointAsync();
+
+        var raw = Assert.IsType<GuardianSurveyPoiViewModel>(editor.SelectedPoint);
+        Assert.True(raw.IsRaw);
+        Assert.Equal("x1", raw.Name);
+        Assert.Equal(GuardianPoiStatus.Present, raw.Status);
+        Assert.Contains("123.4 m", raw.PositionText);
+
+        await editor.AddRawPointAsync();
+
+        Assert.Single(editor.Points, point => point.IsRaw);
+        Assert.Contains("too close", editor.StatusMessage);
+
+        await editor.SaveAsync();
+
+        var saved = Assert.Single(
+            (await new GuardianCommanderDataReader(temporaryDirectory)
+                .ReadAsync("F123", isOdyssey: true)).Surveys);
+        var savedRaw = Assert.Single(saved.Survey.RawPointsOfInterest!);
+        Assert.Equal("x1", savedRaw.Name);
+        Assert.Equal(GuardianPoiType.Orb, savedRaw.Type);
+        Assert.Equal(123.4, savedRaw.Distance);
+        Assert.Equal(45.6, savedRaw.Angle);
+        Assert.Equal(78, savedRaw.Rotation);
+        Assert.DoesNotContain("x1", saved.Survey.PoiStatuses.Keys);
+
+        editor.Load(
+            "F123",
+            isOdyssey: true,
+            saved,
+            CreateTemplate());
+        editor.SelectedPoint = editor.Points.Single(point => point.IsRaw);
+        await editor.RemoveSelectedRawPointAsync();
+        await editor.SaveAsync();
+
+        var afterRemoval = Assert.Single(
+            (await new GuardianCommanderDataReader(temporaryDirectory)
+                .ReadAsync("F123", isOdyssey: true)).Surveys);
+        Assert.Null(afterRemoval.Survey.RawPointsOfInterest);
+    }
+
+    [Fact]
+    public async Task PreservesExplicitLegacyRawPointOverrides()
+    {
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var initial = CreateSurvey();
+        var initialSurvey = initial.Survey;
+        initial = initial with
+        {
+            Survey = new GuardianSurveyData
+            {
+                SiteType = initialSurvey.SiteType,
+                SiteHeading = initialSurvey.SiteHeading,
+                RelicTowerHeading = initialSurvey.RelicTowerHeading,
+                Location = initialSurvey.Location,
+                PoiStatuses = new Dictionary<string, GuardianPoiStatus>(
+                    initialSurvey.PoiStatuses)
+                {
+                    ["x7"] = GuardianPoiStatus.Absent,
+                },
+                RelicHeadings = new Dictionary<string, int>(
+                    initialSurvey.RelicHeadings)
+                {
+                    ["x7"] = 55,
+                },
+                RawPointsOfInterest =
+                [
+                    new GuardianPointOfInterest(
+                        "x7",
+                        GuardianPoiType.Relic,
+                        10,
+                        20,
+                        30),
+                ],
+            },
+        };
+        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        var editor = new GuardianSurveyEditorViewModel(
+            store,
+            (_, _) => Task.CompletedTask);
+        editor.Load(
+            "F123",
+            isOdyssey: true,
+            initial with { Path = path },
+            CreateTemplate());
+
+        await editor.SaveAsync();
+
+        var saved = Assert.Single(
+            (await new GuardianCommanderDataReader(temporaryDirectory)
+                .ReadAsync("F123", isOdyssey: true)).Surveys);
+        Assert.Equal(GuardianPoiStatus.Absent, saved.Survey.PoiStatuses["x7"]);
+        Assert.Equal(55, saved.Survey.RelicHeadings["x7"]);
+        Assert.Equal(30, Assert.Single(saved.Survey.RawPointsOfInterest!).Rotation);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

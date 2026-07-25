@@ -62,7 +62,10 @@ public sealed class GuardianSiteMapProjectorTests
         Assert.True(obelisk.IsActiveObelisk);
         Assert.True(obelisk.IsScannedObelisk);
         Assert.Equal("H1", obelisk.LogCode);
-        Assert.Contains(projection.Points, point => point.Name == "x1");
+        var raw = Assert.Single(
+            projection.Points,
+            point => point.Name == "x1");
+        Assert.Equal(GuardianPoiStatus.Present, raw.Status);
     }
 
     [Fact]

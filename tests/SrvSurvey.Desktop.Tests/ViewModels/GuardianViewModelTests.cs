@@ -555,6 +555,8 @@ public sealed class GuardianViewModelTests
             Assert.True(viewModel.MapProjection?.Points.Single().IsActiveObelisk);
             Assert.True(viewModel.ActiveMapProjection?.Points.Single().IsActiveObelisk);
             Assert.True(viewModel.ShouldShowRamTahOverlay);
+            Assert.True(viewModel.SurveyEditor.HasLiveMeasurement);
+            Assert.Contains("10.0 m from origin", viewModel.SurveyEditor.LiveMeasurementText);
             var ramTahLog = Assert.Single(viewModel.CurrentRamTahLogs);
             Assert.Equal("H1", ramTahLog.LogCode);
             Assert.Equal("MISSING", ramTahLog.ArtifactStatus);

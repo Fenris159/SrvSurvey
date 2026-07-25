@@ -144,10 +144,21 @@ public sealed class GuardianSurveyCompletionCalculator(
         GuardianPublishedSite? published,
         string name)
     {
-        return survey.PoiStatuses.TryGetValue(name, out var local)
-            ? local
-            : published?.PoiStatuses.GetValueOrDefault(name)
-                ?? GuardianPoiStatus.Unknown;
+        if (survey.PoiStatuses.TryGetValue(name, out var local))
+        {
+            return local;
+        }
+
+        if (survey.RawPointsOfInterest?.Any(point => string.Equals(
+                point.Name,
+                name,
+                StringComparison.Ordinal)) == true)
+        {
+            return GuardianPoiStatus.Present;
+        }
+
+        return published?.PoiStatuses.GetValueOrDefault(name)
+            ?? GuardianPoiStatus.Unknown;
     }
 
     private static int? GetRelicHeading(

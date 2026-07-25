@@ -108,6 +108,44 @@ public sealed class GuardianSurveyReferenceTests
     }
 
     [Fact]
+    public void LegacyRawPointsAreImplicitlyPresentForCompletion()
+    {
+        var template = new GuardianSiteTemplate(
+            "Test",
+            "Test",
+            string.Empty,
+            new GuardianMapPoint(0, 0),
+            1,
+            [],
+            [],
+            new Dictionary<string, GuardianMapPoint>());
+        var survey = new GuardianSurveyData
+        {
+            SiteType = "Test",
+            SiteHeading = 0,
+            Location = new GuardianSurfaceLocation(0, 0),
+            RawPointsOfInterest =
+            [
+                new GuardianPointOfInterest(
+                    "x1",
+                    GuardianPoiType.Orb,
+                    10,
+                    20,
+                    0),
+            ],
+        };
+        var calculator = new GuardianSurveyCompletionCalculator(
+            new GuardianSiteTemplateCatalog([template]));
+
+        var completion = calculator.Calculate(survey);
+
+        Assert.Equal(1, completion.ConfirmedPointCount);
+        Assert.Equal(1, completion.PresentPuddleCount);
+        Assert.Equal(100, completion.Progress);
+        Assert.True(completion.IsComplete);
+    }
+
+    [Fact]
     public void TemplateLoadRejectsUnknownPointType()
     {
         using var stream = new MemoryStream(
