@@ -155,6 +155,147 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Single(viewModel.FssBodies);
     }
 
+    [Fact]
+    public void BodyInformationUsesMapDestinationAndFormatsDetailedScan()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[500,0,0]}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2},{"Type":"$SAA_SignalType_Geological;","Count":1}]}"""),
+            ],
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.SystemMap,
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 1,
+                    Name = "Test 1",
+                },
+            });
+
+        Assert.True(viewModel.ShouldShowBodyInfo);
+        var body = Assert.IsType<BodyInformationViewModel>(
+            viewModel.BodyInformation);
+        Assert.Equal("⚑ Test 1", body.Name);
+        Assert.Equal("High metal content body", body.BodyClass);
+        Assert.Equal("123 LS", body.Distance);
+        Assert.Equal("TERRAFORMABLE · UNDISCOVERED", body.Markers);
+        Assert.EndsWith(" CR", body.ScanValue);
+        Assert.EndsWith(" CR", body.MappedValue);
+        Assert.Equal("300 K", body.Temperature);
+        Assert.Equal("1.200 g", body.Gravity);
+        Assert.True(body.IsHighGravity);
+        Assert.True(body.IsHighValue);
+        Assert.Equal("0.0100 bar", body.Pressure);
+        Assert.Equal("2 biological signals", body.BiologicalSignals);
+        Assert.Equal("1 geological signal", body.GeologicalSignals);
+        Assert.Equal("Minor silicate vapour geysers", body.Volcanism);
+        Assert.Equal("Thin carbon dioxide", body.Atmosphere);
+        Assert.Equal(2, body.AtmosphereComposition.Count);
+        Assert.Equal("Carbon Dioxide", body.AtmosphereComposition[0].Name);
+        Assert.Equal(2, body.Materials.Count);
+        Assert.True(Assert.Single(
+            body.Materials,
+            material => material.Name == "Yttrium").IsRare);
+        var ring = Assert.Single(body.Rings);
+        Assert.Equal("A", ring.Name);
+        Assert.Equal("Rocky", ring.RingClass);
+    }
+
+    [Fact]
+    public void BodyInformationPreservesLegacyVisibilityAndToggleModes()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[500,0,0]}"""),
+                Parse(BodyInformationScan),
+            ],
+            new EliteStatus
+            {
+                BodyName = "Test 1",
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 1,
+                    Name = "Test 1",
+                },
+            });
+
+        Assert.False(viewModel.ShouldShowBodyInfo);
+        Assert.True(viewModel.ToggleBodyInfoVisibility());
+        Assert.True(viewModel.IsBodyInfoForced);
+        Assert.True(viewModel.ShouldShowBodyInfo);
+        Assert.True(viewModel.ToggleBodyInfoVisibility());
+        Assert.False(viewModel.ShouldShowBodyInfo);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            GuiFocus = GuiFocus.SystemMap,
+            Destination = new StatusDestination
+            {
+                System = 42,
+                Body = 1,
+                Name = "Test 1",
+            },
+        });
+        viewModel.ShowFssInfoInSystemMap = true;
+        Assert.False(viewModel.ShouldShowBodyInfo);
+        viewModel.ShowFssInfoInSystemMap = false;
+        Assert.True(viewModel.ShouldShowBodyInfo);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            BodyName = "Test 1",
+            Flags = StatusFlags.InMainShip
+                | StatusFlags.Supercruise
+                | StatusFlags.HasLatLong,
+        });
+        Assert.True(viewModel.ShouldShowBodyInfo);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            BodyName = "Test 1",
+            Flags = StatusFlags.InMainShip
+                | StatusFlags.HasLatLong
+                | StatusFlags.HudInAnalysisMode,
+        });
+        Assert.False(viewModel.ShouldShowBodyInfo);
+        viewModel.ShowBodyInfoAtSurface = true;
+        Assert.True(viewModel.ShouldShowBodyInfo);
+    }
+
+    [Fact]
+    public void BodyInformationHonorsBubbleAndSupportsUnscannedTargets()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"Location","StarSystem":"Sol vicinity","SystemAddress":42,"StarPos":[100,0,0]}""")],
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.SystemMap,
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 9,
+                    Name = "Sol vicinity 9",
+                },
+            });
+
+        var body = Assert.IsType<BodyInformationViewModel>(
+            viewModel.BodyInformation);
+        Assert.True(body.IsScanRequired);
+        Assert.Equal("Sol vicinity 9", body.Name);
+        Assert.True(viewModel.IsWithinBodyInfoBubble);
+        Assert.False(viewModel.ShouldShowBodyInfo);
+
+        viewModel.HideBodyInfoInBubble = false;
+        Assert.True(viewModel.ShouldShowBodyInfo);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -191,6 +332,42 @@ public sealed class SystemSurveyViewModelTests : IDisposable
           "MassEM":1.2,
           "DistanceFromArrivalLS":100,
           "Landable":true,
+          "WasDiscovered":false,
+          "WasMapped":false
+        }
+        """;
+
+    private const string BodyInformationScan = """
+        {
+          "event":"Scan",
+          "ScanType":"Detailed",
+          "StarSystem":"Test",
+          "SystemAddress":42,
+          "BodyName":"Test 1",
+          "BodyID":1,
+          "DistanceFromArrivalLS":123.4,
+          "TerraformState":"Terraformable",
+          "PlanetClass":"High metal content body",
+          "Atmosphere":"thin carbon dioxide atmosphere",
+          "AtmosphereType":"CarbonDioxide",
+          "AtmosphereComposition":[
+            {"Name":"CarbonDioxide","Percent":99.0},
+            {"Name":"SulphurDioxide","Percent":1.0}
+          ],
+          "Volcanism":"minor silicate vapour geysers volcanism",
+          "MassEM":1.2,
+          "Radius":6000000,
+          "SurfaceGravity":12.0,
+          "SurfaceTemperature":300,
+          "SurfacePressure":1000,
+          "Landable":true,
+          "Materials":[
+            {"Name":"iron","Percent":20.0},
+            {"Name":"yttrium","Percent":1.0}
+          ],
+          "Rings":[
+            {"Name":"Test 1 A Ring","RingClass":"eRingClass_Rocky","InnerRad":1,"OuterRad":2}
+          ],
           "WasDiscovered":false,
           "WasMapped":false
         }

@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -9,6 +10,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 {
     private const int MaximumDisplayedFssBodies = 8;
+    private static readonly GalacticCoordinate Sol = new(0, 0, 0);
 
     private readonly SystemSurveySettingsStore settingsStore;
     private readonly SystemScanState state;
@@ -17,6 +19,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private IReadOnlyList<FssBodyRowViewModel> fssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> dssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> biologicalBodies = [];
+    private BodyInformationViewModel? bodyInformation;
     private bool autoShowBodyInfo;
     private bool showBodyInfoInSystemMap;
     private bool showBodyInfoInOrbit;
@@ -41,6 +44,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool showNonBodySignals;
     private bool forceShowFssInfo;
     private bool manuallyHideFssInfo;
+    private bool forceShowBodyInfo;
+    private bool manuallyHideBodyInfo;
     private bool fsdJumping;
     private string settingsStatus = string.Empty;
 
@@ -117,15 +122,27 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool HideBodyInfoMaterials
     {
         get => hideBodyInfoMaterials;
-        set => SetPreference(ref hideBodyInfoMaterials, value);
+        set
+        {
+            if (SetPreference(ref hideBodyInfoMaterials, value))
+            {
+                RefreshDisplay();
+            }
+        }
     }
 
     public double HighGravityWarningLevel
     {
         get => highGravityWarningLevel;
-        set => SetPreference(
-            ref highGravityWarningLevel,
-            double.IsFinite(value) ? Math.Clamp(value, 0, 50) : 1);
+        set
+        {
+            if (SetPreference(
+                    ref highGravityWarningLevel,
+                    double.IsFinite(value) ? Math.Clamp(value, 0, 50) : 1))
+            {
+                RefreshDisplay();
+            }
+        }
     }
 
     public bool AutoShowLastFssBody
@@ -285,6 +302,25 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool HasSettingsStatus => !string.IsNullOrWhiteSpace(SettingsStatus);
 
     public SystemScanSnapshot Snapshot => snapshot;
+
+    public BodyInformationViewModel? BodyInformation
+    {
+        get => bodyInformation;
+        private set
+        {
+            if (SetField(ref bodyInformation, value))
+            {
+                OnPropertyChanged(nameof(HasBodyInformation));
+            }
+        }
+    }
+
+    public bool HasBodyInformation => BodyInformation is not null;
+
+    public bool IsBodyInfoForced => forceShowBodyInfo;
+
+    public bool IsWithinBodyInfoBubble => snapshot.StarPosition is { } position
+        && position.DistanceTo(Sol) < BodyInfoBubbleSizeLy;
 
     public string SystemTitle
     {
@@ -510,6 +546,48 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         && snapshot.SystemAddress is not null
         && status?.GuiFocus == GuiFocus.Fss;
 
+    public bool ShouldShowBodyInfo
+    {
+        get
+        {
+            if (!AutoShowBodyInfo
+                || BodyInformation is null
+                || manuallyHideBodyInfo
+                || fsdJumping
+                || HideBodyInfoInBubble && IsWithinBodyInfoBubble)
+            {
+                return false;
+            }
+
+            if (forceShowBodyInfo)
+            {
+                return true;
+            }
+
+            if (status is null)
+            {
+                return false;
+            }
+
+            var inSystemMap = status.GuiFocus is GuiFocus.SystemMap
+                or GuiFocus.Orrery;
+            var inOrbit = status.HasLatitudeLongitude
+                && (status.Flags.HasFlag(StatusFlags.Supercruise)
+                    || status.GlideMode);
+            var atSurface = status.HasLatitudeLongitude
+                && !status.Flags.HasFlag(StatusFlags.Supercruise)
+                && !status.GlideMode
+                && status.HudInAnalysisMode
+                && (status.InMainShip || status.Landed || status.InSrv);
+            return status.GuiFocus == GuiFocus.Saa
+                || inSystemMap
+                    && ShowBodyInfoInSystemMap
+                    && !ShowFssInfoInSystemMap
+                || inOrbit && ShowBodyInfoInOrbit
+                || atSurface && ShowBodyInfoAtSurface;
+        }
+    }
+
     public bool ShouldShowSystemStatus
     {
         get
@@ -558,6 +636,25 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
         if (nextStatus is not null)
         {
+            if (status is not null && status.GuiFocus != nextStatus.GuiFocus)
+            {
+                manuallyHideFssInfo = false;
+                manuallyHideBodyInfo = false;
+            }
+
+            if (status is not null
+                && (!string.Equals(
+                        status.BodyName,
+                        nextStatus.BodyName,
+                        StringComparison.OrdinalIgnoreCase)
+                    || status.Destination?.System
+                        != nextStatus.Destination?.System
+                    || status.Destination?.Body
+                        != nextStatus.Destination?.Body))
+            {
+                manuallyHideBodyInfo = false;
+            }
+
             status = nextStatus;
         }
 
@@ -566,6 +663,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         {
             forceShowFssInfo = false;
             manuallyHideFssInfo = false;
+            forceShowBodyInfo = false;
+            manuallyHideBodyInfo = false;
+            OnPropertyChanged(nameof(IsBodyInfoForced));
         }
 
         RefreshDisplay();
@@ -599,8 +699,44 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         return true;
     }
 
+    public bool ToggleBodyInfoVisibility()
+    {
+        if (!AutoShowBodyInfo
+            || ResolveBodyInfoTarget(preferDestination: true) is null)
+        {
+            forceShowBodyInfo = false;
+            manuallyHideBodyInfo = false;
+            OnPropertyChanged(nameof(IsBodyInfoForced));
+            RaiseVisibilityProperties();
+            return false;
+        }
+
+        if (!ShouldShowBodyInfo)
+        {
+            manuallyHideBodyInfo = false;
+            forceShowBodyInfo = true;
+        }
+        else if (forceShowBodyInfo)
+        {
+            forceShowBodyInfo = false;
+            manuallyHideBodyInfo = true;
+        }
+        else
+        {
+            manuallyHideBodyInfo = true;
+        }
+
+        RefreshDisplay();
+        OnPropertyChanged(nameof(IsBodyInfoForced));
+        RaiseVisibilityProperties();
+        return true;
+    }
+
     private void RefreshDisplay()
     {
+        BodyInformation = CreateBodyInformation(
+            ResolveBodyInfoTarget(forceShowBodyInfo
+                || status?.GuiFocus is GuiFocus.SystemMap or GuiFocus.Orrery));
         FssBodies = snapshot.Bodies
             .Where(IsInterestingFssBody)
             .OrderByDescending(body => body.ScanSequence)
@@ -639,6 +775,276 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(BiologicalHeading));
         OnPropertyChanged(nameof(HasNonBodySignals));
         OnPropertyChanged(nameof(NonBodySignalsText));
+        OnPropertyChanged(nameof(IsWithinBodyInfoBubble));
+    }
+
+    private BodyInformationViewModel? CreateBodyInformation(
+        BodyInfoTarget? target)
+    {
+        if (target is null)
+        {
+            return null;
+        }
+
+        var body = target.Body;
+        if (body is null || body.Kind is SystemBodyKind.Unknown
+            or SystemBodyKind.Barycentre)
+        {
+            return BodyInformationViewModel.ScanRequired(
+                target.BodyId,
+                target.Name);
+        }
+
+        var planetish = body.Kind is not SystemBodyKind.Star
+            and not SystemBodyKind.Asteroid
+            and not SystemBodyKind.Ring;
+        var markers = new List<string>();
+        if (body.IsTerraformable || body.IsEarthLike)
+        {
+            markers.Add("TERRAFORMABLE");
+        }
+
+        if (!body.WasDiscovered && !body.WasMapped)
+        {
+            markers.Add("UNDISCOVERED");
+        }
+        else if (!body.WasMapped && body.IsDssComplete)
+        {
+            markers.Add("FIRST MAPPED");
+        }
+        else if (!body.WasMapped && !IsWithinBodyInfoBubble)
+        {
+            markers.Add("UNMAPPED");
+        }
+
+        var atmosphere = FormatAtmosphere(body);
+        var atmosphereComposition = body.AtmosphereComposition
+            .OrderByDescending(entry => entry.Value)
+            .Select(entry => new BodyCompositionRowViewModel(
+                FormatIdentifier(entry.Key),
+                $"{entry.Value:N2}%",
+                false))
+            .ToArray();
+        var materials = HideBodyInfoMaterials
+            ? []
+            : body.Materials
+                .OrderByDescending(entry => entry.Value)
+                .Select(entry => new BodyCompositionRowViewModel(
+                    FormatIdentifier(entry.Key),
+                    $"{entry.Value:N2}%",
+                    IsRareMaterial(entry.Key)))
+                .ToArray();
+        var rings = body.Rings
+            .Select(ring => new BodyRingRowViewModel(
+                GetRingName(body.Name, ring.Name),
+                FormatRingClass(ring.RingClass)))
+            .ToArray();
+        var gravity = body.SurfaceGravity / 10d;
+
+        return new BodyInformationViewModel(
+            body.BodyId,
+            body.WasDiscovered ? body.Name : "⚑ " + body.Name,
+            body.Kind == SystemBodyKind.Star
+                ? $"{body.StarClass ?? "Unknown"} star"
+                : body.PlanetClass ?? "Unknown body",
+            $"{body.DistanceFromArrivalLs:N0} LS",
+            string.Join(" · ", markers),
+            body.IsDssComplete
+                ? "✓ " + FormatCredits(body.CurrentScanValue)
+                : FormatCredits(body.ScanValue),
+            !body.IsDssComplete && planetish
+                ? FormatCredits(body.EstimatedMappedValue)
+                : string.Empty,
+            $"{body.SurfaceTemperature:N0} K",
+            $"{gravity:N3} g",
+            gravity >= HighGravityWarningLevel,
+            HighlightDssCandidates
+                && (body.IsDssComplete
+                    ? body.CurrentScanValue
+                    : planetish
+                        ? body.EstimatedMappedValue
+                        : body.ScanValue) > DssValueFloor,
+            body.SurfacePressure <= 0
+                ? "None"
+                : $"{body.SurfacePressure / 100_000d:N4} bar",
+            planetish,
+            FormatSignalCount(body.BiologicalSignalCount, "biological"),
+            FormatSignalCount(body.GeologicalSignalCount, "geological"),
+            planetish && body.Kind != SystemBodyKind.GasGiant
+                ? FormatVolcanism(body.Volcanism)
+                : string.Empty,
+            atmosphere,
+            atmosphereComposition,
+            materials,
+            rings,
+            false);
+    }
+
+    private BodyInfoTarget? ResolveBodyInfoTarget(bool preferDestination)
+    {
+        if (snapshot.SystemAddress is null)
+        {
+            return null;
+        }
+
+        if (preferDestination
+            && status?.Destination is { } destination
+            && destination.System == snapshot.SystemAddress)
+        {
+            var body = snapshot.Bodies.FirstOrDefault(candidate =>
+                candidate.BodyId == destination.Body);
+            var name = body?.Name
+                ?? destination.NameLocalised
+                ?? destination.Name;
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                return new BodyInfoTarget(destination.Body, name, body);
+            }
+        }
+
+        var currentBody = !string.IsNullOrWhiteSpace(status?.BodyName)
+            ? snapshot.Bodies.FirstOrDefault(candidate =>
+                string.Equals(
+                    candidate.Name,
+                    status.BodyName,
+                    StringComparison.OrdinalIgnoreCase))
+            : null;
+        currentBody ??= snapshot.CurrentBodyId is { } currentBodyId
+            ? snapshot.Bodies.FirstOrDefault(candidate =>
+                candidate.BodyId == currentBodyId)
+            : null;
+        if (currentBody is not null)
+        {
+            return new BodyInfoTarget(
+                currentBody.BodyId,
+                currentBody.Name,
+                currentBody);
+        }
+
+        if (!string.IsNullOrWhiteSpace(status?.BodyName))
+        {
+            return new BodyInfoTarget(-1, status.BodyName, null);
+        }
+
+        return !preferDestination
+            ? ResolveBodyInfoTarget(preferDestination: true)
+            : null;
+    }
+
+    private static string FormatAtmosphere(SystemScanBodySnapshot body)
+    {
+        if (string.Equals(
+                body.AtmosphereType,
+                "EarthLike",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return "Earth-like";
+        }
+
+        if (string.IsNullOrWhiteSpace(body.Atmosphere)
+            || string.Equals(
+                body.Atmosphere,
+                "No atmosphere",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return body.IsLandable ? "None" : string.Empty;
+        }
+
+        return FormatIdentifier(body.Atmosphere.Replace(
+            " atmosphere",
+            string.Empty,
+            StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string FormatVolcanism(string? volcanism)
+    {
+        return string.IsNullOrWhiteSpace(volcanism)
+            || string.Equals(
+                volcanism,
+                "No volcanism",
+                StringComparison.OrdinalIgnoreCase)
+                    ? "None"
+                    : FormatIdentifier(volcanism.Replace(
+                        " volcanism",
+                        string.Empty,
+                        StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string FormatIdentifier(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var normalized = value.Replace('_', ' ').Trim();
+        var output = new System.Text.StringBuilder(normalized.Length + 8);
+        for (var index = 0; index < normalized.Length; index++)
+        {
+            var character = normalized[index];
+            if (index > 0
+                && char.IsUpper(character)
+                && char.IsLower(normalized[index - 1]))
+            {
+                output.Append(' ');
+            }
+
+            output.Append(character);
+        }
+
+        var result = output.ToString();
+        return char.ToUpperInvariant(result[0]) + result[1..];
+    }
+
+    private static string FormatSignalCount(int count, string kind)
+    {
+        return count switch
+        {
+            <= 0 => string.Empty,
+            1 => $"1 {kind} signal",
+            _ => $"{count:N0} {kind} signals",
+        };
+    }
+
+    private static string GetRingName(string bodyName, string ringName)
+    {
+        var suffix = ringName.StartsWith(
+            bodyName,
+            StringComparison.OrdinalIgnoreCase)
+                ? ringName[bodyName.Length..].Trim()
+                : ringName;
+        return string.IsNullOrWhiteSpace(suffix)
+            ? "Ring"
+            : suffix.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
+    }
+
+    private static string FormatRingClass(string? ringClass)
+    {
+        if (string.IsNullOrWhiteSpace(ringClass))
+        {
+            return "Unknown";
+        }
+
+        return FormatIdentifier(ringClass.Replace(
+            "eRingClass_",
+            string.Empty,
+            StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsRareMaterial(string name)
+    {
+        return name.ToLowerInvariant() is "antimony"
+            or "cadmium"
+            or "mercury"
+            or "molybdenum"
+            or "niobium"
+            or "polonium"
+            or "ruthenium"
+            or "technetium"
+            or "tellurium"
+            or "tin"
+            or "tungsten"
+            or "yttrium";
     }
 
     private bool IsInterestingFssBody(SystemScanBodySnapshot body)
@@ -846,6 +1252,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         OnPropertyChanged(nameof(ShouldShowFssInfo));
         OnPropertyChanged(nameof(ShouldShowLastFssBody));
+        OnPropertyChanged(nameof(ShouldShowBodyInfo));
         OnPropertyChanged(nameof(ShouldShowSystemStatus));
     }
 
@@ -889,6 +1296,88 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
+
+public sealed record BodyInformationViewModel(
+    int BodyId,
+    string Name,
+    string BodyClass,
+    string Distance,
+    string Markers,
+    string ScanValue,
+    string MappedValue,
+    string Temperature,
+    string Gravity,
+    bool IsHighGravity,
+    bool IsHighValue,
+    string Pressure,
+    bool IsPlanet,
+    string BiologicalSignals,
+    string GeologicalSignals,
+    string Volcanism,
+    string Atmosphere,
+    IReadOnlyList<BodyCompositionRowViewModel> AtmosphereComposition,
+    IReadOnlyList<BodyCompositionRowViewModel> Materials,
+    IReadOnlyList<BodyRingRowViewModel> Rings,
+    bool IsScanRequired)
+{
+    public bool HasMarkers => !string.IsNullOrWhiteSpace(Markers);
+
+    public bool HasMappedValue => !string.IsNullOrWhiteSpace(MappedValue);
+
+    public bool HasBiologicalSignals => !string.IsNullOrWhiteSpace(
+        BiologicalSignals);
+
+    public bool HasGeologicalSignals => !string.IsNullOrWhiteSpace(
+        GeologicalSignals);
+
+    public bool HasVolcanism => !string.IsNullOrWhiteSpace(Volcanism);
+
+    public bool HasAtmosphere => !string.IsNullOrWhiteSpace(Atmosphere);
+
+    public bool HasAtmosphereComposition => AtmosphereComposition.Count > 0;
+
+    public bool HasMaterials => Materials.Count > 0;
+
+    public bool HasRings => Rings.Count > 0;
+
+    public static BodyInformationViewModel ScanRequired(int bodyId, string name)
+    {
+        return new BodyInformationViewModel(
+            bodyId,
+            name,
+            "Detailed scan required",
+            string.Empty,
+            string.Empty,
+            "—",
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            false,
+            false,
+            string.Empty,
+            false,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            [],
+            [],
+            [],
+            true);
+    }
+}
+
+public sealed record BodyCompositionRowViewModel(
+    string Name,
+    string Value,
+    bool IsRare);
+
+public sealed record BodyRingRowViewModel(string Name, string RingClass);
+
+internal sealed record BodyInfoTarget(
+    int BodyId,
+    string Name,
+    SystemScanBodySnapshot? Body);
 
 public sealed record FssBodyRowViewModel(
     string Name,
