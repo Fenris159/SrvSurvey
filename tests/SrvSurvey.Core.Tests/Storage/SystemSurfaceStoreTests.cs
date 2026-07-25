@@ -93,6 +93,58 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task DeathMarksEveryMatchingSampleAcrossExistingSystemFiles()
+    {
+        var path = CreateSystemPath();
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "name": "Test System",
+              "address": 42,
+              "futureSystem": true,
+              "bodies": [
+                {
+                  "name": "Test System 1 a",
+                  "id": 7,
+                  "bioScans": [
+                    {"location":{"lat":1,"long":2},"radius":150,"species":"one","status":"Complete","entryId":123},
+                    {"location":{"lat":2,"long":3},"radius":150,"species":"one","status":"Complete","entryId":123},
+                    {"location":{"lat":3,"long":4},"radius":150,"species":"one","status":"Complete","entryId":123},
+                    {"location":{"lat":4,"long":5},"radius":150,"species":"two","status":"Abandoned","entryId":456}
+                  ]
+                }
+              ]
+            }
+            """);
+        var store = new SystemSurfaceStore(temporaryDirectory);
+
+        var result = await store.MarkBioScansDiedAsync(
+            "F123",
+            ["42_7_123_7252500_False", "42_7_456_1_False", "invalid"]);
+
+        Assert.Equal(3, result.MarkedScanCount);
+        Assert.Equal(1, result.ChangedFileCount);
+        Assert.Single(result.Warnings);
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.True(root["futureSystem"]!.GetValue<bool>());
+        var scans = root["bodies"]![0]!["bioScans"]!.AsArray();
+        Assert.Equal(
+            ["Died", "Died", "Died", "Abandoned"],
+            scans.Select(scan => scan!["status"]!.GetValue<string>()));
+
+        var missing = await store.MarkBioScansDiedAsync(
+            "F123",
+            ["99_1_123_1_False"]);
+        Assert.Equal(0, missing.MarkedScanCount);
+        Assert.Equal(0, missing.ChangedFileCount);
+        Assert.DoesNotContain(
+            Directory.EnumerateFiles(
+                Path.Combine(temporaryDirectory, "systems", "F123")),
+            file => Path.GetFileName(file).EndsWith("_99.json"));
+    }
+
+    [Fact]
     public async Task MutationsPreserveNotesUnknownFieldsAndExistingBodyData()
     {
         var path = CreateSystemPath();

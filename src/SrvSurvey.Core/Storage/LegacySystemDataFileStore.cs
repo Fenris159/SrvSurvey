@@ -88,6 +88,63 @@ internal sealed class LegacySystemDataFileStore
         }
     }
 
+    public async Task<LegacySystemDataFileUpdateResult> UpdateExistingAsync(
+        LegacySystemDataFileContext context,
+        Func<JsonObject, bool> update,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateContext(context);
+        ArgumentNullException.ThrowIfNull(update);
+        var path = FindSystemPath(context)
+            ?? GetNewSystemPath(context);
+        var updateLock = UpdateLocks.GetOrAdd(
+            Path.GetFullPath(path),
+            static _ => new SemaphoreSlim(1, 1));
+        await updateLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (!File.Exists(path))
+            {
+                return new LegacySystemDataFileUpdateResult(
+                    path,
+                    false,
+                    false,
+                    null);
+            }
+
+            var readResult = await ReadObjectAsync(path, cancellationToken)
+                .ConfigureAwait(false);
+            if (readResult.Root is null)
+            {
+                return new LegacySystemDataFileUpdateResult(
+                    path,
+                    true,
+                    false,
+                    readResult.Error);
+            }
+
+            var changed = update(readResult.Root);
+            if (changed)
+            {
+                await WriteObjectAsync(
+                        path,
+                        readResult.Root,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            return new LegacySystemDataFileUpdateResult(
+                path,
+                true,
+                changed,
+                null);
+        }
+        finally
+        {
+            updateLock.Release();
+        }
+    }
+
     public static string MakeSafeFileName(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -275,4 +332,10 @@ internal sealed record LegacySystemDataFileLoadResult(
     string Path,
     bool Exists,
     JsonObject? Root,
+    string? Error);
+
+internal sealed record LegacySystemDataFileUpdateResult(
+    string Path,
+    bool Exists,
+    bool Changed,
     string? Error);

@@ -274,6 +274,158 @@ public sealed class SystemSurfaceStore
             .ConfigureAwait(false);
     }
 
+    public async Task<SurfaceDeathMarkResult> MarkBioScansDiedAsync(
+        string frontierId,
+        IReadOnlyList<string> scannedBioEntryIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
+        ArgumentNullException.ThrowIfNull(scannedBioEntryIds);
+        var warnings = new List<string>();
+        var claims = new HashSet<SurfaceBioScanClaim>();
+        foreach (var value in scannedBioEntryIds)
+        {
+            if (TryParseBioScanClaim(value, out var claim))
+            {
+                claims.Add(claim);
+            }
+            else
+            {
+                warnings.Add(
+                    $"Unclaimed biological scan ID '{value}' is malformed and "
+                        + "was not applied to surface history.");
+            }
+        }
+
+        var markedScanCount = 0;
+        var changedFileCount = 0;
+        foreach (var systemGroup in claims.GroupBy(claim => claim.SystemAddress))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var systemAddress = systemGroup.Key;
+            var claimsByBody = systemGroup
+                .GroupBy(claim => claim.BodyId)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Select(claim => claim.EntryId).ToHashSet());
+            var fileContext = new LegacySystemDataFileContext(
+                frontierId,
+                null,
+                systemAddress.ToString(CultureInfo.InvariantCulture),
+                systemAddress,
+                null);
+            var result = await fileStore.UpdateExistingAsync(
+                    fileContext,
+                    root =>
+                    {
+                        var marked = MarkSystemBioScansDied(
+                            root,
+                            claimsByBody);
+                        markedScanCount += marked;
+                        return marked > 0;
+                    },
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(result.Error))
+            {
+                warnings.Add(result.Error);
+            }
+
+            if (result.Changed)
+            {
+                changedFileCount++;
+            }
+        }
+
+        return new SurfaceDeathMarkResult(
+            markedScanCount,
+            changedFileCount,
+            warnings);
+    }
+
+    private static int MarkSystemBioScansDied(
+        JsonObject root,
+        IReadOnlyDictionary<int, HashSet<long>> claimsByBody)
+    {
+        if (root["bodies"] is not JsonArray bodies)
+        {
+            return 0;
+        }
+
+        var markedScanCount = 0;
+        foreach (var body in bodies.OfType<JsonObject>())
+        {
+            if (GetInt32(body["id"]) is not { } bodyId
+                || !claimsByBody.TryGetValue(bodyId, out var entryIds)
+                || body["bioScans"] is not JsonArray scans)
+            {
+                continue;
+            }
+
+            foreach (var scan in scans.OfType<JsonObject>())
+            {
+                if (GetInt64(scan["entryId"]) is not { } entryId
+                    || !entryIds.Contains(entryId)
+                    || string.Equals(
+                        GetString(scan["status"]),
+                        "Abandoned",
+                        StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(
+                        GetString(scan["status"]),
+                        "Died",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                scan["status"] = "Died";
+                markedScanCount++;
+            }
+        }
+
+        return markedScanCount;
+    }
+
+    private static bool TryParseBioScanClaim(
+        string value,
+        out SurfaceBioScanClaim claim)
+    {
+        claim = default;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var parts = value.Split(
+            '_',
+            StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 5
+            || !long.TryParse(
+                parts[0],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var systemAddress)
+            || !int.TryParse(
+                parts[1],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var bodyId)
+            || !long.TryParse(
+                parts[2],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var entryId)
+            || systemAddress <= 0
+            || bodyId < 0
+            || entryId <= 0)
+        {
+            return false;
+        }
+
+        claim = new SurfaceBioScanClaim(systemAddress, bodyId, entryId);
+        return true;
+    }
+
     private static SystemSurfaceBodySnapshot ReadSnapshot(
         JsonObject body,
         SystemSurfaceContext context,
@@ -673,6 +825,11 @@ public sealed class SystemSurfaceStore
             throw new ArgumentOutOfRangeException(nameof(context));
         }
     }
+
+    private readonly record struct SurfaceBioScanClaim(
+        long SystemAddress,
+        int BodyId,
+        long EntryId);
 }
 
 public sealed record SystemSurfaceContext(
@@ -716,6 +873,11 @@ public sealed record SystemSurfaceLoadResult(
 public sealed record SurfaceBookmarkMutationResult(
     string Path,
     SurfaceBookmarkMutation Mutation);
+
+public sealed record SurfaceDeathMarkResult(
+    int MarkedScanCount,
+    int ChangedFileCount,
+    IReadOnlyList<string> Warnings);
 
 public enum SurfaceBookmarkMutation
 {
