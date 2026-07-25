@@ -85,7 +85,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         ColonizationViewModel? colonization = null,
         INearestSystemsClient? nearestSystemsClient = null,
         ISystemSummaryClient? systemSummaryClient = null,
-        JumpInfoSettingsStore? jumpInfoSettingsStore = null)
+        JumpInfoSettingsStore? jumpInfoSettingsStore = null,
+        SystemSurveySettingsStore? systemSurveySettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -146,6 +147,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             systemSummaryClient ?? new SystemSummaryClient(),
             jumpInfoSettingsStore
                 ?? new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath));
+        SystemSurvey = new SystemSurveyViewModel(
+            systemSurveySettingsStore
+                ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath));
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,
@@ -238,6 +242,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public RouteWorkspaceViewModel Route { get; }
 
     public JumpInfoViewModel JumpInfo { get; }
+
+    public SystemSurveyViewModel SystemSurvey { get; }
 
     public SphereLimitViewModel Search { get; }
 
@@ -855,6 +861,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             update.Status,
             Route.CreateSnapshot(),
             update.IsBootstrapRead);
+        SystemSurvey.ApplyUpdate(update.JournalEvents, update.Status);
 
         foreach (var journalEvent in update.JournalEvents)
         {

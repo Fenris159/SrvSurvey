@@ -140,6 +140,10 @@ public sealed class MainWindowViewModelTests
             Assert.Equal("10477373803", viewModel.SystemNotes.SystemAddress);
             Assert.True(viewModel.Route.HasProfile);
             Assert.Equal("Sol", viewModel.Route.CurrentSystem);
+            Assert.Equal("Sol", viewModel.SystemSurvey.Snapshot.SystemName);
+            Assert.Equal(
+                10477373803,
+                viewModel.SystemSurvey.Snapshot.SystemAddress);
         }
         finally
         {

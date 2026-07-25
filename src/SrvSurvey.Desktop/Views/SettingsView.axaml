@@ -137,6 +137,82 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card raised">
+        <StackPanel Spacing="16">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="System survey overlays" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Configure the FSS body feed and compact system-completion overlay. These preserve the original survey thresholds while using the active Raven theme." />
+          </StackPanel>
+
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="12">
+              <TextBlock Classes="eyebrow" Text="FSS BODY FEED" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoShowFssInfo, Mode=TwoWay}"
+                        Content="Show automatically in FSS" />
+              <CheckBox IsChecked="{Binding SystemSurvey.ShowFssInfoInSystemMap, Mode=TwoWay}"
+                        Content="Also show in the system map" />
+              <CheckBox IsChecked="{Binding SystemSurvey.ShowFssInfoInNavigationPanel, Mode=TwoWay}"
+                        Content="Also show in the navigation panel" />
+              <CheckBox IsChecked="{Binding SystemSurvey.HideGeoCount, Mode=TwoWay}"
+                        Content="Hide geological signal counts" />
+              <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center"
+                           Text="Minimum displayed body value" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="0"
+                               Maximum="100000000"
+                               Increment="1000"
+                               FormatString="N0"
+                               Value="{Binding SystemSurvey.FssBodyValueFloor, Mode=TwoWay}" />
+              </Grid>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="12">
+              <TextBlock Classes="eyebrow" Text="SURVEY STATUS" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoShowSystemStatus, Mode=TwoWay}"
+                        Content="Show system completion status" />
+              <CheckBox IsChecked="{Binding SystemSurvey.HighlightDssCandidates, Mode=TwoWay}"
+                        Content="Skip and highlight by DSS value" />
+              <CheckBox IsChecked="{Binding SystemSurvey.SkipGasGiantsForDss, Mode=TwoWay}"
+                        Content="Skip gas giants for DSS" />
+              <CheckBox IsChecked="{Binding SystemSurvey.SkipRingsForDss, Mode=TwoWay}"
+                        Content="Skip rings for DSS" />
+              <CheckBox IsChecked="{Binding SystemSurvey.SkipDistantDssCandidates, Mode=TwoWay}"
+                        Content="Skip distant DSS candidates" />
+              <CheckBox IsChecked="{Binding SystemSurvey.ShowNonBodySignals, Mode=TwoWay}"
+                        Content="Show non-body signal count" />
+              <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center"
+                           Text="Minimum DSS value" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="0"
+                               Maximum="100000000"
+                               Increment="10000"
+                               FormatString="N0"
+                               Value="{Binding SystemSurvey.DssValueFloor, Mode=TwoWay}" />
+              </Grid>
+              <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center"
+                           Text="DSS distance limit (LS)" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="0"
+                               Maximum="10000000"
+                               Increment="1000"
+                               FormatString="N0"
+                               Value="{Binding SystemSurvey.DssDistanceLimitLs, Mode=TwoWay}" />
+              </Grid>
+            </StackPanel>
+          </Grid>
+
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="{Binding SystemSurvey.HasSettingsStatus}"
+                     TextWrapping="Wrap"
+                     Text="{Binding SystemSurvey.SettingsStatus}" />
+        </StackPanel>
+      </Border>
+
       <Separator />
 
       <StackPanel Spacing="5">
