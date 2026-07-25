@@ -84,6 +84,113 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         Assert.Null(layout.GetOpacity("PlotJumpInfo"));
     }
 
+    [Fact]
+    public void SaveIsAtomicBackedUpAndPreservesUnknownEntriesAndVrCalibration()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        const string original =
+            "{\"FutureOverlay\":\"right:99,bottom:77\","
+            + "\"PlotBodyInfo\":\"left:8,top:12,0.75 "
+            + "{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}\"}";
+        File.WriteAllText(path, original);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+
+        var result = store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotBodyInfo"] = new(
+                    LegacyHorizontalAnchor.Screen,
+                    -120,
+                    LegacyVerticalAnchor.Middle,
+                    45,
+                    0),
+            });
+
+        Assert.Equal(path, result.Path);
+        Assert.Equal(1, result.UpdatedPlacementCount);
+        Assert.NotNull(result.BackupPath);
+        Assert.Equal(original, File.ReadAllText(result.BackupPath!));
+        var savedText = File.ReadAllText(path);
+        Assert.Contains("screen:-120, middle:45, 0", savedText);
+        Assert.Contains(
+            "{ s: 10, p: <1, 2, 3>, r: <4, 5, 6>}",
+            savedText);
+
+        var layout = store.Load();
+        Assert.Null(layout.Error);
+        Assert.Equal(
+            new LegacyOverlayPlacement(
+                LegacyHorizontalAnchor.Right,
+                99,
+                LegacyVerticalAnchor.Bottom,
+                77,
+                null),
+            layout.Placements["FutureOverlay"]);
+        Assert.Equal(
+            new LegacyOverlayPlacement(
+                LegacyHorizontalAnchor.Screen,
+                -120,
+                LegacyVerticalAnchor.Middle,
+                45,
+                0),
+            layout.Placements["PlotBodyInfo"]);
+    }
+
+    [Fact]
+    public void SaveRefusesMalformedInputWithoutChangingIt()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        const string original = "{\"PlotBodyInfo\":\"diagonal:8,top:8\"}";
+        File.WriteAllText(path, original);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+
+        var exception = Assert.Throws<InvalidDataException>(() => store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotBodyInfo"] = new(
+                    LegacyHorizontalAnchor.Left,
+                    8,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    null),
+            }));
+
+        Assert.Contains("unknown horizontal anchor", exception.Message);
+        Assert.Equal(original, File.ReadAllText(path));
+        Assert.False(Directory.Exists(Path.Combine(
+            temporaryDirectory,
+            "overlay-layout-backups")));
+    }
+
+    [Fact]
+    public void SaveCreatesNewLayoutWhenNoLegacyFileExists()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+
+        var result = store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = new(
+                    LegacyHorizontalAnchor.Center,
+                    0,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    null),
+            });
+
+        Assert.Null(result.BackupPath);
+        Assert.Equal(
+            new LegacyOverlayPlacement(
+                LegacyHorizontalAnchor.Center,
+                0,
+                LegacyVerticalAnchor.Top,
+                8,
+                null),
+            store.Load().Placements["PlotJumpInfo"]);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

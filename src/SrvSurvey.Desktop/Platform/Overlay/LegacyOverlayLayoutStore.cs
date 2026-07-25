@@ -1,4 +1,7 @@
+using System.Collections.Concurrent;
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Avalonia;
@@ -7,20 +10,52 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class LegacyOverlayLayoutStore
 {
+    private static readonly ConcurrentDictionary<string, object> FileLocks = new(
+        OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal);
     private readonly string dataDirectory;
+    private readonly string plottersPath;
+    private readonly object fileLock;
 
     public LegacyOverlayLayoutStore(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         this.dataDirectory = Path.GetFullPath(dataDirectory);
+        plottersPath = Path.Combine(this.dataDirectory, "plotters.json");
+        fileLock = FileLocks.GetOrAdd(plottersPath, _ => new object());
     }
 
     public LegacyOverlayLayout Load()
     {
+        lock (fileLock)
+        {
+            return LoadCore();
+        }
+    }
+
+    public LegacyOverlayLayoutSaveResult Save(
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
+    {
+        ArgumentNullException.ThrowIfNull(placements);
+        if (placements.Count == 0)
+        {
+            throw new ArgumentException(
+                "At least one overlay placement is required.",
+                nameof(placements));
+        }
+
+        lock (fileLock)
+        {
+            return SaveCore(placements);
+        }
+    }
+
+    private LegacyOverlayLayout LoadCore()
+    {
         var positions = new Dictionary<string, LegacyOverlayPlacement>(
             StringComparer.Ordinal);
         var errors = new List<string>();
-        var plottersPath = Path.Combine(dataDirectory, "plotters.json");
         if (File.Exists(plottersPath))
         {
             try
@@ -58,6 +93,165 @@ public sealed class LegacyOverlayLayoutStore
             positions,
             defaultOpacity,
             errors.Count == 0 ? null : string.Join(" ", errors));
+    }
+
+    private LegacyOverlayLayoutSaveResult SaveCore(
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
+    {
+        var root = File.Exists(plottersPath)
+            ? ParseObject(plottersPath)
+            : [];
+
+        ValidateExistingPlacements(root);
+        foreach (var entry in placements)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(entry.Key);
+            ArgumentNullException.ThrowIfNull(entry.Value);
+            ValidatePlacement(entry.Key, entry.Value);
+
+            var suffix = GetVrSuffix(root[entry.Key]);
+            root[entry.Key] = FormatPlacement(entry.Value) + suffix;
+        }
+
+        Directory.CreateDirectory(dataDirectory);
+        var backupPath = File.Exists(plottersPath)
+            ? CreateVerifiedBackup()
+            : null;
+        var temporaryPath = $"{plottersPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            using (var stream = new FileStream(
+                       temporaryPath,
+                       FileMode.CreateNew,
+                       FileAccess.Write,
+                       FileShare.None))
+            using (var writer = new Utf8JsonWriter(
+                       stream,
+                       new JsonWriterOptions
+                       {
+                           Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                           Indented = true,
+                       }))
+            {
+                root.WriteTo(writer);
+            }
+
+            var verified = ParseObject(temporaryPath);
+            ValidateExistingPlacements(verified);
+            foreach (var entry in placements)
+            {
+                if (verified[entry.Key] is not JsonValue value
+                    || !value.TryGetValue<string>(out var text)
+                    || ParsePlacement(entry.Key, text) != entry.Value)
+                {
+                    throw new InvalidDataException(
+                        $"Overlay position '{entry.Key}' could not be verified before saving.");
+                }
+            }
+
+            File.Move(temporaryPath, plottersPath, true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+
+        return new LegacyOverlayLayoutSaveResult(
+            plottersPath,
+            backupPath,
+            placements.Count);
+    }
+
+    private string CreateVerifiedBackup()
+    {
+        var backupDirectory = Path.Combine(
+            dataDirectory,
+            "overlay-layout-backups");
+        Directory.CreateDirectory(backupDirectory);
+        var backupPath = Path.Combine(
+            backupDirectory,
+            $"plotters-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffffffZ}-{Guid.NewGuid():N}.json");
+        File.Copy(plottersPath, backupPath, false);
+
+        if (!CryptographicOperations.FixedTimeEquals(
+                SHA256.HashData(File.ReadAllBytes(plottersPath)),
+                SHA256.HashData(File.ReadAllBytes(backupPath))))
+        {
+            File.Delete(backupPath);
+            throw new IOException(
+                "The overlay layout backup did not match its source.");
+        }
+
+        return backupPath;
+    }
+
+    private static void ValidateExistingPlacements(JsonObject root)
+    {
+        foreach (var entry in root)
+        {
+            if (entry.Value is not JsonValue value
+                || !value.TryGetValue<string>(out var text))
+            {
+                throw new InvalidDataException(
+                    $"Overlay position '{entry.Key}' must be a string.");
+            }
+
+            _ = ParsePlacement(entry.Key, text);
+        }
+    }
+
+    private static string GetVrSuffix(JsonNode? node)
+    {
+        if (node is not JsonValue value
+            || !value.TryGetValue<string>(out var text))
+        {
+            return string.Empty;
+        }
+
+        var start = text.IndexOf('{');
+        return start >= 0 ? " " + text[start..].TrimStart() : string.Empty;
+    }
+
+    private static string FormatPlacement(LegacyOverlayPlacement placement)
+    {
+        var horizontal = placement.Horizontal switch
+        {
+            LegacyHorizontalAnchor.Left => "left",
+            LegacyHorizontalAnchor.Center => "center",
+            LegacyHorizontalAnchor.Right => "right",
+            _ => "screen",
+        };
+        var vertical = placement.Vertical switch
+        {
+            LegacyVerticalAnchor.Top => "top",
+            LegacyVerticalAnchor.Middle => "middle",
+            LegacyVerticalAnchor.Bottom => "bottom",
+            _ => "screen",
+        };
+        var opacity = placement.Opacity is null
+            ? string.Empty
+            : ", " + placement.Opacity.Value.ToString(
+                "0.################",
+                CultureInfo.InvariantCulture);
+        return $"{horizontal}:{placement.HorizontalOffset}, "
+            + $"{vertical}:{placement.VerticalOffset}{opacity}";
+    }
+
+    private static void ValidatePlacement(
+        string name,
+        LegacyOverlayPlacement placement)
+    {
+        if (placement.Opacity is not null
+            && (!double.IsFinite(placement.Opacity.Value)
+                || placement.Opacity.Value is < 0 or > 1))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(placement),
+                $"Overlay position '{name}' opacity must be from 0 to 1.");
+        }
     }
 
     private double? LoadDefaultOpacity(ICollection<string> errors)
@@ -263,6 +457,11 @@ public sealed record LegacyOverlayPlacement(
     LegacyVerticalAnchor Vertical,
     int VerticalOffset,
     double? Opacity);
+
+public sealed record LegacyOverlayLayoutSaveResult(
+    string Path,
+    string? BackupPath,
+    int UpdatedPlacementCount);
 
 public enum LegacyHorizontalAnchor
 {
