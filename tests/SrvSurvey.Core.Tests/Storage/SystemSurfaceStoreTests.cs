@@ -263,6 +263,32 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task QuickTrackerToggleRemovesTheExistingNamedGroup()
+    {
+        var store = new SystemSurfaceStore(temporaryDirectory);
+
+        var added = await store.ToggleBookmarkGroupAsync(
+            Context(),
+            "#1",
+            new SurfaceCoordinate(1, 2));
+        var loaded = await store.LoadBodyAsync(Context());
+
+        Assert.Equal(SurfaceBookmarkMutation.Added, added.Mutation);
+        Assert.Equal(
+            new SurfaceCoordinate(1, 2),
+            Assert.Single(loaded.Snapshot!.Bookmarks["#1"]));
+
+        var removed = await store.ToggleBookmarkGroupAsync(
+            Context(),
+            "#1",
+            new SurfaceCoordinate(3, 4));
+        loaded = await store.LoadBodyAsync(Context());
+
+        Assert.Equal(SurfaceBookmarkMutation.Removed, removed.Mutation);
+        Assert.Empty(loaded.Snapshot!.Bookmarks);
+    }
+
+    [Fact]
     public async Task NoteAndSurfaceStoresSerializeUpdatesToTheSameFile()
     {
         var noteStore = new SystemNoteStore(temporaryDirectory);

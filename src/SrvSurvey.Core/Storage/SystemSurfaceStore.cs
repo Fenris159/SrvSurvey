@@ -160,6 +160,41 @@ public sealed class SystemSurfaceStore
             .ConfigureAwait(false);
     }
 
+    public async Task<SurfaceBookmarkMutationResult> ToggleBookmarkGroupAsync(
+        SystemSurfaceContext context,
+        string name,
+        SurfaceCoordinate location,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateContext(context);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        var outcome = SurfaceBookmarkMutation.Added;
+        var path = await fileStore.UpdateAsync(
+                ToFileContext(context),
+                root =>
+                {
+                    var body = GetOrCreateBody(root, context);
+                    if (body["bookmarks"] is JsonObject existing
+                        && existing.ContainsKey(name))
+                    {
+                        existing.Remove(name);
+                        if (existing.Count == 0)
+                        {
+                            body.Remove("bookmarks");
+                        }
+
+                        outcome = SurfaceBookmarkMutation.Removed;
+                        return;
+                    }
+
+                    var bookmarks = GetOrCreateObject(body, "bookmarks");
+                    bookmarks[name] = new JsonArray(WriteCoordinate(location));
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
+        return new SurfaceBookmarkMutationResult(path, outcome);
+    }
+
     public async Task<SurfaceBookmarkMutationResult> RemoveBookmarkAsync(
         SystemSurfaceContext context,
         string name,
