@@ -32,6 +32,7 @@ public sealed partial class App : Application
     private BiologyCodexWindowCoordinator? biologyCodexWindowCoordinator;
     private BiologyCodexBingoWindowCoordinator?
         biologyCodexBingoWindowCoordinator;
+    private ErrorReportWindowCoordinator? errorReportWindowCoordinator;
     private GlobalKeyboardHookService? globalKeyboardHookService;
     private GlobalControllerInputService? globalControllerInputService;
 
@@ -66,6 +67,35 @@ public sealed partial class App : Application
                 applicationLogService: applicationLog);
             var mainWindow = new MainWindow(viewModel);
             desktop.MainWindow = mainWindow;
+            var errorReports = new ErrorReportWindowCoordinator(
+                mainWindow,
+                applicationLog,
+                () => viewModel.CurrentJournalPath,
+                () =>
+                {
+                    viewModel.ShowDiagnostics();
+                    mainWindow.Activate();
+                });
+            errorReportWindowCoordinator = errorReports;
+            void HandleUiException(
+                object? sender,
+                DispatcherUnhandledExceptionEventArgs eventArgs)
+            {
+                errorReports.Show(eventArgs.Exception);
+                eventArgs.Handled = true;
+            }
+
+            void HandleUnobservedTaskException(
+                object? sender,
+                UnobservedTaskExceptionEventArgs eventArgs)
+            {
+                errorReports.Show(eventArgs.Exception);
+                eventArgs.SetObserved();
+            }
+
+            Dispatcher.UIThread.UnhandledException += HandleUiException;
+            TaskScheduler.UnobservedTaskException +=
+                HandleUnobservedTaskException;
             systemNotesWindowCoordinator = new SystemNotesWindowCoordinator(
                 viewModel.SystemNotes,
                 mainWindow);
@@ -353,7 +383,12 @@ public sealed partial class App : Application
             globalControllerInputService.Start();
             desktop.Exit += (_, _) =>
             {
+                Dispatcher.UIThread.UnhandledException -= HandleUiException;
+                TaskScheduler.UnobservedTaskException -=
+                    HandleUnobservedTaskException;
                 applicationLog.Append("Application exit");
+                errorReportWindowCoordinator?.Dispose();
+                errorReportWindowCoordinator = null;
                 viewModel.DiagnosticsLog.Dispose();
                 viewModel.JumpInfo.Dispose();
                 globalControllerInputService?.Dispose();

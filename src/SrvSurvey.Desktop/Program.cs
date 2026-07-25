@@ -17,14 +17,24 @@ internal static class Program
     {
         StartupArguments = args;
         var appDataPaths = AppDataPaths.ResolveCurrent();
-        ApplicationLog = new ApplicationLogService(appDataPaths.DataDirectory);
-        ApplicationLog.Append(
+        var applicationLog = new ApplicationLogService(appDataPaths.DataDirectory);
+        ApplicationLog = applicationLog;
+        applicationLog.Append(
             $"SrvSurvey {typeof(Program).Assembly.GetName().Version}");
-        ApplicationLog.Append($"New log path: {ApplicationLog.CurrentLogPath}");
-        ApplicationLog.Append($"Data folder: {appDataPaths.DataDirectory}");
-        ApplicationLog.Append(
+        applicationLog.Append($"New log path: {applicationLog.CurrentLogPath}");
+        applicationLog.Append($"Data folder: {appDataPaths.DataDirectory}");
+        applicationLog.Append(
             $"Platform: {Environment.OSVersion.Platform} ({Environment.OSVersion.VersionString})");
-        using var traceListener = new ApplicationLogTraceListener(ApplicationLog);
+        using var traceListener = new ApplicationLogTraceListener(applicationLog);
+        void HandleUnhandledException(
+            object sender,
+            UnhandledExceptionEventArgs eventArgs)
+        {
+            applicationLog.Append(
+                "Unhandled process exception: " + eventArgs.ExceptionObject);
+        }
+
+        AppDomain.CurrentDomain.UnhandledException += HandleUnhandledException;
         Trace.Listeners.Add(traceListener);
         try
         {
@@ -32,11 +42,12 @@ internal static class Program
         }
         catch (Exception exception)
         {
-            ApplicationLog.Append("Fatal application error: " + exception);
+            applicationLog.Append("Fatal application error: " + exception);
             throw;
         }
         finally
         {
+            AppDomain.CurrentDomain.UnhandledException -= HandleUnhandledException;
             Trace.Listeners.Remove(traceListener);
             traceListener.Flush();
         }

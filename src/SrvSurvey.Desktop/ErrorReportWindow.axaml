@@ -1,0 +1,127 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.ErrorReportWindow"
+        x:DataType="vm:ErrorReportViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="760"
+        d:DesignHeight="720"
+        Width="760"
+        Height="720"
+        MinWidth="620"
+        MinHeight="600"
+        WindowStartupLocation="CenterOwner"
+        Title="Report an error - SrvSurvey">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Border Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="24,18">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="eyebrow" Text="ERROR REPORT" />
+        <TextBlock Classes="page-title" FontSize="24" Text="SrvSurvey hit a problem" />
+        <TextBlock Classes="muted"
+                   Text="Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord."
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="24" Spacing="18">
+        <Border Classes="card raised">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="card-title"
+                       Foreground="{DynamicResource RavenDangerBrush}"
+                       Text="{Binding ErrorTitle}"
+                       TextWrapping="Wrap" />
+            <TextBox MinHeight="150"
+                     MaxHeight="230"
+                     AcceptsReturn="True"
+                     IsReadOnly="True"
+                     TextWrapping="NoWrap"
+                     FontFamily="Consolas, Menlo, monospace"
+                     FontSize="11"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     Text="{Binding ErrorDetails, Mode=OneWay}" />
+            <Button Classes="secondary"
+                    HorizontalAlignment="Left"
+                    Click="CopyError_Click"
+                    Content="Copy error details" />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="card-title" Text="What happened just before?" />
+            <TextBlock Classes="muted"
+                       Text="Add the steps or game activity that led to this error."
+                       TextWrapping="Wrap" />
+            <TextBox MinHeight="120"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     Text="{Binding Steps, Mode=TwoWay}" />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="card-title" Text="Supporting data" />
+            <TextBlock Classes="muted"
+                       Text="{Binding JournalDescription}"
+                       TextWrapping="Wrap" />
+            <WrapPanel Orientation="Horizontal">
+              <Button Classes="secondary"
+                      Margin="0,0,8,8"
+                      IsVisible="{Binding HasJournal}"
+                      Click="OpenJournal_Click"
+                      Content="Open journal" />
+              <Button Classes="secondary"
+                      Margin="0,0,8,8"
+                      IsVisible="{Binding HasJournal}"
+                      Click="CopyJournalPath_Click"
+                      Content="Copy journal path" />
+              <Button Classes="secondary"
+                      Margin="0,0,8,8"
+                      IsEnabled="{Binding HasRecentLogs}"
+                      Click="CopyRecentLogs_Click"
+                      Content="Copy recent logs" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,8"
+                      Click="ViewLogs_Click"
+                      Content="View all logs" />
+            </WrapPanel>
+          </StackPanel>
+        </Border>
+
+        <TextBlock Classes="muted"
+                   IsVisible="{Binding HasStatusMessage}"
+                   Text="{Binding StatusMessage}"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border Grid.Row="2"
+            Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="24,14">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+        <Button Classes="secondary"
+                Click="OpenDiscord_Click"
+                Content="Discord" />
+        <Button Grid.Column="2"
+                Classes="primary"
+                Click="CreateIssue_Click"
+                Content="Create issue on GitHub" />
+        <Button Grid.Column="3"
+                Classes="secondary"
+                Click="Close_Click"
+                Content="Close" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

@@ -384,6 +384,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     public string JournalFolderPath { get; }
 
+    public string? CurrentJournalPath => journalMonitor?.CurrentJournalPath;
+
     public string CandidatePaths { get; }
 
     public ICommand RefreshCommand { get; }
@@ -440,6 +442,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public string PendingPageDescription => SelectedNavigation.Description;
 
     public string PendingPageGlyph => SelectedNavigation.Glyph;
+
+    public void ShowDiagnostics()
+    {
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == "diagnostics");
+    }
 
     public async Task OpenCodexBingoNearestSearchAsync(
         CodexBingoNearestRequest request)
