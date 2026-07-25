@@ -34,6 +34,115 @@
       </Border>
 
       <Border Classes="card">
+        <StackPanel Spacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Journal inspector" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Inspect the newest 120 events and select scalar fields to generate a Lua quest handler." />
+          </StackPanel>
+
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <TextBox MinHeight="110"
+                     MaxHeight="180"
+                     AcceptsReturn="True"
+                     IsReadOnly="True"
+                     TextWrapping="NoWrap"
+                     FontFamily="Consolas, Menlo, monospace"
+                     FontSize="11"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     Text="{Binding JournalInspector.StatusText}" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    VerticalAlignment="Top"
+                    Command="{Binding JournalInspector.CopyCoordinatesCommand}"
+                    Content="Copy coordinates" />
+          </Grid>
+
+          <Grid ColumnDefinitions="300,*" ColumnSpacing="14">
+            <ListBox MinHeight="280"
+                     MaxHeight="400"
+                     ItemsSource="{Binding JournalInspector.Events}"
+                     SelectedItem="{Binding JournalInspector.SelectedEvent, Mode=TwoWay}">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:JournalInspectorEventViewModel">
+                  <StackPanel Margin="4" Spacing="2">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding EventName}" />
+                    <TextBlock Classes="monospace muted"
+                               FontSize="10"
+                               Text="{Binding Timestamp}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Grid Grid.Column="1" RowDefinitions="*,Auto" RowSpacing="10">
+              <ScrollViewer MinHeight="280"
+                            MaxHeight="400"
+                            HorizontalScrollBarVisibility="Auto"
+                            VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding JournalInspector.Properties}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:JournalInspectorPropertyViewModel">
+                      <Grid Margin="{Binding Indent}"
+                            ColumnDefinitions="Auto,220,*"
+                            ColumnSpacing="8">
+                        <CheckBox IsChecked="{Binding IsIncluded, Mode=TwoWay}"
+                                  IsEnabled="{Binding IsSelectable}" />
+                        <TextBlock Grid.Column="1"
+                                   Classes="monospace"
+                                   FontSize="11"
+                                   Text="{Binding Path}" />
+                        <TextBlock Grid.Column="2"
+                                   Classes="monospace muted"
+                                   FontSize="11"
+                                   TextTrimming="CharacterEllipsis"
+                                   Text="{Binding DisplayValue}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+              <TextBox Grid.Row="1"
+                       MinHeight="90"
+                       MaxHeight="160"
+                       AcceptsReturn="True"
+                       IsReadOnly="True"
+                       TextWrapping="NoWrap"
+                       FontFamily="Consolas, Menlo, monospace"
+                       FontSize="11"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto"
+                       Text="{Binding JournalInspector.RawJson}" />
+            </Grid>
+          </Grid>
+
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <TextBox MinHeight="110"
+                     AcceptsReturn="True"
+                     IsReadOnly="True"
+                     TextWrapping="NoWrap"
+                     FontFamily="Consolas, Menlo, monospace"
+                     FontSize="11"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     Text="{Binding JournalInspector.CodeText}" />
+            <Button Grid.Column="1"
+                    Classes="primary"
+                    VerticalAlignment="Top"
+                    Command="{Binding JournalInspector.CopyCodeCommand}"
+                    Content="Copy handler" />
+          </Grid>
+
+          <TextBlock Classes="muted"
+                     IsVisible="{Binding JournalInspector.HasStatusMessage}"
+                     TextWrapping="Wrap"
+                     Text="{Binding JournalInspector.StatusMessage}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
         <StackPanel Spacing="8">
           <TextBlock Classes="card-title" Text="Commander Codex ledger" />
           <TextBlock Classes="muted"

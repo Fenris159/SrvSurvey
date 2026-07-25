@@ -143,6 +143,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             SystemNicknameCatalog.Load(AppDataPaths.DataDirectory),
             new SystemNicknameSettingsStore(AppDataPaths.UiSettingsPath));
         DiagnosticsLog = new DiagnosticsLogViewModel(applicationLogService);
+        JournalInspector = new JournalInspectorViewModel();
         folderResolution = JournalFolderLocator.ResolveCurrent(
             configuredJournalDirectory);
         commanderProfileStore = new CommanderProfileStore(
@@ -459,6 +460,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public SystemNicknameViewModel SystemNicknames { get; }
 
     public DiagnosticsLogViewModel DiagnosticsLog { get; }
+
+    public JournalInspectorViewModel JournalInspector { get; }
 
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
 
@@ -1097,6 +1100,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             latestStatus = update.Status;
         }
+
+        JournalInspector.ApplyUpdate(update.JournalEvents, latestStatus);
 
         if (update.Status is not null)
         {

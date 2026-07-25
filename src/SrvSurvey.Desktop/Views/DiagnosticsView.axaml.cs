@@ -9,6 +9,7 @@ namespace SrvSurvey.Desktop.Views;
 public sealed partial class DiagnosticsView : UserControl
 {
     private DiagnosticsLogViewModel? connectedViewModel;
+    private JournalInspectorViewModel? connectedInspector;
 
     public DiagnosticsView()
     {
@@ -24,16 +25,20 @@ public sealed partial class DiagnosticsView : UserControl
         if (DataContext is MainWindowViewModel viewModel)
         {
             connectedViewModel = viewModel.DiagnosticsLog;
+            connectedInspector = viewModel.JournalInspector;
             connectedViewModel.SetPlatformServices(
                 WriteClipboardAsync,
                 LaunchDirectoryAsync);
+            connectedInspector.SetClipboardWriter(WriteClipboardAsync);
         }
     }
 
     private void DisconnectPlatformServices()
     {
         connectedViewModel?.SetPlatformServices(null, null);
+        connectedInspector?.SetClipboardWriter(null);
         connectedViewModel = null;
+        connectedInspector = null;
     }
 
     private async Task WriteClipboardAsync(string text)
