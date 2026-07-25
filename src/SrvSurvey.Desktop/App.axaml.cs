@@ -25,6 +25,7 @@ public sealed partial class App : Application
     private StationInfoOverlayCoordinator? stationInfoOverlayCoordinator;
     private HumanSiteOverlayCoordinator? humanSiteOverlayCoordinator;
     private SystemSurveyOverlayCoordinator? systemSurveyOverlayCoordinator;
+    private QuestIndicatorOverlayCoordinator? questIndicatorOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
@@ -201,6 +202,11 @@ public sealed partial class App : Application
                 GameWindowTracker.CreateCurrent(),
                 () => viewModel.CommanderName,
                 overlayLayout: overlayLayout);
+            questIndicatorOverlayCoordinator = new QuestIndicatorOverlayCoordinator(
+                viewModel.QuestIndicator,
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent(),
+                overlayLayout);
 
             void SynchronizeOverlayPriority()
             {
@@ -326,7 +332,8 @@ public sealed partial class App : Application
                                 || humanSiteOverlayCoordinator?.IsVisible == true
                                 || sphericalSearchOverlayCoordinator?.IsVisible == true
                                 || colonizationCommodityOverlayCoordinator
-                                    ?.IsVisible == true;
+                                    ?.IsVisible == true
+                                || questIndicatorOverlayCoordinator?.IsVisible == true;
                             jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
                             systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
                             groundTargetOverlayCoordinator?.SetSuppressed(suppress);
@@ -337,6 +344,7 @@ public sealed partial class App : Application
                             sphericalSearchOverlayCoordinator?.SetSuppressed(suppress);
                             colonizationCommodityOverlayCoordinator
                                 ?.SetSuppressed(suppress);
+                            questIndicatorOverlayCoordinator?.SetSuppressed(suppress);
                             handled = true;
                             break;
 
@@ -487,6 +495,8 @@ public sealed partial class App : Application
                 viewModel.StationInfo.Dispose();
                 humanSiteOverlayCoordinator?.Dispose();
                 humanSiteOverlayCoordinator = null;
+                questIndicatorOverlayCoordinator?.Dispose();
+                questIndicatorOverlayCoordinator = null;
                 systemSurveyOverlayCoordinator?.Dispose();
                 systemSurveyOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();

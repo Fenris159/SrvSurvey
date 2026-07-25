@@ -128,6 +128,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         QuestWorkspace = new QuestWorkspaceViewModel(
             this.questRuntimeCoordinator,
             this.questSettingsStore);
+        QuestIndicator = new QuestIndicatorViewModel();
+        this.questRuntimeCoordinator.Changed += OnQuestCoordinatorChanged;
         SystemNicknames = new SystemNicknameViewModel(
             SystemNicknameCatalog.Load(AppDataPaths.DataDirectory),
             new SystemNicknameSettingsStore(AppDataPaths.UiSettingsPath));
@@ -343,6 +345,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public ScreenshotProcessingViewModel ScreenshotProcessing { get; }
 
     public QuestWorkspaceViewModel QuestWorkspace { get; }
+
+    public QuestIndicatorViewModel QuestIndicator { get; }
 
     public IReadOnlyList<QuestRuntimeSnapshot> Quests =>
         questRuntimeCoordinator.Snapshot;
@@ -1295,6 +1299,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 update.JournalEvents,
                 update.IsBootstrapRead);
             QuestWorkspace.ApplyRuntimeResult(result, enabled);
+            QuestIndicator.Update(result.Quests, latestStatus, enabled);
             OnPropertyChanged(nameof(Quests));
             OnPropertyChanged(nameof(QuestUnreadMessageCount));
             if (!enabled)
@@ -1622,7 +1627,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         disposed = true;
+        questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    }
+
+    private void OnQuestCoordinatorChanged(object? sender, EventArgs eventArgs)
+    {
+        QuestIndicator.Update(
+            questRuntimeCoordinator.Snapshot,
+            latestStatus,
+            questSettingsStore.LoadEnabled());
+        OnPropertyChanged(nameof(Quests));
+        OnPropertyChanged(nameof(QuestUnreadMessageCount));
     }
 
     private bool SetField<T>(

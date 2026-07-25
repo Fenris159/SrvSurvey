@@ -943,6 +943,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(quest.IsDevelopment);
             Assert.Equal("Desktop Integration Quest", quest.Title);
             Assert.Single(viewModel.QuestWorkspace.ActiveQuests);
+            Assert.True(viewModel.QuestIndicator.ShouldShow);
             viewModel.ShowQuests();
             Assert.True(viewModel.IsQuestsSelected);
             Assert.DoesNotContain(
