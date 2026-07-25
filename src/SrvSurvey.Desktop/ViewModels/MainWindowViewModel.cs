@@ -125,6 +125,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 new LegacyQuestStateStore(AppDataPaths.DataDirectory),
                 new RavenQuestClient(),
                 message => applicationLogService?.Append(message));
+        QuestWorkspace = new QuestWorkspaceViewModel(
+            this.questRuntimeCoordinator,
+            this.questSettingsStore);
         SystemNicknames = new SystemNicknameViewModel(
             SystemNicknameCatalog.Load(AppDataPaths.DataDirectory),
             new SystemNicknameSettingsStore(AppDataPaths.UiSettingsPath));
@@ -311,9 +314,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             new("travel", "Travel", "04", "Ground targets, journeys, and routes", true),
             new("search", "Search", "05", "Spherical and boxel searches", true),
             new("guardian", "Guardian", "06", "Sites, maps, and Ram Tah", true),
-            new("colonisation", "Colonisation", "07", "Raven Colonial projects", true),
-            new("diagnostics", "Diagnostics", "08", "Journal source and parsed state", true),
-            new("settings", "Settings", "09", "Appearance and application options", true),
+            new("quests", "Quests", "07", "Communications and active objectives", true),
+            new("colonisation", "Colonisation", "08", "Raven Colonial projects", true),
+            new("diagnostics", "Diagnostics", "09", "Journal source and parsed state", true),
+            new("settings", "Settings", "10", "Appearance and application options", true),
         ];
         selectedNavigation = NavigationItems[0];
 
@@ -337,6 +341,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public OverlayLayoutSettingsViewModel OverlayLayout { get; }
 
     public ScreenshotProcessingViewModel ScreenshotProcessing { get; }
+
+    public QuestWorkspaceViewModel QuestWorkspace { get; }
 
     public IReadOnlyList<QuestRuntimeSnapshot> Quests =>
         questRuntimeCoordinator.Snapshot;
@@ -497,6 +503,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             OnPropertyChanged(nameof(IsTravelSelected));
             OnPropertyChanged(nameof(IsSearchSelected));
             OnPropertyChanged(nameof(IsGuardianSelected));
+            OnPropertyChanged(nameof(IsQuestsSelected));
             OnPropertyChanged(nameof(IsColonizationSelected));
             OnPropertyChanged(nameof(IsDiagnosticsSelected));
             OnPropertyChanged(nameof(IsSettingsSelected));
@@ -519,6 +526,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public bool IsGuardianSelected => SelectedNavigation.Key == "guardian";
 
+    public bool IsQuestsSelected => SelectedNavigation.Key == "quests";
+
     public bool IsColonizationSelected =>
         SelectedNavigation.Key == "colonisation";
 
@@ -538,6 +547,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     {
         SelectedNavigation = NavigationItems.Single(
             item => item.Key == "diagnostics");
+    }
+
+    public void ShowQuests()
+    {
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == "quests");
     }
 
     public async Task OpenCodexBingoNearestSearchAsync(
@@ -1279,6 +1294,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 folderResolution.SelectedPath,
                 update.JournalEvents,
                 update.IsBootstrapRead);
+            QuestWorkspace.ApplyRuntimeResult(result, enabled);
             OnPropertyChanged(nameof(Quests));
             OnPropertyChanged(nameof(QuestUnreadMessageCount));
             if (!enabled)

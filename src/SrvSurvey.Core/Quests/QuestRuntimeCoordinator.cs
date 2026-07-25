@@ -190,6 +190,49 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         return new QuestRuntimeUpdateResult(Snapshot, warnings, 0);
     }
 
+    public async Task<QuestRuntimeUpdateResult> SetEnabledAsync(
+        bool enabled,
+        CancellationToken cancellationToken = default)
+    {
+        var warnings = new List<string>();
+        await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            var current = configuration
+                ?? throw new InvalidOperationException(
+                    "A commander journal session is required to change quest availability.");
+            if (current.Enabled == enabled)
+            {
+                return new QuestRuntimeUpdateResult(Snapshot, warnings, 0);
+            }
+
+            current = current with { Enabled = enabled };
+            configuration = current;
+            await ClearRuntimesAsync().ConfigureAwait(false);
+            if (enabled)
+            {
+                await LoadRuntimesAsync(
+                        current,
+                        contextTracker.CreateContext(
+                            current.CommanderName,
+                            current.Status),
+                        warnings,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            Snapshot = CreateSnapshot();
+        }
+        finally
+        {
+            coordinatorLock.Release();
+        }
+
+        Changed?.Invoke(this, EventArgs.Empty);
+        return new QuestRuntimeUpdateResult(Snapshot, warnings, 0);
+    }
+
     public async Task ActivateQuestAsync(
         string publisher,
         string id,
@@ -750,13 +793,50 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                     runtime.UnreadMessageCount,
                     runtime.Progress.Objectives.ToDictionary(
                         StringComparer.Ordinal),
-                    runtime.Progress.Messages.ToArray(),
-                    runtime.Progress.Tags.ToHashSet(StringComparer.Ordinal));
+                    runtime.Definition.Objectives.Keys.ToDictionary(
+                        objectiveId => objectiveId,
+                        objectiveId => runtime.Definition.Strings.GetValueOrDefault(
+                            objectiveId)
+                            ?? runtime.Definition.Objectives[objectiveId],
+                        StringComparer.Ordinal),
+                    runtime.Progress.Messages.Select(message =>
+                        CreateMessageSnapshot(runtime, message)).ToArray(),
+                    runtime.Progress.Tags.ToHashSet(StringComparer.Ordinal),
+                    runtime.Progress.BodyLocations.ToDictionary(
+                        StringComparer.Ordinal));
             })
             .OrderBy(snapshot => snapshot.Title, StringComparer.OrdinalIgnoreCase)
             .ThenBy(snapshot => snapshot.Reference.Publisher, StringComparer.Ordinal)
             .ThenBy(snapshot => snapshot.Reference.Id, StringComparer.Ordinal)
             .ToArray();
+    }
+
+    private static QuestRuntimeMessageSnapshot CreateMessageSnapshot(
+        QuestScriptRuntime runtime,
+        RavenQuestMessage message)
+    {
+        var definition = runtime.Definition.Messages.FirstOrDefault(candidate =>
+            string.Equals(candidate.Id, message.Id, StringComparison.Ordinal));
+        var actionIds = message.Actions
+            ?? definition?.Actions?.Keys.ToArray()
+            ?? [];
+        var actions = actionIds.ToDictionary(
+            action => action,
+            action => definition?.Actions?.GetValueOrDefault(action) ?? action,
+            StringComparer.Ordinal);
+        return new QuestRuntimeMessageSnapshot(
+            runtime.Progress.Reference,
+            message.Id,
+            message.Received,
+            message.From ?? definition?.From ?? string.Empty,
+            message.Subject ?? definition?.Subject,
+            message.Body ?? definition?.Body ?? string.Empty,
+            message.Chapter,
+            actions,
+            definition?.Tags?.ToHashSet(StringComparer.Ordinal)
+                ?? new HashSet<string>(StringComparer.Ordinal),
+            message.Read,
+            message.Replied);
     }
 
     private async Task ClearRuntimesAsync()
@@ -866,8 +946,23 @@ public sealed record QuestRuntimeSnapshot(
     RavenQuestState? TerminalState,
     int UnreadMessageCount,
     IReadOnlyDictionary<string, string> Objectives,
-    IReadOnlyList<RavenQuestMessage> Messages,
-    IReadOnlySet<string> Tags);
+    IReadOnlyDictionary<string, string> ObjectiveLabels,
+    IReadOnlyList<QuestRuntimeMessageSnapshot> Messages,
+    IReadOnlySet<string> Tags,
+    IReadOnlyDictionary<string, string> BodyLocations);
+
+public sealed record QuestRuntimeMessageSnapshot(
+    RavenQuestReference Quest,
+    string Id,
+    DateTimeOffset Received,
+    string From,
+    string? Subject,
+    string Body,
+    string? Chapter,
+    IReadOnlyDictionary<string, string> Actions,
+    IReadOnlySet<string> Tags,
+    bool Read,
+    string? Replied);
 
 public sealed record QuestRuntimeUpdateResult(
     IReadOnlyList<QuestRuntimeSnapshot> Quests,

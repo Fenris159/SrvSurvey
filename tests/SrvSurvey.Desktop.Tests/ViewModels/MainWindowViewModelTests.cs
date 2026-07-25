@@ -19,8 +19,8 @@ public sealed class MainWindowViewModelTests
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
-        Assert.Equal(9, viewModel.NavigationItems.Count);
-        Assert.Equal(9, viewModel.NavigationItems.Count(item => item.IsImplemented));
+        Assert.Equal(10, viewModel.NavigationItems.Count);
+        Assert.Equal(10, viewModel.NavigationItems.Count(item => item.IsImplemented));
         Assert.True(viewModel.IsOverviewSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
@@ -45,6 +45,12 @@ public sealed class MainWindowViewModelTests
             item => item.Key == "guardian");
 
         Assert.True(viewModel.IsGuardianSelected);
+        Assert.False(viewModel.IsPendingSelected);
+
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
+            item => item.Key == "quests");
+
+        Assert.True(viewModel.IsQuestsSelected);
         Assert.False(viewModel.IsPendingSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
@@ -936,6 +942,9 @@ public sealed class MainWindowViewModelTests
             var quest = Assert.Single(viewModel.Quests);
             Assert.True(quest.IsDevelopment);
             Assert.Equal("Desktop Integration Quest", quest.Title);
+            Assert.Single(viewModel.QuestWorkspace.ActiveQuests);
+            viewModel.ShowQuests();
+            Assert.True(viewModel.IsQuestsSelected);
             Assert.DoesNotContain(
                 "Historical body",
                 await File.ReadAllTextAsync(statePath),

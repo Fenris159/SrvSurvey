@@ -260,6 +260,102 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         Assert.Equal(sourceBytes, await File.ReadAllBytesAsync(backup));
     }
 
+    [Fact]
+    public async Task SnapshotHydratesDefinitionBackedMessageAndObjectiveText()
+    {
+        var definition = CreateDefinition("function noop() end") with
+        {
+            Objectives = new Dictionary<string, string>
+            {
+                ["scan"] = "Scan the target",
+            },
+            Strings = new Dictionary<string, string>
+            {
+                ["scan"] = "Scan the ancient beacon",
+            },
+            Messages =
+            [
+                new RavenQuestMessageDefinition
+                {
+                    Id = "welcome",
+                    From = "Raven",
+                    Subject = "Welcome",
+                    Body = "Proceed to the target.",
+                    Actions = new Dictionary<string, string>
+                    {
+                        ["go"] = "Proceed",
+                    },
+                    Tags = ["Sol"],
+                },
+            ],
+        };
+        var progress = CreateRemoteProgress(definition) with
+        {
+            Objectives = new Dictionary<string, string>
+            {
+                ["scan"] = "visible,1,3",
+            },
+            Messages =
+            [
+                new RavenQuestMessage
+                {
+                    Id = "welcome",
+                    Received = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                    Chapter = "start",
+                    Actions = ["go"],
+                },
+            ],
+            BodyLocations = new Dictionary<string, string>
+            {
+                ["beacon"] = "12.5,-42.25,50",
+            },
+        };
+        await using var coordinator = CreateCoordinator(
+            new FakeRavenQuestClient { ActiveQuests = [progress] });
+
+        var result = await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+
+        var snapshot = Assert.Single(result.Quests);
+        Assert.Equal("Scan the ancient beacon", snapshot.ObjectiveLabels["scan"]);
+        Assert.Equal("12.5,-42.25,50", snapshot.BodyLocations["beacon"]);
+        var message = Assert.Single(snapshot.Messages);
+        Assert.Equal("Raven", message.From);
+        Assert.Equal("Welcome", message.Subject);
+        Assert.Equal("Proceed to the target.", message.Body);
+        Assert.Equal("Proceed", message.Actions["go"]);
+        Assert.Contains("Sol", message.Tags);
+    }
+
+    [Fact]
+    public async Task EnableToggleClearsAndRehydratesRuntimesImmediately()
+    {
+        var client = new FakeRavenQuestClient
+        {
+            ActiveQuests =
+            [
+                CreateRemoteProgress(
+                    CreateDefinition("function noop() end")),
+            ],
+        };
+        await using var coordinator = CreateCoordinator(client);
+        await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+
+        var disabled = await coordinator.SetEnabledAsync(false);
+        Assert.Empty(disabled.Quests);
+
+        var enabled = await coordinator.SetEnabledAsync(true);
+        Assert.Single(enabled.Quests);
+        Assert.Equal(2, client.LoadCount);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

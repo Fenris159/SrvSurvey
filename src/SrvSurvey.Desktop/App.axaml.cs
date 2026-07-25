@@ -359,6 +359,13 @@ public sealed partial class App : Application
                                 .ToggleForcedVisibility();
                             break;
 
+                        case GlobalInputAction.QuestShow:
+                            viewModel.ShowQuests();
+                            mainWindow.Show();
+                            mainWindow.Activate();
+                            handled = true;
+                            break;
+
                         case GlobalInputAction.ShowColonyShopping:
                             colonizationCommodityOverlayCoordinator
                                 ?.ToggleVisibility();
