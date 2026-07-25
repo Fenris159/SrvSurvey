@@ -6,6 +6,7 @@ using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -60,6 +61,45 @@ public sealed class MainWindowViewModelTests
 
         Assert.Equal(5, viewModel.ThemeOptions.Count);
         Assert.Equal("Blue (dark)", viewModel.SelectedThemeName);
+    }
+
+    [Fact]
+    public void GuardianOverlayPreferencesAreWiredIntoMainViewModel()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-guardian-settings-{Guid.NewGuid():N}");
+        try
+        {
+            var settingsStore = new GuardianOverlaySettingsStore(
+                Path.Combine(root, "ui-settings.json"));
+            settingsStore.Save(new GuardianOverlayPreferences(
+                EnableGuardianSites: false,
+                AutoShowGuardianSummary: false,
+                AutoShowRamTah: true,
+                SuppressForActiveBuildProjects: true));
+
+            var viewModel = new MainWindowViewModel(
+                Path.Combine(root, "missing-journals"),
+                appDataPaths: new AppDataPaths(
+                    Path.Combine(root, "config"),
+                    Path.Combine(root, "data"),
+                    Path.Combine(root, "cache"),
+                    []),
+                guardianOverlaySettingsStore: settingsStore);
+
+            Assert.False(viewModel.Guardian.EnableGuardianSites);
+            Assert.False(viewModel.Guardian.AutoShowGuardianSummary);
+            Assert.True(viewModel.Guardian.AutoShowRamTah);
+            Assert.True(viewModel.Guardian.SuppressForActiveBuildProjects);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
     }
 
     [Fact]

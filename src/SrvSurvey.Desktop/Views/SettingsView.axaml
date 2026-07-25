@@ -147,6 +147,43 @@
 
       <Border Classes="card raised">
         <StackPanel Spacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Guardian overlays" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Show live Guardian maps, system-site summaries, and Ram Tah artifact guidance using the original game-mode rules." />
+          </StackPanel>
+          <CheckBox IsChecked="{Binding Guardian.EnableGuardianSites, Mode=TwoWay}"
+                    Content="Enable Guardian site overlays" />
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="eyebrow" Text="SYSTEM SUMMARY" />
+              <CheckBox IsChecked="{Binding Guardian.AutoShowGuardianSummary, Mode=TwoWay}"
+                        Content="Show Guardian sites in the current system" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Appears in supercruise, the navigation panel, or the system map and marks the selected destination." />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="10">
+              <TextBlock Classes="eyebrow" Text="RAM TAH" />
+              <CheckBox IsChecked="{Binding Guardian.AutoShowRamTah, Mode=TwoWay}"
+                        Content="Show needed Ram Tah logs and artifacts" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="At an active ruins or structure, lists incomplete logs, matching obelisks, and available artifact counts." />
+            </StackPanel>
+          </Grid>
+          <CheckBox IsChecked="{Binding Guardian.SuppressForActiveBuildProjects, Mode=TwoWay}"
+                    Content="Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active" />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="{Binding Guardian.HasOverlaySettingsStatus}"
+                     TextWrapping="Wrap"
+                     Text="{Binding Guardian.OverlaySettingsStatus}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
           <CheckBox IsChecked="{Binding JumpInfo.AutoShow, Mode=TwoWay}"
                     Content="Show next-jump information automatically" />
           <TextBlock Margin="28,-8,0,0"

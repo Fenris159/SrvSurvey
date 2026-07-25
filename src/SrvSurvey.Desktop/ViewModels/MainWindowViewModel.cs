@@ -92,7 +92,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         JumpInfoSettingsStore? jumpInfoSettingsStore = null,
         SystemSurveySettingsStore? systemSurveySettingsStore = null,
         BiologyPredictionsSettingsStore? biologyPredictionsSettingsStore = null,
-        CombatSettingsStore? combatSettingsStore = null)
+        CombatSettingsStore? combatSettingsStore = null,
+        GuardianOverlaySettingsStore? guardianOverlaySettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -199,7 +200,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,
-            ramTah: RamTah);
+            ramTah: RamTah,
+            overlaySettingsStore: guardianOverlaySettingsStore
+                ?? new GuardianOverlaySettingsStore(
+                    AppDataPaths.UiSettingsPath));
         exobiologyState = new ExobiologyState(sharedExobiologyCatalog);
         ProfileBackupDirectory = Path.Combine(
             Path.GetDirectoryName(AppDataPaths.DataDirectory)
@@ -954,6 +958,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Colonization.UpdateCargo(update.Cargo);
         await Colonization.UpdateMarketAsync(update.Market);
         Combat.SetActiveBuildProjects(Colonization.HasProjects);
+        Guardian.SetActiveBuildProjects(Colonization.HasProjects);
         await Combat.ApplyUpdateAsync(
             update.JournalEvents,
             update.Status,

@@ -113,25 +113,30 @@ public sealed partial class App : Application
 
             void SynchronizeGuardianPriority()
             {
+                var liveGuardianSite =
+                    guardianOverlayCoordinator?.IsLiveSiteVisible == true;
                 systemSurveyOverlayCoordinator?.SetFssObscured(
-                    guardianOverlayCoordinator?.IsVisible == true);
+                    liveGuardianSite);
                 systemSurveyOverlayCoordinator?.SetBodyInfoObscured(
-                    guardianOverlayCoordinator?.IsVisible == true);
+                    liveGuardianSite);
                 systemSurveyOverlayCoordinator?.SetBiologyObscured(
-                    guardianOverlayCoordinator?.IsVisible == true);
+                    liveGuardianSite);
                 systemSurveyOverlayCoordinator?.SetBiologyStatusObscured(
-                    guardianOverlayCoordinator?.IsVisible == true
+                    liveGuardianSite
                     || jumpInfoOverlayCoordinator?.IsVisible == true);
                 systemSurveyOverlayCoordinator?.SetPriorScansObscured(
-                    guardianOverlayCoordinator?.IsVisible == true);
+                    liveGuardianSite);
                 systemSurveyOverlayCoordinator?.SetSurfaceObscured(
-                    guardianOverlayCoordinator?.IsVisible == true);
+                    liveGuardianSite);
                 guardianOverlayCoordinator?.SetObscured(
                     jumpInfoOverlayCoordinator?.IsVisible == true
                     || (systemSurveyOverlayCoordinator?.IsFssVisible == true
                         && viewModel.SystemSurvey.IsFssInfoForced)
                     || (systemSurveyOverlayCoordinator?.IsBodyInfoVisible == true
                         && viewModel.SystemSurvey.IsBodyInfoForced));
+                guardianOverlayCoordinator?.SetSystemSummaryObscured(
+                    viewModel.SystemSurvey.IsFssInfoForced
+                    || viewModel.SystemSurvey.IsBodyInfoForced);
             }
 
             jumpInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
