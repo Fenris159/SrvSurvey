@@ -9,11 +9,13 @@ public sealed class CodexImageCache : IDisposable
     private readonly string cacheDirectory;
     private readonly HttpClient httpClient;
     private readonly bool ownsHttpClient;
+    private readonly TimeSpan downloadTimeout;
     private bool disposed;
 
     public CodexImageCache(
         string cacheDirectory,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        TimeSpan? downloadTimeout = null)
     {
         this.cacheDirectory = Path.GetFullPath(
             string.IsNullOrWhiteSpace(cacheDirectory)
@@ -26,6 +28,13 @@ public sealed class CodexImageCache : IDisposable
         {
             Timeout = TimeSpan.FromSeconds(30),
         };
+        this.downloadTimeout = downloadTimeout ?? TimeSpan.FromSeconds(30);
+        if (this.downloadTimeout <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(downloadTimeout),
+                "The Codex image download timeout must be positive.");
+        }
     }
 
     public async Task<CodexImageCacheResult> GetAsync(
@@ -60,12 +69,16 @@ public sealed class CodexImageCache : IDisposable
 
         Directory.CreateDirectory(cacheDirectory);
         var temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        using var timeoutCancellation = CancellationTokenSource
+            .CreateLinkedTokenSource(cancellationToken);
+        timeoutCancellation.CancelAfter(downloadTimeout);
+        var operationToken = timeoutCancellation.Token;
         try
         {
             using var response = await httpClient.GetAsync(
                     uri,
                     HttpCompletionOption.ResponseHeadersRead,
-                    cancellationToken)
+                    operationToken)
                 .ConfigureAwait(false);
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
@@ -83,7 +96,7 @@ public sealed class CodexImageCache : IDisposable
             }
 
             await using var source = await response.Content
-                .ReadAsStreamAsync(cancellationToken)
+                .ReadAsStreamAsync(operationToken)
                 .ConfigureAwait(false);
             await using (var target = new FileStream(
                 temporaryPath,
@@ -93,9 +106,9 @@ public sealed class CodexImageCache : IDisposable
                 81_920,
                 FileOptions.Asynchronous | FileOptions.SequentialScan))
             {
-                await CopyWithLimitAsync(source, target, cancellationToken)
+                await CopyWithLimitAsync(source, target, operationToken)
                     .ConfigureAwait(false);
-                await target.FlushAsync(cancellationToken).ConfigureAwait(false);
+                await target.FlushAsync(operationToken).ConfigureAwait(false);
             }
 
             File.Move(temporaryPath, path, true);

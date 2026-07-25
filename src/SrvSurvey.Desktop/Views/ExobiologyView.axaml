@@ -135,7 +135,7 @@
       </Grid>
 
       <Border Classes="card raised">
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="24">
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
           <StackPanel Spacing="6">
             <TextBlock Classes="card-title" Text="System predictions" />
             <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
@@ -151,6 +151,12 @@
                   VerticalAlignment="Center"
                   Command="{Binding BiologyPredictions.OpenWindowCommand}"
                   Content="Open predictions" />
+          <Button Grid.Column="2"
+                  Classes="secondary"
+                  MinWidth="150"
+                  VerticalAlignment="Center"
+                  Command="{Binding BiologyCodex.OpenWindowCommand}"
+                  Content="Browse Codex" />
         </Grid>
       </Border>
 
@@ -159,7 +165,7 @@
           <TextBlock Classes="card-title" Text="Compatibility" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="Rewards, first-footfall multipliers, sale removal, death rollback, active samples, and exact body predictions use the WinForms contracts. Codex browsing and prior-scan tools remain separate reviewable surfaces." />
+                     Text="Rewards, first-footfall multipliers, sale removal, death rollback, active samples, exact predictions, and the biology Codex browser use the WinForms contracts. Prior-scan tools remain a separate reviewable surface." />
         </StackPanel>
       </Border>
     </StackPanel>

@@ -1,0 +1,244 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="using:SrvSurvey.Desktop.Controls"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.BiologyCodexWindow"
+        x:DataType="vm:BiologyCodexViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="1180"
+        d:DesignHeight="780"
+        Width="1180"
+        Height="780"
+        MinWidth="900"
+        MinHeight="620"
+        WindowStartupLocation="CenterOwner"
+        Title="Biology Codex - SrvSurvey">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <Border Background="{DynamicResource RavenSidebarBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="24,17">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="eyebrow" Text="BIOLOGY CODEX" />
+          <TextBlock Classes="page-title"
+                     FontSize="24"
+                     Text="{Binding SystemName}"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Classes="muted"
+                     Text="Confirmed discoveries and exact organism predictions" />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="secondary"
+                VerticalAlignment="Center"
+                Click="Close_Click"
+                Content="Close" />
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1"
+          Margin="20"
+          ColumnDefinitions="300,*"
+          ColumnSpacing="16">
+      <Border Classes="card" Padding="14">
+        <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="10">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Biological bodies" />
+            <TextBlock Classes="muted" Text="{Binding BodyPositionText}" />
+          </StackPanel>
+
+          <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="7">
+            <Button Classes="secondary"
+                    Padding="10,7"
+                    Command="{Binding PreviousBodyCommand}"
+                    Content="‹" />
+            <ComboBox Grid.Column="1"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Bodies}"
+                      SelectedItem="{Binding SelectedBody, Mode=TwoWay}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:BiologyCodexBodyViewModel">
+                  <TextBlock Text="{Binding DisplayName}"
+                             TextTrimming="CharacterEllipsis" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Grid.Column="2"
+                    Classes="secondary"
+                    Padding="10,7"
+                    Command="{Binding NextBodyCommand}"
+                    Content="›" />
+          </Grid>
+
+          <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBlock Classes="muted"
+                       VerticalAlignment="Center"
+                       Text="{Binding SelectedBody.SignalCountText}" />
+            <TextBlock Grid.Column="1"
+                       Classes="monospace muted"
+                       VerticalAlignment="Center"
+                       Text="{Binding OrganismPositionText}" />
+          </Grid>
+
+          <Grid Grid.Row="3">
+            <TextBlock Classes="muted"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Text="{Binding EmptyStateText}"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding !HasSelectedOrganism}" />
+            <ListBox Classes="nav"
+                     ItemsSource="{Binding SelectedBody.Organisms}"
+                     SelectedItem="{Binding SelectedOrganism, Mode=TwoWay}"
+                     IsVisible="{Binding HasSelectedOrganism}">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:BiologyCodexOrganismViewModel">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <StackPanel Spacing="2">
+                      <TextBlock FontWeight="SemiBold"
+                                 Text="{Binding DisplayName}"
+                                 TextWrapping="Wrap" />
+                      <TextBlock Classes="muted"
+                                 FontSize="10"
+                                 Text="{Binding StatusText}" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1"
+                               Classes="monospace muted"
+                               FontSize="10"
+                               Text="{Binding EntryId}" />
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+
+          <Grid Grid.Row="4" ColumnDefinitions="*,*" ColumnSpacing="8">
+            <Button Classes="secondary"
+                    Command="{Binding PreviousOrganismCommand}"
+                    Content="Previous entry" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Command="{Binding NextOrganismCommand}"
+                    Content="Next entry" />
+          </Grid>
+        </Grid>
+      </Border>
+
+      <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" RowSpacing="12">
+        <Border Classes="card raised" Padding="16">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+            <StackPanel Spacing="7">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Border Classes="badge">
+                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                             FontSize="9"
+                             FontWeight="Bold"
+                             Text="{Binding SelectedDiscoveryStatus}" />
+                </Border>
+                <TextBlock Classes="monospace muted"
+                           VerticalAlignment="Center"
+                           Text="{Binding SelectedEntryId}" />
+              </StackPanel>
+              <TextBlock FontSize="22"
+                         FontWeight="SemiBold"
+                         Text="{Binding SelectedTitle}"
+                         TextWrapping="Wrap" />
+              <WrapPanel Orientation="Horizontal">
+                <TextBlock Margin="0,0,18,0"
+                           Classes="muted"
+                           Text="{Binding SelectedSampleDistance}" />
+                <TextBlock Margin="0,0,18,0"
+                           Foreground="{DynamicResource RavenAccentBrush}"
+                           Text="{Binding SelectedReward}" />
+                <TextBlock Classes="muted"
+                           Text="{Binding SelectedTemperatureRange}" />
+              </WrapPanel>
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         FontWeight="SemiBold"
+                         Text="{Binding SelectedTemperatureWarning}"
+                         IsVisible="{Binding HasTemperatureWarning}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="7">
+              <Button Classes="secondary"
+                      Padding="12,7"
+                      Click="ResetImage_Click"
+                      Content="Fit image" />
+              <Button Classes="secondary"
+                      Padding="12,7"
+                      Click="RefreshImage_Click"
+                      Content="Refresh image" />
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <Border Grid.Row="1"
+                Background="{DynamicResource RavenSidebarBrush}"
+                BorderBrush="{DynamicResource RavenBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                ClipToBounds="True">
+          <Grid>
+            <controls:CodexImageViewport x:Name="ImageViewport"
+                                         MinHeight="300"
+                                         ViewportBackground="{DynamicResource RavenSidebarBrush}" />
+            <Border HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Margin="12"
+                    Padding="10,6"
+                    Background="{DynamicResource RavenSurfaceBrush}"
+                    CornerRadius="7">
+              <TextBlock x:Name="ImageStatusText"
+                         Classes="muted"
+                         FontSize="11"
+                         Text="Select an organism to load its reference image."
+                         TextWrapping="Wrap" />
+            </Border>
+          </Grid>
+        </Border>
+
+        <Border Grid.Row="2" Classes="card" Padding="12">
+          <WrapPanel Orientation="Horizontal">
+            <Button Margin="0,0,8,0"
+                    Classes="secondary"
+                    Command="{Binding OpenCanonnRegionsCommand}"
+                    Content="Canonn regions" />
+            <Button Margin="0,0,8,0"
+                    Classes="secondary"
+                    Command="{Binding OpenBioforgeCommand}"
+                    Content="Bioforge" />
+            <Button Margin="0,0,8,0"
+                    Classes="secondary"
+                    Command="{Binding OpenCanonnSignalsCommand}"
+                    Content="System signals" />
+            <Button Margin="0,0,8,0"
+                    Classes="secondary"
+                    Command="{Binding OpenSpanshCommand}"
+                    Content="Spansh" />
+            <Button Classes="secondary"
+                    Command="{Binding OpenSubmitImageCommand}"
+                    Content="Submit image" />
+          </WrapPanel>
+        </Border>
+      </Grid>
+    </Grid>
+
+    <Border Grid.Row="2"
+            Background="{DynamicResource RavenSurfaceBrush}"
+            BorderBrush="{DynamicResource RavenBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="20,10">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+        <TextBlock Classes="muted"
+                   Text="Mouse wheel: zoom 0.1×–10× · drag image to pan"
+                   TextTrimming="CharacterEllipsis" />
+        <TextBlock Grid.Column="1"
+                   Foreground="{DynamicResource RavenAccentBrush}"
+                   Text="{Binding LaunchStatus}"
+                   IsVisible="{Binding HasLaunchStatus}" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

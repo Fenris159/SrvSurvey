@@ -79,6 +79,26 @@ public sealed class CodexImageCacheTests : IDisposable
             : []);
     }
 
+    [Fact]
+    public async Task TimesOutWhenTheRemoteResponseStalls()
+    {
+        using var client = new HttpClient(new BlockingHandler());
+        using var cache = new CodexImageCache(
+            temporaryDirectory,
+            client,
+            TimeSpan.FromMilliseconds(25));
+
+        var result = await cache.GetAsync(
+            2310206,
+            "https://example.test/stalled.png");
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains("timed out", result.Error, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(Directory.Exists(temporaryDirectory)
+            ? Directory.GetFiles(temporaryDirectory)
+            : []);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -96,6 +116,17 @@ public sealed class CodexImageCacheTests : IDisposable
             CancellationToken cancellationToken)
         {
             return Task.FromResult(responder(request));
+        }
+    }
+
+    private sealed class BlockingHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            throw new InvalidOperationException("The cancellation did not stop the request.");
         }
     }
 }

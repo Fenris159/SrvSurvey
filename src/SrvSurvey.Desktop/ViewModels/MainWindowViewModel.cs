@@ -161,6 +161,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             biologyPredictionsSettingsStore
                 ?? new BiologyPredictionsSettingsStore(
                     AppDataPaths.UiSettingsPath));
+        BiologyCodex = new BiologyCodexViewModel(
+            SystemSurvey,
+            sharedExobiologyCatalog,
+            BiologyCriteriaCatalog.LoadEmbedded(),
+            () => activeProfileCommanderName ?? journalState.CommanderName);
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,
@@ -257,6 +262,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public SystemSurveyViewModel SystemSurvey { get; }
 
     public BiologyPredictionsViewModel BiologyPredictions { get; }
+
+    public BiologyCodexViewModel BiologyCodex { get; }
 
     public SphereLimitViewModel Search { get; }
 
