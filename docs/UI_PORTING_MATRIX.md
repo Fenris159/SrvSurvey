@@ -31,7 +31,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | --- | --- | --- | --- |
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
-| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
+| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow plus exact `PlotBioSystem` species/variant predictions implemented; standalone predictions and Codex forms remain pending |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
@@ -43,9 +43,10 @@ Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
 
 The implemented Exobiology page covers the original `Main` dashboard workflow.
-The journal-backed `PlotBioSystem` overlay is also implemented, while its exact
-environmental prediction engine, the Codex browser, prior-scan, and remaining
-biology surfaces stay open below until their backing behavior is ported.
+The journal-backed `PlotBioSystem` overlay and its exact environmental
+prediction engine are also implemented, while the standalone predictions UI,
+Codex browser, prior-scan, and remaining biology surfaces stay open below until
+their backing behavior is ported.
 
 ## Secondary forms
 
@@ -136,18 +137,21 @@ as a top-left passive surface with map/orrery, DSS, orbit/glide, optional
 surface-analysis, Sol-bubble, `Alt+B`, and Guardian-priority rules. It supports
 unscanned destinations and shows discovery/mapping, scan/DSS values,
 temperature, gravity, pressure, signals, volcanism, atmosphere, materials, and
-rings. Its biological reward range remains pending with the broader
-`PlotBioSystem` prediction engine. The journal-backed `PlotBioSystem` surface is
+rings. Its biological reward range has not yet been connected to the shared
+prediction engine. The journal-backed `PlotBioSystem` surface is
 now implemented as a bottom-left passive overlay. It preserves whole-system and
 near-body/FSS modes, current/target selection, analyzed progress, active sample
 emphasis, confirmed organism identities and rewards, regional-first
 highlighting, first-footfall value, DSS guidance, geological details, Guardian
-priority, and the original display preferences. Unknown organisms and partial
-rewards remain explicit rather than being guessed. Exact environment/region/
-star/nebula/Guardian prediction criteria, commander-Codex first-discovery
-inference, Canonn signal hints, and the transient map-selection timer remain
-open. The other plotter surfaces remain unported, and the Windows/X11 adapters
-still require live Elite runtime validation.
+priority, and the original display preferences. Its embedded v4 evaluator
+loads all 21 shipped criteria resources and resolves exact species/variant
+predictions with galactic-region, parent-star/barycentre/brightness, offline
+nebula, Guardian-bubble, inheritance, and known-organism context. It exposes
+predicted reward ranges only for complete inputs and otherwise shows the
+missing context explicitly. Commander-Codex first-discovery inference, Canonn
+signal hints, and the transient map-selection timer remain open. The other
+plotter surfaces remain unported, and the Windows/X11 adapters still require
+live Elite runtime validation.
 
 Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
 opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,
@@ -251,14 +255,15 @@ check at 1182 by 790, using a live journal folder:
   scaling. The temporary preview hook and QA settings were removed; live Elite
   attachment, click-through, biological reward prediction, and Linux remain
   untested.
-- The `PlotBioSystem` replacement was exercised with a dense four-signal body
-  in Blue (dark) and Blue (light), plus a three-body whole-system view. Active,
-  analyzed, regional-first, genus-only, and unidentified organism states,
-  confirmed/partial rewards, first-footfall value, geological names/counts,
+- The `PlotBioSystem` replacement was exercised with a dense four-signal body,
+  a three-body whole-system view, and an exact Aleoida species/variant
+  prediction in Blue (dark) and Blue (light). Active, analyzed, regional-first,
+  genus-only, unidentified, and predicted organism states, confirmed/partial/
+  predicted rewards, first-footfall value, geological names/counts,
   target/local badges, and progress bars rendered cleanly in a 390-pixel-wide
   passive card at the active Windows scaling. The temporary preview hook and QA
-  settings were removed; exact biological predictions, live Elite attachment,
-  click-through, and Linux remain untested.
+  settings were removed; live Elite attachment, click-through, and Linux remain
+  untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live

@@ -231,9 +231,9 @@ values, temperature, high-gravity warnings, pressure, biological/geological
 signals, volcanism, atmosphere composition, materials, and rings. Forced body
 information retains its legacy priority over the Guardian summary. A dense
 synthetic body was checked in Blue dark/light at the active Windows scaling.
-The legacy predicted biological reward range remains coupled to the unported
-`PlotBioSystem` prediction engine and is still open; live Elite attachment and
-Linux also remain open.
+The exact biology evaluator is now available, but wiring its predicted reward
+range into this separate `PlotBodyInfo` surface remains open; live Elite
+attachment and Linux also remain open.
 
 `PlotBioSystem` now has a Raven-themed passive replacement with its legacy
 whole-system, FSS-last-body, and near/current/target-body selection rules. The
@@ -242,11 +242,17 @@ Codex IDs, rewards, analyzed state, regional-first state, and geological names.
 The overlay renders active sampling, analyzed dimming, partial and confirmed
 reward totals, first-footfall value, DSS guidance, geology, and unknown slots;
 its persisted settings and Guardian suppression are wired into the shared
-coordinator. Dense body views were checked in Blue dark/light and the system
-overview was checked with three bodies. The exact criteria engine still needs
-region, parent-star brightness, nebula, and Guardian-bubble inputs; commander
-Codex firsts, Canonn hints, the transient map-selection timer, live Elite
-attachment, and Linux remain open.
+coordinator. The embedded v4 criteria catalog now supplies exact species and
+variant predictions plus body/system reward ranges when scan context is
+complete. It covers all 21 shipped criteria resources, galactic regions,
+parent/barycentre ancestry and relative brightness, legacy star aliases, the
+offline nebula catalog, Guardian bubbles, common-child inheritance, and known
+genus/species suppression. Missing inputs stay explicit instead of producing
+false exact matches, and disabling predictions refreshes the overlay
+immediately. Dense body views, a three-body system overview, and an exact
+prediction card were checked in Blue dark/light. Commander-Codex firsts,
+Canonn hints, the transient map-selection timer, live Elite attachment, and
+Linux remain open.
 
 Exit gate: overlay positioning, DPI scaling, focus, click-through behavior, and
 input are recorded on the supported platform matrix.
@@ -307,7 +313,7 @@ not expected to run as a headless container service.
 | Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
 | Settings/data migration | OS paths, legacy discovery, manifests, verified backup/staging/import, lossless commander profile updates, and all 30 legacy input binding names/defaults implemented | Explicit backup-and-import workflow plus opt-in global keyboard/controller settings, validation, default restore, SDL device picker, refresh, and reconnect status | Settings/input UI visually and accessibility checked in Blue light; native keyboard hook reached active; SDL initialized without connected hardware; real profile restart comparison and physical controller input not run | Not tested |
 | Exploration totals | Legacy valuation and six counters plus compatible, atomic profile persistence implemented | Live Overview/Exploration projections and two-step reset | Automated only | Not tested |
-| Organic scans | Codex reference, three-sample state, surface separation, first-footfall reward, sale, death, reset, compatible profile fields, and current-system organism/geology history implemented | Live Overview/Exobiology projections, two-step unclaimed reset, and passive `PlotBioSystem` replacement with system/body modes, active/analyzed/first states, confirmed rewards, first-footfall value, DSS/geology details, and persisted preferences; exact environmental predictions and Codex forms remain pending | Empty/live-profile page visually/accessibility checked; dense body overlay checked in Blue dark/light and three-body system overview checked in Blue light; active Elite sampling/attachment not run | Not tested |
+| Organic scans | Codex reference, three-sample state, surface separation, first-footfall reward, sale, death, reset, compatible profile fields, current-system organism/geology history, and the complete embedded v4 prediction evaluator with region/star/nebula/Guardian context implemented | Live Overview/Exobiology projections, two-step unclaimed reset, and passive `PlotBioSystem` replacement with system/body modes, active/analyzed/first states, confirmed and exact predicted species/variant rewards, first-footfall value, DSS/geology details, incomplete-input disclosure, and persisted preferences; standalone prediction and Codex forms remain pending | Empty/live-profile page visually/accessibility checked; dense body, three-body system, and exact-prediction overlay states checked in Blue dark/light; active Elite sampling/attachment not run | Not tested |
 | Ground target tracking | Legacy coordinate parsing plus cardinal formats, validated settings, great-circle distance/bearing, relative heading, and approach bands implemented | Travel target editor supports typed, current, clipboard, clear, and live guidance; overlay remains pending | Inactive/live-profile page visually and accessibility checked; active surface guidance not run | Not tested |
 | System notes | Lossless legacy per-system JSON lookup/update/creation plus legacy topmost and screenshot-folder settings implemented; saves against the active Journey system update that visit's note counter | Single-instance resizable notes window, current-system context, save/cancel, always-on-top, Canonn/Spansh/EDSM, screenshots, Travel launcher, and `Ctrl+Shift+N` implemented | Travel card and notes window visually checked in Blue dark/light without changing live notes | Not tested |
 | Commander journeys | Lossless legacy journey JSON and active-pointer persistence, historic journal replay, all legacy counters/rewards/flags, current and prior-system starts, live updates, note coupling, conclude, and bounded reprocess implemented | Single-instance responsive workspace unifies begin, list, edit, viewer, and per-system details; supports history, preferences, notes, screenshots, dirty-state handling, and guarded destructive actions | Isolated QA journey exercised in Blue dark/light, including both start modes, begin, overview, visited systems, note edit/discard, refresh, and conclude/reprocess confirmations; no live commander Journey data changed | Not tested |
@@ -333,7 +339,7 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 510 tests: 322 Core tests and 188 Desktop tests.
+  passed all 543 tests: 354 Core tests and 189 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
@@ -448,11 +454,14 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
   Blue (dark) and Blue (light); the temporary preview hook and settings were
   removed.
 - Automated biology-overlay coverage now includes persisted legacy defaults,
-  system/map versus body/FSS selection, near-body targeting, known and partial
-  reward totals, first-footfall value, active samples, analyzed dimming,
-  regional-first semantics, and geological details. Dense body presentation was
-  checked in Blue dark/light and three-body whole-system presentation in Blue
-  light; the temporary preview hook and QA settings were removed.
+  system/map versus body/FSS selection, near-body targeting, known, partial,
+  and exact predicted reward totals, first-footfall value, active samples,
+  analyzed dimming, regional-first semantics, geological details, incomplete
+  prediction context, and immediate prediction disablement. A journal-to-exact-
+  species integration test exercises parent-star context and criteria matching.
+  Dense body, three-body whole-system, and exact-prediction presentation were
+  checked in Blue dark/light; the temporary preview hook and QA settings were
+  removed.
 - Automated global-input coverage now validates all 30 legacy action names and
   default chords, keyboard formatting/routing and text-entry suppression,
   controller button/trigger/eight-way POV chords, first-release dispatch,
