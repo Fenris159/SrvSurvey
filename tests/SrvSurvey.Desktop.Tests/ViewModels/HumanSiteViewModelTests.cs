@@ -374,6 +374,44 @@ public sealed class HumanSiteViewModelTests
         }
     }
 
+    [Fact]
+    public async Task ThreatCommandPersistsWithoutEnablingMaterialTracking()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-human-threat-view-model-{Guid.NewGuid():N}");
+        try
+        {
+            var store = new HumanSiteMaterialStore(root);
+            var viewModel = new HumanSiteViewModel(materialStore: store);
+            viewModel.UpdateContext("F123", "Drew", "Test", 42, null);
+            await viewModel.ApplyUpdateAsync(
+                [Parse(Approach())],
+                OnFootStatus(0, 0, 0),
+                "foot");
+
+            await viewModel.ApplyUpdateAsync(
+                [Parse("""{"event":"SendText","Message":".threat 2"}""")],
+                null,
+                "foot");
+
+            Assert.False(viewModel.TrackMaterialCollection);
+            Assert.True(viewModel.HasThreatLevel);
+            Assert.Equal(2, viewModel.ThreatLevel);
+            Assert.Equal("Threat level 2 · full shield", viewModel.ThreatLevelText);
+            var loaded = await store.LoadActiveAsync(
+                new HumanSiteMaterialContext("F123", viewModel.ActiveSite!));
+            Assert.Equal(2, loaded.Survey!.ThreatLevel);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     private static EliteStatus OnFootStatus(
         double latitude,
         double longitude,

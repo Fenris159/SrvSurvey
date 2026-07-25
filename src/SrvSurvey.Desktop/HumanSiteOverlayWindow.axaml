@@ -43,6 +43,11 @@
                      FontSize="10"
                      Text="{Binding HumanSite.TemplateText}"
                      TextTrimming="CharacterEllipsis" />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontSize="10"
+                     FontWeight="SemiBold"
+                     IsVisible="{Binding HumanSite.HasThreatLevel}"
+                     Text="{Binding HumanSite.ThreatLevelText}" />
         </StackPanel>
         <StackPanel Grid.Column="1"
                     HorizontalAlignment="Right"

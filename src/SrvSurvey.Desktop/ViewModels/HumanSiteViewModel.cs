@@ -54,6 +54,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private bool showCollectedMaterials;
     private bool trackMaterialCollection;
     private bool suppressForActiveBuildProjects;
+    private int threatLevel = -1;
     private string statusMessage = "Waiting to approach a human settlement.";
     private string settingsStatus = string.Empty;
 
@@ -188,6 +189,30 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     public int CollectedMaterialLocationCount =>
         activityTracker.CollectedMaterials.Count;
+
+    public int ThreatLevel
+    {
+        get => threatLevel;
+        private set
+        {
+            if (SetField(ref threatLevel, value))
+            {
+                OnPropertyChanged(nameof(HasThreatLevel));
+                OnPropertyChanged(nameof(ThreatLevelText));
+            }
+        }
+    }
+
+    public bool HasThreatLevel => ThreatLevel >= 0;
+
+    public string ThreatLevelText => ThreatLevel switch
+    {
+        0 => "Threat level 0 · empty shield",
+        1 => "Threat level 1 · half shield",
+        2 => "Threat level 2 · full shield",
+        >= 0 => $"Threat level {ThreatLevel}",
+        _ => string.Empty,
+    };
 
     public HumanSiteMapPoint? ShipOffset { get; private set; }
 
@@ -405,6 +430,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         {
             loadedSiteKey = null;
             loadedMaterialSiteKey = null;
+            ThreatLevel = -1;
         }
 
         frontierId = currentFrontierId;
@@ -430,6 +456,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         var source = HumanSiteGeometrySource.Unknown;
         var addedMaterials = new List<HumanSiteCollectedMaterial>();
         var completeMaterialSurvey = false;
+        int? requestedThreatLevel = null;
         foreach (var journalEvent in journalEvents)
         {
             state.Apply(journalEvent);
@@ -454,12 +481,26 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                 TrackMaterialCollection);
             addedMaterials.AddRange(activity.AddedMaterials);
             if (journalEvent.EventName == "ApproachSettlement"
-                && state.CurrentSite is not null)
+                && state.CurrentSite is { } approachedSite)
             {
+                var materialSiteKey =
+                    $"{approachedSite.SystemAddress}/{approachedSite.MarketId}";
+                if (!string.Equals(
+                    materialSiteKey,
+                    loadedMaterialSiteKey,
+                    StringComparison.Ordinal))
+                {
+                    ThreatLevel = -1;
+                }
+
                 await LoadMaterialSurveyAsync();
             }
 
             completeMaterialSurvey |= IsStopMaterialSurveyCommand(journalEvent);
+            if (TryParseThreatLevelCommand(journalEvent) is { } parsedThreatLevel)
+            {
+                requestedThreatLevel = parsedThreatLevel;
+            }
         }
 
         if (state.CurrentSite is null)
@@ -477,6 +518,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         if (addedMaterials.Count > 0)
         {
             await SaveMaterialActivityAsync(addedMaterials);
+        }
+
+        if (requestedThreatLevel is { } nextThreatLevel)
+        {
+            await SaveThreatLevelAsync(nextThreatLevel);
         }
 
         if (completeMaterialSurvey)
@@ -759,6 +805,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             if (result.Survey is { } survey)
             {
                 activityTracker.ReplaceCollectedMaterials(survey.Materials);
+                ThreatLevel = survey.ThreatLevel;
             }
 
             if (result.Error is not null)
@@ -829,6 +876,31 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         }
     }
 
+    private async Task SaveThreatLevelAsync(int value)
+    {
+        if (materialStore is null
+            || ActiveSite is not { } site
+            || CreateMaterialContext(site) is not { } context)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await materialStore.SetThreatLevelAsync(context, value);
+            ThreatLevel = result.Survey.ThreatLevel;
+            StatusMessage = $"Settlement threat level set to {ThreatLevel}.";
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            StatusMessage =
+                $"Settlement threat level could not be saved: {exception.Message}";
+        }
+    }
+
     private HumanSiteMaterialContext? CreateMaterialContext(
         HumanSiteLiveSnapshot site)
     {
@@ -859,6 +931,35 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                 message.GetString()?.Trim(),
                 ".settlement",
                 StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static int? TryParseThreatLevelCommand(
+        JournalEventEnvelope journalEvent)
+    {
+        if (journalEvent.EventName != "SendText"
+            || !journalEvent.Payload.TryGetProperty("Message", out var message)
+            || message.ValueKind != System.Text.Json.JsonValueKind.String)
+        {
+            return null;
+        }
+
+        var text = message.GetString()?.Trim();
+        const string command = ".threat";
+        if (string.IsNullOrWhiteSpace(text)
+            || !text.StartsWith(command, StringComparison.OrdinalIgnoreCase)
+            || text.Length <= command.Length
+            || !char.IsWhiteSpace(text[command.Length]))
+        {
+            return null;
+        }
+
+        return int.TryParse(
+            text[(command.Length + 1)..].Trim(),
+            System.Globalization.NumberStyles.Integer,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out var value)
+                ? value
+                : null;
     }
 
     private HumanSiteKnowledgeContext? CreateKnowledgeContext()
@@ -1064,6 +1165,9 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ProcessedTerminalOffsets));
         OnPropertyChanged(nameof(CollectedMaterials));
         OnPropertyChanged(nameof(CollectedMaterialLocationCount));
+        OnPropertyChanged(nameof(ThreatLevel));
+        OnPropertyChanged(nameof(HasThreatLevel));
+        OnPropertyChanged(nameof(ThreatLevelText));
         OnPropertyChanged(nameof(ShipOffset));
         OnPropertyChanged(nameof(SrvOffset));
         OnPropertyChanged(nameof(HasShipDeparted));
