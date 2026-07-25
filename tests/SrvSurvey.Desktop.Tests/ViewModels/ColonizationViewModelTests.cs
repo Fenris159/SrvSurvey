@@ -563,6 +563,23 @@ public sealed class ColonizationViewModelTests : IDisposable
             return Task.FromResult<string?>(null);
         }
 
+        public Task<ColonizationSystemRecord> GetSystemAsync(
+            string systemNameOrAddress,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<ColonizationSystemRecord> ImportSystemBodiesAsync(
+            string systemNameOrAddress,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<ColonizationSystemRecord> UpdateSystemSitesAsync(
+            string systemNameOrAddress,
+            ColonizationSystemSiteUpdate update,
+            string apiKey,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
         public Task<ColonizationProject?> CreateProjectAsync(
             ColonizationProjectCreate project,
             CancellationToken cancellationToken = default)

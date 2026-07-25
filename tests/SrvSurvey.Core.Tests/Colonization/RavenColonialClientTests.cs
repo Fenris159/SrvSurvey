@@ -144,6 +144,99 @@ public sealed class RavenColonialClientTests
     }
 
     [Fact]
+    public async Task LoadsAndImportsFullSystemRecords()
+    {
+        var requests = new List<(HttpMethod Method, string Path)>();
+        var handler = new StubHandler(request =>
+        {
+            requests.Add((request.Method, request.RequestUri!.AbsolutePath));
+            return Json(
+                """
+                {
+                  "v":2,
+                  "id64":123,
+                  "name":"Test System",
+                  "architect":"Architect",
+                  "open":true,
+                  "rev":4,
+                  "sites":[],
+                  "bodies":[{"name":"Test System A 1","num":1,"distLS":42,"parents":[0],"type":"hmc","features":["landable"],"future":true}],
+                  "futureSystem":"retain"
+                }
+                """);
+        });
+        var client = Create(handler);
+
+        var loaded = await client.GetSystemAsync("123");
+        var imported = await client.ImportSystemBodiesAsync("123");
+
+        Assert.Equal(123, loaded.SystemAddress);
+        Assert.Equal("Architect", loaded.Architect);
+        Assert.True(loaded.IsOpen);
+        var body = Assert.Single(imported.Bodies!);
+        Assert.Equal(1, body.Number);
+        Assert.Contains("landable", body.Features);
+        Assert.True(body.ExtensionData["future"].GetBoolean());
+        Assert.True(loaded.ExtensionData.ContainsKey("futureSystem"));
+        Assert.Equal(
+            [
+                (HttpMethod.Get, "/root/api/v2/system/123"),
+                (HttpMethod.Post, "/root/api/v2/system/123/import/bodies"),
+            ],
+            requests);
+    }
+
+    [Fact]
+    public async Task UpdatesSystemSitesWithApiKeyAndLegacyPayloadShape()
+    {
+        string? body = null;
+        var handler = new StubHandler(async request =>
+        {
+            Assert.Equal(HttpMethod.Put, request.Method);
+            Assert.Equal(
+                "/root/api/v2/system/Test%20System/sites",
+                request.RequestUri!.AbsolutePath);
+            Assert.Equal(
+                "secret-key",
+                Assert.Single(request.Headers.GetValues("rcc-key")));
+            body = await request.Content!.ReadAsStringAsync();
+            return Json(
+                """{"id64":123,"name":"Test System","sites":[],"bodies":[]}""");
+        });
+        var client = Create(handler);
+
+        var result = await client.UpdateSystemSitesAsync(
+            "Test System",
+            new ColonizationSystemSiteUpdate
+            {
+                UpdatedSites =
+                [
+                    new ColonizationSystemSite
+                    {
+                        Id = "site-1",
+                        Name = "Port",
+                        BodyNumber = 2,
+                        BuildType = "no_truss",
+                        Status = ColonizationSystemSiteStatus.Complete,
+                    },
+                ],
+                DeletedSiteIds = ["site-2"],
+            },
+            "secret-key");
+
+        Assert.Equal(123, result.SystemAddress);
+        using var document = JsonDocument.Parse(body!);
+        var root = document.RootElement;
+        Assert.Equal("site-1", root.GetProperty("update")[0]
+            .GetProperty("id").GetString());
+        Assert.Equal("complete", root.GetProperty("update")[0]
+            .GetProperty("status").GetString());
+        Assert.Equal("site-2", root.GetProperty("delete")[0].GetString());
+        Assert.False(root.TryGetProperty("architect", out _));
+        Assert.False(root.TryGetProperty("open", out _));
+    }
+
+    [Fact]
     public async Task ReportsStatusAndBoundedServiceDetail()
     {
         var handler = new StubHandler(_ => new HttpResponseMessage(

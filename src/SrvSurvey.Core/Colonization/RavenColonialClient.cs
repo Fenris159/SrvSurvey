@@ -28,6 +28,20 @@ public interface IRavenColonialClient
         string systemNameOrAddress,
         CancellationToken cancellationToken = default);
 
+    Task<ColonizationSystemRecord> GetSystemAsync(
+        string systemNameOrAddress,
+        CancellationToken cancellationToken = default);
+
+    Task<ColonizationSystemRecord> ImportSystemBodiesAsync(
+        string systemNameOrAddress,
+        CancellationToken cancellationToken = default);
+
+    Task<ColonizationSystemRecord> UpdateSystemSitesAsync(
+        string systemNameOrAddress,
+        ColonizationSystemSiteUpdate update,
+        string apiKey,
+        CancellationToken cancellationToken = default);
+
     Task<ColonizationProject?> CreateProjectAsync(
         ColonizationProjectCreate project,
         CancellationToken cancellationToken = default);
@@ -185,6 +199,65 @@ public sealed class RavenColonialClient : IRavenColonialClient
             $"api/v2/system/{Uri.EscapeDataString(systemNameOrAddress.Trim())}/architect",
             "load the system architect",
             cancellationToken);
+    }
+
+    public Task<ColonizationSystemRecord> GetSystemAsync(
+        string systemNameOrAddress,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(systemNameOrAddress);
+        return GetAsync<ColonizationSystemRecord>(
+            $"api/v2/system/{Uri.EscapeDataString(systemNameOrAddress.Trim())}",
+            "load a colonisation system",
+            cancellationToken)!;
+    }
+
+    public async Task<ColonizationSystemRecord> ImportSystemBodiesAsync(
+        string systemNameOrAddress,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(systemNameOrAddress);
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            CreateUri(
+                $"api/v2/system/{Uri.EscapeDataString(systemNameOrAddress.Trim())}/import/bodies"));
+        using var response = await httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
+        return await ReadRequiredAsync<ColonizationSystemRecord>(
+                response,
+                "import colonisation system bodies",
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<ColonizationSystemRecord> UpdateSystemSitesAsync(
+        string systemNameOrAddress,
+        ColonizationSystemSiteUpdate update,
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(systemNameOrAddress);
+        ArgumentNullException.ThrowIfNull(update);
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
+        using var request = new HttpRequestMessage(
+            HttpMethod.Put,
+            CreateUri(
+                $"api/v2/system/{Uri.EscapeDataString(systemNameOrAddress.Trim())}/sites"))
+        {
+            Content = JsonContent.Create(update, options: JsonOptions),
+        };
+        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        using var response = await httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
+        return await ReadRequiredAsync<ColonizationSystemRecord>(
+                response,
+                "update colonisation system sites",
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public async Task<ColonizationProject?> CreateProjectAsync(
@@ -569,6 +642,9 @@ public sealed record ColonizationSystemSite
 
     [JsonPropertyName("status")]
     public ColonizationSystemSiteStatus Status { get; init; }
+
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement> ExtensionData { get; init; } = [];
 }
 
 public enum ColonizationSystemSiteStatus
@@ -576,4 +652,94 @@ public enum ColonizationSystemSiteStatus
     Plan,
     Build,
     Complete,
+}
+
+public sealed record ColonizationSystemRecord
+{
+    [JsonPropertyName("v")]
+    public int Version { get; init; }
+
+    [JsonPropertyName("id64")]
+    public long SystemAddress { get; init; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; init; } = string.Empty;
+
+    [JsonPropertyName("architect")]
+    public string? Architect { get; init; }
+
+    [JsonPropertyName("open")]
+    public bool IsOpen { get; init; }
+
+    [JsonPropertyName("rev")]
+    public int Revision { get; init; }
+
+    [JsonPropertyName("reserveLevel")]
+    public string? ReserveLevel { get; init; }
+
+    [JsonPropertyName("sites")]
+    public List<ColonizationSystemSite> Sites { get; init; } = [];
+
+    [JsonPropertyName("bodies")]
+    public List<ColonizationSystemBody>? Bodies { get; init; }
+
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement> ExtensionData { get; init; } = [];
+}
+
+public sealed record ColonizationSystemBody
+{
+    [JsonPropertyName("name")]
+    public string Name { get; init; } = string.Empty;
+
+    [JsonPropertyName("num")]
+    public int Number { get; init; }
+
+    [JsonPropertyName("distLS")]
+    public double DistanceLightSeconds { get; init; }
+
+    [JsonPropertyName("parents")]
+    public List<int> Parents { get; init; } = [];
+
+    [JsonPropertyName("type")]
+    public string Type { get; init; } = string.Empty;
+
+    [JsonPropertyName("subType")]
+    public string? Subtype { get; init; }
+
+    [JsonPropertyName("features")]
+    public HashSet<string> Features { get; init; } = [];
+
+    [JsonPropertyName("radius")]
+    public double Radius { get; init; } = -1;
+
+    [JsonPropertyName("temp")]
+    public double Temperature { get; init; } = -1;
+
+    [JsonPropertyName("gravity")]
+    public double Gravity { get; init; } = -1;
+
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement> ExtensionData { get; init; } = [];
+}
+
+public sealed record ColonizationSystemSiteUpdate
+{
+    [JsonPropertyName("update")]
+    public List<ColonizationSystemSite> UpdatedSites { get; init; } = [];
+
+    [JsonPropertyName("delete")]
+    public List<string> DeletedSiteIds { get; init; } = [];
+
+    [JsonPropertyName("architect")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Architect { get; init; }
+
+    [JsonPropertyName("open")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? IsOpen { get; init; }
+
+    [JsonPropertyName("reserveLevel")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ReserveLevel { get; init; }
 }
