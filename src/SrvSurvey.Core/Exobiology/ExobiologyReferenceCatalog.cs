@@ -150,6 +150,41 @@ public sealed class ExobiologyReferenceCatalog
         return $"$Codex_Ent_{genus}_Genus_Name;";
     }
 
+    public static int GetSampleDistanceMeters(string? genusName)
+    {
+        if (string.IsNullOrWhiteSpace(genusName))
+        {
+            return 50;
+        }
+
+        var normalized = genusName
+            .Replace("$Codex_Ent_", string.Empty, StringComparison.Ordinal)
+            .Replace("_Genus_Name;", string.Empty, StringComparison.Ordinal)
+            .Replace("_Name;", string.Empty, StringComparison.Ordinal)
+            .Replace(" ", string.Empty, StringComparison.Ordinal)
+            .Replace("-", string.Empty, StringComparison.Ordinal)
+            .Replace("_", string.Empty, StringComparison.Ordinal)
+            .ToUpperInvariant();
+        return normalized switch
+        {
+            "INGENSRADICES" or "RADICOIDA" => 15,
+            "BARNACLES" or "THARGOIDCORAL" or "THARGOIDTOWER" => 85,
+            "FUMEROLAS" or "FUMEROLA" or "VENTS" or "AMPHORAPLANT"
+                or "SPHERE" or "ANEMONE" or "CONE" or "BARKMOUNDS"
+                or "BRANCAE" or "BRAINTREE" or "GROUNDSTRUCTICE"
+                or "CRYSTALLINESHARDS" or "TUBE" or "SINUOUSTUBERS" => 100,
+            "ALEOIDS" or "ALEOIDA" or "CLYPEUS" or "CONCHAS" or "CONCHA"
+                or "SHRUBS" or "FRUTEXA" or "RECEPTA" => 150,
+            "TUSSOCKS" or "TUSSOCK" => 200,
+            "CACTOID" or "CACTOIDA" or "FUNGOIDS" or "FUNGOIDA" => 300,
+            "BACTERIAL" or "BACTERIUM" or "FONTICULUS" or "FONTICULUA"
+                or "STRATUM" => 500,
+            "OSSEUS" or "TUBUS" => 800,
+            "ELECTRICAE" => 1_000,
+            _ => 50,
+        };
+    }
+
     private static string? GetString(JsonElement root, string propertyName)
     {
         return root.TryGetProperty(propertyName, out var value)

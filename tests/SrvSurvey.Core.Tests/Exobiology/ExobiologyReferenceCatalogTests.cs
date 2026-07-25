@@ -38,4 +38,25 @@ public sealed class ExobiologyReferenceCatalogTests
         Assert.Throws<InvalidDataException>(
             () => ExobiologyReferenceCatalog.Load(stream));
     }
+
+    [Theory]
+    [InlineData("$Codex_Ent_Ingensradices_Genus_Name;", 15)]
+    [InlineData("$Codex_Ent_Barnacles_Name;", 85)]
+    [InlineData("$Codex_Ent_Vents_Name;", 100)]
+    [InlineData("Aleoida", 150)]
+    [InlineData("Tussock", 200)]
+    [InlineData("Fungoida", 300)]
+    [InlineData("Bacterium", 500)]
+    [InlineData("Osseus", 800)]
+    [InlineData("Electricae", 1_000)]
+    [InlineData("Unknown genus", 50)]
+    [InlineData(null, 50)]
+    public void SampleDistanceMatchesLegacyGenusContract(
+        string? genusName,
+        int expected)
+    {
+        Assert.Equal(
+            expected,
+            ExobiologyReferenceCatalog.GetSampleDistanceMeters(genusName));
+    }
 }
