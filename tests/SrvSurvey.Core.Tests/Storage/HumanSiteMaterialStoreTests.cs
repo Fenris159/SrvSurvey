@@ -127,6 +127,24 @@ public sealed class HumanSiteMaterialStoreTests : IDisposable
         Assert.Equal(1, loaded.Survey.CountByMaterial["opinionpolls"]);
     }
 
+    [Fact]
+    public async Task ThreatLevelCreatesAndUpdatesActiveSurvey()
+    {
+        var store = new HumanSiteMaterialStore(temporaryDirectory);
+
+        var first = await store.SetThreatLevelAsync(Context(), 2);
+        var second = await store.SetThreatLevelAsync(Context(), 1);
+        var loaded = await store.LoadActiveAsync(Context());
+
+        Assert.Equal(first.Path, second.Path);
+        Assert.Equal(1, second.Survey.ThreatLevel);
+        Assert.Equal(1, loaded.Survey!.ThreatLevel);
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(second.Path))!
+            .AsObject();
+        Assert.Equal(1, root["threatLevel"]!.GetValue<int>());
+        Assert.Equal("Test Settlement", root["name"]!.GetValue<string>());
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

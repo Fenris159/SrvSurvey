@@ -211,6 +211,60 @@ public sealed class HumanSiteMaterialStore
         }
     }
 
+    public async Task<HumanSiteMaterialMutationResult> SetThreatLevelAsync(
+        HumanSiteMaterialContext context,
+        int threatLevel,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateContext(context);
+        var folder = GetFolder(context);
+        Directory.CreateDirectory(folder);
+        var sessionLockKey = GetSessionLockKey(folder, context);
+        var fileLock = FileLocks.GetOrAdd(
+            sessionLockKey,
+            static _ => new SemaphoreSlim(1, 1));
+        await fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var latest = FindLatestPath(folder, context);
+            var path = latest ?? GetNewPath(folder, context);
+            var root = new JsonObject();
+            if (latest is not null)
+            {
+                var read = await ReadAsync(latest, cancellationToken)
+                    .ConfigureAwait(false);
+                if (read.Root is null)
+                {
+                    throw new InvalidDataException(read.Error);
+                }
+
+                if (ReadBoolean(read.Root, "completed") == true)
+                {
+                    path = GetNewPath(folder, context, avoidExisting: true);
+                }
+                else
+                {
+                    root = read.Root;
+                }
+            }
+
+            ApplyContext(root, context);
+            root["threatLevel"] = threatLevel;
+            root["completed"] = false;
+            await WriteAsync(path, root, cancellationToken)
+                .ConfigureAwait(false);
+            var warnings = new List<string>();
+            return new HumanSiteMaterialMutationResult(
+                path,
+                0,
+                ReadSurvey(root, warnings));
+        }
+        finally
+        {
+            fileLock.Release();
+        }
+    }
+
     private static HumanSiteMaterialSurvey ReadSurvey(
         JsonObject root,
         ICollection<string> warnings)
@@ -236,6 +290,7 @@ public sealed class HumanSiteMaterialStore
 
         return new HumanSiteMaterialSurvey(
             ReadBoolean(root, "completed") ?? false,
+            ReadInt32(root, "threatLevel") ?? -1,
             Math.Max(0, ReadInt32(root, "totalMatCount") ?? 0),
             ReadCounts(root["countMats"]),
             ReadCounts(root["countTypes"]),
@@ -510,6 +565,7 @@ public sealed record HumanSiteMaterialContext(
 
 public sealed record HumanSiteMaterialSurvey(
     bool Completed,
+    int ThreatLevel,
     int TotalMaterialCount,
     IReadOnlyDictionary<string, int> CountByMaterial,
     IReadOnlyDictionary<string, int> CountByType,
@@ -518,6 +574,7 @@ public sealed record HumanSiteMaterialSurvey(
 {
     public static HumanSiteMaterialSurvey Empty { get; } = new(
         false,
+        -1,
         0,
         new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
         new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
