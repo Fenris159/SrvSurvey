@@ -143,7 +143,7 @@
             <TextBlock Classes="card-title" Text="System survey overlays" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Configure the FSS body feed and compact system-completion overlay. These preserve the original survey thresholds while using the active Raven theme." />
+                       Text="Configure body details, the FSS body feed, and compact system-completion overlays. These preserve the original survey rules while using the active Raven theme." />
           </StackPanel>
 
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
@@ -205,6 +205,53 @@
                                FormatString="N0"
                                Value="{Binding SystemSurvey.DssDistanceLimitLs, Mode=TwoWay}" />
               </Grid>
+            </StackPanel>
+          </Grid>
+
+          <Separator />
+
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="12">
+              <TextBlock Classes="eyebrow" Text="BODY INFORMATION" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoShowBodyInfo, Mode=TwoWay}"
+                        Content="Show body information automatically" />
+              <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoInSystemMap, Mode=TwoWay}"
+                        Content="Show in the system map" />
+              <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoInOrbit, Mode=TwoWay}"
+                        Content="Show while orbiting or gliding" />
+              <CheckBox IsChecked="{Binding SystemSurvey.ShowBodyInfoAtSurface, Mode=TwoWay}"
+                        Content="Show at the surface in analysis mode" />
+              <CheckBox IsChecked="{Binding SystemSurvey.HideBodyInfoInBubble, Mode=TwoWay}"
+                        Content="Hide near Sol" />
+              <CheckBox IsChecked="{Binding SystemSurvey.HideBodyInfoMaterials, Mode=TwoWay}"
+                        Content="Hide material composition" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="12">
+              <TextBlock Classes="eyebrow" Text="BODY THRESHOLDS" />
+              <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center"
+                           Text="Sol bubble radius (ly)" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="0"
+                               Maximum="10000"
+                               Increment="10"
+                               FormatString="N0"
+                               Value="{Binding SystemSurvey.BodyInfoBubbleSizeLy, Mode=TwoWay}" />
+              </Grid>
+              <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center"
+                           Text="High-gravity warning (g)" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="0"
+                               Maximum="50"
+                               Increment="0.1"
+                               FormatString="N2"
+                               Value="{Binding SystemSurvey.HighGravityWarningLevel, Mode=TwoWay}" />
+              </Grid>
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Alt+B toggles details for the current or selected body. The panel stays hidden inside the configured Sol radius unless that rule is disabled." />
             </StackPanel>
           </Grid>
 
