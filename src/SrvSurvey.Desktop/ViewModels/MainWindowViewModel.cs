@@ -1437,6 +1437,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 update.IsBootstrapRead);
             QuestWorkspace.ApplyRuntimeResult(result, enabled);
             QuestIndicator.Update(result.Quests, latestStatus, enabled);
+            HumanSite.UpdateQuests(result.Quests);
             OnPropertyChanged(nameof(Quests));
             OnPropertyChanged(nameof(QuestUnreadMessageCount));
             if (!enabled)
@@ -1491,6 +1492,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             journalEvent);
         QuestWorkspace.ApplyRuntimeResult(result, enabled);
         QuestIndicator.Update(result.Quests, latestStatus, enabled);
+        HumanSite.UpdateQuests(result.Quests);
         OnPropertyChanged(nameof(Quests));
         OnPropertyChanged(nameof(QuestUnreadMessageCount));
         QuestStatusMessage = result.Warnings.Count > 0
@@ -1810,6 +1812,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             questRuntimeCoordinator.Snapshot,
             latestStatus,
             questSettingsStore.LoadEnabled());
+        HumanSite.UpdateQuests(questRuntimeCoordinator.Snapshot);
         OnPropertyChanged(nameof(Quests));
         OnPropertyChanged(nameof(QuestUnreadMessageCount));
     }

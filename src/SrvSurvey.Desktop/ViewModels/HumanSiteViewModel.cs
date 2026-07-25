@@ -1,7 +1,9 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Quests;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Settlements;
 using SrvSurvey.Core.Storage;
@@ -54,6 +56,9 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private bool showCollectedMaterials;
     private bool trackMaterialCollection;
     private bool suppressForActiveBuildProjects;
+    private IReadOnlyList<QuestRuntimeSnapshot> quests = [];
+    private IReadOnlyList<HumanSiteQuestMarker> questMarkers = [];
+    private IReadOnlyList<HumanSiteQuestRoute> questRoutes = [];
     private int threatLevel = -1;
     private string statusMessage = "Waiting to approach a human settlement.";
     private string settingsStatus = string.Empty;
@@ -192,6 +197,10 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         ShowCollectedMaterials
             ? activityTracker.CollectedMaterials
             : [];
+
+    public IReadOnlyList<HumanSiteQuestMarker> QuestMarkers => questMarkers;
+
+    public IReadOnlyList<HumanSiteQuestRoute> QuestRoutes => questRoutes;
 
     public int CollectedMaterialLocationCount =>
         activityTracker.CollectedMaterials.Count;
@@ -581,6 +590,15 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         }
     }
 
+    public void UpdateQuests(IReadOnlyList<QuestRuntimeSnapshot> snapshots)
+    {
+        ArgumentNullException.ThrowIfNull(snapshots);
+        quests = snapshots.ToArray();
+        UpdateQuestProjection();
+        OnPropertyChanged(nameof(QuestMarkers));
+        OnPropertyChanged(nameof(QuestRoutes));
+    }
+
     public void AdjustZoom(bool zoomIn)
     {
         var next = Math.Round(Zoom + (zoomIn ? 0.2 : -0.2), 1);
@@ -654,6 +672,8 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         DistanceToOriginMeters = 0;
         ApproachDistanceMeters = 0;
         RelativeHeading = 0;
+        questMarkers = [];
+        questRoutes = [];
         if (ActiveSite is not { } site
             || status is not { HasLatitudeLongitude: true } currentStatus
             || currentStatus.PlanetRadius <= 0)
@@ -684,6 +704,179 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             RelativeHeading = SurfaceNavigation.NormalizeDegrees(
                 currentStatus.NormalizedHeading - heading);
             UpdateVehicleNavigation(currentStatus, origin, current, heading);
+            UpdateQuestProjection();
+        }
+    }
+
+    private void UpdateQuestProjection()
+    {
+        questMarkers = [];
+        questRoutes = [];
+        if (ActiveSite is not { Heading: { } heading } site
+            || status is not { HasLatitudeLongitude: true } currentStatus
+            || currentStatus.PlanetRadius <= 0)
+        {
+            return;
+        }
+
+        var bodyRadius = (double)currentStatus.PlanetRadius;
+        var origin = new SurfaceCoordinate(
+            site.Location.Latitude,
+            site.Location.Longitude);
+        var current = new SurfaceCoordinate(
+            currentStatus.Latitude,
+            currentStatus.Longitude);
+        var markers = new List<HumanSiteQuestMarker>();
+        var routes = new List<HumanSiteQuestRoute>();
+        foreach (var quest in quests)
+        {
+            foreach (var location in quest.BodyLocations)
+            {
+                if (!TryParseQuestLocation(
+                    location.Value,
+                    out var coordinate,
+                    out var radius))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var offset = HumanSiteNavigation.GetSiteOffset(
+                        origin,
+                        coordinate,
+                        bodyRadius,
+                        heading);
+                    var distance = SurfaceNavigation.GetDistance(
+                        current,
+                        coordinate,
+                        bodyRadius);
+                    markers.Add(new HumanSiteQuestMarker(
+                        location.Key,
+                        offset,
+                        radius,
+                        distance < radius));
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    // Imported quest data is retained, but invalid coordinates
+                    // are deliberately excluded from the live map.
+                }
+            }
+
+            foreach (var route in quest.Routes)
+            {
+                if (!double.IsFinite(route.Width) || route.Width < 0)
+                {
+                    continue;
+                }
+
+                var points = new List<HumanSiteMapPoint>();
+                foreach (var waypoint in route.Waypoints)
+                {
+                    if (!TryParseQuestWaypoint(waypoint, out var coordinate))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        points.Add(HumanSiteNavigation.GetSiteOffset(
+                            origin,
+                            coordinate,
+                            bodyRadius,
+                            heading));
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        // Skip only the malformed waypoint.
+                    }
+                }
+
+                if (points.Count >= 2)
+                {
+                    routes.Add(new HumanSiteQuestRoute(
+                        route.Id,
+                        route.Width,
+                        points));
+                }
+            }
+        }
+
+        questMarkers = markers;
+        questRoutes = routes;
+    }
+
+    private static bool TryParseQuestLocation(
+        string encoded,
+        out SurfaceCoordinate coordinate,
+        out double radius)
+    {
+        coordinate = default;
+        radius = 0;
+        var values = encoded.Split(',', StringSplitOptions.TrimEntries);
+        return values.Length == 3
+            && TryCreateSurfaceCoordinate(values[0], values[1], out coordinate)
+            && double.TryParse(
+                values[2],
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
+                out radius)
+            && double.IsFinite(radius)
+            && radius >= 0;
+    }
+
+    private static bool TryParseQuestWaypoint(
+        IReadOnlyList<double> values,
+        out SurfaceCoordinate coordinate)
+    {
+        coordinate = default;
+        if (values.Count < 2
+            || !double.IsFinite(values[0])
+            || !double.IsFinite(values[1]))
+        {
+            return false;
+        }
+
+        try
+        {
+            coordinate = new SurfaceCoordinate(values[0], values[1]);
+            return true;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return false;
+        }
+    }
+
+    private static bool TryCreateSurfaceCoordinate(
+        string latitude,
+        string longitude,
+        out SurfaceCoordinate coordinate)
+    {
+        coordinate = default;
+        if (!double.TryParse(
+                latitude,
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
+                out var parsedLatitude)
+            || !double.TryParse(
+                longitude,
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
+                out var parsedLongitude))
+        {
+            return false;
+        }
+
+        try
+        {
+            coordinate = new SurfaceCoordinate(parsedLatitude, parsedLongitude);
+            return true;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return false;
         }
     }
 
@@ -1175,6 +1368,8 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ProcessedTerminalIndexes));
         OnPropertyChanged(nameof(ProcessedTerminalOffsets));
         OnPropertyChanged(nameof(CollectedMaterials));
+        OnPropertyChanged(nameof(QuestMarkers));
+        OnPropertyChanged(nameof(QuestRoutes));
         OnPropertyChanged(nameof(CollectedMaterialLocationCount));
         OnPropertyChanged(nameof(ThreatLevel));
         OnPropertyChanged(nameof(HasThreatLevel));
@@ -1217,3 +1412,14 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
+
+public sealed record HumanSiteQuestMarker(
+    string Name,
+    HumanSiteMapPoint Offset,
+    double Radius,
+    bool IsWithinTarget);
+
+public sealed record HumanSiteQuestRoute(
+    string Id,
+    double Width,
+    IReadOnlyList<HumanSiteMapPoint> Waypoints);

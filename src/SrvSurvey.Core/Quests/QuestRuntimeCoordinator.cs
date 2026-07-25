@@ -1127,7 +1127,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                         CreateMessageSnapshot(runtime, message)).ToArray(),
                     runtime.Progress.Tags.ToHashSet(StringComparer.Ordinal),
                     runtime.Progress.BodyLocations.ToDictionary(
-                        StringComparer.Ordinal));
+                        StringComparer.Ordinal),
+                    runtime.Progress.Routes.Select(CloneRoute).ToArray());
             })
             .OrderBy(snapshot => snapshot.Title, StringComparer.OrdinalIgnoreCase)
             .ThenBy(snapshot => snapshot.Reference.Publisher, StringComparer.Ordinal)
@@ -1381,7 +1382,8 @@ public sealed record QuestRuntimeSnapshot(
     IReadOnlyDictionary<string, string> ObjectiveLabels,
     IReadOnlyList<QuestRuntimeMessageSnapshot> Messages,
     IReadOnlySet<string> Tags,
-    IReadOnlyDictionary<string, string> BodyLocations);
+    IReadOnlyDictionary<string, string> BodyLocations,
+    IReadOnlyList<RavenQuestRoute> Routes);
 
 public sealed record QuestRuntimeMessageSnapshot(
     RavenQuestReference Quest,

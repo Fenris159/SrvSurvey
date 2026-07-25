@@ -142,12 +142,15 @@ alignment, approach and docking state, commander-relative navigation, automatic
 and manual zoom, large-map mode, the 500 m ship-call boundary, ship/SRV/former-
 ship markers, the 2 km dismissal boundary and warning, secure doors, named
 points, terminals, conflict-zone points, processed-terminal state, and optional
-material pickup dots. Geometry remains lossless in the legacy system JSON, and
+material pickup dots. Active quest target circles and widened waypoint routes
+are projected onto the aligned map from the losslessly migrated quest state;
+malformed imported coordinates are retained on disk but fail closed in the
+renderer. Geometry remains lossless in the legacy system JSON, and
 material surveys use the legacy `footMatStats/<FID>` layout with corrupt-file
 protection and `.stop` completion. The coordinator preserves station-info and
 surface/biology overlay priority plus the global map and visibility actions.
 Template authoring for both human settlements (`FormBuilder`) and Guardian maps
-(`FormEditMap`) is implemented; quest routes and markers remain open. Threat-level survey metadata and the `.threat` command are
+(`FormEditMap`) is implemented. Threat-level survey metadata and the `.threat` command are
 implemented independently of material tracking. Automated reducer,
 persistence, settings, placement, control-transform, integration, and XAML
 checks pass; per request, the window has not been opened and awaits the final

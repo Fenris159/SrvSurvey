@@ -543,6 +543,15 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
             {
                 ["beacon"] = "12.5,-42.25,50",
             },
+            Routes =
+            [
+                new RavenQuestRoute
+                {
+                    Id = "approach",
+                    Width = 2.5,
+                    Waypoints = [[12.5, -42.25], [12.501, -42.251]],
+                },
+            ],
         };
         await using var coordinator = CreateCoordinator(
             new FakeRavenQuestClient { ActiveQuests = [progress] });
@@ -556,6 +565,10 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         var snapshot = Assert.Single(result.Quests);
         Assert.Equal("Scan the ancient beacon", snapshot.ObjectiveLabels["scan"]);
         Assert.Equal("12.5,-42.25,50", snapshot.BodyLocations["beacon"]);
+        var route = Assert.Single(snapshot.Routes);
+        Assert.Equal("approach", route.Id);
+        Assert.Equal(2.5, route.Width);
+        Assert.Equal([12.5, -42.25], route.Waypoints[0]);
         var message = Assert.Single(snapshot.Messages);
         Assert.Equal("Raven", message.From);
         Assert.Equal("Welcome", message.Subject);

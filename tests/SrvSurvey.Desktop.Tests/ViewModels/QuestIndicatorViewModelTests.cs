@@ -84,6 +84,7 @@ public sealed class QuestIndicatorViewModelTests
             new Dictionary<string, string>
             {
                 ["Beacon"] = "0,0.001,200",
-            });
+            },
+            []);
     }
 }

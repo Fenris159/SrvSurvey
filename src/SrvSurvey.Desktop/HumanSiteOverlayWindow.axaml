@@ -76,6 +76,8 @@
             ShowShipDismissalBoundary="{Binding HumanSite.ShowShipDismissalBoundary}"
             ProcessedTerminalOffsets="{Binding HumanSite.ProcessedTerminalOffsets}"
             CollectedMaterials="{Binding HumanSite.CollectedMaterials}"
+            QuestMarkers="{Binding HumanSite.QuestMarkers}"
+            QuestRoutes="{Binding HumanSite.QuestRoutes}"
             CommanderHeading="{Binding HumanSite.RelativeHeading}"
             ScaleMultiplier="{Binding HumanSite.Zoom}"
             ShowOriginWarning="{Binding HumanSite.ShowOriginWarning}"

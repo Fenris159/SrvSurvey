@@ -33,6 +33,12 @@ public sealed class HumanSiteMapControl : Control
     public static readonly StyledProperty<IReadOnlyList<HumanSiteCollectedMaterial>?> CollectedMaterialsProperty =
         AvaloniaProperty.Register<HumanSiteMapControl, IReadOnlyList<HumanSiteCollectedMaterial>?>(
             nameof(CollectedMaterials));
+    public static readonly StyledProperty<IReadOnlyList<HumanSiteQuestMarker>?> QuestMarkersProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, IReadOnlyList<HumanSiteQuestMarker>?>(
+            nameof(QuestMarkers));
+    public static readonly StyledProperty<IReadOnlyList<HumanSiteQuestRoute>?> QuestRoutesProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, IReadOnlyList<HumanSiteQuestRoute>?>(
+            nameof(QuestRoutes));
     public static readonly StyledProperty<double> CommanderHeadingProperty =
         AvaloniaProperty.Register<HumanSiteMapControl, double>(
             nameof(CommanderHeading));
@@ -79,6 +85,8 @@ public sealed class HumanSiteMapControl : Control
             ShowShipDismissalBoundaryProperty,
             ProcessedTerminalOffsetsProperty,
             CollectedMaterialsProperty,
+            QuestMarkersProperty,
+            QuestRoutesProperty,
             CommanderHeadingProperty,
             ScaleMultiplierProperty,
             ShowOriginWarningProperty,
@@ -139,6 +147,18 @@ public sealed class HumanSiteMapControl : Control
     {
         get => GetValue(CollectedMaterialsProperty);
         set => SetValue(CollectedMaterialsProperty, value);
+    }
+
+    public IReadOnlyList<HumanSiteQuestMarker>? QuestMarkers
+    {
+        get => GetValue(QuestMarkersProperty);
+        set => SetValue(QuestMarkersProperty, value);
+    }
+
+    public IReadOnlyList<HumanSiteQuestRoute>? QuestRoutes
+    {
+        get => GetValue(QuestRoutesProperty);
+        set => SetValue(QuestRoutesProperty, value);
     }
 
     public double CommanderHeading
@@ -273,6 +293,8 @@ public sealed class HumanSiteMapControl : Control
         }
 
         DrawVehicleMarkers(context, center, commander, scale);
+        DrawQuestRoutes(context, center, commander, scale);
+        DrawQuestMarkers(context, bounds, center, commander, scale);
         DrawCollectedMaterials(context, center, commander, scale);
         DrawCommander(context, center);
         if (ShowOriginWarning)
@@ -603,6 +625,84 @@ public sealed class HumanSiteMapControl : Control
                 location,
                 2.5,
                 2.5);
+        }
+    }
+
+    private void DrawQuestRoutes(
+        DrawingContext context,
+        Point center,
+        HumanSiteMapPoint commander,
+        double scale)
+    {
+        if (QuestRoutes is null)
+        {
+            return;
+        }
+
+        var brush = WarningBrush ?? Brushes.Gold;
+        foreach (var route in QuestRoutes)
+        {
+            if (route.Waypoints.Count < 2
+                || !double.IsFinite(route.Width)
+                || route.Width < 0)
+            {
+                continue;
+            }
+
+            var pen = new Pen(
+                brush,
+                Math.Clamp(route.Width * scale, 1, 80),
+                lineCap: PenLineCap.Round,
+                lineJoin: PenLineJoin.Round);
+            var prior = Transform(route.Waypoints[0], center, commander, scale);
+            for (var index = 1; index < route.Waypoints.Count; index++)
+            {
+                var next = Transform(
+                    route.Waypoints[index],
+                    center,
+                    commander,
+                    scale);
+                context.DrawLine(pen, prior, next);
+                prior = next;
+            }
+        }
+    }
+
+    private void DrawQuestMarkers(
+        DrawingContext context,
+        Rect bounds,
+        Point center,
+        HumanSiteMapPoint commander,
+        double scale)
+    {
+        if (QuestMarkers is null)
+        {
+            return;
+        }
+
+        foreach (var marker in QuestMarkers)
+        {
+            if (!marker.Offset.IsFinite
+                || !double.IsFinite(marker.Radius)
+                || marker.Radius < 0)
+            {
+                continue;
+            }
+
+            var location = Transform(marker.Offset, center, commander, scale);
+            var radius = Math.Clamp(
+                marker.Radius * scale,
+                1,
+                Math.Max(bounds.Width, bounds.Height) * 4);
+            var brush = marker.IsWithinTarget
+                ? AccentBrush ?? Brushes.Cyan
+                : WarningBrush ?? Brushes.Gold;
+            context.DrawEllipse(
+                null,
+                new Pen(brush, 2),
+                location,
+                radius,
+                radius);
         }
     }
 

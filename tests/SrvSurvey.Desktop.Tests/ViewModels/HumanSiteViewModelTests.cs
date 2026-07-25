@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Quests;
 using SrvSurvey.Core.Settlements;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
@@ -137,6 +138,93 @@ public sealed class HumanSiteViewModelTests
 
         Assert.True(viewModel.HasKnownGeometry);
         Assert.Equal(siteHeading, viewModel.ActiveSite!.Heading!.Value, 0);
+    }
+
+    [Fact]
+    public async Task QuestLocationsAndRoutesAreProjectedOntoAlignedSettlement()
+    {
+        const double radius = 6_000_000;
+        const double siteHeading = 231;
+        var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
+        var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
+        var origin = new SurfaceCoordinate(-12.5, 44.25);
+        var pad = Assert.Single(template.LandingPads);
+        var observerHeading = SurfaceNavigation.NormalizeDegrees(
+            siteHeading + pad.Rotation);
+        var current = HumanSiteNavigation.GetSurfaceLocation(
+            origin,
+            pad.Offset,
+            radius,
+            siteHeading);
+        var routeEnd = HumanSiteNavigation.GetSurfaceLocation(
+            origin,
+            new HumanSiteMapPoint(40, 75),
+            radius,
+            siteHeading);
+        var status = OnFootStatus(
+            current.Latitude,
+            current.Longitude,
+            (int)Math.Round(observerHeading)) with
+        {
+            PlanetRadius = (decimal)radius,
+        };
+        var viewModel = new HumanSiteViewModel(templateCatalog: catalog);
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse(Approach(
+                    economy: "$economy_Extraction;",
+                    economyLocalized: "Extraction",
+                    latitude: origin.Latitude,
+                    longitude: origin.Longitude)),
+                Parse(
+                    """
+                    {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
+                    """),
+                Parse("""{"event":"SendText","Message":".settlement"}"""),
+            ],
+            status,
+            "foot");
+
+        viewModel.UpdateQuests(
+        [
+            CreateQuestSnapshot(
+                new Dictionary<string, string>
+                {
+                    ["Target"] = FormattableString.Invariant(
+                        $"{origin.Latitude:R},{origin.Longitude:R},500"),
+                    ["Invalid"] = "not-a-location",
+                },
+                [
+                    new RavenQuestRoute
+                    {
+                        Id = "approach",
+                        Width = 2.5,
+                        Waypoints =
+                        [
+                            [origin.Latitude, origin.Longitude],
+                            [routeEnd.Latitude, routeEnd.Longitude],
+                        ],
+                    },
+                    new RavenQuestRoute
+                    {
+                        Id = "invalid",
+                        Width = double.NaN,
+                        Waypoints = [[999, 999], [998, 998]],
+                    },
+                ])
+        ]);
+
+        var marker = Assert.Single(viewModel.QuestMarkers);
+        Assert.Equal("Target", marker.Name);
+        Assert.InRange(marker.Offset.X, -0.01, 0.01);
+        Assert.InRange(marker.Offset.Y, -0.01, 0.01);
+        Assert.True(marker.IsWithinTarget);
+        var route = Assert.Single(viewModel.QuestRoutes);
+        Assert.Equal("approach", route.Id);
+        Assert.Equal(2.5, route.Width);
+        Assert.Equal(2, route.Waypoints.Count);
+        Assert.InRange(route.Waypoints[1].X, 39.99, 40.01);
+        Assert.InRange(route.Waypoints[1].Y, 74.99, 75.01);
     }
 
     [Fact]
@@ -448,5 +536,25 @@ public sealed class HumanSiteViewModelTests
             JournalEventEnvelope.TryParse(json, out var value, out var error),
             error);
         return Assert.IsType<JournalEventEnvelope>(value);
+    }
+
+    private static QuestRuntimeSnapshot CreateQuestSnapshot(
+        IReadOnlyDictionary<string, string> locations,
+        IReadOnlyList<RavenQuestRoute> routes)
+    {
+        return new QuestRuntimeSnapshot(
+            new RavenQuestReference("Raven", "settlement-map", 1),
+            "Settlement map quest",
+            null,
+            false,
+            false,
+            null,
+            0,
+            new Dictionary<string, string>(),
+            new Dictionary<string, string>(),
+            [],
+            new HashSet<string>(),
+            locations,
+            routes);
     }
 }
