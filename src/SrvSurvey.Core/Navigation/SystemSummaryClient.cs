@@ -27,6 +27,33 @@ public sealed record SystemSpecialSummary(
     string Location,
     IReadOnlyList<string> Details);
 
+public sealed record StationLandingPadSummary(
+    int Small,
+    int Medium,
+    int Large)
+{
+    public string? Largest => Large > 0
+        ? "Large"
+        : Medium > 0
+            ? "Medium"
+            : Small > 0
+                ? "Small"
+                : null;
+}
+
+public sealed record SystemStationSummary(
+    long Id,
+    string Name,
+    string Type,
+    string? PrimaryEconomy,
+    IReadOnlyDictionary<string, double> Economies,
+    string? ControllingFaction,
+    string? Government,
+    IReadOnlyList<string> Services,
+    StationLandingPadSummary? LandingPads,
+    IReadOnlyList<string> ProhibitedCommodities,
+    DateTimeOffset? UpdatedAt);
+
 public sealed record SystemSummary(
     string SystemName,
     long SystemAddress,
@@ -40,7 +67,10 @@ public sealed record SystemSummary(
     DateTimeOffset? LastUpdatedAt,
     SystemTrafficSummary? Traffic,
     SystemPoiSummary PointsOfInterest,
-    IReadOnlyList<SystemSpecialSummary> Specials);
+    IReadOnlyList<SystemSpecialSummary> Specials)
+{
+    public IReadOnlyList<SystemStationSummary> Stations { get; init; } = [];
+}
 
 public sealed record SystemSummaryLoadResult(
     SystemSummary Summary,
@@ -157,7 +187,10 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             bodies.Value?.LastUpdatedAt,
             traffic.Value?.Traffic,
             points,
-            spansh.Value?.Specials ?? []);
+            spansh.Value?.Specials ?? [])
+        {
+            Stations = spansh.Value?.Stations ?? [],
+        };
         return new SystemSummaryLoadResult(summary, warnings);
     }
 
@@ -331,7 +364,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         var outposts = 0;
         var settlements = 0;
         var fleetCarriers = 0;
-        foreach (var station in EnumerateStations(system, bodies))
+        var stationElements = EnumerateStations(system, bodies).ToArray();
+        foreach (var station in stationElements)
         {
             var type = GetString(station, "type") ?? string.Empty;
             if (string.Equals(
@@ -383,7 +417,66 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                 warPresences / 2),
             specials.Select(pair => new SystemSpecialSummary(
                 pair.Key,
-                pair.Value.ToArray())).ToArray());
+                pair.Value.ToArray())).ToArray(),
+            stationElements
+                .Select(ParseStation)
+                .Where(station => !string.IsNullOrWhiteSpace(station.Name))
+                .OrderBy(station => station.Name)
+                .ToArray());
+    }
+
+    private static SystemStationSummary ParseStation(JsonElement station)
+    {
+        var economies = TryGetObject(station, "economies", out var values)
+            ? values.EnumerateObject()
+                .Where(property => property.Value.ValueKind == JsonValueKind.Number
+                    && property.Value.TryGetDouble(out _))
+                .ToDictionary(
+                    property => property.Name,
+                    property => property.Value.GetDouble(),
+                    StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+        var services = GetArray(station, "services")
+            .Where(service => service.ValueKind == JsonValueKind.String)
+            .Select(service => service.GetString())
+            .Where(service => !string.IsNullOrWhiteSpace(service))
+            .Cast<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(service => service)
+            .ToArray();
+        StationLandingPadSummary? landingPads = null;
+        if (TryGetObject(station, "landingPads", out var pads))
+        {
+            landingPads = new StationLandingPadSummary(
+                GetInt32(pads, "small") ?? GetInt32(pads, "Small") ?? 0,
+                GetInt32(pads, "medium") ?? GetInt32(pads, "Medium") ?? 0,
+                GetInt32(pads, "large") ?? GetInt32(pads, "Large") ?? 0);
+        }
+
+        IReadOnlyList<string> prohibited = [];
+        if (TryGetObject(station, "market", out var market))
+        {
+            prohibited = GetArray(market, "prohibitedCommodities")
+                .Where(item => item.ValueKind == JsonValueKind.String)
+                .Select(item => item.GetString())
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .Cast<string>()
+                .OrderBy(item => item)
+                .ToArray();
+        }
+
+        return new SystemStationSummary(
+            GetInt64(station, "id") ?? 0,
+            GetString(station, "name") ?? string.Empty,
+            GetString(station, "type") ?? "Station",
+            GetString(station, "primaryEconomy"),
+            economies,
+            GetString(station, "controllingFaction"),
+            GetString(station, "government"),
+            services,
+            landingPads,
+            prohibited,
+            GetDateTimeOffset(station, "updateTime"));
     }
 
     private static IEnumerable<JsonElement> EnumerateStations(
@@ -691,5 +784,6 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         int ScannedBodyCount,
         int TotalBodyCount,
         SystemPoiSummary PointsOfInterest,
-        IReadOnlyList<SystemSpecialSummary> Specials);
+        IReadOnlyList<SystemSpecialSummary> Specials,
+        IReadOnlyList<SystemStationSummary> Stations);
 }

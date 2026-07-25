@@ -52,6 +52,20 @@ public sealed class SystemSummaryClientTests
             result.Summary.Specials,
             special => special.Location == "Engineer Base"
                 && special.Details.Contains("Professor Palin Engineer"));
+        Assert.Equal(5, result.Summary.Stations.Count);
+        var guardianLab = result.Summary.Stations.Single(
+            station => station.Name == "Guardian Lab");
+        Assert.Equal("Planetary Port", guardianLab.Type);
+        Assert.Equal("High Tech", guardianLab.PrimaryEconomy);
+        Assert.Equal(72.5, guardianLab.Economies["High Tech"]);
+        Assert.Equal("Lab Cooperative", guardianLab.ControllingFaction);
+        Assert.Equal("Corporate", guardianLab.Government);
+        Assert.Equal("Large", guardianLab.LandingPads?.Largest);
+        Assert.Contains("Technology Broker", guardianLab.Services);
+        Assert.Equal(["Narcotics", "Slaves"], guardianLab.ProhibitedCommodities);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-01-02T03:04:05Z"),
+            guardianLab.UpdatedAt);
         Assert.Equal(
             [
                 "https://edsm.test/api-system-v1/bodies?systemName=Test%20System",
@@ -192,7 +206,22 @@ public sealed class SystemSummaryClientTests
                         "name": "Guardian Lab",
                         "type": "Planetary Port",
                         "primaryEconomy": "High Tech",
-                        "services": ["Technology Broker"]
+                        "economies": {
+                          "High Tech": 72.5,
+                          "Industrial": 27.5
+                        },
+                        "controllingFaction": "Lab Cooperative",
+                        "government": "Corporate",
+                        "landingPads": {
+                          "small": 2,
+                          "medium": 1,
+                          "large": 1
+                        },
+                        "services": ["Technology Broker", "Market"],
+                        "market": {
+                          "prohibitedCommodities": ["Slaves", "Narcotics"]
+                        },
+                        "updateTime": "2026-01-02T03:04:05Z"
                       },
                       {
                         "id": 2,
