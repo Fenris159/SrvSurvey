@@ -37,7 +37,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
-| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump overlay preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
+| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump and system-survey overlay preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
@@ -76,7 +76,7 @@ system/body and platform behavior is ported.
 | `FormRoute` | Travel / Routes | Implemented with lossless legacy route files, manual-name and current Spansh imports, active/auto-copy controls, per-hop progress, distances/notes/refuel/neutron guidance, save/discard, live FSDJump progression, and a Galaxy Map overlay; Windows visually checked in Blue dark/light |
 | `FormRuins` | Guardian / Survey maps | Partially implemented through the unified site browser, native map renderer, live-site card, and lossless survey editor; dedicated open/share workflows and advanced map authoring remain |
 | `FormSetKeyChord` | Settings / Input | Implemented as the unified binding editor with normalized keyboard, button, trigger, and eight-way POV chords plus default restore |
-| `FormSettings` | Settings pages | Raven themes, migration, next-jump overlay preferences, and global keyboard/controller input implemented; general overlay adjustment, privacy, and remaining legacy options remain |
+| `FormSettings` | Settings pages | Raven themes, migration, next-jump and system-survey overlay preferences, and global keyboard/controller input implemented; general overlay adjustment, privacy, and remaining legacy options remain |
 | `FormShareData` | Settings / Privacy | Not ported |
 | `FormShowCodex` | Exobiology / Codex | Not ported |
 | `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
@@ -118,9 +118,17 @@ fallback, proportional distance/progress, scoopable and boosted-hop cues,
 compact mode, EDSM discovery/traffic, Spansh system/station summaries, material
 traders, technology brokers, engineers, Guardian sites, route notes, and new
 galactic-region notices. Provider failures degrade independently. It temporarily
-obscures the Guardian status overlay as the legacy plotter did. The other
-plotter surfaces remain unported, and the new Windows/X11 adapters still require
-live Elite runtime validation.
+obscures the Guardian status overlay as the legacy plotter did. The
+`PlotFSSInfo` and `PlotSysStatus` surfaces are also implemented. A shared
+journal reducer retains the current system's body classes, scan/DSS values,
+discovery and mapping state, atmospheres, materials, rings, biological and
+geological progress, completion counts, destination, and non-body signals. The
+top-left FSS feed preserves value/signal filtering, recency, `Alt+F`, map/panel
+modes, and Guardian priority. The bottom-left status overlay preserves FSS
+completion, filtered DSS candidates, destination grouping, biological progress,
+and optional non-body counts. Both use bounded click-through layouts and all
+Raven themes. The other plotter surfaces remain unported, and the new
+Windows/X11 adapters still require live Elite runtime validation.
 
 Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
 opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,
@@ -201,6 +209,13 @@ check at 1182 by 790, using a live journal folder:
   scoopable markers, boost emphasis, body/station totals, traffic, and engineer
   details cleanly. The hook was removed and Blue (dark) restored afterward;
   live Elite attachment, click-through, and Linux remain untested.
+- The `PlotFSSInfo` and `PlotSysStatus` replacements were exercised together
+  with a synthetic six-body system in Blue (dark) and Blue (light). The body
+  feed rendered discovery, class, scan/DSS value, terraformable/landable,
+  biology, and geology states at actual Windows DPI; the compact status overlay
+  rendered two DSS candidates, destination emphasis, three remaining biological
+  signals, and four non-body signals. The temporary hook and QA settings were
+  removed; live Elite attachment, click-through, and Linux remain untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live
