@@ -15,6 +15,15 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private const string AllKinds = "All sites";
     private const string AllVisits = "All visits";
     private const string AllTypes = "All types";
+    private static readonly IReadOnlyList<GuardianOverlaySizeOption>
+        OverlaySizes =
+        [
+            new(0, 300, 400),
+            new(1, 500, 500),
+            new(2, 600, 700),
+            new(3, 800, 1_000),
+            new(4, 1_200, 1_200),
+        ];
 
     private readonly GuardianSiteCatalog references;
     private readonly GuardianPublishedSiteCatalog publishedSites;
@@ -70,6 +79,12 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private bool autoShowGuardianSummary;
     private bool autoShowRamTah;
     private bool suppressForActiveBuildProjects;
+    private bool autoZoomNearObelisks;
+    private bool autoZoomInSrvTurret;
+    private GuardianOverlaySizeOption selectedOverlaySize;
+    private bool automaticMapZoom = true;
+    private double activeMapScale = 1;
+    private double activeMapRelativeHeading;
     private bool hasActiveBuildProjects;
     private bool isSystemSummaryObscured;
     private string overlaySettingsStatus = string.Empty;
@@ -102,6 +117,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         autoShowRamTah = overlayPreferences.AutoShowRamTah;
         suppressForActiveBuildProjects =
             overlayPreferences.SuppressForActiveBuildProjects;
+        autoZoomNearObelisks = overlayPreferences.AutoZoomNearObelisks;
+        autoZoomInSrvTurret = overlayPreferences.AutoZoomInSrvTurret;
+        selectedOverlaySize = OverlaySizes[overlayPreferences.OverlaySizeIndex];
         if (this.ramTah is not null)
         {
             this.ramTah.PropertyChanged += (_, _) =>
@@ -194,6 +212,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     public IReadOnlyList<string> VisitFilters { get; }
 
     public IReadOnlyList<string> SiteTypeFilters { get; }
+
+    public IReadOnlyList<GuardianOverlaySizeOption> OverlaySizeOptions =>
+        OverlaySizes;
 
     public ICommand RefreshCommand { get; }
 
@@ -301,6 +322,89 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 NotifyAuxiliaryOverlayState();
             }
         }
+    }
+
+    public bool AutoZoomNearObelisks
+    {
+        get => autoZoomNearObelisks;
+        set
+        {
+            if (SetField(ref autoZoomNearObelisks, value))
+            {
+                SaveOverlayPreferences();
+                RefreshAutomaticMapScale();
+            }
+        }
+    }
+
+    public bool AutoZoomInSrvTurret
+    {
+        get => autoZoomInSrvTurret;
+        set
+        {
+            if (SetField(ref autoZoomInSrvTurret, value))
+            {
+                SaveOverlayPreferences();
+                RefreshAutomaticMapScale();
+            }
+        }
+    }
+
+    public GuardianOverlaySizeOption SelectedOverlaySize
+    {
+        get => selectedOverlaySize;
+        set
+        {
+            var normalized = OverlaySizes.FirstOrDefault(option =>
+                    option.Index == value?.Index)
+                ?? OverlaySizes[0];
+            if (SetField(ref selectedOverlaySize, normalized))
+            {
+                SaveOverlayPreferences();
+                OnPropertyChanged(nameof(PreferredOverlayWidth));
+                OnPropertyChanged(nameof(PreferredOverlayHeight));
+            }
+        }
+    }
+
+    public int PreferredOverlayWidth => SelectedOverlaySize.Width;
+
+    public int PreferredOverlayHeight => SelectedOverlaySize.Height;
+
+    public bool IsAutomaticMapZoom => automaticMapZoom;
+
+    public double ActiveMapScale => activeMapScale;
+
+    public double ActiveMapRelativeHeading => activeMapRelativeHeading;
+
+    public string ActiveMapScaleText => automaticMapZoom
+        ? $"AUTO - {ActiveMapScale:N2}x"
+        : $"MANUAL - {ActiveMapScale:N2}x";
+
+    public bool AdjustMapZoom(bool zoomIn)
+    {
+        var next = Math.Round(
+            ActiveMapScale + (zoomIn ? 0.5 : -0.5),
+            2);
+        if (next is < 0.5 or > 15)
+        {
+            return false;
+        }
+
+        automaticMapZoom = next == GetAutomaticMapScale();
+        activeMapScale = next;
+        OnPropertyChanged(nameof(IsAutomaticMapZoom));
+        OnPropertyChanged(nameof(ActiveMapScale));
+        OnPropertyChanged(nameof(ActiveMapScaleText));
+        return true;
+    }
+
+    public void EnableAutomaticMapZoom()
+    {
+        automaticMapZoom = true;
+        RefreshAutomaticMapScale();
+        OnPropertyChanged(nameof(IsAutomaticMapZoom));
+        OnPropertyChanged(nameof(ActiveMapScaleText));
     }
 
     public string OverlaySettingsStatus
@@ -1432,7 +1536,10 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 EnableGuardianSites,
                 AutoShowGuardianSummary,
                 AutoShowRamTah,
-                SuppressForActiveBuildProjects));
+                SuppressForActiveBuildProjects,
+                AutoZoomNearObelisks,
+                AutoZoomInSrvTurret,
+                SelectedOverlaySize.Index));
             OverlaySettingsStatus = string.Empty;
         }
         catch (Exception exception) when (
@@ -1471,6 +1578,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
     private void NotifyCurrentObeliskChanged()
     {
+        RefreshAutomaticMapScale();
         OnPropertyChanged(nameof(Proximity));
         OnPropertyChanged(nameof(CurrentObelisk));
         OnPropertyChanged(nameof(HasCurrentObelisk));
@@ -1487,16 +1595,103 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ActiveMapProjection));
         OnPropertyChanged(nameof(ActiveMapTitle));
         OnPropertyChanged(nameof(ActiveMapSummary));
+        OnPropertyChanged(nameof(ActiveMapScale));
+        OnPropertyChanged(nameof(ActiveMapScaleText));
+        OnPropertyChanged(nameof(ActiveMapRelativeHeading));
         OnPropertyChanged(nameof(CurrentRamTahLogs));
         OnPropertyChanged(nameof(HasCurrentRamTahLogs));
         OnPropertyChanged(nameof(CurrentRamTahTitle));
         toggleCurrentObeliskScannedCommand.RaiseCanExecuteChanged();
     }
 
+    private void RefreshAutomaticMapScale()
+    {
+        if (!automaticMapZoom)
+        {
+            return;
+        }
+
+        activeMapScale = GetAutomaticMapScale();
+        OnPropertyChanged(nameof(ActiveMapScale));
+        OnPropertyChanged(nameof(ActiveMapScaleText));
+    }
+
+    private double GetAutomaticMapScale()
+    {
+        return CalculateAutomaticMapScale(
+            ActiveSite?.Kind,
+            Proximity?.DistanceFromSite,
+            currentStatus?.OnFoot == true,
+            currentStatus?.UsingSrvTurret == true,
+            currentStatus is { } status && (status.InSrv || status.OnFoot),
+            GetNearestObeliskDistance(),
+            AutoZoomNearObelisks,
+            AutoZoomInSrvTurret);
+    }
+
+    internal static double CalculateAutomaticMapScale(
+        GuardianSiteKind? siteKind,
+        double? distanceFromSite,
+        bool onFoot,
+        bool usingSrvTurret,
+        bool mobileOnSurface,
+        double nearestObeliskDistance,
+        bool autoZoomNearObelisks,
+        bool autoZoomInSrvTurret)
+    {
+        if (autoZoomInSrvTurret && usingSrvTurret)
+        {
+            return 3;
+        }
+
+        if (autoZoomNearObelisks
+            && mobileOnSurface
+            && nearestObeliskDistance < 30)
+        {
+            return 3;
+        }
+
+        if (onFoot)
+        {
+            return 2;
+        }
+
+        return siteKind == GuardianSiteKind.Ruins
+            ? distanceFromSite > 1_000
+                ? 0.2
+                : distanceFromSite > 800
+                    ? 0.5
+                    : 0.65
+            : distanceFromSite > 800
+                ? 0.2
+                : distanceFromSite > 500
+                    ? 0.5
+                    : 1.5;
+    }
+
+    private double GetNearestObeliskDistance()
+    {
+        if (Proximity is not { } current
+            || ActiveMapProjection is not { } projection)
+        {
+            return double.PositiveInfinity;
+        }
+
+        return projection.Points
+            .Where(point => point.Type is GuardianPoiType.Obelisk
+                or GuardianPoiType.BrokenObelisk)
+            .Select(point => Math.Sqrt(
+                Math.Pow(point.X - current.MapX, 2)
+                + Math.Pow(point.Y - current.MapY, 2)))
+            .DefaultIfEmpty(double.PositiveInfinity)
+            .Min();
+    }
+
     private void UpdateProximity()
     {
         proximity = null;
         activeMapProjection = null;
+        activeMapRelativeHeading = 0;
         SurveyEditor.UpdateLiveMeasurement(null);
         TemplateAuthoring.UpdateContext(
             GetSelectedBaseTemplate(),
@@ -1545,6 +1740,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             NotifyCurrentObeliskChanged();
             return;
         }
+
+        activeMapRelativeHeading = SurfaceNavigation.NormalizeDegrees(
+            currentStatus.NormalizedHeading - siteHeading);
 
         proximity = proximityEvaluator.Evaluate(
             currentStatus,
@@ -1925,6 +2123,11 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
+}
+
+public sealed record GuardianOverlaySizeOption(int Index, int Width, int Height)
+{
+    public string Label => $"{Width:N0} Ã— {Height:N0}";
 }
 
 public sealed class GuardianSiteRowViewModel(

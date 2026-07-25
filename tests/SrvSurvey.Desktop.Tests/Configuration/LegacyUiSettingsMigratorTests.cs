@@ -48,6 +48,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "enableGuardianSites": false,
               "autoShowGuardianSummary": false,
               "autoShowRamTah": false,
+              "autoZoomGuardianNearObelisks": false,
+              "autoZoomGuardianInTurret": true,
+              "idxGuardianPlotter": 3,
               "autoShowHumanSitesTest": false,
               "plotHumanSiteWidth": 720,
               "plotHumanSiteHeight": 640,
@@ -141,7 +144,14 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             new CombatPreferences(true, true, true),
             new CombatSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
-            new GuardianOverlayPreferences(false, false, false, true),
+            new GuardianOverlayPreferences(
+                false,
+                false,
+                false,
+                true,
+                false,
+                true,
+                3),
             new GuardianOverlaySettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new HumanSitePreferences(

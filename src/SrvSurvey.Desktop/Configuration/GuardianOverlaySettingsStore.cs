@@ -31,7 +31,19 @@ public sealed class GuardianOverlaySettingsStore
             GetBoolean(
                 settings,
                 "SuppressForActiveBuildProjects",
-                defaults.SuppressForActiveBuildProjects));
+                defaults.SuppressForActiveBuildProjects),
+            GetBoolean(
+                settings,
+                "AutoZoomNearObelisks",
+                defaults.AutoZoomNearObelisks),
+            GetBoolean(
+                settings,
+                "AutoZoomInSrvTurret",
+                defaults.AutoZoomInSrvTurret),
+            GetInteger(
+                settings,
+                "OverlaySizeIndex",
+                defaults.OverlaySizeIndex));
     }
 
     public void Save(GuardianOverlayPreferences preferences)
@@ -53,6 +65,14 @@ public sealed class GuardianOverlaySettingsStore
             settings["AutoShowRamTah"] = preferences.AutoShowRamTah;
             settings["SuppressForActiveBuildProjects"] =
                 preferences.SuppressForActiveBuildProjects;
+            settings["AutoZoomNearObelisks"] =
+                preferences.AutoZoomNearObelisks;
+            settings["AutoZoomInSrvTurret"] =
+                preferences.AutoZoomInSrvTurret;
+            settings["OverlaySizeIndex"] = Math.Clamp(
+                preferences.OverlaySizeIndex,
+                0,
+                4);
         });
     }
 
@@ -66,17 +86,34 @@ public sealed class GuardianOverlaySettingsStore
                 ? result
                 : fallback;
     }
+
+    private static int GetInteger(
+        JsonObject? settings,
+        string propertyName,
+        int fallback)
+    {
+        return settings?[propertyName] is JsonValue value
+            && value.TryGetValue<int>(out var result)
+                ? Math.Clamp(result, 0, 4)
+                : fallback;
+    }
 }
 
 public sealed record GuardianOverlayPreferences(
     bool EnableGuardianSites,
     bool AutoShowGuardianSummary,
     bool AutoShowRamTah,
-    bool SuppressForActiveBuildProjects)
+    bool SuppressForActiveBuildProjects,
+    bool AutoZoomNearObelisks,
+    bool AutoZoomInSrvTurret,
+    int OverlaySizeIndex)
 {
     public static GuardianOverlayPreferences Default { get; } = new(
         EnableGuardianSites: true,
         AutoShowGuardianSummary: true,
         AutoShowRamTah: true,
-        SuppressForActiveBuildProjects: false);
+        SuppressForActiveBuildProjects: false,
+        AutoZoomNearObelisks: true,
+        AutoZoomInSrvTurret: false,
+        OverlaySizeIndex: 0);
 }

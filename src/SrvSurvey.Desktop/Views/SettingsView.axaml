@@ -377,6 +377,32 @@
           </Grid>
           <CheckBox IsChecked="{Binding Guardian.SuppressForActiveBuildProjects, Mode=TwoWay}"
                     Content="Hide Guardian summaries and Ram Tah guidance while Raven Colonial build projects are active" />
+          <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="28">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="eyebrow" Text="MAP ZOOM" />
+              <CheckBox IsChecked="{Binding Guardian.AutoZoomNearObelisks, Mode=TwoWay}"
+                        Content="Zoom in near Guardian obelisks" />
+              <CheckBox IsChecked="{Binding Guardian.AutoZoomInSrvTurret, Mode=TwoWay}"
+                        Content="Zoom in while using the SRV turret" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="6">
+              <TextBlock Classes="eyebrow" Text="OVERLAY SIZE" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Use one of the five original Guardian plotter sizes." />
+            </StackPanel>
+            <ComboBox Grid.Column="2"
+                      MinWidth="150"
+                      VerticalAlignment="Center"
+                      ItemsSource="{Binding Guardian.OverlaySizeOptions}"
+                      SelectedItem="{Binding Guardian.SelectedOverlaySize, Mode=TwoWay}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:GuardianOverlaySizeOption">
+                  <TextBlock Text="{Binding Label}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </Grid>
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="{Binding Guardian.HasOverlaySettingsStatus}"
                      TextWrapping="Wrap"

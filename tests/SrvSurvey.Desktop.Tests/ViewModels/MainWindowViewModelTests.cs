@@ -205,7 +205,10 @@ public sealed class MainWindowViewModelTests
                 EnableGuardianSites: false,
                 AutoShowGuardianSummary: false,
                 AutoShowRamTah: true,
-                SuppressForActiveBuildProjects: true));
+                SuppressForActiveBuildProjects: true,
+                AutoZoomNearObelisks: false,
+                AutoZoomInSrvTurret: true,
+                OverlaySizeIndex: 3));
 
             var viewModel = new MainWindowViewModel(
                 Path.Combine(root, "missing-journals"),
@@ -220,6 +223,10 @@ public sealed class MainWindowViewModelTests
             Assert.False(viewModel.Guardian.AutoShowGuardianSummary);
             Assert.True(viewModel.Guardian.AutoShowRamTah);
             Assert.True(viewModel.Guardian.SuppressForActiveBuildProjects);
+            Assert.False(viewModel.Guardian.AutoZoomNearObelisks);
+            Assert.True(viewModel.Guardian.AutoZoomInSrvTurret);
+            Assert.Equal(800, viewModel.Guardian.PreferredOverlayWidth);
+            Assert.Equal(1_000, viewModel.Guardian.PreferredOverlayHeight);
         }
         finally
         {

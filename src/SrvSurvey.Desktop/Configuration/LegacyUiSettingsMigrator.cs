@@ -120,6 +120,9 @@ public sealed class LegacyUiSettingsMigrator
                     ("autoShowGuardianSummary", "AutoShowGuardianSummary"),
                     ("autoShowRamTah", "AutoShowRamTah"),
                     ("buildProjectsSuppressOtherOverlays", "SuppressForActiveBuildProjects"),
+                    ("autoZoomGuardianNearObelisks", "AutoZoomNearObelisks"),
+                    ("autoZoomGuardianInTurret", "AutoZoomInSrvTurret"),
+                    ("idxGuardianPlotter", "OverlaySizeIndex"),
                 ]);
                 mappedCount += MapSection(legacy, root, "HumanSite",
                 [

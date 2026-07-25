@@ -105,6 +105,24 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
     }
 
+    public bool AdjustZoom(bool zoomIn)
+    {
+        return !disposed
+            && IsLiveSiteVisible
+            && guardian.AdjustMapZoom(zoomIn);
+    }
+
+    public bool ResetZoom()
+    {
+        if (disposed || !IsLiveSiteVisible)
+        {
+            return false;
+        }
+
+        guardian.EnableAutomaticMapZoom();
+        return true;
+    }
+
     public void Dispose()
     {
         if (disposed)

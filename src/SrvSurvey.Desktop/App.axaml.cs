@@ -299,21 +299,27 @@ public sealed partial class App : Application
                     switch (eventArgs.Action)
                     {
                         case GlobalInputAction.MapZoomIn:
-                            handled = humanSiteOverlayCoordinator
+                            handled = guardianOverlayCoordinator
+                                ?.AdjustZoom(zoomIn: true) == true
+                                || humanSiteOverlayCoordinator
                                 ?.AdjustZoom(zoomIn: true) == true
                                 || systemSurveyOverlayCoordinator
                                     ?.AdjustSurfaceZoom(zoomIn: true) == true;
                             break;
 
                         case GlobalInputAction.MapZoomOut:
-                            handled = humanSiteOverlayCoordinator
+                            handled = guardianOverlayCoordinator
+                                ?.AdjustZoom(zoomIn: false) == true
+                                || humanSiteOverlayCoordinator
                                 ?.AdjustZoom(zoomIn: false) == true
                                 || systemSurveyOverlayCoordinator
                                     ?.AdjustSurfaceZoom(zoomIn: false) == true;
                             break;
 
                         case GlobalInputAction.MapZoomAuto:
-                            handled = humanSiteOverlayCoordinator
+                            handled = guardianOverlayCoordinator
+                                ?.ResetZoom() == true
+                                || humanSiteOverlayCoordinator
                                 ?.ResetZoom() == true
                                 || systemSurveyOverlayCoordinator
                                     ?.ResetSurfaceZoom() == true;

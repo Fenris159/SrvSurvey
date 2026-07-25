@@ -19,6 +19,9 @@ public sealed class GuardianOverlaySettingsStoreTests : IDisposable
         Assert.True(store.Load().AutoShowGuardianSummary);
         Assert.True(store.Load().AutoShowRamTah);
         Assert.False(store.Load().SuppressForActiveBuildProjects);
+        Assert.True(store.Load().AutoZoomNearObelisks);
+        Assert.False(store.Load().AutoZoomInSrvTurret);
+        Assert.Equal(0, store.Load().OverlaySizeIndex);
     }
 
     [Fact]
@@ -34,7 +37,10 @@ public sealed class GuardianOverlaySettingsStoreTests : IDisposable
             EnableGuardianSites: false,
             AutoShowGuardianSummary: false,
             AutoShowRamTah: true,
-            SuppressForActiveBuildProjects: true);
+            SuppressForActiveBuildProjects: true,
+            AutoZoomNearObelisks: false,
+            AutoZoomInSrvTurret: true,
+            OverlaySizeIndex: 4);
         store.Save(expected);
 
         Assert.Equal(expected, store.Load());

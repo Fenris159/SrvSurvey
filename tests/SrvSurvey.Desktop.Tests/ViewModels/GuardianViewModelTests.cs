@@ -8,6 +8,31 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class GuardianViewModelTests
 {
+    [Theory]
+    [InlineData(GuardianSiteKind.Ruins, 1_001, 0.2)]
+    [InlineData(GuardianSiteKind.Ruins, 801, 0.5)]
+    [InlineData(GuardianSiteKind.Ruins, 800, 0.65)]
+    [InlineData(GuardianSiteKind.Structure, 801, 0.2)]
+    [InlineData(GuardianSiteKind.Structure, 501, 0.5)]
+    [InlineData(GuardianSiteKind.Structure, 500, 1.5)]
+    public void AutomaticMapScaleMatchesLegacyDistanceThresholds(
+        GuardianSiteKind kind,
+        double distance,
+        double expected)
+    {
+        var actual = GuardianViewModel.CalculateAutomaticMapScale(
+            kind,
+            distance,
+            onFoot: false,
+            usingSrvTurret: false,
+            mobileOnSurface: true,
+            nearestObeliskDistance: 100,
+            autoZoomNearObelisks: true,
+            autoZoomInSrvTurret: true);
+
+        Assert.Equal(expected, actual);
+    }
+
     [Fact]
     public async Task GuardianSurveySharingPreparesAndCopiesBundle()
     {
@@ -589,6 +614,8 @@ public sealed class GuardianViewModelTests
             viewModel.UpdateStatus(StatusNorthOfSite(10));
 
             Assert.Equal("A01", viewModel.CurrentObelisk?.Name);
+            Assert.Equal(3, viewModel.ActiveMapScale);
+            Assert.True(viewModel.IsAutomaticMapZoom);
             Assert.Contains("0.0 m", viewModel.NearbyPointText);
             Assert.Contains("Guardian Casket 1/2", viewModel.CurrentObeliskRequirementsText);
             Assert.False(viewModel.HasCurrentObeliskArtifacts);
@@ -601,6 +628,43 @@ public sealed class GuardianViewModelTests
             Assert.Equal("H1", ramTahLog.LogCode);
             Assert.Equal("MISSING", ramTahLog.ArtifactStatus);
             Assert.Equal("A01", ramTahLog.ObeliskNamesText);
+
+            viewModel.AutoZoomNearObelisks = false;
+            Assert.Equal(0.65, viewModel.ActiveMapScale);
+            Assert.True(viewModel.AdjustMapZoom(zoomIn: true));
+            Assert.Equal(1.15, viewModel.ActiveMapScale);
+            Assert.False(viewModel.IsAutomaticMapZoom);
+            Assert.True(viewModel.AdjustMapZoom(zoomIn: false));
+            Assert.Equal(0.65, viewModel.ActiveMapScale);
+            Assert.True(viewModel.IsAutomaticMapZoom);
+            Assert.True(viewModel.AdjustMapZoom(zoomIn: true));
+            viewModel.EnableAutomaticMapZoom();
+
+            viewModel.AutoZoomInSrvTurret = true;
+            viewModel.UpdateStatus(StatusNorthOfSite(10) with
+            {
+                Flags = StatusFlags.HasLatLong
+                    | StatusFlags.InSrv
+                    | StatusFlags.SrvUsingTurretView,
+                Heading = 90,
+            });
+            Assert.Equal(3, viewModel.ActiveMapScale);
+            Assert.Equal(90, viewModel.ActiveMapRelativeHeading);
+            viewModel.AutoZoomInSrvTurret = false;
+            Assert.Equal(0.65, viewModel.ActiveMapScale);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(10) with
+            {
+                Flags = StatusFlags.HasLatLong,
+                Flags2 = StatusFlags2.OnFoot,
+            });
+            Assert.Equal(2, viewModel.ActiveMapScale);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(900));
+            Assert.Equal(0.5, viewModel.ActiveMapScale);
+            viewModel.UpdateStatus(StatusNorthOfSite(1_100));
+            Assert.Equal(0.2, viewModel.ActiveMapScale);
+            viewModel.UpdateStatus(StatusNorthOfSite(10));
 
             await viewModel.ToggleCurrentObeliskScannedAsync();
 

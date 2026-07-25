@@ -15,6 +15,13 @@ public sealed class GuardianSiteMapControl : Control
         ProximityProperty = AvaloniaProperty.Register<
             GuardianSiteMapControl,
             GuardianSiteProximitySnapshot?>(nameof(Proximity));
+    public static readonly StyledProperty<double> MapScaleProperty =
+        AvaloniaProperty.Register<GuardianSiteMapControl, double>(
+            nameof(MapScale),
+            double.NaN);
+    public static readonly StyledProperty<double> CommanderHeadingProperty =
+        AvaloniaProperty.Register<GuardianSiteMapControl, double>(
+            nameof(CommanderHeading));
     public static readonly StyledProperty<IBrush?> MapBackgroundProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, IBrush?>(
             nameof(MapBackground));
@@ -42,6 +49,8 @@ public sealed class GuardianSiteMapControl : Control
         AffectsRender<GuardianSiteMapControl>(
             ProjectionProperty,
             ProximityProperty,
+            MapScaleProperty,
+            CommanderHeadingProperty,
             MapBackgroundProperty,
             GridBrushProperty,
             AccentBrushProperty,
@@ -61,6 +70,18 @@ public sealed class GuardianSiteMapControl : Control
     {
         get => GetValue(ProximityProperty);
         set => SetValue(ProximityProperty, value);
+    }
+
+    public double MapScale
+    {
+        get => GetValue(MapScaleProperty);
+        set => SetValue(MapScaleProperty, value);
+    }
+
+    public double CommanderHeading
+    {
+        get => GetValue(CommanderHeadingProperty);
+        set => SetValue(CommanderHeadingProperty, value);
     }
 
     public IBrush? MapBackground
@@ -124,40 +145,79 @@ public sealed class GuardianSiteMapControl : Control
 
         var grid = GridBrush ?? Brushes.Gray;
         var accent = AccentBrush ?? Brushes.Cyan;
-        var center = bounds.Center;
+        var viewportCenter = bounds.Center;
         var radius = Math.Max(
             1,
             Math.Min(bounds.Width, bounds.Height) / 2 - 30);
-        var scale = radius / projection.MaximumDistance;
+        var fittedScale = radius / projection.MaximumDistance;
+        var scale = double.IsFinite(MapScale) && MapScale > 0
+            ? Math.Clamp(MapScale, 0.1, 15)
+            : fittedScale;
+        var mapOrigin = TransformMapPoint(
+            0,
+            0,
+            Proximity,
+            CommanderHeading,
+            viewportCenter,
+            scale);
+        var gridExtent = Math.Max(bounds.Width, bounds.Height) / scale * 2;
         var gridPen = new Pen(grid, 1, dashStyle: DashStyle.Dash);
         context.DrawLine(
             gridPen,
-            new Point(center.X, bounds.Top + 18),
-            new Point(center.X, bounds.Bottom - 18));
+            TransformMapPoint(
+                0,
+                -gridExtent,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale),
+            TransformMapPoint(
+                0,
+                gridExtent,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale));
         context.DrawLine(
             gridPen,
-            new Point(bounds.Left + 18, center.Y),
-            new Point(bounds.Right - 18, center.Y));
+            TransformMapPoint(
+                -gridExtent,
+                0,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale),
+            TransformMapPoint(
+                gridExtent,
+                0,
+                Proximity,
+                CommanderHeading,
+                viewportCenter,
+                scale));
         for (var ring = 1; ring <= 4; ring++)
         {
-            var ringRadius = radius * ring / 4;
+            var ringRadius = projection.MaximumDistance * scale * ring / 4;
             context.DrawEllipse(
                 null,
                 gridPen,
-                center,
+                mapOrigin,
                 ringRadius,
                 ringRadius);
         }
 
-        context.DrawEllipse(accent, null, center, 3, 3);
+        context.DrawEllipse(accent, null, mapOrigin, 3, 3);
         foreach (var point in projection.Points)
         {
             DrawPoint(
                 context,
                 point,
-                new Point(
-                    center.X + point.X * scale,
-                    center.Y + point.Y * scale));
+                TransformMapPoint(
+                    point.X,
+                    point.Y,
+                    Proximity,
+                    CommanderHeading,
+                    viewportCenter,
+                    scale));
         }
 
         foreach (var group in projection.Groups)
@@ -165,44 +225,53 @@ public sealed class GuardianSiteMapControl : Control
             DrawGroup(
                 context,
                 group,
-                new Point(
-                    center.X + group.X * scale,
-                    center.Y + group.Y * scale));
+                TransformMapPoint(
+                    group.X,
+                    group.Y,
+                    Proximity,
+                    CommanderHeading,
+                    viewportCenter,
+                    scale));
         }
 
-        if (Proximity is { } proximity)
+        if (Proximity is not null)
         {
-            DrawCommander(
-                context,
-                bounds,
-                center,
-                radius,
-                scale,
-                proximity);
+            DrawCommander(context, viewportCenter);
         }
+    }
+
+    public static Point TransformMapPoint(
+        double x,
+        double y,
+        GuardianSiteProximitySnapshot? proximity,
+        double commanderHeading,
+        Point viewportCenter,
+        double scale)
+    {
+        if (!double.IsFinite(scale) || scale <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(scale));
+        }
+
+        var relativeX = x - (proximity?.MapX ?? 0);
+        var relativeY = y - (proximity?.MapY ?? 0);
+        var heading = double.IsFinite(commanderHeading)
+            ? commanderHeading
+            : 0;
+        var radians = heading * Math.PI / 180;
+        var rotatedX = (relativeX * Math.Cos(radians))
+            + (relativeY * Math.Sin(radians));
+        var rotatedY = (-relativeX * Math.Sin(radians))
+            + (relativeY * Math.Cos(radians));
+        return new Point(
+            viewportCenter.X + rotatedX * scale,
+            viewportCenter.Y + rotatedY * scale);
     }
 
     private void DrawCommander(
         DrawingContext context,
-        Rect bounds,
-        Point center,
-        double radius,
-        double scale,
-        GuardianSiteProximitySnapshot proximity)
+        Point location)
     {
-        var x = proximity.MapX * scale;
-        var y = proximity.MapY * scale;
-        var length = Math.Sqrt((x * x) + (y * y));
-        if (length > radius && length > 0)
-        {
-            var clamp = radius / length;
-            x *= clamp;
-            y *= clamp;
-        }
-
-        var location = new Point(
-            Math.Clamp(center.X + x, bounds.Left + 12, bounds.Right - 12),
-            Math.Clamp(center.Y + y, bounds.Top + 12, bounds.Bottom - 12));
         var brush = PresentBrush ?? Brushes.LimeGreen;
         var pen = new Pen(brush, 2);
         context.DrawEllipse(MapBackground, pen, location, 7, 7);
