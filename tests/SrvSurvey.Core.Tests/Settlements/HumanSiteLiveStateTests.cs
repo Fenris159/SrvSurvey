@@ -163,6 +163,31 @@ public sealed class HumanSiteLiveStateTests
         Assert.Equal(350, state.CurrentSite.Heading);
     }
 
+    [Fact]
+    public void SavedKnowledgeRestoresPriorGeometryForCurrentSiteOnly()
+    {
+        var state = CreateState();
+        state.Apply(Parse(ApproachJson));
+        var knowledge = new HumanSiteKnowledge(
+            "Haberlandt Survey",
+            12345,
+            42,
+            3,
+            HumanSiteEconomy.Agriculture,
+            "$economy_Agri;",
+            new HumanSiteSurfaceLocation(12.5, -45.25),
+            4,
+            275,
+            new HumanSiteLandingPads(2, 0, 1),
+            HumanSiteGeometrySource.AutoDock);
+
+        Assert.True(state.ApplyKnowledge(knowledge));
+        Assert.Equal(4, state.CurrentSite!.SubType);
+        Assert.Equal(275, state.CurrentSite.Heading);
+        Assert.Equal("Fornax", state.CurrentSite.Template!.Name);
+        Assert.False(state.ApplyKnowledge(knowledge with { MarketId = 999 }));
+    }
+
     private static HumanSiteLiveState CreateState()
     {
         return new HumanSiteLiveState(

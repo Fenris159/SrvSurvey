@@ -48,6 +48,47 @@ public sealed class HumanSiteLiveState(
         return true;
     }
 
+    public bool ApplyKnowledge(HumanSiteKnowledge knowledge)
+    {
+        ArgumentNullException.ThrowIfNull(knowledge);
+        if (CurrentSite is null
+            || CurrentSite.MarketId != knowledge.MarketId
+            || CurrentSite.SystemAddress != knowledge.SystemAddress
+            || CurrentSite.Economy != knowledge.Economy)
+        {
+            return false;
+        }
+
+        var template = knowledge.SubType > 0
+            ? templates.Find(knowledge.Economy, knowledge.SubType)
+            : null;
+        var heading = knowledge.Heading is { } savedHeading
+            ? SurfaceNavigation.NormalizeDegrees(savedHeading)
+            : CurrentSite.Heading;
+        var pads = knowledge.AvailablePads.Total > 0
+            ? knowledge.AvailablePads
+            : CurrentSite.AvailablePads;
+        var subType = template?.SubType ?? CurrentSite.SubType;
+        template ??= CurrentSite.Template;
+        if (CurrentSite.SubType == subType
+            && CurrentSite.Template == template
+            && CurrentSite.Heading == heading
+            && CurrentSite.AvailablePads == pads)
+        {
+            return false;
+        }
+
+        CurrentSite = CurrentSite with
+        {
+            SubType = subType,
+            Template = template,
+            Heading = heading,
+            AvailablePads = pads,
+        };
+        Version++;
+        return true;
+    }
+
     public bool Apply(JournalEventEnvelope journalEvent)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
@@ -552,4 +593,27 @@ public enum HumanSiteDockingStatus
     Granted,
     Denied,
     Docked,
+}
+
+public sealed record HumanSiteKnowledge(
+    string Name,
+    long MarketId,
+    long SystemAddress,
+    int BodyId,
+    HumanSiteEconomy Economy,
+    string EconomyToken,
+    HumanSiteSurfaceLocation Location,
+    int SubType,
+    double? Heading,
+    HumanSiteLandingPads AvailablePads,
+    HumanSiteGeometrySource GeometrySource);
+
+public enum HumanSiteGeometrySource
+{
+    Unknown,
+    PadConfig,
+    AutoDock,
+    ManualDock,
+    ManualFoot,
+    TaxiDock,
 }
