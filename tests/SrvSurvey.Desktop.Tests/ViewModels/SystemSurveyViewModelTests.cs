@@ -416,6 +416,47 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(viewModel.ShouldShowBioSystem);
     }
 
+    [Fact]
+    public void BiologySurveyShowsExactCriteriaPredictionsAndHonorsDisableSetting()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""),
+                Parse(PredictableAleoidaScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.SystemMap });
+
+        var systemSurvey = Assert.IsType<BiologySurveyViewModel>(
+            viewModel.BiologySurvey);
+        var bodySummary = Assert.Single(systemSurvey.Bodies);
+        Assert.True(bodySummary.HasPredictedReward);
+        Assert.StartsWith("Estimated reward:", systemSurvey.RewardSummary);
+
+        viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.Fss });
+
+        var bodySurvey = Assert.IsType<BiologySurveyViewModel>(
+            viewModel.BiologySurvey);
+        var prediction = Assert.Single(bodySurvey.Organisms);
+        Assert.Equal("Aleoida Coronamus - Lime", prediction.DisplayName);
+        Assert.Equal("Aleoida", prediction.GenusName);
+        Assert.True(prediction.IsPrediction);
+        Assert.False(prediction.IsGenusIdentified);
+        Assert.True(prediction.HasReward);
+        Assert.False(bodySurvey.HasPredictionStatus);
+        Assert.StartsWith("Estimated reward:", bodySurvey.RewardSummary);
+
+        viewModel.DisableBioPredictions = true;
+
+        var genus = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        Assert.Equal("Aleoida", genus.DisplayName);
+        Assert.False(genus.IsPrediction);
+        Assert.True(genus.IsGenusIdentified);
+        Assert.Equal("Reward pending identification", viewModel.BiologySurvey.RewardSummary);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -491,6 +532,34 @@ public sealed class SystemSurveyViewModelTests : IDisposable
           "WasDiscovered":false,
           "WasMapped":false,
           "WasFootfalled":false
+        }
+        """;
+
+    private const string PredictableAleoidaScan = """
+        {
+          "event":"Scan",
+          "ScanType":"Detailed",
+          "StarSystem":"Test",
+          "SystemAddress":42,
+          "BodyName":"Test 1",
+          "BodyID":1,
+          "Parents":[{"Star":0}],
+          "DistanceFromArrivalLS":500,
+          "PlanetClass":"Rocky body",
+          "Atmosphere":"thin carbon dioxide atmosphere",
+          "AtmosphereType":"CarbonDioxide",
+          "AtmosphereComposition":[
+            {"Name":"CarbonDioxide","Percent":100}
+          ],
+          "Volcanism":"",
+          "MassEM":0.1,
+          "Radius":6000000,
+          "SurfaceGravity":2,
+          "SurfaceTemperature":185,
+          "SurfacePressure":3000,
+          "SemiMajorAxis":100000,
+          "Landable":true,
+          "Materials":[{"Name":"Iron","Percent":20}]
         }
         """;
 }

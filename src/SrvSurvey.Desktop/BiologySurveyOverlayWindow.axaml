@@ -129,6 +129,18 @@
             </StackPanel>
           </Border>
 
+          <Border Padding="10"
+                  Background="{DynamicResource RavenSurfaceBrush}"
+                  BorderBrush="{DynamicResource RavenBorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  IsVisible="{Binding Survey.BiologySurvey.HasPredictionStatus}">
+            <TextBlock Classes="muted"
+                       FontSize="10"
+                       Text="{Binding Survey.BiologySurvey.PredictionStatus}"
+                       TextWrapping="Wrap" />
+          </Border>
+
           <ItemsControl IsVisible="{Binding Survey.BiologySurvey.IsBodyDetail}"
                         ItemsSource="{Binding Survey.BiologySurvey.Organisms}">
             <ItemsControl.ItemTemplate>
@@ -207,6 +219,14 @@
                         <Border Margin="0,0,5,0"
                                 Classes="badge"
                                 IsVisible="{Binding IsPrediction}">
+                          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                     FontSize="8"
+                                     FontWeight="Bold"
+                                     Text="PREDICTED" />
+                        </Border>
+                        <Border Margin="0,0,5,0"
+                                Classes="badge"
+                                IsVisible="{Binding IsGenusIdentified}">
                           <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                                      FontSize="8"
                                      FontWeight="Bold"

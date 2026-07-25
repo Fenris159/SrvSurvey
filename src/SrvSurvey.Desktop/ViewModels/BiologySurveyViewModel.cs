@@ -13,6 +13,7 @@ public sealed record BiologySurveyViewModel(
     string RewardSummary,
     string FirstFootfallRewardSummary,
     bool RequiresDss,
+    string PredictionStatus,
     int GeologicalSignalCount,
     IReadOnlyList<string> GeologicalSignals)
 {
@@ -30,6 +31,9 @@ public sealed record BiologySurveyViewModel(
         FirstFootfallRewardSummary);
 
     public bool HasGeologicalSignals => GeologicalSignalCount > 0;
+
+    public bool HasPredictionStatus => !string.IsNullOrWhiteSpace(
+        PredictionStatus);
 
     public int UnidentifiedGeologicalSignalCount => Math.Max(
         0,
@@ -50,7 +54,8 @@ public sealed record BiologySurveyViewModel(
         bool drawBodyBiosOnlyWhenNear,
         bool highlightRegionalFirsts,
         bool dimAnalyzedOrganisms,
-        bool hideGeoCount)
+        bool hideGeoCount,
+        bool disablePredictions)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
@@ -69,46 +74,67 @@ public sealed record BiologySurveyViewModel(
             biologicalBodies,
             drawBodyBiosOnlyWhenNear);
         return body is null
-            ? CreateSystem(snapshot, status, biologicalBodies)
+            ? CreateSystem(
+                snapshot,
+                status,
+                biologicalBodies,
+                disablePredictions)
             : CreateBody(
+                snapshot,
                 body,
                 exobiology,
                 highlightRegionalFirsts,
                 dimAnalyzedOrganisms,
-                hideGeoCount);
+                hideGeoCount,
+                disablePredictions);
     }
 
     private static BiologySurveyViewModel CreateSystem(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
-        IReadOnlyList<SystemScanBodySnapshot> biologicalBodies)
+        IReadOnlyList<SystemScanBodySnapshot> biologicalBodies,
+        bool disablePredictions)
     {
         var destinationBodyId = status?.Destination is { } destination
             && destination.System == snapshot.SystemAddress
             ? destination.Body
             : (int?)null;
         var currentBodyId = ResolveCurrentBody(snapshot, status)?.BodyId;
-        var rows = biologicalBodies
+        var rowData = biologicalBodies
             .Select(body =>
             {
-                var knownReward = body.Organisms.Sum(
-                    organism => organism.Reward ?? 0);
-                return new BiologyBodyRowViewModel(
+                var predictions = CreatePredictions(
+                    snapshot,
+                    body,
+                    disablePredictions);
+                var estimate = CreateRewardEstimate(body, predictions);
+                var row = new BiologyBodyRowViewModel(
                     body.ShortName,
                     body.AnalyzedBiologicalSignalCount,
                     body.BiologicalSignalCount,
-                    knownReward,
-                    body.Organisms.Count(organism => organism.Reward is not null)
-                        < body.BiologicalSignalCount,
+                    estimate.KnownReward,
+                    estimate.MinimumReward,
+                    estimate.MaximumReward,
+                    estimate.HasPredictedReward,
+                    estimate.HasUnknownReward,
                     body.BodyId == destinationBodyId,
                     body.BodyId == currentBodyId);
+                return new { Row = row, Estimate = estimate };
             })
             .ToArray();
+        var rows = rowData.Select(item => item.Row).ToArray();
         var analyzed = biologicalBodies.Sum(
             body => body.AnalyzedBiologicalSignalCount);
         var total = biologicalBodies.Sum(body => body.BiologicalSignalCount);
         var knownSystemReward = rows.Sum(row => row.KnownReward);
-        var hasUnknownReward = rows.Any(row => row.HasUnknownReward);
+        var minimumSystemReward = rowData.Sum(
+            item => item.Estimate.MinimumReward);
+        var maximumSystemReward = rowData.Sum(
+            item => item.Estimate.MaximumReward);
+        var hasPredictedReward = rowData.Any(
+            item => item.Estimate.HasPredictedReward);
+        var hasUnknownReward = rowData.Any(
+            item => item.Estimate.HasUnknownReward);
 
         return new BiologySurveyViewModel(
             BiologySurveyMode.System,
@@ -116,39 +142,90 @@ public sealed record BiologySurveyViewModel(
             $"{analyzed:N0} of {total:N0} biological signals analyzed",
             rows,
             [],
-            FormatKnownReward(knownSystemReward, hasUnknownReward),
+            hasPredictedReward
+                ? FormatEstimatedReward(
+                    minimumSystemReward,
+                    maximumSystemReward,
+                    hasUnknownReward)
+                : FormatKnownReward(knownSystemReward, hasUnknownReward),
             string.Empty,
             false,
+            string.Empty,
             0,
             []);
     }
 
     private static BiologySurveyViewModel CreateBody(
+        SystemScanSnapshot snapshot,
         SystemScanBodySnapshot body,
         ExobiologySnapshot exobiology,
         bool highlightRegionalFirsts,
         bool dimAnalyzedOrganisms,
-        bool hideGeoCount)
+        bool hideGeoCount,
+        bool disablePredictions)
     {
-        var organisms = body.Organisms
-            .Select(organism => CreateOrganism(
+        var predictionSet = CreatePredictions(
+            snapshot,
+            body,
+            disablePredictions);
+        var predictionsByGenus = predictionSet.Predictions
+            .GroupBy(
+                prediction => prediction.Prediction.Genus,
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+        var consumedPredictions = new HashSet<string>(StringComparer.Ordinal);
+        var organisms = new List<BiologyOrganismRowViewModel>();
+        foreach (var organism in body.Organisms)
+        {
+            var genusName = organism.GenusLocalized
+                ?? FormatJournalName(organism.Genus);
+            if (organism.Variant is null
+                && predictionsByGenus.TryGetValue(genusName, out var predictions))
+            {
+                foreach (var prediction in predictions)
+                {
+                    organisms.Add(CreatePrediction(
+                        body,
+                        prediction,
+                        exobiology));
+                    consumedPredictions.Add(prediction.Prediction.Name);
+                }
+
+                continue;
+            }
+
+            organisms.Add(CreateOrganism(
                 body,
                 organism,
                 exobiology,
                 highlightRegionalFirsts,
-                dimAnalyzedOrganisms))
-            .ToList();
+                dimAnalyzedOrganisms));
+        }
+
+        foreach (var prediction in predictionSet.Predictions.Where(
+                     prediction => !consumedPredictions.Contains(
+                         prediction.Prediction.Name)))
+        {
+            if (body.Organisms.Any(organism => prediction.Reference is not null
+                    && (organism.Variant == prediction.Reference.VariantName
+                        || organism.Species == prediction.Reference.SpeciesName)))
+            {
+                continue;
+            }
+
+            organisms.Add(CreatePrediction(body, prediction, exobiology));
+        }
+
         while (organisms.Count < body.BiologicalSignalCount)
         {
             organisms.Add(BiologyOrganismRowViewModel.Unknown(
                 organisms.Count + 1));
         }
 
-        var knownReward = body.Organisms.Sum(
-            organism => organism.Reward ?? 0);
-        var hasUnknownReward = body.Organisms.Count(
-            organism => organism.Reward is not null)
-            < body.BiologicalSignalCount;
+        var rewardEstimate = CreateRewardEstimate(body, predictionSet);
         var geoCount = hideGeoCount ? 0 : body.GeologicalSignalCount;
         var geoSignals = hideGeoCount
             ? []
@@ -162,11 +239,25 @@ public sealed record BiologySurveyViewModel(
                 : $"{body.BiologicalSignalCount:N0} biological signals",
             [],
             organisms,
-            FormatKnownReward(knownReward, hasUnknownReward),
-            body.IsFirstFootfall && knownReward > 0
-                ? $"First-footfall value: {FormatCredits(knownReward * 5)}"
+            rewardEstimate.HasPredictedReward
+                ? FormatEstimatedReward(
+                    rewardEstimate.MinimumReward,
+                    rewardEstimate.MaximumReward,
+                    rewardEstimate.HasUnknownReward)
+                : FormatKnownReward(
+                    rewardEstimate.KnownReward,
+                    rewardEstimate.HasUnknownReward),
+            body.IsFirstFootfall && rewardEstimate.MaximumReward > 0
+                ? rewardEstimate.HasPredictedReward
+                    ? "First-footfall estimate: " + FormatRewardRange(
+                        rewardEstimate.MinimumReward * 5,
+                        rewardEstimate.MaximumReward * 5,
+                        rewardEstimate.HasUnknownReward)
+                    : "First-footfall value: "
+                        + FormatCredits(rewardEstimate.KnownReward * 5)
                 : string.Empty,
             body.Organisms.Count == 0 && !body.IsDssComplete,
+            predictionSet.Status,
             geoCount,
             geoSignals);
     }
@@ -200,9 +291,135 @@ public sealed record BiologySurveyViewModel(
             organism.IsRegionalFirst,
             highlightRegionalFirsts && organism.IsRegionalFirst,
             activeSample,
+            false,
             organism.Variant is null,
             false,
             dimAnalyzedOrganisms && organism.IsAnalyzed);
+    }
+
+    private static BiologyOrganismRowViewModel CreatePrediction(
+        SystemScanBodySnapshot body,
+        BiologyPredictionPresentation prediction,
+        ExobiologySnapshot exobiology)
+    {
+        var activeSample = exobiology.ScanOne is { } scan
+            && string.Equals(scan.Body, body.Name, StringComparison.OrdinalIgnoreCase)
+            && body.Organisms.Any(organism => string.Equals(
+                    organism.GenusLocalized,
+                    prediction.Prediction.Genus,
+                    StringComparison.OrdinalIgnoreCase)
+                && string.Equals(
+                    organism.Genus,
+                    scan.Genus,
+                    StringComparison.Ordinal));
+        var reward = prediction.Reference?.Reward ?? 0;
+
+        return new BiologyOrganismRowViewModel(
+            prediction.Prediction.Name,
+            prediction.Prediction.Genus,
+            reward,
+            reward > 0,
+            false,
+            false,
+            false,
+            activeSample,
+            true,
+            false,
+            false,
+            false);
+    }
+
+    private static BiologyPredictionSet CreatePredictions(
+        SystemScanSnapshot snapshot,
+        SystemScanBodySnapshot body,
+        bool disablePredictions)
+    {
+        if (disablePredictions)
+        {
+            return BiologyPredictionSet.Empty;
+        }
+
+        var inputs = BiologyPredictionContextBuilder.Build(
+            snapshot,
+            body.BodyId);
+        if (inputs is null)
+        {
+            return new BiologyPredictionSet(
+                [],
+                "Predictions need complete body and parent-star scans.",
+                false);
+        }
+
+        var result = PredictionEvaluator.Value.Evaluate(
+            inputs.Context,
+            inputs.Knowledge);
+        if (!result.HasCompleteContext)
+        {
+            return new BiologyPredictionSet(
+                [],
+                "Predictions waiting for: "
+                    + string.Join(", ", result.MissingProperties),
+                false);
+        }
+
+        return new BiologyPredictionSet(
+            result.PredictionDetails
+                .Select(prediction => new BiologyPredictionPresentation(
+                    prediction,
+                    BioReferenceCatalog.Value.FindByDisplayName(
+                        prediction.Name)))
+                .ToArray(),
+            string.Empty,
+            true);
+    }
+
+    private static BiologyRewardEstimate CreateRewardEstimate(
+        SystemScanBodySnapshot body,
+        BiologyPredictionSet predictionSet)
+    {
+        var knownReward = body.Organisms.Sum(
+            organism => organism.Reward ?? 0);
+        var remainingSignals = Math.Max(
+            0,
+            body.BiologicalSignalCount
+                - body.Organisms.Count(organism => organism.Species is not null));
+        if (remainingSignals == 0)
+        {
+            return new BiologyRewardEstimate(
+                knownReward,
+                knownReward,
+                knownReward,
+                false,
+                false);
+        }
+
+        var rewardGroups = predictionSet.Predictions
+            .Where(prediction => prediction.Reference?.Reward > 0)
+            .GroupBy(
+                prediction => prediction.Prediction.Genus,
+                StringComparer.OrdinalIgnoreCase)
+            .Select(group => new
+            {
+                Minimum = group.Min(prediction => prediction.Reference!.Reward),
+                Maximum = group.Max(prediction => prediction.Reference!.Reward),
+            })
+            .ToArray();
+        var minimumAdd = rewardGroups
+            .OrderBy(group => group.Minimum)
+            .Take(remainingSignals)
+            .Sum(group => group.Minimum);
+        var maximumAdd = rewardGroups
+            .OrderByDescending(group => group.Maximum)
+            .Take(remainingSignals)
+            .Sum(group => group.Maximum);
+        var predictedCount = Math.Min(remainingSignals, rewardGroups.Length);
+
+        return new BiologyRewardEstimate(
+            knownReward,
+            knownReward + minimumAdd,
+            knownReward + maximumAdd,
+            predictedCount > 0,
+            !predictionSet.IsComplete || predictedCount < remainingSignals);
     }
 
     private static SystemScanBodySnapshot? ResolveBody(
@@ -269,6 +486,26 @@ public sealed record BiologySurveyViewModel(
             : $"Total reward: {FormatCredits(reward)}";
     }
 
+    private static string FormatEstimatedReward(
+        long minimum,
+        long maximum,
+        bool hasUnknown)
+    {
+        return "Estimated reward: "
+            + FormatRewardRange(minimum, maximum, hasUnknown);
+    }
+
+    private static string FormatRewardRange(
+        long minimum,
+        long maximum,
+        bool hasUnknown)
+    {
+        var range = minimum == maximum
+            ? FormatCredits(minimum)
+            : $"{FormatCredits(minimum)} – {FormatCredits(maximum)}";
+        return hasUnknown ? range + " + pending" : range;
+    }
+
     private static string FormatCredits(long value)
     {
         return value switch
@@ -291,6 +528,35 @@ public sealed record BiologySurveyViewModel(
             ? "Unidentified organism"
             : normalized;
     }
+
+    private static readonly Lazy<BiologyPredictionEvaluator> PredictionEvaluator =
+        new(() => new BiologyPredictionEvaluator(
+            BiologyCriteriaCatalog.LoadEmbedded()));
+
+    private static readonly Lazy<ExobiologyReferenceCatalog> BioReferenceCatalog =
+        new(ExobiologyReferenceCatalog.LoadEmbedded);
+
+    private sealed record BiologyPredictionPresentation(
+        BiologyPrediction Prediction,
+        ExobiologyReference? Reference);
+
+    private sealed record BiologyPredictionSet(
+        IReadOnlyList<BiologyPredictionPresentation> Predictions,
+        string Status,
+        bool IsComplete)
+    {
+        public static BiologyPredictionSet Empty { get; } = new(
+            [],
+            string.Empty,
+            false);
+    }
+
+    private sealed record BiologyRewardEstimate(
+        long KnownReward,
+        long MinimumReward,
+        long MaximumReward,
+        bool HasPredictedReward,
+        bool HasUnknownReward);
 }
 
 public enum BiologySurveyMode
@@ -304,6 +570,9 @@ public sealed record BiologyBodyRowViewModel(
     int AnalyzedSignalCount,
     int SignalCount,
     long KnownReward,
+    long MinimumReward,
+    long MaximumReward,
+    bool HasPredictedReward,
     bool HasUnknownReward,
     bool IsDestination,
     bool IsCurrentBody)
@@ -313,13 +582,17 @@ public sealed record BiologyBodyRowViewModel(
     public bool IsComplete => SignalCount > 0
         && AnalyzedSignalCount >= SignalCount;
 
-    public string RewardText => KnownReward <= 0
+    public string RewardText => HasPredictedReward
+        ? MinimumReward == MaximumReward
+            ? $"~{MinimumReward / 1_000_000d:N2} M CR"
+            : $"{MinimumReward / 1_000_000d:N2}–{MaximumReward / 1_000_000d:N2} M CR"
+        : KnownReward <= 0
         ? ""
         : HasUnknownReward
             ? $"{KnownReward / 1_000_000d:N2} M+ CR"
             : $"{KnownReward / 1_000_000d:N2} M CR";
 
-    public bool HasReward => KnownReward > 0;
+    public bool HasReward => KnownReward > 0 || HasPredictedReward;
 }
 
 public sealed record BiologyOrganismRowViewModel(
@@ -332,6 +605,7 @@ public sealed record BiologyOrganismRowViewModel(
     bool IsHighlightedFirst,
     bool IsCurrentSample,
     bool IsPrediction,
+    bool IsGenusIdentified,
     bool IsUnknown,
     bool ShouldDim)
 {
@@ -351,6 +625,7 @@ public sealed record BiologyOrganismRowViewModel(
             $"Unidentified biological signal {index:N0}",
             "Genus unknown",
             0,
+            false,
             false,
             false,
             false,

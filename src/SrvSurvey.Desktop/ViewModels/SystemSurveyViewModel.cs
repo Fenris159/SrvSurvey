@@ -217,7 +217,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool DisableBioPredictions
     {
         get => disableBioPredictions;
-        set => SetPreference(ref disableBioPredictions, value);
+        set
+        {
+            if (SetPreference(ref disableBioPredictions, value))
+            {
+                RefreshDisplay();
+            }
+        }
     }
 
     public bool AutoShowLastFssBody
@@ -868,7 +874,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             DrawBodyBiosOnlyWhenNear,
             HighlightRegionalFirsts,
             DimAnalyzedOrganisms,
-            HideGeoCountInBioSystem);
+            HideGeoCountInBioSystem,
+            DisableBioPredictions);
         BodyInformation = CreateBodyInformation(
             ResolveBodyInfoTarget(forceShowBodyInfo
                 || status?.GuiFocus is GuiFocus.SystemMap or GuiFocus.Orrery));
