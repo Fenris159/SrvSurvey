@@ -1,0 +1,207 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.BiologyStatusOverlayWindow"
+        x:DataType="vm:SystemSurveyOverlayViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="480"
+        d:DesignHeight="176"
+        Width="480"
+        MinHeight="104"
+        MaxHeight="260"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey biology status overlay">
+  <Border Margin="8"
+          Padding="14,12"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="12"
+          Opacity="0.97">
+    <StackPanel IsVisible="{Binding Survey.HasBiologyStatus}"
+                Spacing="8">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel Orientation="Horizontal" Spacing="9">
+          <TextBlock Classes="eyebrow"
+                     VerticalAlignment="Center"
+                     Text="GENETIC SAMPLER" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontWeight="SemiBold"
+                     Text="{Binding Survey.BiologyStatus.BodyName}"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <StackPanel Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="8">
+          <TextBlock Classes="monospace"
+                     FontSize="10"
+                     FontWeight="SemiBold"
+                     Text="{Binding Survey.BiologyStatus.ProgressText}" />
+          <Border Classes="badge">
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="8"
+                       FontWeight="Bold"
+                       Text="{Binding InputMode}" />
+          </Border>
+        </StackPanel>
+      </Grid>
+
+      <ProgressBar Height="4"
+                   Minimum="0"
+                   Maximum="100"
+                   Value="{Binding Survey.BiologyStatus.TrackedCompletionPercent}" />
+
+      <Border Padding="10,8"
+              Background="{DynamicResource RavenAccentMutedBrush}"
+              CornerRadius="8"
+              IsVisible="{Binding Survey.BiologyStatus.RequiresDss}">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontWeight="Bold"
+                     Text="DSS" />
+          <TextBlock Grid.Column="1"
+                     Classes="muted"
+                     Text="Biological signals detected · map the body to identify genera"
+                     TextWrapping="Wrap" />
+        </Grid>
+      </Border>
+
+      <Grid IsVisible="{Binding Survey.BiologyStatus.HasActiveSample}"
+            ColumnDefinitions="Auto,*"
+            ColumnSpacing="12">
+        <StackPanel Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Spacing="5">
+          <Grid Width="25" Height="25">
+            <Ellipse Stroke="{DynamicResource RavenAccentBrush}"
+                     StrokeThickness="1.5" />
+            <Ellipse Margin="5"
+                     Fill="{DynamicResource RavenAccentBrush}"
+                     IsVisible="{Binding Survey.BiologyStatus.ActiveSample.IsFirstSampleComplete}" />
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="9"
+                       FontWeight="Bold"
+                       Text="1" />
+          </Grid>
+          <Grid Width="25" Height="25">
+            <Ellipse Stroke="{DynamicResource RavenAccentBrush}"
+                     StrokeThickness="1.5" />
+            <Ellipse Margin="5"
+                     Fill="{DynamicResource RavenAccentBrush}"
+                     IsVisible="{Binding Survey.BiologyStatus.ActiveSample.IsSecondSampleComplete}" />
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="9"
+                       FontWeight="Bold"
+                       Text="2" />
+          </Grid>
+          <Grid Width="25" Height="25">
+            <Ellipse Stroke="{DynamicResource RavenAccentBrush}"
+                     StrokeThickness="1.5" />
+            <TextBlock HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="9"
+                       FontWeight="Bold"
+                       Text="3" />
+          </Grid>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Spacing="5">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <StackPanel Spacing="1">
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontSize="15"
+                         FontWeight="SemiBold"
+                         Text="{Binding Survey.BiologyStatus.ActiveSample.DisplayName}"
+                         TextTrimming="CharacterEllipsis" />
+              <TextBlock Classes="muted"
+                         FontSize="9"
+                         Text="{Binding Survey.BiologyStatus.ActiveSample.StageText}" />
+            </StackPanel>
+            <TextBlock Grid.Column="1"
+                       Classes="monospace"
+                       Foreground="{DynamicResource RavenWarningBrush}"
+                       FontSize="10"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Right"
+                       IsVisible="{Binding Survey.BiologyStatus.ActiveSample.HasReward}"
+                       Text="{Binding Survey.BiologyStatus.ActiveSample.RewardText}" />
+          </Grid>
+          <ProgressBar Height="4"
+                       Minimum="0"
+                       Maximum="100"
+                       Value="{Binding Survey.BiologyStatus.ActiveSample.SeparationPercent}" />
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <TextBlock Classes="muted"
+                       FontSize="9"
+                       Text="{Binding Survey.BiologyStatus.ActiveSample.DistanceText}"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="1"
+                       Classes="monospace"
+                       Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="9"
+                       Text="{Binding Survey.BiologyStatus.ActiveSample.RequiredDistanceText}" />
+          </Grid>
+        </StackPanel>
+      </Grid>
+
+      <ItemsControl IsVisible="{Binding Survey.BiologyStatus.ShowSignalSummary}"
+                    ItemsSource="{Binding Survey.BiologyStatus.Signals}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:BiologyStatusSignalViewModel">
+            <Border Margin="0,0,6,5"
+                    Padding="8,4"
+                    Background="{DynamicResource RavenSurfaceBrush}"
+                    BorderBrush="{DynamicResource RavenBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="7"
+                    Opacity="{Binding RowOpacity}">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Border Width="3"
+                        Background="{DynamicResource RavenAccentBrush}"
+                        CornerRadius="2"
+                        IsVisible="{Binding IsActive}" />
+                <TextBlock FontSize="10"
+                           Text="{Binding DisplayText}" />
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <Border Padding="9,6"
+              Background="{DynamicResource RavenAccentMutedBrush}"
+              CornerRadius="7"
+              IsVisible="{Binding Survey.BiologyStatus.HasWarning}">
+        <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                   FontSize="10"
+                   FontWeight="SemiBold"
+                   Text="{Binding Survey.BiologyStatus.Warning}"
+                   TextWrapping="Wrap" />
+      </Border>
+
+      <TextBlock Classes="muted"
+                 FontSize="9"
+                 HorizontalAlignment="Center"
+                 IsVisible="{Binding Survey.BiologyStatus.HasFooter}"
+                 Text="{Binding Survey.BiologyStatus.Footer}"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+  </Border>
+</Window>

@@ -53,6 +53,8 @@ public sealed class BiologyStatusViewModelTests : IDisposable
             viewModel.BiologyStatus);
         Assert.Equal("1", status.BodyName);
         Assert.Equal("0 of 2 analyzed", status.ProgressText);
+        Assert.Equal(0, status.CompletionPercent);
+        Assert.Equal(50, status.TrackedCompletionPercent);
         Assert.False(status.RequiresDss);
         Assert.Equal(4, status.Signals.Count);
         Assert.True(Assert.Single(
@@ -130,7 +132,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         var status = Assert.IsType<BiologyStatusViewModel>(
             viewModel.BiologyStatus);
         Assert.True(status.RequiresDss);
-        Assert.Contains("DSS", status.Footer);
+        Assert.False(status.HasFooter);
         Assert.True(viewModel.ShouldShowBioStatus);
 
         viewModel.ApplyUpdate([], new EliteStatus

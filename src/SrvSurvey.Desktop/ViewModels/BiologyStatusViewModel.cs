@@ -20,6 +20,8 @@ public sealed record BiologyStatusViewModel(
 
     public bool HasActiveSample => ActiveSample is not null;
 
+    public bool ShowSignalSummary => HasSignals && !HasActiveSample;
+
     public bool HasWarning => !string.IsNullOrWhiteSpace(Warning);
 
     public bool HasFooter => !string.IsNullOrWhiteSpace(Footer);
@@ -31,6 +33,14 @@ public sealed record BiologyStatusViewModel(
         ? 0
         : Math.Clamp(
             AnalyzedSignalCount * 100d / SignalCount,
+            0,
+            100);
+
+    public double TrackedCompletionPercent => SignalCount <= 0
+        ? 0
+        : Math.Clamp(
+            (AnalyzedSignalCount + (HasActiveSample ? 1 : 0))
+                * 100d / SignalCount,
             0,
             100);
 
@@ -93,7 +103,7 @@ public sealed record BiologyStatusViewModel(
                 : allAnalyzed
                     ? "All biological signals analyzed."
                     : body.Organisms.Count == 0
-                        ? "Map this body with the DSS to identify its biological genera."
+                        ? string.Empty
                         : body.IsFirstFootfall
                             ? "First-footfall rewards apply to analyzed organisms."
                             : "Use the Composition Scanner to identify organisms.";
@@ -263,6 +273,10 @@ public sealed record BiologyStatusSignalViewModel(
     bool IsGeological)
 {
     public bool HasDetail => !string.IsNullOrWhiteSpace(Detail);
+
+    public string DisplayText => HasDetail ? $"{Name} · {Detail}" : Name;
+
+    public double RowOpacity => IsAnalyzed ? 0.52 : 1;
 }
 
 public sealed record BiologyActiveSampleViewModel(

@@ -15,12 +15,14 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private BiologySurveyOverlayWindow? biologyWindow;
+    private BiologyStatusOverlayWindow? biologyStatusWindow;
     private BodyInformationOverlayWindow? bodyInfoWindow;
     private FssInfoOverlayWindow? fssWindow;
     private LastFssBodyOverlayWindow? lastFssBodyWindow;
     private SystemStatusOverlayWindow? statusWindow;
     private bool isSuppressed;
     private bool isBiologyObscured;
+    private bool isBiologyStatusObscured;
     private bool isBodyInfoObscured;
     private bool isFssObscured;
     private bool disposed;
@@ -51,6 +53,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     public event EventHandler? VisibilityChanged;
 
     public bool IsVisible => biologyWindow is not null
+        || biologyStatusWindow is not null
         || bodyInfoWindow is not null
         || fssWindow is not null
         || lastFssBodyWindow is not null
@@ -63,6 +66,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     public bool IsBodyInfoVisible => bodyInfoWindow is not null;
 
     public bool IsBiologyVisible => biologyWindow is not null;
+
+    public bool IsBiologyStatusVisible => biologyStatusWindow is not null;
 
     public bool IsSuppressed => isSuppressed;
 
@@ -110,6 +115,17 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         SynchronizeWindows();
     }
 
+    public void SetBiologyStatusObscured(bool value)
+    {
+        if (disposed || value == isBiologyStatusObscured)
+        {
+            return;
+        }
+
+        isBiologyStatusObscured = value;
+        SynchronizeWindows();
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -122,6 +138,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         timer.Tick -= OnTimerTick;
         survey.PropertyChanged -= OnSurveyPropertyChanged;
         CloseBiologyWindow();
+        CloseBiologyStatusWindow();
         CloseBodyInfoWindow();
         CloseFssWindow();
         CloseLastFssBodyWindow();
@@ -143,6 +160,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             or nameof(SystemSurveyViewModel.ShouldShowLastFssBody)
             or nameof(SystemSurveyViewModel.ShouldShowBodyInfo)
             or nameof(SystemSurveyViewModel.ShouldShowBioSystem)
+            or nameof(SystemSurveyViewModel.ShouldShowBioStatus)
             or nameof(SystemSurveyViewModel.ShouldShowSystemStatus)
             or nameof(SystemSurveyViewModel.IsFssInfoForced)
             or nameof(SystemSurveyViewModel.IsBodyInfoForced))
@@ -178,12 +196,48 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         var showBiology = platformReady
             && survey.ShouldShowBioSystem
             && !isBiologyObscured;
+        var showBiologyStatus = platformReady
+            && survey.ShouldShowBioStatus
+            && !isBiologyStatusObscured;
 
         SynchronizeBodyInfoWindow(showBodyInfo);
         SynchronizeFssWindow(showFss);
         SynchronizeLastFssBodyWindow(showLastFssBody);
         SynchronizeStatusWindow(showStatus);
         SynchronizeBiologyWindow(showBiology);
+        SynchronizeBiologyStatusWindow(showBiologyStatus);
+    }
+
+    private void SynchronizeBiologyStatusWindow(bool show)
+    {
+        if (!show)
+        {
+            CloseBiologyStatusWindow();
+            return;
+        }
+
+        if (biologyStatusWindow is not null)
+        {
+            PositionTopCenter(biologyStatusWindow, gameWindow.ClientBounds);
+            return;
+        }
+
+        var overlay = new BiologyStatusOverlayWindow(viewModel);
+        overlay.Opened += (_, _) => PrepareWindow(
+            overlay,
+            PositionTopCenter,
+            CloseBiologyStatusWindow);
+        overlay.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(biologyStatusWindow, overlay))
+            {
+                biologyStatusWindow = null;
+                VisibilityChanged?.Invoke(this, EventArgs.Empty);
+            }
+        };
+        biologyStatusWindow = overlay;
+        overlay.Show();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void SynchronizeBiologyWindow(bool show)
@@ -441,6 +495,19 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         biologyWindow = null;
+        overlay.Close();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void CloseBiologyStatusWindow()
+    {
+        var overlay = biologyStatusWindow;
+        if (overlay is null)
+        {
+            return;
+        }
+
+        biologyStatusWindow = null;
         overlay.Close();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
