@@ -112,6 +112,41 @@
 
       <Border Classes="card raised">
         <StackPanel Spacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Combat overlays" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Track Odyssey ground conflict-zone bonds and active ship massacre missions with the same journal rules as the original application." />
+          </StackPanel>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="eyebrow" Text="GROUND COMBAT" />
+              <CheckBox IsChecked="{Binding Combat.AutoShowFootCombat, Mode=TwoWay}"
+                        Content="Show ground combat-zone totals" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Appears below 100 m while on foot or in an SRV at a settlement whose faction is at war or civil war." />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="10">
+              <TextBlock Classes="eyebrow" Text="MASSACRE MISSIONS" />
+              <CheckBox IsChecked="{Binding Combat.AutoShowMassacreMissions, Mode=TwoWay}"
+                        Content="Track active massacre missions" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Shows remaining kills in flight, supercruise, station services, and the navigation panel. Progress is stored in the commander profile." />
+            </StackPanel>
+          </Grid>
+          <CheckBox IsChecked="{Binding Combat.SuppressForActiveBuildProjects, Mode=TwoWay}"
+                    Content="Hide combat overlays while Raven Colonial build projects are active" />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="{Binding Combat.HasStatusMessage}"
+                     TextWrapping="Wrap"
+                     Text="{Binding Combat.StatusMessage}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
           <CheckBox IsChecked="{Binding JumpInfo.AutoShow, Mode=TwoWay}"
                     Content="Show next-jump information automatically" />
           <TextBlock Margin="28,-8,0,0"

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
@@ -90,7 +91,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         ISystemSummaryClient? systemSummaryClient = null,
         JumpInfoSettingsStore? jumpInfoSettingsStore = null,
         SystemSurveySettingsStore? systemSurveySettingsStore = null,
-        BiologyPredictionsSettingsStore? biologyPredictionsSettingsStore = null)
+        BiologyPredictionsSettingsStore? biologyPredictionsSettingsStore = null,
+        CombatSettingsStore? combatSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -158,6 +160,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         SystemSurvey = new SystemSurveyViewModel(
             systemSurveySettingsStore
                 ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath));
+        Combat = new CombatViewModel(
+            combatSettingsStore
+                ?? new CombatSettingsStore(AppDataPaths.UiSettingsPath),
+            commanderProfileStore);
         var systemSurfaceStore = new SystemSurfaceStore(
             AppDataPaths.DataDirectory);
         SurfaceSurvey = new SurfaceSurveyViewModel(
@@ -286,6 +292,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public SystemSurveyViewModel SystemSurvey { get; }
 
     public SurfaceSurveyViewModel SurfaceSurvey { get; }
+
+    public CombatViewModel Combat { get; }
 
     public BiologyPredictionsViewModel BiologyPredictions { get; }
 
@@ -943,6 +951,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Guardian.UpdateCargo(update.Cargo);
         Colonization.UpdateCargo(update.Cargo);
         await Colonization.UpdateMarketAsync(update.Market);
+        Combat.SetActiveBuildProjects(Colonization.HasProjects);
+        await Combat.ApplyUpdateAsync(
+            update.JournalEvents,
+            update.Status,
+            processHistoricalProgress: !skipPersistedBootstrapEvents);
 
         if (update.Status is not null)
         {
@@ -1090,6 +1103,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         if (result.Data is null)
         {
             SurfaceSurvey.Reset();
+            Combat.LoadProfile(null, null, isOdyssey, CombatSnapshot.Empty);
             Colonization.SetCommanderProfile(null, isOdyssey, apiKey: null);
             ExplorationStatusMessage = result.Error
                 ?? "The commander profile could not be loaded.";
@@ -1114,6 +1128,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         explorationState.Reset(result.Data.Exploration);
         exobiologyState.Reset(result.Data.Exobiology);
         SurfaceSurvey.Reset(result.Data.Exobiology);
+        Combat.LoadProfile(
+            result.Data.FrontierId,
+            activeProfileCommanderName,
+            result.Data.IsOdyssey,
+            result.Data.Combat);
         Search.LoadProfile(
             result.Data.FrontierId,
             activeProfileCommanderName,

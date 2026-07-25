@@ -1,0 +1,85 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.MassacreMissionsOverlayWindow"
+        x:DataType="vm:CombatOverlayViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="380"
+        d:DesignHeight="260"
+        Width="380"
+        MinHeight="118"
+        MaxHeight="620"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey massacre mission overlay">
+  <Border Margin="8"
+          Padding="14,12"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="12"
+          Opacity="0.97">
+    <StackPanel Spacing="10">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="eyebrow" Text="MISSION TRACKER" />
+          <TextBlock FontSize="16"
+                     FontWeight="SemiBold"
+                     Text="Massacre missions" />
+        </StackPanel>
+        <Border Grid.Column="1" Classes="badge">
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="8"
+                     FontWeight="Bold"
+                     Text="{Binding InputMode}" />
+        </Border>
+      </Grid>
+
+      <ItemsControl ItemsSource="{Binding Combat.MassacreMissions}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:MassacreMissionViewModel">
+            <Border Margin="0,0,0,6"
+                    Padding="10,8"
+                    Background="{DynamicResource RavenSurfaceBrush}"
+                    CornerRadius="8"
+                    Opacity="{Binding RowOpacity}">
+              <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="9">
+                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                           FontWeight="Bold"
+                           Text="►" />
+                <StackPanel Grid.Column="1" Spacing="1">
+                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                             FontWeight="SemiBold"
+                             Text="{Binding TargetFaction}"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Classes="muted"
+                             FontSize="9"
+                             Text="{Binding MissionGiver}"
+                             TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <Border Grid.Column="2"
+                        Padding="8,4"
+                        Background="{DynamicResource RavenAccentMutedBrush}"
+                        CornerRadius="6">
+                  <TextBlock Classes="monospace"
+                             Foreground="{DynamicResource RavenWarningBrush}"
+                             FontWeight="Bold"
+                             Text="{Binding RemainingText}" />
+                </Border>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </Border>
+</Window>

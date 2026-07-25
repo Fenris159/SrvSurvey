@@ -1,0 +1,76 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.FootCombatOverlayWindow"
+        x:DataType="vm:CombatOverlayViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="320"
+        d:DesignHeight="176"
+        Width="320"
+        MinHeight="142"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey ground combat zone overlay">
+  <Border Margin="8"
+          Padding="14,12"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenWarningBrush}"
+          BorderThickness="1"
+          CornerRadius="12"
+          Opacity="0.97">
+    <StackPanel Spacing="10">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="eyebrow" Text="GROUND COMBAT ZONE" />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontSize="16"
+                     FontWeight="SemiBold"
+                     Text="{Binding Combat.SettlementName}"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <Border Grid.Column="1" Classes="badge">
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="8"
+                     FontWeight="Bold"
+                     Text="{Binding InputMode}" />
+        </Border>
+      </Grid>
+
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+        <Border Padding="10,8"
+                Background="{DynamicResource RavenSurfaceBrush}"
+                CornerRadius="8">
+          <StackPanel Spacing="2">
+            <TextBlock Classes="muted" FontSize="9" Text="KILLS" />
+            <TextBlock Classes="monospace"
+                       Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="19"
+                       FontWeight="Bold"
+                       Text="{Binding Combat.FootCombatKills}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1"
+                Padding="10,8"
+                Background="{DynamicResource RavenSurfaceBrush}"
+                CornerRadius="8">
+          <StackPanel Spacing="2">
+            <TextBlock Classes="muted" FontSize="9" Text="BONDS" />
+            <TextBlock Classes="monospace"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       Text="{Binding Combat.FootCombatBonds}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+    </StackPanel>
+  </Border>
+</Window>

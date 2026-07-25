@@ -351,4 +351,6 @@ public sealed class MassacreMissionViewModel(
     public bool IsComplete => Remaining == 0;
 
     public string RemainingText => IsComplete ? "COMPLETE" : $"{Remaining:N0}";
+
+    public double RowOpacity => IsComplete ? 0.58 : 1;
 }
