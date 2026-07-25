@@ -366,8 +366,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     }
 
     public string ImportProfileButtonText => IsImportingProfile
-        ? "Importing profile…"
-        : "Back up and import profile";
+        ? "Importing profile..."
+        : HasCompletedLegacyImport
+            ? "Legacy profile imported"
+            : "Back up and import profile";
+
+    public bool HasCompletedLegacyImport => File.Exists(
+        Path.Combine(
+            AppDataPaths.DataDirectory,
+            LegacyProfileImporter.ManifestFileName));
 
     public bool IsImportingProfile
     {
@@ -771,13 +778,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         try
         {
             IsImportingProfile = true;
-            ProfileStatusMessage = "Creating and verifying the legacy profile backup…";
+            ProfileStatusMessage =
+                "Creating verified backups of the legacy and current profiles...";
             var result = await profileImporter.ImportAsync(
                 SelectedLegacyProfile.Path,
                 AppDataPaths.DataDirectory,
                 ProfileBackupDirectory);
-            ProfileStatusMessage = $"Imported {result.Manifest.Entries.Count:N0} files. "
-                + $"Verified backup: {result.BackupDirectory}";
+            var retainedFiles = result.Manifest.PreviousDestinationEntries.Count
+                - result.Manifest.Conflicts.Count;
+            ProfileStatusMessage = $"Imported {result.Manifest.Entries.Count:N0} legacy files, "
+                + $"retained {retainedFiles:N0} current-only files, and recorded "
+                + $"{result.Manifest.Conflicts.Count:N0} path collisions. Restart SrvSurvey "
+                + $"to load the migrated profile. Verified backups: {result.BackupDirectory}";
+            OnPropertyChanged(nameof(HasCompletedLegacyImport));
+            OnPropertyChanged(nameof(ImportProfileButtonText));
         }
         catch (Exception exception) when (
             exception is IOException
@@ -799,23 +813,30 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     {
         return !IsImportingProfile
             && SelectedLegacyProfile is not null
-            && !Directory.Exists(AppDataPaths.DataDirectory)
+            && !HasCompletedLegacyImport
             && !File.Exists(AppDataPaths.DataDirectory);
     }
 
     private string GetInitialProfileStatus()
     {
-        if (Directory.Exists(AppDataPaths.DataDirectory)
-            || File.Exists(AppDataPaths.DataDirectory))
+        if (HasCompletedLegacyImport)
         {
-            return $"Cross-platform profile data already exists at "
-                + $"{AppDataPaths.DataDirectory}. It will not be overwritten.";
+            return $"Legacy profile data has already been imported into "
+                + $"{AppDataPaths.DataDirectory}. The verified backup and conflict "
+                + "manifest are retained for recovery.";
+        }
+
+        if (File.Exists(AppDataPaths.DataDirectory))
+        {
+            return $"The cross-platform profile path is occupied by a file and cannot "
+                + $"be imported: {AppDataPaths.DataDirectory}";
         }
 
         return LegacyProfiles.Count == 0
             ? "No legacy Windows profile was found in the desktop or Microsoft Store locations."
             : $"Found {LegacyProfiles.Count:N0} legacy profile source(s). "
-                + "Import creates a checksum-verified backup before activating the copy.";
+                + "Import creates checksum-verified backups, preserves current-only files, "
+                + "records collisions, and activates the merged copy transactionally.";
     }
 
     private void SelectTheme(ThemeOptionViewModel option)

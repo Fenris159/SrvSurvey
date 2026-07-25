@@ -79,21 +79,62 @@ public sealed class LegacyProfileImporterTests : IDisposable
     }
 
     [Fact]
-    public async Task ImportRefusesToOverwriteDestination()
+    public async Task ImportMergesExistingDestinationWithBackupAndConflictRecord()
     {
         var source = Path.Combine(temporaryDirectory, "legacy");
         var destination = Path.Combine(temporaryDirectory, "current");
         var backups = Path.Combine(temporaryDirectory, "backups");
         Directory.CreateDirectory(source);
         Directory.CreateDirectory(destination);
-        var sentinel = Path.Combine(destination, "keep.txt");
-        await File.WriteAllTextAsync(sentinel, "do not replace");
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "legacy settings");
+        await File.WriteAllTextAsync(
+            Path.Combine(destination, "settings.json"),
+            "new settings");
+        await File.WriteAllTextAsync(
+            Path.Combine(destination, "logs.txt"),
+            "keep current-only data");
 
-        var exception = await Assert.ThrowsAsync<IOException>(
-            () => new LegacyProfileImporter().ImportAsync(source, destination, backups));
+        var result = await new LegacyProfileImporter().ImportAsync(
+            source,
+            destination,
+            backups);
 
-        Assert.Contains("will not be overwritten", exception.Message);
-        Assert.Equal("do not replace", await File.ReadAllTextAsync(sentinel));
+        Assert.Equal(
+            "legacy settings",
+            await File.ReadAllTextAsync(Path.Combine(destination, "settings.json")));
+        Assert.Equal(
+            "keep current-only data",
+            await File.ReadAllTextAsync(Path.Combine(destination, "logs.txt")));
+        Assert.Equal(
+            "new settings",
+            await File.ReadAllTextAsync(Path.Combine(
+                result.BackupDirectory,
+                "previous-destination",
+                "settings.json")));
+        var conflict = Assert.Single(result.Manifest.Conflicts);
+        Assert.Equal("settings.json", conflict.RelativePath);
+        Assert.False(conflict.IsIdentical);
+        Assert.Equal(2, result.Manifest.PreviousDestinationEntries.Count);
+    }
+
+    [Fact]
+    public async Task ImportRefusesToLayerOverCompletedImport()
+    {
+        var source = Path.Combine(temporaryDirectory, "legacy");
+        var destination = Path.Combine(temporaryDirectory, "current");
+        var backups = Path.Combine(temporaryDirectory, "backups");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(destination);
+        await File.WriteAllTextAsync(
+            Path.Combine(destination, LegacyProfileImporter.ManifestFileName),
+            "existing import");
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            new LegacyProfileImporter().ImportAsync(source, destination, backups));
+
+        Assert.Contains("already imported", exception.Message);
         Assert.False(Directory.Exists(backups));
     }
 
@@ -130,9 +171,11 @@ public sealed class LegacyProfileImporterTests : IDisposable
             manifestStream);
 
         Assert.NotNull(manifest);
-        Assert.Equal(1, manifest.Version);
+        Assert.Equal(2, manifest.Version);
         Assert.Equal(result.BackupDirectory, manifest.BackupDirectory);
         Assert.Equal("theme.json", Assert.Single(manifest.Entries).RelativePath);
+        Assert.Empty(manifest.PreviousDestinationEntries);
+        Assert.Empty(manifest.Conflicts);
     }
 
     public void Dispose()
