@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
@@ -108,6 +109,76 @@ public sealed class CommanderProfileStoreTests : IDisposable
 
         Assert.True(File.Exists(Path.Combine(temporaryDirectory, "F123-legacy.json")));
         Assert.False(File.Exists(Path.Combine(temporaryDirectory, "F123-live.json")));
+    }
+
+    [Fact]
+    public async Task LoadsAndSavesLegacyMassacreMissionState()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "fid": "F123",
+              "trackMassacres": [
+                {
+                  "missionId": 879230525,
+                  "missionGiver": "Raven Colonial Corporation",
+                  "targetFaction": "Grabru Crimson Family",
+                  "expires": "2026-07-26T08:06:52+00:00",
+                  "killCount": 7,
+                  "remaining": 4
+                }
+              ],
+              "futureSetting": 42
+            }
+            """);
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        var loaded = await store.LoadAsync("F123", isOdyssey: true);
+
+        var mission = Assert.Single(loaded.Data!.Combat.MassacreMissions);
+        Assert.Equal(879230525, mission.MissionId);
+        Assert.Equal("Raven Colonial Corporation", mission.MissionGiver);
+        Assert.Equal("Grabru Crimson Family", mission.TargetFaction);
+        Assert.Equal(7, mission.KillCount);
+        Assert.Equal(4, mission.Remaining);
+
+        await store.SaveCombatAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            new CombatSnapshot(
+            [
+                mission with { Remaining = 3 },
+            ]));
+
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Equal(
+            3,
+            root["trackMassacres"]![0]!["remaining"]!.GetValue<int>());
+        Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
+    }
+
+    [Fact]
+    public async Task SavingEmptyCombatStateClearsLegacyMissionList()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        await File.WriteAllTextAsync(
+            path,
+            """{"fid":"F123","trackMassacres":[{"missionId":1}]}""");
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        await store.SaveCombatAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            CombatSnapshot.Empty);
+
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Null(root["trackMassacres"]);
     }
 
     [Fact]

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
@@ -44,7 +45,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
                     ExobiologySnapshot.Empty,
                     SphereLimitSnapshot.Empty,
                     BoxelSearchSnapshot.Empty,
-                    RamTahSnapshot.Empty),
+                    RamTahSnapshot.Empty,
+                    CombatSnapshot.Empty),
                 null);
         }
 
@@ -75,6 +77,7 @@ public sealed class CommanderProfileStore(string profileDirectory)
             ReadSphereLimit(root),
             ReadBoxelSearch(root),
             ReadRamTah(root),
+            ReadCombat(root),
             GetString(root, "rccApiKey"),
             GetString(root, "activeJourney"));
         return new CommanderProfileLoadResult(path, true, data, null);
@@ -179,6 +182,22 @@ public sealed class CommanderProfileStore(string profileDirectory)
             commanderName,
             isOdyssey,
             root => WriteRamTah(root, ramTah),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SaveCombatAsync(
+        string frontierId,
+        string? commanderName,
+        bool isOdyssey,
+        CombatSnapshot combat,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(combat);
+        await SaveFieldsAsync(
+            frontierId,
+            commanderName,
+            isOdyssey,
+            root => WriteCombat(root, combat),
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -381,6 +400,30 @@ public sealed class CommanderProfileStore(string profileDirectory)
             ReadStringArray(root, "decodeTheLogs"));
     }
 
+    private static CombatSnapshot ReadCombat(JsonObject root)
+    {
+        if (root["trackMassacres"] is not JsonArray array)
+        {
+            return CombatSnapshot.Empty;
+        }
+
+        var missions = array
+            .OfType<JsonObject>()
+            .Select(mission => new MassacreMissionSnapshot(
+                GetInt64(mission, "missionId") ?? 0,
+                GetString(mission, "missionGiver") ?? string.Empty,
+                GetString(mission, "targetFaction") ?? string.Empty,
+                GetDateTimeOffset(mission, "expires"),
+                Math.Max(0, GetInt32(mission, "killCount") ?? 0),
+                Math.Max(0, GetInt32(mission, "remaining") ?? 0)))
+            .Where(mission => mission.MissionId > 0
+                && !string.IsNullOrWhiteSpace(mission.MissionGiver)
+                && !string.IsNullOrWhiteSpace(mission.TargetFaction))
+            .DistinctBy(mission => mission.MissionId)
+            .ToArray();
+        return new CombatSnapshot(missions);
+    }
+
     private static RamTahMissionStatus ReadRamTahStatus(
         JsonObject root,
         string propertyName)
@@ -484,6 +527,31 @@ public sealed class CommanderProfileStore(string profileDirectory)
             ramTah.GuardianLogsMissionStatus.ToString();
         root["decodeTheRuins"] = WriteStringArray(ramTah.AncientRuinsLogs);
         root["decodeTheLogs"] = WriteStringArray(ramTah.GuardianLogs);
+    }
+
+    private static void WriteCombat(JsonObject root, CombatSnapshot combat)
+    {
+        if (combat.MassacreMissions.Count == 0)
+        {
+            root["trackMassacres"] = null;
+            return;
+        }
+
+        var missions = new JsonArray();
+        foreach (var mission in combat.MassacreMissions)
+        {
+            missions.Add(new JsonObject
+            {
+                ["missionId"] = mission.MissionId,
+                ["missionGiver"] = mission.MissionGiver,
+                ["targetFaction"] = mission.TargetFaction,
+                ["expires"] = mission.Expires,
+                ["killCount"] = mission.KillCount,
+                ["remaining"] = mission.Remaining,
+            });
+        }
+
+        root["trackMassacres"] = missions;
     }
 
     private static JsonArray WriteStringArray(IEnumerable<string> values)
@@ -694,6 +762,7 @@ public sealed record CommanderProfileData(
     SphereLimitSnapshot SphereLimit,
     BoxelSearchSnapshot BoxelSearch,
     RamTahSnapshot RamTah,
+    CombatSnapshot Combat,
     string? RavenColonialApiKey = null,
     string? ActiveJourneyFileName = null);
 
