@@ -1,6 +1,6 @@
 # Avalonia UI porting matrix
 
-Last audited: 2026-07-24
+Last audited: 2026-07-25
 
 This document is the review checklist for translating the legacy WinForms UI to
 Avalonia. A view is marked complete only when its behavior is backed by the
@@ -31,13 +31,13 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | --- | --- | --- | --- |
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
-| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, the standalone system/body prediction workspace, `FormShowCodex` browser, and full commander/region `FormCodexBingo` workspace implemented; prior-scan tools remain pending |
+| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, standalone system/body predictions, `FormShowCodex`, full commander/region `FormCodexBingo`, and `PlotPriorScans` with its Canonn grounded-radar slice implemented; full `PlotGrounded` remains open |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
-| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump and system-survey overlay preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
+| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump/system-survey/prior-scan/radar preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
@@ -52,8 +52,10 @@ replacement covers confirmed and predicted biological entries, reference
 images, navigation, temperature and reward guidance, and research links. Codex
 Bingo now covers the complete hierarchy, commander and regional progress,
 journal/Canonn imports, guarded manual state, discovery locations, research
-links, and integrated nearest searches. Prior-scan and remaining biology
-surfaces stay open below until their backing behavior is ported.
+links, and integrated nearest searches. `PlotPriorScans` now consumes validated
+Canonn coordinates, filters commander/analyzed/low-value/nearby targets,
+recalculates surface guidance, and supplies its configurable grounded-radar
+circles. The rest of `PlotGrounded` and remaining biology surfaces stay open.
 
 ## Secondary forms
 
@@ -84,7 +86,7 @@ surfaces stay open below until their backing behavior is ported.
 | `FormRoute` | Travel / Routes | Implemented with lossless legacy route files, manual-name and current Spansh imports, active/auto-copy controls, per-hop progress, distances/notes/refuel/neutron guidance, save/discard, live FSDJump progression, and a Galaxy Map overlay; Windows visually checked in Blue dark/light |
 | `FormRuins` | Guardian / Survey maps | Partially implemented through the unified site browser, native map renderer, live-site card, and lossless survey editor; dedicated open/share workflows and advanced map authoring remain |
 | `FormSetKeyChord` | Settings / Input | Implemented as the unified binding editor with normalized keyboard, button, trigger, and eight-way POV chords plus default restore |
-| `FormSettings` | Settings pages | Raven themes, migration, next-jump and system-survey overlay preferences, and global keyboard/controller input implemented; general overlay adjustment, privacy, and remaining legacy options remain |
+| `FormSettings` | Settings pages | Raven themes, migration, next-jump/system-survey/Canonn prior-scan/radar preferences, and global keyboard/controller input implemented; general overlay adjustment, privacy, and remaining legacy options remain |
 | `FormShareData` | Settings / Privacy | Not ported |
 | `FormShowCodex` | Exobiology / Codex | Implemented as a single-instance Raven browser with biological-body and entry navigation, reported/confirmed/analyzed/predicted states, entry IDs, rewards, sample separation, live temperature guidance, bounded cached reference images with credit/refresh/fit/zoom/pan, and Canonn/Bioforge/Spansh/submission actions; Windows visually checked in Blue dark/light |
 | `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
@@ -157,7 +159,17 @@ nebula, Guardian-bubble, inheritance, and known-organism context. It exposes
 predicted reward ranges only for complete inputs and otherwise shows the
 missing context explicitly. Commander-Codex first-discovery inference, Canonn
 signal hints, and the transient map-selection timer remain open. The other
-plotter surfaces remain unported, except `PlotBioStatus`, which is now a compact
+plotter surfaces remain unported, except `PlotPriorScans`, which is now a
+bottom-right passive guidance and radar surface. It uses the current Canonn
+`getSystemPoi` response, rejects malformed/bodyless/mismatched records, caches
+per system and commander with failure backoff, normalizes body identifiers,
+filters low-value, commander-owned, analyzed, active-sample-nearby, and true
+surface-near-duplicate targets, and continuously updates absolute/relative
+bearing, distance, approach angle, active/near/distant/analyzed state, and
+compact or genus-radius radar circles. Its settings retain the legacy defaults,
+and it yields to the Guardian overlay. Automated coverage and XAML compilation
+passed; visual/theme QA is intentionally deferred until the final UI pass.
+`PlotBioStatus` is a compact
 top-center passive surface with current-body/DSS gating, genus/geology summary,
 analyzed and active sample progress, stale-sample warnings, three-stage sampler,
 separation distance, reward/first-footfall value, a separate persisted auto-show
