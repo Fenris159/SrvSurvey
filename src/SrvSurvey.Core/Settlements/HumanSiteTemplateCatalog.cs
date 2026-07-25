@@ -43,6 +43,29 @@ public sealed class HumanSiteTemplateCatalog
             .ToArray();
     }
 
+    public HumanSiteTemplateCatalog WithTemplate(HumanSiteTemplate template)
+    {
+        ArgumentNullException.ThrowIfNull(template);
+        var replaced = false;
+        var updated = templates.Select(candidate =>
+        {
+            if (candidate.Economy != template.Economy
+                || candidate.SubType != template.SubType)
+            {
+                return candidate;
+            }
+
+            replaced = true;
+            return template;
+        }).ToList();
+        if (!replaced)
+        {
+            updated.Add(template);
+        }
+
+        return new HumanSiteTemplateCatalog(updated);
+    }
+
     public static HumanSiteTemplateCatalog LoadEmbedded()
     {
         var assembly = typeof(HumanSiteTemplateCatalog).Assembly;
