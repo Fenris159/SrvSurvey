@@ -51,12 +51,41 @@ public sealed class SystemSurveySettingsStore
                 50),
             GetBoolean(
                 settings,
+                "UseExternalData",
+                defaults.UseExternalData),
+            GetBoolean(
+                settings,
                 "AutoShowBioSystem",
                 defaults.AutoShowBioSystem),
             GetBoolean(
                 settings,
                 "AutoShowBioStatus",
                 defaults.AutoShowBioStatus),
+            GetBoolean(
+                settings,
+                "AutoShowPriorScans",
+                defaults.AutoShowPriorScans),
+            GetBoolean(
+                settings,
+                "SkipPriorScansLowValue",
+                defaults.SkipPriorScansLowValue),
+            GetInt32(
+                settings,
+                "PriorScanMinimumValue",
+                defaults.PriorScanMinimumValue,
+                0),
+            GetBoolean(
+                settings,
+                "HideOwnCanonnSignals",
+                defaults.HideOwnCanonnSignals),
+            GetBoolean(
+                settings,
+                "ShowCanonnSignalsOnRadar",
+                defaults.ShowCanonnSignalsOnRadar),
+            GetBoolean(
+                settings,
+                "UseSmallCanonnRadarCircles",
+                defaults.UseSmallCanonnRadarCircles),
             GetBoolean(
                 settings,
                 "DrawBodyBiosOnlyWhenNear",
@@ -155,8 +184,20 @@ public sealed class SystemSurveySettingsStore
                 preferences.HideBodyInfoMaterials;
             settings["HighGravityWarningLevel"] =
                 preferences.HighGravityWarningLevel;
+            settings["UseExternalData"] = preferences.UseExternalData;
             settings["AutoShowBioSystem"] = preferences.AutoShowBioSystem;
             settings["AutoShowBioStatus"] = preferences.AutoShowBioStatus;
+            settings["AutoShowPriorScans"] = preferences.AutoShowPriorScans;
+            settings["SkipPriorScansLowValue"] =
+                preferences.SkipPriorScansLowValue;
+            settings["PriorScanMinimumValue"] =
+                preferences.PriorScanMinimumValue;
+            settings["HideOwnCanonnSignals"] =
+                preferences.HideOwnCanonnSignals;
+            settings["ShowCanonnSignalsOnRadar"] =
+                preferences.ShowCanonnSignalsOnRadar;
+            settings["UseSmallCanonnRadarCircles"] =
+                preferences.UseSmallCanonnRadarCircles;
             settings["DrawBodyBiosOnlyWhenNear"] =
                 preferences.DrawBodyBiosOnlyWhenNear;
             settings["HighlightRegionalFirsts"] =
@@ -235,8 +276,15 @@ public sealed record SystemSurveyPreferences(
     int BodyInfoBubbleSizeLy,
     bool HideBodyInfoMaterials,
     double HighGravityWarningLevel,
+    bool UseExternalData,
     bool AutoShowBioSystem,
     bool AutoShowBioStatus,
+    bool AutoShowPriorScans,
+    bool SkipPriorScansLowValue,
+    int PriorScanMinimumValue,
+    bool HideOwnCanonnSignals,
+    bool ShowCanonnSignalsOnRadar,
+    bool UseSmallCanonnRadarCircles,
     bool DrawBodyBiosOnlyWhenNear,
     bool HighlightRegionalFirsts,
     bool DimAnalyzedOrganisms,
@@ -266,8 +314,15 @@ public sealed record SystemSurveyPreferences(
         BodyInfoBubbleSizeLy: 200,
         HideBodyInfoMaterials: false,
         HighGravityWarningLevel: 1,
+        UseExternalData: true,
         AutoShowBioSystem: true,
         AutoShowBioStatus: true,
+        AutoShowPriorScans: true,
+        SkipPriorScansLowValue: false,
+        PriorScanMinimumValue: 1_000_000,
+        HideOwnCanonnSignals: true,
+        ShowCanonnSignalsOnRadar: true,
+        UseSmallCanonnRadarCircles: true,
         DrawBodyBiosOnlyWhenNear: true,
         HighlightRegionalFirsts: false,
         DimAnalyzedOrganisms: true,

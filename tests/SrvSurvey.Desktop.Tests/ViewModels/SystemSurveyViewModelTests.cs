@@ -12,6 +12,39 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         "SrvSurvey-SystemSurveyViewModel-" + Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public void PriorScanEligibilityUsesLegacySurfaceModesAndPreferences()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
+                BodyName = "Test 1",
+                PlanetRadius = 1_000_000,
+            });
+
+        Assert.True(viewModel.ShouldLoadPriorScans);
+
+        viewModel.UseExternalData = false;
+        Assert.False(viewModel.ShouldLoadPriorScans);
+        viewModel.UseExternalData = true;
+        viewModel.AutoShowPriorScans = false;
+        Assert.False(viewModel.ShouldLoadPriorScans);
+        viewModel.AutoShowPriorScans = true;
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong | StatusFlags.Docked,
+            BodyName = "Test 1",
+            PlanetRadius = 1_000_000,
+        });
+        Assert.False(viewModel.ShouldLoadPriorScans);
+    }
+
+    [Fact]
     public void FssOverlayUsesLegacyModesAndForcedToggleSemantics()
     {
         var viewModel = CreateViewModel();

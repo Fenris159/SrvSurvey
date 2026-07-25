@@ -212,6 +212,43 @@
 
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
             <StackPanel Spacing="12">
+              <TextBlock Classes="eyebrow" Text="CANONN PRIOR SCANS" />
+              <CheckBox IsChecked="{Binding SystemSurvey.UseExternalData, Mode=TwoWay}"
+                        Content="Use external survey data" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoShowPriorScans, Mode=TwoWay}"
+                        Content="Show aiming guidance to known biology signals" />
+              <CheckBox IsChecked="{Binding SystemSurvey.HideOwnCanonnSignals, Mode=TwoWay}"
+                        Content="Hide my own Canonn signals and analyzed organisms" />
+              <CheckBox IsChecked="{Binding SystemSurvey.SkipPriorScansLowValue, Mode=TwoWay}"
+                        Content="Skip lower-value signals" />
+              <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center"
+                           Text="Minimum reward (CR)" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="0"
+                               Maximum="100000000"
+                               Increment="100000"
+                               FormatString="N0"
+                               Value="{Binding SystemSurvey.PriorScanMinimumValue, Mode=TwoWay}" />
+              </Grid>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="12">
+              <TextBlock Classes="eyebrow" Text="SURFACE RADAR" />
+              <CheckBox IsChecked="{Binding SystemSurvey.ShowCanonnSignalsOnRadar, Mode=TwoWay}"
+                        Content="Show Canonn biology signals on the radar" />
+              <CheckBox IsChecked="{Binding SystemSurvey.UseSmallCanonnRadarCircles, Mode=TwoWay}"
+                        Content="Use compact signal circles" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Prior-scan guidance uses Canonn coordinates for the current body. Disabling external data prevents these requests." />
+            </StackPanel>
+          </Grid>
+
+          <Separator />
+
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="12">
               <TextBlock Classes="eyebrow" Text="EXOBIOLOGY SURVEY" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoShowBioSystem, Mode=TwoWay}"
                         Content="Show system exobiology status automatically" />

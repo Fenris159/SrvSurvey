@@ -24,35 +24,42 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         File.WriteAllText(path, "{\"Theme\":\"Blue-dark\"}");
         var store = new SystemSurveySettingsStore(path);
         var expected = new SystemSurveyPreferences(
-            false,
-            false,
-            false,
-            true,
-            false,
-            150,
-            true,
-            2.5,
-            false,
-            true,
-            false,
-            true,
-            false,
-            true,
-            true,
-            false,
-            false,
-            true,
-            true,
-            false,
-            true,
-            25_000,
-            false,
-            750_000,
-            true,
-            50_000,
-            false,
-            false,
-            true);
+            AutoShowBodyInfo: false,
+            ShowBodyInfoInSystemMap: false,
+            ShowBodyInfoInOrbit: false,
+            ShowBodyInfoAtSurface: true,
+            HideBodyInfoInBubble: false,
+            BodyInfoBubbleSizeLy: 150,
+            HideBodyInfoMaterials: true,
+            HighGravityWarningLevel: 2.5,
+            UseExternalData: false,
+            AutoShowBioSystem: false,
+            AutoShowBioStatus: true,
+            AutoShowPriorScans: false,
+            SkipPriorScansLowValue: true,
+            PriorScanMinimumValue: 2_000_000,
+            HideOwnCanonnSignals: false,
+            ShowCanonnSignalsOnRadar: false,
+            UseSmallCanonnRadarCircles: false,
+            DrawBodyBiosOnlyWhenNear: false,
+            HighlightRegionalFirsts: true,
+            DimAnalyzedOrganisms: false,
+            HideGeoCountInBioSystem: true,
+            DisableBioPredictions: true,
+            AutoShowLastFssBody: false,
+            AutoShowFssInfo: false,
+            ShowFssInfoInSystemMap: true,
+            ShowFssInfoInNavigationPanel: true,
+            AutoShowSystemStatus: false,
+            HideGeoCount: true,
+            FssBodyValueFloor: 25_000,
+            HighlightDssCandidates: false,
+            DssValueFloor: 750_000,
+            SkipDistantDssCandidates: true,
+            DssDistanceLimitLs: 50_000,
+            SkipGasGiantsForDss: false,
+            SkipRingsForDss: false,
+            ShowNonBodySignals: true);
 
         store.Save(expected);
 
@@ -70,6 +77,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             "{\"SystemSurvey\":{\"FssBodyValueFloor\":-1,"
                 + "\"DssValueFloor\":-2,\"DssDistanceLimitLs\":-3,"
                 + "\"BodyInfoBubbleSizeLy\":-4,"
+                + "\"PriorScanMinimumValue\":-5,"
                 + "\"HighGravityWarningLevel\":75}}");
 
         var preferences = new SystemSurveySettingsStore(path).Load();
@@ -78,6 +86,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         Assert.Equal(0, preferences.DssValueFloor);
         Assert.Equal(0, preferences.DssDistanceLimitLs);
         Assert.Equal(0, preferences.BodyInfoBubbleSizeLy);
+        Assert.Equal(0, preferences.PriorScanMinimumValue);
         Assert.Equal(50, preferences.HighGravityWarningLevel);
     }
 

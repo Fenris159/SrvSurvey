@@ -32,8 +32,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private int bodyInfoBubbleSizeLy;
     private bool hideBodyInfoMaterials;
     private double highGravityWarningLevel;
+    private bool useExternalData;
     private bool autoShowBioSystem;
     private bool autoShowBioStatus;
+    private bool autoShowPriorScans;
+    private bool skipPriorScansLowValue;
+    private int priorScanMinimumValue;
+    private bool hideOwnCanonnSignals;
+    private bool showCanonnSignalsOnRadar;
+    private bool useSmallCanonnRadarCircles;
     private bool drawBodyBiosOnlyWhenNear;
     private bool highlightRegionalFirsts;
     private bool dimAnalyzedOrganisms;
@@ -76,8 +83,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         bodyInfoBubbleSizeLy = preferences.BodyInfoBubbleSizeLy;
         hideBodyInfoMaterials = preferences.HideBodyInfoMaterials;
         highGravityWarningLevel = preferences.HighGravityWarningLevel;
+        useExternalData = preferences.UseExternalData;
         autoShowBioSystem = preferences.AutoShowBioSystem;
         autoShowBioStatus = preferences.AutoShowBioStatus;
+        autoShowPriorScans = preferences.AutoShowPriorScans;
+        skipPriorScansLowValue = preferences.SkipPriorScansLowValue;
+        priorScanMinimumValue = preferences.PriorScanMinimumValue;
+        hideOwnCanonnSignals = preferences.HideOwnCanonnSignals;
+        showCanonnSignalsOnRadar = preferences.ShowCanonnSignalsOnRadar;
+        useSmallCanonnRadarCircles = preferences.UseSmallCanonnRadarCircles;
         drawBodyBiosOnlyWhenNear = preferences.DrawBodyBiosOnlyWhenNear;
         highlightRegionalFirsts = preferences.HighlightRegionalFirsts;
         dimAnalyzedOrganisms = preferences.DimAnalyzedOrganisms;
@@ -163,6 +177,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool UseExternalData
+    {
+        get => useExternalData;
+        set => SetPreference(ref useExternalData, value);
+    }
+
     public bool AutoShowBioSystem
     {
         get => autoShowBioSystem;
@@ -173,6 +193,42 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get => autoShowBioStatus;
         set => SetPreference(ref autoShowBioStatus, value);
+    }
+
+    public bool AutoShowPriorScans
+    {
+        get => autoShowPriorScans;
+        set => SetPreference(ref autoShowPriorScans, value);
+    }
+
+    public bool SkipPriorScansLowValue
+    {
+        get => skipPriorScansLowValue;
+        set => SetPreference(ref skipPriorScansLowValue, value);
+    }
+
+    public int PriorScanMinimumValue
+    {
+        get => priorScanMinimumValue;
+        set => SetPreference(ref priorScanMinimumValue, Math.Max(0, value));
+    }
+
+    public bool HideOwnCanonnSignals
+    {
+        get => hideOwnCanonnSignals;
+        set => SetPreference(ref hideOwnCanonnSignals, value);
+    }
+
+    public bool ShowCanonnSignalsOnRadar
+    {
+        get => showCanonnSignalsOnRadar;
+        set => SetPreference(ref showCanonnSignalsOnRadar, value);
+    }
+
+    public bool UseSmallCanonnRadarCircles
+    {
+        get => useSmallCanonnRadarCircles;
+        set => SetPreference(ref useSmallCanonnRadarCircles, value);
     }
 
     public bool DrawBodyBiosOnlyWhenNear
@@ -789,6 +845,40 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 || status.InSrv
                 || status.OnFoot
                 || status.GlideMode;
+            return allowedFocus && allowedMode;
+        }
+    }
+
+    public bool ShouldLoadPriorScans
+    {
+        get
+        {
+            if (!UseExternalData
+                || !AutoShowPriorScans
+                || status is null
+                || !status.HasLatitudeLongitude
+                || status.PlanetRadius <= 0
+                || string.IsNullOrWhiteSpace(status.BodyName)
+                || string.IsNullOrWhiteSpace(snapshot.SystemName)
+                || status.Docked
+                || status.InTaxi
+                || status.FsdChargingJump
+                || fsdJumping)
+            {
+                return false;
+            }
+
+            var allowedFocus = status.GuiFocus is GuiFocus.NoFocus
+                or GuiFocus.CommsPanel
+                or GuiFocus.Saa
+                or GuiFocus.Codex;
+            var allowedMode = status.Flags.HasFlag(StatusFlags.Supercruise)
+                || status.InMainShip
+                || status.Landed
+                || status.InSrv
+                || status.OnFoot
+                || status.GlideMode
+                || status.InFighter;
             return allowedFocus && allowedMode;
         }
     }
@@ -1424,8 +1514,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 BodyInfoBubbleSizeLy,
                 HideBodyInfoMaterials,
                 HighGravityWarningLevel,
+                UseExternalData,
                 AutoShowBioSystem,
                 AutoShowBioStatus,
+                AutoShowPriorScans,
+                SkipPriorScansLowValue,
+                PriorScanMinimumValue,
+                HideOwnCanonnSignals,
+                ShowCanonnSignalsOnRadar,
+                UseSmallCanonnRadarCircles,
                 DrawBodyBiosOnlyWhenNear,
                 HighlightRegionalFirsts,
                 DimAnalyzedOrganisms,
@@ -1465,6 +1562,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShouldShowBodyInfo));
         OnPropertyChanged(nameof(ShouldShowBioSystem));
         OnPropertyChanged(nameof(ShouldShowBioStatus));
+        OnPropertyChanged(nameof(ShouldLoadPriorScans));
         OnPropertyChanged(nameof(ShouldShowSystemStatus));
     }
 
