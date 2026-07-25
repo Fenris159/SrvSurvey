@@ -319,7 +319,7 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
             || status.InMainShip
             || status.Landed
             || status.InSrv
-            || status.OnFoot
+            || status.OnFootOnPlanet
             || status.GlideMode
             || status.InFighter;
     }

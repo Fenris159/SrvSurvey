@@ -18,6 +18,7 @@ public sealed partial class App : Application
         colonizationCommodityOverlayCoordinator;
     private RouteOverlayCoordinator? routeOverlayCoordinator;
     private JumpInfoOverlayCoordinator? jumpInfoOverlayCoordinator;
+    private GroundTargetOverlayCoordinator? groundTargetOverlayCoordinator;
     private SystemSurveyOverlayCoordinator? systemSurveyOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
@@ -90,6 +91,10 @@ public sealed partial class App : Application
                 GameWindowTracker.CreateCurrent());
             jumpInfoOverlayCoordinator = new JumpInfoOverlayCoordinator(
                 viewModel.JumpInfo,
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent());
+            groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
+                viewModel.GroundTarget,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent());
             systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
@@ -173,11 +178,13 @@ public sealed partial class App : Application
                                 guardianOverlayCoordinator?.IsVisible == true
                                 || jumpInfoOverlayCoordinator?.IsVisible == true
                                 || systemSurveyOverlayCoordinator?.IsVisible == true
+                                || groundTargetOverlayCoordinator?.IsVisible == true
                                 || routeOverlayCoordinator?.IsVisible == true
                                 || colonizationCommodityOverlayCoordinator
                                     ?.IsVisible == true;
                             jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
                             systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
+                            groundTargetOverlayCoordinator?.SetSuppressed(suppress);
                             guardianOverlayCoordinator?.SetSuppressed(suppress);
                             routeOverlayCoordinator?.SetSuppressed(suppress);
                             colonizationCommodityOverlayCoordinator
@@ -274,6 +281,8 @@ public sealed partial class App : Application
                 routeOverlayCoordinator = null;
                 jumpInfoOverlayCoordinator?.Dispose();
                 jumpInfoOverlayCoordinator = null;
+                groundTargetOverlayCoordinator?.Dispose();
+                groundTargetOverlayCoordinator = null;
                 systemSurveyOverlayCoordinator?.Dispose();
                 systemSurveyOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();
