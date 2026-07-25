@@ -43,10 +43,12 @@ public sealed class SurfaceSurveyOverlayViewModel :
     }
 
     public double WindowWidth => GetWindowSize(
-        SurfaceSurvey.RadarSize).Width;
+        SurfaceSurvey.RadarSize,
+        SurfaceSurvey.IsTrackerOnly).Width;
 
     public double WindowHeight => GetWindowSize(
-        SurfaceSurvey.RadarSize).Height;
+        SurfaceSurvey.RadarSize,
+        SurfaceSurvey.IsTrackerOnly).Height;
 
     public void ApplyPreparation(OverlayPreparationResult result)
     {
@@ -66,8 +68,15 @@ public sealed class SurfaceSurveyOverlayViewModel :
         SurfaceSurvey.PropertyChanged -= OnSurfaceSurveyPropertyChanged;
     }
 
-    private static (double Width, double Height) GetWindowSize(int radarSize)
+    private static (double Width, double Height) GetWindowSize(
+        int radarSize,
+        bool trackerOnly)
     {
+        if (trackerOnly)
+        {
+            return (300, 260);
+        }
+
         return Math.Clamp(radarSize, 0, 4) switch
         {
             0 => (250, 400),
@@ -82,7 +91,8 @@ public sealed class SurfaceSurveyOverlayViewModel :
         object? sender,
         PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName == nameof(SurfaceSurveyViewModel.RadarSize))
+        if (eventArgs.PropertyName is nameof(SurfaceSurveyViewModel.RadarSize)
+            or nameof(SurfaceSurveyViewModel.IsTrackerOnly))
         {
             OnPropertyChanged(nameof(WindowWidth));
             OnPropertyChanged(nameof(WindowHeight));

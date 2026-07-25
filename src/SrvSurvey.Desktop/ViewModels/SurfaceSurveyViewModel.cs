@@ -103,8 +103,13 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         ? $"ZOOM {scale:N2}×"
         : "ZOOM AUTO";
 
+    public bool ShouldShowRadar => IsEligibleStatus()
+        && HasRadarContent();
+
     public bool ShouldShow => IsEligibleStatus()
-        && HasDisplayContent();
+        && (HasRadarContent() || HasTrackerTargets());
+
+    public bool IsTrackerOnly => ShouldShow && !ShouldShowRadar;
 
     public SystemSurfaceBodySnapshot? CurrentSurface => surface;
 
@@ -570,7 +575,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             || status.LandingGearDown;
     }
 
-    private bool HasDisplayContent()
+    private bool HasRadarContent()
     {
         return surface is not null
             && (surface.BioScans.Count > 0
@@ -578,6 +583,11 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                     !group.Key.StartsWith('#') && group.Value.Count > 0)
                 || exobiology.ScanOne is { } sample
                     && BodyNamesMatch(sample.Body, surface.BodyName));
+    }
+
+    private bool HasTrackerTargets()
+    {
+        return surface?.Bookmarks.Any(group => group.Value.Count > 0) == true;
     }
 
     private string GetTrackerDisplayName(string name)
@@ -632,7 +642,9 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(RadarSize));
         OnPropertyChanged(nameof(RadarScale));
         OnPropertyChanged(nameof(RadarScaleText));
+        OnPropertyChanged(nameof(ShouldShowRadar));
         OnPropertyChanged(nameof(ShouldShow));
+        OnPropertyChanged(nameof(IsTrackerOnly));
     }
 
     private static bool TryGetCurrentCoordinate(

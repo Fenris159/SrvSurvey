@@ -147,7 +147,9 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             ExobiologySnapshot.Empty);
 
         Assert.Single(viewModel.TrackerGroups);
-        Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.ShouldShowRadar);
+        Assert.True(viewModel.ShouldShow);
+        Assert.True(viewModel.IsTrackerOnly);
     }
 
     [Fact]
@@ -190,7 +192,9 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             new SurfaceCoordinate(0, 0),
             Assert.Single(viewModel.CurrentSurface!.Bookmarks["#1"]));
         Assert.Contains("added", viewModel.StatusText);
-        Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.ShouldShowRadar);
+        Assert.True(viewModel.ShouldShow);
+        Assert.True(viewModel.IsTrackerOnly);
 
         Assert.True(await viewModel.ToggleQuickTrackerAsync(1));
         Assert.Empty(viewModel.CurrentSurface!.Bookmarks);
