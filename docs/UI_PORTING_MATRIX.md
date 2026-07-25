@@ -31,13 +31,13 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | --- | --- | --- | --- |
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
-| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, standalone system/body predictions, `FormShowCodex`, full commander/region `FormCodexBingo`, `PlotPriorScans`, and consolidated `PlotGrounded`/`PlotTrackers` history, tracking, zoom, and quick-location workflow implemented; the experimental `PlotMiniTrack` variant and Human-site arbitration remain open |
+| Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow, exact `PlotBioSystem` species/variant predictions, standalone system/body predictions, `FormShowCodex`, full commander/region `FormCodexBingo`, `PlotPriorScans`, consolidated `PlotGrounded`/`PlotTrackers`, and the compact `PlotMiniTrack` replacement are implemented; human-settlement priority is wired into the shared coordinator |
 | Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance and passive overlay, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; their combined `PlotSphericalSearch` Galaxy Map guidance is implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, detached live map/current-obelisk, current-system summary, and Ram Tah log/artifact overlays implemented; advanced map-authoring and remaining site-guidance modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
-| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump/system-survey/prior-scan/surface-radar/combat/Guardian preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
+| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump/system-survey/prior-scan/surface-radar/combat/Guardian/human-settlement/station-information preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
@@ -61,9 +61,9 @@ ship and SRV locations; enforces the original surface/panel/landing-gear rules;
 and renders heading-relative exclusion and tracker circles in the five legacy
 window sizes. It also restores Composition Scanner auto-tracking and analyzed
 filters, complete cross-system death marking, bounded zoom/reset, all eight
-quick-location chords, and a compact tracker-only state. The experimental
-dedicated `PlotMiniTrack` variant, Human-site arbitration, and remaining
-biology surfaces stay open.
+quick-location chords, and a compact tracker-only state. The dedicated
+`PlotMiniTrack` replacement and human-site arbitration are now wired into that
+same coordinator; remaining biology-specific auxiliary cues stay open.
 
 ## Secondary forms
 
@@ -134,6 +134,22 @@ grouping, obelisk names, artifact inventory counts, and persisted preferences.
 Both auxiliary windows participate in the shared click-through lifecycle and
 global visibility control. Their automated state, placement, settings, and XAML
 checks pass; visual/theme QA is intentionally deferred to the final UI pass.
+`PlotHumanSite` is implemented as a left-middle passive vector map backed by all
+28 shipped settlement templates. It preserves compatible-site filtering,
+landing-pad subtype and heading inference, explicit `.settlement` foot
+alignment, approach and docking state, commander-relative navigation, automatic
+and manual zoom, large-map mode, the 500 m ship-call boundary, ship/SRV/former-
+ship markers, the 2 km dismissal boundary and warning, secure doors, named
+points, terminals, conflict-zone points, processed-terminal state, and optional
+material pickup dots. Geometry remains lossless in the legacy system JSON, and
+material surveys use the legacy `footMatStats/<FID>` layout with corrupt-file
+protection and `.stop` completion. The coordinator preserves station-info and
+surface/biology overlay priority plus the global map and visibility actions.
+Template authoring (`FormBuilder`/advanced `FormEditMap`), quest routes and
+markers, and threat-level survey metadata remain open. Automated reducer,
+persistence, settings, placement, control-transform, integration, and XAML
+checks pass; per request, the window has not been opened and awaits the final
+visual/theme pass.
 `PlotSphericalSearch` is implemented as a
 combined top-right Galaxy Map overlay at the original 8-pixel anchor. It stacks
 every enabled legacy slice: spherical-limit center/final-route destination/
