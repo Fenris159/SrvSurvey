@@ -32,7 +32,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Overview | `Main` commander group | Commander, game/session, system and body state | Implemented for bootstrap state; Windows visually checked |
 | Exploration | `Main` exploration group | Jumps, distance, bodies and estimated value | Live counters, exact valuation, compatible persistence, and reset implemented; runtime visual recheck pending |
 | Exobiology | `Main` bio group, `FormPredictions`, Codex forms | Scan progress, rewards and predictions | `Main` active-sample, separation, reward, sale/death, and reset workflow implemented; predictions and Codex forms remain pending |
-| Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance, system notes, and the unified Commander Journeys workspace implemented; routes remain pending |
+| Travel | `Main` Travel menu, journey/route forms | Ground target, system notes, journeys and routes | Ground-target editor, clipboard/current actions, persistence, live guidance, system notes, Commander Journeys, followed-route workspace, imports, journal progression, and Galaxy Map guidance implemented |
 | Search | `Main` Search menu, sphere/boxel/nearest forms | Spatial, boxel, and biological searches | Spherical center lookup, radius, enable/disable, live distance, and compatible persistence implemented; Boxel activation, hierarchy, source merging, ID64 decoding, completion, navigation, clipboard, and full-area audit implemented; nearest Canonn-signal and Spansh missing-variant searches plus result actions implemented |
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
@@ -73,7 +73,7 @@ system/body and platform behavior is ported.
 | `FormPredictions` | Exobiology / Predictions | Not ported |
 | `FormRamTah` | Guardian / Ram Tah | Implemented with both journal-driven mission states, all 101 + 28 categorized log controls, compatible commander persistence, progress, manual toggles, guarded resets, both Canonn guide links, and artifact-gated current-obelisk scan updates; detached `PlotRamTah` remains; Windows visually checked |
 | `FormRavenUpdater` | Update flow | Not ported |
-| `FormRoute` | Travel / Routes | Not ported |
+| `FormRoute` | Travel / Routes | Implemented with lossless legacy route files, manual-name and current Spansh imports, active/auto-copy controls, per-hop progress, distances/notes/refuel/neutron guidance, save/discard, live FSDJump progression, and a Galaxy Map overlay; Windows visually checked in Blue dark/light |
 | `FormRuins` | Guardian / Survey maps | Partially implemented through the unified site browser, native map renderer, live-site card, and lossless survey editor; dedicated open/share workflows and advanced map authoring remain |
 | `FormSetKeyChord` | Settings / Input | Implemented as the unified binding editor with normalized keyboard, button, trigger, and eight-way POV chords plus default restore |
 | `FormSettings` | Settings pages | Raven themes, migration, and global keyboard/controller input implemented; overlay, privacy, and remaining legacy options remain |
@@ -107,8 +107,13 @@ Wayland disablement. The detached Guardian window is a partial consolidation of
 the live native map, commander marker, nearest/current obelisk, artifact
 requirements, scan state, and Ram Tah mission status. Site-type, heading,
 origin/alignment, POI marking input, glide/approach guidance, and
-`PlotGuardianSystem` remain open. The other plotter surfaces remain unported,
-and the new Windows/X11 adapters still require live Elite runtime validation.
+`PlotGuardianSystem` remain open. The followed-route slice of
+`PlotSphericalSearch` is implemented as a compact Galaxy Map overlay with route
+priority, one-copy-per-entry behavior, destination state, distance, progress,
+and notes/refuel/neutron guidance. Its spherical-limit and Boxel slices remain
+open, as does the system-rich `PlotJumpInfo` surface. The other plotter surfaces
+remain unported, and the new Windows/X11 adapters still require live Elite
+runtime validation.
 
 Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
 opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,
@@ -176,6 +181,13 @@ check at 1182 by 790, using a live journal folder:
   note edit/discard, refresh, and conclude/reprocess confirmations rendered and
   behaved correctly. The QA records were removed and the original theme was
   restored afterward; active in-game updates and Linux remain untested.
+- The followed-route card and 1100 by 760 workspace were exercised with an
+  isolated QA commander in Blue (dark) and Blue (light). Hop progress updated
+  the next system and dirty state, discard restored the persisted route, and
+  distance plus neutron/refuel guidance rendered correctly. The compact Galaxy
+  Map route overlay was also visually checked in both modes through a temporary
+  preview hook. The hook and exact QA files were removed and Blue (dark) was
+  restored afterward; live Elite window tracking and Linux remain untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,
   full-area audit controls, and the nearby-biology workspace. A live
@@ -220,7 +232,8 @@ check at 1182 by 790, using a live journal folder:
   buttons, Refresh actions, and the visible page text.
 
 Not yet checked: active in-game sample transitions, minimum-width and
-high-contrast rendering, Linux X11/Wayland, or any overlay surface.
+high-contrast rendering, Linux X11/Wayland, or live overlays attached to an
+Elite client window.
 
 ## UI completion gates
 
