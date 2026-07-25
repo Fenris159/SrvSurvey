@@ -69,6 +69,9 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         this.materialStore = materialStore;
         var templates = templateCatalog
             ?? HumanSiteTemplateCatalog.LoadEmbedded();
+        TemplateAuthor = new HumanSiteTemplateAuthoringViewModel(
+            templates,
+            () => OnPropertyChanged(nameof(MapProjection)));
         state = new HumanSiteLiveState(templates);
         mapProjector = new HumanSiteMapProjector();
         navigation = new HumanSiteNavigation(templates);
@@ -96,16 +99,19 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public HumanSiteTemplateAuthoringViewModel TemplateAuthor { get; }
+
     public HumanSiteLiveSnapshot? ActiveSite => state.CurrentSite;
 
-    public HumanSiteMapProjection? MapProjection => ActiveSite?.Template is { } template
+    public HumanSiteMapProjection? MapProjection =>
+        (TemplateAuthor.PreviewTemplate ?? ActiveSite?.Template) is { } template
         ? mapProjector.Project(
             template,
             new HumanSiteMapDisplayOptions(
                 ShowMedkits,
                 ShowBatteries,
                 ShowDataTerminals,
-                ActiveSite.FactionState is "War" or "CivilWar"))
+                ActiveSite?.FactionState is "War" or "CivilWar"))
         : null;
 
     public bool HasKnownType => ActiveSite?.Template is not null;
@@ -1146,6 +1152,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     private void NotifySiteState()
     {
+        TemplateAuthor.UpdateContext(
+            ActiveSite,
+            CommanderOffset,
+            RelativeHeading,
+            status?.ShieldsUp == true);
         OnPropertyChanged(nameof(ActiveSite));
         OnPropertyChanged(nameof(MapProjection));
         OnPropertyChanged(nameof(HasKnownType));
