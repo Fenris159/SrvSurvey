@@ -357,6 +357,115 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
     }
 
     [Fact]
+    public async Task DevelopmentFolderImportPreservesMatchingProgressAndSourceBytes()
+    {
+        WriteDevelopmentQuest();
+        var statePath = Path.Combine(temporaryDirectory, "quests", "F123.json");
+        var originalState = await File.ReadAllBytesAsync(statePath);
+        var sourceDirectory = await WriteDevelopmentSourceAsync(
+            id: "sample",
+            version: 2,
+            title: "Imported Quest");
+        var sourceBytes = Directory.GetFiles(sourceDirectory)
+            .ToDictionary(path => path, File.ReadAllBytes);
+        await using var coordinator = CreateCoordinator(
+            new FakeRavenQuestClient());
+        await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+
+        var imported = await coordinator.ImportDevelopmentQuestAsync(
+            sourceDirectory);
+
+        var snapshot = Assert.Single(coordinator.Snapshot);
+        Assert.True(snapshot.IsDevelopment);
+        Assert.Equal("Imported Quest", snapshot.Title);
+        Assert.Equal(2, snapshot.Reference.Version);
+        Assert.Equal(originalState, await File.ReadAllBytesAsync(
+            Assert.IsType<string>(imported.BackupPath)));
+        Assert.Equal(2, imported.SourceFiles.Count);
+        var loaded = new LegacyQuestStateStore(temporaryDirectory).Load("F123");
+        var progress = QuestProgressMapper.FromLegacy(
+            Assert.IsType<LegacyQuestProgress>(loaded.Data?.DevelopmentQuest));
+        Assert.Equal(42, progress.Variables["prior"].GetInt32());
+        Assert.Equal("Imported Quest", progress.Quest?.Title);
+        Assert.True(progress.Quest?.ExtensionData["futureDefinition"]
+            .GetBoolean());
+        Assert.Contains(
+            "\"future\": \"preserve\"",
+            await File.ReadAllTextAsync(statePath),
+            StringComparison.Ordinal);
+        foreach (var pair in sourceBytes)
+        {
+            Assert.Equal(pair.Value, await File.ReadAllBytesAsync(pair.Key));
+        }
+    }
+
+    [Fact]
+    public async Task DifferentDevelopmentQuestReplacesOldProgressButKeepsRootData()
+    {
+        WriteDevelopmentQuest();
+        var statePath = Path.Combine(temporaryDirectory, "quests", "F123.json");
+        var originalState = await File.ReadAllBytesAsync(statePath);
+        var sourceDirectory = await WriteDevelopmentSourceAsync(
+            id: "replacement",
+            version: 1,
+            title: "Replacement Quest");
+        await using var coordinator = CreateCoordinator(
+            new FakeRavenQuestClient());
+        await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+
+        var imported = await coordinator.ImportDevelopmentQuestAsync(
+            sourceDirectory);
+
+        Assert.Equal(originalState, await File.ReadAllBytesAsync(
+            Assert.IsType<string>(imported.BackupPath)));
+        var state = await File.ReadAllTextAsync(statePath);
+        Assert.Contains("\"futureRoot\": true", state, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"prior\": 42", state, StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "\"future\": \"preserve\"",
+            state,
+            StringComparison.Ordinal);
+        var snapshot = Assert.Single(coordinator.Snapshot);
+        Assert.Equal("replacement", snapshot.Reference.Id);
+        Assert.True(snapshot.IsDevelopment);
+    }
+
+    [Fact]
+    public async Task InvalidDevelopmentScriptCannotReplaceSavedOrActiveQuest()
+    {
+        WriteDevelopmentQuest();
+        var statePath = Path.Combine(temporaryDirectory, "quests", "F123.json");
+        var originalState = await File.ReadAllBytesAsync(statePath);
+        var sourceDirectory = await WriteDevelopmentSourceAsync(
+            id: "replacement",
+            version: 1,
+            title: "Broken Quest",
+            script: "this is not valid lua");
+        await using var coordinator = CreateCoordinator(
+            new FakeRavenQuestClient());
+        await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+        var prior = Assert.Single(coordinator.Snapshot);
+
+        await Assert.ThrowsAsync<QuestScriptException>(() =>
+            coordinator.ImportDevelopmentQuestAsync(sourceDirectory));
+
+        Assert.Equal(originalState, await File.ReadAllBytesAsync(statePath));
+        Assert.Equal(prior, Assert.Single(coordinator.Snapshot));
+    }
+
+    [Fact]
     public async Task SnapshotHydratesDefinitionBackedMessageAndObjectiveText()
     {
         var definition = CreateDefinition("function noop() end") with
@@ -492,7 +601,7 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
               "devQuest":{
                 "startTime":"2026-07-01T00:00:00Z",
                 "chapters":[{"id":"start","startTime":"2026-07-01T00:00:00Z"}],
-                "vars":{},
+                "vars":{"prior":42},
                 "future":"preserve"
               },
               "futureRoot":true
@@ -516,6 +625,36 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
               }
             }
             """);
+    }
+
+    private async Task<string> WriteDevelopmentSourceAsync(
+        string id,
+        double version,
+        string title,
+        string script = "function noop() end")
+    {
+        var directory = Path.Combine(temporaryDirectory, "development-source");
+        Directory.CreateDirectory(directory);
+        await File.WriteAllTextAsync(
+            Path.Combine(directory, "quest.json"),
+            $$"""
+            {
+              "publisher":"Raven",
+              "id":"{{id}}",
+              "ver":{{version.ToString(System.Globalization.CultureInfo.InvariantCulture)}},
+              "title":"{{title}}",
+              "firstChapter":"start",
+              "objectives":{},
+              "strings":{},
+              "msgs":[],
+              "chapters":{},
+              "futureDefinition":true
+            }
+            """);
+        await File.WriteAllTextAsync(
+            Path.Combine(directory, "start.lua"),
+            script);
+        return directory;
     }
 
     private static RavenCommanderQuest CreateRemoteProgress(

@@ -7,6 +7,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
 {
     private readonly LegacyQuestStateStore legacyStore;
     private readonly IRavenQuestClient ravenClient;
+    private readonly QuestDevelopmentFolderLoader developmentFolderLoader;
     private readonly Action<string>? log;
     private readonly QuestCommanderContextTracker contextTracker = new();
     private readonly SemaphoreSlim coordinatorLock = new(1, 1);
@@ -17,12 +18,15 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
     public QuestRuntimeCoordinator(
         LegacyQuestStateStore legacyStore,
         IRavenQuestClient ravenClient,
-        Action<string>? log = null)
+        Action<string>? log = null,
+        QuestDevelopmentFolderLoader? developmentFolderLoader = null)
     {
         this.legacyStore = legacyStore
             ?? throw new ArgumentNullException(nameof(legacyStore));
         this.ravenClient = ravenClient
             ?? throw new ArgumentNullException(nameof(ravenClient));
+        this.developmentFolderLoader = developmentFolderLoader
+            ?? new QuestDevelopmentFolderLoader();
         this.log = log;
     }
 
@@ -465,6 +469,108 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 active,
                 token),
             cancellationToken);
+    }
+
+    public async Task<QuestDevelopmentImportResult> ImportDevelopmentQuestAsync(
+        string sourceDirectory,
+        CancellationToken cancellationToken = default)
+    {
+        var source = await developmentFolderLoader.LoadAsync(
+                sourceDirectory,
+                cancellationToken)
+            .ConfigureAwait(false);
+        QuestDevelopmentImportResult result;
+        await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            ThrowIfDisposed();
+            var current = configuration
+                ?? throw new InvalidOperationException(
+                    "Quest runtime configuration has not been initialized.");
+            if (!current.Enabled)
+            {
+                throw new InvalidOperationException(
+                    "Quest runtime must be enabled before importing a development quest.");
+            }
+
+            var priorRegistration = runtimes.Values.FirstOrDefault(
+                registration => registration.IsDevelopment);
+            var prior = priorRegistration?.Runtime.Progress;
+            var imported = CreateImportedProgress(source.Definition, prior);
+            var hasMatchingPrior = prior is not null
+                && HasSameQuest(prior.Reference, source.Definition.Reference);
+            var context = contextTracker.CreateContext(
+                current.CommanderName,
+                current.Status);
+            await using (var validation = new QuestScriptRuntime(
+                             imported,
+                             context,
+                             log: log))
+            {
+                await validation.InitializeAsync(
+                        startFirstChapter: !imported.Chapters.Any(IsActive),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            var saved = hasMatchingPrior
+                ? await legacyStore.SaveDevelopmentQuestAsync(
+                        current.FrontierId,
+                        current.CommanderName,
+                        imported,
+                        cancellationToken)
+                    .ConfigureAwait(false)
+                : await legacyStore.ReplaceDevelopmentQuestAsync(
+                        current.FrontierId,
+                        current.CommanderName,
+                        imported,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
+            var warnings = source.Warnings.ToList();
+            await TryAddRuntimeAsync(
+                    imported,
+                    isDevelopment: true,
+                    current,
+                    context,
+                    warnings,
+                    cancellationToken,
+                    startFirstChapter: false)
+                .ConfigureAwait(false);
+            var identity = QuestIdentity.From(imported.Reference);
+            if (!runtimes.TryGetValue(identity, out var activated)
+                || !activated.IsDevelopment)
+            {
+                throw new InvalidDataException(
+                    $"Development quest '{imported.Reference}' was saved but could not be initialized. "
+                        + string.Join(" ", warnings));
+            }
+
+            foreach (var pair in runtimes
+                         .Where(pair => pair.Value.IsDevelopment
+                             && pair.Key != identity)
+                         .ToArray())
+            {
+                runtimes.Remove(pair.Key);
+                await pair.Value.Runtime.DisposeAsync().ConfigureAwait(false);
+            }
+
+            Snapshot = CreateSnapshot();
+            result = new QuestDevelopmentImportResult(
+                imported.Reference,
+                saved.Path,
+                saved.BackupPath,
+                source.SourceDirectory,
+                source.SourceFiles,
+                warnings);
+        }
+        finally
+        {
+            coordinatorLock.Release();
+        }
+
+        Changed?.Invoke(this, EventArgs.Empty);
+        return result;
     }
 
     public async ValueTask DisposeAsync()
@@ -1009,6 +1115,106 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 StringComparison.Ordinal);
     }
 
+    private static RavenCommanderQuest CreateImportedProgress(
+        RavenQuestDefinition definition,
+        RavenCommanderQuest? prior)
+    {
+        var preserve = prior is not null
+            && HasSameQuest(prior.Reference, definition.Reference);
+        var chapters = definition.Chapters.Keys.Select(chapterId =>
+        {
+            var previous = preserve
+                ? prior!.Chapters.FirstOrDefault(chapter => string.Equals(
+                    chapter.Id,
+                    chapterId,
+                    StringComparison.Ordinal))
+                : null;
+            return previous is null
+                ? new RavenQuestChapterState { Id = chapterId }
+                : previous with
+                {
+                    Variables = CloneJsonMap(previous.Variables),
+                    ExtensionData = CloneJsonMap(previous.ExtensionData),
+                };
+        }).ToList();
+        return new RavenCommanderQuest
+        {
+            Publisher = definition.Publisher,
+            Id = definition.Id,
+            Version = definition.Version,
+            Quest = definition,
+            Objectives = preserve
+                ? prior!.Objectives.ToDictionary(StringComparer.Ordinal)
+                : [],
+            StartTime = DateTimeOffset.UtcNow,
+            Tags = preserve
+                ? prior!.Tags.ToHashSet(StringComparer.Ordinal)
+                : [],
+            BodyLocations = preserve
+                ? prior!.BodyLocations.ToDictionary(StringComparer.Ordinal)
+                : [],
+            Chapters = chapters,
+            Messages = preserve
+                ? prior!.Messages.Select(CloneMessage).ToList()
+                : [],
+            Variables = preserve ? CloneJsonMap(prior!.Variables) : [],
+            KeptJournalEvents = preserve
+                ? CloneJsonMap(prior!.KeptJournalEvents)
+                : [],
+            Routes = preserve
+                ? prior!.Routes.Select(CloneRoute).ToList()
+                : [],
+            ExtensionData = preserve
+                ? CloneJsonMap(prior!.ExtensionData)
+                : [],
+        };
+    }
+
+    private static RavenQuestMessage CloneMessage(RavenQuestMessage message)
+    {
+        return message with
+        {
+            Actions = message.Actions?.ToArray(),
+            ExtensionData = CloneJsonMap(message.ExtensionData),
+        };
+    }
+
+    private static RavenQuestRoute CloneRoute(RavenQuestRoute route)
+    {
+        return route with
+        {
+            Waypoints = route.Waypoints
+                .Select(waypoint => waypoint.ToArray())
+                .ToList(),
+            ExtensionData = CloneJsonMap(route.ExtensionData),
+        };
+    }
+
+    private static Dictionary<string, JsonElement> CloneJsonMap(
+        IReadOnlyDictionary<string, JsonElement> source)
+    {
+        return source.ToDictionary(
+            pair => pair.Key,
+            pair => pair.Value.Clone(),
+            StringComparer.Ordinal);
+    }
+
+    private static bool HasSameQuest(
+        RavenQuestReference left,
+        RavenQuestReference right)
+    {
+        return string.Equals(
+                left.Publisher,
+                right.Publisher,
+                StringComparison.Ordinal)
+            && string.Equals(left.Id, right.Id, StringComparison.Ordinal);
+    }
+
+    private static bool IsActive(RavenQuestChapterState chapter)
+    {
+        return chapter.StartTime is not null && chapter.EndTime is null;
+    }
+
     private QuestRuntimeConfiguration RequireRemoteConfiguration()
     {
         var current = configuration
@@ -1068,6 +1274,14 @@ public sealed record QuestRuntimeConfiguration(
     string CommanderName,
     string? RavenApiKey,
     EliteStatus? Status);
+
+public sealed record QuestDevelopmentImportResult(
+    RavenQuestReference Reference,
+    string StatePath,
+    string? BackupPath,
+    string SourceDirectory,
+    IReadOnlyList<QuestDevelopmentSourceFile> SourceFiles,
+    IReadOnlyList<string> Warnings);
 
 public sealed record QuestRuntimeSnapshot(
     RavenQuestReference Reference,

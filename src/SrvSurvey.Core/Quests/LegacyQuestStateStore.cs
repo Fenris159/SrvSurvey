@@ -140,6 +140,38 @@ public sealed class LegacyQuestStateStore
         RavenCommanderQuest? progress,
         CancellationToken cancellationToken = default)
     {
+        return await SaveDevelopmentQuestCoreAsync(
+                frontierId,
+                commanderName,
+                progress,
+                replaceExistingProgress: false,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<LegacyQuestStateSaveResult> ReplaceDevelopmentQuestAsync(
+        string frontierId,
+        string? commanderName,
+        RavenCommanderQuest progress,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(progress);
+        return await SaveDevelopmentQuestCoreAsync(
+                frontierId,
+                commanderName,
+                progress,
+                replaceExistingProgress: true,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<LegacyQuestStateSaveResult> SaveDevelopmentQuestCoreAsync(
+        string frontierId,
+        string? commanderName,
+        RavenCommanderQuest? progress,
+        bool replaceExistingProgress,
+        CancellationToken cancellationToken)
+    {
         ValidateFrontierId(frontierId);
         if (progress is not null)
         {
@@ -185,13 +217,15 @@ public sealed class LegacyQuestStateStore
             else
             {
                 root["devRef"] = progress.Reference.ToString();
-                var questRoot = root["devQuest"] switch
-                {
-                    null => new JsonObject(),
-                    JsonObject existing => existing,
-                    _ => throw new InvalidDataException(
-                        "The legacy development quest state is not a JSON object and was not overwritten."),
-                };
+                var questRoot = replaceExistingProgress
+                    ? new JsonObject()
+                    : root["devQuest"] switch
+                    {
+                        null => new JsonObject(),
+                        JsonObject existing => existing,
+                        _ => throw new InvalidDataException(
+                            "The legacy development quest state is not a JSON object and was not overwritten."),
+                    };
                 root["devQuest"] = questRoot;
                 MergeProgress(questRoot, progress);
             }
