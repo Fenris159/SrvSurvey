@@ -9,6 +9,10 @@ namespace SrvSurvey.Core.Exobiology;
 
 public sealed class SurfaceSurveyJournalTracker
 {
+    private const string OrganicCodexCategory =
+        "$Codex_SubCategory_Organic_Structures;";
+    private const string FixedLifeCloud = "$Fixed_Event_Life_Cloud;";
+    private const string FixedLifeRing = "$Fixed_Event_Life_Ring;";
     private const double TrackerRemovalDistanceMeters = 150;
 
     private readonly SystemSurfaceStore store;
@@ -74,6 +78,11 @@ public sealed class SurfaceSurveyJournalTracker
                     "Disembark" => ApplyDisembark(journalEvent.Payload),
                     "Embark" => ApplyEmbark(journalEvent.Payload),
                     "LeaveBody" => ApplyLeaveBody(),
+                    "CodexEntry" => await ApplyCodexEntryAsync(
+                        session,
+                        journalEvent.Payload,
+                        options,
+                        cancellationToken).ConfigureAwait(false),
                     "ScanOrganic" => await ApplyOrganicScanAsync(
                         session,
                         journalEvent.Payload,
@@ -158,6 +167,43 @@ public sealed class SurfaceSurveyJournalTracker
         ShipLocation = null;
         SrvLocation = null;
         return 1;
+    }
+
+    private async Task<int> ApplyCodexEntryAsync(
+        SurfaceSurveySessionContext session,
+        JsonElement root,
+        SurfaceSurveyTrackingOptions options,
+        CancellationToken cancellationToken)
+    {
+        if (!options.AutoTrackCompositionScans
+            || !string.Equals(
+                GetString(root, "SubCategory"),
+                OrganicCodexCategory,
+                StringComparison.Ordinal)
+            || GetString(root, "NearestDestination") is FixedLifeCloud
+                or FixedLifeRing
+            || GetInt64(root, "EntryID") is not { } entryId
+            || catalog.FindByEntryId(entryId) is not { } reference
+            || !reference.IsBiology
+            || CreateBodyContext(session, root) is not { } context
+            || (GetCoordinate(root) ?? GetCurrentCoordinate()) is not { } location)
+        {
+            return 0;
+        }
+
+        if (options.SkipAnalyzedCompositionScans
+            && options.AnalyzedSpecies?.Contains(reference.SpeciesName) == true)
+        {
+            return 0;
+        }
+
+        var result = await store.AddBookmarkAsync(
+                context,
+                ExobiologyReferenceCatalog.GetGenusName(reference.SpeciesName),
+                location,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+        return result.Mutation == SurfaceBookmarkMutation.Added ? 1 : 0;
     }
 
     private async Task<int> ApplyOrganicScanAsync(
@@ -430,9 +476,23 @@ public sealed class SurfaceSurveyJournalTracker
 
     private static long? GetInt64(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.Number
-            && value.TryGetInt64(out var number)
+        if (!root.TryGetProperty(propertyName, out var value))
+        {
+            return null;
+        }
+
+        if (value.ValueKind == JsonValueKind.Number
+            && value.TryGetInt64(out var number))
+        {
+            return number;
+        }
+
+        return value.ValueKind == JsonValueKind.String
+            && long.TryParse(
+                value.GetString(),
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out number)
                 ? number
                 : null;
     }
@@ -456,7 +516,10 @@ public sealed record SurfaceSurveySessionContext(
 
 public sealed record SurfaceSurveyTrackingOptions(
     bool AutoRemoveTrackerOnSampling,
-    bool AutoRemoveTrackerOnFinalSample)
+    bool AutoRemoveTrackerOnFinalSample,
+    bool AutoTrackCompositionScans = true,
+    bool SkipAnalyzedCompositionScans = true,
+    IReadOnlySet<string>? AnalyzedSpecies = null)
 {
     public static SurfaceSurveyTrackingOptions Default { get; } = new(
         AutoRemoveTrackerOnSampling: true,

@@ -146,7 +146,10 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                         status,
                         new SurfaceSurveyTrackingOptions(
                             survey.AutoRemoveTrackerOnSampling,
-                            survey.AutoRemoveTrackerOnFinalSample),
+                            survey.AutoRemoveTrackerOnFinalSample,
+                            survey.AutoTrackCompositionScans,
+                            survey.SkipAnalyzedCompositionScans,
+                            GetAnalyzedSpecies()),
                         cancellationToken)
                     .ConfigureAwait(true);
             }
@@ -465,6 +468,16 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         }
 
         return ExobiologyReferenceCatalog.GetGenusDisplayName(name);
+    }
+
+    private IReadOnlySet<string> GetAnalyzedSpecies()
+    {
+        return survey.Snapshot.Bodies
+            .SelectMany(body => body.Organisms)
+            .Where(organism => organism.IsAnalyzed
+                && !string.IsNullOrWhiteSpace(organism.Species))
+            .Select(organism => organism.Species!)
+            .ToHashSet(StringComparer.Ordinal);
     }
 
     private void OnSurveyPropertyChanged(

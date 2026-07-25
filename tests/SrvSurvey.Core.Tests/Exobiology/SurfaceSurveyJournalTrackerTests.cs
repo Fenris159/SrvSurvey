@@ -139,6 +139,51 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
     }
 
     [Fact]
+    public async Task CompositionScanAddsGenusTrackerAtReportedCoordinates()
+    {
+        var (tracker, store) = CreateTracker();
+
+        var result = await tracker.ApplyAsync(
+            Session(),
+            [Event(CodexEntry(latitude: 5, longitude: 6))],
+            Status(1, 2));
+
+        Assert.Equal(1, result.MutationCount);
+        var loaded = await store.LoadBodyAsync(BodyContext());
+        Assert.Equal(
+            new SurfaceCoordinate(5, 6),
+            Assert.Single(loaded.Snapshot!.Bookmarks[AleoidaGenus]));
+    }
+
+    [Fact]
+    public async Task CompositionTrackingHonorsAnalyzedAndFixedSignalFilters()
+    {
+        var (tracker, store) = CreateTracker();
+        var options = new SurfaceSurveyTrackingOptions(
+            false,
+            false,
+            AutoTrackCompositionScans: true,
+            SkipAnalyzedCompositionScans: true,
+            new HashSet<string>(StringComparer.Ordinal) { AleoidaSpecies });
+
+        var result = await tracker.ApplyAsync(
+            Session(),
+            [
+                Event(CodexEntry(latitude: 5, longitude: 6)),
+                Event(CodexEntry(
+                    latitude: 7,
+                    longitude: 8,
+                    nearestDestination: "$Fixed_Event_Life_Cloud;")),
+            ],
+            Status(1, 2),
+            options);
+
+        Assert.Equal(0, result.MutationCount);
+        Assert.Empty((await store.LoadBodyAsync(BodyContext()))
+            .Snapshot!.Bookmarks);
+    }
+
+    [Fact]
     public async Task MissingSurfaceContextIsNonFatalAndReported()
     {
         var (tracker, _) = CreateTracker();
@@ -160,7 +205,8 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
             AleoidaVariant,
             AleoidaSpecies,
             "Aleoida Arcus - Yellow",
-            7_252_500);
+            7_252_500,
+            HudCategory: "Biology");
         var catalog = new ExobiologyReferenceCatalog([reference, .. additional]);
         var store = new SystemSurfaceStore(temporaryDirectory);
         return (new SurfaceSurveyJournalTracker(store, catalog), store);
@@ -201,6 +247,19 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
     {
         return $$"""
         {"event":"ScanOrganic","ScanType":"{{scanType}}","Genus":"{{genus}}","Species":"{{species}}","Variant":"{{variant}}","SystemAddress":42,"Body":7}
+        """;
+    }
+
+    private static string CodexEntry(
+        double latitude,
+        double longitude,
+        string? nearestDestination = null)
+    {
+        var destination = nearestDestination is null
+            ? string.Empty
+            : $",\"NearestDestination\":\"{nearestDestination}\"";
+        return $$"""
+        {"event":"CodexEntry","SubCategory":"$Codex_SubCategory_Organic_Structures;","EntryID":"2310101","SystemAddress":42,"BodyID":7,"Latitude":{{latitude}},"Longitude":{{longitude}}{{destination}}}
         """;
     }
 
