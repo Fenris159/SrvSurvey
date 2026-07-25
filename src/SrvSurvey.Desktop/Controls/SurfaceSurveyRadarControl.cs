@@ -35,6 +35,10 @@ public sealed class SurfaceSurveyRadarControl : Control
     public static readonly StyledProperty<IBrush?> DangerBrushProperty =
         AvaloniaProperty.Register<SurfaceSurveyRadarControl, IBrush?>(
             nameof(DangerBrush));
+    public static readonly StyledProperty<double> ScaleMultiplierProperty =
+        AvaloniaProperty.Register<SurfaceSurveyRadarControl, double>(
+            nameof(ScaleMultiplier),
+            1);
 
     static SurfaceSurveyRadarControl()
     {
@@ -46,7 +50,8 @@ public sealed class SurfaceSurveyRadarControl : Control
             MutedBrushProperty,
             SuccessBrushProperty,
             WarningBrushProperty,
-            DangerBrushProperty);
+            DangerBrushProperty,
+            ScaleMultiplierProperty);
     }
 
     public IReadOnlyList<SurfaceRadarMarkerViewModel>? Markers
@@ -95,6 +100,12 @@ public sealed class SurfaceSurveyRadarControl : Control
     {
         get => GetValue(DangerBrushProperty);
         set => SetValue(DangerBrushProperty, value);
+    }
+
+    public double ScaleMultiplier
+    {
+        get => GetValue(ScaleMultiplierProperty);
+        set => SetValue(ScaleMultiplierProperty, value);
     }
 
     public override void Render(DrawingContext context)
@@ -158,12 +169,15 @@ public sealed class SurfaceSurveyRadarControl : Control
         SurfaceRadarMarkerViewModel marker)
     {
         var radians = marker.RelativeBearingDegrees * Math.PI / 180d;
+        var scale = double.IsFinite(ScaleMultiplier)
+            ? Math.Clamp(ScaleMultiplier, 0.25, 10)
+            : 1;
         var point = new Point(
             center.X + Math.Sin(radians)
-                * marker.DistanceMeters / MetersPerPixel,
+                * marker.DistanceMeters / MetersPerPixel * scale,
             center.Y - Math.Cos(radians)
-                * marker.DistanceMeters / MetersPerPixel);
-        var radius = marker.RadiusMeters / MetersPerPixel;
+                * marker.DistanceMeters / MetersPerPixel * scale);
+        var radius = marker.RadiusMeters / MetersPerPixel * scale;
         if (radius > 0
             && point.X + radius >= bounds.Left
             && point.X - radius <= bounds.Right

@@ -150,6 +150,30 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.False(viewModel.ShouldShow);
     }
 
+    [Fact]
+    public void RadarZoomUsesLegacyFactorBoundsAndAutomaticReset()
+    {
+        var (viewModel, _, _) = CreateViewModel();
+
+        Assert.Equal(1, viewModel.RadarScale);
+        Assert.Equal("ZOOM AUTO", viewModel.RadarScaleText);
+        Assert.True(viewModel.AdjustRadarScale(zoomIn: true));
+        Assert.Equal(1.25, viewModel.RadarScale);
+        Assert.Equal("ZOOM 1.25×", viewModel.RadarScaleText);
+        Assert.True(viewModel.AdjustRadarScale(zoomIn: false));
+        Assert.Equal(1, viewModel.RadarScale);
+        Assert.True(viewModel.ResetRadarScale());
+        Assert.Equal("ZOOM AUTO", viewModel.RadarScaleText);
+
+        for (var index = 0; index < 17; index++)
+        {
+            viewModel.AdjustRadarScale(zoomIn: true);
+        }
+
+        Assert.InRange(viewModel.RadarScale, 0.25, 10);
+        Assert.False(viewModel.AdjustRadarScale(zoomIn: true));
+    }
+
     private (SurfaceSurveyViewModel ViewModel, SystemSurveyViewModel Survey,
         SystemSurfaceStore Store) CreateViewModel()
     {

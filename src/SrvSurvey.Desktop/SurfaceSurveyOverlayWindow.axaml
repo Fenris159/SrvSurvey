@@ -40,14 +40,20 @@
                      FontWeight="SemiBold"
                      Text="{Binding SurfaceSurvey.BodyName}"
                      TextTrimming="CharacterEllipsis" />
-          <StackPanel Orientation="Horizontal" Spacing="8">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="7">
             <TextBlock Classes="monospace"
                        FontSize="9"
                        Text="{Binding SurfaceSurvey.HeadingText}" />
-            <TextBlock Classes="muted"
+            <TextBlock Grid.Column="1"
+                       Classes="muted"
                        FontSize="9"
-                       Text="{Binding SurfaceSurvey.HistoryText}" />
-          </StackPanel>
+                       Text="{Binding SurfaceSurvey.HistoryText}"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="2"
+                       Classes="monospace"
+                       FontSize="9"
+                       Text="{Binding SurfaceSurvey.RadarScaleText}" />
+          </Grid>
         </StackPanel>
         <Border Grid.Column="1"
                 Classes="badge"
@@ -66,6 +72,7 @@
         <controls:SurfaceSurveyRadarControl
             MinHeight="180"
             Markers="{Binding SurfaceSurvey.RadarMarkers}"
+            ScaleMultiplier="{Binding SurfaceSurvey.RadarScale}"
             BackgroundBrush="{DynamicResource RavenRaisedSurfaceBrush}"
             GridBrush="{DynamicResource RavenBorderBrush}"
             AccentBrush="{DynamicResource RavenAccentBrush}"

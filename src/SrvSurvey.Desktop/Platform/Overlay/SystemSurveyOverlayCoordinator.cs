@@ -103,6 +103,28 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     public bool IsSuppressed => isSuppressed;
 
+    public bool AdjustSurfaceZoom(bool zoomIn)
+    {
+        if (disposed || surfaceWindow is null)
+        {
+            return false;
+        }
+
+        surfaceSurvey.AdjustRadarScale(zoomIn);
+        return true;
+    }
+
+    public bool ResetSurfaceZoom()
+    {
+        if (disposed || surfaceWindow is null)
+        {
+            return false;
+        }
+
+        surfaceSurvey.ResetRadarScale();
+        return true;
+    }
+
     public void SetSuppressed(bool value)
     {
         if (disposed || value == isSuppressed)

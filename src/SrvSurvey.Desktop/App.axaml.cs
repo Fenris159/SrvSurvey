@@ -176,6 +176,21 @@ public sealed partial class App : Application
                     var handled = false;
                     switch (eventArgs.Action)
                     {
+                        case GlobalInputAction.MapZoomIn:
+                            handled = systemSurveyOverlayCoordinator
+                                ?.AdjustSurfaceZoom(zoomIn: true) == true;
+                            break;
+
+                        case GlobalInputAction.MapZoomOut:
+                            handled = systemSurveyOverlayCoordinator
+                                ?.AdjustSurfaceZoom(zoomIn: false) == true;
+                            break;
+
+                        case GlobalInputAction.MapZoomAuto:
+                            handled = systemSurveyOverlayCoordinator
+                                ?.ResetSurfaceZoom() == true;
+                            break;
+
                         case GlobalInputAction.ToggleAllVisibility:
                             var suppress =
                                 guardianOverlayCoordinator?.IsVisible == true

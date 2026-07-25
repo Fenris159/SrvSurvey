@@ -20,6 +20,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     private IReadOnlyList<SurfaceRadarMarkerViewModel> radarMarkers = [];
     private IReadOnlyList<SurfaceTrackerGroupViewModel> trackerGroups = [];
     private string statusText = "Waiting for surface survey context.";
+    private double? customRadarScale;
     private bool disposed;
 
     public SurfaceSurveyViewModel(
@@ -96,10 +97,45 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
 
     public int RadarSize => survey.SurfaceRadarSize;
 
+    public double RadarScale => customRadarScale ?? 1;
+
+    public string RadarScaleText => customRadarScale is { } scale
+        ? $"ZOOM {scale:N2}×"
+        : "ZOOM AUTO";
+
     public bool ShouldShow => IsEligibleStatus()
         && HasDisplayContent();
 
     public SystemSurfaceBodySnapshot? CurrentSurface => surface;
+
+    public bool AdjustRadarScale(bool zoomIn)
+    {
+        const double delta = 1.25;
+        var next = RadarScale;
+        next = zoomIn ? next * delta : next / delta;
+        if (next is < 0.25 or > 10)
+        {
+            return false;
+        }
+
+        customRadarScale = next;
+        OnPropertyChanged(nameof(RadarScale));
+        OnPropertyChanged(nameof(RadarScaleText));
+        return true;
+    }
+
+    public bool ResetRadarScale()
+    {
+        if (customRadarScale is null)
+        {
+            return false;
+        }
+
+        customRadarScale = null;
+        OnPropertyChanged(nameof(RadarScale));
+        OnPropertyChanged(nameof(RadarScaleText));
+        return true;
+    }
 
     public void Reset(ExobiologySnapshot? seed = null)
     {
@@ -107,6 +143,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         exobiology = seed ?? ExobiologySnapshot.Empty;
         context = null;
         surface = null;
+        customRadarScale = null;
         RadarMarkers = [];
         TrackerGroups = [];
         StatusText = "Waiting for surface survey context.";
@@ -534,6 +571,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(HeadingText));
         OnPropertyChanged(nameof(HistoryText));
         OnPropertyChanged(nameof(RadarSize));
+        OnPropertyChanged(nameof(RadarScale));
+        OnPropertyChanged(nameof(RadarScaleText));
         OnPropertyChanged(nameof(ShouldShow));
     }
 
