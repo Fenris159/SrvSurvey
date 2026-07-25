@@ -33,6 +33,10 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "bodyInfoBubbleSize": 321,
               "highGravityWarningLevel": 2.75,
               "useExternalData": false,
+              "useExternalBioData": true,
+              "eddnUpload": true,
+              "eddnEnvironment": "live",
+              "uploadGGG": true,
               "bioPlotSize": 4,
               "skipLowValueDSS": false,
               "skipLowValueAmount": 7654321,
@@ -126,6 +130,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(321, survey.BodyInfoBubbleSizeLy);
         Assert.Equal(2.75, survey.HighGravityWarningLevel);
         Assert.False(survey.UseExternalData);
+        Assert.True(survey.UseExternalBioData);
         Assert.Equal(4, survey.SurfaceRadarSize);
         Assert.False(survey.HighlightDssCandidates);
         Assert.Equal(7_654_321, survey.DssValueFloor);
@@ -163,6 +168,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.True(
             new SystemNicknameSettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.True(new QuestSettingsStore(paths.UiSettingsPath).LoadEnabled());
+        Assert.Equal(
+            new NetworkPrivacyPreferences(true, "live", true),
+            new NetworkPrivacySettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new ScreenshotProcessingPreferences(
                 true,

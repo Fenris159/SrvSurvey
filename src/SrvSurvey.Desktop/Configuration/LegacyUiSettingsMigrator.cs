@@ -66,6 +66,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("autoShowFlightWarnings", "AutoShowFlightWarnings"),
                     ("highGravityWarningLevel", "HighGravityWarningLevel"),
                     ("useExternalData", "UseExternalData"),
+                    ("useExternalBioData", "UseExternalBioData"),
                     ("autoShowPlotBioSystem", "AutoShowBioSystem"),
                     ("autoShowBioSummary", "AutoShowBioStatus"),
                     ("autoLoadPriorScans", "AutoShowPriorScans"),
@@ -167,6 +168,12 @@ public sealed class LegacyUiSettingsMigrator
                     ("aerialAltGamma", "AerialAltitudeGamma"),
                 ]);
                 mappedCount += MapColonization(legacy, root);
+                mappedCount += MapSection(legacy, root, "NetworkPrivacy",
+                [
+                    ("eddnUpload", "EddnUploadEnabled"),
+                    ("eddnEnvironment", "EddnEnvironment"),
+                    ("uploadGGG", "UploadGreenGasGiantCandidates"),
+                ]);
                 mappedCount += MapInput(legacy, root);
                 root["LegacyImport"] = new JsonObject
                 {

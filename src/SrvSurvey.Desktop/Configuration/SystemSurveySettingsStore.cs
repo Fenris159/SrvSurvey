@@ -59,6 +59,10 @@ public sealed class SystemSurveySettingsStore
                 defaults.UseExternalData),
             GetBoolean(
                 settings,
+                "UseExternalBioData",
+                defaults.UseExternalBioData),
+            GetBoolean(
+                settings,
                 "AutoShowBioSystem",
                 defaults.AutoShowBioSystem),
             GetBoolean(
@@ -225,6 +229,7 @@ public sealed class SystemSurveySettingsStore
             settings["HighGravityWarningLevel"] =
                 preferences.HighGravityWarningLevel;
             settings["UseExternalData"] = preferences.UseExternalData;
+            settings["UseExternalBioData"] = preferences.UseExternalBioData;
             settings["AutoShowBioSystem"] = preferences.AutoShowBioSystem;
             settings["AutoShowBioStatus"] = preferences.AutoShowBioStatus;
             settings["AutoShowPriorScans"] = preferences.AutoShowPriorScans;
@@ -332,6 +337,7 @@ public sealed record SystemSurveyPreferences(
     bool AutoShowFlightWarnings,
     double HighGravityWarningLevel,
     bool UseExternalData,
+    bool UseExternalBioData,
     bool AutoShowBioSystem,
     bool AutoShowBioStatus,
     bool AutoShowPriorScans,
@@ -379,6 +385,7 @@ public sealed record SystemSurveyPreferences(
         AutoShowFlightWarnings: true,
         HighGravityWarningLevel: 1,
         UseExternalData: true,
+        UseExternalBioData: false,
         AutoShowBioSystem: true,
         AutoShowBioStatus: true,
         AutoShowPriorScans: true,

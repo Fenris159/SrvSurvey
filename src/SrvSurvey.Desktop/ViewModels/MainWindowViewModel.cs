@@ -158,6 +158,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         ScreenshotProcessing = new ScreenshotProcessingViewModel(
             new ScreenshotProcessingSettingsStore(AppDataPaths.UiSettingsPath),
             screenshotProcessingService);
+        NetworkPrivacy = new NetworkPrivacyViewModel(
+            new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
         Colonization = colonization ?? new ColonizationViewModel(
             new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
             commanderProfileStore: commanderProfileStore,
@@ -382,6 +384,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public OverlayLayoutSettingsViewModel OverlayLayout { get; }
 
     public ScreenshotProcessingViewModel ScreenshotProcessing { get; }
+
+    public NetworkPrivacyViewModel NetworkPrivacy { get; }
 
     public QuestWorkspaceViewModel QuestWorkspace { get; }
 

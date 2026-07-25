@@ -34,6 +34,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             AutoShowFlightWarnings: false,
             HighGravityWarningLevel: 2.5,
             UseExternalData: false,
+            UseExternalBioData: true,
             AutoShowBioSystem: false,
             AutoShowBioStatus: true,
             AutoShowPriorScans: false,

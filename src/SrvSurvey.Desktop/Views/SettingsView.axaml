@@ -602,6 +602,9 @@
               <TextBlock Classes="eyebrow" Text="CANONN PRIOR SCANS" />
               <CheckBox IsChecked="{Binding SystemSurvey.UseExternalData, Mode=TwoWay}"
                         Content="Use external survey data" />
+              <CheckBox IsChecked="{Binding SystemSurvey.UseExternalBioData, Mode=TwoWay}"
+                        IsEnabled="{Binding SystemSurvey.UseExternalData}"
+                        Content="Use external biology confirmations" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoShowPriorScans, Mode=TwoWay}"
                         Content="Show aiming guidance to known biology signals" />
               <CheckBox IsChecked="{Binding SystemSurvey.HideOwnCanonnSignals, Mode=TwoWay}"
@@ -738,6 +741,47 @@
                      IsVisible="{Binding SystemSurvey.HasSettingsStatus}"
                      TextWrapping="Wrap"
                      Text="{Binding SystemSurvey.SettingsStatus}" />
+        </StackPanel>
+      </Border>
+
+      <Separator />
+
+      <StackPanel Spacing="5">
+        <TextBlock Classes="eyebrow" Text="PRIVACY" />
+        <TextBlock Classes="page-title" Text="Network publication" />
+        <TextBlock Classes="muted"
+                   TextWrapping="Wrap"
+                   Text="All publication remains off unless you explicitly enable it. Imported profiles retain the original choices." />
+      </StackPanel>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="12">
+              <TextBlock Classes="card-title" Text="EDDN" />
+              <CheckBox IsChecked="{Binding NetworkPrivacy.EddnUploadEnabled, Mode=TwoWay}"
+                        Content="Allow supported journal publication" />
+              <ComboBox ItemsSource="{Binding NetworkPrivacy.EddnEnvironments}"
+                        SelectedItem="{Binding NetworkPrivacy.EddnEnvironment, Mode=TwoWay}"
+                        IsEnabled="{Binding NetworkPrivacy.EddnUploadEnabled}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="The legacy EDDN path was disabled in the original build. This consent and environment are retained without making new EDDN requests." />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="12">
+              <TextBlock Classes="card-title" Text="Green Gas Giants" />
+              <CheckBox IsChecked="{Binding NetworkPrivacy.UploadGreenGasGiantCandidates, Mode=TwoWay}"
+                        Content="Upload matching candidates to Raven Colonial" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="When enabled, matching Scan journal events may include commander name, system coordinates, and the original scan payload. Runtime publication parity is tracked separately." />
+            </StackPanel>
+          </Grid>
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="{Binding NetworkPrivacy.HasStatusMessage}"
+                     TextWrapping="Wrap"
+                     Text="{Binding NetworkPrivacy.StatusMessage}" />
         </StackPanel>
       </Border>
 

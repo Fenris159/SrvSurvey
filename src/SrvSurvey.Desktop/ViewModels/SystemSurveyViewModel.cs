@@ -34,6 +34,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool autoShowFlightWarnings;
     private double highGravityWarningLevel;
     private bool useExternalData;
+    private bool useExternalBioData;
     private bool autoShowBioSystem;
     private bool autoShowBioStatus;
     private bool autoShowPriorScans;
@@ -94,6 +95,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         autoShowFlightWarnings = preferences.AutoShowFlightWarnings;
         highGravityWarningLevel = preferences.HighGravityWarningLevel;
         useExternalData = preferences.UseExternalData;
+        useExternalBioData = preferences.UseExternalBioData;
         autoShowBioSystem = preferences.AutoShowBioSystem;
         autoShowBioStatus = preferences.AutoShowBioStatus;
         autoShowPriorScans = preferences.AutoShowPriorScans;
@@ -208,6 +210,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get => useExternalData;
         set => SetPreference(ref useExternalData, value);
+    }
+
+    public bool UseExternalBioData
+    {
+        get => useExternalBioData;
+        set => SetPreference(ref useExternalBioData, value);
     }
 
     public bool AutoShowBioSystem
@@ -1641,6 +1649,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 AutoShowFlightWarnings,
                 HighGravityWarningLevel,
                 UseExternalData,
+                UseExternalBioData,
                 AutoShowBioSystem,
                 AutoShowBioStatus,
                 AutoShowPriorScans,
