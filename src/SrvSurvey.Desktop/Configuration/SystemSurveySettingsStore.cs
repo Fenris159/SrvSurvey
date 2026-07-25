@@ -17,6 +17,38 @@ public sealed class SystemSurveySettingsStore
         var settings = root["SystemSurvey"] as JsonObject;
         var defaults = SystemSurveyPreferences.Default;
         return new SystemSurveyPreferences(
+            GetBoolean(settings, "AutoShowBodyInfo", defaults.AutoShowBodyInfo),
+            GetBoolean(
+                settings,
+                "ShowBodyInfoInSystemMap",
+                defaults.ShowBodyInfoInSystemMap),
+            GetBoolean(
+                settings,
+                "ShowBodyInfoInOrbit",
+                defaults.ShowBodyInfoInOrbit),
+            GetBoolean(
+                settings,
+                "ShowBodyInfoAtSurface",
+                defaults.ShowBodyInfoAtSurface),
+            GetBoolean(
+                settings,
+                "HideBodyInfoInBubble",
+                defaults.HideBodyInfoInBubble),
+            GetInt32(
+                settings,
+                "BodyInfoBubbleSizeLy",
+                defaults.BodyInfoBubbleSizeLy,
+                0),
+            GetBoolean(
+                settings,
+                "HideBodyInfoMaterials",
+                defaults.HideBodyInfoMaterials),
+            GetDouble(
+                settings,
+                "HighGravityWarningLevel",
+                defaults.HighGravityWarningLevel,
+                0,
+                50),
             GetBoolean(
                 settings,
                 "AutoShowLastFssBody",
@@ -82,6 +114,19 @@ public sealed class SystemSurveySettingsStore
             }
 
             root["Version"] = 1;
+            settings["AutoShowBodyInfo"] = preferences.AutoShowBodyInfo;
+            settings["ShowBodyInfoInSystemMap"] =
+                preferences.ShowBodyInfoInSystemMap;
+            settings["ShowBodyInfoInOrbit"] = preferences.ShowBodyInfoInOrbit;
+            settings["ShowBodyInfoAtSurface"] =
+                preferences.ShowBodyInfoAtSurface;
+            settings["HideBodyInfoInBubble"] =
+                preferences.HideBodyInfoInBubble;
+            settings["BodyInfoBubbleSizeLy"] = preferences.BodyInfoBubbleSizeLy;
+            settings["HideBodyInfoMaterials"] =
+                preferences.HideBodyInfoMaterials;
+            settings["HighGravityWarningLevel"] =
+                preferences.HighGravityWarningLevel;
             settings["AutoShowLastFssBody"] = preferences.AutoShowLastFssBody;
             settings["AutoShowFssInfo"] = preferences.AutoShowFssInfo;
             settings["ShowFssInfoInSystemMap"] =
@@ -125,9 +170,31 @@ public sealed class SystemSurveySettingsStore
                 ? Math.Max(minimum, result)
                 : fallback;
     }
+
+    private static double GetDouble(
+        JsonObject? source,
+        string propertyName,
+        double fallback,
+        double minimum,
+        double maximum)
+    {
+        return source?[propertyName] is JsonValue value
+            && value.TryGetValue<double>(out var result)
+            && double.IsFinite(result)
+                ? Math.Clamp(result, minimum, maximum)
+                : fallback;
+    }
 }
 
 public sealed record SystemSurveyPreferences(
+    bool AutoShowBodyInfo,
+    bool ShowBodyInfoInSystemMap,
+    bool ShowBodyInfoInOrbit,
+    bool ShowBodyInfoAtSurface,
+    bool HideBodyInfoInBubble,
+    int BodyInfoBubbleSizeLy,
+    bool HideBodyInfoMaterials,
+    double HighGravityWarningLevel,
     bool AutoShowLastFssBody,
     bool AutoShowFssInfo,
     bool ShowFssInfoInSystemMap,
@@ -144,6 +211,14 @@ public sealed record SystemSurveyPreferences(
     bool ShowNonBodySignals)
 {
     public static SystemSurveyPreferences Default { get; } = new(
+        AutoShowBodyInfo: true,
+        ShowBodyInfoInSystemMap: true,
+        ShowBodyInfoInOrbit: true,
+        ShowBodyInfoAtSurface: false,
+        HideBodyInfoInBubble: true,
+        BodyInfoBubbleSizeLy: 200,
+        HideBodyInfoMaterials: false,
+        HighGravityWarningLevel: 1,
         AutoShowLastFssBody: true,
         AutoShowFssInfo: true,
         ShowFssInfoInSystemMap: false,

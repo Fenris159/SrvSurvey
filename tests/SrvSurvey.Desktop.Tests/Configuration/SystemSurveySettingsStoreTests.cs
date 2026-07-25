@@ -26,6 +26,14 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         var expected = new SystemSurveyPreferences(
             false,
             false,
+            false,
+            true,
+            false,
+            150,
+            true,
+            2.5,
+            false,
+            false,
             true,
             true,
             false,
@@ -53,13 +61,17 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         File.WriteAllText(
             path,
             "{\"SystemSurvey\":{\"FssBodyValueFloor\":-1,"
-                + "\"DssValueFloor\":-2,\"DssDistanceLimitLs\":-3}}");
+                + "\"DssValueFloor\":-2,\"DssDistanceLimitLs\":-3,"
+                + "\"BodyInfoBubbleSizeLy\":-4,"
+                + "\"HighGravityWarningLevel\":75}}");
 
         var preferences = new SystemSurveySettingsStore(path).Load();
 
         Assert.Equal(0, preferences.FssBodyValueFloor);
         Assert.Equal(0, preferences.DssValueFloor);
         Assert.Equal(0, preferences.DssDistanceLimitLs);
+        Assert.Equal(0, preferences.BodyInfoBubbleSizeLy);
+        Assert.Equal(50, preferences.HighGravityWarningLevel);
     }
 
     public void Dispose()

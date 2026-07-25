@@ -17,6 +17,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private IReadOnlyList<FssBodyRowViewModel> fssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> dssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> biologicalBodies = [];
+    private bool autoShowBodyInfo;
+    private bool showBodyInfoInSystemMap;
+    private bool showBodyInfoInOrbit;
+    private bool showBodyInfoAtSurface;
+    private bool hideBodyInfoInBubble;
+    private int bodyInfoBubbleSizeLy;
+    private bool hideBodyInfoMaterials;
+    private double highGravityWarningLevel;
     private bool autoShowLastFssBody;
     private bool autoShowFssInfo;
     private bool showFssInfoInSystemMap;
@@ -44,6 +52,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             ?? throw new ArgumentNullException(nameof(settingsStore));
         this.state = state ?? new SystemScanState();
         var preferences = settingsStore.Load();
+        autoShowBodyInfo = preferences.AutoShowBodyInfo;
+        showBodyInfoInSystemMap = preferences.ShowBodyInfoInSystemMap;
+        showBodyInfoInOrbit = preferences.ShowBodyInfoInOrbit;
+        showBodyInfoAtSurface = preferences.ShowBodyInfoAtSurface;
+        hideBodyInfoInBubble = preferences.HideBodyInfoInBubble;
+        bodyInfoBubbleSizeLy = preferences.BodyInfoBubbleSizeLy;
+        hideBodyInfoMaterials = preferences.HideBodyInfoMaterials;
+        highGravityWarningLevel = preferences.HighGravityWarningLevel;
         autoShowLastFssBody = preferences.AutoShowLastFssBody;
         autoShowFssInfo = preferences.AutoShowFssInfo;
         showFssInfoInSystemMap = preferences.ShowFssInfoInSystemMap;
@@ -61,6 +77,56 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public bool AutoShowBodyInfo
+    {
+        get => autoShowBodyInfo;
+        set => SetPreference(ref autoShowBodyInfo, value);
+    }
+
+    public bool ShowBodyInfoInSystemMap
+    {
+        get => showBodyInfoInSystemMap;
+        set => SetPreference(ref showBodyInfoInSystemMap, value);
+    }
+
+    public bool ShowBodyInfoInOrbit
+    {
+        get => showBodyInfoInOrbit;
+        set => SetPreference(ref showBodyInfoInOrbit, value);
+    }
+
+    public bool ShowBodyInfoAtSurface
+    {
+        get => showBodyInfoAtSurface;
+        set => SetPreference(ref showBodyInfoAtSurface, value);
+    }
+
+    public bool HideBodyInfoInBubble
+    {
+        get => hideBodyInfoInBubble;
+        set => SetPreference(ref hideBodyInfoInBubble, value);
+    }
+
+    public int BodyInfoBubbleSizeLy
+    {
+        get => bodyInfoBubbleSizeLy;
+        set => SetPreference(ref bodyInfoBubbleSizeLy, Math.Max(0, value));
+    }
+
+    public bool HideBodyInfoMaterials
+    {
+        get => hideBodyInfoMaterials;
+        set => SetPreference(ref hideBodyInfoMaterials, value);
+    }
+
+    public double HighGravityWarningLevel
+    {
+        get => highGravityWarningLevel;
+        set => SetPreference(
+            ref highGravityWarningLevel,
+            double.IsFinite(value) ? Math.Clamp(value, 0, 50) : 1);
+    }
 
     public bool AutoShowLastFssBody
     {
@@ -741,6 +807,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         try
         {
             settingsStore.Save(new SystemSurveyPreferences(
+                AutoShowBodyInfo,
+                ShowBodyInfoInSystemMap,
+                ShowBodyInfoInOrbit,
+                ShowBodyInfoAtSurface,
+                HideBodyInfoInBubble,
+                BodyInfoBubbleSizeLy,
+                HideBodyInfoMaterials,
+                HighGravityWarningLevel,
                 AutoShowLastFssBody,
                 AutoShowFssInfo,
                 ShowFssInfoInSystemMap,
