@@ -131,9 +131,14 @@ top-center last-scan card with standalone-planet selection, discovery,
 terraformable/landable state, distance, scan/mapped values, and biological
 signals. These surfaces use bounded click-through layouts and all Raven themes.
 The legacy `PlotFSS.watchFssSettings_TEST` screen-pixel tuning detector remains
-open pending a platform capture abstraction. The other plotter surfaces remain
-unported, and the new Windows/X11 adapters still require live Elite runtime
-validation.
+open pending a platform capture abstraction. `PlotBodyInfo` is now implemented
+as a top-left passive surface with map/orrery, DSS, orbit/glide, optional
+surface-analysis, Sol-bubble, `Alt+B`, and Guardian-priority rules. It supports
+unscanned destinations and shows discovery/mapping, scan/DSS values,
+temperature, gravity, pressure, signals, volcanism, atmosphere, materials, and
+rings. Its biological reward range remains pending with the broader
+`PlotBioSystem` prediction engine. The other plotter surfaces remain unported,
+and the new Windows/X11 adapters still require live Elite runtime validation.
 
 Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
 opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,
@@ -227,6 +232,15 @@ check at 1182 by 790, using a live journal folder:
   values, and four biological signals rendered cleanly at the active Windows
   scaling. The temporary preview hook and QA settings were removed; live Elite
   attachment, click-through, the experimental pixel watcher, and Linux remain
+  untested.
+- The `PlotBodyInfo` replacement was exercised with a dense synthetic body in
+  Blue (dark) and Blue (light). A long generated name, discovery and
+  terraformable state, scan/DSS values, 12,845 LS distance, high gravity,
+  pressure, four biological and two geological signals, volcanism, three
+  atmosphere components, eight materials including rare-material emphasis, and
+  two rings fit in a 390 by 521 logical-pixel passive card at the active Windows
+  scaling. The temporary preview hook and QA settings were removed; live Elite
+  attachment, click-through, biological reward prediction, and Linux remain
   untested.
 - Search rendered the spherical limit, live current-system coordinates,
   configuration editor, Boxel status/options/hierarchy, current-boxel actions,

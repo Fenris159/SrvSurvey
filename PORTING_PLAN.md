@@ -223,6 +223,18 @@ can be considered completely equivalent. Blue dark/light presentation has been
 checked at the active Windows scaling; live Elite attachment and Linux remain
 open.
 
+`PlotBodyInfo` now has a Raven-themed passive replacement with the original
+map/orrery, DSS, orbit/glide, optional surface-analysis, Sol-bubble, and `Alt+B`
+visibility rules. It selects current versus status-destination bodies by mode,
+supports unscanned targets, and renders discovery/mapping, scan and mapped
+values, temperature, high-gravity warnings, pressure, biological/geological
+signals, volcanism, atmosphere composition, materials, and rings. Forced body
+information retains its legacy priority over the Guardian summary. A dense
+synthetic body was checked in Blue dark/light at the active Windows scaling.
+The legacy predicted biological reward range remains coupled to the unported
+`PlotBioSystem` prediction engine and is still open; live Elite attachment and
+Linux also remain open.
+
 Exit gate: overlay positioning, DPI scaling, focus, click-through behavior, and
 input are recorded on the supported platform matrix.
 
@@ -244,8 +256,10 @@ UI tests where practical, and live Windows/Linux evidence.
   Followed-route Galaxy Map guidance, `PlotJumpInfo`, `PlotFSSInfo`, and
   `PlotSysStatus` are implemented. The journal-backed `PlotFSS` card is
   implemented, while its experimental pixel tuning detector remains open;
-  `PlotBodyInfo`, `PlotBioSystem`, `PlotPriorScans`, and the remaining
-  route/search plotter modes are still open.
+  `PlotBodyInfo` selection, visibility, and presentation are implemented while
+  its biological reward range remains tied to the open `PlotBioSystem`
+  prediction work. `PlotPriorScans` and the remaining route/search plotter
+  modes are still open.
 - [ ] Human settlements and post-processing tools.
 - [ ] Cargo, missions, massacre/foot combat, and colonization projects.
 - [ ] Quest communications and controller navigation.
@@ -284,7 +298,7 @@ not expected to run as a headless container service.
 | Commander journeys | Lossless legacy journey JSON and active-pointer persistence, historic journal replay, all legacy counters/rewards/flags, current and prior-system starts, live updates, note coupling, conclude, and bounded reprocess implemented | Single-instance responsive workspace unifies begin, list, edit, viewer, and per-system details; supports history, preferences, notes, screenshots, dirty-state handling, and guarded destructive actions | Isolated QA journey exercised in Blue dark/light, including both start modes, begin, overview, visited systems, note edit/discard, refresh, and conclude/reprocess confirmations; no live commander Journey data changed | Not tested |
 | Followed routes | Lossless legacy route JSON, activation/progression/completion, out-of-order protection, name resolution, and current Spansh result polling/shapes implemented | Travel card plus single-instance route workspace support imports, per-hop progress, route preferences, manual copy, live FSDJump advancement, route-priority Galaxy Map auto-copy, and a passive route overlay | Isolated QA route/editor and overlay preview exercised in Blue dark/light; progress/discard, distance, notes, neutron/refuel, destination, and copy states checked; no live commander data retained and no live Elite attachment run | Not tested |
 | Next-jump information | `FSDTarget`/status target precedence, nav/followed/direct route planning, ship-range boost detection, EDSM bodies/traffic, Spansh dump aggregation, Guardian counts, and galactic-region lookup implemented with partial-provider failure handling | Passive top-center `PlotJumpInfo` replacement, proportional route renderer, automatic/FSD/selected-hop lifecycle, `Alt+D`, compact mode, persisted preferences, and Guardian-overlay arbitration implemented | Live Sol provider responses and a two-hop 64.9 ly preview checked in Blue dark/light; temporary hook removed and Blue dark restored; no live Elite attachment run | Not tested |
-| System/FSS survey | Current-system reducer tracks body details, FSS/DSS values and completion, discovery/mapping, rings, materials, bio/geo analysis, destination context, latest detailed standalone planet, and non-body signals with stale-system rejection | Passive top-left `PlotFSSInfo`, top-center journal-backed `PlotFSS`, and bottom-left `PlotSysStatus` replacements, `Alt+F`, legacy visibility/filter settings, bounded body feed, last-scan values/signals, DSS targets, and Guardian arbitration implemented; the experimental FSS pixel tuning detector remains open | Synthetic six-body and last-scan previews checked in Blue dark/light at actual Windows DPI; hooks and QA settings removed; no live Elite attachment run | Not tested |
+| System/FSS survey | Current-system reducer tracks body details, galactic position, FSS/DSS values and completion, discovery/mapping, rings, materials, bio/geo analysis, destination context, latest detailed standalone planet, and non-body signals with stale-system rejection | Passive top-left `PlotFSSInfo`/`PlotBodyInfo`, top-center journal-backed `PlotFSS`, and bottom-left `PlotSysStatus` replacements, `Alt+F`/`Alt+B`, legacy visibility/filter/Sol-bubble settings, bounded body feed, detailed body composition, last-scan values/signals, DSS targets, and Guardian arbitration implemented; the FSS pixel detector and body biological reward range remain open | Synthetic six-body, last-scan, and dense body previews checked in Blue dark/light at actual Windows DPI; hooks and QA settings removed; no live Elite attachment run | Not tested |
 | Spherical search limit | Legacy-compatible center/radius state, strict boundary rule, lossless commander persistence, journal galactic position, and current Spansh response contract implemented | Search supports center lookup and selection, 1–1000 ly radius, enable/disable, and current-system distance/result; `PlotSphericalSearch` remains pending | Live profile page and Sol lookup visually/accessibility checked; save action enabled but profile was not changed | Not tested |
 | Boxel search | Generated-name hierarchy, ID64 decoding for generated and hand-authored names, completion/skip rules, lossless commander fields, legacy local-system and empty-boxel files, paged Spansh search, live `NavRoute.json`/journal updates, and cancellable full-area completion audit with partial results implemented | Search supports activation, mass-code/date options, current/parent/sibling/child navigation, expected counts, manual completion, empty marking, current-system highlighting, refresh, manual/Galaxy Map clipboard copy, audit progress/cancellation, and a large-audit confirmation guard | Inactive live-profile page and audit controls visually and accessibility checked at 1182 by 790; automated ID64, source-merge, live-completion, audit, cancellation, and confirmation integration passed; no search/profile/audit action was invoked | Not tested |
 | Nearby biological systems | Canonn nearest-codex and POI enrichment plus Spansh missing-variant request/response contracts implemented; malformed rows are excluded and Spansh results are limited to five unique systems | Search supports current journal reference coordinates, both legacy modes, validation, result selection, copy name/coordinates, Canonn/Spansh links, and the original Spansh result page | Both modes and conditional inputs visually checked in Blue dark at 1182 by 790 without issuing a live query; automated request, enrichment, selection, clipboard, address-resolution, and link coverage passed | Not tested |
@@ -304,7 +318,7 @@ Validation performed on 2026-07-24 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 503 tests: 321 Core tests and 182 Desktop tests.
+  passed all 506 tests: 321 Core tests and 185 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - The direct and transitive NuGet vulnerability audit reported no known
   vulnerable packages.
