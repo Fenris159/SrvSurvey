@@ -84,7 +84,7 @@ same coordinator; remaining biology-specific auxiliary cues stay open.
 | `FormMyProjects` | Colonisation / Projects | Implemented with opt-in Raven loading, hidden-project selection, primary-project display, aggregate cargo planning, current-ship trip estimates, refresh/save, and Raven build link; Windows visually checked |
 | `FormNearestSystems` | Search / Nearby systems | Implemented with current journal coordinates, Canonn signal and Spansh missing-variant searches, enriched notes, five unique results, selection, clipboard actions, Canonn/Spansh links, and original Spansh search link; Windows visually checked |
 | `FormNewProject` | Colonisation / Projects | Implemented with live depot/docked context, shipped build catalog, planned Raven sites, location/build/layout/body/architect/notes fields, validation, explicit review/confirm publishing, refresh, and created-project link; Windows visually checked |
-| `FormPlayComms` / `FormPlayComms2` | Quest communications | Legacy local commander/development-quest state and definition loading plus Raven catalog, progress, lifecycle, publishing, and chapter API contracts are implemented; Lua/journal runtime, player workspace, and compact quest indicator remain |
+| `FormPlayComms` / `FormPlayComms2` | Quest communications | Lossless legacy local commander/development-quest loading and verified atomic progress saves plus Raven catalog, progress, lifecycle, publishing, and chapter API contracts are implemented; Lua/journal runtime, player workspace, and compact quest indicator remain |
 | `FormPlayDev` | Developer tools | Deferred |
 | `FormPlayJournal` | Diagnostics / Journal tools | Not ported |
 | `FormPostProcess` | Diagnostics / Journal tools | Not ported |

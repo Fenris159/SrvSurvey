@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using SrvSurvey.Core.Quests;
 
 namespace SrvSurvey.Core.Tests.Quests;
@@ -218,6 +220,171 @@ public sealed class LegacyQuestStateStoreTests : IDisposable
         Assert.Contains(
             result.Warnings,
             warning => warning.Contains("path separator", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task DevelopmentProgressSavesAtomicallyWithVerifiedBackup()
+    {
+        var questDirectory = Path.Combine(temporaryDirectory, "quests");
+        Directory.CreateDirectory(questDirectory);
+        var statePath = Path.Combine(questDirectory, "F123.json");
+        var definitionPath = Path.Combine(questDirectory, "dev-sample.json");
+        var stateBytes = Encoding.UTF8.GetBytes(
+            """
+            {
+              "fid": "F123",
+              "cmdr": "Test Cmdr",
+              "devRef": "publisher|sample|1.5",
+              "devQuest": {
+                "objectives": {"scan": "visible,1,3"},
+                "tags": ["Sol"],
+                "bodyLocations": {"site": "12.5,-42.25,50"},
+                "chapters": [
+                  {"id":"start","startTime":"2026-07-01T00:00:00Z","vars":{"visits":2},"futureChapter":true}
+                ],
+                "msgs": [
+                  {"id":"welcome","received":"2026-07-01T00:01:00Z","chapter":"start","actions":["go"],"futureMessage":42}
+                ],
+                "vars": {"counter": 42},
+                "keptLasts": {"Docked":{"event":"Docked"}},
+                "routes": [
+                  {"id":"route","w":2.5,"wp":[[1,2]],"futureRoute":"keep"}
+                ],
+                "futureQuest": {"keep": true}
+              },
+              "futureRoot": "keep"
+            }
+            """);
+        var definitionBytes = Encoding.UTF8.GetBytes(
+            """
+            {
+              "id":"sample",
+              "ver":1.5,
+              "publisher":"publisher",
+              "title":"Sample",
+              "firstChapter":"start",
+              "objectives":{"scan":"Scan"},
+              "msgs":[{"id":"welcome","from":"Raven","body":"Welcome","actions":{"go":"Proceed"}}],
+              "chapters":{"start":"return true"}
+            }
+            """);
+        File.WriteAllBytes(statePath, stateBytes);
+        File.WriteAllBytes(definitionPath, definitionBytes);
+        var store = new LegacyQuestStateStore(temporaryDirectory);
+        var loaded = store.Load("F123");
+        var legacy = Assert.IsType<LegacyQuestProgress>(
+            loaded.Data?.DevelopmentQuest);
+        var progress = QuestProgressMapper.FromLegacy(legacy);
+        progress.Objectives["scan"] = "complete,3,3";
+        progress.Variables["counter"] = JsonSerializer.SerializeToElement(99);
+        progress.ExtensionData["newFutureQuest"] =
+            JsonSerializer.SerializeToElement("round-trip");
+        progress.Messages[0] = progress.Messages[0] with
+        {
+            Read = true,
+            Replied = "go",
+        };
+        progress.Routes[0].Waypoints.Add([3, 4]);
+
+        var saved = await store.SaveDevelopmentQuestAsync(
+            "F123",
+            "Test Cmdr",
+            progress);
+
+        Assert.Equal(statePath, saved.Path);
+        var backupPath = Assert.IsType<string>(saved.BackupPath);
+        Assert.Equal(stateBytes, File.ReadAllBytes(backupPath));
+        Assert.Equal(definitionBytes, File.ReadAllBytes(definitionPath));
+        var root = Assert.IsType<JsonObject>(
+            JsonNode.Parse(File.ReadAllText(statePath)));
+        Assert.Equal("keep", root["futureRoot"]?.GetValue<string>());
+        var quest = Assert.IsType<JsonObject>(root["devQuest"]);
+        Assert.True(quest["futureQuest"]?["keep"]?.GetValue<bool>());
+        Assert.Equal(
+            "round-trip",
+            quest["newFutureQuest"]?.GetValue<string>());
+        Assert.True(quest["chapters"]?[0]?["futureChapter"]?.GetValue<bool>());
+        Assert.Equal(42, quest["msgs"]?[0]?["futureMessage"]?.GetValue<int>());
+        Assert.Equal("keep", quest["routes"]?[0]?["futureRoute"]?.GetValue<string>());
+        Assert.Equal(
+            "complete,3,3",
+            quest["objectives"]?["scan"]?.GetValue<string>());
+        Assert.Equal(99, quest["vars"]?["counter"]?.GetValue<int>());
+        Assert.True(quest["msgs"]?[0]?["read"]?.GetValue<bool>());
+        Assert.Equal("go", quest["msgs"]?[0]?["replied"]?.GetValue<string>());
+        Assert.Equal(2, quest["routes"]?[0]?["wp"]?.AsArray().Count);
+        Assert.Empty(Directory.EnumerateFiles(questDirectory, "*.tmp"));
+
+        var reopened = store.Load("F123");
+        Assert.Null(reopened.Error);
+        Assert.Equal(
+            LegacyQuestObjectiveState.complete,
+            reopened.Data?.DevelopmentQuest?.Objectives["scan"].State);
+    }
+
+    [Fact]
+    public async Task MalformedStateIsNeverOverwrittenBySave()
+    {
+        var questDirectory = Path.Combine(temporaryDirectory, "quests");
+        Directory.CreateDirectory(questDirectory);
+        var path = Path.Combine(questDirectory, "F123.json");
+        var malformed = Encoding.UTF8.GetBytes("{\"devQuest\":[");
+        File.WriteAllBytes(path, malformed);
+
+        await Assert.ThrowsAnyAsync<InvalidDataException>(() =>
+            new LegacyQuestStateStore(temporaryDirectory)
+                .SaveDevelopmentQuestAsync(
+                    "F123",
+                    "Test Cmdr",
+                    CreateProgress()));
+
+        Assert.Equal(malformed, File.ReadAllBytes(path));
+        Assert.False(Directory.Exists(
+            Path.Combine(questDirectory, "quest-state-backups")));
+    }
+
+    [Fact]
+    public async Task ClearingDevelopmentQuestPreservesOtherCommanderState()
+    {
+        var questDirectory = Path.Combine(temporaryDirectory, "quests");
+        Directory.CreateDirectory(questDirectory);
+        var path = Path.Combine(questDirectory, "F123.json");
+        var original = Encoding.UTF8.GetBytes(
+            """
+            {"fid":"F123","cmdr":"Cmdr","devRef":"publisher|sample|1","devQuest":{},"future":42}
+            """);
+        File.WriteAllBytes(path, original);
+
+        var saved = await new LegacyQuestStateStore(temporaryDirectory)
+            .SaveDevelopmentQuestAsync("F123", "Cmdr", null);
+
+        Assert.Equal(original, File.ReadAllBytes(saved.BackupPath!));
+        var root = Assert.IsType<JsonObject>(
+            JsonNode.Parse(File.ReadAllText(path)));
+        Assert.Null(root["devRef"]);
+        Assert.Null(root["devQuest"]);
+        Assert.Equal(42, root["future"]?.GetValue<int>());
+    }
+
+    [Fact]
+    public async Task SaveFrontierIdCannotEscapeTheQuestDirectory()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            new LegacyQuestStateStore(temporaryDirectory)
+                .SaveDevelopmentQuestAsync(
+                    "../F123",
+                    "Cmdr",
+                    CreateProgress()));
+    }
+
+    private static RavenCommanderQuest CreateProgress()
+    {
+        return new RavenCommanderQuest
+        {
+            Publisher = "publisher",
+            Id = "sample",
+            Version = 1,
+        };
     }
 
     public void Dispose()

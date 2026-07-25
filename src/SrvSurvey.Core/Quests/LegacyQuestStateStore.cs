@@ -1,11 +1,14 @@
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Encodings.Web;
 using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Core.Quests;
 
 public sealed class LegacyQuestStateStore
 {
+    private readonly SemaphoreSlim saveLock = new(1, 1);
     private readonly string questDirectory;
 
     public LegacyQuestStateStore(string dataDirectory)
@@ -105,6 +108,418 @@ public sealed class LegacyQuestStateStore
                 null,
                 [],
                 exception.Message);
+        }
+    }
+
+    public async Task<LegacyQuestStateSaveResult> SaveDevelopmentQuestAsync(
+        string frontierId,
+        string? commanderName,
+        RavenCommanderQuest? progress,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateFrontierId(frontierId);
+        if (progress is not null)
+        {
+            ValidateProgressIdentity(progress);
+        }
+
+        await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            Directory.CreateDirectory(questDirectory);
+            var path = FindFile(frontierId + ".json")
+                ?? Path.Combine(questDirectory, frontierId + ".json");
+            JsonObject root;
+            if (File.Exists(path))
+            {
+                try
+                {
+                    root = ParseObject(path);
+                }
+                catch (JsonException exception)
+                {
+                    throw new InvalidDataException(
+                        "The legacy quest state is malformed and was not overwritten.",
+                        exception);
+                }
+            }
+            else
+            {
+                root = [];
+            }
+
+            root["fid"] = frontierId;
+            if (!string.IsNullOrWhiteSpace(commanderName))
+            {
+                root["cmdr"] = commanderName.Trim();
+            }
+
+            if (progress is null)
+            {
+                root.Remove("devRef");
+                root.Remove("devQuest");
+            }
+            else
+            {
+                root["devRef"] = progress.Reference.ToString();
+                var questRoot = root["devQuest"] switch
+                {
+                    null => new JsonObject(),
+                    JsonObject existing => existing,
+                    _ => throw new InvalidDataException(
+                        "The legacy development quest state is not a JSON object and was not overwritten."),
+                };
+                root["devQuest"] = questRoot;
+                MergeProgress(questRoot, progress);
+            }
+
+            var backupPath = File.Exists(path)
+                ? await CreateVerifiedBackupAsync(path, frontierId, cancellationToken)
+                    .ConfigureAwait(false)
+                : null;
+            await WriteVerifiedAsync(path, root, cancellationToken)
+                .ConfigureAwait(false);
+            return new LegacyQuestStateSaveResult(
+                path,
+                backupPath,
+                progress is not null);
+        }
+        finally
+        {
+            saveLock.Release();
+        }
+    }
+
+    private static void MergeProgress(
+        JsonObject root,
+        RavenCommanderQuest progress)
+    {
+        MergeExtensionData(root, progress.ExtensionData);
+        root["objectives"] = ToStringObject(progress.Objectives);
+        SetOrRemove(root, "startTime", progress.StartTime);
+        SetOrRemove(root, "endTime", progress.EndTime);
+        if (progress.Paused)
+        {
+            root["paused"] = true;
+        }
+        else
+        {
+            root.Remove("paused");
+        }
+
+        root["tags"] = new JsonArray(
+            progress.Tags
+                .Select(value => (JsonNode?)JsonValue.Create(value))
+                .ToArray());
+        root["bodyLocations"] = ToStringObject(progress.BodyLocations);
+        root["chapters"] = MergeById(
+            root["chapters"],
+            progress.Chapters,
+            chapter => chapter.Id,
+            MergeChapter);
+        root["msgs"] = MergeById(
+            root["msgs"],
+            progress.Messages,
+            message => message.Id,
+            MergeMessage);
+        root["vars"] = ToJsonObject(progress.Variables);
+        root["keptLasts"] = ToJsonObject(progress.KeptJournalEvents);
+        root["routes"] = MergeById(
+            root["routes"],
+            progress.Routes,
+            route => route.Id,
+            MergeRoute);
+    }
+
+    private static void MergeChapter(
+        JsonObject root,
+        RavenQuestChapterState chapter)
+    {
+        MergeExtensionData(root, chapter.ExtensionData);
+        root["id"] = chapter.Id;
+        SetOrRemove(root, "startTime", chapter.StartTime);
+        SetOrRemove(root, "endTime", chapter.EndTime);
+        root["vars"] = ToJsonObject(chapter.Variables);
+    }
+
+    private static void MergeMessage(
+        JsonObject root,
+        RavenQuestMessage message)
+    {
+        MergeExtensionData(root, message.ExtensionData);
+        root["id"] = message.Id;
+        SetOrRemove(
+            root,
+            "received",
+            message.Received == default
+                ? (DateTimeOffset?)null
+                : message.Received);
+        SetOrRemove(root, "from", message.From);
+        SetOrRemove(root, "subject", message.Subject);
+        SetOrRemove(root, "body", message.Body);
+        SetOrRemove(root, "chapter", message.Chapter);
+        if (message.Actions is null)
+        {
+            root.Remove("actions");
+        }
+        else
+        {
+            root["actions"] = new JsonArray(
+                message.Actions
+                    .Select(value => (JsonNode?)JsonValue.Create(value))
+                    .ToArray());
+        }
+
+        if (message.Read)
+        {
+            root["read"] = true;
+        }
+        else
+        {
+            root.Remove("read");
+        }
+
+        SetOrRemove(root, "replied", message.Replied);
+    }
+
+    private static void MergeRoute(
+        JsonObject root,
+        RavenQuestRoute route)
+    {
+        MergeExtensionData(root, route.ExtensionData);
+        root["id"] = route.Id;
+        root["w"] = route.Width;
+        var waypoints = new JsonArray();
+        foreach (var waypoint in route.Waypoints)
+        {
+            waypoints.Add(new JsonArray(
+                waypoint
+                    .Select(value => (JsonNode?)JsonValue.Create(value))
+                    .ToArray()));
+        }
+
+        root["wp"] = waypoints;
+    }
+
+    private static JsonArray MergeById<T>(
+        JsonNode? existing,
+        IEnumerable<T> values,
+        Func<T, string> getId,
+        Action<JsonObject, T> merge)
+    {
+        var existingById = new Dictionary<string, JsonObject>(
+            StringComparer.Ordinal);
+        var unidentified = new List<JsonNode>();
+        if (existing is JsonArray array)
+        {
+            foreach (var item in array)
+            {
+                if (item is JsonObject child
+                    && GetString(child, "id") is { } id
+                    && !existingById.ContainsKey(id))
+                {
+                    existingById[id] = child;
+                }
+                else if (item is not null)
+                {
+                    unidentified.Add(item.DeepClone());
+                }
+            }
+        }
+
+        var result = new JsonArray();
+        foreach (var value in values)
+        {
+            var id = getId(value);
+            ArgumentException.ThrowIfNullOrWhiteSpace(id);
+            var child = existingById.TryGetValue(id, out var prior)
+                ? prior.DeepClone().AsObject()
+                : new JsonObject();
+            merge(child, value);
+            result.Add(child);
+        }
+
+        foreach (var child in unidentified)
+        {
+            result.Add(child);
+        }
+
+        return result;
+    }
+
+    private static JsonObject ToStringObject(
+        IReadOnlyDictionary<string, string> values)
+    {
+        var result = new JsonObject();
+        foreach (var pair in values)
+        {
+            result[pair.Key] = pair.Value;
+        }
+
+        return result;
+    }
+
+    private static JsonObject ToJsonObject(
+        IReadOnlyDictionary<string, JsonElement> values)
+    {
+        var result = new JsonObject();
+        foreach (var pair in values)
+        {
+            result[pair.Key] = JsonNode.Parse(pair.Value.GetRawText());
+        }
+
+        return result;
+    }
+
+    private static void MergeExtensionData(
+        JsonObject root,
+        IReadOnlyDictionary<string, JsonElement> extensionData)
+    {
+        foreach (var pair in extensionData)
+        {
+            root[pair.Key] = JsonNode.Parse(pair.Value.GetRawText());
+        }
+    }
+
+    private static void SetOrRemove<T>(
+        JsonObject root,
+        string name,
+        T? value)
+    {
+        if (value is null)
+        {
+            root.Remove(name);
+        }
+        else
+        {
+            root[name] = JsonValue.Create(value);
+        }
+    }
+
+    private async Task<string> CreateVerifiedBackupAsync(
+        string path,
+        string frontierId,
+        CancellationToken cancellationToken)
+    {
+        var backupDirectory = Path.Combine(
+            questDirectory,
+            "quest-state-backups");
+        Directory.CreateDirectory(backupDirectory);
+        var safeFrontierId = string.Concat(frontierId.Select(character =>
+            Path.GetInvalidFileNameChars().Contains(character)
+                ? '_'
+                : character));
+        var backupPath = Path.Combine(
+            backupDirectory,
+            $"{safeFrontierId}-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffffffZ}-{Guid.NewGuid():N}.json");
+        File.Copy(path, backupPath, false);
+        try
+        {
+            var sourceHash = await ComputeSha256Async(path, cancellationToken)
+                .ConfigureAwait(false);
+            var backupHash = await ComputeSha256Async(
+                    backupPath,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (!CryptographicOperations.FixedTimeEquals(sourceHash, backupHash))
+            {
+                throw new IOException(
+                    "The legacy quest state backup did not match its source.");
+            }
+
+            return backupPath;
+        }
+        catch
+        {
+            File.Delete(backupPath);
+            throw;
+        }
+    }
+
+    private static async Task<byte[]> ComputeSha256Async(
+        string path,
+        CancellationToken cancellationToken)
+    {
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            16 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        return await SHA256.HashDataAsync(stream, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static async Task WriteVerifiedAsync(
+        string path,
+        JsonObject root,
+        CancellationToken cancellationToken)
+    {
+        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            await using (var stream = new FileStream(
+                             temporaryPath,
+                             FileMode.CreateNew,
+                             FileAccess.Write,
+                             FileShare.None,
+                             16 * 1024,
+                             FileOptions.Asynchronous))
+            {
+                await using var writer = new Utf8JsonWriter(
+                    stream,
+                    new JsonWriterOptions
+                    {
+                        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                        Indented = true,
+                    });
+                root.WriteTo(writer);
+                await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            var verified = ParseObject(temporaryPath);
+            if (!JsonNode.DeepEquals(root, verified))
+            {
+                throw new InvalidDataException(
+                    "The legacy quest state could not be verified before saving.");
+            }
+
+            File.Move(temporaryPath, path, true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+    }
+
+    private static void ValidateFrontierId(string frontierId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
+        if (ContainsPathSeparator(frontierId))
+        {
+            throw new ArgumentException(
+                "The Frontier ID cannot contain path separators.",
+                nameof(frontierId));
+        }
+    }
+
+    private static void ValidateProgressIdentity(RavenCommanderQuest progress)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(progress.Publisher);
+        ArgumentException.ThrowIfNullOrWhiteSpace(progress.Id);
+        if (progress.Publisher.Contains('|', StringComparison.Ordinal)
+            || progress.Id.Contains('|', StringComparison.Ordinal)
+            || ContainsPathSeparator(progress.Id)
+            || !double.IsFinite(progress.Version))
+        {
+            throw new ArgumentException(
+                "The development quest has an invalid identity.",
+                nameof(progress));
         }
     }
 
@@ -680,6 +1095,11 @@ public sealed record LegacyQuestStateLoadResult(
     LegacyCommanderQuestState? Data,
     IReadOnlyList<string> Warnings,
     string? Error);
+
+public sealed record LegacyQuestStateSaveResult(
+    string Path,
+    string? BackupPath,
+    bool HasDevelopmentQuest);
 
 public sealed record LegacyCommanderQuestState(
     string FrontierId,

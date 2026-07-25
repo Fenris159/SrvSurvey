@@ -36,19 +36,9 @@ public static class QuestProgressMapper
                     EndTime = chapter.EndTime,
                     Variables = CloneJsonMap(chapter.Variables),
                 }).ToList(),
-            Messages = progress.Messages.Select(message =>
-                new RavenQuestMessage
-                {
-                    Id = message.Id,
-                    Received = message.Received ?? default,
-                    From = message.From,
-                    Subject = message.Subject,
-                    Body = message.Body,
-                    Chapter = message.Chapter,
-                    Actions = message.Actions.ToArray(),
-                    Read = message.Read,
-                    Replied = message.Replied,
-                }).ToList(),
+            Messages = progress.Messages
+                .Select(message => MapMessage(message, progress.Definition))
+                .ToList(),
             Variables = CloneJsonMap(progress.Variables),
             KeptJournalEvents = CloneJsonMap(progress.KeptJournalEvents),
             Routes = progress.Routes.Select(route => new RavenQuestRoute
@@ -128,6 +118,28 @@ public static class QuestProgressMapper
             location.Latitude.ToString("R", CultureInfo.InvariantCulture),
             location.Longitude.ToString("R", CultureInfo.InvariantCulture),
             location.Radius.ToString("R", CultureInfo.InvariantCulture));
+    }
+
+    private static RavenQuestMessage MapMessage(
+        LegacyQuestMessage message,
+        LegacyQuestDefinition? definition)
+    {
+        var declared = definition?.Messages.FirstOrDefault(candidate =>
+            string.Equals(candidate.Id, message.Id, StringComparison.Ordinal));
+        return new RavenQuestMessage
+        {
+            Id = message.Id,
+            Received = message.Received ?? default,
+            From = message.From == declared?.From ? null : message.From,
+            Subject = message.Subject == declared?.Subject ? null : message.Subject,
+            Body = message.Body == declared?.Body ? null : message.Body,
+            Chapter = message.Chapter,
+            Actions = message.Actions.Count == 0
+                ? null
+                : message.Actions.ToArray(),
+            Read = message.Read,
+            Replied = message.Replied,
+        };
     }
 
     private static Dictionary<string, JsonElement> CloneJsonMap(
