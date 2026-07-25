@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\SrvSurvey\EliteDangerousRegionMap\RegionMapData.cs"
+             Link="Navigation\RegionMapData.cs" />
     <EmbeddedResource Include="..\..\docs\codexRef.json"
                       LogicalName="SrvSurvey.Core.Resources.codexRef.json" />
     <EmbeddedResource Include="..\..\SrvSurvey\allRuins.json"

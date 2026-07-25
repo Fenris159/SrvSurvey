@@ -27,7 +27,8 @@ public sealed record JumpInfoRoutePlan(
     JumpTarget Target,
     JumpInfoRouteSource Source,
     int TargetLegIndex,
-    IReadOnlyList<JumpInfoRouteLeg> Legs)
+    IReadOnlyList<JumpInfoRouteLeg> Legs,
+    GalacticCoordinate? TargetPosition)
 {
     public int JumpNumber => TargetLegIndex >= 0 ? TargetLegIndex + 1 : 0;
 
@@ -89,7 +90,12 @@ public static class JumpInfoRoutePlanner
                 StringComparison.OrdinalIgnoreCase))?.SystemAddress,
             target));
 
-        return new JumpInfoRoutePlan(target, source, targetLegIndex, legs);
+        return new JumpInfoRoutePlan(
+            target,
+            source,
+            targetLegIndex,
+            legs,
+            targetPoint?.Position);
     }
 
     public static JumpTarget? SelectTarget(
