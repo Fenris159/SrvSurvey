@@ -4,6 +4,19 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public static class OverlayWindowPlacement
 {
+    public static PixelPoint TopCenter(
+        PixelRect gameClientBounds,
+        PixelSize overlaySize,
+        int margin = 20)
+    {
+        Validate(gameClientBounds, overlaySize, margin);
+        var availableWidth = Math.Max(0, gameClientBounds.Width - (margin * 2));
+        var centeredOffset = Math.Max(0, (availableWidth - overlaySize.Width) / 2);
+        return new PixelPoint(
+            gameClientBounds.X + margin + centeredOffset,
+            gameClientBounds.Y + margin);
+    }
+
     public static PixelPoint TopLeft(
         PixelRect hostBounds,
         PixelSize overlaySize,

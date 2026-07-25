@@ -6,30 +6,33 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-public sealed class GuardianOverlayCoordinator : IDisposable
+public sealed class JumpInfoOverlayCoordinator : IDisposable
 {
-    private readonly GuardianViewModel guardian;
+    private readonly JumpInfoViewModel jumpInfo;
+    private readonly JumpInfoOverlayViewModel viewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
-    private GuardianOverlayWindow? window;
+    private JumpInfoOverlayWindow? window;
     private bool isSuppressed;
-    private bool isObscured;
     private bool disposed;
 
-    public GuardianOverlayCoordinator(
-        GuardianViewModel guardian,
+    public JumpInfoOverlayCoordinator(
+        JumpInfoViewModel jumpInfo,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker)
     {
-        this.guardian = guardian
-            ?? throw new ArgumentNullException(nameof(guardian));
+        this.jumpInfo = jumpInfo
+            ?? throw new ArgumentNullException(nameof(jumpInfo));
         this.platform = platform
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
-        this.guardian.PropertyChanged += OnGuardianPropertyChanged;
+        viewModel = new JumpInfoOverlayViewModel(
+            jumpInfo,
+            platform.Capabilities);
+        jumpInfo.PropertyChanged += OnJumpInfoPropertyChanged;
         timer = new DispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
@@ -39,22 +42,11 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
+    public event EventHandler? VisibilityChanged;
+
     public bool IsVisible => window is not null;
 
-    public string PlatformStatus => platform.Capabilities.StatusText;
-
     public bool IsSuppressed => isSuppressed;
-
-    public void ToggleVisibility()
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        isSuppressed = !isSuppressed;
-        SynchronizeWindow();
-    }
 
     public void SetSuppressed(bool value)
     {
@@ -64,17 +56,6 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         isSuppressed = value;
-        SynchronizeWindow();
-    }
-
-    public void SetObscured(bool value)
-    {
-        if (disposed || value == isObscured)
-        {
-            return;
-        }
-
-        isObscured = value;
         SynchronizeWindow();
     }
 
@@ -88,7 +69,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         disposed = true;
         timer.Stop();
         timer.Tick -= OnTimerTick;
-        guardian.PropertyChanged -= OnGuardianPropertyChanged;
+        jumpInfo.PropertyChanged -= OnJumpInfoPropertyChanged;
         CloseWindow();
         gameWindowTracker.Dispose();
         platform.Dispose();
@@ -99,11 +80,11 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    private void OnGuardianPropertyChanged(
+    private void OnJumpInfoPropertyChanged(
         object? sender,
         PropertyChangedEventArgs eventArgs)
     {
-        if (eventArgs.PropertyName == nameof(GuardianViewModel.HasActiveSite))
+        if (eventArgs.PropertyName == nameof(JumpInfoViewModel.ShouldShow))
         {
             SynchronizeWindow();
         }
@@ -118,8 +99,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
 
         gameWindow = gameWindowTracker.GetSnapshot();
         if (isSuppressed
-            || isObscured
-            || !guardian.HasActiveSite
+            || !jumpInfo.ShouldShow
             || !platform.Capabilities.SupportsPassiveOverlay
             || !platform.Capabilities.SupportsClickThrough
             || !platform.Capabilities.SupportsGameWindowTracking
@@ -137,10 +117,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             return;
         }
 
-        var viewModel = new GuardianOverlayViewModel(
-            guardian,
-            platform.Capabilities);
-        var overlay = new GuardianOverlayWindow(viewModel);
+        var overlay = new JumpInfoOverlayWindow(viewModel);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);
@@ -157,10 +134,12 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             if (ReferenceEquals(window, overlay))
             {
                 window = null;
+                VisibilityChanged?.Invoke(this, EventArgs.Empty);
             }
         };
         window = overlay;
         overlay.Show();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private static void PositionWindow(Window window, PixelRect gameBounds)
@@ -173,10 +152,13 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         var width = (int)Math.Ceiling(window.Width * screen.Scaling);
-        var height = (int)Math.Ceiling(window.Height * screen.Scaling);
-        var position = OverlayWindowPlacement.BottomRight(
+        var logicalHeight = window.Bounds.Height > 0
+            ? window.Bounds.Height
+            : window.MinHeight;
+        var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
+        var position = OverlayWindowPlacement.TopCenter(
             gameBounds,
-            new PixelSize(width, height));
+            new PixelSize(width, Math.Max(height, 1)));
         if (window.Position != position)
         {
             window.Position = position;
@@ -186,7 +168,13 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     private void CloseWindow()
     {
         var overlay = window;
+        if (overlay is null)
+        {
+            return;
+        }
+
         window = null;
-        overlay?.Close();
+        overlay.Close();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 }

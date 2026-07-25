@@ -6,6 +6,16 @@ namespace SrvSurvey.Desktop.Tests.Platform;
 public sealed class OverlayWindowPlacementTests
 {
     [Fact]
+    public void PlacesOverlayInsideTopCenterOfGameClient()
+    {
+        var position = OverlayWindowPlacement.TopCenter(
+            new PixelRect(-1920, 200, 1920, 1080),
+            new PixelSize(620, 390));
+
+        Assert.Equal(new PixelPoint(-1270, 220), position);
+    }
+
+    [Fact]
     public void PlacesOverlayInsideTopLeftOfGameClient()
     {
         var position = OverlayWindowPlacement.TopLeft(
@@ -61,5 +71,9 @@ public sealed class OverlayWindowPlacementTests
                 new PixelRect(0, 0, 100, 100),
                 new PixelSize(50, 50),
                 margin: -1));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            OverlayWindowPlacement.TopCenter(
+                default,
+                new PixelSize(100, 100)));
     }
 }

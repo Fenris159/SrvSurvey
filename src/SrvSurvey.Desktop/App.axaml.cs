@@ -17,6 +17,7 @@ public sealed partial class App : Application
     private ColonizationCommodityOverlayCoordinator?
         colonizationCommodityOverlayCoordinator;
     private RouteOverlayCoordinator? routeOverlayCoordinator;
+    private JumpInfoOverlayCoordinator? jumpInfoOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
@@ -68,6 +69,15 @@ public sealed partial class App : Application
                 viewModel.Guardian,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent());
+            jumpInfoOverlayCoordinator = new JumpInfoOverlayCoordinator(
+                viewModel.JumpInfo,
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent());
+            jumpInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
+                guardianOverlayCoordinator?.SetObscured(
+                    jumpInfoOverlayCoordinator?.IsVisible == true);
+            guardianOverlayCoordinator.SetObscured(
+                jumpInfoOverlayCoordinator.IsVisible);
             colonizationCommodityOverlayCoordinator =
                 new ColonizationCommodityOverlayCoordinator(
                     viewModel.Colonization.CommodityOverlay,
@@ -113,14 +123,20 @@ public sealed partial class App : Application
                         case GlobalInputAction.ToggleAllVisibility:
                             var suppress =
                                 guardianOverlayCoordinator?.IsVisible == true
+                                || jumpInfoOverlayCoordinator?.IsVisible == true
                                 || routeOverlayCoordinator?.IsVisible == true
                                 || colonizationCommodityOverlayCoordinator
                                     ?.IsVisible == true;
+                            jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
                             guardianOverlayCoordinator?.SetSuppressed(suppress);
                             routeOverlayCoordinator?.SetSuppressed(suppress);
                             colonizationCommodityOverlayCoordinator
                                 ?.SetSuppressed(suppress);
                             handled = true;
+                            break;
+
+                        case GlobalInputAction.ShowJumpInfo:
+                            handled = viewModel.JumpInfo.ToggleForcedVisibility();
                             break;
 
                         case GlobalInputAction.ShowColonyShopping:
@@ -187,6 +203,8 @@ public sealed partial class App : Application
                 routeWindowCoordinator = null;
                 routeOverlayCoordinator?.Dispose();
                 routeOverlayCoordinator = null;
+                jumpInfoOverlayCoordinator?.Dispose();
+                jumpInfoOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();
                 guardianOverlayCoordinator = null;
             };
