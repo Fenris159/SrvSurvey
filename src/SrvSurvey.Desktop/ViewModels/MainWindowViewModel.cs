@@ -28,6 +28,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private readonly ExplorationState explorationState = new();
     private readonly ExobiologyState exobiologyState;
     private readonly CommanderProfileStore commanderProfileStore;
+    private readonly CommanderCodexJournalTracker commanderCodexJournalTracker;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
     private readonly AsyncCommand importLegacyProfileCommand;
@@ -64,6 +65,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private string organicSampleRange = Unavailable;
     private string bioFirstFootfall = "Unknown";
     private string exobiologyStatusMessage = "Waiting for commander profile.";
+    private string commanderCodexStatusMessage =
+        "Waiting for Commander Codex journal entries.";
     private bool isResetExobiologyPending;
     private string? activeProfileFrontierId;
     private string? activeProfileCommanderName;
@@ -96,6 +99,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             configuredJournalDirectory);
         commanderProfileStore = new CommanderProfileStore(
             AppDataPaths.DataDirectory);
+        commanderCodexJournalTracker = new CommanderCodexJournalTracker(
+            new CommanderCodexStore(AppDataPaths.DataDirectory));
         InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
             OverlayPlatformCapabilities.DetectCurrent());
@@ -561,6 +566,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         private set => SetField(ref exobiologyStatusMessage, value);
     }
 
+    public string CommanderCodexStatusMessage
+    {
+        get => commanderCodexStatusMessage;
+        private set => SetField(ref commanderCodexStatusMessage, value);
+    }
+
     public ICommand ResetExobiologyCommand { get; }
 
     public ICommand CancelResetExobiologyCommand { get; }
@@ -779,6 +790,23 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         foreach (var journalEvent in update.JournalEvents)
         {
             journalState.Apply(journalEvent);
+        }
+
+        var commanderCodexResult =
+            await commanderCodexJournalTracker.ApplyAsync(update.JournalEvents);
+        if (commanderCodexResult.Warnings.Count > 0)
+        {
+            CommanderCodexStatusMessage = string.Join(
+                Environment.NewLine,
+                commanderCodexResult.Warnings);
+        }
+        else if (commanderCodexResult.DiscoveryEventCount > 0)
+        {
+            CommanderCodexStatusMessage = commanderCodexResult.HasChanges
+                ? $"Recorded {commanderCodexResult.ChangedEntryCount:N0} "
+                    + "Commander Codex ledger entries across "
+                    + $"{commanderCodexResult.ChangedFileCount:N0} files."
+                : "Commander Codex is current; no earlier firsts were found.";
         }
 
         Colonization.ApplyJournalEvents(update.JournalEvents);

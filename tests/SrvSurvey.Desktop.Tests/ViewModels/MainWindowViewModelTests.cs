@@ -155,6 +155,51 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task RefreshReplaysCommanderCodexFirstsToLegacyLedgers()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-codex-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Sol\",\"SystemAddress\":10477373803,\"StarPos\":[0,0,0]}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"CodexEntry\",\"EntryID\":2310101,\"SystemAddress\":10477373803,\"BodyID\":3}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths);
+
+            await viewModel.RefreshAsync();
+
+            Assert.Contains("2 Commander Codex ledger entries", viewModel.CommanderCodexStatusMessage);
+            Assert.Contains("2 files", viewModel.CommanderCodexStatusMessage);
+            var store = new CommanderCodexStore(profile);
+            var global = await store.LoadAsync("F123", "Drew");
+            var first = Assert.Single(global.Data!.Firsts).Value;
+            Assert.Equal(10477373803, first.SystemAddress);
+            Assert.Equal(3, first.BodyId);
+            Assert.Single(Directory.GetFiles(profile, "F123-codex-*.json"));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RefreshConnectsFollowedRouteAndLiveFsdProgress()
     {
         var root = Path.Combine(

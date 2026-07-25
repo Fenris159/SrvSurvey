@@ -34,6 +34,15 @@
       </Border>
 
       <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Classes="card-title" Text="Commander Codex ledger" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding CommanderCodexStatusMessage}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
         <Grid ColumnDefinitions="Auto,*"
               RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
               RowSpacing="10"
