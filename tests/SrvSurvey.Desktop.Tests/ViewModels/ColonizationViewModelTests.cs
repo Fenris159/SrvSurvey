@@ -178,6 +178,54 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task OfflineFirstRunKeepsImportedColonizationCache()
+    {
+        Directory.CreateDirectory(directory);
+        await File.WriteAllTextAsync(
+            Path.Combine(directory, "F123-colony.json"),
+            """
+            {
+              "cmdr": "Test Cmdr",
+              "primaryBuildId": "cached-build",
+              "hiddenIDs": [],
+              "projects": [
+                {
+                  "buildId": "cached-build",
+                  "buildType": "no_truss",
+                  "buildName": "Cached port",
+                  "systemName": "Cached System",
+                  "maxNeed": 1000,
+                  "sumNeed": 300,
+                  "commodities": {"steel": 300}
+                }
+              ],
+              "linkedFCs": {}
+            }
+            """);
+        var client = new StubRavenColonialClient
+        {
+            Failure = new HttpRequestException("offline"),
+        };
+        var viewModel = new ColonizationViewModel(
+            new ColonizationSettingsStore(Path.Combine(directory, "ui.json")),
+            client,
+            ColonizationBuildCatalog.LoadEmbedded(),
+            new CommanderProfileStore(directory),
+            new LegacyColonizationProfileStore(directory));
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", true, apiKey: null);
+
+        await viewModel.SetCommanderAsync("Test Cmdr");
+
+        var project = Assert.Single(viewModel.Projects);
+        Assert.Equal("cached-build", project.Project.BuildId);
+        Assert.True(project.IsPrimary);
+        Assert.Equal("Cargo required: 300", viewModel.ProjectSummary);
+        Assert.Contains("offline", viewModel.StatusMessage);
+        Assert.Equal(1, client.LoadCount);
+    }
+
+    [Fact]
     public async Task FeedsProjectsCarriersAndShipCargoIntoOverlay()
     {
         var project = Project("build-1", "Port", remaining: 100) with

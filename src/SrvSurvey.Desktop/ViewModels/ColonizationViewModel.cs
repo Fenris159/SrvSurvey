@@ -15,6 +15,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private readonly ColonizationBuildCatalog buildCatalog;
     private readonly ColonizationSettingsStore settingsStore;
     private readonly CommanderProfileStore? commanderProfileStore;
+    private readonly LegacyColonizationProfileStore? legacyProfileStore;
     private ColonizationOverlayPreferences overlayPreferences;
     private readonly ColonizationConstructionState constructionState = new();
     private readonly AsyncCommand refreshCommand;
@@ -58,12 +59,14 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         ColonizationSettingsStore settingsStore,
         IRavenColonialClient? client = null,
         ColonizationBuildCatalog? buildCatalog = null,
-        CommanderProfileStore? commanderProfileStore = null)
+        CommanderProfileStore? commanderProfileStore = null,
+        LegacyColonizationProfileStore? legacyProfileStore = null)
     {
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
         this.client = client ?? new RavenColonialClient();
         this.commanderProfileStore = commanderProfileStore;
+        this.legacyProfileStore = legacyProfileStore;
         this.buildCatalog = buildCatalog
             ?? ColonizationBuildCatalog.LoadEmbedded();
         overlayPreferences = settingsStore.LoadOverlayPreferences();
@@ -672,6 +675,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             return;
         }
 
+        if (Projects.Count == 0)
+        {
+            await RestoreLegacyProfileAsync();
+        }
+
         IsBusy = true;
         StatusMessage = "Fetching active projects from Raven Colonial...";
         try
@@ -707,6 +715,46 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
         }
+    }
+
+    private async Task RestoreLegacyProfileAsync()
+    {
+        if (legacyProfileStore is null
+            || profileFrontierId is null
+            || CommanderName is null)
+        {
+            return;
+        }
+
+        var result = await legacyProfileStore.LoadAsync(profileFrontierId);
+        if (result.Error is not null)
+        {
+            StatusMessage = "The imported colonisation cache could not be read: "
+                + result.Error;
+            return;
+        }
+
+        if (result.Snapshot is not { } snapshot)
+        {
+            return;
+        }
+
+        hiddenProjectIds = snapshot.HiddenProjectIds.ToHashSet(
+            StringComparer.OrdinalIgnoreCase);
+        primaryProjectId = snapshot.PrimaryProjectId;
+        fleetCarriers = snapshot.FleetCarriers;
+        Projects = snapshot.Projects
+            .OrderBy(project => project.SystemName)
+            .ThenBy(project => project.BuildName)
+            .Select(CreateRow)
+            .ToArray();
+        HasUnsavedProjectVisibility = false;
+        UpdateProjectSummary();
+        var warning = result.Warnings.Count == 0
+            ? string.Empty
+            : $" Ignored {result.Warnings.Count:N0} invalid cached item(s).";
+        StatusMessage = $"Restored {Projects.Count:N0} imported colonisation "
+            + $"project(s) from {Path.GetFileName(result.Path)}.{warning}";
     }
 
     public async Task SaveProjectVisibilityAsync()

@@ -116,7 +116,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             OverlayPlatformCapabilities.DetectCurrent());
         Colonization = colonization ?? new ColonizationViewModel(
             new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
-            commanderProfileStore: commanderProfileStore);
+            commanderProfileStore: commanderProfileStore,
+            legacyProfileStore: new LegacyColonizationProfileStore(
+                AppDataPaths.DataDirectory));
         var sharedSystemResolver = starSystemResolver
             ?? new SpanshStarSystemResolver();
         var sharedExobiologyCatalog = exobiologyCatalog
@@ -932,7 +934,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
 
         Colonization.ApplyJournalEvents(update.JournalEvents);
-        await Colonization.SetCommanderAsync(journalState.CommanderName);
         Colonization.UpdateSystemContext(
             journalState.SystemName,
             journalState.StarPosition);
@@ -973,6 +974,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             journalState.SystemAddress ?? 0);
 
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
+        await Colonization.SetCommanderAsync(journalState.CommanderName);
         var initializedJourney = await Journey.UpdateContextAsync(
             journalState.FrontierId,
             journalState.CommanderName,
