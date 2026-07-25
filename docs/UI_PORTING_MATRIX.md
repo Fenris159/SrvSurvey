@@ -37,7 +37,7 @@ The fixed WinForms dashboard becomes a responsive desktop shell:
 | Guardian | `Main` Guardian menu and survey forms | Sites, maps, beacons and Ram Tah | Reference/commander catalog, visits, exact completion, filters, distance ordering, details, clipboard actions, live site detection/writes, native survey maps, survey editing, current-obelisk proximity/artifacts/scan actions, both Ram Tah missions, and a detached live map/current-obelisk overlay implemented; advanced map-authoring and remaining plotter modes remain |
 | Colonisation | `Main` Colonise menu, project forms, and `PlotBuildCommodities` | Raven projects and construction state | Opt-in Raven project loading/selection and creation, live depot progress, cargo planning, Market guidance, linked Fleet Carrier cargo/sync, and a passive shopping overlay implemented; special squadron-FC/music auto-show rules remain |
 | Diagnostics | `ViewLogs`, journal development tools | Journal source, candidate paths and logs | Journal source and parsed state implemented; full logs not ported |
-| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump/system-survey/prior-scan/surface-radar preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
+| Settings | `FormSettings`, `FormSetKeyChord`, `FormAdjustOverlay` | Themes, paths, overlays, input and privacy | Raven themes, checksum-verified legacy profile import, persisted next-jump/system-survey/prior-scan/surface-radar/combat preferences, all 30 editable keyboard/controller bindings, opt-in SharpHook keyboard capture, and SDL controller discovery/polling implemented; general overlay adjustment and privacy settings remain |
 
 Unavailable areas may appear in the shell to preserve discoverability, but they
 must be labelled as pending and must not imply working behavior.
@@ -94,7 +94,7 @@ biology surfaces stay open.
 | `FormRoute` | Travel / Routes | Implemented with lossless legacy route files, manual-name and current Spansh imports, active/auto-copy controls, per-hop progress, distances/notes/refuel/neutron guidance, save/discard, live FSDJump progression, and a Galaxy Map overlay; Windows visually checked in Blue dark/light |
 | `FormRuins` | Guardian / Survey maps | Partially implemented through the unified site browser, native map renderer, live-site card, and lossless survey editor; dedicated open/share workflows and advanced map authoring remain |
 | `FormSetKeyChord` | Settings / Input | Implemented as the unified binding editor with normalized keyboard, button, trigger, and eight-way POV chords plus default restore |
-| `FormSettings` | Settings pages | Raven themes, migration, next-jump/system-survey/Canonn prior-scan/radar preferences, and global keyboard/controller input implemented; general overlay adjustment, privacy, and remaining legacy options remain |
+| `FormSettings` | Settings pages | Raven themes, migration, next-jump/system-survey/Canonn prior-scan/radar/combat preferences, and global keyboard/controller input implemented; general overlay adjustment, privacy, and remaining legacy options remain |
 | `FormShareData` | Settings / Privacy | Not ported |
 | `FormShowCodex` | Exobiology / Codex | Implemented as a single-instance Raven browser with biological-body and entry navigation, reported/confirmed/analyzed/predicted states, entry IDs, rewards, sample separation, live temperature guidance, bounded cached reference images with credit/refresh/fit/zoom/pan, and Canonn/Bioforge/Spansh/submission actions; Windows visually checked in Blue dark/light |
 | `FormSphereLimit` | Search / Spherical | Implemented with live Spansh lookup, matching-system selection, 1–1000 ly validation, current distance, enable/disable, and compatible commander persistence; Windows visually checked |
@@ -204,6 +204,26 @@ foreground, scaling, click-through, and fail-closed platform contract.
 Automated state, placement, passive-preparation, XAML compilation, and
 full-suite checks passed; visual/theme QA is intentionally deferred until the
 final UI pass.
+
+`PlotFlightWarning` is now implemented as a top-center passive warning. It
+preserves the original landable-body requirement, configurable gravity
+threshold, persisted auto-show preference, and supercruise, glide, flying,
+fighter, landed, and SRV mode gates. Automated state, settings, lifecycle, and
+XAML compilation checks passed; visual/theme QA is intentionally deferred until
+the final UI pass.
+
+`PlotFootCombat` and `PlotMassacre` are now implemented as passive top-left and
+top-right Raven surfaces using the original 8-pixel anchors. Ground combat
+preserves the war/civil-war settlement match, below-100-metre, on-foot/SRV,
+active-build suppression, session reset, kill, and bond rules. Massacre
+tracking preserves opt-in acceptance of solo/wing massacre missions,
+completion/failure/abandonment removal, active/complete mission-list
+reconciliation, expiry, one bounty credit per mission giver, compatible
+commander-profile persistence, and the exact flight/supercruise/navigation-
+panel/station-services visibility modes. Both legacy test features remain off
+by default. Automated reducer, persistence, settings, presentation,
+passive-preparation, XAML compilation, and full-suite checks passed;
+visual/theme QA is intentionally deferred until the final UI pass.
 
 `PlotBioStatus` is a compact
 top-center passive surface with current-body/DSS gating, genus/geology summary,
