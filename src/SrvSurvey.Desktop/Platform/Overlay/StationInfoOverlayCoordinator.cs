@@ -118,6 +118,7 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
         }
 
         var overlay = new StationInfoOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);

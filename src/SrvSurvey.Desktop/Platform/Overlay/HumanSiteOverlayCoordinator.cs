@@ -153,6 +153,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         }
 
         var overlay = new HumanSiteOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) =>
         {
             SizeAndPositionWindow(overlay, gameWindow.ClientBounds);

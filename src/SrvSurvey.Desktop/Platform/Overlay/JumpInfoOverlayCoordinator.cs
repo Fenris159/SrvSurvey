@@ -118,6 +118,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
         }
 
         var overlay = new JumpInfoOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);

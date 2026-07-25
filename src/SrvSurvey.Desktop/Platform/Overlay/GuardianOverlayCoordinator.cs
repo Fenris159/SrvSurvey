@@ -180,6 +180,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         var overlay = new GuardianOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(overlay, PositionLiveSite);
         overlay.Closed += (_, _) =>
         {
@@ -209,6 +210,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         var overlay = new GuardianSystemOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionSystemSummary);
@@ -240,6 +242,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         }
 
         var overlay = new RamTahOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(overlay, PositionRamTah);
         overlay.Closed += (_, _) =>
         {

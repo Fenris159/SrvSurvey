@@ -67,9 +67,18 @@ public sealed partial class App : Application
                     + settingsMigration.Error);
             }
 
+            var overlayTheme = new LegacyOverlayThemeStore(
+                Path.Combine(appDataPaths.DataDirectory, "theme.json"))
+                .Load();
+            if (overlayTheme.Error is not null)
+            {
+                applicationLog.Append(overlayTheme.Error);
+            }
+
             var themeService = new RavenThemeService(
                 this,
-                new ThemePreferenceStore(appDataPaths.UiSettingsPath));
+                new ThemePreferenceStore(appDataPaths.UiSettingsPath),
+                overlayTheme);
             themeService.ApplyCurrent();
             var capabilities = OverlayPlatformCapabilities.DetectCurrent();
             var inputSettings = new GlobalInputSettingsViewModel(

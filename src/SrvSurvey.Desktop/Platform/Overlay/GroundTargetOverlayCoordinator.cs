@@ -118,6 +118,7 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
         }
 
         var overlay = new GroundTargetOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);

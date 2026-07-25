@@ -135,6 +135,7 @@ public sealed class SphericalSearchOverlayCoordinator : IDisposable
         }
 
         var overlay = new SphericalSearchOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);

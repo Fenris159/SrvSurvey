@@ -136,6 +136,7 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         }
 
         var overlay = new ColonizationCommodityOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) =>
         {
             PositionWindow(overlay, gameWindow.ClientBounds);

@@ -8,13 +8,17 @@ public sealed class RavenThemeService
 {
     private readonly Application application;
     private readonly ThemePreferenceStore preferenceStore;
+    private readonly LegacyOverlayTheme overlayTheme;
 
     public RavenThemeService(
         Application application,
-        ThemePreferenceStore preferenceStore)
+        ThemePreferenceStore preferenceStore,
+        LegacyOverlayTheme? overlayTheme = null)
     {
         this.application = application;
         this.preferenceStore = preferenceStore;
+        this.overlayTheme = overlayTheme
+            ?? LegacyOverlayThemeStore.CreateDefault();
         Current = RavenThemeCatalog.Get(preferenceStore.LoadThemeKey());
     }
 
@@ -64,10 +68,40 @@ public sealed class RavenThemeService
         SetBrush("RavenSuccessBrush", theme.IsDark ? "#6CCB72" : "#107C10");
         SetBrush("RavenWarningBrush", theme.IsDark ? "#F7C948" : "#8A5D00");
         SetBrush("RavenDangerBrush", theme.IsDark ? "#FF7B72" : "#C50F1F");
+        ApplyOverlayTheme();
+    }
+
+    private void ApplyOverlayTheme()
+    {
+        foreach (var entry in overlayTheme.Colors)
+        {
+            application.Resources[$"LegacyTheme.{entry.Key}"] =
+                new SolidColorBrush(entry.Value);
+        }
+
+        SetBrush("RavenOverlayWindowBrush", overlayTheme.GetColor("black"));
+        SetBrush("RavenOverlaySurfaceBrush", overlayTheme.GetColor("black"));
+        SetBrush("RavenOverlayRaisedSurfaceBrush", overlayTheme.GetColor("black"));
+        SetBrush("RavenOverlayAccentBrush", overlayTheme.GetColor("orange"));
+        SetBrush(
+            "RavenOverlayAccentMutedBrush",
+            overlayTheme.GetColor("orangeDark"));
+        SetBrush("RavenOverlayTextBrush", overlayTheme.GetColor("white"));
+        SetBrush("RavenOverlayMutedTextBrush", overlayTheme.GetColor("grey"));
+        SetBrush("RavenOverlayBorderBrush", overlayTheme.GetColor("cyanDark"));
+        SetBrush("RavenOverlayInformationBrush", overlayTheme.GetColor("cyan"));
+        SetBrush("RavenOverlaySuccessBrush", overlayTheme.GetColor("green"));
+        SetBrush("RavenOverlayWarningBrush", overlayTheme.GetColor("yellow"));
+        SetBrush("RavenOverlayDangerBrush", overlayTheme.GetColor("red"));
     }
 
     private void SetBrush(string key, string value)
     {
         application.Resources[key] = new SolidColorBrush(Color.Parse(value));
+    }
+
+    private void SetBrush(string key, Color value)
+    {
+        application.Resources[key] = new SolidColorBrush(value);
     }
 }

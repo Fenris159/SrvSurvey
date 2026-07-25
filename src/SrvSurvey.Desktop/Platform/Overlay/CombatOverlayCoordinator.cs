@@ -132,6 +132,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
         }
 
         var overlay = new FootCombatOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopLeft);
@@ -163,6 +164,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
         }
 
         var overlay = new MassacreMissionsOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopRight);

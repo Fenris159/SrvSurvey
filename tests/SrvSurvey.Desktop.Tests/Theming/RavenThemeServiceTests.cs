@@ -36,6 +36,36 @@ public sealed class RavenThemeServiceTests : IDisposable
         Assert.Equal("green-dark", store.LoadThemeKey());
     }
 
+    [Fact]
+    public void CustomLegacyPaletteCreatesOverlayAndNamedResources()
+    {
+        var application = new Application();
+        var store = new ThemePreferenceStore(
+            Path.Combine(temporaryDirectory, "ui.json"));
+        var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
+        colors["orange"] = Color.FromArgb(255, 12, 34, 56);
+        colors["bio.gold"] = Color.FromArgb(255, 78, 90, 12);
+        var service = new RavenThemeService(
+            application,
+            store,
+            new LegacyOverlayTheme(colors, true, null));
+
+        service.ApplyCurrent();
+
+        Assert.Equal(
+            Color.FromArgb(255, 12, 34, 56),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayAccentBrush"]).Color);
+        Assert.Equal(
+            Color.FromArgb(255, 78, 90, 12),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["LegacyTheme.bio.gold"]).Color);
+        Assert.Equal(
+            Color.Parse(RavenThemeCatalog.Get(null).AccentColor),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenAccentBrush"]).Color);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

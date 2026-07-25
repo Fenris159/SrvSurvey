@@ -356,6 +356,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new MiniTrackOverlayWindow(surfaceViewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionMiniTrack,
@@ -388,6 +389,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new FlightWarningOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopCenter,
@@ -420,6 +422,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new SurfaceSurveyOverlayWindow(surfaceViewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionBottomCenter,
@@ -452,6 +455,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new PriorScansOverlayWindow(priorScansViewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionBottomRight,
@@ -484,6 +488,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new BiologyStatusOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopCenter,
@@ -516,6 +521,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new BiologySurveyOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionBiologyWindow,
@@ -548,6 +554,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new BodyInformationOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopLeft,
@@ -580,6 +587,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new LastFssBodyOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopCenter,
@@ -612,6 +620,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new FssInfoOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionTopLeft,
@@ -644,6 +653,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         var overlay = new SystemStatusOverlayWindow(viewModel);
+        OverlayThemeResources.Apply(overlay);
         overlay.Opened += (_, _) => PrepareWindow(
             overlay,
             PositionBottomLeft,
