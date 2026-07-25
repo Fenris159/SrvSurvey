@@ -55,6 +55,8 @@ public sealed class SystemScanStateTests
             organism => organism.Genus == "$Genus_A;").IsAnalyzed);
         Assert.Equal(1, planet.GeologicalSignalCount);
         Assert.Equal(1, planet.AnalyzedGeologicalSignalCount);
+        Assert.Equal("Fumarole", Assert.Single(
+            planet.AnalyzedGeologicalSignals));
         Assert.Equal(2, planet.AtmosphereComposition.Count);
         Assert.Equal(2, planet.Materials.Count);
         Assert.Single(planet.Rings);

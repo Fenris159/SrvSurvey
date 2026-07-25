@@ -877,6 +877,9 @@ public sealed class SystemScanState
                 Organisms.Values
                     .OrderBy(organism => organism.Genus, StringComparer.Ordinal)
                     .Select(organism => organism.CreateSnapshot())
+                    .ToArray(),
+                AnalyzedGeologicalSignals
+                    .OrderBy(name => name, StringComparer.Ordinal)
                     .ToArray());
         }
 
@@ -1030,7 +1033,8 @@ public sealed record SystemScanBodySnapshot(
     IReadOnlyDictionary<string, double> AtmosphereComposition,
     IReadOnlyDictionary<string, double> Materials,
     IReadOnlyList<SystemRingSnapshot> Rings,
-    IReadOnlyList<SystemOrganismSnapshot> Organisms)
+    IReadOnlyList<SystemOrganismSnapshot> Organisms,
+    IReadOnlyList<string> AnalyzedGeologicalSignals)
 {
     public bool CountsTowardFss => Kind is SystemBodyKind.Star
         or SystemBodyKind.GasGiant
