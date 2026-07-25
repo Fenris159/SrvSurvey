@@ -136,6 +136,81 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
             () => monitor.RunAsync(TimeSpan.FromMilliseconds(1), cancellation.Token));
     }
 
+    [Fact]
+    public async Task PollSelectsNewestJournalForRequestedCommander()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var requestedJournal = Path.Combine(
+            temporaryDirectory,
+            "Journal.2026-07-24T100000.01.log");
+        await File.WriteAllTextAsync(
+            requestedJournal,
+            "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n");
+        File.SetLastWriteTimeUtc(
+            requestedJournal,
+            new DateTime(2026, 7, 24, 10, 0, 0, DateTimeKind.Utc));
+        var otherJournal = Path.Combine(
+            temporaryDirectory,
+            "Journal.2026-07-24T110000.01.log");
+        await File.WriteAllTextAsync(
+            otherJournal,
+            "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                + "{\"event\":\"Commander\",\"Name\":\"Other\",\"FID\":\"F999\"}\n");
+        File.SetLastWriteTimeUtc(
+            otherJournal,
+            new DateTime(2026, 7, 24, 11, 0, 0, DateTimeKind.Utc));
+        var monitor = new JournalDirectoryMonitor(
+            temporaryDirectory,
+            "f123");
+
+        var update = await monitor.PollAsync();
+
+        Assert.Equal(requestedJournal, update.JournalPath);
+        Assert.Equal(
+            ["Fileheader", "Commander"],
+            update.JournalEvents.Select(entry => entry.EventName));
+    }
+
+    [Fact]
+    public async Task PollMovesToNewRequestedCommanderJournalAfterIdentityArrives()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var firstJournal = Path.Combine(
+            temporaryDirectory,
+            "Journal.2026-07-24T100000.01.log");
+        await File.WriteAllTextAsync(
+            firstJournal,
+            "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n");
+        File.SetLastWriteTimeUtc(
+            firstJournal,
+            new DateTime(2026, 7, 24, 10, 0, 0, DateTimeKind.Utc));
+        var monitor = new JournalDirectoryMonitor(temporaryDirectory, "F123");
+        _ = await monitor.PollAsync();
+        var nextJournal = Path.Combine(
+            temporaryDirectory,
+            "Journal.2026-07-24T110000.01.log");
+        await File.WriteAllTextAsync(
+            nextJournal,
+            "{\"event\":\"Fileheader\",\"Odyssey\":true}\n");
+        File.SetLastWriteTimeUtc(
+            nextJournal,
+            new DateTime(2026, 7, 24, 11, 0, 0, DateTimeKind.Utc));
+
+        var beforeIdentity = await monitor.PollAsync();
+        await File.AppendAllTextAsync(
+            nextJournal,
+            "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n");
+        var afterIdentity = await monitor.PollAsync();
+
+        Assert.Equal(firstJournal, beforeIdentity.JournalPath);
+        Assert.Empty(beforeIdentity.JournalEvents);
+        Assert.Equal(nextJournal, afterIdentity.JournalPath);
+        Assert.Equal(
+            ["Fileheader", "Commander"],
+            afterIdentity.JournalEvents.Select(entry => entry.EventName));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

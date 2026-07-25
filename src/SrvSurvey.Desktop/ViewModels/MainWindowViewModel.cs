@@ -112,7 +112,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         LegacyOverlayLayout? overlayLayout = null,
         IScreenshotProcessingService? screenshotProcessingService = null,
         QuestRuntimeCoordinator? questRuntimeCoordinator = null,
-        QuestSettingsStore? questSettingsStore = null)
+        QuestSettingsStore? questSettingsStore = null,
+        string? targetFrontierId = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -283,13 +284,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         CandidatePaths = folderResolution.CandidatePaths.Count == 0
             ? "No default locations are available for this platform."
             : string.Join(Environment.NewLine, folderResolution.CandidatePaths);
+        TargetFrontierId = string.IsNullOrWhiteSpace(targetFrontierId)
+            ? null
+            : targetFrontierId.Trim();
         statusMessage = folderResolution.IsFound
-            ? "Ready to read the newest Journal.*.log file."
+            ? TargetFrontierId is null
+                ? "Ready to read the newest Journal.*.log file."
+                : $"Ready to read journals for {TargetFrontierId}."
             : $"Journal folder not found. Set {JournalFolderLocator.EnvironmentVariableName} "
                 + "or start with --journal-directory <path>.";
         journalMonitor = folderResolution.SelectedPath is null
             ? null
-            : new JournalDirectoryMonitor(folderResolution.SelectedPath);
+            : new JournalDirectoryMonitor(
+                folderResolution.SelectedPath,
+                TargetFrontierId);
         RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
         resetExplorationCommand = new AsyncCommand(
             ResetExplorationAsync,
@@ -405,6 +413,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public DiagnosticsLogViewModel DiagnosticsLog { get; }
 
     public IReadOnlyList<LegacyProfileOptionViewModel> LegacyProfiles { get; }
+
+    public string? TargetFrontierId { get; }
 
     public string ProfileDataDirectory => AppDataPaths.DataDirectory;
 

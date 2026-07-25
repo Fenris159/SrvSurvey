@@ -95,6 +95,8 @@ public sealed partial class App : Application
                 capabilities);
             var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
                 Program.StartupArguments);
+            var targetFrontierId = StartupOptions.GetFrontierId(
+                Program.StartupArguments);
             var viewModel = new MainWindowViewModel(
                 configuredJournalDirectory,
                 themeService,
@@ -102,7 +104,8 @@ public sealed partial class App : Application
                 inputSettings: inputSettings,
                 applicationLogService: applicationLog,
                 overlayLayoutStore: overlayLayoutStore,
-                overlayLayout: overlayLayout);
+                overlayLayout: overlayLayout,
+                targetFrontierId: targetFrontierId);
             var mainWindow = new MainWindow(viewModel);
             desktop.MainWindow = mainWindow;
             var errorReports = new ErrorReportWindowCoordinator(

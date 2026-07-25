@@ -5,6 +5,9 @@ namespace SrvSurvey.Core.Journal;
 public sealed class JournalDirectoryMonitor
 {
     private readonly string journalDirectory;
+    private readonly string? targetFrontierId;
+    private readonly Dictionary<string, JournalIdentityCacheEntry>
+        journalIdentityCache;
     private readonly SemaphoreSlim pollLock = new(1, 1);
     private string? currentJournalPath;
     private long currentJournalOffset;
@@ -15,10 +18,19 @@ public sealed class JournalDirectoryMonitor
     private string? marketContentHash;
     private bool hasCompletedFirstPoll;
 
-    public JournalDirectoryMonitor(string journalDirectory)
+    public JournalDirectoryMonitor(
+        string journalDirectory,
+        string? targetFrontierId = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         this.journalDirectory = Path.GetFullPath(journalDirectory);
+        this.targetFrontierId = string.IsNullOrWhiteSpace(targetFrontierId)
+            ? null
+            : targetFrontierId.Trim();
+        journalIdentityCache = new Dictionary<string, JournalIdentityCacheEntry>(
+            OperatingSystem.IsWindows()
+                ? StringComparer.OrdinalIgnoreCase
+                : StringComparer.Ordinal);
     }
 
     public event EventHandler<JournalEventEnvelope>? JournalEventReceived;
@@ -58,7 +70,8 @@ public sealed class JournalDirectoryMonitor
 
             var events = new List<JournalEventEnvelope>();
             var errors = new List<string>();
-            var latestJournal = FindLatestJournal();
+            var latestJournal = await FindLatestJournalAsync(cancellationToken)
+                .ConfigureAwait(false);
             if (latestJournal is not null)
             {
                 if (!PathsEqual(latestJournal.FullName, currentJournalPath))
@@ -257,13 +270,91 @@ public sealed class JournalDirectoryMonitor
         }
     }
 
-    private FileInfo? FindLatestJournal()
+    private async Task<FileInfo?> FindLatestJournalAsync(
+        CancellationToken cancellationToken)
     {
-        return new DirectoryInfo(journalDirectory)
+        var journals = new DirectoryInfo(journalDirectory)
             .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
             .OrderByDescending(file => file.LastWriteTimeUtc)
             .ThenByDescending(file => file.Name, StringComparer.Ordinal)
-            .FirstOrDefault();
+            .ToArray();
+        if (targetFrontierId is null)
+        {
+            return journals.FirstOrDefault();
+        }
+
+        foreach (var journal in journals)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var frontierId = await ReadFrontierIdAsync(journal, cancellationToken)
+                .ConfigureAwait(false);
+            if (string.Equals(
+                    frontierId,
+                    targetFrontierId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return journal;
+            }
+        }
+
+        return null;
+    }
+
+    private async Task<string?> ReadFrontierIdAsync(
+        FileInfo journal,
+        CancellationToken cancellationToken)
+    {
+        journal.Refresh();
+        if (journalIdentityCache.TryGetValue(journal.FullName, out var cached)
+            && cached.Length == journal.Length
+            && cached.LastWriteTimeUtc == journal.LastWriteTimeUtc)
+        {
+            return cached.FrontierId;
+        }
+
+        string? frontierId = null;
+        try
+        {
+            await using var stream = new FileStream(
+                journal.FullName,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete,
+                16 * 1024,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+            using var reader = new StreamReader(
+                stream,
+                Encoding.UTF8,
+                detectEncodingFromByteOrderMarks: true);
+            while (await reader.ReadLineAsync(cancellationToken) is { } line)
+            {
+                if (!JournalEventEnvelope.TryParse(
+                        line,
+                        out var journalEvent,
+                        out _)
+                    || journalEvent?.EventName != "Commander"
+                    || !journalEvent.Payload.TryGetProperty("FID", out var value)
+                    || value.ValueKind != System.Text.Json.JsonValueKind.String)
+                {
+                    continue;
+                }
+
+                frontierId = value.GetString();
+                break;
+            }
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+
+        journal.Refresh();
+        journalIdentityCache[journal.FullName] = new JournalIdentityCacheEntry(
+            journal.Length,
+            journal.LastWriteTimeUtc,
+            frontierId);
+        return frontierId;
     }
 
     private async Task ReadJournalAppendAsync(
@@ -377,6 +468,11 @@ public sealed class JournalDirectoryMonitor
                     ? StringComparison.OrdinalIgnoreCase
                     : StringComparison.Ordinal);
     }
+
+    private sealed record JournalIdentityCacheEntry(
+        long Length,
+        DateTime LastWriteTimeUtc,
+        string? FrontierId);
 }
 
 public sealed record JournalMonitorUpdate(
