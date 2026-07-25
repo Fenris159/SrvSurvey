@@ -10,7 +10,9 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 public sealed class SystemSurveyOverlayCoordinator : IDisposable
 {
     private readonly SystemSurveyViewModel survey;
+    private readonly SurfaceSurveyViewModel surfaceSurvey;
     private readonly SystemSurveyOverlayViewModel viewModel;
+    private readonly SurfaceSurveyOverlayViewModel surfaceViewModel;
     private readonly PriorScansOverlayViewModel priorScansViewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
@@ -22,6 +24,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private FssInfoOverlayWindow? fssWindow;
     private LastFssBodyOverlayWindow? lastFssBodyWindow;
     private PriorScansOverlayWindow? priorScansWindow;
+    private SurfaceSurveyOverlayWindow? surfaceWindow;
     private SystemStatusOverlayWindow? statusWindow;
     private bool isSuppressed;
     private bool isBiologyObscured;
@@ -29,10 +32,12 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private bool isBodyInfoObscured;
     private bool isFssObscured;
     private bool isPriorScansObscured;
+    private bool isSurfaceObscured;
     private bool disposed;
 
     public SystemSurveyOverlayCoordinator(
         SystemSurveyViewModel survey,
+        SurfaceSurveyViewModel surfaceSurvey,
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
         Func<string?>? commanderNameProvider = null,
@@ -40,12 +45,17 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         ExobiologyReferenceCatalog? exobiologyCatalog = null)
     {
         this.survey = survey ?? throw new ArgumentNullException(nameof(survey));
+        this.surfaceSurvey = surfaceSurvey
+            ?? throw new ArgumentNullException(nameof(surfaceSurvey));
         this.platform = platform
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         viewModel = new SystemSurveyOverlayViewModel(
             survey,
+            platform.Capabilities);
+        surfaceViewModel = new SurfaceSurveyOverlayViewModel(
+            surfaceSurvey,
             platform.Capabilities);
         priorScansViewModel = new PriorScansOverlayViewModel(
             survey,
@@ -54,6 +64,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             commanderNameProvider ?? (() => null),
             platform.Capabilities);
         survey.PropertyChanged += OnSurveyPropertyChanged;
+        surfaceSurvey.PropertyChanged += OnSurfaceSurveyPropertyChanged;
         priorScansViewModel.PropertyChanged +=
             OnPriorScansPropertyChanged;
         timer = new DispatcherTimer
@@ -73,6 +84,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         || fssWindow is not null
         || lastFssBodyWindow is not null
         || priorScansWindow is not null
+        || surfaceWindow is not null
         || statusWindow is not null;
 
     public bool IsFssVisible => fssWindow is not null;
@@ -86,6 +98,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     public bool IsBiologyStatusVisible => biologyStatusWindow is not null;
 
     public bool IsPriorScansVisible => priorScansWindow is not null;
+
+    public bool IsSurfaceVisible => surfaceWindow is not null;
 
     public bool IsSuppressed => isSuppressed;
 
@@ -155,6 +169,17 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         SynchronizeWindows();
     }
 
+    public void SetSurfaceObscured(bool value)
+    {
+        if (disposed || value == isSurfaceObscured)
+        {
+            return;
+        }
+
+        isSurfaceObscured = value;
+        SynchronizeWindows();
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -166,6 +191,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         timer.Stop();
         timer.Tick -= OnTimerTick;
         survey.PropertyChanged -= OnSurveyPropertyChanged;
+        surfaceSurvey.PropertyChanged -= OnSurfaceSurveyPropertyChanged;
         priorScansViewModel.PropertyChanged -=
             OnPriorScansPropertyChanged;
         CloseBiologyWindow();
@@ -174,7 +200,9 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         CloseFssWindow();
         CloseLastFssBodyWindow();
         ClosePriorScansWindow();
+        CloseSurfaceWindow();
         CloseStatusWindow();
+        surfaceViewModel.Dispose();
         priorScansViewModel.Dispose();
         gameWindowTracker.Dispose();
         platform.Dispose();
@@ -192,6 +220,17 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     {
         if (eventArgs.PropertyName == nameof(
                 PriorScansOverlayViewModel.ShouldShow))
+        {
+            SynchronizeWindows();
+        }
+    }
+
+    private void OnSurfaceSurveyPropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs eventArgs)
+    {
+        if (eventArgs.PropertyName is nameof(SurfaceSurveyViewModel.ShouldShow)
+            or nameof(SurfaceSurveyViewModel.RadarSize))
         {
             SynchronizeWindows();
         }
@@ -248,6 +287,9 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         var showPriorScans = platformReady
             && priorScansViewModel.ShouldShow
             && !isPriorScansObscured;
+        var showSurface = platformReady
+            && surfaceSurvey.ShouldShow
+            && !isSurfaceObscured;
 
         SynchronizeBodyInfoWindow(showBodyInfo);
         SynchronizeFssWindow(showFss);
@@ -256,6 +298,39 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         SynchronizeBiologyWindow(showBiology);
         SynchronizeBiologyStatusWindow(showBiologyStatus);
         SynchronizePriorScansWindow(showPriorScans);
+        SynchronizeSurfaceWindow(showSurface);
+    }
+
+    private void SynchronizeSurfaceWindow(bool show)
+    {
+        if (!show)
+        {
+            CloseSurfaceWindow();
+            return;
+        }
+
+        if (surfaceWindow is not null)
+        {
+            PositionBottomCenter(surfaceWindow, gameWindow.ClientBounds);
+            return;
+        }
+
+        var overlay = new SurfaceSurveyOverlayWindow(surfaceViewModel);
+        overlay.Opened += (_, _) => PrepareWindow(
+            overlay,
+            PositionBottomCenter,
+            CloseSurfaceWindow);
+        overlay.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(surfaceWindow, overlay))
+            {
+                surfaceWindow = null;
+                VisibilityChanged?.Invoke(this, EventArgs.Empty);
+            }
+        };
+        surfaceWindow = overlay;
+        overlay.Show();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void SynchronizePriorScansWindow(bool show)
@@ -491,6 +566,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         var preparation = platform.PreparePassiveWindow(window);
         viewModel.ApplyPreparation(preparation);
         priorScansViewModel.ApplyPreparation(preparation);
+        surfaceViewModel.ApplyPreparation(preparation);
         if (!preparation.IsClickThrough)
         {
             isSuppressed = true;
@@ -516,6 +592,11 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private static void PositionBottomRight(Window window, PixelRect gameBounds)
     {
         PositionWindow(window, gameBounds, OverlayWindowPlacement.BottomRight);
+    }
+
+    private static void PositionBottomCenter(Window window, PixelRect gameBounds)
+    {
+        PositionWindow(window, gameBounds, OverlayWindowPlacement.BottomCenter);
     }
 
     private void PositionBiologyWindow(Window window, PixelRect gameBounds)
@@ -648,6 +729,19 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         }
 
         priorScansWindow = null;
+        overlay.Close();
+        VisibilityChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void CloseSurfaceWindow()
+    {
+        var overlay = surfaceWindow;
+        if (overlay is null)
+        {
+            return;
+        }
+
+        surfaceWindow = null;
         overlay.Close();
         VisibilityChanged?.Invoke(this, EventArgs.Empty);
     }

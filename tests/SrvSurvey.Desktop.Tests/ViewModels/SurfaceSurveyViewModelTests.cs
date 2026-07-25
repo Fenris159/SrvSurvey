@@ -54,9 +54,15 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.Contains(viewModel.RadarMarkers, marker => marker.IsBookmark);
         Assert.Contains(viewModel.RadarMarkers, marker => marker.IsActiveSample);
         Assert.Contains(viewModel.RadarMarkers, marker => marker.IsVehicle);
+        Assert.Equal(2, viewModel.NavigationMarkers.Count);
+        Assert.Contains(
+            viewModel.NavigationMarkers,
+            marker => marker.Name == "Sample 1");
+        Assert.True(viewModel.HasNavigationMarkers);
         var group = Assert.Single(viewModel.TrackerGroups);
         Assert.True(group.IsActive);
         Assert.Equal("Aleoida", group.Name);
+        Assert.All(group.Targets, marker => Assert.True(marker.IsActive));
     }
 
     [Fact]

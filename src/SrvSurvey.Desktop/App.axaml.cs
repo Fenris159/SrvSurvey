@@ -99,6 +99,7 @@ public sealed partial class App : Application
                 GameWindowTracker.CreateCurrent());
             systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
                 viewModel.SystemSurvey,
+                viewModel.SurfaceSurvey,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent(),
                 () => viewModel.CommanderName);
@@ -115,6 +116,8 @@ public sealed partial class App : Application
                     guardianOverlayCoordinator?.IsVisible == true
                     || jumpInfoOverlayCoordinator?.IsVisible == true);
                 systemSurveyOverlayCoordinator?.SetPriorScansObscured(
+                    guardianOverlayCoordinator?.IsVisible == true);
+                systemSurveyOverlayCoordinator?.SetSurfaceObscured(
                     guardianOverlayCoordinator?.IsVisible == true);
                 guardianOverlayCoordinator?.SetObscured(
                     jumpInfoOverlayCoordinator?.IsVisible == true

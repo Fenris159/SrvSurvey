@@ -39,8 +39,20 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     public IReadOnlyList<SurfaceRadarMarkerViewModel> RadarMarkers
     {
         get => radarMarkers;
-        private set => SetField(ref radarMarkers, value);
+        private set
+        {
+            if (SetField(ref radarMarkers, value))
+            {
+                OnPropertyChanged(nameof(NavigationMarkers));
+                OnPropertyChanged(nameof(HasNavigationMarkers));
+            }
+        }
     }
+
+    public IReadOnlyList<SurfaceRadarMarkerViewModel> NavigationMarkers =>
+        RadarMarkers
+            .Where(marker => marker.IsActiveSample || marker.IsVehicle)
+            .ToArray();
 
     public IReadOnlyList<SurfaceTrackerGroupViewModel> TrackerGroups
     {
@@ -79,6 +91,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public bool HasTrackers => TrackerGroups.Count > 0;
+
+    public bool HasNavigationMarkers => NavigationMarkers.Count > 0;
 
     public int RadarSize => survey.SurfaceRadarSize;
 
@@ -241,6 +255,11 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                      pair => pair.Key,
                      StringComparer.Ordinal))
         {
+            var isActive = string.IsNullOrWhiteSpace(activeGenus)
+                || string.Equals(
+                    activeGenus,
+                    group.Key,
+                    StringComparison.Ordinal);
             var targets = group.Value
                 .Select(location => CreateMarker(
                     group.Key,
@@ -249,29 +268,29 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                     SurfaceRadarMarkerKind.Bookmark,
                     "Tracker",
                     current,
-                    status))
+                    status,
+                    isActive))
                 .OrderBy(marker => marker.DistanceMeters)
                 .ToArray();
             markers.AddRange(targets);
             trackerRows.Add(new SurfaceTrackerGroupViewModel(
                 GetTrackerDisplayName(group.Key),
-                string.IsNullOrWhiteSpace(activeGenus)
-                    || string.Equals(
-                        activeGenus,
-                        group.Key,
-                        StringComparison.Ordinal),
+                isActive,
                 targets));
         }
 
-        foreach (var sample in new[] { exobiology.ScanOne, exobiology.ScanTwo }
-                     .Where(sample => sample is not null)
-                     .Cast<BioSampleSnapshot>()
-                     .Where(sample => BodyNamesMatch(
-                         sample.Body,
-                         surface.BodyName)))
+        var activeSamples = new[] { exobiology.ScanOne, exobiology.ScanTwo };
+        for (var index = 0; index < activeSamples.Length; index++)
         {
+            var sample = activeSamples[index];
+            if (sample is null
+                || !BodyNamesMatch(sample.Body, surface.BodyName))
+            {
+                continue;
+            }
+
             markers.Add(CreateMarker(
-                sample.Species,
+                $"Sample {index + 1}",
                 new SurfaceCoordinate(
                     sample.Location.Latitude,
                     sample.Location.Longitude),
@@ -323,7 +342,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         SurfaceRadarMarkerKind kind,
         string statusText,
         SurfaceCoordinate current,
-        EliteStatus status)
+        EliteStatus status,
+        bool isActive = true)
     {
         var distance = SurfaceNavigation.GetDistance(
             current,
@@ -340,7 +360,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                 bearing - status.NormalizedHeading),
             Math.Max(0, radiusMeters),
             distance < radiusMeters,
-            location);
+            location,
+            isActive);
     }
 
     private SystemSurfaceContext? CreateBodyContext(
@@ -530,7 +551,8 @@ public sealed record SurfaceRadarMarkerViewModel(
     double RelativeBearingDegrees,
     double RadiusMeters,
     bool IsInsideRadius,
-    SurfaceCoordinate Location)
+    SurfaceCoordinate Location,
+    bool IsActive = true)
 {
     public string DistanceText => DistanceMeters >= 1_000
         ? $"{DistanceMeters / 1_000:N2} km"
