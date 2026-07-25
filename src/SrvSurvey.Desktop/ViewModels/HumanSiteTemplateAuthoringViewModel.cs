@@ -172,7 +172,8 @@ public sealed class HumanSiteTemplateAuthoringViewModel
 
     public ICommand CancelDiscardCommand { get; }
 
-    public HumanSiteTemplate? PreviewTemplate => session?.Template;
+    public HumanSiteTemplate? PreviewTemplate =>
+        session?.CreatePreviewTemplate(BuildingName);
 
     public bool CanStart => activeTemplate is not null
         && !IsAuthoring

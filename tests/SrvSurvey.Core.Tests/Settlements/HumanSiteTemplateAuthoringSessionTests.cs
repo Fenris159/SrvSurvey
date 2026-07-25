@@ -12,6 +12,8 @@ public sealed class HumanSiteTemplateAuthoringSessionTests
 
         session.BeginPolygon(new HumanSiteMapPoint(0, 0));
         session.AddPolygonPoint(new HumanSiteMapPoint(10, 0));
+        var livePreview = session.CreatePreviewTemplate();
+        Assert.Equal(2, livePreview.Buildings[^1].Paths[0].Points.Count);
         session.EndPolygon(new HumanSiteMapPoint(10, 10), closePath: true);
         session.AddCircle(new HumanSiteMapPoint(20, 20), radius: 5);
         var building = session.CommitBuilding("HAB");

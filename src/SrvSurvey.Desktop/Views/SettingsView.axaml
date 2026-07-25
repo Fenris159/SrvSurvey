@@ -497,6 +497,252 @@
         </StackPanel>
       </Border>
 
+      <Expander HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                IsExpanded="False">
+        <Expander.Header>
+          <StackPanel Spacing="3">
+            <TextBlock Classes="card-title"
+                       Text="Settlement template authoring" />
+            <TextBlock Classes="muted"
+                       Text="Developer tools for capturing live Odyssey settlement geometry." />
+          </StackPanel>
+        </Expander.Header>
+        <Border Margin="0,12,0,0" Classes="card">
+          <StackPanel Spacing="16">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="eyebrow" Text="LIVE TEMPLATE DRAFT" />
+                <TextBlock Classes="card-title"
+                           Text="{Binding HumanSite.TemplateAuthor.TemplateTitle}" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="Draft points are previewed on the active settlement map. Nothing changes on disk until you choose an export destination." />
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Classes="primary"
+                      VerticalAlignment="Center"
+                      Command="{Binding HumanSite.TemplateAuthor.StartCommand}"
+                      Content="Start local draft" />
+            </Grid>
+
+            <Border Background="{DynamicResource RavenSurfaceBrush}"
+                    CornerRadius="8"
+                    Padding="12">
+              <StackPanel Spacing="4">
+                <TextBlock Text="{Binding HumanSite.TemplateAuthor.CurrentOffsetText}" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="{Binding HumanSite.TemplateAuthor.StatusMessage}" />
+              </StackPanel>
+            </Border>
+
+            <StackPanel Spacing="16"
+                        IsVisible="{Binding HumanSite.TemplateAuthor.IsAuthoring}">
+              <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+                <Border Classes="badge" Padding="10,6">
+                  <TextBlock HorizontalAlignment="Center">
+                    <Run Text="Buildings " />
+                    <Run FontWeight="Bold"
+                         Text="{Binding HumanSite.TemplateAuthor.BuildingCount}" />
+                  </TextBlock>
+                </Border>
+                <Border Grid.Column="1" Classes="badge" Padding="10,6">
+                  <TextBlock HorizontalAlignment="Center">
+                    <Run Text="Named " />
+                    <Run FontWeight="Bold"
+                         Text="{Binding HumanSite.TemplateAuthor.NamedPointCount}" />
+                  </TextBlock>
+                </Border>
+                <Border Grid.Column="2" Classes="badge" Padding="10,6">
+                  <TextBlock HorizontalAlignment="Center">
+                    <Run Text="Terminals " />
+                    <Run FontWeight="Bold"
+                         Text="{Binding HumanSite.TemplateAuthor.DataTerminalCount}" />
+                  </TextBlock>
+                </Border>
+                <Border Grid.Column="3" Classes="badge" Padding="10,6">
+                  <TextBlock HorizontalAlignment="Center">
+                    <Run Text="Doors " />
+                    <Run FontWeight="Bold"
+                         Text="{Binding HumanSite.TemplateAuthor.SecureDoorCount}" />
+                  </TextBlock>
+                </Border>
+              </Grid>
+
+              <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      Padding="14">
+                <StackPanel Spacing="12">
+                  <TextBlock FontWeight="Bold" Text="Points of interest" />
+                  <Grid ColumnDefinitions="110,110,*" ColumnSpacing="12">
+                    <StackPanel Spacing="5">
+                      <TextBlock Classes="muted" Text="SECURITY" />
+                      <NumericUpDown Minimum="0"
+                                     Maximum="3"
+                                     Increment="1"
+                                     FormatString="0"
+                                     Value="{Binding HumanSite.TemplateAuthor.SecurityLevel, Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="5">
+                      <TextBlock Classes="muted" Text="FLOOR" />
+                      <NumericUpDown Minimum="0"
+                                     Maximum="99"
+                                     Increment="1"
+                                     FormatString="0"
+                                     Value="{Binding HumanSite.TemplateAuthor.Floor, Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="5">
+                      <TextBlock Classes="muted" Text="NAMED POINT" />
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBox Text="{Binding HumanSite.TemplateAuthor.NamedPointName, Mode=TwoWay}"
+                                 PlaceholderText="Battery, Medkit, Alarm, Power..." />
+                        <Button Grid.Column="1"
+                                Classes="secondary"
+                                Command="{Binding HumanSite.TemplateAuthor.AddNamedPointCommand}"
+                                Content="Add here" />
+                      </Grid>
+                    </StackPanel>
+                  </Grid>
+                  <WrapPanel Orientation="Horizontal">
+                    <Button Margin="0,0,8,8"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.AddDataTerminalCommand}"
+                            Content="Add data terminal here" />
+                    <Button Margin="0,0,8,8"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.AddSecureDoorCommand}"
+                            Content="Add secure door here" />
+                    <Button Margin="0,0,8,8"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.RemoveLastNamedPointCommand}"
+                            Content="Undo named" />
+                    <Button Margin="0,0,8,8"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.RemoveLastDataTerminalCommand}"
+                            Content="Undo terminal" />
+                    <Button Margin="0,0,8,8"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.RemoveLastSecureDoorCommand}"
+                            Content="Undo door" />
+                  </WrapPanel>
+                </StackPanel>
+              </Border>
+
+              <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      Padding="14">
+                <StackPanel Spacing="12">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <StackPanel Spacing="3">
+                      <TextBlock FontWeight="Bold" Text="Building geometry" />
+                      <TextBlock Classes="muted">
+                        <Run Text="Polygon points " />
+                        <Run FontWeight="Bold"
+                             Text="{Binding HumanSite.TemplateAuthor.PendingPolygonPointCount}" />
+                        <Run Text=" · pending paths " />
+                        <Run FontWeight="Bold"
+                             Text="{Binding HumanSite.TemplateAuthor.PendingBuildingPathCount}" />
+                      </TextBlock>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.RemoveLastBuildingCommand}"
+                            Content="Undo committed building" />
+                  </Grid>
+
+                  <WrapPanel Orientation="Horizontal">
+                    <Button Margin="0,0,8,8"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.BeginPolygonCommand}"
+                            Content="Start polygon here" />
+                    <Button Margin="0,0,8,8"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.AddPolygonPointCommand}"
+                            Content="Add point" />
+                    <Button Margin="0,0,8,8"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.EndPolygonCommand}"
+                            Content="End path here" />
+                    <Button Margin="0,0,8,8"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.CancelPolygonCommand}"
+                            Content="Cancel polygon" />
+                    <TextBlock Margin="10,0,8,8"
+                               Classes="muted"
+                               VerticalAlignment="Center"
+                               Text="Circle radius" />
+                    <NumericUpDown Width="110"
+                                   Margin="0,0,8,8"
+                                   Minimum="0.1"
+                                   Maximum="10000"
+                                   Increment="0.5"
+                                   FormatString="0.0"
+                                   Value="{Binding HumanSite.TemplateAuthor.CircleRadius, Mode=TwoWay}" />
+                    <Button Margin="0,0,8,8"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.AddCircleCommand}"
+                            Content="Add circle here" />
+                  </WrapPanel>
+
+                  <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <TextBox Text="{Binding HumanSite.TemplateAuthor.BuildingName, Mode=TwoWay}"
+                             PlaceholderText="Building name" />
+                    <Button Grid.Column="1"
+                            Classes="secondary"
+                            Command="{Binding HumanSite.TemplateAuthor.RemovePendingPathCommand}"
+                            Content="Undo pending path" />
+                    <Button Grid.Column="2"
+                            Classes="primary"
+                            Command="{Binding HumanSite.TemplateAuthor.CommitBuildingCommand}"
+                            Content="Commit building to draft" />
+                  </Grid>
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="While a polygon is active, toggling ship shields captures the current point just like the original builder." />
+                </StackPanel>
+              </Border>
+
+              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                <TextBlock Classes="muted"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding HumanSite.TemplateAuthor.LastExportPath}" />
+                <Button Grid.Column="1"
+                        Classes="secondary"
+                        Command="{Binding HumanSite.TemplateAuthor.RequestDiscardCommand}"
+                        Content="Discard draft" />
+                <Button Grid.Column="2"
+                        Classes="primary"
+                        Click="ExportHumanSiteTemplates_Click"
+                        Content="Export verified catalog..." />
+              </Grid>
+
+              <Border BorderBrush="{DynamicResource RavenWarningBrush}"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      IsVisible="{Binding HumanSite.TemplateAuthor.IsDiscardConfirmationPending}"
+                      Padding="12">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                  <TextBlock VerticalAlignment="Center"
+                             Text="Discard the unexported in-memory draft?" />
+                  <Button Grid.Column="1"
+                          Classes="secondary"
+                          Command="{Binding HumanSite.TemplateAuthor.CancelDiscardCommand}"
+                          Content="Keep draft" />
+                  <Button Grid.Column="2"
+                          Classes="primary"
+                          Command="{Binding HumanSite.TemplateAuthor.ConfirmDiscardCommand}"
+                          Content="Confirm discard" />
+                </Grid>
+              </Border>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </Expander>
+
       <Border Classes="card raised">
         <StackPanel Spacing="14">
           <CheckBox IsChecked="{Binding JumpInfo.AutoShow, Mode=TwoWay}"

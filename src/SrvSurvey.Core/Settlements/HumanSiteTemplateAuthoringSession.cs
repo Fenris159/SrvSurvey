@@ -32,6 +32,38 @@ public sealed class HumanSiteTemplateAuthoringSession
 
     public bool HasPendingBuilding => pendingBuildingPaths.Count > 0;
 
+    public HumanSiteTemplate CreatePreviewTemplate(
+        string pendingBuildingName = "Draft building")
+    {
+        var previewPaths = pendingBuildingPaths.Select(Clone).ToList();
+        if (polygonPoints is { Count: > 0 })
+        {
+            var pointTypes = Enumerable.Repeat(
+                LinePoint,
+                polygonPoints.Count).ToArray();
+            pointTypes[0] = StartPoint;
+            previewPaths.Add(new HumanSiteBuildingPath(
+                polygonPoints.ToArray(),
+                pointTypes,
+                FillMode: 0));
+        }
+
+        if (previewPaths.Count == 0)
+        {
+            return template;
+        }
+
+        var name = string.IsNullOrWhiteSpace(pendingBuildingName)
+            ? "Draft building"
+            : pendingBuildingName.Trim();
+        return template with
+        {
+            Buildings = template.Buildings
+                .Append(new HumanSiteBuilding(name, previewPaths))
+                .ToArray(),
+        };
+    }
+
     public void BeginPolygon(HumanSiteMapPoint firstPoint)
     {
         ValidatePoint(firstPoint);

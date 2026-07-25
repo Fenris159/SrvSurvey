@@ -76,4 +76,36 @@ public sealed partial class SettingsView : UserControl
             });
         return folders.FirstOrDefault()?.Path.LocalPath;
     }
+
+    private async void ExportHumanSiteTemplates_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel?.StorageProvider is null
+            || DataContext is not MainWindowViewModel viewModel)
+        {
+            return;
+        }
+
+        var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+            new FilePickerSaveOptions
+            {
+                Title = "Export the settlement template catalog",
+                SuggestedFileName = "humanSiteTemplates.json",
+                FileTypeChoices =
+                [
+                    new FilePickerFileType("JSON catalog")
+                    {
+                        Patterns = ["*.json"],
+                        MimeTypes = ["application/json"],
+                    },
+                ],
+            });
+        if (file is not null)
+        {
+            await viewModel.HumanSite.TemplateAuthor.ExportAsync(
+                file.Path.LocalPath);
+        }
+    }
 }
