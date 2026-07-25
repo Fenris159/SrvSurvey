@@ -13,6 +13,8 @@
              Link="Navigation\RegionMapData.cs" />
     <EmbeddedResource Include="..\..\docs\codexRef.json"
                       LogicalName="SrvSurvey.Core.Resources.codexRef.json" />
+    <EmbeddedResource Include="..\..\docs\nebulae.json"
+                      LogicalName="SrvSurvey.Core.Resources.nebulae.json" />
     <EmbeddedResource Include="..\..\SrvSurvey\allRuins.json"
                       LogicalName="SrvSurvey.Core.Resources.allRuins.json" />
     <EmbeddedResource Include="..\..\SrvSurvey\allStructures.json"

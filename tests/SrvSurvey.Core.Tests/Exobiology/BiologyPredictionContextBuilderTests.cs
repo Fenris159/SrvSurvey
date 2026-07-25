@@ -27,10 +27,17 @@ public sealed class BiologyPredictionContextBuilderTests
             """{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_02_Name;","Species_Localised":"Aleoida Coronamus"}"""));
 
         var snapshot = state.CreateSnapshot();
+        var nebulaCatalog = new NebulaCatalog(
+        [
+            new GalacticCoordinate(
+                position.X + 42,
+                position.Y,
+                position.Z),
+        ]);
         var inputs = BiologyPredictionContextBuilder.Build(
             snapshot,
             bodyId: 1,
-            nebulaDistanceLy: 42);
+            nebulaCatalog);
 
         Assert.NotNull(inputs);
         Assert.Equal("Rocky body", inputs.Context.PlanetClass);
@@ -80,7 +87,7 @@ public sealed class BiologyPredictionContextBuilderTests
         Assert.Equal(["D"], inputs.Context.StarTypes);
         Assert.Equal(["D", "M"], inputs.Context.ParentStarTypes);
         Assert.Equal("D", inputs.Context.PrimaryStarType);
-        Assert.Null(inputs.Context.NebulaDistanceLy);
+        Assert.True(inputs.Context.NebulaDistanceLy > 0);
     }
 
     [Theory]

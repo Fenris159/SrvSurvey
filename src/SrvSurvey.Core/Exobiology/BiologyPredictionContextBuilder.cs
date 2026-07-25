@@ -5,10 +5,13 @@ namespace SrvSurvey.Core.Exobiology;
 
 public static class BiologyPredictionContextBuilder
 {
+    private static readonly Lazy<NebulaCatalog> DefaultNebulaCatalog =
+        new(NebulaCatalog.LoadEmbedded);
+
     public static BiologyPredictionInputs? Build(
         SystemScanSnapshot system,
         int bodyId,
-        double? nebulaDistanceLy = null)
+        NebulaCatalog? nebulaCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(system);
         var body = system.Bodies.FirstOrDefault(candidate => candidate.BodyId == bodyId);
@@ -38,6 +41,7 @@ public static class BiologyPredictionContextBuilder
 
         var primaryStar = system.Bodies.FirstOrDefault(IsMainStar);
         var position = system.StarPosition;
+        nebulaCatalog ??= DefaultNebulaCatalog.Value;
         var context = new BiologyPredictionContext
         {
             PlanetClass = body.PlanetClass,
@@ -66,7 +70,9 @@ public static class BiologyPredictionContextBuilder
                 .Distinct(StringComparer.Ordinal)
                 .ToArray(),
             PrimaryStarType = FlattenStarType(primaryStar?.StarClass),
-            NebulaDistanceLy = nebulaDistanceLy,
+            NebulaDistanceLy = position is null
+                ? null
+                : nebulaCatalog.FindDistanceToClosest(position.Value),
             IsWithinGuardianBubble = position is null
                 ? null
                 : GuardianBubbleLocator.IsWithinKnownBubble(position.Value),
