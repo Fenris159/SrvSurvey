@@ -10,6 +10,7 @@ public sealed class ExobiologyReferenceCatalog
 
     private readonly Dictionary<string, ExobiologyReference> byVariant;
     private readonly Dictionary<string, ExobiologyReference> bySpecies;
+    private readonly Dictionary<string, ExobiologyReference> byDisplayName;
     private readonly Dictionary<long, ExobiologyReference> byEntryId;
 
     public ExobiologyReferenceCatalog(IEnumerable<ExobiologyReference> entries)
@@ -28,6 +29,15 @@ public sealed class ExobiologyReferenceCatalog
                 group => group.Key,
                 group => group.First(),
                 StringComparer.Ordinal);
+        byDisplayName = materialized
+            .Where(entry => !string.IsNullOrWhiteSpace(entry.DisplayName))
+            .GroupBy(
+                entry => entry.DisplayName!,
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.First(),
+                StringComparer.OrdinalIgnoreCase);
         byEntryId = materialized
             .GroupBy(entry => entry.EntryId)
             .ToDictionary(group => group.Key, group => group.First());
@@ -54,6 +64,14 @@ public sealed class ExobiologyReferenceCatalog
     public ExobiologyReference? FindByEntryId(long entryId)
     {
         return byEntryId.GetValueOrDefault(entryId);
+    }
+
+    public ExobiologyReference? FindByDisplayName(string? displayName)
+    {
+        return displayName is not null
+            && byDisplayName.TryGetValue(displayName, out var result)
+                ? result
+                : null;
     }
 
     public static ExobiologyReferenceCatalog LoadEmbedded()

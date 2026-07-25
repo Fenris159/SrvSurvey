@@ -20,6 +20,9 @@ public sealed class ExobiologyReferenceCatalogTests
         Assert.Equal(7_252_500, byVariant.Reward);
         Assert.Equal(byVariant, bySpecies);
         Assert.Equal(byVariant, catalog.FindByEntryId(2310101));
+        Assert.Equal(
+            byVariant,
+            catalog.FindByDisplayName(byVariant.DisplayName?.ToLowerInvariant()));
         Assert.Equal("23101", byVariant.EntryIdPrefix);
         Assert.Equal(
             "$Codex_Ent_Aleoids_Genus_Name;",

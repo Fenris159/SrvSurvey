@@ -14,6 +14,12 @@ public sealed class BiologyPredictionEvaluatorTests
         var result = evaluator.Evaluate(CompleteAleoidaContext());
 
         Assert.Contains("Aleoida Coronamus - Lime", result.Predictions);
+        var prediction = Assert.Single(
+            result.PredictionDetails,
+            candidate => candidate.Name == "Aleoida Coronamus - Lime");
+        Assert.Equal("Aleoida", prediction.Genus);
+        Assert.Equal("Coronamus", prediction.Species);
+        Assert.Equal("Lime", prediction.Variant);
         Assert.True(result.HasCompleteContext);
         Assert.Empty(result.MissingProperties);
     }

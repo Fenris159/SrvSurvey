@@ -42,7 +42,7 @@ public sealed class BiologyPredictionEvaluator
         private readonly BiologyPredictionContext context;
         private readonly BiologyPredictionKnowledge knowledge;
         private readonly string? targetVariant;
-        private readonly HashSet<string> predictions = new(
+        private readonly Dictionary<string, BiologyPrediction> predictions = new(
             StringComparer.Ordinal);
         private readonly HashSet<string> missingProperties = new(
             StringComparer.Ordinal);
@@ -95,7 +95,13 @@ public sealed class BiologyPredictionEvaluator
                     StringComparison.Ordinal);
                 if (targetVariant is null || targetMatch)
                 {
-                    predictions.Add(currentName);
+                    predictions.TryAdd(
+                        currentName,
+                        new BiologyPrediction(
+                            currentName,
+                            genus!,
+                            species!,
+                            variant!));
                 }
 
                 if (targetMatch)
@@ -129,7 +135,9 @@ public sealed class BiologyPredictionEvaluator
         public BiologyPredictionResult CreateResult()
         {
             return new BiologyPredictionResult(
-                predictions.Order(StringComparer.Ordinal).ToArray(),
+                predictions.Values
+                    .OrderBy(prediction => prediction.Name, StringComparer.Ordinal)
+                    .ToArray(),
                 missingProperties.Order(StringComparer.Ordinal).ToArray(),
                 targetClauses
                     .DistinctBy(clause => clause.RawText, StringComparer.Ordinal)
@@ -411,9 +419,19 @@ public sealed record BiologyPredictionKnowledge
 }
 
 public sealed record BiologyPredictionResult(
-    IReadOnlyList<string> Predictions,
+    IReadOnlyList<BiologyPrediction> PredictionDetails,
     IReadOnlyList<string> MissingProperties,
     IReadOnlyList<BiologyCriteriaClause> TargetClauses)
 {
+    public IReadOnlyList<string> Predictions => PredictionDetails
+        .Select(prediction => prediction.Name)
+        .ToArray();
+
     public bool HasCompleteContext => MissingProperties.Count == 0;
 }
+
+public sealed record BiologyPrediction(
+    string Name,
+    string Genus,
+    string Species,
+    string Variant);
