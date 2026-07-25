@@ -25,6 +25,8 @@
                       LogicalName="SrvSurvey.Core.Resources.guardian.zip" />
     <EmbeddedResource Include="..\..\SrvSurvey\colonization-costs2.json"
                       LogicalName="SrvSurvey.Core.Resources.colonization-costs2.json" />
+    <EmbeddedResource Include="..\..\SrvSurvey\bio-criteria\*.json"
+                      LogicalName="SrvSurvey.Core.Resources.bio-criteria.%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
