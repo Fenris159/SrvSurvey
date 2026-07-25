@@ -274,6 +274,7 @@ public sealed partial class App : Application
                 biologyCodexWindowCoordinator?.Dispose();
                 biologyCodexWindowCoordinator = null;
                 viewModel.BiologyCodex.Dispose();
+                viewModel.SurfaceSurvey.Dispose();
                 biologyCodexBingoWindowCoordinator?.Dispose();
                 biologyCodexBingoWindowCoordinator = null;
                 viewModel.CodexBingo.Dispose();

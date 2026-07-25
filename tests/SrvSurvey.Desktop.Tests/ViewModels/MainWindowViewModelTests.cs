@@ -2,6 +2,7 @@ using SrvSurvey.Desktop.ViewModels;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Search;
@@ -511,6 +512,86 @@ public sealed class MainWindowViewModelTests
                 Directory.Delete(root, true);
             }
         }
+    }
+
+    [Fact]
+    public async Task LiveOrganicSamplesPopulateGroundedSurfaceHistory()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-surface-history-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-24T100000.01.log");
+            const string variant = "$Codex_Ent_Aleoids_01_B_Name;";
+            const string species = "$Codex_Ent_Aleoids_01_Name;";
+            const string genus = "$Codex_Ent_Aleoids_Genus_Name;";
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"event\":\"Location\",\"StarSystem\":\"Test System\",\"SystemAddress\":42}\n"
+                    + "{\"event\":\"Scan\",\"ScanType\":\"Detailed\",\"SystemAddress\":42,\"BodyName\":\"Test System 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"Radius\":1000}\n"
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Log\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n");
+            var statusPath = Path.Combine(journals, "Status.json");
+            await WriteSurfaceStatusAsync(statusPath, 1, 2);
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths);
+
+            await viewModel.RefreshAsync();
+            await WriteSurfaceStatusAsync(statusPath, 2, 3);
+            await File.AppendAllTextAsync(
+                journalPath,
+                $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Sample\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n");
+            await viewModel.RefreshAsync();
+            await WriteSurfaceStatusAsync(statusPath, 3, 4);
+            await File.AppendAllTextAsync(
+                journalPath,
+                $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(3, viewModel.SurfaceSurvey.CurrentSurface!.BioScans.Count);
+            Assert.True(viewModel.SurfaceSurvey.ShouldShow);
+            Assert.Equal(
+                [
+                    new SurfaceCoordinate(3, 4),
+                    new SurfaceCoordinate(1, 2),
+                    new SurfaceCoordinate(2, 3),
+                ],
+                viewModel.SurfaceSurvey.CurrentSurface.BioScans
+                    .Select(scan => scan.Location));
+            viewModel.SurfaceSurvey.Dispose();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    private static Task WriteSurfaceStatusAsync(
+        string path,
+        double latitude,
+        double longitude)
+    {
+        return File.WriteAllTextAsync(
+            path,
+            $$"""
+            {"event":"Status","Flags":69206016,"Flags2":0,"Latitude":{{latitude}},"Longitude":{{longitude}},"Heading":90,"Altitude":10,"BodyName":"Test System 1","PlanetRadius":1000}
+            """);
     }
 
     private static BoxelSystemObservation BoxelObservation(

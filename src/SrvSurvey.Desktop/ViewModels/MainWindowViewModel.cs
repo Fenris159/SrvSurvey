@@ -158,6 +158,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         SystemSurvey = new SystemSurveyViewModel(
             systemSurveySettingsStore
                 ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath));
+        var systemSurfaceStore = new SystemSurfaceStore(
+            AppDataPaths.DataDirectory);
+        SurfaceSurvey = new SurfaceSurveyViewModel(
+            SystemSurvey,
+            systemSurfaceStore,
+            new SurfaceSurveyJournalTracker(
+                systemSurfaceStore,
+                sharedExobiologyCatalog));
         BiologyPredictions = new BiologyPredictionsViewModel(
             SystemSurvey,
             biologyPredictionsSettingsStore
@@ -276,6 +284,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public JumpInfoViewModel JumpInfo { get; }
 
     public SystemSurveyViewModel SystemSurvey { get; }
+
+    public SurfaceSurveyViewModel SurfaceSurvey { get; }
 
     public BiologyPredictionsViewModel BiologyPredictions { get; }
 
@@ -978,6 +988,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             update.JournalEvents,
             update.Status,
             exobiologyAfter);
+        SurfaceSurveySessionContext? surfaceSession = null;
+        if (!string.IsNullOrWhiteSpace(activeProfileFrontierId)
+            && !string.IsNullOrWhiteSpace(journalState.SystemName)
+            && journalState.SystemAddress is > 0)
+        {
+            surfaceSession = new SurfaceSurveySessionContext(
+                activeProfileFrontierId,
+                activeProfileCommanderName ?? journalState.CommanderName,
+                journalState.SystemName,
+                journalState.SystemAddress.Value,
+                journalState.StarPosition);
+        }
+
+        await SurfaceSurvey.ApplyUpdateAsync(
+            surfaceSession,
+            update.JournalEvents,
+            update.Status,
+            exobiologyAfter,
+            processOrganicEvents: !skipPersistedBootstrapEvents);
         if (exobiologyState.Version != exobiologyVersionBefore)
         {
             await SaveExobiologyAsync(exobiologyAfter);
@@ -1052,6 +1081,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         if (result.Data is null)
         {
+            SurfaceSurvey.Reset();
             Colonization.SetCommanderProfile(null, isOdyssey, apiKey: null);
             ExplorationStatusMessage = result.Error
                 ?? "The commander profile could not be loaded.";
@@ -1075,6 +1105,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         explorationState.Reset(result.Data.Exploration);
         exobiologyState.Reset(result.Data.Exobiology);
+        SurfaceSurvey.Reset(result.Data.Exobiology);
         Search.LoadProfile(
             result.Data.FrontierId,
             activeProfileCommanderName,
