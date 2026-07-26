@@ -573,8 +573,11 @@ UI tests where practical, and live Windows/Linux evidence.
   current install file and mode, refuses any pre-swap drift, renames the old
   directory to a recoverable backup, and restores it byte-for-byte while
   preserving the failed candidate when replacement health confirmation or an
-  injected post-swap checkpoint fails. External helper/process handoff, user
-  consent/status, and the remaining network audit keep this phase open.
+  injected post-swap checkpoint fails. The process handoff now has a bounded,
+  atomically written app-data plan with strict request-directory and two-hour
+  expiry checks, preserved startup arguments, a random 256-bit health token, and
+  atomic health/outcome markers. External helper execution, user consent/status,
+  and the remaining network audit keep this phase open.
   The legacy regional-Codex Google Sheet now refreshes on the original
   weekly cadence or with a Codex-reference update. Its live 26-column CSV
   contract is parsed with bounded RFC-style quoting, numeric region IDs remain
