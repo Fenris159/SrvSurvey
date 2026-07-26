@@ -30,6 +30,7 @@ public sealed partial class App : Application
     private SystemSurveyOverlayCoordinator? systemSurveyOverlayCoordinator;
     private QuestIndicatorOverlayCoordinator? questIndicatorOverlayCoordinator;
     private NotificationOverlayCoordinator? notificationOverlayCoordinator;
+    private StreamOverlayCoordinator? streamOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
@@ -240,6 +241,10 @@ public sealed partial class App : Application
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent(),
                 overlayLayout);
+            streamOverlayCoordinator = new StreamOverlayCoordinator(
+                viewModel.StreamOverlay,
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent());
 
             void SynchronizeOverlayPriority()
             {
@@ -482,6 +487,10 @@ public sealed partial class App : Application
                                 .ToggleCurrentBodyFirstFootfallAsync();
                             break;
 
+                        case GlobalInputAction.StreamOne:
+                            handled = streamOverlayCoordinator?.Toggle() == true;
+                            break;
+
                         case GlobalInputAction.Track1:
                         case GlobalInputAction.Track2:
                         case GlobalInputAction.Track3:
@@ -601,6 +610,8 @@ public sealed partial class App : Application
                 questIndicatorOverlayCoordinator = null;
                 notificationOverlayCoordinator?.Dispose();
                 notificationOverlayCoordinator = null;
+                streamOverlayCoordinator?.Dispose();
+                streamOverlayCoordinator = null;
                 systemSurveyOverlayCoordinator?.Dispose();
                 systemSurveyOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();

@@ -109,6 +109,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "buildProjectsInlineSumFC_TEST": true,
               "buildProjectsCollapseGroupsWithFCEnough_TEST": false,
               "buildProjectsHighlightAlmostFC_TEST": true,
+              "streamOneOverlay": true,
               "keyhook_TEST": true,
               "hookDirectX_TEST": true,
               "hookDirectXDeviceId_TEST": "b7bd7df1-251e-4335-a994-8ce36011eeb2",
@@ -262,6 +263,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             input.ControllerDeviceId);
         Assert.Equal("CTRL J", input.Bindings[GlobalInputAction.ShowJumpInfo]);
         Assert.Equal("SHIFT C", input.Bindings[GlobalInputAction.CopyNextBoxel]);
+        Assert.True(
+            new StreamOverlaySettingsStore(paths.UiSettingsPath).LoadEnabled());
 
         var migrated = Assert.IsType<JsonObject>(
             JsonNode.Parse(await File.ReadAllTextAsync(paths.UiSettingsPath)));

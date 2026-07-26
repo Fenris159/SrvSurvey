@@ -177,6 +177,10 @@ public sealed class LegacyUiSettingsMigrator
                 ]);
                 mappedCount += MapNotifications(legacy, root);
                 mappedCount += MapColonization(legacy, root);
+                mappedCount += MapSection(legacy, root, "Streaming",
+                [
+                    ("streamOneOverlay", "JoinedOverlayEnabled"),
+                ]);
                 mappedCount += MapSection(legacy, root, "NetworkPrivacy",
                 [
                     ("eddnUpload", "EddnUploadEnabled"),

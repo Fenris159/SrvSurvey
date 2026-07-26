@@ -126,7 +126,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         VisitedStarsCacheViewModel? visitedStarsCache = null,
         GreenGasGiantPublicationCoordinator?
             greenGasGiantPublicationCoordinator = null,
-        NotificationSettingsStore? notificationSettingsStore = null)
+        NotificationSettingsStore? notificationSettingsStore = null,
+        StreamOverlaySettingsStore? streamOverlaySettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -172,6 +173,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Notifications = new NotificationViewModel(
             notificationSettingsStore
                 ?? new NotificationSettingsStore(AppDataPaths.UiSettingsPath));
+        StreamOverlay = new StreamOverlayViewModel(
+            streamOverlaySettingsStore
+                ?? new StreamOverlaySettingsStore(AppDataPaths.UiSettingsPath));
         NetworkPrivacy = new NetworkPrivacyViewModel(
             new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
         this.greenGasGiantPublicationCoordinator =
@@ -425,6 +429,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public ScreenshotProcessingViewModel ScreenshotProcessing { get; }
 
     public NotificationViewModel Notifications { get; }
+
+    public StreamOverlayViewModel StreamOverlay { get; }
 
     public NetworkPrivacyViewModel NetworkPrivacy { get; }
 

@@ -50,6 +50,7 @@ public static class OverlayThemeResources
         ArgumentNullException.ThrowIfNull(layout);
         Apply(window);
         ApplyOpacity(window, layout, plotterName);
+        OverlayWindowRegistry.Shared.Register(window, plotterName);
     }
 
     public static void ApplyOpacity(

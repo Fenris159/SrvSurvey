@@ -363,6 +363,30 @@
       </Border>
 
       <Border Classes="card raised">
+        <StackPanel Spacing="10">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Joined stream overlay" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Clone every live game overlay into the transparent SrvSurveyWindowOne capture surface used by streaming software." />
+            </StackPanel>
+            <CheckBox Grid.Column="1"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding StreamOverlay.Enabled, Mode=TwoWay}"
+                      Content="Enabled" />
+          </Grid>
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding StreamOverlay.StatusMessage}" />
+          <TextBlock Classes="muted"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="Alt+Ctrl+O toggles this capture window. Its enabled state is restored at startup." />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
         <StackPanel Spacing="14">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Combat overlays" />
