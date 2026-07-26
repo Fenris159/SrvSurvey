@@ -34,6 +34,8 @@ public sealed partial class App : Application
     private StreamOverlayCoordinator? streamOverlayCoordinator;
     private VrOverlayCoordinator? vrOverlayCoordinator;
     private GalaxyMapOverlayCoordinator? galaxyMapOverlayCoordinator;
+    private MultiGameCommanderOverlayCoordinator?
+        multiGameCommanderOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
@@ -355,6 +357,13 @@ public sealed partial class App : Application
                 OverlayPlatformService.CreateCurrent(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
+            multiGameCommanderOverlayCoordinator =
+                new MultiGameCommanderOverlayCoordinator(
+                    viewModel.CommanderInstances,
+                    viewModel.OverlayBehavior,
+                    OverlayPlatformService.CreateCurrent(),
+                    GameWindowTracker.CreateCurrent(),
+                    () => desktop.Windows.Any(window => window.IsActive));
 
             void SynchronizeOverlayPriority()
             {
@@ -424,6 +433,7 @@ public sealed partial class App : Application
                 notificationOverlayCoordinator?.SetSuppressed(suppress);
                 pulseOverlayCoordinator?.SetSuppressed(suppress);
                 galaxyMapOverlayCoordinator?.SetSuppressed(suppress);
+                multiGameCommanderOverlayCoordinator?.SetSuppressed(suppress);
             }
 
             void HandleOverlayBehaviorChanged(
@@ -709,6 +719,8 @@ public sealed partial class App : Application
                 TaskScheduler.UnobservedTaskException -=
                     HandleUnobservedTaskException;
                 applicationLog.Append("Application exit");
+                multiGameCommanderOverlayCoordinator?.Dispose();
+                multiGameCommanderOverlayCoordinator = null;
                 viewModel.Dispose();
                 errorReportWindowCoordinator?.Dispose();
                 errorReportWindowCoordinator = null;

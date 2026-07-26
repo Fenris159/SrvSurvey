@@ -40,6 +40,15 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
         set => Update(preferences with { HideInMaverickSuit = value });
     }
 
+    public bool HideMultiGameCommanderOverlay
+    {
+        get => preferences.HideMultiGameCommanderOverlay;
+        set => Update(preferences with
+        {
+            HideMultiGameCommanderOverlay = value,
+        });
+    }
+
     public bool ShouldSuppressForSuit => isOnFoot
         && (currentSuit == OdysseySuitType.Dominator && HideInDominatorSuit
             || currentSuit == OdysseySuitType.Maverick && HideInMaverickSuit);
@@ -109,6 +118,7 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(KeepWhenGameLosesFocus));
         OnPropertyChanged(nameof(HideInDominatorSuit));
         OnPropertyChanged(nameof(HideInMaverickSuit));
+        OnPropertyChanged(nameof(HideMultiGameCommanderOverlay));
         OnPropertyChanged(nameof(ShouldSuppressForSuit));
     }
 

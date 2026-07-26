@@ -419,6 +419,8 @@
           </StackPanel>
           <CheckBox IsChecked="{Binding OverlayBehavior.KeepWhenGameLosesFocus, Mode=TwoWay}"
                     Content="Keep overlays visible when Elite loses focus" />
+          <CheckBox IsChecked="{Binding OverlayBehavior.HideMultiGameCommanderOverlay, Mode=TwoWay}"
+                    Content="Hide the multi-game Commander overlay" />
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
             <CheckBox IsChecked="{Binding OverlayBehavior.HideInDominatorSuit, Mode=TwoWay}"
                       Content="Hide overlays in a Dominator suit" />

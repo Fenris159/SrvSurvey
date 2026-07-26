@@ -17,7 +17,11 @@ public sealed class OverlayBehaviorSettingsStore
         return new OverlayBehaviorPreferences(
             GetBoolean(settings, "KeepWhenGameLosesFocus", false),
             GetBoolean(settings, "HideInDominatorSuit", false),
-            GetBoolean(settings, "HideInMaverickSuit", false));
+            GetBoolean(settings, "HideInMaverickSuit", false),
+            GetBoolean(
+                settings,
+                "HideMultiGameCommanderOverlay",
+                false));
     }
 
     public void Save(OverlayBehaviorPreferences preferences)
@@ -37,6 +41,8 @@ public sealed class OverlayBehaviorSettingsStore
                 preferences.KeepWhenGameLosesFocus;
             settings["HideInDominatorSuit"] = preferences.HideInDominatorSuit;
             settings["HideInMaverickSuit"] = preferences.HideInMaverickSuit;
+            settings["HideMultiGameCommanderOverlay"] =
+                preferences.HideMultiGameCommanderOverlay;
         });
     }
 
@@ -55,4 +61,5 @@ public sealed class OverlayBehaviorSettingsStore
 public sealed record OverlayBehaviorPreferences(
     bool KeepWhenGameLosesFocus,
     bool HideInDominatorSuit,
-    bool HideInMaverickSuit);
+    bool HideInMaverickSuit,
+    bool HideMultiGameCommanderOverlay = false);

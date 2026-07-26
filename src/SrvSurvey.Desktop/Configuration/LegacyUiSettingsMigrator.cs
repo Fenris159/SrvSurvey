@@ -64,6 +64,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("keepOverlays", "KeepWhenGameLosesFocus"),
                     ("hidePlottersFromCombatSuits", "HideInDominatorSuit"),
                     ("hidePlottersFromMaverickSuits", "HideInMaverickSuit"),
+                    ("hideMultiFloatie", "HideMultiGameCommanderOverlay"),
                 ]);
                 mappedCount += MapOverlayScale(legacy, root);
                 mappedCount += MapSection(legacy, root, "DesktopBehavior",
@@ -298,6 +299,7 @@ public sealed class LegacyUiSettingsMigrator
             ("GuardianGestures", "blinkDuration", "BlinkDurationMilliseconds"),
             ("FirstFootfallInference", "inferTolerance", "Tolerance"),
             ("FirstFootfallInference", "inferThreshold", "Threshold"),
+            ("OverlayBehavior", "hideMultiFloatie", "HideMultiGameCommanderOverlay"),
         };
         var pending = mappings.Where(mapping =>
             legacy[mapping.Legacy] is not null

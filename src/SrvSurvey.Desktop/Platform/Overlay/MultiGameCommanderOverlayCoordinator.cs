@@ -1,0 +1,239 @@
+using System.ComponentModel;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Threading;
+using SrvSurvey.Desktop.ViewModels;
+
+namespace SrvSurvey.Desktop.Platform.Overlay;
+
+public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
+{
+    private static readonly TimeSpan InventoryInterval = TimeSpan.FromSeconds(5);
+    private readonly CommanderInstancesViewModel commanderInstances;
+    private readonly OverlayBehaviorViewModel overlayBehavior;
+    private readonly IOverlayPlatformService platform;
+    private readonly IGameWindowTracker gameWindowTracker;
+    private readonly Func<bool> isApplicationActive;
+    private readonly TimeProvider timeProvider;
+    private readonly DispatcherTimer timer;
+    private DateTimeOffset nextInventoryRefresh;
+    private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
+    private MultiGameCommanderOverlayWindow? window;
+    private bool isSuppressed;
+    private bool disposed;
+
+    public MultiGameCommanderOverlayCoordinator(
+        CommanderInstancesViewModel commanderInstances,
+        OverlayBehaviorViewModel overlayBehavior,
+        IOverlayPlatformService platform,
+        IGameWindowTracker gameWindowTracker,
+        Func<bool> isApplicationActive,
+        TimeProvider? timeProvider = null)
+    {
+        this.commanderInstances = commanderInstances
+            ?? throw new ArgumentNullException(nameof(commanderInstances));
+        this.overlayBehavior = overlayBehavior
+            ?? throw new ArgumentNullException(nameof(overlayBehavior));
+        this.platform = platform
+            ?? throw new ArgumentNullException(nameof(platform));
+        this.gameWindowTracker = gameWindowTracker
+            ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.isApplicationActive = isApplicationActive
+            ?? throw new ArgumentNullException(nameof(isApplicationActive));
+        this.timeProvider = timeProvider ?? TimeProvider.System;
+        commanderInstances.PropertyChanged += OnStateChanged;
+        overlayBehavior.PropertyChanged += OnStateChanged;
+        timer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(250),
+        };
+        timer.Tick += OnTimerTick;
+        timer.Start();
+        RefreshInventory();
+        SynchronizeWindow();
+    }
+
+    public bool IsVisible => window is not null;
+
+    public void SetSuppressed(bool value)
+    {
+        if (disposed || value == isSuppressed)
+        {
+            return;
+        }
+
+        isSuppressed = value;
+        SynchronizeWindow();
+    }
+
+    public static bool ShouldShow(
+        bool hasMultipleGameWindows,
+        bool hideByPreference,
+        bool isSuppressed,
+        bool supportsPassiveOverlay,
+        bool supportsClickThrough,
+        bool supportsGameWindowTracking,
+        GameWindowSnapshot gameWindow,
+        bool isApplicationActive)
+    {
+        ArgumentNullException.ThrowIfNull(gameWindow);
+        return hasMultipleGameWindows
+            && !hideByPreference
+            && !isSuppressed
+            && supportsPassiveOverlay
+            && supportsClickThrough
+            && supportsGameWindowTracking
+            && gameWindow.IsAvailable
+            && gameWindow.IsVisible
+            && (gameWindow.IsForeground || isApplicationActive);
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        timer.Stop();
+        timer.Tick -= OnTimerTick;
+        commanderInstances.PropertyChanged -= OnStateChanged;
+        overlayBehavior.PropertyChanged -= OnStateChanged;
+        CloseWindow();
+        gameWindowTracker.Dispose();
+        platform.Dispose();
+    }
+
+    private void OnTimerTick(object? sender, EventArgs eventArgs)
+    {
+        if (timeProvider.GetUtcNow() >= nextInventoryRefresh)
+        {
+            RefreshInventory();
+        }
+
+        SynchronizeWindow();
+    }
+
+    private void OnStateChanged(
+        object? sender,
+        PropertyChangedEventArgs eventArgs)
+    {
+        if (eventArgs.PropertyName is
+            nameof(CommanderInstancesViewModel.HasMultipleGameWindows)
+            or nameof(CommanderInstancesViewModel.MultiGameOverlayLabel)
+            or nameof(OverlayBehaviorViewModel.HideMultiGameCommanderOverlay))
+        {
+            SynchronizeWindow();
+        }
+    }
+
+    private void RefreshInventory()
+    {
+        commanderInstances.RefreshGameWindowCount();
+        nextInventoryRefresh = timeProvider.GetUtcNow() + InventoryInterval;
+    }
+
+    private void SynchronizeWindow()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        gameWindow = gameWindowTracker.GetSnapshot();
+        var capabilities = platform.Capabilities;
+        var shouldShow = ShouldShow(
+            commanderInstances.HasMultipleGameWindows,
+            overlayBehavior.HideMultiGameCommanderOverlay,
+            isSuppressed,
+            capabilities.SupportsPassiveOverlay,
+            capabilities.SupportsClickThrough,
+            capabilities.SupportsGameWindowTracking,
+            gameWindow,
+            isApplicationActive());
+        if (!shouldShow)
+        {
+            CloseWindow();
+            return;
+        }
+
+        if (window is not null)
+        {
+            PositionWindow(window);
+            return;
+        }
+
+        var overlay = new MultiGameCommanderOverlayWindow(commanderInstances)
+        {
+            Opacity = 0.82,
+        };
+        overlay.Opened += (_, _) => PrepareWindow(overlay);
+        overlay.Closed += (_, _) =>
+        {
+            if (ReferenceEquals(window, overlay))
+            {
+                window = null;
+            }
+        };
+        window = overlay;
+        overlay.Show();
+    }
+
+    private void PrepareWindow(MultiGameCommanderOverlayWindow overlay)
+    {
+        PositionWindow(overlay);
+        var preparation = platform.PreparePassiveWindow(overlay);
+        if (!preparation.IsClickThrough)
+        {
+            isSuppressed = true;
+            CloseWindow();
+        }
+    }
+
+    private void PositionWindow(Window overlay)
+    {
+        var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds)
+            ?? overlay.Screens.Primary;
+        if (screen is null)
+        {
+            return;
+        }
+
+        var logicalWidth = overlay.Bounds.Width > 0
+            ? overlay.Bounds.Width
+            : overlay.MinWidth;
+        var logicalHeight = overlay.Bounds.Height > 0
+            ? overlay.Bounds.Height
+            : 32;
+        var width = Math.Max(
+            1,
+            (int)Math.Ceiling(logicalWidth * screen.Scaling));
+        var height = Math.Max(
+            1,
+            (int)Math.Ceiling(logicalHeight * screen.Scaling));
+        var x = gameWindow.ClientBounds.X
+            + ((gameWindow.ClientBounds.Width - width) / 2);
+        var aboveClient = gameWindow.ClientBounds.Y - height - 2;
+        var y = aboveClient >= screen.WorkingArea.Y
+            ? aboveClient
+            : gameWindow.ClientBounds.Y;
+        var position = new PixelPoint(x, y);
+        if (overlay.Position != position)
+        {
+            overlay.Position = position;
+        }
+    }
+
+    private void CloseWindow()
+    {
+        var overlay = window;
+        if (overlay is null)
+        {
+            return;
+        }
+
+        window = null;
+        overlay.Close();
+    }
+}

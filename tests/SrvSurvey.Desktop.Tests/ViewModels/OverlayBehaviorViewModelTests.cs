@@ -30,15 +30,18 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
     }
 
     [Fact]
-    public void FocusPreferencePersists()
+    public void PassiveOverlayPreferencesPersist()
     {
         var viewModel = CreateViewModel();
 
         viewModel.KeepWhenGameLosesFocus = true;
+        viewModel.HideMultiGameCommanderOverlay = true;
 
-        Assert.True(new OverlayBehaviorSettingsStore(Path.Combine(
+        var persisted = new OverlayBehaviorSettingsStore(Path.Combine(
             temporaryDirectory,
-            "ui-settings.json")).Load().KeepWhenGameLosesFocus);
+            "ui-settings.json")).Load();
+        Assert.True(persisted.KeepWhenGameLosesFocus);
+        Assert.True(persisted.HideMultiGameCommanderOverlay);
     }
 
     public void Dispose()

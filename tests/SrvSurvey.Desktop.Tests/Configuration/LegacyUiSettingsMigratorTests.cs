@@ -36,6 +36,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "keepOverlays": true,
               "hidePlottersFromCombatSuits": true,
               "hidePlottersFromMaverickSuits": false,
+              "hideMultiFloatie": true,
               "plotterScale": 16.0,
               "focusGameOnStart": false,
               "focusGameOnMinimize": false,
@@ -183,7 +184,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             new PulseOverlayPreferences(false),
             new PulseOverlaySettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
-            new OverlayBehaviorPreferences(true, true, false),
+            new OverlayBehaviorPreferences(true, true, false, true),
             new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new OverlayScalePreferences(16),
@@ -460,6 +461,42 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new OverlayScalePreferences(22),
             new OverlayScaleSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            "green-light",
+            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Null(result.PreviousSettingsBackupPath);
+    }
+
+    [Fact]
+    public async Task ExistingImportMarkerReceivesMissingMultiGamePreferenceOnly()
+    {
+        var paths = CreatePaths();
+        var source = Path.Combine(temporaryDirectory, "legacy-multi-game-upgrade");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "{\"hideMultiFloatie\":true,\"darkTheme\":true}");
+        await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups-multi-game-upgrade"));
+        var migrator = new LegacyUiSettingsMigrator();
+        Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
+        var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
+        document.Update(root =>
+        {
+            var behavior = Assert.IsType<JsonObject>(root["OverlayBehavior"]);
+            behavior.Remove("HideMultiGameCommanderOverlay");
+            root["Theme"] = "green-light";
+        });
+
+        var result = migrator.MigrateIfNeeded(paths);
+
+        Assert.True(result.Migrated);
+        Assert.Equal(1, result.MappedPreferenceCount);
+        Assert.True(new OverlayBehaviorSettingsStore(paths.UiSettingsPath)
+            .Load()
+            .HideMultiGameCommanderOverlay);
         Assert.Equal(
             "green-light",
             new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
