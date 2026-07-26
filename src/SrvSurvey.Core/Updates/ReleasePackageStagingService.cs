@@ -13,6 +13,13 @@ public interface IReleasePackageStagingService
         string archivePath,
         string dataDirectory,
         CancellationToken cancellationToken = default);
+
+    Task<ReleasePackageStagingResult> VerifyReadyAsync(
+        Version version,
+        string runtimeIdentifier,
+        string readyDirectory,
+        string manifestSha256,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed record ReleasePackageStagingResult(
@@ -20,7 +27,8 @@ public sealed record ReleasePackageStagingResult(
     string EntryPointPath,
     bool Reused,
     int FileCount,
-    long ExpandedBytes);
+    long ExpandedBytes,
+    string ManifestSha256);
 
 public sealed class ReleasePackageStagingService
     : IReleasePackageStagingService
@@ -63,7 +71,11 @@ public sealed class ReleasePackageStagingService
                 cancellationToken)
             .ConfigureAwait(false))
         {
-            return CreateResult(readyDirectory, archive.Manifest, reused: true);
+            return CreateResult(
+                readyDirectory,
+                archive.Manifest,
+                archive.ManifestBytes,
+                reused: true);
         }
 
         Directory.CreateDirectory(stageRoot);
@@ -92,12 +104,83 @@ public sealed class ReleasePackageStagingService
             }
 
             ActivateCandidate(stageRoot, candidateDirectory, readyDirectory);
-            return CreateResult(readyDirectory, archive.Manifest, reused: false);
+            return CreateResult(
+                readyDirectory,
+                archive.Manifest,
+                archive.ManifestBytes,
+                reused: false);
         }
         finally
         {
             TryDeleteDirectory(candidateDirectory);
         }
+    }
+
+    public async Task<ReleasePackageStagingResult> VerifyReadyAsync(
+        Version version,
+        string runtimeIdentifier,
+        string readyDirectory,
+        string manifestSha256,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(version);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runtimeIdentifier);
+        ArgumentException.ThrowIfNullOrWhiteSpace(readyDirectory);
+        ArgumentException.ThrowIfNullOrWhiteSpace(manifestSha256);
+        if (version.Build < 0
+            || runtimeIdentifier is not ("win-x64" or "linux-x64")
+            || manifestSha256.Length != 64
+            || manifestSha256.Any(character => !Uri.IsHexDigit(character)))
+        {
+            throw new InvalidDataException(
+                "The ready-package verification metadata is invalid.");
+        }
+
+        var manifestPath = Path.Combine(
+            Path.GetFullPath(readyDirectory),
+            ManifestName);
+        var info = new FileInfo(manifestPath);
+        if (!info.Exists || info.Length is <= 0 or > MaximumManifestBytes)
+        {
+            throw new InvalidDataException(
+                "The ready update has no bounded package manifest.");
+        }
+
+        var bytes = await File.ReadAllBytesAsync(manifestPath, cancellationToken)
+            .ConfigureAwait(false);
+        var actualManifestHash = Convert.ToHexString(SHA256.HashData(bytes));
+        if (!HashesMatch(actualManifestHash, manifestSha256))
+        {
+            throw new InvalidDataException(
+                "The ready update manifest no longer matches the verified archive.");
+        }
+
+        var archiveType = runtimeIdentifier == "win-x64" ? "zip" : "tar.gz";
+        var suffix = archiveType == "zip" ? ".zip" : ".tar.gz";
+        var package = new CrossPlatformReleasePackage(
+            runtimeIdentifier,
+            $"SrvSurvey-Avalonia-{version}-{runtimeIdentifier}{suffix}",
+            archiveType,
+            1,
+            new string('0', 64),
+            new Uri("https://example.invalid/package"));
+        var manifest = ParseManifest(bytes, version, package);
+        if (!await IsReadyAsync(
+                readyDirectory,
+                manifest,
+                bytes,
+                cancellationToken)
+            .ConfigureAwait(false))
+        {
+            throw new InvalidDataException(
+                "The ready update files no longer match their package manifest.");
+        }
+
+        return CreateResult(
+            Path.GetFullPath(readyDirectory),
+            manifest,
+            bytes,
+            reused: true);
     }
 
     private static async Task<InspectedArchive> InspectArchiveAsync(
@@ -717,6 +800,7 @@ public sealed class ReleasePackageStagingService
     private static ReleasePackageStagingResult CreateResult(
         string readyDirectory,
         ReleasePackageManifest manifest,
+        byte[] manifestBytes,
         bool reused)
     {
         return new ReleasePackageStagingResult(
@@ -724,7 +808,8 @@ public sealed class ReleasePackageStagingService
             ResolveDestination(readyDirectory, manifest.EntryPoint),
             reused,
             manifest.Files.Count,
-            manifest.ExpandedBytes);
+            manifest.ExpandedBytes,
+            Convert.ToHexString(SHA256.HashData(manifestBytes)).ToLowerInvariant());
     }
 
     private static async Task VerifyArchiveAsync(

@@ -568,8 +568,13 @@ UI tests where practical, and live Windows/Linux evidence.
   rejection, bounded expansion, per-file size/SHA-256 checks, preserved Linux
   executable mode, and a verified ready-directory swap that preserves the prior
   candidate on failure. Both full self-contained CI packages passed this staging
-  path. Installation/rollback and the remaining network audit keep this phase
-  open.
+  path. The installation transaction now prepares and revalidates a same-volume
+  sibling candidate while the current app remains untouched, fingerprints every
+  current install file and mode, refuses any pre-swap drift, renames the old
+  directory to a recoverable backup, and restores it byte-for-byte while
+  preserving the failed candidate when replacement health confirmation or an
+  injected post-swap checkpoint fails. External helper/process handoff, user
+  consent/status, and the remaining network audit keep this phase open.
   The legacy regional-Codex Google Sheet now refreshes on the original
   weekly cadence or with a Codex-reference update. Its live 26-column CSV
   contract is parsed with bounded RFC-style quoting, numeric region IDs remain
