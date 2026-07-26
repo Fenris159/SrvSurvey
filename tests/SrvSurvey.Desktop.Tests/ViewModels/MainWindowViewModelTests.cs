@@ -963,6 +963,147 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task RefreshHydratesExternalBodiesWithSeparateBiologyConsent()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-system-body-data-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"Scan\",\"SystemAddress\":42,\"BodyName\":\"Test 1\",\"BodyID\":1,\"PlanetClass\":\"Rocky body\",\"Landable\":true,\"SurfaceGravity\":20}\n");
+            var externalState = new SystemScanState();
+            externalState.Apply(ParseJournalEvent(
+                """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+            externalState.Apply(ParseJournalEvent(
+                """{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Icy body","Landable":true,"SurfaceGravity":9,"SurfaceTemperature":180,"Materials":[{"Name":"iron","Percent":20}]}"""));
+            externalState.Apply(ParseJournalEvent(
+                """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""));
+            var external = new RecordingSystemBodyDataClient(
+                new SystemBodyDataLoadResult(
+                    [new SystemBodyDataProviderSnapshot(
+                        "Spansh",
+                        externalState.CreateSnapshot())],
+                    []));
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                systemBodyDataClient: external);
+
+            viewModel.SystemSurvey.UseExternalData = false;
+            await viewModel.RefreshAsync();
+            Assert.Equal(0, external.CallCount);
+            Assert.Equal(
+                0,
+                Assert.Single(viewModel.SystemSurvey.Snapshot.Bodies)
+                    .SurfaceTemperature);
+
+            viewModel.SystemSurvey.UseExternalData = true;
+            await viewModel.RefreshAsync();
+            await viewModel.PendingSystemBodyDataLoad;
+
+            Assert.Equal(1, external.CallCount);
+            var body = Assert.Single(viewModel.SystemSurvey.Snapshot.Bodies);
+            Assert.Equal("Rocky body", body.PlanetClass);
+            Assert.Equal(20, body.SurfaceGravity);
+            Assert.Equal(180, body.SurfaceTemperature);
+            Assert.Equal(20, body.Materials["iron"]);
+            Assert.Equal(2, body.BiologicalSignalCount);
+            Assert.Empty(body.Organisms);
+            var savedPath = Path.Combine(
+                profile,
+                "systems",
+                "F123",
+                "Test_42.json");
+            var saved = JsonNode.Parse(
+                await File.ReadAllTextAsync(savedPath))!.AsObject();
+            Assert.Equal(
+                180,
+                saved["bodies"]![0]!["surfaceTemperature"]!.GetValue<double>());
+
+            await viewModel.RefreshAsync();
+            Assert.Equal(1, external.CallCount);
+
+            viewModel.SystemSurvey.UseExternalBioData = true;
+            await viewModel.RefreshAsync();
+            await viewModel.PendingSystemBodyDataLoad;
+
+            Assert.Equal(2, external.CallCount);
+            Assert.Equal(
+                "Aleoida",
+                Assert.Single(viewModel.SystemSurvey.Snapshot.Bodies[0].Organisms)
+                    .GenusLocalized);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task SystemChangeCancelsStaleExternalBodyRequest()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-system-body-cancel-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-24T100000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n");
+            var client = new BlockingSystemBodyDataClient();
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                systemBodyDataClient: client);
+
+            await viewModel.RefreshAsync();
+            Assert.Equal([42], client.RequestedAddresses);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-24T10:05:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"New Test\",\"SystemAddress\":84,\"StarPos\":[4,5,6]}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Equal([42, 84], client.RequestedAddresses);
+            Assert.Contains(42, client.CanceledAddresses);
+            Assert.Equal(84, viewModel.SystemSurvey.Snapshot.SystemAddress);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RefreshFeedsHumanSettlementJournalAndStatusPipeline()
     {
         var root = Path.Combine(
@@ -2274,6 +2415,85 @@ public sealed class MainWindowViewModelTests
             null,
             DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
             true);
+    }
+
+    private static JournalEventEnvelope ParseJournalEvent(string json)
+    {
+        Assert.True(
+            JournalEventEnvelope.TryParse(
+                json,
+                out var journalEvent,
+                out var error),
+            error);
+        return Assert.IsType<JournalEventEnvelope>(journalEvent);
+    }
+
+    private sealed class RecordingSystemBodyDataClient(
+        SystemBodyDataLoadResult result) : ISystemBodyDataClient
+    {
+        public int CallCount { get; private set; }
+
+        public Task<SystemBodyDataLoadResult> GetAsync(
+            string systemName,
+            long systemAddress,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return Task.FromResult(result);
+        }
+    }
+
+    private sealed class BlockingSystemBodyDataClient : ISystemBodyDataClient
+    {
+        private readonly object sync = new();
+        private readonly List<long> requestedAddresses = [];
+        private readonly List<long> canceledAddresses = [];
+
+        public IReadOnlyList<long> RequestedAddresses
+        {
+            get
+            {
+                lock (sync)
+                {
+                    return requestedAddresses.ToArray();
+                }
+            }
+        }
+
+        public IReadOnlyList<long> CanceledAddresses
+        {
+            get
+            {
+                lock (sync)
+                {
+                    return canceledAddresses.ToArray();
+                }
+            }
+        }
+
+        public Task<SystemBodyDataLoadResult> GetAsync(
+            string systemName,
+            long systemAddress,
+            CancellationToken cancellationToken = default)
+        {
+            lock (sync)
+            {
+                requestedAddresses.Add(systemAddress);
+            }
+
+            var completion = new TaskCompletionSource<SystemBodyDataLoadResult>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            cancellationToken.Register(() =>
+            {
+                lock (sync)
+                {
+                    canceledAddresses.Add(systemAddress);
+                }
+
+                completion.TrySetCanceled(cancellationToken);
+            });
+            return completion.Task;
+        }
     }
 
     private sealed class StubBoxelResolver(

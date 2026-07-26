@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Settlements;
 using SrvSurvey.Core.Storage;
@@ -181,6 +182,7 @@ public sealed partial class App : Application
                     commanderPreferenceResolution.StatusMessage,
                 firstFootfallInferenceService:
                     firstFootfallInferenceService,
+                systemBodyDataClient: new SystemBodyDataClient(),
                 canonnHumanSiteClient: canonnHumanSiteClient,
                 canonnHumanSitePublisher: canonnHumanSiteClient);
             IGameWindowTracker CreateOverlayGameWindowTracker()

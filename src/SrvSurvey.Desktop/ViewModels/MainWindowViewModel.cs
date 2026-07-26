@@ -41,6 +41,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly CommanderCodexStore commanderCodexStore;
     private readonly CommanderCodexJournalTracker commanderCodexJournalTracker;
     private readonly SystemScanPersistenceStore systemScanPersistenceStore;
+    private readonly ISystemBodyDataClient? systemBodyDataClient;
     private readonly CargoInventoryState cargoInventoryState = new();
     private readonly FirstFootfallInferenceSettingsStore
         firstFootfallInferenceSettingsStore;
@@ -48,6 +49,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         firstFootfallInferenceService;
     private readonly CancellationTokenSource firstFootfallInferenceCancellation =
         new();
+    private CancellationTokenSource? systemBodyDataCancellation;
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
     private readonly IEddnPublisher eddnPublisher;
@@ -114,6 +116,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private long? activeSystemVisitAddress;
     private DateTimeOffset? activeSystemVisitedAt;
     private string? loadedSystemHistoryKey;
+    private string? loadedSystemBodyDataKey;
     private EliteStatus? latestStatus;
     private CargoSnapshot? latestCargo;
     private bool awaitFreshCargoSnapshot;
@@ -178,7 +181,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         LocalizationViewModel? localization = null,
         ICanonnHumanSiteClient? canonnHumanSiteClient = null,
         ICanonnHumanSitePublisher? canonnHumanSitePublisher = null,
-        IEddnPublisher? eddnPublisher = null)
+        IEddnPublisher? eddnPublisher = null,
+        ISystemBodyDataClient? systemBodyDataClient = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -288,6 +292,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             commanderCodexStore);
         this.systemScanPersistenceStore = systemScanPersistenceStore
             ?? new SystemScanPersistenceStore(AppDataPaths.DataDirectory);
+        this.systemBodyDataClient = systemBodyDataClient;
         this.firstFootfallInferenceSettingsStore =
             firstFootfallInferenceSettingsStore
                 ?? new FirstFootfallInferenceSettingsStore(
@@ -708,6 +713,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public AppDataPaths AppDataPaths { get; }
+
+    public Task PendingSystemBodyDataLoad { get; private set; } =
+        Task.CompletedTask;
 
     public GroundTargetViewModel GroundTarget { get; }
 
@@ -1869,6 +1877,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.Status,
             exobiologyAfter);
         await LoadCurrentSystemHistoryAsync();
+        PendingSystemBodyDataLoad = LoadCurrentSystemBodyDataAsync();
         if (!update.IsBootstrapRead
             && await ApplyFirstFootfallTextCommandsAsync(update.JournalEvents) > 0)
         {
@@ -2169,6 +2178,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             journalState.FrontierId,
             isOdyssey);
         loadedSystemHistoryKey = null;
+        loadedSystemBodyDataKey = null;
+        CancelSystemBodyDataRequest();
         activeProfileFrontierId = journalState.FrontierId;
         activeProfileCommanderName = journalState.CommanderName
             ?? result.Data?.CommanderName;
@@ -2402,6 +2413,96 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             SystemSurvey.MergeKnownSystemData(history);
         }
+    }
+
+    private async Task LoadCurrentSystemBodyDataAsync()
+    {
+        if (systemBodyDataClient is null)
+        {
+            return;
+        }
+
+        if (!SystemSurvey.UseExternalData)
+        {
+            loadedSystemBodyDataKey = null;
+            CancelSystemBodyDataRequest();
+            return;
+        }
+
+        var current = SystemSurvey.Snapshot;
+        if (string.IsNullOrWhiteSpace(current.SystemName)
+            || current.SystemAddress is not { } systemAddress
+            || systemAddress <= 0)
+        {
+            return;
+        }
+
+        var key = systemAddress
+            + "\nbiology="
+            + SystemSurvey.UseExternalBioData;
+        if (string.Equals(
+            loadedSystemBodyDataKey,
+            key,
+            StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        CancelSystemBodyDataRequest();
+        var cancellation = new CancellationTokenSource();
+        systemBodyDataCancellation = cancellation;
+        loadedSystemBodyDataKey = key;
+        try
+        {
+            var result = await systemBodyDataClient.GetAsync(
+                current.SystemName,
+                systemAddress,
+                cancellation.Token);
+            if (cancellation.IsCancellationRequested
+                || SystemSurvey.Snapshot.SystemAddress != systemAddress
+                || !SystemSurvey.UseExternalData)
+            {
+                return;
+            }
+
+            var changed = false;
+            foreach (var provider in result.Providers)
+            {
+                changed |= SystemSurvey.MergeKnownSystemData(
+                    provider.Snapshot,
+                    SystemSurvey.UseExternalBioData);
+            }
+
+            foreach (var warning in result.Warnings)
+            {
+                applicationLogService?.Append(warning);
+            }
+
+            if (changed)
+            {
+                await PersistCurrentSystemScanAsync();
+            }
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            // A newer system or preference replaced this request.
+        }
+        finally
+        {
+            if (ReferenceEquals(systemBodyDataCancellation, cancellation))
+            {
+                systemBodyDataCancellation = null;
+            }
+
+            cancellation.Dispose();
+        }
+    }
+
+    private void CancelSystemBodyDataRequest()
+    {
+        var cancellation = systemBodyDataCancellation;
+        systemBodyDataCancellation = null;
+        cancellation?.Cancel();
     }
 
     private async Task PersistSystemScanAsync(
@@ -3163,6 +3264,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         disposed = true;
+        CancelSystemBodyDataRequest();
         firstFootfallInferenceCancellation.Cancel();
         firstFootfallInferenceService.Dispose();
         firstFootfallInferenceCancellation.Dispose();
