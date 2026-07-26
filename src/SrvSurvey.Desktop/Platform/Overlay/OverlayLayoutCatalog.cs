@@ -13,6 +13,7 @@ public static class OverlayLayoutCatalog
         Define("PlotFootCombat", "Ground combat", LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8),
         Define("PlotFSS", "FSS body feed", LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8),
         Define("PlotFSSInfo", "FSS information", LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8),
+        Define("PlotGalMap", "Galaxy Map system intelligence", LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8),
         Define("PlotGrounded", "Surface survey", LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Middle, 0),
         Define("PlotGuardians", "Guardian site", LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0),
         Define("PlotGuardianSystem", "Guardian system", LegacyHorizontalAnchor.Left, 10, LegacyVerticalAnchor.Top, 8),

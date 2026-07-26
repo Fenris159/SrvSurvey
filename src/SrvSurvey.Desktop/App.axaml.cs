@@ -32,6 +32,7 @@ public sealed partial class App : Application
     private NotificationOverlayCoordinator? notificationOverlayCoordinator;
     private StreamOverlayCoordinator? streamOverlayCoordinator;
     private VrOverlayCoordinator? vrOverlayCoordinator;
+    private GalaxyMapOverlayCoordinator? galaxyMapOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
@@ -249,6 +250,11 @@ public sealed partial class App : Application
             vrOverlayCoordinator = new VrOverlayCoordinator(
                 viewModel.VrOverlay,
                 modeProvider: () => viewModel.CurrentVrOverlayMode);
+            galaxyMapOverlayCoordinator = new GalaxyMapOverlayCoordinator(
+                viewModel.GalaxyMap,
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent(),
+                overlayLayout);
 
             void SynchronizeOverlayPriority()
             {
@@ -629,6 +635,8 @@ public sealed partial class App : Application
                 streamOverlayCoordinator = null;
                 vrOverlayCoordinator?.Dispose();
                 vrOverlayCoordinator = null;
+                galaxyMapOverlayCoordinator?.Dispose();
+                galaxyMapOverlayCoordinator = null;
                 systemSurveyOverlayCoordinator?.Dispose();
                 systemSurveyOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();

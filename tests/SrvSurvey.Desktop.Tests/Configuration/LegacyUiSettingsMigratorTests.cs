@@ -29,6 +29,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "autoShowPlotJumpInfo": false,
               "plotJumpInfoMinimal": true,
               "showPlotJumpInfoIfNextHop": true,
+              "autoShowPlotGalMap": false,
+              "galMapFactions": false,
               "autoShowPlotBodyInfo": false,
               "bodyInfoBubbleSize": 321,
               "highGravityWarningLevel": 2.75,
@@ -150,6 +152,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new JumpInfoPreferences(false, true, true),
             new JumpInfoSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            new GalaxyMapPreferences(false, false),
+            new GalaxyMapSettingsStore(paths.UiSettingsPath).Load());
 
         var survey = new SystemSurveySettingsStore(paths.UiSettingsPath).Load();
         Assert.False(survey.AutoShowBodyInfo);

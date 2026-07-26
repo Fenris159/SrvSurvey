@@ -53,6 +53,9 @@ public sealed class SystemSummaryClientTests
             special => special.Location == "Engineer Base"
                 && special.Details.Contains("Professor Palin Engineer"));
         Assert.Equal(5, result.Summary.Stations.Count);
+        Assert.Equal(2, result.Summary.Factions.Count);
+        Assert.Equal("Pathfinder Cooperative", result.Summary.Factions[0].Name);
+        Assert.Equal(0.62, result.Summary.Factions[0].Influence);
         var guardianLab = result.Summary.Stations.Single(
             station => station.Name == "Guardian Lab");
         Assert.Equal("Planetary Port", guardianLab.Type);
@@ -261,8 +264,8 @@ public sealed class SystemSummaryClientTests
                   }
                 ],
                 "factions": [
-                  { "state": "War" },
-                  { "state": "War" },
+                  { "name": "Pathfinder Cooperative", "influence": 0.62, "state": "War" },
+                  { "name": "Survey League", "influence": 0.38, "state": "War" },
                   { "state": "Boom" }
                 ]
               }

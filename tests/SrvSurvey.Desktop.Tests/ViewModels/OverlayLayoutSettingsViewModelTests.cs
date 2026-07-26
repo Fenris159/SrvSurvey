@@ -99,7 +99,16 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
                 24,
                 null),
             notification.Placement);
-        Assert.Equal(22, viewModel.Overlays.Count);
+        Assert.Equal(23, viewModel.Overlays.Count);
+        Assert.Equal(
+            new LegacyOverlayPlacement(
+                LegacyHorizontalAnchor.Left,
+                8,
+                LegacyVerticalAnchor.Top,
+                8,
+                null),
+            viewModel.Overlays.Single(
+                overlay => overlay.Name == "PlotGalMap").Placement);
     }
 
     [Fact]

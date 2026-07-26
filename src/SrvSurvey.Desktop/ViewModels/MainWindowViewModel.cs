@@ -129,7 +129,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         NotificationSettingsStore? notificationSettingsStore = null,
         StreamOverlaySettingsStore? streamOverlaySettingsStore = null,
         VrOverlaySettingsStore? vrOverlaySettingsStore = null,
-        VrOverlayCalibrationStore? vrOverlayCalibrationStore = null)
+        VrOverlayCalibrationStore? vrOverlayCalibrationStore = null,
+        GalaxyMapSettingsStore? galaxyMapSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -243,6 +244,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             sharedSystemSummaryClient,
             jumpInfoSettingsStore
                 ?? new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath));
+        GalaxyMap = new GalaxyMapOverlayViewModel(
+            sharedSystemSummaryClient,
+            galaxyMapSettingsStore
+                ?? new GalaxyMapSettingsStore(AppDataPaths.UiSettingsPath),
+            SystemNicknames);
         StationInfo = new StationInfoViewModel(
             sharedSystemSummaryClient,
             stationInfoSettingsStore
@@ -440,6 +446,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public StreamOverlayViewModel StreamOverlay { get; }
 
     public VrOverlayViewModel VrOverlay { get; }
+
+    public GalaxyMapOverlayViewModel GalaxyMap { get; }
 
     public NetworkPrivacyViewModel NetworkPrivacy { get; }
 
@@ -1402,6 +1410,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.Status,
             Route.CreateSnapshot(),
             update.IsBootstrapRead);
+        GalaxyMap.ApplyUpdate(
+            journalState.SystemName,
+            journalState.SystemAddress,
+            journalState.StarPosition,
+            update.NavRoute,
+            update.JournalEvents,
+            update.Status,
+            update.IsBootstrapRead);
         foreach (var journalEvent in update.JournalEvents)
         {
             if (!skipPersistedBootstrapEvents
@@ -1967,6 +1983,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         disposed = true;
+        GalaxyMap.Dispose();
         QuestWorkspace.Dispose();
         CommanderInstances.Dispose();
         visitedStarsHttpClient?.Dispose();

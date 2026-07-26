@@ -14,6 +14,11 @@ public interface ISystemSummaryClient
 
 public sealed record SystemTrafficSummary(int Day, int Week, int Total);
 
+public sealed record SystemFactionSummary(
+    string Name,
+    double Influence,
+    string? State);
+
 public sealed record SystemPoiSummary(
     int Bodies,
     int Genus,
@@ -70,6 +75,8 @@ public sealed record SystemSummary(
     IReadOnlyList<SystemSpecialSummary> Specials)
 {
     public IReadOnlyList<SystemStationSummary> Stations { get; init; } = [];
+
+    public IReadOnlyList<SystemFactionSummary> Factions { get; init; } = [];
 }
 
 public sealed record SystemSummaryLoadResult(
@@ -190,6 +197,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             spansh.Value?.Specials ?? [])
         {
             Stations = spansh.Value?.Stations ?? [],
+            Factions = spansh.Value?.Factions ?? [],
         };
         return new SystemSummaryLoadResult(summary, warnings);
     }
@@ -398,9 +406,20 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             AddStationSpecials(station, specials);
         }
 
-        var warPresences = GetArray(system, "factions")
+        var factionElements = GetArray(system, "factions");
+        var warPresences = factionElements
             .Count(faction => faction.ValueKind == JsonValueKind.Object
                 && GetString(faction, "state") is "War" or "Civil War");
+        var factions = factionElements
+            .Where(faction => faction.ValueKind == JsonValueKind.Object)
+            .Select(faction => new SystemFactionSummary(
+                GetString(faction, "name") ?? string.Empty,
+                GetDouble(faction, "influence") ?? 0,
+                GetString(faction, "state")))
+            .Where(faction => !string.IsNullOrWhiteSpace(faction.Name))
+            .OrderByDescending(faction => faction.Influence)
+            .ThenBy(faction => faction.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         var totalBodies = GetInt32(system, "bodyCount") ?? 0;
         return new SpanshFragment(
             position,
@@ -422,7 +441,8 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                 .Select(ParseStation)
                 .Where(station => !string.IsNullOrWhiteSpace(station.Name))
                 .OrderBy(station => station.Name)
-                .ToArray());
+                .ToArray(),
+            factions);
     }
 
     private static SystemStationSummary ParseStation(JsonElement station)
@@ -785,5 +805,6 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         int TotalBodyCount,
         SystemPoiSummary PointsOfInterest,
         IReadOnlyList<SystemSpecialSummary> Specials,
-        IReadOnlyList<SystemStationSummary> Stations);
+        IReadOnlyList<SystemStationSummary> Stations,
+        IReadOnlyList<SystemFactionSummary> Factions);
 }

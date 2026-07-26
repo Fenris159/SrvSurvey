@@ -54,6 +54,11 @@ public sealed class LegacyUiSettingsMigrator
                     ("plotJumpInfoMinimal", "Minimal"),
                     ("showPlotJumpInfoIfNextHop", "ShowWhenNextHopSelected"),
                 ]);
+                mappedCount += MapSection(legacy, root, "GalaxyMap",
+                [
+                    ("autoShowPlotGalMap", "AutoShow"),
+                    ("galMapFactions", "ShowFactions"),
+                ]);
                 mappedCount += MapSection(legacy, root, "SystemSurvey",
                 [
                     ("autoShowPlotBodyInfo", "AutoShowBodyInfo"),

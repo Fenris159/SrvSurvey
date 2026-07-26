@@ -260,11 +260,33 @@
 
       <StackPanel Spacing="5">
         <TextBlock Classes="eyebrow" Text="OVERLAYS" />
-        <TextBlock Classes="page-title" Text="Next-jump intelligence" />
+        <TextBlock Classes="page-title" Text="Game overlays" />
         <TextBlock Classes="muted"
                    TextWrapping="Wrap"
-                   Text="Control the passive overlay shown while charging or travelling through hyperspace." />
+                   Text="Control passive Galaxy Map, route, survey, and status surfaces." />
       </StackPanel>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="12">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Galaxy Map intelligence" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Show the selected destination, next jump, discovery progress, biological signal count, route distance, and optional faction influence while the Galaxy Map is open." />
+          </StackPanel>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <CheckBox IsChecked="{Binding GalaxyMap.AutoShow, Mode=TwoWay}"
+                      Content="Show automatically in the Galaxy Map" />
+            <CheckBox Grid.Column="1"
+                      IsChecked="{Binding GalaxyMap.ShowFactions, Mode=TwoWay}"
+                      Content="Show destination faction influence" />
+          </Grid>
+          <TextBlock IsVisible="{Binding GalaxyMap.HasSettingsStatus}"
+                     Foreground="{DynamicResource RavenWarningBrush}"
+                     Text="{Binding GalaxyMap.SettingsStatus}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
 
       <Border Classes="card raised">
         <StackPanel Spacing="14">
