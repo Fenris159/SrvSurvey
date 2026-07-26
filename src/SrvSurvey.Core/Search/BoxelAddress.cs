@@ -86,10 +86,22 @@ public sealed partial record BoxelAddress(
         }
 
         var storedParts = value.Split('|', 2, StringSplitOptions.TrimEntries);
+        var storedAddress = 0L;
+        var hasStoredAddress = storedParts.Length == 2
+            && long.TryParse(
+                storedParts[1],
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out storedAddress)
+            && storedAddress > 0;
         var match = BoxelNamePattern().Match(storedParts[0]);
         if (!match.Success)
         {
-            return false;
+            return hasStoredAddress
+                && TryFromSystemAddress(
+                    storedAddress,
+                    storedParts[0],
+                    out boxel);
         }
 
         var massCode = char.ToLowerInvariant(match.Groups[3].Value[0]);
@@ -127,21 +139,13 @@ public sealed partial record BoxelAddress(
             n2 = firstNumber;
         }
 
-        var systemAddress = storedParts.Length == 2
-            && long.TryParse(
-                storedParts[1],
-                NumberStyles.None,
-                CultureInfo.InvariantCulture,
-                out var parsedAddress)
-                ? parsedAddress
-                : 0;
         boxel = new BoxelAddress(
             match.Groups[1].Value.Trim(),
             match.Groups[2].Value.ToUpperInvariant(),
             massCode,
             n1,
             n2,
-            systemAddress);
+            hasStoredAddress ? storedAddress : 0);
         return true;
     }
 
@@ -163,7 +167,9 @@ public sealed partial record BoxelAddress(
             return false;
         }
 
-        if (TryParse(publicName, out var parsed)
+        var normalizedPublicName = publicName?
+            .Split('|', 2, StringSplitOptions.TrimEntries)[0];
+        if (TryParse(normalizedPublicName, out var parsed)
             && parsed is not null
             && BoxelSectorNameResolver.IsValidSectorName(parsed.Sector))
         {
@@ -208,7 +214,7 @@ public sealed partial record BoxelAddress(
             massCode,
             (int)remaining,
             systemAddress,
-            publicName?.Trim());
+            normalizedPublicName?.Trim());
         return true;
     }
 

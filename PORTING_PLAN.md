@@ -193,6 +193,13 @@ malformed or oversized files fail closed without changing their bytes, and
 biology/prediction surfaces keep global regional candidates distinct from both
 commander-first and commander regional-first discoveries.
 
+The imported `pub/Boxel.Names.txt` map is also loaded read-only with UTF-8,
+file-size, line-length, entry-count, and complete-envelope validation. Its
+scalar and multi-address legacy rows restore hand-authored system-name lookup
+for Boxel search activation, and the resulting `name|ID64` state now round-trips
+through the commander profile without losing the decoded generated geometry.
+Malformed or truncated maps remain byte-identical and fail closed.
+
 The port also preserves the legacy multi-client cargo safety rule. Because
 Elite's shared `Cargo.json` cannot be attributed to a commander while multiple
 game windows are running, cached cargo is cleared and new file snapshots are

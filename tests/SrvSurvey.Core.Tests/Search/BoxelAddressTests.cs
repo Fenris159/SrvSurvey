@@ -35,6 +35,19 @@ public sealed class BoxelAddressTests
         Assert.Equal(stored, boxel.ToStoredString());
     }
 
+    [Fact]
+    public void StoredHandAuthoredAddressRoundTripsWithoutLosingItsGeometry()
+    {
+        const string stored = "Sol|10477373803";
+
+        var boxel = BoxelAddress.Parse(stored);
+
+        Assert.Equal("Sol", boxel.Name);
+        Assert.Equal(10477373803, boxel.SystemAddress);
+        Assert.NotEqual("Sol", boxel.GeneratedName);
+        Assert.Equal(stored, boxel.ToStoredString());
+    }
+
     [Theory]
     [InlineData(685451322393, "Wregoe BU-Y b2-0")]
     [InlineData(1184840454858, "Synuefe NL-N c23-4")]

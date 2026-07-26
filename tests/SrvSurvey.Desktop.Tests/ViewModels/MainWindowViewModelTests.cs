@@ -74,7 +74,7 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
-    public void ImportedRegionalCodexCandidatesAreActivatedWithoutRewritingThem()
+    public void ImportedReadOnlyReferenceCachesActivateWithoutBeingRewritten()
     {
         var root = Path.Combine(
             Path.GetTempPath(),
@@ -89,6 +89,15 @@ public sealed class MainWindowViewModelTests
             const string json =
                 "{\"Inner Orion Spur\":[\"2310101_Aleoida Arcus - Green\"]}";
             File.WriteAllText(catalogPath, json);
+            var published = Path.Combine(data, "pub");
+            Directory.CreateDirectory(published);
+            var knownSystemsPath = Path.Combine(
+                published,
+                KnownSystemAddressCatalog.LegacyFileName);
+            const string knownSystems =
+                "known_systems = {\n  \"sol\": 10477373803,\n}\n"
+                + "known_missing = [\n]\n";
+            File.WriteAllText(knownSystemsPath, knownSystems);
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 data,
@@ -102,7 +111,11 @@ public sealed class MainWindowViewModelTests
             Assert.Contains(
                 "Imported regional Codex candidates: 1.",
                 viewModel.ReferenceDataStatus);
+            Assert.Contains(
+                "Imported known system addresses: 1.",
+                viewModel.ReferenceDataStatus);
             Assert.Equal(json, File.ReadAllText(catalogPath));
+            Assert.Equal(knownSystems, File.ReadAllText(knownSystemsPath));
         }
         finally
         {

@@ -61,6 +61,43 @@ public sealed class BoxelSearchViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task ActivateResolvesImportedHandAuthoredSystemName()
+    {
+        var published = Path.Combine(temporaryDirectory, "pub");
+        Directory.CreateDirectory(published);
+        await File.WriteAllTextAsync(
+            Path.Combine(
+                published,
+                KnownSystemAddressCatalog.LegacyFileName),
+            "known_systems = {\n  \"sol\": 10477373803,\n}\n"
+                + "known_missing = [\n]\n");
+        var profileStore = new CommanderProfileStore(temporaryDirectory);
+        var viewModel = new BoxelSearchViewModel(
+            profileStore,
+            new LegacySystemDataReader(temporaryDirectory),
+            new EmptyBoxelStore(temporaryDirectory),
+            new StubResolver([]),
+            knownSystems: KnownSystemAddressCatalog.Load(temporaryDirectory));
+        await viewModel.LoadProfileAsync(
+            "F123",
+            "Drew",
+            true,
+            BoxelSearchSnapshot.Empty);
+        viewModel.TopBoxelText = "Sol";
+        viewModel.LowMassCode = "c";
+
+        await viewModel.ActivateAsync();
+
+        Assert.True(viewModel.IsActive);
+        Assert.DoesNotContain("valid generated", viewModel.StatusMessage);
+        var saved = await profileStore.LoadAsync("F123", true);
+        Assert.Equal("Sol", saved.Data?.BoxelSearch.TopBoxel?.Name);
+        Assert.Equal(
+            10477373803,
+            saved.Data?.BoxelSearch.TopBoxel?.SystemAddress);
+    }
+
+    [Fact]
     public async Task JournalCompletionAndGalaxyMapAutoCopyUseTheNextSystem()
     {
         var copied = new List<string>();

@@ -174,11 +174,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             AppDataPaths.DataDirectory);
         var regionalCodexCandidates = RegionalCodexCandidateCatalog.Load(
             AppDataPaths.DataDirectory);
+        var knownSystems = KnownSystemAddressCatalog.Load(
+            AppDataPaths.DataDirectory);
         foreach (var warning in legacyReferences.Warnings)
         {
             applicationLogService?.Append(warning);
         }
         foreach (var warning in regionalCodexCandidates.Warnings)
+        {
+            applicationLogService?.Append(warning);
+        }
+        foreach (var warning in knownSystems.Warnings)
         {
             applicationLogService?.Append(warning);
         }
@@ -200,6 +206,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         else if (regionalCodexCandidates.Warnings.Count > 0)
         {
             ReferenceDataStatus += " The imported regional Codex candidate "
+                + "catalog was incompatible and ignored safely; see logs.";
+        }
+        if (knownSystems.HasData)
+        {
+            ReferenceDataStatus += $" Imported known system addresses: "
+                + $"{knownSystems.Count:N0}.";
+        }
+        else if (knownSystems.Warnings.Count > 0)
+        {
+            ReferenceDataStatus += " The imported known-system address "
                 + "catalog was incompatible and ignored safely; see logs.";
         }
 
@@ -358,7 +374,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             commanderProfileStore,
             new LegacySystemDataReader(AppDataPaths.DataDirectory),
             new EmptyBoxelStore(AppDataPaths.DataDirectory),
-            boxelSystemResolver ?? new SpanshBoxelClient());
+            boxelSystemResolver ?? new SpanshBoxelClient(),
+            knownSystems: knownSystems);
         GroundTarget = new GroundTargetViewModel(
             new GroundTargetSettingsStore(AppDataPaths.DataDirectory));
         SystemNotes = new SystemNotesViewModel(

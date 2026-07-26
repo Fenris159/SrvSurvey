@@ -18,6 +18,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private readonly LegacySystemDataReader localSystemReader;
     private readonly EmptyBoxelStore emptyBoxelStore;
     private readonly IBoxelSystemResolver systemResolver;
+    private readonly KnownSystemAddressCatalog knownSystems;
     private readonly BoxelCompletionAuditor completionAuditor;
     private readonly BoxelSearchState state = new();
     private readonly SemaphoreSlim operationLock = new(1, 1);
@@ -76,7 +77,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         LegacySystemDataReader localSystemReader,
         EmptyBoxelStore emptyBoxelStore,
         IBoxelSystemResolver systemResolver,
-        Func<string, Task>? clipboardWriter = null)
+        Func<string, Task>? clipboardWriter = null,
+        KnownSystemAddressCatalog? knownSystems = null)
     {
         this.profileStore = profileStore
             ?? throw new ArgumentNullException(nameof(profileStore));
@@ -86,6 +88,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             ?? throw new ArgumentNullException(nameof(emptyBoxelStore));
         this.systemResolver = systemResolver
             ?? throw new ArgumentNullException(nameof(systemResolver));
+        this.knownSystems = knownSystems
+            ?? KnownSystemAddressCatalog.Empty;
         completionAuditor = new BoxelCompletionAuditor(
             this.localSystemReader,
             this.systemResolver);
@@ -768,6 +772,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 return;
             }
 
+            if (update.Processed <= AuditProcessed)
+            {
+                return;
+            }
+
             AuditProcessed = update.Processed;
             AuditProgress = $"Audited {update.Processed:N0} of {update.Total:N0}: "
                 + update.Prefix;
@@ -1349,17 +1358,27 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         cancelAuditCommand.RaiseCanExecuteChanged();
     }
 
-    private static bool TryParseBoxelInput(
+    private bool TryParseBoxelInput(
         string? value,
         out BoxelAddress? boxel)
     {
-        var normalized = value?.Trim();
+        var systemName = value?.Trim();
+        var normalized = systemName;
         if (normalized?.EndsWith("-", StringComparison.Ordinal) == true)
         {
             normalized += "0";
         }
 
-        return BoxelAddress.TryParse(normalized, out boxel);
+        if (BoxelAddress.TryParse(normalized, out boxel))
+        {
+            return true;
+        }
+
+        return knownSystems.TryResolve(systemName, out var systemAddress)
+            && BoxelAddress.TryFromSystemAddress(
+                systemAddress,
+                systemName,
+                out boxel);
     }
 
     private static string FormatDate(DateTimeOffset? value)
