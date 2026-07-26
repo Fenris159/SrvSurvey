@@ -75,6 +75,11 @@ public interface IRavenColonialClient
         long marketId,
         CancellationToken cancellationToken = default);
 
+    Task<ColonizationFleetCarrier> PublishFleetCarrierAsync(
+        ColonizationFleetCarrierRegistration carrier,
+        string apiKey,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyDictionary<string, int>> ReplaceFleetCarrierCargoAsync(
         long marketId,
         IReadOnlyDictionary<string, int> cargo,
@@ -453,6 +458,33 @@ public sealed class RavenColonialClient : IRavenColonialClient
         return await ReadRequiredAsync<ColonizationFleetCarrier>(
                 response,
                 "load Fleet Carrier cargo",
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<ColonizationFleetCarrier> PublishFleetCarrierAsync(
+        ColonizationFleetCarrierRegistration carrier,
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(carrier);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(carrier.MarketId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(carrier.Name);
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
+        using var request = new HttpRequestMessage(
+            HttpMethod.Put,
+            CreateUri($"api/fc/{carrier.MarketId}"))
+        {
+            Content = JsonContent.Create(carrier, options: JsonOptions),
+        };
+        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        using var response = await httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
+        return await ReadRequiredAsync<ColonizationFleetCarrier>(
+                response,
+                "publish the Fleet Carrier",
                 cancellationToken)
             .ConfigureAwait(false);
     }

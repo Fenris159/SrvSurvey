@@ -382,6 +382,12 @@ public sealed class ColonizationSystemEditorViewModelTests
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
+        public Task<ColonizationFleetCarrier> PublishFleetCarrierAsync(
+            ColonizationFleetCarrierRegistration carrier,
+            string apiKey,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
         public Task<IReadOnlyDictionary<string, int>>
             ReplaceFleetCarrierCargoAsync(
                 long marketId,

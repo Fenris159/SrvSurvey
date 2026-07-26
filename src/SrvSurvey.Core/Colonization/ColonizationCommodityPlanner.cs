@@ -498,3 +498,21 @@ public sealed record ColonizationFleetCarrier
     public Dictionary<string, int> Cargo { get; init; } = new(
         StringComparer.OrdinalIgnoreCase);
 }
+
+public sealed record ColonizationFleetCarrierRegistration
+{
+    [JsonPropertyName("marketId")]
+    public long MarketId { get; init; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; init; } = string.Empty;
+
+    [JsonPropertyName("displayName")]
+    public string DisplayName { get; init; } = string.Empty;
+
+    // Raven's legacy contract treats null as "preserve server cargo". Keeping
+    // this separate from ColonizationFleetCarrier prevents an empty local
+    // collection from erasing an existing carrier inventory during linking.
+    [JsonPropertyName("cargo")]
+    public Dictionary<string, int>? Cargo => null;
+}

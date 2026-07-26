@@ -393,6 +393,48 @@ public sealed class RavenColonialClientTests
         Assert.Equal(75, carrier?.Cargo["steel"]);
     }
 
+    [Fact]
+    public async Task PublishesFleetCarrierWithoutReplacingExistingCargo()
+    {
+        string? body = null;
+        var handler = new StubHandler(async request =>
+        {
+            Assert.Equal(HttpMethod.Put, request.Method);
+            Assert.Equal(
+                "/root/api/fc/3700123456",
+                request.RequestUri!.AbsolutePath);
+            Assert.Equal(
+                "secret-key",
+                Assert.Single(request.Headers.GetValues("rcc-key")));
+            body = await request.Content!.ReadAsStringAsync();
+            return Json(
+                "{\"marketId\":3700123456,\"name\":\"ABC-123\","
+                + "\"displayName\":\"Supply carrier\","
+                + "\"cargo\":{\"steel\":75}}");
+        });
+        var client = Create(handler);
+
+        var result = await client.PublishFleetCarrierAsync(
+            new ColonizationFleetCarrierRegistration
+            {
+                MarketId = 3700123456,
+                Name = "ABC-123",
+                DisplayName = "Supply carrier",
+            },
+            "secret-key");
+
+        Assert.Equal(75, result.Cargo["steel"]);
+        using var json = JsonDocument.Parse(body!);
+        Assert.Equal(3700123456, json.RootElement
+            .GetProperty("marketId").GetInt64());
+        Assert.Equal("ABC-123", json.RootElement
+            .GetProperty("name").GetString());
+        Assert.Equal("Supply carrier", json.RootElement
+            .GetProperty("displayName").GetString());
+        Assert.Equal(JsonValueKind.Null, json.RootElement
+            .GetProperty("cargo").ValueKind);
+    }
+
     [Theory]
     [InlineData("POST", false)]
     [InlineData("PATCH", true)]

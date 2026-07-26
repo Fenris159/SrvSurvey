@@ -125,7 +125,8 @@ public sealed class ColonizationConstructionState
             stationName,
             factionName,
             services,
-            timestamp);
+            timestamp,
+            GetString(root, "StationType"));
         var changed = !DockEquals(updated, currentDock)
             || currentDepot is not null;
         currentDock = updated;
@@ -308,6 +309,10 @@ public sealed class ColonizationConstructionState
                 left.FactionName,
                 right.FactionName,
                 StringComparison.Ordinal)
+            && string.Equals(
+                left.StationType,
+                right.StationType,
+                StringComparison.Ordinal)
             && left.Timestamp == right.Timestamp
             && left.StationServices.SequenceEqual(
                 right.StationServices,
@@ -454,7 +459,8 @@ public sealed record ColonizationDockingSnapshot(
     string StationName,
     string? FactionName,
     IReadOnlyList<string> StationServices,
-    DateTimeOffset? Timestamp = null)
+    DateTimeOffset? Timestamp = null,
+    string? StationType = null)
 {
     public const string SystemColonisationShip = "System Colonisation Ship";
     public const string ExternalPanelColonisationShip =

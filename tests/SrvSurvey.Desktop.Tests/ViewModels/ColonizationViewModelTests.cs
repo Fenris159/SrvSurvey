@@ -750,11 +750,11 @@ public sealed class ColonizationViewModelTests : IDisposable
         };
         var viewModel = Create(client);
         viewModel.IsEnabled = true;
-        await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.SetCommanderProfile(
             "F123",
             isOdyssey: true,
             apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.ApplyJournalEvents(
         [
             Event(
@@ -805,6 +805,84 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Equal(80, client.LastReplacement?["steel"]);
         Assert.Contains("Updated 1 cargo", viewModel.FleetCarrierSyncStatus);
         Assert.False(viewModel.CommodityOverlay.HasPendingCargo);
+    }
+
+    [Fact]
+    public async Task PublishesCurrentCarrierAndThenReconcilesFreshMarket()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "ABC-123",
+            DisplayName = "Supply carrier",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var client = new StubRavenColonialClient
+        {
+            FleetCarrierResponse = carrier,
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "secret-key");
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "ReceiveText",
+                "\"From\":\"Supply carrier | ABC-123\""),
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"ABC-123","StationType":"FleetCarrier",
+                "StationServices":["commodities"]
+                """),
+        ]);
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        await viewModel.UpdateMarketAsync(new MarketSnapshot(
+            DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
+            "Market",
+            42,
+            "ABC-123",
+            "FleetCarrier",
+            "all",
+            "Test",
+            [
+                new MarketItem(
+                    1,
+                    "$Steel_Name;",
+                    "Steel",
+                    "$MARKET_category_metals;",
+                    "Metals",
+                    1,
+                    1,
+                    1,
+                    1,
+                    0,
+                    80,
+                    0,
+                    true,
+                    false,
+                    false),
+            ]));
+
+        Assert.True(viewModel.PublishFleetCarrierCommand.CanExecute(null));
+        await viewModel.PublishCurrentFleetCarrierAsync();
+
+        Assert.Equal(1, client.PublishCarrierCount);
+        Assert.Equal(42, client.LastCarrierRegistration?.MarketId);
+        Assert.Equal("ABC-123", client.LastCarrierRegistration?.Name);
+        Assert.Equal(
+            "Supply carrier",
+            client.LastCarrierRegistration?.DisplayName);
+        Assert.Null(client.LastCarrierRegistration?.Cargo);
+        Assert.Equal(1, client.ReplaceCargoCount);
+        Assert.Equal(80, client.LastReplacement?["steel"]);
+        Assert.Contains(
+            "Published and linked Supply carrier",
+            viewModel.FleetCarrierSyncStatus);
     }
 
     public void Dispose()
@@ -880,6 +958,8 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public int ReplaceCargoCount { get; private set; }
 
+        public int PublishCarrierCount { get; private set; }
+
         public int PublishShipCount { get; private set; }
 
         public int SiteProjectLoadCount { get; private set; }
@@ -895,6 +975,12 @@ public sealed class ColonizationViewModelTests : IDisposable
         public ColonizationCurrentShip? LastPublishedShip { get; private set; }
 
         public ColonizationFleetCarrier? FleetCarrierResponse { get; set; }
+
+        public ColonizationFleetCarrierRegistration? LastCarrierRegistration
+        {
+            get;
+            private set;
+        }
 
         public ColonizationProject? SiteProjectResponse { get; set; }
 
@@ -1040,6 +1126,21 @@ public sealed class ColonizationViewModelTests : IDisposable
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult(FleetCarrierResponse);
+        }
+
+        public Task<ColonizationFleetCarrier> PublishFleetCarrierAsync(
+            ColonizationFleetCarrierRegistration carrier,
+            string apiKey,
+            CancellationToken cancellationToken = default)
+        {
+            PublishCarrierCount++;
+            LastCarrierRegistration = carrier;
+            return Task.FromResult(FleetCarrierResponse ?? new()
+            {
+                MarketId = carrier.MarketId,
+                Name = carrier.Name,
+                DisplayName = carrier.DisplayName,
+            });
         }
 
         public Task<IReadOnlyDictionary<string, int>>

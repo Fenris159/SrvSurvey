@@ -77,6 +77,16 @@
                        TextWrapping="Wrap"
                        Text="{Binding Colonization.RavenCredentialStatus}" />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBlock VerticalAlignment="Center"
+                         Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Dock at a Fleet Carrier to publish and link it. Registration preserves Raven's existing cargo; a freshly opened market is reconciled afterward." />
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      Command="{Binding Colonization.PublishFleetCarrierCommand}"
+                      Content="{Binding Colonization.FleetCarrierPublishButtonText}" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
               <CheckBox VerticalAlignment="Center"
                         IsChecked="{Binding Colonization.FleetCarrierCargoSyncEnabled, Mode=TwoWay}"
                         IsEnabled="{Binding Colonization.HasStoredRavenApiKey}"

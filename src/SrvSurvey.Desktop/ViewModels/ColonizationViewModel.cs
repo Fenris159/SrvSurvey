@@ -20,9 +20,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private readonly LegacyColonizationProfileStore? legacyProfileStore;
     private ColonizationOverlayPreferences overlayPreferences;
     private readonly ColonizationConstructionState constructionState = new();
+    private readonly ColonizationFleetCarrierIdentityTracker
+        fleetCarrierIdentityTracker = new();
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand saveProjectsCommand;
     private readonly AsyncCommand saveRavenApiKeyCommand;
+    private readonly AsyncCommand publishFleetCarrierCommand;
     private readonly AsyncCommand syncFleetCarrierCargoCommand;
     private IReadOnlyList<ColonizationProjectRowViewModel> projects = [];
     private IReadOnlyList<ColonizationResourceRowViewModel> constructionResources =
@@ -101,12 +104,16 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         saveRavenApiKeyCommand = new AsyncCommand(
             SaveRavenApiKeyAsync,
             CanSaveRavenApiKey);
+        publishFleetCarrierCommand = new AsyncCommand(
+            PublishCurrentFleetCarrierAsync,
+            CanPublishCurrentFleetCarrier);
         syncFleetCarrierCargoCommand = new AsyncCommand(
             () => SyncFleetCarrierCargoAsync(force: true),
             CanSyncFleetCarrierCargo);
         RefreshCommand = refreshCommand;
         SaveProjectsCommand = saveProjectsCommand;
         SaveRavenApiKeyCommand = saveRavenApiKeyCommand;
+        PublishFleetCarrierCommand = publishFleetCarrierCommand;
         SyncFleetCarrierCargoCommand = syncFleetCarrierCargoCommand;
         ProjectEditor = new ColonizationProjectEditorViewModel(
             this.client,
@@ -129,6 +136,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     public ICommand SaveProjectsCommand { get; }
 
     public ICommand SaveRavenApiKeyCommand { get; }
+
+    public ICommand PublishFleetCarrierCommand { get; }
 
     public ICommand SyncFleetCarrierCargoCommand { get; }
 
@@ -255,6 +264,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             if (SetField(ref isFleetCarrierSyncBusy, value))
             {
                 OnPropertyChanged(nameof(FleetCarrierSyncButtonText));
+                OnPropertyChanged(nameof(FleetCarrierPublishButtonText));
                 RaiseCommandStates();
             }
         }
@@ -262,6 +272,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
 
     public string FleetCarrierSyncButtonText =>
         IsFleetCarrierSyncBusy ? "Syncing..." : "Sync current market";
+
+    public string FleetCarrierPublishButtonText => IsFleetCarrierSyncBusy
+        ? "Working..."
+        : "Publish/link current carrier";
 
     public string FleetCarrierSyncStatus
     {
@@ -558,6 +572,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         foreach (var journalEvent in journalEvents)
         {
             constructionState.Apply(journalEvent);
+            fleetCarrierIdentityTracker.Apply(journalEvent);
             ApplyShipIdentity(journalEvent);
         }
 
@@ -566,6 +581,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             UpdateConstructionDisplay();
             UpdateProjectSummary();
             UpdateProjectEditorContext();
+            publishFleetCarrierCommand.RaiseCanExecuteChanged();
             syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
         }
     }
@@ -919,6 +935,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
 
         currentMarket = market;
         UpdateCommodityPlan();
+        publishFleetCarrierCommand.RaiseCanExecuteChanged();
         syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
         if (FleetCarrierCargoSyncEnabled)
         {
@@ -1011,6 +1028,96 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         {
             IsFleetCarrierSyncBusy = false;
             RaiseCommandStates();
+        }
+    }
+
+    public async Task PublishCurrentFleetCarrierAsync()
+    {
+        if (!CanPublishCurrentFleetCarrier()
+            || constructionState.CurrentDock is not { } dock
+            || storedRavenApiKey is null)
+        {
+            FleetCarrierSyncStatus =
+                GetFleetCarrierPublishBlockReason();
+            return;
+        }
+
+        var published = false;
+        IsFleetCarrierSyncBusy = true;
+        FleetCarrierSyncStatus =
+            $"Publishing {dock.StationName} to Raven Colonial...";
+        try
+        {
+            var registered = await client.PublishFleetCarrierAsync(
+                new ColonizationFleetCarrierRegistration
+                {
+                    MarketId = dock.MarketId,
+                    Name = dock.StationName,
+                    DisplayName = fleetCarrierIdentityTracker
+                        .ResolveDisplayName(dock.StationName),
+                },
+                storedRavenApiKey);
+            published = true;
+            registered = registered with
+            {
+                Cargo = registered.Cargo ?? new Dictionary<string, int>(
+                    StringComparer.OrdinalIgnoreCase),
+            };
+            ReplaceLocalFleetCarrier(registered);
+
+            var market = GetFreshFleetCarrierMarket(dock);
+            if (market is null)
+            {
+                FleetCarrierSyncStatus =
+                    $"Published and linked {GetCarrierName(registered)}. "
+                    + "Open its commodity market to synchronize cargo.";
+                return;
+            }
+
+            var replacements = ColonizationFleetCarrierCargoSynchronizer
+                .CreateMarketReplacement(market, registered);
+            if (replacements.Count == 0)
+            {
+                lastSyncedMarket = (market.MarketId, market.Timestamp);
+                FleetCarrierSyncStatus =
+                    $"Published and linked {GetCarrierName(registered)}; "
+                    + "its cargo is already current.";
+                return;
+            }
+
+            CommodityOverlay.ApplyPendingFleetCarrierCargo(
+                replacements.Keys);
+            var updatedCargo = await client.ReplaceFleetCarrierCargoAsync(
+                dock.MarketId,
+                replacements,
+                storedRavenApiKey);
+            ReplaceLocalFleetCarrier(registered with
+            {
+                Cargo = updatedCargo.ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value,
+                    StringComparer.OrdinalIgnoreCase),
+            });
+            lastSyncedMarket = (market.MarketId, market.Timestamp);
+            FleetCarrierSyncStatus =
+                $"Published and linked {GetCarrierName(registered)} and "
+                + $"updated {replacements.Count:N0} cargo entries.";
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or InvalidDataException
+                or TaskCanceledException
+                or ArgumentException)
+        {
+            FleetCarrierSyncStatus = published
+                ? "The Fleet Carrier was linked, but its current cargo was not updated: "
+                    + exception.Message
+                : "The Fleet Carrier was not published: " + exception.Message;
+        }
+        finally
+        {
+            CommodityOverlay.ApplyPendingFleetCarrierCargo(null);
+            IsFleetCarrierSyncBusy = false;
         }
     }
 
@@ -1482,6 +1589,52 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 StringComparison.Ordinal);
     }
 
+    private bool CanPublishCurrentFleetCarrier()
+    {
+        return IsEnabled
+            && HasStoredRavenApiKey
+            && !IsFleetCarrierSyncBusy
+            && constructionState.CurrentDock is
+            {
+                MarketId: > 0,
+                StationType: not null,
+            } dock
+            && string.Equals(
+                dock.StationType,
+                "FleetCarrier",
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string GetFleetCarrierPublishBlockReason()
+    {
+        if (!IsEnabled)
+        {
+            return "Enable Raven Colonial before publishing a Fleet Carrier.";
+        }
+
+        if (!HasStoredRavenApiKey)
+        {
+            return "Save a Raven API key before publishing a Fleet Carrier.";
+        }
+
+        return "Dock at the Fleet Carrier you want to publish and link.";
+    }
+
+    private MarketSnapshot? GetFreshFleetCarrierMarket(
+        ColonizationDockingSnapshot dock)
+    {
+        return currentMarket is not null
+            && dock.Timestamp is not null
+            && currentMarket.MarketId == dock.MarketId
+            && string.Equals(
+                currentMarket.StationType,
+                "FleetCarrier",
+                StringComparison.OrdinalIgnoreCase)
+            && currentMarket.Timestamp > dock.Timestamp
+                ? currentMarket
+                : null;
+    }
+
     private bool CanSyncFleetCarrierCargo()
     {
         if (!IsEnabled
@@ -1677,6 +1830,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         refreshCommand.RaiseCanExecuteChanged();
         saveProjectsCommand.RaiseCanExecuteChanged();
         saveRavenApiKeyCommand.RaiseCanExecuteChanged();
+        publishFleetCarrierCommand.RaiseCanExecuteChanged();
         syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
     }
 
