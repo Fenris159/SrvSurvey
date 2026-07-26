@@ -35,11 +35,10 @@ public sealed class LegacyUiSettingsMigrator
             var existing = store.Load();
             if (HasMigrationMarker(existing, manifest))
             {
-                return new LegacyUiSettingsMigrationResult(
-                    false,
-                    0,
-                    null,
-                    null);
+                return MigrateCommanderPreferenceIfMissing(
+                    legacy,
+                    existing,
+                    store);
             }
 
             var backupPath = BackupExistingSettings(paths.UiSettingsPath, manifest);
@@ -72,6 +71,10 @@ public sealed class LegacyUiSettingsMigrator
                     ("focusGameOnMinimize", "FocusGameOnMinimize"),
                     ("focusGameAfterFsdJump", "FocusGameAfterFsdJump"),
                     ("minimizeToTray", "MinimizeToTray"),
+                ]);
+                mappedCount += MapSection(legacy, root, "CommanderPreference",
+                [
+                    ("preferredCommander", "PreferredCommanderName"),
                 ]);
                 mappedCount += MapSection(legacy, root, "Journal",
                 [
@@ -273,6 +276,31 @@ public sealed class LegacyUiSettingsMigrator
             && blackValue;
         target["Theme"] = black ? "orange-dark" : dark ? "blue-dark" : "blue-light";
         return 1;
+    }
+
+    private static LegacyUiSettingsMigrationResult
+        MigrateCommanderPreferenceIfMissing(
+            JsonObject legacy,
+            JsonObject existing,
+            UiSettingsDocumentStore store)
+    {
+        if (existing["CommanderPreference"] is JsonObject preference
+            && preference.ContainsKey("PreferredCommanderName"))
+        {
+            return LegacyUiSettingsMigrationResult.NotRequired;
+        }
+
+        var mappedCount = 0;
+        store.Update(root =>
+        {
+            mappedCount += MapSection(legacy, root, "CommanderPreference",
+            [
+                ("preferredCommander", "PreferredCommanderName"),
+            ]);
+        });
+        return mappedCount == 0
+            ? LegacyUiSettingsMigrationResult.NotRequired
+            : new LegacyUiSettingsMigrationResult(true, mappedCount, null, null);
     }
 
     private static int MapCodexImages(

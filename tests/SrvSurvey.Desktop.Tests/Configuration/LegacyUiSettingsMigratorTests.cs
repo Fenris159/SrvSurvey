@@ -39,6 +39,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "focusGameOnMinimize": false,
               "focusGameAfterFsdJump": true,
               "minimizeToTray": true,
+              "preferredCommander": "Drew",
               "watchedJournalFolder": "D:\\Elite Journals",
               "autoShowPlotBodyInfo": false,
               "bodyInfoBubbleSize": 321,
@@ -183,6 +184,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new DesktopBehaviorPreferences(false, false, true, true),
             new DesktopBehaviorSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            new CommanderPreferencePreferences("Drew", null),
+            new CommanderPreferenceSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new JournalPreferences("D:\\Elite Journals"),
             new JournalSettingsStore(paths.UiSettingsPath).Load());
@@ -380,6 +384,41 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             "green-light",
             new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+    }
+
+    [Fact]
+    public async Task ExistingImportMarkerReceivesMissingCommanderPreferenceOnly()
+    {
+        var paths = CreatePaths();
+        var source = Path.Combine(temporaryDirectory, "legacy-commander-upgrade");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "{\"preferredCommander\":\"Drew\",\"darkTheme\":true}");
+        await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups-commander-upgrade"));
+        var migrator = new LegacyUiSettingsMigrator();
+        Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
+        var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
+        document.Update(root =>
+        {
+            root.Remove("CommanderPreference");
+            root["Theme"] = "green-light";
+        });
+
+        var result = migrator.MigrateIfNeeded(paths);
+
+        Assert.True(result.Migrated);
+        Assert.Equal(1, result.MappedPreferenceCount);
+        Assert.Equal(
+            new CommanderPreferencePreferences("Drew", null),
+            new CommanderPreferenceSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            "green-light",
+            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Null(result.PreviousSettingsBackupPath);
     }
 
     [Fact]

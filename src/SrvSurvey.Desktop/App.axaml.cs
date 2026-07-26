@@ -104,8 +104,24 @@ public sealed partial class App : Application
             var gameTextInputService = GameTextInputService.CreateCurrent();
             var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
                 Program.StartupArguments);
-            var targetFrontierId = StartupOptions.GetFrontierId(
+            var commandLineFrontierId = StartupOptions.GetFrontierId(
                 Program.StartupArguments);
+            var commanderPreferenceStore = new CommanderPreferenceSettingsStore(
+                appDataPaths.UiSettingsPath);
+            var commanderPreferenceResolution = new CommanderPreferenceResolver(
+                    commanderPreferenceStore,
+                    new CommanderProfileCatalog(appDataPaths.DataDirectory))
+                .ResolveAsync(commandLineFrontierId)
+                .GetAwaiter()
+                .GetResult();
+            if (commanderPreferenceResolution.StatusMessage is not null)
+            {
+                applicationLog.Append(
+                    commanderPreferenceResolution.StatusMessage);
+            }
+
+            var targetFrontierId =
+                commanderPreferenceResolution.TargetFrontierId;
             var viewModel = new MainWindowViewModel(
                 configuredJournalDirectory,
                 themeService,
@@ -114,7 +130,12 @@ public sealed partial class App : Application
                 applicationLogService: applicationLog,
                 overlayLayoutStore: overlayLayoutStore,
                 overlayLayout: overlayLayout,
-                targetFrontierId: targetFrontierId);
+                targetFrontierId: targetFrontierId,
+                commanderPreferenceSettingsStore: commanderPreferenceStore,
+                commanderPreferenceCommandLineOverride:
+                    commanderPreferenceResolution.IsCommandLineOverride,
+                commanderPreferenceInitialStatus:
+                    commanderPreferenceResolution.StatusMessage);
             IGameWindowTracker CreateOverlayGameWindowTracker()
             {
                 return new OverlayGameWindowTracker(
@@ -141,9 +162,16 @@ public sealed partial class App : Application
                 return RestartApplicationAsync("Journal folder changed");
             }
 
+            Task RestartAfterCommanderPreferenceChangeAsync()
+            {
+                return RestartApplicationAsync("Commander preference changed");
+            }
+
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested +=
                 RestartAfterJournalChangeAsync;
+            viewModel.CommanderPreference.RestartRequested +=
+                RestartAfterCommanderPreferenceChangeAsync;
             async Task WriteClipboardAsync(string text)
             {
                 var clipboard = mainWindow.Clipboard
@@ -634,6 +662,8 @@ public sealed partial class App : Application
                     RestartAfterProfileImportAsync;
                 viewModel.JournalSettings.RestartRequested -=
                     RestartAfterJournalChangeAsync;
+                viewModel.CommanderPreference.RestartRequested -=
+                    RestartAfterCommanderPreferenceChangeAsync;
                 viewModel.OverlayBehavior.PropertyChanged -=
                     HandleOverlayBehaviorChanged;
                 Dispatcher.UIThread.UnhandledException -= HandleUiException;

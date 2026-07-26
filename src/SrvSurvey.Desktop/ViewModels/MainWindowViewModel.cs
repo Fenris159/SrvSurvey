@@ -144,7 +144,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         DockToDockSettingsStore? dockToDockSettingsStore = null,
         DockToDockLogService? dockToDockLogService = null,
         DesktopBehaviorSettingsStore? desktopBehaviorSettingsStore = null,
-        BiologyRewardSettingsStore? biologyRewardSettingsStore = null)
+        BiologyRewardSettingsStore? biologyRewardSettingsStore = null,
+        CommanderPreferenceSettingsStore?
+            commanderPreferenceSettingsStore = null,
+        bool commanderPreferenceCommandLineOverride = false,
+        string? commanderPreferenceInitialStatus = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -404,8 +408,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         TargetFrontierId = string.IsNullOrWhiteSpace(targetFrontierId)
             ? null
             : targetFrontierId.Trim();
+        var commanderProfileCatalog = new CommanderProfileCatalog(
+            AppDataPaths.DataDirectory);
+        CommanderPreference = new CommanderPreferenceViewModel(
+            commanderPreferenceSettingsStore
+                ?? new CommanderPreferenceSettingsStore(
+                    AppDataPaths.UiSettingsPath),
+            commanderProfileCatalog,
+            commanderPreferenceCommandLineOverride,
+            commanderPreferenceInitialStatus);
         CommanderInstances = new CommanderInstancesViewModel(
-            new CommanderProfileCatalog(AppDataPaths.DataDirectory),
+            commanderProfileCatalog,
             commanderInstanceLauncher
                 ?? new ApplicationCommanderInstanceLauncher(),
             JournalFolderPath,
@@ -521,6 +534,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public QuestIndicatorViewModel QuestIndicator { get; }
 
     public CommanderInstancesViewModel CommanderInstances { get; }
+
+    public CommanderPreferenceViewModel CommanderPreference { get; }
 
     public VisitedStarsCacheViewModel VisitedStarsCache { get; }
 
@@ -1040,6 +1055,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         await Task.WhenAll(
+            CommanderPreference.RefreshAsync(),
             CommanderInstances.RefreshAsync(),
             VisitedStarsCache.RefreshAsync(),
             JournalPostProcessor.RefreshCommandersAsync());

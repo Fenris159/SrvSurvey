@@ -135,6 +135,39 @@
       </Border>
 
       <Border Classes="card raised">
+        <StackPanel Spacing="12">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Preferred commander" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Pin this SrvSurvey instance to one commander's stable Frontier ID, or follow the newest active journal automatically." />
+          </StackPanel>
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <ComboBox ItemsSource="{Binding CommanderPreference.Options}"
+                      SelectedItem="{Binding CommanderPreference.SelectedOption, Mode=TwoWay}"
+                      IsEnabled="{Binding !CommanderPreference.IsCommandLineOverride}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:CommanderPreferenceOptionViewModel">
+                  <TextBlock Margin="4" Text="{Binding DisplayName}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Grid.Column="1"
+                    Classes="primary"
+                    Command="{Binding CommanderPreference.SaveAndRestartCommand}"
+                    Content="Save and restart" />
+          </Grid>
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding CommanderPreference.StatusMessage}" />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="Imported name-only preferences are applied only when exactly one profile matches, preventing data from being written to the wrong commander." />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
         <StackPanel Spacing="10">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
             <StackPanel Spacing="4">
