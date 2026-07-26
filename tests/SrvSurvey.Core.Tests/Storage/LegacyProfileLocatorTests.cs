@@ -58,6 +58,28 @@ public sealed class LegacyProfileLocatorTests : IDisposable
             result[1].Path);
     }
 
+    [Fact]
+    public void DiscoverIgnoresEmptyVersionDirectories()
+    {
+        var productRoot = Path.Combine(temporaryDirectory, "SrvSurvey");
+        var emptyProfile = Path.Combine(productRoot, "1.1.0.0");
+        var populatedProfile = Path.Combine(productRoot, "1.0.0.0");
+        Directory.CreateDirectory(Path.Combine(emptyProfile, "systems"));
+        Directory.CreateDirectory(populatedProfile);
+        File.WriteAllText(Path.Combine(populatedProfile, "settings.json"), "{}");
+
+        var result = LegacyProfileLocator.Discover(
+        [
+            new LegacyProfileCandidate(
+                LegacyProfileLocationKind.Desktop,
+                emptyProfile),
+        ]);
+
+        Assert.Equal(
+            Path.GetFullPath(populatedProfile),
+            Assert.Single(result).Path);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

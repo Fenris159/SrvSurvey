@@ -188,6 +188,30 @@ public sealed class LegacyProfileImporterTests : IDisposable
     }
 
     [Fact]
+    public async Task ImportRejectsEmptySourceBeforeCreatingAnyArtifacts()
+    {
+        var source = Path.Combine(temporaryDirectory, "legacy");
+        var destination = Path.Combine(temporaryDirectory, "current");
+        var backups = Path.Combine(temporaryDirectory, "backups");
+        Directory.CreateDirectory(Path.Combine(source, "empty"));
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            new LegacyProfileImporter().ImportAsync(
+                source,
+                destination,
+                backups));
+
+        Assert.Contains("does not contain any files", exception.Message);
+        Assert.False(Directory.Exists(destination));
+        Assert.False(Directory.Exists(backups));
+        Assert.Equal(
+            ["empty"],
+            Directory.EnumerateDirectories(source)
+                .Select(path => Path.GetFileName(path)!)
+                .ToArray());
+    }
+
+    [Fact]
     public async Task ImportPreservesAndLoadsGuardianComponentSurveyData()
     {
         var source = Path.Combine(temporaryDirectory, "legacy");

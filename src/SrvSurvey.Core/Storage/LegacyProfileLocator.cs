@@ -21,10 +21,25 @@ public static class LegacyProfileLocator
                 continue;
             }
 
-            var fileCount = Directory.EnumerateFiles(
-                path,
-                "*",
-                SearchOption.AllDirectories).Count();
+            int fileCount;
+            try
+            {
+                fileCount = Directory.EnumerateFiles(
+                    path,
+                    "*",
+                    SearchOption.AllDirectories).Count();
+            }
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException)
+            {
+                continue;
+            }
+
+            if (fileCount == 0)
+            {
+                continue;
+            }
+
             discoveries.Add(new LegacyProfileDiscovery(
                 candidate.Kind,
                 path,

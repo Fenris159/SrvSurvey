@@ -149,7 +149,9 @@ on Windows and Linux.
   staged destination before activation and never mutates the source. The
   activated directory and its manifest are now hashed again in place before
   the rollback copy is released; a post-swap mismatch restores the prior
-  cross-platform profile automatically.
+  cross-platform profile automatically. Empty or unreadable legacy-version
+  folders are not offered, and a manually selected empty source is rejected
+  before any destination or backup artifact is created.
 - [x] Add the five Raven Colonial shell themes with native light/dark modes and
   an isolated persisted preference.
 - [ ] Port theme, localization, and static JSON/image resource loading.

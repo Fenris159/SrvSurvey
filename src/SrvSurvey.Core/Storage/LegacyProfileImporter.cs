@@ -50,6 +50,12 @@ public sealed class LegacyProfileImporter
                 source,
                 cancellationToken)
             .ConfigureAwait(false);
+        if (sourceInventory.Entries.Count == 0)
+        {
+            throw new InvalidDataException(
+                $"The selected legacy profile does not contain any files: {source}");
+        }
+
         var destinationExisted = Directory.Exists(destination);
         var destinationInventory = destinationExisted
             ? await ProfileInventory.CreateAsync(destination, cancellationToken)
