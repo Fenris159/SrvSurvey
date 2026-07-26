@@ -1,5 +1,6 @@
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -130,6 +131,44 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
                 "Sol_42.json")));
     }
 
+    [Fact]
+    public async Task HistoricalGreenGasGiantsRequireConsentAndConfirmation()
+    {
+        var client = new RecordingGreenGasGiantClient();
+        var enabled = false;
+        var viewModel = CreateViewModel(
+            out var dataDirectory,
+            client,
+            () => enabled);
+        var profilePath = Path.Combine(dataDirectory, "F123-live.json");
+        var originalProfile = await File.ReadAllBytesAsync(profilePath);
+        await viewModel.RefreshCommandersAsync();
+        viewModel.SetBeginningOfTime();
+
+        await viewModel.AnalyzeAsync();
+
+        Assert.Equal(1, viewModel.HistoricalGreenGasGiantCandidateCount);
+        Assert.Empty(client.Candidates);
+        Assert.Contains("no candidate was published", viewModel.StatusMessage);
+
+        viewModel.HistoricalGreenGasGiantPublishConfirmed = true;
+        await viewModel.PublishHistoricalGreenGasGiantsAsync();
+        Assert.Empty(client.Candidates);
+        Assert.Contains("Enable", viewModel.StatusMessage);
+
+        enabled = true;
+        await viewModel.PublishHistoricalGreenGasGiantsAsync();
+
+        var candidate = Assert.Single(client.Candidates);
+        Assert.Equal("Drew", candidate.CommanderName);
+        Assert.Equal("potential", candidate.Tag);
+        Assert.Equal(0, candidate.StarPosition.X);
+        Assert.Contains("\"PlanetClass\"", candidate.RawJournalJson);
+        Assert.Equal(0, viewModel.HistoricalGreenGasGiantCandidateCount);
+        Assert.False(viewModel.HistoricalGreenGasGiantPublishConfirmed);
+        Assert.Equal(originalProfile, await File.ReadAllBytesAsync(profilePath));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -139,7 +178,9 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
     }
 
     private JournalPostProcessorViewModel CreateViewModel(
-        out string dataDirectory)
+        out string dataDirectory,
+        IGreenGasGiantClient? greenGasGiantClient = null,
+        Func<bool>? isGreenGasGiantPublicationEnabled = null)
     {
         var journalDirectory = Path.Combine(temporaryDirectory, "journals");
         dataDirectory = Path.Combine(temporaryDirectory, "data");
@@ -157,6 +198,7 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
             {"timestamp":"2026-07-20T12:00:00Z","event":"Commander","Name":"Drew","FID":"F123"}
             {"timestamp":"2026-07-20T12:01:00Z","event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[0,0,0]}
             {"timestamp":"2026-07-20T12:01:30Z","event":"Scan","SystemAddress":42,"BodyName":"Sol A","BodyID":0,"StarType":"G","StellarMass":1}
+            {"timestamp":"2026-07-20T12:01:45Z","event":"Scan","SystemAddress":42,"BodyName":"Sol B","BodyID":1,"PlanetClass":"Sudarsky class III gas giant","SurfaceTemperature":310}
             {"timestamp":"2026-07-20T12:02:00Z","event":"FSDJump","JumpDist":12.4}
             {"timestamp":"2026-07-20T12:03:00Z","event":"MarketBuy","Count":12}
             {"timestamp":"2026-07-20T12:04:00Z","event":"CodexEntry","EntryID":2310101,"SystemAddress":42,"BodyID":3}
@@ -173,6 +215,22 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
                 journalDirectory,
                 Path.Combine(temporaryDirectory, "rebuild-backups"),
                 () => DateTimeOffset.Parse("2026-07-25T12:00:00Z")),
-            new CommanderCodexJournalImporter(journalDirectory, store));
+            new CommanderCodexJournalImporter(journalDirectory, store),
+            greenGasGiantClient,
+            isGreenGasGiantPublicationEnabled);
+    }
+
+    private sealed class RecordingGreenGasGiantClient
+        : IGreenGasGiantClient
+    {
+        public List<GreenGasGiantCandidate> Candidates { get; } = [];
+
+        public Task PublishAsync(
+            GreenGasGiantCandidate candidate,
+            CancellationToken cancellationToken = default)
+        {
+            Candidates.Add(candidate);
+            return Task.CompletedTask;
+        }
     }
 }

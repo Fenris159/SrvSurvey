@@ -503,7 +503,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                     "historical-systems")),
             new CommanderCodexJournalImporter(
                 journalImportDirectory,
-                commanderCodexStore));
+                commanderCodexStore),
+            new GreenGasGiantClient(serviceUri: ravenServiceUri),
+            () => NetworkPrivacy.UploadGreenGasGiantCandidates);
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,

@@ -153,6 +153,64 @@ public sealed class JournalHistoryAnalyzerTests : IDisposable
         Assert.Equal(1, progress[0].ProcessedFileCount);
     }
 
+    [Fact]
+    public async Task FindsHistoricalGreenGasGiantWithoutPublishing()
+    {
+        WriteJournal(
+            "Journal.2026-07-20T120000.01.log",
+            """
+            {"event":"Commander","Name":"Drew","FID":"F123"}
+            {"event":"Location","StarPos":[1.5,-2,3]}
+            {"timestamp":"2026-07-20T12:01:00Z","event":"Scan","PlanetClass":"Sudarsky class III gas giant","SurfaceTemperature":310}
+            {"event":"Shutdown"}
+            """);
+        var analyzer = new JournalHistoryAnalyzer(
+            temporaryDirectory,
+            () => now);
+
+        var result = await analyzer.AnalyzeAsync(
+            "F123",
+            JournalHistoryAnalyzer.EliteReleaseDate);
+
+        var match = Assert.Single(result.GreenGasGiantMatches);
+        Assert.Equal("potential", match.Tag);
+        Assert.Equal(1.5, match.StarPosition.X);
+        Assert.Equal(-2, match.StarPosition.Y);
+        Assert.Equal(3, match.StarPosition.Z);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-07-20T12:01:00Z"),
+            match.Timestamp);
+        Assert.Contains("\"event\":\"Scan\"", match.RawJournalJson);
+    }
+
+    [Fact]
+    public async Task DoesNotReuseStalePositionForHistoricalGreenGasGiant()
+    {
+        WriteJournal(
+            "Journal.2026-07-20T120000.01.log",
+            """
+            {"event":"Commander","Name":"Drew","FID":"F123"}
+            {"event":"Location","StarPos":[1.5,-2,3]}
+            {"event":"FSDJump","StarSystem":"Position unavailable"}
+            {"event":"Scan","PlanetClass":"Sudarsky class III gas giant","SurfaceTemperature":310}
+            {"event":"Shutdown"}
+            """);
+        var analyzer = new JournalHistoryAnalyzer(
+            temporaryDirectory,
+            () => now);
+
+        var result = await analyzer.AnalyzeAsync(
+            "F123",
+            JournalHistoryAnalyzer.EliteReleaseDate);
+
+        Assert.Empty(result.GreenGasGiantMatches);
+        Assert.Contains(
+            result.Warnings,
+            warning => warning.Contains(
+                "no journal StarPos",
+                StringComparison.Ordinal));
+    }
+
     [Theory]
     [InlineData("Journal.2026-07-25T123456.01.log", 2026)]
     [InlineData("Journal.260725123456.01.log", 2026)]

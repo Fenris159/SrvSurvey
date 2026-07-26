@@ -453,7 +453,7 @@ UI tests where practical, and live Windows/Linux evidence.
   `PlotSphericalSearch` now
   consolidates spherical-limit, Boxel-search, and followed-route Galaxy Map
   guidance at the original top-right anchor.
-- [ ] Human settlements and post-processing tools. The passive human-settlement
+- [x] Human settlements and post-processing tools. The passive human-settlement
   map now covers all 28 templates, compatible-site and mode gates, docking and
   manual foot alignment, lossless saved geometry and calculation provenance,
   privacy-gated live Canonn station lookup that only fills missing local data,
@@ -469,9 +469,15 @@ UI tests where practical, and live Windows/Linux evidence.
   malformed imported coordinates fail closed without mutating quest data. Local
   post-processing is implemented with
   historical statistics, Codex merging, biology analysis, and transactional
-  system reconstruction; historical network publication remains a separate
-  external operation. Threat metadata is persisted and exposed through the
-  `.threat` command.
+  system reconstruction. The original historical Green Gas Giant matching and
+  publication is restored without coupling network writes to analysis: only
+  safely selected commander journals are inspected, exact raw `Scan` payloads
+  and journal `StarPos` are retained, missing-position candidates are refused,
+  and publication requires both the migrated privacy opt-in and a separate
+  per-analysis confirmation. Successful candidates leave the retry set while
+  individual failures remain isolated and retryable. Threat metadata is
+  persisted and exposed through the `.threat` command. Visual/theme verification
+  remains deferred to the final whole-application pass.
 - [x] Cargo, missions, massacre/foot combat, and colonization projects.
   `PlotFootCombat` and `PlotMassacre` are implemented with legacy settlement,
   altitude, vehicle/panel, active-project suppression, mission-lifecycle,

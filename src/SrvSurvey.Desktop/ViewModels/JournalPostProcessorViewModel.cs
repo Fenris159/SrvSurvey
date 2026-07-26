@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -15,10 +16,13 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     private readonly LegacySystemBiologyAnalyzer systemBiologyAnalyzer;
     private readonly HistoricalSystemRebuildService systemRebuildService;
     private readonly CommanderCodexJournalImporter codexImporter;
+    private readonly IGreenGasGiantClient greenGasGiantClient;
+    private readonly Func<bool> isGreenGasGiantPublicationEnabled;
     private readonly AsyncCommand analyzeCommand;
     private readonly AsyncCommand analyzeSystemsCommand;
     private readonly AsyncCommand rebuildSystemsCommand;
     private readonly AsyncCommand rebuildCodexCommand;
+    private readonly AsyncCommand publishGreenGasGiantsCommand;
     private readonly AsyncCommand refreshCommandersCommand;
     private readonly DelegateCommand cancelCommand;
     private readonly DelegateCommand setBeginningCommand;
@@ -26,6 +30,8 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     private JournalPostProcessorCommanderViewModel? selectedCommander;
     private IReadOnlyList<JournalPostProcessorStatisticViewModel> statistics = [];
     private IReadOnlyList<JournalPostProcessorSpeciesViewModel> systemSpecies = [];
+    private IReadOnlyList<HistoricalGreenGasGiantMatch>
+        historicalGreenGasGiantMatches = [];
     private DateTimeOffset startDate;
     private string statusMessage = "Refresh commanders to prepare historical journal analysis.";
     private string trailblazersSummary = string.Empty;
@@ -35,6 +41,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     private bool isBusy;
     private bool codexRebuildConfirmed;
     private bool systemRebuildConfirmed;
+    private bool historicalGreenGasGiantPublishConfirmed;
     private CancellationTokenSource? operationCancellation;
 
     public JournalPostProcessorViewModel(
@@ -42,7 +49,9 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         JournalHistoryAnalyzer analyzer,
         LegacySystemBiologyAnalyzer systemBiologyAnalyzer,
         HistoricalSystemRebuildService systemRebuildService,
-        CommanderCodexJournalImporter codexImporter)
+        CommanderCodexJournalImporter codexImporter,
+        IGreenGasGiantClient? greenGasGiantClient = null,
+        Func<bool>? isGreenGasGiantPublicationEnabled = null)
     {
         this.commanderCatalog = commanderCatalog
             ?? throw new ArgumentNullException(nameof(commanderCatalog));
@@ -53,6 +62,10 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             ?? throw new ArgumentNullException(nameof(systemRebuildService));
         this.codexImporter = codexImporter
             ?? throw new ArgumentNullException(nameof(codexImporter));
+        this.greenGasGiantClient = greenGasGiantClient
+            ?? new GreenGasGiantClient();
+        this.isGreenGasGiantPublicationEnabled =
+            isGreenGasGiantPublicationEnabled ?? (() => false);
         var localNow = DateTimeOffset.Now;
         startDate = new DateTimeOffset(
             localNow.Date.AddDays(-7),
@@ -65,6 +78,9 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         rebuildCodexCommand = new AsyncCommand(
             RebuildCodexAsync,
             CanRebuildCodex);
+        publishGreenGasGiantsCommand = new AsyncCommand(
+            PublishHistoricalGreenGasGiantsAsync,
+            CanPublishHistoricalGreenGasGiants);
         refreshCommandersCommand = new AsyncCommand(
             RefreshCommandersAsync,
             () => !IsBusy);
@@ -76,6 +92,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         AnalyzeSystemsCommand = analyzeSystemsCommand;
         RebuildSystemsCommand = rebuildSystemsCommand;
         RebuildCodexCommand = rebuildCodexCommand;
+        PublishGreenGasGiantsCommand = publishGreenGasGiantsCommand;
         RefreshCommandersCommand = refreshCommandersCommand;
         CancelCommand = cancelCommand;
         SetBeginningCommand = setBeginningCommand;
@@ -90,6 +107,8 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
     public ICommand RebuildSystemsCommand { get; }
 
     public ICommand RebuildCodexCommand { get; }
+
+    public ICommand PublishGreenGasGiantsCommand { get; }
 
     public ICommand RefreshCommandersCommand { get; }
 
@@ -112,6 +131,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             {
                 CodexRebuildConfirmed = false;
                 SystemRebuildConfirmed = false;
+                ClearHistoricalGreenGasGiantMatches();
                 RaiseCommandStates();
             }
         }
@@ -131,6 +151,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             {
                 CodexRebuildConfirmed = false;
                 SystemRebuildConfirmed = false;
+                ClearHistoricalGreenGasGiantMatches();
             }
         }
     }
@@ -158,6 +179,17 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         get => systemAnalysisSummary;
         private set => SetField(ref systemAnalysisSummary, value);
     }
+
+    public int HistoricalGreenGasGiantCandidateCount =>
+        historicalGreenGasGiantMatches.Count;
+
+    public bool HasHistoricalGreenGasGiantCandidates =>
+        HistoricalGreenGasGiantCandidateCount > 0;
+
+    public string HistoricalGreenGasGiantSummary =>
+        HasHistoricalGreenGasGiantCandidates
+            ? $"Found {HistoricalGreenGasGiantCandidateCount:N0} historical Green Gas Giant candidate(s). Publishing sends only the original matching Scan event, commander name, tag, and journal StarPos."
+            : "Analyze journals to find historical Green Gas Giant candidates. Analysis never publishes them.";
 
     public string StatusMessage
     {
@@ -209,6 +241,18 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             if (SetField(ref systemRebuildConfirmed, value))
             {
                 rebuildSystemsCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool HistoricalGreenGasGiantPublishConfirmed
+    {
+        get => historicalGreenGasGiantPublishConfirmed;
+        set
+        {
+            if (SetField(ref historicalGreenGasGiantPublishConfirmed, value))
+            {
+                publishGreenGasGiantsCommand.RaiseCanExecuteChanged();
             }
         }
     }
@@ -286,6 +330,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             IsBusy = true;
             Statistics = [];
             TrailblazersSummary = string.Empty;
+            ClearHistoricalGreenGasGiantMatches();
             ProgressValue = 0;
             ProgressMaximum = 1;
             StatusMessage = "Scanning historical journals without changing profile data...";
@@ -321,6 +366,97 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         finally
         {
             progress?.Close();
+            operationCancellation.Dispose();
+            operationCancellation = null;
+            IsBusy = false;
+        }
+    }
+
+    public async Task PublishHistoricalGreenGasGiantsAsync()
+    {
+        if (!CanPublishHistoricalGreenGasGiants()
+            || SelectedCommander is null)
+        {
+            StatusMessage =
+                "Analyze journals, review the candidate count, and confirm historical publication first.";
+            return;
+        }
+
+        if (!isGreenGasGiantPublicationEnabled())
+        {
+            StatusMessage =
+                "Enable Green Gas Giant uploads in Settings before publishing historical candidates.";
+            return;
+        }
+
+        operationCancellation = new CancellationTokenSource();
+        var pending = historicalGreenGasGiantMatches.ToArray();
+        var remaining = pending.ToList();
+        var published = 0;
+        var warnings = new List<string>();
+        try
+        {
+            IsBusy = true;
+            ProgressValue = 0;
+            ProgressMaximum = pending.Length;
+            for (var index = 0; index < pending.Length; index++)
+            {
+                operationCancellation.Token.ThrowIfCancellationRequested();
+                var match = pending[index];
+                StatusMessage =
+                    $"Publishing historical Green Gas Giant candidate {index + 1:N0} of {pending.Length:N0}...";
+                try
+                {
+                    await greenGasGiantClient.PublishAsync(
+                        new GreenGasGiantCandidate(
+                            SelectedCommander.CommanderName,
+                            match.Tag,
+                            match.StarPosition,
+                            match.RawJournalJson),
+                        operationCancellation.Token);
+                    remaining.Remove(match);
+                    published++;
+                }
+                catch (Exception exception) when (
+                    exception is HttpRequestException
+                        or InvalidDataException
+                        or TaskCanceledException
+                        or ArgumentException)
+                {
+                    if (exception is TaskCanceledException
+                        && operationCancellation.IsCancellationRequested)
+                    {
+                        throw new OperationCanceledException(
+                            operationCancellation.Token);
+                    }
+
+                    warnings.Add(
+                        $"Candidate {index + 1:N0} was not uploaded: "
+                            + exception.Message);
+                }
+
+                ProgressValue = index + 1;
+            }
+
+            SetHistoricalGreenGasGiantMatches(remaining);
+            StatusMessage =
+                $"Published {published:N0} historical Green Gas Giant candidate(s)."
+                + (remaining.Count > 0
+                    ? $" {remaining.Count:N0} failed candidate(s) remain available for a confirmed retry."
+                    : string.Empty)
+                + (warnings.Count > 0
+                    ? " " + string.Join(" ", warnings)
+                    : string.Empty);
+        }
+        catch (OperationCanceledException)
+        {
+            SetHistoricalGreenGasGiantMatches(remaining);
+            StatusMessage =
+                $"Historical Green Gas Giant publication stopped after {published:N0} successful upload(s); {remaining.Count:N0} candidate(s) remain.";
+        }
+        finally
+        {
+            HistoricalGreenGasGiantPublishConfirmed = false;
             operationCancellation.Dispose();
             operationCancellation = null;
             IsBusy = false;
@@ -565,6 +701,10 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
 
     private bool CanRebuildSystems() => CanRun() && SystemRebuildConfirmed;
 
+    private bool CanPublishHistoricalGreenGasGiants() => CanRun()
+        && HistoricalGreenGasGiantPublishConfirmed
+        && HasHistoricalGreenGasGiantCandidates;
+
     private static string FormatAtmospheres(
         IReadOnlyList<LegacyAtmosphereCompositionSummary> atmospheres)
     {
@@ -578,6 +718,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
 
     private void ApplyResult(JournalHistoryAnalysisResult result)
     {
+        SetHistoricalGreenGasGiantMatches(result.GreenGasGiantMatches);
         var value = result.Statistics;
         Statistics =
         [
@@ -618,6 +759,9 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             + (result.MalformedLineCount > 0
                 ? $" Ignored {result.MalformedLineCount:N0} malformed line(s)."
                 : string.Empty)
+            + (result.GreenGasGiantMatches.Count > 0
+                ? $" Found {result.GreenGasGiantMatches.Count:N0} Green Gas Giant candidate(s); no candidate was published."
+                : string.Empty)
             + (result.Warnings.Count > 0
                 ? " " + string.Join(" ", result.Warnings)
                 : string.Empty);
@@ -629,9 +773,26 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         analyzeSystemsCommand.RaiseCanExecuteChanged();
         rebuildSystemsCommand.RaiseCanExecuteChanged();
         rebuildCodexCommand.RaiseCanExecuteChanged();
+        publishGreenGasGiantsCommand.RaiseCanExecuteChanged();
         refreshCommandersCommand.RaiseCanExecuteChanged();
         cancelCommand.RaiseCanExecuteChanged();
         setBeginningCommand.RaiseCanExecuteChanged();
+    }
+
+    private void ClearHistoricalGreenGasGiantMatches()
+    {
+        SetHistoricalGreenGasGiantMatches([]);
+    }
+
+    private void SetHistoricalGreenGasGiantMatches(
+        IReadOnlyList<HistoricalGreenGasGiantMatch> matches)
+    {
+        historicalGreenGasGiantMatches = matches;
+        HistoricalGreenGasGiantPublishConfirmed = false;
+        OnPropertyChanged(nameof(HistoricalGreenGasGiantCandidateCount));
+        OnPropertyChanged(nameof(HasHistoricalGreenGasGiantCandidates));
+        OnPropertyChanged(nameof(HistoricalGreenGasGiantSummary));
+        publishGreenGasGiantsCommand.RaiseCanExecuteChanged();
     }
 
     private bool SetField<T>(

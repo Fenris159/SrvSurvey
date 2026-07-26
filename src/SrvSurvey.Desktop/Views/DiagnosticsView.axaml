@@ -194,6 +194,30 @@
                      TextWrapping="Wrap"
                      Text="{Binding JournalPostProcessor.TrailblazersSummary}" />
 
+          <Border BorderBrush="{DynamicResource RavenWarningBrush}"
+                  BorderThickness="1"
+                  CornerRadius="6"
+                  IsVisible="{Binding JournalPostProcessor.HasHistoricalGreenGasGiantCandidates}"
+                  Padding="12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+              <StackPanel Spacing="4">
+                <CheckBox IsChecked="{Binding JournalPostProcessor.HistoricalGreenGasGiantPublishConfirmed, Mode=TwoWay}"
+                          Content="Confirm publication of the listed historical Green Gas Giant candidates" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="{Binding JournalPostProcessor.HistoricalGreenGasGiantSummary}" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="The Green Gas Giant upload privacy option in Settings must also be enabled. Analysis and local reconstruction never publish candidates." />
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Classes="secondary"
+                      VerticalAlignment="Center"
+                      Command="{Binding JournalPostProcessor.PublishGreenGasGiantsCommand}"
+                      Content="Publish candidates" />
+            </Grid>
+          </Border>
+
           <Expander Header="Species and atmosphere summary">
             <StackPanel Margin="0,10,0,0" Spacing="8">
               <TextBlock Classes="muted"

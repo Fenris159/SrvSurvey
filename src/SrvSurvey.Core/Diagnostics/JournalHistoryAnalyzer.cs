@@ -1,7 +1,9 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Diagnostics;
 
@@ -15,14 +17,18 @@ public sealed class JournalHistoryAnalyzer
 
     private readonly string journalDirectory;
     private readonly Func<DateTimeOffset> currentTime;
+    private readonly GreenGasGiantCriteriaCatalog greenGasGiantCriteria;
 
     public JournalHistoryAnalyzer(
         string journalDirectory,
-        Func<DateTimeOffset>? currentTime = null)
+        Func<DateTimeOffset>? currentTime = null,
+        GreenGasGiantCriteriaCatalog? greenGasGiantCriteria = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         this.journalDirectory = Path.GetFullPath(journalDirectory);
         this.currentTime = currentTime ?? (() => DateTimeOffset.Now);
+        this.greenGasGiantCriteria = greenGasGiantCriteria
+            ?? GreenGasGiantCriteriaCatalog.LoadEmbedded();
     }
 
     public async Task<JournalHistoryAnalysisResult> AnalyzeAsync(
@@ -61,7 +67,7 @@ public sealed class JournalHistoryAnalyzer
             .OrderBy(candidate => candidate.OpenedAt)
             .ThenBy(candidate => candidate.File.Name, StringComparer.Ordinal)
             .ToArray();
-        var totals = new MutableTotals();
+        var totals = new MutableTotals(greenGasGiantCriteria);
         var processedFiles = 0;
         var skippedCommanderFiles = 0;
         var skippedRecentActiveFiles = 0;
@@ -112,6 +118,12 @@ public sealed class JournalHistoryAnalyzer
             Report(progress, index, files, candidate, totals);
         }
 
+        if (totals.GreenGasGiantMatchesWithoutPosition > 0)
+        {
+            warnings.Add(
+                $"Skipped {totals.GreenGasGiantMatchesWithoutPosition:N0} Green Gas Giant candidate(s) because no journal StarPos was available.");
+        }
+
         return new JournalHistoryAnalysisResult(
             files.Length,
             processedFiles,
@@ -121,6 +133,7 @@ public sealed class JournalHistoryAnalyzer
             malformedLines,
             totals.CreateStatistics(),
             totals.CreateTrailblazersComparison(),
+            totals.GreenGasGiantMatches.ToArray(),
             warnings);
     }
 
@@ -236,7 +249,8 @@ public sealed class JournalHistoryAnalyzer
         IReadOnlyList<JournalEventEnvelope> Events,
         int MalformedLineCount);
 
-    private sealed class MutableTotals
+    private sealed class MutableTotals(
+        GreenGasGiantCriteriaCatalog greenGasGiantCriteria)
     {
         private DateTimeOffset? firstEvent;
         private DateTimeOffset? lastEvent;
@@ -250,12 +264,20 @@ public sealed class JournalHistoryAnalyzer
         private long died;
         private long bodyCount;
         private double jumpDistance;
+        private GalacticCoordinate? currentStarPosition;
+        private readonly List<HistoricalGreenGasGiantMatch>
+            greenGasGiantMatches = [];
         private readonly MutableCargoTransactions beforeTrailblazers = new();
         private readonly MutableCargoTransactions afterTrailblazers = new();
 
         public long JumpCount { get; private set; }
 
         public long OrganismCount { get; private set; }
+
+        public IReadOnlyList<HistoricalGreenGasGiantMatch>
+            GreenGasGiantMatches => greenGasGiantMatches;
+
+        public int GreenGasGiantMatchesWithoutPosition { get; private set; }
 
         public void Apply(JournalEventEnvelope journalEvent)
         {
@@ -271,6 +293,14 @@ public sealed class JournalHistoryAnalyzer
             }
 
             var root = journalEvent.Payload;
+            if (journalEvent.EventName is "LoadGame"
+                or "Location"
+                or "FSDJump"
+                or "CarrierJump")
+            {
+                currentStarPosition = TryGetCoordinate(root, "StarPos");
+            }
+
             var trailblazers = timestamp < TrailblazersReleaseDate
                 ? beforeTrailblazers
                 : afterTrailblazers;
@@ -279,6 +309,29 @@ public sealed class JournalHistoryAnalyzer
                 case "FSDJump":
                     JumpCount++;
                     jumpDistance += GetDouble(root, "JumpDist") ?? 0;
+                    break;
+                case "Scan":
+                    var tag = greenGasGiantCriteria.Match(
+                        GetString(root, "PlanetClass"),
+                        GetDouble(root, "SurfaceTemperature")
+                            ?? double.NaN);
+                    if (tag is null)
+                    {
+                        break;
+                    }
+
+                    if (currentStarPosition is not { } starPosition)
+                    {
+                        GreenGasGiantMatchesWithoutPosition++;
+                        break;
+                    }
+
+                    greenGasGiantMatches.Add(
+                        new HistoricalGreenGasGiantMatch(
+                            tag,
+                            starPosition,
+                            journalEvent.RawJson,
+                            journalEvent.Timestamp));
                     break;
                 case "ApproachBody":
                     bodyCount++;
@@ -384,6 +437,29 @@ public sealed class JournalHistoryAnalyzer
                     ? result
                     : null;
         }
+
+        private static GalacticCoordinate? TryGetCoordinate(
+            JsonElement root,
+            string propertyName)
+        {
+            if (!root.TryGetProperty(propertyName, out var value)
+                || value.ValueKind != JsonValueKind.Array)
+            {
+                return null;
+            }
+
+            var components = value.EnumerateArray().ToArray();
+            return components.Length == 3
+                && components.All(component =>
+                    component.ValueKind == JsonValueKind.Number
+                    && component.TryGetDouble(out var number)
+                    && double.IsFinite(number))
+                ? new GalacticCoordinate(
+                    components[0].GetDouble(),
+                    components[1].GetDouble(),
+                    components[2].GetDouble())
+                : null;
+        }
     }
 
     private sealed class MutableCargoTransactions
@@ -415,7 +491,14 @@ public sealed record JournalHistoryAnalysisResult(
     int MalformedLineCount,
     JournalHistoryStatistics Statistics,
     TrailblazersCargoComparison Trailblazers,
+    IReadOnlyList<HistoricalGreenGasGiantMatch> GreenGasGiantMatches,
     IReadOnlyList<string> Warnings);
+
+public sealed record HistoricalGreenGasGiantMatch(
+    string Tag,
+    GalacticCoordinate StarPosition,
+    string RawJournalJson,
+    DateTimeOffset? Timestamp);
 
 public sealed record JournalHistoryStatistics(
     DateTimeOffset? FirstEvent,
