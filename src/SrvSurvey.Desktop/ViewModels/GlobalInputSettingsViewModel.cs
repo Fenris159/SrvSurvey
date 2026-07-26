@@ -216,7 +216,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
         var definition = GlobalInputActionCatalog.Get(action);
         LastActionStatus = handled
             ? $"Shortcut received: {definition.DisplayName}."
-            : $"Shortcut received: {definition.DisplayName}; its target view is not ported yet.";
+            : $"Shortcut received: {definition.DisplayName}; it is not available in the current game context.";
     }
 
     private void SaveBinding(InputBindingViewModel binding, string chord)

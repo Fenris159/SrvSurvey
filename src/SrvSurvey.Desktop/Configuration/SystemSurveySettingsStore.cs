@@ -75,6 +75,16 @@ public sealed class SystemSurveySettingsStore
                 defaults.AutoHideBioPlotOnRepeat),
             GetBoolean(
                 settings,
+                "KeepBioPlottersVisibleAfterDss",
+                defaults.KeepBioPlottersVisibleAfterDss),
+            GetInt32(
+                settings,
+                "BioPlotterDssDurationSeconds",
+                defaults.BioPlotterDssDurationSeconds,
+                0,
+                600),
+            GetBoolean(
+                settings,
                 "AutoShowPriorScans",
                 defaults.AutoShowPriorScans),
             GetBoolean(
@@ -245,6 +255,10 @@ public sealed class SystemSurveySettingsStore
             settings["AutoShowBioStatus"] = preferences.AutoShowBioStatus;
             settings["AutoHideBioPlotOnRepeat"] =
                 preferences.AutoHideBioPlotOnRepeat;
+            settings["KeepBioPlottersVisibleAfterDss"] =
+                preferences.KeepBioPlottersVisibleAfterDss;
+            settings["BioPlotterDssDurationSeconds"] =
+                preferences.BioPlotterDssDurationSeconds;
             settings["AutoShowPriorScans"] = preferences.AutoShowPriorScans;
             settings["SkipPriorScansLowValue"] =
                 preferences.SkipPriorScansLowValue;
@@ -439,6 +453,8 @@ public sealed record SystemSurveyPreferences(
     bool AutoShowBioSystem,
     bool AutoShowBioStatus,
     bool AutoHideBioPlotOnRepeat,
+    bool KeepBioPlottersVisibleAfterDss,
+    int BioPlotterDssDurationSeconds,
     bool AutoShowPriorScans,
     bool SkipPriorScansLowValue,
     int PriorScanMinimumValue,
@@ -490,6 +506,8 @@ public sealed record SystemSurveyPreferences(
         AutoShowBioSystem: true,
         AutoShowBioStatus: true,
         AutoHideBioPlotOnRepeat: true,
+        KeepBioPlottersVisibleAfterDss: true,
+        BioPlotterDssDurationSeconds: 120,
         AutoShowPriorScans: true,
         SkipPriorScansLowValue: false,
         PriorScanMinimumValue: 1_000_000,

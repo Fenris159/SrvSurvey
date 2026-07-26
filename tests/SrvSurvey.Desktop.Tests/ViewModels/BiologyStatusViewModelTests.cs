@@ -254,6 +254,54 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.False(viewModel.ShouldShowBioStatus);
     }
 
+    [Fact]
+    public void DssCompletionTemporarilyOverridesDisabledAutomaticStatus()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "dss-window-ui-settings.json")),
+            utcNow: () => now);
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+            Parse(BodyScan),
+            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+        ],
+        new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip,
+            BodyName = "Test 1",
+        });
+        viewModel.AutoShowBioStatus = false;
+
+        Assert.False(viewModel.ShouldShowBioStatus);
+
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"timestamp":"2026-07-25T12:00:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
+        ],
+        null);
+
+        Assert.True(viewModel.IsWithinPostDssBiologyWindow);
+        Assert.True(viewModel.ShouldShowBioStatus);
+
+        now = now.AddSeconds(121);
+        Assert.True(viewModel.RefreshTransientState());
+        Assert.False(viewModel.IsWithinPostDssBiologyWindow);
+        Assert.False(viewModel.ShouldShowBioStatus);
+
+        viewModel.KeepBioPlottersVisibleAfterDss = false;
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"timestamp":"2026-07-25T12:02:01Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
+        ],
+        null);
+        Assert.False(viewModel.IsWithinPostDssBiologyWindow);
+        Assert.False(viewModel.ShouldShowBioStatus);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

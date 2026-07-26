@@ -38,6 +38,8 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             AutoShowBioSystem: false,
             AutoShowBioStatus: true,
             AutoHideBioPlotOnRepeat: false,
+            KeepBioPlottersVisibleAfterDss: false,
+            BioPlotterDssDurationSeconds: 300,
             AutoShowPriorScans: false,
             SkipPriorScansLowValue: true,
             PriorScanMinimumValue: 2_000_000,
@@ -98,6 +100,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
                 + "\"DssValueFloor\":-2,\"DssDistanceLimitLs\":-3,"
                 + "\"BodyInfoBubbleSizeLy\":-4,"
                 + "\"PriorScanMinimumValue\":-5,"
+                + "\"BioPlotterDssDurationSeconds\":999,"
                 + "\"HighGravityWarningLevel\":75,"
                 + "\"SurfaceRadarSize\":99,"
                 + "\"FssTuningDetector\":{"
@@ -111,6 +114,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         Assert.Equal(0, preferences.DssDistanceLimitLs);
         Assert.Equal(0, preferences.BodyInfoBubbleSizeLy);
         Assert.Equal(0, preferences.PriorScanMinimumValue);
+        Assert.Equal(600, preferences.BioPlotterDssDurationSeconds);
         Assert.Equal(50, preferences.HighGravityWarningLevel);
         Assert.Equal(4, preferences.SurfaceRadarSize);
         Assert.Equal(

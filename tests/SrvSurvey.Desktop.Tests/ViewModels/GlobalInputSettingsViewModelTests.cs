@@ -140,6 +140,18 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
         Assert.False(viewModel.CanEnableControllerInput);
     }
 
+    [Fact]
+    public void UnhandledActionReportsContextInsteadOfAnUnportedFeature()
+    {
+        var viewModel = Create(OverlayHostKind.Windows);
+
+        viewModel.ReportAction(GlobalInputAction.CopyNextBoxel, handled: false);
+
+        Assert.Contains("not available in the current game context",
+            viewModel.LastActionStatus);
+        Assert.DoesNotContain("not ported", viewModel.LastActionStatus);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

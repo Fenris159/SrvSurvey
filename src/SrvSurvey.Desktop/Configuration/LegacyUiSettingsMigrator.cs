@@ -86,6 +86,8 @@ public sealed class LegacyUiSettingsMigrator
                     ("autoShowPlotBioSystem", "AutoShowBioSystem"),
                     ("autoShowBioSummary", "AutoShowBioStatus"),
                     ("autoHideBioPlotOnRepeat", "AutoHideBioPlotOnRepeat"),
+                    ("keepBioPlottersVisibleEnabled", "KeepBioPlottersVisibleAfterDss"),
+                    ("keepBioPlottersVisibleDuration", "BioPlotterDssDurationSeconds"),
                     ("autoLoadPriorScans", "AutoShowPriorScans"),
                     ("skipPriorScansLowValue", "SkipPriorScansLowValue"),
                     ("skipPriorScansLowValueAmount", "PriorScanMinimumValue"),

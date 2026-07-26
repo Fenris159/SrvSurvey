@@ -1266,6 +1266,17 @@
                         Content="Show compact genetic-sampler status automatically" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoHideBioPlotOnRepeat, Mode=TwoWay}"
                         Content="Hide completed biology overlays on repeat visits" />
+              <CheckBox IsChecked="{Binding SystemSurvey.KeepBioPlottersVisibleAfterDss, Mode=TwoWay}"
+                        Content="Keep biology status available after a DSS scan" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock VerticalAlignment="Center"
+                           Text="Post-DSS visibility (seconds)" />
+                <NumericUpDown Width="92"
+                               Minimum="0"
+                               Maximum="600"
+                               Increment="5"
+                               Value="{Binding SystemSurvey.BioPlotterDssDurationSeconds, Mode=TwoWay}" />
+              </StackPanel>
               <CheckBox IsChecked="{Binding SystemSurvey.DrawBodyBiosOnlyWhenNear, Mode=TwoWay}"
                         Content="Show body details only when nearby" />
               <CheckBox IsChecked="{Binding SystemSurvey.HideGeoCountInBioSystem, Mode=TwoWay}"

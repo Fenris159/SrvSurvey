@@ -48,6 +48,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool autoShowBioSystem;
     private bool autoShowBioStatus;
     private bool autoHideBioPlotOnRepeat;
+    private bool keepBioPlottersVisibleAfterDss;
+    private int bioPlotterDssDurationSeconds;
     private bool autoShowPriorScans;
     private bool skipPriorScansLowValue;
     private int priorScanMinimumValue;
@@ -93,6 +95,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private int? timedBiologyBodyId;
     private DateTimeOffset timedBiologyStartedAt;
     private DateTimeOffset timedBiologyExpiresAt;
+    private DateTimeOffset lastDssCompletedAt;
+    private bool dssVisibilityWindowWasActive;
     private string settingsStatus = string.Empty;
     private FssTuningDetectionState fssTuningState;
     private DateTimeOffset lastFssTuningScanAt;
@@ -126,6 +130,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         autoShowBioSystem = preferences.AutoShowBioSystem;
         autoShowBioStatus = preferences.AutoShowBioStatus;
         autoHideBioPlotOnRepeat = preferences.AutoHideBioPlotOnRepeat;
+        keepBioPlottersVisibleAfterDss =
+            preferences.KeepBioPlottersVisibleAfterDss;
+        bioPlotterDssDurationSeconds =
+            preferences.BioPlotterDssDurationSeconds;
         autoShowPriorScans = preferences.AutoShowPriorScans;
         skipPriorScansLowValue = preferences.SkipPriorScansLowValue;
         priorScanMinimumValue = preferences.PriorScanMinimumValue;
@@ -271,6 +279,43 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => autoHideBioPlotOnRepeat;
         set => SetPreference(ref autoHideBioPlotOnRepeat, value);
     }
+
+    public bool KeepBioPlottersVisibleAfterDss
+    {
+        get => keepBioPlottersVisibleAfterDss;
+        set
+        {
+            if (SetPreference(ref keepBioPlottersVisibleAfterDss, value))
+            {
+                dssVisibilityWindowWasActive =
+                    IsWithinPostDssBiologyWindow;
+                OnPropertyChanged(nameof(IsWithinPostDssBiologyWindow));
+            }
+        }
+    }
+
+    public int BioPlotterDssDurationSeconds
+    {
+        get => bioPlotterDssDurationSeconds;
+        set
+        {
+            if (SetPreference(
+                    ref bioPlotterDssDurationSeconds,
+                    Math.Clamp(value, 0, 600)))
+            {
+                dssVisibilityWindowWasActive =
+                    IsWithinPostDssBiologyWindow;
+                OnPropertyChanged(nameof(IsWithinPostDssBiologyWindow));
+            }
+        }
+    }
+
+    public bool IsWithinPostDssBiologyWindow =>
+        KeepBioPlottersVisibleAfterDss
+        && BioPlotterDssDurationSeconds > 0
+        && lastDssCompletedAt != default
+        && (utcNow() - lastDssCompletedAt).TotalSeconds
+            < BioPlotterDssDurationSeconds;
 
     public bool AreBiologyOverlaysSuppressedForRepeatVisit =>
         AutoHideBioPlotOnRepeat && suppressBiologyOverlaysForRepeatVisit;
@@ -1119,7 +1164,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get
         {
-            if (!AutoShowBioStatus
+            if ((!AutoShowBioStatus && !IsWithinPostDssBiologyWindow)
                 || BiologyStatus is null
                 || status is null
                 || status.Docked
@@ -1209,6 +1254,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 case "FSDJump":
                 case "CarrierJump":
                     fsdJumping = false;
+                    break;
+
+                case "SAAScanComplete":
+                    lastDssCompletedAt = journalEvent.Timestamp ?? utcNow();
+                    dssVisibilityWindowWasActive =
+                        IsWithinPostDssBiologyWindow;
+                    OnPropertyChanged(nameof(IsWithinPostDssBiologyWindow));
                     break;
             }
         }
@@ -1327,6 +1379,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool RefreshTransientState()
     {
         var changed = false;
+        if (dssVisibilityWindowWasActive
+            && !IsWithinPostDssBiologyWindow)
+        {
+            dssVisibilityWindowWasActive = false;
+            OnPropertyChanged(nameof(IsWithinPostDssBiologyWindow));
+            RaiseVisibilityProperties();
+            changed = true;
+        }
+
         if (timedBiologyBodyId is not null)
         {
             if (!IsBiologyMapMode(status) || utcNow() >= timedBiologyExpiresAt)
@@ -2147,6 +2208,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 AutoShowBioSystem,
                 AutoShowBioStatus,
                 AutoHideBioPlotOnRepeat,
+                KeepBioPlottersVisibleAfterDss,
+                BioPlotterDssDurationSeconds,
                 AutoShowPriorScans,
                 SkipPriorScansLowValue,
                 PriorScanMinimumValue,

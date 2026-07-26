@@ -42,6 +42,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "useExternalData": false,
               "useExternalBioData": true,
               "autoHideBioPlotOnRepeat": false,
+              "keepBioPlottersVisibleEnabled": false,
+              "keepBioPlottersVisibleDuration": 345,
               "tempRange_TEST": true,
               "watchFssSettings_TEST": {
                 "saveDebugImages": true,
@@ -179,6 +181,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.False(survey.UseExternalData);
         Assert.True(survey.UseExternalBioData);
         Assert.False(survey.AutoHideBioPlotOnRepeat);
+        Assert.False(survey.KeepBioPlottersVisibleAfterDss);
+        Assert.Equal(345, survey.BioPlotterDssDurationSeconds);
         Assert.True(survey.ShowTemperatureRangeDebug);
         Assert.Equal(
             new FssTuningDetectorSettings(
