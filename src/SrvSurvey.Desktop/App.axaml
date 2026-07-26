@@ -1,5 +1,6 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:localization="using:SrvSurvey.Desktop.Localization"
              x:Class="SrvSurvey.Desktop.App"
              RequestedThemeVariant="Dark">
   <Application.Resources>
@@ -21,5 +22,17 @@
   <Application.Styles>
     <FluentTheme />
     <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/RavenStyles.axaml" />
+    <Style Selector="TextBlock">
+      <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
+    </Style>
+    <Style Selector="Button, CheckBox, RadioButton, Expander, TabItem">
+      <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
+    </Style>
+    <Style Selector="Window">
+      <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
+    </Style>
   </Application.Styles>
 </Application>

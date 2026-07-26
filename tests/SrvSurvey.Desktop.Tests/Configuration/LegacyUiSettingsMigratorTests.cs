@@ -27,6 +27,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             {
               "darkTheme": true,
               "themeMainBlack": false,
+              "lang": "de",
               "autoShowPlotJumpInfo": false,
               "plotJumpInfoMinimal": true,
               "showPlotJumpInfoIfNextHop": true,
@@ -176,6 +177,12 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             "blue-dark",
             new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Equal(
+            "de",
+            new LocalizationSettingsStore(
+                paths.UiSettingsPath,
+                paths.DataDirectory)
+                .Load());
         Assert.Equal(
             new JumpInfoPreferences(false, true, true, true),
             new JumpInfoSettingsStore(paths.UiSettingsPath).Load());

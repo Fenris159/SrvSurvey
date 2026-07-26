@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:localization="using:SrvSurvey.Desktop.Localization"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.SettingsView"
              x:DataType="vm:MainWindowViewModel"
@@ -15,6 +16,39 @@
         <TextBlock Classes="muted"
                    Text="Use the same five visual identities available on Raven Colonial." />
       </StackPanel>
+
+      <Border Classes="card">
+        <Grid RowDefinitions="Auto,Auto"
+              ColumnDefinitions="*,260,Auto"
+              ColumnSpacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Language" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Uses the original SrvSurvey translations where available. New port-only text falls back to English." />
+          </StackPanel>
+          <ComboBox Grid.Column="1"
+                    ItemsSource="{Binding Localization.Languages}"
+                    SelectedItem="{Binding Localization.SelectedLanguage, Mode=TwoWay}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="localization:LocalizationLanguage">
+                <TextBlock Text="{Binding DisplayName}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <Button Grid.Column="2"
+                  Classes="primary"
+                  IsVisible="{Binding Localization.IsRestartRequired}"
+                  Command="{Binding Localization.RestartCommand}"
+                  Content="Restart to apply" />
+          <TextBlock Grid.Row="1"
+                     Grid.ColumnSpan="3"
+                     Classes="muted"
+                     Margin="0,10,0,0"
+                     TextWrapping="Wrap"
+                     Text="{Binding Localization.StatusMessage}" />
+        </Grid>
+      </Border>
 
       <Border Classes="card raised">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">

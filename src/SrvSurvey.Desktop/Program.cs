@@ -3,6 +3,8 @@ using Avalonia;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Localization;
 
 namespace SrvSurvey.Desktop;
 
@@ -17,6 +19,9 @@ internal static class Program
     {
         StartupArguments = args;
         var appDataPaths = AppDataPaths.ResolveCurrent();
+        var language = LocalizationSettingsStore.ResolveCurrent(appDataPaths);
+        LocalizationCatalog.Initialize(language);
+        LocalizationCatalog.ApplyCulture(language);
         var applicationLog = new ApplicationLogService(appDataPaths.DataDirectory);
         ApplicationLog = applicationLog;
         applicationLog.Append(

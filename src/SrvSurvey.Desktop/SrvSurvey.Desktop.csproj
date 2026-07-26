@@ -27,6 +27,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\legacy-localization.json"
+                      LogicalName="SrvSurvey.Desktop.Resources.legacy-localization.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SrvSurvey.Core\SrvSurvey.Core.csproj" />
   </ItemGroup>
 

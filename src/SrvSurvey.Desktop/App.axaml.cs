@@ -210,6 +210,8 @@ public sealed partial class App : Application
 
             viewModel.ReferenceDataUpdates.SetRestartHandler(() =>
                 RestartApplicationAsync("Published reference data refreshed"));
+            viewModel.Localization.SetRestartHandler(() =>
+                RestartApplicationAsync("Language preference changed"));
 
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested +=

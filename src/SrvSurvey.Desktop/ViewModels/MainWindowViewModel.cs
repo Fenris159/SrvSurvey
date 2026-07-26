@@ -163,7 +163,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         IFirstFootfallInferenceService? firstFootfallInferenceService = null,
         RavenServiceSettingsStore? ravenServiceSettingsStore = null,
         ReleaseUpdateViewModel? releaseUpdates = null,
-        ReferenceDataUpdateViewModel? referenceDataUpdates = null)
+        ReferenceDataUpdateViewModel? referenceDataUpdates = null,
+        LocalizationViewModel? localization = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -195,6 +196,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 AppDataPaths.DataDirectory,
                 ReferenceDataStatus,
                 referenceUpdateLog);
+        Localization = localization ?? new LocalizationViewModel(
+            new LocalizationSettingsStore(
+                AppDataPaths.UiSettingsPath,
+                AppDataPaths.DataDirectory));
 
         var ravenServiceUri = (ravenServiceSettingsStore
                 ?? new RavenServiceSettingsStore(AppDataPaths.UiSettingsPath))
@@ -681,6 +686,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public string ReferenceDataStatus { get; }
 
     public ReferenceDataUpdateViewModel ReferenceDataUpdates { get; }
+
+    public LocalizationViewModel Localization { get; }
 
     public ReleaseUpdateViewModel ReleaseUpdates { get; }
 

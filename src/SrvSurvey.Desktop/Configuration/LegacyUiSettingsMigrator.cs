@@ -242,6 +242,10 @@ public sealed class LegacyUiSettingsMigrator
                     ("eddnEnvironment", "EddnEnvironment"),
                     ("uploadGGG", "UploadGreenGasGiantCandidates"),
                 ]);
+                mappedCount += MapSection(legacy, root, "Localization",
+                [
+                    ("lang", "Language"),
+                ]);
                 mappedCount += MapCodexImages(legacy, root, manifest);
                 mappedCount += MapSection(legacy, root, "Travel",
                 [
