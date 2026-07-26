@@ -50,10 +50,13 @@
         </Grid>
       </Border>
 
-      <Border Padding="0,0,0,24"
+      <Border Padding="1,1,1,24"
+              Background="{DynamicResource RavenSurfaceBrush}"
               BorderBrush="{DynamicResource RavenBorderBrush}"
-              BorderThickness="0,0,0,1">
-        <Expander ExpandDirection="Down"
+              BorderThickness="1"
+              CornerRadius="12">
+        <Expander Classes="theme-selector"
+                  ExpandDirection="Down"
                   HorizontalAlignment="Stretch"
                   HorizontalContentAlignment="Stretch"
                   IsExpanded="True">
@@ -65,8 +68,9 @@
                          Text="Application and in-game overlay palettes" />
             </StackPanel>
           </Expander.Header>
-          <TabControl HorizontalContentAlignment="Stretch">
-        <TabItem Header="Application theme">
+          <TabControl Classes="theme-selector"
+                      HorizontalContentAlignment="Stretch">
+        <TabItem Classes="theme-selector" Header="Application theme">
           <StackPanel Margin="0,16,0,0" Spacing="18">
             <Border Classes="card raised">
               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
@@ -155,7 +159,7 @@
           </StackPanel>
         </TabItem>
 
-        <TabItem Header="In-game overlay appearance">
+        <TabItem Classes="theme-selector" Header="In-game overlay appearance">
           <StackPanel Margin="0,16,0,0" Spacing="18">
             <Border Classes="card raised">
               <StackPanel Spacing="14">
@@ -243,20 +247,24 @@
             </ItemsControl>
 
             <Border Classes="card raised">
-              <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+              <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="10">
                 <TextBlock VerticalAlignment="Center"
                            Classes="muted"
                            TextWrapping="Wrap"
                            Text="{Binding OverlayTheme.StatusMessage}" />
                 <Button Grid.Column="1"
                         Classes="secondary"
+                        Command="{Binding OverlayTheme.PreviewCommand}"
+                        Content="Refresh preview" />
+                <Button Grid.Column="2"
+                        Classes="secondary"
                         Command="{Binding OverlayTheme.ReloadActiveCommand}"
                         Content="Discard changes" />
-                <Button Grid.Column="2"
+                <Button Grid.Column="3"
                         Classes="secondary"
                         Command="{Binding OverlayTheme.RestoreDefaultsCommand}"
                         Content="Load defaults" />
-                <Button Grid.Column="3"
+                <Button Grid.Column="4"
                         Classes="primary"
                         Command="{Binding OverlayTheme.ApplyCommand}"
                         Content="Apply to overlays" />

@@ -6,6 +6,46 @@ namespace SrvSurvey.Desktop.Theming;
 
 public sealed class RavenThemeService
 {
+    private static readonly IReadOnlyDictionary<string, string>
+        OverlayResourceKeys = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["RavenOverlayWindowBrush"] = "black",
+            ["RavenOverlaySurfaceBrush"] = "black",
+            ["RavenOverlayRaisedSurfaceBrush"] = "black",
+            ["RavenOverlayAccentBrush"] = "orange",
+            ["RavenOverlayAccentMutedBrush"] = "orangeDark",
+            ["RavenOverlayTextBrush"] = "white",
+            ["RavenOverlayMutedTextBrush"] = "grey",
+            ["RavenOverlayBorderBrush"] = "cyanDark",
+            ["RavenOverlayInformationBrush"] = "cyan",
+            ["RavenOverlaySuccessBrush"] = "green",
+            ["RavenOverlayWarningBrush"] = "yellow",
+            ["RavenOverlayDangerBrush"] = "red",
+            ["RavenOverlayPrimaryBrush"] = "orange",
+            ["RavenOverlayPrimaryDimBrush"] = "orangeDark",
+            ["RavenOverlaySecondaryBrush"] = "cyan",
+            ["RavenOverlaySecondaryDimBrush"] = "cyanDark",
+            ["RavenOverlayDangerDimBrush"] = "redDark",
+            ["RavenOverlaySuccessDimBrush"] = "greenDark",
+            ["RavenOverlayMenuGoldBrush"] = "menuGold",
+            ["RavenOverlayBioGoldBrush"] = "bio.gold",
+            ["RavenOverlayBioGoldDimBrush"] = "bio.goldDark",
+            ["RavenOverlayBioUnknownBrush"] = "bio.unknown",
+            ["RavenOverlayBioHatchBrush"] = "bio.hatch",
+            ["RavenOverlayBioWhiteBrush"] = "bio.white",
+            ["RavenOverlayBioPredictionBrush"] = "bio.prediction",
+            ["RavenOverlayColoniseSurplusBrush"] = "colonise.surplus",
+            ["RavenOverlayColoniseSurplusDimBrush"] = "colonise.surplusDark",
+            ["RavenOverlayColoniseDeficitBrush"] = "colonise.deficit",
+            ["RavenOverlayColoniseDeficitDimBrush"] = "colonise.deficitDark",
+            ["RavenOverlayColoniseHighlightBrush"] = "colonise.highlight",
+            ["RavenOverlayColoniseItemBrush"] = "colonise.item",
+            ["RavenOverlayColoniseItemDimBrush"] = "colonise.itemDark",
+            ["RavenOverlayFczCheckpointBrush"] = "fcz.checkpoint",
+            ["RavenOverlayFczCheckpointLocalBrush"] = "fcz.checkpointLocal",
+            ["RavenOverlayFczPowerPostBrush"] = "fcz.powerPost",
+        };
+
     private readonly Application application;
     private readonly ThemePreferenceStore preferenceStore;
     private LegacyOverlayTheme overlayTheme;
@@ -90,20 +130,10 @@ public sealed class RavenThemeService
                 new SolidColorBrush(entry.Value);
         }
 
-        SetBrush("RavenOverlayWindowBrush", theme.GetColor("black"));
-        SetBrush("RavenOverlaySurfaceBrush", theme.GetColor("black"));
-        SetBrush("RavenOverlayRaisedSurfaceBrush", theme.GetColor("black"));
-        SetBrush("RavenOverlayAccentBrush", theme.GetColor("orange"));
-        SetBrush(
-            "RavenOverlayAccentMutedBrush",
-            theme.GetColor("orangeDark"));
-        SetBrush("RavenOverlayTextBrush", theme.GetColor("white"));
-        SetBrush("RavenOverlayMutedTextBrush", theme.GetColor("grey"));
-        SetBrush("RavenOverlayBorderBrush", theme.GetColor("cyanDark"));
-        SetBrush("RavenOverlayInformationBrush", theme.GetColor("cyan"));
-        SetBrush("RavenOverlaySuccessBrush", theme.GetColor("green"));
-        SetBrush("RavenOverlayWarningBrush", theme.GetColor("yellow"));
-        SetBrush("RavenOverlayDangerBrush", theme.GetColor("red"));
+        foreach (var mapping in OverlayResourceKeys)
+        {
+            SetBrush(mapping.Key, theme.GetColor(mapping.Value));
+        }
         if (notify)
         {
             OverlayThemeChanged?.Invoke(this, EventArgs.Empty);

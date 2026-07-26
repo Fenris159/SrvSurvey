@@ -9,6 +9,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public static class OverlayThemeResources
 {
+    private static readonly object ThemeWindowsLock = new();
+    private static readonly List<WeakReference<Window>> ThemeWindows = [];
     private static readonly ConditionalWeakTable<Window, ScaleRegistration>
         ScaleRegistrations = new();
     private static readonly IReadOnlyDictionary<string, string> ResourceMappings =
@@ -25,11 +27,61 @@ public static class OverlayThemeResources
             ["RavenSuccessBrush"] = "RavenOverlaySuccessBrush",
             ["RavenWarningBrush"] = "RavenOverlayWarningBrush",
             ["RavenDangerBrush"] = "RavenOverlayDangerBrush",
+            ["RavenPrimaryBrush"] = "RavenOverlayPrimaryBrush",
+            ["RavenPrimaryDimBrush"] = "RavenOverlayPrimaryDimBrush",
+            ["RavenSecondaryBrush"] = "RavenOverlaySecondaryBrush",
+            ["RavenSecondaryDimBrush"] = "RavenOverlaySecondaryDimBrush",
+            ["RavenDangerDimBrush"] = "RavenOverlayDangerDimBrush",
+            ["RavenSuccessDimBrush"] = "RavenOverlaySuccessDimBrush",
+            ["RavenMenuGoldBrush"] = "RavenOverlayMenuGoldBrush",
+            ["RavenBioGoldBrush"] = "RavenOverlayBioGoldBrush",
+            ["RavenBioGoldDimBrush"] = "RavenOverlayBioGoldDimBrush",
+            ["RavenBioUnknownBrush"] = "RavenOverlayBioUnknownBrush",
+            ["RavenBioHatchBrush"] = "RavenOverlayBioHatchBrush",
+            ["RavenBioWhiteBrush"] = "RavenOverlayBioWhiteBrush",
+            ["RavenBioPredictionBrush"] = "RavenOverlayBioPredictionBrush",
+            ["RavenColoniseSurplusBrush"] = "RavenOverlayColoniseSurplusBrush",
+            ["RavenColoniseSurplusDimBrush"] = "RavenOverlayColoniseSurplusDimBrush",
+            ["RavenColoniseDeficitBrush"] = "RavenOverlayColoniseDeficitBrush",
+            ["RavenColoniseDeficitDimBrush"] = "RavenOverlayColoniseDeficitDimBrush",
+            ["RavenColoniseHighlightBrush"] = "RavenOverlayColoniseHighlightBrush",
+            ["RavenColoniseItemBrush"] = "RavenOverlayColoniseItemBrush",
+            ["RavenColoniseItemDimBrush"] = "RavenOverlayColoniseItemDimBrush",
+            ["RavenFczCheckpointBrush"] = "RavenOverlayFczCheckpointBrush",
+            ["RavenFczCheckpointLocalBrush"] = "RavenOverlayFczCheckpointLocalBrush",
+            ["RavenFczPowerPostBrush"] = "RavenOverlayFczPowerPostBrush",
         };
 
     public static void Apply(Window window)
     {
         ArgumentNullException.ThrowIfNull(window);
+        TrackThemeWindow(window);
+        ApplyThemeResources(window);
+    }
+
+    public static void RefreshAll()
+    {
+        Window[] windows;
+        lock (ThemeWindowsLock)
+        {
+            windows = ThemeWindows
+                .Select(reference => reference.TryGetTarget(out var window)
+                    ? window
+                    : null)
+                .Where(window => window is not null)
+                .Cast<Window>()
+                .ToArray();
+            ThemeWindows.RemoveAll(reference => !reference.TryGetTarget(out _));
+        }
+
+        foreach (var window in windows)
+        {
+            ApplyThemeResources(window);
+        }
+    }
+
+    private static void ApplyThemeResources(Window window)
+    {
         // Overlay controls keep a stable native style and never inherit a
         // light/dark switch from the application shell.
         window.RequestedThemeVariant = ThemeVariant.Dark;
@@ -48,6 +100,28 @@ public static class OverlayThemeResources
             {
                 window.Resources[mapping.Key] = value;
             }
+        }
+    }
+
+    private static void TrackThemeWindow(Window window)
+    {
+        lock (ThemeWindowsLock)
+        {
+            for (var index = ThemeWindows.Count - 1; index >= 0; index--)
+            {
+                if (!ThemeWindows[index].TryGetTarget(out var target))
+                {
+                    ThemeWindows.RemoveAt(index);
+                    continue;
+                }
+
+                if (ReferenceEquals(target, window))
+                {
+                    return;
+                }
+            }
+
+            ThemeWindows.Add(new WeakReference<Window>(window));
         }
     }
 

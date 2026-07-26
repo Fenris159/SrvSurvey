@@ -103,6 +103,52 @@
     <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
     <Setter Property="CornerRadius" Value="8" />
   </Style>
+  <Style Selector="ComboBoxItem">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="Padding" Value="10,7" />
+  </Style>
+  <Style Selector="ComboBoxItem:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+  <Style Selector="ComboBoxItem:selected">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentForegroundBrush}" />
+  </Style>
+  <Style Selector="Expander.theme-selector">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+  </Style>
+  <Style Selector="Expander.theme-selector /template/ ToggleButton">
+    <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+  </Style>
+  <Style Selector="Expander.theme-selector /template/ ToggleButton:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
+  <Style Selector="TabControl.theme-selector">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+  <Style Selector="TabItem.theme-selector">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+  </Style>
+  <Style Selector="TabItem.theme-selector:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+  <Style Selector="TabItem.theme-selector:selected">
+    <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+  <Style Selector="ProgressBar">
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
   <Style Selector="Separator">
     <Setter Property="Background" Value="{DynamicResource RavenBorderBrush}" />
   </Style>

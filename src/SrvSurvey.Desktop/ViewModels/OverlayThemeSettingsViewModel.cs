@@ -45,6 +45,7 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     private readonly OverlayThemeStateStore stateStore;
     private readonly RavenThemeService? themeService;
     private readonly DelegateCommand applyCommand;
+    private readonly DelegateCommand previewCommand;
     private readonly DelegateCommand saveStateCommand;
     private readonly DelegateCommand loadStateCommand;
     private readonly DelegateCommand deleteStateCommand;
@@ -66,10 +67,12 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
             ?? throw new ArgumentNullException(nameof(stateStore));
         this.themeService = themeService;
         applyCommand = new DelegateCommand(Apply, () => CanApply);
+        previewCommand = new DelegateCommand(Preview, () => CanPreview);
         saveStateCommand = new DelegateCommand(SaveState, () => CanSaveState);
         loadStateCommand = new DelegateCommand(LoadState, () => SelectedSavedState is not null);
         deleteStateCommand = new DelegateCommand(DeleteState, () => SelectedSavedState is not null);
         ApplyCommand = applyCommand;
+        PreviewCommand = previewCommand;
         SaveStateCommand = saveStateCommand;
         LoadStateCommand = loadStateCommand;
         DeleteStateCommand = deleteStateCommand;
@@ -170,11 +173,15 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 
     public bool CanApply => IsDirty && !HasValidationErrors;
 
+    public bool CanPreview => themeService is not null && !HasValidationErrors;
+
     public bool CanSaveState => !string.IsNullOrWhiteSpace(StateName)
         && StateName.Trim().Length <= 80
         && !HasValidationErrors;
 
     public ICommand ApplyCommand { get; }
+
+    public ICommand PreviewCommand { get; }
 
     public ICommand SaveStateCommand { get; }
 
@@ -212,6 +219,23 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
                 or ArgumentException)
         {
             StatusMessage = "The overlay theme was not changed: " + exception.Message;
+        }
+    }
+
+    private void Preview()
+    {
+        try
+        {
+            themeService?.ApplyOverlayTheme(CreateDraftTheme());
+            StatusMessage = "Refreshed all open overlays and position previews with unsaved colours. Apply to keep them, or discard changes to restore theme.json.";
+        }
+        catch (Exception exception) when (
+            exception is InvalidDataException
+                or InvalidOperationException
+                or ArgumentException)
+        {
+            StatusMessage = "The overlay preview was not refreshed: "
+                + exception.Message;
         }
     }
 
@@ -304,8 +328,9 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     {
         var theme = activeStore.Load();
         ReplaceEditors(theme.Colors, acceptChanges: true);
+        themeService?.ApplyOverlayTheme(theme);
         StatusMessage = theme.Error
-            ?? "Reloaded the active theme.json colours and discarded editor changes.";
+            ?? "Reloaded the active theme.json colours, discarded editor changes, and refreshed open overlays.";
     }
 
     private LegacyOverlayTheme CreateDraftTheme()
@@ -385,8 +410,10 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsDirty));
         OnPropertyChanged(nameof(HasValidationErrors));
         OnPropertyChanged(nameof(CanApply));
+        OnPropertyChanged(nameof(CanPreview));
         OnPropertyChanged(nameof(CanSaveState));
         applyCommand.RaiseCanExecuteChanged();
+        previewCommand.RaiseCanExecuteChanged();
         saveStateCommand.RaiseCanExecuteChanged();
     }
 

@@ -61,6 +61,38 @@ public sealed class RavenThemeServiceTests : IDisposable
             Assert.IsType<SolidColorBrush>(
                 application.Resources["LegacyTheme.bio.gold"]).Color);
         Assert.Equal(
+            Color.FromArgb(255, 78, 90, 12),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayBioGoldBrush"]).Color);
+        foreach (var resource in new[]
+                 {
+                     "RavenOverlayPrimaryBrush",
+                     "RavenOverlayPrimaryDimBrush",
+                     "RavenOverlaySecondaryBrush",
+                     "RavenOverlaySecondaryDimBrush",
+                     "RavenOverlayDangerDimBrush",
+                     "RavenOverlaySuccessDimBrush",
+                     "RavenOverlayMenuGoldBrush",
+                     "RavenOverlayBioGoldDimBrush",
+                     "RavenOverlayBioUnknownBrush",
+                     "RavenOverlayBioHatchBrush",
+                     "RavenOverlayBioWhiteBrush",
+                     "RavenOverlayBioPredictionBrush",
+                     "RavenOverlayColoniseSurplusBrush",
+                     "RavenOverlayColoniseSurplusDimBrush",
+                     "RavenOverlayColoniseDeficitBrush",
+                     "RavenOverlayColoniseDeficitDimBrush",
+                     "RavenOverlayColoniseHighlightBrush",
+                     "RavenOverlayColoniseItemBrush",
+                     "RavenOverlayColoniseItemDimBrush",
+                     "RavenOverlayFczCheckpointBrush",
+                     "RavenOverlayFczCheckpointLocalBrush",
+                     "RavenOverlayFczPowerPostBrush",
+                 })
+        {
+            Assert.IsType<SolidColorBrush>(application.Resources[resource]);
+        }
+        Assert.Equal(
             Color.Parse(RavenThemeCatalog.Get(null).AccentColor),
             Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenAccentBrush"]).Color);
