@@ -239,7 +239,9 @@ journal reducer retains the current system's body classes, scan/DSS values,
 discovery and mapping state, atmospheres, materials, rings, biological and
 geological progress, completion counts, destination, and non-body signals. The
 top-left FSS feed preserves value/signal filtering, recency, `Alt+F`, map/panel
-modes, and Guardian priority. The bottom-left status overlay preserves FSS
+modes, and Guardian priority. It no longer truncates qualifying bodies at an
+arbitrary row count; every row remains available in a bounded scroll region
+when the overlay is switched into interactive mode. The bottom-left status overlay preserves FSS
 completion, filtered DSS candidates, destination grouping, biological progress,
 and optional non-body counts. The journal-backed `PlotFSS` surface is now a
 top-center last-scan card with standalone-planet selection, discovery,

@@ -148,6 +148,23 @@ public sealed class LegacyOverlayParityTests
         Assert.Contains("TextDecorations=\"Strikethrough\"", xaml);
     }
 
+    [Fact]
+    public void FssOverlayDoesNotReplaceBodyRowsWithAnArbitrarySummaryCap()
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml")));
+        var viewModel = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs")));
+
+        Assert.Contains("ItemsSource=\"{Binding Survey.FssBodies}\"", xaml);
+        Assert.Contains("<ScrollViewer", xaml);
+        Assert.DoesNotContain("DisplayedFssBodies", viewModel);
+        Assert.DoesNotContain("MaximumDisplayedFssBodies", viewModel);
+    }
+
     private static OverlayMapping Map(
         string legacyName,
         IReadOnlyList<string> productionFiles,
