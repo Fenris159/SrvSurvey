@@ -199,7 +199,8 @@ public sealed class SurfaceSurveyRadarControl : Control
         }
 
         var markerBrush = GetMarkerBrush(marker);
-        if (marker.Kind == SurfaceRadarMarkerKind.Ship)
+        if (marker.Kind is SurfaceRadarMarkerKind.Ship
+            or SurfaceRadarMarkerKind.FormerShip)
         {
             DrawTriangle(context, point, markerBrush, 7);
         }
@@ -250,6 +251,7 @@ public sealed class SurfaceSurveyRadarControl : Control
         return marker.Kind switch
         {
             SurfaceRadarMarkerKind.Ship => WarningBrush ?? Brushes.Gold,
+            SurfaceRadarMarkerKind.FormerShip => MutedBrush ?? Brushes.Gray,
             SurfaceRadarMarkerKind.Srv => SuccessBrush ?? Brushes.LimeGreen,
             _ => GetCircleBrush(marker),
         };

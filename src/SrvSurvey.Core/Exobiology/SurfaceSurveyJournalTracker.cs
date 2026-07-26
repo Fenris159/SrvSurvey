@@ -32,6 +32,8 @@ public sealed class SurfaceSurveyJournalTracker
 
     public SurfaceCoordinate? ShipLocation { get; private set; }
 
+    public bool HasShipDeparted { get; private set; }
+
     public SurfaceCoordinate? SrvLocation { get; private set; }
 
     public int Version { get; private set; }
@@ -43,6 +45,7 @@ public sealed class SurfaceSurveyJournalTracker
         scanOne = seed.ScanOne;
         scanTwo = seed.ScanTwo;
         ShipLocation = null;
+        HasShipDeparted = false;
         SrvLocation = null;
         Version++;
     }
@@ -75,9 +78,16 @@ public sealed class SurfaceSurveyJournalTracker
                         session,
                         journalEvent.Payload,
                         cancellationToken).ConfigureAwait(false),
+                    "Liftoff" or "ShipDismissed" => ApplyShipDeparted(),
                     "Disembark" => ApplyDisembark(journalEvent.Payload),
                     "Embark" => ApplyEmbark(journalEvent.Payload),
-                    "LeaveBody" => ApplyLeaveBody(),
+                    "LeaveBody" or "StartJump" or "SupercruiseEntry"
+                        or "FSDJump" or "CarrierJump" or "Shutdown"
+                        or "Died" or "Resurrect" => ClearVehicleLocations(),
+                    "Music" when string.Equals(
+                        GetString(journalEvent.Payload, "MusicTrack"),
+                        "MainMenu",
+                        StringComparison.Ordinal) => ClearVehicleLocations(),
                     "CodexEntry" => await ApplyCodexEntryAsync(
                         session,
                         journalEvent.Payload,
@@ -126,11 +136,25 @@ public sealed class SurfaceSurveyJournalTracker
         }
 
         ShipLocation = location;
+        HasShipDeparted = false;
         await store.SetLastTouchdownAsync(
                 context,
                 location,
                 cancellationToken)
             .ConfigureAwait(false);
+        return 1;
+    }
+
+    private int ApplyShipDeparted()
+    {
+        if (HasShipDeparted)
+        {
+            return 0;
+        }
+
+        // Keep the last touchdown so the former ship location remains
+        // navigable even when it was loaded from durable surface history.
+        HasShipDeparted = true;
         return 1;
     }
 
@@ -157,14 +181,17 @@ public sealed class SurfaceSurveyJournalTracker
         return 1;
     }
 
-    private int ApplyLeaveBody()
+    private int ClearVehicleLocations()
     {
-        if (ShipLocation is null && SrvLocation is null)
+        if (ShipLocation is null
+            && !HasShipDeparted
+            && SrvLocation is null)
         {
             return 0;
         }
 
         ShipLocation = null;
+        HasShipDeparted = false;
         SrvLocation = null;
         return 1;
     }

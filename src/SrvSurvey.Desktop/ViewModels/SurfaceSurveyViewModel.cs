@@ -457,12 +457,15 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             ?? surface.LastTouchdown;
         if (shipLocation is { } ship)
         {
+            var shipDeparted = journalTracker.HasShipDeparted;
             markers.Add(CreateMarker(
-                "Ship",
+                shipDeparted ? "Former ship location" : "Ship",
                 ship,
                 0,
-                SurfaceRadarMarkerKind.Ship,
-                "Ship",
+                shipDeparted
+                    ? SurfaceRadarMarkerKind.FormerShip
+                    : SurfaceRadarMarkerKind.Ship,
+                shipDeparted ? "Departed" : "Ship",
                 current,
                 status));
         }
@@ -771,6 +774,7 @@ public sealed record SurfaceRadarMarkerViewModel(
     public bool IsActiveSample => Kind == SurfaceRadarMarkerKind.ActiveSample;
 
     public bool IsVehicle => Kind is SurfaceRadarMarkerKind.Ship
+        or SurfaceRadarMarkerKind.FormerShip
         or SurfaceRadarMarkerKind.Srv;
 }
 
@@ -788,5 +792,6 @@ public enum SurfaceRadarMarkerKind
     Bookmark,
     ActiveSample,
     Ship,
+    FormerShip,
     Srv,
 }

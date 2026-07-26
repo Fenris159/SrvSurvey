@@ -120,10 +120,27 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
             Status(3, 4));
 
         Assert.Equal(new SurfaceCoordinate(1, 2), tracker.ShipLocation);
+        Assert.False(tracker.HasShipDeparted);
         Assert.Equal(new SurfaceCoordinate(3, 4), tracker.SrvLocation);
         Assert.Equal(
             new SurfaceCoordinate(1, 2),
             (await store.LoadBodyAsync(BodyContext())).Snapshot!.LastTouchdown);
+
+        await tracker.ApplyAsync(
+            session,
+            [Event("{\"event\":\"Liftoff\"}")],
+            Status(3, 4));
+        Assert.Equal(new SurfaceCoordinate(1, 2), tracker.ShipLocation);
+        Assert.True(tracker.HasShipDeparted);
+
+        await tracker.ApplyAsync(
+            session,
+            [Event(
+                """
+                {"event":"Touchdown","StarSystem":"Test System","SystemAddress":42,"Body":"Test System 1 a","BodyID":7,"Latitude":5,"Longitude":6}
+                """)],
+            Status(5, 6));
+        Assert.False(tracker.HasShipDeparted);
 
         await tracker.ApplyAsync(
             session,
@@ -136,6 +153,64 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
             [Event("{\"event\":\"LeaveBody\"}")],
             Status(3, 4));
         Assert.Null(tracker.ShipLocation);
+    }
+
+    [Theory]
+    [InlineData("LeaveBody")]
+    [InlineData("StartJump")]
+    [InlineData("SupercruiseEntry")]
+    [InlineData("FSDJump")]
+    [InlineData("CarrierJump")]
+    [InlineData("Shutdown")]
+    [InlineData("Died")]
+    [InlineData("Resurrect")]
+    public async Task SessionDepartureClearsOnlyVehicleLocations(
+        string eventName)
+    {
+        var (tracker, store) = CreateTracker();
+        var session = Session();
+        await tracker.ApplyAsync(
+            session,
+            [Event(
+                """
+                {"event":"Touchdown","StarSystem":"Test System","SystemAddress":42,"Body":"Test System 1 a","BodyID":7,"Latitude":1,"Longitude":2}
+                """)],
+            Status(1, 2));
+        await tracker.ApplyAsync(
+            session,
+            [Event("{\"event\":\"Liftoff\"}")],
+            Status(1, 2));
+
+        var result = await tracker.ApplyAsync(
+            session,
+            [Event($$"""{"event":"{{eventName}}"}""")],
+            Status(1, 2));
+
+        Assert.Equal(1, result.MutationCount);
+        Assert.Null(tracker.ShipLocation);
+        Assert.Null(tracker.SrvLocation);
+        Assert.False(tracker.HasShipDeparted);
+        Assert.Equal(
+            new SurfaceCoordinate(1, 2),
+            (await store.LoadBodyAsync(BodyContext())).Snapshot!.LastTouchdown);
+    }
+
+    [Fact]
+    public async Task MainMenuClearsVehicleLocations()
+    {
+        var (tracker, _) = CreateTracker();
+        await tracker.ApplyAsync(
+            Session(),
+            [Event("{\"event\":\"Liftoff\"}")],
+            Status(1, 2));
+
+        var result = await tracker.ApplyAsync(
+            Session(),
+            [Event("{\"event\":\"Music\",\"MusicTrack\":\"MainMenu\"}")],
+            Status(1, 2));
+
+        Assert.Equal(1, result.MutationCount);
+        Assert.False(tracker.HasShipDeparted);
     }
 
     [Fact]

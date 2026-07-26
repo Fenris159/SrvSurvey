@@ -266,8 +266,9 @@ overwriting them, and records touchdown, bookmarks, Composition Scanner
 discoveries, species changes, completed three-sample scans, and complete lost
 organism circles after death. The presentation preserves the original
 auto-show, altitude, focus panel, vehicle mode, landing-gear and hidden-tracker
-rules; renders heading-up historical, tracker, active-sample, ship and SRV
-markers; exposes active navigation bearings/distances; supports all five legacy
+rules; renders heading-up historical, tracker, active-sample, active ship,
+former-ship and SRV markers with departure-safe cleanup; exposes active
+navigation bearings/distances; supports all five legacy
 sizes and bounded zoom/reset; handles `#1` through `#8`; falls back to a compact
 tracker-only state; and yields to Guardian overlays. Automated persistence,
 journal, presentation, preparation, lifecycle, XAML compilation, and full-suite

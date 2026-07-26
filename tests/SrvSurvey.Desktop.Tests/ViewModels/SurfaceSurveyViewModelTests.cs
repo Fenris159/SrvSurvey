@@ -66,6 +66,32 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task LiftoffRendersPersistedTouchdownAsFormerShipLocation()
+    {
+        var (viewModel, survey, _) = CreateViewModel();
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [
+                Event(
+                    """
+                    {"event":"Touchdown","StarSystem":"Test System","SystemAddress":42,"Body":"Test System 1","BodyID":7,"Latitude":0,"Longitude":1}
+                    """),
+                Event("""{"event":"Liftoff"}"""),
+            ],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        var marker = Assert.Single(viewModel.RadarMarkers);
+        Assert.Equal(SurfaceRadarMarkerKind.FormerShip, marker.Kind);
+        Assert.Equal("Former ship location", marker.Name);
+        Assert.Equal("Departed", marker.Status);
+        Assert.True(marker.IsVehicle);
+        Assert.Contains(marker, viewModel.NavigationMarkers);
+    }
+
+    [Fact]
     public async Task EligibilityMatchesLegacyAltitudePanelAndLandingGearRules()
     {
         var (viewModel, survey, store) = CreateViewModel();

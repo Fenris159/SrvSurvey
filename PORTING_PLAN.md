@@ -819,7 +819,8 @@ Validation performed on 2026-07-25 using Windows build `10.0.26200` and .NET SDK
   bookmark and completed-scan updates under shared per-file locking, sample and
   touchdown journal mutations, tracker-removal preferences, exact legacy
   status/panel/landing-gear gating, Composition Scanner filters, complete
-  cross-system death marking, all eight quick tracker actions, marker
+  cross-system death marking, active and former-ship touchdown presentation,
+  departure-safe ship/SRV cleanup, all eight quick tracker actions, marker
   navigation, tracker-only presentation, five legacy window sizes, bounded
   zoom, passive preparation, Guardian arbitration, and XAML compilation. Per
   request, the overlay was not opened; its visual/theme pass remains held until
