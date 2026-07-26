@@ -71,7 +71,25 @@
           <Separator Margin="0,4" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="{Binding ReferenceDataStatus}" />
+                     Text="{Binding ReferenceDataUpdates.StatusMessage}" />
+          <TextBlock Classes="monospace muted"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="{Binding ReferenceDataUpdates.UpdatedCatalogs, StringFormat=Updated: {0}}" />
+          <TextBlock Classes="monospace muted"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="{Binding ReferenceDataUpdates.BackupDirectory, StringFormat=Backup: {0}}" />
+          <WrapPanel Orientation="Horizontal">
+            <Button Classes="secondary"
+                    Margin="0,0,8,0"
+                    Command="{Binding ReferenceDataUpdates.RefreshCommand}"
+                    Content="{Binding ReferenceDataUpdates.RefreshButtonText}" />
+            <Button Classes="primary"
+                    IsVisible="{Binding ReferenceDataUpdates.IsRestartRequired}"
+                    Command="{Binding ReferenceDataUpdates.RestartCommand}"
+                    Content="Restart to apply" />
+          </WrapPanel>
         </StackPanel>
       </Border>
 

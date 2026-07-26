@@ -208,6 +208,9 @@ public sealed partial class App : Application
                 return RestartApplicationAsync("Commander preference changed");
             }
 
+            viewModel.ReferenceDataUpdates.SetRestartHandler(() =>
+                RestartApplicationAsync("Published reference data refreshed"));
+
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested +=
                 RestartAfterJournalChangeAsync;

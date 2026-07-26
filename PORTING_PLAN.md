@@ -520,9 +520,16 @@ UI tests where practical, and live Windows/Linux evidence.
   offers the original GitHub releases page. HTTP, rate-limit, timeout, and
   malformed-index failures are contained and explicitly leave both the
   installation and profile untouched. Imported reference catalogs are now
-  validated and consumed with per-catalog embedded fallback. Network refresh,
-  packaged update installation/rollback, and the remaining network audit keep
-  this phase open.
+  validated and consumed with per-catalog embedded fallback. The legacy static
+  catalog refresh is also restored for Codex, biology criteria, Guardian
+  indexes/surveys/templates, human settlements, and Green Gas Giant criteria.
+  Downloads are size-bounded, archives reject traversal and unexpected files,
+  candidates must parse at full embedded coverage, existing references receive
+  checksum-verified backups, and activation rolls back as a unit on injected
+  pre/post-swap failures. Refresh runs without blocking journal startup and a
+  controlled restart applies the immutable catalogs. Raven nicknames, packaged
+  update installation/rollback, and the remaining network audit keep this phase
+  open.
 - [ ] Localization review for every migrated surface.
 
 Features may be explicitly deferred, but the release notes and UI must identify

@@ -162,7 +162,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             firstFootfallInferenceSettingsStore = null,
         IFirstFootfallInferenceService? firstFootfallInferenceService = null,
         RavenServiceSettingsStore? ravenServiceSettingsStore = null,
-        ReleaseUpdateViewModel? releaseUpdates = null)
+        ReleaseUpdateViewModel? releaseUpdates = null,
+        ReferenceDataUpdateViewModel? referenceDataUpdates = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -184,6 +185,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             ReferenceDataStatus += $" {legacyReferences.Warnings.Count:N0} incompatible "
                 + "or incomplete legacy catalog(s) were ignored safely; see logs.";
         }
+
+        Action<string>? referenceUpdateLog = applicationLogService is null
+            ? null
+            : message => applicationLogService.Append(message);
+        ReferenceDataUpdates = referenceDataUpdates
+            ?? new ReferenceDataUpdateViewModel(
+                new PublishedReferenceUpdateService(),
+                AppDataPaths.DataDirectory,
+                ReferenceDataStatus,
+                referenceUpdateLog);
 
         var ravenServiceUri = (ravenServiceSettingsStore
                 ?? new RavenServiceSettingsStore(AppDataPaths.UiSettingsPath))
@@ -668,6 +679,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public DiagnosticsLogViewModel DiagnosticsLog { get; }
 
     public string ReferenceDataStatus { get; }
+
+    public ReferenceDataUpdateViewModel ReferenceDataUpdates { get; }
 
     public ReleaseUpdateViewModel ReleaseUpdates { get; }
 
