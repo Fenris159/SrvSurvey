@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Colonization;
@@ -1415,7 +1416,9 @@ public sealed class ColonizationProjectRowViewModel
     public string ProgressText => Project.IsFleetCarrierLoading
         ? $"? of {Project.MaximumRequired:N0}"
         : Project.Progress is double progress
-            ? $"{progress:P0} of {Project.MaximumRequired:N0}"
+            ? (progress * 100).ToString("0", CultureInfo.InvariantCulture)
+                + "% of "
+                + Project.MaximumRequired.ToString("N0", CultureInfo.CurrentCulture)
             : "Progress unavailable";
 
     public bool IsShown

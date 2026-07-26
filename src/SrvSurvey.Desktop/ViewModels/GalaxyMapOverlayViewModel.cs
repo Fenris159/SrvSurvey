@@ -353,7 +353,8 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             Factions = primaryResult.Summary.Factions
                 .Select(faction => new GalaxyMapFactionViewModel(
                     faction.Name,
-                    faction.Influence.ToString("P0", CultureInfo.CurrentCulture),
+                    (faction.Influence * 100).ToString("0", CultureInfo.InvariantCulture)
+                        + "%",
                     faction.State ?? string.Empty))
                 .ToArray();
             var warnings = primaryResult.Warnings

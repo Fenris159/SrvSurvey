@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using SrvSurvey.Core.Exploration;
@@ -161,7 +162,10 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         if (CurrentBoxelSearchStatus && after.TotalSystems > 0)
         {
             var progress = after.CompletedSystems / (double)after.TotalSystems;
-            ShowMessage($"Current boxel {progress:P0} searched.");
+            ShowMessage(
+                "Current boxel "
+                + (progress * 100).ToString("0", CultureInfo.InvariantCulture)
+                + "% searched.");
         }
 
         if (ShowNextBoxelToSearch

@@ -41,13 +41,13 @@ public sealed record AppDataPaths(
         ArgumentException.ThrowIfNullOrWhiteSpace(homeDirectory);
         getEnvironmentVariable ??= _ => null;
 
-        var home = Path.GetFullPath(homeDirectory);
+        var home = NormalizeRoot(platform, homeDirectory);
         var roaming = ResolveOptionalRoot(
             roamingApplicationDataDirectory,
-            Path.Combine(home, ".config"));
+            Combine(platform, home, ".config"));
         var local = ResolveOptionalRoot(
             localApplicationDataDirectory,
-            Path.Combine(home, ".local", "share"));
+            Combine(platform, home, ".local", "share"));
 
         string configDirectory;
         string dataDirectory;
@@ -67,9 +67,17 @@ public sealed record AppDataPaths(
         }
         else
         {
-            configDirectory = Path.Combine(roaming, ApplicationDirectoryName);
-            dataDirectory = Path.Combine(roaming, ApplicationDirectoryName, "cross-platform");
-            cacheDirectory = Path.Combine(local, ApplicationDirectoryName, "cache");
+            configDirectory = Combine(platform, roaming, ApplicationDirectoryName);
+            dataDirectory = Combine(
+                platform,
+                roaming,
+                ApplicationDirectoryName,
+                "cross-platform");
+            cacheDirectory = Combine(
+                platform,
+                local,
+                ApplicationDirectoryName,
+                "cache");
         }
 
         var candidates = platform == DesktopPlatform.Windows
@@ -77,9 +85,9 @@ public sealed record AppDataPaths(
             : Array.Empty<LegacyProfileCandidate>();
 
         return new AppDataPaths(
-            Path.GetFullPath(configDirectory),
-            Path.GetFullPath(dataDirectory),
-            Path.GetFullPath(cacheDirectory),
+            NormalizeRoot(platform, configDirectory),
+            NormalizeRoot(platform, dataDirectory),
+            NormalizeRoot(platform, cacheDirectory),
             candidates);
     }
 
@@ -87,12 +95,14 @@ public sealed record AppDataPaths(
         string roaming,
         string local)
     {
-        var normal = Path.Combine(
+        var normal = Combine(
+            DesktopPlatform.Windows,
             roaming,
             ApplicationDirectoryName,
             ApplicationDirectoryName,
             LegacyVersionDirectoryName);
-        var redirectedRoot = Path.Combine(
+        var redirectedRoot = Combine(
+            DesktopPlatform.Windows,
             local,
             "Packages",
             StorePackageDirectoryName,
@@ -104,16 +114,18 @@ public sealed record AppDataPaths(
         [
             new LegacyProfileCandidate(
                 LegacyProfileLocationKind.Desktop,
-                Path.GetFullPath(normal)),
+                NormalizeRoot(DesktopPlatform.Windows, normal)),
             new LegacyProfileCandidate(
                 LegacyProfileLocationKind.MicrosoftStore,
-                Path.GetFullPath(Path.Combine(
+                NormalizeRoot(DesktopPlatform.Windows, Combine(
+                    DesktopPlatform.Windows,
                     redirectedRoot,
                     ApplicationDirectoryName,
                     LegacyVersionDirectoryName))),
             new LegacyProfileCandidate(
                 LegacyProfileLocationKind.MicrosoftStoreBackup,
-                Path.GetFullPath(Path.Combine(
+                NormalizeRoot(DesktopPlatform.Windows, Combine(
+                    DesktopPlatform.Windows,
                     redirectedRoot,
                     $"{ApplicationDirectoryName}-",
                     LegacyVersionDirectoryName))),
@@ -123,6 +135,32 @@ public sealed record AppDataPaths(
     private static string ResolveOptionalRoot(string value, string fallback)
     {
         return string.IsNullOrWhiteSpace(value) ? fallback : value;
+    }
+
+    private static string Combine(
+        DesktopPlatform platform,
+        params string[] segments)
+    {
+        if (platform != DesktopPlatform.Windows || OperatingSystem.IsWindows())
+        {
+            return Path.Combine(segments);
+        }
+
+        return string.Join(
+            '\\',
+            segments.Select((segment, index) => index == 0
+                ? segment.TrimEnd('\\', '/')
+                : segment.Trim('\\', '/')));
+    }
+
+    private static string NormalizeRoot(DesktopPlatform platform, string path)
+    {
+        if (platform != DesktopPlatform.Windows || OperatingSystem.IsWindows())
+        {
+            return Path.GetFullPath(path);
+        }
+
+        return path.Replace('/', '\\');
     }
 
     private static string ResolveXdgRoot(

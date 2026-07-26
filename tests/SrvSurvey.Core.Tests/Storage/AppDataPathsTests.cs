@@ -15,19 +15,21 @@ public sealed class AppDataPathsTests
             @"C:\Users\Cmdr\AppData\Local");
 
         Assert.Equal(
-            Path.GetFullPath(@"C:\Users\Cmdr\AppData\Roaming\SrvSurvey"),
+            @"C:\Users\Cmdr\AppData\Roaming\SrvSurvey",
             paths.ConfigDirectory);
         Assert.Equal(
-            Path.GetFullPath(@"C:\Users\Cmdr\AppData\Roaming\SrvSurvey\cross-platform"),
+            @"C:\Users\Cmdr\AppData\Roaming\SrvSurvey\cross-platform",
             paths.DataDirectory);
         Assert.Equal(
-            Path.GetFullPath(@"C:\Users\Cmdr\AppData\Local\SrvSurvey\cache"),
+            @"C:\Users\Cmdr\AppData\Local\SrvSurvey\cache",
             paths.CacheDirectory);
         Assert.Equal(3, paths.LegacyProfileCandidates.Count);
         Assert.Equal(
-            Path.GetFullPath(
-                @"C:\Users\Cmdr\AppData\Roaming\SrvSurvey\SrvSurvey\1.1.0.0"),
+            @"C:\Users\Cmdr\AppData\Roaming\SrvSurvey\SrvSurvey\1.1.0.0",
             paths.LegacyProfileCandidates[0].Path);
+        Assert.Equal(
+            @"C:\Users\Cmdr\AppData\Local\Packages\35333NosmohtSoftware.142860789C73F_p4c193bsm1z5a\LocalCache\Roaming\SrvSurvey\SrvSurvey\1.1.0.0",
+            paths.LegacyProfileCandidates[1].Path);
         Assert.DoesNotContain(
             paths.LegacyProfileCandidates,
             candidate => candidate.Path == paths.DataDirectory);
