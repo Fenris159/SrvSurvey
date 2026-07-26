@@ -76,6 +76,41 @@ public sealed partial class App : Application
                     + settingsMigration.Error);
             }
 
+            try
+            {
+                var organicMigration = new LegacyOrganicProfileMigrator(
+                        appDataPaths.DataDirectory)
+                    .MigrateAsync()
+                    .GetAwaiter()
+                    .GetResult();
+                if (organicMigration.Migrated)
+                {
+                    applicationLog.Append(
+                        "Migrated retired organic history into legacy-compatible "
+                            + $"profile/system data: {organicMigration.MigratedProfileCount:N0} "
+                            + $"profile(s), {organicMigration.MigratedBodyCount:N0} body file(s), "
+                            + $"{organicMigration.MigratedScanCount:N0} scan(s), and "
+                            + $"{organicMigration.MigratedOrganismCount:N0} organism(s).");
+                }
+
+                foreach (var error in organicMigration.Errors)
+                {
+                    applicationLog.Append(
+                        "Legacy organic history was preserved without conversion: "
+                            + error);
+                }
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or InvalidDataException)
+            {
+                applicationLog.Append(
+                    "Legacy organic migration was skipped without modifying its "
+                        + "source data: "
+                        + exception.Message);
+            }
+
             var overlayTheme = new LegacyOverlayThemeStore(
                 Path.Combine(appDataPaths.DataDirectory, "theme.json"))
                 .Load();

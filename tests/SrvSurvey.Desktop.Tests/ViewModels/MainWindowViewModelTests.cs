@@ -377,6 +377,72 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task LegacyProfileImportConvertsRetiredOrganicClaimsAfterVerification()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-profile-organic-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var source = Path.Combine(root, "legacy");
+            var data = Path.Combine(root, "current");
+            Directory.CreateDirectory(source);
+            var reference = ExobiologyReferenceCatalog.LoadEmbedded()
+                .BiologyEntries.First(entry => string.Equals(
+                    entry.VariantName,
+                    "$Codex_Ent_Aleoids_01_B_Name;",
+                    StringComparison.Ordinal));
+            var sourceProfilePath = Path.Combine(source, "F123-live.json");
+            await File.WriteAllTextAsync(
+                sourceProfilePath,
+                $$"""
+                {
+                  "fid": "F123",
+                  "futureProfile": true,
+                  "organicRewards": 1,
+                  "scannedBioEntryIds": ["42_1_{{reference.EntryId}}"]
+                }
+                """);
+            var sourceBytes = await File.ReadAllBytesAsync(sourceProfilePath);
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                data,
+                Path.Combine(root, "cache"),
+                [new LegacyProfileCandidate(
+                    LegacyProfileLocationKind.Desktop,
+                    source)]);
+            var viewModel = new MainWindowViewModel(
+                Path.Combine(root, "missing-journals"),
+                appDataPaths: paths);
+
+            await viewModel.ImportLegacyProfileAsync();
+
+            Assert.Contains(
+                "Converted retired organic history",
+                viewModel.ProfileStatusMessage);
+            Assert.Equal(
+                sourceBytes,
+                await File.ReadAllBytesAsync(sourceProfilePath));
+            var profile = JsonNode.Parse(await File.ReadAllTextAsync(
+                Path.Combine(data, "F123-live.json")))!.AsObject();
+            Assert.True(profile["futureProfile"]!.GetValue<bool>());
+            Assert.True(
+                profile["migratedScannedOrganicsInEntryId"]!
+                    .GetValue<bool>());
+            Assert.Equal(
+                reference.Reward,
+                profile["organicRewards"]!.GetValue<long>());
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task LegacyProfileImportPreservesCurrentUiSettingsWhenLegacySettingsAreMalformed()
     {
         var root = Path.Combine(

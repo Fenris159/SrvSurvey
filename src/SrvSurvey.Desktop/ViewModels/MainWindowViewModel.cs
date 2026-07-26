@@ -1157,6 +1157,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 ProfileBackupDirectory);
             var settingsMigration = new LegacyUiSettingsMigrator()
                 .MigrateIfNeeded(AppDataPaths);
+            var organicMigration = await new LegacyOrganicProfileMigrator(
+                    AppDataPaths.DataDirectory)
+                .MigrateAsync();
+            foreach (var error in organicMigration.Errors)
+            {
+                applicationLogService?.Append(
+                    "Legacy organic history was preserved without conversion: "
+                        + error);
+            }
             var retainedFiles = result.Manifest.PreviousDestinationEntries.Count
                 - result.Manifest.Conflicts.Count;
             var importedBytes = result.Manifest.Entries.Sum(entry => entry.Length);
@@ -1165,6 +1174,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 + $"retained {retainedFiles:N0} current-only files, and recorded "
                 + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
                 + GetSettingsMigrationStatus(settingsMigration)
+                + " "
+                + GetOrganicMigrationStatus(organicMigration)
                 + $"Verified backups: {result.BackupDirectory}";
             OnPropertyChanged(nameof(HasCompletedLegacyImport));
             OnPropertyChanged(nameof(ImportProfileButtonText));
@@ -1238,6 +1249,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         return migration.Migrated
             ? $"Translated {migration.MappedPreferenceCount:N0} legacy UI preferences."
             : "No legacy UI preference translation was required.";
+    }
+
+    private static string GetOrganicMigrationStatus(
+        LegacyOrganicProfileMigrationResult migration)
+    {
+        var status = migration.Migrated
+            ? "Converted retired organic history without changing its source: "
+                + $"{migration.MigratedProfileCount:N0} profile(s), "
+                + $"{migration.MigratedBodyCount:N0} body file(s), "
+                + $"{migration.MigratedScanCount:N0} scan(s), and "
+                + $"{migration.MigratedOrganismCount:N0} organism(s). "
+            : "No retired organic-history conversion was required. ";
+        if (migration.Errors.Count > 0)
+        {
+            status += $"Preserved {migration.Errors.Count:N0} unconverted "
+                + "organic-history file(s); see Diagnostics for details. ";
+        }
+
+        return status;
     }
 
     private bool CanImportLegacyProfile()
