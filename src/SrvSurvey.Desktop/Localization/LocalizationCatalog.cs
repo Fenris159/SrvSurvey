@@ -1,13 +1,18 @@
 using System.Globalization;
-using System.Reflection;
+using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace SrvSurvey.Desktop.Localization;
 
 public static class LocalizationCatalog
 {
-    private const string ResourceName =
+    private const string LegacyResourceName =
         "SrvSurvey.Desktop.Resources.legacy-localization.json";
+    private const string ApplicationResourceName =
+        "SrvSurvey.Desktop.Resources.avalonia-localization.json";
+    private const string SourceResourceName =
+        "SrvSurvey.Desktop.Resources.avalonia-localization-source.json";
 
     private static readonly IReadOnlyDictionary<string, string>
         EmptyTranslations = new Dictionary<string, string>();
@@ -16,8 +21,11 @@ public static class LocalizationCatalog
             new Dictionary<string, TranslationCandidate>();
     private static IReadOnlyDictionary<string, string> translations =
         EmptyTranslations;
+    private static IReadOnlyDictionary<string, string> applicationTranslations =
+        EmptyTranslations;
     private static IReadOnlyDictionary<string, TranslationCandidate>
         normalizedTranslations = EmptyNormalizedTranslations;
+    private static IReadOnlyList<FormatTranslationPattern> formatPatterns = [];
 
     public static IReadOnlyList<LocalizationLanguage> Languages { get; } =
     [
@@ -33,7 +41,12 @@ public static class LocalizationCatalog
 
     public static string CurrentLanguage { get; private set; } = "en";
 
-    internal static int TranslationCount => translations.Count;
+    internal static int LegacyTranslationCount => translations.Count;
+
+    internal static int ApplicationTranslationCount =>
+        applicationTranslations.Count;
+
+    internal static int SourceCount { get; } = LoadSourceCount();
 
     public static void Initialize(string? language)
     {
@@ -42,27 +55,14 @@ public static class LocalizationCatalog
         if (normalized == "en")
         {
             translations = EmptyTranslations;
+            applicationTranslations = EmptyTranslations;
             normalizedTranslations = EmptyNormalizedTranslations;
+            formatPatterns = [];
             return;
         }
 
-        var assembly = typeof(LocalizationCatalog).Assembly;
-        using var stream = assembly.GetManifestResourceStream(ResourceName)
-            ?? throw new InvalidOperationException(
-                $"The embedded localization catalog {ResourceName} is missing.");
-        using var document = JsonDocument.Parse(stream);
-        if (!document.RootElement.TryGetProperty(normalized, out var languageMap)
-            || languageMap.ValueKind != JsonValueKind.Object)
-        {
-            translations = EmptyTranslations;
-            normalizedTranslations = EmptyNormalizedTranslations;
-            return;
-        }
-
-        translations = languageMap.EnumerateObject().ToDictionary(
-            property => property.Name,
-            property => property.Value.GetString() ?? property.Name,
-            StringComparer.Ordinal);
+        translations = LoadLegacyTranslations(normalized);
+        applicationTranslations = LoadApplicationTranslations(normalized);
         normalizedTranslations = translations
             .Select(entry => new TranslationCandidate(entry.Key, entry.Value))
             .GroupBy(
@@ -73,6 +73,14 @@ public static class LocalizationCatalog
                 group => group.Key,
                 group => group.Single(),
                 StringComparer.Ordinal);
+        formatPatterns = applicationTranslations
+            .Where(entry => FormatTranslationPattern.IsTemplate(entry.Key))
+            .Select(entry => FormatTranslationPattern.Create(
+                entry.Key,
+                entry.Value))
+            .OrderByDescending(pattern => pattern.Anchor.Length)
+            .ThenByDescending(pattern => pattern.Source.Length)
+            .ToArray();
     }
 
     public static string Translate(string? source)
@@ -87,11 +95,27 @@ public static class LocalizationCatalog
             return exact;
         }
 
-        return normalizedTranslations.TryGetValue(
+        if (normalizedTranslations.TryGetValue(
                 NormalizeSource(source),
-                out var candidate)
-            ? AdaptPresentation(source, candidate)
-            : source;
+                out var candidate))
+        {
+            return AdaptPresentation(source, candidate);
+        }
+
+        if (applicationTranslations.TryGetValue(source, out exact))
+        {
+            return exact;
+        }
+
+        foreach (var pattern in formatPatterns)
+        {
+            if (pattern.TryTranslate(source, out var formatted))
+            {
+                return formatted;
+            }
+        }
+
+        return source;
     }
 
     public static string NormalizeLanguage(string? language)
@@ -221,6 +245,151 @@ public static class LocalizationCatalog
     private sealed record TranslationCandidate(
         string Source,
         string Translation);
+
+    private static IReadOnlyDictionary<string, string> LoadLegacyTranslations(
+        string language)
+    {
+        using var document = OpenResource(LegacyResourceName);
+        if (!document.RootElement.TryGetProperty(language, out var languageMap)
+            || languageMap.ValueKind != JsonValueKind.Object)
+        {
+            return EmptyTranslations;
+        }
+
+        return languageMap.EnumerateObject().ToDictionary(
+            property => property.Name,
+            property => property.Value.GetString() ?? property.Name,
+            StringComparer.Ordinal);
+    }
+
+    private static IReadOnlyDictionary<string, string> LoadApplicationTranslations(
+        string language)
+    {
+        using var document = OpenResource(ApplicationResourceName);
+        if (!document.RootElement.TryGetProperty(language, out var languageMap)
+            || languageMap.ValueKind != JsonValueKind.Array)
+        {
+            return EmptyTranslations;
+        }
+
+        return languageMap.EnumerateArray().ToDictionary(
+            element => element.GetProperty("source").GetString()
+                ?? string.Empty,
+            element => element.GetProperty("translation").GetString()
+                ?? element.GetProperty("source").GetString()
+                ?? string.Empty,
+            StringComparer.Ordinal);
+    }
+
+    private static int LoadSourceCount()
+    {
+        using var document = OpenResource(SourceResourceName);
+        return document.RootElement.ValueKind == JsonValueKind.Array
+            ? document.RootElement.GetArrayLength()
+            : 0;
+    }
+
+    private static JsonDocument OpenResource(string resourceName)
+    {
+        var stream = typeof(LocalizationCatalog).Assembly
+            .GetManifestResourceStream(resourceName)
+            ?? throw new InvalidOperationException(
+                $"The embedded localization catalog {resourceName} is missing.");
+        try
+        {
+            return JsonDocument.Parse(stream);
+        }
+        finally
+        {
+            stream.Dispose();
+        }
+    }
+
+    private sealed class FormatTranslationPattern
+    {
+        private static readonly Regex Placeholder = new(
+            @"\{(\d+)\}",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        private readonly Regex matcher;
+        private readonly string translation;
+
+        private FormatTranslationPattern(
+            string source,
+            string translation,
+            Regex matcher,
+            string anchor)
+        {
+            Source = source;
+            this.translation = translation;
+            this.matcher = matcher;
+            Anchor = anchor;
+        }
+
+        public string Source { get; }
+
+        public string Anchor { get; }
+
+        public static bool IsTemplate(string source)
+        {
+            return Placeholder.IsMatch(source);
+        }
+
+        public static FormatTranslationPattern Create(
+            string source,
+            string translation)
+        {
+            var expression = new StringBuilder("^");
+            var literals = new List<string>();
+            var offset = 0;
+            foreach (Match placeholder in Placeholder.Matches(source))
+            {
+                var literal = source[offset..placeholder.Index];
+                literals.Add(literal);
+                expression.Append(Regex.Escape(literal));
+                expression.Append("(?<arg")
+                    .Append(placeholder.Groups[1].Value)
+                    .Append(">.*?)");
+                offset = placeholder.Index + placeholder.Length;
+            }
+
+            var tail = source[offset..];
+            literals.Add(tail);
+            expression.Append(Regex.Escape(tail)).Append('$');
+            return new FormatTranslationPattern(
+                source,
+                translation,
+                new Regex(
+                    expression.ToString(),
+                    RegexOptions.Compiled
+                        | RegexOptions.CultureInvariant
+                        | RegexOptions.Singleline),
+                literals.MaxBy(value => value.Length) ?? string.Empty);
+        }
+
+        public bool TryTranslate(string source, out string result)
+        {
+            if (Anchor.Length > 0
+                && !source.Contains(Anchor, StringComparison.Ordinal))
+            {
+                result = string.Empty;
+                return false;
+            }
+
+            var match = matcher.Match(source);
+            if (!match.Success)
+            {
+                result = string.Empty;
+                return false;
+            }
+
+            result = Placeholder.Replace(
+                translation,
+                placeholder => match.Groups[
+                    $"arg{placeholder.Groups[1].Value}"].Value);
+            return true;
+        }
+    }
 }
 
 public sealed record LocalizationLanguage(string Code, string DisplayName);

@@ -30,6 +30,10 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\legacy-localization.json"
                       LogicalName="SrvSurvey.Desktop.Resources.legacy-localization.json" />
+    <EmbeddedResource Include="Resources\avalonia-localization.json"
+                      LogicalName="SrvSurvey.Desktop.Resources.avalonia-localization.json" />
+    <EmbeddedResource Include="Resources\avalonia-localization-source.json"
+                      LogicalName="SrvSurvey.Desktop.Resources.avalonia-localization-source.json" />
   </ItemGroup>
 
   <ItemGroup>

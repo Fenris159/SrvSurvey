@@ -1,9 +1,11 @@
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Localization;
+using SrvSurvey.Desktop.Tests.Localization;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
+[Collection(LocalizationTestCollection.Name)]
 public sealed class LocalizationViewModelTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(

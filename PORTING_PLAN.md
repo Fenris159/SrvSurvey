@@ -160,19 +160,19 @@ on Windows and Linux.
   user explicitly applies a draft. Overlay writes are atomic, reopen-verified,
   and preceded by a checksum-verified backup; saved-state metadata lives only
   in `overlay-theme-states.json`.
-- [ ] Complete localization of port-only and dynamic presentation strings.
-  The original seven non-English/pseudo catalogs now generate a deterministic
-  UTF-8 Avalonia catalog with all 1,090 source strings per language. Startup
-  applies the imported `lang` preference before constructing controls, literal
-  control text is translated without replacing bindings, and Settings persists
-  later changes only in the isolated cross-platform file with a controlled
-  restart. The current markup audit finds 1,015 unique Avalonia literals: 12
-  exact legacy matches plus 29 unique, collision-rejected variants that differ
-  only by WinForms accelerator marks, label punctuation, or casing. Those safe
-  variants now reuse the original translations while preserving Avalonia's
-  presentation shape. The remaining port-only literals and bound/dynamic
-  presentation strings still require explicit translations, so localization
-  parity remains open.
+- [x] Complete localization of port-only and dynamic presentation strings.
+  The original hand-maintained catalog remains authoritative for its 1,090
+  source strings per language. A Roslyn/XAML inventory adds 3,773 Avalonia-only
+  literal and dynamic format sources for German, Spanish, French, Brazilian
+  Portuguese, Russian, Simplified Chinese, and pseudo-localization. Both
+  generated resources are deterministic UTF-8, embedded for offline use, and
+  verified for exact source coverage, format placeholders, protected product
+  names/file names/hotkeys, and invalid replacement characters. Startup applies
+  the imported `lang` preference before constructing controls; literal and
+  bound presentation updates are translated without replacing their bindings,
+  including the custom-drawn Guardian and human-site map labels. Settings keeps
+  later changes in the isolated cross-platform file and uses a controlled
+  restart.
 - [x] Test unknown fields, corrupt files, concurrent writes, and copied-profile
   upgrades.
 

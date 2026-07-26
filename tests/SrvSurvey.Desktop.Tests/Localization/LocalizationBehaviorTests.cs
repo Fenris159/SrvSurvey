@@ -19,7 +19,7 @@ public sealed class LocalizationBehaviorTests : IDisposable
     }
 
     [Fact]
-    public void EnabledBehaviorDoesNotReplaceBindings()
+    public void EnabledBehaviorTranslatesBindingUpdatesWithoutReplacingBinding()
     {
         LocalizationCatalog.Initialize("de");
         var textBlock = new TextBlock();
@@ -32,6 +32,13 @@ public sealed class LocalizationBehaviorTests : IDisposable
 
         LocalizationBehavior.SetEnabled(textBlock, true);
 
+        Assert.NotNull(BindingOperations.GetBindingExpressionBase(
+            textBlock,
+            TextBlock.TextProperty));
+
+        textBlock.SetCurrentValue(TextBlock.TextProperty, "Close");
+
+        Assert.Equal("Schließen", textBlock.Text);
         Assert.NotNull(BindingOperations.GetBindingExpressionBase(
             textBlock,
             TextBlock.TextProperty));

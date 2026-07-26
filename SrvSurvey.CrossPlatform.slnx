@@ -7,4 +7,7 @@
     <Project Path="tests/SrvSurvey.Core.Tests/SrvSurvey.Core.Tests.csproj" />
     <Project Path="tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/SrvSurvey.LocalizationTool/SrvSurvey.LocalizationTool.csproj" />
+  </Folder>
 </Solution>

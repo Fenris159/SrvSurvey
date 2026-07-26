@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using SrvSurvey.Core.Settlements;
+using SrvSurvey.Desktop.Localization;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Controls;
@@ -472,7 +473,12 @@ public sealed class HumanSiteMapControl : Control
                 location,
                 24,
                 24);
-            DrawLabel(context, "SHIP", location, brush, 8);
+            DrawLabel(
+                context,
+                LocalizationCatalog.Translate("SHIP"),
+                location,
+                brush,
+                8);
         }
 
         if (SrvOffset is { } srv)
@@ -485,7 +491,12 @@ public sealed class HumanSiteMapControl : Control
                 new Rect(location.X - 10, location.Y - 10, 20, 20),
                 3,
                 3);
-            DrawLabel(context, "SRV", location, brush, 7);
+            DrawLabel(
+                context,
+                LocalizationCatalog.Translate("SRV"),
+                location,
+                brush,
+                7);
         }
     }
 

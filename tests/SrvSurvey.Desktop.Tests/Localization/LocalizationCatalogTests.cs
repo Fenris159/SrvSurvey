@@ -11,11 +11,14 @@ public sealed class LocalizationCatalogTests : IDisposable
         LocalizationCatalog.Initialize("de");
 
         Assert.Equal("de", LocalizationCatalog.CurrentLanguage);
-        Assert.Equal(1_090, LocalizationCatalog.TranslationCount);
+        Assert.Equal(1_090, LocalizationCatalog.LegacyTranslationCount);
+        Assert.Equal(3_773, LocalizationCatalog.ApplicationTranslationCount);
+        Assert.Equal(3_773, LocalizationCatalog.SourceCount);
         Assert.Equal("Himmelskörper", LocalizationCatalog.Translate("Bodies"));
         Assert.Equal(
-            "Avalonia-only text",
-            LocalizationCatalog.Translate("Avalonia-only text"));
+            "Plattformübergreifender Erkundungsbegleiter",
+            LocalizationCatalog.Translate(
+                "Cross-platform exploration companion"));
     }
 
     [Fact]
@@ -26,7 +29,10 @@ public sealed class LocalizationCatalogTests : IDisposable
         {
             LocalizationCatalog.Initialize(language.Code);
 
-            Assert.Equal(1_090, LocalizationCatalog.TranslationCount);
+            Assert.Equal(1_090, LocalizationCatalog.LegacyTranslationCount);
+            Assert.Equal(
+                LocalizationCatalog.SourceCount,
+                LocalizationCatalog.ApplicationTranslationCount);
         }
     }
 
@@ -45,14 +51,30 @@ public sealed class LocalizationCatalogTests : IDisposable
     }
 
     [Fact]
-    public void NovelAvaloniaTextStillFallsBackWithoutGuessing()
+    public void DynamicAvaloniaFormatRetainsRuntimeValues()
+    {
+        LocalizationCatalog.Initialize("de");
+        var template = LocalizationCatalog.Translate(
+            "Loaded {0} active Raven Colonial projects.");
+
+        Assert.Equal(
+            template.Replace("{0}", "3", StringComparison.Ordinal),
+            LocalizationCatalog.Translate(
+                "Loaded 3 active Raven Colonial projects."));
+        Assert.NotEqual(
+            "Loaded {0} active Raven Colonial projects.",
+            template);
+    }
+
+    [Fact]
+    public void UnknownTextStillFallsBackWithoutGuessing()
     {
         LocalizationCatalog.Initialize("de");
 
         Assert.Equal(
-            "Cross-platform exploration companion",
+            "Text that is absent from every catalog",
             LocalizationCatalog.Translate(
-                "Cross-platform exploration companion"));
+                "Text that is absent from every catalog"));
     }
 
     [Theory]

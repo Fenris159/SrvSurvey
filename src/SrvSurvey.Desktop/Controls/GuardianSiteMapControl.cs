@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using SrvSurvey.Core.Guardian;
+using SrvSurvey.Desktop.Localization;
 
 namespace SrvSurvey.Desktop.Controls;
 
@@ -400,7 +401,7 @@ public sealed class GuardianSiteMapControl : Control
         FontWeight weight)
     {
         return new FormattedText(
-            text,
+            LocalizationCatalog.Translate(text),
             CultureInfo.InvariantCulture,
             FlowDirection.LeftToRight,
             new Typeface("Inter", FontStyle.Normal, weight),
