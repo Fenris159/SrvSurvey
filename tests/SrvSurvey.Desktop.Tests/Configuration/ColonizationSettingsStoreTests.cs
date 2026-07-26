@@ -114,6 +114,50 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
         Assert.False(store.LoadFleetCarrierCargoSyncEnabled());
     }
 
+    [Fact]
+    public void BuildSiteRepairCachePersistsLatestFiftyUniqueVisits()
+    {
+        var path = Path.Combine(directory, "ui.json");
+        var store = new ColonizationSettingsStore(path);
+        var visits = Enumerable.Range(1, 52)
+            .Select(index => new ColonizationBuildSiteRepairVisit(
+                4_300_000_000 + index,
+                $" Station {index} "))
+            .Append(new ColonizationBuildSiteRepairVisit(
+                4_300_000_052,
+                "STATION 52"));
+
+        store.SaveBuildSiteRepairVisits(visits);
+
+        var loaded = store.LoadBuildSiteRepairVisits();
+        Assert.Equal(50, loaded.Count);
+        Assert.Equal(4_300_000_003, loaded[0].MarketId);
+        Assert.Equal("station 52", loaded[^1].StationKey);
+        Assert.True(store.LoadBuildSiteRepairVisits().SequenceEqual(loaded));
+    }
+
+    [Fact]
+    public void BuildSiteRepairCacheIgnoresMalformedEntries()
+    {
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "ui.json");
+        File.WriteAllText(
+            path,
+            """
+            {"Colonization":{"BuildSiteRepairVisits":[
+              {"MarketId":0,"StationKey":"invalid"},
+              {"MarketId":4300000001},
+              {"MarketId":4300000002,"StationKey":"Valid Port"}
+            ]}}
+            """);
+        var store = new ColonizationSettingsStore(path);
+
+        var visit = Assert.Single(store.LoadBuildSiteRepairVisits());
+
+        Assert.Equal(4_300_000_002, visit.MarketId);
+        Assert.Equal("valid port", visit.StationKey);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(directory))

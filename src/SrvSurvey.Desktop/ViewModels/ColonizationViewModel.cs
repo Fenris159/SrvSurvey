@@ -14,6 +14,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly TimeSpan DockingRefreshDelay = TimeSpan.FromSeconds(4);
+    private const int MaximumBuildSiteRepairVisits = 50;
 
     private readonly IRavenColonialClient client;
     private readonly ColonizationBuildCatalog buildCatalog;
@@ -30,6 +31,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private readonly AsyncCommand publishFleetCarrierCommand;
     private readonly AsyncCommand syncFleetCarrierCargoCommand;
     private readonly Func<TimeSpan, CancellationToken, Task> delayAsync;
+    private readonly object buildSiteRepairLock = new();
+    private readonly Queue<ColonizationBuildSiteRepairVisit>
+        buildSiteRepairVisits = new();
+    private readonly HashSet<ColonizationBuildSiteRepairVisit>
+        buildSiteRepairVisitSet = [];
+    private readonly HashSet<(long SystemAddress, long MarketId, string StationKey)>
+        buildSiteRepairsInFlight = [];
     private CancellationTokenSource? dockingRefreshCancellation;
     private IReadOnlyList<ColonizationProjectRowViewModel> projects = [];
     private IReadOnlyList<ColonizationResourceRowViewModel> constructionResources =
@@ -95,6 +103,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         shipCargoPublishingEnabled =
             settingsStore.LoadShipCargoPublishingEnabled();
         isEnabled = settingsStore.LoadEnabled();
+        foreach (var visit in settingsStore.LoadBuildSiteRepairVisits())
+        {
+            buildSiteRepairVisits.Enqueue(visit);
+            buildSiteRepairVisitSet.Add(visit);
+        }
         statusMessage = isEnabled
             ? "Raven Colonial access is enabled. Waiting for a commander profile."
             : "Raven Colonial access is off. No project data will be fetched or published.";
@@ -614,8 +627,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             {
                 var message = journalEvent.EventName switch
                 {
-                    "Docked" => await SynchronizeDockedProjectAsync(
-                        journalEvent),
+                    "Docked" => CombineMessages(
+                        await SynchronizeDockedProjectAsync(journalEvent),
+                        await SynchronizeBuildSiteRepairAsync(journalEvent)),
+                    "Location" when GetJournalBoolean(
+                        journalEvent.Payload,
+                        "Docked") == true =>
+                        await SynchronizeBuildSiteRepairAsync(journalEvent),
                     "ColonisationContribution" =>
                         await SynchronizeContributionAsync(journalEvent),
                     "ColonisationConstructionDepot" =>
@@ -798,6 +816,141 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             });
         UpsertProject(updated);
         return $"Updated Raven project faction for {updated.BuildName}.";
+    }
+
+    private async Task<string?> SynchronizeBuildSiteRepairAsync(
+        JournalEventEnvelope journalEvent)
+    {
+        if (storedRavenApiKey is null)
+        {
+            return null;
+        }
+
+        var root = journalEvent.Payload;
+        var stationName = GetJournalString(root, "StationName");
+        var stationType = GetJournalString(root, "StationType");
+        var systemAddress = GetJournalInt64(root, "SystemAddress");
+        var marketId = GetJournalInt64(root, "MarketID");
+        var isConstructionShip = stationName?.Contains(
+            "ColonisationShip",
+            StringComparison.Ordinal) == true;
+        if (systemAddress is not > 0
+            || marketId is not > 0
+            || string.IsNullOrWhiteSpace(stationName)
+            || !ColonizationBuildSiteRepair.IsPlayerColonyMarketId(
+                marketId.Value)
+            || ColonizationBuildSiteRepair.ShouldSkipDockContext(
+                stationType,
+                stationName,
+                isConstructionShip))
+        {
+            return null;
+        }
+
+        var stationKey = ColonizationBuildSiteRepair
+            .NormalizeDockStationName(stationName)
+            .ToLowerInvariant();
+        if (stationKey.Length == 0)
+        {
+            return null;
+        }
+
+        var visit = new ColonizationBuildSiteRepairVisit(
+            marketId.Value,
+            stationKey);
+        var inFlight = (systemAddress.Value, marketId.Value, stationKey);
+        lock (buildSiteRepairLock)
+        {
+            if (buildSiteRepairVisitSet.Contains(visit)
+                || !buildSiteRepairsInFlight.Add(inFlight))
+            {
+                return null;
+            }
+        }
+
+        try
+        {
+            var sites = await GetSystemSitesForRepairAsync(
+                systemAddress.Value);
+            var plan = ColonizationBuildSiteRepair.CreatePlan(
+                sites,
+                stationName,
+                marketId.Value);
+            if (plan is null || string.IsNullOrWhiteSpace(plan.Site.Id))
+            {
+                return null;
+            }
+
+            await client.PatchSystemSiteAsync(
+                systemAddress.Value.ToString(CultureInfo.InvariantCulture),
+                plan.Site.Id,
+                plan.CreatePatch(),
+                storedRavenApiKey);
+            RememberBuildSiteRepairVisit(visit);
+            return plan.Field == ColonizationBuildSiteRepairField.MarketId
+                ? $"Repaired Raven Market Info for {plan.NormalizedStationName}."
+                : $"Repaired the Raven site name for {plan.NormalizedStationName}.";
+        }
+        finally
+        {
+            lock (buildSiteRepairLock)
+            {
+                buildSiteRepairsInFlight.Remove(inFlight);
+            }
+        }
+    }
+
+    private async Task<IReadOnlyList<ColonizationSystemSite>>
+        GetSystemSitesForRepairAsync(long systemAddress)
+    {
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                return await client.GetSystemSitesAsync(
+                    systemAddress.ToString(CultureInfo.InvariantCulture));
+            }
+            catch (Exception exception) when (
+                attempt < 2
+                && exception is HttpRequestException or TaskCanceledException)
+            {
+                await delayAsync(
+                    TimeSpan.FromSeconds(1.5 * (attempt + 1)),
+                    CancellationToken.None);
+            }
+        }
+    }
+
+    private void RememberBuildSiteRepairVisit(
+        ColonizationBuildSiteRepairVisit visit)
+    {
+        lock (buildSiteRepairLock)
+        {
+            if (!buildSiteRepairVisitSet.Add(visit))
+            {
+                return;
+            }
+
+            if (buildSiteRepairVisits.Count
+                == MaximumBuildSiteRepairVisits)
+            {
+                buildSiteRepairVisitSet.Remove(
+                    buildSiteRepairVisits.Dequeue());
+            }
+
+            buildSiteRepairVisits.Enqueue(visit);
+            try
+            {
+                settingsStore.SaveBuildSiteRepairVisits(
+                    buildSiteRepairVisits);
+            }
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException)
+            {
+                // The server repair succeeded; a cache write failure must not
+                // report that successful remote change as failed.
+            }
+        }
     }
 
     private async Task<string?> SynchronizeContributionAsync(
@@ -1960,6 +2113,32 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             && value.TryGetInt64(out var result)
                 ? result
                 : null;
+    }
+
+    private static bool? GetJournalBoolean(
+        JsonElement root,
+        string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out var value))
+        {
+            return null;
+        }
+
+        return value.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            _ => null,
+        };
+    }
+
+    private static string? CombineMessages(params string?[] messages)
+    {
+        var present = messages.Where(message =>
+            !string.IsNullOrWhiteSpace(message)).ToArray();
+        return present.Length == 0
+            ? null
+            : string.Join(Environment.NewLine, present);
     }
 
     private static int? GetJournalInt32(

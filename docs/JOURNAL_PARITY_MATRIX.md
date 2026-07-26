@@ -21,7 +21,7 @@ and requires each event to occur in the golden projection files assigned below.
 | Guardian/human sites | `ApproachSettlement`, `BackpackChange`, `CollectItems`, `SupercruiseEntry`, `DockingRequested`, `DockingCancelled`, `DockingDenied`, `DockingGranted` | `GuardianLiveSiteStateTests`, `HumanSiteLiveStateTests`, `HumanSiteActivityTrackerTests` |
 | Missions/combat | `Missions`, `MissionAccepted`, `MissionFailed`, `MissionAbandoned`, `MissionCompleted`, `Bounty` | `CombatStateTests`, `RamTahStateTests` |
 | Cargo/materials | `CollectCargo`, `EjectCargo`, `CargoTransfer`, `CargoDepot`, `Cargo`, `MarketBuy`, `MarketSell`, `Market`, `Materials`, `MaterialCollected`, `MaterialTrade`, `TechnologyBroker` | `CargoInventoryStateTests`, `GuardianArtifactInventoryStateTests`, `JournalDirectoryMonitorTests`, `NotificationViewModelTests` |
-| Colonization | `ColonisationConstructionDepot`, `ColonisationContribution`, `ColonisationBeaconDeployed` | `ColonizationConstructionStateTests` |
+| Colonization | `ColonisationConstructionDepot`, `ColonisationContribution`, `ColonisationBeaconDeployed`, live `Docked`, docked `Location` | `ColonizationConstructionStateTests`, `ColonizationBuildSiteRepairTests`, `ColonizationViewModelTests` |
 | Route/docking/travel | `FSDTarget`, `NavRoute`, `NavRouteClear`, `Interdicted`, `Docked`, `Undocked` | `DockToDockLogServiceTests`, `JumpInfoViewModelTests`, `GalaxyMapOverlayViewModelTests` |
 
 The projection tests cover durable commander/system data, disposable live
@@ -29,4 +29,3 @@ location and vehicle context, body scan and organic progress, Guardian and human
 site state, mission counters, cargo/material balances, colonization construction,
 and route/docking history. Malformed payload tests remain fail-closed and are
 kept beside their corresponding state tests.
-

@@ -441,6 +441,164 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task DockedLocationRepairsSiteAndPersistsRepeatGuard()
+    {
+        var client = new StubRavenColonialClient
+        {
+            SystemSitesResponse =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "&4310842115",
+                    Name = "Gold Enterprise",
+                    Status = ColonizationSystemSiteStatus.Complete,
+                },
+            ],
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", true, "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        var location = Event(
+            "Location",
+            """
+            "Docked":true,"MarketID":4310842115,
+            "SystemAddress":123456789,"StarSystem":"Test System",
+            "StationName":"Gold Enterprise","StationType":"Dodec"
+            """);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [location],
+            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [location],
+            allowPublishing: true);
+
+        Assert.Equal(1, client.SystemSiteLoadCount);
+        var patch = Assert.Single(client.SystemSitePatches);
+        Assert.Equal("123456789", patch.SystemNameOrAddress);
+        Assert.Equal("&4310842115", patch.SiteId);
+        Assert.Equal(4_310_842_115, patch.Patch.MarketId);
+        Assert.Null(patch.Patch.Name);
+        Assert.Equal("secret-key", patch.ApiKey);
+        Assert.Contains("Repaired Raven Market Info", viewModel.StatusMessage);
+
+        var reloadedClient = new StubRavenColonialClient
+        {
+            SystemSitesResponse = client.SystemSitesResponse,
+        };
+        var reloaded = Create(reloadedClient);
+        reloaded.IsEnabled = true;
+        reloaded.SetCommanderProfile("F123", true, "secret-key");
+        await reloaded.SetCommanderAsync("Test Cmdr");
+
+        await reloaded.SynchronizeLiveProjectsAsync(
+            [location],
+            allowPublishing: true);
+
+        Assert.Equal(0, reloadedClient.SystemSiteLoadCount);
+        Assert.Empty(reloadedClient.SystemSitePatches);
+    }
+
+    [Fact]
+    public async Task FailedOrNoMatchSiteRepairCanRetryLater()
+    {
+        var delays = new List<TimeSpan>();
+        var client = new StubRavenColonialClient();
+        client.SystemSiteFailures.Enqueue(
+            new HttpRequestException("temporary one"));
+        client.SystemSiteFailures.Enqueue(
+            new HttpRequestException("temporary two"));
+        var viewModel = Create(
+            client,
+            (delay, _) =>
+            {
+                delays.Add(delay);
+                return Task.CompletedTask;
+            });
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", true, "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        var docked = Event(
+            "Docked",
+            """
+            "MarketID":4310999999,"SystemAddress":20,
+            "StationName":"Dampier Gateway","StationType":"Outpost"
+            """);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [docked],
+            allowPublishing: true);
+
+        Assert.Equal(
+            [TimeSpan.FromSeconds(1.5), TimeSpan.FromSeconds(3)],
+            delays);
+        Assert.Equal(3, client.SystemSiteLoadCount);
+        Assert.Empty(client.SystemSitePatches);
+
+        client.SystemSitesResponse =
+        [
+            new ColonizationSystemSite
+            {
+                Id = "x1",
+                Name = "Dampier Gateway",
+                MarketId = 3_963_024_386,
+                Status = ColonizationSystemSiteStatus.Complete,
+            },
+        ];
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [docked],
+            allowPublishing: true);
+
+        Assert.Equal(4, client.SystemSiteLoadCount);
+        Assert.Equal(
+            4_310_999_999,
+            Assert.Single(client.SystemSitePatches).Patch.MarketId);
+    }
+
+    [Fact]
+    public async Task SiteRepairHonorsBootstrapCredentialAndDockSafetyGates()
+    {
+        var client = new StubRavenColonialClient();
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        var completedPort = Event(
+            "Docked",
+            """
+            "MarketID":4310999999,"SystemAddress":20,
+            "StationName":"Dampier Gateway","StationType":"Outpost"
+            """);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [completedPort],
+            allowPublishing: true);
+        viewModel.SetCommanderProfile("F123", true, "secret-key");
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [completedPort],
+            allowPublishing: false);
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [Event(
+                "Docked",
+                """
+                "MarketID":4310999999,"SystemAddress":20,
+                "StationName":"ABC-123","StationType":"FleetCarrier"
+                """)],
+            allowPublishing: true);
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [Event(
+                "Location",
+                """
+                "Docked":false,"MarketID":4310999999,"SystemAddress":20,
+                "StationName":"Dampier Gateway","StationType":"Outpost"
+                """)],
+            allowPublishing: true);
+
+        Assert.Equal(0, client.SystemSiteLoadCount);
+        Assert.Empty(client.SystemSitePatches);
+    }
+
+    [Fact]
     public async Task DockingPermissionRefreshesActiveCommanderProjectsAfterLegacyDelay()
     {
         var delays = new List<TimeSpan>();
@@ -1255,6 +1413,8 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public int SiteProjectLoadCount { get; private set; }
 
+        public int SystemSiteLoadCount { get; private set; }
+
         public int MarkCompleteCount { get; private set; }
 
         public List<ColonizationProjectUpdate> ProjectUpdates { get; } = [];
@@ -1264,6 +1424,16 @@ public sealed class ColonizationViewModelTests : IDisposable
         public List<string?> PrimaryProjectRequests { get; } = [];
 
         public List<SystemUpdateCall> SystemUpdates { get; } = [];
+
+        public List<SystemSitePatchCall> SystemSitePatches { get; } = [];
+
+        public Queue<Exception> SystemSiteFailures { get; } = new();
+
+        public IReadOnlyList<ColonizationSystemSite> SystemSitesResponse
+        {
+            get;
+            set;
+        } = [];
 
         public ColonizationCurrentShip? LastPublishedShip { get; private set; }
 
@@ -1388,7 +1558,11 @@ public sealed class ColonizationViewModelTests : IDisposable
             string systemNameOrAddress,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<IReadOnlyList<ColonizationSystemSite>>([]);
+            SystemSiteLoadCount++;
+            return SystemSiteFailures.TryDequeue(out var failure)
+                ? Task.FromException<IReadOnlyList<ColonizationSystemSite>>(
+                    failure)
+                : Task.FromResult(SystemSitesResponse);
         }
 
         public Task<string?> GetSystemArchitectAsync(
@@ -1432,8 +1606,15 @@ public sealed class ColonizationViewModelTests : IDisposable
             string siteId,
             ColonizationSystemSitePatch patch,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default)
+        {
+            SystemSitePatches.Add(new SystemSitePatchCall(
+                systemNameOrAddress,
+                siteId,
+                patch,
+                apiKey));
+            return Task.CompletedTask;
+        }
 
         public Task<ColonizationProject?> CreateProjectAsync(
             ColonizationProjectCreate project,
@@ -1538,6 +1719,12 @@ public sealed class ColonizationViewModelTests : IDisposable
     private sealed record SystemUpdateCall(
         string SystemNameOrAddress,
         ColonizationSystemSiteUpdate Update,
+        string ApiKey);
+
+    private sealed record SystemSitePatchCall(
+        string SystemNameOrAddress,
+        string SiteId,
+        ColonizationSystemSitePatch Patch,
         string ApiKey);
 
     private sealed record FleetCarrierAdjustmentCall(

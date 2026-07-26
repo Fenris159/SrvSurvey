@@ -74,6 +74,40 @@ public sealed class ColonizationSettingsStore
             && value;
     }
 
+    public IReadOnlyList<ColonizationBuildSiteRepairVisit>
+        LoadBuildSiteRepairVisits()
+    {
+        var root = documentStore.Load();
+        var visits = root["Colonization"]?["BuildSiteRepairVisits"]
+            as JsonArray;
+        if (visits is null)
+        {
+            return [];
+        }
+
+        var loaded = new List<ColonizationBuildSiteRepairVisit>();
+        foreach (var item in visits.OfType<JsonObject>())
+        {
+            if (item["MarketId"] is not JsonValue marketValue
+                || !marketValue.TryGetValue<long>(out var marketId)
+                || marketId <= 0
+                || item["StationKey"] is not JsonValue stationValue
+                || !stationValue.TryGetValue<string>(out var stationKey)
+                || string.IsNullOrWhiteSpace(stationKey))
+            {
+                continue;
+            }
+
+            var visit = new ColonizationBuildSiteRepairVisit(
+                marketId,
+                stationKey.Trim().ToLowerInvariant());
+            loaded.RemoveAll(existing => existing == visit);
+            loaded.Add(visit);
+        }
+
+        return loaded.TakeLast(50).ToArray();
+    }
+
     public void SaveEnabled(bool enabled)
     {
         documentStore.Update(root =>
@@ -158,6 +192,39 @@ public sealed class ColonizationSettingsStore
         });
     }
 
+    public void SaveBuildSiteRepairVisits(
+        IEnumerable<ColonizationBuildSiteRepairVisit> visits)
+    {
+        ArgumentNullException.ThrowIfNull(visits);
+        var normalized = visits
+            .Where(visit => visit.MarketId > 0
+                && !string.IsNullOrWhiteSpace(visit.StationKey))
+            .Select(visit => visit with
+            {
+                StationKey = visit.StationKey.Trim().ToLowerInvariant(),
+            })
+            .Distinct()
+            .TakeLast(50)
+            .ToArray();
+        documentStore.Update(root =>
+        {
+            var colonization = root["Colonization"] as JsonObject;
+            if (colonization is null)
+            {
+                colonization = [];
+                root["Colonization"] = colonization;
+            }
+
+            root["Version"] = 1;
+            colonization["BuildSiteRepairVisits"] = new JsonArray(
+                normalized.Select(visit => new JsonObject
+                {
+                    ["MarketId"] = visit.MarketId,
+                    ["StationKey"] = visit.StationKey,
+                }).ToArray<JsonNode?>());
+        });
+    }
+
     private static bool GetBoolean(
         JsonObject? source,
         string propertyName,
@@ -169,6 +236,10 @@ public sealed class ColonizationSettingsStore
                 : fallback;
     }
 }
+
+public sealed record ColonizationBuildSiteRepairVisit(
+    long MarketId,
+    string StationKey);
 
 public sealed record ColonizationOverlayPreferences(
     bool AutoShow,

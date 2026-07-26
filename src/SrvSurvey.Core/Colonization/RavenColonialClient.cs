@@ -478,6 +478,18 @@ public sealed class RavenColonialClient : IRavenColonialClient
                 "A system-site patch must contain a market ID or name.",
                 nameof(patch));
         }
+        if (patch.MarketId is <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(patch),
+                "A system-site market ID must be positive.");
+        }
+        if (patch.Name is not null && string.IsNullOrWhiteSpace(patch.Name))
+        {
+            throw new ArgumentException(
+                "A system-site name cannot be empty.",
+                nameof(patch));
+        }
 
         using var request = new HttpRequestMessage(
             HttpMethod.Patch,
