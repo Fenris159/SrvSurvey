@@ -22,6 +22,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
     private string? currentCommanderName;
     private string statusMessage = "Commander profiles have not been scanned yet.";
     private bool isBusy;
+    private int availableGameWindowCount;
 
     public CommanderInstancesViewModel(
         CommanderProfileCatalog catalog,
@@ -41,6 +42,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         LaunchCommand = launchCommand;
         RefreshCommand = refreshCommand;
         SwitchWindowCommand = new RelayCommand(SwitchToNextGameWindow);
+        RefreshGameWindowCount();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -68,6 +70,25 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         : string.IsNullOrWhiteSpace(currentFrontierId)
             ? currentCommanderName
             : $"{currentCommanderName} ({currentFrontierId})";
+
+    public string MultiGameOverlayLabel =>
+        $"~ {(!string.IsNullOrWhiteSpace(currentCommanderName)
+            ? currentCommanderName
+            : currentFrontierId ?? "?")} ~";
+
+    public int AvailableGameWindowCount
+    {
+        get => availableGameWindowCount;
+        private set
+        {
+            if (SetField(ref availableGameWindowCount, value))
+            {
+                OnPropertyChanged(nameof(HasMultipleGameWindows));
+            }
+        }
+    }
+
+    public bool HasMultipleGameWindows => AvailableGameWindowCount > 1;
 
     public string StatusMessage
     {
@@ -97,10 +118,18 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
     public bool SwitchToNextGameWindow()
     {
         var switched = gameWindowSwitcher.TryActivateNext();
+        RefreshGameWindowCount();
         StatusMessage = switched
             ? "Focused the next Elite Dangerous window; overlays will follow it."
             : "No available Elite Dangerous window could be focused.";
         return switched;
+    }
+
+    public void RefreshGameWindowCount()
+    {
+        AvailableGameWindowCount = Math.Max(
+            0,
+            gameWindowSwitcher.GetAvailableWindowCount());
     }
 
     public void Dispose()
@@ -118,6 +147,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
             : commanderName.Trim();
         RebuildOptions();
         OnPropertyChanged(nameof(CurrentCommander));
+        OnPropertyChanged(nameof(MultiGameOverlayLabel));
     }
 
     public async Task RefreshAsync()

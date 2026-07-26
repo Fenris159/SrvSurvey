@@ -31,6 +31,8 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
             journalDirectory,
             "F123",
             switcher);
+        Assert.Equal(2, viewModel.AvailableGameWindowCount);
+        Assert.True(viewModel.HasMultipleGameWindows);
         viewModel.UpdateCurrent("F123", "Drew");
 
         await viewModel.RefreshAsync();
@@ -41,11 +43,18 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
         Assert.Equal("F456", option.FrontierId);
         Assert.Same(option, viewModel.SelectedCommander);
         Assert.Equal("Drew (F123)", viewModel.CurrentCommander);
+        Assert.Equal("~ Drew ~", viewModel.MultiGameOverlayLabel);
         Assert.Equal("F456", launcher.FrontierId);
         Assert.Equal(journalDirectory, launcher.JournalDirectory);
         Assert.True(switched);
         Assert.Equal(1, switcher.ActivationCount);
         Assert.Contains("Focused the next", viewModel.StatusMessage);
+
+        switcher.AvailableWindowCount = 1;
+        viewModel.RefreshGameWindowCount();
+
+        Assert.Equal(1, viewModel.AvailableGameWindowCount);
+        Assert.False(viewModel.HasMultipleGameWindows);
     }
 
     public void Dispose()
@@ -76,6 +85,10 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
     private sealed class RecordingSwitcher : IGameWindowSwitcher
     {
         public int ActivationCount { get; private set; }
+
+        public int AvailableWindowCount { get; set; } = 2;
+
+        public int GetAvailableWindowCount() => AvailableWindowCount;
 
         public bool TryActivateCurrent()
         {

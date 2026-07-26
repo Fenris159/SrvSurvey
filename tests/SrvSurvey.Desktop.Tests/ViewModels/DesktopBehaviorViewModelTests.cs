@@ -87,6 +87,8 @@ public sealed class DesktopBehaviorViewModelTests : IDisposable
 
         public int NextActivationCount { get; private set; }
 
+        public int GetAvailableWindowCount() => 1;
+
         public bool TryActivateCurrent()
         {
             CurrentActivationCount++;

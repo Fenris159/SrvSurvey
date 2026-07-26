@@ -7,6 +7,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public interface IGameWindowSwitcher : IDisposable
 {
+    int GetAvailableWindowCount();
+
     bool TryActivateCurrent();
 
     bool TryActivateNext();
@@ -94,6 +96,8 @@ internal static class GameWindowCycle
 
 internal sealed class UnavailableGameWindowSwitcher : IGameWindowSwitcher
 {
+    public int GetAvailableWindowCount() => 0;
+
     public bool TryActivateCurrent() => false;
 
     public bool TryActivateNext() => false;
@@ -107,6 +111,21 @@ internal sealed class UnavailableGameWindowSwitcher : IGameWindowSwitcher
 internal sealed partial class WindowsGameWindowSwitcher : IGameWindowSwitcher
 {
     private nint previousWindow;
+
+    public int GetAvailableWindowCount()
+    {
+        try
+        {
+            return GetCandidateWindows().Length;
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or NotSupportedException
+                or Win32Exception)
+        {
+            return 0;
+        }
+    }
 
     public bool TryActivateCurrent()
     {
@@ -122,36 +141,7 @@ internal sealed partial class WindowsGameWindowSwitcher : IGameWindowSwitcher
     {
         try
         {
-            using var currentProcess = Process.GetCurrentProcess();
-            var currentSession = currentProcess.SessionId;
-            var windows = new List<(int ProcessId, nint Handle)>();
-            foreach (var process in Process.GetProcessesByName(
-                         EliteGameWindowIdentity.WindowsProcessName))
-            {
-                using (process)
-                {
-                    try
-                    {
-                        if (process.SessionId == currentSession
-                            && process.MainWindowHandle != nint.Zero)
-                        {
-                            windows.Add((process.Id, process.MainWindowHandle));
-                        }
-                    }
-                    catch (Exception exception) when (
-                        exception is InvalidOperationException
-                            or NotSupportedException
-                            or Win32Exception)
-                    {
-                        // Elite can exit while its process details are read.
-                    }
-                }
-            }
-
-            var handles = windows
-                .OrderBy(window => window.ProcessId)
-                .Select(window => window.Handle)
-                .ToArray();
+            var handles = GetCandidateWindows();
             var target = activateNext
                 ? GameWindowCycle.SelectNext(
                     handles,
@@ -186,6 +176,40 @@ internal sealed partial class WindowsGameWindowSwitcher : IGameWindowSwitcher
         {
             return false;
         }
+    }
+
+    private static nint[] GetCandidateWindows()
+    {
+        using var currentProcess = Process.GetCurrentProcess();
+        var currentSession = currentProcess.SessionId;
+        var windows = new List<(int ProcessId, nint Handle)>();
+        foreach (var process in Process.GetProcessesByName(
+                     EliteGameWindowIdentity.WindowsProcessName))
+        {
+            using (process)
+            {
+                try
+                {
+                    if (process.SessionId == currentSession
+                        && process.MainWindowHandle != nint.Zero)
+                    {
+                        windows.Add((process.Id, process.MainWindowHandle));
+                    }
+                }
+                catch (Exception exception) when (
+                    exception is InvalidOperationException
+                        or NotSupportedException
+                        or Win32Exception)
+                {
+                    // Elite can exit while its process details are read.
+                }
+            }
+        }
+
+        return windows
+            .OrderBy(window => window.ProcessId)
+            .Select(window => window.Handle)
+            .ToArray();
     }
 
     public void Dispose()
@@ -274,17 +298,7 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
             return false;
         }
 
-        var windows = ReadWindowList(clientListStackingAtom);
-        if (windows.Length == 0)
-        {
-            windows = ReadWindowList(clientListAtom);
-        }
-
-        var candidates = windows
-            .Where(IsEliteWindow)
-            .Where(IsViewable)
-            .Select(window => unchecked((nint)window))
-            .ToArray();
+        var candidates = GetCandidateWindows();
         var target = activateNext
             ? GameWindowCycle.SelectNext(
                 candidates,
@@ -309,6 +323,26 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
         _ = X11Native.XFlush(display);
         previousWindow = targetWindow;
         return true;
+    }
+
+    public int GetAvailableWindowCount()
+    {
+        return display == nint.Zero ? 0 : GetCandidateWindows().Length;
+    }
+
+    private nint[] GetCandidateWindows()
+    {
+        var windows = ReadWindowList(clientListStackingAtom);
+        if (windows.Length == 0)
+        {
+            windows = ReadWindowList(clientListAtom);
+        }
+
+        return windows
+            .Where(IsEliteWindow)
+            .Where(IsViewable)
+            .Select(window => unchecked((nint)window))
+            .ToArray();
     }
 
     public void Dispose()
