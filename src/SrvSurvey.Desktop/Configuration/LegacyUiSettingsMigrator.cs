@@ -52,6 +52,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("autoShowPlotJumpInfo", "AutoShow"),
                     ("plotJumpInfoMinimal", "Minimal"),
                     ("showPlotJumpInfoIfNextHop", "ShowWhenNextHopSelected"),
+                    ("useLastUpdatedFromSpanshNotEDSM", "UseSpanshLastUpdated"),
                 ]);
                 mappedCount += MapSection(legacy, root, "GalaxyMap",
                 [
@@ -305,6 +306,7 @@ public sealed class LegacyUiSettingsMigrator
             ("FirstFootfallInference", "inferThreshold", "Threshold"),
             ("OverlayBehavior", "hideMultiFloatie", "HideMultiGameCommanderOverlay"),
             ("RavenService", "buildProjectsUrl_TEST", "ServiceUri"),
+            ("JumpInfo", "useLastUpdatedFromSpanshNotEDSM", "UseSpanshLastUpdated"),
         };
         var pending = mappings.Where(mapping =>
             legacy[mapping.Legacy] is not null

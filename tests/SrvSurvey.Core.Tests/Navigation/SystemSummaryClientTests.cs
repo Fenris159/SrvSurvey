@@ -102,6 +102,28 @@ public sealed class SystemSummaryClientTests
     }
 
     [Fact]
+    public async Task LastUpdatedProviderPreferenceSelectsSpanshTimestamp()
+    {
+        var useSpansh = false;
+        var client = new SystemSummaryClient(
+            new HttpClient(new ProviderHandler()),
+            new Uri("https://edsm.test/"),
+            new Uri("https://spansh.test/api/"),
+            () => useSpansh);
+
+        var edsm = await client.GetAsync("Test System", 42);
+        useSpansh = true;
+        var spansh = await client.GetAsync("Test System", 42);
+
+        Assert.Equal(
+            DateTimeOffset.Parse("2025-02-03T04:05:06Z"),
+            edsm.Summary.LastUpdatedAt);
+        Assert.Equal(
+            DateTimeOffset.Parse("2026-03-04T05:06:07Z"),
+            spansh.Summary.LastUpdatedAt);
+    }
+
+    [Fact]
     public async Task NoAddressSkipsSpanshRequest()
     {
         var handler = new ProviderHandler();
@@ -192,6 +214,7 @@ public sealed class SystemSummaryClientTests
             {
               "system": {
                 "id64": 42,
+                "updated_at": "2026-03-04T05:06:07Z",
                 "bodyCount": 6,
                 "coords": { "x": 1, "y": 2, "z": 3 },
                 "bodies": [

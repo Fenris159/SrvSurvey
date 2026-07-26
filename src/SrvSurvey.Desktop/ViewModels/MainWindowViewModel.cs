@@ -320,12 +320,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 new FollowRouteStore(AppDataPaths.DataDirectory)),
             new RouteNameImporter(sharedSystemResolver),
             new SpanshRouteClient());
+        var sharedJumpInfoSettingsStore = jumpInfoSettingsStore
+            ?? new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath);
         var sharedSystemSummaryClient = systemSummaryClient
-            ?? new SystemSummaryClient();
+            ?? new SystemSummaryClient(
+                useSpanshLastUpdated: () => sharedJumpInfoSettingsStore
+                    .Load()
+                    .UseSpanshLastUpdated);
         JumpInfo = new JumpInfoViewModel(
             sharedSystemSummaryClient,
-            jumpInfoSettingsStore
-                ?? new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath));
+            sharedJumpInfoSettingsStore);
         GalaxyMap = new GalaxyMapOverlayViewModel(
             sharedSystemSummaryClient,
             galaxyMapSettingsStore

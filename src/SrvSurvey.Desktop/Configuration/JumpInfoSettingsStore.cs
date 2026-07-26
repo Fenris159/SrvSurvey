@@ -22,7 +22,11 @@ public sealed class JumpInfoSettingsStore
             GetBoolean(
                 jumpInfo,
                 "ShowWhenNextHopSelected",
-                defaults.ShowWhenNextHopSelected));
+                defaults.ShowWhenNextHopSelected),
+            GetBoolean(
+                jumpInfo,
+                "UseSpanshLastUpdated",
+                defaults.UseSpanshLastUpdated));
     }
 
     public void Save(JumpInfoPreferences preferences)
@@ -42,6 +46,8 @@ public sealed class JumpInfoSettingsStore
             jumpInfo["Minimal"] = preferences.Minimal;
             jumpInfo["ShowWhenNextHopSelected"] =
                 preferences.ShowWhenNextHopSelected;
+            jumpInfo["UseSpanshLastUpdated"] =
+                preferences.UseSpanshLastUpdated;
         });
     }
 
@@ -60,10 +66,12 @@ public sealed class JumpInfoSettingsStore
 public sealed record JumpInfoPreferences(
     bool AutoShow,
     bool Minimal,
-    bool ShowWhenNextHopSelected)
+    bool ShowWhenNextHopSelected,
+    bool UseSpanshLastUpdated = false)
 {
     public static JumpInfoPreferences Default { get; } = new(
         AutoShow: true,
         Minimal: false,
-        ShowWhenNextHopSelected: false);
+        ShowWhenNextHopSelected: false,
+        UseSpanshLastUpdated: false);
 }

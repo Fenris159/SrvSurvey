@@ -30,6 +30,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "autoShowPlotJumpInfo": false,
               "plotJumpInfoMinimal": true,
               "showPlotJumpInfoIfNextHop": true,
+              "useLastUpdatedFromSpanshNotEDSM": true,
               "autoShowPlotGalMap": false,
               "galMapFactions": false,
               "hideJournalWriteTimer": true,
@@ -176,7 +177,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             "blue-dark",
             new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
         Assert.Equal(
-            new JumpInfoPreferences(false, true, true),
+            new JumpInfoPreferences(false, true, true, true),
             new JumpInfoSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new GalaxyMapPreferences(false, false),
@@ -539,6 +540,43 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             new Uri("https://localhost:7007/"),
             new RavenServiceSettingsStore(paths.UiSettingsPath)
                 .LoadServiceUri());
+        Assert.Equal(
+            "green-light",
+            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Null(result.PreviousSettingsBackupPath);
+    }
+
+    [Fact]
+    public async Task ExistingImportMarkerReceivesMissingTimestampProviderOnly()
+    {
+        var paths = CreatePaths();
+        var source = Path.Combine(temporaryDirectory, "legacy-timestamp-upgrade");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "{\"useLastUpdatedFromSpanshNotEDSM\":true,"
+                + "\"darkTheme\":true}");
+        await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups-timestamp-upgrade"));
+        var migrator = new LegacyUiSettingsMigrator();
+        Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
+        var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
+        document.Update(root =>
+        {
+            var jumpInfo = Assert.IsType<JsonObject>(root["JumpInfo"]);
+            jumpInfo.Remove("UseSpanshLastUpdated");
+            root["Theme"] = "green-light";
+        });
+
+        var result = migrator.MigrateIfNeeded(paths);
+
+        Assert.True(result.Migrated);
+        Assert.Equal(1, result.MappedPreferenceCount);
+        Assert.True(new JumpInfoSettingsStore(paths.UiSettingsPath)
+            .Load()
+            .UseSpanshLastUpdated);
         Assert.Equal(
             "green-light",
             new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());

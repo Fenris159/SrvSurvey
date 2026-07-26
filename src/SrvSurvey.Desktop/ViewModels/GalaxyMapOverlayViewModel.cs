@@ -414,6 +414,12 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
                     ? " · " + discoveredAt.ToLocalTime().ToString("g")
                     : string.Empty)
             : string.Empty;
+        var updated = summary.LastUpdatedAt is { } updatedAt
+            && (summary.DiscoveredAt is null
+                || updatedAt > summary.DiscoveredAt)
+                    ? "Last updated "
+                        + updatedAt.ToLocalTime().ToString("g")
+                    : string.Empty;
         var details = summary.PointsOfInterest.Genus > 0
             ? $"{summary.PointsOfInterest.Genus:N0} biological genera"
             : string.Empty;
@@ -422,7 +428,8 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             ResolveName(summary.SystemName),
             discovery,
             discovered,
-            details);
+            details,
+            updated);
     }
 
     private void SetRouteFooter()
@@ -547,11 +554,14 @@ public sealed record GalaxyMapSystemViewModel(
     string Name,
     string DiscoveryText,
     string DiscoveredByText,
-    string DetailsText)
+    string DetailsText,
+    string UpdatedText = "")
 {
     public bool HasDiscoveredBy => !string.IsNullOrWhiteSpace(DiscoveredByText);
 
     public bool HasDetails => !string.IsNullOrWhiteSpace(DetailsText);
+
+    public bool HasUpdated => !string.IsNullOrWhiteSpace(UpdatedText);
 }
 
 public sealed record GalaxyMapFactionViewModel(

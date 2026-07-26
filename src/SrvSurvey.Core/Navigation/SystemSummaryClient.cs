@@ -104,15 +104,18 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
     private readonly HttpClient client;
     private readonly Uri edsmBaseUri;
     private readonly Uri spanshBaseUri;
+    private readonly Func<bool> useSpanshLastUpdated;
 
     public SystemSummaryClient(
         HttpClient? client = null,
         Uri? edsmBaseUri = null,
-        Uri? spanshBaseUri = null)
+        Uri? spanshBaseUri = null,
+        Func<bool>? useSpanshLastUpdated = null)
     {
         this.client = client ?? SharedClient;
         this.edsmBaseUri = edsmBaseUri ?? DefaultEdsmBaseUri;
         this.spanshBaseUri = spanshBaseUri ?? DefaultSpanshBaseUri;
+        this.useSpanshLastUpdated = useSpanshLastUpdated ?? (() => false);
     }
 
     public async Task<SystemSummaryLoadResult> GetAsync(
@@ -191,7 +194,9 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             totalBodyCount,
             bodies.Value?.DiscoveredBy ?? traffic.Value?.DiscoveredBy,
             bodies.Value?.DiscoveredAt ?? traffic.Value?.DiscoveredAt,
-            bodies.Value?.LastUpdatedAt,
+            useSpanshLastUpdated()
+                ? spansh.Value?.LastUpdatedAt
+                : bodies.Value?.LastUpdatedAt,
             traffic.Value?.Traffic,
             points,
             spansh.Value?.Specials ?? [])
@@ -426,6 +431,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             starClass,
             scannedBodies,
             totalBodies,
+            GetDateTimeOffset(system, "updated_at"),
             new SystemPoiSummary(
                 totalBodies,
                 genus,
@@ -803,6 +809,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         string? StarClass,
         int ScannedBodyCount,
         int TotalBodyCount,
+        DateTimeOffset? LastUpdatedAt,
         SystemPoiSummary PointsOfInterest,
         IReadOnlyList<SystemSpecialSummary> Specials,
         IReadOnlyList<SystemStationSummary> Stations,

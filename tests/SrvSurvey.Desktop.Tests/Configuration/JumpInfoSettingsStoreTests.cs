@@ -18,6 +18,7 @@ public sealed class JumpInfoSettingsStoreTests : IDisposable
         Assert.True(preferences.AutoShow);
         Assert.False(preferences.Minimal);
         Assert.False(preferences.ShowWhenNextHopSelected);
+        Assert.False(preferences.UseSpanshLastUpdated);
     }
 
     [Fact]
@@ -28,10 +29,10 @@ public sealed class JumpInfoSettingsStoreTests : IDisposable
         File.WriteAllText(path, "{\"Theme\":\"Blue-dark\"}");
         var store = new JumpInfoSettingsStore(path);
 
-        store.Save(new JumpInfoPreferences(false, true, true));
+        store.Save(new JumpInfoPreferences(false, true, true, true));
         var reloaded = store.Load();
 
-        Assert.Equal(new JumpInfoPreferences(false, true, true), reloaded);
+        Assert.Equal(new JumpInfoPreferences(false, true, true, true), reloaded);
         Assert.Contains("Blue-dark", File.ReadAllText(path));
     }
 

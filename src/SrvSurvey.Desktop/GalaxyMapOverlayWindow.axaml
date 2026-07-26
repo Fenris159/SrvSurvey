@@ -64,6 +64,11 @@
                      FontSize="11"
                      Text="{Binding PrimarySystem.DiscoveredByText}"
                      TextWrapping="Wrap" />
+          <TextBlock IsVisible="{Binding PrimarySystem.HasUpdated}"
+                     Classes="muted"
+                     FontSize="11"
+                     Text="{Binding PrimarySystem.UpdatedText}"
+                     TextWrapping="Wrap" />
           <TextBlock IsVisible="{Binding PrimarySystem.HasDetails}"
                      Foreground="{DynamicResource RavenSuccessBrush}"
                      FontWeight="SemiBold"
@@ -85,6 +90,11 @@
                      FontWeight="SemiBold"
                      Text="{Binding SecondarySystem.Name}" />
           <TextBlock Text="{Binding SecondarySystem.DiscoveryText}"
+                     TextWrapping="Wrap" />
+          <TextBlock IsVisible="{Binding SecondarySystem.HasUpdated}"
+                     Classes="muted"
+                     FontSize="11"
+                     Text="{Binding SecondarySystem.UpdatedText}"
                      TextWrapping="Wrap" />
           <TextBlock IsVisible="{Binding SecondarySystem.HasDetails}"
                      Foreground="{DynamicResource RavenSuccessBrush}"

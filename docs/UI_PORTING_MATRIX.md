@@ -190,6 +190,13 @@ state, distance, progress, and notes/refuel/neutron guidance. The earlier
 route-only top-left window was removed. Automated state, precedence,
 passive-preparation, XAML compilation, and full-suite checks passed; the
 corrected combined layout intentionally awaits the final visual/theme pass.
+`PlotGalMap` is implemented as a passive Galaxy Map system/route summary with
+destination/next-hop precedence, discovery and scan state, factions, points of
+interest, route totals, and system nicknames. It now restores the original
+last-updated line and the migrated choice between the newest EDSM body timestamp
+and Spansh system timestamp through the shared provider path used by
+`PlotJumpInfo`; parsing, dynamic selection, persistence, migration-upgrade, and
+XAML bindings are automated, while the added line awaits final visual QA.
 `PlotJumpInfo` is implemented as a modern top-center passive overlay with
 the original automatic FSD-charge/witchspace/selected-next-hop lifecycle and
 `Alt+D` toggle. It preserves target precedence, nav-route/followed-route

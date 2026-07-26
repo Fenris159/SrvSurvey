@@ -37,6 +37,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private bool autoShow;
     private bool minimal;
     private bool showWhenNextHopSelected;
+    private bool useSpanshLastUpdated;
     private string settingsStatus = string.Empty;
     private string dataStatus = "Waiting for a jump target.";
     private bool disposed;
@@ -56,6 +57,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         autoShow = preferences.AutoShow;
         minimal = preferences.Minimal;
         showWhenNextHopSelected = preferences.ShowWhenNextHopSelected;
+        useSpanshLastUpdated = preferences.UseSpanshLastUpdated;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -95,6 +97,18 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             {
                 SavePreferences();
                 RaiseVisibilityProperties();
+            }
+        }
+    }
+
+    public bool UseSpanshLastUpdated
+    {
+        get => useSpanshLastUpdated;
+        set
+        {
+            if (SetField(ref useSpanshLastUpdated, value))
+            {
+                SavePreferences();
             }
         }
     }
@@ -552,7 +566,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             settingsStore.Save(new JumpInfoPreferences(
                 AutoShow,
                 Minimal,
-                ShowWhenNextHopSelected));
+                ShowWhenNextHopSelected,
+                UseSpanshLastUpdated));
             SettingsStatus = string.Empty;
         }
         catch (Exception exception) when (

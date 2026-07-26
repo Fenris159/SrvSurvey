@@ -1245,6 +1245,12 @@
                      Classes="muted"
                      TextWrapping="Wrap"
                      Text="Also displays the overlay in supercruise when the navigation destination matches the next followed-route system." />
+          <CheckBox IsChecked="{Binding JumpInfo.UseSpanshLastUpdated, Mode=TwoWay}"
+                    Content="Use Spansh for the system last-updated time" />
+          <TextBlock Margin="28,-8,0,0"
+                     Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries." />
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="{Binding JumpInfo.HasSettingsStatus}"
                      TextWrapping="Wrap"

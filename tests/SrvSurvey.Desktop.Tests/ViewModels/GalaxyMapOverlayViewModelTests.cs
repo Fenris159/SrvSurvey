@@ -31,6 +31,8 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         Assert.Equal("DESTINATION", viewModel.PrimarySystem!.Label);
         Assert.Equal("Beta", viewModel.PrimarySystem.Name);
         Assert.Contains("Scanned 4 of 7", viewModel.PrimarySystem.DiscoveryText);
+        Assert.Contains("2025", viewModel.PrimarySystem.UpdatedText);
+        Assert.True(viewModel.PrimarySystem.HasUpdated);
         Assert.Equal("NEXT JUMP", viewModel.SecondarySystem!.Label);
         Assert.Equal("Alpha", viewModel.SecondarySystem.Name);
         Assert.Equal("2 jumps · 7.0 ly", viewModel.RouteFooter);
