@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Updates;
 
@@ -23,6 +24,8 @@ public sealed record PublishedDataIndex(
 
 public sealed class PublishedDataIndexClient : IPublishedDataIndexClient
 {
+    private const int MaximumIndexBytes = 64 * 1024;
+
     public static readonly Uri DefaultIndexUri = new(
         "https://njthomson.github.io/SrvSurvey/data.json");
 
@@ -53,12 +56,11 @@ public sealed class PublishedDataIndexClient : IPublishedDataIndexClient
                 cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        await using var stream = await response.Content.ReadAsStreamAsync(
+        using var document = await BoundedHttpContent.ReadJsonDocumentAsync(
+                response.Content,
+                MaximumIndexBytes,
+                "The published-data index",
                 cancellationToken)
-            .ConfigureAwait(false);
-        using var document = await JsonDocument.ParseAsync(
-                stream,
-                cancellationToken: cancellationToken)
             .ConfigureAwait(false);
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object)

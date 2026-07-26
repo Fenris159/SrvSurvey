@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Search;
 
@@ -14,6 +15,7 @@ public sealed class SpanshBoxelClient : IBoxelSystemResolver
 {
     private const int PageSize = 50;
     private const int MaximumPages = 1_000;
+    private const int MaximumResponseBytes = 8 * 1024 * 1024;
     private static readonly Uri DefaultApiBaseUri = new("https://spansh.co.uk/api/");
     private static readonly HttpClient SharedClient = CreateSharedClient();
 
@@ -45,13 +47,22 @@ public sealed class SpanshBoxelClient : IBoxelSystemResolver
                 PageSize,
                 [new SpanshSort(new SpanshSortDirection("asc"))],
                 new SpanshFilters(new SpanshNameFilter(boxel.Prefix + "*")));
-            using var response = await client.PostAsJsonAsync(
-                    requestUri,
-                    request,
+            using var requestMessage = new HttpRequestMessage(
+                HttpMethod.Post,
+                requestUri)
+            {
+                Content = JsonContent.Create(request),
+            };
+            using var response = await client.SendAsync(
+                    requestMessage,
+                    HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            var payload = await response.Content.ReadFromJsonAsync<SpanshSearchResponse>(
+            var payload = await BoundedHttpContent.ReadFromJsonAsync<SpanshSearchResponse>(
+                    response.Content,
+                    MaximumResponseBytes,
+                    "The Spansh boxel-search response",
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false)
                 ?? throw new HttpRequestException(

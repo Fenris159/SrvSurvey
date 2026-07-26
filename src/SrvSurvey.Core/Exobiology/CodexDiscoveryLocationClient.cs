@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Exobiology;
@@ -36,6 +37,8 @@ public sealed record CodexDiscoveryLocationLoadResult(
 
 public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
 {
+    private const int MaximumResponseBytes = 32 * 1024 * 1024;
+
     private static readonly Uri DefaultBaseUri = new(
         "https://spansh.co.uk/api/");
     private static readonly HttpClient SharedClient = new()
@@ -90,12 +93,11 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
                     operationToken)
                 .ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            await using var stream = await response.Content.ReadAsStreamAsync(
+            using var document = await BoundedHttpContent.ReadJsonDocumentAsync(
+                    response.Content,
+                    MaximumResponseBytes,
+                    "The Spansh system-dump response",
                     operationToken)
-                .ConfigureAwait(false);
-            using var document = await JsonDocument.ParseAsync(
-                    stream,
-                    cancellationToken: operationToken)
                 .ConfigureAwait(false);
             if (!document.RootElement.TryGetProperty("system", out var system)
                 || system.ValueKind != JsonValueKind.Object)

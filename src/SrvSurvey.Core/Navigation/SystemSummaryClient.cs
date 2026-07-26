@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Navigation;
@@ -85,6 +86,8 @@ public sealed record SystemSummaryLoadResult(
 
 public sealed class SystemSummaryClient : ISystemSummaryClient
 {
+    private const int MaximumResponseBytes = 32 * 1024 * 1024;
+
     private static readonly Uri DefaultEdsmBaseUri = new(
         "https://www.edsm.net/");
     private static readonly Uri DefaultSpanshBaseUri = new(
@@ -216,15 +219,17 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
     {
         try
         {
-            using var response = await client.GetAsync(requestUri, cancellationToken)
-                .ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            await using var stream = await response.Content.ReadAsStreamAsync(
+            using var response = await client.GetAsync(
+                    requestUri,
+                    HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken)
                 .ConfigureAwait(false);
-            using var document = await JsonDocument.ParseAsync(
-                    stream,
-                    cancellationToken: cancellationToken)
+            response.EnsureSuccessStatusCode();
+            using var document = await BoundedHttpContent.ReadJsonDocumentAsync(
+                    response.Content,
+                    MaximumResponseBytes,
+                    $"The {provider} response",
+                    cancellationToken)
                 .ConfigureAwait(false);
             return new FetchResult<T>(parser(document.RootElement), null);
         }

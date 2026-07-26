@@ -257,9 +257,13 @@ public sealed class VisitedStarsCacheService(
             $"system={Uri.EscapeDataString(systemName)}",
             Encoding.ASCII,
             "application/x-www-form-urlencoded");
-        using var response = await httpClient.PostAsync(
-                Endpoint,
-                body,
+        using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint)
+        {
+            Content = body,
+        };
+        using var response = await httpClient.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();

@@ -85,6 +85,21 @@ public sealed class PublishedDataIndexClientTests
         Assert.Equal(HttpStatusCode.TooManyRequests, exception.StatusCode);
     }
 
+    [Fact]
+    public async Task GetAsyncRejectsOversizedPublishedIndexes()
+    {
+        var client = new PublishedDataIndexClient(
+            new HttpClient(new StubHandler(
+                HttpStatusCode.OK,
+                new string(' ', (64 * 1024) + 1))));
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(
+            () => client.GetAsync());
+
+        Assert.Contains("published-data index", exception.Message);
+        Assert.Contains("safety limit", exception.Message);
+    }
+
     private sealed class StubHandler(
         HttpStatusCode statusCode,
         string payload) : HttpMessageHandler

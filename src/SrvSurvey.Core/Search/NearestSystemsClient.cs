@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Search;
 
@@ -24,6 +25,8 @@ public interface INearestSystemsClient
 
 public sealed class NearestSystemsClient : INearestSystemsClient
 {
+    private const int MaximumResponseBytes = 8 * 1024 * 1024;
+
     private static readonly Uri DefaultCanonnBaseUri = new(
         "https://us-central1-canonn-api-236217.cloudfunctions.net/query/");
     private static readonly Uri DefaultSpanshBaseUri = new(
@@ -77,7 +80,10 @@ public sealed class NearestSystemsClient : INearestSystemsClient
             HttpCompletionOption.ResponseHeadersRead,
             cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var payload = await response.Content.ReadFromJsonAsync<CanonnNearest>(
+        var payload = await BoundedHttpContent.ReadFromJsonAsync<CanonnNearest>(
+                response.Content,
+                MaximumResponseBytes,
+                "The Canonn nearest-system response",
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false)
             ?? throw new HttpRequestException(
@@ -130,13 +136,22 @@ public sealed class NearestSystemsClient : INearestSystemsClient
             10,
             0,
             new SpanshReference(reference.X, reference.Y, reference.Z));
-        using var response = await client.PostAsJsonAsync(
-                new Uri(spanshBaseUri, "bodies/search"),
-                request,
+        using var requestMessage = new HttpRequestMessage(
+            HttpMethod.Post,
+            new Uri(spanshBaseUri, "bodies/search"))
+        {
+            Content = JsonContent.Create(request),
+        };
+        using var response = await client.SendAsync(
+                requestMessage,
+                HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var payload = await response.Content.ReadFromJsonAsync<SpanshBodies>(
+        var payload = await BoundedHttpContent.ReadFromJsonAsync<SpanshBodies>(
+                response.Content,
+                MaximumResponseBytes,
+                "The Spansh nearest-body response",
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false)
             ?? throw new HttpRequestException(
@@ -238,7 +253,10 @@ public sealed class NearestSystemsClient : INearestSystemsClient
                 HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            var poi = await response.Content.ReadFromJsonAsync<CanonnSystemPoi>(
+            var poi = await BoundedHttpContent.ReadFromJsonAsync<CanonnSystemPoi>(
+                    response.Content,
+                    MaximumResponseBytes,
+                    "The Canonn system-POI response",
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
             notes = poi is null
@@ -246,7 +264,9 @@ public sealed class NearestSystemsClient : INearestSystemsClient
                 : SummarizeCanonnSystemPoi(poi.Codex ?? []);
         }
         catch (Exception exception) when (
-            exception is HttpRequestException or JsonException)
+            exception is HttpRequestException
+                or JsonException
+                or InvalidDataException)
         {
             notes = "System details unavailable";
         }

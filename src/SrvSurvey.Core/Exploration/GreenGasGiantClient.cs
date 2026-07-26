@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Exploration;
@@ -12,6 +13,8 @@ public interface IGreenGasGiantClient
 
 public sealed class GreenGasGiantClient : IGreenGasGiantClient
 {
+    private const int MaximumErrorDetailBytes = 2 * 1024;
+
     public static Uri DefaultServiceUri { get; } = new(
         "https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/");
 
@@ -71,7 +74,10 @@ public sealed class GreenGasGiantClient : IGreenGasGiantClient
         HttpResponseMessage response,
         CancellationToken cancellationToken)
     {
-        var content = await response.Content.ReadAsStringAsync(cancellationToken)
+        var content = await BoundedHttpContent.ReadStringPrefixAsync(
+                response.Content,
+                MaximumErrorDetailBytes,
+                cancellationToken)
             .ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(content))
         {

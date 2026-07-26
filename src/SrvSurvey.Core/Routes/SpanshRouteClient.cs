@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Routes;
@@ -14,6 +15,8 @@ public interface ISpanshRouteClient
 
 public sealed class SpanshRouteClient : ISpanshRouteClient
 {
+    private const int MaximumResponseBytes = 32 * 1024 * 1024;
+
     private static readonly Uri DefaultApiBaseUri = new("https://spansh.co.uk/api/");
     private static readonly HttpClient SharedClient = CreateSharedClient();
 
@@ -60,18 +63,20 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         string? lastStatus = null;
         while (true)
         {
-            using var response = await client.GetAsync(requestUri, cancellationToken)
-                .ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            await using var stream = await response.Content.ReadAsStreamAsync(
+            using var response = await client.GetAsync(
+                    requestUri,
+                    HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken)
                 .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             JsonObject root;
             try
             {
-                root = (await JsonNode.ParseAsync(
-                        stream,
-                        cancellationToken: cancellationToken)
+                root = (await BoundedHttpContent.ReadJsonNodeAsync(
+                        response.Content,
+                        MaximumResponseBytes,
+                        "The Spansh route response",
+                        cancellationToken)
                     .ConfigureAwait(false)) as JsonObject
                     ?? throw InvalidResponse("the root value is not an object");
             }

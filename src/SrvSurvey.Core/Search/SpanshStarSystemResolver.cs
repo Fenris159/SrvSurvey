@@ -1,10 +1,12 @@
-using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Search;
 
 public sealed class SpanshStarSystemResolver : IStarSystemResolver
 {
+    private const int MaximumResponseBytes = 8 * 1024 * 1024;
+
     private static readonly Uri DefaultApiBaseUri = new("https://spansh.co.uk/api/");
     private static readonly HttpClient SharedClient = CreateSharedClient();
 
@@ -28,10 +30,16 @@ public sealed class SpanshStarSystemResolver : IStarSystemResolver
             apiBaseUri,
             "systems/field_values/system_names?q="
                 + Uri.EscapeDataString(query.Trim()));
-        using var response = await client.GetAsync(requestUri, cancellationToken)
+        using var response = await client.GetAsync(
+                requestUri,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var payload = await response.Content.ReadFromJsonAsync<SpanshSystemResponse>(
+        var payload = await BoundedHttpContent.ReadFromJsonAsync<SpanshSystemResponse>(
+                response.Content,
+                MaximumResponseBytes,
+                "The Spansh system-name response",
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
         if (payload?.Systems is null)

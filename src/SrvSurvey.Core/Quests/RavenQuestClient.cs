@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SrvSurvey.Core.Colonization;
+using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Quests;
 
@@ -66,6 +67,10 @@ public interface IRavenQuestClient
 
 public sealed class RavenQuestClient : IRavenQuestClient
 {
+    private const int MaximumJsonResponseBytes = 8 * 1024 * 1024;
+    private const int MaximumChapterBytes = 8 * 1024 * 1024;
+    private const int MaximumErrorDetailBytes = 2 * 1024;
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -327,7 +332,11 @@ public sealed class RavenQuestClient : IRavenQuestClient
                 "load a quest chapter",
                 cancellationToken)
             .ConfigureAwait(false);
-        return await response.Content.ReadAsStringAsync(cancellationToken)
+        return await BoundedHttpContent.ReadStringAsync(
+                response.Content,
+                MaximumChapterBytes,
+                "The Raven Colonial quest chapter response",
+                cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -375,7 +384,10 @@ public sealed class RavenQuestClient : IRavenQuestClient
             .ConfigureAwait(false);
         try
         {
-            return await response.Content.ReadFromJsonAsync<T>(
+            return await BoundedHttpContent.ReadFromJsonAsync<T>(
+                    response.Content,
+                    MaximumJsonResponseBytes,
+                    "The Raven Colonial quest response",
                     JsonOptions,
                     cancellationToken)
                 .ConfigureAwait(false)
@@ -400,7 +412,10 @@ public sealed class RavenQuestClient : IRavenQuestClient
             return;
         }
 
-        var detail = await response.Content.ReadAsStringAsync(cancellationToken)
+        var detail = await BoundedHttpContent.ReadStringPrefixAsync(
+                response.Content,
+                MaximumErrorDetailBytes,
+                cancellationToken)
             .ConfigureAwait(false);
         throw new RavenColonialServiceException(
             response.StatusCode,

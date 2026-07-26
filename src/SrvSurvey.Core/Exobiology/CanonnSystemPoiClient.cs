@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Core.Exobiology;
 
@@ -14,6 +15,8 @@ public interface ICanonnSystemPoiClient
 
 public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
 {
+    private const int MaximumResponseBytes = 8 * 1024 * 1024;
+
     private static readonly Uri DefaultBaseUri = new(
         "https://us-central1-canonn-api-236217.cloudfunctions.net/query/");
     private static readonly HttpClient SharedClient = CreateSharedClient();
@@ -46,11 +49,12 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
             HttpCompletionOption.ResponseHeadersRead,
             cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        await using var stream = await response.Content.ReadAsStreamAsync(
-            cancellationToken).ConfigureAwait(false);
-        using var document = await JsonDocument.ParseAsync(
-            stream,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+        using var document = await BoundedHttpContent.ReadJsonDocumentAsync(
+                response.Content,
+                MaximumResponseBytes,
+                "The Canonn system-POI response",
+                cancellationToken)
+            .ConfigureAwait(false);
         var root = document.RootElement;
         if (root.ValueKind != JsonValueKind.Object)
         {
