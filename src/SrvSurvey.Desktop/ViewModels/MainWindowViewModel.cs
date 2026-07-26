@@ -180,6 +180,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         ReferenceDataUpdateViewModel? referenceDataUpdates = null,
         LocalizationViewModel? localization = null,
         OverlayThemeSettingsViewModel? overlayThemeSettings = null,
+        OverlayInteractionViewModel? overlayInteraction = null,
         ICanonnHumanSiteClient? canonnHumanSiteClient = null,
         ICanonnHumanSitePublisher? canonnHumanSitePublisher = null,
         IEddnPublisher? eddnPublisher = null,
@@ -323,6 +324,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         OverlayBehavior = new OverlayBehaviorViewModel(
             overlayBehaviorSettingsStore
                 ?? new OverlayBehaviorSettingsStore(AppDataPaths.UiSettingsPath));
+        OverlayInteraction = overlayInteraction ?? new OverlayInteractionViewModel(
+            OverlayPlatformCapabilities.DetectCurrent());
+        OverlayInteractionBinding = InputSettings.Bindings.Single(binding =>
+            binding.Definition.Action
+                == GlobalInputAction.ToggleOverlayInteraction);
         OverlayTheme = overlayThemeSettings ?? new OverlayThemeSettingsViewModel(
             new LegacyOverlayThemeStore(
                 Path.Combine(AppDataPaths.DataDirectory, "theme.json")),
@@ -675,6 +681,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public OverlayScaleSettingsViewModel OverlayScale { get; }
 
     public OverlayBehaviorViewModel OverlayBehavior { get; }
+
+    public OverlayInteractionViewModel OverlayInteraction { get; }
+
+    public InputBindingViewModel OverlayInteractionBinding { get; }
 
     public OverlayThemeSettingsViewModel OverlayTheme { get; }
 
@@ -3273,6 +3283,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged;
         CommanderInstances.Dispose();
         BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged;
+        OverlayInteraction.Dispose();
         visitedStarsHttpClient?.Dispose();
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();

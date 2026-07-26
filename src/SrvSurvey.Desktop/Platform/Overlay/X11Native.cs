@@ -126,6 +126,16 @@ internal static partial class X11Native
         int operation,
         int ordering);
 
+    [LibraryImport("libXext.so.6")]
+    internal static partial void XShapeCombineMask(
+        nint display,
+        nuint destinationWindow,
+        int destinationKind,
+        int xOffset,
+        int yOffset,
+        nuint sourcePixmap,
+        int operation);
+
     [StructLayout(LayoutKind.Sequential)]
     internal struct XClassHint
     {

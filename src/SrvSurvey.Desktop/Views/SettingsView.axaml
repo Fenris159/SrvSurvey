@@ -583,6 +583,49 @@
                       ItemsSource="{Binding OverlayScale.Options}"
                       SelectedItem="{Binding OverlayScale.SelectedOption, Mode=TwoWay}" />
           </Grid>
+          <Border Background="{DynamicResource RavenSurfaceBrush}"
+                  BorderBrush="{DynamicResource RavenBorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  Padding="14">
+            <StackPanel Spacing="12">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+                <StackPanel Spacing="3">
+                  <TextBlock FontWeight="SemiBold" Text="Clickable position editing" />
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="{Binding OverlayInteraction.ModeLabel}" />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Classes="primary"
+                        Command="{Binding OverlayInteraction.ToggleCommand}"
+                        Content="{Binding OverlayInteraction.ToggleButtonText}" />
+              </Grid>
+              <Grid ColumnDefinitions="*,220" ColumnSpacing="18">
+                <StackPanel Spacing="3">
+                  <TextBlock FontWeight="SemiBold" Text="Position-edit shortcut" />
+                  <TextBlock Classes="muted"
+                             FontSize="11"
+                             TextWrapping="Wrap"
+                             Text="Enable global keyboard input below, then use this shortcut in Elite or while an overlay is active." />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="3">
+                  <TextBox Text="{Binding OverlayInteractionBinding.Chord, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                           PlaceholderText="Leave blank to disable" />
+                  <TextBlock Classes="muted"
+                             FontSize="10"
+                             Text="{Binding OverlayInteractionBinding.DefaultChord}" />
+                  <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                             FontSize="10"
+                             IsVisible="{Binding OverlayInteractionBinding.HasValidationError}"
+                             Text="{Binding OverlayInteractionBinding.ValidationMessage}" />
+                </StackPanel>
+              </Grid>
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding OverlayInteraction.StatusMessage}" />
+            </StackPanel>
+          </Border>
           <TextBlock Classes="muted"
                      FontSize="11"
                      Text="{Binding OverlayBehavior.CurrentSuitText}" />
@@ -620,7 +663,7 @@
             <TextBlock Classes="card-title" Text="Overlay positions" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Place each detached overlay relative to the Elite window or at an absolute screen coordinate. Imported VR calibration remains unchanged." />
+                       Text="Place each detached overlay relative to the Elite window or at an absolute screen coordinate. You can also enable clickable position editing above and drag visible overlays directly. Imported VR calibration remains unchanged." />
           </StackPanel>
 
           <ComboBox ItemsSource="{Binding OverlayLayout.Overlays}"

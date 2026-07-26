@@ -219,6 +219,33 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         Assert.Equal(0.5, active.DefaultOpacity);
     }
 
+    [Fact]
+    public void UpdatingOneRuntimePlacementPreservesOtherLayoutState()
+    {
+        var original = new LegacyOverlayPlacement(
+            LegacyHorizontalAnchor.Center,
+            0,
+            LegacyVerticalAnchor.Top,
+            8,
+            0.75);
+        var active = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = original,
+            },
+            0.5,
+            null);
+        active.SetScaleIndex(20);
+        var updated = original with { HorizontalOffset = 42 };
+
+        Assert.True(active.SetPlacement("PlotJumpInfo", updated));
+        Assert.False(active.SetPlacement("PlotJumpInfo", updated));
+
+        Assert.Equal(updated, active.Placements["PlotJumpInfo"]);
+        Assert.Equal(0.5, active.DefaultOpacity);
+        Assert.Equal(20, active.ScaleIndex);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

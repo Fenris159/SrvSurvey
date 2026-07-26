@@ -9,6 +9,8 @@ public interface IOverlayPlatformService : IDisposable
     OverlayPlatformCapabilities Capabilities { get; }
 
     OverlayPreparationResult PreparePassiveWindow(Window window);
+
+    OverlayInteractionResult SetInteractive(Window window, bool interactive);
 }
 
 public static class OverlayPlatformService
@@ -55,6 +57,15 @@ internal sealed class PortableOverlayPlatformService(
             Capabilities.StatusText);
     }
 
+    public OverlayInteractionResult SetInteractive(Window window, bool interactive)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        return new OverlayInteractionResult(
+            IsPrepared: false,
+            IsInteractive: false,
+            Capabilities.StatusText);
+    }
+
     public void Dispose()
     {
     }
@@ -69,40 +80,76 @@ internal sealed partial class WindowsOverlayPlatformService
     private const long Transparent = 0x00000020L;
     private const long Layered = 0x00080000L;
     private const long NoActivate = 0x08000000L;
+    private const uint NoSize = 0x0001;
+    private const uint NoMove = 0x0002;
+    private const uint NoZOrder = 0x0004;
+    private const uint DoNotActivate = 0x0010;
+    private const uint FrameChanged = 0x0020;
 
     public OverlayPlatformCapabilities Capabilities { get; } =
         OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
 
     public OverlayPreparationResult PreparePassiveWindow(Window window)
     {
+        var result = SetInteractive(window, interactive: false);
+        return new OverlayPreparationResult(
+            result.IsPrepared,
+            IsClickThrough: result.IsPrepared && !result.IsInteractive,
+            result.Status);
+    }
+
+    public OverlayInteractionResult SetInteractive(Window window, bool interactive)
+    {
         ArgumentNullException.ThrowIfNull(window);
         var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
-            return new OverlayPreparationResult(
+            return new OverlayInteractionResult(
                 IsPrepared: false,
-                IsClickThrough: false,
+                IsInteractive: false,
                 "The native Windows overlay handle is not available.");
         }
 
         var style = GetWindowLongPtr(handle, ExtendedWindowStyle);
-        var updated = style | (nint)(ToolWindow | Transparent | Layered | NoActivate);
+        var updated = interactive
+            ? (style | (nint)(ToolWindow | Layered))
+                & ~(nint)(Transparent | NoActivate)
+            : style | (nint)(ToolWindow | Transparent | Layered | NoActivate);
         Marshal.SetLastPInvokeError(0);
         var previous = SetWindowLongPtr(handle, ExtendedWindowStyle, updated);
         var error = Marshal.GetLastPInvokeError();
         if (previous == nint.Zero && error != 0)
         {
-            return new OverlayPreparationResult(
+            return new OverlayInteractionResult(
                 IsPrepared: false,
-                IsClickThrough: false,
-                $"Windows click-through could not be enabled (error {error}).");
+                IsInteractive: false,
+                $"Windows overlay interaction mode could not be changed (error {error}).");
         }
 
-        window.IsHitTestVisible = false;
-        return new OverlayPreparationResult(
+        if (!SetWindowPos(
+                handle,
+                nint.Zero,
+                0,
+                0,
+                0,
+                0,
+                NoSize | NoMove | NoZOrder | DoNotActivate | FrameChanged))
+        {
+            error = Marshal.GetLastPInvokeError();
+            _ = SetWindowLongPtr(handle, ExtendedWindowStyle, style);
+            return new OverlayInteractionResult(
+                IsPrepared: false,
+                IsInteractive: false,
+                $"Windows overlay interaction mode could not be refreshed (error {error}).");
+        }
+
+        window.IsHitTestVisible = interactive;
+        return new OverlayInteractionResult(
             IsPrepared: true,
-            IsClickThrough: true,
-            Capabilities.StatusText);
+            IsInteractive: interactive,
+            interactive
+                ? "Overlay edit mode is active on Windows."
+                : Capabilities.StatusText);
     }
 
     public void Dispose()
@@ -120,4 +167,20 @@ internal sealed partial class WindowsOverlayPlatformService
         nint window,
         int index,
         nint value);
+
+    [LibraryImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetWindowPos(
+        nint window,
+        nint insertAfter,
+        int x,
+        int y,
+        int width,
+        int height,
+        uint flags);
 }
+
+public sealed record OverlayInteractionResult(
+    bool IsPrepared,
+    bool IsInteractive,
+    string Status);

@@ -9,9 +9,9 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         $"SrvSurvey-input-settings-tests-{Guid.NewGuid():N}");
 
     [Fact]
-    public void CatalogPreservesEveryLegacyActionAndDefault()
+    public void CatalogPreservesLegacyActionsAndAddsOverlayEditShortcut()
     {
-        Assert.Equal(30, GlobalInputActionCatalog.All.Count);
+        Assert.Equal(31, GlobalInputActionCatalog.All.Count);
         Assert.Equal(
             GlobalInputActionCatalog.All.Count,
             GlobalInputActionCatalog.All
@@ -26,6 +26,10 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
             "ALT CTRL I",
             GlobalInputActionCatalog.Get(
                 GlobalInputAction.ToggleImageEmbed).DefaultChord);
+        Assert.Equal(
+            "ALT SHIFT O",
+            GlobalInputActionCatalog.Get(
+                GlobalInputAction.ToggleOverlayInteraction).DefaultChord);
         Assert.Equal(
             new("adjustVR", "ALT V"),
             GetLegacyBinding(GlobalInputAction.AdjustVr));
@@ -95,7 +99,7 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         Assert.Equal(
             "ALT F2",
             loaded.Bindings[GlobalInputAction.ToggleAllVisibility]);
-        Assert.Equal(30, loaded.Bindings.Count);
+        Assert.Equal(31, loaded.Bindings.Count);
     }
 
     [Fact]

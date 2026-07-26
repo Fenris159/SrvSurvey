@@ -459,6 +459,46 @@ public sealed class LegacyOverlayLayout
                 updatedState.Error));
     }
 
+    public bool SetPlacement(
+        string plotterName,
+        LegacyOverlayPlacement placement)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        ArgumentNullException.ThrowIfNull(placement);
+        if (ReferenceEquals(this, Empty))
+        {
+            throw new InvalidOperationException(
+                "The shared empty overlay layout cannot be changed.");
+        }
+
+        while (true)
+        {
+            var current = Volatile.Read(ref state);
+            if (current.Placements.TryGetValue(plotterName, out var existing)
+                && existing == placement)
+            {
+                return false;
+            }
+
+            var placements = new Dictionary<string, LegacyOverlayPlacement>(
+                current.Placements,
+                StringComparer.Ordinal)
+            {
+                [plotterName] = placement,
+            };
+            var updated = new LayoutState(
+                placements,
+                current.DefaultOpacity,
+                current.Error);
+            if (ReferenceEquals(
+                    Interlocked.CompareExchange(ref state, updated, current),
+                    current))
+            {
+                return true;
+            }
+        }
+    }
+
     public PixelPoint? GetPosition(
         string plotterName,
         PixelRect gameBounds,

@@ -149,6 +149,11 @@ public sealed partial class App : Application
             var inputSettings = new GlobalInputSettingsViewModel(
                 new GlobalInputSettingsStore(appDataPaths.UiSettingsPath),
                 capabilities);
+            var overlayInteraction = new OverlayInteractionViewModel(
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent(),
+                overlayLayoutStore,
+                overlayLayout);
             var gameTextInputService = GameTextInputService.CreateCurrent();
             var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
                 Program.StartupArguments);
@@ -181,6 +186,7 @@ public sealed partial class App : Application
                 applicationLogService: applicationLog,
                 overlayLayoutStore: overlayLayoutStore,
                 overlayLayout: overlayLayout,
+                overlayInteraction: overlayInteraction,
                 targetFrontierId: targetFrontierId,
                 commanderPreferenceSettingsStore: commanderPreferenceStore,
                 commanderPreferenceCommandLineOverride:
@@ -196,7 +202,8 @@ public sealed partial class App : Application
             {
                 return new OverlayGameWindowTracker(
                     GameWindowTracker.CreateCurrent(),
-                    () => viewModel.OverlayBehavior.KeepWhenGameLosesFocus);
+                    () => viewModel.OverlayBehavior.KeepWhenGameLosesFocus
+                        || viewModel.OverlayInteraction.IsEditing);
             }
 
             var mainWindow = new MainWindow(viewModel);
@@ -405,7 +412,8 @@ public sealed partial class App : Application
                     viewModel.OverlayBehavior,
                     OverlayPlatformService.CreateCurrent(),
                     GameWindowTracker.CreateCurrent(),
-                    () => desktop.Windows.Any(window => window.IsActive));
+                    () => desktop.Windows.Any(window => window.IsActive),
+                    overlayLayout);
 
             void SynchronizeOverlayPriority()
             {
@@ -498,12 +506,18 @@ public sealed partial class App : Application
                 inputSettings.CurrentSettings,
                 capabilities.Host,
                 GameWindowTracker.CreateCurrent(),
-                () => mainWindow.InputContext.AreShortcutsActive);
+                () => mainWindow.InputContext.AreShortcutsActive
+                    || (viewModel.OverlayInteraction.IsEditing
+                        && !mainWindow.IsActive
+                        && desktop.Windows.Any(window => window.IsActive)));
             globalControllerInputService = new GlobalControllerInputService(
                 inputSettings.CurrentSettings,
                 capabilities.Host,
                 GameWindowTracker.CreateCurrent(),
-                () => mainWindow.InputContext.AreShortcutsActive);
+                () => mainWindow.InputContext.AreShortcutsActive
+                    || (viewModel.OverlayInteraction.IsEditing
+                        && !mainWindow.IsActive
+                        && desktop.Windows.Any(window => window.IsActive)));
             globalKeyboardHookService.StatusChanged += (_, _) =>
             {
                 var status = globalKeyboardHookService?.Status;
@@ -568,6 +582,10 @@ public sealed partial class App : Application
                                 !manualOverlaySuppressed;
                             ApplyOverlaySuppression();
                             handled = true;
+                            break;
+
+                        case GlobalInputAction.ToggleOverlayInteraction:
+                            handled = viewModel.OverlayInteraction.Toggle();
                             break;
 
                         case GlobalInputAction.ShowJumpInfo:

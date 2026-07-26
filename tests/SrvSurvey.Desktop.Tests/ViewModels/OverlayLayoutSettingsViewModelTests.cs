@@ -99,7 +99,16 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
                 24,
                 null),
             notification.Placement);
-        Assert.Equal(24, viewModel.Overlays.Count);
+        Assert.Equal(26, viewModel.Overlays.Count);
+        Assert.Equal(
+            new LegacyOverlayPlacement(
+                LegacyHorizontalAnchor.Right,
+                8,
+                LegacyVerticalAnchor.Top,
+                8,
+                null),
+            viewModel.Overlays.Single(
+                overlay => overlay.Name == "PlotQuestMini").Placement);
         Assert.Equal(
             new LegacyOverlayPlacement(
                 LegacyHorizontalAnchor.Left,

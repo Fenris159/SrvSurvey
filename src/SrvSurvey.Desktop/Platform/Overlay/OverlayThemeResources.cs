@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Styling;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -29,6 +30,9 @@ public static class OverlayThemeResources
     public static void Apply(Window window)
     {
         ArgumentNullException.ThrowIfNull(window);
+        // Overlay controls keep a stable native style and never inherit a
+        // light/dark switch from the application shell.
+        window.RequestedThemeVariant = ThemeVariant.Dark;
         var application = Application.Current;
         if (application is null)
         {

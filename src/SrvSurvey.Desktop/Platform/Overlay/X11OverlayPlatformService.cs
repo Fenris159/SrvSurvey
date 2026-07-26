@@ -68,52 +68,78 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService
 
     public OverlayPreparationResult PreparePassiveWindow(Window window)
     {
+        var result = SetInteractive(window, interactive: false);
+        return new OverlayPreparationResult(
+            result.IsPrepared,
+            IsClickThrough: result.IsPrepared && !result.IsInteractive,
+            result.Status);
+    }
+
+    public OverlayInteractionResult SetInteractive(Window window, bool interactive)
+    {
         ArgumentNullException.ThrowIfNull(window);
         if (display == nint.Zero || !shapeAvailable)
         {
-            return new OverlayPreparationResult(
+            return new OverlayInteractionResult(
                 IsPrepared: false,
-                IsClickThrough: false,
+                IsInteractive: false,
                 Capabilities.StatusText);
         }
 
         var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
         if (handle == nint.Zero)
         {
-            return new OverlayPreparationResult(
+            return new OverlayInteractionResult(
                 IsPrepared: false,
-                IsClickThrough: false,
+                IsInteractive: false,
                 "The native X11 overlay window is not available.");
         }
 
         try
         {
-            X11Native.XShapeCombineRectangles(
-                display,
-                unchecked((nuint)handle),
-                X11Native.ShapeInput,
-                0,
-                0,
-                nint.Zero,
-                0,
-                X11Native.ShapeSet,
-                X11Native.Unsorted);
+            if (interactive)
+            {
+                X11Native.XShapeCombineMask(
+                    display,
+                    unchecked((nuint)handle),
+                    X11Native.ShapeInput,
+                    0,
+                    0,
+                    0,
+                    X11Native.ShapeSet);
+            }
+            else
+            {
+                X11Native.XShapeCombineRectangles(
+                    display,
+                    unchecked((nuint)handle),
+                    X11Native.ShapeInput,
+                    0,
+                    0,
+                    nint.Zero,
+                    0,
+                    X11Native.ShapeSet,
+                    X11Native.Unsorted);
+            }
+
             _ = X11Native.XFlush(display);
-            window.IsHitTestVisible = false;
-            return new OverlayPreparationResult(
+            window.IsHitTestVisible = interactive;
+            return new OverlayInteractionResult(
                 IsPrepared: true,
-                IsClickThrough: true,
-                Capabilities.StatusText);
+                IsInteractive: interactive,
+                interactive
+                    ? "Overlay edit mode is active through the X11 input region."
+                    : Capabilities.StatusText);
         }
         catch (Exception exception) when (
             exception is DllNotFoundException
                 or EntryPointNotFoundException
                 or BadImageFormatException)
         {
-            return new OverlayPreparationResult(
+            return new OverlayInteractionResult(
                 IsPrepared: false,
-                IsClickThrough: false,
-                $"X11 click-through could not be enabled: {exception.Message}");
+                IsInteractive: false,
+                $"X11 overlay interaction mode could not be changed: {exception.Message}");
         }
     }
 

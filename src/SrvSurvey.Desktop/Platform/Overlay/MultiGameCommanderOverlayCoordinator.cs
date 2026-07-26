@@ -14,6 +14,7 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly Func<bool> isApplicationActive;
+    private readonly LegacyOverlayLayout overlayLayout;
     private readonly TimeProvider timeProvider;
     private readonly DispatcherTimer timer;
     private DateTimeOffset nextInventoryRefresh;
@@ -28,6 +29,7 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         IOverlayPlatformService platform,
         IGameWindowTracker gameWindowTracker,
         Func<bool> isApplicationActive,
+        LegacyOverlayLayout overlayLayout,
         TimeProvider? timeProvider = null)
     {
         this.commanderInstances = commanderInstances
@@ -40,6 +42,8 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.isApplicationActive = isApplicationActive
             ?? throw new ArgumentNullException(nameof(isApplicationActive));
+        this.overlayLayout = overlayLayout
+            ?? throw new ArgumentNullException(nameof(overlayLayout));
         this.timeProvider = timeProvider ?? TimeProvider.System;
         commanderInstances.PropertyChanged += OnStateChanged;
         overlayBehavior.PropertyChanged += OnStateChanged;
@@ -168,6 +172,10 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         {
             Opacity = 0.82,
         };
+        OverlayThemeResources.Apply(
+            overlay,
+            overlayLayout,
+            "PlotMultiGameCommander");
         overlay.Opened += (_, _) => PrepareWindow(overlay);
         overlay.Closed += (_, _) =>
         {
@@ -193,6 +201,10 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
 
     private void PositionWindow(Window overlay)
     {
+        OverlayThemeResources.ApplyOpacity(
+            overlay,
+            overlayLayout,
+            "PlotMultiGameCommander");
         var screen = overlay.Screens.ScreenFromBounds(gameWindow.ClientBounds)
             ?? overlay.Screens.Primary;
         if (screen is null)
@@ -212,16 +224,25 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         var height = Math.Max(
             1,
             (int)Math.Ceiling(logicalHeight * screen.Scaling));
-        var x = gameWindow.ClientBounds.X
-            + ((gameWindow.ClientBounds.Width - width) / 2);
-        var aboveClient = gameWindow.ClientBounds.Y - height - 2;
-        var y = aboveClient >= screen.WorkingArea.Y
-            ? aboveClient
-            : gameWindow.ClientBounds.Y;
-        var position = new PixelPoint(x, y);
-        if (overlay.Position != position)
+        var size = new PixelSize(width, height);
+        var position = overlayLayout.GetPosition(
+            "PlotMultiGameCommander",
+            gameWindow.ClientBounds,
+            size);
+        if (position is null)
         {
-            overlay.Position = position;
+            var x = gameWindow.ClientBounds.X
+                + ((gameWindow.ClientBounds.Width - width) / 2);
+            var aboveClient = gameWindow.ClientBounds.Y - height - 2;
+            var y = aboveClient >= screen.WorkingArea.Y
+                ? aboveClient
+                : gameWindow.ClientBounds.Y;
+            position = new PixelPoint(x, y);
+        }
+
+        if (overlay.Position != position.Value)
+        {
+            overlay.Position = position.Value;
         }
     }
 
