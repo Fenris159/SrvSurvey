@@ -159,18 +159,22 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         string? commanderPreferenceInitialStatus = null,
         FirstFootfallInferenceSettingsStore?
             firstFootfallInferenceSettingsStore = null,
-        IFirstFootfallInferenceService? firstFootfallInferenceService = null)
+        IFirstFootfallInferenceService? firstFootfallInferenceService = null,
+        RavenServiceSettingsStore? ravenServiceSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         this.applicationLogService = applicationLogService;
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        var ravenServiceUri = (ravenServiceSettingsStore
+                ?? new RavenServiceSettingsStore(AppDataPaths.UiSettingsPath))
+            .LoadServiceUri();
         this.questSettingsStore = questSettingsStore
             ?? new QuestSettingsStore(AppDataPaths.UiSettingsPath);
         this.questRuntimeCoordinator = questRuntimeCoordinator
             ?? new QuestRuntimeCoordinator(
                 new LegacyQuestStateStore(AppDataPaths.DataDirectory),
-                new RavenQuestClient(),
+                new RavenQuestClient(serviceUri: ravenServiceUri),
                 message => applicationLogService?.Append(message));
         QuestWorkspace = new QuestWorkspaceViewModel(
             this.questRuntimeCoordinator,
@@ -257,9 +261,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             greenGasGiantPublicationCoordinator
                 ?? new GreenGasGiantPublicationCoordinator(
                     GreenGasGiantCriteriaCatalog.LoadEmbedded(),
-                    new GreenGasGiantClient());
+                    new GreenGasGiantClient(serviceUri: ravenServiceUri));
         Colonization = colonization ?? new ColonizationViewModel(
             new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
+            client: new RavenColonialClient(serviceUri: ravenServiceUri),
             commanderProfileStore: commanderProfileStore,
             legacyProfileStore: new LegacyColonizationProfileStore(
                 AppDataPaths.DataDirectory));

@@ -44,6 +44,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "minimizeToTray": true,
               "preferredCommander": "Drew",
               "watchedJournalFolder": "D:\\Elite Journals",
+              "buildProjectsUrl_TEST": "http://localhost:7007",
               "autoShowPlotBodyInfo": false,
               "bodyInfoBubbleSize": 321,
               "highGravityWarningLevel": 2.75,
@@ -198,6 +199,10 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new JournalPreferences("D:\\Elite Journals"),
             new JournalSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            new Uri("http://localhost:7007/"),
+            new RavenServiceSettingsStore(paths.UiSettingsPath)
+                .LoadServiceUri());
 
         var survey = new SystemSurveySettingsStore(paths.UiSettingsPath).Load();
         Assert.False(survey.AutoShowBodyInfo);
@@ -497,6 +502,43 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.True(new OverlayBehaviorSettingsStore(paths.UiSettingsPath)
             .Load()
             .HideMultiGameCommanderOverlay);
+        Assert.Equal(
+            "green-light",
+            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Null(result.PreviousSettingsBackupPath);
+    }
+
+    [Fact]
+    public async Task ExistingImportMarkerReceivesMissingRavenServiceOnly()
+    {
+        var paths = CreatePaths();
+        var source = Path.Combine(temporaryDirectory, "legacy-raven-upgrade");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "{\"buildProjectsUrl_TEST\":\"https://localhost:7007\","
+                + "\"darkTheme\":true}");
+        await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups-raven-upgrade"));
+        var migrator = new LegacyUiSettingsMigrator();
+        Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
+        var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
+        document.Update(root =>
+        {
+            root.Remove("RavenService");
+            root["Theme"] = "green-light";
+        });
+
+        var result = migrator.MigrateIfNeeded(paths);
+
+        Assert.True(result.Migrated);
+        Assert.Equal(1, result.MappedPreferenceCount);
+        Assert.Equal(
+            new Uri("https://localhost:7007/"),
+            new RavenServiceSettingsStore(paths.UiSettingsPath)
+                .LoadServiceUri());
         Assert.Equal(
             "green-light",
             new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());

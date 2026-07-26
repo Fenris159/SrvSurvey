@@ -82,6 +82,10 @@ public sealed class LegacyUiSettingsMigrator
                 [
                     ("watchedJournalFolder", "Directory"),
                 ]);
+                mappedCount += MapSection(legacy, root, "RavenService",
+                [
+                    ("buildProjectsUrl_TEST", "ServiceUri"),
+                ]);
                 mappedCount += MapSection(legacy, root, "SystemSurvey",
                 [
                     ("autoShowPlotBodyInfo", "AutoShowBodyInfo"),
@@ -300,6 +304,7 @@ public sealed class LegacyUiSettingsMigrator
             ("FirstFootfallInference", "inferTolerance", "Tolerance"),
             ("FirstFootfallInference", "inferThreshold", "Threshold"),
             ("OverlayBehavior", "hideMultiFloatie", "HideMultiGameCommanderOverlay"),
+            ("RavenService", "buildProjectsUrl_TEST", "ServiceUri"),
         };
         var pending = mappings.Where(mapping =>
             legacy[mapping.Legacy] is not null
