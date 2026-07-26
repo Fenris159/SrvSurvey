@@ -612,6 +612,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                         await SynchronizeContributionAsync(journalEvent),
                     "ColonisationConstructionDepot" =>
                         await SynchronizeDepotAsync(journalEvent),
+                    "ColonisationBeaconDeployed" =>
+                        await SynchronizeBeaconDeploymentAsync(),
                     "MarketBuy" or "MarketSell" or "CargoTransfer" =>
                         await SynchronizeFleetCarrierCargoAdjustmentAsync(
                             journalEvent),
@@ -638,6 +640,28 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         {
             StatusMessage = string.Join(Environment.NewLine, messages);
         }
+    }
+
+    private async Task<string?> SynchronizeBeaconDeploymentAsync()
+    {
+        if (storedRavenApiKey is null)
+        {
+            return "Raven architect update was not sent because this commander has no saved API key.";
+        }
+
+        if (string.IsNullOrWhiteSpace(currentSystemName))
+        {
+            return "Raven architect update was not sent because the current system is unknown.";
+        }
+
+        await client.UpdateSystemSitesAsync(
+            currentSystemName,
+            new ColonizationSystemSiteUpdate
+            {
+                Architect = CommanderName,
+            },
+            storedRavenApiKey);
+        return $"Registered {CommanderName} as the Raven architect for {currentSystemName}.";
     }
 
     private async Task<string?> SynchronizeFleetCarrierCargoAdjustmentAsync(

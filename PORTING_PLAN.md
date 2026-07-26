@@ -541,7 +541,11 @@ UI tests where practical, and live Windows/Linux evidence.
   system/market-matched untracked projects and updates changed faction metadata;
   `ColonisationContribution` publishes normalized positive commodity deltas;
   depot events update the exact remaining requirements, total need, and legacy
-  depot payload; completion is marked once. Each operation is isolated so a
+  depot payload; completion is marked once; and a live
+  `ColonisationBeaconDeployed` event registers the active commander as the
+  system architect through the original Raven payload. Beacon replay is
+  suppressed during bootstrap and a missing commander key or system context
+  fails closed without a request. Each operation is isolated so a
   Raven failure cannot roll back local journal state, and the project list now
   supports the original set/clear-primary operation explicitly. Fleet Carrier
   onboarding is restored as an explicit commander-key-gated action for the

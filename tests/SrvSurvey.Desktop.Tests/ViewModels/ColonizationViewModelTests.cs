@@ -303,6 +303,66 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task LiveBeaconDeploymentRegistersCurrentCommanderAsArchitect()
+    {
+        var client = new StubRavenColonialClient();
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.UpdateSystemContext(
+            "Test System",
+            new GalacticCoordinate(1, 2, 3),
+            systemAddress: 42);
+        var beacon = Event(
+            "ColonisationBeaconDeployed",
+            string.Empty);
+        viewModel.ApplyJournalEvents([beacon]);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [beacon],
+            allowPublishing: true);
+
+        var call = Assert.Single(client.SystemUpdates);
+        Assert.Equal("Test System", call.SystemNameOrAddress);
+        Assert.Equal("Test Cmdr", call.Update.Architect);
+        Assert.Empty(call.Update.UpdatedSites);
+        Assert.Empty(call.Update.DeletedSiteIds);
+        Assert.Equal("secret-key", call.ApiKey);
+        Assert.Contains("architect", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task BeaconArchitectUpdateRequiresLiveEventAndSavedKey()
+    {
+        var client = new StubRavenColonialClient();
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.UpdateSystemContext(
+            "Test System",
+            new GalacticCoordinate(1, 2, 3),
+            systemAddress: 42);
+        var beacon = Event(
+            "ColonisationBeaconDeployed",
+            string.Empty);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [beacon],
+            allowPublishing: false);
+        Assert.Empty(client.SystemUpdates);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [beacon],
+            allowPublishing: true);
+        Assert.Empty(client.SystemUpdates);
+        Assert.Contains("no saved API key", viewModel.StatusMessage);
+    }
+
+    [Fact]
     public async Task CompletedDepotMarksProjectCompleteOnce()
     {
         var client = new StubRavenColonialClient
@@ -1071,8 +1131,11 @@ public sealed class ColonizationViewModelTests : IDisposable
         string eventName,
         string properties)
     {
+        var propertySuffix = string.IsNullOrWhiteSpace(properties)
+            ? string.Empty
+            : "," + properties;
         var json = $$"""
-            {"timestamp":"2026-07-24T12:00:00Z","event":"{{eventName}}",{{properties}}}
+            {"timestamp":"2026-07-24T12:00:00Z","event":"{{eventName}}"{{propertySuffix}}}
             """;
         Assert.True(
             JournalEventEnvelope.TryParse(json, out var result, out var error),
@@ -1118,6 +1181,8 @@ public sealed class ColonizationViewModelTests : IDisposable
         public List<ContributionCall> Contributions { get; } = [];
 
         public List<string?> PrimaryProjectRequests { get; } = [];
+
+        public List<SystemUpdateCall> SystemUpdates { get; } = [];
 
         public ColonizationCurrentShip? LastPublishedShip { get; private set; }
 
@@ -1266,8 +1331,20 @@ public sealed class ColonizationViewModelTests : IDisposable
             string systemNameOrAddress,
             ColonizationSystemSiteUpdate update,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default)
+        {
+            SystemUpdates.Add(new SystemUpdateCall(
+                systemNameOrAddress,
+                update,
+                apiKey));
+            return Task.FromResult(new ColonizationSystemRecord
+            {
+                SystemAddress = 42,
+                Name = systemNameOrAddress,
+                Architect = update.Architect,
+                Sites = update.UpdatedSites,
+            });
+        }
 
         public Task<ColonizationProject?> CreateProjectAsync(
             ColonizationProjectCreate project,
@@ -1368,6 +1445,11 @@ public sealed class ColonizationViewModelTests : IDisposable
         string BuildId,
         string CommanderName,
         IReadOnlyDictionary<string, int> Commodities);
+
+    private sealed record SystemUpdateCall(
+        string SystemNameOrAddress,
+        ColonizationSystemSiteUpdate Update,
+        string ApiKey);
 
     private sealed record FleetCarrierAdjustmentCall(
         long MarketId,

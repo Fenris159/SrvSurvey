@@ -269,6 +269,43 @@ public sealed class RavenColonialClientTests
     }
 
     [Fact]
+    public async Task UpdatesSystemArchitectWithExactLegacyPayloadShape()
+    {
+        string? body = null;
+        var handler = new StubHandler(async request =>
+        {
+            Assert.Equal(HttpMethod.Put, request.Method);
+            Assert.Equal(
+                "/root/api/v2/system/Test%20System/sites",
+                request.RequestUri!.AbsolutePath);
+            Assert.Equal(
+                "secret-key",
+                Assert.Single(request.Headers.GetValues("rcc-key")));
+            body = await request.Content!.ReadAsStringAsync();
+            return Json(
+                """{"id64":123,"name":"Test System","architect":"Test Cmdr","sites":[],"bodies":[]}""");
+        });
+        var client = Create(handler);
+
+        var result = await client.UpdateSystemSitesAsync(
+            "Test System",
+            new ColonizationSystemSiteUpdate
+            {
+                Architect = "Test Cmdr",
+            },
+            "secret-key");
+
+        Assert.Equal("Test Cmdr", result.Architect);
+        using var document = JsonDocument.Parse(body!);
+        var root = document.RootElement;
+        Assert.Equal("Test Cmdr", root.GetProperty("architect").GetString());
+        Assert.Empty(root.GetProperty("update").EnumerateArray());
+        Assert.Empty(root.GetProperty("delete").EnumerateArray());
+        Assert.False(root.TryGetProperty("open", out _));
+        Assert.False(root.TryGetProperty("reserveLevel", out _));
+    }
+
+    [Fact]
     public async Task ReportsStatusAndBoundedServiceDetail()
     {
         var handler = new StubHandler(_ => new HttpResponseMessage(
