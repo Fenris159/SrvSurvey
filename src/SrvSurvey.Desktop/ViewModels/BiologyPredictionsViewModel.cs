@@ -286,7 +286,9 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
             snapshot,
             survey.CurrentStatus,
             survey.DisableBioPredictions,
-            survey.BiologyRewardThresholds);
+            survey.BiologyRewardThresholds,
+            survey.BiologyPredictionEvaluator,
+            survey.BiologyReferenceCatalog);
         if (overview is null)
         {
             SystemName = snapshot.SystemName ?? "No biological signals";
@@ -325,7 +327,9 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
                 survey.HideGeoCountInBioSystem,
                 survey.DisableBioPredictions,
                 survey.CurrentBiologyDiscoveryContext,
-                survey.BiologyRewardThresholds)!;
+                survey.BiologyRewardThresholds,
+                survey.BiologyPredictionEvaluator,
+                survey.BiologyReferenceCatalog)!;
             var isExpanded = expandedState.GetValueOrDefault(
                 body.BodyId,
                 !CurrentBodyOnly || row.IsCurrentBody);

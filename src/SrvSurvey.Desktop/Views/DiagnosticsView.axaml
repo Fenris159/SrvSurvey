@@ -68,6 +68,10 @@
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
                      Text="{Binding ReleaseUpdates.StatusMessage}" />
+          <Separator Margin="0,4" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding ReferenceDataStatus}" />
         </StackPanel>
       </Border>
 

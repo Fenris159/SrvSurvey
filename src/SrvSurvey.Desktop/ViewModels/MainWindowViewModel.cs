@@ -168,6 +168,23 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         this.applicationLogService = applicationLogService;
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        var legacyReferences = LegacyReferenceCatalogLoader.Load(
+            AppDataPaths.DataDirectory);
+        foreach (var warning in legacyReferences.Warnings)
+        {
+            applicationLogService?.Append(warning);
+        }
+
+        ReferenceDataStatus = legacyReferences.LocalCatalogCount == 0
+            ? "Validated embedded reference catalogs are active."
+            : $"Using {legacyReferences.LocalCatalogCount:N0} validated catalog(s) "
+                + "from the imported legacy profile; all others use embedded defaults.";
+        if (legacyReferences.Warnings.Count > 0)
+        {
+            ReferenceDataStatus += $" {legacyReferences.Warnings.Count:N0} incompatible "
+                + "or incomplete legacy catalog(s) were ignored safely; see logs.";
+        }
+
         var ravenServiceUri = (ravenServiceSettingsStore
                 ?? new RavenServiceSettingsStore(AppDataPaths.UiSettingsPath))
             .LoadServiceUri();
@@ -266,7 +283,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         this.greenGasGiantPublicationCoordinator =
             greenGasGiantPublicationCoordinator
                 ?? new GreenGasGiantPublicationCoordinator(
-                    GreenGasGiantCriteriaCatalog.LoadEmbedded(),
+                    legacyReferences.GreenGasGiants,
                     new GreenGasGiantClient(serviceUri: ravenServiceUri));
         Colonization = colonization ?? new ColonizationViewModel(
             new ColonizationSettingsStore(AppDataPaths.UiSettingsPath),
@@ -277,7 +294,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var sharedSystemResolver = starSystemResolver
             ?? new SpanshStarSystemResolver();
         var sharedExobiologyCatalog = exobiologyCatalog
-            ?? ExobiologyReferenceCatalog.LoadEmbedded();
+            ?? legacyReferences.Exobiology;
         var defaultCodexImageCache = Path.Combine(
             AppDataPaths.CacheDirectory,
             "codex-images");
@@ -335,7 +352,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                     .UseSpanshLastUpdated);
         JumpInfo = new JumpInfoViewModel(
             sharedSystemSummaryClient,
-            sharedJumpInfoSettingsStore);
+            sharedJumpInfoSettingsStore,
+            legacyReferences.GuardianSites);
         GalaxyMap = new GalaxyMapOverlayViewModel(
             sharedSystemSummaryClient,
             galaxyMapSettingsStore
@@ -349,7 +367,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             humanSiteSettingsStore
                 ?? new HumanSiteSettingsStore(AppDataPaths.UiSettingsPath),
             new HumanSiteKnowledgeStore(AppDataPaths.DataDirectory),
-            new HumanSiteMaterialStore(AppDataPaths.DataDirectory));
+            new HumanSiteMaterialStore(AppDataPaths.DataDirectory),
+            legacyReferences.HumanSiteTemplates);
         BiologyRewards = new BiologyRewardSettingsViewModel(
             biologyRewardSettingsStore
                 ?? new BiologyRewardSettingsStore(AppDataPaths.UiSettingsPath));
@@ -357,7 +376,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             systemSurveySettingsStore
                 ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath),
             biologyCatalog: sharedExobiologyCatalog,
-            biologyRewardThresholds: BiologyRewards.Thresholds);
+            biologyRewardThresholds: BiologyRewards.Thresholds,
+            biologyCriteria: legacyReferences.BiologyCriteria);
         BiologyRewards.PropertyChanged += OnBiologyRewardsChanged;
         Combat = new CombatViewModel(
             combatSettingsStore
@@ -379,7 +399,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         BiologyCodex = new BiologyCodexViewModel(
             SystemSurvey,
             sharedExobiologyCatalog,
-            BiologyCriteriaCatalog.LoadEmbedded(),
+            legacyReferences.BiologyCriteria,
             () => activeProfileCommanderName ?? journalState.CommanderName);
         var journalImportDirectory = folderResolution.SelectedPath
             ?? folderResolution.CandidatePaths.FirstOrDefault()
@@ -415,6 +435,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         RamTah = new RamTahViewModel(commanderProfileStore);
         Guardian = new GuardianViewModel(
             AppDataPaths.DataDirectory,
+            references: legacyReferences.GuardianSites,
+            publishedSites: legacyReferences.GuardianPublishedSites,
+            templates: legacyReferences.GuardianTemplates,
             ramTah: RamTah,
             overlaySettingsStore: guardianOverlaySettingsStore
                 ?? new GuardianOverlaySettingsStore(
@@ -643,6 +666,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public SystemNicknameViewModel SystemNicknames { get; }
 
     public DiagnosticsLogViewModel DiagnosticsLog { get; }
+
+    public string ReferenceDataStatus { get; }
 
     public ReleaseUpdateViewModel ReleaseUpdates { get; }
 

@@ -20,12 +20,21 @@ public sealed class GreenGasGiantCriteriaCatalog
 
     public double Tolerance { get; }
 
+    public int TemperatureCount => known.Values.Sum(values => values.Count)
+        + theorized.Values.Sum(values => values.Count);
+
     public static GreenGasGiantCriteriaCatalog LoadEmbedded()
     {
         var assembly = typeof(GreenGasGiantCriteriaCatalog).Assembly;
         using var stream = assembly.GetManifestResourceStream(ResourceName)
             ?? throw new InvalidDataException(
                 $"Embedded Green Gas Giant criteria were not found: {ResourceName}");
+        return Load(stream);
+    }
+
+    public static GreenGasGiantCriteriaCatalog Load(Stream stream)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
         using var document = JsonDocument.Parse(stream);
         var root = document.RootElement;
         var tolerance = root.TryGetProperty("delta", out var delta)

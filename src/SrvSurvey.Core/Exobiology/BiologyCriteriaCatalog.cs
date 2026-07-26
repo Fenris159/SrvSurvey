@@ -66,6 +66,31 @@ public sealed class BiologyCriteriaCatalog
             [sourceName]);
     }
 
+    public static BiologyCriteriaCatalog LoadDirectory(string directoryPath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(directoryPath);
+        var directory = Path.GetFullPath(directoryPath);
+        var paths = Directory.Exists(directory)
+            ? Directory.GetFiles(directory, "*.json", SearchOption.TopDirectoryOnly)
+                .Order(StringComparer.Ordinal)
+                .ToArray()
+            : [];
+        if (paths.Length == 0)
+        {
+            throw new InvalidDataException(
+                $"No biology criteria JSON files were found in {directory}.");
+        }
+
+        var roots = new List<BiologyCriteriaNode>(paths.Length);
+        foreach (var path in paths)
+        {
+            using var stream = File.OpenRead(path);
+            roots.Add(ParseRoot(stream, path));
+        }
+
+        return new BiologyCriteriaCatalog(roots, paths);
+    }
+
     private static BiologyCriteriaNode ParseRoot(
         Stream stream,
         string sourceName)

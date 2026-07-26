@@ -19,7 +19,7 @@ public sealed record BiologyStatusViewModel(
     BiologyTemperatureRangeViewModel? TemperatureRange)
 {
     private static readonly Lazy<BiologyPredictionEvaluator>
-        PredictionEvaluator = new(() => new BiologyPredictionEvaluator(
+        DefaultPredictionEvaluator = new(() => new BiologyPredictionEvaluator(
             BiologyCriteriaCatalog.LoadEmbedded()));
 
     public bool HasSignals => Signals.Count > 0;
@@ -60,7 +60,8 @@ public sealed record BiologyStatusViewModel(
         ExobiologySnapshot exobiology,
         bool hideGeologicalSignals,
         BiologyCodexNotificationViewModel? codexNotification = null,
-        bool showTemperatureRangeDebug = false)
+        bool showTemperatureRangeDebug = false,
+        BiologyPredictionEvaluator? predictionEvaluator = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
@@ -141,7 +142,8 @@ public sealed record BiologyStatusViewModel(
                     snapshot,
                     body,
                     activeOrganism,
-                    status)
+                    status,
+                    predictionEvaluator ?? DefaultPredictionEvaluator.Value)
                 : null);
     }
 
@@ -149,7 +151,8 @@ public sealed record BiologyStatusViewModel(
         SystemScanSnapshot snapshot,
         SystemScanBodySnapshot body,
         SystemOrganismSnapshot? organism,
-        EliteStatus? status)
+        EliteStatus? status,
+        BiologyPredictionEvaluator predictionEvaluator)
     {
         BiologyCriteriaClause? temperatureClause = null;
         var targetName = organism?.VariantLocalized
@@ -159,7 +162,7 @@ public sealed record BiologyStatusViewModel(
             body.BodyId);
         if (inputs is not null && !string.IsNullOrWhiteSpace(targetName))
         {
-            temperatureClause = PredictionEvaluator.Value.Evaluate(
+            temperatureClause = predictionEvaluator.Evaluate(
                     inputs.Context,
                     inputs.Knowledge,
                     targetName)

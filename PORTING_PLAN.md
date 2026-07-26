@@ -167,6 +167,17 @@ completion markers so startup retries are idempotent. Malformed values,
 overflowing rewards, and symbolic links fail closed: their bytes are preserved,
 the completion marker is not written, and Diagnostics identifies the file.
 
+Imported published-reference caches are also active rather than merely copied.
+The catalog resolver recognizes the original `codexRef.json`, `pub/bio-criteria`,
+Guardian indexes/surveys/templates, human-settlement templates, and `pub/ggg.json`
+layout. Every candidate must parse successfully and meet or exceed the shipped
+catalog's coverage before it can replace that embedded catalog. Malformed ZIPs,
+partial JSON, and syntactically valid but truncated catalogs remain byte-identical
+on disk, fall back independently to the embedded baseline, and are reported in
+Diagnostics/logs. The same resolved biology catalogs now feed the main survey,
+predictions, status, Codex, and overlay paths so imported data cannot split the
+application into inconsistent reference views.
+
 The port also preserves the legacy multi-client cargo safety rule. Because
 Elite's shared `Cargo.json` cannot be attributed to a commander while multiple
 game windows are running, cached cargo is cleared and new file snapshots are
@@ -508,8 +519,10 @@ UI tests where practical, and live Windows/Linux evidence.
   `2.0.95.0` file version, checks asynchronously after the window opens, and
   offers the original GitHub releases page. HTTP, rate-limit, timeout, and
   malformed-index failures are contained and explicitly leave both the
-  installation and profile untouched. Reference-data refresh, packaged update
-  installation/rollback, and the remaining network audit keep this phase open.
+  installation and profile untouched. Imported reference catalogs are now
+  validated and consumed with per-catalog embedded fallback. Network refresh,
+  packaged update installation/rollback, and the remaining network audit keep
+  this phase open.
 - [ ] Localization review for every migrated surface.
 
 Features may be explicitly deferred, but the release notes and UI must identify

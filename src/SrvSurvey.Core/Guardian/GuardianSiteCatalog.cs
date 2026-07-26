@@ -90,6 +90,20 @@ public sealed class GuardianSiteCatalog
         return Load(ruins, structures, beacons);
     }
 
+    public static GuardianSiteCatalog LoadPublishedDirectory(
+        string publishedDataDirectory)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(publishedDataDirectory);
+        var directory = Path.GetFullPath(publishedDataDirectory);
+        using var ruins = File.OpenRead(Path.Combine(directory, "allRuins.json"));
+        using var structures = File.OpenRead(
+            Path.Combine(directory, "allStructures.json"));
+        var assembly = typeof(GuardianSiteCatalog).Assembly;
+        using var beacons = assembly.GetManifestResourceStream(BeaconsResourceName)
+            ?? throw MissingResource(BeaconsResourceName);
+        return Load(ruins, structures, beacons);
+    }
+
     public static GuardianSiteCatalog Load(
         Stream ruins,
         Stream structures,

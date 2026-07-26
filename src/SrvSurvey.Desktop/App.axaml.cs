@@ -326,6 +326,7 @@ public sealed partial class App : Application
                 OverlayPlatformService.CreateCurrent(),
                 CreateOverlayGameWindowTracker(),
                 () => viewModel.CommanderName,
+                exobiologyCatalog: viewModel.SystemSurvey.BiologyReferenceCatalog,
                 overlayLayout: overlayLayout,
                 fssDiagnosticDirectory: Path.Combine(
                     appDataPaths.CacheDirectory,

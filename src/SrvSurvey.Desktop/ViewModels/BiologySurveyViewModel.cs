@@ -59,7 +59,9 @@ public sealed record BiologySurveyViewModel(
         bool hideGeoCount,
         bool disablePredictions,
         BiologyDiscoveryContext? discoveryContext = null,
-        BiologyRewardThresholds? rewardThresholds = null)
+        BiologyRewardThresholds? rewardThresholds = null,
+        BiologyPredictionEvaluator? predictionEvaluator = null,
+        ExobiologyReferenceCatalog? referenceCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
@@ -83,7 +85,9 @@ public sealed record BiologySurveyViewModel(
                 status,
                 biologicalBodies,
                 disablePredictions,
-                rewardThresholds ?? BiologyRewardThresholds.Default)
+                rewardThresholds ?? BiologyRewardThresholds.Default,
+                predictionEvaluator ?? DefaultPredictionEvaluator.Value,
+                referenceCatalog ?? DefaultBioReferenceCatalog.Value)
             : CreateBody(
                 snapshot,
                 body,
@@ -93,14 +97,18 @@ public sealed record BiologySurveyViewModel(
                 hideGeoCount,
                 disablePredictions,
                 discoveryContext ?? BiologyDiscoveryContext.Unavailable,
-                rewardThresholds ?? BiologyRewardThresholds.Default);
+                rewardThresholds ?? BiologyRewardThresholds.Default,
+                predictionEvaluator ?? DefaultPredictionEvaluator.Value,
+                referenceCatalog ?? DefaultBioReferenceCatalog.Value);
     }
 
     public static BiologySurveyViewModel? CreateSystemOverview(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
         bool disablePredictions,
-        BiologyRewardThresholds? rewardThresholds = null)
+        BiologyRewardThresholds? rewardThresholds = null,
+        BiologyPredictionEvaluator? predictionEvaluator = null,
+        ExobiologyReferenceCatalog? referenceCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         var biologicalBodies = snapshot.Bodies
@@ -114,7 +122,9 @@ public sealed record BiologySurveyViewModel(
                 status,
                 biologicalBodies,
                 disablePredictions,
-                rewardThresholds ?? BiologyRewardThresholds.Default);
+                rewardThresholds ?? BiologyRewardThresholds.Default,
+                predictionEvaluator ?? DefaultPredictionEvaluator.Value,
+                referenceCatalog ?? DefaultBioReferenceCatalog.Value);
     }
 
     public static BiologySurveyViewModel? CreateBodyDetail(
@@ -126,7 +136,9 @@ public sealed record BiologySurveyViewModel(
         bool hideGeoCount,
         bool disablePredictions,
         BiologyDiscoveryContext? discoveryContext = null,
-        BiologyRewardThresholds? rewardThresholds = null)
+        BiologyRewardThresholds? rewardThresholds = null,
+        BiologyPredictionEvaluator? predictionEvaluator = null,
+        ExobiologyReferenceCatalog? referenceCatalog = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
@@ -144,7 +156,9 @@ public sealed record BiologySurveyViewModel(
                 hideGeoCount,
                 disablePredictions,
                 discoveryContext ?? BiologyDiscoveryContext.Unavailable,
-                rewardThresholds ?? BiologyRewardThresholds.Default);
+                rewardThresholds ?? BiologyRewardThresholds.Default,
+                predictionEvaluator ?? DefaultPredictionEvaluator.Value,
+                referenceCatalog ?? DefaultBioReferenceCatalog.Value);
     }
 
     private static BiologySurveyViewModel CreateSystem(
@@ -152,7 +166,9 @@ public sealed record BiologySurveyViewModel(
         EliteStatus? status,
         IReadOnlyList<SystemScanBodySnapshot> biologicalBodies,
         bool disablePredictions,
-        BiologyRewardThresholds rewardThresholds)
+        BiologyRewardThresholds rewardThresholds,
+        BiologyPredictionEvaluator predictionEvaluator,
+        ExobiologyReferenceCatalog referenceCatalog)
     {
         var destinationBodyId = status?.Destination is { } destination
             && destination.System == snapshot.SystemAddress
@@ -165,7 +181,9 @@ public sealed record BiologySurveyViewModel(
                 var predictions = CreatePredictions(
                     snapshot,
                     body,
-                    disablePredictions);
+                    disablePredictions,
+                    predictionEvaluator,
+                    referenceCatalog);
                 var estimate = CreateRewardEstimate(body, predictions);
                 var row = new BiologyBodyRowViewModel(
                     body.BodyId,
@@ -228,12 +246,16 @@ public sealed record BiologySurveyViewModel(
         bool hideGeoCount,
         bool disablePredictions,
         BiologyDiscoveryContext discoveryContext,
-        BiologyRewardThresholds rewardThresholds)
+        BiologyRewardThresholds rewardThresholds,
+        BiologyPredictionEvaluator predictionEvaluator,
+        ExobiologyReferenceCatalog referenceCatalog)
     {
         var predictionSet = CreatePredictions(
             snapshot,
             body,
-            disablePredictions);
+            disablePredictions,
+            predictionEvaluator,
+            referenceCatalog);
         var predictionsByGenus = predictionSet.Predictions
             .GroupBy(
                 prediction => prediction.Prediction.Genus,
@@ -442,7 +464,9 @@ public sealed record BiologySurveyViewModel(
     private static BiologyPredictionSet CreatePredictions(
         SystemScanSnapshot snapshot,
         SystemScanBodySnapshot body,
-        bool disablePredictions)
+        bool disablePredictions,
+        BiologyPredictionEvaluator predictionEvaluator,
+        ExobiologyReferenceCatalog referenceCatalog)
     {
         if (disablePredictions)
         {
@@ -460,7 +484,7 @@ public sealed record BiologySurveyViewModel(
                 false);
         }
 
-        var result = PredictionEvaluator.Value.Evaluate(
+        var result = predictionEvaluator.Evaluate(
             inputs.Context,
             inputs.Knowledge);
         if (!result.HasCompleteContext)
@@ -476,7 +500,7 @@ public sealed record BiologySurveyViewModel(
             result.PredictionDetails
                 .Select(prediction => new BiologyPredictionPresentation(
                     prediction,
-                    BioReferenceCatalog.Value.FindByDisplayName(
+                    referenceCatalog.FindByDisplayName(
                         prediction.Name)))
                 .ToArray(),
             string.Empty,
@@ -639,11 +663,13 @@ public sealed record BiologySurveyViewModel(
             : normalized;
     }
 
-    private static readonly Lazy<BiologyPredictionEvaluator> PredictionEvaluator =
+    private static readonly Lazy<BiologyPredictionEvaluator>
+        DefaultPredictionEvaluator =
         new(() => new BiologyPredictionEvaluator(
             BiologyCriteriaCatalog.LoadEmbedded()));
 
-    private static readonly Lazy<ExobiologyReferenceCatalog> BioReferenceCatalog =
+    private static readonly Lazy<ExobiologyReferenceCatalog>
+        DefaultBioReferenceCatalog =
         new(ExobiologyReferenceCatalog.LoadEmbedded);
 
     private sealed record BiologyPredictionPresentation(

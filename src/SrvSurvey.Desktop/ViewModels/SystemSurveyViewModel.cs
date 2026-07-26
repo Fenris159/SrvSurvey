@@ -19,6 +19,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private readonly SystemSurveySettingsStore settingsStore;
     private readonly SystemScanState state;
     private readonly ExobiologyReferenceCatalog biologyCatalog;
+    private readonly BiologyCriteriaCatalog biologyCriteria;
+    private readonly BiologyPredictionEvaluator biologyPredictionEvaluator;
     private readonly Func<DateTimeOffset> utcNow;
     private EliteStatus? status;
     private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
@@ -109,13 +111,18 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         SystemScanState? state = null,
         ExobiologyReferenceCatalog? biologyCatalog = null,
         Func<DateTimeOffset>? utcNow = null,
-        BiologyRewardThresholds? biologyRewardThresholds = null)
+        BiologyRewardThresholds? biologyRewardThresholds = null,
+        BiologyCriteriaCatalog? biologyCriteria = null)
     {
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
         this.state = state ?? new SystemScanState();
         this.biologyCatalog = biologyCatalog
             ?? ExobiologyReferenceCatalog.LoadEmbedded();
+        this.biologyCriteria = biologyCriteria
+            ?? BiologyCriteriaCatalog.LoadEmbedded();
+        biologyPredictionEvaluator = new BiologyPredictionEvaluator(
+            this.biologyCriteria);
         this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         this.biologyRewardThresholds = biologyRewardThresholds
             ?? BiologyRewardThresholds.Default;
@@ -179,6 +186,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public ExobiologyReferenceCatalog BiologyReferenceCatalog => biologyCatalog;
+
+    public BiologyCriteriaCatalog BiologyCriteriaCatalog => biologyCriteria;
+
+    public BiologyPredictionEvaluator BiologyPredictionEvaluator =>
+        biologyPredictionEvaluator;
 
     public BiologyRewardThresholds BiologyRewardThresholds =>
         biologyRewardThresholds;
@@ -1568,7 +1582,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     HideGeoCountInBioSystem,
                     DisableBioPredictions,
                     biologyDiscoveryContext,
-                    BiologyRewardThresholds)
+                    BiologyRewardThresholds,
+                    biologyPredictionEvaluator,
+                    biologyCatalog)
                 : BiologySurveyViewModel.Create(
                     snapshot,
                     status,
@@ -1579,14 +1595,17 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     HideGeoCountInBioSystem,
                     DisableBioPredictions,
                     biologyDiscoveryContext,
-                    BiologyRewardThresholds);
+                    BiologyRewardThresholds,
+                    biologyPredictionEvaluator,
+                    biologyCatalog);
         BiologyStatus = BiologyStatusViewModel.Create(
             snapshot,
             status,
             exobiology,
             HideGeoCountInBioSystem,
             biologyCodexNotification,
-            ShowTemperatureRangeDebug);
+            ShowTemperatureRangeDebug,
+            biologyPredictionEvaluator);
         BodyInformation = CreateBodyInformation(
             ResolveBodyInfoTarget(forceShowBodyInfo
                 || status?.GuiFocus is GuiFocus.SystemMap or GuiFocus.Orrery));
@@ -1698,7 +1717,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             HideGeoCountInBioSystem,
             DisableBioPredictions,
             biologyDiscoveryContext,
-            BiologyRewardThresholds);
+            BiologyRewardThresholds,
+            biologyPredictionEvaluator,
+            biologyCatalog);
         var signalCount = Math.Max(
             1,
             details?.Organisms.Count ?? body.BiologicalSignalCount);
@@ -1867,7 +1888,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     HideGeoCountInBioSystem,
                     DisableBioPredictions,
                     biologyDiscoveryContext,
-                    BiologyRewardThresholds)
+                    BiologyRewardThresholds,
+                    biologyPredictionEvaluator,
+                    biologyCatalog)
                 ?.RewardSummary ?? string.Empty
             : string.Empty;
 
