@@ -120,6 +120,33 @@ public sealed class HumanSiteLiveStateTests
         Assert.Null(state.CurrentSite);
     }
 
+    [Theory]
+    [InlineData("Died")]
+    [InlineData("Resurrect")]
+    [InlineData("Shutdown")]
+    public void SessionExitClearsCurrentSite(string eventName)
+    {
+        var state = CreateState();
+        state.Apply(Parse(ApproachJson));
+
+        Assert.True(state.Apply(Parse(
+            $$"""{"event":"{{eventName}}"}""")));
+
+        Assert.Null(state.CurrentSite);
+    }
+
+    [Fact]
+    public void MainMenuMusicClearsCurrentSite()
+    {
+        var state = CreateState();
+        state.Apply(Parse(ApproachJson));
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"Music","MusicTrack":"MainMenu"}""")));
+
+        Assert.Null(state.CurrentSite);
+    }
+
     [Fact]
     public void RepeatedApproachRetainsLearnedTemplateAndFirstVisit()
     {

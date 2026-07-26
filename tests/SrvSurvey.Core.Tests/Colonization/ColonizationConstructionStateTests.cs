@@ -118,6 +118,29 @@ public sealed class ColonizationConstructionStateTests
         Assert.Null(state.CurrentDock);
     }
 
+    [Theory]
+    [InlineData("Died", "")]
+    [InlineData("Resurrect", "")]
+    [InlineData("Shutdown", "")]
+    [InlineData("Music", "\"MusicTrack\":\"MainMenu\"")]
+    public void SessionExitClearsDockingContext(
+        string eventName,
+        string properties)
+    {
+        var state = new ColonizationConstructionState();
+        state.Apply(Event(
+            "Docked",
+            """
+            "MarketID":2,"SystemAddress":3,"StarSystem":"Test",
+            "StationName":"Station","StationServices":[]
+            """));
+
+        Assert.True(state.Apply(Event(eventName, properties)));
+
+        Assert.Null(state.CurrentDock);
+        Assert.Null(state.CurrentDepot);
+    }
+
     [Fact]
     public void TracksClaimAndBeaconDeployment()
     {

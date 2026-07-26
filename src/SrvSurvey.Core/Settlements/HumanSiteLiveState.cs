@@ -114,7 +114,12 @@ public sealed class HumanSiteLiveState(
             "Undocked" => ApplyUndocked(journalEvent.Payload),
             "Touchdown" => ApplyTouchdown(journalEvent.Payload),
             "StartJump" or "SupercruiseEntry" or "FSDJump"
-                or "CarrierJump" or "Shutdown" => Clear(),
+                or "CarrierJump" or "Died" or "Resurrect" or "Shutdown" =>
+                Clear(),
+            "Music" when string.Equals(
+                GetString(journalEvent.Payload, "MusicTrack"),
+                "MainMenu",
+                StringComparison.Ordinal) => Clear(),
             _ => false,
         };
         if (changed)

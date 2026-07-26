@@ -110,6 +110,18 @@ public sealed class SystemScanState
                 ApplyBodyContext(root, journalEvent.EventName);
                 return true;
 
+            case "Died":
+            case "Resurrect":
+                CurrentBodyId = null;
+                return true;
+
+            case "Music" when string.Equals(
+                GetString(root, "MusicTrack"),
+                "MainMenu",
+                StringComparison.Ordinal):
+                CurrentBodyId = null;
+                return true;
+
             default:
                 return false;
         }

@@ -66,6 +66,7 @@ public sealed class HumanSiteVehicleTrackerTests
     [InlineData("FSDJump")]
     [InlineData("CarrierJump")]
     [InlineData("Shutdown")]
+    [InlineData("Died")]
     [InlineData("Resurrect")]
     public void LeavingSurfaceContextClearsVehicleLocations(string eventName)
     {
@@ -80,6 +81,20 @@ public sealed class HumanSiteVehicleTrackerTests
         Assert.Null(tracker.ShipHeading);
         Assert.Null(tracker.SrvLocation);
         Assert.False(tracker.HasShipDeparted);
+    }
+
+    [Fact]
+    public void MainMenuMusicClearsVehicleLocations()
+    {
+        var tracker = new HumanSiteVehicleTracker();
+        var status = Status(latitude: 1, longitude: 2, heading: 90);
+        tracker.Apply(Event("Touchdown"), status);
+
+        Assert.True(tracker.Apply(
+            Event("Music", """{"MusicTrack":"MainMenu"}"""),
+            status));
+
+        Assert.Null(tracker.ShipLocation);
     }
 
     [Fact]

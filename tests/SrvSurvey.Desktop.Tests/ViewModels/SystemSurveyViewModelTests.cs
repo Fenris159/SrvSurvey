@@ -77,6 +77,11 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             [Parse("""{"event":"StartJump","JumpType":"Hyperspace"}""")],
             null);
         Assert.False(viewModel.ShouldShowFssInfo);
+
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"Died"}""")],
+            null);
+        Assert.True(viewModel.ShouldShowFssInfo);
     }
 
     [Fact]

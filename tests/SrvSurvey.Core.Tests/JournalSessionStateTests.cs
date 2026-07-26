@@ -59,6 +59,54 @@ public sealed class JournalSessionStateTests
     }
 
     [Theory]
+    [InlineData("Died")]
+    [InlineData("Resurrect")]
+    public void DeathLifecycleClearsOnlyTransientLocationContext(
+        string eventName)
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse(
+            """{"event":"Commander","Name":"Drew","FID":"F123"}"""));
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[1,2,3],"Body":"Earth","BodyType":"Planet"}"""));
+        state.Apply(Parse(
+            """{"event":"Loadout","Ship":"mandalay"}"""));
+        state.Apply(Parse(
+            """{"event":"LaunchSRV","SRVType":"combat_multicrew_srv_01"}"""));
+        state.Apply(Parse("""{"event":"LaunchFighter"}"""));
+
+        Assert.True(state.Apply(Parse(
+            $$"""{"event":"{{eventName}}"}""")));
+
+        Assert.Equal("Drew", state.CommanderName);
+        Assert.Equal("mandalay", state.ShipType);
+        Assert.Equal("Sol", state.SystemName);
+        Assert.Equal(42, state.SystemAddress);
+        Assert.Equal(new GalacticCoordinate(1, 2, 3), state.StarPosition);
+        Assert.Null(state.BodyName);
+        Assert.Null(state.ActiveSrvType);
+        Assert.False(state.IsFighterLaunched);
+        Assert.False(state.IsShutdown);
+    }
+
+    [Fact]
+    public void MainMenuMusicClearsTransientLocationContext()
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Sol","SystemAddress":42,"Body":"Earth","BodyType":"Planet"}"""));
+        state.Apply(Parse(
+            """{"event":"LaunchSRV","SRVType":"testbuggy"}"""));
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"Music","MusicTrack":"MainMenu"}""")));
+
+        Assert.Equal("Sol", state.SystemName);
+        Assert.Null(state.BodyName);
+        Assert.Null(state.ActiveSrvType);
+    }
+
+    [Theory]
     [InlineData("flightsuit_class1", OdysseySuitType.Flight)]
     [InlineData("explorationsuit_class5", OdysseySuitType.Artemis)]
     [InlineData("utilitysuit_class3", OdysseySuitType.Maverick)]

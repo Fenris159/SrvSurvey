@@ -230,6 +230,14 @@ broker entries are isolated, and later `MaterialCollected` totals have fixtures
 covering both event shapes and malformed-trade refusal. The broader golden
 fixture/projection inventory remains open above.
 
+The death/resurrection and main-menu lifecycle now matches the legacy split
+between durable commander data and disposable live context. `Died`, `Resurrect`,
+`Shutdown`, and `Music/MainMenu` clear the current body, SRV/fighter, carrier
+dock/depot, Guardian site, human settlement/vehicle, and ground-combat session
+without deleting system survey history or active massacre missions. This also
+prevents a stale Fleet Carrier dock from authorizing Raven cargo deltas after a
+rebuy. Focused reducer and Avalonia presentation fixtures cover each exit path.
+
 Exit gate: the supported event inventory has a fixture and parity result; unknown
 events remain non-fatal and observable.
 

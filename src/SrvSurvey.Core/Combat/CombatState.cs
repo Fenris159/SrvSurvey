@@ -68,7 +68,12 @@ public sealed class CombatState(TimeProvider? timeProvider = null)
         var result = journalEvent.EventName switch
         {
             "ApproachSettlement" => ApplySettlement(journalEvent.Payload),
-            "FSDJump" or "CarrierJump" => ClearSettlement(),
+            "StartJump" or "SupercruiseEntry" or "FSDJump" or "CarrierJump"
+                or "Died" or "Resurrect" or "Shutdown" => ClearSettlement(),
+            "Music" when string.Equals(
+                GetString(journalEvent.Payload, "MusicTrack"),
+                "MainMenu",
+                StringComparison.Ordinal) => ClearSettlement(),
             "FactionKillBond" when countProgress && countFootCombat =>
                 ApplyFactionKillBond(journalEvent.Payload),
             "MissionAccepted" => ApplyMissionAccepted(journalEvent.Payload),

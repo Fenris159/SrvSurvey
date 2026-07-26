@@ -1291,6 +1291,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
                 case "FSDJump":
                 case "CarrierJump":
+                case "Died":
+                case "Resurrect":
+                    fsdJumping = false;
+                    break;
+
+                case "Music" when string.Equals(
+                    GetString(journalEvent.Payload, "MusicTrack"),
+                    "MainMenu",
+                    StringComparison.Ordinal):
                     fsdJumping = false;
                     break;
 

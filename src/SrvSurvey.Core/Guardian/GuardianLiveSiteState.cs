@@ -41,7 +41,16 @@ public sealed class GuardianLiveSiteState(
 
             case "StartJump":
             case "SupercruiseEntry":
+            case "Died":
+            case "Resurrect":
             case "Shutdown":
+                CurrentSite = null;
+                return true;
+
+            case "Music" when string.Equals(
+                GetString(root, "MusicTrack"),
+                "MainMenu",
+                StringComparison.Ordinal):
                 CurrentSite = null;
                 return true;
 

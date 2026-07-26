@@ -137,6 +137,26 @@ public sealed class SystemScanStateTests
         Assert.Empty(snapshot.Bodies);
     }
 
+    [Theory]
+    [InlineData("Died")]
+    [InlineData("Resurrect")]
+    public void DeathLifecycleClearsCurrentBodyButRetainsSystemSurvey(
+        string eventName)
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"Body":"Test 1","BodyID":1,"BodyType":"Planet"}"""));
+        state.Apply(Parse(PlanetScan));
+
+        Assert.True(state.Apply(Parse(
+            $$"""{"event":"{{eventName}}"}""")));
+
+        var snapshot = state.CreateSnapshot();
+        Assert.Equal(42, snapshot.SystemAddress);
+        Assert.Null(snapshot.CurrentBodyId);
+        Assert.Single(snapshot.Bodies);
+    }
+
     [Fact]
     public void FssCountExcludesAsteroidsRingsAndBarycentres()
     {

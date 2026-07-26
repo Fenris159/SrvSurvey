@@ -46,6 +46,35 @@ public sealed class CombatStateTests
         Assert.Equal(0, state.FootCombatBonds);
     }
 
+    [Theory]
+    [InlineData("StartJump", "")]
+    [InlineData("SupercruiseEntry", "")]
+    [InlineData("Died", "")]
+    [InlineData("Resurrect", "")]
+    [InlineData("Shutdown", "")]
+    [InlineData("Music", ",\"MusicTrack\":\"MainMenu\"")]
+    public void SessionExitClearsFootCombatButRetainsMissions(
+        string eventName,
+        string properties)
+    {
+        var state = new CombatState();
+        state.Apply(Parse(
+            """{"event":"ApproachSettlement","Name":"Test Base","StationFaction":{"FactionState":"War"}}"""));
+        state.Apply(Parse(
+            """{"event":"FactionKillBond","Reward":100}"""));
+        state.Apply(Parse(
+            """{"event":"MissionAccepted","Faction":"Giver","Name":"Mission_Massacre","TargetFaction":"Enemy","KillCount":2,"MissionID":456}"""));
+
+        var result = state.Apply(Parse(
+            $$"""{"event":"{{eventName}}"{{properties}}}"""));
+
+        Assert.True(result.StateChanged);
+        Assert.False(result.PersistenceChanged);
+        Assert.Null(state.SettlementName);
+        Assert.Equal(0, state.FootCombatKills);
+        Assert.Single(state.MassacreMissions);
+    }
+
     [Fact]
     public void TracksAndRemovesMassacreMission()
     {

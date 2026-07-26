@@ -52,7 +52,7 @@ public sealed class ColonizationConstructionState
                 journalEvent.Timestamp),
             "Loadout" => ApplyShipLoadout(journalEvent.Payload),
             "Music" => ApplyMusic(journalEvent.Payload),
-            "Shutdown" => ClearDocking(),
+            "Died" or "Resurrect" or "Shutdown" => ClearDocking(),
             _ => false,
         };
         if (changed)
@@ -250,13 +250,14 @@ public sealed class ColonizationConstructionState
     private bool ApplyMusic(JsonElement root)
     {
         var updated = GetString(root, "MusicTrack");
-        if (string.Equals(updated, musicTrack, StringComparison.Ordinal))
-        {
-            return false;
-        }
-
+        var changed = !string.Equals(
+            updated,
+            musicTrack,
+            StringComparison.Ordinal);
         musicTrack = updated;
-        return true;
+        return string.Equals(updated, "MainMenu", StringComparison.Ordinal)
+            ? ClearDocking() || changed
+            : changed;
     }
 
     private static IReadOnlyList<ColonizationResourceRequirement>

@@ -125,6 +125,19 @@ public sealed class JournalSessionState
                 // retains the current planet until another location event.
                 break;
 
+            case "Died":
+            case "Resurrect":
+                ClearLiveLocationContext();
+                IsShutdown = false;
+                break;
+
+            case "Music" when string.Equals(
+                GetString(root, "MusicTrack"),
+                "MainMenu",
+                StringComparison.Ordinal):
+                ClearLiveLocationContext();
+                break;
+
             case "Shutdown":
                 IsShutdown = true;
                 break;
@@ -135,6 +148,13 @@ public sealed class JournalSessionState
 
         RecognizedEventCount++;
         return true;
+    }
+
+    private void ClearLiveLocationContext()
+    {
+        ActiveSrvType = null;
+        IsFighterLaunched = false;
+        BodyName = null;
     }
 
     public JournalSnapshot CreateSnapshot(

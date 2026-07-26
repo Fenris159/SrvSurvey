@@ -34,7 +34,11 @@ public sealed class HumanSiteVehicleTracker
             "Disembark" => ApplyDisembark(journalEvent.Payload, status),
             "Embark" => ApplyEmbark(journalEvent.Payload),
             "LeaveBody" or "FSDJump" or "CarrierJump" or "Shutdown"
-                or "Resurrect" => Clear(),
+                or "Died" or "Resurrect" => Clear(),
+            "Music" when string.Equals(
+                GetString(journalEvent.Payload, "MusicTrack"),
+                "MainMenu",
+                StringComparison.Ordinal) => Clear(),
             _ => false,
         };
         if (changed)
@@ -157,6 +161,14 @@ public sealed class HumanSiteVehicleTracker
         return root.TryGetProperty(propertyName, out var value)
             && value.ValueKind is JsonValueKind.True or JsonValueKind.False
                 ? value.GetBoolean()
+                : null;
+    }
+
+    private static string? GetString(JsonElement root, string propertyName)
+    {
+        return root.TryGetProperty(propertyName, out var value)
+            && value.ValueKind == JsonValueKind.String
+                ? value.GetString()
                 : null;
     }
 

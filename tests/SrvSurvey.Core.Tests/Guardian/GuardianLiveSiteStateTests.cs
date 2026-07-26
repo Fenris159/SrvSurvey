@@ -104,6 +104,8 @@ public sealed class GuardianLiveSiteStateTests
     [InlineData("SupercruiseEntry")]
     [InlineData("Shutdown")]
     [InlineData("CarrierJump")]
+    [InlineData("Died")]
+    [InlineData("Resurrect")]
     public void DepartureClearsCurrentSite(string eventName)
     {
         var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
@@ -113,6 +115,19 @@ public sealed class GuardianLiveSiteStateTests
         Assert.True(state.Apply(Parse($$"""
             {"timestamp":"2026-07-24T11:00:00Z","event":"{{eventName}}","StarSystem":"Elsewhere","SystemAddress":99}
             """)));
+
+        Assert.Null(state.CurrentSite);
+    }
+
+    [Fact]
+    public void MainMenuMusicClearsCurrentSite()
+    {
+        var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
+        state.Apply(Parse(
+            """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1"}"""));
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"Music","MusicTrack":"MainMenu"}""")));
 
         Assert.Null(state.CurrentSite);
     }
