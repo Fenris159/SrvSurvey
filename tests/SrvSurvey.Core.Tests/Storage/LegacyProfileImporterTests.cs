@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Storage;
 
@@ -9,6 +11,105 @@ public sealed class LegacyProfileImporterTests : IDisposable
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-profile-importer-tests-{Guid.NewGuid():N}");
+
+    [Fact]
+    public async Task ImportedRetiredOrganicDataIsConvertedFromVerifiedCopies()
+    {
+        var source = Path.Combine(temporaryDirectory, "legacy-organic");
+        var destination = Path.Combine(temporaryDirectory, "current-organic");
+        var backups = Path.Combine(temporaryDirectory, "backups-organic");
+        var organicDirectory = Path.Combine(source, "organic", "F123");
+        Directory.CreateDirectory(organicDirectory);
+        var catalog = ExobiologyReferenceCatalog.LoadEmbedded();
+        var reference = catalog.BiologyEntries.First(entry =>
+            string.Equals(
+                entry.VariantName,
+                "$Codex_Ent_Aleoids_01_B_Name;",
+                StringComparison.Ordinal));
+        var profilePath = Path.Combine(source, "F123-live.json");
+        var bodyPath = Path.Combine(organicDirectory, "Test 1.json");
+        await File.WriteAllTextAsync(
+            profilePath,
+            $$$"""
+            {
+              "fid":"F123",
+              "commander":"Drew",
+              "organicRewards":{{{reference.Reward}}},
+              "scannedBioEntryIds":["42_1_{{{reference.EntryId}}}"]
+            }
+            """);
+        await File.WriteAllTextAsync(
+            bodyPath,
+            $$$"""
+            {
+              "systemName":"Test",
+              "bodyName":"Test 1",
+              "commander":"Drew",
+              "bodyId":1,
+              "systemAddress":42,
+              "bioScans":[{
+                "location":{"lat":1,"long":2},
+                "radius":150,
+                "genus":"$Codex_Ent_Aleoids_Genus_Name;",
+                "species":"{{{reference.SpeciesName}}}",
+                "status":"Complete",
+                "entryId":0
+              }],
+              "organisms":{"Aleoida":{
+                "genus":"$Codex_Ent_Aleoids_Genus_Name;",
+                "species":"{{{reference.SpeciesName}}}",
+                "variant":"{{{reference.VariantName}}}",
+                "analyzed":true
+              }}
+            }
+            """);
+        var profileBytes = await File.ReadAllBytesAsync(profilePath);
+        var bodyBytes = await File.ReadAllBytesAsync(bodyPath);
+
+        var import = await new LegacyProfileImporter().ImportAsync(
+            source,
+            destination,
+            backups);
+        var migration = await new LegacyOrganicProfileMigrator(
+            destination,
+            catalog).MigrateAsync();
+
+        Assert.True(migration.Migrated);
+        Assert.Equal(
+            profileBytes,
+            await File.ReadAllBytesAsync(Path.Combine(
+                import.BackupDirectory,
+                "profile",
+                "F123-live.json")));
+        Assert.Equal(
+            bodyBytes,
+            await File.ReadAllBytesAsync(Path.Combine(
+                import.BackupDirectory,
+                "profile",
+                "organic",
+                "F123",
+                "Test 1.json")));
+        Assert.Equal(profileBytes, await File.ReadAllBytesAsync(profilePath));
+        Assert.Equal(bodyBytes, await File.ReadAllBytesAsync(bodyPath));
+        Assert.Equal(
+            bodyBytes,
+            await File.ReadAllBytesAsync(Path.Combine(
+                destination,
+                "organic",
+                "F123",
+                "Test 1.json")));
+        var migratedProfile = JsonNode.Parse(await File.ReadAllTextAsync(
+            Path.Combine(destination, "F123-live.json")))!.AsObject();
+        Assert.True(
+            migratedProfile["migratedScannedOrganicsInEntryId"]!
+                .GetValue<bool>());
+        Assert.True(
+            migratedProfile["migratedNonSystemDataOrganics"]!
+                .GetValue<bool>());
+        Assert.True(File.Exists(Assert.Single(Directory.GetFiles(
+            Path.Combine(destination, "systems", "F123"),
+            "*.json"))));
+    }
 
     [Fact]
     public async Task ImportCreatesVerifiedBackupAndLosslessDestination()
