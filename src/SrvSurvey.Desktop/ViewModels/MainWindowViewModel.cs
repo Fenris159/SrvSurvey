@@ -166,7 +166,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         ReleaseUpdateViewModel? releaseUpdates = null,
         ReferenceDataUpdateViewModel? referenceDataUpdates = null,
         LocalizationViewModel? localization = null,
-        ICanonnHumanSiteClient? canonnHumanSiteClient = null)
+        ICanonnHumanSiteClient? canonnHumanSiteClient = null,
+        ICanonnHumanSitePublisher? canonnHumanSitePublisher = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -430,8 +431,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             new HumanSiteKnowledgeStore(AppDataPaths.DataDirectory),
             new HumanSiteMaterialStore(AppDataPaths.DataDirectory),
             legacyReferences.HumanSiteTemplates,
-            canonnHumanSiteClient,
-            () => SystemSurvey.UseExternalData);
+            canonnClient: canonnHumanSiteClient,
+            useExternalData: () => SystemSurvey.UseExternalData,
+            canonnPublisher: canonnHumanSitePublisher,
+            publishCanonnGeometry: () =>
+                NetworkPrivacy.UploadHumanSettlementGeometry,
+            reportCanonnPublication: result =>
+            {
+                NetworkPrivacy.ReportPublicationResult(result);
+                if (!string.IsNullOrWhiteSpace(result.Warning))
+                {
+                    applicationLogService?.Append(result.Warning);
+                }
+            });
         BiologyRewards.PropertyChanged += OnBiologyRewardsChanged;
         Combat = new CombatViewModel(
             combatSettingsStore

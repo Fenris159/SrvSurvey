@@ -27,7 +27,12 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private readonly HumanSiteKnowledgeStore? knowledgeStore;
     private readonly HumanSiteMaterialStore? materialStore;
     private readonly ICanonnHumanSiteClient? canonnClient;
+    private readonly ICanonnHumanSitePublisher? canonnPublisher;
     private readonly Func<bool> useExternalData;
+    private readonly Func<bool> publishCanonnGeometry;
+    private readonly Action<CanonnHumanSitePublicationResult>?
+        reportCanonnPublication;
+    private readonly Version clientVersion;
     private EliteStatus? status;
     private string? frontierId;
     private string? commanderName;
@@ -72,13 +77,24 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         HumanSiteMaterialStore? materialStore = null,
         HumanSiteTemplateCatalog? templateCatalog = null,
         ICanonnHumanSiteClient? canonnClient = null,
-        Func<bool>? useExternalData = null)
+        Func<bool>? useExternalData = null,
+        ICanonnHumanSitePublisher? canonnPublisher = null,
+        Func<bool>? publishCanonnGeometry = null,
+        Action<CanonnHumanSitePublicationResult>?
+            reportCanonnPublication = null,
+        Version? clientVersion = null)
     {
         this.settingsStore = settingsStore;
         this.knowledgeStore = knowledgeStore;
         this.materialStore = materialStore;
         this.canonnClient = canonnClient;
+        this.canonnPublisher = canonnPublisher;
         this.useExternalData = useExternalData ?? (() => true);
+        this.publishCanonnGeometry = publishCanonnGeometry ?? (() => false);
+        this.reportCanonnPublication = reportCanonnPublication;
+        this.clientVersion = clientVersion
+            ?? typeof(HumanSiteViewModel).Assembly.GetName().Version
+            ?? new Version(0, 0);
         var templates = templateCatalog
             ?? HumanSiteTemplateCatalog.LoadEmbedded();
         TemplateAuthor = new HumanSiteTemplateAuthoringViewModel(
@@ -478,6 +494,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         vehicle = currentVehicle ?? vehicle;
         var versionBefore = state.Version;
         var source = HumanSiteGeometrySource.Unknown;
+        var publicationSource = HumanSiteGeometrySource.Unknown;
         var addedMaterials = new List<HumanSiteCollectedMaterial>();
         var completeMaterialSurvey = false;
         int? requestedThreatLevel = null;
@@ -509,6 +526,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             if (inferredSource != HumanSiteGeometrySource.Unknown)
             {
                 source = inferredSource;
+                publicationSource = inferredSource;
             }
 
             var activity = activityTracker.Apply(
@@ -551,6 +569,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         if (finalSource != HumanSiteGeometrySource.Unknown)
         {
             source = finalSource;
+            publicationSource = finalSource;
         }
 
         if (addedMaterials.Count > 0)
@@ -577,6 +596,10 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         if (state.Version != versionBefore && state.CurrentSite is { } site)
         {
             await SaveKnowledgeAsync(site, source);
+            await PublishCanonnKnowledgeAsync(
+                site,
+                publicationSource,
+                allowExternalData);
         }
 
         NotifySiteState();
@@ -1056,6 +1079,81 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         {
             StatusMessage =
                 $"Settlement geometry could not be saved: {exception.Message}";
+        }
+    }
+
+    private async Task PublishCanonnKnowledgeAsync(
+        HumanSiteLiveSnapshot site,
+        HumanSiteGeometrySource source,
+        bool allowPublishing)
+    {
+        if (!allowPublishing
+            || source == HumanSiteGeometrySource.Unknown
+            || canonnPublisher is null
+            || !publishCanonnGeometry()
+            || status is not { HasLatitudeLongitude: true } currentStatus
+            || currentStatus.PlanetRadius <= 0
+            || site.Heading is not { } heading)
+        {
+            return;
+        }
+
+        var activeVehicle = currentStatus.InTaxi
+            ? "taxi"
+            : currentStatus.OnFoot
+                ? "foot"
+                : vehicle;
+        if (string.IsNullOrWhiteSpace(activeVehicle))
+        {
+            const string warning =
+                "Settlement geometry was not uploaded because the active vehicle was unavailable.";
+            StatusMessage = warning;
+            reportCanonnPublication?.Invoke(new(null, warning));
+            return;
+        }
+
+        var submission = new CanonnHumanSiteSubmission(
+            currentStatus.Timestamp == default
+                ? site.LastUpdated
+                : currentStatus.Timestamp,
+            clientVersion,
+            site.Name,
+            site.MarketId,
+            site.SystemAddress,
+            site.BodyId,
+            site.EconomyToken,
+            site.StationType ?? "OnFootSettlement",
+            site.Location,
+            site.SubType,
+            heading,
+            source,
+            currentStatus.NormalizedHeading,
+            new HumanSiteSurfaceLocation(
+                currentStatus.Latitude,
+                currentStatus.Longitude),
+            activeVehicle,
+            source == HumanSiteGeometrySource.ManualFoot
+                ? 0
+                : site.GrantedPad,
+            (double)currentStatus.PlanetRadius,
+            site.AvailablePads);
+        try
+        {
+            await canonnPublisher.PublishStationAsync(submission);
+            StatusMessage = "Uploaded newly calculated settlement geometry to Canonn.";
+            reportCanonnPublication?.Invoke(new(submission, null));
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or TaskCanceledException
+                or IOException
+                or InvalidDataException
+                or ArgumentException)
+        {
+            var warning = "Settlement geometry could not be uploaded to Canonn: "
+                + exception.Message;
+            StatusMessage = warning;
+            reportCanonnPublication?.Invoke(new(null, warning));
         }
     }
 

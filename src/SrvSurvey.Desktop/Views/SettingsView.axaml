@@ -1613,6 +1613,15 @@
                          Text="When enabled, matching live Scan journal events include commander name, system coordinates, and the original scan payload. Startup history is never uploaded." />
             </StackPanel>
           </Grid>
+          <Separator />
+          <StackPanel Spacing="8">
+            <TextBlock Classes="card-title" Text="Human settlements" />
+            <CheckBox IsChecked="{Binding NetworkPrivacy.UploadHumanSettlementGeometry, Mode=TwoWay}"
+                      Content="Upload newly calculated settlement geometry to Canonn" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="When enabled, only a new live docking or manual alignment uploads the settlement identity, coordinates, pad layout, commander position, ship type, and calculated heading. Imported data, startup history, and Canonn lookups are never republished." />
+          </StackPanel>
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="{Binding NetworkPrivacy.HasStatusMessage}"
                      TextWrapping="Wrap"

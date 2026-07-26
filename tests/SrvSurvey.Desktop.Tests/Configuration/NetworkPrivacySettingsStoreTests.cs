@@ -11,9 +11,10 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     [Fact]
     public void MissingDocumentKeepsPublicationDisabled()
     {
-        Assert.Equal(
-            NetworkPrivacyPreferences.Default,
-            CreateStore().Load());
+        var preferences = CreateStore().Load();
+
+        Assert.Equal(NetworkPrivacyPreferences.Default, preferences);
+        Assert.False(preferences.UploadHumanSettlementGeometry);
     }
 
     [Fact]
@@ -23,7 +24,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Theme\":\"blue-dark\"}");
         var store = new NetworkPrivacySettingsStore(path);
-        var expected = new NetworkPrivacyPreferences(true, "live", true);
+        var expected = new NetworkPrivacyPreferences(true, "live", true, true);
 
         store.Save(expected);
 

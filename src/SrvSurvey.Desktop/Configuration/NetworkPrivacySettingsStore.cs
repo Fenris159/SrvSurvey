@@ -26,7 +26,11 @@ public sealed class NetworkPrivacySettingsStore
             GetBoolean(
                 settings,
                 "UploadGreenGasGiantCandidates",
-                defaults.UploadGreenGasGiantCandidates));
+                defaults.UploadGreenGasGiantCandidates),
+            GetBoolean(
+                settings,
+                "UploadHumanSettlementGeometry",
+                defaults.UploadHumanSettlementGeometry));
     }
 
     public void Save(NetworkPrivacyPreferences preferences)
@@ -47,6 +51,8 @@ public sealed class NetworkPrivacySettingsStore
                 preferences.EddnEnvironment);
             settings["UploadGreenGasGiantCandidates"] =
                 preferences.UploadGreenGasGiantCandidates;
+            settings["UploadHumanSettlementGeometry"] =
+                preferences.UploadHumanSettlementGeometry;
         });
     }
 
@@ -83,10 +89,12 @@ public sealed class NetworkPrivacySettingsStore
 public sealed record NetworkPrivacyPreferences(
     bool EddnUploadEnabled,
     string EddnEnvironment,
-    bool UploadGreenGasGiantCandidates)
+    bool UploadGreenGasGiantCandidates,
+    bool UploadHumanSettlementGeometry = false)
 {
     public static NetworkPrivacyPreferences Default { get; } = new(
         EddnUploadEnabled: false,
         EddnEnvironment: "dev",
-        UploadGreenGasGiantCandidates: false);
+        UploadGreenGasGiantCandidates: false,
+        UploadHumanSettlementGeometry: false);
 }

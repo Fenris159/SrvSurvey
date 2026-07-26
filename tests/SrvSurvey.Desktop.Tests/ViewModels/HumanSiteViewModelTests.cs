@@ -506,10 +506,13 @@ public sealed class HumanSiteViewModelTests
         var client = new StubCanonnClient(new CanonnHumanSiteLookupResult(
             [CreateCanonnKnowledge()],
             []));
+        var publisher = new StubCanonnPublisher();
         var viewModel = new HumanSiteViewModel(
             templateCatalog: HumanSiteTemplateCatalog.LoadEmbedded(),
             canonnClient: client,
-            useExternalData: () => true);
+            useExternalData: () => true,
+            canonnPublisher: publisher,
+            publishCanonnGeometry: () => true);
 
         await viewModel.ApplyUpdateAsync(
             [Parse(Approach())],
@@ -523,6 +526,7 @@ public sealed class HumanSiteViewModelTests
         Assert.Equal(275, viewModel.ActiveSite.Heading);
         Assert.Equal("Fornax", viewModel.ActiveSite.Template!.Name);
         Assert.Contains("Canonn", viewModel.StatusMessage);
+        Assert.Empty(publisher.Submissions);
     }
 
     [Theory]
@@ -617,6 +621,127 @@ public sealed class HumanSiteViewModelTests
                 Directory.Delete(root, true);
             }
         }
+    }
+
+    [Fact]
+    public async Task NewlyInferredLiveGeometryPublishesOnlyAfterConsent()
+    {
+        const double radius = 6_000_000;
+        const double siteHeading = 231;
+        var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
+        var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
+        var origin = new SurfaceCoordinate(-12.5, 44.25);
+        var pad = Assert.Single(template.LandingPads);
+        var observerHeading = SurfaceNavigation.NormalizeDegrees(
+            siteHeading + pad.Rotation);
+        var cockpitLocation = HumanSiteNavigation.GetSurfaceLocation(
+            origin,
+            pad.Offset,
+            radius,
+            siteHeading);
+        var status = new EliteStatus
+        {
+            Timestamp = DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
+            Flags = StatusFlags.HasLatLong
+                | StatusFlags.Docked
+                | StatusFlags.InMainShip,
+            Latitude = cockpitLocation.Latitude,
+            Longitude = cockpitLocation.Longitude,
+            Heading = (int)Math.Round(observerHeading),
+            PlanetRadius = (decimal)radius,
+        };
+        var publisher = new StubCanonnPublisher();
+        CanonnHumanSitePublicationResult? reported = null;
+        var viewModel = new HumanSiteViewModel(
+            templateCatalog: catalog,
+            canonnPublisher: publisher,
+            publishCanonnGeometry: () => true,
+            reportCanonnPublication: result => reported = result,
+            clientVersion: new Version(2, 0, 95, 0));
+
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse(Approach(
+                    economy: "$economy_Extraction;",
+                    economyLocalized: "Extraction",
+                    latitude: origin.Latitude,
+                    longitude: origin.Longitude)),
+                Parse(
+                    """
+                    {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
+                    """),
+            ],
+            status,
+            "sidewinder");
+
+        var submission = Assert.Single(publisher.Submissions);
+        Assert.Equal(new Version(2, 0, 95, 0), submission.ClientVersion);
+        Assert.Equal(HumanSiteGeometrySource.AutoDock,
+            submission.GeometrySource);
+        Assert.Equal("sidewinder", submission.CommanderVehicle);
+        Assert.Equal(siteHeading, submission.Heading, 0);
+        Assert.Same(submission, reported!.Published);
+        Assert.Contains("Uploaded", viewModel.StatusMessage);
+
+        await viewModel.ApplyUpdateAsync(
+            [Parse("""{"event":"DockingGranted","MarketID":12345,"LandingPad":1}""")],
+            status,
+            "sidewinder");
+        Assert.Single(publisher.Submissions);
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task SettlementPublicationRespectsConsentAndBootstrapGates(
+        bool consent,
+        bool allowPublishing)
+    {
+        const double radius = 6_000_000;
+        const double siteHeading = 231;
+        var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
+        var template = catalog.Find(HumanSiteEconomy.Extraction, 5)!;
+        var origin = new SurfaceCoordinate(-12.5, 44.25);
+        var pad = Assert.Single(template.LandingPads);
+        var heading = SurfaceNavigation.NormalizeDegrees(
+            siteHeading + pad.Rotation);
+        var location = HumanSiteNavigation.GetSurfaceLocation(
+            origin,
+            pad.Offset,
+            radius,
+            siteHeading);
+        var publisher = new StubCanonnPublisher();
+        var viewModel = new HumanSiteViewModel(
+            templateCatalog: catalog,
+            canonnPublisher: publisher,
+            publishCanonnGeometry: () => consent);
+
+        await viewModel.ApplyUpdateAsync(
+            [
+                Parse(Approach(
+                    economy: "$economy_Extraction;",
+                    economyLocalized: "Extraction",
+                    latitude: origin.Latitude,
+                    longitude: origin.Longitude)),
+                Parse(
+                    """
+                    {"event":"DockingRequested","MarketID":12345,"StationType":"OnFootSettlement","LandingPads":{"Small":1,"Medium":0,"Large":0}}
+                    """),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong
+                    | StatusFlags.Docked
+                    | StatusFlags.InMainShip,
+                Latitude = location.Latitude,
+                Longitude = location.Longitude,
+                Heading = (int)Math.Round(heading),
+                PlanetRadius = (decimal)radius,
+            },
+            "sidewinder",
+            allowPublishing);
+
+        Assert.Empty(publisher.Submissions);
     }
 
     private static EliteStatus OnFootStatus(
@@ -721,6 +846,19 @@ public sealed class HumanSiteViewModelTests
             return exception is null
                 ? Task.FromResult(result!)
                 : Task.FromException<CanonnHumanSiteLookupResult>(exception);
+        }
+    }
+
+    private sealed class StubCanonnPublisher : ICanonnHumanSitePublisher
+    {
+        public List<CanonnHumanSiteSubmission> Submissions { get; } = [];
+
+        public Task<string> PublishStationAsync(
+            CanonnHumanSiteSubmission submission,
+            CancellationToken cancellationToken = default)
+        {
+            Submissions.Add(submission);
+            return Task.FromResult("accepted");
         }
     }
 }

@@ -162,6 +162,7 @@ public sealed partial class App : Application
                 commanderPreferenceResolution.TargetFrontierId;
             var firstFootfallInferenceService =
                 FirstFootfallInferenceService.CreateCurrent();
+            var canonnHumanSiteClient = new CanonnHumanSiteClient();
             var viewModel = new MainWindowViewModel(
                 configuredJournalDirectory,
                 themeService,
@@ -178,7 +179,8 @@ public sealed partial class App : Application
                     commanderPreferenceResolution.StatusMessage,
                 firstFootfallInferenceService:
                     firstFootfallInferenceService,
-                canonnHumanSiteClient: new CanonnHumanSiteClient());
+                canonnHumanSiteClient: canonnHumanSiteClient,
+                canonnHumanSitePublisher: canonnHumanSiteClient);
             IGameWindowTracker CreateOverlayGameWindowTracker()
             {
                 return new OverlayGameWindowTracker(

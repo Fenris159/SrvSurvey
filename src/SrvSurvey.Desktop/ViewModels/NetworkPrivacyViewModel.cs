@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Settlements;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -48,6 +49,15 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         });
     }
 
+    public bool UploadHumanSettlementGeometry
+    {
+        get => preferences.UploadHumanSettlementGeometry;
+        set => Update(preferences with
+        {
+            UploadHumanSettlementGeometry = value,
+        });
+    }
+
     public string StatusMessage
     {
         get => statusMessage;
@@ -83,6 +93,21 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         {
             StatusMessage =
                 $"Uploaded {result.Published.Count:N0} Green Gas Giant candidates.";
+        }
+    }
+
+    public void ReportPublicationResult(
+        CanonnHumanSitePublicationResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        if (!string.IsNullOrWhiteSpace(result.Warning))
+        {
+            StatusMessage = result.Warning;
+        }
+        else if (result.Published is { } published)
+        {
+            StatusMessage =
+                $"Uploaded settlement geometry for {published.Name} to Canonn.";
         }
     }
 
