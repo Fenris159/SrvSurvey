@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
 
@@ -9,14 +10,14 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     {
         InitializeComponent();
         Definition = OverlayLayoutCatalog.Supported[0];
-        DataContext = Definition;
+        DataContext = OverlayPositionPreviewViewModel.Create(Definition);
     }
 
     public OverlayPositionPreviewWindow(OverlayLayoutDefinition definition)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         InitializeComponent();
-        DataContext = definition;
+        DataContext = OverlayPositionPreviewViewModel.Create(definition);
         Width = definition.PreviewSize.Width;
         Height = definition.PreviewSize.Height;
         MinWidth = Width;
