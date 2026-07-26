@@ -113,6 +113,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private long? surveyCodexSystemAddress;
     private long? activeSystemVisitAddress;
     private DateTimeOffset? activeSystemVisitedAt;
+    private string? loadedSystemHistoryKey;
     private EliteStatus? latestStatus;
     private CargoSnapshot? latestCargo;
     private bool awaitFreshCargoSnapshot;
@@ -1867,6 +1868,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.JournalEvents,
             update.Status,
             exobiologyAfter);
+        await LoadCurrentSystemHistoryAsync();
         if (!update.IsBootstrapRead
             && await ApplyFirstFootfallTextCommandsAsync(update.JournalEvents) > 0)
         {
@@ -2166,6 +2168,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var result = await commanderProfileStore.LoadAsync(
             journalState.FrontierId,
             isOdyssey);
+        loadedSystemHistoryKey = null;
         activeProfileFrontierId = journalState.FrontierId;
         activeProfileCommanderName = journalState.CommanderName
             ?? result.Data?.CommanderName;
@@ -2354,6 +2357,51 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             or "ApproachBody"
             or "Scan"
             or "Disembark";
+    }
+
+    private async Task LoadCurrentSystemHistoryAsync()
+    {
+        var current = SystemSurvey.Snapshot;
+        if (string.IsNullOrWhiteSpace(activeProfileFrontierId)
+            || string.IsNullOrWhiteSpace(current.SystemName)
+            || current.SystemAddress is not { } systemAddress
+            || systemAddress <= 0)
+        {
+            return;
+        }
+
+        var key = activeProfileFrontierId + "\n" + systemAddress;
+        if (string.Equals(
+            loadedSystemHistoryKey,
+            key,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        loadedSystemHistoryKey = key;
+        var result = await systemScanPersistenceStore.LoadAsync(
+            activeProfileFrontierId,
+            activeProfileCommanderName ?? journalState.CommanderName,
+            current.SystemName,
+            systemAddress,
+            current.StarPosition);
+        if (result.Error is not null)
+        {
+            var message = "Imported system history was preserved but could not "
+                + "be loaded safely from "
+                + Path.GetFileName(result.Path)
+                + ": "
+                + result.Error;
+            applicationLogService?.Append(message);
+            StatusMessage = message;
+            return;
+        }
+
+        if (result.Snapshot is { } history)
+        {
+            SystemSurvey.MergeKnownSystemData(history);
+        }
     }
 
     private async Task PersistSystemScanAsync(

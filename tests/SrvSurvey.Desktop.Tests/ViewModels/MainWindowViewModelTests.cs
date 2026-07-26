@@ -896,6 +896,10 @@ public sealed class MainWindowViewModelTests
                   "bodies":[{
                     "name":"Test 1",
                     "id":1,
+                    "type":"LandableBody",
+                    "planetClass":"Rocky body",
+                    "surfaceTemperature":180,
+                    "materials":{"iron":20},
                     "bioSignalCount":1,
                     "bookmarks":{"Aleoida":[{"latitude":1}]},
                     "organisms":[{"genus":"Aleoida","analyzed":true}]
@@ -923,6 +927,13 @@ public sealed class MainWindowViewModelTests
 
             Assert.True(
                 viewModel.SystemSurvey.AreBiologyOverlaysSuppressedForRepeatVisit);
+            var restoredBody = Assert.Single(
+                viewModel.SystemSurvey.Snapshot.Bodies);
+            Assert.Equal(SystemBodyKind.LandablePlanet, restoredBody.Kind);
+            Assert.Equal("Rocky body", restoredBody.PlanetClass);
+            Assert.Equal(180, restoredBody.SurfaceTemperature);
+            Assert.Equal(20, restoredBody.Materials["iron"]);
+            Assert.True(Assert.Single(restoredBody.Organisms).IsAnalyzed);
             var saved = JsonNode.Parse(
                 await File.ReadAllTextAsync(systemPath))!.AsObject();
             Assert.True(saved["futureRoot"]!["keep"]!.GetValue<bool>());

@@ -1392,6 +1392,21 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         RefreshDisplay();
     }
 
+    public bool MergeKnownSystemData(
+        SystemScanSnapshot known,
+        bool includeBiologicalData = true)
+    {
+        if (!state.MergeKnownData(known, includeBiologicalData))
+        {
+            return false;
+        }
+
+        snapshot = state.CreateSnapshot();
+        RefreshDisplay();
+        RaiseVisibilityProperties();
+        return true;
+    }
+
     public bool SetCurrentBodyFirstFootfall(bool value)
     {
         if (!state.SetCurrentBodyFirstFootfall(value))
