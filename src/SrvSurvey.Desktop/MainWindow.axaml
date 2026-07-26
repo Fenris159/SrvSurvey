@@ -95,6 +95,7 @@
       <views:ColonizationView IsVisible="{Binding IsColonizationSelected}" />
       <views:DiagnosticsView IsVisible="{Binding IsDiagnosticsSelected}" />
       <views:SettingsView IsVisible="{Binding IsSettingsSelected}" />
+      <views:GuidesView IsVisible="{Binding IsGuidesSelected}" />
     </Grid>
   </Grid>
 </Window>

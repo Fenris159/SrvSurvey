@@ -1,0 +1,178 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.GuidesView"
+             x:DataType="vm:MainWindowViewModel"
+             mc:Ignorable="d">
+  <Grid Margin="32"
+        RowDefinitions="Auto,*"
+        RowSpacing="22">
+    <Grid ColumnDefinitions="*,360" ColumnSpacing="28">
+      <StackPanel Spacing="5">
+        <TextBlock Classes="eyebrow" Text="FIELD MANUAL" />
+        <TextBlock Classes="page-title" Text="Guides" />
+        <TextBlock Classes="muted"
+                   Text="Task-focused help for every SrvSurvey workspace and overlay." />
+      </StackPanel>
+
+      <TextBox Grid.Column="1"
+               VerticalAlignment="Center"
+               PlaceholderText="Search guides, settings, symbols, or workflows"
+               Text="{Binding Guides.SearchText, Mode=TwoWay}" />
+    </Grid>
+
+    <Grid Grid.Row="1"
+          ColumnDefinitions="230,*"
+          ColumnSpacing="18">
+      <Border Classes="card" Padding="8">
+        <ListBox Classes="guide-categories"
+                 ItemsSource="{Binding Guides.Categories}"
+                 SelectedItem="{Binding Guides.SelectedCategory, Mode=TwoWay}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:GuideCategoryViewModel">
+              <Grid ColumnDefinitions="28,*" ColumnSpacing="8">
+                <TextBlock Classes="muted"
+                           FontSize="11"
+                           FontWeight="SemiBold"
+                           Text="{Binding Number}" />
+                <TextBlock Grid.Column="1"
+                           FontWeight="SemiBold"
+                           TextWrapping="Wrap"
+                           Text="{Binding Title}" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
+
+      <ScrollViewer Grid.Column="1"
+                    HorizontalScrollBarVisibility="Disabled">
+        <StackPanel MaxWidth="850" Spacing="16">
+          <StackPanel IsVisible="{Binding Guides.IsBrowsing}" Spacing="16">
+            <Border Classes="card raised">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="eyebrow"
+                           Text="{Binding Guides.SelectedCategory.Number, StringFormat=CATEGORY {0}}" />
+                <TextBlock FontSize="24"
+                           FontWeight="SemiBold"
+                           Text="{Binding Guides.SelectedCategory.Title}" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="{Binding Guides.SelectedCategory.Summary}" />
+              </StackPanel>
+            </Border>
+
+            <ItemsControl IsVisible="{Binding Guides.SelectedCategory.HasSections}"
+                          ItemsSource="{Binding Guides.SelectedCategory.Sections}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:GuideSectionViewModel">
+                  <Border Classes="card" Margin="0,0,0,14">
+                    <StackPanel Spacing="12">
+                      <TextBlock Classes="card-title" Text="{Binding Title}" />
+                      <TextBlock Classes="muted"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding Summary}" />
+
+                      <ItemsControl IsVisible="{Binding HasSteps}"
+                                    ItemsSource="{Binding Steps}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Grid Margin="0,3" ColumnDefinitions="22,*">
+                              <Border Width="18" Height="18"
+                                      Background="{DynamicResource RavenAccentMutedBrush}"
+                                      CornerRadius="9">
+                                <TextBlock HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="10"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource RavenAccentBrush}"
+                                           Text="›" />
+                              </Border>
+                              <TextBlock Grid.Column="1"
+                                         TextWrapping="Wrap"
+                                         Text="{Binding}" />
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+
+                      <ItemsControl IsVisible="{Binding HasDetails}"
+                                    ItemsSource="{Binding Details}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Grid Margin="0,2" ColumnDefinitions="16,*">
+                              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                         Text="•" />
+                              <TextBlock Grid.Column="1"
+                                         Classes="muted"
+                                         TextWrapping="Wrap"
+                                         Text="{Binding}" />
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Classes="card"
+                    IsVisible="{Binding Guides.SelectedCategory.HasIcons}">
+              <TextBlock Classes="muted"
+                         Text="The visual glossary will appear here." />
+            </Border>
+          </StackPanel>
+
+          <StackPanel IsVisible="{Binding Guides.IsSearching}" Spacing="14">
+            <Grid ColumnDefinitions="*,Auto">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="eyebrow" Text="SEARCH RESULTS" />
+                <TextBlock Classes="card-title"
+                           Text="{Binding Guides.SearchSummary}" />
+              </StackPanel>
+              <TextBlock Grid.Column="1"
+                         Classes="muted"
+                         VerticalAlignment="Bottom"
+                         Text="Type more words to narrow the results" />
+            </Grid>
+
+            <ItemsControl IsVisible="{Binding Guides.HasSearchResults}"
+                          ItemsSource="{Binding Guides.SearchResults}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:GuideSearchResultViewModel">
+                  <Border Classes="card" Margin="0,0,0,12">
+                    <StackPanel Spacing="6">
+                      <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Classes="card-title" Text="{Binding Title}" />
+                        <Border Grid.Column="1" Classes="badge">
+                          <TextBlock FontSize="10"
+                                     Foreground="{DynamicResource RavenAccentBrush}"
+                                     Text="{Binding Kind}" />
+                        </Border>
+                      </Grid>
+                      <TextBlock Classes="muted" Text="{Binding Category}" />
+                      <TextBlock TextWrapping="Wrap" Text="{Binding Summary}" />
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Classes="card"
+                    IsVisible="{Binding Guides.HasNoSearchResults}">
+              <StackPanel Spacing="5">
+                <TextBlock Classes="card-title" Text="No matching guide entries" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="Try a workspace name, overlay title, icon, journal event, setting, or task such as scanning, importing, or plotting a route." />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+  </Grid>
+</UserControl>

@@ -652,8 +652,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             new("colonisation", "Colonisation", "08", "Raven Colonial projects"),
             new("diagnostics", "Diagnostics", "09", "Journal source and parsed state"),
             new("settings", "Settings", "10", "Appearance and application options"),
+            new("guides", "Guides", "11", "Help documentation and overlay icon glossary"),
         ];
         selectedNavigation = NavigationItems[0];
+        Guides = new GuidesViewModel(GuideCatalog.Create());
 
         var currentTheme = themeService?.Current
             ?? RavenThemeCatalog.Get(RavenThemeCatalog.DefaultThemeKey);
@@ -669,6 +671,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public IReadOnlyList<NavigationItemViewModel> NavigationItems { get; }
 
     public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; }
+
+    public GuidesViewModel Guides { get; }
 
     public GlobalInputSettingsViewModel InputSettings { get; }
 
@@ -929,6 +933,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             OnPropertyChanged(nameof(IsColonizationSelected));
             OnPropertyChanged(nameof(IsDiagnosticsSelected));
             OnPropertyChanged(nameof(IsSettingsSelected));
+            OnPropertyChanged(nameof(IsGuidesSelected));
         }
     }
 
@@ -952,6 +957,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public bool IsDiagnosticsSelected => SelectedNavigation.Key == "diagnostics";
 
     public bool IsSettingsSelected => SelectedNavigation.Key == "settings";
+
+    public bool IsGuidesSelected => SelectedNavigation.Key == "guides";
 
     public void ShowDiagnostics()
     {

@@ -26,7 +26,7 @@ public sealed class MainWindowViewModelTests
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
-        Assert.Equal(10, viewModel.NavigationItems.Count);
+        Assert.Equal(11, viewModel.NavigationItems.Count);
         Assert.True(viewModel.IsOverviewSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
@@ -58,6 +58,11 @@ public sealed class MainWindowViewModelTests
             item => item.Key == "colonisation");
 
         Assert.True(viewModel.IsColonizationSelected);
+
+        viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
+            item => item.Key == "guides");
+
+        Assert.True(viewModel.IsGuidesSelected);
     }
 
     [Fact]
