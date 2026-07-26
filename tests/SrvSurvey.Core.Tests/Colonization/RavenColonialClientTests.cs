@@ -156,6 +156,96 @@ public sealed class RavenColonialClientTests
     }
 
     [Fact]
+    public async Task CreatingProjectRestoresOriginalPrimaryWithOrderOnlyUpdate()
+    {
+        var requestNumber = 0;
+        string? orderBody = null;
+        var handler = new StubHandler(async request =>
+        {
+            requestNumber++;
+            switch (requestNumber)
+            {
+                case 1:
+                    Assert.Equal(HttpMethod.Get, request.Method);
+                    Assert.Equal(
+                        "/root/api/v2/system/99/sites",
+                        request.RequestUri!.AbsolutePath);
+                    return Json(
+                        """[{"id":"primary","name":"Nexus Port"},{"id":"secondary","name":"Outpost"}]""");
+                case 2:
+                    Assert.Equal(HttpMethod.Put, request.Method);
+                    Assert.Equal(
+                        "/root/api/project/",
+                        request.RequestUri!.AbsolutePath);
+                    return Json(
+                        """{"buildId":"created","buildType":"no_truss","buildName":"New Port","marketId":42,"systemAddress":99,"systemName":"Test"}""");
+                case 3:
+                    Assert.Equal(HttpMethod.Get, request.Method);
+                    return Json(
+                        """[{"id":"created-site","buildId":"created","marketId":42,"name":"New Port"},{"id":"primary","name":"Nexus Port"},{"id":"secondary","name":"Outpost"},{"id":"concurrent","name":"Concurrent Site"}]""");
+                case 4:
+                    Assert.Equal(HttpMethod.Put, request.Method);
+                    Assert.Equal(
+                        "/root/api/v2/system/99/sites",
+                        request.RequestUri!.AbsolutePath);
+                    Assert.Equal(
+                        "secret-key",
+                        Assert.Single(request.Headers.GetValues("rcc-key")));
+                    orderBody = await request.Content!.ReadAsStringAsync();
+                    return Json(
+                        """{"id64":99,"name":"Test","sites":[],"bodies":[]}""");
+                case 5:
+                    Assert.Equal(HttpMethod.Get, request.Method);
+                    return Json(
+                        """[{"id":"primary","name":"Nexus Port"},{"id":"created-site","buildId":"created","marketId":42,"name":"New Port"},{"id":"secondary","name":"Outpost"},{"id":"concurrent","name":"Concurrent Site"}]""");
+                default:
+                    throw new InvalidOperationException(
+                        $"Unexpected request {requestNumber}: {request.Method} {request.RequestUri}");
+            }
+        });
+        var publisher = new ColonizationProjectPublisher(Create(handler));
+
+        var result = await publisher.CreateAsync(
+            CreateProjectRequest(),
+            "secret-key");
+
+        Assert.Equal("created", result.Project?.BuildId);
+        Assert.Equal(
+            ColonizationPrimarySiteOrderStatus.Restored,
+            result.PrimarySiteOrderStatus);
+        Assert.Null(result.Warning);
+        Assert.Equal(5, requestNumber);
+        using var document = JsonDocument.Parse(orderBody!);
+        var root = document.RootElement;
+        Assert.Empty(root.GetProperty("update").EnumerateArray());
+        Assert.Empty(root.GetProperty("delete").EnumerateArray());
+        Assert.Equal(
+            ["primary", "created-site", "secondary", "concurrent"],
+            root.GetProperty("orderIDs")
+                .EnumerateArray()
+                .Select(value => value.GetString()));
+    }
+
+    [Fact]
+    public async Task ExistingPrimaryWithoutApiKeyStopsBeforeProjectCreation()
+    {
+        var requestCount = 0;
+        var publisher = new ColonizationProjectPublisher(Create(
+            new StubHandler(request =>
+            {
+                requestCount++;
+                Assert.Equal(HttpMethod.Get, request.Method);
+                return Json("""[{"id":"primary","name":"Nexus Port"}]""");
+            })));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            publisher.CreateAsync(CreateProjectRequest(), apiKey: null));
+
+        Assert.Contains("API key", exception.Message);
+        Assert.Equal(1, requestCount);
+    }
+
+    [Fact]
     public async Task ReadsPlannedSitesAndArchitect()
     {
         var handler = new StubHandler(request =>
@@ -664,6 +754,24 @@ public sealed class RavenColonialClientTests
         return new RavenColonialClient(
             new HttpClient(handler),
             new Uri("https://example.test/root/"));
+    }
+
+    private static ColonizationProjectCreate CreateProjectRequest()
+    {
+        return new ColonizationProjectCreate
+        {
+            BuildType = "no_truss",
+            BuildName = "New Port",
+            MarketId = 42,
+            SystemAddress = 99,
+            SystemName = "Test",
+            StarPosition = [1, 2, 3],
+            MaximumRequired = 100,
+            Commodities = new Dictionary<string, int>
+            {
+                ["steel"] = 100,
+            },
+        };
     }
 
     private static HttpResponseMessage Json(string json)

@@ -1241,6 +1241,10 @@ public sealed record ColonizationSystemSiteUpdate
     [JsonPropertyName("delete")]
     public List<string> DeletedSiteIds { get; init; } = [];
 
+    [JsonPropertyName("orderIDs")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<string>? OrderedSiteIds { get; init; }
+
     [JsonPropertyName("architect")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Architect { get; init; }
