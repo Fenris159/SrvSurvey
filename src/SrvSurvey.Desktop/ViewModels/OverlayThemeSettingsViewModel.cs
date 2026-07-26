@@ -468,7 +468,6 @@ public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
 
             OnPropertyChanged();
             OnPropertyChanged(nameof(Color));
-            OnPropertyChanged(nameof(PreviewBrush));
             OnPropertyChanged(nameof(ValidationMessage));
             OnPropertyChanged(nameof(HasValidationError));
             OnPropertyChanged(nameof(IsDirty));
@@ -476,9 +475,31 @@ public sealed class OverlayThemeColorEditorViewModel : INotifyPropertyChanged
         }
     }
 
-    public Color Color => color;
+    public Color Color
+    {
+        get => color;
+        set
+        {
+            var formatted = LegacyOverlayThemeStore.FormatHtmlColor(value);
+            if (color == value
+                && string.Equals(hexValue, formatted, StringComparison.Ordinal)
+                && !HasValidationError)
+            {
+                return;
+            }
 
-    public IBrush PreviewBrush => new SolidColorBrush(Color);
+            color = value;
+            hexValue = formatted;
+            validationMessage = string.Empty;
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HexValue));
+            OnPropertyChanged(nameof(ValidationMessage));
+            OnPropertyChanged(nameof(HasValidationError));
+            OnPropertyChanged(nameof(IsDirty));
+            changed();
+        }
+    }
 
     public string ValidationMessage => validationMessage;
 

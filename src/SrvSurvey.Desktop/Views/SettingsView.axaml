@@ -175,6 +175,10 @@
               </StackPanel>
             </Border>
 
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Choose any colour swatch to open its visual picker, or use the hex field for exact values. Alpha is supported for translucent overlays." />
+
             <ItemsControl ItemsSource="{Binding OverlayTheme.Categories}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:OverlayThemeCategoryViewModel">
@@ -191,15 +195,17 @@
                           <DataTemplate x:DataType="vm:OverlayThemeColorEditorViewModel">
                             <Grid Width="476"
                                   Margin="0,0,12,10"
-                                  ColumnDefinitions="28,*,150"
+                                  ColumnDefinitions="56,*,150"
                                   ColumnSpacing="10">
-                              <Border Width="24"
-                                      Height="24"
-                                      VerticalAlignment="Center"
-                                      Background="{Binding PreviewBrush}"
-                                      BorderBrush="{DynamicResource RavenBorderBrush}"
-                                      BorderThickness="1"
-                                      CornerRadius="4" />
+                              <ColorPicker Width="52"
+                                           Height="38"
+                                           VerticalAlignment="Center"
+                                           Color="{Binding Color, Mode=TwoWay}"
+                                           ColorModel="Rgba"
+                                           HexInputAlphaPosition="Trailing"
+                                           IsAlphaEnabled="True"
+                                           IsAlphaVisible="True"
+                                           ToolTip.Tip="Open colour picker" />
                               <StackPanel Grid.Column="1" Spacing="1">
                                 <TextBlock FontWeight="SemiBold" Text="{Binding DisplayName}" />
                                 <TextBlock Classes="muted" FontSize="10" Text="{Binding Key}" />
