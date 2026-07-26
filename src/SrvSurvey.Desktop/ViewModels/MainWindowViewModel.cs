@@ -143,7 +143,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         CodexImageSettingsStore? codexImageSettingsStore = null,
         DockToDockSettingsStore? dockToDockSettingsStore = null,
         DockToDockLogService? dockToDockLogService = null,
-        DesktopBehaviorSettingsStore? desktopBehaviorSettingsStore = null)
+        DesktopBehaviorSettingsStore? desktopBehaviorSettingsStore = null,
+        BiologyRewardSettingsStore? biologyRewardSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -307,10 +308,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 ?? new HumanSiteSettingsStore(AppDataPaths.UiSettingsPath),
             new HumanSiteKnowledgeStore(AppDataPaths.DataDirectory),
             new HumanSiteMaterialStore(AppDataPaths.DataDirectory));
+        BiologyRewards = new BiologyRewardSettingsViewModel(
+            biologyRewardSettingsStore
+                ?? new BiologyRewardSettingsStore(AppDataPaths.UiSettingsPath));
         SystemSurvey = new SystemSurveyViewModel(
             systemSurveySettingsStore
                 ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath),
-            biologyCatalog: sharedExobiologyCatalog);
+            biologyCatalog: sharedExobiologyCatalog,
+            biologyRewardThresholds: BiologyRewards.Thresholds);
+        BiologyRewards.PropertyChanged += OnBiologyRewardsChanged;
         Combat = new CombatViewModel(
             combatSettingsStore
                 ?? new CombatSettingsStore(AppDataPaths.UiSettingsPath),
@@ -487,6 +493,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public GlobalInputSettingsViewModel InputSettings { get; }
 
     public DesktopBehaviorViewModel DesktopBehavior { get; }
+
+    public BiologyRewardSettingsViewModel BiologyRewards { get; }
 
     public OverlayLayoutSettingsViewModel OverlayLayout { get; }
 
@@ -2205,6 +2213,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         GalaxyMap.Dispose();
         QuestWorkspace.Dispose();
         CommanderInstances.Dispose();
+        BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged;
         visitedStarsHttpClient?.Dispose();
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();
@@ -2219,6 +2228,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         HumanSite.UpdateQuests(questRuntimeCoordinator.Snapshot);
         OnPropertyChanged(nameof(Quests));
         OnPropertyChanged(nameof(QuestUnreadMessageCount));
+    }
+
+    private void OnBiologyRewardsChanged(
+        object? sender,
+        PropertyChangedEventArgs eventArgs)
+    {
+        if (eventArgs.PropertyName ==
+            nameof(BiologyRewardSettingsViewModel.Thresholds))
+        {
+            SystemSurvey.UpdateBiologyRewardThresholds(
+                BiologyRewards.Thresholds);
+        }
     }
 
     private static bool IsShowCodexCommand(JournalEventEnvelope journalEvent)

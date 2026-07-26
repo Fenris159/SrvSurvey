@@ -1,0 +1,259 @@
+using System.Globalization;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using SrvSurvey.Desktop.Configuration;
+
+namespace SrvSurvey.Desktop.Controls;
+
+public sealed class BiologyRewardBandControl : Control
+{
+    public static readonly StyledProperty<long> MinimumRewardProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, long>(
+            nameof(MinimumReward));
+    public static readonly StyledProperty<long> MaximumRewardProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, long>(
+            nameof(MaximumReward),
+            -1);
+    public static readonly StyledProperty<double> BucketOneMillionsProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, double>(
+            nameof(BucketOneMillions),
+            3);
+    public static readonly StyledProperty<double> BucketTwoMillionsProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, double>(
+            nameof(BucketTwoMillions),
+            7);
+    public static readonly StyledProperty<double> BucketThreeMillionsProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, double>(
+            nameof(BucketThreeMillions),
+            12);
+    public static readonly StyledProperty<bool> IsPredictionProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, bool>(
+            nameof(IsPrediction));
+    public static readonly StyledProperty<bool> IsHighlightedProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, bool>(
+            nameof(IsHighlighted));
+    public static readonly StyledProperty<IBrush?> FilledBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(FilledBrush));
+    public static readonly StyledProperty<IBrush?> PotentialBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(PotentialBrush));
+    public static readonly StyledProperty<IBrush?> HighlightBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(HighlightBrush));
+    public static readonly StyledProperty<IBrush?> EdgeBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(EdgeBrush));
+    public static readonly StyledProperty<IBrush?> PredictionBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(PredictionBrush));
+
+    static BiologyRewardBandControl()
+    {
+        AffectsRender<BiologyRewardBandControl>(
+            MinimumRewardProperty,
+            MaximumRewardProperty,
+            BucketOneMillionsProperty,
+            BucketTwoMillionsProperty,
+            BucketThreeMillionsProperty,
+            IsPredictionProperty,
+            IsHighlightedProperty,
+            FilledBrushProperty,
+            PotentialBrushProperty,
+            HighlightBrushProperty,
+            EdgeBrushProperty,
+            PredictionBrushProperty);
+    }
+
+    public long MinimumReward
+    {
+        get => GetValue(MinimumRewardProperty);
+        set => SetValue(MinimumRewardProperty, value);
+    }
+
+    public long MaximumReward
+    {
+        get => GetValue(MaximumRewardProperty);
+        set => SetValue(MaximumRewardProperty, value);
+    }
+
+    public double BucketOneMillions
+    {
+        get => GetValue(BucketOneMillionsProperty);
+        set => SetValue(BucketOneMillionsProperty, value);
+    }
+
+    public double BucketTwoMillions
+    {
+        get => GetValue(BucketTwoMillionsProperty);
+        set => SetValue(BucketTwoMillionsProperty, value);
+    }
+
+    public double BucketThreeMillions
+    {
+        get => GetValue(BucketThreeMillionsProperty);
+        set => SetValue(BucketThreeMillionsProperty, value);
+    }
+
+    public bool IsPrediction
+    {
+        get => GetValue(IsPredictionProperty);
+        set => SetValue(IsPredictionProperty, value);
+    }
+
+    public bool IsHighlighted
+    {
+        get => GetValue(IsHighlightedProperty);
+        set => SetValue(IsHighlightedProperty, value);
+    }
+
+    public IBrush? FilledBrush
+    {
+        get => GetValue(FilledBrushProperty);
+        set => SetValue(FilledBrushProperty, value);
+    }
+
+    public IBrush? PotentialBrush
+    {
+        get => GetValue(PotentialBrushProperty);
+        set => SetValue(PotentialBrushProperty, value);
+    }
+
+    public IBrush? HighlightBrush
+    {
+        get => GetValue(HighlightBrushProperty);
+        set => SetValue(HighlightBrushProperty, value);
+    }
+
+    public IBrush? EdgeBrush
+    {
+        get => GetValue(EdgeBrushProperty);
+        set => SetValue(EdgeBrushProperty, value);
+    }
+
+    public IBrush? PredictionBrush
+    {
+        get => GetValue(PredictionBrushProperty);
+        set => SetValue(PredictionBrushProperty, value);
+    }
+
+    public override void Render(DrawingContext context)
+    {
+        base.Render(context);
+        if (Bounds.Width <= 0 || Bounds.Height <= 0)
+        {
+            return;
+        }
+
+        var edge = EdgeBrush ?? Brushes.Gray;
+        var filled = IsHighlighted
+            ? HighlightBrush ?? Brushes.Gold
+            : FilledBrush ?? Brushes.Orange;
+        var potential = PotentialBrush ?? Brushes.DarkOrange;
+        var prediction = PredictionBrush ?? Brushes.LightGray;
+        var outer = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
+        context.DrawRectangle(Brushes.Transparent, new Pen(edge, 1), outer, 2, 2);
+
+        var thresholds = BiologyRewardThresholds.Normalize(
+            BucketOneMillions,
+            BucketTwoMillions,
+            BucketThreeMillions);
+        var state = BiologyRewardBandScale.Calculate(
+            MinimumReward,
+            MaximumReward,
+            thresholds);
+        if (state.IsUnknown)
+        {
+            var text = new FormattedText(
+                "?",
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                Typeface.Default,
+                Math.Max(9, Bounds.Height * 0.48),
+                prediction);
+            context.DrawText(
+                text,
+                new Point(
+                    (Bounds.Width - text.Width) / 2,
+                    (Bounds.Height - text.Height) / 2));
+            return;
+        }
+
+        const double gap = 1;
+        var segmentHeight = (Bounds.Height - 3 - gap * 3) / 4;
+        for (var index = 0; index < state.Segments.Count; index++)
+        {
+            var segment = state.Segments[index];
+            var y = Bounds.Height - 1.5 - segmentHeight
+                - index * (segmentHeight + gap);
+            var rect = new Rect(2, y, Bounds.Width - 4, segmentHeight);
+            if (segment == BiologyRewardBandSegment.Filled)
+            {
+                context.DrawRectangle(filled, null, rect, 1, 1);
+            }
+            else if (segment == BiologyRewardBandSegment.Potential)
+            {
+                context.DrawRectangle(potential, null, rect, 1, 1);
+            }
+        }
+
+        if (IsPrediction)
+        {
+            var hatchPen = new Pen(prediction, 0.75);
+            for (var x = -Bounds.Height; x < Bounds.Width; x += 4)
+            {
+                context.DrawLine(
+                    hatchPen,
+                    new Point(x, Bounds.Height - 1),
+                    new Point(x + Bounds.Height, 1));
+            }
+        }
+    }
+}
+
+public static class BiologyRewardBandScale
+{
+    public static BiologyRewardBandState Calculate(
+        long minimumReward,
+        long maximumReward,
+        BiologyRewardThresholds thresholds)
+    {
+        ArgumentNullException.ThrowIfNull(thresholds);
+        if (minimumReward <= 0)
+        {
+            return new BiologyRewardBandState(true, []);
+        }
+
+        var buckets = new[]
+        {
+            0L,
+            ToCredits(thresholds.BucketOneMillions),
+            ToCredits(thresholds.BucketTwoMillions),
+            ToCredits(thresholds.BucketThreeMillions),
+        };
+        var segments = buckets.Select(bucket => minimumReward > bucket
+                ? BiologyRewardBandSegment.Filled
+                : maximumReward > bucket
+                    ? BiologyRewardBandSegment.Potential
+                    : BiologyRewardBandSegment.Empty)
+            .ToArray();
+        return new BiologyRewardBandState(false, segments);
+    }
+
+    private static long ToCredits(double millions)
+    {
+        return checked((long)(millions * 1_000_000));
+    }
+}
+
+public sealed record BiologyRewardBandState(
+    bool IsUnknown,
+    IReadOnlyList<BiologyRewardBandSegment> Segments);
+
+public enum BiologyRewardBandSegment
+{
+    Empty,
+    Potential,
+    Filled,
+}

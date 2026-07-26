@@ -136,6 +136,12 @@ public sealed class LegacyUiSettingsMigrator
                     ("formPredictionsCurrentBodyOnly", "CurrentBodyOnly", 0),
                     ("formPredictionsRowFontSize", "RowSize", 1),
                 ]);
+                mappedCount += MapSection(legacy, root, "BiologyRewards",
+                [
+                    ("bioRingBucketOne", "BucketOneMillions"),
+                    ("bioRingBucketTwo", "BucketTwoMillions"),
+                    ("bioRingBucketThree", "BucketThreeMillions"),
+                ]);
                 mappedCount += MapSection(legacy, root, "Combat",
                 [
                     ("autoShowFootCombat_TEST", "AutoShowFootCombat"),

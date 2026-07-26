@@ -285,7 +285,8 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         var overview = BiologySurveyViewModel.CreateSystemOverview(
             snapshot,
             survey.CurrentStatus,
-            survey.DisableBioPredictions);
+            survey.DisableBioPredictions,
+            survey.BiologyRewardThresholds);
         if (overview is null)
         {
             SystemName = snapshot.SystemName ?? "No biological signals";
@@ -323,7 +324,8 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
                 survey.DimAnalyzedOrganisms,
                 survey.HideGeoCountInBioSystem,
                 survey.DisableBioPredictions,
-                survey.CurrentBiologyDiscoveryContext)!;
+                survey.CurrentBiologyDiscoveryContext,
+                survey.BiologyRewardThresholds)!;
             var isExpanded = expandedState.GetValueOrDefault(
                 body.BodyId,
                 !CurrentBodyOnly || row.IsCurrentBody);
@@ -705,7 +707,11 @@ public sealed record BiologyPredictionOrganismViewModel(
     bool IsUnknown,
     double RowOpacity,
     double RowFontSize,
-    double RowVerticalPadding)
+    double RowVerticalPadding,
+    long Reward,
+    double RewardBucketOneMillions,
+    double RewardBucketTwoMillions,
+    double RewardBucketThreeMillions)
 {
     public bool HasSampleDistance => !string.IsNullOrWhiteSpace(
         SampleDistanceText);
@@ -731,6 +737,10 @@ public sealed record BiologyPredictionOrganismViewModel(
             source.IsUnknown,
             source.RowOpacity,
             rowFontSize,
-            rowVerticalPadding);
+            rowVerticalPadding,
+            source.Reward,
+            source.RewardBucketOneMillions,
+            source.RewardBucketTwoMillions,
+            source.RewardBucketThreeMillions);
     }
 }

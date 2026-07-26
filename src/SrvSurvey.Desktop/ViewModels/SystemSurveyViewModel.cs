@@ -86,6 +86,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool showNonBodySignals;
     private FssTuningDetectorSettings fssTuningDetector =
         FssTuningDetectorSettings.Default;
+    private BiologyRewardThresholds biologyRewardThresholds;
     private bool forceShowFssInfo;
     private bool manuallyHideFssInfo;
     private bool forceShowBodyInfo;
@@ -107,7 +108,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         SystemSurveySettingsStore settingsStore,
         SystemScanState? state = null,
         ExobiologyReferenceCatalog? biologyCatalog = null,
-        Func<DateTimeOffset>? utcNow = null)
+        Func<DateTimeOffset>? utcNow = null,
+        BiologyRewardThresholds? biologyRewardThresholds = null)
     {
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
@@ -115,6 +117,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         this.biologyCatalog = biologyCatalog
             ?? ExobiologyReferenceCatalog.LoadEmbedded();
         this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
+        this.biologyRewardThresholds = biologyRewardThresholds
+            ?? BiologyRewardThresholds.Default;
         var preferences = settingsStore.Load();
         autoShowBodyInfo = preferences.AutoShowBodyInfo;
         showBodyInfoInSystemMap = preferences.ShowBodyInfoInSystemMap;
@@ -175,6 +179,22 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public BiologyRewardThresholds BiologyRewardThresholds =>
+        biologyRewardThresholds;
+
+    public void UpdateBiologyRewardThresholds(BiologyRewardThresholds value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        if (biologyRewardThresholds == value)
+        {
+            return;
+        }
+
+        biologyRewardThresholds = value;
+        OnPropertyChanged(nameof(BiologyRewardThresholds));
+        RefreshDisplay();
+    }
 
     public bool AutoShowBodyInfo
     {
@@ -1521,7 +1541,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     DimAnalyzedOrganisms,
                     HideGeoCountInBioSystem,
                     DisableBioPredictions,
-                    biologyDiscoveryContext)
+                    biologyDiscoveryContext,
+                    BiologyRewardThresholds)
                 : BiologySurveyViewModel.Create(
                     snapshot,
                     status,
@@ -1531,7 +1552,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     DimAnalyzedOrganisms,
                     HideGeoCountInBioSystem,
                     DisableBioPredictions,
-                    biologyDiscoveryContext);
+                    biologyDiscoveryContext,
+                    BiologyRewardThresholds);
         BiologyStatus = BiologyStatusViewModel.Create(
             snapshot,
             status,
@@ -1649,7 +1671,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             DimAnalyzedOrganisms,
             HideGeoCountInBioSystem,
             DisableBioPredictions,
-            biologyDiscoveryContext);
+            biologyDiscoveryContext,
+            BiologyRewardThresholds);
         var signalCount = Math.Max(
             1,
             details?.Organisms.Count ?? body.BiologicalSignalCount);
@@ -1817,7 +1840,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     DimAnalyzedOrganisms,
                     HideGeoCountInBioSystem,
                     DisableBioPredictions,
-                    biologyDiscoveryContext)
+                    biologyDiscoveryContext,
+                    BiologyRewardThresholds)
                 ?.RewardSummary ?? string.Empty
             : string.Empty;
 

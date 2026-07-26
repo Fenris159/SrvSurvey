@@ -61,6 +61,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "eddnEnvironment": "live",
               "uploadGGG": true,
               "bioPlotSize": 4,
+              "bioRingBucketOne": 2.5,
+              "bioRingBucketTwo": 6.5,
+              "bioRingBucketThree": 11.5,
               "skipLowValueDSS": false,
               "skipLowValueAmount": 7654321,
               "formPredictionsCurrentBodyOnly": true,
@@ -210,6 +213,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new BiologyPredictionsPreferences(true, 3),
             new BiologyPredictionsSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            new BiologyRewardThresholds(2.5, 6.5, 11.5),
+            new BiologyRewardSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new CombatPreferences(true, true, true),
             new CombatSettingsStore(paths.UiSettingsPath).Load());

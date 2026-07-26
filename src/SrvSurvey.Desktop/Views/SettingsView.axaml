@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.Views.SettingsView"
              x:DataType="vm:MainWindowViewModel"
@@ -1384,6 +1385,48 @@
                         Content="Disable organism predictions" />
               <CheckBox IsChecked="{Binding SystemSurvey.ShowTemperatureRangeDebug, Mode=TwoWay}"
                         Content="Show biology temperature diagnostics" />
+              <TextBlock Classes="muted"
+                         Text="Reward-band thresholds (millions of CR)" />
+              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <NumericUpDown Minimum="0"
+                               Maximum="20"
+                               Increment="0.5"
+                               FormatString="0.##"
+                               Value="{Binding BiologyRewards.BucketOneMillions, Mode=TwoWay}" />
+                <NumericUpDown Grid.Column="1"
+                               Minimum="0"
+                               Maximum="20"
+                               Increment="0.5"
+                               FormatString="0.##"
+                               Value="{Binding BiologyRewards.BucketTwoMillions, Mode=TwoWay}" />
+                <NumericUpDown Grid.Column="2"
+                               Minimum="0"
+                               Maximum="20"
+                               Increment="0.5"
+                               FormatString="0.##"
+                               Value="{Binding BiologyRewards.BucketThreeMillions, Mode=TwoWay}" />
+              </Grid>
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <controls:BiologyRewardBandControl Width="12"
+                                                  Height="28"
+                                                  MinimumReward="13000000"
+                                                  MaximumReward="13000000"
+                                                  BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
+                                                  BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
+                                                  BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
+                                                  FilledBrush="{DynamicResource RavenAccentBrush}"
+                                                  PotentialBrush="{DynamicResource RavenAccentMutedBrush}"
+                                                  HighlightBrush="{DynamicResource RavenWarningBrush}"
+                                                  EdgeBrush="{DynamicResource RavenBorderBrush}"
+                                                  PredictionBrush="{DynamicResource RavenMutedTextBrush}" />
+                <TextBlock Classes="muted"
+                           VerticalAlignment="Center"
+                           Text="Bands fill above 0 and each configured threshold." />
+              </StackPanel>
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         IsVisible="{Binding BiologyRewards.HasStatusMessage}"
+                         Text="{Binding BiologyRewards.StatusMessage}"
+                         TextWrapping="Wrap" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="Predictions use the bundled SrvSurvey Codex criteria; confirmed scans and rewards remain visible when predictions are disabled." />
