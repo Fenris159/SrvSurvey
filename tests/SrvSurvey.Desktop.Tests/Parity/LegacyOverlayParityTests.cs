@@ -131,6 +131,23 @@ public sealed class LegacyOverlayParityTests
         }
     }
 
+    [Theory]
+    [InlineData("src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml", "IsAnalyzed")]
+    [InlineData("src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml", "IsComplete")]
+    [InlineData("src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml", "AreBiologicalSignalsComplete")]
+    [InlineData("src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml", "AreGeologicalSignalsComplete")]
+    [InlineData("src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml", "IsComplete")]
+    public void LegacyCompletionStatesRemainVisiblyStruckThrough(
+        string relativePath,
+        string stateBinding)
+    {
+        var root = FindRepositoryRoot();
+        var xaml = File.ReadAllText(Path.Combine(root, Native(relativePath)));
+
+        Assert.Contains($"IsVisible=\"{{Binding {stateBinding}}}\"", xaml);
+        Assert.Contains("TextDecorations=\"Strikethrough\"", xaml);
+    }
+
     private static OverlayMapping Map(
         string legacyName,
         IReadOnlyList<string> productionFiles,

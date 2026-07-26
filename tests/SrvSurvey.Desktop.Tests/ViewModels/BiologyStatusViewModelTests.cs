@@ -12,6 +12,25 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         "SrvSurvey-BiologyStatus-" + Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public void CodexNotificationUsesReadableLegacySummarySeparators()
+    {
+        var notification = new BiologyCodexNotificationViewModel(
+            1,
+            2,
+            "Aleoida Arcus - Green",
+            7_252_500,
+            true,
+            true);
+
+        Assert.Equal(
+            "Aleoida Arcus - Green · 7.25 M CR · FF bonus",
+            notification.SummaryText);
+        Assert.Equal(
+            "Reference image available · type .show",
+            notification.ActionText);
+    }
+
+    [Fact]
     public void ActiveSampleShowsLegacyProgressDistanceRewardAndSignals()
     {
         var viewModel = CreateViewModel();

@@ -221,8 +221,16 @@
                         Background="{DynamicResource RavenAccentBrush}"
                         CornerRadius="2"
                         IsVisible="{Binding IsActive}" />
-                <TextBlock FontSize="10"
-                           Text="{Binding DisplayText}" />
+                <Grid>
+                  <TextBlock FontSize="10"
+                             IsVisible="{Binding !IsAnalyzed}"
+                             Text="{Binding DisplayText}" />
+                  <TextBlock Classes="muted"
+                             FontSize="10"
+                             IsVisible="{Binding IsAnalyzed}"
+                             Text="{Binding DisplayText}"
+                             TextDecorations="Strikethrough" />
+                </Grid>
               </StackPanel>
             </Border>
           </DataTemplate>

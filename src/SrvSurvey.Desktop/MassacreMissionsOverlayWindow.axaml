@@ -57,10 +57,19 @@
                            FontWeight="Bold"
                            Text="►" />
                 <StackPanel Grid.Column="1" Spacing="1">
-                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                             FontWeight="SemiBold"
-                             Text="{Binding TargetFaction}"
-                             TextTrimming="CharacterEllipsis" />
+                  <Grid>
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                               FontWeight="SemiBold"
+                               IsVisible="{Binding !IsComplete}"
+                               Text="{Binding TargetFaction}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="muted"
+                               FontWeight="SemiBold"
+                               IsVisible="{Binding IsComplete}"
+                               Text="{Binding TargetFaction}"
+                               TextDecorations="Strikethrough"
+                               TextTrimming="CharacterEllipsis" />
+                  </Grid>
                   <TextBlock Classes="muted"
                              FontSize="9"
                              Text="{Binding MissionGiver}"

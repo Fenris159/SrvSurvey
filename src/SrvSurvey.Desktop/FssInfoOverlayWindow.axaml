@@ -111,15 +111,30 @@
                 <StackPanel Grid.Row="1"
                             Orientation="Horizontal"
                             Spacing="10">
-                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                             FontSize="10"
-                             FontWeight="SemiBold"
-                             IsVisible="{Binding HasBiologicalSignals}"
-                             Text="{Binding BiologicalSignalsText}" />
-                  <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                             FontSize="10"
-                             IsVisible="{Binding HasGeologicalSignals}"
-                             Text="{Binding GeologicalSignalsText}" />
+                  <Grid IsVisible="{Binding HasBiologicalSignals}">
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               IsVisible="{Binding !AreBiologicalSignalsComplete}"
+                               Text="{Binding BiologicalSignalsText}" />
+                    <TextBlock Classes="muted"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               IsVisible="{Binding AreBiologicalSignalsComplete}"
+                               Text="{Binding BiologicalSignalsText}"
+                               TextDecorations="Strikethrough" />
+                  </Grid>
+                  <Grid IsVisible="{Binding HasGeologicalSignals}">
+                    <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                               FontSize="10"
+                               IsVisible="{Binding !AreGeologicalSignalsComplete}"
+                               Text="{Binding GeologicalSignalsText}" />
+                    <TextBlock Classes="muted"
+                               FontSize="10"
+                               IsVisible="{Binding AreGeologicalSignalsComplete}"
+                               Text="{Binding GeologicalSignalsText}"
+                               TextDecorations="Strikethrough" />
+                  </Grid>
                 </StackPanel>
               </Grid>
             </Border>

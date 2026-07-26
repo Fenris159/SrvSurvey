@@ -68,8 +68,11 @@ bookmark alias merging, bounded zoom/reset, all eight
   and a compact tracker-only state. The dedicated
 `PlotMiniTrack` replacement and human-site arbitration are now wired into that
 same coordinator. The exact legacy overlay-designer inventory is enforced by
-`LegacyOverlayParityTests`; final rendering and live-game behavior remain in the
-requested last visual/runtime pass.
+`LegacyOverlayParityTests`. Semantic completion cues are also retained across
+the compact biology summary, system-biology table, FSS signal counts, and
+massacre missions: analyzed or completed entries remain visibly struck through
+instead of relying on a theme-dependent opacity change alone. Final rendering
+and live-game behavior remain in the requested last visual/runtime pass.
 
 The current-system reducer also restores the original EDSM and Spansh body
 hydration path. Downloaded physical/orbital details fill missing journal or

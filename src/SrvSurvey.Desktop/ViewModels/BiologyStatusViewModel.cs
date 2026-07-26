@@ -331,12 +331,12 @@ public sealed record BiologyCodexNotificationViewModel(
     bool IsFirstFootfall,
     bool HasImage)
 {
-    public string SummaryText => DisplayName + " Â· " + FormatCredits(Reward)
-        + (IsFirstFootfall ? " Â· FF bonus" : string.Empty);
+    public string SummaryText => DisplayName + " · " + FormatCredits(Reward)
+        + (IsFirstFootfall ? " · FF bonus" : string.Empty);
 
     public string ActionText => HasImage
-        ? "Reference image available Â· type .show"
-        : "Codex details available Â· type .show";
+        ? "Reference image available · type .show"
+        : "Codex details available · type .show";
 
     private static string FormatCredits(long value)
     {

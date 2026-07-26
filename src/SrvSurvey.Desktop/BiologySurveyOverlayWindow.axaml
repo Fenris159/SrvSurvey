@@ -78,9 +78,17 @@
                   <Grid RowDefinitions="Auto,Auto" RowSpacing="7">
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                       <StackPanel Orientation="Horizontal" Spacing="7">
-                        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                                   FontWeight="SemiBold"
-                                   Text="{Binding Name}" />
+                        <Grid>
+                          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                     FontWeight="SemiBold"
+                                     IsVisible="{Binding !IsComplete}"
+                                     Text="{Binding Name}" />
+                          <TextBlock Classes="muted"
+                                     FontWeight="SemiBold"
+                                     IsVisible="{Binding IsComplete}"
+                                     Text="{Binding Name}"
+                                     TextDecorations="Strikethrough" />
+                        </Grid>
                         <Border Classes="badge"
                                 IsVisible="{Binding IsDestination}">
                           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
