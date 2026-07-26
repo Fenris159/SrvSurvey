@@ -13,6 +13,7 @@
         Height="760"
         MinWidth="860"
         MinHeight="600"
+        Icon="/Assets/logo.ico"
         Title="SrvSurvey">
   <Grid ColumnDefinitions="248,*">
     <Border Background="{DynamicResource RavenSidebarBrush}"

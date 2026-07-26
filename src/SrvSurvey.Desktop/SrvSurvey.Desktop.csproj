@@ -32,6 +32,8 @@
     <Content Include="..\..\SrvSurvey\plotters.json"
              Link="plotters.json"
              CopyToOutputDirectory="PreserveNewest" />
+    <AvaloniaResource Include="..\..\SrvSurvey\logo.ico"
+                       Link="Assets\logo.ico" />
   </ItemGroup>
 
 </Project>

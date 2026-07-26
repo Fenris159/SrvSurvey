@@ -7,6 +7,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public interface IGameWindowSwitcher : IDisposable
 {
+    bool TryActivateCurrent();
+
     bool TryActivateNext();
 }
 
@@ -32,6 +34,26 @@ public static class GameWindowSwitcher
 
 internal static class GameWindowCycle
 {
+    public static nint SelectCurrent(
+        IReadOnlyList<nint> windows,
+        nint activeWindow,
+        nint previousWindow)
+    {
+        if (windows.Count == 0)
+        {
+            return nint.Zero;
+        }
+
+        if (IndexOf(windows, activeWindow) >= 0)
+        {
+            return activeWindow;
+        }
+
+        return IndexOf(windows, previousWindow) >= 0
+            ? previousWindow
+            : windows[0];
+    }
+
     public static nint SelectNext(
         IReadOnlyList<nint> windows,
         nint activeWindow,
@@ -72,6 +94,8 @@ internal static class GameWindowCycle
 
 internal sealed class UnavailableGameWindowSwitcher : IGameWindowSwitcher
 {
+    public bool TryActivateCurrent() => false;
+
     public bool TryActivateNext() => false;
 
     public void Dispose()
@@ -84,7 +108,17 @@ internal sealed partial class WindowsGameWindowSwitcher : IGameWindowSwitcher
 {
     private nint previousWindow;
 
+    public bool TryActivateCurrent()
+    {
+        return TryActivate(activateNext: false);
+    }
+
     public bool TryActivateNext()
+    {
+        return TryActivate(activateNext: true);
+    }
+
+    private bool TryActivate(bool activateNext)
     {
         try
         {
@@ -118,26 +152,31 @@ internal sealed partial class WindowsGameWindowSwitcher : IGameWindowSwitcher
                 .OrderBy(window => window.ProcessId)
                 .Select(window => window.Handle)
                 .ToArray();
-            var next = GameWindowCycle.SelectNext(
-                handles,
-                GetForegroundWindow(),
-                previousWindow);
-            if (next == nint.Zero)
+            var target = activateNext
+                ? GameWindowCycle.SelectNext(
+                    handles,
+                    GetForegroundWindow(),
+                    previousWindow)
+                : GameWindowCycle.SelectCurrent(
+                    handles,
+                    GetForegroundWindow(),
+                    previousWindow);
+            if (target == nint.Zero)
             {
                 return false;
             }
 
-            if (IsIconic(next))
+            if (IsIconic(target))
             {
-                _ = ShowWindow(next, 9);
+                _ = ShowWindow(target, 9);
             }
 
-            if (!SetForegroundWindow(next))
+            if (!SetForegroundWindow(target))
             {
                 return false;
             }
 
-            previousWindow = next;
+            previousWindow = target;
             return true;
         }
         catch (Exception exception) when (
@@ -220,6 +259,16 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
 
     public bool TryActivateNext()
     {
+        return TryActivate(activateNext: true);
+    }
+
+    public bool TryActivateCurrent()
+    {
+        return TryActivate(activateNext: false);
+    }
+
+    private bool TryActivate(bool activateNext)
+    {
         if (display == nint.Zero)
         {
             return false;
@@ -236,24 +285,29 @@ internal sealed class X11GameWindowSwitcher : IGameWindowSwitcher
             .Where(IsViewable)
             .Select(window => unchecked((nint)window))
             .ToArray();
-        var next = GameWindowCycle.SelectNext(
-            candidates,
-            unchecked((nint)ReadSingleWindow(activeWindowAtom)),
-            unchecked((nint)previousWindow));
-        if (next == nint.Zero)
+        var target = activateNext
+            ? GameWindowCycle.SelectNext(
+                candidates,
+                unchecked((nint)ReadSingleWindow(activeWindowAtom)),
+                unchecked((nint)previousWindow))
+            : GameWindowCycle.SelectCurrent(
+                candidates,
+                unchecked((nint)ReadSingleWindow(activeWindowAtom)),
+                unchecked((nint)previousWindow));
+        if (target == nint.Zero)
         {
             return false;
         }
 
-        var nextWindow = unchecked((nuint)next);
-        _ = X11Native.XMapRaised(display, nextWindow);
+        var targetWindow = unchecked((nuint)target);
+        _ = X11Native.XMapRaised(display, targetWindow);
         _ = X11Native.XSetInputFocus(
             display,
-            nextWindow,
+            targetWindow,
             RevertToParent,
             0);
         _ = X11Native.XFlush(display);
-        previousWindow = nextWindow;
+        previousWindow = targetWindow;
         return true;
     }
 

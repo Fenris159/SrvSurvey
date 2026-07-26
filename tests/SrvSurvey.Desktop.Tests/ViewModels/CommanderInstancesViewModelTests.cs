@@ -77,6 +77,11 @@ public sealed class CommanderInstancesViewModelTests : IDisposable
     {
         public int ActivationCount { get; private set; }
 
+        public bool TryActivateCurrent()
+        {
+            return true;
+        }
+
         public bool TryActivateNext()
         {
             ActivationCount++;

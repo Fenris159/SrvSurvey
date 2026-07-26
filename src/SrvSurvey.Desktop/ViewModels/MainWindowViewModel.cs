@@ -142,7 +142,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         SystemScanPersistenceStore? systemScanPersistenceStore = null,
         CodexImageSettingsStore? codexImageSettingsStore = null,
         DockToDockSettingsStore? dockToDockSettingsStore = null,
-        DockToDockLogService? dockToDockLogService = null)
+        DockToDockLogService? dockToDockLogService = null,
+        DesktopBehaviorSettingsStore? desktopBehaviorSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -185,6 +186,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
             OverlayPlatformCapabilities.DetectCurrent());
+        var sharedGameWindowSwitcher = gameWindowSwitcher
+            ?? GameWindowSwitcher.CreateCurrent();
+        DesktopBehavior = new DesktopBehaviorViewModel(
+            desktopBehaviorSettingsStore
+                ?? new DesktopBehaviorSettingsStore(AppDataPaths.UiSettingsPath),
+            sharedGameWindowSwitcher);
         var sharedOverlayLayoutStore = overlayLayoutStore
             ?? new LegacyOverlayLayoutStore(AppDataPaths.DataDirectory);
         OverlayLayout = new OverlayLayoutSettingsViewModel(
@@ -397,7 +404,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 ?? new ApplicationCommanderInstanceLauncher(),
             JournalFolderPath,
             TargetFrontierId,
-            gameWindowSwitcher);
+            sharedGameWindowSwitcher);
         if (visitedStarsCache is null)
         {
             var processDetector = new EliteGameProcessDetector();
@@ -478,6 +485,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; }
 
     public GlobalInputSettingsViewModel InputSettings { get; }
+
+    public DesktopBehaviorViewModel DesktopBehavior { get; }
 
     public OverlayLayoutSettingsViewModel OverlayLayout { get; }
 
@@ -724,6 +733,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     {
         SelectedNavigation = NavigationItems.Single(
             item => item.Key == "diagnostics");
+    }
+
+    public void ShowSettings()
+    {
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == "settings");
     }
 
     public bool BeginVrAdjustment()
@@ -1298,6 +1313,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         DockToDock.ApplyUpdate(
             update.JournalEvents,
             latestCargo,
+            update.IsBootstrapRead);
+        DesktopBehavior.ApplyJournalEvents(
+            update.JournalEvents,
             update.IsBootstrapRead);
 
         if (update.Status is not null)

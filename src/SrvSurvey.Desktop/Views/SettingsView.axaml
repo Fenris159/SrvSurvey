@@ -101,6 +101,39 @@
       </Border>
 
       <Border Classes="card raised">
+        <StackPanel Spacing="12">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Desktop behavior" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Preserve the original hand-off to the selected Elite Dangerous window without cycling to another commander instance." />
+          </StackPanel>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="10">
+              <CheckBox IsChecked="{Binding DesktopBehavior.FocusGameOnStart, Mode=TwoWay}"
+                        Content="Focus Elite after SrvSurvey starts" />
+              <CheckBox IsChecked="{Binding DesktopBehavior.FocusGameOnMinimize, Mode=TwoWay}"
+                        Content="Focus Elite when SrvSurvey is minimized" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="10">
+              <CheckBox IsChecked="{Binding DesktopBehavior.FocusGameAfterFsdJump, Mode=TwoWay}"
+                        Content="Focus Elite after each live FSD jump" />
+              <CheckBox IsChecked="{Binding DesktopBehavior.MinimizeToTray, Mode=TwoWay}"
+                        Content="Hide SrvSurvey in the system tray when minimized" />
+            </StackPanel>
+          </Grid>
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="{Binding DesktopBehavior.HasStatusMessage}"
+                     TextWrapping="Wrap"
+                     Text="{Binding DesktopBehavior.StatusMessage}" />
+          <TextBlock Classes="muted"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="Passive overlays are click-through and never activate, replacing the legacy force-refocus workaround." />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
         <StackPanel Spacing="10">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
             <StackPanel Spacing="4">

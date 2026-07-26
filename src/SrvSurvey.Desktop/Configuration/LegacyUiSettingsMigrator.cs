@@ -66,6 +66,13 @@ public sealed class LegacyUiSettingsMigrator
                     ("hidePlottersFromCombatSuits", "HideInDominatorSuit"),
                     ("hidePlottersFromMaverickSuits", "HideInMaverickSuit"),
                 ]);
+                mappedCount += MapSection(legacy, root, "DesktopBehavior",
+                [
+                    ("focusGameOnStart", "FocusGameOnStart"),
+                    ("focusGameOnMinimize", "FocusGameOnMinimize"),
+                    ("focusGameAfterFsdJump", "FocusGameAfterFsdJump"),
+                    ("minimizeToTray", "MinimizeToTray"),
+                ]);
                 mappedCount += MapSection(legacy, root, "Journal",
                 [
                     ("watchedJournalFolder", "Directory"),

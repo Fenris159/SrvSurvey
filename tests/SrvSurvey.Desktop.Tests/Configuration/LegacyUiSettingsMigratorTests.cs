@@ -35,6 +35,10 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "keepOverlays": true,
               "hidePlottersFromCombatSuits": true,
               "hidePlottersFromMaverickSuits": false,
+              "focusGameOnStart": false,
+              "focusGameOnMinimize": false,
+              "focusGameAfterFsdJump": true,
+              "minimizeToTray": true,
               "watchedJournalFolder": "D:\\Elite Journals",
               "autoShowPlotBodyInfo": false,
               "bodyInfoBubbleSize": 321,
@@ -173,6 +177,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new OverlayBehaviorPreferences(true, true, false),
             new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            new DesktopBehaviorPreferences(false, false, true, true),
+            new DesktopBehaviorSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new JournalPreferences("D:\\Elite Journals"),
             new JournalSettingsStore(paths.UiSettingsPath).Load());
