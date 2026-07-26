@@ -8,6 +8,7 @@ internal static partial class X11Native
     internal const int ShapeInput = 2;
     internal const int ShapeSet = 0;
     internal const int Unsorted = 0;
+    internal const int ZPixmap = 2;
 
     [LibraryImport("libX11.so.6")]
     internal static partial nint XOpenDisplay(nint displayName);
@@ -79,6 +80,20 @@ internal static partial class X11Native
 
     [LibraryImport("libX11.so.6")]
     internal static partial int XFree(nint data);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial nint XGetImage(
+        nint display,
+        nuint drawable,
+        int x,
+        int y,
+        uint width,
+        uint height,
+        nuint planeMask,
+        int format);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XDestroyImage(nint image);
 
     [LibraryImport("libX11.so.6")]
     internal static partial int XFlush(nint display);
