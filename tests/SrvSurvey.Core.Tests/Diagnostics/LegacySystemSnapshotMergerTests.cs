@@ -16,7 +16,7 @@ public sealed class LegacySystemSnapshotMergerTests
         state.Apply(Parse(
             """{"event":"FSSDiscoveryScan","SystemAddress":42,"BodyCount":2}"""));
         state.Apply(Parse(
-            """{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","Landable":true,"Radius":1000,"AtmosphereComposition":[{"Name":"CarbonDioxide","Percent":100}]}"""));
+            """{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"PlanetClass":"Rocky body","Landable":true,"Radius":1000,"AtmosphereComposition":[{"Name":"CarbonDioxide","Percent":100}],"Parents":[{"Star":0}]}"""));
         state.Apply(Parse(
             """{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""));
         state.Apply(Parse(
@@ -71,6 +71,10 @@ public sealed class LegacySystemSnapshotMergerTests
         Assert.Equal(
             100,
             body["atmosphereComposition"]!["CarbonDioxide"]!.GetValue<double>());
+        var parent = Assert.IsType<JsonObject>(
+            Assert.Single(body["parents"]!.AsArray()));
+        Assert.Equal("Star", parent["type"]!.GetValue<string>());
+        Assert.Equal(0, parent["id"]!.GetValue<int>());
         var organism = Assert.IsType<JsonObject>(
             Assert.Single(body["organisms"]!.AsArray()));
         Assert.Equal("keep", organism["futureOrganism"]!.GetValue<string>());

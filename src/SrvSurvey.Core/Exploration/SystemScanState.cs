@@ -171,6 +171,74 @@ public sealed class SystemScanState
             bodySnapshots);
     }
 
+    public bool MergeKnownData(
+        SystemScanSnapshot known,
+        bool includeBiologicalData = true)
+    {
+        ArgumentNullException.ThrowIfNull(known);
+        if (SystemAddress is null
+            || known.SystemAddress != SystemAddress
+            || string.IsNullOrWhiteSpace(known.SystemName))
+        {
+            return false;
+        }
+
+        var changed = false;
+        if (string.IsNullOrWhiteSpace(SystemName))
+        {
+            SystemName = known.SystemName;
+            changed = true;
+        }
+
+        if (StarPosition is null && known.StarPosition is not null)
+        {
+            StarPosition = known.StarPosition;
+            changed = true;
+        }
+
+        if (known.ExpectedBodyCount > ExpectedBodyCount)
+        {
+            ExpectedBodyCount = known.ExpectedBodyCount;
+            changed = true;
+        }
+
+        if (!HasDiscoveryScan && known.HasDiscoveryScan)
+        {
+            HasDiscoveryScan = true;
+            changed = true;
+        }
+
+        if (!AllBodiesFound && known.AllBodiesFound)
+        {
+            AllBodiesFound = true;
+            changed = true;
+        }
+
+        foreach (var source in known.Bodies)
+        {
+            if (source.BodyId < 0 || string.IsNullOrWhiteSpace(source.Name))
+            {
+                continue;
+            }
+
+            if (!bodies.TryGetValue(source.BodyId, out var target))
+            {
+                target = new BodyState(source.BodyId, source.Name);
+                bodies.Add(source.BodyId, target);
+                changed = true;
+            }
+            else if (target.Name == $"Body {source.BodyId}")
+            {
+                target.Name = source.Name;
+                changed = true;
+            }
+
+            changed |= MergeBody(target, source, includeBiologicalData);
+        }
+
+        return changed;
+    }
+
     public bool SetCurrentBodyFirstFootfall(bool value)
     {
         return CurrentBodyId is { } bodyId
@@ -570,6 +638,288 @@ public sealed class SystemScanState
         }
     }
 
+    private static bool MergeBody(
+        BodyState target,
+        SystemScanBodySnapshot source,
+        bool includeBiologicalData)
+    {
+        var changed = false;
+        var hasLiveScan = target.IsScanned;
+        if (target.Kind == SystemBodyKind.Unknown
+            && source.Kind != SystemBodyKind.Unknown)
+        {
+            target.Kind = source.Kind;
+            changed = true;
+        }
+        else if (target.Kind == SystemBodyKind.Planet
+            && source.Kind == SystemBodyKind.LandablePlanet)
+        {
+            target.Kind = SystemBodyKind.LandablePlanet;
+            changed = true;
+        }
+
+        changed |= SetIfMissing(ref target.StarClass, source.StarClass);
+        changed |= SetIfMissing(ref target.PlanetClass, source.PlanetClass);
+        changed |= SetTrue(ref target.IsLandable, source.IsLandable);
+        changed |= SetTrue(ref target.IsTerraformable, source.IsTerraformable);
+        changed |= SetTrue(ref target.IsScanned, source.IsScanned);
+        changed |= SetTrue(ref target.IsDssComplete, source.IsDssComplete);
+        if (!hasLiveScan)
+        {
+            changed |= SetTrue(ref target.WasDiscovered, source.WasDiscovered);
+            changed |= SetTrue(ref target.WasMapped, source.WasMapped);
+        }
+        if (target.WasFootfalled is null && source.WasFootfalled is not null)
+        {
+            target.WasFootfalled = source.WasFootfalled;
+            changed = true;
+        }
+        else if (target.WasFootfalled == false && source.WasFootfalled == true)
+        {
+            target.WasFootfalled = true;
+            changed = true;
+        }
+
+        changed |= SetTrue(ref target.IsFirstFootfall, source.IsFirstFootfall);
+        changed |= SetTrue(ref target.HasRingParent, source.HasRingParent);
+        if (target.TidalLock is null && source.TidalLock is not null)
+        {
+            target.TidalLock = source.TidalLock;
+            changed = true;
+        }
+
+        changed |= SetIfZero(ref target.Mass, source.Mass);
+        changed |= SetIfZero(
+            ref target.DistanceFromArrivalLs,
+            source.DistanceFromArrivalLs);
+        changed |= SetIfZero(ref target.RadiusMeters, source.RadiusMeters);
+        changed |= SetIfZero(ref target.SurfaceGravity, source.SurfaceGravity);
+        changed |= SetIfZero(
+            ref target.SurfaceTemperature,
+            source.SurfaceTemperature);
+        changed |= SetIfZero(ref target.SurfacePressure, source.SurfacePressure);
+        changed |= SetIfZero(ref target.SemiMajorAxis, source.SemiMajorAxis);
+        changed |= SetIfZero(
+            ref target.AbsoluteMagnitude,
+            source.AbsoluteMagnitude);
+        changed |= SetIfMissing(
+            ref target.Atmosphere,
+            source.Atmosphere,
+            allowEmpty: true);
+        changed |= SetIfMissing(
+            ref target.AtmosphereType,
+            source.AtmosphereType);
+        changed |= SetIfMissing(
+            ref target.Volcanism,
+            source.Volcanism,
+            allowEmpty: true);
+        if (includeBiologicalData)
+        {
+            changed |= SetMaximum(
+                ref target.BiologicalSignalCount,
+                source.BiologicalSignalCount);
+        }
+        changed |= SetMaximum(
+            ref target.GeologicalSignalCount,
+            source.GeologicalSignalCount);
+        changed |= MergeDictionary(
+            ref target.AtmosphereComposition,
+            source.AtmosphereComposition);
+        changed |= MergeDictionary(ref target.Materials, source.Materials);
+        changed |= MergeRings(target, source.Rings);
+        if (target.Parents.Count == 0 && source.Parents.Count > 0)
+        {
+            target.Parents = source.Parents.ToArray();
+            target.HasRingParent = source.Parents.FirstOrDefault()?.Kind
+                == SystemBodyParentKind.Ring;
+            changed = true;
+        }
+
+        foreach (var signal in source.AnalyzedGeologicalSignals)
+        {
+            changed |= target.AnalyzedGeologicalSignals.Add(signal);
+        }
+
+        if (!includeBiologicalData)
+        {
+            return changed;
+        }
+
+        foreach (var sourceOrganism in source.Organisms)
+        {
+            if (string.IsNullOrWhiteSpace(sourceOrganism.Genus))
+            {
+                continue;
+            }
+
+            var existed = target.Organisms.TryGetValue(
+                sourceOrganism.Genus,
+                out var organism);
+            organism ??= target.GetOrCreateOrganism(sourceOrganism.Genus);
+            changed |= !existed;
+            changed |= SetIfMissing(
+                ref organism.GenusLocalized,
+                sourceOrganism.GenusLocalized);
+            changed |= SetIfMissing(
+                ref organism.Species,
+                sourceOrganism.Species);
+            changed |= SetIfMissing(
+                ref organism.SpeciesLocalized,
+                sourceOrganism.SpeciesLocalized);
+            changed |= SetIfMissing(
+                ref organism.Variant,
+                sourceOrganism.Variant);
+            changed |= SetIfMissing(
+                ref organism.VariantLocalized,
+                sourceOrganism.VariantLocalized);
+            if (organism.EntryId is null && sourceOrganism.EntryId is > 0)
+            {
+                organism.EntryId = sourceOrganism.EntryId;
+                changed = true;
+            }
+
+            if (organism.Reward is null && sourceOrganism.Reward is >= 0)
+            {
+                organism.Reward = sourceOrganism.Reward;
+                changed = true;
+            }
+
+            changed |= SetTrue(ref organism.IsScanned, sourceOrganism.IsScanned);
+            changed |= SetTrue(
+                ref organism.IsAnalyzed,
+                sourceOrganism.IsAnalyzed);
+            changed |= SetTrue(
+                ref organism.IsRegionalFirst,
+                sourceOrganism.IsRegionalFirst);
+        }
+
+        changed |= SetMaximum(
+            ref target.BiologicalSignalCount,
+            target.Organisms.Count);
+        return changed;
+    }
+
+    private static bool MergeDictionary(
+        ref IReadOnlyDictionary<string, double> target,
+        IReadOnlyDictionary<string, double> source)
+    {
+        if (source.Count == 0)
+        {
+            return false;
+        }
+
+        var merged = new Dictionary<string, double>(
+            target,
+            StringComparer.OrdinalIgnoreCase);
+        var changed = false;
+        foreach (var pair in source)
+        {
+            if (!merged.ContainsKey(pair.Key))
+            {
+                merged[pair.Key] = pair.Value;
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            target = merged;
+        }
+
+        return changed;
+    }
+
+    private static bool MergeRings(
+        BodyState target,
+        IReadOnlyList<SystemRingSnapshot> source)
+    {
+        if (source.Count == 0)
+        {
+            return false;
+        }
+
+        var rings = target.Rings.ToList();
+        var changed = false;
+        foreach (var ring in source)
+        {
+            if (!rings.Any(existing => string.Equals(
+                    existing.Name,
+                    ring.Name,
+                    StringComparison.OrdinalIgnoreCase)))
+            {
+                rings.Add(ring);
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            target.Rings = rings;
+        }
+
+        return changed;
+    }
+
+    private static bool SetIfMissing(
+        ref string? target,
+        string? source,
+        bool allowEmpty = false)
+    {
+        if (target is not null
+            || source is null
+            || !allowEmpty && string.IsNullOrWhiteSpace(source))
+        {
+            return false;
+        }
+
+        target = source;
+        return true;
+    }
+
+    private static bool SetIfZero(ref long target, long source)
+    {
+        if (target != 0 || source == 0)
+        {
+            return false;
+        }
+
+        target = source;
+        return true;
+    }
+
+    private static bool SetIfZero(ref double target, double source)
+    {
+        if (target != 0 || source == 0 || !double.IsFinite(source))
+        {
+            return false;
+        }
+
+        target = source;
+        return true;
+    }
+
+    private static bool SetMaximum(ref int target, int source)
+    {
+        if (source <= target)
+        {
+            return false;
+        }
+
+        target = source;
+        return true;
+    }
+
+    private static bool SetTrue(ref bool target, bool source)
+    {
+        if (target || !source)
+        {
+            return false;
+        }
+
+        target = true;
+        return true;
+    }
+
     private BodyState GetOrCreateBody(int bodyId, string? name)
     {
         if (!bodies.TryGetValue(bodyId, out var body))
@@ -788,73 +1138,73 @@ public sealed class SystemScanState
     {
         public int BodyId { get; } = bodyId;
 
-        public string Name { get; set; } = name;
+        public string Name = name;
 
-        public SystemBodyKind Kind { get; set; }
+        public SystemBodyKind Kind;
 
-        public string? StarClass { get; set; }
+        public string? StarClass;
 
-        public string? PlanetClass { get; set; }
+        public string? PlanetClass;
 
-        public bool IsLandable { get; set; }
+        public bool IsLandable;
 
-        public bool IsTerraformable { get; set; }
+        public bool IsTerraformable;
 
-        public bool IsScanned { get; set; }
+        public bool IsScanned;
 
-        public bool IsDssComplete { get; set; }
+        public bool IsDssComplete;
 
-        public bool DssEfficiencyBonus { get; set; }
+        public bool DssEfficiencyBonus;
 
-        public bool WasDiscovered { get; set; }
+        public bool WasDiscovered;
 
-        public bool WasMapped { get; set; }
+        public bool WasMapped;
 
-        public bool? WasFootfalled { get; set; }
+        public bool? WasFootfalled;
 
-        public bool IsFirstFootfall { get; set; }
+        public bool IsFirstFootfall;
 
-        public bool HasRingParent { get; set; }
+        public bool HasRingParent;
 
-        public bool? TidalLock { get; set; }
+        public bool? TidalLock;
 
-        public double Mass { get; set; }
+        public double Mass;
 
-        public double DistanceFromArrivalLs { get; set; }
+        public double DistanceFromArrivalLs;
 
-        public double RadiusMeters { get; set; }
+        public double RadiusMeters;
 
-        public double SurfaceGravity { get; set; }
+        public double SurfaceGravity;
 
-        public double SurfaceTemperature { get; set; }
+        public double SurfaceTemperature;
 
-        public double SurfacePressure { get; set; }
+        public double SurfacePressure;
 
-        public double SemiMajorAxis { get; set; }
+        public double SemiMajorAxis;
 
-        public double AbsoluteMagnitude { get; set; }
+        public double AbsoluteMagnitude;
 
-        public string? Atmosphere { get; set; }
+        public string? Atmosphere;
 
-        public string? AtmosphereType { get; set; }
+        public string? AtmosphereType;
 
-        public string? Volcanism { get; set; }
+        public string? Volcanism;
 
-        public int BiologicalSignalCount { get; set; }
+        public int BiologicalSignalCount;
 
-        public int GeologicalSignalCount { get; set; }
+        public int GeologicalSignalCount;
 
-        public long ScanSequence { get; set; }
+        public long ScanSequence;
 
-        public IReadOnlyDictionary<string, double> AtmosphereComposition { get; set; } =
+        public IReadOnlyDictionary<string, double> AtmosphereComposition =
             new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
 
-        public IReadOnlyDictionary<string, double> Materials { get; set; } =
+        public IReadOnlyDictionary<string, double> Materials =
             new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
 
-        public IReadOnlyList<SystemRingSnapshot> Rings { get; set; } = [];
+        public IReadOnlyList<SystemRingSnapshot> Rings = [];
 
-        public IReadOnlyList<SystemBodyParentSnapshot> Parents { get; set; } = [];
+        public IReadOnlyList<SystemBodyParentSnapshot> Parents = [];
 
         public Dictionary<string, OrganismState> Organisms { get; } =
             new(StringComparer.Ordinal);
@@ -977,25 +1327,25 @@ public sealed class SystemScanState
     {
         public string Genus { get; } = genus;
 
-        public string? GenusLocalized { get; set; }
+        public string? GenusLocalized;
 
-        public string? Species { get; set; }
+        public string? Species;
 
-        public string? SpeciesLocalized { get; set; }
+        public string? SpeciesLocalized;
 
-        public string? Variant { get; set; }
+        public string? Variant;
 
-        public string? VariantLocalized { get; set; }
+        public string? VariantLocalized;
 
-        public long? EntryId { get; set; }
+        public long? EntryId;
 
-        public long? Reward { get; set; }
+        public long? Reward;
 
-        public bool IsScanned { get; set; }
+        public bool IsScanned;
 
-        public bool IsAnalyzed { get; set; }
+        public bool IsAnalyzed;
 
-        public bool IsRegionalFirst { get; set; }
+        public bool IsRegionalFirst;
 
         public SystemOrganismSnapshot CreateSnapshot()
         {

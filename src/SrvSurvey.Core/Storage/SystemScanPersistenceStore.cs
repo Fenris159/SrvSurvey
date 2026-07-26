@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Storage;
 
@@ -12,6 +13,70 @@ public sealed class SystemScanPersistenceStore
     public SystemScanPersistenceStore(string dataDirectory)
     {
         fileStore = new LegacySystemDataFileStore(dataDirectory);
+    }
+
+    public async Task<SystemScanHistoryLoadResult> LoadAsync(
+        string frontierId,
+        string? commanderName,
+        string systemName,
+        long systemAddress,
+        GalacticCoordinate? starPosition = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(frontierId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(systemAddress);
+        var result = await fileStore.LoadAsync(
+                new LegacySystemDataFileContext(
+                    frontierId,
+                    commanderName,
+                    systemName,
+                    systemAddress,
+                    starPosition),
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (!result.Exists)
+        {
+            return new SystemScanHistoryLoadResult(
+                result.Path,
+                false,
+                null,
+                null);
+        }
+
+        if (result.Root is null)
+        {
+            return new SystemScanHistoryLoadResult(
+                result.Path,
+                true,
+                null,
+                result.Error ?? "The legacy system data is malformed.");
+        }
+
+        try
+        {
+            var snapshot = LegacySystemSnapshotParser.Parse(result.Root);
+            if (snapshot.SystemAddress != systemAddress)
+            {
+                throw new InvalidDataException(
+                    $"The legacy system file contains address "
+                        + $"{snapshot.SystemAddress}, not {systemAddress}.");
+            }
+
+            return new SystemScanHistoryLoadResult(
+                result.Path,
+                true,
+                snapshot,
+                null);
+        }
+        catch (InvalidDataException exception)
+        {
+            return new SystemScanHistoryLoadResult(
+                result.Path,
+                true,
+                null,
+                exception.Message);
+        }
     }
 
     public async Task<SystemScanPersistenceResult> SaveAsync(
@@ -260,3 +325,9 @@ public sealed record SystemScanPersistenceResult(
     bool IsRepeatVisit,
     int? BiologicalSignalsRemaining,
     bool ShouldSuppressBiologyOverlays);
+
+public sealed record SystemScanHistoryLoadResult(
+    string Path,
+    bool Exists,
+    SystemScanSnapshot? Snapshot,
+    string? Error);

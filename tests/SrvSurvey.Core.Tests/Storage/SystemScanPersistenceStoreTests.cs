@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Core.Tests.Storage;
@@ -150,6 +151,114 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
                     """{"event":"Location","StarSystem":"Test","SystemAddress":42}""")));
 
         Assert.Contains("was not overwritten", exception.Message);
+        Assert.Equal(before, await File.ReadAllBytesAsync(path));
+    }
+
+    [Fact]
+    public async Task LoadProjectsImportedSystemHistoryWithoutChangingItsBytes()
+    {
+        var path = CreateSystemFile(
+            "Test_42.json",
+            """
+            {
+              "name": "Test",
+              "address": 42,
+              "starPos": [1, 2, 3],
+              "bodyCount": 2,
+              "honked": true,
+              "futureRoot": { "keep": true },
+              "bodies": [
+                {
+                  "name": "Test A",
+                  "id": 0,
+                  "type": "Star",
+                  "starType": "K",
+                  "scanned": true
+                },
+                {
+                  "name": "Test 1",
+                  "id": 1,
+                  "type": "LandableBody",
+                  "planetClass": "Rocky body",
+                  "surfaceGravity": 9.5,
+                  "bioSignalCount": 1,
+                  "geoSignalCount": 1,
+                  "materials": { "iron": 20 },
+                  "parents": [
+                    { "type": "Star", "id": 0 }
+                  ],
+                  "geoSignals": [
+                    {
+                      "entryId": 123,
+                      "name": "$Codex_Ent_Geysers_Water_Name;",
+                      "nameLocalized": "Water Geysers"
+                    }
+                  ],
+                  "organisms": [
+                    {
+                      "genus": "$Codex_Ent_Aleoids_Genus_Name;",
+                      "genusLocalized": "Aleoida",
+                      "analyzed": true,
+                      "futureOrganism": 7
+                    }
+                  ],
+                  "futureBody": true
+                }
+              ]
+            }
+            """);
+        var before = await File.ReadAllBytesAsync(path);
+        var store = new SystemScanPersistenceStore(temporaryDirectory);
+
+        var result = await store.LoadAsync(
+            "F123",
+            "Drew",
+            "Test",
+            42);
+
+        Assert.True(result.Exists);
+        Assert.Null(result.Error);
+        var snapshot = Assert.IsType<SystemScanSnapshot>(result.Snapshot);
+        Assert.Equal(new GalacticCoordinate(1, 2, 3), snapshot.StarPosition);
+        Assert.True(snapshot.HasDiscoveryScan);
+        Assert.Equal(2, snapshot.ExpectedBodyCount);
+        Assert.Equal(2, snapshot.Bodies.Count);
+        var body = snapshot.Bodies.Single(candidate => candidate.BodyId == 1);
+        Assert.Equal(SystemBodyKind.LandablePlanet, body.Kind);
+        Assert.Equal(9.5, body.SurfaceGravity);
+        Assert.Equal(20, body.Materials["iron"]);
+        Assert.Equal(
+            new SystemBodyParentSnapshot(SystemBodyParentKind.Star, 0),
+            Assert.Single(body.Parents));
+        Assert.Equal(
+            "Water Geysers",
+            Assert.Single(body.AnalyzedGeologicalSignals));
+        Assert.True(Assert.Single(body.Organisms).IsAnalyzed);
+        Assert.Equal(before, await File.ReadAllBytesAsync(path));
+    }
+
+    [Fact]
+    public async Task LoadRejectsMalformedTypedHistoryWithoutChangingItsBytes()
+    {
+        var path = CreateSystemFile(
+            "Test_42.json",
+            """
+            {
+              "name": "Test",
+              "address": 42,
+              "bodies": [
+                { "name": "Test 1", "id": 1, "type": "FutureBodyType" }
+              ]
+            }
+            """);
+        var before = await File.ReadAllBytesAsync(path);
+
+        var result = await new SystemScanPersistenceStore(temporaryDirectory)
+            .LoadAsync("F123", "Drew", "Test", 42);
+
+        Assert.True(result.Exists);
+        Assert.Null(result.Snapshot);
+        Assert.Contains("not recognized", result.Error);
         Assert.Equal(before, await File.ReadAllBytesAsync(path));
     }
 

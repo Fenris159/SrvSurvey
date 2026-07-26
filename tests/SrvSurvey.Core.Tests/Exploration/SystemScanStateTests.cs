@@ -260,6 +260,91 @@ public sealed class SystemScanStateTests
         Assert.Equal(SystemScanSnapshot.Empty, state.CreateSnapshot());
     }
 
+    [Fact]
+    public void KnownSystemHistoryFillsMissingFieldsWithoutReplacingLiveScans()
+    {
+        var live = new SystemScanState();
+        live.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        live.Apply(Parse(
+            """
+            {
+              "event":"Scan",
+              "SystemAddress":42,
+              "BodyName":"Test 1",
+              "BodyID":1,
+              "PlanetClass":"Rocky body",
+              "Landable":true,
+              "WasDiscovered":false,
+              "SurfaceGravity":20
+            }
+            """));
+        var knownState = new SystemScanState();
+        knownState.Apply(Parse(
+            """
+            {
+              "event":"Location",
+              "StarSystem":"Test",
+              "SystemAddress":42,
+              "StarPos":[1,2,3]
+            }
+            """));
+        knownState.Apply(Parse(
+            """
+            {
+              "event":"Scan",
+              "SystemAddress":42,
+              "BodyName":"Test 1",
+              "BodyID":1,
+              "PlanetClass":"Icy body",
+              "Landable":true,
+              "WasDiscovered":true,
+              "SurfaceGravity":9,
+              "SurfaceTemperature":180,
+              "AtmosphereType":"Argon",
+              "Materials":[{"Name":"iron","Percent":20}]
+            }
+            """));
+        knownState.Apply(Parse(
+            """
+            {
+              "event":"FSSBodySignals",
+              "SystemAddress":42,
+              "BodyName":"Test 1",
+              "BodyID":1,
+              "Signals":[
+                {"Type":"$SAA_SignalType_Biological;","Count":1}
+              ],
+              "Genuses":[
+                {
+                  "Genus":"$Codex_Ent_Aleoids_Genus_Name;",
+                  "Genus_Localised":"Aleoida"
+                }
+              ]
+            }
+            """));
+
+        var changed = live.MergeKnownData(knownState.CreateSnapshot());
+
+        Assert.True(changed);
+        var snapshot = live.CreateSnapshot();
+        Assert.Equal(new GalacticCoordinate(1, 2, 3), snapshot.StarPosition);
+        var body = Assert.Single(snapshot.Bodies);
+        Assert.Equal("Rocky body", body.PlanetClass);
+        Assert.False(body.WasDiscovered);
+        Assert.Equal(20, body.SurfaceGravity);
+        Assert.Equal(180, body.SurfaceTemperature);
+        Assert.Equal("Argon", body.AtmosphereType);
+        Assert.Equal(20, body.Materials["iron"]);
+        Assert.Equal(1, body.BiologicalSignalCount);
+        Assert.Equal("Aleoida", Assert.Single(body.Organisms).GenusLocalized);
+
+        var other = new SystemScanState();
+        other.Apply(Parse(
+            """{"event":"Location","StarSystem":"Other","SystemAddress":99}"""));
+        Assert.False(live.MergeKnownData(other.CreateSnapshot()));
+    }
+
     private const string PlanetScan = """
         {
           "event":"Scan",

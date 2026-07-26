@@ -118,7 +118,8 @@ public static class LegacySystemSnapshotMerger
                 snapshot.Parents
                     .Select(parent => (JsonNode)new JsonObject
                     {
-                        [parent.Kind.ToString()] = parent.BodyId,
+                        ["type"] = parent.Kind.ToString(),
+                        ["id"] = parent.BodyId,
                     })
                     .ToArray());
         }
