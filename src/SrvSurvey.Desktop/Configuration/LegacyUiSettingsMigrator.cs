@@ -212,6 +212,10 @@ public sealed class LegacyUiSettingsMigrator
                     ("uploadGGG", "UploadGreenGasGiantCandidates"),
                 ]);
                 mappedCount += MapCodexImages(legacy, root, manifest);
+                mappedCount += MapSection(legacy, root, "Travel",
+                [
+                    ("logDockToDockTimes", "LogDockToDockTimes"),
+                ]);
                 mappedCount += MapInput(legacy, root);
                 root["LegacyImport"] = new JsonObject
                 {

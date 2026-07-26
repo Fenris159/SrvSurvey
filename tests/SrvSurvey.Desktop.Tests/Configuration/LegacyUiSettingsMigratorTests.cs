@@ -120,6 +120,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "buildProjectsInlineSumFC_TEST": true,
               "buildProjectsCollapseGroupsWithFCEnough_TEST": false,
               "buildProjectsHighlightAlmostFC_TEST": true,
+              "logDockToDockTimes": true,
               "streamOneOverlay": true,
               "displayVR": true,
               "vrProcessName": "vrcompositor",
@@ -297,6 +298,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new VrOverlayPreferences(true, "vrcompositor"),
             new VrOverlaySettingsStore(paths.UiSettingsPath).Load());
+        Assert.True(
+            new DockToDockSettingsStore(paths.UiSettingsPath).LoadEnabled());
 
         var migrated = Assert.IsType<JsonObject>(
             JsonNode.Parse(await File.ReadAllTextAsync(paths.UiSettingsPath)));

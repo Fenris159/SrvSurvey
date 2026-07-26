@@ -154,6 +154,26 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card raised">
+        <StackPanel Spacing="10">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Dock-to-dock travel log" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Append live completed trips, jump distance, ingress and egress timing, ship details, and departure cargo using the original CSV columns." />
+            </StackPanel>
+            <CheckBox Grid.Column="1"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding DockToDock.Enabled, Mode=TwoWay}"
+                      Content="Enabled" />
+          </Grid>
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding DockToDock.StatusMessage}" />
+        </StackPanel>
+      </Border>
+
       <Separator />
 
       <StackPanel Spacing="5">

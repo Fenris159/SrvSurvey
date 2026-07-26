@@ -14,6 +14,7 @@ using SrvSurvey.Core.Quests;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Core.Travel;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform;
@@ -96,6 +97,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private long? activeSystemVisitAddress;
     private DateTimeOffset? activeSystemVisitedAt;
     private EliteStatus? latestStatus;
+    private CargoSnapshot? latestCargo;
     private bool disposed;
 
     public MainWindowViewModel(
@@ -138,7 +140,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         OverlayBehaviorSettingsStore? overlayBehaviorSettingsStore = null,
         JournalSettingsStore? journalSettingsStore = null,
         SystemScanPersistenceStore? systemScanPersistenceStore = null,
-        CodexImageSettingsStore? codexImageSettingsStore = null)
+        CodexImageSettingsStore? codexImageSettingsStore = null,
+        DockToDockSettingsStore? dockToDockSettingsStore = null,
+        DockToDockLogService? dockToDockLogService = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -192,6 +196,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         ScreenshotProcessing = new ScreenshotProcessingViewModel(
             new ScreenshotProcessingSettingsStore(AppDataPaths.UiSettingsPath),
             screenshotProcessingService);
+        DockToDock = new DockToDockViewModel(
+            dockToDockSettingsStore
+                ?? new DockToDockSettingsStore(AppDataPaths.UiSettingsPath),
+            dockToDockLogService
+                ?? new DockToDockLogService(
+                    DockToDockCsvWriter.GetDefaultPath()));
         Notifications = new NotificationViewModel(
             notificationSettingsStore
                 ?? new NotificationSettingsStore(AppDataPaths.UiSettingsPath));
@@ -474,6 +484,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public OverlayBehaviorViewModel OverlayBehavior { get; }
 
     public ScreenshotProcessingViewModel ScreenshotProcessing { get; }
+
+    public DockToDockViewModel DockToDock { get; }
 
     public NotificationViewModel Notifications { get; }
 
@@ -1281,6 +1293,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         JournalInspector.ApplyUpdate(update.JournalEvents, latestStatus);
+
+        latestCargo = update.Cargo ?? latestCargo;
+        DockToDock.ApplyUpdate(
+            update.JournalEvents,
+            latestCargo,
+            update.IsBootstrapRead);
 
         if (update.Status is not null)
         {
