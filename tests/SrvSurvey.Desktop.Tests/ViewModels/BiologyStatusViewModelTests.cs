@@ -227,6 +227,9 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.False(status.HasFooter);
         Assert.True(viewModel.ShouldShowBioStatus);
 
+        viewModel.SetRepeatVisitBiologySuppression(true);
+        Assert.True(viewModel.ShouldShowBioStatus);
+
         viewModel.ApplyUpdate([], new EliteStatus
         {
             GuiFocus = GuiFocus.SystemMap,

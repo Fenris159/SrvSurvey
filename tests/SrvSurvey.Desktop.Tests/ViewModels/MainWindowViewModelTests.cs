@@ -9,6 +9,7 @@ using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Theming;
+using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -649,6 +650,87 @@ public sealed class MainWindowViewModelTests
             Assert.Equal(
                 10477373803,
                 viewModel.SystemSurvey.Snapshot.SystemAddress);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task RefreshLosslesslyUpdatesImportedSystemHistoryAndRepeatState()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-system-history-vm-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            var systems = Path.Combine(profile, "systems", "F123");
+            Directory.CreateDirectory(journals);
+            Directory.CreateDirectory(systems);
+            var systemPath = Path.Combine(systems, "Test_42.json");
+            await File.WriteAllTextAsync(
+                systemPath,
+                """
+                {
+                  "name":"Test",
+                  "address":42,
+                  "firstVisited":"2026-07-20T00:00:00Z",
+                  "lastVisited":"2026-07-20T00:00:00Z",
+                  "futureRoot":{"keep":true},
+                  "bodies":[{
+                    "name":"Test 1",
+                    "id":1,
+                    "bioSignalCount":1,
+                    "bookmarks":{"Aleoida":[{"latitude":1}]},
+                    "organisms":[{"genus":"Aleoida","analyzed":true}]
+                  }]
+                }
+                """);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-24T100000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"StarPos\":[1,2,3]}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"FSSBodySignals\",\"SystemAddress\":42,\"BodyName\":\"Test 1\",\"BodyID\":1,\"Signals\":[{\"Type\":\"$SAA_SignalType_Biological;\",\"Count\":1}]}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths);
+
+            await viewModel.RefreshAsync();
+
+            Assert.True(
+                viewModel.SystemSurvey.AreBiologyOverlaysSuppressedForRepeatVisit);
+            var saved = JsonNode.Parse(
+                await File.ReadAllTextAsync(systemPath))!.AsObject();
+            Assert.True(saved["futureRoot"]!["keep"]!.GetValue<bool>());
+            Assert.NotNull(saved["bodies"]![0]!["bookmarks"]);
+            Assert.Equal(
+                "2026-07-24T10:00:01.0000000+00:00",
+                saved["lastVisited"]!.GetValue<string>());
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-24T10:05:00Z\",\"event\":\"FSDJump\",\"StarSystem\":\"New Test\",\"SystemAddress\":84,\"StarPos\":[4,5,6]}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.False(
+                viewModel.SystemSurvey.AreBiologyOverlaysSuppressedForRepeatVisit);
+            Assert.True(File.Exists(Path.Combine(
+                systems,
+                "New Test_84.json")));
         }
         finally
         {

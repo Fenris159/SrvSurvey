@@ -71,6 +71,10 @@ public sealed class SystemSurveySettingsStore
                 defaults.AutoShowBioStatus),
             GetBoolean(
                 settings,
+                "AutoHideBioPlotOnRepeat",
+                defaults.AutoHideBioPlotOnRepeat),
+            GetBoolean(
+                settings,
                 "AutoShowPriorScans",
                 defaults.AutoShowPriorScans),
             GetBoolean(
@@ -239,6 +243,8 @@ public sealed class SystemSurveySettingsStore
             settings["UseExternalBioData"] = preferences.UseExternalBioData;
             settings["AutoShowBioSystem"] = preferences.AutoShowBioSystem;
             settings["AutoShowBioStatus"] = preferences.AutoShowBioStatus;
+            settings["AutoHideBioPlotOnRepeat"] =
+                preferences.AutoHideBioPlotOnRepeat;
             settings["AutoShowPriorScans"] = preferences.AutoShowPriorScans;
             settings["SkipPriorScansLowValue"] =
                 preferences.SkipPriorScansLowValue;
@@ -432,6 +438,7 @@ public sealed record SystemSurveyPreferences(
     bool UseExternalBioData,
     bool AutoShowBioSystem,
     bool AutoShowBioStatus,
+    bool AutoHideBioPlotOnRepeat,
     bool AutoShowPriorScans,
     bool SkipPriorScansLowValue,
     int PriorScanMinimumValue,
@@ -482,6 +489,7 @@ public sealed record SystemSurveyPreferences(
         UseExternalBioData: false,
         AutoShowBioSystem: true,
         AutoShowBioStatus: true,
+        AutoHideBioPlotOnRepeat: true,
         AutoShowPriorScans: true,
         SkipPriorScansLowValue: false,
         PriorScanMinimumValue: 1_000_000,

@@ -1,0 +1,195 @@
+using System.Globalization;
+using System.Text.Json.Nodes;
+using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Exploration;
+
+namespace SrvSurvey.Core.Storage;
+
+public sealed class SystemScanPersistenceStore
+{
+    private readonly LegacySystemDataFileStore fileStore;
+
+    public SystemScanPersistenceStore(string dataDirectory)
+    {
+        fileStore = new LegacySystemDataFileStore(dataDirectory);
+    }
+
+    public async Task<SystemScanPersistenceResult> SaveAsync(
+        SystemScanPersistenceContext context,
+        SystemScanSnapshot snapshot,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentException.ThrowIfNullOrWhiteSpace(context.FrontierId);
+        if (snapshot.SystemAddress is not { } systemAddress
+            || systemAddress <= 0
+            || string.IsNullOrWhiteSpace(snapshot.SystemName))
+        {
+            throw new ArgumentException(
+                "A named system snapshot with a positive address is required.",
+                nameof(snapshot));
+        }
+
+        var fileContext = new LegacySystemDataFileContext(
+            context.FrontierId,
+            context.CommanderName,
+            snapshot.SystemName,
+            systemAddress,
+            snapshot.StarPosition);
+        var mutation = await fileStore.UpdateWithResultAsync(
+                fileContext,
+                root => Merge(root, context, snapshot),
+                cancellationToken)
+            .ConfigureAwait(false);
+        return mutation.Value with { Path = mutation.Path };
+    }
+
+    private static SystemScanPersistenceResult Merge(
+        JsonObject root,
+        SystemScanPersistenceContext context,
+        SystemScanSnapshot snapshot)
+    {
+        var firstVisited = ReadTimestamp(root["firstVisited"]);
+        var lastVisited = ReadTimestamp(root["lastVisited"]);
+        var isKnownRepeat = firstVisited is not null
+            && lastVisited is not null
+            && firstVisited != lastVisited;
+        var isNewRepeat = firstVisited is not null
+            && context.VisitedAt > (lastVisited ?? firstVisited);
+        var merged = LegacySystemSnapshotMerger.Merge(
+            root,
+            snapshot,
+            context.CommanderName,
+            context.VisitedAt,
+            context.VisitedAt);
+        var biologicalSignalsRemaining =
+            ReadBiologicalSignalsRemaining(merged);
+
+        root.Clear();
+        foreach (var pair in merged)
+        {
+            root[pair.Key] = pair.Value?.DeepClone();
+        }
+
+        var isRepeatVisit = isKnownRepeat || isNewRepeat;
+        return new SystemScanPersistenceResult(
+            string.Empty,
+            isRepeatVisit,
+            biologicalSignalsRemaining,
+            isRepeatVisit && biologicalSignalsRemaining == 0);
+    }
+
+    private static int? ReadBiologicalSignalsRemaining(JsonObject root)
+    {
+        if (root["bodies"] is null)
+        {
+            return 0;
+        }
+
+        if (root["bodies"] is not JsonArray bodies)
+        {
+            return null;
+        }
+
+        var remaining = 0;
+        foreach (var bodyNode in bodies)
+        {
+            if (bodyNode is not JsonObject body)
+            {
+                return null;
+            }
+
+            var signalCount = ReadInt32(body["bioSignalCount"]);
+            if (signalCount is null)
+            {
+                if (body["bioSignalCount"] is not null)
+                {
+                    return null;
+                }
+
+                continue;
+            }
+
+            var analyzedCount = 0;
+            if (body["organisms"] is not null)
+            {
+                if (body["organisms"] is not JsonArray organisms)
+                {
+                    return null;
+                }
+
+                foreach (var organismNode in organisms)
+                {
+                    if (organismNode is not JsonObject organism)
+                    {
+                        return null;
+                    }
+
+                    if (ReadBoolean(organism["analyzed"]) == true)
+                    {
+                        analyzedCount++;
+                    }
+                }
+            }
+
+            remaining += Math.Max(0, signalCount.Value - analyzedCount);
+        }
+
+        return remaining;
+    }
+
+    private static int? ReadInt32(JsonNode? node)
+    {
+        if (node is not JsonValue value)
+        {
+            return null;
+        }
+
+        if (value.TryGetValue<int>(out var result))
+        {
+            return result;
+        }
+
+        return value.TryGetValue<string>(out var text)
+            && int.TryParse(
+                text,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out result)
+                    ? result
+                    : null;
+    }
+
+    private static bool? ReadBoolean(JsonNode? node)
+    {
+        return node is JsonValue value
+            && value.TryGetValue<bool>(out var result)
+                ? result
+                : null;
+    }
+
+    private static DateTimeOffset? ReadTimestamp(JsonNode? node)
+    {
+        return node is JsonValue value
+            && value.TryGetValue<string>(out var text)
+            && DateTimeOffset.TryParse(
+                text,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.RoundtripKind,
+                out var result)
+                    ? result
+                    : null;
+    }
+}
+
+public sealed record SystemScanPersistenceContext(
+    string FrontierId,
+    string? CommanderName,
+    DateTimeOffset VisitedAt);
+
+public sealed record SystemScanPersistenceResult(
+    string Path,
+    bool IsRepeatVisit,
+    int? BiologicalSignalsRemaining,
+    bool ShouldSuppressBiologyOverlays);

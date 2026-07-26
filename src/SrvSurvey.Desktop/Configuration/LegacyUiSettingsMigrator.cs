@@ -85,6 +85,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("useExternalBioData", "UseExternalBioData"),
                     ("autoShowPlotBioSystem", "AutoShowBioSystem"),
                     ("autoShowBioSummary", "AutoShowBioStatus"),
+                    ("autoHideBioPlotOnRepeat", "AutoHideBioPlotOnRepeat"),
                     ("autoLoadPriorScans", "AutoShowPriorScans"),
                     ("skipPriorScansLowValue", "SkipPriorScansLowValue"),
                     ("skipPriorScansLowValueAmount", "PriorScanMinimumValue"),

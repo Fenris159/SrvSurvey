@@ -41,6 +41,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "highGravityWarningLevel": 2.75,
               "useExternalData": false,
               "useExternalBioData": true,
+              "autoHideBioPlotOnRepeat": false,
               "tempRange_TEST": true,
               "watchFssSettings_TEST": {
                 "saveDebugImages": true,
@@ -177,6 +178,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(2.75, survey.HighGravityWarningLevel);
         Assert.False(survey.UseExternalData);
         Assert.True(survey.UseExternalBioData);
+        Assert.False(survey.AutoHideBioPlotOnRepeat);
         Assert.True(survey.ShowTemperatureRangeDebug);
         Assert.Equal(
             new FssTuningDetectorSettings(

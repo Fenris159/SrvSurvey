@@ -34,6 +34,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly CommanderProfileStore commanderProfileStore;
     private readonly CommanderCodexStore commanderCodexStore;
     private readonly CommanderCodexJournalTracker commanderCodexJournalTracker;
+    private readonly SystemScanPersistenceStore systemScanPersistenceStore;
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
     private readonly RavenThemeService? themeService;
@@ -92,6 +93,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private string? surveyCodexFrontierId;
     private int? surveyCodexRegionId;
     private long? surveyCodexSystemAddress;
+    private long? activeSystemVisitAddress;
+    private DateTimeOffset? activeSystemVisitedAt;
     private EliteStatus? latestStatus;
     private bool disposed;
 
@@ -133,7 +136,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         GalaxyMapSettingsStore? galaxyMapSettingsStore = null,
         PulseOverlaySettingsStore? pulseOverlaySettingsStore = null,
         OverlayBehaviorSettingsStore? overlayBehaviorSettingsStore = null,
-        JournalSettingsStore? journalSettingsStore = null)
+        JournalSettingsStore? journalSettingsStore = null,
+        SystemScanPersistenceStore? systemScanPersistenceStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -171,6 +175,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             AppDataPaths.DataDirectory);
         commanderCodexJournalTracker = new CommanderCodexJournalTracker(
             commanderCodexStore);
+        this.systemScanPersistenceStore = systemScanPersistenceStore
+            ?? new SystemScanPersistenceStore(AppDataPaths.DataDirectory);
         InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
             OverlayPlatformCapabilities.DetectCurrent());
@@ -1509,6 +1515,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.JournalEvents,
             update.Status,
             exobiologyAfter);
+        await PersistSystemScanAsync(update.JournalEvents);
         await RefreshSystemSurveyCommanderCodexAsync(
             forceRefresh: commanderCodexResult.DiscoveryEventCount > 0);
         if (!update.IsBootstrapRead
@@ -1941,6 +1948,111 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             or "ApproachBody"
             or "Scan"
             or "Disembark";
+    }
+
+    private async Task PersistSystemScanAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents)
+    {
+        var snapshot = SystemSurvey.Snapshot;
+        if (string.IsNullOrWhiteSpace(activeProfileFrontierId)
+            || snapshot.SystemAddress is not { } systemAddress
+            || systemAddress <= 0
+            || string.IsNullOrWhiteSpace(snapshot.SystemName))
+        {
+            return;
+        }
+
+        foreach (var journalEvent in journalEvents)
+        {
+            if (!IsSystemVisitEvent(journalEvent.EventName)
+                || journalEvent.Timestamp is not { } timestamp
+                || !TryGetSystemAddress(journalEvent, out var eventAddress)
+                || eventAddress != systemAddress)
+            {
+                continue;
+            }
+
+            activeSystemVisitAddress = eventAddress;
+            activeSystemVisitedAt = timestamp;
+        }
+
+        if (activeSystemVisitAddress != systemAddress
+            || activeSystemVisitedAt is not { } visitedAt
+            || !journalEvents.Any(journalEvent =>
+                IsSystemScanPersistenceEvent(journalEvent.EventName)))
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await systemScanPersistenceStore.SaveAsync(
+                new SystemScanPersistenceContext(
+                    activeProfileFrontierId,
+                    activeProfileCommanderName ?? journalState.CommanderName,
+                    visitedAt),
+                snapshot);
+            SystemSurvey.SetRepeatVisitBiologySuppression(
+                result.ShouldSuppressBiologyOverlays);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            var message = "System survey history was not updated because its "
+                + "legacy-compatible data file could not be written safely: "
+                + exception.Message;
+            applicationLogService?.Append(message);
+            StatusMessage = message;
+        }
+    }
+
+    private static bool IsSystemVisitEvent(string eventName)
+    {
+        return eventName is "Location" or "FSDJump" or "CarrierJump";
+    }
+
+    private static bool IsSystemScanPersistenceEvent(string eventName)
+    {
+        return eventName is "Location"
+            or "FSDJump"
+            or "CarrierJump"
+            or "FSSDiscoveryScan"
+            or "FSSAllBodiesFound"
+            or "Scan"
+            or "ScanBaryCentre"
+            or "SAAScanComplete"
+            or "FSSBodySignals"
+            or "SAASignalsFound"
+            or "ScanOrganic"
+            or "CodexEntry"
+            or "FSSSignalDiscovered"
+            or "ApproachBody"
+            or "Touchdown"
+            or "SupercruiseExit"
+            or "Disembark";
+    }
+
+    private static bool TryGetSystemAddress(
+        JournalEventEnvelope journalEvent,
+        out long systemAddress)
+    {
+        systemAddress = 0;
+        if (!journalEvent.Payload.TryGetProperty(
+                "SystemAddress",
+                out var address))
+        {
+            return false;
+        }
+
+        if (address.ValueKind == System.Text.Json.JsonValueKind.Number)
+        {
+            return address.TryGetInt64(out systemAddress);
+        }
+
+        return address.ValueKind == System.Text.Json.JsonValueKind.String
+            && long.TryParse(address.GetString(), out systemAddress);
     }
 
     public async Task ResetExplorationAsync()

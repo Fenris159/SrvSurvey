@@ -37,6 +37,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             UseExternalBioData: true,
             AutoShowBioSystem: false,
             AutoShowBioStatus: true,
+            AutoHideBioPlotOnRepeat: false,
             AutoShowPriorScans: false,
             SkipPriorScansLowValue: true,
             PriorScanMinimumValue: 2_000_000,

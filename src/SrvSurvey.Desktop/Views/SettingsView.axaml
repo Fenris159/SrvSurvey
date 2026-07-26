@@ -1264,6 +1264,8 @@
                         Content="Show system exobiology status automatically" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoShowBioStatus, Mode=TwoWay}"
                         Content="Show compact genetic-sampler status automatically" />
+              <CheckBox IsChecked="{Binding SystemSurvey.AutoHideBioPlotOnRepeat, Mode=TwoWay}"
+                        Content="Hide completed biology overlays on repeat visits" />
               <CheckBox IsChecked="{Binding SystemSurvey.DrawBodyBiosOnlyWhenNear, Mode=TwoWay}"
                         Content="Show body details only when nearby" />
               <CheckBox IsChecked="{Binding SystemSurvey.HideGeoCountInBioSystem, Mode=TwoWay}"

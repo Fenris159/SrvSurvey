@@ -47,6 +47,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool useExternalBioData;
     private bool autoShowBioSystem;
     private bool autoShowBioStatus;
+    private bool autoHideBioPlotOnRepeat;
     private bool autoShowPriorScans;
     private bool skipPriorScansLowValue;
     private int priorScanMinimumValue;
@@ -87,6 +88,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool manuallyHideFssInfo;
     private bool forceShowBodyInfo;
     private bool manuallyHideBodyInfo;
+    private bool suppressBiologyOverlaysForRepeatVisit;
     private bool fsdJumping;
     private int? timedBiologyBodyId;
     private DateTimeOffset timedBiologyStartedAt;
@@ -123,6 +125,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         useExternalBioData = preferences.UseExternalBioData;
         autoShowBioSystem = preferences.AutoShowBioSystem;
         autoShowBioStatus = preferences.AutoShowBioStatus;
+        autoHideBioPlotOnRepeat = preferences.AutoHideBioPlotOnRepeat;
         autoShowPriorScans = preferences.AutoShowPriorScans;
         skipPriorScansLowValue = preferences.SkipPriorScansLowValue;
         priorScanMinimumValue = preferences.PriorScanMinimumValue;
@@ -262,6 +265,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get => autoShowBioStatus;
         set => SetPreference(ref autoShowBioStatus, value);
     }
+
+    public bool AutoHideBioPlotOnRepeat
+    {
+        get => autoHideBioPlotOnRepeat;
+        set => SetPreference(ref autoHideBioPlotOnRepeat, value);
+    }
+
+    public bool AreBiologyOverlaysSuppressedForRepeatVisit =>
+        AutoHideBioPlotOnRepeat && suppressBiologyOverlaysForRepeatVisit;
 
     public bool AutoShowPriorScans
     {
@@ -1075,6 +1087,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         get
         {
             if (!AutoShowBioSystem
+                || AreBiologyOverlaysSuppressedForRepeatVisit
                 || BiologySurvey is null
                 || status is null
                 || status.InTaxi
@@ -1137,6 +1150,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         {
             if (!UseExternalData
                 || !AutoShowPriorScans
+                || AreBiologyOverlaysSuppressedForRepeatVisit
                 || status is null
                 || !status.HasLatitudeLongitude
                 || status.PlanetRadius <= 0
@@ -1236,6 +1250,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         snapshot = state.CreateSnapshot();
         if (snapshot.SystemAddress != previousAddress)
         {
+            suppressBiologyOverlaysForRepeatVisit = false;
             ClearTimedBiologySelection(refreshDisplay: false);
             biologyDiscoveryContext = BiologyDiscoveryContext.Unavailable;
             canonnBiologyBodyIds = new HashSet<int>();
@@ -1246,6 +1261,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             manuallyHideBodyInfo = false;
             ResetFssTuningDetection();
             OnPropertyChanged(nameof(IsBodyInfoForced));
+            OnPropertyChanged(
+                nameof(AreBiologyOverlaysSuppressedForRepeatVisit));
         }
 
         UpdateTimedBiologySelection(previousStatus, nextStatus);
@@ -1268,6 +1285,19 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             : BiologyDiscoveryContext.Unavailable;
         OnPropertyChanged(nameof(CurrentBiologyDiscoveryContext));
         RefreshDisplay();
+    }
+
+    public void SetRepeatVisitBiologySuppression(bool suppress)
+    {
+        if (!SetField(
+                ref suppressBiologyOverlaysForRepeatVisit,
+                suppress,
+                nameof(AreBiologyOverlaysSuppressedForRepeatVisit)))
+        {
+            return;
+        }
+
+        RaiseVisibilityProperties();
     }
 
     public void UpdateCanonnSystemPoi(CanonnSystemPoiResult? result)
@@ -2116,6 +2146,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 UseExternalBioData,
                 AutoShowBioSystem,
                 AutoShowBioStatus,
+                AutoHideBioPlotOnRepeat,
                 AutoShowPriorScans,
                 SkipPriorScansLowValue,
                 PriorScanMinimumValue,

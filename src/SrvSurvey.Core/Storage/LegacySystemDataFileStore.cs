@@ -97,6 +97,57 @@ internal sealed class LegacySystemDataFileStore
             .ConfigureAwait(false);
     }
 
+    public async Task<LegacySystemDataFileMutationResult<T>>
+        UpdateWithResultAsync<T>(
+            LegacySystemDataFileContext context,
+            Func<JsonObject, T> update,
+            CancellationToken cancellationToken = default)
+    {
+        ValidateContext(context);
+        ArgumentNullException.ThrowIfNull(update);
+        return await ExecuteProfileWriteAsync(
+                context.FrontierId,
+                async token =>
+                {
+                    var path = FindSystemPath(context)
+                        ?? GetNewSystemPath(context);
+                    var updateLock = UpdateLocks.GetOrAdd(
+                        Path.GetFullPath(path),
+                        static _ => new SemaphoreSlim(1, 1));
+                    await updateLock.WaitAsync(token).ConfigureAwait(false);
+                    try
+                    {
+                        JsonObject root;
+                        if (File.Exists(path))
+                        {
+                            var readResult = await ReadObjectAsync(path, token)
+                                .ConfigureAwait(false);
+                            root = readResult.Root
+                                ?? throw new InvalidDataException(
+                                    "The system data file is malformed and was not overwritten: "
+                                        + readResult.Error);
+                        }
+                        else
+                        {
+                            root = CreateSystemData(context);
+                        }
+
+                        var result = update(root);
+                        await WriteObjectAsync(path, root, token)
+                            .ConfigureAwait(false);
+                        return new LegacySystemDataFileMutationResult<T>(
+                            path,
+                            result);
+                    }
+                    finally
+                    {
+                        updateLock.Release();
+                    }
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async Task<LegacySystemDataFileUpdateResult> UpdateExistingAsync(
         LegacySystemDataFileContext context,
         Func<JsonObject, bool> update,
@@ -385,3 +436,7 @@ internal sealed record LegacySystemDataFileUpdateResult(
     bool Exists,
     bool Changed,
     string? Error);
+
+internal sealed record LegacySystemDataFileMutationResult<T>(
+    string Path,
+    T Value);

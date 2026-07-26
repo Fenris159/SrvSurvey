@@ -30,6 +30,13 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         Assert.True(viewModel.ShouldLoadPriorScans);
 
+        viewModel.SetRepeatVisitBiologySuppression(true);
+        Assert.True(viewModel.AreBiologyOverlaysSuppressedForRepeatVisit);
+        Assert.False(viewModel.ShouldLoadPriorScans);
+        viewModel.AutoHideBioPlotOnRepeat = false;
+        Assert.False(viewModel.AreBiologyOverlaysSuppressedForRepeatVisit);
+        Assert.True(viewModel.ShouldLoadPriorScans);
+
         viewModel.UseExternalData = false;
         Assert.False(viewModel.ShouldLoadPriorScans);
         viewModel.UseExternalData = true;
@@ -396,6 +403,9 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             });
 
         Assert.True(viewModel.ShouldShowBioSystem);
+        viewModel.SetRepeatVisitBiologySuppression(true);
+        Assert.False(viewModel.ShouldShowBioSystem);
+        viewModel.SetRepeatVisitBiologySuppression(false);
         var biology = Assert.IsType<BiologySurveyViewModel>(
             viewModel.BiologySurvey);
         Assert.True(biology.IsSystemOverview);
