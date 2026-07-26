@@ -2665,6 +2665,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         firstFootfallInferenceCancellation.Cancel();
         firstFootfallInferenceService.Dispose();
         firstFootfallInferenceCancellation.Dispose();
+        Colonization.Dispose();
         GalaxyMap.Dispose();
         QuestWorkspace.Dispose();
         CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged;

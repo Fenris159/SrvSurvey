@@ -441,6 +441,84 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task DockingPermissionRefreshesActiveCommanderProjectsAfterLegacyDelay()
+    {
+        var delays = new List<TimeSpan>();
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [Project("build-1", "Port", remaining: 100)],
+                [],
+                null,
+                []),
+        };
+        using var viewModel = Create(
+            client,
+            (delay, _) =>
+            {
+                delays.Add(delay);
+                return Task.CompletedTask;
+            });
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        Assert.Equal(1, client.LoadCount);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [Event("DockingGranted", "\"StationName\":\"Regular port\"")],
+            allowPublishing: true);
+
+        Assert.Equal([TimeSpan.FromSeconds(4)], delays);
+        Assert.Equal(2, client.LoadCount);
+    }
+
+    [Fact]
+    public async Task ConstructionSiteDockingPermissionRefreshesWithoutExistingProject()
+    {
+        var client = new StubRavenColonialClient();
+        using var viewModel = Create(client, (_, _) => Task.CompletedTask);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        Assert.Empty(viewModel.Projects);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [Event(
+                "DockingGranted",
+                "\"StationName\":\"Orbital Construction Site: Hope\"")],
+            allowPublishing: true);
+
+        Assert.Equal(2, client.LoadCount);
+    }
+
+    [Fact]
+    public async Task DockingPermissionDoesNotRefreshDuringBootstrapOrAtUnrelatedPort()
+    {
+        var delays = 0;
+        var client = new StubRavenColonialClient();
+        using var viewModel = Create(
+            client,
+            (_, _) =>
+            {
+                delays++;
+                return Task.CompletedTask;
+            });
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        var granted = Event(
+            "DockingGranted",
+            "\"StationName\":\"Regular port\"");
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [granted],
+            allowPublishing: false);
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [granted],
+            allowPublishing: true);
+
+        Assert.Equal(0, delays);
+        Assert.Equal(1, client.LoadCount);
+    }
+
+    [Fact]
     public async Task RefreshFailureKeepsExistingProjectRows()
     {
         var client = new StubRavenColonialClient
@@ -1091,14 +1169,17 @@ public sealed class ColonizationViewModelTests : IDisposable
         }
     }
 
-    private ColonizationViewModel Create(StubRavenColonialClient client)
+    private ColonizationViewModel Create(
+        StubRavenColonialClient client,
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
     {
         return new ColonizationViewModel(
             new ColonizationSettingsStore(
                 Path.Combine(directory, "ui.json")),
             client,
             ColonizationBuildCatalog.LoadEmbedded(),
-            new CommanderProfileStore(directory));
+            new CommanderProfileStore(directory),
+            delayAsync: delayAsync);
     }
 
     private static ColonizationProject Project(

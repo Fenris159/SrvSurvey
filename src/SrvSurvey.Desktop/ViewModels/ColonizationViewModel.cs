@@ -11,8 +11,10 @@ using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class ColonizationViewModel : INotifyPropertyChanged
+public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 {
+    private static readonly TimeSpan DockingRefreshDelay = TimeSpan.FromSeconds(4);
+
     private readonly IRavenColonialClient client;
     private readonly ColonizationBuildCatalog buildCatalog;
     private readonly ColonizationSettingsStore settingsStore;
@@ -27,6 +29,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private readonly AsyncCommand saveRavenApiKeyCommand;
     private readonly AsyncCommand publishFleetCarrierCommand;
     private readonly AsyncCommand syncFleetCarrierCargoCommand;
+    private readonly Func<TimeSpan, CancellationToken, Task> delayAsync;
+    private CancellationTokenSource? dockingRefreshCancellation;
     private IReadOnlyList<ColonizationProjectRowViewModel> projects = [];
     private IReadOnlyList<ColonizationResourceRowViewModel> constructionResources =
         [];
@@ -74,13 +78,15 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         IRavenColonialClient? client = null,
         ColonizationBuildCatalog? buildCatalog = null,
         CommanderProfileStore? commanderProfileStore = null,
-        LegacyColonizationProfileStore? legacyProfileStore = null)
+        LegacyColonizationProfileStore? legacyProfileStore = null,
+        Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
     {
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
         this.client = client ?? new RavenColonialClient();
         this.commanderProfileStore = commanderProfileStore;
         this.legacyProfileStore = legacyProfileStore;
+        this.delayAsync = delayAsync ?? Task.Delay;
         this.buildCatalog = buildCatalog
             ?? ColonizationBuildCatalog.LoadEmbedded();
         overlayPreferences = settingsStore.LoadOverlayPreferences();
@@ -368,6 +374,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 }
                 else
                 {
+                    CancelDockingRefresh();
                     ClearProjects();
                     StatusMessage = "Raven Colonial access is off. No project data will be fetched or published.";
                 }
@@ -547,6 +554,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             return;
         }
 
+        CancelDockingRefresh();
         CommanderName = normalized;
         ClearProjects();
         UpdateProjectEditorContext();
@@ -614,6 +622,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                         await SynchronizeDepotAsync(journalEvent),
                     "ColonisationBeaconDeployed" =>
                         await SynchronizeBeaconDeploymentAsync(),
+                    "DockingGranted" => ScheduleDockingRefresh(journalEvent),
                     "MarketBuy" or "MarketSell" or "CargoTransfer" =>
                         await SynchronizeFleetCarrierCargoAdjustmentAsync(
                             journalEvent),
@@ -640,6 +649,49 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         {
             StatusMessage = string.Join(Environment.NewLine, messages);
         }
+    }
+
+    private string? ScheduleDockingRefresh(JournalEventEnvelope journalEvent)
+    {
+        if (Projects.Count == 0
+            && !ColonizationDockingSnapshot.IsConstructionSiteName(GetJournalString(
+                journalEvent.Payload,
+                "StationName")))
+        {
+            return null;
+        }
+
+        CancelDockingRefresh();
+        dockingRefreshCancellation = new CancellationTokenSource();
+        _ = RefreshAfterDockingAsync(dockingRefreshCancellation.Token);
+        return null;
+    }
+
+    private async Task RefreshAfterDockingAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await delayAsync(DockingRefreshDelay, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await RefreshAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // A newer docking event, commander change, disable, or shutdown superseded it.
+        }
+    }
+
+    private void CancelDockingRefresh()
+    {
+        var cancellation = dockingRefreshCancellation;
+        dockingRefreshCancellation = null;
+        if (cancellation is null)
+        {
+            return;
+        }
+
+        cancellation.Cancel();
+        cancellation.Dispose();
     }
 
     private async Task<string?> SynchronizeBeaconDeploymentAsync()
@@ -1055,6 +1107,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         StatusMessage = "Raven Colonial could not be opened: " + message;
     }
 
+    public void Dispose()
+    {
+        CancelDockingRefresh();
+    }
+
     public async Task SaveRavenApiKeyAsync()
     {
         if (!CanSaveRavenApiKey()
@@ -1321,12 +1378,19 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         }
     }
 
-    public async Task RefreshAsync()
+    public Task RefreshAsync()
+    {
+        return RefreshAsync(CancellationToken.None);
+    }
+
+    private async Task RefreshAsync(CancellationToken cancellationToken)
     {
         if (!IsEnabled || IsBusy || CommanderName is null)
         {
             return;
         }
+
+        var commander = CommanderName;
 
         if (Projects.Count == 0)
         {
@@ -1337,7 +1401,18 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         StatusMessage = "Fetching active projects from Raven Colonial...";
         try
         {
-            var result = await client.GetCommanderProjectsAsync(CommanderName);
+            var result = await client.GetCommanderProjectsAsync(
+                commander,
+                cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!string.Equals(
+                    CommanderName,
+                    commander,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
             hiddenProjectIds = result.HiddenProjectIds.ToHashSet(
                 StringComparer.OrdinalIgnoreCase);
             primaryProjectId = result.PrimaryProjectId;
@@ -1356,6 +1431,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 1 => "Loaded 1 active Raven Colonial project.",
                 _ => $"Loaded {Projects.Count:N0} active Raven Colonial projects.",
             };
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception exception) when (
             exception is HttpRequestException

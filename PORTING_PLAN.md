@@ -545,7 +545,11 @@ UI tests where practical, and live Windows/Linux evidence.
   `ColonisationBeaconDeployed` event registers the active commander as the
   system architect through the original Raven payload. Beacon replay is
   suppressed during bootstrap and a missing commander key or system context
-  fails closed without a request. Each operation is isolated so a
+  fails closed without a request. Live docking permission also schedules the
+  original four-second commander-workspace refresh when projects are active or
+  the destination is a construction site; the delay never blocks journal
+  polling and is cancelled on commander changes, disablement, or shutdown. Each
+  operation is isolated so a
   Raven failure cannot roll back local journal state, and the project list now
   supports the original set/clear-primary operation explicitly. Fleet Carrier
   onboarding is restored as an explicit commander-key-gated action for the
