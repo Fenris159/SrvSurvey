@@ -187,6 +187,12 @@ Diagnostics/logs. The same resolved biology catalogs now feed the main survey,
 predictions, status, Codex, and overlay paths so imported data cannot split the
 application into inconsistent reference views.
 
+The imported root `codexNotFound.json` cache is now validated and consumed as
+well. Its region and entry identifiers remain read-only during migration,
+malformed or oversized files fail closed without changing their bytes, and
+biology/prediction surfaces keep global regional candidates distinct from both
+commander-first and commander regional-first discoveries.
+
 The port also preserves the legacy multi-client cargo safety rule. Because
 Elite's shared `Cargo.json` cannot be attributed to a commander while multiple
 game windows are running, cached cargo is cleared and new file snapshots are

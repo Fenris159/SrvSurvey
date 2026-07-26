@@ -280,6 +280,14 @@
                                   </Border>
                                   <Border Margin="0,2,5,0"
                                           Classes="badge"
+                                          IsVisible="{Binding IsGlobalRegionalFirst}">
+                                    <TextBlock Foreground="{DynamicResource RavenTextBrush}"
+                                               FontSize="8"
+                                               FontWeight="Bold"
+                                               Text="GLOBAL REGIONAL FIRST" />
+                                  </Border>
+                                  <Border Margin="0,2,5,0"
+                                          Classes="badge"
                                           IsVisible="{Binding IsRegionalFirst}">
                                     <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                                                FontSize="8"

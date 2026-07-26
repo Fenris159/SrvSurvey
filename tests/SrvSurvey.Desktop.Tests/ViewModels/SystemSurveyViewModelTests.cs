@@ -556,8 +556,9 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         var organism = Assert.Single(biology.Organisms);
         Assert.Equal("Aleoida Arcus - Green", organism.DisplayName);
         Assert.Equal("7.25 M CR", organism.RewardText);
-        Assert.True(organism.IsRegionalFirst);
-        Assert.False(organism.IsHighlightedFirst);
+        Assert.True(organism.IsGlobalRegionalFirst);
+        Assert.False(organism.IsRegionalFirst);
+        Assert.True(organism.IsHighlightedFirst);
         Assert.True(organism.IsCurrentSample);
         Assert.False(organism.ShouldDim);
         Assert.Equal(
@@ -589,6 +590,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.Fss });
 
         var unavailable = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        Assert.False(unavailable.IsGlobalRegionalFirst);
         Assert.False(unavailable.IsCommanderFirst);
         Assert.False(unavailable.IsRegionalFirst);
 
@@ -615,6 +617,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             emptyRegional);
 
         var regional = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        Assert.False(regional.IsGlobalRegionalFirst);
         Assert.False(regional.IsCommanderFirst);
         Assert.True(regional.IsRegionalFirst);
         Assert.False(regional.IsHighlightedFirst);
@@ -638,6 +641,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             emptyRegional);
 
         var commander = Assert.Single(viewModel.BiologySurvey!.Organisms);
+        Assert.False(commander.IsGlobalRegionalFirst);
         Assert.True(commander.IsCommanderFirst);
         Assert.False(commander.IsRegionalFirst);
         Assert.True(commander.IsHighlightedFirst);
@@ -737,7 +741,18 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     [Fact]
     public void BiologySurveyShowsExactCriteriaPredictionsAndHonorsDisableSetting()
     {
-        var viewModel = CreateViewModel();
+        var reference = ExobiologyReferenceCatalog.LoadEmbedded()
+            .FindByDisplayName("Aleoida Coronamus - Lime");
+        Assert.NotNull(reference);
+        var globalRegionalCandidates = RegionalCodexCandidateCatalog.FromEntries(
+        [
+            new(
+                18,
+                "Inner Orion Spur",
+                reference.EntryId,
+                reference.DisplayName ?? "Aleoida Coronamus - Lime"),
+        ]);
+        var viewModel = CreateViewModel(globalRegionalCandidates);
         viewModel.ApplyUpdate(
             [
                 Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0]}"""),
@@ -793,9 +808,12 @@ public sealed class SystemSurveyViewModelTests : IDisposable
                 "Cmdr Test",
                 18,
                 "Inner Orion Spur",
-                new Dictionary<long, CommanderCodexFirst>()));
+                new Dictionary<long, CommanderCodexFirst>()),
+            18);
         prediction = Assert.Single(viewModel.BiologySurvey!.Organisms);
-        Assert.True(prediction.IsCommanderFirst);
+        Assert.True(prediction.IsGlobalRegionalFirst);
+        Assert.False(prediction.IsCommanderFirst);
+        Assert.False(prediction.IsRegionalFirst);
         Assert.True(prediction.IsHighlightedFirst);
 
         viewModel.DisableBioPredictions = true;
@@ -904,10 +922,12 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         }
     }
 
-    private SystemSurveyViewModel CreateViewModel()
+    private SystemSurveyViewModel CreateViewModel(
+        RegionalCodexCandidateCatalog? regionalCodexCandidates = null)
     {
         return new SystemSurveyViewModel(new SystemSurveySettingsStore(
-            Path.Combine(temporaryDirectory, "ui-settings.json")));
+            Path.Combine(temporaryDirectory, "ui-settings.json")),
+            regionalCodexCandidates: regionalCodexCandidates);
     }
 
     private static JournalEventEnvelope Parse(string json)

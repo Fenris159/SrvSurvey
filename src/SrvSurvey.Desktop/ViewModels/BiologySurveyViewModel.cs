@@ -384,12 +384,16 @@ public sealed record BiologySurveyViewModel(
             && !organism.IsAnalyzed
             && string.Equals(scan.Body, body.Name, StringComparison.OrdinalIgnoreCase)
             && string.Equals(scan.Genus, organism.Genus, StringComparison.Ordinal);
-        var commanderFirst = organism.EntryId is { } entryId
+        var globalRegionalFirst = organism.IsRegionalFirst
+            || organism.EntryId is { } globalRegionalEntryId
+                && discoveryContext.IsGlobalRegionalNew(globalRegionalEntryId);
+        var commanderFirst = !globalRegionalFirst
+            && organism.EntryId is { } entryId
             && discoveryContext.IsPersonalFirst(
                 entryId,
                 body.BodyId);
-        var regionalFirst = organism.IsRegionalFirst
-            || organism.EntryId is { } regionalEntryId
+        var regionalFirst = !globalRegionalFirst
+            && organism.EntryId is { } regionalEntryId
                 && !organism.IsAnalyzed
                 && !commanderFirst
                 && discoveryContext.IsRegionalNew(regionalEntryId);
@@ -404,7 +408,10 @@ public sealed record BiologySurveyViewModel(
             organism.IsAnalyzed,
             commanderFirst,
             regionalFirst,
-            commanderFirst || highlightRegionalFirsts && regionalFirst,
+            globalRegionalFirst,
+            globalRegionalFirst
+                || commanderFirst
+                || highlightRegionalFirsts && regionalFirst,
             activeSample,
             false,
             organism.Variant is null,
@@ -434,9 +441,13 @@ public sealed record BiologySurveyViewModel(
                     scan.Genus,
                     StringComparison.Ordinal));
         var reward = prediction.Reference?.Reward ?? 0;
-        var commanderFirst = prediction.Reference is { } reference
+        var globalRegionalFirst = prediction.Reference is { } globalReference
+            && discoveryContext.IsGlobalRegionalNew(globalReference.EntryId);
+        var commanderFirst = !globalRegionalFirst
+            && prediction.Reference is { } reference
             && discoveryContext.IsCommanderNew(reference.EntryId);
-        var regionalFirst = prediction.Reference is { } regionalReference
+        var regionalFirst = !globalRegionalFirst
+            && prediction.Reference is { } regionalReference
             && !commanderFirst
             && discoveryContext.IsRegionalNew(regionalReference.EntryId);
 
@@ -450,7 +461,10 @@ public sealed record BiologySurveyViewModel(
             false,
             commanderFirst,
             regionalFirst,
-            commanderFirst || highlightRegionalFirsts && regionalFirst,
+            globalRegionalFirst,
+            globalRegionalFirst
+                || commanderFirst
+                || highlightRegionalFirsts && regionalFirst,
             activeSample,
             true,
             false,
@@ -752,6 +766,7 @@ public sealed record BiologyOrganismRowViewModel(
     bool IsAnalyzed,
     bool IsCommanderFirst,
     bool IsRegionalFirst,
+    bool IsGlobalRegionalFirst,
     bool IsHighlightedFirst,
     bool IsCurrentSample,
     bool IsPrediction,
@@ -796,6 +811,7 @@ public sealed record BiologyOrganismRowViewModel(
             false,
             false,
             false,
+            false,
             true,
             false,
             thresholds.BucketOneMillions,
@@ -807,12 +823,16 @@ public sealed record BiologyOrganismRowViewModel(
 public sealed record BiologyDiscoveryContext(
     long SystemAddress,
     CommanderCodexData? Global,
-    CommanderCodexData? Regional)
+    CommanderCodexData? Regional,
+    int? RegionId,
+    RegionalCodexCandidateCatalog GlobalRegionalCandidates)
 {
     public static BiologyDiscoveryContext Unavailable { get; } = new(
         0,
         null,
-        null);
+        null,
+        null,
+        RegionalCodexCandidateCatalog.Empty);
 
     public bool IsCommanderNew(long entryId) => Global is not null
         && !Global.IsDiscovered(entryId);
@@ -822,4 +842,7 @@ public sealed record BiologyDiscoveryContext(
 
     public bool IsRegionalNew(long entryId) => Regional is not null
         && !Regional.IsDiscovered(entryId);
+
+    public bool IsGlobalRegionalNew(long entryId) =>
+        GlobalRegionalCandidates.IsCandidate(RegionId, entryId);
 }

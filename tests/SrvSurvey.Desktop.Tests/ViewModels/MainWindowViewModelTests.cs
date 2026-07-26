@@ -74,6 +74,46 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void ImportedRegionalCodexCandidatesAreActivatedWithoutRewritingThem()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-regional-codex-vm-{Guid.NewGuid():N}");
+        try
+        {
+            var data = Path.Combine(root, "data");
+            Directory.CreateDirectory(data);
+            var catalogPath = Path.Combine(
+                data,
+                RegionalCodexCandidateCatalog.LegacyFileName);
+            const string json =
+                "{\"Inner Orion Spur\":[\"2310101_Aleoida Arcus - Green\"]}";
+            File.WriteAllText(catalogPath, json);
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                data,
+                Path.Combine(root, "cache"),
+                []);
+
+            using var viewModel = new MainWindowViewModel(
+                Path.Combine(root, "journals"),
+                appDataPaths: paths);
+
+            Assert.Contains(
+                "Imported regional Codex candidates: 1.",
+                viewModel.ReferenceDataStatus);
+            Assert.Equal(json, File.ReadAllText(catalogPath));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task LiveShowCommandOpensTheLatestBiologyCodexEntry()
     {
         var root = Path.Combine(

@@ -172,7 +172,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
         var legacyReferences = LegacyReferenceCatalogLoader.Load(
             AppDataPaths.DataDirectory);
+        var regionalCodexCandidates = RegionalCodexCandidateCatalog.Load(
+            AppDataPaths.DataDirectory);
         foreach (var warning in legacyReferences.Warnings)
+        {
+            applicationLogService?.Append(warning);
+        }
+        foreach (var warning in regionalCodexCandidates.Warnings)
         {
             applicationLogService?.Append(warning);
         }
@@ -185,6 +191,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             ReferenceDataStatus += $" {legacyReferences.Warnings.Count:N0} incompatible "
                 + "or incomplete legacy catalog(s) were ignored safely; see logs.";
+        }
+        if (regionalCodexCandidates.HasData)
+        {
+            ReferenceDataStatus += $" Imported regional Codex candidates: "
+                + $"{regionalCodexCandidates.Count:N0}.";
+        }
+        else if (regionalCodexCandidates.Warnings.Count > 0)
+        {
+            ReferenceDataStatus += " The imported regional Codex candidate "
+                + "catalog was incompatible and ignored safely; see logs.";
         }
 
         Action<string>? referenceUpdateLog = applicationLogService is null
@@ -393,7 +409,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 ?? new SystemSurveySettingsStore(AppDataPaths.UiSettingsPath),
             biologyCatalog: sharedExobiologyCatalog,
             biologyRewardThresholds: BiologyRewards.Thresholds,
-            biologyCriteria: legacyReferences.BiologyCriteria);
+            biologyCriteria: legacyReferences.BiologyCriteria,
+            regionalCodexCandidates: regionalCodexCandidates);
         BiologyRewards.PropertyChanged += OnBiologyRewardsChanged;
         Combat = new CombatViewModel(
             combatSettingsStore
@@ -1841,7 +1858,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         surveyCodexSystemAddress = systemAddress;
         SystemSurvey.UpdateCommanderCodexContext(
             global.Data,
-            regional?.Data);
+            regional?.Data,
+            regionId);
 
         var warnings = global.Warnings
             .Concat(regional?.Warnings ?? [])

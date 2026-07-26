@@ -21,6 +21,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private readonly ExobiologyReferenceCatalog biologyCatalog;
     private readonly BiologyCriteriaCatalog biologyCriteria;
     private readonly BiologyPredictionEvaluator biologyPredictionEvaluator;
+    private readonly RegionalCodexCandidateCatalog regionalCodexCandidates;
     private readonly Func<DateTimeOffset> utcNow;
     private EliteStatus? status;
     private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
@@ -112,7 +113,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         ExobiologyReferenceCatalog? biologyCatalog = null,
         Func<DateTimeOffset>? utcNow = null,
         BiologyRewardThresholds? biologyRewardThresholds = null,
-        BiologyCriteriaCatalog? biologyCriteria = null)
+        BiologyCriteriaCatalog? biologyCriteria = null,
+        RegionalCodexCandidateCatalog? regionalCodexCandidates = null)
     {
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
@@ -123,6 +125,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             ?? BiologyCriteriaCatalog.LoadEmbedded();
         biologyPredictionEvaluator = new BiologyPredictionEvaluator(
             this.biologyCriteria);
+        this.regionalCodexCandidates = regionalCodexCandidates
+            ?? RegionalCodexCandidateCatalog.Empty;
         this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         this.biologyRewardThresholds = biologyRewardThresholds
             ?? BiologyRewardThresholds.Default;
@@ -1364,10 +1368,16 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public void UpdateCommanderCodexContext(
         CommanderCodexData? global,
-        CommanderCodexData? regional)
+        CommanderCodexData? regional,
+        int? regionId = null)
     {
         biologyDiscoveryContext = snapshot.SystemAddress is { } systemAddress
-            ? new BiologyDiscoveryContext(systemAddress, global, regional)
+            ? new BiologyDiscoveryContext(
+                systemAddress,
+                global,
+                regional,
+                regionId,
+                regionalCodexCandidates)
             : BiologyDiscoveryContext.Unavailable;
         OnPropertyChanged(nameof(CurrentBiologyDiscoveryContext));
         RefreshDisplay();
