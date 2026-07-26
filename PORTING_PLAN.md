@@ -558,7 +558,11 @@ UI tests where practical, and live Windows/Linux evidence.
   contract is parsed with bounded RFC-style quoting, numeric region IDs remain
   authoritative over display-name drift, unresolved unpublished variants are
   skipped as before, and the generated `codexNotFound.json` joins the same
-  verified backup/stage/activation/rollback transaction.
+  verified backup/stage/activation/rollback transaction. The versionless
+  `Boxel.Names.txt` source is likewise provisioned for fresh or incompatible
+  installs only after its complete legacy envelope and entries validate. Any
+  replaced copy remains byte-identical in the checksum-verified backup, and a
+  malformed download cannot touch the active reference tree.
 - [ ] Localization review for every migrated surface.
 
 Features may be explicitly deferred, but the release notes and UI must identify

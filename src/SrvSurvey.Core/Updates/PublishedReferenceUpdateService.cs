@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Updates;
 
@@ -26,6 +27,7 @@ public sealed record PublishedReferenceUpdateResult(
 public sealed record PublishedReferenceUris(
     Uri CodexReference,
     Uri RegionalCodexCandidatesCsv,
+    Uri KnownSystemAddresses,
     Uri BiologyCriteriaArchive,
     Uri GuardianTemplates,
     Uri GuardianRuins,
@@ -38,6 +40,7 @@ public sealed record PublishedReferenceUris(
     public static PublishedReferenceUris Default { get; } = new(
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/refs/heads/main/docs/codexRef.json"),
         new Uri("https://docs.google.com/spreadsheets/d/1TpPZUFd61KUQWy1sV8VhScZiVbRWJ435wTN8xjN0Qv0/gviz/tq?tqx=out:csv&sheet=Individual+Items"),
+        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/game/Boxel.Names.txt"),
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/data/bio-criteria.zip"),
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/guardianSiteTemplates.json"),
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/allRuins.json"),
@@ -128,6 +131,9 @@ public sealed class PublishedReferenceUpdateService
                 root,
                 regionalCodexCandidates,
                 timeProvider.GetUtcNow());
+        var knownSystemAddresses = KnownSystemAddressCatalog.Load(root);
+        var updateKnownSystemAddresses = !knownSystemAddresses.HasData
+            || knownSystemAddresses.Warnings.Count > 0;
         var updateBiology = NeedsUpdate(
             previous.BiologyCriteria,
             remote.BiologyCriteriaVersion,
@@ -162,6 +168,7 @@ public sealed class PublishedReferenceUpdateService
         var updated = new List<string>();
         if (!updateCodex
             && !updateRegionalCodexCandidates
+            && !updateKnownSystemAddresses
             && !updateBiology
             && !updateGuardianTemplates
             && !updateGuardian
@@ -228,6 +235,18 @@ public sealed class PublishedReferenceUpdateService
 
             var stagePublished = Path.Combine(stageRoot, "pub");
             Directory.CreateDirectory(stagePublished);
+            if (updateKnownSystemAddresses)
+            {
+                await WriteDownloadAsync(
+                        uris.KnownSystemAddresses,
+                        Path.Combine(
+                            stagePublished,
+                            KnownSystemAddressCatalog.LegacyFileName),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                updated.Add("known system addresses");
+            }
+
             if (updateBiology)
             {
                 var bytes = await DownloadAsync(
@@ -582,6 +601,19 @@ public sealed class PublishedReferenceUpdateService
                     throw new InvalidDataException(
                         nicknames.Warnings.FirstOrDefault()
                             ?? "The staged Raven nickname catalog is empty.");
+                }
+
+                continue;
+            }
+
+            if (catalogName == "known system addresses")
+            {
+                var knownSystems = KnownSystemAddressCatalog.Load(candidateRoot);
+                if (!knownSystems.HasData || knownSystems.Warnings.Count > 0)
+                {
+                    throw new InvalidDataException(
+                        knownSystems.Warnings.FirstOrDefault()
+                            ?? "The staged known-system address catalog is empty.");
                 }
 
                 continue;

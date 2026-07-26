@@ -2,6 +2,7 @@ using System.IO.Compression;
 using System.Net;
 using System.Text;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Updates;
 
 namespace SrvSurvey.Core.Tests.Updates;
@@ -15,6 +16,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     private readonly PublishedReferenceUris uris = new(
         new Uri("https://example.test/codex.json"),
         new Uri("https://example.test/regional-codex.csv"),
+        new Uri("https://example.test/known-systems.txt"),
         new Uri("https://example.test/bio.zip"),
         new Uri("https://example.test/guardian-templates.json"),
         new Uri("https://example.test/ruins.json"),
@@ -32,7 +34,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
 
         var result = await service.RefreshAsync(root);
 
-        Assert.Equal(8, result.UpdatedCatalogs.Count);
+        Assert.Equal(9, result.UpdatedCatalogs.Count);
         Assert.True(result.RestartRequired);
         Assert.NotNull(result.BackupDirectory);
         Assert.Equal(
@@ -49,6 +51,12 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
             File.ReadAllText(Path.Combine(
                 result.BackupDirectory!,
                 RegionalCodexCandidateCatalog.LegacyFileName)));
+        Assert.Equal(
+            LegacyKnownSystemsCatalog,
+            File.ReadAllText(Path.Combine(
+                result.BackupDirectory!,
+                "pub",
+                KnownSystemAddressCatalog.LegacyFileName)));
         var active = LegacyReferenceCatalogLoader.Load(root);
         Assert.Equal(7, active.LocalCatalogCount);
         Assert.Empty(active.Warnings);
@@ -72,6 +80,9 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
             "Aleoida Coronamus - Lime");
         Assert.NotNull(resolved);
         Assert.True(regional.IsCandidate(18, resolved.EntryId));
+        var knownSystems = KnownSystemAddressCatalog.Load(root);
+        Assert.True(knownSystems.TryResolve("Sol", out var sol));
+        Assert.Equal(10477373803, sol);
         Assert.Empty(FindOperationDirectories(".reference-update-"));
         Assert.Empty(FindOperationDirectories(".reference-rollback-"));
     }
@@ -121,6 +132,33 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
             () => service.RefreshAsync(root));
 
         Assert.Equal(originalRegional, File.ReadAllBytes(regionalPath));
+        Assert.Equal(
+            "keep me",
+            File.ReadAllText(Path.Combine(root, "pub", "keep.txt")));
+        Assert.Empty(FindOperationDirectories(".reference-update-"));
+        Assert.Empty(FindOperationDirectories(".reference-rollback-"));
+    }
+
+    [Fact]
+    public async Task RefreshAsyncRejectsMalformedKnownSystemsBeforeTouchingLiveFiles()
+    {
+        WriteExistingReferences();
+        var knownSystemsPath = Path.Combine(
+            root,
+            "pub",
+            KnownSystemAddressCatalog.LegacyFileName);
+        var originalKnownSystems = File.ReadAllBytes(knownSystemsPath);
+        var payloads = CreatePayloads();
+        payloads[uris.KnownSystemAddresses] = Encoding.UTF8.GetBytes(
+            "known_systems = {\n  \"sol\": 10477373803,\n}\nknown_missing = [");
+        var service = CreateService(payloads);
+
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => service.RefreshAsync(root));
+
+        Assert.Equal(
+            originalKnownSystems,
+            File.ReadAllBytes(knownSystemsPath));
         Assert.Equal(
             "keep me",
             File.ReadAllText(Path.Combine(root, "pub", "keep.txt")));
@@ -245,6 +283,29 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         Assert.Equal(2, RegionalCodexCandidateCatalog.Load(root).Count);
     }
 
+    [Fact]
+    public async Task RefreshAsyncRestoresOnlyAMissingKnownSystemCatalog()
+    {
+        WriteExistingReferences();
+        await CreateService(CreatePayloads()).RefreshAsync(root);
+        File.Delete(Path.Combine(
+            root,
+            "pub",
+            KnownSystemAddressCatalog.LegacyFileName));
+        var payloads = new Dictionary<Uri, byte[]>
+        {
+            [uris.KnownSystemAddresses] = CreateKnownSystemsCatalog(),
+        };
+
+        var result = await CreateService(payloads).RefreshAsync(root);
+
+        Assert.Equal(["known system addresses"], result.UpdatedCatalogs);
+        Assert.True(result.RestartRequired);
+        Assert.True(KnownSystemAddressCatalog.Load(root).TryResolve(
+            "Sol",
+            out _));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(root))
@@ -270,6 +331,12 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     {
         Directory.CreateDirectory(Path.Combine(root, "pub"));
         File.WriteAllText(Path.Combine(root, "pub", "keep.txt"), "keep me");
+        File.WriteAllText(
+            Path.Combine(
+                root,
+                "pub",
+                KnownSystemAddressCatalog.LegacyFileName),
+            LegacyKnownSystemsCatalog);
         CopyResource(
             "SrvSurvey.Core.Resources.codexRef.json",
             Path.Combine(root, "codexRef.json"));
@@ -287,6 +354,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
             [uris.CodexReference] = ReadResource(
                 "SrvSurvey.Core.Resources.codexRef.json"),
             [uris.RegionalCodexCandidatesCsv] = CreateRegionalCodexCsv(),
+            [uris.KnownSystemAddresses] = CreateKnownSystemsCatalog(),
             [uris.BiologyCriteriaArchive] = CreateBiologyArchive(),
             [uris.GuardianTemplates] = ReadResource(
                 "SrvSurvey.Core.Resources.guardianSiteTemplates.json"),
@@ -342,6 +410,13 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
             "\"18\",\"Inner Orion Spur\",\"Aleoida Coronamus - Lime\",\"0\",\"0\",\"\",\"$Codex_Ent_Aleoids_02_C_Name;\",\"C\"",
             "\"18\",\"Inner Orion Spur\",\"Already found\",\"1\",\"0\",\"2310102\",\"ignored\",\"ignored\"");
         return Encoding.UTF8.GetBytes(csv);
+    }
+
+    private static byte[] CreateKnownSystemsCatalog()
+    {
+        return Encoding.UTF8.GetBytes(
+            "known_systems = {\n  \"sol\": 10477373803,\n}\n"
+                + "known_missing = [\n]\n");
     }
 
     private static byte[] CreateArchive(params (string Name, byte[] Bytes)[] entries)
@@ -431,4 +506,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
 
     private const string LegacyRegionalCatalog =
         "{\"Inner Orion Spur\":[\"2310101_old\"]}";
+
+    private const string LegacyKnownSystemsCatalog =
+        "known_systems = {\n  \"old\": 123,\n";
 }
