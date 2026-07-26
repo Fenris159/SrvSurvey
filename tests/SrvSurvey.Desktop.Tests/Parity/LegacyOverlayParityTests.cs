@@ -194,6 +194,9 @@ public sealed class LegacyOverlayParityTests
         Assert.Contains("ItemsSource=\"{Binding Rows}\"", preview);
         Assert.Contains("Text=\"{Binding CompactText}\"", preview);
         Assert.Contains("Text=\"{Binding Footer}\"", preview);
+        Assert.Contains("SizeToContent=\"Height\"", preview);
+        Assert.Contains("ItemsSource=\"{Binding RewardBands}\"", preview);
+        Assert.Contains("BiologyRewardBandControl", preview);
         Assert.Contains("SIMULATED GAME STATE", preview);
         Assert.Contains("BorderThickness=\"2\"", preview);
         Assert.Contains("simulated game data", interaction);
@@ -202,8 +205,10 @@ public sealed class LegacyOverlayParityTests
         Assert.Contains(": (PixelRect?)null", interaction);
         Assert.Contains("ToggleLiveOverlayInteraction", interaction);
         Assert.Contains("<Expander", settings);
+        Assert.Contains("Classes=\"theme-selector\"", settings);
         Assert.Contains("Text=\"Theme selection\"", settings);
-        Assert.Contains("BorderThickness=\"0,0,0,1\"", settings);
+        Assert.Contains("BorderThickness=\"1\"", settings);
+        Assert.Contains("Command=\"{Binding OverlayTheme.PreviewCommand}\"", settings);
     }
 
     private static OverlayMapping Map(
