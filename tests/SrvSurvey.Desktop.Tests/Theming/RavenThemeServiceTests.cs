@@ -66,6 +66,30 @@ public sealed class RavenThemeServiceTests : IDisposable
                 application.Resources["RavenAccentBrush"]).Color);
     }
 
+    [Fact]
+    public void SelectingApplicationThemeDoesNotReapplyOrChangeOverlayTheme()
+    {
+        var application = new Application();
+        var store = new ThemePreferenceStore(
+            Path.Combine(temporaryDirectory, "ui.json"));
+        var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
+        colors["orange"] = Color.FromArgb(255, 11, 22, 33);
+        var overlay = new LegacyOverlayTheme(colors, true, null);
+        var service = new RavenThemeService(application, store, overlay);
+        var overlayChanges = 0;
+        service.OverlayThemeChanged += (_, _) => overlayChanges++;
+        service.ApplyCurrent();
+
+        service.Select("green-light");
+
+        Assert.Same(overlay, service.CurrentOverlayTheme);
+        Assert.Equal(0, overlayChanges);
+        Assert.Equal(
+            Color.FromArgb(255, 11, 22, 33),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayAccentBrush"]).Color);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

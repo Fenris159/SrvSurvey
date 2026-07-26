@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Avalonia.Media;
@@ -91,6 +93,46 @@ public sealed class LegacyOverlayThemeStore
                 Error = $"Could not read legacy overlay theme '{path}': "
                     + exception.Message,
             };
+        }
+    }
+
+    public LegacyOverlayThemeSaveResult Save(LegacyOverlayTheme theme)
+    {
+        ArgumentNullException.ThrowIfNull(theme);
+        foreach (var required in DefaultColors.Keys)
+        {
+            if (!theme.Colors.ContainsKey(required))
+            {
+                throw new InvalidDataException(
+                    $"The overlay theme does not define required colour '{required}'.");
+            }
+        }
+
+        var directory = Path.GetDirectoryName(path)
+            ?? throw new InvalidOperationException(
+                "The overlay theme path has no parent directory.");
+        Directory.CreateDirectory(directory);
+        var backupPath = File.Exists(path) ? CreateVerifiedBackup(directory) : null;
+        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            WriteTheme(temporaryPath, theme.Colors);
+            var verified = new LegacyOverlayThemeStore(temporaryPath).Load();
+            if (verified.Error is not null || !ColorsEqual(theme.Colors, verified.Colors))
+            {
+                throw new InvalidDataException(
+                    verified.Error ?? "The written overlay theme did not verify.");
+            }
+
+            File.Move(temporaryPath, path, overwrite: true);
+            return new LegacyOverlayThemeSaveResult(path, backupPath);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
         }
     }
 
@@ -213,6 +255,115 @@ public sealed class LegacyOverlayThemeStore
     {
         return byte.Parse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
     }
+
+    internal static string FormatHtmlColor(Color color)
+    {
+        return color.A == byte.MaxValue
+            ? $"#{color.R:X2}{color.G:X2}{color.B:X2}"
+            : $"#{color.R:X2}{color.G:X2}{color.B:X2}{color.A:X2}";
+    }
+
+    internal static bool TryParseHtmlColor(string? text, out Color color)
+    {
+        try
+        {
+            var normalized = text?.Trim() ?? string.Empty;
+            if (!normalized.StartsWith('#'))
+            {
+                color = default;
+                return false;
+            }
+
+            color = ParseHtmlColor("value", normalized);
+            return true;
+        }
+        catch (Exception exception) when (
+            exception is InvalidDataException
+                or FormatException
+                or OverflowException
+                or ArgumentException)
+        {
+            color = default;
+            return false;
+        }
+    }
+
+    private string CreateVerifiedBackup(string directory)
+    {
+        var backupDirectory = Path.Combine(
+            directory,
+            "legacy-backups",
+            "overlay-themes",
+            DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmssfff", CultureInfo.InvariantCulture));
+        Directory.CreateDirectory(backupDirectory);
+        var backupPath = Path.Combine(backupDirectory, Path.GetFileName(path));
+        File.Copy(path, backupPath, overwrite: false);
+        var sourceHash = SHA256.HashData(File.ReadAllBytes(path));
+        var backupHash = SHA256.HashData(File.ReadAllBytes(backupPath));
+        if (!sourceHash.AsSpan().SequenceEqual(backupHash))
+        {
+            throw new IOException("The overlay theme backup failed checksum verification.");
+        }
+
+        return backupPath;
+    }
+
+    private static void WriteTheme(
+        string outputPath,
+        IReadOnlyDictionary<string, Color> colors)
+    {
+        var root = new JsonObject();
+        foreach (var entry in colors.OrderBy(entry => entry.Key, StringComparer.Ordinal))
+        {
+            SetNestedValue(root, entry.Key, FormatHtmlColor(entry.Value));
+        }
+
+        using var stream = new FileStream(
+            outputPath,
+            FileMode.CreateNew,
+            FileAccess.Write,
+            FileShare.None);
+        using var writer = new Utf8JsonWriter(
+            stream,
+            new JsonWriterOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Indented = true,
+            });
+        root.WriteTo(writer);
+    }
+
+    private static void SetNestedValue(JsonObject root, string name, string value)
+    {
+        var parts = name.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0)
+        {
+            throw new InvalidDataException("An overlay colour name cannot be empty.");
+        }
+
+        var current = root;
+        for (var index = 0; index < parts.Length - 1; index++)
+        {
+            if (current[parts[index]] is not JsonObject child)
+            {
+                child = new JsonObject();
+                current[parts[index]] = child;
+            }
+
+            current = child;
+        }
+
+        current[parts[^1]] = value;
+    }
+
+    private static bool ColorsEqual(
+        IReadOnlyDictionary<string, Color> expected,
+        IReadOnlyDictionary<string, Color> actual)
+    {
+        return expected.Count == actual.Count
+            && expected.All(entry => actual.TryGetValue(entry.Key, out var color)
+                && color == entry.Value);
+    }
 }
 
 public sealed record LegacyOverlayTheme(
@@ -228,3 +379,7 @@ public sealed record LegacyOverlayTheme(
                 $"The legacy overlay theme does not define '{name}'.");
     }
 }
+
+public sealed record LegacyOverlayThemeSaveResult(
+    string Path,
+    string? BackupPath);

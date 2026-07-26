@@ -8,7 +8,7 @@ public sealed class RavenThemeService
 {
     private readonly Application application;
     private readonly ThemePreferenceStore preferenceStore;
-    private readonly LegacyOverlayTheme overlayTheme;
+    private LegacyOverlayTheme overlayTheme;
 
     public RavenThemeService(
         Application application,
@@ -24,14 +24,19 @@ public sealed class RavenThemeService
 
     public RavenThemeDefinition Current { get; private set; }
 
+    public LegacyOverlayTheme CurrentOverlayTheme => overlayTheme;
+
     public IReadOnlyList<RavenThemeDefinition> AvailableThemes =>
         RavenThemeCatalog.All;
 
     public event EventHandler? ThemeChanged;
 
+    public event EventHandler? OverlayThemeChanged;
+
     public void ApplyCurrent()
     {
-        Apply(Current);
+        ApplyApplicationTheme(Current);
+        ApplyOverlayTheme(overlayTheme, notify: false);
     }
 
     public void Select(string key)
@@ -43,12 +48,17 @@ public sealed class RavenThemeService
         }
 
         Current = selected;
-        Apply(selected);
+        ApplyApplicationTheme(selected);
         preferenceStore.SaveThemeKey(selected.Key);
         ThemeChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private void Apply(RavenThemeDefinition theme)
+    public void ApplyOverlayTheme(LegacyOverlayTheme theme)
+    {
+        ApplyOverlayTheme(theme, notify: true);
+    }
+
+    private void ApplyApplicationTheme(RavenThemeDefinition theme)
     {
         application.RequestedThemeVariant = theme.IsDark
             ? ThemeVariant.Dark
@@ -68,31 +78,36 @@ public sealed class RavenThemeService
         SetBrush("RavenSuccessBrush", theme.IsDark ? "#6CCB72" : "#107C10");
         SetBrush("RavenWarningBrush", theme.IsDark ? "#F7C948" : "#8A5D00");
         SetBrush("RavenDangerBrush", theme.IsDark ? "#FF7B72" : "#C50F1F");
-        ApplyOverlayTheme();
     }
 
-    private void ApplyOverlayTheme()
+    private void ApplyOverlayTheme(LegacyOverlayTheme theme, bool notify)
     {
-        foreach (var entry in overlayTheme.Colors)
+        ArgumentNullException.ThrowIfNull(theme);
+        overlayTheme = theme;
+        foreach (var entry in theme.Colors)
         {
             application.Resources[$"LegacyTheme.{entry.Key}"] =
                 new SolidColorBrush(entry.Value);
         }
 
-        SetBrush("RavenOverlayWindowBrush", overlayTheme.GetColor("black"));
-        SetBrush("RavenOverlaySurfaceBrush", overlayTheme.GetColor("black"));
-        SetBrush("RavenOverlayRaisedSurfaceBrush", overlayTheme.GetColor("black"));
-        SetBrush("RavenOverlayAccentBrush", overlayTheme.GetColor("orange"));
+        SetBrush("RavenOverlayWindowBrush", theme.GetColor("black"));
+        SetBrush("RavenOverlaySurfaceBrush", theme.GetColor("black"));
+        SetBrush("RavenOverlayRaisedSurfaceBrush", theme.GetColor("black"));
+        SetBrush("RavenOverlayAccentBrush", theme.GetColor("orange"));
         SetBrush(
             "RavenOverlayAccentMutedBrush",
-            overlayTheme.GetColor("orangeDark"));
-        SetBrush("RavenOverlayTextBrush", overlayTheme.GetColor("white"));
-        SetBrush("RavenOverlayMutedTextBrush", overlayTheme.GetColor("grey"));
-        SetBrush("RavenOverlayBorderBrush", overlayTheme.GetColor("cyanDark"));
-        SetBrush("RavenOverlayInformationBrush", overlayTheme.GetColor("cyan"));
-        SetBrush("RavenOverlaySuccessBrush", overlayTheme.GetColor("green"));
-        SetBrush("RavenOverlayWarningBrush", overlayTheme.GetColor("yellow"));
-        SetBrush("RavenOverlayDangerBrush", overlayTheme.GetColor("red"));
+            theme.GetColor("orangeDark"));
+        SetBrush("RavenOverlayTextBrush", theme.GetColor("white"));
+        SetBrush("RavenOverlayMutedTextBrush", theme.GetColor("grey"));
+        SetBrush("RavenOverlayBorderBrush", theme.GetColor("cyanDark"));
+        SetBrush("RavenOverlayInformationBrush", theme.GetColor("cyan"));
+        SetBrush("RavenOverlaySuccessBrush", theme.GetColor("green"));
+        SetBrush("RavenOverlayWarningBrush", theme.GetColor("yellow"));
+        SetBrush("RavenOverlayDangerBrush", theme.GetColor("red"));
+        if (notify)
+        {
+            OverlayThemeChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private void SetBrush(string key, string value)

@@ -77,6 +77,30 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         Assert.Contains("was not found", theme.Error);
     }
 
+    [Fact]
+    public void SaveRoundTripsAllColorsAndCreatesVerifiedBackup()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "theme.json");
+        File.WriteAllText(path, "{\"orange\":[1,2,3]}");
+        var store = new LegacyOverlayThemeStore(path);
+        var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
+        colors["orange"] = Color.FromArgb(128, 12, 34, 56);
+        colors["custom.future"] = Color.FromArgb(255, 90, 80, 70);
+
+        var result = store.Save(new LegacyOverlayTheme(colors, true, null));
+        var loaded = store.Load();
+
+        Assert.Null(loaded.Error);
+        Assert.Equal(colors.Count, loaded.Colors.Count);
+        Assert.All(colors, entry => Assert.Equal(
+            entry.Value,
+            loaded.Colors[entry.Key]));
+        Assert.NotNull(result.BackupPath);
+        Assert.True(File.Exists(result.BackupPath));
+        Assert.Equal("{\"orange\":[1,2,3]}", File.ReadAllText(result.BackupPath!));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

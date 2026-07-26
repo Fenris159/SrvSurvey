@@ -138,6 +138,13 @@ public sealed partial class App : Application
                 new ThemePreferenceStore(appDataPaths.UiSettingsPath),
                 overlayTheme);
             themeService.ApplyCurrent();
+            themeService.OverlayThemeChanged += (_, _) =>
+            {
+                foreach (var registered in OverlayWindowRegistry.Shared.Snapshot())
+                {
+                    OverlayThemeResources.Apply(registered.Window);
+                }
+            };
             var capabilities = OverlayPlatformCapabilities.DetectCurrent();
             var inputSettings = new GlobalInputSettingsViewModel(
                 new GlobalInputSettingsStore(appDataPaths.UiSettingsPath),

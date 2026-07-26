@@ -179,6 +179,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         ReleaseUpdateViewModel? releaseUpdates = null,
         ReferenceDataUpdateViewModel? referenceDataUpdates = null,
         LocalizationViewModel? localization = null,
+        OverlayThemeSettingsViewModel? overlayThemeSettings = null,
         ICanonnHumanSiteClient? canonnHumanSiteClient = null,
         ICanonnHumanSitePublisher? canonnHumanSitePublisher = null,
         IEddnPublisher? eddnPublisher = null,
@@ -322,6 +323,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         OverlayBehavior = new OverlayBehaviorViewModel(
             overlayBehaviorSettingsStore
                 ?? new OverlayBehaviorSettingsStore(AppDataPaths.UiSettingsPath));
+        OverlayTheme = overlayThemeSettings ?? new OverlayThemeSettingsViewModel(
+            new LegacyOverlayThemeStore(
+                Path.Combine(AppDataPaths.DataDirectory, "theme.json")),
+            new OverlayThemeStateStore(
+                Path.Combine(
+                    AppDataPaths.DataDirectory,
+                    "overlay-theme-states.json")),
+            themeService);
         ScreenshotProcessing = new ScreenshotProcessingViewModel(
             new ScreenshotProcessingSettingsStore(AppDataPaths.UiSettingsPath),
             screenshotProcessingService);
@@ -666,6 +675,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public OverlayScaleSettingsViewModel OverlayScale { get; }
 
     public OverlayBehaviorViewModel OverlayBehavior { get; }
+
+    public OverlayThemeSettingsViewModel OverlayTheme { get; }
 
     public ScreenshotProcessingViewModel ScreenshotProcessing { get; }
 
