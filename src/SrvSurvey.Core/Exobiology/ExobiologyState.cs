@@ -183,6 +183,20 @@ public sealed class ExobiologyState
         }
     }
 
+    public bool ToggleCurrentBodyFirstFootfall()
+    {
+        if (currentBodyKey is not { } key)
+        {
+            return false;
+        }
+
+        SetFirstFootfall(
+            key.SystemAddress,
+            key.BodyId,
+            CurrentBodyFirstFootfall != true);
+        return true;
+    }
+
     private void ApplyBodyScan(JsonElement root)
     {
         var key = GetBodyKey(root);

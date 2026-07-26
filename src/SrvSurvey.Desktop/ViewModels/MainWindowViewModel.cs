@@ -1861,6 +1861,22 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         await SaveExobiologyAsync(snapshot);
     }
 
+    public async Task<bool> ToggleCurrentBodyFirstFootfallAsync()
+    {
+        if (!exobiologyState.ToggleCurrentBodyFirstFootfall())
+        {
+            ExobiologyStatusMessage =
+                "First-footfall state cannot be changed until the current body is known.";
+            return false;
+        }
+
+        var snapshot = exobiologyState.CreateSnapshot();
+        UpdateExobiologyDisplay(snapshot);
+        SystemSurvey.ApplyUpdate([], null, snapshot);
+        await SaveExobiologyAsync(snapshot);
+        return true;
+    }
+
     private Task CancelResetExobiologyAsync()
     {
         IsResetExobiologyPending = false;

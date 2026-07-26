@@ -204,6 +204,21 @@ public sealed class ExobiologyStateTests
         Assert.EndsWith("_True", Assert.Single(state.CreateSnapshot().ScannedBioEntryIds));
     }
 
+    [Fact]
+    public void CurrentBodyFirstFootfallToggleRequiresBodyContext()
+    {
+        var state = CreateState();
+        Assert.False(state.ToggleCurrentBodyFirstFootfall());
+        state.Apply(Event(
+            "{\"event\":\"Scan\",\"SystemAddress\":123456,\"BodyID\":7,"
+                + "\"BodyName\":\"Test A 1\",\"WasFootfalled\":true}"));
+
+        Assert.True(state.ToggleCurrentBodyFirstFootfall());
+        Assert.True(state.CurrentBodyFirstFootfall);
+        Assert.True(state.ToggleCurrentBodyFirstFootfall());
+        Assert.False(state.CurrentBodyFirstFootfall);
+    }
+
     private static ExobiologyState CreateState(
         params ExobiologyReference[] additional)
     {

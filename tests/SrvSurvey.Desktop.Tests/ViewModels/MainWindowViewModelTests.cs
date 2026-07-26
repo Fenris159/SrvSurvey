@@ -978,6 +978,65 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task FirstFootfallGlobalActionUpdatesAndPersistsOrganicRewards()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-first-footfall-action-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            const string variant = "$Codex_Ent_Aleoids_01_B_Name;";
+            const string species = "$Codex_Ent_Aleoids_01_Name;";
+            const string genus = "$Codex_Ent_Aleoids_Genus_Name;";
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-25T120000.01.log"),
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"Population\":0}\n"
+                    + "{\"event\":\"Scan\",\"SystemAddress\":42,\"BodyName\":\"Test 1\",\"BodyID\":7,\"PlanetClass\":\"Rocky body\",\"WasFootfalled\":true}\n"
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Log\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n"
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Sample\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n"
+                    + $"{{\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":7}}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths);
+            await viewModel.RefreshAsync();
+            Assert.Equal("Not first footfall", viewModel.BioFirstFootfall);
+            var originalReward = viewModel.UnclaimedBioRewards;
+
+            Assert.True(await viewModel.ToggleCurrentBodyFirstFootfallAsync());
+
+            Assert.Equal(
+                "Confirmed; 5x reward applies",
+                viewModel.BioFirstFootfall);
+            Assert.NotEqual(originalReward, viewModel.UnclaimedBioRewards);
+            var saved = await new CommanderProfileStore(profile)
+                .LoadAsync("F123", true);
+            Assert.All(
+                saved.Data!.Exobiology.ScannedBioEntryIds,
+                entry => Assert.EndsWith("_True", entry));
+
+            Assert.True(await viewModel.ToggleCurrentBodyFirstFootfallAsync());
+            Assert.Equal("Not first footfall", viewModel.BioFirstFootfall);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task LiveOrganicSamplesPopulateGroundedSurfaceHistory()
     {
         var root = Path.Combine(

@@ -255,6 +255,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     public bool ShouldShowGalaxyMapOverlay =>
         lastGuiFocus == GuiFocus.GalaxyMap && state.IsActive;
 
+    public string? NextSystemForInput => state.NextSystem;
+
+    public bool ShouldPasteNextSystem => ShouldShowGalaxyMapOverlay
+        && !AutoCopy
+        && state.NextSystem is not null
+        && IsCurrentSystemInsideSearch();
+
     public string DestinationStatus
     {
         get => destinationStatus;

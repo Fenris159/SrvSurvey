@@ -510,7 +510,7 @@ Validation performed on 2026-07-25 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore`
-  passed all 1,034 tests: 618 Core tests and 416 Desktop tests.
+  passed all 1,043 tests: 619 Core tests and 424 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - Automated quest migration coverage loads known legacy commander,
   development-definition, objective, chapter, message, variable, retained
@@ -772,7 +772,12 @@ Validation performed on 2026-07-25 using Windows build `10.0.26200` and .NET SDK
   default chords, keyboard formatting/routing and text-entry suppression,
   controller button/trigger/eight-way POV chords, first-release dispatch,
   disconnect clearing, focus/Elite gating, device changes, and settings
-  persistence. The real Windows SharpHook service reached its active state.
+  persistence. Galaxy Map copy/paste now restores route, in-boxel, and clipboard
+  precedence through bounded SharpHook text entry on Windows/X11, and the
+  first-footfall action rewrites compatible organic entries and persisted
+  rewards. Stream-composition and VR adjustment actions remain the only listed
+  bindings without a new-platform destination. The real Windows SharpHook
+  service reached its active state.
   SDL3 initialized and enumerated successfully with no controller connected;
   physical button/HOTAS input has not been exercised on this machine.
 - Automated screenshot coverage uses generated BMP fixtures to verify portable

@@ -1,8 +1,11 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using SrvSurvey.Core.Diagnostics;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
@@ -94,6 +97,7 @@ public sealed partial class App : Application
             var inputSettings = new GlobalInputSettingsViewModel(
                 new GlobalInputSettingsStore(appDataPaths.UiSettingsPath),
                 capabilities);
+            var gameTextInputService = GameTextInputService.CreateCurrent();
             var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
                 Program.StartupArguments);
             var targetFrontierId = StartupOptions.GetFrontierId(
@@ -109,6 +113,23 @@ public sealed partial class App : Application
                 targetFrontierId: targetFrontierId);
             var mainWindow = new MainWindow(viewModel);
             desktop.MainWindow = mainWindow;
+            async Task WriteClipboardAsync(string text)
+            {
+                var clipboard = mainWindow.Clipboard
+                    ?? throw new InvalidOperationException(
+                        "The desktop clipboard is not available.");
+                await clipboard.SetTextAsync(text);
+                await clipboard.FlushAsync();
+            }
+
+            async Task<string?> ReadClipboardAsync()
+            {
+                var clipboard = mainWindow.Clipboard
+                    ?? throw new InvalidOperationException(
+                        "The desktop clipboard is not available.");
+                return await clipboard.TryGetValueAsync(DataFormat.Text);
+            }
+
             var errorReports = new ErrorReportWindowCoordinator(
                 mainWindow,
                 applicationLog,
@@ -409,6 +430,56 @@ public sealed partial class App : Application
                             handled = systemNotesWindowCoordinator is not null
                                 && await systemNotesWindowCoordinator
                                     .ShowOrActivateAsync();
+                            break;
+
+                        case GlobalInputAction.CopyNextBoxel:
+                            if (viewModel.BoxelSearch.ShouldShowGalaxyMapOverlay
+                                && viewModel.BoxelSearch.NextSystemForInput
+                                    is not null)
+                            {
+                                viewModel.BoxelSearch.SetClipboardWriter(
+                                    WriteClipboardAsync);
+                                await viewModel.BoxelSearch.CopyNextSystemAsync();
+                                handled = true;
+                            }
+
+                            break;
+
+                        case GlobalInputAction.PasteGalMap:
+                            var isGalaxyMapOpen = viewModel.SystemSurvey
+                                .CurrentStatus?.GuiFocus == GuiFocus.GalaxyMap;
+                            var routeNextHop = viewModel.Route
+                                .ShouldShowGalaxyMapOverlay
+                                    ? viewModel.Route.NextHop?.Name
+                                    : null;
+                            var resolvedText = GalaxyMapTextResolver.Resolve(
+                                isGalaxyMapOpen,
+                                routeNextHop,
+                                viewModel.BoxelSearch.NextSystemForInput,
+                                viewModel.BoxelSearch.ShouldPasteNextSystem,
+                                clipboardText: null);
+                            if (resolvedText is null && isGalaxyMapOpen)
+                            {
+                                resolvedText = GalaxyMapTextResolver.Resolve(
+                                    true,
+                                    null,
+                                    null,
+                                    useBoxelNextSystem: false,
+                                    await ReadClipboardAsync());
+                            }
+
+                            if (resolvedText is not null)
+                            {
+                                handled = gameTextInputService
+                                    .EnterText(resolvedText)
+                                    .Succeeded;
+                            }
+
+                            break;
+
+                        case GlobalInputAction.ToggleFirstFootfall:
+                            handled = await viewModel
+                                .ToggleCurrentBodyFirstFootfallAsync();
                             break;
 
                         case GlobalInputAction.Track1:

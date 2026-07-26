@@ -303,10 +303,13 @@ Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
 opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,
 joystick, and HOTAS input on Windows and Linux. The Settings page preserves and
 edits every legacy action binding; controller chords retain the original
-first-release dispatch behavior. The legacy `showSystemNotes` action now opens
-or activates the current-system notes window. Wayland keyboard capture remains
-disabled, while SDL controller input can operate when the Avalonia app itself
-is active.
+first-release dispatch behavior. The legacy Galaxy Map copy/paste actions now
+use route, in-boxel, and clipboard precedence with SharpHook text simulation,
+`toggleFF` corrects and persists current-body organic rewards, and
+`showSystemNotes` opens or activates the current-system notes window. The
+stream-composition and two VR adjustment actions still need new-platform
+destinations. Wayland keyboard capture remains disabled, while SDL controller
+input can operate when the Avalonia app itself is active.
 
 The code-rendered legacy `PlotBuildCommodities` surface is not part of the 22
 designer count above. Its Avalonia replacement is implemented as the detached
