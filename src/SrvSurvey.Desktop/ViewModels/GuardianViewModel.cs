@@ -1281,7 +1281,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
     public void UpdateCargo(CargoSnapshot? cargo)
     {
-        if (cargo is not null && artifactInventory.Reset(cargo))
+        if (artifactInventory.Reset(cargo))
         {
             NotifyCurrentObeliskChanged();
             NotifyAuxiliaryOverlayState();

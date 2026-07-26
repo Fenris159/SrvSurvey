@@ -117,6 +117,36 @@ public sealed class DockToDockLogServiceTests : IDisposable
         Assert.Equal(validHeader + "\r\npartial", File.ReadAllText(path));
     }
 
+    [Fact]
+    public void ClearingAmbiguousCargoPreventsItEnteringNewTrip()
+    {
+        var path = Path.Combine(
+            temporaryDirectory,
+            DockToDockCsvWriter.FileName);
+        var service = new DockToDockLogService(path);
+        var cargo = new CargoSnapshot(
+            DateTimeOffset.UtcNow,
+            "Cargo",
+            "Ship",
+            2,
+            [new CargoItem("gold", "Gold", 2, 0)]);
+        service.Apply([], cargo, enabled: true, isBootstrapRead: false);
+
+        service.ClearCargo();
+        var result = service.Apply(
+        [
+            Event("2026-07-25T12:00:00Z", "Undocked",
+                "\"MarketID\":100,\"StationName\":\"Start\""),
+            Event("2026-07-25T12:10:00Z", "Docked",
+                "\"MarketID\":200,\"StationName\":\"End\""),
+        ],
+        null,
+        enabled: true,
+        isBootstrapRead: false);
+
+        Assert.Empty(Assert.Single(result.Entries).Cargo);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

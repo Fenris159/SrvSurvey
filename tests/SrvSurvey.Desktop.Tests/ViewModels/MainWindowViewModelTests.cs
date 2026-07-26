@@ -1673,6 +1673,61 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    [Fact]
+    public void MultipleGameWindowInventoryControlsSharedCargoSuppression()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-multi-cargo-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            var switcher = new MutableGameWindowSwitcher
+            {
+                AvailableWindowCount = 2,
+            };
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                gameWindowSwitcher: switcher);
+
+            Assert.True(viewModel.IsSharedCargoSuppressed);
+            Assert.True(viewModel.DockToDock.SharedCargoSuppressed);
+            Assert.True(viewModel.Colonization.SharedCargoSuppressed);
+
+            switcher.AvailableWindowCount = 1;
+            viewModel.CommanderInstances.RefreshGameWindowCount();
+
+            Assert.False(viewModel.IsSharedCargoSuppressed);
+            Assert.False(viewModel.DockToDock.SharedCargoSuppressed);
+            Assert.False(viewModel.Colonization.SharedCargoSuppressed);
+
+            switcher.AvailableWindowCount = 2;
+            viewModel.CommanderInstances.RefreshGameWindowCount();
+
+            Assert.True(viewModel.IsSharedCargoSuppressed);
+            Assert.Contains(
+                "cannot be attributed safely",
+                viewModel.DockToDock.StatusMessage);
+            Assert.Contains(
+                "cannot be attributed safely",
+                viewModel.Colonization.ShipCargoPublishingStatus);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     private static Task WriteSurfaceStatusAsync(
         string path,
         double latitude,
@@ -1772,6 +1827,21 @@ public sealed class MainWindowViewModelTests
             CallCount++;
             return Task.FromResult(result);
         }
+
+        public void Dispose()
+        {
+        }
+    }
+
+    private sealed class MutableGameWindowSwitcher : IGameWindowSwitcher
+    {
+        public int AvailableWindowCount { get; set; }
+
+        public int GetAvailableWindowCount() => AvailableWindowCount;
+
+        public bool TryActivateCurrent() => AvailableWindowCount > 0;
+
+        public bool TryActivateNext() => AvailableWindowCount > 1;
 
         public void Dispose()
         {

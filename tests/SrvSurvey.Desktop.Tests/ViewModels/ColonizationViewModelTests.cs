@@ -291,6 +291,58 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task MultipleGameWindowsClearAndRejectAmbiguousShipCargo()
+    {
+        var project = Project("build-1", "Port", remaining: 100) with
+        {
+            Commodities = new Dictionary<string, int> { ["steel"] = 100 },
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [project],
+                [],
+                null,
+                []),
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.ShipCargoPublishingEnabled = true;
+        viewModel.SetCommanderProfile("F123", true, "secret-key");
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Loadout",
+                "\"Ship\":\"python\",\"CargoCapacity\":192"),
+        ]);
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        var cargo = new CargoSnapshot(
+            DateTimeOffset.UtcNow,
+            "Cargo",
+            "Ship",
+            25,
+            [new CargoItem("steel", "Steel", 25, 0)]);
+        await viewModel.UpdateCargoAsync(cargo);
+        Assert.Equal(25, Assert.Single(
+            viewModel.CommodityOverlay.Plan.Rows).InShip);
+        Assert.Equal(1, client.PublishShipCount);
+
+        viewModel.SetSharedCargoSuppressed(true);
+        await viewModel.UpdateCargoAsync(cargo with
+        {
+            Timestamp = cargo.Timestamp.AddSeconds(1),
+        });
+
+        Assert.True(viewModel.SharedCargoSuppressed);
+        Assert.Equal(0, Assert.Single(
+            viewModel.CommodityOverlay.Plan.Rows).InShip);
+        Assert.Equal(1, client.PublishShipCount);
+        Assert.Contains(
+            "multiple Elite windows",
+            viewModel.ShipCargoPublishingStatus);
+    }
+
+    [Fact]
     public async Task PublishesOptedInShipCargoForVisibleProjects()
     {
         var client = new StubRavenColonialClient

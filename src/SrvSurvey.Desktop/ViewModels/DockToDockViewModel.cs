@@ -11,6 +11,7 @@ public sealed class DockToDockViewModel : INotifyPropertyChanged
     private readonly DockToDockSettingsStore settingsStore;
     private readonly DockToDockLogService logService;
     private bool enabled;
+    private bool sharedCargoSuppressed;
     private string statusMessage;
 
     public DockToDockViewModel(
@@ -62,6 +63,27 @@ public sealed class DockToDockViewModel : INotifyPropertyChanged
         private set => SetField(ref statusMessage, value);
     }
 
+    public bool SharedCargoSuppressed => sharedCargoSuppressed;
+
+    public void SetSharedCargoSuppressed(bool value)
+    {
+        if (sharedCargoSuppressed == value)
+        {
+            return;
+        }
+
+        sharedCargoSuppressed = value;
+        PropertyChanged?.Invoke(
+            this,
+            new PropertyChangedEventArgs(nameof(SharedCargoSuppressed)));
+        if (value)
+        {
+            logService.ClearCargo();
+        }
+
+        StatusMessage = CreateReadyStatus();
+    }
+
     public void ApplyUpdate(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         CargoSnapshot? cargo,
@@ -69,7 +91,7 @@ public sealed class DockToDockViewModel : INotifyPropertyChanged
     {
         var result = logService.Apply(
             journalEvents,
-            cargo,
+            SharedCargoSuppressed ? null : cargo,
             Enabled,
             isBootstrapRead);
         if (result.Error is not null)
@@ -91,6 +113,11 @@ public sealed class DockToDockViewModel : INotifyPropertyChanged
 
     private string CreateReadyStatus()
     {
+        if (SharedCargoSuppressed)
+        {
+            return "Cargo capture is paused while multiple Elite windows are running because Cargo.json cannot be attributed safely.";
+        }
+
         return Enabled
             ? "Completed live trips will be appended safely to " + OutputPath + "."
             : "Dock-to-dock CSV logging is off.";

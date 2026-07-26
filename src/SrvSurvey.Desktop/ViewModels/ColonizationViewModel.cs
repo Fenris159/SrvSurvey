@@ -41,6 +41,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private bool hasUnsavedProjectVisibility;
     private bool fleetCarrierCargoSyncEnabled;
     private bool shipCargoPublishingEnabled;
+    private bool sharedCargoSuppressed;
     private bool isFleetCarrierSyncBusy;
     private bool isShipCargoPublishingBusy;
     private string ravenApiKey = string.Empty;
@@ -280,11 +281,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 settingsStore.SaveShipCargoPublishingEnabled(value);
                 shipCargoPublishingEnabled = value;
                 OnPropertyChanged();
-                ShipCargoPublishingStatus = value
-                    ? HasStoredRavenApiKey
-                        ? "Ship cargo will publish after Cargo.json changes."
-                        : "Save a Raven API key before ship cargo can publish."
-                    : "Automatic ship cargo publishing is off.";
+                ShipCargoPublishingStatus = GetShipCargoReadyStatus();
             }
             catch (Exception exception) when (
                 exception is IOException
@@ -308,6 +305,26 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     {
         get => shipCargoPublishingStatus;
         private set => SetField(ref shipCargoPublishingStatus, value);
+    }
+
+    public bool SharedCargoSuppressed => sharedCargoSuppressed;
+
+    public void SetSharedCargoSuppressed(bool value)
+    {
+        if (sharedCargoSuppressed == value)
+        {
+            return;
+        }
+
+        sharedCargoSuppressed = value;
+        OnPropertyChanged(nameof(SharedCargoSuppressed));
+        if (value)
+        {
+            shipCargo = null;
+            UpdateCommodityPlan();
+        }
+
+        ShipCargoPublishingStatus = GetShipCargoReadyStatus();
     }
 
     public bool IsEnabled
@@ -340,11 +357,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
 
                 if (ShipCargoPublishingEnabled)
                 {
-                    ShipCargoPublishingStatus = value
-                        ? HasStoredRavenApiKey
-                            ? "Ship cargo will publish after Cargo.json changes."
-                            : "Save a Raven API key before ship cargo can publish."
-                        : "Enable Raven Colonial before publishing ship cargo.";
+                    ShipCargoPublishingStatus = GetShipCargoReadyStatus();
                 }
 
                 UpdateProjectEditorContext();
@@ -497,11 +510,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 ? "Save a Raven API key before Fleet Carrier cargo can sync."
                 : "Fleet Carrier cargo will sync from matching Market.json updates."
             : "Automatic Fleet Carrier cargo sync is off.";
-        ShipCargoPublishingStatus = ShipCargoPublishingEnabled
-            ? storedRavenApiKey is null
-                ? "Save a Raven API key before ship cargo can publish."
-                : "Ship cargo will publish after Cargo.json changes."
-            : "Automatic ship cargo publishing is off.";
+        ShipCargoPublishingStatus = GetShipCargoReadyStatus();
         OnPropertyChanged(nameof(HasCommanderProfile));
         OnPropertyChanged(nameof(HasStoredRavenApiKey));
         RaiseCommandStates();
@@ -560,7 +569,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
 
     public async Task UpdateCargoAsync(CargoSnapshot? cargo)
     {
-        if (cargo is null)
+        if (cargo is null || SharedCargoSuppressed)
         {
             return;
         }
@@ -707,9 +716,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
 
             if (ShipCargoPublishingEnabled)
             {
-                ShipCargoPublishingStatus = normalized is null
-                    ? "Save a Raven API key before ship cargo can publish."
-                    : "Ship cargo will publish after Cargo.json changes.";
+                ShipCargoPublishingStatus = GetShipCargoReadyStatus();
             }
 
             UpdateSystemEditorContext();
@@ -1111,6 +1118,28 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             latestStatus,
             hasMarketSinceDocking,
             construction.IsSquadronBankOpen);
+    }
+
+    private string GetShipCargoReadyStatus()
+    {
+        if (SharedCargoSuppressed)
+        {
+            return "Ship cargo is paused while multiple Elite windows are running because Cargo.json cannot be attributed safely.";
+        }
+
+        if (!ShipCargoPublishingEnabled)
+        {
+            return "Automatic ship cargo publishing is off.";
+        }
+
+        if (!IsEnabled)
+        {
+            return "Enable Raven Colonial before publishing ship cargo.";
+        }
+
+        return HasStoredRavenApiKey
+            ? "Ship cargo will publish after Cargo.json changes."
+            : "Save a Raven API key before ship cargo can publish.";
     }
 
     private bool CanSaveRavenApiKey()

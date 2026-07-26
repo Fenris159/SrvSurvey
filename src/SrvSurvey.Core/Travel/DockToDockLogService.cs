@@ -33,6 +33,11 @@ public sealed class DockToDockLogService
 
     public bool HasActiveTrip => activeTrip is not null;
 
+    public void ClearCargo()
+    {
+        cargo = null;
+    }
+
     public DockToDockApplyResult Apply(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         CargoSnapshot? currentCargo,

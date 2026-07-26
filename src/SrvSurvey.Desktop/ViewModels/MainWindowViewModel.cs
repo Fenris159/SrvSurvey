@@ -458,6 +458,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             JournalFolderPath,
             TargetFrontierId,
             sharedGameWindowSwitcher);
+        CommanderInstances.PropertyChanged += OnCommanderInstancesPropertyChanged;
+        SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
         if (visitedStarsCache is null)
         {
             var processDetector = new EliteGameProcessDetector();
@@ -570,6 +572,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public QuestIndicatorViewModel QuestIndicator { get; }
 
     public CommanderInstancesViewModel CommanderInstances { get; }
+
+    public bool IsSharedCargoSuppressed =>
+        CommanderInstances.HasMultipleGameWindows;
 
     public CommanderPreferenceViewModel CommanderPreference { get; }
 
@@ -1399,7 +1404,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         JournalInspector.ApplyUpdate(update.JournalEvents, latestStatus);
 
-        latestCargo = update.Cargo ?? latestCargo;
+        var allowSharedCargo = !IsSharedCargoSuppressed;
+        latestCargo = allowSharedCargo
+            ? update.Cargo ?? latestCargo
+            : null;
         DockToDock.ApplyUpdate(
             update.JournalEvents,
             latestCargo,
@@ -1499,7 +1507,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             journalState.SystemAddress ?? 0);
 
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
-        await ApplyQuestUpdateAsync(update);
+        await ApplyQuestUpdateAsync(update, allowSharedCargo);
         await Colonization.SetCommanderAsync(journalState.CommanderName);
         var initializedJourney = await Journey.UpdateContextAsync(
             journalState.FrontierId,
@@ -1558,8 +1566,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             activeProfileCommanderName,
             allowLiveCommands: !update.IsBootstrapRead);
         await RamTah.ApplyJournalEventsAsync(update.JournalEvents);
-        Guardian.UpdateCargo(update.Cargo);
-        await Colonization.UpdateCargoAsync(update.Cargo);
+        Guardian.UpdateCargo(allowSharedCargo ? update.Cargo : null);
+        await Colonization.UpdateCargoAsync(
+            allowSharedCargo ? update.Cargo : null);
         await Colonization.UpdateMarketAsync(update.Market);
         Combat.SetActiveBuildProjects(Colonization.HasProjects);
         Guardian.SetActiveBuildProjects(Colonization.HasProjects);
@@ -1792,7 +1801,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    private async Task ApplyQuestUpdateAsync(JournalMonitorUpdate update)
+    private async Task ApplyQuestUpdateAsync(
+        JournalMonitorUpdate update,
+        bool allowCargoFile)
     {
         if (string.IsNullOrWhiteSpace(journalState.FrontierId)
             || string.IsNullOrWhiteSpace(journalState.CommanderName)
@@ -1814,7 +1825,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                     latestStatus),
                 folderResolution.SelectedPath,
                 update.JournalEvents,
-                update.IsBootstrapRead);
+                update.IsBootstrapRead,
+                allowCargoFile: allowCargoFile);
             QuestWorkspace.ApplyRuntimeResult(result, enabled);
             QuestIndicator.Update(result.Quests, latestStatus, enabled);
             HumanSite.UpdateQuests(result.Quests);
@@ -1869,7 +1881,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         var result = await questRuntimeCoordinator.ReplayEventAsync(
             folderResolution.SelectedPath,
-            journalEvent);
+            journalEvent,
+            allowCargoFile: !IsSharedCargoSuppressed);
         QuestWorkspace.ApplyRuntimeResult(result, enabled);
         QuestIndicator.Update(result.Quests, latestStatus, enabled);
         HumanSite.UpdateQuests(result.Quests);
@@ -2457,11 +2470,38 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         firstFootfallInferenceCancellation.Dispose();
         GalaxyMap.Dispose();
         QuestWorkspace.Dispose();
+        CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged;
         CommanderInstances.Dispose();
         BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged;
         visitedStarsHttpClient?.Dispose();
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    }
+
+    private void OnCommanderInstancesPropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs eventArgs)
+    {
+        if (eventArgs.PropertyName !=
+            nameof(CommanderInstancesViewModel.HasMultipleGameWindows))
+        {
+            return;
+        }
+
+        SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
+        OnPropertyChanged(nameof(IsSharedCargoSuppressed));
+    }
+
+    private void SetSharedCargoSuppressed(bool value)
+    {
+        if (value)
+        {
+            latestCargo = null;
+            Guardian.UpdateCargo(null);
+        }
+
+        DockToDock.SetSharedCargoSuppressed(value);
+        Colonization.SetSharedCargoSuppressed(value);
     }
 
     private void OnQuestCoordinatorChanged(object? sender, EventArgs eventArgs)

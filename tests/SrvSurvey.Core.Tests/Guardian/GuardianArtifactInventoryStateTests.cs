@@ -27,6 +27,10 @@ public sealed class GuardianArtifactInventoryStateTests
         Assert.Equal(1, state.GetCount("Guardian Orb"));
         Assert.Equal(0, state.GetCount("gold"));
         Assert.False(state.Reset(cargo));
+        Assert.True(state.Reset(null));
+        Assert.Equal(0, state.GetCount("ca"));
+        Assert.Equal(0, state.GetCount("or"));
+        Assert.False(state.Reset(null));
     }
 
     [Fact]

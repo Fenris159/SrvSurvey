@@ -42,6 +42,34 @@ public sealed class QuestJournalCompatibilityTests : IDisposable
         Assert.Equal(originalBytes, await File.ReadAllBytesAsync(path));
     }
 
+    [Fact]
+    public async Task MultipleGameWindowsRejectAmbiguousCargoFile()
+    {
+        var path = Path.Combine(tempDirectory, "Cargo.json");
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {"event":"Cargo","Vessel":"Wrong commander","Inventory":[{"Name":"gold","Count":99}]}
+            """);
+        var originalBytes = await File.ReadAllBytesAsync(path);
+        var journalEvent = Parse(
+            """
+            {"event":"Cargo","Vessel":"Journal commander","Inventory":[]}
+            """);
+
+        var result = await QuestJournalPayloadResolver.ResolveAsync(
+            tempDirectory,
+            journalEvent,
+            allowCargoFile: false);
+
+        Assert.False(result.UsedAuxiliaryFile);
+        Assert.Contains("multiple Elite windows", result.Warning);
+        Assert.Equal(
+            "Journal commander",
+            result.Payload.GetProperty("Vessel").GetString());
+        Assert.Equal(originalBytes, await File.ReadAllBytesAsync(path));
+    }
+
     [Theory]
     [InlineData("Cargo", null)]
     [InlineData("Market", "not-json")]

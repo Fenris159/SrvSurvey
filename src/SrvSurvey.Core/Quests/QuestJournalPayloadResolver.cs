@@ -22,7 +22,8 @@ public static class QuestJournalPayloadResolver
     public static async Task<QuestJournalPayloadResult> ResolveAsync(
         string journalDirectory,
         JournalEventEnvelope journalEvent,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        bool allowCargoFile = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         ArgumentNullException.ThrowIfNull(journalEvent);
@@ -33,6 +34,13 @@ public static class QuestJournalPayloadResolver
                 journalEvent.Payload.Clone(),
                 UsedAuxiliaryFile: false,
                 Warning: null);
+        }
+
+        if (journalEvent.EventName == "Cargo" && !allowCargoFile)
+        {
+            return Fallback(
+                journalEvent,
+                "Cargo.json was ignored because multiple Elite windows prevent safe commander attribution.");
         }
 
         var path = Path.Combine(
