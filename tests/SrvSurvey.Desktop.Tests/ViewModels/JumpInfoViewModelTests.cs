@@ -36,6 +36,9 @@ public sealed class JumpInfoViewModelTests : IDisposable
 
         Assert.True(viewModel.ShouldShow);
         Assert.Equal("Beta", viewModel.TargetName);
+        Assert.False(viewModel.IsQuestTagged);
+        viewModel.UpdateQuestTags(["beta"]);
+        Assert.True(viewModel.IsQuestTagged);
         Assert.Equal("STAR CLASS N", viewModel.StarClass);
         Assert.Equal("JUMP 2 OF 2", viewModel.JumpProgress);
         Assert.Equal("45.0 LY", viewModel.TotalDistance);

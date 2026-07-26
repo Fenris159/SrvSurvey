@@ -2094,8 +2094,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 update.IsBootstrapRead,
                 allowCargoFile: allowCargoFile);
             QuestWorkspace.ApplyRuntimeResult(result, enabled);
-            QuestIndicator.Update(result.Quests, latestStatus, enabled);
-            HumanSite.UpdateQuests(result.Quests);
+            UpdateQuestOverlayPresentation(result.Quests, enabled);
             OnPropertyChanged(nameof(Quests));
             OnPropertyChanged(nameof(QuestUnreadMessageCount));
             if (!enabled)
@@ -2150,8 +2149,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             journalEvent,
             allowCargoFile: !IsSharedCargoSuppressed);
         QuestWorkspace.ApplyRuntimeResult(result, enabled);
-        QuestIndicator.Update(result.Quests, latestStatus, enabled);
-        HumanSite.UpdateQuests(result.Quests);
+        UpdateQuestOverlayPresentation(result.Quests, enabled);
         OnPropertyChanged(nameof(Quests));
         OnPropertyChanged(nameof(QuestUnreadMessageCount));
         QuestStatusMessage = result.Warnings.Count > 0
@@ -3319,13 +3317,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     private void OnQuestCoordinatorChanged(object? sender, EventArgs eventArgs)
     {
-        QuestIndicator.Update(
+        UpdateQuestOverlayPresentation(
             questRuntimeCoordinator.Snapshot,
-            latestStatus,
             questSettingsStore.LoadEnabled());
-        HumanSite.UpdateQuests(questRuntimeCoordinator.Snapshot);
         OnPropertyChanged(nameof(Quests));
         OnPropertyChanged(nameof(QuestUnreadMessageCount));
+    }
+
+    private void UpdateQuestOverlayPresentation(
+        IReadOnlyList<QuestRuntimeSnapshot> quests,
+        bool enabled)
+    {
+        QuestIndicator.Update(quests, latestStatus, enabled);
+        HumanSite.UpdateQuests(quests);
+        var tags = enabled
+            ? quests.SelectMany(quest => quest.Tags).ToArray()
+            : [];
+        GalaxyMap.UpdateQuestTags(tags);
+        JumpInfo.UpdateQuestTags(tags);
+        StationInfo.UpdateQuestTags(tags);
     }
 
     private void OnBiologyRewardsChanged(

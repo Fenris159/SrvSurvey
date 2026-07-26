@@ -28,6 +28,8 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private JumpInfoRoutePlan? routePlan;
     private SystemSummary? summary;
     private IReadOnlyList<JumpInfoDetailLineViewModel> detailLines = [];
+    private IReadOnlySet<string> questTags = new HashSet<string>(
+        StringComparer.OrdinalIgnoreCase);
     private double? maximumJumpRange;
     private DateTimeOffset? jumpVisibleUntil;
     private bool fsdJumping;
@@ -161,6 +163,9 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     public string TargetName => routePlan?.Target.Name ?? Unavailable;
 
+    public bool IsQuestTagged => routePlan is { } plan
+        && questTags.Contains(plan.Target.Name);
+
     public string StarClass => string.IsNullOrWhiteSpace(
         routePlan?.Target.StarClass ?? summary?.StarClass)
             ? "STAR CLASS UNKNOWN"
@@ -219,6 +224,21 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     public bool HasDataStatus => !string.IsNullOrWhiteSpace(DataStatus);
 
     public Task PendingSummaryLoad { get; private set; } = Task.CompletedTask;
+
+    public void UpdateQuestTags(IEnumerable<string> tags)
+    {
+        ArgumentNullException.ThrowIfNull(tags);
+        var next = tags
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (questTags.SetEquals(next))
+        {
+            return;
+        }
+
+        questTags = next;
+        OnPropertyChanged(nameof(IsQuestTagged));
+    }
 
     public void ApplyUpdate(
         string? nextCurrentSystemName,
@@ -583,6 +603,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private void RaisePlanProperties()
     {
         OnPropertyChanged(nameof(TargetName));
+        OnPropertyChanged(nameof(IsQuestTagged));
         OnPropertyChanged(nameof(StarClass));
         OnPropertyChanged(nameof(JumpProgress));
         OnPropertyChanged(nameof(TotalDistance));

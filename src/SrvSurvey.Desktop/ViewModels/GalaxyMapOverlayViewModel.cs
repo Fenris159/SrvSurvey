@@ -26,6 +26,8 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     private GalaxyMapSystemViewModel? primarySystem;
     private GalaxyMapSystemViewModel? secondarySystem;
     private IReadOnlyList<GalaxyMapFactionViewModel> factions = [];
+    private IReadOnlySet<string> questTags = new HashSet<string>(
+        StringComparer.OrdinalIgnoreCase);
     private bool routeWasCleared;
     private bool isLoading;
     private bool autoShow;
@@ -163,6 +165,35 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     }
 
     public Task PendingLoad { get; private set; } = Task.CompletedTask;
+
+    public void UpdateQuestTags(IEnumerable<string> tags)
+    {
+        ArgumentNullException.ThrowIfNull(tags);
+        var next = tags
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (questTags.SetEquals(next))
+        {
+            return;
+        }
+
+        questTags = next;
+        if (PrimarySystem is { } primary)
+        {
+            PrimarySystem = primary with
+            {
+                IsQuestTagged = IsQuestTagged(primaryTarget?.Name),
+            };
+        }
+
+        if (SecondarySystem is { } secondary)
+        {
+            SecondarySystem = secondary with
+            {
+                IsQuestTagged = IsQuestTagged(secondaryTarget?.Name),
+            };
+        }
+    }
 
     public void ApplyUpdate(
         string? nextCurrentSystemName,
@@ -430,8 +461,12 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             discovery,
             discovered,
             details,
-            updated);
+            updated,
+            IsQuestTagged(summary.SystemName));
     }
+
+    private bool IsQuestTagged(string? name) =>
+        !string.IsNullOrWhiteSpace(name) && questTags.Contains(name);
 
     private void SetRouteFooter()
     {
@@ -556,7 +591,8 @@ public sealed record GalaxyMapSystemViewModel(
     string DiscoveryText,
     string DiscoveredByText,
     string DetailsText,
-    string UpdatedText = "")
+    string UpdatedText = "",
+    bool IsQuestTagged = false)
 {
     public bool HasDiscoveredBy => !string.IsNullOrWhiteSpace(DiscoveredByText);
 

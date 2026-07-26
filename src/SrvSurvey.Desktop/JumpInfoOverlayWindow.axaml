@@ -48,11 +48,19 @@
       </Grid>
 
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
-        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="27"
-                   FontWeight="SemiBold"
-                   Text="{Binding TargetName}"
-                   TextTrimming="CharacterEllipsis" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Border Classes="badge" IsVisible="{Binding JumpInfo.IsQuestTagged}">
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                       FontSize="9"
+                       FontWeight="Bold"
+                       Text="Q" />
+          </Border>
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="27"
+                     FontWeight="SemiBold"
+                     Text="{Binding TargetName}"
+                     TextTrimming="CharacterEllipsis" />
+        </StackPanel>
         <TextBlock Grid.Column="1"
                    Classes="monospace"
                    Foreground="{DynamicResource RavenWarningBrush}"

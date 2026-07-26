@@ -52,11 +52,20 @@
         <StackPanel Spacing="5">
           <TextBlock Classes="eyebrow"
                      Text="{Binding PrimarySystem.Label}" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="23"
-                     FontWeight="SemiBold"
-                     Text="{Binding PrimarySystem.Name}"
-                     TextTrimming="CharacterEllipsis" />
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <Border Classes="badge"
+                    IsVisible="{Binding PrimarySystem.IsQuestTagged}">
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         FontSize="9"
+                         FontWeight="Bold"
+                         Text="Q" />
+            </Border>
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="23"
+                       FontWeight="SemiBold"
+                       Text="{Binding PrimarySystem.Name}"
+                       TextTrimming="CharacterEllipsis" />
+          </StackPanel>
           <TextBlock Text="{Binding PrimarySystem.DiscoveryText}"
                      TextWrapping="Wrap" />
           <TextBlock IsVisible="{Binding PrimarySystem.HasDiscoveredBy}"
@@ -85,11 +94,25 @@
         <StackPanel Spacing="4">
           <TextBlock Classes="eyebrow"
                      Text="{Binding SecondarySystem.Label}" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="18"
-                     FontWeight="SemiBold"
-                     Text="{Binding SecondarySystem.Name}" />
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <Border Classes="badge"
+                    IsVisible="{Binding SecondarySystem.IsQuestTagged}">
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         FontSize="9"
+                         FontWeight="Bold"
+                         Text="Q" />
+            </Border>
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Text="{Binding SecondarySystem.Name}" />
+          </StackPanel>
           <TextBlock Text="{Binding SecondarySystem.DiscoveryText}"
+                     TextWrapping="Wrap" />
+          <TextBlock IsVisible="{Binding SecondarySystem.HasDiscoveredBy}"
+                     Classes="muted"
+                     FontSize="11"
+                     Text="{Binding SecondarySystem.DiscoveredByText}"
                      TextWrapping="Wrap" />
           <TextBlock IsVisible="{Binding SecondarySystem.HasUpdated}"
                      Classes="muted"

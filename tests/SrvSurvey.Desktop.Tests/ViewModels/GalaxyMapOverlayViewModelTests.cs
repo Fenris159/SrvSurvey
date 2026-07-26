@@ -35,6 +35,10 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         Assert.True(viewModel.PrimarySystem.HasUpdated);
         Assert.Equal("NEXT JUMP", viewModel.SecondarySystem!.Label);
         Assert.Equal("Alpha", viewModel.SecondarySystem.Name);
+        Assert.True(viewModel.SecondarySystem.HasDiscoveredBy);
+        viewModel.UpdateQuestTags(["Beta", "Alpha"]);
+        Assert.True(viewModel.PrimarySystem.IsQuestTagged);
+        Assert.True(viewModel.SecondarySystem.IsQuestTagged);
         Assert.Equal("2 jumps · 7.0 ly", viewModel.RouteFooter);
         Assert.Equal("Pathfinder Cooperative", Assert.Single(viewModel.Factions).Name);
         Assert.Equal("62%", viewModel.Factions[0].Influence);

@@ -34,11 +34,20 @@
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
         <StackPanel Spacing="2">
           <TextBlock Classes="eyebrow" Text="HUMAN SETTLEMENT" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="19"
-                     FontWeight="SemiBold"
-                     Text="{Binding HumanSite.SiteName}"
-                     TextTrimming="CharacterEllipsis" />
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <Border Classes="badge"
+                    IsVisible="{Binding HumanSite.IsQuestTagged}">
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         FontSize="9"
+                         FontWeight="Bold"
+                         Text="Q" />
+            </Border>
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="19"
+                       FontWeight="SemiBold"
+                       Text="{Binding HumanSite.SiteName}"
+                       TextTrimming="CharacterEllipsis" />
+          </StackPanel>
           <TextBlock Classes="muted"
                      FontSize="10"
                      Text="{Binding HumanSite.TemplateText}"

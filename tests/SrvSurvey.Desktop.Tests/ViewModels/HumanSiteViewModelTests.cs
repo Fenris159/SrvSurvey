@@ -211,9 +211,11 @@ public sealed class HumanSiteViewModelTests
                         Width = double.NaN,
                         Waypoints = [[999, 999], [998, 998]],
                     },
-                ])
+                ],
+                new HashSet<string>(["Haberlandt Survey"]))
         ]);
 
+        Assert.True(viewModel.IsQuestTagged);
         var marker = Assert.Single(viewModel.QuestMarkers);
         Assert.Equal("Target", marker.Name);
         Assert.InRange(marker.Offset.X, -0.01, 0.01);
@@ -800,7 +802,8 @@ public sealed class HumanSiteViewModelTests
 
     private static QuestRuntimeSnapshot CreateQuestSnapshot(
         IReadOnlyDictionary<string, string> locations,
-        IReadOnlyList<RavenQuestRoute> routes)
+        IReadOnlyList<RavenQuestRoute> routes,
+        IReadOnlySet<string>? tags = null)
     {
         return new QuestRuntimeSnapshot(
             new RavenQuestReference("Raven", "settlement-map", 1),
@@ -813,7 +816,7 @@ public sealed class HumanSiteViewModelTests
             new Dictionary<string, string>(),
             new Dictionary<string, string>(),
             [],
-            new HashSet<string>(),
+            tags ?? new HashSet<string>(),
             locations,
             routes);
     }

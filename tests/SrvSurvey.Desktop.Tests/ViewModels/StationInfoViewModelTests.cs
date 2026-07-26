@@ -16,6 +16,9 @@ public sealed class StationInfoViewModelTests
 
         Assert.True(viewModel.ShouldShow);
         Assert.Equal("Raven Port", viewModel.StationName);
+        Assert.False(viewModel.IsQuestTagged);
+        viewModel.UpdateQuestTags(["raven port"]);
+        Assert.True(viewModel.IsQuestTagged);
         Assert.Equal("Planetary Port", viewModel.StationType);
         Assert.Equal("Largest pad: Large", viewModel.LargestPadText);
         Assert.Equal("Cooperative · Democracy", viewModel.FactionText);

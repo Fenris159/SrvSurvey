@@ -151,6 +151,10 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         ?? ActiveSite?.Name
         ?? "Human settlement";
 
+    public bool IsQuestTagged => quests.Any(quest => quest.Tags.Contains(
+        SiteName,
+        StringComparer.OrdinalIgnoreCase));
+
     public string TemplateText => ActiveSite is { } site
         ? site.Template is { } template
             ? $"{site.Economy} #{site.SubType} · {template.Name}"
@@ -643,6 +647,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         UpdateQuestProjection();
         OnPropertyChanged(nameof(QuestMarkers));
         OnPropertyChanged(nameof(QuestRoutes));
+        OnPropertyChanged(nameof(IsQuestTagged));
     }
 
     public void AdjustZoom(bool zoomIn)
@@ -1530,6 +1535,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasKnownType));
         OnPropertyChanged(nameof(HasKnownGeometry));
         OnPropertyChanged(nameof(SiteName));
+        OnPropertyChanged(nameof(IsQuestTagged));
         OnPropertyChanged(nameof(TemplateText));
         OnPropertyChanged(nameof(GeometryStatus));
         OnPropertyChanged(nameof(FactionText));

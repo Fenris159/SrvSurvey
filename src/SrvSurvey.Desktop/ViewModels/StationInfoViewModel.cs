@@ -36,6 +36,8 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     private bool forceShow;
     private bool manuallyHidden;
     private bool isBusy;
+    private IReadOnlySet<string> questTags = new HashSet<string>(
+        StringComparer.OrdinalIgnoreCase);
     private string statusMessage = "Waiting for a current system.";
     private string settingsStatus = string.Empty;
     private bool disposed;
@@ -126,6 +128,9 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
                 && !manuallyHidden);
 
     public string StationName => SelectedStation?.Name ?? "No station selected";
+
+    public bool IsQuestTagged => SelectedStation is { } station
+        && questTags.Contains(station.Name);
 
     public string StationType => SelectedStation?.Type ?? "Station information";
 
@@ -230,6 +235,21 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
             currentSystemAddress,
             loadCancellation);
         return PendingLoad;
+    }
+
+    public void UpdateQuestTags(IEnumerable<string> tags)
+    {
+        ArgumentNullException.ThrowIfNull(tags);
+        var next = tags
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (questTags.SetEquals(next))
+        {
+            return;
+        }
+
+        questTags = next;
+        OnPropertyChanged(nameof(IsQuestTagged));
     }
 
     public void UpdateStatus(EliteStatus? currentStatus)
@@ -366,6 +386,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(IsForced));
         OnPropertyChanged(nameof(ShouldShow));
         OnPropertyChanged(nameof(StationName));
+        OnPropertyChanged(nameof(IsQuestTagged));
         OnPropertyChanged(nameof(StationType));
         OnPropertyChanged(nameof(LargestPadText));
         OnPropertyChanged(nameof(PrimaryEconomyText));
