@@ -61,6 +61,11 @@ public interface IRavenColonialClient
         IReadOnlyDictionary<string, int> cargoChanges,
         string apiKey,
         CancellationToken cancellationToken = default);
+
+    Task PublishCurrentShipAsync(
+        ColonizationCurrentShip ship,
+        string apiKey,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed class RavenColonialClient : IRavenColonialClient
@@ -348,6 +353,35 @@ public sealed class RavenColonialClient : IRavenColonialClient
             cancellationToken);
     }
 
+    public async Task PublishCurrentShipAsync(
+        ColonizationCurrentShip ship,
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(ship);
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            CreateUri("api/cmdr/currentShip"))
+        {
+            Content = JsonContent.Create(ship, options: JsonOptions),
+        };
+        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        using var response = await httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            var detail = await response.Content.ReadAsStringAsync(
+                cancellationToken).ConfigureAwait(false);
+            throw new RavenColonialServiceException(
+                response.StatusCode,
+                "publish current ship cargo",
+                detail);
+        }
+    }
+
     private async Task<IReadOnlyDictionary<string, int>>
         SendFleetCarrierCargoAsync(
             HttpMethod method,
@@ -453,6 +487,24 @@ public sealed class RavenColonialClient : IRavenColonialClient
             ? uri
             : new Uri(uri.AbsoluteUri + "/");
     }
+}
+
+public sealed record ColonizationCurrentShip
+{
+    [JsonPropertyName("cmdr")]
+    public required string CommanderName { get; init; }
+
+    [JsonPropertyName("name")]
+    public required string Name { get; init; }
+
+    [JsonPropertyName("type")]
+    public required string Type { get; init; }
+
+    [JsonPropertyName("maxCargo")]
+    public required int MaximumCargo { get; init; }
+
+    [JsonPropertyName("cargo")]
+    public required IReadOnlyDictionary<string, int> Cargo { get; init; }
 }
 
 public sealed class RavenColonialServiceException : HttpRequestException

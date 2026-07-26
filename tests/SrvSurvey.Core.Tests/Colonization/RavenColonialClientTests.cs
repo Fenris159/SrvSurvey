@@ -341,6 +341,45 @@ public sealed class RavenColonialClientTests
         Assert.False(sent);
     }
 
+    [Fact]
+    public async Task PublishesCurrentShipWithLegacyPayloadAndApiKey()
+    {
+        string? body = null;
+        var handler = new StubHandler(async request =>
+        {
+            Assert.Equal(HttpMethod.Post, request.Method);
+            Assert.Equal(
+                "/root/api/cmdr/currentShip",
+                request.RequestUri!.AbsolutePath);
+            Assert.Equal(
+                "secret-key",
+                Assert.Single(request.Headers.GetValues("rcc-key")));
+            body = await request.Content!.ReadAsStringAsync();
+            return new HttpResponseMessage(HttpStatusCode.NoContent);
+        });
+        var client = Create(handler);
+
+        await client.PublishCurrentShipAsync(
+            new ColonizationCurrentShip
+            {
+                CommanderName = "Test Cmdr",
+                Name = "Raven One",
+                Type = "python",
+                MaximumCargo = 192,
+                Cargo = new Dictionary<string, int> { ["steel"] = 27 },
+            },
+            "secret-key");
+
+        using var document = JsonDocument.Parse(body!);
+        var root = document.RootElement;
+        Assert.Equal("Test Cmdr", root.GetProperty("cmdr").GetString());
+        Assert.Equal("Raven One", root.GetProperty("name").GetString());
+        Assert.Equal("python", root.GetProperty("type").GetString());
+        Assert.Equal(192, root.GetProperty("maxCargo").GetInt32());
+        Assert.Equal(27, root.GetProperty("cargo")
+            .GetProperty("steel").GetInt32());
+    }
+
     private static RavenColonialClient Create(HttpMessageHandler handler)
     {
         return new RavenColonialClient(

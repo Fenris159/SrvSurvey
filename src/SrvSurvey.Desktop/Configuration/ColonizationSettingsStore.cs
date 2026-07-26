@@ -64,6 +64,16 @@ public sealed class ColonizationSettingsStore
             && value;
     }
 
+    public bool LoadShipCargoPublishingEnabled()
+    {
+        var root = documentStore.Load();
+        return root["Colonization"] is JsonObject colonization
+            && colonization["ShipCargoPublishingEnabled"]
+                is JsonValue enabled
+            && enabled.TryGetValue<bool>(out var value)
+            && value;
+    }
+
     public void SaveEnabled(bool enabled)
     {
         documentStore.Update(root =>
@@ -129,6 +139,22 @@ public sealed class ColonizationSettingsStore
 
             root["Version"] = 1;
             colonization["FleetCarrierCargoSyncEnabled"] = enabled;
+        });
+    }
+
+    public void SaveShipCargoPublishingEnabled(bool enabled)
+    {
+        documentStore.Update(root =>
+        {
+            var colonization = root["Colonization"] as JsonObject;
+            if (colonization is null)
+            {
+                colonization = [];
+                root["Colonization"] = colonization;
+            }
+
+            root["Version"] = 1;
+            colonization["ShipCargoPublishingEnabled"] = enabled;
         });
     }
 

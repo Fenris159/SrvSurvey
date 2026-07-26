@@ -368,5 +368,11 @@ public sealed class ColonizationSystemEditorViewModelTests
                 string apiKey,
                 CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
+
+        public Task PublishCurrentShipAsync(
+            ColonizationCurrentShip ship,
+            string apiKey,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
     }
 }

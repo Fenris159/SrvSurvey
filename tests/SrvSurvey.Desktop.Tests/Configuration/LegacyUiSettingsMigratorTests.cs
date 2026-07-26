@@ -109,6 +109,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
                 "showScreenshot": false
               },
               "buildProjects_TEST": true,
+              "buildProjectsTrackShipCargo": true,
               "autoShowPlotBuildCommodities": false,
               "buildProjectsOnRightScreen": false,
               "buildProjectsShowSumFC_TEST": false,
@@ -264,6 +265,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
 
         var colonization = new ColonizationSettingsStore(paths.UiSettingsPath);
         Assert.True(colonization.LoadEnabled());
+        Assert.True(colonization.LoadShipCargoPublishingEnabled());
         Assert.True(colonization.LoadFleetCarrierCargoSyncEnabled());
         Assert.Equal(
             new ColonizationOverlayPreferences(

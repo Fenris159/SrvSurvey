@@ -89,6 +89,15 @@
             <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                        TextWrapping="Wrap"
                        Text="{Binding Colonization.FleetCarrierSyncStatus}" />
+            <CheckBox IsChecked="{Binding Colonization.ShipCargoPublishingEnabled, Mode=TwoWay}"
+                      IsEnabled="{Binding Colonization.HasStoredRavenApiKey}"
+                      Content="Publish current ship cargo automatically" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonisation projects are active." />
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       TextWrapping="Wrap"
+                       Text="{Binding Colonization.ShipCargoPublishingStatus}" />
           </StackPanel>
         </Border>
       </Expander>

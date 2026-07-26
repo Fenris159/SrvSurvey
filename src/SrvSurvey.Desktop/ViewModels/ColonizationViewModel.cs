@@ -40,7 +40,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private bool isBusy;
     private bool hasUnsavedProjectVisibility;
     private bool fleetCarrierCargoSyncEnabled;
+    private bool shipCargoPublishingEnabled;
     private bool isFleetCarrierSyncBusy;
+    private bool isShipCargoPublishingBusy;
     private string ravenApiKey = string.Empty;
     private string? storedRavenApiKey;
     private string? profileFrontierId;
@@ -50,6 +52,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         "Load a commander profile to configure a Raven API key.";
     private string fleetCarrierSyncStatus =
         "Automatic Fleet Carrier cargo sync is off.";
+    private string shipCargoPublishingStatus =
+        "Automatic ship cargo publishing is off.";
+    private string? currentShipType;
+    private string? currentShipName;
     private string statusMessage;
     private string projectSummary = "No projects loaded.";
     private string constructionTitle = "No construction depot active";
@@ -73,6 +79,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         overlayPreferences = settingsStore.LoadOverlayPreferences();
         fleetCarrierCargoSyncEnabled =
             settingsStore.LoadFleetCarrierCargoSyncEnabled();
+        shipCargoPublishingEnabled =
+            settingsStore.LoadShipCargoPublishingEnabled();
         isEnabled = settingsStore.LoadEnabled();
         statusMessage = isEnabled
             ? "Raven Colonial access is enabled. Waiting for a commander profile."
@@ -257,6 +265,51 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         private set => SetField(ref fleetCarrierSyncStatus, value);
     }
 
+    public bool ShipCargoPublishingEnabled
+    {
+        get => shipCargoPublishingEnabled;
+        set
+        {
+            if (value == shipCargoPublishingEnabled)
+            {
+                return;
+            }
+
+            try
+            {
+                settingsStore.SaveShipCargoPublishingEnabled(value);
+                shipCargoPublishingEnabled = value;
+                OnPropertyChanged();
+                ShipCargoPublishingStatus = value
+                    ? HasStoredRavenApiKey
+                        ? "Ship cargo will publish after Cargo.json changes."
+                        : "Save a Raven API key before ship cargo can publish."
+                    : "Automatic ship cargo publishing is off.";
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or InvalidOperationException)
+            {
+                ShipCargoPublishingStatus =
+                    "The ship cargo publishing preference could not be saved: "
+                    + exception.Message;
+            }
+        }
+    }
+
+    public bool IsShipCargoPublishingBusy
+    {
+        get => isShipCargoPublishingBusy;
+        private set => SetField(ref isShipCargoPublishingBusy, value);
+    }
+
+    public string ShipCargoPublishingStatus
+    {
+        get => shipCargoPublishingStatus;
+        private set => SetField(ref shipCargoPublishingStatus, value);
+    }
+
     public bool IsEnabled
     {
         get => isEnabled;
@@ -283,6 +336,15 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 {
                     ClearProjects();
                     StatusMessage = "Raven Colonial access is off. No project data will be fetched or published.";
+                }
+
+                if (ShipCargoPublishingEnabled)
+                {
+                    ShipCargoPublishingStatus = value
+                        ? HasStoredRavenApiKey
+                            ? "Ship cargo will publish after Cargo.json changes."
+                            : "Save a Raven API key before ship cargo can publish."
+                        : "Enable Raven Colonial before publishing ship cargo.";
                 }
 
                 UpdateProjectEditorContext();
@@ -435,6 +497,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 ? "Save a Raven API key before Fleet Carrier cargo can sync."
                 : "Fleet Carrier cargo will sync from matching Market.json updates."
             : "Automatic Fleet Carrier cargo sync is off.";
+        ShipCargoPublishingStatus = ShipCargoPublishingEnabled
+            ? storedRavenApiKey is null
+                ? "Save a Raven API key before ship cargo can publish."
+                : "Ship cargo will publish after Cargo.json changes."
+            : "Automatic ship cargo publishing is off.";
         OnPropertyChanged(nameof(HasCommanderProfile));
         OnPropertyChanged(nameof(HasStoredRavenApiKey));
         RaiseCommandStates();
@@ -479,6 +546,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         foreach (var journalEvent in journalEvents)
         {
             constructionState.Apply(journalEvent);
+            ApplyShipIdentity(journalEvent);
         }
 
         if (constructionState.Version != before)
@@ -490,7 +558,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         }
     }
 
-    public void UpdateCargo(CargoSnapshot? cargo)
+    public async Task UpdateCargoAsync(CargoSnapshot? cargo)
     {
         if (cargo is null)
         {
@@ -499,6 +567,60 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
 
         shipCargo = cargo;
         UpdateCommodityPlan();
+        await PublishCurrentShipCargoAsync(cargo);
+    }
+
+    private async Task PublishCurrentShipCargoAsync(CargoSnapshot cargo)
+    {
+        if (!ShipCargoPublishingEnabled)
+        {
+            return;
+        }
+
+        var blockReason = GetShipCargoPublishingBlockReason();
+        if (blockReason is not null)
+        {
+            ShipCargoPublishingStatus = blockReason;
+            return;
+        }
+
+        var cargoCounts = cargo.Inventory
+            .Where(item => !string.IsNullOrWhiteSpace(item.Name))
+            .GroupBy(item => item.Name.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Sum(item => Math.Max(0, item.Count)),
+                StringComparer.OrdinalIgnoreCase);
+        IsShipCargoPublishingBusy = true;
+        ShipCargoPublishingStatus = "Publishing current ship cargo...";
+        try
+        {
+            await client.PublishCurrentShipAsync(
+                new ColonizationCurrentShip
+                {
+                    CommanderName = CommanderName!,
+                    Name = currentShipName ?? currentShipType!,
+                    Type = currentShipType!,
+                    MaximumCargo = constructionState.ShipCargoCapacity,
+                    Cargo = cargoCounts,
+                },
+                storedRavenApiKey!);
+            ShipCargoPublishingStatus =
+                $"Published {cargoCounts.Count:N0} ship cargo entries to Raven Colonial.";
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or InvalidDataException
+                or TaskCanceledException
+                or ArgumentException)
+        {
+            ShipCargoPublishingStatus =
+                "Ship cargo was not published: " + exception.Message;
+        }
+        finally
+        {
+            IsShipCargoPublishingBusy = false;
+        }
     }
 
     public async Task UpdateMarketAsync(MarketSnapshot? market)
@@ -581,6 +703,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             if (normalized is null && FleetCarrierCargoSyncEnabled)
             {
                 FleetCarrierCargoSyncEnabled = false;
+            }
+
+            if (ShipCargoPublishingEnabled)
+            {
+                ShipCargoPublishingStatus = normalized is null
+                    ? "Save a Raven API key before ship cargo can publish."
+                    : "Ship cargo will publish after Cargo.json changes.";
             }
 
             UpdateSystemEditorContext();
@@ -1058,6 +1187,68 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         }
 
         return "Dock at the Fleet Carrier and reopen its commodity market before syncing.";
+    }
+
+    private string? GetShipCargoPublishingBlockReason()
+    {
+        if (!IsEnabled)
+        {
+            return "Enable Raven Colonial before publishing ship cargo.";
+        }
+
+        if (storedRavenApiKey is null)
+        {
+            return "Save a Raven API key before ship cargo can publish.";
+        }
+
+        if (CommanderName is null)
+        {
+            return "Load a commander profile before publishing ship cargo.";
+        }
+
+        if (!Projects.Any(project => project.IsShown))
+        {
+            return "Ship cargo was not published because no visible colonisation projects are active.";
+        }
+
+        if (string.IsNullOrWhiteSpace(currentShipType))
+        {
+            return "Ship cargo is waiting for a Loadout journal event.";
+        }
+
+        return null;
+    }
+
+    private void ApplyShipIdentity(JournalEventEnvelope journalEvent)
+    {
+        var root = journalEvent.Payload;
+        switch (journalEvent.EventName)
+        {
+            case "LoadGame":
+            case "Loadout":
+                currentShipType = GetJournalString(root, "Ship")
+                    ?? currentShipType;
+                currentShipName = GetJournalString(root, "ShipName")
+                    ?? GetJournalString(root, "ShipIdent")
+                    ?? currentShipName;
+                break;
+
+            case "ShipyardSwap":
+                currentShipType = GetJournalString(root, "ShipType")
+                    ?? currentShipType;
+                break;
+        }
+    }
+
+    private static string? GetJournalString(
+        System.Text.Json.JsonElement root,
+        string propertyName)
+    {
+        return root.TryGetProperty(propertyName, out var value)
+            && value.ValueKind == System.Text.Json.JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(value.GetString())
+                ? value.GetString()!.Trim()
+                : null;
     }
 
     private void ReplaceLocalFleetCarrier(

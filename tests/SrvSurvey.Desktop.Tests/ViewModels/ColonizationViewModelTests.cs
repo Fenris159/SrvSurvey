@@ -278,7 +278,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         viewModel.IsEnabled = true;
 
         await viewModel.SetCommanderAsync("Test Cmdr");
-        viewModel.UpdateCargo(new CargoSnapshot(
+        await viewModel.UpdateCargoAsync(new CargoSnapshot(
             DateTimeOffset.UtcNow,
             "Cargo",
             "Ship",
@@ -288,6 +288,88 @@ public sealed class ColonizationViewModelTests : IDisposable
         var row = Assert.Single(viewModel.CommodityOverlay.Plan.Rows);
         Assert.Equal(25, row.InShip);
         Assert.Equal(60, row.OnFleetCarriers);
+    }
+
+    [Fact]
+    public async Task PublishesOptedInShipCargoForVisibleProjects()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [Project("build-1", "Port", remaining: 100)],
+                [],
+                null,
+                []),
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.ShipCargoPublishingEnabled = true;
+        viewModel.SetCommanderProfile("F123", true, "secret-key");
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Loadout",
+                "\"Ship\":\"python\",\"ShipName\":\"Raven One\",\"CargoCapacity\":192"),
+        ]);
+        await viewModel.SetCommanderAsync("Test Cmdr");
+
+        await viewModel.UpdateCargoAsync(new CargoSnapshot(
+            DateTimeOffset.UtcNow,
+            "Cargo",
+            "Ship",
+            27,
+            [new CargoItem("steel", "Steel", 27, 0)]));
+
+        Assert.Equal(1, client.PublishShipCount);
+        var ship = Assert.IsType<ColonizationCurrentShip>(
+            client.LastPublishedShip);
+        Assert.Equal("Test Cmdr", ship.CommanderName);
+        Assert.Equal("Raven One", ship.Name);
+        Assert.Equal("python", ship.Type);
+        Assert.Equal(192, ship.MaximumCargo);
+        Assert.Equal(27, ship.Cargo["steel"]);
+        Assert.Contains("Published", viewModel.ShipCargoPublishingStatus);
+    }
+
+    [Fact]
+    public async Task DoesNotPublishShipCargoWithoutOptInOrVisibleProjects()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [Project("hidden", "Port", remaining: 100)],
+                ["hidden"],
+                null,
+                []),
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile("F123", true, "secret-key");
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Loadout",
+                "\"Ship\":\"python\",\"CargoCapacity\":192"),
+        ]);
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        var cargo = new CargoSnapshot(
+            DateTimeOffset.UtcNow,
+            "Cargo",
+            "Ship",
+            1,
+            [new CargoItem("steel", "Steel", 1, 0)]);
+
+        await viewModel.UpdateCargoAsync(cargo);
+        Assert.Equal(0, client.PublishShipCount);
+
+        viewModel.ShipCargoPublishingEnabled = true;
+        await viewModel.UpdateCargoAsync(cargo with
+        {
+            Timestamp = cargo.Timestamp.AddSeconds(1),
+        });
+
+        Assert.Equal(0, client.PublishShipCount);
+        Assert.Contains("no visible", viewModel.ShipCargoPublishingStatus);
     }
 
     [Fact]
@@ -531,6 +613,10 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public int ReplaceCargoCount { get; private set; }
 
+        public int PublishShipCount { get; private set; }
+
+        public ColonizationCurrentShip? LastPublishedShip { get; private set; }
+
         public ColonizationFleetCarrier? FleetCarrierResponse { get; set; }
 
         public IReadOnlyDictionary<string, int>? LastReplacement
@@ -643,6 +729,16 @@ public sealed class ColonizationViewModelTests : IDisposable
                 CancellationToken cancellationToken = default)
         {
             return Task.FromResult(cargoChanges);
+        }
+
+        public Task PublishCurrentShipAsync(
+            ColonizationCurrentShip ship,
+            string apiKey,
+            CancellationToken cancellationToken = default)
+        {
+            PublishShipCount++;
+            LastPublishedShip = ship;
+            return Task.CompletedTask;
         }
     }
 }

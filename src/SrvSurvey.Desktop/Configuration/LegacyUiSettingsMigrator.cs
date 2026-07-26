@@ -317,6 +317,11 @@ public sealed class LegacyUiSettingsMigrator
         var count = 0;
         var section = GetOrCreateObject(target, "Colonization");
         count += Copy(legacy, "buildProjects_TEST", section, "Enabled");
+        count += Copy(
+            legacy,
+            "buildProjectsTrackShipCargo",
+            section,
+            "ShipCargoPublishingEnabled");
         var overlay = GetOrCreateObject(section, "Overlay");
         count += Copy(legacy, "autoShowPlotBuildCommodities", overlay, "AutoShow");
         count += Copy(legacy, "buildProjectsOnRightScreen", overlay, "ShowOnRightPanel");

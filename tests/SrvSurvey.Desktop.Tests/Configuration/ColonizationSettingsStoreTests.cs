@@ -98,6 +98,22 @@ public sealed class ColonizationSettingsStoreTests : IDisposable
             store.LoadOverlayPreferences());
     }
 
+    [Fact]
+    public void ShipCargoPublishingDefaultsOffAndPersistsOptIn()
+    {
+        var path = Path.Combine(directory, "ui.json");
+        var store = new ColonizationSettingsStore(path);
+
+        Assert.False(store.LoadShipCargoPublishingEnabled());
+
+        store.SaveEnabled(true);
+        store.SaveShipCargoPublishingEnabled(true);
+
+        Assert.True(store.LoadEnabled());
+        Assert.True(store.LoadShipCargoPublishingEnabled());
+        Assert.False(store.LoadFleetCarrierCargoSyncEnabled());
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(directory))

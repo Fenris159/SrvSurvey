@@ -324,5 +324,11 @@ public sealed class ColonizationProjectEditorViewModelTests
         {
             return Task.FromResult(cargoChanges);
         }
+
+        public Task PublishCurrentShipAsync(
+            ColonizationCurrentShip ship,
+            string apiKey,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
     }
 }

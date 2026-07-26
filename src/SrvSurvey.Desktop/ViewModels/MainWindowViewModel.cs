@@ -1414,7 +1414,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             allowLiveCommands: !update.IsBootstrapRead);
         await RamTah.ApplyJournalEventsAsync(update.JournalEvents);
         Guardian.UpdateCargo(update.Cargo);
-        Colonization.UpdateCargo(update.Cargo);
+        await Colonization.UpdateCargoAsync(update.Cargo);
         await Colonization.UpdateMarketAsync(update.Market);
         Combat.SetActiveBuildProjects(Colonization.HasProjects);
         Guardian.SetActiveBuildProjects(Colonization.HasProjects);
