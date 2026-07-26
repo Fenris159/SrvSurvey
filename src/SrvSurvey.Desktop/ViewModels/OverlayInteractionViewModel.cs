@@ -2,6 +2,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -13,12 +15,17 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private readonly LegacyOverlayLayoutStore? layoutStore;
     private readonly LegacyOverlayLayout? activeLayout;
     private readonly IOverlayPositionEditorHost? editorHost;
+    private readonly OverlayWindowRegistry? registry;
+    private readonly Dictionary<Window, LiveOverlayWindowState> liveWindows = [];
     private readonly DelegateCommand toggleCommand;
     private readonly DelegateCommand saveCommand;
     private readonly DelegateCommand cancelCommand;
     private OverlayPositionEditSession? editSession;
+    private OverlayPositionEditSession? liveEditSession;
     private OverlayLayoutCategoryDefinition selectedCategory;
     private bool isEditing;
+    private bool isLiveInteractionEnabled;
+    private PixelRect liveHostBounds;
     private bool disposed;
     private string statusMessage;
 
@@ -55,9 +62,10 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             ?? throw new ArgumentNullException(nameof(layoutStore));
         this.activeLayout = activeLayout
             ?? throw new ArgumentNullException(nameof(activeLayout));
+        this.registry = registry ?? OverlayWindowRegistry.Shared;
         this.editorHost = editorHost
             ?? new AvaloniaOverlayPositionEditorHost(
-                registry ?? OverlayWindowRegistry.Shared);
+                this.registry);
         Capabilities = platform.Capabilities;
         Categories = OverlayLayoutCatalog.Categories;
         selectedCategory = Categories[0];
@@ -123,9 +131,23 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
+    public bool IsLiveInteractionEnabled
+    {
+        get => isLiveInteractionEnabled;
+        private set
+        {
+            if (SetField(ref isLiveInteractionEnabled, value))
+            {
+                OnPropertyChanged(nameof(ModeLabel));
+            }
+        }
+    }
+
     public string ModeLabel => IsEditing
         ? $"Editing {SelectedCategory.DisplayName}"
-        : "Open categorized previews without starting Elite. Changes are saved only with ✓.";
+        : IsLiveInteractionEnabled
+            ? "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode."
+            : "Open categorized previews without starting Elite. Changes are saved only with ✓.";
 
     public string ToggleButtonText => IsEditing
         ? "Cancel Position Editing"
@@ -154,12 +176,34 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         return Begin();
     }
 
+    public bool ToggleLiveOverlayInteraction()
+    {
+        if (IsEditing)
+        {
+            StatusMessage = "Close the categorized overlay position editor before enabling interaction with live overlays.";
+            return false;
+        }
+
+        if (IsLiveInteractionEnabled)
+        {
+            EndLiveInteraction(saveChanges: true);
+            return true;
+        }
+
+        return BeginLiveInteraction();
+    }
+
     public bool Begin()
     {
         if (!IsAvailable || disposed)
         {
             StatusMessage = Capabilities.StatusText;
             return false;
+        }
+
+        if (IsLiveInteractionEnabled)
+        {
+            EndLiveInteraction(saveChanges: true);
         }
 
         if (activeLayout?.Error is not null)
@@ -254,6 +298,234 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         StatusMessage = "Overlay position changes were cancelled.";
     }
 
+    private bool BeginLiveInteraction()
+    {
+        if (!IsAvailable
+            || disposed
+            || platform is null
+            || gameWindowTracker is null
+            || activeLayout is null
+            || registry is null)
+        {
+            StatusMessage = Capabilities.StatusText;
+            return false;
+        }
+
+        if (activeLayout.Error is not null)
+        {
+            StatusMessage = "Live overlay positions cannot be edited until the existing layout error is corrected: "
+                + activeLayout.Error;
+            return false;
+        }
+
+        var game = gameWindowTracker.GetSnapshot();
+        if (!game.IsAvailable || game.ClientBounds is not { Width: > 0, Height: > 0 })
+        {
+            StatusMessage = "No tracked Elite window is available. Use Edit Overlay Positions for offline layout changes.";
+            return false;
+        }
+
+        liveHostBounds = game.ClientBounds;
+        liveEditSession = new OverlayPositionEditSession(activeLayout);
+        var lastStatus = "No registered live overlay accepted interactive mode.";
+        foreach (var registered in registry.Snapshot())
+        {
+            var result = platform.SetInteractive(
+                registered.Window,
+                interactive: true);
+            lastStatus = result.Status;
+            if (!result.IsPrepared || !result.IsInteractive)
+            {
+                continue;
+            }
+
+            AttachLiveWindow(registered);
+        }
+
+        if (liveWindows.Count == 0)
+        {
+            liveEditSession = null;
+            StatusMessage = "No live overlays could be made clickable. " + lastStatus;
+            return false;
+        }
+
+        IsLiveInteractionEnabled = true;
+        StatusMessage = $"{liveWindows.Count:N0} live overlay(s) are clickable. Drag them into place, then use the shortcut again to save.";
+        return true;
+    }
+
+    private void EndLiveInteraction(bool saveChanges)
+    {
+        var changes = liveEditSession?.Changes
+            ?? new Dictionary<string, LegacyOverlayPlacement>();
+        var failures = new List<string>();
+        foreach (var state in liveWindows.Values.ToArray())
+        {
+            DetachLiveWindow(state.Window);
+            if (platform is null)
+            {
+                continue;
+            }
+
+            var result = platform.SetInteractive(
+                state.Window,
+                interactive: false);
+            if (!result.IsPrepared || result.IsInteractive)
+            {
+                failures.Add(result.Status);
+            }
+        }
+
+        liveEditSession = null;
+        IsLiveInteractionEnabled = false;
+        if (!saveChanges || changes.Count == 0)
+        {
+            StatusMessage = failures.Count == 0
+                ? "Live overlays returned to click-through mode; no positions moved."
+                : "Live overlay interaction ended, but one or more windows could not be restored: "
+                    + string.Join(" ", failures.Distinct(StringComparer.Ordinal));
+            return;
+        }
+
+        try
+        {
+            if (layoutStore is null || activeLayout is null)
+            {
+                throw new InvalidOperationException(
+                    "The overlay layout store is unavailable.");
+            }
+
+            var result = layoutStore.Save(changes);
+            var updated = layoutStore.Load();
+            if (updated.Error is not null)
+            {
+                throw new InvalidDataException(updated.Error);
+            }
+
+            activeLayout.ReplaceWith(updated);
+            StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} live overlay position(s) and restored click-through mode."
+                + (failures.Count == 0
+                    ? string.Empty
+                    : " One or more windows reported a click-through restore warning: "
+                        + string.Join(" ", failures.Distinct(StringComparer.Ordinal)));
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException
+                or ArgumentException)
+        {
+            StatusMessage = "Live overlays returned to click-through mode, but their moved positions were not saved: "
+                + exception.Message;
+        }
+    }
+
+    private void AttachLiveWindow(RegisteredOverlayWindow registered)
+    {
+        if (liveWindows.ContainsKey(registered.Window))
+        {
+            return;
+        }
+
+        EventHandler<PointerPressedEventArgs> pointerPressed = (_, eventArgs) =>
+            OnLiveWindowPointerPressed(registered.Window, eventArgs);
+        EventHandler<PixelPointEventArgs> positionChanged = (_, eventArgs) =>
+            OnLiveWindowPositionChanged(registered, eventArgs.Point);
+        EventHandler closed = (_, _) => DetachLiveWindow(registered.Window);
+        var state = new LiveOverlayWindowState(
+            registered.Window,
+            registered.PlotterName,
+            pointerPressed,
+            positionChanged,
+            closed);
+        liveWindows.Add(registered.Window, state);
+        registered.Window.PointerPressed += pointerPressed;
+        registered.Window.PositionChanged += positionChanged;
+        registered.Window.Closed += closed;
+    }
+
+    private void DetachLiveWindow(Window window)
+    {
+        if (!liveWindows.Remove(window, out var state))
+        {
+            return;
+        }
+
+        window.PointerPressed -= state.PointerPressed;
+        window.PositionChanged -= state.PositionChanged;
+        window.Closed -= state.Closed;
+    }
+
+    private void OnLiveWindowPointerPressed(
+        Window window,
+        PointerPressedEventArgs eventArgs)
+    {
+        if (!IsLiveInteractionEnabled
+            || !eventArgs.GetCurrentPoint(window).Properties.IsLeftButtonPressed)
+        {
+            return;
+        }
+
+        window.BeginMoveDrag(eventArgs);
+        eventArgs.Handled = true;
+    }
+
+    private void OnLiveWindowPositionChanged(
+        RegisteredOverlayWindow registered,
+        PixelPoint position)
+    {
+        if (!IsLiveInteractionEnabled || liveEditSession is null)
+        {
+            return;
+        }
+
+        var size = GetLiveWindowPixelSize(registered);
+        if (!liveEditSession.Move(
+                registered.PlotterName,
+                position,
+                size,
+                liveHostBounds))
+        {
+            return;
+        }
+
+        var name = OverlayLayoutCatalog.Supported
+            .FirstOrDefault(definition => string.Equals(
+                definition.Name,
+                registered.PlotterName,
+                StringComparison.Ordinal))
+            ?.DisplayName
+            ?? registered.PlotterName;
+        StatusMessage = $"Moved live overlay {name}. Use the shortcut again to save and restore click-through mode.";
+    }
+
+    private static PixelSize GetLiveWindowPixelSize(
+        RegisteredOverlayWindow registered)
+    {
+        var fallback = OverlayLayoutCatalog.Supported
+            .FirstOrDefault(definition => string.Equals(
+                definition.Name,
+                registered.PlotterName,
+                StringComparison.Ordinal))
+            ?.PreviewSize
+            ?? new PixelSize(1, 1);
+        var scaling = Math.Max(0.1, registered.Window.RenderScaling);
+        var logicalWidth = registered.Window.Bounds.Width > 0
+            ? registered.Window.Bounds.Width
+            : registered.Window.Width;
+        var logicalHeight = registered.Window.Bounds.Height > 0
+            ? registered.Window.Bounds.Height
+            : registered.Window.Height;
+        var width = double.IsFinite(logicalWidth) && logicalWidth > 0
+            ? (int)Math.Ceiling(logicalWidth * scaling)
+            : fallback.Width;
+        var height = double.IsFinite(logicalHeight) && logicalHeight > 0
+            ? (int)Math.Ceiling(logicalHeight * scaling)
+            : fallback.Height;
+        return new PixelSize(Math.Max(width, 1), Math.Max(height, 1));
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -262,6 +534,11 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         disposed = true;
+        if (IsLiveInteractionEnabled)
+        {
+            EndLiveInteraction(saveChanges: false);
+        }
+
         if (editorHost is not null)
         {
             editorHost.PreviewMoved -= OnPreviewMoved;
@@ -392,4 +669,11 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
+
+    private sealed record LiveOverlayWindowState(
+        Window Window,
+        string PlotterName,
+        EventHandler<PointerPressedEventArgs> PointerPressed,
+        EventHandler<PixelPointEventArgs> PositionChanged,
+        EventHandler Closed);
 }

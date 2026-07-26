@@ -203,7 +203,8 @@ public sealed partial class App : Application
                 return new OverlayGameWindowTracker(
                     GameWindowTracker.CreateCurrent(),
                     () => viewModel.OverlayBehavior.KeepWhenGameLosesFocus
-                        || viewModel.OverlayInteraction.IsEditing);
+                        || viewModel.OverlayInteraction.IsEditing
+                        || viewModel.OverlayInteraction.IsLiveInteractionEnabled);
             }
 
             var mainWindow = new MainWindow(viewModel);
@@ -507,7 +508,8 @@ public sealed partial class App : Application
                 capabilities.Host,
                 GameWindowTracker.CreateCurrent(),
                 () => mainWindow.InputContext.AreShortcutsActive
-                    || (viewModel.OverlayInteraction.IsEditing
+                    || ((viewModel.OverlayInteraction.IsEditing
+                            || viewModel.OverlayInteraction.IsLiveInteractionEnabled)
                         && !mainWindow.IsActive
                         && desktop.Windows.Any(window => window.IsActive)));
             globalControllerInputService = new GlobalControllerInputService(
@@ -515,7 +517,8 @@ public sealed partial class App : Application
                 capabilities.Host,
                 GameWindowTracker.CreateCurrent(),
                 () => mainWindow.InputContext.AreShortcutsActive
-                    || (viewModel.OverlayInteraction.IsEditing
+                    || ((viewModel.OverlayInteraction.IsEditing
+                            || viewModel.OverlayInteraction.IsLiveInteractionEnabled)
                         && !mainWindow.IsActive
                         && desktop.Windows.Any(window => window.IsActive)));
             globalKeyboardHookService.StatusChanged += (_, _) =>
@@ -585,7 +588,8 @@ public sealed partial class App : Application
                             break;
 
                         case GlobalInputAction.ToggleOverlayInteraction:
-                            handled = viewModel.OverlayInteraction.Toggle();
+                            handled = viewModel.OverlayInteraction
+                                .ToggleLiveOverlayInteraction();
                             break;
 
                         case GlobalInputAction.ShowJumpInfo:

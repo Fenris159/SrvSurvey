@@ -609,11 +609,11 @@
               </Grid>
               <Grid ColumnDefinitions="*,220" ColumnSpacing="18">
                 <StackPanel Spacing="3">
-                  <TextBlock FontWeight="SemiBold" Text="Position-edit shortcut" />
+                  <TextBlock FontWeight="SemiBold" Text="Live-overlay interaction shortcut" />
                   <TextBlock Classes="muted"
                              FontSize="11"
                              TextWrapping="Wrap"
-                             Text="Enable global keyboard input below, then use this shortcut to open or cancel the categorized position editor." />
+                             Text="Enable global keyboard input below, then use this shortcut to make existing live overlays clickable and draggable. Use it again to save positions and restore click-through mode; it never opens the full editor." />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="3">
                   <TextBox Text="{Binding OverlayInteractionBinding.Chord, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"

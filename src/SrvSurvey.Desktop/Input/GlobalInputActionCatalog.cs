@@ -47,7 +47,7 @@ public static class GlobalInputActionCatalog
     public static IReadOnlyList<GlobalInputActionDefinition> All { get; } =
     [
         Define(GlobalInputAction.ToggleAllVisibility, "toggleAllVisibility", "Toggle overlays", "Hide or show all detached overlays.", "ALT F2"),
-        Define(GlobalInputAction.ToggleOverlayInteraction, "toggleOverlayInteraction", "Toggle overlay position editing", "Switch visible overlays between passive click-through and clickable drag-to-position mode.", "ALT SHIFT O"),
+        Define(GlobalInputAction.ToggleOverlayInteraction, "toggleOverlayInteraction", "Toggle live overlay interaction", "Switch existing live overlays between passive click-through and clickable drag-to-position mode without opening the full editor.", "ALT SHIFT O"),
         Define(GlobalInputAction.MapZoomIn, "mapZoomIn", "Map zoom in", "Increase the active map scale.", "CTRL +"),
         Define(GlobalInputAction.MapZoomOut, "mapZoomOut", "Map zoom out", "Decrease the active map scale.", "CTRL -"),
         Define(GlobalInputAction.MapZoomAuto, "mapZoomAuto", "Automatic map zoom", "Restore automatic map scaling.", "CTRL SHIFT Backspace"),

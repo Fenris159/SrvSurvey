@@ -100,6 +100,35 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     }
 
     [Fact]
+    public void LiveShortcutDoesNotOpenFullEditorWhenNoLiveOverlayExists()
+    {
+        var platform = new FakeOverlayPlatform();
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var registry = new OverlayWindowRegistry();
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                new PixelRect(100, 200, 1200, 800),
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            store.Load(),
+            registry,
+            host);
+
+        Assert.False(viewModel.ToggleLiveOverlayInteraction());
+
+        Assert.False(viewModel.IsLiveInteractionEnabled);
+        Assert.False(viewModel.IsEditing);
+        Assert.False(host.IsOpen);
+        Assert.Empty(platform.InteractiveStates);
+        Assert.Contains("No live overlays", viewModel.StatusMessage);
+    }
+
+    [Fact]
     public void CategorySelectionReplacesTheVisiblePreviewGroup()
     {
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
@@ -203,6 +232,8 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         public OverlayPlatformCapabilities Capabilities { get; } =
             OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows);
 
+        public List<bool> InteractiveStates { get; } = [];
+
         public OverlayPreparationResult PreparePassiveWindow(Window window)
         {
             return new OverlayPreparationResult(true, true, "Prepared");
@@ -212,6 +243,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             Window window,
             bool interactive)
         {
+            InteractiveStates.Add(interactive);
             return new OverlayInteractionResult(true, interactive, "Prepared");
         }
 
