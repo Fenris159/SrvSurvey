@@ -191,6 +191,34 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
             store.Load().Placements["PlotJumpInfo"]);
     }
 
+    [Fact]
+    public void ReplacingPositionsPreservesIndependentGlobalScale()
+    {
+        var active = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>(),
+            null,
+            null);
+        active.SetScaleIndex(19);
+        var updated = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = new(
+                    LegacyHorizontalAnchor.Center,
+                    0,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    null),
+            },
+            0.5,
+            null);
+
+        active.ReplaceWith(updated);
+
+        Assert.Equal(19, active.ScaleIndex);
+        Assert.Single(active.Placements);
+        Assert.Equal(0.5, active.DefaultOpacity);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

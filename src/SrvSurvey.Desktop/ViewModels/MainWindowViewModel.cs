@@ -145,6 +145,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         GalaxyMapSettingsStore? galaxyMapSettingsStore = null,
         PulseOverlaySettingsStore? pulseOverlaySettingsStore = null,
         OverlayBehaviorSettingsStore? overlayBehaviorSettingsStore = null,
+        OverlayScaleSettingsStore? overlayScaleSettingsStore = null,
         JournalSettingsStore? journalSettingsStore = null,
         SystemScanPersistenceStore? systemScanPersistenceStore = null,
         CodexImageSettingsStore? codexImageSettingsStore = null,
@@ -215,9 +216,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             sharedGameWindowSwitcher);
         var sharedOverlayLayoutStore = overlayLayoutStore
             ?? new LegacyOverlayLayoutStore(AppDataPaths.DataDirectory);
+        var activeOverlayLayout = overlayLayout
+            ?? sharedOverlayLayoutStore.Load();
         OverlayLayout = new OverlayLayoutSettingsViewModel(
             sharedOverlayLayoutStore,
-            overlayLayout ?? sharedOverlayLayoutStore.Load());
+            activeOverlayLayout);
+        OverlayScale = new OverlayScaleSettingsViewModel(
+            overlayScaleSettingsStore
+                ?? new OverlayScaleSettingsStore(AppDataPaths.UiSettingsPath),
+            activeOverlayLayout);
         OverlayBehavior = new OverlayBehaviorViewModel(
             overlayBehaviorSettingsStore
                 ?? new OverlayBehaviorSettingsStore(AppDataPaths.UiSettingsPath));
@@ -528,6 +535,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public BiologyRewardSettingsViewModel BiologyRewards { get; }
 
     public OverlayLayoutSettingsViewModel OverlayLayout { get; }
+
+    public OverlayScaleSettingsViewModel OverlayScale { get; }
 
     public OverlayBehaviorViewModel OverlayBehavior { get; }
 

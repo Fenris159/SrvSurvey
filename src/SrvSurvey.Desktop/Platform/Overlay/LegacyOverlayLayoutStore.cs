@@ -5,6 +5,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Avalonia;
+using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -396,6 +397,7 @@ public sealed class LegacyOverlayLayoutStore
 public sealed class LegacyOverlayLayout
 {
     private LayoutState state;
+    private int scaleIndex;
 
     public LegacyOverlayLayout(
         IReadOnlyDictionary<string, LegacyOverlayPlacement> placements,
@@ -422,6 +424,20 @@ public sealed class LegacyOverlayLayout
     public double? DefaultOpacity => Volatile.Read(ref state).DefaultOpacity;
 
     public string? Error => Volatile.Read(ref state).Error;
+
+    public int ScaleIndex => Volatile.Read(ref scaleIndex);
+
+    public void SetScaleIndex(int index)
+    {
+        if (!OverlayScaleCatalog.IsSupported(index))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(index),
+                $"Overlay scale index {index} is not supported.");
+        }
+
+        Volatile.Write(ref scaleIndex, index);
+    }
 
     public void ReplaceWith(LegacyOverlayLayout updated)
     {

@@ -426,9 +426,24 @@
                       IsChecked="{Binding OverlayBehavior.HideInMaverickSuit, Mode=TwoWay}"
                       Content="Hide overlays in a Maverick suit" />
           </Grid>
+          <Grid ColumnDefinitions="*,240" ColumnSpacing="20">
+            <StackPanel Spacing="2">
+              <TextBlock FontWeight="SemiBold" Text="Overlay scale" />
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         Text="Match desktop scaling or force the original 50-250% overlay sizes." />
+            </StackPanel>
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding OverlayScale.Options}"
+                      SelectedItem="{Binding OverlayScale.SelectedOption, Mode=TwoWay}" />
+          </Grid>
           <TextBlock Classes="muted"
                      FontSize="11"
                      Text="{Binding OverlayBehavior.CurrentSuitText}" />
+          <TextBlock IsVisible="{Binding OverlayScale.HasSettingsStatus}"
+                     Foreground="{DynamicResource RavenMutedTextBrush}"
+                     Text="{Binding OverlayScale.SettingsStatus}"
+                     TextWrapping="Wrap" />
           <TextBlock IsVisible="{Binding OverlayBehavior.HasSettingsStatus}"
                      Foreground="{DynamicResource RavenWarningBrush}"
                      Text="{Binding OverlayBehavior.SettingsStatus}"

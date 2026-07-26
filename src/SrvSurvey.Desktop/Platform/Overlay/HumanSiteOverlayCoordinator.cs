@@ -200,19 +200,15 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
         var logicalHeight = humanSite.IsHuge
             ? gameBounds.Height * 0.9 / screen.Scaling
             : humanSite.PreferredHeight;
-        if (Math.Abs(overlay.Width - logicalWidth) > 0.5)
-        {
-            overlay.Width = logicalWidth;
-        }
-
-        if (Math.Abs(overlay.Height - logicalHeight) > 0.5)
-        {
-            overlay.Height = logicalHeight;
-        }
+        OverlayThemeResources.SetBaseSize(
+            overlay,
+            overlayLayout,
+            logicalWidth,
+            logicalHeight);
 
         var pixelSize = new PixelSize(
-            Math.Max(1, (int)Math.Ceiling(logicalWidth * screen.Scaling)),
-            Math.Max(1, (int)Math.Ceiling(logicalHeight * screen.Scaling)));
+            Math.Max(1, (int)Math.Ceiling(overlay.Width * screen.Scaling)),
+            Math.Max(1, (int)Math.Ceiling(overlay.Height * screen.Scaling)));
         var position = overlayLayout.GetPosition(
                 "PlotHumanSite",
                 gameBounds,
