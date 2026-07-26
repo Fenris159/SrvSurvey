@@ -3,6 +3,7 @@ using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Search;
@@ -211,7 +212,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []);
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
-                new NetworkPrivacyPreferences(true, "dev", true));
+                new NetworkPrivacyPreferences(false, "dev", true));
             var client = new RecordingGreenGasGiantClient();
             using var viewModel = new MainWindowViewModel(
                 journals,
@@ -235,6 +236,68 @@ public sealed class MainWindowViewModelTests
             Assert.Equal("potential", candidate.Tag);
             Assert.Contains(
                 "Uploaded a potential Green Gas Giant candidate",
+                viewModel.NetworkPrivacy.StatusMessage);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task EddnReceivesContextButPublishesOnlyNewLiveEvents()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-eddn-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-25T120000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"gameversion\":\"4.1\",\"build\":\"r1\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"LoadGame\",\"Commander\":\"Test Cmdr\",\"Horizons\":true,\"Odyssey\":true}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test A\",\"SystemAddress\":123,\"StarPos\":[1,2,3]}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
+                new NetworkPrivacyPreferences(true, "beta", false));
+            var publisher = new RecordingEddnPublisher();
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                eddnPublisher: publisher);
+
+            await viewModel.RefreshAsync();
+
+            var bootstrap = Assert.Single(publisher.Calls);
+            Assert.False(bootstrap.AllowPublishing);
+            Assert.True(bootstrap.Enabled);
+            Assert.Equal("beta", bootstrap.Environment);
+            Assert.Equal(3, bootstrap.Events.Count);
+            Assert.DoesNotContain("Published", viewModel.NetworkPrivacy.StatusMessage);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-25T12:01:00Z\",\"event\":\"DockingGranted\",\"MarketID\":1,\"StationName\":\"Port\",\"LandingPad\":2}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(2, publisher.Calls.Count);
+            var live = publisher.Calls[1];
+            Assert.True(live.AllowPublishing);
+            Assert.Equal("DockingGranted", Assert.Single(live.Events).EventName);
+            Assert.Contains(
+                "Published DockingGranted to EDDN (beta)",
                 viewModel.NetworkPrivacy.StatusMessage);
         }
         finally
@@ -1839,6 +1902,40 @@ public sealed class MainWindowViewModelTests
             return Task.CompletedTask;
         }
     }
+
+    private sealed class RecordingEddnPublisher : IEddnPublisher
+    {
+        public List<EddnCall> Calls { get; } = [];
+
+        public Task<EddnPublicationResult> ApplyAsync(
+            IReadOnlyList<JournalEventEnvelope> journalEvents,
+            EliteStatus? status,
+            bool enabled,
+            string environment,
+            bool allowPublishing,
+            CancellationToken cancellationToken = default)
+        {
+            Calls.Add(new EddnCall(
+                journalEvents.ToArray(),
+                enabled,
+                environment,
+                allowPublishing));
+            IReadOnlyList<EddnPublishedEvent> published =
+                enabled && allowPublishing && journalEvents.Count > 0
+                    ? [new EddnPublishedEvent(
+                        journalEvents[0].EventName,
+                        "https://eddn.edcd.io/schemas/test/1/test",
+                        environment)]
+                    : [];
+            return Task.FromResult(new EddnPublicationResult(published, []));
+        }
+    }
+
+    private sealed record EddnCall(
+        IReadOnlyList<JournalEventEnvelope> Events,
+        bool Enabled,
+        string Environment,
+        bool AllowPublishing);
 
     private sealed class CountingScreenshotProcessor
         : IScreenshotProcessingService

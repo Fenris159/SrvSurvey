@@ -1601,7 +1601,7 @@
                         IsEnabled="{Binding NetworkPrivacy.EddnUploadEnabled}" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="The legacy EDDN path was disabled in the original build. This consent and environment are retained without making new EDDN requests." />
+                         Text="Publishes only supported new journal events after startup. Commander-specific and localized fields are removed, and dev/beta always use EDDN test schemas." />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Spacing="12">

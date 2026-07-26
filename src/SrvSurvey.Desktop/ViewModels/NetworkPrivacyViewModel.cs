@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Settlements;
 using SrvSurvey.Desktop.Configuration;
 
@@ -93,6 +94,26 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         {
             StatusMessage =
                 $"Uploaded {result.Published.Count:N0} Green Gas Giant candidates.";
+        }
+    }
+
+    public void ReportPublicationResult(EddnPublicationResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        if (result.Warnings.Count > 0)
+        {
+            StatusMessage = string.Join(Environment.NewLine, result.Warnings);
+        }
+        else if (result.Published.Count == 1)
+        {
+            StatusMessage =
+                $"Published {result.Published[0].EventName} to EDDN ({result.Published[0].Environment}).";
+        }
+        else if (result.Published.Count > 1)
+        {
+            StatusMessage =
+                $"Published {result.Published.Count:N0} journal events to EDDN "
+                + $"({result.Published[0].Environment}).";
         }
     }
 

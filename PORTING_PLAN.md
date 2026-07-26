@@ -611,6 +611,17 @@ UI tests where practical, and live Windows/Linux evidence.
   newly inferred live geometry is validated and submitted, with exact legacy
   field names; imported, downloaded, repeated, and bootstrap state is never
   republished, and failures remain isolated from journal processing.
+  EDDN publication is now functional rather than merely retaining the legacy
+  preference: the migrated opt-in and dev/beta/live environment feed the 16
+  supported legacy journal contracts, while disabled and bootstrap processing
+  only hydrate session, system, expansion, and body identity context. Payloads
+  follow the current EDDN live schemas, always use HTTP/1.1, route dev/beta to
+  test schema references, remove localized and commander-specific fields
+  recursively, require every schema field, cross-check system identity before
+  augmentation, and apply the Status.json/journal body agreement rule before a
+  Codex BodyID is sent. Requests and response details are bounded, a failed or
+  schema-invalid message is never retried automatically, later events remain
+  independent, and all failures are isolated from journal processing.
 - [ ] Localization review for every migrated surface.
 
 Features may be explicitly deferred, but the release notes and UI must identify

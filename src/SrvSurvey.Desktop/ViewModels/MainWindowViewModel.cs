@@ -11,6 +11,7 @@ using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Quests;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
@@ -47,6 +48,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         new();
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
+    private readonly IEddnPublisher eddnPublisher;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
     private readonly QuestRuntimeCoordinator questRuntimeCoordinator;
@@ -167,7 +169,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         ReferenceDataUpdateViewModel? referenceDataUpdates = null,
         LocalizationViewModel? localization = null,
         ICanonnHumanSiteClient? canonnHumanSiteClient = null,
-        ICanonnHumanSitePublisher? canonnHumanSitePublisher = null)
+        ICanonnHumanSitePublisher? canonnHumanSitePublisher = null,
+        IEddnPublisher? eddnPublisher = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -331,6 +334,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 ?? new VrOverlayCalibrationStore(AppDataPaths.DataDirectory));
         NetworkPrivacy = new NetworkPrivacyViewModel(
             new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
+        this.eddnPublisher = eddnPublisher ?? new EddnPublisher(
+            (typeof(MainWindowViewModel).Assembly.GetName().Version
+                ?? new Version(0, 0)).ToString());
         this.greenGasGiantPublicationCoordinator =
             greenGasGiantPublicationCoordinator
                 ?? new GreenGasGiantPublicationCoordinator(
@@ -1844,6 +1850,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             || isManualRefresh)
         {
             LastUpdated = $"Last update: {DateTimeOffset.Now:G}";
+        }
+
+        // External publication runs after every local reducer and persistence
+        // path so an unavailable gateway cannot delay live state projection.
+        var eddnResult = await eddnPublisher.ApplyAsync(
+            update.JournalEvents,
+            latestStatus,
+            NetworkPrivacy.EddnUploadEnabled,
+            NetworkPrivacy.EddnEnvironment,
+            allowPublishing: !update.IsBootstrapRead);
+        NetworkPrivacy.ReportPublicationResult(eddnResult);
+        foreach (var warning in eddnResult.Warnings)
+        {
+            applicationLogService?.Append(warning);
         }
     }
 
