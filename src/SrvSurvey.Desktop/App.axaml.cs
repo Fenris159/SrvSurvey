@@ -124,15 +124,26 @@ public sealed partial class App : Application
 
             var mainWindow = new MainWindow(viewModel);
             desktop.MainWindow = mainWindow;
-            async Task RestartAfterProfileImportAsync()
+            async Task RestartApplicationAsync(string reason)
             {
                 new ApplicationRestartService().StartReplacement();
-                applicationLog.Append(
-                    "Profile import verified; replacement process started.");
+                applicationLog.Append(reason + "; replacement process started.");
                 await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
             }
 
+            Task RestartAfterProfileImportAsync()
+            {
+                return RestartApplicationAsync("Profile import verified");
+            }
+
+            Task RestartAfterJournalChangeAsync()
+            {
+                return RestartApplicationAsync("Journal folder changed");
+            }
+
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
+            viewModel.JournalSettings.RestartRequested +=
+                RestartAfterJournalChangeAsync;
             async Task WriteClipboardAsync(string text)
             {
                 var clipboard = mainWindow.Clipboard
@@ -621,6 +632,8 @@ public sealed partial class App : Application
             {
                 viewModel.ProfileImportCompleted -=
                     RestartAfterProfileImportAsync;
+                viewModel.JournalSettings.RestartRequested -=
+                    RestartAfterJournalChangeAsync;
                 viewModel.OverlayBehavior.PropertyChanged -=
                     HandleOverlayBehaviorChanged;
                 Dispatcher.UIThread.UnhandledException -= HandleUiException;

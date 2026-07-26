@@ -35,6 +35,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "keepOverlays": true,
               "hidePlottersFromCombatSuits": true,
               "hidePlottersFromMaverickSuits": false,
+              "watchedJournalFolder": "D:\\Elite Journals",
               "autoShowPlotBodyInfo": false,
               "bodyInfoBubbleSize": 321,
               "highGravityWarningLevel": 2.75,
@@ -165,6 +166,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new OverlayBehaviorPreferences(true, true, false),
             new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            new JournalPreferences("D:\\Elite Journals"),
+            new JournalSettingsStore(paths.UiSettingsPath).Load());
 
         var survey = new SystemSurveySettingsStore(paths.UiSettingsPath).Load();
         Assert.False(survey.AutoShowBodyInfo);

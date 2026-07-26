@@ -46,6 +46,18 @@ public sealed partial class SettingsView : UserControl
         }
     }
 
+    private async void ChooseJournalFolder_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        var folder = await ChooseFolderAsync(
+            "Choose the Elite Dangerous journal folder");
+        if (folder is not null && DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.JournalSettings.DirectoryPath = folder;
+        }
+    }
+
     private async void ChooseScreenshotSourceFolder_Click(
         object? sender,
         RoutedEventArgs eventArgs)

@@ -569,6 +569,42 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void PersistedJournalFolderIsUsedWhenNoStartupOverrideIsPresent()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-persisted-journal-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var config = Path.Combine(root, "config");
+            Directory.CreateDirectory(journals);
+            Directory.CreateDirectory(config);
+            var paths = new AppDataPaths(
+                config,
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            new JournalSettingsStore(paths.UiSettingsPath).Save(
+                new JournalPreferences(journals));
+
+            var viewModel = new MainWindowViewModel(
+                configuredJournalDirectory: null,
+                appDataPaths: paths);
+
+            Assert.Equal(journals, viewModel.JournalFolderPath);
+            Assert.Equal(journals, viewModel.JournalSettings.DirectoryPath);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task RefreshAppliesLiveJournalAndStatusState()
     {
         var root = Path.Combine(

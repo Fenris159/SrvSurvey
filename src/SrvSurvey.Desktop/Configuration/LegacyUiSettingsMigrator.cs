@@ -66,6 +66,10 @@ public sealed class LegacyUiSettingsMigrator
                     ("hidePlottersFromCombatSuits", "HideInDominatorSuit"),
                     ("hidePlottersFromMaverickSuits", "HideInMaverickSuit"),
                 ]);
+                mappedCount += MapSection(legacy, root, "Journal",
+                [
+                    ("watchedJournalFolder", "Directory"),
+                ]);
                 mappedCount += MapSection(legacy, root, "SystemSurvey",
                 [
                     ("autoShowPlotBodyInfo", "AutoShowBodyInfo"),

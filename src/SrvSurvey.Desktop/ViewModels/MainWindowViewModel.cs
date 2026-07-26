@@ -132,7 +132,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         VrOverlayCalibrationStore? vrOverlayCalibrationStore = null,
         GalaxyMapSettingsStore? galaxyMapSettingsStore = null,
         PulseOverlaySettingsStore? pulseOverlaySettingsStore = null,
-        OverlayBehaviorSettingsStore? overlayBehaviorSettingsStore = null)
+        OverlayBehaviorSettingsStore? overlayBehaviorSettingsStore = null,
+        JournalSettingsStore? journalSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -156,8 +157,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         DiagnosticsLog = new DiagnosticsLogViewModel(applicationLogService);
         JournalInspector = new JournalInspectorViewModel(
             ReplayQuestJournalEventAsync);
-        folderResolution = JournalFolderLocator.ResolveCurrent(
+        var sharedJournalSettingsStore = journalSettingsStore
+            ?? new JournalSettingsStore(AppDataPaths.UiSettingsPath);
+        JournalSettings = new JournalSettingsViewModel(
+            sharedJournalSettingsStore,
             configuredJournalDirectory);
+        folderResolution = JournalFolderLocator.ResolveCurrent(
+            configuredJournalDirectory
+                ?? sharedJournalSettingsStore.Load().Directory);
         commanderProfileStore = new CommanderProfileStore(
             AppDataPaths.DataDirectory);
         commanderCodexStore = new CommanderCodexStore(
@@ -528,6 +535,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public DiagnosticsLogViewModel DiagnosticsLog { get; }
 
     public JournalInspectorViewModel JournalInspector { get; }
+
+    public JournalSettingsViewModel JournalSettings { get; }
 
     public JournalPostProcessorViewModel JournalPostProcessor { get; }
 

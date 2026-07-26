@@ -1525,11 +1525,39 @@
 
       <StackPanel Spacing="5">
         <TextBlock Classes="eyebrow" Text="DATA &amp; MIGRATION" />
-        <TextBlock Classes="page-title" Text="Legacy profile" />
+        <TextBlock Classes="page-title" Text="Data sources and migration" />
         <TextBlock Classes="muted"
                    TextWrapping="Wrap"
                    Text="Bring settings, commander state, surveys, routes, journeys, caches, and every other legacy profile file into the cross-platform application." />
       </StackPanel>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="12">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Elite journal source" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Use a persisted folder for non-default Windows installations, Proton prefixes, and copied profiles." />
+          </StackPanel>
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <TextBox Text="{Binding JournalSettings.DirectoryPath, Mode=TwoWay}"
+                     IsEnabled="{Binding !JournalSettings.IsCommandLineOverride}"
+                     PlaceholderText="Elite Dangerous journal folder" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    IsEnabled="{Binding !JournalSettings.IsCommandLineOverride}"
+                    Click="ChooseJournalFolder_Click"
+                    Content="Choose folder" />
+          </Grid>
+          <Button Classes="primary"
+                  HorizontalAlignment="Left"
+                  Command="{Binding JournalSettings.SaveAndRestartCommand}"
+                  Content="Save journal folder and restart" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding JournalSettings.StatusMessage}" />
+        </StackPanel>
+      </Border>
 
       <Border Classes="card raised">
         <StackPanel Spacing="16">
