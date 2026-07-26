@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:SrvSurvey.Desktop.Controls"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.OverlayPositionPreviewWindow"
         x:DataType="vm:OverlayPositionPreviewViewModel"
@@ -8,17 +9,18 @@
         ShowInTaskbar="False"
         WindowDecorations="None"
         Topmost="True"
+        SizeToContent="Height"
         Background="Transparent"
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="Overlay position preview">
-  <Border Margin="2"
-          Padding="4"
+  <Border Margin="1"
+          Padding="5"
           Background="{DynamicResource RavenWindowBrush}"
           BorderBrush="{DynamicResource RavenWarningBrush}"
           BorderThickness="2"
-          CornerRadius="8"
-          Opacity="0.94">
+          CornerRadius="5"
+          Opacity="0.96">
     <Grid>
       <TextBlock HorizontalAlignment="Center"
                  VerticalAlignment="Center"
@@ -30,25 +32,25 @@
                  TextAlignment="Center"
                  TextTrimming="CharacterEllipsis"
                  ToolTip.Tip="{Binding Title}" />
-      <Grid Margin="6"
+      <Grid Margin="3"
             IsVisible="{Binding !IsCompact}"
-            RowDefinitions="Auto,Auto,*,Auto"
-            RowSpacing="4">
+            RowDefinitions="Auto,Auto,Auto,Auto"
+            RowSpacing="3">
         <StackPanel>
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                     FontSize="11"
+                     FontSize="12"
                      FontWeight="SemiBold"
                      Text="{Binding Title}"
                      TextTrimming="CharacterEllipsis"
                      ToolTip.Tip="{Binding Title}" />
           <TextBlock Foreground="{DynamicResource RavenTextBrush}"
-                     FontSize="9"
+                     FontSize="10"
                      FontWeight="SemiBold"
                      IsVisible="{Binding ShowSubtitle}"
                      Text="{Binding Subtitle}"
                      TextTrimming="CharacterEllipsis" />
           <TextBlock Classes="muted"
-                     FontSize="8"
+                     FontSize="9"
                      IsVisible="{Binding ShowSubtitle}"
                      Text="{Binding Context}"
                      TextTrimming="CharacterEllipsis" />
@@ -62,21 +64,94 @@
                       ItemsSource="{Binding Rows}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:OverlayPositionPreviewRowViewModel">
-              <Grid Margin="0,1,0,3"
+              <Grid Margin="0,1"
                     RowDefinitions="Auto,Auto"
-                    ColumnDefinitions="Auto,*"
-                    ColumnSpacing="8">
-                <TextBlock Classes="muted"
-                           FontSize="9"
+                    ColumnDefinitions="Auto,Auto,Auto,*"
+                    ColumnSpacing="5">
+                <Grid Width="14"
+                      MinHeight="18"
+                      IsVisible="{Binding HasGlyph}">
+                  <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
+                             FontSize="11"
+                             FontWeight="Bold"
+                             IsVisible="{Binding IsPrimaryGlyph}"
+                             Text="{Binding Glyph}" />
+                  <TextBlock Foreground="{DynamicResource RavenSecondaryBrush}"
+                             FontSize="11"
+                             FontWeight="Bold"
+                             IsVisible="{Binding IsInformationGlyph}"
+                             Text="{Binding Glyph}" />
+                  <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
+                             FontSize="11"
+                             FontWeight="Bold"
+                             IsVisible="{Binding IsGoldGlyph}"
+                             Text="{Binding Glyph}" />
+                  <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                             FontSize="11"
+                             FontWeight="Bold"
+                             IsVisible="{Binding IsWarningGlyph}"
+                             Text="{Binding Glyph}" />
+                  <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                             FontSize="11"
+                             FontWeight="Bold"
+                             IsVisible="{Binding IsDangerGlyph}"
+                             Text="{Binding Glyph}" />
+                  <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
+                             FontSize="11"
+                             FontWeight="Bold"
+                             IsVisible="{Binding IsSuccessGlyph}"
+                             Text="{Binding Glyph}" />
+                </Grid>
+                <TextBlock Grid.Column="1"
+                           Foreground="{DynamicResource RavenPrimaryBrush}"
+                           FontSize="10"
                            Text="{Binding Label}"
                            TextTrimming="CharacterEllipsis" />
-                <TextBlock Grid.Column="1"
+                <ItemsControl Grid.Column="2"
+                              Margin="1,0,3,0"
+                              VerticalAlignment="Center"
+                              IsVisible="{Binding HasRewardBands}"
+                              ItemsSource="{Binding RewardBands}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <StackPanel Orientation="Horizontal" Spacing="2" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:BiologySignalRewardBandViewModel">
+                      <controls:BiologyRewardBandControl Width="13"
+                                                         Height="28"
+                                                         MinimumReward="{Binding MinimumReward}"
+                                                         MaximumReward="{Binding MaximumReward}"
+                                                         BucketOneMillions="{Binding RewardBucketOneMillions}"
+                                                         BucketTwoMillions="{Binding RewardBucketTwoMillions}"
+                                                         BucketThreeMillions="{Binding RewardBucketThreeMillions}"
+                                                         IsPrediction="{Binding IsPrediction}"
+                                                         IsHighlighted="{Binding IsHighlighted}"
+                                                         IsDimmed="{Binding ShouldDim}"
+                                                         FilledBrush="{DynamicResource RavenPrimaryBrush}"
+                                                         PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
+                                                         DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
+                                                         PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
+                                                         PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
+                                                         HighlightBrush="{DynamicResource RavenBioGoldBrush}"
+                                                         DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
+                                                         UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
+                                                         HatchBrush="{DynamicResource RavenBioHatchBrush}"
+                                                         PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Grid.Column="3"
                            HorizontalAlignment="Right"
-                           FontSize="9"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource RavenPrimaryBrush}"
+                           FontSize="10"
                            Text="{Binding Value}"
                            TextTrimming="CharacterEllipsis" />
                 <ProgressBar Grid.Row="1"
-                             Grid.ColumnSpan="2"
+                             Grid.Column="1"
+                             Grid.ColumnSpan="3"
                              Height="3"
                              Margin="0,2,0,0"
                              IsVisible="{Binding HasProgress}"
@@ -90,7 +165,7 @@
         <TextBlock Grid.Row="3"
                    HorizontalAlignment="Center"
                    Foreground="{DynamicResource RavenMutedTextBrush}"
-                   FontSize="8"
+                   FontSize="9"
                    IsVisible="{Binding ShowFooter}"
                    Text="{Binding Footer}"
                    TextTrimming="CharacterEllipsis"

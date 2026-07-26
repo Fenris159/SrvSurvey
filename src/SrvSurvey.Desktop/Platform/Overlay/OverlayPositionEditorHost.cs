@@ -38,6 +38,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     private readonly Dictionary<Window, RuntimeWindowState> runtimeWindows = [];
     private OverlayPositionEditorWindow? editor;
     private PixelRect hostBounds;
+    private double hostScaling = 1;
     private bool closing;
     private bool disposed;
 
@@ -83,6 +84,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
 
         hostBounds = preferred ?? screen.Bounds;
+        hostScaling = screen.Scaling;
         var toolbarSize = new PixelSize(
             Math.Max(1, (int)Math.Ceiling(toolbar.Width * screen.Scaling)),
             Math.Max(1, (int)Math.Ceiling(toolbar.Height * screen.Scaling)));
@@ -113,16 +115,18 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             var preview = new OverlayPositionPreviewWindow(definition);
             OverlayThemeResources.Apply(preview);
+            var previewSize = preview.GetExpectedPixelSize(hostScaling);
             var position = session.GetPosition(
                 definition.Name,
                 hostBounds,
-                definition.PreviewSize);
+                previewSize);
             preview.Position = ClampToHost(
                 position,
-                definition.PreviewSize,
+                previewSize,
                 hostBounds);
             preview.PointerPressed += OnPreviewPointerPressed;
             preview.PositionChanged += OnPreviewPositionChanged;
+            preview.Opened += OnPreviewOpened;
             previews.Add(preview);
             preview.Show();
         }
@@ -203,8 +207,21 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             new OverlayPreviewMovedEventArgs(
                 preview.Definition.Name,
                 eventArgs.Point,
-                preview.Definition.PreviewSize,
+                preview.GetCurrentPixelSize(hostScaling),
                 hostBounds));
+    }
+
+    private void OnPreviewOpened(object? sender, EventArgs eventArgs)
+    {
+        if (sender is not OverlayPositionPreviewWindow preview)
+        {
+            return;
+        }
+
+        preview.Position = ClampToHost(
+            preview.Position,
+            preview.GetCurrentPixelSize(hostScaling),
+            hostBounds);
     }
 
     private void ClosePreviews()
@@ -213,6 +230,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             preview.PointerPressed -= OnPreviewPointerPressed;
             preview.PositionChanged -= OnPreviewPositionChanged;
+            preview.Opened -= OnPreviewOpened;
             preview.Close();
         }
 

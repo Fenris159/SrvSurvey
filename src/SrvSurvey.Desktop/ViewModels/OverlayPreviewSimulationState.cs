@@ -1,3 +1,4 @@
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -48,14 +49,20 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Signals", "6 biological")),
             "PlotBioSystem" => Content(
                 state.CurrentSystem,
-                "6 bodies with biological signals",
-                "REWARDS 61.32 M - 91.99 M",
-                Row("6a", "6 / 6  |  42.11 M", 100),
-                Row("6d", "4 / 6  |  31.80 M", 67),
-                Row("6e", "5 / 7  |  37.42 M", 71),
-                Row("6f", "3 / 6  |  24.90 M", 50),
-                Row("7f", "5 / 7  |  58.20 M", 71),
-                Row("9d", "4 / 6  |  33.60 M", 67)),
+                "Bio signals: 12",
+                "Rewards: 42.75 M - 106 M",
+                BioRow("A4", "10.89 M - 34.34 M",
+                    Known(1_000_000), Known(2_400_000),
+                    Known(7_600_000, highlighted: true), Unknown()),
+                BioRow("A5", "9.47 M - 31.54 M",
+                    Known(2_200_000), Known(5_200_000),
+                    Predicted(1_000_000, 9_400_000),
+                    Known(13_000_000, highlighted: true)),
+                BioRow("BC3", "20.7 M",
+                    Known(4_100_000), Known(16_600_000)),
+                BioRow("BC4", "1.69 M - 19.01 M",
+                    Predicted(1_690_000, 19_010_000),
+                    Known(7_600_000))),
             "PlotBodyInfo" => Content(
                 state.CurrentBody,
                 "High metal content world",
@@ -80,13 +87,13 @@ internal static class OverlayPreviewSimulationProjector
                 state.CurrentBody,
                 "HIGH-GRAVITY APPROACH",
                 "2.84 G | CHECK DESCENT RATE",
-                Row("Warning", "High gravity - 2.84 g", 82)),
+                Row("Warning", "High gravity - 2.84 g", 82, "⚠", OverlayPreviewGlyphTone.Danger)),
             "PlotFloatie" => Content(
                 state.CommanderName,
                 "Journal notification",
                 "FIRST FOOTFALL CONFIRMED",
-                Row("Discovery", "First footfall confirmed"),
-                Row("Codex", "Bacterium Acies recorded")),
+                Row("Discovery", "First footfall confirmed", glyph: "✓", glyphTone: OverlayPreviewGlyphTone.Success),
+                Row("Codex", "Bacterium Acies recorded", glyph: "◆", glyphTone: OverlayPreviewGlyphTone.Information)),
             "PlotFootCombat" => Content(
                 state.SettlementName,
                 "High-intensity conflict zone",
@@ -107,10 +114,10 @@ internal static class OverlayPreviewSimulationProjector
                 "6 BODIES REMAIN | EST. VALUE 18.4 M CR",
                 Row("B 1", "Class II gas giant | 126,400 cr"),
                 Row("B 2", "Rocky body | 18,220 cr"),
-                Row("B 3", "HMC world | BIO 6 | GEO 2", 75),
+                Row("B 3", "HMC world | BIO 6 | GEO 2", 75, "☀", OverlayPreviewGlyphTone.Gold),
                 Row("B 3 a", "Icy body | 12,840 cr"),
-                Row("C 1", "Water world | 1.24 M cr", 100),
-                Row("C 2", "Terraformable HMC | 682,100 cr", 100)),
+                Row("C 1", "Water world | 1.24 M cr", 100, "⚑", OverlayPreviewGlyphTone.Information),
+                Row("C 2", "Terraformable HMC | 682,100 cr", 100, "✓", OverlayPreviewGlyphTone.Success)),
             "PlotGalMap" => Content(
                 state.DestinationSystem,
                 "Route and system intelligence",
@@ -124,8 +131,8 @@ internal static class OverlayPreviewSimulationProjector
                 state.CurrentBody,
                 "Surface survey - heading 074 degrees",
                 "3 TARGETS | RADAR 1.0 KM",
-                Row("Bacterium Acies", "146 m | 068 degrees", 29),
-                Row("Tussock Capillum", "412 m | 091 degrees", 82),
+                Row("Bacterium Acies", "146 m | 068 degrees", 29, "►", OverlayPreviewGlyphTone.Information),
+                Row("Tussock Capillum", "412 m | 091 degrees", 82, "⚐", OverlayPreviewGlyphTone.Gold),
                 Row("Stratum Tectonicas", "1.24 km | 312 degrees"),
                 Row("Ship", "860 m | 184 degrees"),
                 Row("History", "12 samples | 4 species")),
@@ -134,8 +141,8 @@ internal static class OverlayPreviewSimulationProjector
                 "Guardian ruins live map",
                 "OBELISK B04 | RELIC + CASKET REQUIRED",
                 Row("Survey", "18 / 27 points", 67),
-                Row("Nearest", "Pylon P3 | 84 m"),
-                Row("Obelisk", "B04 | Technology 06"),
+                Row("Nearest", "Pylon P3 | 84 m", glyph: "►", glyphTone: OverlayPreviewGlyphTone.Information),
+                Row("Obelisk", "B04 | Technology 06", glyph: "◆", glyphTone: OverlayPreviewGlyphTone.Gold),
                 Row("Artifacts", "Relic 2 | Casket 1 | Orb 0"),
                 Row("Mission", "12 / 28 logs", 43)),
             "PlotGuardianSystem" => Content(
@@ -144,7 +151,7 @@ internal static class OverlayPreviewSimulationProjector
                 "3 SITES | 1 ACTIVE DESTINATION",
                 Row("B 3 a", "Ancient Ruins beta | 18 / 27", 67),
                 Row("B 3 b", "Guardian Structure | unvisited"),
-                Row("C 1 a", "Ancient Ruins gamma | complete", 100)),
+                Row("C 1 a", "Ancient Ruins gamma | complete", 100, "✓", OverlayPreviewGlyphTone.Success)),
             "PlotHumanSite" => Content(
                 state.SettlementName,
                 "Military settlement - threat 2",
@@ -158,8 +165,8 @@ internal static class OverlayPreviewSimulationProjector
                 state.DestinationSystem,
                 "K-class star | scoopable",
                 "JUMP 4 / 9 | 138.7 LY REMAINING",
-                Row("Destination", state.DestinationSystem),
-                Row("Star", "K | scoopable"),
+                Row("Destination", state.DestinationSystem, glyph: "►", glyphTone: OverlayPreviewGlyphTone.Primary),
+                Row("Star", "K | scoopable", glyph: "☀", glyphTone: OverlayPreviewGlyphTone.Gold),
                 Row("Traffic", "42 ships in 24 h")),
             "PlotMassacre" => Content(
                 "Massacre missions",
@@ -203,7 +210,7 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Technology logs", "6 / 10", 60),
                 Row("Culture logs", "4 / 8", 50),
                 Row("Language logs", "2 / 10", 20),
-                Row("Next site", "Ancient Ruins beta | 1.8 km")),
+                Row("Next site", "Ancient Ruins beta | 1.8 km", glyph: "◆", glyphTone: OverlayPreviewGlyphTone.Gold)),
             "PlotRamTah" => Content(
                 "Decoding the Ancient Ruins",
                 state.GuardianSiteName,
@@ -220,7 +227,7 @@ internal static class OverlayPreviewSimulationProjector
                 Row("To", state.DestinationSystem),
                 Row("Distance", "42.6 ly | inside 50 ly limit"),
                 Row("Boxel", "Eol Prou AA-A h | 42 visited", 33),
-                Row("Next", "Eol Prou AA-A h23")),
+                Row("Next", "Eol Prou AA-A h23", glyph: "►", glyphTone: OverlayPreviewGlyphTone.Primary)),
             "PlotStationInfo" => Content(
                 state.StationName,
                 "Coriolis starport",
@@ -228,8 +235,8 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Largest pad", "Large"),
                 Row("Economy", "High Tech | Industrial"),
                 Row("Faction", "Raven Colonial Initiative"),
-                Row("Services", "Shipyard | Outfitting | Vista"),
-                Row("Prohibited", "Narcotics | Slaves")),
+                Row("Services", "Shipyard | Outfitting | Vista", glyph: "✓", glyphTone: OverlayPreviewGlyphTone.Success),
+                Row("Prohibited", "Narcotics | Slaves", glyph: "!", glyphTone: OverlayPreviewGlyphTone.Danger)),
             "PlotSysStatus" => Content(
                 state.CurrentSystem,
                 "System survey status",
@@ -240,7 +247,7 @@ internal static class OverlayPreviewSimulationProjector
                 "Ground target",
                 "Biological sample location",
                 "146 M | 068 DEGREES",
-                Row("Bacterium Acies", "146 m | 068 degrees", 29),
+                Row("Bacterium Acies", "146 m | 068 degrees", 29, "►", OverlayPreviewGlyphTone.Information),
                 Row("Latitude", "-18.4216"),
                 Row("Longitude", "74.0921")),
             _ => throw new InvalidOperationException(
@@ -275,10 +282,53 @@ internal static class OverlayPreviewSimulationProjector
     private static OverlayPositionPreviewRowViewModel Row(
         string label,
         string value,
-        double? progress = null)
+        double? progress = null,
+        string glyph = "",
+        OverlayPreviewGlyphTone glyphTone = OverlayPreviewGlyphTone.Primary)
     {
-        return new OverlayPositionPreviewRowViewModel(label, value, progress);
+        return new OverlayPositionPreviewRowViewModel(
+            label,
+            value,
+            progress,
+            glyph,
+            glyphTone);
     }
+
+    private static OverlayPositionPreviewRowViewModel BioRow(
+        string body,
+        string reward,
+        params BiologySignalRewardBandViewModel[] bands)
+    {
+        return new OverlayPositionPreviewRowViewModel(
+            body,
+            reward,
+            Glyph: "☀",
+            GlyphTone: OverlayPreviewGlyphTone.Gold,
+            RewardBands: bands);
+    }
+
+    private static BiologySignalRewardBandViewModel Known(
+        long reward,
+        bool highlighted = false,
+        bool dimmed = false) =>
+        BiologySignalRewardBandViewModel.Known(
+            reward,
+            highlighted,
+            dimmed,
+            BiologyRewardThresholds.Default);
+
+    private static BiologySignalRewardBandViewModel Predicted(
+        long minimumReward,
+        long maximumReward) =>
+        BiologySignalRewardBandViewModel.Predicted(
+            minimumReward,
+            maximumReward,
+            false,
+            BiologyRewardThresholds.Default);
+
+    private static BiologySignalRewardBandViewModel Unknown() =>
+        BiologySignalRewardBandViewModel.Unknown(
+            BiologyRewardThresholds.Default);
 }
 
 internal sealed record OverlayPreviewSimulationContent(

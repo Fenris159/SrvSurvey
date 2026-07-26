@@ -29,9 +29,54 @@ public sealed class OverlayPositionPreviewViewModelTests
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
-        Assert.Contains(preview.Rows, row => row.Label == "6a");
-        Assert.Contains(preview.Rows, row => row.HasProgress);
-        Assert.Contains("REWARDS", preview.Footer);
+        Assert.Contains(preview.Rows, row => row.Label == "A4");
+        Assert.All(preview.Rows, row => Assert.True(row.HasRewardBands));
+        Assert.DoesNotContain(preview.Rows, row => row.HasProgress);
+        Assert.Contains(
+            preview.Rows.SelectMany(row => row.RewardBands!),
+            band => band.IsPrediction);
+        Assert.Contains(
+            preview.Rows.SelectMany(row => row.RewardBands!),
+            band => band.MinimumReward == 0);
+        Assert.Contains("Rewards", preview.Footer);
+    }
+
+    [Fact]
+    public void PreviewWrapsItsSimulatedContentInsteadOfUsingLegacyCanvasSize()
+    {
+        var jump = OverlayLayoutCatalog.Supported.Single(item =>
+            item.Name == "PlotJumpInfo");
+        var biology = OverlayLayoutCatalog.Supported.Single(item =>
+            item.Name == "PlotBioSystem");
+
+        var jumpPreview = OverlayPositionPreviewViewModel.Create(jump);
+        var biologyPreview = OverlayPositionPreviewViewModel.Create(biology);
+
+        Assert.InRange(jumpPreview.PreferredWidth, 190, 480);
+        Assert.True(jumpPreview.PreferredWidth < jump.PreviewSize.Width);
+        Assert.True(jumpPreview.EstimatedHeight < jump.PreviewSize.Height * 2);
+        Assert.True(biologyPreview.EstimatedHeight > jumpPreview.EstimatedHeight);
+        Assert.Equal(
+            biologyPreview.Rows.Count,
+            biologyPreview.Rows.Count(row => row.HasRewardBands));
+    }
+
+    [Fact]
+    public void SimulatedStateIncludesLegacySemanticGlyphs()
+    {
+        var definitions = new[] { "PlotFSSInfo", "PlotJumpInfo", "PlotFlightWarning" }
+            .Select(name => OverlayLayoutCatalog.Supported.Single(item =>
+                item.Name == name));
+
+        var glyphs = definitions
+            .SelectMany(definition =>
+                OverlayPositionPreviewViewModel.Create(definition).Rows)
+            .Where(row => row.HasGlyph)
+            .ToArray();
+
+        Assert.Contains(glyphs, row => row.Glyph == "☀");
+        Assert.Contains(glyphs, row => row.Glyph == "►");
+        Assert.Contains(glyphs, row => row.Glyph == "⚠");
     }
 
     [Fact]
