@@ -42,7 +42,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         SaveCommand = saveCommand;
         CancelCommand = cancelCommand;
         statusMessage = IsAvailable
-            ? "Overlay position previews are ready when the desktop overlay runtime starts."
+            ? "Overlay position previews use an isolated simulated game state."
             : Capabilities.StatusText;
     }
 
@@ -76,7 +76,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         SaveCommand = saveCommand;
         CancelCommand = cancelCommand;
         statusMessage = IsAvailable
-            ? "Choose Edit Overlay Positions to open categorized previews. Elite does not need to be running."
+            ? "Choose Edit Overlay Positions to load categorized previews from an isolated simulated game state. Elite does not need to be running."
             : Capabilities.StatusText;
         this.editorHost.PreviewMoved += OnPreviewMoved;
         this.editorHost.Closed += OnEditorClosed;
@@ -103,7 +103,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             if (IsEditing && editSession is not null)
             {
                 editorHost?.ShowCategory(editSession, value.Category);
-                StatusMessage = $"Showing {value.DisplayName}. Drag the previews, then use ✓ to save or ✕ to cancel.";
+                StatusMessage = $"Showing {value.DisplayName} with simulated game data. Drag the previews, then use ✓ to save or ✕ to cancel.";
             }
         }
     }
@@ -226,7 +226,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         var preferredBounds = game.IsAvailable
             ? game.ClientBounds
             : (PixelRect?)null;
-        StatusMessage = $"Showing {SelectedCategory.DisplayName}. Drag the previews, then use ✓ to save or ✕ to cancel.";
+        StatusMessage = $"Showing {SelectedCategory.DisplayName} with simulated game data. Drag the previews, then use ✓ to save or ✕ to cancel.";
         if (editorHost.Open(
                 this,
                 session,

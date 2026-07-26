@@ -192,7 +192,11 @@ public sealed class LegacyOverlayParityTests
         Assert.Contains("Content=\"&#x00D7;\"", editor);
         Assert.Contains("Text=\"{Binding Title}\"", preview);
         Assert.Contains("ItemsSource=\"{Binding Rows}\"", preview);
+        Assert.Contains("Text=\"{Binding CompactText}\"", preview);
+        Assert.Contains("Text=\"{Binding Footer}\"", preview);
+        Assert.Contains("SIMULATED GAME STATE", preview);
         Assert.Contains("BorderThickness=\"2\"", preview);
+        Assert.Contains("simulated game data", interaction);
         Assert.Contains("game.IsAvailable", interaction);
         Assert.Contains("? game.ClientBounds", interaction);
         Assert.Contains(": (PixelRect?)null", interaction);
