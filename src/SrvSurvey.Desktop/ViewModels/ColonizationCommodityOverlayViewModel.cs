@@ -411,6 +411,18 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
 
     public bool IsSatisfied => ShipHasEnough || FleetCarriersHaveEnough;
 
+    public bool IsActiveItem => !IsUnavailableAtCurrentMarket;
+
+    public bool IsDimmedItem => IsUnavailableAtCurrentMarket;
+
+    public bool IsActiveSurplus => IsSatisfied && IsActiveItem;
+
+    public bool IsDimmedSurplus => IsSatisfied && IsDimmedItem;
+
+    public bool IsActiveDeficit => !IsSatisfied && IsActiveItem;
+
+    public bool IsDimmedDeficit => !IsSatisfied && IsDimmedItem;
+
     public string AssignmentText => IsAssignedToCommander
         ? "PIN"
         : IsAssignedToOther

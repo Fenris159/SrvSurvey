@@ -98,7 +98,12 @@
             SuccessBrush="{DynamicResource RavenSuccessBrush}"
             WarningBrush="{DynamicResource RavenWarningBrush}"
             DangerBrush="{DynamicResource RavenDangerBrush}"
-            TextBrush="{DynamicResource RavenTextBrush}" />
+            TextBrush="{DynamicResource RavenTextBrush}"
+            CheckpointBrush="{DynamicResource RavenFczCheckpointBrush}"
+            LocalCheckpointBrush="{DynamicResource RavenFczCheckpointLocalBrush}"
+            PowerPostBrush="{DynamicResource RavenFczPowerPostBrush}"
+            ProcessedBrush="{DynamicResource RavenSuccessDimBrush}"
+            QuestBrush="{DynamicResource RavenMenuGoldBrush}" />
 
         <Border Margin="18"
                 Padding="10,7"

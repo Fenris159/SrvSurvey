@@ -39,15 +39,36 @@ public sealed class BiologyRewardBandControl : Control
     public static readonly StyledProperty<IBrush?> PotentialBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(PotentialBrush));
+    public static readonly StyledProperty<IBrush?> DimmedFilledBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(DimmedFilledBrush));
+    public static readonly StyledProperty<IBrush?> PredictionFilledBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(PredictionFilledBrush));
+    public static readonly StyledProperty<IBrush?> PredictionPotentialBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(PredictionPotentialBrush));
     public static readonly StyledProperty<IBrush?> HighlightBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(HighlightBrush));
+    public static readonly StyledProperty<IBrush?> DimmedHighlightBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(DimmedHighlightBrush));
     public static readonly StyledProperty<IBrush?> EdgeBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(EdgeBrush));
     public static readonly StyledProperty<IBrush?> PredictionBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(PredictionBrush));
+    public static readonly StyledProperty<IBrush?> UnknownBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(UnknownBrush));
+    public static readonly StyledProperty<IBrush?> HatchBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(HatchBrush));
+    public static readonly StyledProperty<bool> IsDimmedProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, bool>(
+            nameof(IsDimmed));
 
     static BiologyRewardBandControl()
     {
@@ -61,9 +82,16 @@ public sealed class BiologyRewardBandControl : Control
             IsHighlightedProperty,
             FilledBrushProperty,
             PotentialBrushProperty,
+            DimmedFilledBrushProperty,
+            PredictionFilledBrushProperty,
+            PredictionPotentialBrushProperty,
             HighlightBrushProperty,
+            DimmedHighlightBrushProperty,
             EdgeBrushProperty,
-            PredictionBrushProperty);
+            PredictionBrushProperty,
+            UnknownBrushProperty,
+            HatchBrushProperty,
+            IsDimmedProperty);
     }
 
     public long MinimumReward
@@ -120,10 +148,34 @@ public sealed class BiologyRewardBandControl : Control
         set => SetValue(PotentialBrushProperty, value);
     }
 
+    public IBrush? DimmedFilledBrush
+    {
+        get => GetValue(DimmedFilledBrushProperty);
+        set => SetValue(DimmedFilledBrushProperty, value);
+    }
+
+    public IBrush? PredictionFilledBrush
+    {
+        get => GetValue(PredictionFilledBrushProperty);
+        set => SetValue(PredictionFilledBrushProperty, value);
+    }
+
+    public IBrush? PredictionPotentialBrush
+    {
+        get => GetValue(PredictionPotentialBrushProperty);
+        set => SetValue(PredictionPotentialBrushProperty, value);
+    }
+
     public IBrush? HighlightBrush
     {
         get => GetValue(HighlightBrushProperty);
         set => SetValue(HighlightBrushProperty, value);
+    }
+
+    public IBrush? DimmedHighlightBrush
+    {
+        get => GetValue(DimmedHighlightBrushProperty);
+        set => SetValue(DimmedHighlightBrushProperty, value);
     }
 
     public IBrush? EdgeBrush
@@ -138,6 +190,24 @@ public sealed class BiologyRewardBandControl : Control
         set => SetValue(PredictionBrushProperty, value);
     }
 
+    public IBrush? UnknownBrush
+    {
+        get => GetValue(UnknownBrushProperty);
+        set => SetValue(UnknownBrushProperty, value);
+    }
+
+    public IBrush? HatchBrush
+    {
+        get => GetValue(HatchBrushProperty);
+        set => SetValue(HatchBrushProperty, value);
+    }
+
+    public bool IsDimmed
+    {
+        get => GetValue(IsDimmedProperty);
+        set => SetValue(IsDimmedProperty, value);
+    }
+
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -146,23 +216,34 @@ public sealed class BiologyRewardBandControl : Control
             return;
         }
 
-        var edge = EdgeBrush ?? Brushes.Gray;
+        var unknown = UnknownBrush ?? Brushes.Gray;
         var filled = IsHighlighted
-            ? HighlightBrush ?? Brushes.Gold
-            : FilledBrush ?? Brushes.Orange;
-        var potential = PotentialBrush ?? Brushes.DarkOrange;
+            ? IsDimmed
+                ? DimmedHighlightBrush ?? Brushes.DarkGoldenrod
+                : HighlightBrush ?? Brushes.Gold
+            : IsPrediction
+                ? PredictionFilledBrush ?? Brushes.Cyan
+                : IsDimmed
+                    ? DimmedFilledBrush ?? Brushes.DarkOrange
+                    : FilledBrush ?? Brushes.Orange;
+        var potential = IsHighlighted
+            ? DimmedHighlightBrush ?? Brushes.DarkGoldenrod
+            : IsPrediction
+                ? PredictionPotentialBrush ?? Brushes.DarkCyan
+                : PotentialBrush ?? Brushes.DarkOrange;
         var prediction = PredictionBrush ?? Brushes.LightGray;
-        var outer = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
-        context.DrawRectangle(Brushes.Transparent, new Pen(edge, 1), outer, 2, 2);
-
-        var thresholds = BiologyRewardThresholds.Normalize(
-            BucketOneMillions,
-            BucketTwoMillions,
-            BucketThreeMillions);
+        var hatch = HatchBrush ?? prediction;
         var state = BiologyRewardBandScale.Calculate(
             MinimumReward,
             MaximumReward,
-            thresholds);
+            BiologyRewardThresholds.Normalize(
+                BucketOneMillions,
+                BucketTwoMillions,
+                BucketThreeMillions));
+        var edge = state.IsUnknown ? unknown : EdgeBrush ?? filled;
+        var outer = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
+        context.DrawRectangle(Brushes.Transparent, new Pen(edge, 1), outer, 2, 2);
+
         if (state.IsUnknown)
         {
             var text = new FormattedText(
@@ -200,7 +281,7 @@ public sealed class BiologyRewardBandControl : Control
 
         if (IsPrediction)
         {
-            var hatchPen = new Pen(prediction, 0.75);
+            var hatchPen = new Pen(hatch, 0.75);
             for (var x = -Bounds.Height; x < Bounds.Width; x += 4)
             {
                 context.DrawLine(

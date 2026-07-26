@@ -22,7 +22,7 @@
         Title="SrvSurvey high-gravity warning">
   <Border Margin="8"
           Padding="3"
-          Background="{DynamicResource RavenDangerBrush}"
+          Background="{DynamicResource RavenDangerDimBrush}"
           CornerRadius="12"
           Opacity="0.98">
     <Border Padding="14,11"

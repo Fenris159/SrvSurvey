@@ -124,7 +124,6 @@
               <DataTemplate x:DataType="vm:BiologySignalRewardBandViewModel">
                 <controls:BiologyRewardBandControl Width="10"
                                                     Height="24"
-                                                    Opacity="{Binding Opacity}"
                                                     MinimumReward="{Binding MinimumReward}"
                                                     MaximumReward="{Binding MaximumReward}"
                                                     BucketOneMillions="{Binding RewardBucketOneMillions}"
@@ -132,18 +131,24 @@
                                                     BucketThreeMillions="{Binding RewardBucketThreeMillions}"
                                                     IsPrediction="{Binding IsPrediction}"
                                                     IsHighlighted="{Binding IsHighlighted}"
-                                                    FilledBrush="{DynamicResource RavenAccentBrush}"
-                                                    PotentialBrush="{DynamicResource RavenAccentMutedBrush}"
-                                                    HighlightBrush="{DynamicResource RavenWarningBrush}"
-                                                    EdgeBrush="{DynamicResource RavenBorderBrush}"
-                                                    PredictionBrush="{DynamicResource RavenMutedTextBrush}" />
+                                                    IsDimmed="{Binding ShouldDim}"
+                                                    FilledBrush="{DynamicResource RavenPrimaryBrush}"
+                                                    DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
+                                                    PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
+                                                    PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
+                                                    PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
+                                                    HighlightBrush="{DynamicResource RavenBioGoldBrush}"
+                                                    DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
+                                                    UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
+                                                    HatchBrush="{DynamicResource RavenBioHatchBrush}"
+                                                    PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
         </Border>
         <TextBlock Grid.Column="2"
                    Classes="monospace"
-                   Foreground="{DynamicResource RavenAccentBrush}"
+                   Foreground="{DynamicResource RavenBioWhiteBrush}"
                    FontSize="9"
                    FontWeight="SemiBold"
                    HorizontalAlignment="Right"

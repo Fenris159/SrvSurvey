@@ -74,6 +74,16 @@ public sealed class HumanSiteMapControl : Control
             nameof(DangerBrush));
     public static readonly StyledProperty<IBrush?> TextBrushProperty =
         AvaloniaProperty.Register<HumanSiteMapControl, IBrush?>(nameof(TextBrush));
+    public static readonly StyledProperty<IBrush?> CheckpointBrushProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, IBrush?>(nameof(CheckpointBrush));
+    public static readonly StyledProperty<IBrush?> LocalCheckpointBrushProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, IBrush?>(nameof(LocalCheckpointBrush));
+    public static readonly StyledProperty<IBrush?> PowerPostBrushProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, IBrush?>(nameof(PowerPostBrush));
+    public static readonly StyledProperty<IBrush?> ProcessedBrushProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, IBrush?>(nameof(ProcessedBrush));
+    public static readonly StyledProperty<IBrush?> QuestBrushProperty =
+        AvaloniaProperty.Register<HumanSiteMapControl, IBrush?>(nameof(QuestBrush));
 
     static HumanSiteMapControl()
     {
@@ -99,7 +109,12 @@ public sealed class HumanSiteMapControl : Control
             SuccessBrushProperty,
             WarningBrushProperty,
             DangerBrushProperty,
-            TextBrushProperty);
+            TextBrushProperty,
+            CheckpointBrushProperty,
+            LocalCheckpointBrushProperty,
+            PowerPostBrushProperty,
+            ProcessedBrushProperty,
+            QuestBrushProperty);
     }
 
     public HumanSiteMapProjection? Projection
@@ -232,6 +247,36 @@ public sealed class HumanSiteMapControl : Control
     {
         get => GetValue(TextBrushProperty);
         set => SetValue(TextBrushProperty, value);
+    }
+
+    public IBrush? CheckpointBrush
+    {
+        get => GetValue(CheckpointBrushProperty);
+        set => SetValue(CheckpointBrushProperty, value);
+    }
+
+    public IBrush? LocalCheckpointBrush
+    {
+        get => GetValue(LocalCheckpointBrushProperty);
+        set => SetValue(LocalCheckpointBrushProperty, value);
+    }
+
+    public IBrush? PowerPostBrush
+    {
+        get => GetValue(PowerPostBrushProperty);
+        set => SetValue(PowerPostBrushProperty, value);
+    }
+
+    public IBrush? ProcessedBrush
+    {
+        get => GetValue(ProcessedBrushProperty);
+        set => SetValue(ProcessedBrushProperty, value);
+    }
+
+    public IBrush? QuestBrush
+    {
+        get => GetValue(QuestBrushProperty);
+        set => SetValue(QuestBrushProperty, value);
     }
 
     public override void Render(DrawingContext context)
@@ -586,7 +631,7 @@ public sealed class HumanSiteMapControl : Control
     {
         var location = Transform(terminal.Offset, center, commander, scale);
         var brush = processed
-            ? MutedBrush ?? Brushes.DimGray
+            ? ProcessedBrush ?? MutedBrush ?? Brushes.DarkGreen
             : GetSecurityBrush(terminal.SecurityLevel);
         var radius = Math.Clamp(3 * scale, 3, 9);
         context.DrawRectangle(
@@ -650,7 +695,7 @@ public sealed class HumanSiteMapControl : Control
             return;
         }
 
-        var brush = WarningBrush ?? Brushes.Gold;
+        var brush = QuestBrush ?? WarningBrush ?? Brushes.Gold;
         foreach (var route in QuestRoutes)
         {
             if (route.Waypoints.Count < 2
@@ -707,7 +752,7 @@ public sealed class HumanSiteMapControl : Control
                 Math.Max(bounds.Width, bounds.Height) * 4);
             var brush = marker.IsWithinTarget
                 ? AccentBrush ?? Brushes.Cyan
-                : WarningBrush ?? Brushes.Gold;
+                : QuestBrush ?? WarningBrush ?? Brushes.Gold;
             context.DrawEllipse(
                 null,
                 new Pen(brush, 2),
@@ -725,7 +770,23 @@ public sealed class HumanSiteMapControl : Control
         double scale)
     {
         var location = Transform(point.Offset, center, commander, scale);
-        var brush = WarningBrush ?? Brushes.Gold;
+        if (string.Equals(point.Name, "P", StringComparison.OrdinalIgnoreCase))
+        {
+            var power = PowerPostBrush ?? WarningBrush ?? Brushes.Gold;
+            var pen = new Pen(power, 1.5);
+            context.DrawEllipse(null, pen, location, 6, 6);
+            context.DrawLine(pen, new Point(location.X + 2, location.Y - 5), new Point(location.X - 2, location.Y));
+            context.DrawLine(pen, new Point(location.X - 2, location.Y), new Point(location.X + 2, location.Y));
+            context.DrawLine(pen, new Point(location.X + 2, location.Y), new Point(location.X - 2, location.Y + 5));
+            return;
+        }
+
+        var dx = point.Offset.X - commander.X;
+        var dy = point.Offset.Y - commander.Y;
+        var isLocal = Math.Sqrt(dx * dx + dy * dy) < 5;
+        var brush = isLocal
+            ? LocalCheckpointBrush ?? SuccessBrush ?? Brushes.LimeGreen
+            : CheckpointBrush ?? WarningBrush ?? Brushes.Gold;
         context.DrawEllipse(null, new Pen(brush, 1.5), location, 6, 6);
         if (!string.IsNullOrWhiteSpace(point.Name))
         {
