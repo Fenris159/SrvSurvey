@@ -77,6 +77,86 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task LoadsAndMergesLegacyShortBookmarkGroupsWithoutWriting()
+    {
+        var path = CreateSystemPath();
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "name":"Test System",
+              "address":42,
+              "bodies":[{
+                "name":"Test System 1 a",
+                "id":7,
+                "radius":1000,
+                "bookmarks":{
+                  "ale":[{"lat":1,"long":2}],
+                  "$Codex_Ent_Aleoids_Genus_Name;":[{"lat":3,"long":4}],
+                  "lut":[{"lat":5,"long":6}]
+                }
+              }]
+            }
+            """);
+        var originalBytes = await File.ReadAllBytesAsync(path);
+        var store = new SystemSurfaceStore(temporaryDirectory);
+
+        var result = await store.LoadBodyAsync(Context());
+
+        Assert.Equal(
+            [new SurfaceCoordinate(3, 4), new SurfaceCoordinate(1, 2)],
+            result.Snapshot!.Bookmarks["$Codex_Ent_Aleoids_Genus_Name;"]);
+        Assert.Equal(
+            new SurfaceCoordinate(5, 6),
+            Assert.Single(result.Snapshot.Bookmarks["$Codex_Ent_Sphere_Name;"]));
+        Assert.DoesNotContain("ale", result.Snapshot.Bookmarks.Keys);
+        Assert.DoesNotContain("lut", result.Snapshot.Bookmarks.Keys);
+        Assert.Equal(originalBytes, await File.ReadAllBytesAsync(path));
+    }
+
+    [Fact]
+    public async Task BookmarkMutationCanonicalizesImportedGroupsWithoutDataLoss()
+    {
+        var path = CreateSystemPath();
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "name":"Test System",
+              "address":42,
+              "futureSystem":9,
+              "bodies":[{
+                "name":"Test System 1 a",
+                "id":7,
+                "radius":1000,
+                "futureBody":true,
+                "bookmarks":{
+                  "ale":[{"lat":1,"long":2,"futurePoint":"old"}],
+                  "$Codex_Ent_Aleoids_Genus_Name;":[{"lat":3,"long":4}]
+                }
+              }]
+            }
+            """);
+        var store = new SystemSurfaceStore(temporaryDirectory);
+
+        var result = await store.AddBookmarkAsync(
+            Context(),
+            "ale",
+            new SurfaceCoordinate(5, 6));
+
+        Assert.Equal(SurfaceBookmarkMutation.Added, result.Mutation);
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Equal(9, root["futureSystem"]!.GetValue<int>());
+        var body = root["bodies"]![0]!.AsObject();
+        Assert.True(body["futureBody"]!.GetValue<bool>());
+        var bookmarks = body["bookmarks"]!.AsObject();
+        Assert.False(bookmarks.ContainsKey("ale"));
+        var locations = bookmarks["$Codex_Ent_Aleoids_Genus_Name;"]!.AsArray();
+        Assert.Equal(3, locations.Count);
+        Assert.Equal("old", locations[1]!["futurePoint"]!.GetValue<string>());
+    }
+
+    [Fact]
     public async Task MissingFileReturnsAnEmptyCompatibleBodyWithoutWriting()
     {
         var store = new SystemSurfaceStore(temporaryDirectory);

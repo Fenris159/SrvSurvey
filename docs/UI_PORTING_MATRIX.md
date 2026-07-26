@@ -60,7 +60,8 @@ legacy touchdown, bookmark, and completed-scan records; tracks active samples,
 ship and SRV locations; enforces the original surface/panel/landing-gear rules;
 and renders heading-relative exclusion and tracker circles in the five legacy
 window sizes. It also restores Composition Scanner auto-tracking and analyzed
-  filters, complete cross-system death marking, bounded zoom/reset, all eight
+filters, complete cross-system death marking, lossless imported three-letter
+bookmark alias merging, bounded zoom/reset, all eight
   quick-location chords, live named `+`, `-`, `=`, `--`, and `---` commands
   with legacy genus aliases, body-selectable `.ff`/`.firstFoot` corrections,
   and a compact tracker-only state. The dedicated

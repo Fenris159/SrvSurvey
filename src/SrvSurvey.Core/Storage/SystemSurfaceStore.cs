@@ -97,6 +97,7 @@ public sealed class SystemSurfaceStore
     {
         ValidateContext(context);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        name = LegacySurfaceBookmarkNames.Canonicalize(name);
         if (!double.IsFinite(minimumSeparationMeters)
             || minimumSeparationMeters < 0)
         {
@@ -111,6 +112,7 @@ public sealed class SystemSurfaceStore
                 {
                     var body = GetOrCreateBody(root, context);
                     var bookmarks = GetOrCreateObject(body, "bookmarks");
+                    NormalizeLegacyBookmarkKeys(bookmarks);
                     var locations = GetOrCreateArray(bookmarks, name);
                     var existing = locations
                         .Select(ReadCoordinate)
@@ -140,6 +142,7 @@ public sealed class SystemSurfaceStore
     {
         ValidateContext(context);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        name = LegacySurfaceBookmarkNames.Canonicalize(name);
         return await fileStore.UpdateAsync(
                 ToFileContext(context),
                 root =>
@@ -150,6 +153,7 @@ public sealed class SystemSurfaceStore
                         return;
                     }
 
+                    NormalizeLegacyBookmarkKeys(bookmarks);
                     bookmarks.Remove(name);
                     if (bookmarks.Count == 0)
                     {
@@ -180,23 +184,27 @@ public sealed class SystemSurfaceStore
     {
         ValidateContext(context);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        name = LegacySurfaceBookmarkNames.Canonicalize(name);
         var outcome = SurfaceBookmarkMutation.Added;
         var path = await fileStore.UpdateAsync(
                 ToFileContext(context),
                 root =>
                 {
                     var body = GetOrCreateBody(root, context);
-                    if (body["bookmarks"] is JsonObject existing
-                        && existing.ContainsKey(name))
+                    if (body["bookmarks"] is JsonObject existing)
                     {
-                        existing.Remove(name);
-                        if (existing.Count == 0)
+                        NormalizeLegacyBookmarkKeys(existing);
+                        if (existing.ContainsKey(name))
                         {
-                            body.Remove("bookmarks");
-                        }
+                            existing.Remove(name);
+                            if (existing.Count == 0)
+                            {
+                                body.Remove("bookmarks");
+                            }
 
-                        outcome = SurfaceBookmarkMutation.Removed;
-                        return;
+                            outcome = SurfaceBookmarkMutation.Removed;
+                            return;
+                        }
                     }
 
                     var bookmarks = GetOrCreateObject(body, "bookmarks");
@@ -217,6 +225,7 @@ public sealed class SystemSurfaceStore
     {
         ValidateContext(context);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        name = LegacySurfaceBookmarkNames.Canonicalize(name);
         if (maximumDistanceMeters is { } maximum
             && (!double.IsFinite(maximum) || maximum < 0))
         {
@@ -230,8 +239,13 @@ public sealed class SystemSurfaceStore
                 root =>
                 {
                     var body = FindBody(root, context);
-                    if (body?["bookmarks"] is not JsonObject bookmarks
-                        || bookmarks[name] is not JsonArray locations)
+                    if (body?["bookmarks"] is not JsonObject bookmarks)
+                    {
+                        return;
+                    }
+
+                    NormalizeLegacyBookmarkKeys(bookmarks);
+                    if (bookmarks[name] is not JsonArray locations)
                     {
                         return;
                     }
@@ -511,9 +525,11 @@ public sealed class SystemSurfaceStore
                 StringComparer.Ordinal);
         }
 
+        var normalizedBookmarks = bookmarks.DeepClone().AsObject();
+        NormalizeLegacyBookmarkKeys(normalizedBookmarks);
         var result = new Dictionary<string, IReadOnlyList<SurfaceCoordinate>>(
             StringComparer.Ordinal);
-        foreach (var pair in bookmarks)
+        foreach (var pair in normalizedBookmarks)
         {
             if (pair.Value is not JsonArray locations)
             {
@@ -536,10 +552,50 @@ public sealed class SystemSurfaceStore
                 }
             }
 
-            result[pair.Key] = parsed;
+            var name = LegacySurfaceBookmarkNames.Canonicalize(pair.Key);
+            if (result.TryGetValue(name, out var existing))
+            {
+                result[name] = [.. existing, .. parsed];
+            }
+            else
+            {
+                result[name] = parsed;
+            }
         }
 
         return result;
+    }
+
+    private static void NormalizeLegacyBookmarkKeys(JsonObject bookmarks)
+    {
+        foreach (var pair in bookmarks.ToArray())
+        {
+            var canonical = LegacySurfaceBookmarkNames.Canonicalize(pair.Key);
+            if (string.Equals(canonical, pair.Key, StringComparison.Ordinal)
+                || pair.Value is not JsonArray legacyLocations)
+            {
+                continue;
+            }
+
+            if (bookmarks[canonical] is null)
+            {
+                bookmarks.Remove(pair.Key);
+                bookmarks[canonical] = legacyLocations;
+                continue;
+            }
+
+            if (bookmarks[canonical] is not JsonArray canonicalLocations)
+            {
+                continue;
+            }
+
+            foreach (var location in legacyLocations)
+            {
+                canonicalLocations.Add(location?.DeepClone());
+            }
+
+            bookmarks.Remove(pair.Key);
+        }
     }
 
     private static IReadOnlyList<SurfaceBioScan> ReadBioScans(

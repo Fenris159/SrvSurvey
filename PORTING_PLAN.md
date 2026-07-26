@@ -176,6 +176,12 @@ completion markers so startup retries are idempotent. Malformed values,
 overflowing rewards, and symbolic links fail closed: their bytes are preserved,
 the completion marker is not written, and Diagnostics identifies the file.
 
+Legacy three-letter surface-bookmark groups are also active immediately after
+import instead of being stranded under retired keys. Reads normalize the same
+WinForms alias table without writing the imported file; the first later bookmark
+mutation atomically merges old and canonical groups, retains every coordinate
+and unknown JSON field, and removes only the obsolete alias.
+
 Imported published-reference caches are also active rather than merely copied.
 The catalog resolver recognizes the original `codexRef.json`, `pub/bio-criteria`,
 Guardian indexes/surveys/templates, human-settlement templates, and `pub/ggg.json`
