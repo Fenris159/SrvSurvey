@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -16,11 +17,14 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private readonly PriorScansOverlayViewModel priorScansViewModel;
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
+    private readonly IGameScreenCapture gameScreenCapture;
     private readonly LegacyOverlayLayout overlayLayout;
     private readonly ICanonnSystemPoiClient canonnSystemPoiClient;
     private readonly Func<string?> commanderNameProvider;
     private readonly SemaphoreSlim canonnRefreshLock = new(1, 1);
+    private readonly SemaphoreSlim fssCaptureLock = new(1, 1);
     private readonly CancellationTokenSource disposalCancellation = new();
+    private readonly string? fssDiagnosticDirectory;
     private readonly DispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private BiologySurveyOverlayWindow? biologyWindow;
@@ -43,6 +47,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private string? canonnLoadedKey;
     private string? canonnFailedKey;
     private DateTimeOffset canonnRetryAfter;
+    private long? fssDiagnosticRevision;
     private bool disposed;
 
     public SystemSurveyOverlayCoordinator(
@@ -53,7 +58,9 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         Func<string?>? commanderNameProvider = null,
         ICanonnSystemPoiClient? canonnSystemPoiClient = null,
         ExobiologyReferenceCatalog? exobiologyCatalog = null,
-        LegacyOverlayLayout? overlayLayout = null)
+        LegacyOverlayLayout? overlayLayout = null,
+        IGameScreenCapture? gameScreenCapture = null,
+        string? fssDiagnosticDirectory = null)
     {
         this.survey = survey ?? throw new ArgumentNullException(nameof(survey));
         this.surfaceSurvey = surfaceSurvey
@@ -62,6 +69,12 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(platform));
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
+        this.gameScreenCapture = gameScreenCapture
+            ?? GameScreenCapture.CreateCurrent();
+        this.fssDiagnosticDirectory = string.IsNullOrWhiteSpace(
+            fssDiagnosticDirectory)
+                ? null
+                : fssDiagnosticDirectory;
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         this.commanderNameProvider = commanderNameProvider ?? (() => null);
         this.canonnSystemPoiClient = new CachingCanonnSystemPoiClient(
@@ -88,6 +101,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         };
         timer.Tick += OnTimerTick;
         timer.Start();
+        ApplyFssCaptureCapabilityStatus();
         SynchronizeWindows();
     }
 
@@ -250,9 +264,44 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         CloseStatusWindow();
         surfaceViewModel.Dispose();
         priorScansViewModel.Dispose();
-        disposalCancellation.Dispose();
         gameWindowTracker.Dispose();
+        DisposeFssCapture();
         platform.Dispose();
+    }
+
+    private void DisposeFssCapture()
+    {
+        if (!fssCaptureLock.Wait(0))
+        {
+            _ = DisposeFssCaptureWhenIdleAsync();
+            return;
+        }
+
+        try
+        {
+            gameScreenCapture.Dispose();
+        }
+        finally
+        {
+            fssCaptureLock.Release();
+            fssCaptureLock.Dispose();
+            disposalCancellation.Dispose();
+        }
+    }
+
+    private async Task DisposeFssCaptureWhenIdleAsync()
+    {
+        await fssCaptureLock.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            gameScreenCapture.Dispose();
+        }
+        finally
+        {
+            fssCaptureLock.Release();
+            fssCaptureLock.Dispose();
+            disposalCancellation.Dispose();
+        }
     }
 
     private void OnTimerTick(object? sender, EventArgs eventArgs)
@@ -261,6 +310,130 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         _ = RefreshBiologyCanonnAsync();
         _ = priorScansViewModel.RefreshAsync();
         SynchronizeWindows();
+        _ = RefreshFssTuningAsync();
+    }
+
+    private async Task RefreshFssTuningAsync()
+    {
+        var request = survey.CreateFssTuningCaptureRequest();
+        if (disposed
+            || request is null
+            || lastFssBodyWindow is null
+            || !gameWindow.IsAvailable
+            || !gameWindow.IsVisible
+            || !gameWindow.IsForeground)
+        {
+            return;
+        }
+
+        if (!gameScreenCapture.IsAvailable)
+        {
+            ApplyFssCaptureCapabilityStatus();
+            return;
+        }
+
+        if (!await fssCaptureLock.WaitAsync(0).ConfigureAwait(true))
+        {
+            return;
+        }
+
+        try
+        {
+            var halfWidth = gameWindow.ClientBounds.Width / 2;
+            var halfHeight = gameWindow.ClientBounds.Height / 2;
+            if (halfWidth <= 0 || halfHeight <= 0)
+            {
+                return;
+            }
+
+            var captureBounds = new PixelRect(
+                gameWindow.ClientBounds.X + halfWidth,
+                gameWindow.ClientBounds.Y,
+                halfWidth,
+                halfHeight);
+            var captureResult = await Task.Run(
+                () =>
+                {
+                    var pixels = gameScreenCapture.Capture(captureBounds);
+                    var analysis = FssTuningDetector.Analyze(
+                        pixels,
+                        request.Settings,
+                        request.State);
+                    return (Pixels: pixels, Analysis: analysis);
+                },
+                disposalCancellation.Token).ConfigureAwait(true);
+            if (disposed)
+            {
+                return;
+            }
+
+            if (captureResult.Analysis.Failure is not null
+                && request.Settings.SaveDiagnosticImages
+                && fssDiagnosticDirectory is not null
+                && fssDiagnosticRevision != request.Revision)
+            {
+                fssDiagnosticRevision = request.Revision;
+                try
+                {
+                    _ = await Task.Run(
+                        () => FssTuningDiagnosticWriter.Save(
+                            fssDiagnosticDirectory,
+                            captureResult.Pixels,
+                            request.Revision),
+                        disposalCancellation.Token).ConfigureAwait(true);
+                }
+                catch (Exception exception) when (
+                    exception is IOException
+                        or UnauthorizedAccessException
+                        or InvalidOperationException)
+                {
+                    survey.UpdateFssTuningDetectorStatus(
+                        "FSS tuning detection is active, but its diagnostic "
+                            + "image could not be saved: "
+                            + exception.Message);
+                }
+            }
+            else
+            {
+                survey.UpdateFssTuningDetectorStatus(null);
+            }
+
+            survey.ApplyFssTuningAnalysis(
+                request.Revision,
+                captureResult.Analysis);
+        }
+        catch (OperationCanceledException)
+            when (disposalCancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception) when (
+            exception is Win32Exception
+                or ExternalException
+                or IOException
+                or InvalidDataException
+                or InvalidOperationException
+                or NotSupportedException
+                or ArgumentException)
+        {
+            if (!disposed)
+            {
+                survey.UpdateFssTuningDetectorStatus(
+                    "FSS tuning capture is temporarily unavailable: "
+                        + exception.Message);
+            }
+        }
+        finally
+        {
+            fssCaptureLock.Release();
+        }
+    }
+
+    private void ApplyFssCaptureCapabilityStatus()
+    {
+        survey.UpdateFssTuningDetectorStatus(
+            gameScreenCapture.IsAvailable
+                ? null
+                : gameScreenCapture.UnavailableReason);
     }
 
     private async Task RefreshBiologyCanonnAsync()
@@ -380,6 +553,13 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         object? sender,
         PropertyChangedEventArgs eventArgs)
     {
+        if (eventArgs.PropertyName == nameof(
+                SystemSurveyViewModel.FssTuningDetectorEnabled))
+        {
+            fssDiagnosticRevision = null;
+            ApplyFssCaptureCapabilityStatus();
+        }
+
         if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.ShouldShowFssInfo)
             or nameof(SystemSurveyViewModel.ShouldShowLastFssBody)
             or nameof(SystemSurveyViewModel.ShouldShowBodyInfo)

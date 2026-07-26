@@ -205,7 +205,10 @@ public sealed partial class App : Application
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent(),
                 () => viewModel.CommanderName,
-                overlayLayout: overlayLayout);
+                overlayLayout: overlayLayout,
+                fssDiagnosticDirectory: Path.Combine(
+                    appDataPaths.CacheDirectory,
+                    "fss-diagnostics"));
             questIndicatorOverlayCoordinator = new QuestIndicatorOverlayCoordinator(
                 viewModel.QuestIndicator,
                 OverlayPlatformService.CreateCurrent(),

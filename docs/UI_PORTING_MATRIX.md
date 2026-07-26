@@ -206,9 +206,11 @@ and optional non-body counts. The journal-backed `PlotFSS` surface is now a
 top-center last-scan card with standalone-planet selection, discovery,
 terraformable/landable state, distance, scan/mapped values, and biological
 signals. These surfaces use bounded click-through layouts and all Raven themes.
-The legacy `PlotFSS.watchFssSettings_TEST` screen-pixel tuning detector remains
-open pending a platform capture abstraction. `PlotBodyInfo` is now implemented
-as a top-left passive surface with map/orrery, DSS, orbit/glide, optional
+The legacy `PlotFSS.watchFssSettings_TEST` screen-pixel tuning detector is now
+ported with its exact scan/skip state machine, thresholds, status cues, nested
+settings migration, and optional diagnostic captures. Bounded native capture
+supports Windows and X11, while Wayland exposes an explicit unavailable status.
+`PlotBodyInfo` is now implemented as a top-left passive surface with map/orrery, DSS, orbit/glide, optional
 surface-analysis, Sol-bubble, `Alt+B`, and Guardian-priority rules. It supports
 unscanned destinations and shows discovery/mapping, scan/DSS values,
 temperature, gravity, pressure, signals, volcanism, atmosphere, materials, and
@@ -389,8 +391,8 @@ check at 1182 by 790, using a live journal folder:
   class, 12,845 LS distance, terraformable/landable markers, scan and mapped
   values, and four biological signals rendered cleanly at the active Windows
   scaling. The temporary preview hook and QA settings were removed; live Elite
-  attachment, click-through, the experimental pixel watcher, and Linux remain
-  untested.
+  attachment, click-through, the newly ported pixel watcher, and Linux remain
+  untested, and the watcher is held for the final requested visual pass.
 - The `PlotBodyInfo` replacement was exercised with a dense synthetic body in
   Blue (dark) and Blue (light). A long generated name, discovery and
   terraformable state, scan/DSS values, 12,845 LS distance, high gravity,

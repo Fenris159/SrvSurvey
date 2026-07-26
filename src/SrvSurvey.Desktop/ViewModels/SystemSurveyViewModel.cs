@@ -5,6 +5,7 @@ using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -91,6 +92,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private DateTimeOffset timedBiologyStartedAt;
     private DateTimeOffset timedBiologyExpiresAt;
     private string settingsStatus = string.Empty;
+    private FssTuningDetectionState fssTuningState;
+    private DateTimeOffset lastFssTuningScanAt;
+    private long fssTuningRevision;
+    private string fssTuningDetectorStatus = string.Empty;
 
     public SystemSurveyViewModel(
         SystemSurveySettingsStore settingsStore,
@@ -577,6 +582,56 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         set => SetFssTuningDetectorPreference(
             FssTuningDetector with { SaveDiagnosticImages = value });
     }
+
+    public FssTuningDetectionState FssTuningState => fssTuningState;
+
+    public bool IsFssTuningDetectionPending => FssTuningDetectorEnabled
+        && FssTuningState is FssTuningDetectionState.Waiting
+            or FssTuningDetectionState.Skipped;
+
+    public string FssTuningIndicator
+    {
+        get
+        {
+            if (!FssTuningDetectorEnabled)
+            {
+                return string.Empty;
+            }
+
+            var elapsed = utcNow() - lastFssTuningScanAt;
+            if (FssTuningState == FssTuningDetectionState.Waiting
+                || lastFssTuningScanAt != default
+                    && elapsed.TotalMilliseconds < 250)
+            {
+                return "⏳";
+            }
+
+            return FssTuningState switch
+            {
+                FssTuningDetectionState.Skipped => "✋",
+                FssTuningDetectionState.Yellow => "📡",
+                _ => string.Empty,
+            };
+        }
+    }
+
+    public bool HasFssTuningIndicator =>
+        !string.IsNullOrEmpty(FssTuningIndicator);
+
+    public string FssTuningDetectorStatus
+    {
+        get => fssTuningDetectorStatus;
+        private set
+        {
+            if (SetField(ref fssTuningDetectorStatus, value))
+            {
+                OnPropertyChanged(nameof(HasFssTuningDetectorStatus));
+            }
+        }
+    }
+
+    public bool HasFssTuningDetectorStatus => FssTuningDetectorEnabled
+        && !string.IsNullOrWhiteSpace(FssTuningDetectorStatus);
 
     public string SettingsStatus
     {
@@ -1120,6 +1175,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         var previousStatus = status;
         foreach (var journalEvent in journalEvents)
         {
+            if (status?.GuiFocus == GuiFocus.Fss
+                && FssTuningDetectorEnabled
+                && journalEvent.EventName == "Scan"
+                && !HasRingParent(journalEvent.Payload))
+            {
+                ApplyFssTuningScan();
+            }
+
             state.Apply(journalEvent);
             switch (journalEvent.EventName)
             {
@@ -1158,6 +1221,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             }
 
             status = nextStatus;
+            if (previousStatus?.GuiFocus == GuiFocus.Fss
+                && nextStatus.GuiFocus != GuiFocus.Fss)
+            {
+                ResetFssTuningDetection();
+            }
         }
 
         if (nextExobiology is not null)
@@ -1176,6 +1244,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             manuallyHideFssInfo = false;
             forceShowBodyInfo = false;
             manuallyHideBodyInfo = false;
+            ResetFssTuningDetection();
             OnPropertyChanged(nameof(IsBodyInfoForced));
         }
 
@@ -1227,20 +1296,65 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public bool RefreshTransientState()
     {
-        if (timedBiologyBodyId is null)
+        var changed = false;
+        if (timedBiologyBodyId is not null)
         {
-            return false;
+            if (!IsBiologyMapMode(status) || utcNow() >= timedBiologyExpiresAt)
+            {
+                ClearTimedBiologySelection(refreshDisplay: true);
+                RaiseVisibilityProperties();
+                changed = true;
+            }
+            else
+            {
+                OnPropertyChanged(nameof(TimedBiologySelectionProgressPercent));
+            }
         }
 
-        if (!IsBiologyMapMode(status) || utcNow() >= timedBiologyExpiresAt)
+        if (FssTuningState != FssTuningDetectionState.None)
         {
-            ClearTimedBiologySelection(refreshDisplay: true);
-            RaiseVisibilityProperties();
-            return true;
+            OnPropertyChanged(nameof(FssTuningIndicator));
+            OnPropertyChanged(nameof(HasFssTuningIndicator));
         }
 
-        OnPropertyChanged(nameof(TimedBiologySelectionProgressPercent));
-        return false;
+        return changed;
+    }
+
+    public FssTuningCaptureRequest? CreateFssTuningCaptureRequest()
+    {
+        if (!IsFssTuningDetectionPending
+            || !ShouldShowLastFssBody
+            || !snapshot.HasDiscoveryScan && snapshot.IsFssComplete)
+        {
+            return null;
+        }
+
+        return new FssTuningCaptureRequest(
+            fssTuningRevision,
+            FssTuningState,
+            FssTuningDetector);
+    }
+
+    public void ApplyFssTuningAnalysis(
+        long revision,
+        FssTuningAnalysis analysis)
+    {
+        ArgumentNullException.ThrowIfNull(analysis);
+        if (revision != fssTuningRevision || !IsFssTuningDetectionPending)
+        {
+            return;
+        }
+
+        if (fssTuningState != analysis.State)
+        {
+            fssTuningState = analysis.State;
+            RaiseFssTuningProperties();
+        }
+    }
+
+    public void UpdateFssTuningDetectorStatus(string? value)
+    {
+        FssTuningDetectorStatus = value?.Trim() ?? string.Empty;
     }
 
     public bool ToggleFssInfoVisibility()
@@ -2062,8 +2176,51 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(FssTuningDetector));
         OnPropertyChanged(nameof(FssTuningDetectorEnabled));
         OnPropertyChanged(nameof(SaveFssTuningDiagnosticImages));
+        OnPropertyChanged(nameof(HasFssTuningDetectorStatus));
+        if (!value.Enabled)
+        {
+            ResetFssTuningDetection();
+        }
+
         SavePreferences();
         RaiseVisibilityProperties();
+    }
+
+    private void ApplyFssTuningScan()
+    {
+        lastFssTuningScanAt = utcNow();
+        fssTuningState = FssTuningState switch
+        {
+            FssTuningDetectionState.Waiting =>
+                FssTuningDetectionState.Skipped,
+            FssTuningDetectionState.Skipped =>
+                FssTuningDetectionState.Skipped,
+            _ => FssTuningDetectionState.Waiting,
+        };
+        fssTuningRevision++;
+        RaiseFssTuningProperties();
+    }
+
+    private void ResetFssTuningDetection()
+    {
+        if (fssTuningState == FssTuningDetectionState.None
+            && lastFssTuningScanAt == default)
+        {
+            return;
+        }
+
+        fssTuningState = FssTuningDetectionState.None;
+        lastFssTuningScanAt = default;
+        fssTuningRevision++;
+        RaiseFssTuningProperties();
+    }
+
+    private void RaiseFssTuningProperties()
+    {
+        OnPropertyChanged(nameof(FssTuningState));
+        OnPropertyChanged(nameof(IsFssTuningDetectionPending));
+        OnPropertyChanged(nameof(FssTuningIndicator));
+        OnPropertyChanged(nameof(HasFssTuningIndicator));
     }
 
     private void RaiseVisibilityProperties()
@@ -2096,6 +2253,35 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             && value.ValueKind == System.Text.Json.JsonValueKind.String
                 ? value.GetString()
                 : null;
+    }
+
+    private static bool HasRingParent(System.Text.Json.JsonElement root)
+    {
+        if (!root.TryGetProperty("Parents", out var parents)
+            || parents.ValueKind != System.Text.Json.JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        foreach (var parent in parents.EnumerateArray())
+        {
+            if (parent.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            foreach (var property in parent.EnumerateObject())
+            {
+                return string.Equals(
+                    property.Name,
+                    "Ring",
+                    StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        return false;
     }
 
     private static long? GetInt64(
@@ -2139,6 +2325,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
+
+public sealed record FssTuningCaptureRequest(
+    long Revision,
+    FssTuningDetectionState State,
+    FssTuningDetectorSettings Settings);
 
 public sealed record BodyInformationViewModel(
     int BodyId,

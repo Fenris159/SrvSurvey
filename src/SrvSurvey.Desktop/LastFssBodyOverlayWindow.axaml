@@ -41,6 +41,11 @@
         <StackPanel Grid.Column="1"
                     HorizontalAlignment="Right"
                     Spacing="4">
+          <TextBlock HorizontalAlignment="Right"
+                     FontSize="18"
+                     IsVisible="{Binding Survey.HasFssTuningIndicator}"
+                     Text="{Binding Survey.FssTuningIndicator}"
+                     ToolTip.Tip="FSS tuning detector status" />
           <Border Classes="badge" HorizontalAlignment="Right">
             <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                        FontSize="9"

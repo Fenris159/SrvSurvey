@@ -2,6 +2,7 @@ using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Navigation;
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -794,6 +795,95 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.False(genus.IsPrediction);
         Assert.True(genus.IsGenusIdentified);
         Assert.Equal("Reward pending identification", viewModel.BiologySurvey.RewardSummary);
+    }
+
+    [Fact]
+    public void FssTuningStateMatchesLegacyScanAndIndicatorTransitions()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(
+                Path.Combine(temporaryDirectory, "ui-settings.json")),
+            utcNow: () => now);
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse("""{"event":"FSSDiscoveryScan","SystemAddress":42,"BodyCount":4}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.Fss });
+
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":1,"StarType":"K","Parents":[{"Star":0}]}""")],
+            null);
+
+        Assert.Equal(FssTuningDetectionState.Waiting, viewModel.FssTuningState);
+        Assert.Equal("⏳", viewModel.FssTuningIndicator);
+        var waiting = Assert.IsType<FssTuningCaptureRequest>(
+            viewModel.CreateFssTuningCaptureRequest());
+        viewModel.ApplyFssTuningAnalysis(
+            waiting.Revision,
+            new FssTuningAnalysis(
+                FssTuningDetectionState.White,
+                new FssPixelRegion(1, 1, 1, 1),
+                30,
+                0,
+                null));
+        Assert.Equal(FssTuningDetectionState.White, viewModel.FssTuningState);
+        Assert.Equal("⏳", viewModel.FssTuningIndicator);
+
+        now = now.AddMilliseconds(300);
+        viewModel.RefreshTransientState();
+        Assert.False(viewModel.HasFssTuningIndicator);
+
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 1","BodyID":2,"PlanetClass":"Rocky body","Parents":[{"Star":0}]}""")],
+            null);
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 2","BodyID":3,"PlanetClass":"Rocky body","Parents":[{"Star":0}]}""")],
+            null);
+        Assert.Equal(FssTuningDetectionState.Skipped, viewModel.FssTuningState);
+        var skipped = Assert.IsType<FssTuningCaptureRequest>(
+            viewModel.CreateFssTuningCaptureRequest());
+
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 2 A Ring","BodyID":4,"PlanetClass":"Rocky body","Parents":[{"Ring":3}]}""")],
+            null);
+        Assert.Equal(
+            skipped.Revision,
+            viewModel.CreateFssTuningCaptureRequest()?.Revision);
+
+        viewModel.ApplyFssTuningAnalysis(
+            skipped.Revision,
+            new FssTuningAnalysis(
+                FssTuningDetectionState.Yellow,
+                new FssPixelRegion(1, 1, 1, 1),
+                30,
+                8,
+                null));
+        now = now.AddMilliseconds(300);
+        viewModel.RefreshTransientState();
+        Assert.Equal("📡", viewModel.FssTuningIndicator);
+
+        viewModel.ApplyUpdate([], new EliteStatus { GuiFocus = GuiFocus.NoFocus });
+        Assert.Equal(FssTuningDetectionState.None, viewModel.FssTuningState);
+        Assert.Null(viewModel.CreateFssTuningCaptureRequest());
+    }
+
+    [Fact]
+    public void FssTuningCapabilityStatusIsOnlyShownWhileEnabled()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.UpdateFssTuningDetectorStatus("Wayland capture unavailable.");
+
+        Assert.True(viewModel.HasFssTuningDetectorStatus);
+        viewModel.FssTuningDetectorEnabled = false;
+        Assert.False(viewModel.HasFssTuningDetectorStatus);
+        Assert.False(
+            new SystemSurveySettingsStore(
+                Path.Combine(temporaryDirectory, "ui-settings.json"))
+                .Load()
+                .FssTuningDetector
+                .Enabled);
     }
 
     public void Dispose()

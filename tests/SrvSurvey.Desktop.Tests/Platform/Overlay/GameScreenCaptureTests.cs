@@ -53,6 +53,35 @@ public sealed class GameScreenCaptureTests
             () => capture.Capture(new PixelRect(0, 0, 1, 1)));
     }
 
+    [Fact]
+    public void DiagnosticWriterCreatesAPortablePng()
+    {
+        var directory = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-fss-diagnostic-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var buffer = new CapturedPixelBuffer(
+                1,
+                1,
+                [51, 34, 17, 255]);
+
+            var path = FssTuningDiagnosticWriter.Save(directory, buffer, 42);
+
+            Assert.StartsWith(directory, path);
+            Assert.Equal(
+                new byte[] { 137, 80, 78, 71 },
+                File.ReadAllBytes(path)[..4]);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
     private static CapturedPixelBuffer DecodeX11(
         byte[] bytes,
         int bitsPerPixel,

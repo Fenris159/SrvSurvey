@@ -902,6 +902,16 @@
               <TextBlock Classes="eyebrow" Text="FSS BODY FEED" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoShowLastFssBody, Mode=TwoWay}"
                         Content="Show the last tuned body in FSS" />
+              <CheckBox IsChecked="{Binding SystemSurvey.FssTuningDetectorEnabled, Mode=TwoWay}"
+                        Content="Detect FSS tuning completion from the game display" />
+              <CheckBox Margin="24,0,0,0"
+                        IsChecked="{Binding SystemSurvey.SaveFssTuningDiagnosticImages, Mode=TwoWay}"
+                        IsEnabled="{Binding SystemSurvey.FssTuningDetectorEnabled}"
+                        Content="Save a diagnostic capture when the tuning panel cannot be found" />
+              <TextBlock Classes="muted"
+                         IsVisible="{Binding SystemSurvey.HasFssTuningDetectorStatus}"
+                         Text="{Binding SystemSurvey.FssTuningDetectorStatus}"
+                         TextWrapping="Wrap" />
               <CheckBox IsChecked="{Binding SystemSurvey.AutoShowFssInfo, Mode=TwoWay}"
                         Content="Show automatically in FSS" />
               <CheckBox IsChecked="{Binding SystemSurvey.ShowFssInfoInSystemMap, Mode=TwoWay}"
