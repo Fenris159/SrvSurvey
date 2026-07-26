@@ -526,6 +526,19 @@ public sealed class RavenColonialClientTests
     }
 
     [Fact]
+    public async Task RejectsInvalidFleetCarrierCargoResponse()
+    {
+        var client = Create(new StubHandler(_ =>
+            Json("{\"steel\":-1}")));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            client.AdjustFleetCarrierCargoAsync(
+                42,
+                new Dictionary<string, int> { ["steel"] = 1 },
+                "secret-key"));
+    }
+
+    [Fact]
     public async Task PublishesCurrentShipWithLegacyPayloadAndApiKey()
     {
         string? body = null;

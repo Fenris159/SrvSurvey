@@ -612,6 +612,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                         await SynchronizeContributionAsync(journalEvent),
                     "ColonisationConstructionDepot" =>
                         await SynchronizeDepotAsync(journalEvent),
+                    "MarketBuy" or "MarketSell" or "CargoTransfer" =>
+                        await SynchronizeFleetCarrierCargoAdjustmentAsync(
+                            journalEvent),
                     _ => null,
                 };
                 if (!string.IsNullOrWhiteSpace(message))
@@ -634,6 +637,51 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         if (messages.Count > 0)
         {
             StatusMessage = string.Join(Environment.NewLine, messages);
+        }
+    }
+
+    private async Task<string?> SynchronizeFleetCarrierCargoAdjustmentAsync(
+        JournalEventEnvelope journalEvent)
+    {
+        if (!FleetCarrierCargoSyncEnabled
+            || storedRavenApiKey is null
+            || constructionState.CurrentDock is not { } dock
+            || !fleetCarriers.Any(carrier => carrier.MarketId == dock.MarketId))
+        {
+            return null;
+        }
+
+        var adjustments = ColonizationFleetCarrierCargoSynchronizer
+            .CreateJournalAdjustment(
+                journalEvent,
+                dock,
+                latestStatus?.InMainShip == true);
+        if (adjustments.Count == 0)
+        {
+            return null;
+        }
+
+        CommodityOverlay.ApplyPendingFleetCarrierCargo(adjustments.Keys);
+        try
+        {
+            var updatedCargo = await client.AdjustFleetCarrierCargoAsync(
+                dock.MarketId,
+                adjustments,
+                storedRavenApiKey);
+            var localCarrier = fleetCarriers.First(carrier =>
+                carrier.MarketId == dock.MarketId);
+            ReplaceLocalFleetCarrier(localCarrier with
+            {
+                Cargo = updatedCargo.ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value,
+                    StringComparer.OrdinalIgnoreCase),
+            });
+            return $"Updated {adjustments.Count:N0} linked Fleet Carrier cargo entry(s) from {journalEvent.EventName}.";
+        }
+        finally
+        {
+            CommodityOverlay.ApplyPendingFleetCarrierCargo(null);
         }
     }
 

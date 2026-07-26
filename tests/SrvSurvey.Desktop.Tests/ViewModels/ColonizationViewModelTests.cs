@@ -846,6 +846,93 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task AdjustsLinkedCarrierFromLiveCargoEventsOnlyAfterOptIn()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "ABC-123",
+            Cargo = new Dictionary<string, int>
+            {
+                ["steel"] = 75,
+                ["water"] = 10,
+            },
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [],
+                [],
+                null,
+                [carrier]),
+            FleetCarrierResponse = carrier,
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"ABC-123","StationType":"FleetCarrier",
+                "StationServices":["commodities"]
+                """),
+        ]);
+        viewModel.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip,
+        });
+        var bought = Event(
+            "MarketBuy",
+            "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5");
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [bought],
+            allowPublishing: true);
+        Assert.Empty(client.FleetCarrierAdjustments);
+
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        await viewModel.SynchronizeLiveProjectsAsync(
+        [
+            bought,
+            Event(
+                "MarketSell",
+                "\"MarketID\":42,\"Type\":\"Water\",\"Count\":2"),
+            Event(
+                "CargoTransfer",
+                """
+                "Transfers":[
+                  {"Type":"Steel","Count":4,"Direction":"tocarrier"},
+                  {"Type":"Water","Count":3,"Direction":"toship"}]
+                """),
+        ],
+        allowPublishing: true);
+
+        Assert.Collection(
+            client.FleetCarrierAdjustments,
+            call => Assert.Equal(-5, call.Changes["steel"]),
+            call => Assert.Equal(2, call.Changes["water"]),
+            call =>
+            {
+                Assert.Equal(4, call.Changes["steel"]);
+                Assert.Equal(-3, call.Changes["water"]);
+            });
+        Assert.Contains("CargoTransfer", viewModel.StatusMessage);
+        Assert.False(viewModel.CommodityOverlay.HasPendingCargo);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [bought],
+            allowPublishing: false);
+        Assert.Equal(3, client.FleetCarrierAdjustments.Count);
+    }
+
+    [Fact]
     public async Task PublishesCurrentCarrierAndThenReconcilesFreshMarket()
     {
         var carrier = new ColonizationFleetCarrier
@@ -1003,6 +1090,11 @@ public sealed class ColonizationViewModelTests : IDisposable
         public int PublishCarrierCount { get; private set; }
 
         public int PublishShipCount { get; private set; }
+
+        public List<FleetCarrierAdjustmentCall> FleetCarrierAdjustments
+        {
+            get;
+        } = [];
 
         public int SiteProjectLoadCount { get; private set; }
 
@@ -1221,7 +1313,31 @@ public sealed class ColonizationViewModelTests : IDisposable
                 string apiKey,
                 CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(cargoChanges);
+            FleetCarrierAdjustments.Add(new FleetCarrierAdjustmentCall(
+                marketId,
+                new Dictionary<string, int>(
+                    cargoChanges,
+                    StringComparer.OrdinalIgnoreCase)));
+            var updated = new Dictionary<string, int>(
+                FleetCarrierResponse?.Cargo
+                    ?? new Dictionary<string, int>(),
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var pair in cargoChanges)
+            {
+                updated[pair.Key] = Math.Max(
+                    0,
+                    updated.GetValueOrDefault(pair.Key) + pair.Value);
+            }
+
+            if (FleetCarrierResponse is not null)
+            {
+                FleetCarrierResponse = FleetCarrierResponse with
+                {
+                    Cargo = updated,
+                };
+            }
+
+            return Task.FromResult<IReadOnlyDictionary<string, int>>(updated);
         }
 
         public Task PublishCurrentShipAsync(
@@ -1239,4 +1355,8 @@ public sealed class ColonizationViewModelTests : IDisposable
         string BuildId,
         string CommanderName,
         IReadOnlyDictionary<string, int> Commodities);
+
+    private sealed record FleetCarrierAdjustmentCall(
+        long MarketId,
+        IReadOnlyDictionary<string, int> Changes);
 }

@@ -63,6 +63,67 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
                     carrier));
     }
 
+    [Fact]
+    public void CreatesLegacyMarketAndMainShipTransferAdjustments()
+    {
+        var dock = Dock();
+
+        var bought = ColonizationFleetCarrierCargoSynchronizer
+            .CreateJournalAdjustment(
+                Event("MarketBuy", "\"MarketID\":42,\"Type\":\"$Steel_Name;\",\"Count\":5"),
+                dock,
+                isInMainShip: true);
+        var sold = ColonizationFleetCarrierCargoSynchronizer
+            .CreateJournalAdjustment(
+                Event("MarketSell", "\"MarketID\":42,\"Type\":\"Water\",\"Count\":2"),
+                dock,
+                isInMainShip: true);
+        var transferred = ColonizationFleetCarrierCargoSynchronizer
+            .CreateJournalAdjustment(
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[
+                      {"Type":"$Steel_Name;","Count":4,"Direction":"tocarrier"},
+                      {"Type":"Water","Count":3,"Direction":"toship"}]
+                    """),
+                dock,
+                isInMainShip: true);
+
+        Assert.Equal(-5, bought["steel"]);
+        Assert.Equal(2, sold["water"]);
+        Assert.Equal(4, transferred["steel"]);
+        Assert.Equal(-3, transferred["water"]);
+    }
+
+    [Fact]
+    public void RefusesSrvAndMalformedTransfersAndSkipsSquadronDeposits()
+    {
+        var transfer = Event(
+            "CargoTransfer",
+            """
+            "Transfers":[{"Type":"Steel","Count":4,"Direction":"tocarrier"}]
+            """);
+
+        Assert.Empty(
+            ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
+                transfer,
+                Dock(),
+                isInMainShip: false));
+        Assert.Empty(
+            ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
+                transfer,
+                Dock("squadronBank"),
+                isInMainShip: true));
+        Assert.Throws<InvalidDataException>(() =>
+            ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
+                Event(
+                    "CargoTransfer",
+                    "\"Transfers\":[{\"Type\":\"Steel\",\"Direction\":\"tocarrier\"}]"),
+                Dock(),
+                isInMainShip: true));
+    }
+
     private static MarketSnapshot Market(
         long marketId,
         IReadOnlyList<MarketItem> items)
@@ -100,5 +161,32 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
             producer,
             consumer,
             false);
+    }
+
+    private static ColonizationDockingSnapshot Dock(
+        params string[] stationServices)
+    {
+        return new ColonizationDockingSnapshot(
+            42,
+            20,
+            "Test",
+            "Supply carrier",
+            null,
+            stationServices,
+            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+            "FleetCarrier");
+    }
+
+    private static JournalEventEnvelope Event(
+        string eventName,
+        string properties)
+    {
+        var json = $$"""
+            {"timestamp":"2026-07-24T12:00:00Z","event":"{{eventName}}",{{properties}}}
+            """;
+        Assert.True(
+            JournalEventEnvelope.TryParse(json, out var result, out var error),
+            error);
+        return result!;
     }
 }

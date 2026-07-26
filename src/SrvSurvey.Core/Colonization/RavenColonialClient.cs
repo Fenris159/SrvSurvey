@@ -633,9 +633,25 @@ public sealed class RavenColonialClient : IRavenColonialClient
                 operation,
                 cancellationToken)
             .ConfigureAwait(false);
-        return new Dictionary<string, int>(
-            result,
+        var validated = new Dictionary<string, int>(
             StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in result)
+        {
+            var name = pair.Key?.Trim();
+            if (string.IsNullOrWhiteSpace(name) || pair.Value < 0)
+            {
+                throw new InvalidDataException(
+                    "Raven Colonial returned invalid Fleet Carrier cargo.");
+            }
+
+            if (!validated.TryAdd(name, pair.Value))
+            {
+                throw new InvalidDataException(
+                    "Raven Colonial returned duplicate Fleet Carrier cargo names.");
+            }
+        }
+
+        return validated;
     }
 
     private async Task<T?> GetAsync<T>(
