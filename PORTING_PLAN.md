@@ -444,9 +444,14 @@ whole-system, FSS-last-body, and near/current/target-body selection rules. The
 shared reducer retains genus/species/variant identities, localized names,
 Codex IDs, rewards, analyzed state, regional-first state, and geological names.
 The overlay renders active sampling, analyzed dimming, partial and confirmed
-reward totals, first-footfall value, DSS guidance, geology, and unknown slots;
-its persisted settings and Guardian suppression are wired into the shared
-coordinator. Selecting a biological body in the System Map, Orrery, or
+reward totals, first-footfall value, DSS guidance, geology, and unknown slots.
+The whole-system table preserves the original one-segmented-bar-per-signal
+layout: resolved genera appear first, predicted genera retain range hatching,
+and any remaining unidentified signals render as question-mark bars inside the
+body signal-count frame. The modern card styling does not collapse those bars
+into an aggregate body value. Its persisted settings and Guardian suppression
+are wired into the shared coordinator. Selecting a biological body in the
+System Map, Orrery, or
 navigation panel now retains its detail card for two seconds per organism with
 the original countdown behavior. The embedded v4 criteria catalog now supplies exact species and
 variant predictions plus body/system reward ranges when scan context is

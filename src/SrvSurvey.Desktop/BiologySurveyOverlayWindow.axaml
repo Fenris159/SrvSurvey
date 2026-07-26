@@ -76,7 +76,7 @@
                         BorderThickness="1"
                         CornerRadius="8">
                   <Grid RowDefinitions="Auto,Auto" RowSpacing="7">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                       <StackPanel Orientation="Horizontal" Spacing="7">
                         <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                                    FontWeight="SemiBold"
@@ -96,36 +96,52 @@
                                      Text="LOCAL" />
                         </Border>
                       </StackPanel>
-                      <Grid Grid.Column="1"
-                            ColumnDefinitions="Auto,Auto"
-                            ColumnSpacing="7">
-                        <controls:BiologyRewardBandControl Width="12"
-                                                          Height="28"
-                                                          MinimumReward="{Binding RewardBandMinimum}"
-                                                          MaximumReward="{Binding RewardBandMaximum}"
-                                                          BucketOneMillions="{Binding RewardBucketOneMillions}"
-                                                          BucketTwoMillions="{Binding RewardBucketTwoMillions}"
-                                                          BucketThreeMillions="{Binding RewardBucketThreeMillions}"
-                                                          IsPrediction="{Binding HasPredictedReward}"
-                                                          FilledBrush="{DynamicResource RavenAccentBrush}"
-                                                          PotentialBrush="{DynamicResource RavenAccentMutedBrush}"
-                                                          HighlightBrush="{DynamicResource RavenWarningBrush}"
-                                                          EdgeBrush="{DynamicResource RavenBorderBrush}"
-                                                          PredictionBrush="{DynamicResource RavenMutedTextBrush}" />
-                        <StackPanel Grid.Column="1"
-                                    HorizontalAlignment="Right"
-                                    Spacing="2">
-                          <TextBlock Classes="monospace"
-                                     FontWeight="SemiBold"
-                                     HorizontalAlignment="Right"
-                                     Text="{Binding ProgressText}" />
-                          <TextBlock Classes="monospace"
-                                     FontSize="9"
-                                     HorizontalAlignment="Right"
-                                     IsVisible="{Binding HasReward}"
-                                     Text="{Binding RewardText}" />
-                        </StackPanel>
-                      </Grid>
+                      <Border Grid.Column="1"
+                              Padding="4,3"
+                              HorizontalAlignment="Left"
+                              BorderBrush="{DynamicResource RavenBorderBrush}"
+                              BorderThickness="1"
+                              CornerRadius="3">
+                        <ItemsControl ItemsSource="{Binding RewardBands}">
+                          <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                              <StackPanel Orientation="Horizontal" Spacing="3" />
+                            </ItemsPanelTemplate>
+                          </ItemsControl.ItemsPanel>
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:BiologySignalRewardBandViewModel">
+                              <controls:BiologyRewardBandControl Width="10"
+                                                                  Height="24"
+                                                                  Opacity="{Binding Opacity}"
+                                                                  MinimumReward="{Binding MinimumReward}"
+                                                                  MaximumReward="{Binding MaximumReward}"
+                                                                  BucketOneMillions="{Binding RewardBucketOneMillions}"
+                                                                  BucketTwoMillions="{Binding RewardBucketTwoMillions}"
+                                                                  BucketThreeMillions="{Binding RewardBucketThreeMillions}"
+                                                                  IsPrediction="{Binding IsPrediction}"
+                                                                  IsHighlighted="{Binding IsHighlighted}"
+                                                                  FilledBrush="{DynamicResource RavenAccentBrush}"
+                                                                  PotentialBrush="{DynamicResource RavenAccentMutedBrush}"
+                                                                  HighlightBrush="{DynamicResource RavenWarningBrush}"
+                                                                  EdgeBrush="{DynamicResource RavenBorderBrush}"
+                                                                  PredictionBrush="{DynamicResource RavenMutedTextBrush}" />
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </Border>
+                      <StackPanel Grid.Column="2"
+                                  HorizontalAlignment="Right"
+                                  Spacing="2">
+                        <TextBlock Classes="monospace"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Right"
+                                   Text="{Binding ProgressText}" />
+                        <TextBlock Classes="monospace"
+                                   FontSize="9"
+                                   HorizontalAlignment="Right"
+                                   IsVisible="{Binding HasReward}"
+                                   Text="{Binding RewardText}" />
+                      </StackPanel>
                     </Grid>
                     <ProgressBar Grid.Row="1"
                                  Height="4"

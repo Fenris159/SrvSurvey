@@ -185,6 +185,10 @@ public sealed record BiologySurveyViewModel(
                     predictionEvaluator,
                     referenceCatalog);
                 var estimate = CreateRewardEstimate(body, predictions);
+                var rewardBands = CreateSystemRewardBands(
+                    body,
+                    predictions,
+                    rewardThresholds);
                 var row = new BiologyBodyRowViewModel(
                     body.BodyId,
                     body.ShortName,
@@ -197,6 +201,7 @@ public sealed record BiologySurveyViewModel(
                     estimate.HasUnknownReward,
                     body.BodyId == destinationBodyId,
                     body.BodyId == currentBodyId,
+                    rewardBands,
                     rewardThresholds.BucketOneMillions,
                     rewardThresholds.BucketTwoMillions,
                     rewardThresholds.BucketThreeMillions);
@@ -570,6 +575,84 @@ public sealed record BiologySurveyViewModel(
             !predictionSet.IsComplete || predictedCount < remainingSignals);
     }
 
+    private static IReadOnlyList<BiologySignalRewardBandViewModel>
+        CreateSystemRewardBands(
+            SystemScanBodySnapshot body,
+            BiologyPredictionSet predictionSet,
+            BiologyRewardThresholds rewardThresholds)
+    {
+        var predictionsByGenus = predictionSet.Predictions
+            .Where(prediction => prediction.Reference?.Reward > 0)
+            .GroupBy(
+                prediction => prediction.Prediction.Genus,
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => new BiologySignalRewardRange(
+                    group.Min(prediction => prediction.Reference!.Reward),
+                    group.Max(prediction => prediction.Reference!.Reward)),
+                StringComparer.OrdinalIgnoreCase);
+        var consumedPredictionGenera = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase);
+        var bands = new List<BiologySignalRewardBandViewModel>(
+            body.BiologicalSignalCount);
+
+        // Preserve the legacy sequence: known/DSS-resolved genera first,
+        // remaining predictions second, and unidentified signals last.
+        foreach (var organism in body.Organisms)
+        {
+            var genus = organism.GenusLocalized
+                ?? FormatJournalName(organism.Genus);
+            if (organism.Reward is { } reward && reward > 0)
+            {
+                bands.Add(BiologySignalRewardBandViewModel.Known(
+                    reward,
+                    organism.IsRegionalFirst,
+                    organism.IsAnalyzed,
+                    rewardThresholds));
+                consumedPredictionGenera.Add(genus);
+                continue;
+            }
+
+            if (predictionsByGenus.TryGetValue(genus, out var prediction))
+            {
+                bands.Add(BiologySignalRewardBandViewModel.Predicted(
+                    prediction.Minimum,
+                    prediction.Maximum,
+                    organism.IsRegionalFirst,
+                    rewardThresholds));
+                consumedPredictionGenera.Add(genus);
+                continue;
+            }
+
+            bands.Add(BiologySignalRewardBandViewModel.Unknown(
+                rewardThresholds));
+        }
+
+        foreach (var prediction in predictionsByGenus)
+        {
+            if (bands.Count >= body.BiologicalSignalCount
+                || consumedPredictionGenera.Contains(prediction.Key))
+            {
+                continue;
+            }
+
+            bands.Add(BiologySignalRewardBandViewModel.Predicted(
+                prediction.Value.Minimum,
+                prediction.Value.Maximum,
+                false,
+                rewardThresholds));
+        }
+
+        while (bands.Count < body.BiologicalSignalCount)
+        {
+            bands.Add(BiologySignalRewardBandViewModel.Unknown(
+                rewardThresholds));
+        }
+
+        return bands.Take(body.BiologicalSignalCount).ToArray();
+    }
+
     private static SystemScanBodySnapshot? ResolveBody(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
@@ -707,6 +790,10 @@ public sealed record BiologySurveyViewModel(
         long MaximumReward,
         bool HasPredictedReward,
         bool HasUnknownReward);
+
+    private sealed record BiologySignalRewardRange(
+        long Minimum,
+        long Maximum);
 }
 
 public enum BiologySurveyMode
@@ -727,6 +814,7 @@ public sealed record BiologyBodyRowViewModel(
     bool HasUnknownReward,
     bool IsDestination,
     bool IsCurrentBody,
+    IReadOnlyList<BiologySignalRewardBandViewModel> RewardBands,
     double RewardBucketOneMillions = 3,
     double RewardBucketTwoMillions = 7,
     double RewardBucketThreeMillions = 12)
@@ -755,6 +843,58 @@ public sealed record BiologyBodyRowViewModel(
     public long RewardBandMaximum => HasPredictedReward
         ? MaximumReward
         : KnownReward;
+}
+
+public sealed record BiologySignalRewardBandViewModel(
+    long MinimumReward,
+    long MaximumReward,
+    bool IsPrediction,
+    bool IsHighlighted,
+    bool ShouldDim,
+    double RewardBucketOneMillions,
+    double RewardBucketTwoMillions,
+    double RewardBucketThreeMillions)
+{
+    public double Opacity => ShouldDim ? 0.48 : 1;
+
+    public static BiologySignalRewardBandViewModel Known(
+        long reward,
+        bool isHighlighted,
+        bool shouldDim,
+        BiologyRewardThresholds thresholds) => new(
+            reward,
+            reward,
+            false,
+            isHighlighted,
+            shouldDim,
+            thresholds.BucketOneMillions,
+            thresholds.BucketTwoMillions,
+            thresholds.BucketThreeMillions);
+
+    public static BiologySignalRewardBandViewModel Predicted(
+        long minimumReward,
+        long maximumReward,
+        bool isHighlighted,
+        BiologyRewardThresholds thresholds) => new(
+            minimumReward,
+            maximumReward,
+            true,
+            isHighlighted,
+            false,
+            thresholds.BucketOneMillions,
+            thresholds.BucketTwoMillions,
+            thresholds.BucketThreeMillions);
+
+    public static BiologySignalRewardBandViewModel Unknown(
+        BiologyRewardThresholds thresholds) => new(
+            0,
+            0,
+            false,
+            false,
+            false,
+            thresholds.BucketOneMillions,
+            thresholds.BucketTwoMillions,
+            thresholds.BucketThreeMillions);
 }
 
 public sealed record BiologyOrganismRowViewModel(

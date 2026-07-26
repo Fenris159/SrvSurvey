@@ -419,6 +419,13 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.True(body.IsDestination);
         Assert.Equal(7_252_500, body.KnownReward);
         Assert.True(body.HasUnknownReward);
+        Assert.Equal(body.SignalCount, body.RewardBands.Count);
+        Assert.Equal(2, body.RewardBands.Count);
+        Assert.Equal(7_252_500, body.RewardBands[0].MinimumReward);
+        Assert.False(body.RewardBands[0].IsPrediction);
+        Assert.True(body.RewardBands[0].ShouldDim);
+        Assert.Equal(0, body.RewardBands[1].MinimumReward);
+        Assert.False(body.RewardBands[1].IsPrediction);
         Assert.Equal("Known reward: 7.25 M CR", biology.RewardSummary);
     }
 
@@ -780,6 +787,10 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             viewModel.BiologySurvey);
         var bodySummary = Assert.Single(systemSurvey.Bodies);
         Assert.True(bodySummary.HasPredictedReward);
+        var systemBand = Assert.Single(bodySummary.RewardBands);
+        Assert.True(systemBand.IsPrediction);
+        Assert.True(systemBand.MinimumReward > 0);
+        Assert.True(systemBand.MaximumReward >= systemBand.MinimumReward);
         Assert.StartsWith("Estimated reward:", systemSurvey.RewardSummary);
         var bodyInformation = Assert.IsType<BodyInformationViewModel>(
             viewModel.BodyInformation);
