@@ -63,6 +63,8 @@ public sealed class HumanSiteVehicleTrackerTests
 
     [Theory]
     [InlineData("LeaveBody")]
+    [InlineData("StartJump")]
+    [InlineData("SupercruiseEntry")]
     [InlineData("FSDJump")]
     [InlineData("CarrierJump")]
     [InlineData("Shutdown")]

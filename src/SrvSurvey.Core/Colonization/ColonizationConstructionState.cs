@@ -39,6 +39,7 @@ public sealed class ColonizationConstructionState
                 journalEvent.Payload,
                 journalEvent.Timestamp),
             "Undocked" => ClearDocking(),
+            "StartJump" => ClearDocking(),
             "ColonisationConstructionDepot" => ApplyDepot(
                 journalEvent.Payload,
                 journalEvent.Timestamp),

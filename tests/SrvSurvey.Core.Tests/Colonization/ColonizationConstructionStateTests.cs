@@ -122,6 +122,7 @@ public sealed class ColonizationConstructionStateTests
     [InlineData("Died", "")]
     [InlineData("Resurrect", "")]
     [InlineData("Shutdown", "")]
+    [InlineData("StartJump", "\"JumpType\":\"Supercruise\"")]
     [InlineData("Music", "\"MusicTrack\":\"MainMenu\"")]
     public void SessionExitClearsDockingContext(
         string eventName,

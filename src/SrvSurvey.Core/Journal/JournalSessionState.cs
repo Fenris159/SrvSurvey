@@ -125,6 +125,16 @@ public sealed class JournalSessionState
                 // retains the current planet until another location event.
                 break;
 
+            case "StartJump" when string.Equals(
+                GetString(root, "JumpType"),
+                "Hyperspace",
+                StringComparison.Ordinal):
+                // The departure event arrives before FSDJump. Drop only the
+                // live body/vehicle context while retaining the durable
+                // commander, ship, and origin-system identity.
+                ClearLiveLocationContext();
+                break;
+
             case "Died":
             case "Resurrect":
                 ClearLiveLocationContext();

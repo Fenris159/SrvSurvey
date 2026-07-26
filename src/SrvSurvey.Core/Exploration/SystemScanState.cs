@@ -110,6 +110,13 @@ public sealed class SystemScanState
                 ApplyBodyContext(root, journalEvent.EventName);
                 return true;
 
+            case "StartJump" when string.Equals(
+                GetString(root, "JumpType"),
+                "Hyperspace",
+                StringComparison.Ordinal):
+                CurrentBodyId = null;
+                return true;
+
             case "Died":
             case "Resurrect":
                 CurrentBodyId = null;

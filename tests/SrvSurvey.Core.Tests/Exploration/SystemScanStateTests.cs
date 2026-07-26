@@ -158,6 +158,36 @@ public sealed class SystemScanStateTests
     }
 
     [Fact]
+    public void HyperspaceDepartureClearsCurrentBodyButRetainsSystemSurvey()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"Body":"Test 1","BodyID":1,"BodyType":"Planet"}"""));
+        state.Apply(Parse(PlanetScan));
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"StartJump","JumpType":"Hyperspace"}""")));
+
+        var snapshot = state.CreateSnapshot();
+        Assert.Equal(42, snapshot.SystemAddress);
+        Assert.Null(snapshot.CurrentBodyId);
+        Assert.Single(snapshot.Bodies);
+    }
+
+    [Fact]
+    public void SupercruiseDepartureRetainsCurrentBodyIdentity()
+    {
+        var state = new SystemScanState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"Body":"Test 1","BodyID":1,"BodyType":"Planet"}"""));
+
+        Assert.False(state.Apply(Parse(
+            """{"event":"StartJump","JumpType":"Supercruise"}""")));
+
+        Assert.Equal(1, state.CurrentBodyId);
+    }
+
+    [Fact]
     public void FssCountExcludesAsteroidsRingsAndBarycentres()
     {
         var state = new SystemScanState();

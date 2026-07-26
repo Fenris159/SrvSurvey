@@ -238,6 +238,13 @@ without deleting system survey history or active massacre missions. This also
 prevents a stale Fleet Carrier dock from authorizing Raven cargo deltas after a
 rebuy. Focused reducer and Avalonia presentation fixtures cover each exit path.
 
+Departure handling now preserves that same boundary. A hyperspace `StartJump`
+clears current-body and launched-vehicle context before the arrival event while
+retaining the origin-system survey, and either hyperspace or supercruise
+departure clears construction-site docking and settlement vehicle markers.
+This matches the legacy event ordering and prevents an old body, landing site,
+or carrier dock from being projected during the transition.
+
 Guardian artifact inventory now treats `Cargo.json` as an authoritative snapshot
 only when the monitor actually observes a new verified file. Unchanged poll
 ticks no longer erase journal-applied cargo, and collect/eject, market buy/sell,

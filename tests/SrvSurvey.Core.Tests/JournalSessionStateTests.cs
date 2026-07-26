@@ -106,6 +106,41 @@ public sealed class JournalSessionStateTests
         Assert.Null(state.ActiveSrvType);
     }
 
+    [Fact]
+    public void HyperspaceDepartureClearsTransientContextBeforeArrival()
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Sol","SystemAddress":42,"StarPos":[1,2,3],"Body":"Earth","BodyType":"Planet"}"""));
+        state.Apply(Parse(
+            """{"event":"Loadout","Ship":"mandalay"}"""));
+        state.Apply(Parse(
+            """{"event":"LaunchSRV","SRVType":"testbuggy"}"""));
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"StartJump","JumpType":"Hyperspace"}""")));
+
+        Assert.Equal("Sol", state.SystemName);
+        Assert.Equal(42, state.SystemAddress);
+        Assert.Equal(new GalacticCoordinate(1, 2, 3), state.StarPosition);
+        Assert.Equal("mandalay", state.ShipType);
+        Assert.Null(state.BodyName);
+        Assert.Null(state.ActiveSrvType);
+    }
+
+    [Fact]
+    public void SupercruiseDepartureDoesNotDiscardCurrentBodyIdentity()
+    {
+        var state = new JournalSessionState();
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Sol","SystemAddress":42,"Body":"Earth","BodyType":"Planet"}"""));
+
+        Assert.False(state.Apply(Parse(
+            """{"event":"StartJump","JumpType":"Supercruise"}""")));
+
+        Assert.Equal("Earth", state.BodyName);
+    }
+
     [Theory]
     [InlineData("flightsuit_class1", OdysseySuitType.Flight)]
     [InlineData("explorationsuit_class5", OdysseySuitType.Artemis)]

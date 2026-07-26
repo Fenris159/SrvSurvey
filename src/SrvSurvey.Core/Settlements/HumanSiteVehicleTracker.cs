@@ -33,8 +33,9 @@ public sealed class HumanSiteVehicleTracker
             "Liftoff" or "ShipDismissed" => MarkShipDeparted(),
             "Disembark" => ApplyDisembark(journalEvent.Payload, status),
             "Embark" => ApplyEmbark(journalEvent.Payload),
-            "LeaveBody" or "FSDJump" or "CarrierJump" or "Shutdown"
-                or "Died" or "Resurrect" => Clear(),
+            "LeaveBody" or "StartJump" or "SupercruiseEntry" or "FSDJump"
+                or "CarrierJump" or "Shutdown" or "Died" or "Resurrect" =>
+                Clear(),
             "Music" when string.Equals(
                 GetString(journalEvent.Payload, "MusicTrack"),
                 "MainMenu",
