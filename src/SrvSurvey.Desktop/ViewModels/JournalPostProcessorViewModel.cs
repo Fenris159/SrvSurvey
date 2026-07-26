@@ -280,6 +280,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         }
 
         operationCancellation = new CancellationTokenSource();
+        GuardedProgress<JournalHistoryAnalysisProgress>? progress = null;
         try
         {
             IsBusy = true;
@@ -288,7 +289,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             ProgressValue = 0;
             ProgressMaximum = 1;
             StatusMessage = "Scanning historical journals without changing profile data...";
-            var progress = new Progress<JournalHistoryAnalysisProgress>(value =>
+            progress = new GuardedProgress<JournalHistoryAnalysisProgress>(value =>
             {
                 ProgressMaximum = value.TotalFileCount;
                 ProgressValue = value.ProcessedFileCount;
@@ -300,10 +301,12 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                 StartDate,
                 progress,
                 operationCancellation.Token);
+            progress.Close();
             ApplyResult(result);
         }
         catch (OperationCanceledException)
         {
+            progress?.Close();
             StatusMessage = "Historical journal analysis was cancelled; no profile data changed.";
         }
         catch (Exception exception) when (
@@ -311,11 +314,13 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                 or UnauthorizedAccessException
                 or InvalidDataException)
         {
+            progress?.Close();
             StatusMessage = "Historical journals could not be analyzed: "
                 + exception.Message;
         }
         finally
         {
+            progress?.Close();
             operationCancellation.Dispose();
             operationCancellation = null;
             IsBusy = false;
@@ -332,13 +337,14 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         }
 
         operationCancellation = new CancellationTokenSource();
+        GuardedProgress<CommanderCodexJournalImportProgress>? progress = null;
         try
         {
             IsBusy = true;
             ProgressValue = 0;
             ProgressMaximum = 1;
             StatusMessage = "Merging Commander Codex first discoveries from journal history...";
-            var progress = new Progress<CommanderCodexJournalImportProgress>(value =>
+            progress = new GuardedProgress<CommanderCodexJournalImportProgress>(value =>
             {
                 ProgressMaximum = value.TotalFileCount;
                 ProgressValue = value.ProcessedFileCount;
@@ -349,6 +355,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                 SelectedCommander.FrontierId,
                 progress,
                 operationCancellation.Token);
+            progress.Close();
             ProgressMaximum = Math.Max(1, result.JournalFileCount);
             ProgressValue = result.JournalFileCount;
             StatusMessage = $"Scanned {result.JournalFileCount:N0} journal(s) and "
@@ -363,6 +370,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         }
         catch (OperationCanceledException)
         {
+            progress?.Close();
             StatusMessage =
                 "Commander Codex rebuilding was cancelled. Completed atomic merges remain valid.";
         }
@@ -372,11 +380,13 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                 or InvalidDataException
                 or InvalidOperationException)
         {
+            progress?.Close();
             StatusMessage = "Commander Codex rebuilding could not finish: "
                 + exception.Message;
         }
         finally
         {
+            progress?.Close();
             CodexRebuildConfirmed = false;
             operationCancellation.Dispose();
             operationCancellation = null;
@@ -392,6 +402,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         }
 
         operationCancellation = new CancellationTokenSource();
+        GuardedProgress<LegacySystemBiologyAnalysisProgress>? progress = null;
         try
         {
             IsBusy = true;
@@ -401,7 +412,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             ProgressMaximum = 1;
             StatusMessage =
                 "Reading copied system files without changing them...";
-            var progress = new Progress<LegacySystemBiologyAnalysisProgress>(value =>
+            progress = new GuardedProgress<LegacySystemBiologyAnalysisProgress>(value =>
             {
                 ProgressMaximum = value.TotalFileCount;
                 ProgressValue = value.ProcessedFileCount;
@@ -412,6 +423,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                 SelectedCommander.FrontierId,
                 progress,
                 operationCancellation.Token);
+            progress.Close();
             SystemSpecies = result.Species
                 .Select(species => new JournalPostProcessorSpeciesViewModel(
                     species.Name,
@@ -434,6 +446,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         }
         catch (OperationCanceledException)
         {
+            progress?.Close();
             StatusMessage =
                 "System-file analysis was cancelled; no system or profile data changed.";
         }
@@ -442,11 +455,13 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                 or UnauthorizedAccessException
                 or InvalidDataException)
         {
+            progress?.Close();
             StatusMessage = "System files could not be analyzed: "
                 + exception.Message;
         }
         finally
         {
+            progress?.Close();
             operationCancellation.Dispose();
             operationCancellation = null;
             IsBusy = false;
@@ -463,6 +478,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         }
 
         operationCancellation = new CancellationTokenSource();
+        GuardedProgress<HistoricalSystemRebuildProgress>? progress = null;
         try
         {
             IsBusy = true;
@@ -470,7 +486,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             ProgressMaximum = 1;
             StatusMessage =
                 "Reconstructing exploration history before creating verified backups...";
-            var progress = new Progress<HistoricalSystemRebuildProgress>(value =>
+            progress = new GuardedProgress<HistoricalSystemRebuildProgress>(value =>
             {
                 ProgressMaximum = value.TotalCount;
                 ProgressValue = value.ProcessedCount;
@@ -486,6 +502,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                 StartDate,
                 progress,
                 operationCancellation.Token);
+            progress.Close();
             ProgressMaximum = Math.Max(1, result.CandidateJournalFileCount);
             ProgressValue = result.CandidateJournalFileCount;
             StatusMessage = $"Replayed {result.AppliedExplorationEventCount:N0} exploration "
@@ -507,6 +524,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         }
         catch (OperationCanceledException)
         {
+            progress?.Close();
             StatusMessage =
                 "Historical system reconstruction was cancelled before activation; active system files did not change.";
         }
@@ -516,11 +534,13 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                 or InvalidDataException
                 or InvalidOperationException)
         {
+            progress?.Close();
             StatusMessage = "Historical system reconstruction could not finish: "
                 + exception.Message;
         }
         finally
         {
+            progress?.Close();
             SystemRebuildConfirmed = false;
             operationCancellation.Dispose();
             operationCancellation = null;
@@ -648,6 +668,52 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         public void RaiseCanExecuteChanged()
         {
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private sealed class GuardedProgress<T> : IProgress<T>
+    {
+        private readonly object gate = new();
+        private readonly Action<T> report;
+        private readonly Progress<T> progress;
+        private bool closed;
+
+        public GuardedProgress(Action<T> report)
+        {
+            this.report = report;
+            progress = new Progress<T>(ReportIfOpen);
+        }
+
+        public void Report(T value)
+        {
+            lock (gate)
+            {
+                if (closed)
+                {
+                    return;
+                }
+            }
+
+            ((IProgress<T>)progress).Report(value);
+        }
+
+        public void Close()
+        {
+            lock (gate)
+            {
+                closed = true;
+            }
+        }
+
+        private void ReportIfOpen(T value)
+        {
+            lock (gate)
+            {
+                if (!closed)
+                {
+                    report(value);
+                }
+            }
         }
     }
 

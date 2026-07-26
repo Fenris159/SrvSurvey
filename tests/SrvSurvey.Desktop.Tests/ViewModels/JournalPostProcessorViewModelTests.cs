@@ -54,6 +54,7 @@ public sealed class JournalPostProcessorViewModelTests : IDisposable
         Assert.False(viewModel.CodexRebuildConfirmed);
         Assert.True(File.Exists(Path.Combine(dataDirectory, "F123-codex.json")));
         Assert.Single(Directory.GetFiles(dataDirectory, "F123-codex-*.json"));
+        await Task.Delay(50);
         Assert.Contains("merged 2 earlier", viewModel.StatusMessage);
         Assert.Equal(originalProfile, await File.ReadAllBytesAsync(profilePath));
     }
