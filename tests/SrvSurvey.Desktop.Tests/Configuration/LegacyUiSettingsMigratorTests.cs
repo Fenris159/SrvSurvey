@@ -388,6 +388,59 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Null(result.PreviousSettingsBackupPath);
     }
 
+    [Fact]
+    public async Task ImportedCodexImageDirectoriesMoveWithVerifiedProfile()
+    {
+        var paths = CreatePaths();
+        var source = Path.Combine(temporaryDirectory, "legacy-codex-images");
+        var sourceCache = Path.Combine(source, "codexImages");
+        var sourceFlora = Path.Combine(source, "local-flora");
+        Directory.CreateDirectory(sourceCache);
+        Directory.CreateDirectory(sourceFlora);
+        await File.WriteAllBytesAsync(
+            Path.Combine(sourceCache, "2310101.jpg"),
+            [1, 2, 3, 4]);
+        await File.WriteAllBytesAsync(
+            Path.Combine(sourceFlora, "aleoida-arcus-yellow.png"),
+            [5, 6, 7, 8]);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            new JsonObject
+            {
+                ["downloadCodexImageFolder"] = sourceCache,
+                ["localFloraFolder"] = sourceFlora,
+                ["preDownloadCodexImages"] = true,
+            }.ToJsonString());
+        await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups-codex-images"));
+
+        var result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
+
+        Assert.True(result.Migrated);
+        var preferences = new CodexImageSettingsStore(
+            paths.UiSettingsPath,
+            paths.CacheDirectory).Load();
+        Assert.Equal(
+            Path.Combine(paths.DataDirectory, "codexImages"),
+            preferences.CacheDirectory);
+        Assert.Equal(
+            Path.Combine(paths.DataDirectory, "local-flora"),
+            preferences.LocalFloraDirectory);
+        Assert.True(preferences.PreDownload);
+        Assert.Equal(
+            [1, 2, 3, 4],
+            await File.ReadAllBytesAsync(Path.Combine(
+                preferences.CacheDirectory,
+                "2310101.jpg")));
+        Assert.Equal(
+            [5, 6, 7, 8],
+            await File.ReadAllBytesAsync(Path.Combine(
+                preferences.LocalFloraDirectory!,
+                "aleoida-arcus-yellow.png")));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

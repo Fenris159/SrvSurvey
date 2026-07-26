@@ -84,6 +84,7 @@ public sealed partial class BiologyCodexWindow : Window
         var imageLoadTask = imageCache.GetAsync(
             organism.EntryId,
             organism.ImageUrl,
+            organism.LocalImageName,
             forceRefresh,
             cancellationToken);
         try
@@ -132,8 +133,10 @@ public sealed partial class BiologyCodexWindow : Window
         try
         {
             ReplaceImage(new Bitmap(result.Path));
-            ImageStatusText.Text = organism.ImageCreditText
-                + (result.IsFromCache ? " · cached" : " · downloaded");
+            ImageStatusText.Text = result.IsLocal
+                ? "Local flora reference image"
+                : organism.ImageCreditText
+                    + (result.IsFromCache ? " · cached" : " · downloaded");
         }
         catch (Exception exception) when (
             exception is IOException

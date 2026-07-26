@@ -206,7 +206,7 @@ public sealed partial class App : Application
             biologyCodexWindowCoordinator = new BiologyCodexWindowCoordinator(
                 viewModel.BiologyCodex,
                 mainWindow,
-                Path.Combine(appDataPaths.CacheDirectory, "codex-images"));
+                viewModel.CodexImages);
             biologyCodexBingoWindowCoordinator =
                 new BiologyCodexBingoWindowCoordinator(
                     viewModel.CodexBingo,

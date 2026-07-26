@@ -6,7 +6,10 @@ public sealed class CodexImageCache : IDisposable
 {
     public const long MaximumImageBytes = 30 * 1024 * 1024;
 
-    private readonly string cacheDirectory;
+    private static readonly string[] KnownExtensions =
+        [".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif"];
+
+    private readonly Func<CodexImageLocations> locationProvider;
     private readonly HttpClient httpClient;
     private readonly bool ownsHttpClient;
     private readonly TimeSpan downloadTimeout;
@@ -16,13 +19,21 @@ public sealed class CodexImageCache : IDisposable
         string cacheDirectory,
         HttpClient? httpClient = null,
         TimeSpan? downloadTimeout = null)
+        : this(
+            () => new CodexImageLocations(cacheDirectory, null),
+            httpClient,
+            downloadTimeout)
     {
-        this.cacheDirectory = Path.GetFullPath(
-            string.IsNullOrWhiteSpace(cacheDirectory)
-                ? throw new ArgumentException(
-                    "A Codex image cache directory is required.",
-                    nameof(cacheDirectory))
-                : cacheDirectory);
+    }
+
+    public CodexImageCache(
+        Func<CodexImageLocations> locationProvider,
+        HttpClient? httpClient = null,
+        TimeSpan? downloadTimeout = null)
+    {
+        this.locationProvider = locationProvider
+            ?? throw new ArgumentNullException(nameof(locationProvider));
+        _ = ResolveLocations();
         ownsHttpClient = httpClient is null;
         this.httpClient = httpClient ?? new HttpClient
         {
@@ -40,6 +51,7 @@ public sealed class CodexImageCache : IDisposable
     public async Task<CodexImageCacheResult> GetAsync(
         long entryId,
         string imageUrl,
+        string? localImageName = null,
         bool forceRefresh = false,
         CancellationToken cancellationToken = default)
     {
@@ -51,6 +63,20 @@ public sealed class CodexImageCache : IDisposable
                 "A positive Codex entry ID is required.");
         }
 
+        var locations = ResolveLocations();
+        if (!forceRefresh
+            && ResolveLocalImage(
+                locations.LocalFloraDirectory,
+                localImageName) is { } localPath)
+        {
+            return new CodexImageCacheResult(
+                localPath,
+                true,
+                true,
+                null,
+                true);
+        }
+
         if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri)
             || uri.Scheme is not ("http" or "https"))
         {
@@ -60,14 +86,17 @@ public sealed class CodexImageCache : IDisposable
         }
 
         var path = Path.Combine(
-            cacheDirectory,
+            locations.CacheDirectory,
             entryId + GetExtension(uri));
-        if (!forceRefresh && File.Exists(path))
+        var cachedPath = !forceRefresh
+            ? ResolveCachedImage(locations.CacheDirectory, entryId, path)
+            : null;
+        if (cachedPath is not null)
         {
-            return new CodexImageCacheResult(path, true, true, null);
+            return new CodexImageCacheResult(cachedPath, true, true, null);
         }
 
-        Directory.CreateDirectory(cacheDirectory);
+        Directory.CreateDirectory(locations.CacheDirectory);
         var temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         using var timeoutCancellation = CancellationTokenSource
             .CreateLinkedTokenSource(cancellationToken);
@@ -137,6 +166,66 @@ public sealed class CodexImageCache : IDisposable
         }
     }
 
+    public async Task<CodexImagePreDownloadResult> PreDownloadAsync(
+        IEnumerable<CodexImageRequest> requests,
+        IProgress<CodexImagePreDownloadProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(requests);
+        var materialized = requests
+            .Where(request => request.EntryId > 0
+                && !string.IsNullOrWhiteSpace(request.ImageUrl))
+            .GroupBy(request => request.EntryId)
+            .Select(group => group.First())
+            .ToArray();
+        var downloaded = 0;
+        var cached = 0;
+        var local = 0;
+        var failed = 0;
+        for (var index = 0; index < materialized.Length; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var request = materialized[index];
+            var result = await GetAsync(
+                    request.EntryId,
+                    request.ImageUrl,
+                    request.LocalImageName,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            if (!result.IsSuccess)
+            {
+                failed++;
+            }
+            else if (result.IsLocal)
+            {
+                local++;
+            }
+            else if (result.IsFromCache)
+            {
+                cached++;
+            }
+            else
+            {
+                downloaded++;
+            }
+
+            progress?.Report(new CodexImagePreDownloadProgress(
+                index + 1,
+                materialized.Length,
+                downloaded,
+                cached,
+                local,
+                failed));
+        }
+
+        return new CodexImagePreDownloadResult(
+            materialized.Length,
+            downloaded,
+            cached,
+            local,
+            failed);
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -192,16 +281,97 @@ public sealed class CodexImageCache : IDisposable
             _ => ".jpg",
         };
     }
+
+    private CodexImageLocations ResolveLocations()
+    {
+        var locations = locationProvider()
+            ?? throw new InvalidOperationException(
+                "The Codex image location provider returned no locations.");
+        return new CodexImageLocations(
+            Path.GetFullPath(
+                string.IsNullOrWhiteSpace(locations.CacheDirectory)
+                    ? throw new InvalidOperationException(
+                        "A Codex image cache directory is required.")
+                    : locations.CacheDirectory),
+            string.IsNullOrWhiteSpace(locations.LocalFloraDirectory)
+                ? null
+                : Path.GetFullPath(locations.LocalFloraDirectory));
+    }
+
+    private static string? ResolveLocalImage(
+        string? directory,
+        string? imageName)
+    {
+        if (directory is null
+            || string.IsNullOrWhiteSpace(imageName)
+            || !string.Equals(
+                Path.GetFileName(imageName),
+                imageName,
+                StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var path = Path.Combine(directory, imageName + ".png");
+        return File.Exists(path) ? path : null;
+    }
+
+    private static string? ResolveCachedImage(
+        string directory,
+        long entryId,
+        string preferredPath)
+    {
+        if (File.Exists(preferredPath))
+        {
+            return preferredPath;
+        }
+
+        foreach (var extension in KnownExtensions)
+        {
+            var candidate = Path.Combine(directory, entryId + extension);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
 }
 
 public sealed record CodexImageCacheResult(
     string Path,
     bool IsFromCache,
     bool IsSuccess,
-    string? Error)
+    string? Error,
+    bool IsLocal = false)
 {
     public static CodexImageCacheResult Failed(string path, string error)
     {
         return new CodexImageCacheResult(path, false, false, error);
     }
 }
+
+public sealed record CodexImageLocations(
+    string CacheDirectory,
+    string? LocalFloraDirectory);
+
+public sealed record CodexImageRequest(
+    long EntryId,
+    string ImageUrl,
+    string? LocalImageName = null);
+
+public sealed record CodexImagePreDownloadProgress(
+    int Completed,
+    int Total,
+    int Downloaded,
+    int Cached,
+    int Local,
+    int Failed);
+
+public sealed record CodexImagePreDownloadResult(
+    int Total,
+    int Downloaded,
+    int Cached,
+    int Local,
+    int Failed);

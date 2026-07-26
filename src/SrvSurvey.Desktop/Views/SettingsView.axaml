@@ -120,6 +120,40 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Codex reference images" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Use the original local-flora naming contract, retain an imported image cache, or download biology references for offline browsing." />
+          </StackPanel>
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <TextBox Text="{Binding CodexImages.CacheDirectory, Mode=TwoWay}"
+                     PlaceholderText="Absolute cache directory" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Click="ChooseCodexCacheFolder_Click"
+                    Content="Choose cache..." />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <TextBox Text="{Binding CodexImages.LocalFloraDirectory, Mode=TwoWay}"
+                     PlaceholderText="Optional local flora directory" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Click="ChooseLocalFloraFolder_Click"
+                    Content="Choose local images..." />
+          </Grid>
+          <CheckBox IsChecked="{Binding CodexImages.PreDownload, Mode=TwoWay}"
+                    Content="Download all available biology images in the background" />
+          <ProgressBar IsIndeterminate="True"
+                       IsVisible="{Binding CodexImages.IsPreDownloading}" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding CodexImages.StatusMessage}" />
+        </StackPanel>
+      </Border>
+
       <Separator />
 
       <StackPanel Spacing="5">

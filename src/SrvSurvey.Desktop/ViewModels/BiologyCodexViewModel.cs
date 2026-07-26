@@ -422,7 +422,8 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
             temperatureRange,
             temperatureWarning,
             reference.ImageUrl,
-            reference.ImageCommander);
+            reference.ImageCommander,
+            reference.GetLegacyLocalImageName());
     }
 
     private string FormatTemperatureWarning(
@@ -710,7 +711,8 @@ public sealed record BiologyCodexOrganismViewModel(
     string TemperatureRangeText,
     string TemperatureWarningText,
     string? ImageUrl,
-    string? ImageCommander)
+    string? ImageCommander,
+    string? LocalImageName)
 {
     public string StatusText => Status.ToString();
 

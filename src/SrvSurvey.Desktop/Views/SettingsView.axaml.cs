@@ -82,6 +82,30 @@ public sealed partial class SettingsView : UserControl
         }
     }
 
+    private async void ChooseCodexCacheFolder_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        var folder = await ChooseFolderAsync(
+            "Choose the Codex image cache folder");
+        if (folder is not null && DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.CodexImages.CacheDirectory = folder;
+        }
+    }
+
+    private async void ChooseLocalFloraFolder_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        var folder = await ChooseFolderAsync(
+            "Choose the local flora image folder");
+        if (folder is not null && DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.CodexImages.LocalFloraDirectory = folder;
+        }
+    }
+
     private async Task<string?> ChooseFolderAsync(string title)
     {
         var topLevel = TopLevel.GetTopLevel(this);

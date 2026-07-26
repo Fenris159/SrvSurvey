@@ -211,6 +211,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("eddnEnvironment", "EddnEnvironment"),
                     ("uploadGGG", "UploadGreenGasGiantCandidates"),
                 ]);
+                mappedCount += MapCodexImages(legacy, root, manifest);
                 mappedCount += MapInput(legacy, root);
                 root["LegacyImport"] = new JsonObject
                 {
@@ -253,6 +254,151 @@ public sealed class LegacyUiSettingsMigrator
             && blackValue;
         target["Theme"] = black ? "orange-dark" : dark ? "blue-dark" : "blue-light";
         return 1;
+    }
+
+    private static int MapCodexImages(
+        JsonObject legacy,
+        JsonObject target,
+        ProfileImportManifest manifest)
+    {
+        var section = GetOrCreateObject(target, "CodexImages");
+        var count = Copy(
+            legacy,
+            "preDownloadCodexImages",
+            section,
+            "PreDownload");
+        count += MapImportedDirectory(
+            legacy,
+            "downloadCodexImageFolder",
+            section,
+            "CacheDirectory",
+            manifest,
+            "codexImages");
+        count += MapImportedDirectory(
+            legacy,
+            "localFloraFolder",
+            section,
+            "LocalFloraDirectory",
+            manifest,
+            null);
+        return count;
+    }
+
+    private static int MapImportedDirectory(
+        JsonObject source,
+        string sourceName,
+        JsonObject target,
+        string targetName,
+        ProfileImportManifest manifest,
+        string? conventionalImportedDirectory)
+    {
+        if (source[sourceName] is not JsonValue value
+            || !value.TryGetValue<string>(out var configuredPath)
+            || string.IsNullOrWhiteSpace(configuredPath))
+        {
+            return 0;
+        }
+
+        target[targetName] = RelocateImportedDirectory(
+            configuredPath,
+            manifest,
+            conventionalImportedDirectory);
+        return 1;
+    }
+
+    private static string RelocateImportedDirectory(
+        string configuredPath,
+        ProfileImportManifest manifest,
+        string? conventionalImportedDirectory)
+    {
+        var configured = configuredPath.Trim();
+        var relative = GetImportedRelativePath(
+            configured,
+            manifest.SourceDirectory);
+        if (relative is not null)
+        {
+            var relocated = Path.GetFullPath(Path.Combine(
+                manifest.DestinationDirectory,
+                relative));
+            if (IsSameOrChildPath(relocated, manifest.DestinationDirectory))
+            {
+                return relocated;
+            }
+        }
+
+        if (conventionalImportedDirectory is not null
+            && string.Equals(
+                GetCrossPlatformFileName(configured),
+                conventionalImportedDirectory,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            var imported = Path.Combine(
+                manifest.DestinationDirectory,
+                conventionalImportedDirectory);
+            if (Directory.Exists(imported))
+            {
+                return Path.GetFullPath(imported);
+            }
+        }
+
+        return configured;
+    }
+
+    private static string? GetImportedRelativePath(
+        string configuredPath,
+        string sourceDirectory)
+    {
+        var configured = NormalizeDirectory(configuredPath);
+        var source = NormalizeDirectory(sourceDirectory);
+        if (string.Equals(configured, source, StringComparison.OrdinalIgnoreCase))
+        {
+            return string.Empty;
+        }
+
+        var prefix = source + "/";
+        if (!configured.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var relative = configured[prefix.Length..];
+        return string.Join(
+            Path.DirectorySeparatorChar,
+            relative.Split(
+                '/',
+                StringSplitOptions.RemoveEmptyEntries
+                    | StringSplitOptions.TrimEntries));
+    }
+
+    private static string NormalizeDirectory(string path)
+    {
+        return path.Trim()
+            .Replace('\\', '/')
+            .TrimEnd('/');
+    }
+
+    private static string GetCrossPlatformFileName(string path)
+    {
+        var normalized = NormalizeDirectory(path);
+        var separator = normalized.LastIndexOf('/');
+        return separator >= 0 ? normalized[(separator + 1)..] : normalized;
+    }
+
+    private static bool IsSameOrChildPath(string path, string root)
+    {
+        var fullPath = Path.GetFullPath(path).TrimEnd(
+            Path.DirectorySeparatorChar,
+            Path.AltDirectorySeparatorChar);
+        var fullRoot = Path.GetFullPath(root).TrimEnd(
+            Path.DirectorySeparatorChar,
+            Path.AltDirectorySeparatorChar);
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        return string.Equals(fullPath, fullRoot, comparison)
+            || fullPath.StartsWith(
+                fullRoot + Path.DirectorySeparatorChar,
+                comparison);
     }
 
     private static int MapFssTuningDetector(

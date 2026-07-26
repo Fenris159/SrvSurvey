@@ -137,7 +137,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         PulseOverlaySettingsStore? pulseOverlaySettingsStore = null,
         OverlayBehaviorSettingsStore? overlayBehaviorSettingsStore = null,
         JournalSettingsStore? journalSettingsStore = null,
-        SystemScanPersistenceStore? systemScanPersistenceStore = null)
+        SystemScanPersistenceStore? systemScanPersistenceStore = null,
+        CodexImageSettingsStore? codexImageSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -221,6 +222,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             ?? new SpanshStarSystemResolver();
         var sharedExobiologyCatalog = exobiologyCatalog
             ?? ExobiologyReferenceCatalog.LoadEmbedded();
+        var defaultCodexImageCache = Path.Combine(
+            AppDataPaths.CacheDirectory,
+            "codex-images");
+        CodexImages = new CodexImageSettingsViewModel(
+            codexImageSettingsStore
+                ?? new CodexImageSettingsStore(
+                    AppDataPaths.UiSettingsPath,
+                    defaultCodexImageCache),
+            sharedExobiologyCatalog,
+            defaultCodexImageCache);
         var systemNoteStore = new SystemNoteStore(AppDataPaths.DataDirectory);
         var systemNotesSettingsStore = new SystemNotesSettingsStore(
             AppDataPaths.DataDirectory);
@@ -521,6 +532,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public BiologyPredictionsViewModel BiologyPredictions { get; }
 
     public BiologyCodexViewModel BiologyCodex { get; }
+
+    public CodexImageSettingsViewModel CodexImages { get; }
 
     public BiologyCodexBingoViewModel CodexBingo { get; }
 

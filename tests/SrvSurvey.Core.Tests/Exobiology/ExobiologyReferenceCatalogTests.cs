@@ -49,6 +49,21 @@ public sealed class ExobiologyReferenceCatalogTests
         Assert.DoesNotContain(touristEntry, catalog.BiologyEntries);
     }
 
+    [Theory]
+    [InlineData(2310101, "aleoida-arcus-yellow")]
+    [InlineData(2100402, "Anemone-Croceum")]
+    [InlineData(2100201, "Brain-Trees-Roseum-Brain-Tree")]
+    public void LocalImageNamesMatchLegacyFloraContract(
+        long entryId,
+        string expected)
+    {
+        var entry = ExobiologyReferenceCatalog.LoadEmbedded()
+            .FindByEntryId(entryId);
+
+        Assert.NotNull(entry);
+        Assert.Equal(expected, entry.GetLegacyLocalImageName());
+    }
+
     [Fact]
     public void LoadRejectsNonObjectReference()
     {

@@ -290,4 +290,51 @@ public sealed record ExobiologyReference(
         HudCategory,
         "Biology",
         StringComparison.OrdinalIgnoreCase);
+
+    public string? GetLegacyLocalImageName()
+    {
+        if (string.IsNullOrWhiteSpace(DisplayName))
+        {
+            return null;
+        }
+
+        if (string.Equals(Platform, "odyssey", StringComparison.OrdinalIgnoreCase))
+        {
+            var parts = DisplayName.Split(
+                ' ',
+                StringSplitOptions.TrimEntries
+                    | StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length == 4
+                ? $"{parts[0]}-{parts[1]}-{parts[3]}".ToLowerInvariant()
+                : $"{parts[^1]}-{parts[0]}".ToLowerInvariant();
+        }
+
+        var genusName = string.Equals(
+                SubCategory,
+                "$Codex_SubCategory_Thargoid;",
+                StringComparison.Ordinal)
+            ? DisplayName
+            : DisplayName.Split(' ', 2).ElementAtOrDefault(1) ?? DisplayName;
+        genusName = genusName switch
+        {
+            "Brain Tree" => "Brain Trees",
+            "Mounds" => "Bark Mounds",
+            "Anemone" => "Luteolum Anemone",
+            "Plant" => "Amphora Plant",
+            "Shards" => "Crystalline Shards",
+            _ => genusName,
+        };
+        var speciesName = string.Equals(DisplayName, genusName, StringComparison.Ordinal)
+            ? DisplayName
+            : DisplayName.Replace(genusName, string.Empty, StringComparison.Ordinal)
+                .Trim();
+        var localGenusName = genusName == "Luteolum Anemone"
+            ? "Anemone"
+            : genusName;
+        speciesName = speciesName.Replace(
+            localGenusName,
+            string.Empty,
+            StringComparison.Ordinal).Trim();
+        return $"{localGenusName}-{speciesName}".Replace(' ', '-');
+    }
 }
