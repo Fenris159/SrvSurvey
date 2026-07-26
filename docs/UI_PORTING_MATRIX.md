@@ -153,7 +153,7 @@ Both auxiliary windows participate in the shared click-through lifecycle and
 global visibility control. Their automated state, placement, settings, and XAML
 checks pass; visual/theme QA is intentionally deferred to the final UI pass.
 `PlotFloatie` is implemented as a bottom-center passive notification surface.
-It restores cargo-depot remainder, material pickup totals, Boxel progress/next-
+It restores cargo-depot remainder, trade/technology-broker-aware material pickup totals, Boxel progress/next-
 target, screenshot save, Green Gas Giant upload, and banner-toggle messages,
 including de-duplication, the original six-second lifetime, all five nested
 notification preferences, and global enablement. Bootstrap journal history

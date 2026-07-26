@@ -73,6 +73,89 @@ public sealed class NotificationViewModelTests : IDisposable
     }
 
     [Fact]
+    public void MaterialTradesAndTechnologyBrokerKeepPickupTotalsAccurate()
+    {
+        var viewModel = CreateViewModel(new MutableTimeProvider(
+            DateTimeOffset.UtcNow));
+        viewModel.ApplyJournalEvents(
+        [
+            Parse(
+                """
+                {"event":"Materials","Raw":[{"Name":"iron","Count":20}],"Manufactured":[],"Encoded":[{"Name":"ancienttechnologicaldata","Name_Localised":"Pattern Epsilon Obelisk Data","Count":5}]}
+                """),
+            Parse(
+                """
+                {"event":"MaterialTrade","Paid":{"Material":"iron","Category":"Raw","Quantity":6},"Received":{"Material":"selenium","Category":"Raw","Quantity":2}}
+                """),
+            Parse(
+                """
+                {"event":"TechnologyBroker","Materials":[{"Name":"iron","Count":4,"Category":"Raw"},{"Name":"ancienttechnologicaldata","Count":3,"Category":"Encoded"}]}
+                """),
+        ],
+        allowNotifications: false);
+
+        viewModel.ApplyJournalEvents(
+        [
+            Parse(
+                """
+                {"event":"MaterialCollected","Category":"Raw","Name":"iron","Count":1}
+                """),
+            Parse(
+                """
+                {"event":"MaterialCollected","Category":"Raw","Name":"selenium","Count":1}
+                """),
+            Parse(
+                """
+                {"event":"MaterialCollected","Category":"Encoded","Name":"ancienttechnologicaldata","Name_Localised":"Pattern Epsilon Obelisk Data","Count":1}
+                """),
+        ],
+        allowNotifications: true);
+
+        Assert.Contains(
+            viewModel.Messages,
+            message => message.Text == "Collected: 1x iron, new total 11");
+        Assert.Contains(
+            viewModel.Messages,
+            message => message.Text == "Collected: 1x selenium, new total 3");
+        Assert.Contains(
+            viewModel.Messages,
+            message => message.Text
+                == "Collected: 1x Pattern Epsilon Obelisk Data, new total 3");
+    }
+
+    [Fact]
+    public void MalformedMaterialTradeDoesNotPartiallyChangeInventory()
+    {
+        var viewModel = CreateViewModel(new MutableTimeProvider(
+            DateTimeOffset.UtcNow));
+        viewModel.ApplyJournalEvents(
+        [
+            Parse(
+                """
+                {"event":"Materials","Raw":[{"Name":"iron","Count":20}],"Manufactured":[],"Encoded":[]}
+                """),
+            Parse(
+                """
+                {"event":"MaterialTrade","Paid":{"Material":"iron","Category":"Raw","Quantity":6},"Received":{"Material":"selenium","Category":"Raw"}}
+                """),
+        ],
+        allowNotifications: false);
+
+        viewModel.ApplyJournalEvents(
+        [
+            Parse(
+                """
+                {"event":"MaterialCollected","Category":"Raw","Name":"iron","Count":1}
+                """),
+        ],
+        allowNotifications: true);
+
+        Assert.Equal(
+            "Collected: 1x iron, new total 21",
+            Assert.Single(viewModel.Messages).Text);
+    }
+
+    [Fact]
     public void BoxelScreenshotUploadAndBannerMessagesMatchLegacyWording()
     {
         var viewModel = CreateViewModel(new MutableTimeProvider(

@@ -221,6 +221,15 @@ profile matches the legacy application after restart.
 - [ ] Compare serialized state or a documented equivalent projection against
   the legacy implementation.
 
+The legacy dispatch audit now accounts for all 68 concrete event handlers in
+`Game`: 66 already had an exact modern consumer, and the two uncovered events,
+`MaterialTrade` and `TechnologyBroker`, now update the bounded in-memory
+material inventory used by pickup-total notifications. Trade events validate
+both sides before changing either count, unknown paid materials fail closed,
+broker entries are isolated, and later `MaterialCollected` totals have fixtures
+covering both event shapes and malformed-trade refusal. The broader golden
+fixture/projection inventory remains open above.
+
 Exit gate: the supported event inventory has a fixture and parity result; unknown
 events remain non-fatal and observable.
 

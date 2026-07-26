@@ -137,6 +137,14 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
                         allowNotifications);
                     break;
 
+                case "MaterialTrade":
+                    ApplyMaterialTrade(journalEvent.Payload);
+                    break;
+
+                case "TechnologyBroker":
+                    ApplyTechnologyBroker(journalEvent.Payload);
+                    break;
+
                 case "CargoDepot" when allowNotifications
                     && CargoMissionRemaining:
                     ApplyCargoDepot(journalEvent.Payload);
@@ -292,13 +300,101 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
         var displayName = GetString(root, "Name_Localised")
             ?? existing?.DisplayName
             ?? name;
-        var total = Math.Max(0, (existing?.Count ?? 0) + count.Value);
+        var total = (int)Math.Clamp(
+            (long)(existing?.Count ?? 0) + count.Value,
+            0,
+            int.MaxValue);
         materials[key] = new MaterialState(displayName, total);
         if (allowNotifications && MaterialCountAfterPickup)
         {
             ShowMessage(
                 $"Collected: {count.Value}x {displayName}, new total {total}");
         }
+    }
+
+    private void ApplyMaterialTrade(JsonElement root)
+    {
+        if (!root.TryGetProperty("Paid", out var paidElement)
+            || paidElement.ValueKind != JsonValueKind.Object
+            || !root.TryGetProperty("Received", out var receivedElement)
+            || receivedElement.ValueKind != JsonValueKind.Object
+            || TryReadMaterialAdjustment(paidElement, "Quantity")
+                is not { } paid
+            || TryReadMaterialAdjustment(receivedElement, "Quantity")
+                is not { } received)
+        {
+            return;
+        }
+
+        var paidKey = GetMaterialKey(paid.Category, paid.Name);
+        if (!materials.TryGetValue(paidKey, out var paidState))
+        {
+            return;
+        }
+
+        materials[paidKey] = paidState with
+        {
+            Count = Math.Max(0, paidState.Count - paid.Count),
+        };
+        ApplyMaterialIncrease(received);
+    }
+
+    private void ApplyTechnologyBroker(JsonElement root)
+    {
+        if (!root.TryGetProperty("Materials", out var entries)
+            || entries.ValueKind != JsonValueKind.Array)
+        {
+            return;
+        }
+
+        foreach (var entry in entries.EnumerateArray())
+        {
+            if (entry.ValueKind != JsonValueKind.Object
+                || TryReadMaterialAdjustment(entry, "Count")
+                    is not { } material)
+            {
+                continue;
+            }
+
+            var key = GetMaterialKey(material.Category, material.Name);
+            if (materials.TryGetValue(key, out var existing))
+            {
+                materials[key] = existing with
+                {
+                    Count = Math.Max(0, existing.Count - material.Count),
+                };
+            }
+        }
+    }
+
+    private void ApplyMaterialIncrease(MaterialAdjustment material)
+    {
+        var key = GetMaterialKey(material.Category, material.Name);
+        var existing = materials.GetValueOrDefault(key);
+        materials[key] = new MaterialState(
+            material.DisplayName ?? existing?.DisplayName ?? material.Name,
+            (int)Math.Min(
+                int.MaxValue,
+                (long)(existing?.Count ?? 0) + material.Count));
+    }
+
+    private static MaterialAdjustment? TryReadMaterialAdjustment(
+        JsonElement root,
+        string countProperty)
+    {
+        var category = GetString(root, "Category");
+        var name = GetString(root, "Material") ?? GetString(root, "Name");
+        var count = GetInt32(root, countProperty);
+        return string.IsNullOrWhiteSpace(category)
+            || string.IsNullOrWhiteSpace(name)
+            || count is not > 0
+                ? null
+                : new MaterialAdjustment(
+                    category,
+                    name,
+                    GetString(root, "Material_Localised")
+                        ?? GetString(root, "Name_Localised"),
+                    count.Value);
     }
 
     private void ApplyCargoDepot(JsonElement root)
@@ -394,6 +490,12 @@ public sealed class NotificationViewModel : INotifyPropertyChanged
     }
 
     private sealed record MaterialState(string DisplayName, int Count);
+
+    private sealed record MaterialAdjustment(
+        string Category,
+        string Name,
+        string? DisplayName,
+        int Count);
 }
 
 public sealed record NotificationMessageViewModel(
