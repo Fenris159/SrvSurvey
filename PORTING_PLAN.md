@@ -576,8 +576,15 @@ UI tests where practical, and live Windows/Linux evidence.
   injected post-swap checkpoint fails. The process handoff now has a bounded,
   atomically written app-data plan with strict request-directory and two-hour
   expiry checks, preserved startup arguments, a random 256-bit health token, and
-  atomic health/outcome markers. External helper execution, user consent/status,
-  and the remaining network audit keep this phase open.
+  atomic health/outcome markers. The staged self-contained executable now runs
+  the helper mode before any profile/UI initialization, waits for the exact
+  parent instance, applies the transaction, starts the replacement with internal
+  arguments removed from normal option parsing, and requires token-bound health
+  confirmation after Avalonia initialization. A crash or 60-second timeout stops
+  the replacement before rollback and relaunch of the verified old build; a
+  still-running parent aborts without starting a duplicate. User consent/status,
+  final packaged process testing, and the remaining network audit keep this phase
+  open.
   The legacy regional-Codex Google Sheet now refreshes on the original
   weekly cadence or with a Codex-reference update. Its live 26-column CSV
   contract is parsed with bounded RFC-style quoting, numeric region IDs remain

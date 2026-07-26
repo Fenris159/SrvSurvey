@@ -788,6 +788,27 @@ public sealed partial class App : Application
                 guardianOverlayCoordinator?.Dispose();
                 guardianOverlayCoordinator = null;
             };
+            try
+            {
+                if (ApplicationUpdateBootstrap
+                    .ConfirmPendingHealthyAsync(appDataPaths)
+                    .GetAwaiter()
+                    .GetResult())
+                {
+                    applicationLog.Append(
+                        "Verified update replacement startup with the handoff helper.");
+                }
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or InvalidDataException
+                    or InvalidOperationException)
+            {
+                applicationLog.Append(
+                    "Update replacement health confirmation failed: "
+                    + exception.Message);
+            }
         }
 
         base.OnFrameworkInitializationCompleted();

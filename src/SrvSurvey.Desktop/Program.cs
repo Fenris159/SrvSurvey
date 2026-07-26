@@ -17,7 +17,21 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        StartupArguments = args;
+        var updateStartup = ApplicationUpdateBootstrap.ParseStartupArguments(args);
+        if (updateStartup.Mode == ApplicationUpdateStartupMode.Apply)
+        {
+            Environment.ExitCode = ApplicationUpdateBootstrap.RunHelperAsync(
+                    updateStartup.PlanPath!)
+                .GetAwaiter()
+                .GetResult();
+            return;
+        }
+
+        StartupArguments = updateStartup.ApplicationArguments.ToArray();
+        ApplicationUpdateBootstrap.SetPendingConfirmation(
+            updateStartup.Mode == ApplicationUpdateStartupMode.Confirm
+                ? updateStartup.PlanPath
+                : null);
         var appDataPaths = AppDataPaths.ResolveCurrent();
         var language = LocalizationSettingsStore.ResolveCurrent(appDataPaths);
         LocalizationCatalog.Initialize(language);
