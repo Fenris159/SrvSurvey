@@ -12,6 +12,10 @@ public interface IRavenColonialClient
         string commanderName,
         CancellationToken cancellationToken = default);
 
+    Task<string?> GetCommanderByApiKeyAsync(
+        string apiKey,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<string>> SaveHiddenProjectIdsAsync(
         string commanderName,
         IEnumerable<string> hiddenProjectIds,
@@ -163,6 +167,42 @@ public sealed class RavenColonialClient : IRavenColonialClient
             await hiddenTask.ConfigureAwait(false) ?? [],
             await primaryTask.ConfigureAwait(false),
             await fleetCarriersTask.ConfigureAwait(false) ?? []);
+    }
+
+    public async Task<string?> GetCommanderByApiKeyAsync(
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            CreateUri("api/cmdr/"));
+        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        using var response = await httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode is HttpStatusCode.BadRequest
+            or HttpStatusCode.Unauthorized
+            or HttpStatusCode.Forbidden
+            or HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        var data = await ReadRequiredAsync<Dictionary<string, string>>(
+                response,
+                "validate the Raven API key",
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (!data.TryGetValue("displayName", out var commanderName)
+            || string.IsNullOrWhiteSpace(commanderName))
+        {
+            throw new InvalidDataException(
+                "Raven returned no commander display name for the API key.");
+        }
+
+        return commanderName.Trim();
     }
 
     public async Task<IReadOnlyList<string>> SaveHiddenProjectIdsAsync(

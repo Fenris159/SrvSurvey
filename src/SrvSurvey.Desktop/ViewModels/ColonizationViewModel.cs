@@ -993,6 +993,39 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             var normalized = string.IsNullOrWhiteSpace(RavenApiKey)
                 ? null
                 : RavenApiKey.Trim();
+            string? validatedCommander = null;
+            if (normalized is not null)
+            {
+                if (CommanderName is null)
+                {
+                    RavenCredentialStatus =
+                        "Load the active commander before validating a Raven API key.";
+                    return;
+                }
+
+                RavenCredentialStatus =
+                    "Validating the Raven API key without saving it...";
+                validatedCommander =
+                    await client.GetCommanderByApiKeyAsync(normalized);
+                if (validatedCommander is null)
+                {
+                    RavenCredentialStatus =
+                        "Raven rejected this API key. The saved key was not changed.";
+                    return;
+                }
+
+                if (!string.Equals(
+                        validatedCommander,
+                        CommanderName,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    RavenCredentialStatus =
+                        $"This key belongs to {validatedCommander}, not "
+                        + $"{CommanderName}. The saved key was not changed.";
+                    return;
+                }
+            }
+
             await commanderProfileStore.SaveRavenColonialApiKeyAsync(
                 profileFrontierId,
                 CommanderName,
@@ -1002,7 +1035,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
             RavenApiKey = normalized ?? string.Empty;
             RavenCredentialStatus = normalized is null
                 ? "The Raven API key was removed from this commander profile."
-                : "The Raven API key was saved to this commander profile.";
+                : $"The Raven API key was validated for {validatedCommander} and saved.";
             OnPropertyChanged(nameof(HasStoredRavenApiKey));
             if (normalized is null && FleetCarrierCargoSyncEnabled)
             {
@@ -1019,7 +1052,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         catch (Exception exception) when (
             exception is IOException
                 or UnauthorizedAccessException
-                or InvalidDataException)
+                or InvalidDataException
+                or HttpRequestException
+                or TaskCanceledException
+                or ArgumentException)
         {
             RavenCredentialStatus =
                 "The Raven API key was not saved: " + exception.Message;

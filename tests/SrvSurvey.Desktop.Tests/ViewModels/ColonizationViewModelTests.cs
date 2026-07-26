@@ -710,6 +710,7 @@ public sealed class ColonizationViewModelTests : IDisposable
         var client = new StubRavenColonialClient();
         var viewModel = Create(client);
         viewModel.SetCommanderProfile("F123", isOdyssey: true, apiKey: null);
+        await viewModel.SetCommanderAsync("Test Cmdr");
         viewModel.RavenApiKey = "secret-key";
 
         await viewModel.SaveRavenApiKeyAsync();
@@ -718,7 +719,44 @@ public sealed class ColonizationViewModelTests : IDisposable
         var profile = await store.LoadAsync("F123", isOdyssey: true);
         Assert.Equal("secret-key", profile.Data?.RavenColonialApiKey);
         Assert.True(viewModel.HasStoredRavenApiKey);
+        Assert.Equal(1, client.ValidateApiKeyCount);
         Assert.DoesNotContain("secret-key", viewModel.RavenCredentialStatus);
+    }
+
+    [Fact]
+    public async Task RefusesRavenKeyOwnedByDifferentCommander()
+    {
+        var client = new StubRavenColonialClient
+        {
+            ValidatedCommanderName = "Other Cmdr",
+        };
+        var store = new CommanderProfileStore(directory);
+        await store.SaveRavenColonialApiKeyAsync(
+            "F123",
+            "Test Cmdr",
+            isOdyssey: true,
+            "existing-key");
+        var profilePath = Assert.Single(Directory.GetFiles(directory));
+        var originalBytes = await File.ReadAllBytesAsync(profilePath);
+        var viewModel = Create(client);
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "existing-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.RavenApiKey = "wrong-key";
+
+        await viewModel.SaveRavenApiKeyAsync();
+
+        var profile = await store.LoadAsync("F123", isOdyssey: true);
+        Assert.Equal("existing-key", profile.Data?.RavenColonialApiKey);
+        Assert.True(viewModel.HasStoredRavenApiKey);
+        Assert.Equal(
+            originalBytes,
+            await File.ReadAllBytesAsync(profilePath));
+        Assert.Contains("Other Cmdr", viewModel.RavenCredentialStatus);
+        Assert.Contains("Test Cmdr", viewModel.RavenCredentialStatus);
+        Assert.DoesNotContain("wrong-key", viewModel.RavenCredentialStatus);
     }
 
     [Fact]
@@ -952,9 +990,13 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public Exception? Failure { get; set; }
 
+        public string? ValidatedCommanderName { get; set; } = "Test Cmdr";
+
         public int LoadCount { get; private set; }
 
         public int SaveCount { get; private set; }
+
+        public int ValidateApiKeyCount { get; private set; }
 
         public int ReplaceCargoCount { get; private set; }
 
@@ -1001,6 +1043,14 @@ public sealed class ColonizationViewModelTests : IDisposable
             return Failure is null
                 ? Task.FromResult(Workspace)
                 : Task.FromException<ColonizationCommanderProjects>(Failure);
+        }
+
+        public Task<string?> GetCommanderByApiKeyAsync(
+            string apiKey,
+            CancellationToken cancellationToken = default)
+        {
+            ValidateApiKeyCount++;
+            return Task.FromResult(ValidatedCommanderName);
         }
 
         public Task<IReadOnlyList<string>> SaveHiddenProjectIdsAsync(

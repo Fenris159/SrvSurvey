@@ -46,6 +46,38 @@ public sealed class RavenColonialClientTests
     }
 
     [Fact]
+    public async Task ResolvesCommanderForRavenApiKey()
+    {
+        var client = Create(new StubHandler(request =>
+        {
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.Equal("/root/api/cmdr/", request.RequestUri!.AbsolutePath);
+            Assert.Equal(
+                "secret-key",
+                Assert.Single(request.Headers.GetValues("rcc-key")));
+            return Json("{\"displayName\":\"Test Cmdr\"}");
+        }));
+
+        var commander = await client.GetCommanderByApiKeyAsync("secret-key");
+
+        Assert.Equal("Test Cmdr", commander);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.NotFound)]
+    public async Task TreatsRejectedRavenApiKeyAsInvalid(
+        HttpStatusCode statusCode)
+    {
+        var client = Create(new StubHandler(_ =>
+            new HttpResponseMessage(statusCode)));
+
+        Assert.Null(await client.GetCommanderByApiKeyAsync("invalid-key"));
+    }
+
+    [Fact]
     public async Task SavesDistinctHiddenIdsWithExpectedJsonShape()
     {
         string? body = null;

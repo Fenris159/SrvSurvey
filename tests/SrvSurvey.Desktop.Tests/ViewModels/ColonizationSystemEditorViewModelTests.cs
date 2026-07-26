@@ -322,6 +322,11 @@ public sealed class ColonizationSystemEditorViewModelTests
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
+        public Task<string?> GetCommanderByApiKeyAsync(
+            string apiKey,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
         public Task<IReadOnlyList<string>> SaveHiddenProjectIdsAsync(
             string commanderName,
             IEnumerable<string> hiddenProjectIds,

@@ -62,7 +62,7 @@
           <StackPanel Spacing="12">
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="The API key is stored in the active commander profile. When sync is enabled, only cargo counts from a freshly opened market on a linked Fleet Carrier are sent to Raven Colonial." />
+                       Text="The API key is validated against the active commander before it is stored in that commander profile. When sync is enabled, only cargo counts from a freshly opened market on a linked Fleet Carrier are sent to Raven Colonial." />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
               <TextBox Text="{Binding Colonization.RavenApiKey, Mode=TwoWay}"
                        PasswordChar="*"
