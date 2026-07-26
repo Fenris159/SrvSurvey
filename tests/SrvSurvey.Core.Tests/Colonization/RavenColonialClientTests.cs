@@ -242,7 +242,7 @@ public sealed class RavenColonialClientTests
         var handler = new StubHandler(_ => new HttpResponseMessage(
             HttpStatusCode.ServiceUnavailable)
         {
-            Content = new StringContent(new string('x', 600)),
+            Content = new StringContent(new string('x', 10_000)),
         });
         var client = Create(handler);
 
@@ -256,12 +256,122 @@ public sealed class RavenColonialClientTests
     }
 
     [Fact]
+    public async Task RejectsOversizedSuccessfulResponse()
+    {
+        var client = Create(new StubHandler(_ => Json(
+            new string('x', 8 * 1024 * 1024 + 1))));
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            client.GetProjectAsync("build-1"));
+
+        Assert.Contains("8,388,608", exception.Message);
+    }
+
+    [Fact]
     public async Task MissingProjectReturnsNull()
     {
         var client = Create(new StubHandler(_ =>
             new HttpResponseMessage(HttpStatusCode.NotFound)));
 
         Assert.Null(await client.GetProjectAsync("missing"));
+    }
+
+    [Fact]
+    public async Task LoadsProjectByLegacyConstructionSiteEndpoint()
+    {
+        var client = Create(new StubHandler(request =>
+        {
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.Equal(
+                "/root/api/system/123/456",
+                request.RequestUri!.AbsolutePath);
+            return Json(
+                "{\"buildId\":\"build-1\",\"buildName\":\"Port\",\"marketId\":456}");
+        }));
+
+        var project = await client.GetProjectAsync(123, 456);
+
+        Assert.Equal("build-1", project?.BuildId);
+    }
+
+    [Fact]
+    public async Task RestoresLegacyProjectMutationContracts()
+    {
+        var requests = new List<(
+            HttpMethod Method,
+            string Path,
+            string? Body)>();
+        var handler = new StubHandler(async request =>
+        {
+            requests.Add((
+                request.Method,
+                request.RequestUri!.AbsolutePath,
+                request.Content is null
+                    ? null
+                    : await request.Content.ReadAsStringAsync()));
+            return request.RequestUri.AbsolutePath.EndsWith(
+                "/build-1",
+                StringComparison.Ordinal)
+                ? Json(
+                    "{\"buildId\":\"build-1\",\"buildName\":\"Port\",\"sumNeed\":75}")
+                : new HttpResponseMessage(HttpStatusCode.NoContent);
+        });
+        var client = Create(handler);
+        var depot = new ColonizationConstructionDepotSnapshot(
+            DateTimeOffset.Parse("2026-07-25T12:00:00Z"),
+            456,
+            0.25,
+            IsComplete: false,
+            IsFailed: false,
+            [new ColonizationResourceRequirement(
+                "steel",
+                "Steel",
+                100,
+                25,
+                5_000)]);
+
+        var updated = await client.UpdateProjectAsync(
+            new ColonizationProjectUpdate
+            {
+                BuildId = "build-1",
+                MaximumRequired = 100,
+                Commodities = new Dictionary<string, int>
+                {
+                    ["steel"] = 75,
+                },
+                ConstructionDepot =
+                    ColonizationConstructionDepotPayload.FromSnapshot(depot),
+            });
+        await client.ContributeToProjectAsync(
+            "build-1",
+            "Test Cmdr",
+            new Dictionary<string, int> { ["steel"] = 25 });
+        await client.MarkProjectCompleteAsync("build-1");
+        await client.SetPrimaryProjectAsync("Test Cmdr", "build-1");
+        await client.SetPrimaryProjectAsync("Test Cmdr", null);
+
+        Assert.Equal(75, updated.RemainingRequired);
+        Assert.Equal(
+            [
+                (HttpMethod.Post, "/root/api/project/build-1"),
+                (HttpMethod.Post,
+                    "/root/api/project/build-1/contribute/Test%20Cmdr"),
+                (HttpMethod.Post, "/root/api/project/build-1/complete"),
+                (HttpMethod.Put,
+                    "/root/api/cmdr/Test%20Cmdr/primary/build-1"),
+                (HttpMethod.Delete,
+                    "/root/api/cmdr/Test%20Cmdr/primary/"),
+            ],
+            requests.Select(request => (request.Method, request.Path)));
+        using var updateJson = JsonDocument.Parse(requests[0].Body!);
+        var updateRoot = updateJson.RootElement;
+        Assert.Equal("build-1", updateRoot.GetProperty("buildId").GetString());
+        Assert.Equal(75, updateRoot.GetProperty("commodities")
+            .GetProperty("steel").GetInt32());
+        Assert.False(updateRoot.TryGetProperty("buildType", out _));
+        using var contributionJson = JsonDocument.Parse(requests[1].Body!);
+        Assert.Equal(25, contributionJson.RootElement
+            .GetProperty("steel").GetInt32());
     }
 
     [Fact]

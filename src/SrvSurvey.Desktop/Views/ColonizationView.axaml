@@ -36,7 +36,7 @@
               <TextBlock Classes="card-title" Text="External data consent" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="When enabled, SrvSurvey can fetch your commander projects from Raven Colonial. Saving project selection or creating a project sends only that requested change. This is off by default." />
+                         Text="When enabled, SrvSurvey can fetch your commander projects and keep newly recorded construction contributions, depot requirements, completion, and docking faction metadata in sync with Raven Colonial. Startup history is never published. This is off by default." />
               <TextBlock FontWeight="SemiBold"
                          Text="{Binding Colonization.CommanderStatus}" />
             </StackPanel>
@@ -382,7 +382,7 @@
                        Text="{Binding Colonization.ProjectSummary}" />
           </Border>
 
-          <Grid ColumnDefinitions="Auto,*,150,220,150"
+          <Grid ColumnDefinitions="Auto,*,150,220,150,Auto"
                 ColumnSpacing="12"
                 Margin="4,0">
             <TextBlock Classes="muted" Text="SHOW" />
@@ -390,6 +390,7 @@
             <TextBlock Grid.Column="2" Classes="muted" Text="PROGRESS" />
             <TextBlock Grid.Column="3" Classes="muted" Text="TYPE" />
             <TextBlock Grid.Column="4" Classes="muted" Text="SYSTEM" />
+            <TextBlock Grid.Column="5" Classes="muted" Text="PRIMARY" />
           </Grid>
 
           <ItemsControl ItemsSource="{Binding Colonization.Projects}">
@@ -398,7 +399,7 @@
                 <Border BorderBrush="{DynamicResource RavenBorderBrush}"
                         BorderThickness="0,1,0,0"
                         Padding="4,12">
-                  <Grid ColumnDefinitions="Auto,*,150,220,150"
+                  <Grid ColumnDefinitions="Auto,*,150,220,150,Auto"
                         ColumnSpacing="12">
                     <CheckBox VerticalAlignment="Center"
                               IsChecked="{Binding IsShown, Mode=TwoWay}" />
@@ -421,6 +422,11 @@
                                VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis"
                                Text="{Binding SystemName}" />
+                    <Button Grid.Column="5"
+                            Classes="secondary"
+                            MinWidth="110"
+                            Command="{Binding TogglePrimaryCommand}"
+                            Content="{Binding PrimaryActionLabel}" />
                   </Grid>
                 </Border>
               </DataTemplate>

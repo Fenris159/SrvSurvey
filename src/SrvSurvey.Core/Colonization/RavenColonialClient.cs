@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -18,6 +19,30 @@ public interface IRavenColonialClient
 
     Task<ColonizationProject?> GetProjectAsync(
         string buildId,
+        CancellationToken cancellationToken = default);
+
+    Task<ColonizationProject?> GetProjectAsync(
+        long systemAddress,
+        long marketId,
+        CancellationToken cancellationToken = default);
+
+    Task<ColonizationProject> UpdateProjectAsync(
+        ColonizationProjectUpdate update,
+        CancellationToken cancellationToken = default);
+
+    Task MarkProjectCompleteAsync(
+        string buildId,
+        CancellationToken cancellationToken = default);
+
+    Task ContributeToProjectAsync(
+        string buildId,
+        string commanderName,
+        IReadOnlyDictionary<string, int> contributions,
+        CancellationToken cancellationToken = default);
+
+    Task SetPrimaryProjectAsync(
+        string commanderName,
+        string? buildId,
         CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesAsync(
@@ -70,6 +95,9 @@ public interface IRavenColonialClient
 
 public sealed class RavenColonialClient : IRavenColonialClient
 {
+    private const int MaximumJsonResponseBytes = 8 * 1024 * 1024;
+    private const int MaximumErrorDetailBytes = 2048;
+
     public static Uri DefaultServiceUri { get; } = new(
         "https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/");
 
@@ -180,6 +208,122 @@ public sealed class RavenColonialClient : IRavenColonialClient
                 "load a colonisation project",
                 cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    public async Task<ColonizationProject?> GetProjectAsync(
+        long systemAddress,
+        long marketId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(systemAddress);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(marketId);
+        using var response = await httpClient.GetAsync(
+            CreateUri($"api/system/{systemAddress}/{marketId}"),
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        return await ReadRequiredAsync<ColonizationProject>(
+                response,
+                "load a colonisation project by construction site",
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<ColonizationProject> UpdateProjectAsync(
+        ColonizationProjectUpdate update,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(update);
+        ArgumentException.ThrowIfNullOrWhiteSpace(update.BuildId);
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            CreateUri(
+                $"api/project/{Uri.EscapeDataString(update.BuildId.Trim())}"))
+        {
+            Content = JsonContent.Create(update, options: JsonOptions),
+        };
+        using var response = await httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
+        return await ReadRequiredAsync<ColonizationProject>(
+                response,
+                "update a colonisation project",
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public Task MarkProjectCompleteAsync(
+        string buildId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(buildId);
+        return SendWithoutResponseAsync(
+            HttpMethod.Post,
+            $"api/project/{Uri.EscapeDataString(buildId.Trim())}/complete",
+            content: null,
+            "mark a colonisation project complete",
+            cancellationToken);
+    }
+
+    public Task ContributeToProjectAsync(
+        string buildId,
+        string commanderName,
+        IReadOnlyDictionary<string, int> contributions,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(buildId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(commanderName);
+        ArgumentNullException.ThrowIfNull(contributions);
+        if (contributions.Any(pair =>
+            string.IsNullOrWhiteSpace(pair.Key) || pair.Value <= 0))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(contributions),
+                "Project contributions require a commodity name and a positive amount.");
+        }
+
+        var normalized = contributions.ToDictionary(
+            pair => pair.Key.Trim(),
+            pair => pair.Value,
+            StringComparer.OrdinalIgnoreCase);
+        return SendWithoutResponseAsync(
+            HttpMethod.Post,
+            $"api/project/{Uri.EscapeDataString(buildId.Trim())}/contribute/"
+                + Uri.EscapeDataString(commanderName.Trim()),
+            JsonContent.Create(normalized, options: JsonOptions),
+            "publish a colonisation contribution",
+            cancellationToken);
+    }
+
+    public Task SetPrimaryProjectAsync(
+        string commanderName,
+        string? buildId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(commanderName);
+        var relativeUri =
+            $"api/cmdr/{Uri.EscapeDataString(commanderName.Trim())}/primary/";
+        if (string.IsNullOrWhiteSpace(buildId))
+        {
+            return SendWithoutResponseAsync(
+                HttpMethod.Delete,
+                relativeUri,
+                content: null,
+                "clear the primary colonisation project",
+                cancellationToken);
+        }
+
+        return SendWithoutResponseAsync(
+            HttpMethod.Put,
+            relativeUri + Uri.EscapeDataString(buildId.Trim()),
+            content: null,
+            "set the primary colonisation project",
+            cancellationToken);
     }
 
     public async Task<IReadOnlyList<ColonizationSystemSite>>
@@ -373,7 +517,9 @@ public sealed class RavenColonialClient : IRavenColonialClient
             cancellationToken).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            var detail = await response.Content.ReadAsStringAsync(
+            var detail = await ReadBoundedTextAsync(
+                response.Content,
+                MaximumErrorDetailBytes,
                 cancellationToken).ConfigureAwait(false);
             throw new RavenColonialServiceException(
                 response.StatusCode,
@@ -436,6 +582,36 @@ public sealed class RavenColonialClient : IRavenColonialClient
             .ConfigureAwait(false);
     }
 
+    private async Task SendWithoutResponseAsync(
+        HttpMethod method,
+        string relativeUri,
+        HttpContent? content,
+        string operation,
+        CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(
+            method,
+            CreateUri(relativeUri))
+        {
+            Content = content,
+        };
+        using var response = await httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            var detail = await ReadBoundedTextAsync(
+                response.Content,
+                MaximumErrorDetailBytes,
+                cancellationToken).ConfigureAwait(false);
+            throw new RavenColonialServiceException(
+                response.StatusCode,
+                operation,
+                detail);
+        }
+    }
+
     private static async Task<T> ReadRequiredAsync<T>(
         HttpResponseMessage response,
         string operation,
@@ -443,7 +619,9 @@ public sealed class RavenColonialClient : IRavenColonialClient
     {
         if (!response.IsSuccessStatusCode)
         {
-            var detail = await response.Content.ReadAsStringAsync(
+            var detail = await ReadBoundedTextAsync(
+                response.Content,
+                MaximumErrorDetailBytes,
                 cancellationToken).ConfigureAwait(false);
             throw new RavenColonialServiceException(
                 response.StatusCode,
@@ -453,9 +631,11 @@ public sealed class RavenColonialClient : IRavenColonialClient
 
         try
         {
-            var result = await response.Content.ReadFromJsonAsync<T>(
-                JsonOptions,
+            var bytes = await ReadBoundedBytesAsync(
+                response.Content,
+                MaximumJsonResponseBytes,
                 cancellationToken).ConfigureAwait(false);
+            var result = JsonSerializer.Deserialize<T>(bytes, JsonOptions);
             return result
                 ?? throw new InvalidDataException(
                     $"Raven Colonial returned no data while trying to {operation}.");
@@ -466,6 +646,69 @@ public sealed class RavenColonialClient : IRavenColonialClient
                 $"Raven Colonial returned invalid data while trying to {operation}.",
                 exception);
         }
+    }
+
+    private static async Task<string> ReadBoundedTextAsync(
+        HttpContent content,
+        int maximumBytes,
+        CancellationToken cancellationToken)
+    {
+        await using var source = await content.ReadAsStreamAsync(
+            cancellationToken).ConfigureAwait(false);
+        var buffer = new byte[maximumBytes];
+        var total = 0;
+        while (total < buffer.Length)
+        {
+            var read = await source.ReadAsync(
+                buffer.AsMemory(total, buffer.Length - total),
+                cancellationToken).ConfigureAwait(false);
+            if (read == 0)
+            {
+                break;
+            }
+
+            total += read;
+        }
+
+        return Encoding.UTF8.GetString(buffer, 0, total);
+    }
+
+    private static async Task<byte[]> ReadBoundedBytesAsync(
+        HttpContent content,
+        int maximumBytes,
+        CancellationToken cancellationToken)
+    {
+        if (content.Headers.ContentLength is > 0
+            && content.Headers.ContentLength > maximumBytes)
+        {
+            throw new InvalidDataException(
+                $"Raven Colonial returned more than {maximumBytes:N0} bytes.");
+        }
+
+        await using var source = await content.ReadAsStreamAsync(
+            cancellationToken).ConfigureAwait(false);
+        using var destination = new MemoryStream();
+        var buffer = new byte[16 * 1024];
+        while (true)
+        {
+            var read = await source.ReadAsync(
+                buffer,
+                cancellationToken).ConfigureAwait(false);
+            if (read == 0)
+            {
+                break;
+            }
+
+            if (destination.Length + read > maximumBytes)
+            {
+                throw new InvalidDataException(
+                    $"Raven Colonial returned more than {maximumBytes:N0} bytes.");
+            }
+
+            destination.Write(buffer, 0, read);
+        }
+
+        return destination.ToArray();
     }
 
     private Uri CreateUri(string relativeUri)
@@ -603,6 +846,56 @@ public sealed record ColonizationProjectCreate
     public string? SystemSiteId { get; init; }
 
     [JsonPropertyName("colonisationConstructionDepot")]
+    public ColonizationConstructionDepotPayload? ConstructionDepot
+    {
+        get;
+        init;
+    }
+}
+
+public sealed record ColonizationProjectUpdate
+{
+    [JsonPropertyName("buildId")]
+    public required string BuildId { get; init; }
+
+    [JsonPropertyName("buildType")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? BuildType { get; init; }
+
+    [JsonPropertyName("buildName")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? BuildName { get; init; }
+
+    [JsonPropertyName("bodyNum")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? BodyNumber { get; init; }
+
+    [JsonPropertyName("bodyName")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? BodyName { get; init; }
+
+    [JsonPropertyName("factionName")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? FactionName { get; init; }
+
+    [JsonPropertyName("architectName")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ArchitectName { get; init; }
+
+    [JsonPropertyName("notes")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Notes { get; init; }
+
+    [JsonPropertyName("maxNeed")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? MaximumRequired { get; init; }
+
+    [JsonPropertyName("commodities")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyDictionary<string, int>? Commodities { get; init; }
+
+    [JsonPropertyName("colonisationConstructionDepot")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ColonizationConstructionDepotPayload? ConstructionDepot
     {
         get;

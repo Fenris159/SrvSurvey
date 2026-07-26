@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows.Input;
 using SrvSurvey.Core.Colonization;
 using SrvSurvey.Core.Journal;
@@ -29,6 +30,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     private HashSet<string> hiddenProjectIds = new(
         StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<ColonizationFleetCarrier> fleetCarriers = [];
+    private ColonizationProject? localUntrackedProject;
     private CargoSnapshot? shipCargo;
     private MarketSnapshot? currentMarket;
     private EliteStatus? latestStatus;
@@ -568,6 +570,281 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
         }
     }
 
+    public async Task SynchronizeLiveProjectsAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        bool allowPublishing)
+    {
+        ArgumentNullException.ThrowIfNull(journalEvents);
+        if (!allowPublishing
+            || !IsEnabled
+            || CommanderName is null
+            || journalEvents.Count == 0)
+        {
+            return;
+        }
+
+        var messages = new List<string>();
+        foreach (var journalEvent in journalEvents)
+        {
+            try
+            {
+                var message = journalEvent.EventName switch
+                {
+                    "Docked" => await SynchronizeDockedProjectAsync(
+                        journalEvent),
+                    "ColonisationContribution" =>
+                        await SynchronizeContributionAsync(journalEvent),
+                    "ColonisationConstructionDepot" =>
+                        await SynchronizeDepotAsync(journalEvent),
+                    _ => null,
+                };
+                if (!string.IsNullOrWhiteSpace(message))
+                {
+                    messages.Add(message);
+                }
+            }
+            catch (Exception exception) when (
+                exception is HttpRequestException
+                    or InvalidDataException
+                    or TaskCanceledException
+                    or ArgumentException)
+            {
+                messages.Add(
+                    $"Raven project sync skipped {journalEvent.EventName}: "
+                        + exception.Message);
+            }
+        }
+
+        if (messages.Count > 0)
+        {
+            StatusMessage = string.Join(Environment.NewLine, messages);
+        }
+    }
+
+    private async Task<string?> SynchronizeDockedProjectAsync(
+        JournalEventEnvelope journalEvent)
+    {
+        var parser = new ColonizationConstructionState();
+        if (!parser.Apply(journalEvent)
+            || parser.CurrentDock is not { IsConstructionSite: true } dock)
+        {
+            return null;
+        }
+
+        var project = await FindOrLoadProjectAsync(
+            dock.SystemAddress,
+            dock.MarketId);
+        if (project is null)
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(dock.FactionName)
+            || string.Equals(
+                dock.FactionName,
+                project.FactionName,
+                StringComparison.Ordinal))
+        {
+            return localUntrackedProject?.BuildId == project.BuildId
+                ? $"Loaded untracked Raven project {project.BuildName} for this construction site."
+                : null;
+        }
+
+        var updated = await client.UpdateProjectAsync(
+            new ColonizationProjectUpdate
+            {
+                BuildId = project.BuildId,
+                FactionName = dock.FactionName,
+            });
+        UpsertProject(updated);
+        return $"Updated Raven project faction for {updated.BuildName}.";
+    }
+
+    private async Task<string?> SynchronizeContributionAsync(
+        JournalEventEnvelope journalEvent)
+    {
+        var marketId = GetJournalInt64(journalEvent.Payload, "MarketID");
+        var contributions = ReadJournalContributions(journalEvent.Payload);
+        if (marketId is not > 0 || contributions.Count == 0)
+        {
+            return null;
+        }
+
+        var dock = constructionState.CurrentDock;
+        var project = await FindOrLoadProjectAsync(
+            dock?.MarketId == marketId
+                ? dock.SystemAddress
+                : currentSystemAddress,
+            marketId.Value);
+        if (project is null)
+        {
+            return "Raven did not identify a project for the recorded construction contribution.";
+        }
+
+        await client.ContributeToProjectAsync(
+            project.BuildId,
+            CommanderName!,
+            contributions);
+        return $"Published {contributions.Values.Sum(value => (long)value):N0} contributed cargo units to {project.BuildName}.";
+    }
+
+    private async Task<string?> SynchronizeDepotAsync(
+        JournalEventEnvelope journalEvent)
+    {
+        var parser = new ColonizationConstructionState();
+        if (!parser.Apply(journalEvent)
+            || parser.CurrentDepot is not { } depot)
+        {
+            return null;
+        }
+
+        var dock = constructionState.CurrentDock;
+        var project = await FindOrLoadProjectAsync(
+            dock?.MarketId == depot.MarketId
+                ? dock.SystemAddress
+                : currentSystemAddress,
+            depot.MarketId);
+        if (project is null)
+        {
+            return "Raven did not identify a project for the current construction depot.";
+        }
+
+        var remaining = depot.Resources.ToDictionary(
+            resource => resource.Name,
+            resource => resource.RemainingAmount,
+            StringComparer.OrdinalIgnoreCase);
+        var maximumRequiredLong = depot.Resources.Sum(resource =>
+            (long)resource.RequiredAmount);
+        if (maximumRequiredLong > int.MaxValue)
+        {
+            return "Raven project sync rejected construction requirements above the supported total.";
+        }
+
+        var maximumRequired = (int)maximumRequiredLong;
+        var updated = project;
+        if (project.MaximumRequired != maximumRequired
+            || !DictionariesEqual(project.Commodities, remaining)
+            || depot.IsFailed)
+        {
+            updated = await client.UpdateProjectAsync(
+                new ColonizationProjectUpdate
+                {
+                    BuildId = project.BuildId,
+                    MaximumRequired = maximumRequired,
+                    Commodities = remaining,
+                    ConstructionDepot =
+                        ColonizationConstructionDepotPayload.FromSnapshot(
+                            depot),
+                });
+            UpsertProject(updated);
+        }
+
+        if (depot.IsComplete && !updated.IsComplete)
+        {
+            await client.MarkProjectCompleteAsync(updated.BuildId);
+            updated = updated with
+            {
+                IsComplete = true,
+                RemainingRequired = 0,
+                Commodities = new Dictionary<string, int>(
+                    StringComparer.OrdinalIgnoreCase),
+            };
+            UpsertProject(updated);
+            return $"Marked Raven project {updated.BuildName} complete.";
+        }
+
+        return updated == project
+            ? null
+            : $"Updated Raven construction requirements for {updated.BuildName}.";
+    }
+
+    private async Task<ColonizationProject?> FindOrLoadProjectAsync(
+        long? systemAddress,
+        long marketId)
+    {
+        var project = Projects
+            .Select(row => row.Project)
+            .FirstOrDefault(candidate => candidate.MarketId == marketId)
+            ?? (localUntrackedProject?.MarketId == marketId
+                ? localUntrackedProject
+                : null);
+        if (project is not null || systemAddress is not > 0)
+        {
+            return project;
+        }
+
+        project = await client.GetProjectAsync(systemAddress.Value, marketId);
+        if (project is not null)
+        {
+            localUntrackedProject = project;
+            UpsertProject(project);
+        }
+
+        return project;
+    }
+
+    private void UpsertProject(ColonizationProject project)
+    {
+        if (localUntrackedProject?.BuildId == project.BuildId)
+        {
+            localUntrackedProject = project;
+        }
+
+        Projects = Projects
+            .Select(row => row.Project)
+            .Where(candidate => !string.Equals(
+                candidate.BuildId,
+                project.BuildId,
+                StringComparison.OrdinalIgnoreCase))
+            .Append(project)
+            .OrderBy(candidate => candidate.SystemName)
+            .ThenBy(candidate => candidate.BuildName)
+            .Select(CreateRow)
+            .ToArray();
+        UpdateProjectSummary();
+    }
+
+    private static IReadOnlyDictionary<string, int> ReadJournalContributions(
+        JsonElement root)
+    {
+        if (!root.TryGetProperty("Contributions", out var rows)
+            || rows.ValueKind != JsonValueKind.Array)
+        {
+            return new Dictionary<string, int>();
+        }
+
+        var result = new Dictionary<string, int>(
+            StringComparer.OrdinalIgnoreCase);
+        foreach (var row in rows.EnumerateArray())
+        {
+            var name = ColonizationConstructionState.NormalizeCommodityName(
+                GetJournalString(row, "Name"));
+            var amount = GetJournalInt32(row, "Amount");
+            if (name.Length > 0 && amount is > 0)
+            {
+                var existing = result.GetValueOrDefault(name);
+                if (existing > int.MaxValue - amount.Value)
+                {
+                    return new Dictionary<string, int>();
+                }
+
+                result[name] = existing + amount.Value;
+            }
+        }
+
+        return result;
+    }
+
+    private static bool DictionariesEqual(
+        IReadOnlyDictionary<string, int> left,
+        IReadOnlyDictionary<string, int> right)
+    {
+        return left.Count == right.Count
+            && left.All(pair =>
+                right.TryGetValue(pair.Key, out var value)
+                && value == pair.Value);
+    }
+
     public async Task UpdateCargoAsync(CargoSnapshot? cargo)
     {
         if (cargo is null || SharedCargoSuppressed)
@@ -845,6 +1122,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 StringComparer.OrdinalIgnoreCase);
             primaryProjectId = result.PrimaryProjectId;
             fleetCarriers = result.FleetCarriers;
+            localUntrackedProject = null;
             Projects = result.Projects
                 .OrderBy(project => project.SystemName)
                 .ThenBy(project => project.BuildName)
@@ -973,7 +1251,53 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 primaryProjectId,
                 StringComparison.OrdinalIgnoreCase),
             !hiddenProjectIds.Contains(project.BuildId),
-            OnProjectShownChanged);
+            OnProjectShownChanged,
+            TogglePrimaryProjectAsync);
+    }
+
+    public async Task TogglePrimaryProjectAsync(
+        ColonizationProjectRowViewModel row)
+    {
+        ArgumentNullException.ThrowIfNull(row);
+        if (!IsEnabled || IsBusy || CommanderName is null)
+        {
+            return;
+        }
+
+        var nextPrimaryId = row.IsPrimary ? null : row.Project.BuildId;
+        IsBusy = true;
+        StatusMessage = nextPrimaryId is null
+            ? "Clearing the primary Raven Colonial project..."
+            : $"Setting {row.BuildName} as the primary Raven Colonial project...";
+        try
+        {
+            await client.SetPrimaryProjectAsync(
+                CommanderName,
+                nextPrimaryId);
+            primaryProjectId = nextPrimaryId;
+            Projects = Projects
+                .Select(project => project.Project)
+                .OrderBy(project => project.SystemName)
+                .ThenBy(project => project.BuildName)
+                .Select(CreateRow)
+                .ToArray();
+            StatusMessage = nextPrimaryId is null
+                ? "The primary Raven Colonial project was cleared."
+                : $"{row.BuildName} is now the primary Raven Colonial project.";
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or InvalidDataException
+                or TaskCanceledException
+                or ArgumentException)
+        {
+            StatusMessage = "The primary project was not changed: "
+                + exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private Task OnProjectCreatedAsync(ColonizationProject project)
@@ -1091,6 +1415,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     {
         Projects = [];
         fleetCarriers = [];
+        localUntrackedProject = null;
         hiddenProjectIds.Clear();
         primaryProjectId = null;
         HasUnsavedProjectVisibility = false;
@@ -1271,13 +1596,35 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
     }
 
     private static string? GetJournalString(
-        System.Text.Json.JsonElement root,
+        JsonElement root,
         string propertyName)
     {
         return root.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == System.Text.Json.JsonValueKind.String
+            && value.ValueKind == JsonValueKind.String
             && !string.IsNullOrWhiteSpace(value.GetString())
                 ? value.GetString()!.Trim()
+                : null;
+    }
+
+    private static long? GetJournalInt64(
+        JsonElement root,
+        string propertyName)
+    {
+        return root.TryGetProperty(propertyName, out var value)
+            && value.ValueKind == JsonValueKind.Number
+            && value.TryGetInt64(out var result)
+                ? result
+                : null;
+    }
+
+    private static int? GetJournalInt32(
+        JsonElement root,
+        string propertyName)
+    {
+        return root.TryGetProperty(propertyName, out var value)
+            && value.ValueKind == JsonValueKind.Number
+            && value.TryGetInt32(out var result)
+                ? result
                 : null;
     }
 
@@ -1390,13 +1737,16 @@ public sealed class ColonizationProjectRowViewModel
         string typeDescription,
         bool isPrimary,
         bool isShown,
-        Action<ColonizationProjectRowViewModel, bool> changed)
+        Action<ColonizationProjectRowViewModel, bool> changed,
+        Func<ColonizationProjectRowViewModel, Task> togglePrimary)
     {
         Project = project;
         TypeDescription = typeDescription;
         IsPrimary = isPrimary;
         this.isShown = isShown;
         this.changed = changed;
+        TogglePrimaryCommand = new RowAsyncCommand(
+            () => togglePrimary(this));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -1412,6 +1762,12 @@ public sealed class ColonizationProjectRowViewModel
     public bool IsPrimary { get; }
 
     public string PrimaryLabel => IsPrimary ? "PRIMARY" : string.Empty;
+
+    public string PrimaryActionLabel => IsPrimary
+        ? "Clear primary"
+        : "Make primary";
+
+    public ICommand TogglePrimaryCommand { get; }
 
     public string ProgressText => Project.IsFleetCarrierLoading
         ? $"? of {Project.MaximumRequired:N0}"
@@ -1450,6 +1806,35 @@ public sealed class ColonizationProjectRowViewModel
         PropertyChanged?.Invoke(
             this,
             new PropertyChangedEventArgs(nameof(IsShown)));
+    }
+
+    private sealed class RowAsyncCommand(Func<Task> execute) : ICommand
+    {
+        private bool isExecuting;
+
+        public event EventHandler? CanExecuteChanged;
+
+        public bool CanExecute(object? parameter) => !isExecuting;
+
+        public async void Execute(object? parameter)
+        {
+            if (isExecuting)
+            {
+                return;
+            }
+
+            isExecuting = true;
+            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+            try
+            {
+                await execute();
+            }
+            finally
+            {
+                isExecuting = false;
+                CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
     }
 }
 

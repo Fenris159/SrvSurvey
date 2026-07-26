@@ -88,6 +88,33 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task SetsAndClearsPrimaryProjectThroughLegacyEndpoint()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [Project("build-1", "Port", remaining: 100)],
+                [],
+                null,
+                []),
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+
+        await viewModel.TogglePrimaryProjectAsync(viewModel.Projects[0]);
+
+        Assert.Equal("build-1", Assert.Single(client.PrimaryProjectRequests));
+        Assert.True(Assert.Single(viewModel.Projects).IsPrimary);
+
+        await viewModel.TogglePrimaryProjectAsync(viewModel.Projects[0]);
+
+        Assert.Equal(2, client.PrimaryProjectRequests.Count);
+        Assert.Null(client.PrimaryProjectRequests[1]);
+        Assert.False(Assert.Single(viewModel.Projects).IsPrimary);
+    }
+
+    [Fact]
     public void ProjectsLiveConstructionDepotIntoResourceRows()
     {
         var viewModel = Create(new StubRavenColonialClient());
@@ -173,6 +200,184 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.True(viewModel.SystemEditor.CanLoad);
         Assert.True(viewModel.SystemEditor.LoadCommand.CanExecute(null));
         Assert.Equal("Test System", viewModel.SystemEditor.SystemTitle);
+    }
+
+    [Fact]
+    public async Task LiveConstructionEventsSynchronizeLegacyProjectMutations()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+            [
+                Project(
+                    "build-1",
+                    "Port",
+                    remaining: 100,
+                    marketId: 10,
+                    systemAddress: 20,
+                    factionName: "Old faction"),
+            ],
+            [],
+            null,
+            []),
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        var events = new[]
+        {
+            Event(
+                "Docked",
+                """
+                "MarketID":10,"SystemAddress":20,"StarSystem":"Test System",
+                "StationName":"Orbital Construction Site: Hope",
+                "StationFaction":{"Name":"New faction"},
+                "StationServices":["colonisationcontribution"]
+                """),
+            Event(
+                "ColonisationContribution",
+                """
+                "MarketID":10,
+                "Contributions":[{"Name":"$steel_name;","Amount":25}]
+                """),
+            Event(
+                "ColonisationConstructionDepot",
+                """
+                "MarketID":10,"ConstructionProgress":0.25,
+                "ResourcesRequired":[
+                  {"Name":"$steel_name;","Name_Localised":"Steel","RequiredAmount":100,"ProvidedAmount":25,"Payment":5000}
+                ]
+                """),
+        };
+        viewModel.ApplyJournalEvents(events);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            events,
+            allowPublishing: true);
+
+        Assert.Equal(2, client.ProjectUpdates.Count);
+        Assert.Equal(
+            "New faction",
+            client.ProjectUpdates[0].FactionName);
+        Assert.Equal(75, client.ProjectUpdates[1].Commodities!["steel"]);
+        var contribution = Assert.Single(client.Contributions);
+        Assert.Equal("build-1", contribution.BuildId);
+        Assert.Equal("Test Cmdr", contribution.CommanderName);
+        Assert.Equal(25, contribution.Commodities["steel"]);
+        Assert.Equal(75, Assert.Single(viewModel.Projects)
+            .Project.RemainingRequired);
+        Assert.Contains("Updated Raven construction requirements", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task BootstrapNeverSynchronizesProjectMutations()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [Project("build-1", "Port", 100, 10, 20)],
+                [],
+                null,
+                []),
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        var depot = Event(
+            "ColonisationConstructionDepot",
+            """
+            "MarketID":10,"ConstructionProgress":0.25,
+            "ResourcesRequired":[
+              {"Name":"$steel_name;","RequiredAmount":100,"ProvidedAmount":25,"Payment":5000}
+            ]
+            """);
+        viewModel.ApplyJournalEvents([depot]);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [depot],
+            allowPublishing: false);
+
+        Assert.Empty(client.ProjectUpdates);
+        Assert.Empty(client.Contributions);
+        Assert.Equal(0, client.MarkCompleteCount);
+    }
+
+    [Fact]
+    public async Task CompletedDepotMarksProjectCompleteOnce()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [Project("build-1", "Port", 25, 10, 20)],
+                [],
+                null,
+                []),
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        var events = new[]
+        {
+            Event(
+                "Docked",
+                """
+                "MarketID":10,"SystemAddress":20,"StarSystem":"Test System",
+                "StationName":"Orbital Construction Site: Hope",
+                "StationServices":["colonisationcontribution"]
+                """),
+            Event(
+                "ColonisationConstructionDepot",
+                """
+                "MarketID":10,"ConstructionProgress":1,
+                "ConstructionComplete":true,
+                "ResourcesRequired":[
+                  {"Name":"$steel_name;","RequiredAmount":100,"ProvidedAmount":100,"Payment":5000}
+                ]
+                """),
+        };
+        viewModel.ApplyJournalEvents(events);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            events,
+            allowPublishing: true);
+
+        Assert.Equal(1, client.MarkCompleteCount);
+        Assert.True(Assert.Single(viewModel.Projects).Project.IsComplete);
+        Assert.Contains("complete", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task DockingLoadsUntrackedProjectBySystemAndMarket()
+    {
+        var client = new StubRavenColonialClient
+        {
+            SiteProjectResponse = Project(
+                "other-build",
+                "Other port",
+                50,
+                10,
+                20),
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        var docked = Event(
+            "Docked",
+            """
+            "MarketID":10,"SystemAddress":20,"StarSystem":"Test System",
+            "StationName":"Orbital Construction Site: Hope",
+            "StationServices":["colonisationcontribution"]
+            """);
+        viewModel.ApplyJournalEvents([docked]);
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [docked],
+            allowPublishing: true);
+
+        Assert.Equal(1, client.SiteProjectLoadCount);
+        Assert.Equal("other-build", Assert.Single(viewModel.Projects)
+            .Project.BuildId);
+        Assert.Contains("untracked Raven project", viewModel.StatusMessage);
     }
 
     [Fact]
@@ -623,7 +828,10 @@ public sealed class ColonizationViewModelTests : IDisposable
     private static ColonizationProject Project(
         string id,
         string name,
-        int remaining)
+        int remaining,
+        long marketId = 0,
+        long systemAddress = 0,
+        string? factionName = null)
     {
         return new ColonizationProject
         {
@@ -631,8 +839,15 @@ public sealed class ColonizationViewModelTests : IDisposable
             BuildType = "no_truss",
             BuildName = name,
             SystemName = "Test System",
+            MarketId = marketId,
+            SystemAddress = systemAddress,
+            FactionName = factionName,
             MaximumRequired = 1_000,
             RemainingRequired = remaining,
+            Commodities = new Dictionary<string, int>
+            {
+                ["steel"] = remaining,
+            },
         };
     }
 
@@ -667,9 +882,21 @@ public sealed class ColonizationViewModelTests : IDisposable
 
         public int PublishShipCount { get; private set; }
 
+        public int SiteProjectLoadCount { get; private set; }
+
+        public int MarkCompleteCount { get; private set; }
+
+        public List<ColonizationProjectUpdate> ProjectUpdates { get; } = [];
+
+        public List<ContributionCall> Contributions { get; } = [];
+
+        public List<string?> PrimaryProjectRequests { get; } = [];
+
         public ColonizationCurrentShip? LastPublishedShip { get; private set; }
 
         public ColonizationFleetCarrier? FleetCarrierResponse { get; set; }
+
+        public ColonizationProject? SiteProjectResponse { get; set; }
 
         public IReadOnlyDictionary<string, int>? LastReplacement
         {
@@ -705,6 +932,69 @@ public sealed class ColonizationViewModelTests : IDisposable
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult<ColonizationProject?>(null);
+        }
+
+        public Task<ColonizationProject?> GetProjectAsync(
+            long systemAddress,
+            long marketId,
+            CancellationToken cancellationToken = default)
+        {
+            SiteProjectLoadCount++;
+            return Task.FromResult(SiteProjectResponse);
+        }
+
+        public Task<ColonizationProject> UpdateProjectAsync(
+            ColonizationProjectUpdate update,
+            CancellationToken cancellationToken = default)
+        {
+            ProjectUpdates.Add(update);
+            var source = Workspace.Projects.First(project =>
+                project.BuildId == update.BuildId);
+            var remaining = update.Commodities?.Values.Sum()
+                ?? source.RemainingRequired;
+            var updated = source with
+            {
+                FactionName = update.FactionName ?? source.FactionName,
+                MaximumRequired = update.MaximumRequired
+                    ?? source.MaximumRequired,
+                RemainingRequired = remaining,
+                Commodities = update.Commodities is null
+                    ? source.Commodities
+                    : new Dictionary<string, int>(
+                        update.Commodities,
+                        StringComparer.OrdinalIgnoreCase),
+            };
+            return Task.FromResult(updated);
+        }
+
+        public Task MarkProjectCompleteAsync(
+            string buildId,
+            CancellationToken cancellationToken = default)
+        {
+            MarkCompleteCount++;
+            return Task.CompletedTask;
+        }
+
+        public Task ContributeToProjectAsync(
+            string buildId,
+            string commanderName,
+            IReadOnlyDictionary<string, int> contributions,
+            CancellationToken cancellationToken = default)
+        {
+            Contributions.Add(new ContributionCall(
+                buildId,
+                commanderName,
+                contributions));
+            return Task.CompletedTask;
+        }
+
+        public Task SetPrimaryProjectAsync(
+            string commanderName,
+            string? buildId,
+            CancellationToken cancellationToken = default)
+        {
+            PrimaryProjectRequests.Add(buildId);
+            return Task.CompletedTask;
         }
 
         public Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesAsync(
@@ -793,4 +1083,9 @@ public sealed class ColonizationViewModelTests : IDisposable
             return Task.CompletedTask;
         }
     }
+
+    private sealed record ContributionCall(
+        string BuildId,
+        string CommanderName,
+        IReadOnlyDictionary<string, int> Commodities);
 }

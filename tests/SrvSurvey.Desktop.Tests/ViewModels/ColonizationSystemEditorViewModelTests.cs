@@ -333,6 +333,35 @@ public sealed class ColonizationSystemEditorViewModelTests
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
+        public Task<ColonizationProject?> GetProjectAsync(
+            long systemAddress,
+            long marketId,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<ColonizationProject> UpdateProjectAsync(
+            ColonizationProjectUpdate update,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task MarkProjectCompleteAsync(
+            string buildId,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task ContributeToProjectAsync(
+            string buildId,
+            string commanderName,
+            IReadOnlyDictionary<string, int> contributions,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task SetPrimaryProjectAsync(
+            string commanderName,
+            string? buildId,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
         public Task<IReadOnlyList<ColonizationSystemSite>> GetSystemSitesAsync(
             string systemNameOrAddress,
             CancellationToken cancellationToken = default) =>

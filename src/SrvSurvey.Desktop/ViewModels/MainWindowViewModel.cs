@@ -1618,6 +1618,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
         await ApplyQuestUpdateAsync(update, allowSharedCargo);
         await Colonization.SetCommanderAsync(journalState.CommanderName);
+        await Colonization.SynchronizeLiveProjectsAsync(
+            update.JournalEvents,
+            allowPublishing: !update.IsBootstrapRead);
         var initializedJourney = await Journey.UpdateContextAsync(
             journalState.FrontierId,
             journalState.CommanderName,
