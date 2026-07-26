@@ -1561,6 +1561,10 @@
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      TextWrapping="Wrap"
                      Text="{Binding ProfileStatusMessage}" />
+          <TextBlock Classes="muted"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="A successful import restarts SrvSurvey automatically so no pre-import in-memory state can overwrite migrated data." />
         </StackPanel>
       </Border>
     </StackPanel>

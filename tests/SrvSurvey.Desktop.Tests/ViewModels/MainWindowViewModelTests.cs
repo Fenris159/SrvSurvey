@@ -473,6 +473,56 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task VerifiedLegacyProfileImportRequestsImmediateRestart()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-profile-restart-tests-{Guid.NewGuid():N}");
+        try
+        {
+            var source = Path.Combine(root, "legacy");
+            var data = Path.Combine(root, "current");
+            Directory.CreateDirectory(source);
+            await File.WriteAllTextAsync(
+                Path.Combine(source, "settings.json"),
+                "{\"darkTheme\":true}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                data,
+                Path.Combine(root, "cache"),
+                [new LegacyProfileCandidate(
+                    LegacyProfileLocationKind.Desktop,
+                    source)]);
+            var viewModel = new MainWindowViewModel(
+                Path.Combine(root, "missing-journals"),
+                appDataPaths: paths);
+            var restartRequested = false;
+            viewModel.ProfileImportCompleted += () =>
+            {
+                Assert.True(viewModel.HasCompletedLegacyImport);
+                Assert.Equal(
+                    "{\"darkTheme\":true}",
+                    File.ReadAllText(Path.Combine(data, "settings.json")));
+                restartRequested = true;
+                return Task.CompletedTask;
+            };
+
+            await viewModel.ImportLegacyProfileAsync();
+
+            Assert.True(restartRequested);
+            Assert.Contains("checksum-verified", viewModel.ProfileStatusMessage);
+            Assert.Contains("restarting SrvSurvey", viewModel.ProfileStatusMessage);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task LegacyProfileCanBeImportedFromManuallySelectedFolder()
     {
         var root = Path.Combine(

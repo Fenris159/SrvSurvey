@@ -117,6 +117,15 @@ public sealed partial class App : Application
                 targetFrontierId: targetFrontierId);
             var mainWindow = new MainWindow(viewModel);
             desktop.MainWindow = mainWindow;
+            async Task RestartAfterProfileImportAsync()
+            {
+                new ApplicationRestartService().StartReplacement();
+                applicationLog.Append(
+                    "Profile import verified; replacement process started.");
+                await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
+            }
+
+            viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             async Task WriteClipboardAsync(string text)
             {
                 var clipboard = mainWindow.Clipboard
@@ -591,6 +600,8 @@ public sealed partial class App : Application
             globalControllerInputService.Start();
             desktop.Exit += (_, _) =>
             {
+                viewModel.ProfileImportCompleted -=
+                    RestartAfterProfileImportAsync;
                 Dispatcher.UIThread.UnhandledException -= HandleUiException;
                 TaskScheduler.UnobservedTaskException -=
                     HandleUnobservedTaskException;

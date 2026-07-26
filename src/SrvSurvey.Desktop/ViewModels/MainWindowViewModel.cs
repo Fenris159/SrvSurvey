@@ -537,6 +537,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public event Func<Task>? ProfileImportPreparing;
 
+    public event Func<Task>? ProfileImportCompleted;
+
     public LegacyProfileOptionViewModel? SelectedLegacyProfile
     {
         get => selectedLegacyProfile;
@@ -588,7 +590,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         ? "Importing profile..."
         : HasCompletedLegacyImport
             ? "Legacy profile imported"
-            : "Back up and import profile";
+            : "Back up, verify, and import";
 
     public bool HasCompletedLegacyImport => File.Exists(
         Path.Combine(
@@ -1054,14 +1056,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 .MigrateIfNeeded(AppDataPaths);
             var retainedFiles = result.Manifest.PreviousDestinationEntries.Count
                 - result.Manifest.Conflicts.Count;
+            var importedBytes = result.Manifest.Entries.Sum(entry => entry.Length);
             ProfileStatusMessage = $"Imported {result.Manifest.Entries.Count:N0} legacy files, "
+                + $"checksum-verified {importedBytes:N0} bytes, "
                 + $"retained {retainedFiles:N0} current-only files, and recorded "
                 + $"{result.Manifest.Conflicts.Count:N0} path collisions. "
                 + GetSettingsMigrationStatus(settingsMigration)
-                + " Restart SrvSurvey to load the migrated profile. "
                 + $"Verified backups: {result.BackupDirectory}";
             OnPropertyChanged(nameof(HasCompletedLegacyImport));
             OnPropertyChanged(nameof(ImportProfileButtonText));
+            await CompleteProfileImportAsync();
         }
         catch (Exception exception) when (
             exception is IOException
@@ -1089,6 +1093,32 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         foreach (var handler in handlers.GetInvocationList().Cast<Func<Task>>())
         {
             await handler();
+        }
+    }
+
+    private async Task CompleteProfileImportAsync()
+    {
+        if (ProfileImportCompleted is not { } handlers)
+        {
+            ProfileStatusMessage +=
+                " Restart SrvSurvey to load the migrated profile.";
+            return;
+        }
+
+        ProfileStatusMessage +=
+            " Verification complete; restarting SrvSurvey with the migrated profile...";
+        try
+        {
+            foreach (var handler in handlers.GetInvocationList().Cast<Func<Task>>())
+            {
+                await handler();
+            }
+        }
+        catch (Exception exception)
+        {
+            ProfileStatusMessage += " Automatic restart failed: "
+                + exception.Message
+                + " Close and reopen SrvSurvey manually; the verified import is safe.";
         }
     }
 
