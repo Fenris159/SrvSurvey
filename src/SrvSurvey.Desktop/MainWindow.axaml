@@ -61,7 +61,7 @@
                  SelectedItem="{Binding SelectedNavigation}">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:NavigationItemViewModel">
-              <Grid ColumnDefinitions="28,*,Auto" ColumnSpacing="8">
+              <Grid ColumnDefinitions="28,*" ColumnSpacing="8">
                 <TextBlock Foreground="{Binding $parent[ListBoxItem].Foreground}"
                            FontWeight="SemiBold"
                            Text="{Binding Glyph}" />
@@ -69,10 +69,6 @@
                            Foreground="{Binding $parent[ListBoxItem].Foreground}"
                            FontWeight="SemiBold"
                            Text="{Binding Label}" />
-                <TextBlock Grid.Column="2"
-                           Foreground="{DynamicResource RavenMutedTextBrush}"
-                           FontSize="9"
-                           Text="{Binding StatusLabel}" />
               </Grid>
             </DataTemplate>
           </ListBox.ItemTemplate>
@@ -83,7 +79,7 @@
           <TextBlock Classes="muted"
                      FontSize="10"
                      TextWrapping="Wrap"
-                     Text="Avalonia migration build • feature parity in progress" />
+                     Text="Cross-platform exploration companion" />
         </StackPanel>
       </Grid>
     </Border>
@@ -99,7 +95,6 @@
       <views:ColonizationView IsVisible="{Binding IsColonizationSelected}" />
       <views:DiagnosticsView IsVisible="{Binding IsDiagnosticsSelected}" />
       <views:SettingsView IsVisible="{Binding IsSettingsSelected}" />
-      <views:PendingView IsVisible="{Binding IsPendingSelected}" />
     </Grid>
   </Grid>
 </Window>

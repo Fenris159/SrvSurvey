@@ -627,16 +627,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         NavigationItems =
         [
-            new("overview", "Overview", "01", "Commander and current journal state", true),
-            new("exploration", "Exploration", "02", "Trip totals and body scans", true),
-            new("exobiology", "Exobiology", "03", "Organic scans and unclaimed rewards", true),
-            new("travel", "Travel", "04", "Ground targets, journeys, and routes", true),
-            new("search", "Search", "05", "Spherical and boxel searches", true),
-            new("guardian", "Guardian", "06", "Sites, maps, and Ram Tah", true),
-            new("quests", "Quests", "07", "Communications and active objectives", true),
-            new("colonisation", "Colonisation", "08", "Raven Colonial projects", true),
-            new("diagnostics", "Diagnostics", "09", "Journal source and parsed state", true),
-            new("settings", "Settings", "10", "Appearance and application options", true),
+            new("overview", "Overview", "01", "Commander and current journal state"),
+            new("exploration", "Exploration", "02", "Trip totals and body scans"),
+            new("exobiology", "Exobiology", "03", "Organic scans and unclaimed rewards"),
+            new("travel", "Travel", "04", "Ground targets, journeys, and routes"),
+            new("search", "Search", "05", "Spherical and boxel searches"),
+            new("guardian", "Guardian", "06", "Sites, maps, and Ram Tah"),
+            new("quests", "Quests", "07", "Communications and active objectives"),
+            new("colonisation", "Colonisation", "08", "Raven Colonial projects"),
+            new("diagnostics", "Diagnostics", "09", "Journal source and parsed state"),
+            new("settings", "Settings", "10", "Appearance and application options"),
         ];
         selectedNavigation = NavigationItems[0];
 
@@ -908,10 +908,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             OnPropertyChanged(nameof(IsColonizationSelected));
             OnPropertyChanged(nameof(IsDiagnosticsSelected));
             OnPropertyChanged(nameof(IsSettingsSelected));
-            OnPropertyChanged(nameof(IsPendingSelected));
-            OnPropertyChanged(nameof(PendingPageTitle));
-            OnPropertyChanged(nameof(PendingPageDescription));
-            OnPropertyChanged(nameof(PendingPageGlyph));
         }
     }
 
@@ -935,14 +931,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public bool IsDiagnosticsSelected => SelectedNavigation.Key == "diagnostics";
 
     public bool IsSettingsSelected => SelectedNavigation.Key == "settings";
-
-    public bool IsPendingSelected => !SelectedNavigation.IsImplemented;
-
-    public string PendingPageTitle => SelectedNavigation.Label;
-
-    public string PendingPageDescription => SelectedNavigation.Description;
-
-    public string PendingPageGlyph => SelectedNavigation.Glyph;
 
     public void ShowDiagnostics()
     {

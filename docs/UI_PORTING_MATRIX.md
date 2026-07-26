@@ -515,7 +515,10 @@ check at 1182 by 790, using a live journal folder:
   the SDL controller picker/status card. The Windows keyboard hook reached its
   active state during a controlled check and was disabled afterward. SDL device
   discovery initialized without hardware and reported the empty state cleanly.
-- A pending navigation item rendered the explicit incomplete-feature message.
+- Before the final navigation destinations were completed, a pending item
+  rendered the explicit incomplete-feature message. All ten destinations now
+  have working behavior and automated coverage, so the unreachable pending-page
+  scaffold and migration-progress banner have been removed.
 - Windows UI Automation exposed all nine navigation destinations, five theme
   buttons, Refresh actions, and the visible page text.
 

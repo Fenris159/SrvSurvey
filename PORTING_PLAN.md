@@ -780,7 +780,7 @@ not expected to run as a headless container service.
 
 | Feature | Core | Desktop UI | Windows runtime | Linux runtime |
 | --- | --- | --- | --- | --- |
-| Application shell | Not applicable | Modern navigation plus Overview, Exploration, Exobiology, Travel, Search, Guardian, Colonisation, Diagnostics, Settings, and explicit pending states | Blue dark/light shell plus current Overview, Exobiology, Travel, Search, Guardian, Colonisation, and Settings visual smoke passed; Exploration page needs current visual recheck | Not tested |
+| Application shell | Not applicable | Modern navigation plus implemented Overview, Exploration, Exobiology, Travel, Search, Guardian, Quests, Colonisation, Diagnostics, and Settings destinations; the unreachable pending-page scaffold and migration-progress banner were removed after every destination gained working behavior and automated coverage | Blue dark/light shell plus current Overview, Exobiology, Travel, Search, Guardian, Colonisation, and Settings visual smoke passed; the completed shell and Exploration page need the final current visual recheck | Not tested |
 | Journal folder discovery | Implemented; 3 tests | Paths and errors shown | Missing and default paths smoke-tested | Not tested |
 | Journal ingestion/state | Retrying status/cargo readers plus polling journal append/partial-line/rotation and `Status.json`/`Cargo.json`/`NavRoute.json` change monitor; shared bootstrap/live reducer | Overview and Diagnostics projections update live; cargo changes feed Guardian artifact state | Earlier bootstrap state and cargo-backed inactive Guardian state inspected; current live monitor not exercised with Elite | Not tested |
 | Raven shell themes | Five definitions; 11 desktop tests cover themes, persistence, and shell navigation | Five-theme gallery and runtime switching | Blue dark/light switched and inspected | Not tested |
@@ -904,7 +904,7 @@ Validation performed on 2026-07-25 using Windows build `10.0.26200` and .NET SDK
   a deliberately missing journal directory and with the default live journal
   folder (455 journal files present), then was stopped after each check.
 - The rebuilt 1180 by 760 Windows shell was visually inspected in Blue (dark)
-  and Blue (light). Overview, Diagnostics, Settings, pending-feature disclosure,
+  and Blue (light). Overview, Diagnostics, Settings, the then-pending feature disclosure,
   live theme switching, and the exposed accessibility tree were checked. All
   five Raven theme previews rendered; the runtime switch was exercised for the
   two blue variants.

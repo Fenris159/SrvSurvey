@@ -21,50 +21,43 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 public sealed class MainWindowViewModelTests
 {
     [Fact]
-    public void NavigationSeparatesImplementedAndPendingSurfaces()
+    public void NavigationContainsEveryImplementedSurface()
     {
         var viewModel = new MainWindowViewModel(
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
         Assert.Equal(10, viewModel.NavigationItems.Count);
-        Assert.Equal(10, viewModel.NavigationItems.Count(item => item.IsImplemented));
         Assert.True(viewModel.IsOverviewSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "exobiology");
 
         Assert.True(viewModel.IsExobiologySelected);
-        Assert.False(viewModel.IsPendingSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "travel");
 
         Assert.True(viewModel.IsTravelSelected);
-        Assert.False(viewModel.IsPendingSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "search");
 
         Assert.True(viewModel.IsSearchSelected);
-        Assert.False(viewModel.IsPendingSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "guardian");
 
         Assert.True(viewModel.IsGuardianSelected);
-        Assert.False(viewModel.IsPendingSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "quests");
 
         Assert.True(viewModel.IsQuestsSelected);
-        Assert.False(viewModel.IsPendingSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
             item => item.Key == "colonisation");
 
         Assert.True(viewModel.IsColonizationSelected);
-        Assert.False(viewModel.IsPendingSelected);
     }
 
     [Fact]
