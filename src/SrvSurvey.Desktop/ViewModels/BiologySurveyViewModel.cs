@@ -14,6 +14,7 @@ public sealed record BiologySurveyViewModel(
     IReadOnlyList<BiologyOrganismRowViewModel> Organisms,
     string RewardSummary,
     string FirstFootfallRewardSummary,
+    int RadicoidaUnicaCount,
     bool RequiresDss,
     string PredictionStatus,
     int GeologicalSignalCount,
@@ -31,6 +32,11 @@ public sealed record BiologySurveyViewModel(
 
     public bool HasFirstFootfallRewardSummary => !string.IsNullOrWhiteSpace(
         FirstFootfallRewardSummary);
+
+    public bool HasRadicoidaUnicaCount => RadicoidaUnicaCount > 0;
+
+    public string RadicoidaUnicaCountText =>
+        $"Radicoida scans: {RadicoidaUnicaCount:N0}";
 
     public bool HasGeologicalSignals => GeologicalSignalCount > 0;
 
@@ -85,6 +91,7 @@ public sealed record BiologySurveyViewModel(
                 status,
                 biologicalBodies,
                 disablePredictions,
+                exobiology.CountRadicoidaUnica,
                 rewardThresholds ?? BiologyRewardThresholds.Default,
                 predictionEvaluator ?? DefaultPredictionEvaluator.Value,
                 referenceCatalog ?? DefaultBioReferenceCatalog.Value)
@@ -108,7 +115,8 @@ public sealed record BiologySurveyViewModel(
         bool disablePredictions,
         BiologyRewardThresholds? rewardThresholds = null,
         BiologyPredictionEvaluator? predictionEvaluator = null,
-        ExobiologyReferenceCatalog? referenceCatalog = null)
+        ExobiologyReferenceCatalog? referenceCatalog = null,
+        int radicoidaUnicaCount = 0)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         var biologicalBodies = snapshot.Bodies
@@ -122,6 +130,7 @@ public sealed record BiologySurveyViewModel(
                 status,
                 biologicalBodies,
                 disablePredictions,
+                radicoidaUnicaCount,
                 rewardThresholds ?? BiologyRewardThresholds.Default,
                 predictionEvaluator ?? DefaultPredictionEvaluator.Value,
                 referenceCatalog ?? DefaultBioReferenceCatalog.Value);
@@ -187,6 +196,7 @@ public sealed record BiologySurveyViewModel(
         EliteStatus? status,
         IReadOnlyList<SystemScanBodySnapshot> biologicalBodies,
         bool disablePredictions,
+        int radicoidaUnicaCount,
         BiologyRewardThresholds rewardThresholds,
         BiologyPredictionEvaluator predictionEvaluator,
         ExobiologyReferenceCatalog referenceCatalog)
@@ -257,6 +267,7 @@ public sealed record BiologySurveyViewModel(
                     hasUnknownReward)
                 : FormatKnownReward(knownSystemReward, hasUnknownReward),
             string.Empty,
+            radicoidaUnicaCount,
             false,
             string.Empty,
             0,
@@ -383,6 +394,7 @@ public sealed record BiologySurveyViewModel(
                     : "First-footfall value: "
                         + FormatCredits(rewardEstimate.KnownReward * 5)
                 : string.Empty,
+            exobiology.CountRadicoidaUnica,
             body.Organisms.Count == 0 && !body.IsDssComplete,
             predictionSet.Status,
             geoCount,

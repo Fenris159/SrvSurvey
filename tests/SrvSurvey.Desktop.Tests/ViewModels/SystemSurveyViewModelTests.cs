@@ -428,7 +428,8 @@ public sealed class SystemSurveyViewModelTests : IDisposable
                     Body = 1,
                     Name = "Test 1",
                 },
-            });
+            },
+            new ExobiologySnapshot(null, null, null, 0, [], 4));
 
         Assert.True(viewModel.ShouldShowBioSystem);
         viewModel.SetRepeatVisitBiologySuppression(true);
@@ -437,6 +438,8 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         var biology = Assert.IsType<BiologySurveyViewModel>(
             viewModel.BiologySurvey);
         Assert.True(biology.IsSystemOverview);
+        Assert.True(biology.HasRadicoidaUnicaCount);
+        Assert.Equal("Radicoida scans: 4", biology.RadicoidaUnicaCountText);
         Assert.Equal("1 of 2 biological signals analyzed", biology.ProgressText);
         var body = Assert.Single(biology.Bodies);
         Assert.True(body.IsDestination);

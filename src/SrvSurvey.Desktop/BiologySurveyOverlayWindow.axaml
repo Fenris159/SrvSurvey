@@ -369,6 +369,12 @@
         </StackPanel>
       </ScrollViewer>
 
+      <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                 FontSize="10"
+                 FontWeight="SemiBold"
+                 IsVisible="{Binding Survey.BiologySurvey.HasRadicoidaUnicaCount}"
+                 Text="{Binding Survey.BiologySurvey.RadicoidaUnicaCountText}" />
+
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
         <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                    FontSize="10"

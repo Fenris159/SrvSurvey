@@ -48,7 +48,9 @@ The journal-backed `PlotBioSystem` overlay and its exact environmental
 prediction engine are also implemented. The standalone predictions workspace
 uses that evaluator for exact body rows, rewards, sample distances, and
 first-footfall estimates. The compact `PlotBioStatus` replacement covers live
-sampler progress and body summaries. The single-instance `FormShowCodex`
+sampler progress and body summaries. Both the body and whole-system
+`PlotBioSystem` presentations also retain the commander-wide Radicoida scan
+counter when it is nonzero. The single-instance `FormShowCodex`
 replacement covers confirmed and predicted biological entries, reference
 images, navigation, temperature and reward guidance, and research links. Codex
 Bingo now covers the complete hierarchy, commander and regional progress,
