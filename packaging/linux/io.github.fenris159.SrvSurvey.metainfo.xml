@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.fenris159.SrvSurvey</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <name>SrvSurvey</name>
+  <summary>Exploration and surface-survey companion for Elite Dangerous</summary>
+  <description>
+    <p>
+      SrvSurvey reads Elite Dangerous journal files and provides exploration,
+      exobiology, Guardian-site, ground-target, route, and colonisation tools.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.fenris159.SrvSurvey.desktop</launchable>
+  <url type="homepage">https://github.com/Fenris159/SrvSurvey</url>
+  <url type="bugtracker">https://github.com/Fenris159/SrvSurvey/issues</url>
+  <provides>
+    <binary>SrvSurvey.Desktop</binary>
+  </provides>
+  <content_rating type="oars-1.1" />
+</component>

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=SrvSurvey
+Comment=Exploration and surface-survey companion for Elite Dangerous
+Exec=SrvSurvey
+Icon=srvsurvey
+Terminal=false
+Categories=Game;Utility;
+Keywords=Elite Dangerous;exploration;exobiology;guardian;SRV;
+StartupNotify=true
+StartupWMClass=SrvSurvey.Desktop

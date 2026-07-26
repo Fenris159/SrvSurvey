@@ -21,7 +21,12 @@ Please see [the wiki](https://github.com/njthomson/SrvSurvey/wiki) for guidance 
 
 ## Cross-platform development
 
-The existing WinForms application remains the production implementation. Work on a new cross-platform application is being developed incrementally; it has not reached feature parity or release readiness.
+The `cross-platform-development` branch contains the Avalonia port for Windows
+and Linux. Its user-facing destinations, journal monitoring, overlays,
+preferences, profile migration, and network integrations are implemented and
+covered by automated parity tests. Final whole-application visual, live Elite,
+and native Linux runtime verification is still in progress, so these builds
+remain review builds rather than the upstream production release.
 
 See [PORTING_PLAN.md](PORTING_PLAN.md) for the validated status, architecture, milestones, and platform-specific risks.
 
@@ -41,8 +46,20 @@ Journal discovery can be overridden with either
 dotnet run --project src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj -- --journal-directory "/path/to/journals"
 ```
 
-The shell currently reads a bootstrap snapshot from the newest journal. It does
-not yet watch live changes or provide the production overlays and tools.
+The application watches live journal and auxiliary files after rebuilding its
+bootstrap state. A backup-first import in Settings migrates an original
+SrvSurvey profile without modifying the source and verifies backup, staging,
+activation, and rollback hashes before restarting into the imported data.
+
+Versioned reference catalogs retain the original no-reinstall delivery model:
+SrvSurvey checks the published data index once at startup, downloads only
+missing or newer external catalogs, and offers the same refresh manually in
+Diagnostics. Catalog updates are staged, validated, backed up, and activated
+independently of application releases.
+
+Cross-platform CI produces checksum-indexed self-contained Windows and Linux
+archives. The Linux job also creates a desktop-integrated AppImage from the same
+tested publish output and structurally inspects it without starting the UI.
 
 ## Feedback
 

@@ -124,6 +124,60 @@ jobs:
             --file "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-${{ matrix.rid }}.tar.gz" \
             --directory "artifacts/${{ matrix.rid }}" .
 
+      - name: Install AppImage validation tools
+        if: matrix.archive == 'tar.gz'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes appstream desktop-file-utils imagemagick
+
+      - name: Validate Linux desktop metadata
+        if: matrix.archive == 'tar.gz'
+        shell: bash
+        run: |
+          desktop-file-validate packaging/linux/io.github.fenris159.SrvSurvey.desktop
+          appstreamcli validate --no-net packaging/linux/io.github.fenris159.SrvSurvey.metainfo.xml
+
+      - name: Build Linux AppImage
+        if: matrix.archive == 'tar.gz'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/appimage-tools" artifacts/appimage
+          tool="$RUNNER_TEMP/appimage-tools/appimagetool-x86_64.AppImage"
+          curl --fail --location --retry 3 \
+            --output "$tool" \
+            "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          echo "a6d71e2b6cd66f8e8d16c37ad164658985e0cf5fcaa950c90a482890cb9d13e0  $tool" \
+            | sha256sum --check --strict
+          chmod +x "$tool"
+          convert "SrvSurvey/logo.ico[0]" \
+            -background none \
+            -resize 256x256 \
+            "artifacts/appimage/srvsurvey.png"
+          bash ./scripts/New-LinuxAppImage.sh \
+            "artifacts/${{ matrix.rid }}" \
+            "${{ needs.release-metadata.outputs.version }}" \
+            "artifacts/appimage/srvsurvey.png" \
+            "$tool" \
+            "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-x86_64.AppImage"
+
+      - name: Inspect Linux AppImage payload
+        if: matrix.archive == 'tar.gz'
+        shell: bash
+        run: |
+          appimage=$(realpath "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-x86_64.AppImage")
+          inspect_root="$RUNNER_TEMP/srvsurvey-appimage-inspection"
+          mkdir -p "$inspect_root"
+          cd "$inspect_root"
+          "$appimage" --appimage-extract >/dev/null
+          test -x squashfs-root/AppRun
+          test -x squashfs-root/usr/lib/srvsurvey/SrvSurvey.Desktop
+          test -f squashfs-root/usr/lib/srvsurvey/release-package.json
+          test -f squashfs-root/io.github.fenris159.SrvSurvey.desktop
+          test -f squashfs-root/srvsurvey.png
+          test -f squashfs-root/usr/share/metainfo/io.github.fenris159.SrvSurvey.metainfo.xml
+          test -f squashfs-root/usr/share/licenses/srvsurvey/LICENSE
+
       - name: Upload review package
         uses: actions/upload-artifact@v7
         with:
