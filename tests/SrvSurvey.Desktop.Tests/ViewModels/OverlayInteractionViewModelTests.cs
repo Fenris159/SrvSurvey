@@ -70,24 +70,124 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     }
 
     [Fact]
-    public void ModeCanArmBeforeAnyOverlayOpens()
+    public void ModeCanArmWithoutEliteAndShowsTheSelectedCategory()
     {
         var platform = new FakeOverlayPlatform();
         var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new FakeEditorHost();
         using var viewModel = new OverlayInteractionViewModel(
             platform,
-            new FakeGameWindowTracker(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
             store,
             store.Load(),
-            new OverlayWindowRegistry());
+            new OverlayWindowRegistry(),
+            host);
 
         Assert.True(viewModel.Toggle());
 
         Assert.True(viewModel.IsEditing);
-        Assert.Contains("Newly opened overlays", viewModel.StatusMessage);
+        Assert.True(host.IsOpen);
+        Assert.Null(host.PreferredHostBounds);
+        Assert.Equal(
+            OverlayLayoutCategory.ExplorationAndNavigation,
+            host.ShownCategories.Single());
+        Assert.Contains("Editing Exploration", viewModel.ModeLabel);
 
         Assert.True(viewModel.Toggle());
         Assert.False(viewModel.IsEditing);
+        Assert.False(host.IsOpen);
+        Assert.Contains("cancelled", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public void CategorySelectionReplacesTheVisiblePreviewGroup()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            store.Load(),
+            new OverlayWindowRegistry(),
+            host);
+
+        Assert.True(viewModel.Begin());
+        viewModel.SelectedCategory = viewModel.Categories.Single(category =>
+            category.Category == OverlayLayoutCategory.SitesAndQuests);
+
+        Assert.Equal(
+            [
+                OverlayLayoutCategory.ExplorationAndNavigation,
+                OverlayLayoutCategory.SitesAndQuests,
+            ],
+            host.ShownCategories);
+        Assert.Contains("Sites & quests", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public void CancelDiscardsMovesAndSaveCommitsThemAtomically()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        const string originalFile = "{\"PlotJumpInfo\":\"center:0, top:8\"}";
+        File.WriteAllText(path, originalFile);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            activeLayout,
+            new OverlayWindowRegistry(),
+            host);
+        var definition = OverlayLayoutCatalog.Supported.Single(item =>
+            item.Name == "PlotJumpInfo");
+        var bounds = new PixelRect(100, 200, 1200, 800);
+
+        Assert.True(viewModel.Begin());
+        host.Move(
+            definition.Name,
+            new PixelPoint(420, 310),
+            definition.PreviewSize,
+            bounds);
+
+        Assert.Equal(originalFile, File.ReadAllText(path));
+        Assert.Equal(
+            new PixelPoint(400, 208),
+            activeLayout.GetPosition(
+                definition.Name,
+                bounds,
+                definition.PreviewSize));
+
+        viewModel.Cancel();
+
+        Assert.Equal(originalFile, File.ReadAllText(path));
+        Assert.Equal(
+            new PixelPoint(400, 208),
+            activeLayout.GetPosition(
+                definition.Name,
+                bounds,
+                definition.PreviewSize));
+
+        Assert.True(viewModel.Begin());
+        host.Move(
+            definition.Name,
+            new PixelPoint(420, 310),
+            definition.PreviewSize,
+            bounds);
+        viewModel.Save();
+
+        Assert.False(viewModel.IsEditing);
+        Assert.Equal(
+            new PixelPoint(420, 310),
+            activeLayout.GetPosition(
+                definition.Name,
+                bounds,
+                definition.PreviewSize));
+        Assert.Contains("Saved 1 overlay position", viewModel.StatusMessage);
+        Assert.Contains("center:20, top:110", File.ReadAllText(path));
     }
 
     public void Dispose()
@@ -120,16 +220,72 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         }
     }
 
-    private sealed class FakeGameWindowTracker : IGameWindowTracker
+    private sealed class FakeGameWindowTracker(GameWindowSnapshot snapshot)
+        : IGameWindowTracker
     {
         public GameWindowSnapshot GetSnapshot()
         {
-            return new GameWindowSnapshot(
-                (nint)1,
-                1,
-                new PixelRect(100, 200, 1200, 800),
-                true,
-                true);
+            return snapshot;
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
+    private sealed class FakeEditorHost : IOverlayPositionEditorHost
+    {
+        public event EventHandler<OverlayPreviewMovedEventArgs>? PreviewMoved;
+
+        public event EventHandler? Closed
+        {
+            add { }
+            remove { }
+        }
+
+        public bool IsOpen { get; private set; }
+
+        public PixelRect? PreferredHostBounds { get; private set; }
+
+        public List<OverlayLayoutCategory> ShownCategories { get; } = [];
+
+        public bool Open(
+            OverlayInteractionViewModel viewModel,
+            OverlayPositionEditSession session,
+            OverlayLayoutCategory category,
+            PixelRect? preferredHostBounds)
+        {
+            IsOpen = true;
+            PreferredHostBounds = preferredHostBounds;
+            ShownCategories.Add(category);
+            return true;
+        }
+
+        public void ShowCategory(
+            OverlayPositionEditSession session,
+            OverlayLayoutCategory category)
+        {
+            ShownCategories.Add(category);
+        }
+
+        public void Close(bool restoreRuntimeWindows = true)
+        {
+            IsOpen = false;
+        }
+
+        public void Move(
+            string plotterName,
+            PixelPoint position,
+            PixelSize previewSize,
+            PixelRect hostBounds)
+        {
+            PreviewMoved?.Invoke(
+                this,
+                new OverlayPreviewMovedEventArgs(
+                    plotterName,
+                    position,
+                    previewSize,
+                    hostBounds));
         }
 
         public void Dispose()

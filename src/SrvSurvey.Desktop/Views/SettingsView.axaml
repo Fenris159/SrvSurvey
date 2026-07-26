@@ -597,7 +597,7 @@
             <StackPanel Spacing="12">
               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
                 <StackPanel Spacing="3">
-                  <TextBlock FontWeight="SemiBold" Text="Clickable position editing" />
+                  <TextBlock FontWeight="SemiBold" Text="Overlay position editor" />
                   <TextBlock Classes="muted"
                              TextWrapping="Wrap"
                              Text="{Binding OverlayInteraction.ModeLabel}" />
@@ -613,7 +613,7 @@
                   <TextBlock Classes="muted"
                              FontSize="11"
                              TextWrapping="Wrap"
-                             Text="Enable global keyboard input below, then use this shortcut in Elite or while an overlay is active." />
+                             Text="Enable global keyboard input below, then use this shortcut to open or cancel the categorized position editor." />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Spacing="3">
                   <TextBox Text="{Binding OverlayInteractionBinding.Chord, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"

@@ -1,0 +1,54 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.OverlayPositionEditorWindow"
+        x:DataType="vm:OverlayInteractionViewModel"
+        Width="620"
+        Height="92"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="Edit overlay positions">
+  <Border Margin="4"
+          Padding="12,10"
+          Background="{DynamicResource RavenSurfaceBrush}"
+          BorderBrush="{DynamicResource RavenAccentBrush}"
+          BorderThickness="1"
+          CornerRadius="10">
+    <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto,Auto"
+          ColumnSpacing="8" RowSpacing="5">
+      <TextBlock VerticalAlignment="Center"
+                 FontWeight="SemiBold"
+                 Text="Overlay category" />
+      <ComboBox Grid.Column="1"
+                MinWidth="310"
+                ItemsSource="{Binding Categories}"
+                SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
+      <Button Grid.Column="2"
+              Width="42"
+              Height="38"
+              Padding="0"
+              Classes="primary"
+              Command="{Binding SaveCommand}"
+              ToolTip.Tip="Save overlay positions"
+              Content="✓" />
+      <Button Grid.Column="3"
+              Width="42"
+              Height="38"
+              Padding="0"
+              Command="{Binding CancelCommand}"
+              ToolTip.Tip="Cancel position changes"
+              Content="✕" />
+      <TextBlock Grid.Row="1"
+                 Grid.ColumnSpan="4"
+                 Classes="muted"
+                 FontSize="11"
+                 Text="{Binding StatusMessage}"
+                 TextTrimming="CharacterEllipsis" />
+    </Grid>
+  </Border>
+</Window>

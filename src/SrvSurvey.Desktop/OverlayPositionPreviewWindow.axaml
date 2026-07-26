@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:overlay="using:SrvSurvey.Desktop.Platform.Overlay"
+        x:Class="SrvSurvey.Desktop.OverlayPositionPreviewWindow"
+        x:DataType="overlay:OverlayLayoutDefinition"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="Overlay position preview">
+  <Border Margin="2"
+          Padding="10"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenWarningBrush}"
+          BorderThickness="2"
+          CornerRadius="8"
+          Opacity="0.94">
+    <Grid RowDefinitions="Auto,*,Auto">
+      <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                 FontSize="10"
+                 FontWeight="Bold"
+                 Text="POSITION PREVIEW" />
+      <TextBlock Grid.Row="1"
+                 Margin="0,4"
+                 VerticalAlignment="Center"
+                 HorizontalAlignment="Center"
+                 Foreground="{DynamicResource RavenTextBrush}"
+                 FontSize="14"
+                 FontWeight="SemiBold"
+                 Text="{Binding DisplayName}"
+                 TextAlignment="Center"
+                 TextWrapping="Wrap" />
+      <TextBlock Grid.Row="2"
+                 HorizontalAlignment="Center"
+                 Foreground="{DynamicResource RavenMutedTextBrush}"
+                 FontSize="9"
+                 Text="Drag to move" />
+    </Grid>
+  </Border>
+</Window>

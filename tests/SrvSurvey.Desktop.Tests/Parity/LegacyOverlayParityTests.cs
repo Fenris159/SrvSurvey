@@ -165,6 +165,38 @@ public sealed class LegacyOverlayParityTests
         Assert.DoesNotContain("MaximumDisplayedFssBodies", viewModel);
     }
 
+    [Fact]
+    public void PositionEditorUsesCategorizedForcedPreviewsAndExplicitCommitControls()
+    {
+        var root = FindRepositoryRoot();
+        var settings = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/Views/SettingsView.axaml")));
+        var editor = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml")));
+        var preview = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/OverlayPositionPreviewWindow.axaml")));
+        var interaction = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs")));
+
+        Assert.Contains("Edit Overlay Positions", interaction);
+        Assert.Contains("OverlayInteraction.ToggleCommand", settings);
+        Assert.Contains("ItemsSource=\"{Binding Categories}\"", editor);
+        Assert.Contains("SelectedItem=\"{Binding SelectedCategory, Mode=TwoWay}\"", editor);
+        Assert.Contains("Command=\"{Binding SaveCommand}\"", editor);
+        Assert.Contains("Content=\"✓\"", editor);
+        Assert.Contains("Command=\"{Binding CancelCommand}\"", editor);
+        Assert.Contains("Content=\"✕\"", editor);
+        Assert.Contains("POSITION PREVIEW", preview);
+        Assert.Contains("Drag to move", preview);
+        Assert.Contains("game.IsAvailable", interaction);
+        Assert.Contains("? game.ClientBounds", interaction);
+        Assert.Contains(": (PixelRect?)null", interaction);
+    }
+
     private static OverlayMapping Map(
         string legacyName,
         IReadOnlyList<string> productionFiles,
