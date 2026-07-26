@@ -250,11 +250,11 @@ profile matches the legacy application after restart.
 
 ### Phase 3 — Domain state and journal parity
 
-- [ ] Port journal event models from observed payloads.
-- [ ] Port system/body, commander, organic scan, guardian, human settlement,
+- [x] Port journal event models from observed payloads.
+- [x] Port system/body, commander, organic scan, guardian, human settlement,
   mission, cargo, colonization, and quest state in review-sized groups.
-- [ ] Create golden journal fixtures for each group.
-- [ ] Compare serialized state or a documented equivalent projection against
+- [x] Create golden journal fixtures for each group.
+- [x] Compare serialized state or a documented equivalent projection against
   the legacy implementation.
 
 The legacy dispatch audit now accounts for all 68 concrete event handlers in
@@ -263,8 +263,11 @@ The legacy dispatch audit now accounts for all 68 concrete event handlers in
 material inventory used by pickup-total notifications. Trade events validate
 both sides before changing either count, unknown paid materials fail closed,
 broker entries are isolated, and later `MaterialCollected` totals have fixtures
-covering both event shapes and malformed-trade refusal. The broader golden
-fixture/projection inventory remains open above.
+covering both event shapes and malformed-trade refusal. The eight-group
+`docs/JOURNAL_PARITY_MATRIX.md` now documents the stable replacement projections,
+and `LegacyJournalParityTests` parses the legacy source to require an exact
+68-handler inventory, a modern consumer, event-specific regression evidence,
+and group-level golden projection evidence for every handler.
 
 The death/resurrection and main-menu lifecycle now matches the legacy split
 between durable commander data and disposable live context. `Died`, `Resurrect`,
