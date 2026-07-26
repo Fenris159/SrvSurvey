@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="using:SrvSurvey.Desktop.Controls"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.LastFssBodyOverlayWindow"
         x:DataType="vm:SystemSurveyOverlayViewModel"
@@ -99,11 +100,57 @@
         </Border>
       </Grid>
 
-      <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                 FontSize="10"
-                 FontWeight="SemiBold"
-                 IsVisible="{Binding Survey.HasLastFssSignals}"
-                 Text="{Binding Survey.LastFssSignalsText}" />
+      <Grid IsVisible="{Binding Survey.HasLastFssSignals}"
+            ColumnDefinitions="Auto,*,Auto"
+            ColumnSpacing="8">
+        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="10"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Center"
+                   Text="{Binding Survey.LastFssSignalsText}" />
+        <Border Grid.Column="1"
+                Padding="4,3"
+                HorizontalAlignment="Left"
+                BorderBrush="{DynamicResource RavenBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="3">
+          <ItemsControl ItemsSource="{Binding Survey.LastFssBiologyRewardBands}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="3" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BiologySignalRewardBandViewModel">
+                <controls:BiologyRewardBandControl Width="10"
+                                                    Height="24"
+                                                    Opacity="{Binding Opacity}"
+                                                    MinimumReward="{Binding MinimumReward}"
+                                                    MaximumReward="{Binding MaximumReward}"
+                                                    BucketOneMillions="{Binding RewardBucketOneMillions}"
+                                                    BucketTwoMillions="{Binding RewardBucketTwoMillions}"
+                                                    BucketThreeMillions="{Binding RewardBucketThreeMillions}"
+                                                    IsPrediction="{Binding IsPrediction}"
+                                                    IsHighlighted="{Binding IsHighlighted}"
+                                                    FilledBrush="{DynamicResource RavenAccentBrush}"
+                                                    PotentialBrush="{DynamicResource RavenAccentMutedBrush}"
+                                                    HighlightBrush="{DynamicResource RavenWarningBrush}"
+                                                    EdgeBrush="{DynamicResource RavenBorderBrush}"
+                                                    PredictionBrush="{DynamicResource RavenMutedTextBrush}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Border>
+        <TextBlock Grid.Column="2"
+                   Classes="monospace"
+                   Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="9"
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding Survey.HasLastFssBiologyRewards}"
+                   Text="{Binding Survey.LastFssBiologyRewardText}" />
+      </Grid>
     </StackPanel>
   </Border>
 </Window>

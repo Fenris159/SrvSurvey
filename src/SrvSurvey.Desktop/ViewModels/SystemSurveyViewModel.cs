@@ -969,6 +969,35 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool HasLastFssSignals => !string.IsNullOrWhiteSpace(
         LastFssSignalsText);
 
+    public IReadOnlyList<BiologySignalRewardBandViewModel>
+        LastFssBiologyRewardBands => LastFssBody is { } body
+            ? BiologySurveyViewModel.CreateRewardBandsForBody(
+                snapshot,
+                body,
+                DisableBioPredictions,
+                BiologyRewardThresholds)
+            : [];
+
+    public string LastFssBiologyRewardText => LastFssBody is { } body
+        && body.BiologicalSignalCount > 0
+            ? BiologySurveyViewModel.CreateBodyDetail(
+                    snapshot,
+                    body.BodyId,
+                    exobiology,
+                    HighlightRegionalFirsts,
+                    DimAnalyzedOrganisms,
+                    HideGeoCountInBioSystem,
+                    DisableBioPredictions,
+                    biologyDiscoveryContext,
+                    BiologyRewardThresholds,
+                    biologyPredictionEvaluator,
+                    biologyCatalog)
+                ?.RewardSummary ?? string.Empty
+            : string.Empty;
+
+    public bool HasLastFssBiologyRewards =>
+        LastFssBiologyRewardBands.Count > 0;
+
     public string SystemStatusText
     {
         get
@@ -1678,6 +1707,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasLastFssMarkers));
         OnPropertyChanged(nameof(LastFssSignalsText));
         OnPropertyChanged(nameof(HasLastFssSignals));
+        OnPropertyChanged(nameof(LastFssBiologyRewardBands));
+        OnPropertyChanged(nameof(LastFssBiologyRewardText));
+        OnPropertyChanged(nameof(HasLastFssBiologyRewards));
         OnPropertyChanged(nameof(SystemStatusText));
         OnPropertyChanged(nameof(BiologicalHeading));
         OnPropertyChanged(nameof(HasNonBodySignals));

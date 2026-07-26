@@ -236,7 +236,10 @@ completion, filtered DSS candidates, destination grouping, biological progress,
 and optional non-body counts. The journal-backed `PlotFSS` surface is now a
 top-center last-scan card with standalone-planet selection, discovery,
 terraformable/landable state, distance, scan/mapped values, and biological
-signals. These surfaces use bounded click-through layouts and all Raven themes.
+signals. As in the original compact scan surface, its biological row includes
+one segmented reward bar per resolved, predicted, or unknown signal followed
+by the current reward range. These surfaces use bounded click-through layouts
+and all Raven themes.
 The legacy `PlotFSS.watchFssSettings_TEST` screen-pixel tuning detector is now
 ported with its exact scan/skip state machine, thresholds, status cues, nested
 settings migration, and optional diagnostic captures. Bounded native capture

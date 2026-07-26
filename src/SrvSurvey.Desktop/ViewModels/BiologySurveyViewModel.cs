@@ -161,6 +161,27 @@ public sealed record BiologySurveyViewModel(
                 referenceCatalog ?? DefaultBioReferenceCatalog.Value);
     }
 
+    public static IReadOnlyList<BiologySignalRewardBandViewModel>
+        CreateRewardBandsForBody(
+            SystemScanSnapshot snapshot,
+            SystemScanBodySnapshot body,
+            bool disablePredictions,
+            BiologyRewardThresholds? rewardThresholds = null,
+            BiologyPredictionEvaluator? predictionEvaluator = null,
+            ExobiologyReferenceCatalog? referenceCatalog = null)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(body);
+        var thresholds = rewardThresholds ?? BiologyRewardThresholds.Default;
+        var predictions = CreatePredictions(
+            snapshot,
+            body,
+            disablePredictions,
+            predictionEvaluator ?? DefaultPredictionEvaluator.Value,
+            referenceCatalog ?? DefaultBioReferenceCatalog.Value);
+        return CreateSystemRewardBands(body, predictions, thresholds);
+    }
+
     private static BiologySurveyViewModel CreateSystem(
         SystemScanSnapshot snapshot,
         EliteStatus? status,

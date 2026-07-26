@@ -228,6 +228,29 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void LastFssBodyPreservesPerSignalBiologyRewardBars()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+                Parse("""{"event":"ScanOrganic","ScanType":"Analyse","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_01_Name;","Species_Localised":"Aleoida Arcus","Variant":"$Codex_Ent_Aleoids_01_B_Name;","Variant_Localised":"Aleoida Arcus - Green"}"""),
+            ],
+            new EliteStatus { GuiFocus = GuiFocus.Fss });
+
+        Assert.True(viewModel.HasLastFssSignals);
+        Assert.True(viewModel.HasLastFssBiologyRewards);
+        Assert.Equal(2, viewModel.LastFssBiologyRewardBands.Count);
+        Assert.Equal(
+            7_252_500,
+            viewModel.LastFssBiologyRewardBands[0].MinimumReward);
+        Assert.Equal(0, viewModel.LastFssBiologyRewardBands[1].MinimumReward);
+        Assert.Contains("7.25 M CR", viewModel.LastFssBiologyRewardText);
+    }
+
+    [Fact]
     public void SettingsImmediatelyRecalculateFilteredRows()
     {
         var viewModel = CreateViewModel();
