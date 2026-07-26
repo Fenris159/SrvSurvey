@@ -142,7 +142,11 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         private set => SetField(ref installProgressText, value);
     }
 
-    public bool CanInstallCurrentInstallation => installer?.IsPackaged == true;
+    public bool CanInstallCurrentInstallation => installer is
+    {
+        IsPackaged: true,
+        AutomaticInstallationUnavailableReason: null,
+    };
 
     public bool ShowInstallUnavailable =>
         IsUpdateAvailable && !CanInstallCurrentInstallation;
@@ -179,7 +183,8 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         string dataDirectory,
         string installationDirectory,
         IReadOnlyList<string> startupArguments,
-        Func<Task> shutdown)
+        Func<Task> shutdown,
+        string? automaticInstallationUnavailableReason = null)
     {
         ArgumentNullException.ThrowIfNull(downloadService);
         ArgumentNullException.ThrowIfNull(stagingService);
@@ -201,7 +206,10 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             shutdown,
             File.Exists(Path.Combine(
                 fullInstallationDirectory,
-                "release-package.json")));
+                "release-package.json")),
+            string.IsNullOrWhiteSpace(automaticInstallationUnavailableReason)
+                ? null
+                : automaticInstallationUnavailableReason.Trim());
         OnPropertyChanged(nameof(CanInstallCurrentInstallation));
         OnPropertyChanged(nameof(ShowInstallUnavailable));
         installCommand.RaiseCanExecuteChanged();
@@ -254,7 +262,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             StatusMessage = AppendPreviousOutcome(result.IsUpdateAvailable
                 ? CanInstallCurrentInstallation
                     ? $"SrvSurvey {LatestVersion} is available. Confirm the guarded install when ready."
-                    : $"SrvSurvey {LatestVersion} is available. This development or unpackaged build cannot replace itself; use Open releases."
+                    : $"SrvSurvey {LatestVersion} is available. {GetInstallationUnavailableMessage()}"
                 : $"SrvSurvey {CurrentVersion} is current with the published release index.");
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
@@ -286,7 +294,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         {
             StatusMessage = CanInstallCurrentInstallation
                 ? "Confirm the guarded update installation first. No files were changed."
-                : "Automatic installation is available only from a checksum-indexed SrvSurvey package. No files were changed.";
+                : GetInstallationUnavailableMessage() + " No files were changed.";
             return;
         }
 
@@ -405,6 +413,12 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             : message + " " + previousInstallationOutcomeMessage;
     }
 
+    private string GetInstallationUnavailableMessage()
+    {
+        return installer?.AutomaticInstallationUnavailableReason
+            ?? "This development or unpackaged build cannot replace itself; use Open releases.";
+    }
+
     private bool SetField<T>(
         ref T field,
         T value,
@@ -434,7 +448,8 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         string InstallationDirectory,
         IReadOnlyList<string> StartupArguments,
         Func<Task> Shutdown,
-        bool IsPackaged);
+        bool IsPackaged,
+        string? AutomaticInstallationUnavailableReason);
 
     private sealed class GuardedProgress<T> : IProgress<T>
     {

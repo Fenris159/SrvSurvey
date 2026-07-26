@@ -220,6 +220,7 @@ public sealed partial class App : Application
                 RestartApplicationAsync("Published reference data refreshed"));
             viewModel.Localization.SetRestartHandler(() =>
                 RestartApplicationAsync("Language preference changed"));
+            var appImagePath = Environment.GetEnvironmentVariable("APPIMAGE");
             viewModel.ReleaseUpdates.ConfigureInstaller(
                 new ReleasePackageDownloadService(),
                 new ReleasePackageStagingService(),
@@ -229,7 +230,10 @@ public sealed partial class App : Application
                 AppContext.BaseDirectory,
                 Program.StartupArguments,
                 async () => await Dispatcher.UIThread.InvokeAsync(
-                    () => desktop.Shutdown()));
+                    () => desktop.Shutdown()),
+                string.IsNullOrWhiteSpace(appImagePath)
+                    ? null
+                    : "This AppImage is mounted read-only and cannot replace itself; use Open releases to download the new AppImage.");
 
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested +=

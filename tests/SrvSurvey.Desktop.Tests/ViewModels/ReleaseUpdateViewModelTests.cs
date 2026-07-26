@@ -76,6 +76,50 @@ public sealed class ReleaseUpdateViewModelTests
     }
 
     [Fact]
+    public async Task ReadOnlyBundleKeepsReleaseAvailableWithoutOfferingReplacement()
+    {
+        var temporaryDirectory = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-update-view-model-tests-{Guid.NewGuid():N}");
+        var installationDirectory = Path.Combine(temporaryDirectory, "install");
+        Directory.CreateDirectory(installationDirectory);
+        await File.WriteAllTextAsync(
+            Path.Combine(installationDirectory, "release-package.json"),
+            "{}");
+        try
+        {
+            var viewModel = new ReleaseUpdateViewModel(
+                new StubService(CreateResult(isAvailable: true)),
+                new Version(2, 0, 95, 0));
+            var calls = new List<string>();
+            viewModel.ConfigureInstaller(
+                new StubDownloader(calls),
+                new StubStagingService(calls),
+                new StubPreparer(calls),
+                new StubHandoff(calls),
+                temporaryDirectory,
+                installationDirectory,
+                [],
+                () => Task.CompletedTask,
+                "This AppImage is mounted read-only and cannot replace itself; use Open releases to download the new AppImage.");
+
+            await viewModel.CheckAsync();
+
+            Assert.True(viewModel.IsUpdateAvailable);
+            Assert.False(viewModel.CanInstallCurrentInstallation);
+            Assert.True(viewModel.ShowInstallUnavailable);
+            Assert.False(viewModel.InstallCommand.CanExecute(null));
+            Assert.Contains("AppImage is mounted read-only", viewModel.StatusMessage);
+            Assert.Contains("Open releases", viewModel.StatusMessage);
+            Assert.Empty(calls);
+        }
+        finally
+        {
+            Directory.Delete(temporaryDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task OpenReleaseUsesConfiguredPlatformLauncher()
     {
         var viewModel = new ReleaseUpdateViewModel(
