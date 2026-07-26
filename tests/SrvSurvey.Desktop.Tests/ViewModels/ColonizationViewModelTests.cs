@@ -586,6 +586,19 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Equal(192, ship.MaximumCargo);
         Assert.Equal(27, ship.Cargo["steel"]);
         Assert.Contains("Published", viewModel.ShipCargoPublishingStatus);
+
+        await viewModel.UpdateCargoAsync(
+            new CargoSnapshot(
+                DateTimeOffset.UtcNow.AddSeconds(1),
+                "MarketSell",
+                "Ship",
+                26,
+                [new CargoItem("steel", "Steel", 26, 0)]),
+            publishCurrentShipCargo: false);
+
+        Assert.Equal(26, Assert.Single(
+            viewModel.CommodityOverlay.Plan.Rows).InShip);
+        Assert.Equal(1, client.PublishShipCount);
     }
 
     [Fact]

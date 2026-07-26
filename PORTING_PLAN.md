@@ -246,6 +246,14 @@ Counts clamp safely at zero and `Int32.MaxValue`; explicit multi-client
 suppression still clears the inventory because the shared file cannot be
 attributed to one commander.
 
+The same delta logic now feeds a single shared cargo projection for Guardian,
+Colonisation planning, and dock-to-dock capture. It covers collect/eject,
+market buy/sell, carrier/SRV transfer direction, construction contributions,
+and full `Cargo` journal inventories with bounded duplicate aggregation. A
+newly hashed `Cargo.json` remains authoritative, projected changes never cause
+extra Raven ship-cargo publications, and returning from multi-client ambiguity
+requires a genuinely fresh file before any consumer receives cargo again.
+
 Exit gate: the supported event inventory has a fixture and parity result; unknown
 events remain non-fatal and observable.
 

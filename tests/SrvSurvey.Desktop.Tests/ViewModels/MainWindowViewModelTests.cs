@@ -1864,6 +1864,97 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    [Fact]
+    public async Task CargoProjectionAppliesJournalDeltasAndRequiresFreshFileAfterAmbiguity()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-cargo-projection-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-25T120000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                """
+                {"timestamp":"2026-07-25T12:00:00Z","event":"Commander","Name":"Drew","FID":"F123"}
+                {"timestamp":"2026-07-25T12:00:01Z","event":"LoadGame","Commander":"Drew","FID":"F123","Odyssey":true}
+
+                """);
+            var cargoPath = Path.Combine(journals, CargoFileReader.FileName);
+            await File.WriteAllTextAsync(
+                cargoPath,
+                """
+                {"timestamp":"2026-07-25T12:00:02Z","event":"Cargo","Vessel":"Ship","Count":2,"Inventory":[{"Name":"gold","Count":2,"Stolen":0}]}
+                """);
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            var switcher = new MutableGameWindowSwitcher
+            {
+                AvailableWindowCount = 1,
+            };
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                gameWindowSwitcher: switcher);
+
+            await viewModel.RefreshAsync();
+            Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                """
+                {"timestamp":"2026-07-25T12:00:03Z","event":"CollectCargo","Type":"silver","Type_Localised":"Silver"}
+
+                """);
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));
+            Assert.Equal(1, viewModel.CurrentCargo?.GetCount("silver"));
+
+            switcher.AvailableWindowCount = 2;
+            viewModel.CommanderInstances.RefreshGameWindowCount();
+            Assert.Null(viewModel.CurrentCargo);
+            Assert.True(viewModel.IsWaitingForFreshCargoSnapshot);
+
+            switcher.AvailableWindowCount = 1;
+            viewModel.CommanderInstances.RefreshGameWindowCount();
+            await File.AppendAllTextAsync(
+                journalPath,
+                """
+                {"timestamp":"2026-07-25T12:00:04Z","event":"CollectCargo","Type":"gold"}
+
+                """);
+            await viewModel.RefreshAsync();
+
+            Assert.Null(viewModel.CurrentCargo);
+            Assert.True(viewModel.IsWaitingForFreshCargoSnapshot);
+
+            await File.WriteAllTextAsync(
+                cargoPath,
+                """
+                {"timestamp":"2026-07-25T12:00:05Z","event":"Cargo","Vessel":"Ship","Count":5,"Inventory":[{"Name":"gold","Count":5,"Stolen":0}]}
+                """);
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(5, viewModel.CurrentCargo?.GetCount("gold"));
+            Assert.False(viewModel.IsWaitingForFreshCargoSnapshot);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     private static Task WriteSurfaceStatusAsync(
         string path,
         double latitude,

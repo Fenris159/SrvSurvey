@@ -909,7 +909,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
                 && value == pair.Value);
     }
 
-    public async Task UpdateCargoAsync(CargoSnapshot? cargo)
+    public async Task UpdateCargoAsync(
+        CargoSnapshot? cargo,
+        bool publishCurrentShipCargo = true)
     {
         if (cargo is null || SharedCargoSuppressed)
         {
@@ -918,7 +920,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged
 
         shipCargo = cargo;
         UpdateCommodityPlan();
-        await PublishCurrentShipCargoAsync(cargo);
+        if (publishCurrentShipCargo)
+        {
+            await PublishCurrentShipCargoAsync(cargo);
+        }
     }
 
     private async Task PublishCurrentShipCargoAsync(CargoSnapshot cargo)

@@ -40,6 +40,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly CommanderCodexStore commanderCodexStore;
     private readonly CommanderCodexJournalTracker commanderCodexJournalTracker;
     private readonly SystemScanPersistenceStore systemScanPersistenceStore;
+    private readonly CargoInventoryState cargoInventoryState = new();
     private readonly FirstFootfallInferenceSettingsStore
         firstFootfallInferenceSettingsStore;
     private readonly IFirstFootfallInferenceService
@@ -110,6 +111,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private DateTimeOffset? activeSystemVisitedAt;
     private EliteStatus? latestStatus;
     private CargoSnapshot? latestCargo;
+    private bool awaitFreshCargoSnapshot;
     private bool disposed;
 
     public MainWindowViewModel(
@@ -679,6 +681,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public bool IsSharedCargoSuppressed =>
         CommanderInstances.HasMultipleGameWindows;
+
+    internal CargoSnapshot? CurrentCargo => latestCargo;
+
+    internal bool IsWaitingForFreshCargoSnapshot => awaitFreshCargoSnapshot;
 
     public CommanderPreferenceViewModel CommanderPreference { get; }
 
@@ -1537,9 +1543,37 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         JournalInspector.ApplyUpdate(update.JournalEvents, latestStatus);
 
         var allowSharedCargo = !IsSharedCargoSuppressed;
-        latestCargo = allowSharedCargo
-            ? update.Cargo ?? latestCargo
-            : null;
+        var cargoChanged = false;
+        if (!allowSharedCargo)
+        {
+            cargoChanged = cargoInventoryState.Reset(null);
+            latestCargo = null;
+        }
+        else if (awaitFreshCargoSnapshot)
+        {
+            if (update.Cargo is not null)
+            {
+                cargoChanged = cargoInventoryState.Reset(update.Cargo);
+                awaitFreshCargoSnapshot = false;
+                latestCargo = cargoInventoryState.CreateSnapshot();
+            }
+        }
+        else
+        {
+            foreach (var journalEvent in update.JournalEvents)
+            {
+                cargoChanged |= cargoInventoryState.Apply(
+                    journalEvent,
+                    latestStatus?.InSrv == true);
+            }
+
+            if (update.Cargo is not null)
+            {
+                cargoChanged |= cargoInventoryState.Reset(update.Cargo);
+            }
+
+            latestCargo = cargoInventoryState.CreateSnapshot();
+        }
         DockToDock.ApplyUpdate(
             update.JournalEvents,
             latestCargo,
@@ -1706,12 +1740,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             Guardian.ClearCargo();
         }
-        else if (update.Cargo is not null)
+        else if (cargoChanged && latestCargo is not null)
         {
-            Guardian.UpdateCargo(update.Cargo);
+            Guardian.UpdateCargo(latestCargo);
         }
-        await Colonization.UpdateCargoAsync(
-            allowSharedCargo ? update.Cargo : null);
+        if (cargoChanged && latestCargo is not null)
+        {
+            await Colonization.UpdateCargoAsync(
+                latestCargo,
+                publishCurrentShipCargo: update.Cargo is not null);
+        }
         await Colonization.UpdateMarketAsync(update.Market);
         Combat.SetActiveBuildProjects(Colonization.HasProjects);
         Guardian.SetActiveBuildProjects(Colonization.HasProjects);
@@ -2655,6 +2693,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     {
         if (value)
         {
+            awaitFreshCargoSnapshot = true;
+            cargoInventoryState.Reset(null);
             latestCargo = null;
             Guardian.ClearCargo();
         }
