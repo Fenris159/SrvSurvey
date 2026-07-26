@@ -50,7 +50,22 @@
         </Grid>
       </Border>
 
-      <TabControl HorizontalContentAlignment="Stretch">
+      <Border Padding="0,0,0,24"
+              BorderBrush="{DynamicResource RavenBorderBrush}"
+              BorderThickness="0,0,0,1">
+        <Expander ExpandDirection="Down"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Stretch"
+                  IsExpanded="True">
+          <Expander.Header>
+            <StackPanel Margin="4,0,0,8" Spacing="2">
+              <TextBlock Classes="card-title" Text="Theme selection" />
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         Text="Application and in-game overlay palettes" />
+            </StackPanel>
+          </Expander.Header>
+          <TabControl HorizontalContentAlignment="Stretch">
         <TabItem Header="Application theme">
           <StackPanel Margin="0,16,0,0" Spacing="18">
             <Border Classes="card raised">
@@ -249,7 +264,9 @@
             </Border>
           </StackPanel>
         </TabItem>
-      </TabControl>
+          </TabControl>
+        </Expander>
+      </Border>
 
       <Border Classes="card raised">
         <StackPanel Spacing="12">

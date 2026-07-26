@@ -187,14 +187,19 @@ public sealed class LegacyOverlayParityTests
         Assert.Contains("ItemsSource=\"{Binding Categories}\"", editor);
         Assert.Contains("SelectedItem=\"{Binding SelectedCategory, Mode=TwoWay}\"", editor);
         Assert.Contains("Command=\"{Binding SaveCommand}\"", editor);
-        Assert.Contains("Content=\"✓\"", editor);
+        Assert.Contains("Content=\"&#x2713;\"", editor);
         Assert.Contains("Command=\"{Binding CancelCommand}\"", editor);
-        Assert.Contains("Content=\"✕\"", editor);
-        Assert.Contains("POSITION PREVIEW", preview);
-        Assert.Contains("Drag to move", preview);
+        Assert.Contains("Content=\"&#x00D7;\"", editor);
+        Assert.Contains("Text=\"{Binding Title}\"", preview);
+        Assert.Contains("ItemsSource=\"{Binding Rows}\"", preview);
+        Assert.Contains("BorderThickness=\"2\"", preview);
         Assert.Contains("game.IsAvailable", interaction);
         Assert.Contains("? game.ClientBounds", interaction);
         Assert.Contains(": (PixelRect?)null", interaction);
+        Assert.Contains("ToggleLiveOverlayInteraction", interaction);
+        Assert.Contains("<Expander", settings);
+        Assert.Contains("Text=\"Theme selection\"", settings);
+        Assert.Contains("BorderThickness=\"0,0,0,1\"", settings);
     }
 
     private static OverlayMapping Map(
