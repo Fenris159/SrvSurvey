@@ -58,23 +58,20 @@ public sealed class ReleaseUpdateViewModelTests
 
     private static ReleaseUpdateResult CreateResult(bool isAvailable)
     {
-        var index = new PublishedDataIndex(
-            new Version(2, 0, 95, 23),
-            new Version(2, 0, 95, 0),
-            7,
-            4,
-            10,
-            48,
-            68,
-            15,
-            1,
-            1);
         return new ReleaseUpdateResult(
             new Version(2, 0, 95, 0),
-            index.GitHubVersion,
+            new Version(2, 0, 95, 23),
             isAvailable,
             new Uri("https://example.test/releases"),
-            index);
+            isAvailable
+                ? new CrossPlatformReleasePackage(
+                    "win-x64",
+                    "SrvSurvey-Avalonia-2.0.95.23-win-x64.zip",
+                    "zip",
+                    1_024,
+                    new string('a', 64),
+                    new Uri("https://example.test/package.zip"))
+                : null);
     }
 
     private static async Task WaitUntilAsync(Func<bool> predicate)

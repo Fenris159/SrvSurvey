@@ -39,7 +39,7 @@
             <TextBlock Classes="card-title" Text="Application updates" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Checks the same signed-off release index used by the original SrvSurvey. The check never installs files or changes profile data." />
+                       Text="Checks checksum-indexed Avalonia packages published from this cross-platform repository. The check never installs files or changes profile data." />
           </StackPanel>
 
           <Grid ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">

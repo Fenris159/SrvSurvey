@@ -147,7 +147,8 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             or InvalidDataException
             or JsonException
             or TaskCanceledException
-            or InvalidOperationException;
+            or InvalidOperationException
+            or PlatformNotSupportedException;
     }
 
     private static string FormatVersion(Version version)

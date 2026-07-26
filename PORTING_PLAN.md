@@ -537,13 +537,15 @@ UI tests where practical, and live Windows/Linux evidence.
   stale legacy sidecar cannot corrupt activation. Visual verification remains
   intentionally deferred to the final parity pass.
 - [ ] Network integrations, update behavior, diagnostics, and remaining tools.
-  The original non-store release check is now restored without its
-  Windows-only self-installer: Avalonia reads and validates the same published
-  `data.json` contract, compares the four-part `ghVer` against its corrected
-  `2.0.95.0` file version, checks asynchronously after the window opens, and
-  offers the original GitHub releases page. HTTP, rate-limit, timeout, and
-  malformed-index failures are contained and explicitly leave both the
-  installation and profile untouched. Imported reference catalogs are now
+  The non-store release check now targets only cross-platform packages from this
+  fork instead of offering an incompatible upstream WinForms asset. It ignores
+  drafts, prereleases, and legacy releases without `release-index.json`, bounds
+  both GitHub responses, requires the tag/index versions and both exact RID
+  contracts to agree, and cross-checks archive names and sizes against unique
+  GitHub assets before offering a release. It checks asynchronously after the
+  window opens. HTTP, rate-limit, timeout, unsupported-platform, and malformed
+  metadata failures are contained and explicitly leave both the installation
+  and profile untouched. Imported reference catalogs are now
   validated and consumed with per-catalog embedded fallback. The legacy static
   catalog refresh is also restored for Codex, biology criteria, Guardian
   indexes/surveys/templates, human settlements, and Green Gas Giant criteria.
@@ -557,7 +559,7 @@ UI tests where practical, and live Windows/Linux evidence.
   cross-platform builds now establish the installable artifact contract:
   version-validated Windows ZIP and Linux tarball assets contain a per-file
   SHA-256 manifest, while the release index records the exact RID, archive type,
-  byte length, and SHA-256 for both packages. Packaged update discovery,
+  byte length, and SHA-256 for both packages. Verified package download,
   installation/rollback, and the remaining network audit keep this phase open.
   The legacy regional-Codex Google Sheet now refreshes on the original
   weekly cadence or with a Codex-reference update. Its live 26-column CSV

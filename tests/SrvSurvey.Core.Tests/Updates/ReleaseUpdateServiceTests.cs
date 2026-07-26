@@ -5,17 +5,22 @@ namespace SrvSurvey.Core.Tests.Updates;
 public sealed class ReleaseUpdateServiceTests
 {
     [Fact]
-    public async Task CheckAsyncReportsNewerFourPartGitHubVersion()
+    public async Task CheckAsyncReportsNewerPackageForTheCurrentRuntime()
     {
+        var release = CreateRelease(new Version(2, 0, 95, 23));
         var service = new ReleaseUpdateService(
-            new StubIndexClient(CreateIndex(new Version(2, 0, 95, 23))),
+            new StubReleaseClient(release),
+            "win-x64",
             new Uri("https://example.test/releases"));
 
         var result = await service.CheckAsync(new Version(2, 0, 95, 0));
 
         Assert.True(result.IsUpdateAvailable);
         Assert.Equal(new Version(2, 0, 95, 23), result.LatestVersion);
-        Assert.Equal("https://example.test/releases", result.ReleaseUri.AbsoluteUri);
+        Assert.Equal(release.Package, result.Package);
+        Assert.Equal(
+            "https://example.test/releases/2.0.95.23",
+            result.ReleaseUri.AbsoluteUri);
     }
 
     [Theory]
@@ -24,35 +29,55 @@ public sealed class ReleaseUpdateServiceTests
     public async Task CheckAsyncDoesNotOfferEqualOrOlderBuilds(int revision)
     {
         var service = new ReleaseUpdateService(
-            new StubIndexClient(CreateIndex(new Version(2, 0, 95, revision))));
+            new StubReleaseClient(CreateRelease(new Version(2, 0, 95, revision))),
+            "win-x64");
 
         var result = await service.CheckAsync(new Version(2, 0, 95, 22));
 
         Assert.False(result.IsUpdateAvailable);
+        Assert.Null(result.Package);
     }
 
-    private static PublishedDataIndex CreateIndex(Version version)
+    [Fact]
+    public async Task CheckAsyncTreatsNoCompatibleReleaseAsCurrent()
     {
-        return new PublishedDataIndex(
+        var service = new ReleaseUpdateService(
+            new StubReleaseClient(null),
+            "linux-x64",
+            new Uri("https://example.test/releases"));
+        var current = new Version(2, 0, 95, 0);
+
+        var result = await service.CheckAsync(current);
+
+        Assert.False(result.IsUpdateAvailable);
+        Assert.Equal(current, result.LatestVersion);
+        Assert.Equal(
+            "https://example.test/releases",
+            result.ReleaseUri.AbsoluteUri);
+    }
+
+    private static CrossPlatformRelease CreateRelease(Version version)
+    {
+        return new CrossPlatformRelease(
             version,
-            new Version(2, 0, 95, 0),
-            7,
-            4,
-            10,
-            48,
-            68,
-            15,
-            1,
-            1);
+            new Uri($"https://example.test/releases/{version}"),
+            new CrossPlatformReleasePackage(
+                "win-x64",
+                $"SrvSurvey-Avalonia-{version}-win-x64.zip",
+                "zip",
+                1_024,
+                new string('a', 64),
+                new Uri("https://example.test/package.zip")));
     }
 
-    private sealed class StubIndexClient(PublishedDataIndex index)
-        : IPublishedDataIndexClient
+    private sealed class StubReleaseClient(CrossPlatformRelease? release)
+        : ICrossPlatformReleaseClient
     {
-        public Task<PublishedDataIndex> GetAsync(
+        public Task<CrossPlatformRelease?> GetLatestAsync(
+            string runtimeIdentifier,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(index);
+            return Task.FromResult(release);
         }
     }
 }

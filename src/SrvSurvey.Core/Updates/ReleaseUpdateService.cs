@@ -12,21 +12,24 @@ public sealed record ReleaseUpdateResult(
     Version LatestVersion,
     bool IsUpdateAvailable,
     Uri ReleaseUri,
-    PublishedDataIndex PublishedData);
+    CrossPlatformReleasePackage? Package);
 
 public sealed class ReleaseUpdateService : IReleaseUpdateService
 {
     public static readonly Uri DefaultReleaseUri = new(
-        "https://github.com/njthomson/SrvSurvey/releases");
+        "https://github.com/Fenris159/SrvSurvey/releases");
 
-    private readonly IPublishedDataIndexClient indexClient;
+    private readonly ICrossPlatformReleaseClient releaseClient;
+    private readonly string? runtimeIdentifier;
     private readonly Uri releaseUri;
 
     public ReleaseUpdateService(
-        IPublishedDataIndexClient? indexClient = null,
+        ICrossPlatformReleaseClient? releaseClient = null,
+        string? runtimeIdentifier = null,
         Uri? releaseUri = null)
     {
-        this.indexClient = indexClient ?? new PublishedDataIndexClient();
+        this.releaseClient = releaseClient ?? new CrossPlatformReleaseClient();
+        this.runtimeIdentifier = runtimeIdentifier;
         this.releaseUri = releaseUri ?? DefaultReleaseUri;
     }
 
@@ -35,13 +38,19 @@ public sealed class ReleaseUpdateService : IReleaseUpdateService
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(currentVersion);
-        var publishedData = await indexClient.GetAsync(cancellationToken)
+        var currentRuntimeIdentifier = runtimeIdentifier
+            ?? CrossPlatformReleaseClient.ResolveCurrentRuntimeIdentifier();
+        var release = await releaseClient.GetLatestAsync(
+                currentRuntimeIdentifier,
+                cancellationToken)
             .ConfigureAwait(false);
+        var latestVersion = release?.Version ?? currentVersion;
+        var isUpdateAvailable = latestVersion > currentVersion;
         return new ReleaseUpdateResult(
             currentVersion,
-            publishedData.GitHubVersion,
-            publishedData.GitHubVersion > currentVersion,
-            releaseUri,
-            publishedData);
+            latestVersion,
+            isUpdateAvailable,
+            release?.ReleaseUri ?? releaseUri,
+            isUpdateAvailable ? release!.Package : null);
     }
 }

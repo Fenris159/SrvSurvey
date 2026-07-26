@@ -1,0 +1,506 @@
+using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+
+namespace SrvSurvey.Core.Updates;
+
+public interface ICrossPlatformReleaseClient
+{
+    Task<CrossPlatformRelease?> GetLatestAsync(
+        string runtimeIdentifier,
+        CancellationToken cancellationToken = default);
+}
+
+public sealed record CrossPlatformRelease(
+    Version Version,
+    Uri ReleaseUri,
+    CrossPlatformReleasePackage Package);
+
+public sealed record CrossPlatformReleasePackage(
+    string RuntimeIdentifier,
+    string ArchiveName,
+    string ArchiveType,
+    long Size,
+    string Sha256,
+    Uri DownloadUri);
+
+public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
+{
+    private const int MaximumReleaseCount = 20;
+    private const int MaximumAssetCount = 64;
+    private const int MaximumReleaseApiBytes = 2 * 1024 * 1024;
+    private const int MaximumReleaseIndexBytes = 64 * 1024;
+    private const long MaximumPackageBytes = 512L * 1024 * 1024;
+    private const string ProductName = "SrvSurvey.Avalonia";
+    private const string ReleaseIndexName = "release-index.json";
+    private static readonly Uri DefaultReleasesApiUri = new(
+        "https://api.github.com/repos/Fenris159/SrvSurvey/releases?per_page=20");
+    private static readonly HttpClient SharedClient = CreateSharedClient();
+    private readonly HttpClient client;
+    private readonly Uri releasesApiUri;
+
+    public CrossPlatformReleaseClient(
+        HttpClient? client = null,
+        Uri? releasesApiUri = null)
+    {
+        this.client = client ?? SharedClient;
+        this.releasesApiUri = releasesApiUri ?? DefaultReleasesApiUri;
+    }
+
+    public async Task<CrossPlatformRelease?> GetLatestAsync(
+        string runtimeIdentifier,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateRuntimeIdentifier(runtimeIdentifier);
+        using var request = new HttpRequestMessage(HttpMethod.Get, releasesApiUri);
+        request.Headers.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
+        request.Headers.CacheControl = new CacheControlHeaderValue
+        {
+            NoCache = true,
+        };
+        request.Headers.Accept.ParseAdd("application/vnd.github+json");
+        request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
+        using var response = await client.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken)
+            .ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        var bytes = await ReadBoundedAsync(
+                response.Content,
+                MaximumReleaseApiBytes,
+                releasesApiUri,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var candidate = ParseLatestRelease(bytes);
+        if (candidate is null)
+        {
+            return null;
+        }
+
+        var indexAsset = candidate.Assets.Single(asset =>
+            string.Equals(
+                asset.Name,
+                ReleaseIndexName,
+                StringComparison.Ordinal));
+        using var indexRequest = new HttpRequestMessage(
+            HttpMethod.Get,
+            indexAsset.DownloadUri);
+        indexRequest.Headers.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
+        using var indexResponse = await client.SendAsync(
+                indexRequest,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken)
+            .ConfigureAwait(false);
+        indexResponse.EnsureSuccessStatusCode();
+        var indexBytes = await ReadBoundedAsync(
+                indexResponse.Content,
+                MaximumReleaseIndexBytes,
+                indexAsset.DownloadUri,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (indexBytes.LongLength != indexAsset.Size)
+        {
+            throw new InvalidDataException(
+                "The release index size does not match its GitHub asset metadata.");
+        }
+
+        var package = ParseReleaseIndex(
+            indexBytes,
+            candidate.Version,
+            runtimeIdentifier,
+            candidate.Assets);
+        return new CrossPlatformRelease(
+            candidate.Version,
+            candidate.ReleaseUri,
+            package);
+    }
+
+    public static string ResolveCurrentRuntimeIdentifier()
+    {
+        if (RuntimeInformation.ProcessArchitecture != Architecture.X64)
+        {
+            throw new PlatformNotSupportedException(
+                "Automatic updates currently require an x64 SrvSurvey package.");
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            return "win-x64";
+        }
+
+        if (OperatingSystem.IsLinux())
+        {
+            return "linux-x64";
+        }
+
+        throw new PlatformNotSupportedException(
+            "Automatic updates are available only on Windows and Linux.");
+    }
+
+    private static ReleaseCandidate? ParseLatestRelease(byte[] bytes)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(bytes);
+            if (document.RootElement.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidDataException(
+                    "The GitHub releases response is not an array.");
+            }
+
+            ReleaseCandidate? latest = null;
+            var count = 0;
+            foreach (var element in document.RootElement.EnumerateArray())
+            {
+                count++;
+                if (count > MaximumReleaseCount)
+                {
+                    throw new InvalidDataException(
+                        "The GitHub releases response contains too many releases.");
+                }
+
+                var candidate = ParseReleaseCandidate(element);
+                if (candidate is not null
+                    && (latest is null || candidate.Version > latest.Version))
+                {
+                    latest = candidate;
+                }
+            }
+
+            return latest;
+        }
+        catch (JsonException exception)
+        {
+            throw new InvalidDataException(
+                "The GitHub releases response is not valid JSON.",
+                exception);
+        }
+    }
+
+    private static ReleaseCandidate? ParseReleaseCandidate(JsonElement element)
+    {
+        if (element.ValueKind != JsonValueKind.Object
+            || ReadBoolean(element, "draft")
+            || ReadBoolean(element, "prerelease"))
+        {
+            return null;
+        }
+
+        var tag = ReadRequiredString(element, "tag_name");
+        if (tag.StartsWith('v') || tag.StartsWith('V'))
+        {
+            tag = tag[1..];
+        }
+
+        if (!Version.TryParse(tag, out var version)
+            || version.Build < 0
+            || version.Major < 0
+            || version.Minor < 0)
+        {
+            return null;
+        }
+
+        var releaseUri = ReadRequiredHttpsUri(element, "html_url");
+        if (!element.TryGetProperty("assets", out var assetsElement)
+            || assetsElement.ValueKind != JsonValueKind.Array)
+        {
+            throw new InvalidDataException(
+                $"Release {version} has no GitHub asset array.");
+        }
+
+        var assets = new List<ReleaseAsset>();
+        foreach (var assetElement in assetsElement.EnumerateArray())
+        {
+            if (assets.Count >= MaximumAssetCount)
+            {
+                throw new InvalidDataException(
+                    $"Release {version} has too many GitHub assets.");
+            }
+
+            assets.Add(new ReleaseAsset(
+                ReadRequiredString(assetElement, "name"),
+                ReadPositiveInt64(assetElement, "size"),
+                ReadRequiredHttpsUri(assetElement, "browser_download_url")));
+        }
+
+        var indexCount = assets.Count(asset => string.Equals(
+            asset.Name,
+            ReleaseIndexName,
+            StringComparison.Ordinal));
+        if (indexCount == 0)
+        {
+            return null;
+        }
+
+        if (indexCount != 1)
+        {
+            throw new InvalidDataException(
+                $"Release {version} has duplicate release index assets.");
+        }
+
+        return new ReleaseCandidate(version, releaseUri, assets);
+    }
+
+    private static CrossPlatformReleasePackage ParseReleaseIndex(
+        byte[] bytes,
+        Version expectedVersion,
+        string runtimeIdentifier,
+        IReadOnlyList<ReleaseAsset> assets)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(bytes);
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object
+                || ReadRequiredInt32(root, "schemaVersion") != 1
+                || !string.Equals(
+                    ReadRequiredString(root, "product"),
+                    ProductName,
+                    StringComparison.Ordinal))
+            {
+                throw new InvalidDataException(
+                    "The cross-platform release index has an incompatible schema or product.");
+            }
+
+            var versionText = ReadRequiredString(root, "version");
+            if (!Version.TryParse(versionText, out var indexVersion)
+                || indexVersion != expectedVersion)
+            {
+                throw new InvalidDataException(
+                    "The release index version does not match the GitHub tag.");
+            }
+
+            if (!root.TryGetProperty("packages", out var packagesElement)
+                || packagesElement.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidDataException(
+                    "The release index has no package array.");
+            }
+
+            var packages = packagesElement.EnumerateArray().ToArray();
+            if (packages.Length != 2)
+            {
+                throw new InvalidDataException(
+                    "The release index must contain exactly two platform packages.");
+            }
+
+            var windows = ParseIndexedPackage(
+                packages,
+                expectedVersion,
+                "win-x64",
+                "zip",
+                assets);
+            var linux = ParseIndexedPackage(
+                packages,
+                expectedVersion,
+                "linux-x64",
+                "tar.gz",
+                assets);
+            return runtimeIdentifier == "win-x64" ? windows : linux;
+        }
+        catch (JsonException exception)
+        {
+            throw new InvalidDataException(
+                "The cross-platform release index is not valid JSON.",
+                exception);
+        }
+    }
+
+    private static CrossPlatformReleasePackage ParseIndexedPackage(
+        IReadOnlyList<JsonElement> packages,
+        Version version,
+        string runtimeIdentifier,
+        string archiveType,
+        IReadOnlyList<ReleaseAsset> assets)
+    {
+        var matching = packages.Where(package => string.Equals(
+            ReadRequiredString(package, "runtimeIdentifier"),
+            runtimeIdentifier,
+            StringComparison.Ordinal)).ToArray();
+        var suffix = archiveType == "zip" ? ".zip" : ".tar.gz";
+        var expectedName = $"SrvSurvey-Avalonia-{version}-{runtimeIdentifier}{suffix}";
+        if (matching.Length != 1
+            || !string.Equals(
+                ReadRequiredString(matching[0], "archive"),
+                expectedName,
+                StringComparison.Ordinal)
+            || !string.Equals(
+                ReadRequiredString(matching[0], "archiveType"),
+                archiveType,
+                StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                $"The release index has an invalid {runtimeIdentifier} package contract.");
+        }
+
+        var selected = matching[0];
+        var archiveName = ReadRequiredString(selected, "archive");
+        var size = ReadPositiveInt64(selected, "size");
+        if (size > MaximumPackageBytes)
+        {
+            throw new InvalidDataException(
+                $"The {runtimeIdentifier} package exceeds the supported size.");
+        }
+
+        var sha256 = ReadRequiredString(selected, "sha256").ToLowerInvariant();
+        if (sha256.Length != 64 || sha256.Any(character =>
+                !Uri.IsHexDigit(character)))
+        {
+            throw new InvalidDataException(
+                $"The {runtimeIdentifier} package has an invalid SHA-256 value.");
+        }
+
+        var matchingAssets = assets.Where(asset => string.Equals(
+            asset.Name,
+            archiveName,
+            StringComparison.Ordinal)).ToArray();
+        if (matchingAssets.Length != 1 || matchingAssets[0].Size != size)
+        {
+            throw new InvalidDataException(
+                $"The {runtimeIdentifier} package does not match its GitHub asset metadata.");
+        }
+
+        return new CrossPlatformReleasePackage(
+            runtimeIdentifier,
+            archiveName,
+            archiveType,
+            size,
+            sha256,
+            matchingAssets[0].DownloadUri);
+    }
+
+    private static async Task<byte[]> ReadBoundedAsync(
+        HttpContent content,
+        int maximumBytes,
+        Uri uri,
+        CancellationToken cancellationToken)
+    {
+        var contentLength = content.Headers.ContentLength;
+        if (contentLength.HasValue && contentLength.Value > maximumBytes)
+        {
+            throw new InvalidDataException(
+                $"The update response exceeded {maximumBytes:N0} bytes: {uri}");
+        }
+
+        await using var input = await content.ReadAsStreamAsync(cancellationToken)
+            .ConfigureAwait(false);
+        using var output = new MemoryStream();
+        var buffer = new byte[16 * 1024];
+        while (true)
+        {
+            var read = await input.ReadAsync(buffer, cancellationToken)
+                .ConfigureAwait(false);
+            if (read == 0)
+            {
+                break;
+            }
+
+            if (output.Length + read > maximumBytes)
+            {
+                throw new InvalidDataException(
+                    $"The update response exceeded {maximumBytes:N0} bytes: {uri}");
+            }
+
+            output.Write(buffer, 0, read);
+        }
+
+        return output.ToArray();
+    }
+
+    private static bool ReadBoolean(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var property)
+            || property.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
+        {
+            throw new InvalidDataException(
+                $"The GitHub release has an invalid '{propertyName}' value.");
+        }
+
+        return property.GetBoolean();
+    }
+
+    private static int ReadRequiredInt32(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var property)
+            || !property.TryGetInt32(out var value))
+        {
+            throw new InvalidDataException(
+                $"The update metadata has an invalid '{propertyName}' value.");
+        }
+
+        return value;
+    }
+
+    private static long ReadPositiveInt64(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var property)
+            || !property.TryGetInt64(out var value)
+            || value <= 0)
+        {
+            throw new InvalidDataException(
+                $"The update metadata has an invalid '{propertyName}' value.");
+        }
+
+        return value;
+    }
+
+    private static string ReadRequiredString(
+        JsonElement element,
+        string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var property)
+            || property.ValueKind != JsonValueKind.String
+            || string.IsNullOrWhiteSpace(property.GetString()))
+        {
+            throw new InvalidDataException(
+                $"The update metadata has an invalid '{propertyName}' value.");
+        }
+
+        return property.GetString()!;
+    }
+
+    private static Uri ReadRequiredHttpsUri(
+        JsonElement element,
+        string propertyName)
+    {
+        var value = ReadRequiredString(element, propertyName);
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri)
+            || uri.Scheme != Uri.UriSchemeHttps)
+        {
+            throw new InvalidDataException(
+                $"The update metadata has an invalid '{propertyName}' URI.");
+        }
+
+        return uri;
+    }
+
+    private static void ValidateRuntimeIdentifier(string runtimeIdentifier)
+    {
+        if (runtimeIdentifier is not ("win-x64" or "linux-x64"))
+        {
+            throw new PlatformNotSupportedException(
+                $"The runtime '{runtimeIdentifier}' has no SrvSurvey update package.");
+        }
+    }
+
+    private static HttpClient CreateSharedClient()
+    {
+        var client = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(30),
+        };
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
+        return client;
+    }
+
+    private sealed record ReleaseCandidate(
+        Version Version,
+        Uri ReleaseUri,
+        IReadOnlyList<ReleaseAsset> Assets);
+
+    private sealed record ReleaseAsset(
+        string Name,
+        long Size,
+        Uri DownloadUri);
+}
