@@ -102,6 +102,86 @@ public sealed class ColonizationProjectEditorViewModelTests
     }
 
     [Fact]
+    public async Task ConfirmationRestoresPrimaryOrderWithStoredRavenKey()
+    {
+        var primary = new ColonizationSystemSite
+        {
+            Id = "primary",
+            Name = "Nexus Port",
+            Status = ColonizationSystemSiteStatus.Complete,
+        };
+        var createdSite = new ColonizationSystemSite
+        {
+            Id = "created-site",
+            BuildId = "created-1",
+            MarketId = 42,
+            Name = "Test Project",
+            Status = ColonizationSystemSiteStatus.Build,
+        };
+        var client = new StubRavenColonialClient
+        {
+            SiteResponses = new Queue<IReadOnlyList<ColonizationSystemSite>>(
+            [
+                [primary],
+                [primary],
+                [createdSite, primary],
+                [primary, createdSite],
+            ]),
+        };
+        var editor = Create(client);
+        editor.UpdateContext(ReadyContext() with
+        {
+            RavenApiKey = "secret-key",
+        });
+        await editor.PrepareAsync();
+        editor.SelectedBuild = editor.BuildOptions.Single(option =>
+            option.Build.BuildType == "no_truss");
+        editor.SelectedLayout = "no_truss";
+        await editor.ReviewAsync();
+
+        await editor.ConfirmCreateAsync();
+
+        Assert.Equal(1, client.CreateCount);
+        Assert.Equal("secret-key", client.LastSiteUpdateApiKey);
+        Assert.Equal(
+            ["primary", "created-site"],
+            client.LastSiteUpdate!.OrderedSiteIds);
+        Assert.Empty(client.LastSiteUpdate.UpdatedSites);
+        Assert.Empty(client.LastSiteUpdate.DeletedSiteIds);
+        Assert.Contains("restored", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task ConfirmationWithoutRavenKeyDoesNotRiskExistingPrimary()
+    {
+        var client = new StubRavenColonialClient
+        {
+            Sites =
+            [
+                new ColonizationSystemSite
+                {
+                    Id = "primary",
+                    Name = "Nexus Port",
+                    Status = ColonizationSystemSiteStatus.Complete,
+                },
+            ],
+        };
+        var editor = Create(client);
+        editor.UpdateContext(ReadyContext());
+        await editor.PrepareAsync();
+        editor.SelectedBuild = editor.BuildOptions.Single(option =>
+            option.Build.BuildType == "no_truss");
+        editor.SelectedLayout = "no_truss";
+        await editor.ReviewAsync();
+
+        await editor.ConfirmCreateAsync();
+
+        Assert.Equal(0, client.CreateCount);
+        Assert.Contains("API key", editor.StatusMessage);
+        Assert.Contains("not created", editor.StatusMessage);
+    }
+
+    [Fact]
     public async Task InvalidBodyNumberCannotReachPublishConfirmation()
     {
         var client = new StubRavenColonialClient();
@@ -206,6 +286,12 @@ public sealed class ColonizationProjectEditorViewModelTests
     {
         public IReadOnlyList<ColonizationSystemSite> Sites { get; set; } = [];
 
+        public Queue<IReadOnlyList<ColonizationSystemSite>>? SiteResponses
+        {
+            get;
+            init;
+        }
+
         public string? Architect { get; set; }
 
         public int SiteReadCount { get; private set; }
@@ -215,6 +301,10 @@ public sealed class ColonizationProjectEditorViewModelTests
         public int CreateCount { get; private set; }
 
         public ColonizationProjectCreate? LastCreated { get; private set; }
+
+        public ColonizationSystemSiteUpdate? LastSiteUpdate { get; private set; }
+
+        public string? LastSiteUpdateApiKey { get; private set; }
 
         public Task<ColonizationCommanderProjects> GetCommanderProjectsAsync(
             string commanderName,
@@ -284,7 +374,10 @@ public sealed class ColonizationProjectEditorViewModelTests
             CancellationToken cancellationToken = default)
         {
             SiteReadCount++;
-            return Task.FromResult(Sites);
+            return Task.FromResult(
+                SiteResponses is { Count: > 0 }
+                    ? SiteResponses.Dequeue()
+                    : Sites);
         }
 
         public Task<string?> GetSystemArchitectAsync(
@@ -309,8 +402,16 @@ public sealed class ColonizationProjectEditorViewModelTests
             string systemNameOrAddress,
             ColonizationSystemSiteUpdate update,
             string apiKey,
-            CancellationToken cancellationToken = default) =>
-            throw new NotSupportedException();
+            CancellationToken cancellationToken = default)
+        {
+            LastSiteUpdate = update;
+            LastSiteUpdateApiKey = apiKey;
+            return Task.FromResult(new ColonizationSystemRecord
+            {
+                SystemAddress = 99,
+                Name = "Test System",
+            });
+        }
 
         public Task PatchSystemSiteAsync(
             string systemNameOrAddress,

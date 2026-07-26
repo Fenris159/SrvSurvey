@@ -551,6 +551,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(HasCommanderProfile));
         OnPropertyChanged(nameof(HasStoredRavenApiKey));
         RaiseCommandStates();
+        UpdateProjectEditorContext();
         UpdateSystemEditorContext();
     }
 
@@ -1334,6 +1335,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 ShipCargoPublishingStatus = GetShipCargoReadyStatus();
             }
 
+            UpdateProjectEditorContext();
             UpdateSystemEditorContext();
         }
         catch (Exception exception) when (
@@ -1778,7 +1780,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             currentSystemName,
             currentStarPosition,
             snapshot.CurrentDock,
-            snapshot.CurrentDepot));
+            snapshot.CurrentDepot,
+            storedRavenApiKey));
     }
 
     private void UpdateSystemEditorContext()

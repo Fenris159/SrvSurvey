@@ -11,6 +11,7 @@ public sealed class ColonizationProjectEditorViewModel
     private readonly IRavenColonialClient client;
     private readonly ColonizationBuildCatalog buildCatalog;
     private readonly ColonizationProjectFactory projectFactory;
+    private readonly ColonizationProjectPublisher projectPublisher;
     private readonly Func<ColonizationProject, Task> onCreated;
     private readonly AsyncCommand prepareCommand;
     private readonly AsyncCommand reviewCommand;
@@ -50,6 +51,7 @@ public sealed class ColonizationProjectEditorViewModel
         this.onCreated = onCreated
             ?? throw new ArgumentNullException(nameof(onCreated));
         projectFactory = new ColonizationProjectFactory(this.buildCatalog);
+        projectPublisher = new ColonizationProjectPublisher(this.client);
         Locations = Enum.GetValues<ColonizationBuildLocation>();
         prepareCommand = new AsyncCommand(PrepareAsync, () => CanPrepare);
         reviewCommand = new AsyncCommand(
@@ -495,7 +497,10 @@ public sealed class ColonizationProjectEditorViewModel
         StatusMessage = "Publishing the project to Raven Colonial...";
         try
         {
-            var created = await client.CreateProjectAsync(pendingProject);
+            var result = await projectPublisher.CreateAsync(
+                pendingProject,
+                context.RavenApiKey);
+            var created = result.Project;
             if (created is null)
             {
                 StatusMessage = "Raven Colonial did not create the project. It may already exist.";
@@ -512,11 +517,16 @@ public sealed class ColonizationProjectEditorViewModel
             OnPropertyChanged(nameof(CreatedProjectSummary));
             OnPropertyChanged(nameof(CreatedProjectId));
             await onCreated(created);
-            StatusMessage = $"Created {created.BuildName}. It was added to the active project list.";
+            StatusMessage = result.Warning
+                ?? (result.PrimarySiteOrderStatus
+                    == ColonizationPrimarySiteOrderStatus.Restored
+                    ? $"Created {created.BuildName} and restored the existing primary port to the first position."
+                    : $"Created {created.BuildName}. It was added to the active project list.");
         }
         catch (Exception exception) when (
             exception is HttpRequestException
                 or InvalidDataException
+                or InvalidOperationException
                 or TaskCanceledException)
         {
             StatusMessage = "The project was not created: " + exception.Message;
@@ -794,13 +804,15 @@ public sealed record ColonizationProjectEditorContext(
     string? SystemName,
     IReadOnlyList<double> StarPosition,
     ColonizationDockingSnapshot? Dock,
-    ColonizationConstructionDepotSnapshot? Depot)
+    ColonizationConstructionDepotSnapshot? Depot,
+    string? RavenApiKey = null)
 {
     public static ColonizationProjectEditorContext Unavailable { get; } = new(
         false,
         null,
         null,
         [],
+        null,
         null,
         null);
 }
