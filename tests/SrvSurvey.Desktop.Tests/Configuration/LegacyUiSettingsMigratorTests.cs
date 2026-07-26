@@ -31,6 +31,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "showPlotJumpInfoIfNextHop": true,
               "autoShowPlotGalMap": false,
               "galMapFactions": false,
+              "hideJournalWriteTimer": true,
               "autoShowPlotBodyInfo": false,
               "bodyInfoBubbleSize": 321,
               "highGravityWarningLevel": 2.75,
@@ -155,6 +156,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new GalaxyMapPreferences(false, false),
             new GalaxyMapSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            new PulseOverlayPreferences(false),
+            new PulseOverlaySettingsStore(paths.UiSettingsPath).Load());
 
         var survey = new SystemSurveySettingsStore(paths.UiSettingsPath).Load();
         Assert.False(survey.AutoShowBodyInfo);

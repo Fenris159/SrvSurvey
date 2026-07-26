@@ -130,7 +130,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         StreamOverlaySettingsStore? streamOverlaySettingsStore = null,
         VrOverlaySettingsStore? vrOverlaySettingsStore = null,
         VrOverlayCalibrationStore? vrOverlayCalibrationStore = null,
-        GalaxyMapSettingsStore? galaxyMapSettingsStore = null)
+        GalaxyMapSettingsStore? galaxyMapSettingsStore = null,
+        PulseOverlaySettingsStore? pulseOverlaySettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -176,6 +177,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Notifications = new NotificationViewModel(
             notificationSettingsStore
                 ?? new NotificationSettingsStore(AppDataPaths.UiSettingsPath));
+        PulseOverlay = new PulseOverlayViewModel(
+            pulseOverlaySettingsStore
+                ?? new PulseOverlaySettingsStore(AppDataPaths.UiSettingsPath));
         StreamOverlay = new StreamOverlayViewModel(
             streamOverlaySettingsStore
                 ?? new StreamOverlaySettingsStore(AppDataPaths.UiSettingsPath));
@@ -442,6 +446,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public ScreenshotProcessingViewModel ScreenshotProcessing { get; }
 
     public NotificationViewModel Notifications { get; }
+
+    public PulseOverlayViewModel PulseOverlay { get; }
 
     public StreamOverlayViewModel StreamOverlay { get; }
 
@@ -1343,6 +1349,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Notifications.ApplyJournalEvents(
             update.JournalEvents,
             allowNotifications: !update.IsBootstrapRead);
+        PulseOverlay.ApplyUpdate(
+            update.JournalEvents,
+            update.Status,
+            update.IsBootstrapRead);
         Notifications.ReportBoxelUpdate(
             boxelBefore,
             BoxelSearch.CreateNotificationState(),

@@ -22,6 +22,7 @@ public static class OverlayLayoutCatalog
         Define("PlotMassacre", "Massacre missions", LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8),
         Define("PlotMiniTrack", "Mini tracker", LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8),
         Define("PlotPriorScans", "Prior scans", LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0),
+        Define("PlotPulse", "Journal activity and SCO status", LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Bottom, 8),
         Define("PlotRamTah", "Ram Tah guidance", LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Middle, 0),
         Define("PlotSphericalSearch", "Spherical search", LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8),
         Define("PlotStationInfo", "Station information", LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0),

@@ -289,6 +289,23 @@
       </Border>
 
       <Border Classes="card raised">
+        <StackPanel Spacing="10">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Journal activity and SCO status" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Show the legacy ten-second journal/status pulse and the Supercruise Overdrive cooldown indicator." />
+          </StackPanel>
+          <CheckBox IsChecked="{Binding PulseOverlay.Enabled, Mode=TwoWay}"
+                    Content="Show the PlotPulse overlay" />
+          <TextBlock IsVisible="{Binding PulseOverlay.HasSettingsStatus}"
+                     Foreground="{DynamicResource RavenWarningBrush}"
+                     Text="{Binding PulseOverlay.SettingsStatus}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
         <StackPanel Spacing="14">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Overlay positions" />

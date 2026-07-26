@@ -30,6 +30,7 @@ public sealed partial class App : Application
     private SystemSurveyOverlayCoordinator? systemSurveyOverlayCoordinator;
     private QuestIndicatorOverlayCoordinator? questIndicatorOverlayCoordinator;
     private NotificationOverlayCoordinator? notificationOverlayCoordinator;
+    private PulseOverlayCoordinator? pulseOverlayCoordinator;
     private StreamOverlayCoordinator? streamOverlayCoordinator;
     private VrOverlayCoordinator? vrOverlayCoordinator;
     private GalaxyMapOverlayCoordinator? galaxyMapOverlayCoordinator;
@@ -243,6 +244,11 @@ public sealed partial class App : Application
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent(),
                 overlayLayout);
+            pulseOverlayCoordinator = new PulseOverlayCoordinator(
+                viewModel.PulseOverlay,
+                OverlayPlatformService.CreateCurrent(),
+                GameWindowTracker.CreateCurrent(),
+                overlayLayout);
             streamOverlayCoordinator = new StreamOverlayCoordinator(
                 viewModel.StreamOverlay,
                 OverlayPlatformService.CreateCurrent(),
@@ -388,7 +394,8 @@ public sealed partial class App : Application
                                 || colonizationCommodityOverlayCoordinator
                                     ?.IsVisible == true
                                 || questIndicatorOverlayCoordinator?.IsVisible == true
-                                || notificationOverlayCoordinator?.IsVisible == true;
+                                || notificationOverlayCoordinator?.IsVisible == true
+                                || pulseOverlayCoordinator?.IsVisible == true;
                             jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
                             systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
                             groundTargetOverlayCoordinator?.SetSuppressed(suppress);
@@ -401,6 +408,7 @@ public sealed partial class App : Application
                                 ?.SetSuppressed(suppress);
                             questIndicatorOverlayCoordinator?.SetSuppressed(suppress);
                             notificationOverlayCoordinator?.SetSuppressed(suppress);
+                            pulseOverlayCoordinator?.SetSuppressed(suppress);
                             handled = true;
                             break;
 
@@ -631,6 +639,8 @@ public sealed partial class App : Application
                 questIndicatorOverlayCoordinator = null;
                 notificationOverlayCoordinator?.Dispose();
                 notificationOverlayCoordinator = null;
+                pulseOverlayCoordinator?.Dispose();
+                pulseOverlayCoordinator = null;
                 streamOverlayCoordinator?.Dispose();
                 streamOverlayCoordinator = null;
                 vrOverlayCoordinator?.Dispose();

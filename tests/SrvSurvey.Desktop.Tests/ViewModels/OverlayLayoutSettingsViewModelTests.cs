@@ -99,7 +99,7 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
                 24,
                 null),
             notification.Placement);
-        Assert.Equal(23, viewModel.Overlays.Count);
+        Assert.Equal(24, viewModel.Overlays.Count);
         Assert.Equal(
             new LegacyOverlayPlacement(
                 LegacyHorizontalAnchor.Left,
@@ -109,6 +109,15 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
                 null),
             viewModel.Overlays.Single(
                 overlay => overlay.Name == "PlotGalMap").Placement);
+        Assert.Equal(
+            new LegacyOverlayPlacement(
+                LegacyHorizontalAnchor.Left,
+                8,
+                LegacyVerticalAnchor.Bottom,
+                8,
+                null),
+            viewModel.Overlays.Single(
+                overlay => overlay.Name == "PlotPulse").Placement);
     }
 
     [Fact]

@@ -59,6 +59,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("autoShowPlotGalMap", "AutoShow"),
                     ("galMapFactions", "ShowFactions"),
                 ]);
+                mappedCount += MapPulseOverlay(legacy, root);
                 mappedCount += MapSection(legacy, root, "SystemSurvey",
                 [
                     ("autoShowPlotBodyInfo", "AutoShowBodyInfo"),
@@ -372,6 +373,17 @@ public sealed class LegacyUiSettingsMigrator
         }
 
         return count;
+    }
+
+    private static int MapPulseOverlay(JsonObject legacy, JsonObject target)
+    {
+        if (!TryGetBoolean(legacy, "hideJournalWriteTimer", out var hidden))
+        {
+            return 0;
+        }
+
+        GetOrCreateObject(target, "PulseOverlay")["Enabled"] = !hidden;
+        return 1;
     }
 
     private static int MapSection(
