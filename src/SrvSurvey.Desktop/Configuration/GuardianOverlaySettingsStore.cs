@@ -55,7 +55,15 @@ public sealed class GuardianOverlaySettingsStore
             GetBoolean(
                 settings,
                 "DisableAerialAlignmentGrid",
-                defaults.DisableAerialAlignmentGrid));
+                defaults.DisableAerialAlignmentGrid),
+            GetBoolean(
+                settings,
+                "ShowMapNotes",
+                defaults.ShowMapNotes),
+            GetBoolean(
+                settings,
+                "ShowMapLegend",
+                defaults.ShowMapLegend));
     }
 
     public void Save(GuardianOverlayPreferences preferences)
@@ -91,6 +99,8 @@ public sealed class GuardianOverlaySettingsStore
                 preferences.DisableRuinsMeasurementGrid;
             settings["DisableAerialAlignmentGrid"] =
                 preferences.DisableAerialAlignmentGrid;
+            settings["ShowMapNotes"] = preferences.ShowMapNotes;
+            settings["ShowMapLegend"] = preferences.ShowMapLegend;
         });
     }
 
@@ -127,7 +137,9 @@ public sealed record GuardianOverlayPreferences(
     bool ShowComponentMaterials,
     int OverlaySizeIndex,
     bool DisableRuinsMeasurementGrid,
-    bool DisableAerialAlignmentGrid)
+    bool DisableAerialAlignmentGrid,
+    bool ShowMapNotes = true,
+    bool ShowMapLegend = true)
 {
     public static GuardianOverlayPreferences Default { get; } = new(
         EnableGuardianSites: true,
@@ -139,5 +151,7 @@ public sealed record GuardianOverlayPreferences(
         ShowComponentMaterials: false,
         OverlaySizeIndex: 0,
         DisableRuinsMeasurementGrid: false,
-        DisableAerialAlignmentGrid: false);
+        DisableAerialAlignmentGrid: false,
+        ShowMapNotes: true,
+        ShowMapLegend: true);
 }

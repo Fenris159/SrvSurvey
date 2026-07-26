@@ -369,6 +369,7 @@
               <controls:GuardianSiteMapControl
                   Height="640"
                   Projection="{Binding Guardian.MapProjection}"
+                  ShowLegend="{Binding Guardian.ShowMapLegend}"
                   MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
                   GridBrush="{DynamicResource RavenBorderBrush}"
                   AccentBrush="{DynamicResource RavenAccentBrush}"
@@ -391,6 +392,22 @@
                   <TextBlock Classes="muted"
                              TextWrapping="Wrap"
                              Text="{Binding Guardian.MapStatus}" />
+                  <WrapPanel Orientation="Horizontal">
+                    <CheckBox Margin="0,0,14,0"
+                              IsChecked="{Binding Guardian.ShowMapLegend, Mode=TwoWay}"
+                              Content="Show legend" />
+                    <CheckBox IsChecked="{Binding Guardian.ShowMapNotes, Mode=TwoWay}"
+                              Content="Show notes" />
+                  </WrapPanel>
+                </StackPanel>
+              </Border>
+
+              <Border Classes="card"
+                      IsVisible="{Binding Guardian.ShouldShowMapNotes}">
+                <StackPanel Spacing="5">
+                  <TextBlock Classes="eyebrow" Text="COMMANDER NOTES" />
+                  <TextBlock Text="{Binding Guardian.SelectedSite.Notes}"
+                             TextWrapping="Wrap" />
                 </StackPanel>
               </Border>
 

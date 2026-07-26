@@ -712,6 +712,10 @@
                         Content="Zoom in while using the SRV turret" />
               <CheckBox IsChecked="{Binding Guardian.ShowComponentMaterials, Mode=TwoWay}"
                         Content="Track Guardian component materials" />
+              <CheckBox IsChecked="{Binding Guardian.ShowMapLegend, Mode=TwoWay}"
+                        Content="Show the survey-map legend" />
+              <CheckBox IsChecked="{Binding Guardian.ShowMapNotes, Mode=TwoWay}"
+                        Content="Show commander notes beside survey maps" />
               <TextBlock Classes="muted"
                          FontSize="11"
                          TextWrapping="Wrap"

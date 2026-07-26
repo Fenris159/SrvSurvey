@@ -46,6 +46,10 @@ public sealed class GuardianSiteMapControl : Control
     public static readonly StyledProperty<IBrush?> EmptyBrushProperty =
         AvaloniaProperty.Register<GuardianSiteMapControl, IBrush?>(
             nameof(EmptyBrush));
+    public static readonly StyledProperty<bool> ShowLegendProperty =
+        AvaloniaProperty.Register<GuardianSiteMapControl, bool>(
+            nameof(ShowLegend),
+            true);
 
     static GuardianSiteMapControl()
     {
@@ -61,7 +65,8 @@ public sealed class GuardianSiteMapControl : Control
             MutedBrushProperty,
             PresentBrushProperty,
             AbsentBrushProperty,
-            EmptyBrushProperty);
+            EmptyBrushProperty,
+            ShowLegendProperty);
     }
 
     public GuardianSiteMapProjection? Projection
@@ -134,6 +139,12 @@ public sealed class GuardianSiteMapControl : Control
     {
         get => GetValue(EmptyBrushProperty);
         set => SetValue(EmptyBrushProperty, value);
+    }
+
+    public bool ShowLegend
+    {
+        get => GetValue(ShowLegendProperty);
+        set => SetValue(ShowLegendProperty, value);
     }
 
     public override void Render(DrawingContext context)
@@ -248,6 +259,20 @@ public sealed class GuardianSiteMapControl : Control
         {
             DrawCommander(context, viewportCenter);
         }
+
+        if (ShowLegend)
+        {
+            DrawLegend(context, projection);
+        }
+    }
+
+    public static IReadOnlyList<string> CreateLegendLabels(
+        GuardianSiteMapProjection projection)
+    {
+        ArgumentNullException.ThrowIfNull(projection);
+        return CreateLegendEntries(projection)
+            .Select(entry => entry.Label)
+            .ToArray();
     }
 
     public static Point TransformMapPoint(
@@ -286,6 +311,146 @@ public sealed class GuardianSiteMapControl : Control
         var pen = new Pen(brush, 2);
         context.DrawEllipse(MapBackground, pen, location, 7, 7);
         context.DrawEllipse(brush, null, location, 2.5, 2.5);
+    }
+
+    private void DrawLegend(
+        DrawingContext context,
+        GuardianSiteMapProjection projection)
+    {
+        var entries = CreateLegendEntries(projection);
+        const double rowHeight = 17;
+        const double width = 156;
+        var height = 28 + entries.Count * rowHeight;
+        var panel = new Rect(12, 12, width, height);
+        context.DrawRectangle(
+            MapBackground ?? Brushes.Black,
+            new Pen(GridBrush ?? Brushes.Gray, 1),
+            panel,
+            5,
+            5);
+        context.DrawText(
+            CreateLegendText("Legend", FontWeight.Bold),
+            new Point(22, 18));
+        for (var index = 0; index < entries.Count; index++)
+        {
+            var entry = entries[index];
+            var center = new Point(28, 45 + index * rowHeight);
+            DrawLegendSymbol(context, center, entry);
+            context.DrawText(
+                CreateLegendText(entry.Label, FontWeight.Normal),
+                new Point(42, center.Y - 7));
+        }
+    }
+
+    private void DrawLegendSymbol(
+        DrawingContext context,
+        Point center,
+        GuardianMapLegendEntry entry)
+    {
+        var accent = AccentBrush ?? Brushes.Cyan;
+        if (entry.Kind == GuardianMapLegendKind.SiteHeading)
+        {
+            context.DrawLine(
+                new Pen(accent, 2),
+                new Point(center.X - 6, center.Y + 5),
+                new Point(center.X + 5, center.Y - 6));
+            return;
+        }
+
+        if (entry.Kind == GuardianMapLegendKind.TowerHeading)
+        {
+            context.DrawLine(
+                new Pen(EmptyBrush ?? Brushes.Goldenrod, 2),
+                new Point(center.X - 6, center.Y + 5),
+                new Point(center.X + 5, center.Y - 6));
+            return;
+        }
+
+        if (entry.Kind == GuardianMapLegendKind.SurveyNeeded)
+        {
+            context.DrawEllipse(
+                null,
+                new Pen(accent, 1.5, dashStyle: DashStyle.Dot),
+                center,
+                7,
+                7);
+            return;
+        }
+
+        DrawPoint(
+            context,
+            new GuardianProjectedPoint(
+                entry.Label,
+                entry.Type,
+                0,
+                0,
+                0,
+                0,
+                0,
+                entry.Status,
+                false,
+                false,
+                string.Empty,
+                []),
+            center);
+    }
+
+    private FormattedText CreateLegendText(
+        string text,
+        FontWeight weight)
+    {
+        return new FormattedText(
+            text,
+            CultureInfo.InvariantCulture,
+            FlowDirection.LeftToRight,
+            new Typeface("Inter", FontStyle.Normal, weight),
+            11,
+            MutedBrush ?? Brushes.Wheat);
+    }
+
+    private static IReadOnlyList<GuardianMapLegendEntry> CreateLegendEntries(
+        GuardianSiteMapProjection projection)
+    {
+        var entries = new List<GuardianMapLegendEntry>
+        {
+            new("Relic tower", GuardianPoiType.Relic),
+            new("Orb", GuardianPoiType.Orb),
+            new("Casket", GuardianPoiType.Casket),
+            new("Tablet", GuardianPoiType.Tablet),
+            new("Totem", GuardianPoiType.Totem),
+            new("Urn", GuardianPoiType.Urn),
+            new("Empty puddle", GuardianPoiType.EmptyPuddle, GuardianPoiStatus.Empty),
+            new("Obelisk", GuardianPoiType.Obelisk),
+        };
+        if (projection.Points.Any(point => point.Type == GuardianPoiType.Pylon))
+        {
+            entries.Add(new GuardianMapLegendEntry(
+                "Energy pylon",
+                GuardianPoiType.Pylon));
+        }
+
+        if (projection.Points.Any(point => point.Type
+                is GuardianPoiType.Component
+                    or GuardianPoiType.DestructiblePanel))
+        {
+            entries.Add(new GuardianMapLegendEntry(
+                "Component tower",
+                GuardianPoiType.Component));
+        }
+
+        entries.Add(new GuardianMapLegendEntry(
+            "Site heading",
+            GuardianPoiType.Unknown,
+            Kind: GuardianMapLegendKind.SiteHeading));
+        entries.Add(new GuardianMapLegendEntry(
+            "Tower heading",
+            GuardianPoiType.Unknown,
+            Kind: GuardianMapLegendKind.TowerHeading));
+        entries.Add(new GuardianMapLegendEntry(
+            "Survey needed",
+            GuardianPoiType.Unknown,
+            Kind: GuardianMapLegendKind.SurveyNeeded));
+        return entries;
     }
 
     private void DrawPoint(
@@ -514,5 +679,19 @@ public sealed class GuardianSiteMapControl : Control
         }
 
         return geometry;
+    }
+
+    private sealed record GuardianMapLegendEntry(
+        string Label,
+        GuardianPoiType Type,
+        GuardianPoiStatus Status = GuardianPoiStatus.Present,
+        GuardianMapLegendKind Kind = GuardianMapLegendKind.Point);
+
+    private enum GuardianMapLegendKind
+    {
+        Point,
+        SiteHeading,
+        TowerHeading,
+        SurveyNeeded,
     }
 }

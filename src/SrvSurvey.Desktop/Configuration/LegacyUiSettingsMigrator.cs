@@ -147,6 +147,8 @@ public sealed class LegacyUiSettingsMigrator
                     ("idxGuardianPlotter", "OverlaySizeIndex"),
                     ("disableRuinsMeasurementGrid", "DisableRuinsMeasurementGrid"),
                     ("disableAerialAlignmentGrid", "DisableAerialAlignmentGrid"),
+                    ("mapShowNotes", "ShowMapNotes"),
+                    ("mapShowLegend", "ShowMapLegend"),
                 ]);
                 mappedCount += MapSection(legacy, root, "HumanSite",
                 [

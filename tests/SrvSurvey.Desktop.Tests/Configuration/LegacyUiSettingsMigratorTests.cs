@@ -73,6 +73,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "idxGuardianPlotter": 3,
               "disableRuinsMeasurementGrid": true,
               "disableAerialAlignmentGrid": true,
+              "mapShowNotes": false,
+              "mapShowLegend": false,
               "autoShowHumanSitesTest": false,
               "plotHumanSiteWidth": 720,
               "plotHumanSiteHeight": 640,
@@ -215,7 +217,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
                 true,
                 3,
                 true,
-                true),
+                true,
+                false,
+                false),
             new GuardianOverlaySettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new HumanSitePreferences(

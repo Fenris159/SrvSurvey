@@ -85,4 +85,51 @@ public sealed class GuardianSiteMapControlTests
                 new Point(10, 10),
                 double.NaN));
     }
+
+    [Fact]
+    public void LegendRetainsLegacyLabelsAndAddsStructureMarkersWhenPresent()
+    {
+        var ruins = new GuardianSiteMapProjection("Alpha", [], [], 1);
+        var structure = new GuardianSiteMapProjection(
+            "Lacrosse",
+            [
+                Point("P1", GuardianPoiType.Pylon),
+                Point("C1", GuardianPoiType.Component),
+            ],
+            [],
+            1);
+
+        var ruinsLabels = GuardianSiteMapControl.CreateLegendLabels(ruins);
+        var structureLabels = GuardianSiteMapControl.CreateLegendLabels(structure);
+
+        Assert.Contains("Relic tower", ruinsLabels);
+        Assert.Contains("Empty puddle", ruinsLabels);
+        Assert.Contains("Obelisk", ruinsLabels);
+        Assert.Contains("Site heading", ruinsLabels);
+        Assert.Contains("Tower heading", ruinsLabels);
+        Assert.Contains("Survey needed", ruinsLabels);
+        Assert.DoesNotContain("Energy pylon", ruinsLabels);
+        Assert.DoesNotContain("Component tower", ruinsLabels);
+        Assert.Contains("Energy pylon", structureLabels);
+        Assert.Contains("Component tower", structureLabels);
+    }
+
+    private static GuardianProjectedPoint Point(
+        string name,
+        GuardianPoiType type)
+    {
+        return new GuardianProjectedPoint(
+            name,
+            type,
+            0,
+            0,
+            0,
+            0,
+            0,
+            GuardianPoiStatus.Present,
+            false,
+            false,
+            string.Empty,
+            []);
+    }
 }

@@ -25,6 +25,8 @@ public sealed class GuardianOverlaySettingsStoreTests : IDisposable
         Assert.Equal(0, store.Load().OverlaySizeIndex);
         Assert.False(store.Load().DisableRuinsMeasurementGrid);
         Assert.False(store.Load().DisableAerialAlignmentGrid);
+        Assert.True(store.Load().ShowMapNotes);
+        Assert.True(store.Load().ShowMapLegend);
     }
 
     [Fact]
@@ -46,7 +48,9 @@ public sealed class GuardianOverlaySettingsStoreTests : IDisposable
             ShowComponentMaterials: true,
             OverlaySizeIndex: 4,
             DisableRuinsMeasurementGrid: true,
-            DisableAerialAlignmentGrid: true);
+            DisableAerialAlignmentGrid: true,
+            ShowMapNotes: false,
+            ShowMapLegend: false);
         store.Save(expected);
 
         Assert.Equal(expected, store.Load());

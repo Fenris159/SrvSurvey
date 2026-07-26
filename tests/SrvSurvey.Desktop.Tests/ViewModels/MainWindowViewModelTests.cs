@@ -212,7 +212,9 @@ public sealed class MainWindowViewModelTests
                 ShowComponentMaterials: true,
                 OverlaySizeIndex: 3,
                 DisableRuinsMeasurementGrid: true,
-                DisableAerialAlignmentGrid: false));
+                DisableAerialAlignmentGrid: false,
+                ShowMapNotes: false,
+                ShowMapLegend: false));
 
             var viewModel = new MainWindowViewModel(
                 Path.Combine(root, "missing-journals"),
@@ -232,6 +234,8 @@ public sealed class MainWindowViewModelTests
             Assert.True(viewModel.Guardian.ShowComponentMaterials);
             Assert.False(viewModel.Guardian.ShowRuinsMeasurementGrid);
             Assert.True(viewModel.Guardian.ShowAerialAlignmentGrid);
+            Assert.False(viewModel.Guardian.ShowMapNotes);
+            Assert.False(viewModel.Guardian.ShowMapLegend);
             Assert.Equal(800, viewModel.Guardian.PreferredOverlayWidth);
             Assert.Equal(1_000, viewModel.Guardian.PreferredOverlayHeight);
         }

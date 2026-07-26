@@ -85,6 +85,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private bool showComponentMaterials;
     private bool showRuinsMeasurementGrid;
     private bool showAerialAlignmentGrid;
+    private bool showMapNotes;
+    private bool showMapLegend;
     private GuardianOverlaySizeOption selectedOverlaySize;
     private bool automaticMapZoom = true;
     private double activeMapScale = 1;
@@ -133,6 +135,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             !overlayPreferences.DisableRuinsMeasurementGrid;
         showAerialAlignmentGrid =
             !overlayPreferences.DisableAerialAlignmentGrid;
+        showMapNotes = overlayPreferences.ShowMapNotes;
+        showMapLegend = overlayPreferences.ShowMapLegend;
         selectedOverlaySize = OverlaySizes[overlayPreferences.OverlaySizeIndex];
         if (this.ramTah is not null)
         {
@@ -401,6 +405,33 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             {
                 SaveOverlayPreferences();
                 NotifyGuardianGuidanceChanged();
+            }
+        }
+    }
+
+    public bool ShowMapNotes
+    {
+        get => showMapNotes;
+        set
+        {
+            if (SetField(ref showMapNotes, value))
+            {
+                SaveOverlayPreferences();
+                OnPropertyChanged(nameof(ShouldShowMapNotes));
+            }
+        }
+    }
+
+    public bool ShouldShowMapNotes => ShowMapNotes && HasSelectedSite;
+
+    public bool ShowMapLegend
+    {
+        get => showMapLegend;
+        set
+        {
+            if (SetField(ref showMapLegend, value))
+            {
+                SaveOverlayPreferences();
             }
         }
     }
@@ -680,6 +711,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             {
                 OnPropertyChanged(nameof(HasSelectedSite));
                 OnPropertyChanged(nameof(HasSelectedSurvey));
+                OnPropertyChanged(nameof(ShouldShowMapNotes));
                 OnPropertyChanged(nameof(SelectedCanonnUri));
                 OnPropertyChanged(nameof(SelectedSpanshUri));
                 OnPropertyChanged(nameof(SelectedEdsmUri));
@@ -2261,7 +2293,9 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 ShowComponentMaterials,
                 SelectedOverlaySize.Index,
                 DisableRuinsMeasurementGrid: !ShowRuinsMeasurementGrid,
-                DisableAerialAlignmentGrid: !ShowAerialAlignmentGrid));
+                DisableAerialAlignmentGrid: !ShowAerialAlignmentGrid,
+                ShowMapNotes,
+                ShowMapLegend));
             OverlaySettingsStatus = string.Empty;
         }
         catch (Exception exception) when (
