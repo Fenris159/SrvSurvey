@@ -30,6 +30,18 @@ public sealed record ReleaseInstallationResult(
     string? FailedDirectory,
     string? Error);
 
+public interface IReleaseInstallationPreparer
+{
+    Task<ReleaseInstallationPreparation> PrepareAsync(
+        Version version,
+        string runtimeIdentifier,
+        string readyDirectory,
+        string manifestSha256,
+        string installationDirectory,
+        IReadOnlyList<string> startupArguments,
+        CancellationToken cancellationToken = default);
+}
+
 internal enum ReleaseInstallationCheckpoint
 {
     BeforeBackup,
@@ -37,7 +49,7 @@ internal enum ReleaseInstallationCheckpoint
     CandidateActivated,
 }
 
-public sealed class ReleaseInstallationPreparer
+public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
 {
     private const int MaximumInstallationFileCount = 16_384;
     private const long MaximumInstallationBytes = 4L * 1024 * 1024 * 1024;

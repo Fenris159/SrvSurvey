@@ -8,6 +8,7 @@ using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Settlements;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Core.Updates;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform;
@@ -216,6 +217,16 @@ public sealed partial class App : Application
                 RestartApplicationAsync("Published reference data refreshed"));
             viewModel.Localization.SetRestartHandler(() =>
                 RestartApplicationAsync("Language preference changed"));
+            viewModel.ReleaseUpdates.ConfigureInstaller(
+                new ReleasePackageDownloadService(),
+                new ReleasePackageStagingService(),
+                new ReleaseInstallationPreparer(),
+                new ApplicationUpdateHandoffService(),
+                appDataPaths.DataDirectory,
+                AppContext.BaseDirectory,
+                Program.StartupArguments,
+                async () => await Dispatcher.UIThread.InvokeAsync(
+                    () => desktop.Shutdown()));
 
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested +=

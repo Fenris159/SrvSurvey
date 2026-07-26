@@ -63,7 +63,30 @@
                     IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
                     Command="{Binding ReleaseUpdates.OpenReleaseCommand}"
                     Content="Open releases" />
+            <Button Classes="primary"
+                    Margin="8,0,0,8"
+                    IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
+                    Command="{Binding ReleaseUpdates.InstallCommand}"
+                    Content="{Binding ReleaseUpdates.InstallButtonText}" />
           </WrapPanel>
+
+          <CheckBox IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
+                    IsEnabled="{Binding ReleaseUpdates.CanInstallCurrentInstallation}"
+                    IsChecked="{Binding ReleaseUpdates.InstallConfirmed, Mode=TwoWay}"
+                    Content="I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails." />
+          <TextBlock Classes="muted"
+                     IsVisible="{Binding ReleaseUpdates.ShowInstallUnavailable}"
+                     TextWrapping="Wrap"
+                     Text="Automatic replacement is disabled because this copy was not launched from a checksum-indexed release package. Open the releases page to install manually." />
+          <ProgressBar IsVisible="{Binding ReleaseUpdates.IsInstalling}"
+                       Minimum="0"
+                       Maximum="100"
+                       Value="{Binding ReleaseUpdates.InstallProgressPercent}" />
+          <TextBlock Classes="monospace muted"
+                     IsVisible="{Binding ReleaseUpdates.IsInstalling}"
+                     FontSize="11"
+                     TextWrapping="Wrap"
+                     Text="{Binding ReleaseUpdates.InstallProgressText}" />
 
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"

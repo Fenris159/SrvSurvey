@@ -17,6 +17,7 @@ internal sealed record ApplicationUpdateStartup(
     IReadOnlyList<string> ApplicationArguments);
 
 public sealed class ApplicationUpdateHandoffService
+    : IApplicationUpdateHandoffService
 {
     private readonly ReleaseInstallationPlanStore planStore;
     private readonly Func<ProcessStartInfo, Process?> startProcess;
@@ -85,6 +86,15 @@ public sealed class ApplicationUpdateHandoffService
             },
         };
     }
+}
+
+public interface IApplicationUpdateHandoffService
+{
+    Task<ReleaseInstallationHandoffPlan> StartHelperAsync(
+        string dataDirectory,
+        ReleaseInstallationPreparation preparation,
+        string stagedEntryPoint,
+        CancellationToken cancellationToken = default);
 }
 
 internal static class ApplicationUpdateBootstrap

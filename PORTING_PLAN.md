@@ -582,7 +582,11 @@ UI tests where practical, and live Windows/Linux evidence.
   arguments removed from normal option parsing, and requires token-bound health
   confirmation after Avalonia initialization. A crash or 60-second timeout stops
   the replacement before rollback and relaunch of the verified old build; a
-  still-running parent aborts without starting a duplicate. User consent/status,
+  still-running parent aborts without starting a duplicate. Diagnostics now
+  exposes this pipeline only after an explicit close/verify/rollback consent,
+  reports byte progress and every guarded phase, disables replacement for local
+  or unpackaged folders without `release-package.json`, and leaves the releases
+  link available for manual installation. Persisted post-restart outcome display,
   final packaged process testing, and the remaining network audit keep this phase
   open.
   The legacy regional-Codex Google Sheet now refreshes on the original
