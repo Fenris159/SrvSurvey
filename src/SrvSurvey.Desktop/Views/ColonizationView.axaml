@@ -63,7 +63,7 @@
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="The API key is validated against the active commander before it is stored in that commander profile. When sync is enabled, only cargo counts from a freshly opened market on a linked Fleet Carrier are sent to Raven Colonial." />
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
               <TextBox Text="{Binding Colonization.RavenApiKey, Mode=TwoWay}"
                        PasswordChar="*"
                        IsEnabled="{Binding Colonization.HasCommanderProfile}"
@@ -72,6 +72,10 @@
                       Classes="secondary"
                       Command="{Binding Colonization.SaveRavenApiKeyCommand}"
                       Content="Save key" />
+              <Button Grid.Column="2"
+                      Classes="secondary"
+                      Click="OpenRavenApiKeyPage_Click"
+                      Content="Get API key" />
             </Grid>
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
@@ -161,7 +165,7 @@
         </Expander.Header>
         <Border Margin="0,12,0,0" Classes="card">
           <StackPanel Spacing="16">
-            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="10">
               <StackPanel Spacing="3">
                 <TextBlock Classes="eyebrow" Text="SYSTEM EDITOR" />
                 <TextBlock Classes="card-title"
@@ -179,9 +183,14 @@
               <Button Grid.Column="2"
                       Classes="secondary"
                       VerticalAlignment="Center"
+                      Click="OpenRavenVisualizer_Click"
+                      Content="Visualizer" />
+              <Button Grid.Column="3"
+                      Classes="secondary"
+                      VerticalAlignment="Center"
                       Click="OpenRavenUpdaterGuide_Click"
                       Content="Guide" />
-              <Button Grid.Column="3"
+              <Button Grid.Column="4"
                       Classes="primary"
                       VerticalAlignment="Center"
                       Command="{Binding Colonization.SystemEditor.LoadCommand}"

@@ -646,6 +646,14 @@ UI tests where practical, and live Windows/Linux evidence.
   Codex BodyID is sent. Requests and response details are bounded, a failed or
   schema-invalid message is never retried automatically, later events remain
   independent, and all failures are isolated from journal processing.
+  The legacy Raven launch actions are restored as cross-platform desktop links:
+  API-key acquisition, Green Gas Giant documentation, the active system page,
+  and the system visualizer now open through Avalonia's platform launcher with
+  contained failure reporting. A tagged-control audit accounts for all 133
+  original Settings options: 126 translate directly, while the seven remaining
+  WinForms implementation switches are either superseded by native separate,
+  click-through Avalonia overlays or already consumed losslessly from imported
+  overlay/Journey settings.
 - [ ] Localization review for every migrated surface.
 
 Features may be explicitly deferred, but the release notes and UI must identify

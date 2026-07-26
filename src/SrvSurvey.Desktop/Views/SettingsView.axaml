@@ -1611,6 +1611,10 @@
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="When enabled, matching live Scan journal events include commander name, system coordinates, and the original scan payload. Startup history is never uploaded." />
+              <Button Classes="secondary"
+                      HorizontalAlignment="Left"
+                      Click="OpenGreenGasGiantGuide_Click"
+                      Content="Open Green Gas Giant guide" />
             </StackPanel>
           </Grid>
           <Separator />
@@ -1626,6 +1630,9 @@
                      IsVisible="{Binding NetworkPrivacy.HasStatusMessage}"
                      TextWrapping="Wrap"
                      Text="{Binding NetworkPrivacy.StatusMessage}" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding SettingsLinkStatusMessage}" />
         </StackPanel>
       </Border>
 

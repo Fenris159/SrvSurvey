@@ -75,6 +75,26 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void SettingsLinkResultReportsSuccessAndFailureWithoutChangingData()
+    {
+        var viewModel = new MainWindowViewModel(
+            Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
+
+        viewModel.ReportSettingsLinkResult("the guide", true);
+        Assert.Equal(
+            "Opened the guide in the default browser.",
+            viewModel.SettingsLinkStatusMessage);
+
+        viewModel.ReportSettingsLinkResult(
+            "the guide",
+            false,
+            "No launcher");
+        Assert.Equal(
+            "Could not open the guide: No launcher",
+            viewModel.SettingsLinkStatusMessage);
+    }
+
+    [Fact]
     public void ImportedReadOnlyReferenceCachesActivateWithoutBeingRewritten()
     {
         var root = Path.Combine(

@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using SrvSurvey.Core.Colonization;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
@@ -121,6 +122,41 @@ public sealed partial class SettingsView : UserControl
                 AllowMultiple = false,
             });
         return folders.FirstOrDefault()?.Path.LocalPath;
+    }
+
+    private async void OpenGreenGasGiantGuide_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        await OpenSettingsUriAsync(
+            new Uri(RavenColonialClient.WebsiteUri, "#ggg"),
+            "the Raven Colonial Green Gas Giant guide");
+    }
+
+    private async Task OpenSettingsUriAsync(Uri uri, string description)
+    {
+        if (DataContext is not MainWindowViewModel viewModel)
+        {
+            return;
+        }
+
+        try
+        {
+            var launcher = TopLevel.GetTopLevel(this)?.Launcher
+                ?? throw new InvalidOperationException(
+                    "The desktop link launcher is not available.");
+            var launched = await launcher.LaunchUriAsync(uri);
+            viewModel.ReportSettingsLinkResult(description, launched);
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or NotSupportedException)
+        {
+            viewModel.ReportSettingsLinkResult(
+                description,
+                false,
+                exception.Message);
+        }
     }
 
     private async void ExportHumanSiteTemplates_Click(

@@ -12,6 +12,35 @@ public sealed partial class ColonizationView : UserControl
         InitializeComponent();
     }
 
+    private async void OpenRavenApiKeyPage_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is not MainWindowViewModel viewModel)
+        {
+            return;
+        }
+
+        try
+        {
+            var launcher = TopLevel.GetTopLevel(this)?.Launcher
+                ?? throw new InvalidOperationException(
+                    "The desktop link launcher is not available.");
+            if (!await launcher.LaunchUriAsync(
+                    new Uri(RavenColonialClient.WebsiteUri, "user")))
+            {
+                throw new InvalidOperationException(
+                    "The default browser declined the request.");
+            }
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or NotSupportedException)
+        {
+            viewModel.Colonization.ReportLinkFailure(exception.Message);
+        }
+    }
+
     private async void OpenRavenBuilds_Click(
         object? sender,
         RoutedEventArgs eventArgs)
@@ -21,8 +50,12 @@ public sealed partial class ColonizationView : UserControl
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     "The desktop link launcher is not available.");
-            await launcher.LaunchUriAsync(
-                new Uri(RavenColonialClient.WebsiteUri, "build"));
+            if (!await launcher.LaunchUriAsync(
+                    new Uri(RavenColonialClient.WebsiteUri, "build")))
+            {
+                throw new InvalidOperationException(
+                    "The default browser declined the request.");
+            }
         }
         catch (Exception exception) when (
             exception is InvalidOperationException
@@ -54,9 +87,13 @@ public sealed partial class ColonizationView : UserControl
                     "The desktop link launcher is not available.");
             var buildId = Uri.EscapeDataString(
                 viewModel.Colonization.ProjectEditor.CreatedProjectId);
-            await launcher.LaunchUriAsync(new Uri(
-                RavenColonialClient.WebsiteUri,
-                $"#build={buildId}"));
+            if (!await launcher.LaunchUriAsync(new Uri(
+                    RavenColonialClient.WebsiteUri,
+                    $"#build={buildId}")))
+            {
+                throw new InvalidOperationException(
+                    "The default browser declined the request.");
+            }
         }
         catch (Exception exception) when (
             exception is InvalidOperationException
@@ -97,6 +134,18 @@ public sealed partial class ColonizationView : UserControl
         }
     }
 
+    private async void OpenRavenVisualizer_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            await OpenSystemEditorUriAsync(
+                new Uri(RavenColonialClient.WebsiteUri, "vis"),
+                viewModel);
+        }
+    }
+
     private async Task OpenSystemEditorUriAsync(
         Uri uri,
         MainWindowViewModel viewModel)
@@ -106,7 +155,11 @@ public sealed partial class ColonizationView : UserControl
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
                     "The desktop link launcher is not available.");
-            await launcher.LaunchUriAsync(uri);
+            if (!await launcher.LaunchUriAsync(uri))
+            {
+                throw new InvalidOperationException(
+                    "The default browser declined the request.");
+            }
         }
         catch (Exception exception) when (
             exception is InvalidOperationException

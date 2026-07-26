@@ -100,6 +100,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
     private string legacyProfileSourcePath;
     private string profileStatusMessage;
+    private string settingsLinkStatusMessage = string.Empty;
     private string questStatusMessage = "Quests are disabled.";
     private string? activeProfileRavenApiKey;
     private string? surveyCodexFrontierId;
@@ -814,6 +815,26 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     {
         get => profileStatusMessage;
         private set => SetField(ref profileStatusMessage, value);
+    }
+
+    public string SettingsLinkStatusMessage
+    {
+        get => settingsLinkStatusMessage;
+        private set => SetField(ref settingsLinkStatusMessage, value);
+    }
+
+    public void ReportSettingsLinkResult(
+        string description,
+        bool launched,
+        string? error = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(description);
+        SettingsLinkStatusMessage = launched
+            ? $"Opened {description} in the default browser."
+            : $"Could not open {description}: "
+                + (string.IsNullOrWhiteSpace(error)
+                    ? "the desktop launcher declined the request."
+                    : error);
     }
 
     public string ImportProfileButtonText => IsImportingProfile
