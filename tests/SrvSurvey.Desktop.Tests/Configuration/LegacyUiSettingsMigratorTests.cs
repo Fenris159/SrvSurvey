@@ -110,6 +110,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "buildProjectsCollapseGroupsWithFCEnough_TEST": false,
               "buildProjectsHighlightAlmostFC_TEST": true,
               "streamOneOverlay": true,
+              "displayVR": true,
+              "vrProcessName": "vrcompositor",
               "keyhook_TEST": true,
               "hookDirectX_TEST": true,
               "hookDirectXDeviceId_TEST": "b7bd7df1-251e-4335-a994-8ce36011eeb2",
@@ -265,6 +267,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal("SHIFT C", input.Bindings[GlobalInputAction.CopyNextBoxel]);
         Assert.True(
             new StreamOverlaySettingsStore(paths.UiSettingsPath).LoadEnabled());
+        Assert.Equal(
+            new VrOverlayPreferences(true, "vrcompositor"),
+            new VrOverlaySettingsStore(paths.UiSettingsPath).Load());
 
         var migrated = Assert.IsType<JsonObject>(
             JsonNode.Parse(await File.ReadAllTextAsync(paths.UiSettingsPath)));

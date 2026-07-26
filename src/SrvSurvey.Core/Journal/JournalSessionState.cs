@@ -19,6 +19,10 @@ public sealed class JournalSessionState
 
     public string? ShipType { get; private set; }
 
+    public string? ActiveSrvType { get; private set; }
+
+    public bool IsFighterLaunched { get; private set; }
+
     public string? SystemName { get; private set; }
 
     public long? SystemAddress { get; private set; }
@@ -75,6 +79,22 @@ public sealed class JournalSessionState
 
             case "ShipyardSwap":
                 ShipType = GetString(root, "ShipType") ?? ShipType;
+                break;
+
+            case "LaunchSRV":
+                ActiveSrvType = GetString(root, "SRVType") ?? ActiveSrvType;
+                break;
+
+            case "DockSRV":
+                ActiveSrvType = null;
+                break;
+
+            case "LaunchFighter":
+                IsFighterLaunched = true;
+                break;
+
+            case "DockFighter":
+                IsFighterLaunched = false;
                 break;
 
             case "Location":

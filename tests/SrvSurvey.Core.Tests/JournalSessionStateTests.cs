@@ -38,6 +38,26 @@ public sealed class JournalSessionStateTests
             snapshot.LastEventTimestamp);
     }
 
+    [Fact]
+    public void VehicleLaunchAndDockEventsPreserveVrCalibrationMode()
+    {
+        var state = new JournalSessionState();
+
+        Assert.True(state.Apply(Parse(
+            """{"timestamp":"2026-07-24T10:00:00Z","event":"LaunchSRV","SRVType":"combat_multicrew_srv_01"}""")));
+        Assert.Equal("combat_multicrew_srv_01", state.ActiveSrvType);
+        Assert.True(state.Apply(Parse(
+            """{"timestamp":"2026-07-24T10:00:01Z","event":"LaunchFighter"}""")));
+        Assert.True(state.IsFighterLaunched);
+
+        Assert.True(state.Apply(Parse(
+            """{"timestamp":"2026-07-24T10:00:02Z","event":"DockFighter"}""")));
+        Assert.False(state.IsFighterLaunched);
+        Assert.True(state.Apply(Parse(
+            """{"timestamp":"2026-07-24T10:00:03Z","event":"DockSRV"}""")));
+        Assert.Null(state.ActiveSrvType);
+    }
+
     private static JournalEventEnvelope Parse(string json)
     {
         var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);

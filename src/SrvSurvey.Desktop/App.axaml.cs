@@ -31,6 +31,7 @@ public sealed partial class App : Application
     private QuestIndicatorOverlayCoordinator? questIndicatorOverlayCoordinator;
     private NotificationOverlayCoordinator? notificationOverlayCoordinator;
     private StreamOverlayCoordinator? streamOverlayCoordinator;
+    private VrOverlayCoordinator? vrOverlayCoordinator;
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
@@ -245,6 +246,9 @@ public sealed partial class App : Application
                 viewModel.StreamOverlay,
                 OverlayPlatformService.CreateCurrent(),
                 GameWindowTracker.CreateCurrent());
+            vrOverlayCoordinator = new VrOverlayCoordinator(
+                viewModel.VrOverlay,
+                modeProvider: () => viewModel.CurrentVrOverlayMode);
 
             void SynchronizeOverlayPriority()
             {
@@ -491,6 +495,17 @@ public sealed partial class App : Application
                             handled = streamOverlayCoordinator?.Toggle() == true;
                             break;
 
+                        case GlobalInputAction.AdjustVr:
+                            handled = viewModel.BeginVrAdjustment();
+                            mainWindow.Show();
+                            mainWindow.Activate();
+                            break;
+
+                        case GlobalInputAction.ResetVr:
+                            handled = vrOverlayCoordinator
+                                ?.ResetOrientation() == true;
+                            break;
+
                         case GlobalInputAction.Track1:
                         case GlobalInputAction.Track2:
                         case GlobalInputAction.Track3:
@@ -612,6 +627,8 @@ public sealed partial class App : Application
                 notificationOverlayCoordinator = null;
                 streamOverlayCoordinator?.Dispose();
                 streamOverlayCoordinator = null;
+                vrOverlayCoordinator?.Dispose();
+                vrOverlayCoordinator = null;
                 systemSurveyOverlayCoordinator?.Dispose();
                 systemSurveyOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();

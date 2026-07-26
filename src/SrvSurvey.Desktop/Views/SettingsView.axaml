@@ -388,6 +388,138 @@
 
       <Border Classes="card raised">
         <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="OpenVR overlays" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Project every live Avalonia overlay into SteamVR with the original per-overlay position, rotation, scale, opacity, and vehicle-mode overrides." />
+            </StackPanel>
+            <CheckBox Grid.Column="1"
+                      VerticalAlignment="Center"
+                      IsChecked="{Binding VrOverlay.Enabled, Mode=TwoWay}"
+                      Content="Enabled" />
+          </Grid>
+
+          <Grid ColumnDefinitions="*,220" ColumnSpacing="18">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="eyebrow" Text="VR RUNTIME PROCESS" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Projection starts only while this process is running. Use SRVSURVEY_OPENVR_LIBRARY on Linux when SteamVR is installed in a custom location." />
+            </StackPanel>
+            <TextBox Grid.Column="1"
+                     VerticalAlignment="Center"
+                     Text="{Binding VrOverlay.RuntimeProcessName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                     PlaceholderText="vrserver" />
+          </Grid>
+
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+            <TextBlock VerticalAlignment="Center"
+                       Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="{Binding VrOverlay.StatusMessage}" />
+            <Button Grid.Column="1"
+                    Classes="secondary"
+                    Click="BeginVrAdjustment_Click"
+                    Content="Adjust overlays" />
+          </Grid>
+
+          <Border IsVisible="{Binding VrOverlay.IsAdjusting}"
+                  Padding="16"
+                  Background="{DynamicResource RavenSurfaceBrush}"
+                  BorderBrush="{DynamicResource RavenBorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="8">
+            <StackPanel Spacing="14">
+              <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="18">
+                <StackPanel Spacing="4">
+                  <TextBlock Classes="eyebrow" Text="CALIBRATION TARGET" />
+                  <ComboBox MinWidth="280"
+                            ItemsSource="{Binding VrOverlay.AvailableOverlays}"
+                            SelectedItem="{Binding VrOverlay.SelectedOverlayName, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="4">
+                  <TextBlock Classes="eyebrow" Text="VEHICLE / GAME MODE" />
+                  <ComboBox MinWidth="200"
+                            ItemsSource="{Binding VrOverlay.AvailableModes}"
+                            SelectedItem="{Binding VrOverlay.SelectedMode, Mode=TwoWay}" />
+                  <TextBlock Classes="muted"
+                             FontSize="11"
+                             Text="{Binding VrOverlay.CurrentRuntimeMode, StringFormat='Current: {0}'}" />
+                </StackPanel>
+                <TextBlock Grid.Column="2"
+                           VerticalAlignment="Bottom"
+                           Classes="muted"
+                           FontSize="11"
+                           Text="Alt+V opens this editor" />
+              </Grid>
+
+              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18">
+                <StackPanel Spacing="5">
+                  <TextBlock Classes="eyebrow" Text="SCALE" />
+                  <NumericUpDown Minimum="0.1"
+                                 Maximum="50"
+                                 Increment="0.1"
+                                 FormatString="0.0###"
+                                 Value="{Binding VrOverlay.Scale, Mode=TwoWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="5">
+                  <TextBlock Classes="eyebrow" Text="POSITION X / Y / Z" />
+                  <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <NumericUpDown Minimum="-1000" Maximum="1000" Increment="0.1"
+                                   FormatString="0.0###"
+                                   Value="{Binding VrOverlay.PositionX, Mode=TwoWay}" />
+                    <NumericUpDown Grid.Column="1" Minimum="-1000" Maximum="1000" Increment="0.1"
+                                   FormatString="0.0###"
+                                   Value="{Binding VrOverlay.PositionY, Mode=TwoWay}" />
+                    <NumericUpDown Grid.Column="2" Minimum="-1000" Maximum="1000" Increment="0.1"
+                                   FormatString="0.0###"
+                                   Value="{Binding VrOverlay.PositionZ, Mode=TwoWay}" />
+                  </Grid>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="5">
+                  <TextBlock Classes="eyebrow" Text="PITCH / YAW / ROLL" />
+                  <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                    <NumericUpDown Minimum="-360" Maximum="360" Increment="0.1"
+                                   FormatString="0.0###"
+                                   Value="{Binding VrOverlay.RotationPitch, Mode=TwoWay}" />
+                    <NumericUpDown Grid.Column="1" Minimum="-360" Maximum="360" Increment="0.1"
+                                   FormatString="0.0###"
+                                   Value="{Binding VrOverlay.RotationYaw, Mode=TwoWay}" />
+                    <NumericUpDown Grid.Column="2" Minimum="-360" Maximum="360" Increment="0.1"
+                                   FormatString="0.0###"
+                                   Value="{Binding VrOverlay.RotationRoll, Mode=TwoWay}" />
+                  </Grid>
+                </StackPanel>
+              </Grid>
+
+              <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+                <TextBlock VerticalAlignment="Center"
+                           Classes="muted"
+                           FontSize="11"
+                           TextWrapping="Wrap"
+                           Text="Changes preview live in OpenVR. Save is atomic and preserves desktop placement plus unknown overlays." />
+                <Button Grid.Column="1"
+                        Classes="secondary"
+                        Command="{Binding VrOverlay.CancelCommand}"
+                        Content="Cancel" />
+                <Button Grid.Column="2"
+                        Classes="secondary"
+                        Command="{Binding VrOverlay.ResetCommand}"
+                        Content="Reset selected" />
+                <Button Grid.Column="3"
+                        Classes="primary"
+                        Command="{Binding VrOverlay.SaveCommand}"
+                        Content="Save calibration" />
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Combat overlays" />
             <TextBlock Classes="muted"

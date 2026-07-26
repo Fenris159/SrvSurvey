@@ -127,7 +127,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         GreenGasGiantPublicationCoordinator?
             greenGasGiantPublicationCoordinator = null,
         NotificationSettingsStore? notificationSettingsStore = null,
-        StreamOverlaySettingsStore? streamOverlaySettingsStore = null)
+        StreamOverlaySettingsStore? streamOverlaySettingsStore = null,
+        VrOverlaySettingsStore? vrOverlaySettingsStore = null,
+        VrOverlayCalibrationStore? vrOverlayCalibrationStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -176,6 +178,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         StreamOverlay = new StreamOverlayViewModel(
             streamOverlaySettingsStore
                 ?? new StreamOverlaySettingsStore(AppDataPaths.UiSettingsPath));
+        VrOverlay = new VrOverlayViewModel(
+            vrOverlaySettingsStore
+                ?? new VrOverlaySettingsStore(AppDataPaths.UiSettingsPath),
+            vrOverlayCalibrationStore
+                ?? new VrOverlayCalibrationStore(AppDataPaths.DataDirectory));
         NetworkPrivacy = new NetworkPrivacyViewModel(
             new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
         this.greenGasGiantPublicationCoordinator =
@@ -432,6 +439,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public StreamOverlayViewModel StreamOverlay { get; }
 
+    public VrOverlayViewModel VrOverlay { get; }
+
     public NetworkPrivacyViewModel NetworkPrivacy { get; }
 
     public QuestWorkspaceViewModel QuestWorkspace { get; }
@@ -653,6 +662,39 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     {
         SelectedNavigation = NavigationItems.Single(
             item => item.Key == "diagnostics");
+    }
+
+    public bool BeginVrAdjustment()
+    {
+        SelectedNavigation = NavigationItems.Single(
+            item => item.Key == "settings");
+        return VrOverlay.BeginAdjustment();
+    }
+
+    public string? CurrentVrOverlayMode
+    {
+        get
+        {
+            var status = latestStatus;
+            if (status is null)
+            {
+                return journalState.ShipType;
+            }
+
+            return status.GuiFocus switch
+            {
+                GuiFocus.GalaxyMap => "GalaxyMap",
+                GuiFocus.SystemMap => "SystemMap",
+                GuiFocus.Orrery => "Orrery",
+                GuiFocus.Fss => "FSS",
+                GuiFocus.Saa => "SAA",
+                _ when status.OnFoot => "OnFoot",
+                _ when status.InFighter => "fighter",
+                _ when status.InSrv => journalState.ActiveSrvType
+                    ?? "testbuggy",
+                _ => journalState.ShipType,
+            };
+        }
     }
 
     public void ShowQuests()

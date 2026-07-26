@@ -12,6 +12,16 @@ public sealed partial class SettingsView : UserControl
         InitializeComponent();
     }
 
+    private void BeginVrAdjustment_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            _ = viewModel.BeginVrAdjustment();
+        }
+    }
+
     private async void ChooseLegacyProfileFolder_Click(
         object? sender,
         RoutedEventArgs eventArgs)

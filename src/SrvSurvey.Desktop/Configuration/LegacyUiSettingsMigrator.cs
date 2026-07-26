@@ -181,6 +181,11 @@ public sealed class LegacyUiSettingsMigrator
                 [
                     ("streamOneOverlay", "JoinedOverlayEnabled"),
                 ]);
+                mappedCount += MapSection(legacy, root, "VirtualReality",
+                [
+                    ("displayVR", "Enabled"),
+                    ("vrProcessName", "RuntimeProcessName"),
+                ]);
                 mappedCount += MapSection(legacy, root, "NetworkPrivacy",
                 [
                     ("eddnUpload", "EddnUploadEnabled"),

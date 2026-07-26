@@ -15,15 +15,23 @@
     <PackageReference Include="Avalonia.Desktop" Version="12.1.0" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.0" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.0" />
+    <PackageReference Include="OVRSharp" Version="1.2.0" />
     <PackageReference Include="SDL3-CS" Version="3.4.12.3" />
     <PackageReference Include="SDL3-CS.Linux" Version="3.4.12.1" />
     <PackageReference Include="SDL3-CS.Windows" Version="3.4.12.1" />
     <PackageReference Include="SharpHook" Version="7.1.3" />
     <PackageReference Include="SkiaSharp" Version="3.119.4" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.10" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SrvSurvey.Core\SrvSurvey.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\SrvSurvey\plotters.json"
+             Link="plotters.json"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
