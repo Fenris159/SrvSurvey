@@ -15,8 +15,13 @@ public sealed record BiologyStatusViewModel(
     BiologyCodexNotificationViewModel? CodexNotification,
     bool RequiresDss,
     string Warning,
-    string Footer)
+    string Footer,
+    BiologyTemperatureRangeViewModel? TemperatureRange)
 {
+    private static readonly Lazy<BiologyPredictionEvaluator>
+        PredictionEvaluator = new(() => new BiologyPredictionEvaluator(
+            BiologyCriteriaCatalog.LoadEmbedded()));
+
     public bool HasSignals => Signals.Count > 0;
 
     public bool HasActiveSample => ActiveSample is not null;
@@ -28,6 +33,8 @@ public sealed record BiologyStatusViewModel(
     public bool HasWarning => !string.IsNullOrWhiteSpace(Warning);
 
     public bool HasFooter => !string.IsNullOrWhiteSpace(Footer);
+
+    public bool HasTemperatureRange => TemperatureRange is not null;
 
     public string ProgressText =>
         $"{AnalyzedSignalCount:N0} of {SignalCount:N0} analyzed";
@@ -52,7 +59,8 @@ public sealed record BiologyStatusViewModel(
         EliteStatus? status,
         ExobiologySnapshot exobiology,
         bool hideGeologicalSignals,
-        BiologyCodexNotificationViewModel? codexNotification = null)
+        BiologyCodexNotificationViewModel? codexNotification = null,
+        bool showTemperatureRangeDebug = false)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
@@ -127,7 +135,44 @@ public sealed record BiologyStatusViewModel(
             currentNotification,
             body.Organisms.Count == 0,
             warning,
-            footer);
+            footer,
+            showTemperatureRangeDebug
+                ? CreateTemperatureRange(
+                    snapshot,
+                    body,
+                    activeOrganism,
+                    status)
+                : null);
+    }
+
+    private static BiologyTemperatureRangeViewModel CreateTemperatureRange(
+        SystemScanSnapshot snapshot,
+        SystemScanBodySnapshot body,
+        SystemOrganismSnapshot? organism,
+        EliteStatus? status)
+    {
+        BiologyCriteriaClause? temperatureClause = null;
+        var targetName = organism?.VariantLocalized
+            ?? organism?.SpeciesLocalized;
+        var inputs = BiologyPredictionContextBuilder.Build(
+            snapshot,
+            body.BodyId);
+        if (inputs is not null && !string.IsNullOrWhiteSpace(targetName))
+        {
+            temperatureClause = PredictionEvaluator.Value.Evaluate(
+                    inputs.Context,
+                    inputs.Knowledge,
+                    targetName)
+                .TargetClauses
+                .LastOrDefault(clause => clause.Property == "temp"
+                    && clause.Operator == BiologyCriteriaOperator.Range);
+        }
+
+        return new BiologyTemperatureRangeViewModel(
+            body.SurfaceTemperature,
+            status?.Temperature is > 0 ? status.Temperature : null,
+            temperatureClause?.Minimum,
+            temperatureClause?.Maximum);
     }
 
     private static IReadOnlyList<BiologyStatusSignalViewModel> CreateSignals(
@@ -364,5 +409,55 @@ public sealed record BiologyActiveSampleViewModel(
             >= 1_000 => $"{value / 1_000d:N1} K CR",
             _ => $"{value:N0} CR",
         };
+    }
+}
+
+public sealed record BiologyTemperatureRangeViewModel(
+    double BodyTemperature,
+    double? LiveTemperature,
+    double? Minimum,
+    double? Maximum)
+{
+    public bool HasLiveTemperature => LiveTemperature is not null;
+
+    public bool HasExpectedRange => Minimum is not null || Maximum is not null;
+
+    public string BodyTemperatureText => $"Body baseline {BodyTemperature:N1} K";
+
+    public string LiveTemperatureText => LiveTemperature is { } value
+        ? $"Live suit temperature {value:N1} K"
+        : "Live suit temperature unavailable";
+
+    public string ExpectedRangeText => (Minimum, Maximum) switch
+    {
+        ({ } minimum, { } maximum) =>
+            $"Expected organism range {minimum:N1} to {maximum:N1} K",
+        ({ } minimum, null) => $"Expected organism minimum {minimum:N1} K",
+        (null, { } maximum) => $"Expected organism maximum {maximum:N1} K",
+        _ => "No organism-specific temperature range was resolved.",
+    };
+
+    public double BodyPositionPercent => CalculatePosition(BodyTemperature);
+
+    public double LivePositionPercent => LiveTemperature is { } value
+        ? CalculatePosition(value)
+        : 0;
+
+    private double CalculatePosition(double value)
+    {
+        if (Minimum is { } minimum
+            && Maximum is { } maximum
+            && maximum > minimum)
+        {
+            return Math.Clamp(
+                (value - minimum) * 100d / (maximum - minimum),
+                0,
+                100);
+        }
+
+        return Math.Clamp(
+            50d + (value - BodyTemperature) * 2.5d,
+            0,
+            100);
     }
 }

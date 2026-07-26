@@ -65,6 +65,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool dimAnalyzedOrganisms;
     private bool hideGeoCountInBioSystem;
     private bool disableBioPredictions;
+    private bool showTemperatureRangeDebug;
     private bool autoShowLastFssBody;
     private bool autoShowFssInfo;
     private bool showFssInfoInSystemMap;
@@ -137,6 +138,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         dimAnalyzedOrganisms = preferences.DimAnalyzedOrganisms;
         hideGeoCountInBioSystem = preferences.HideGeoCountInBioSystem;
         disableBioPredictions = preferences.DisableBioPredictions;
+        showTemperatureRangeDebug = preferences.ShowTemperatureRangeDebug;
         autoShowLastFssBody = preferences.AutoShowLastFssBody;
         autoShowFssInfo = preferences.AutoShowFssInfo;
         showFssInfoInSystemMap = preferences.ShowFssInfoInSystemMap;
@@ -397,6 +399,18 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         set
         {
             if (SetPreference(ref disableBioPredictions, value))
+            {
+                RefreshDisplay();
+            }
+        }
+    }
+
+    public bool ShowTemperatureRangeDebug
+    {
+        get => showTemperatureRangeDebug;
+        set
+        {
+            if (SetPreference(ref showTemperatureRangeDebug, value))
             {
                 RefreshDisplay();
             }
@@ -1299,7 +1313,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             status,
             exobiology,
             HideGeoCountInBioSystem,
-            biologyCodexNotification);
+            biologyCodexNotification,
+            ShowTemperatureRangeDebug);
         BodyInformation = CreateBodyInformation(
             ResolveBodyInfoTarget(forceShowBodyInfo
                 || status?.GuiFocus is GuiFocus.SystemMap or GuiFocus.Orrery));
@@ -1987,6 +2002,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 DimAnalyzedOrganisms,
                 HideGeoCountInBioSystem,
                 DisableBioPredictions,
+                ShowTemperatureRangeDebug,
                 AutoShowLastFssBody,
                 AutoShowFssInfo,
                 ShowFssInfoInSystemMap,

@@ -292,8 +292,10 @@ analyzed and active sample progress, stale-sample warnings, three-stage sampler,
 separation distance, reward/first-footfall value, a separate persisted auto-show
 preference, jump/Guardian priority, the last Composition Scanner Codex entry,
 image availability, and the original live `.show` handoff to the selected Codex
-detail window. Only its `_TEST` temperature debug display remains open. The Windows/X11 adapters still
-require live Elite runtime validation.
+detail window. Its `_TEST` temperature display is now a migrated opt-in
+diagnostic using the exact organism range, body baseline, and live suit
+temperature. The Windows/X11 adapters still require live Elite runtime
+validation, and the new diagnostic awaits the final visual pass.
 
 Global input no longer depends on SharpDX/DirectInput. SharpHook provides the
 opt-in Windows/X11 keyboard hook, and SDL3 provides reconnecting gamepad,

@@ -88,6 +88,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("dimIfAnalyzed", "DimAnalyzedOrganisms"),
                     ("hideGeoCountInBioSystem", "HideGeoCountInBioSystem"),
                     ("disableBioPredictions", "DisableBioPredictions"),
+                    ("tempRange_TEST", "ShowTemperatureRangeDebug"),
                     ("autoShowPlotFSS", "AutoShowLastFssBody"),
                     ("autoShowPlotFSSInfo", "AutoShowFssInfo"),
                     ("autoShowPlotFSSInfoInSystemMap", "ShowFssInfoInSystemMap"),

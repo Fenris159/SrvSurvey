@@ -114,6 +114,52 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     }
 
     [Fact]
+    public void TemperatureDiagnosticsUseLiveBodyAndExactSpeciesRange()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ShowTemperatureRangeDebug = true;
+        var scan = new BioSampleSnapshot(
+            new SurfaceLocation(0, 0),
+            150,
+            "$Codex_Ent_Aleoids_Genus_Name;",
+            "$Codex_Ent_Aleoids_02_Name;",
+            "Active",
+            2310206,
+            "Test 1");
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[0,0,0],"Population":0}"""),
+            Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test A","BodyID":0,"StarType":"L","StellarMass":1,"Radius":695700000,"SurfaceTemperature":5000}"""),
+            Parse(PredictableAleoidaScan),
+            Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310206,"Name_Localised":"Aleoida Coronamus - Lime","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
+            Parse("""{"event":"ScanOrganic","ScanType":"Log","SystemAddress":42,"Body":1,"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida","Species":"$Codex_Ent_Aleoids_02_Name;","Species_Localised":"Aleoida Coronamus","Variant":"$Codex_Ent_Aleoids_02_L_Name;","Variant_Localised":"Aleoida Coronamus - Lime"}"""),
+        ],
+        new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            Temperature = 187,
+        },
+        new ExobiologySnapshot(null, scan, null, 0, [], 0));
+
+        var status = Assert.IsType<BiologyStatusViewModel>(
+            viewModel.BiologyStatus);
+        var temperature = Assert.IsType<BiologyTemperatureRangeViewModel>(
+            status.TemperatureRange);
+        Assert.True(status.HasTemperatureRange);
+        Assert.Equal(185, temperature.BodyTemperature);
+        Assert.Equal(187, temperature.LiveTemperature);
+        Assert.Equal(180, temperature.Minimum);
+        Assert.Equal(190, temperature.Maximum);
+        Assert.Equal(50, temperature.BodyPositionPercent);
+        Assert.Equal(70, temperature.LivePositionPercent);
+
+        viewModel.ShowTemperatureRangeDebug = false;
+        Assert.False(viewModel.BiologyStatus!.HasTemperatureRange);
+    }
+
+    [Fact]
     public void CompositionScannerCodexCueShowsRewardAndClearsOnSampling()
     {
         var viewModel = CreateViewModel();
@@ -241,6 +287,32 @@ public sealed class BiologyStatusViewModelTests : IDisposable
           "Radius":6000000,
           "Landable":true,
           "WasFootfalled":false
+        }
+        """;
+
+    private const string PredictableAleoidaScan = """
+        {
+          "event":"Scan",
+          "ScanType":"Detailed",
+          "StarSystem":"Test",
+          "SystemAddress":42,
+          "BodyName":"Test 1",
+          "BodyID":1,
+          "Parents":[{"Star":0}],
+          "DistanceFromArrivalLS":500,
+          "PlanetClass":"Rocky body",
+          "Atmosphere":"thin carbon dioxide atmosphere",
+          "AtmosphereType":"CarbonDioxide",
+          "AtmosphereComposition":[{"Name":"CarbonDioxide","Percent":100}],
+          "Volcanism":"",
+          "MassEM":0.1,
+          "Radius":6000000,
+          "SurfaceGravity":2,
+          "SurfaceTemperature":185,
+          "SurfacePressure":3000,
+          "SemiMajorAxis":100000,
+          "Landable":true,
+          "Materials":[{"Name":"Iron","Percent":20}]
         }
         """;
 }

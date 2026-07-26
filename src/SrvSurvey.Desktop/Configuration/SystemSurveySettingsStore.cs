@@ -150,6 +150,10 @@ public sealed class SystemSurveySettingsStore
                 defaults.DisableBioPredictions),
             GetBoolean(
                 settings,
+                "ShowTemperatureRangeDebug",
+                defaults.ShowTemperatureRangeDebug),
+            GetBoolean(
+                settings,
                 "AutoShowLastFssBody",
                 defaults.AutoShowLastFssBody),
             GetBoolean(settings, "AutoShowFssInfo", defaults.AutoShowFssInfo),
@@ -266,6 +270,8 @@ public sealed class SystemSurveySettingsStore
                 preferences.HideGeoCountInBioSystem;
             settings["DisableBioPredictions"] =
                 preferences.DisableBioPredictions;
+            settings["ShowTemperatureRangeDebug"] =
+                preferences.ShowTemperatureRangeDebug;
             settings["AutoShowLastFssBody"] = preferences.AutoShowLastFssBody;
             settings["AutoShowFssInfo"] = preferences.AutoShowFssInfo;
             settings["ShowFssInfoInSystemMap"] =
@@ -359,6 +365,7 @@ public sealed record SystemSurveyPreferences(
     bool DimAnalyzedOrganisms,
     bool HideGeoCountInBioSystem,
     bool DisableBioPredictions,
+    bool ShowTemperatureRangeDebug,
     bool AutoShowLastFssBody,
     bool AutoShowFssInfo,
     bool ShowFssInfoInSystemMap,
@@ -407,6 +414,7 @@ public sealed record SystemSurveyPreferences(
         DimAnalyzedOrganisms: true,
         HideGeoCountInBioSystem: false,
         DisableBioPredictions: false,
+        ShowTemperatureRangeDebug: false,
         AutoShowLastFssBody: true,
         AutoShowFssInfo: true,
         ShowFssInfoInSystemMap: false,

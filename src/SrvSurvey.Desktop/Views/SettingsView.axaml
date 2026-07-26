@@ -1040,6 +1040,8 @@
                         Content="Dim fully analyzed organisms" />
               <CheckBox IsChecked="{Binding SystemSurvey.DisableBioPredictions, Mode=TwoWay}"
                         Content="Disable organism predictions" />
+              <CheckBox IsChecked="{Binding SystemSurvey.ShowTemperatureRangeDebug, Mode=TwoWay}"
+                        Content="Show biology temperature diagnostics" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="Predictions use the bundled SrvSurvey Codex criteria; confirmed scans and rewards remain visible when predictions are disabled." />

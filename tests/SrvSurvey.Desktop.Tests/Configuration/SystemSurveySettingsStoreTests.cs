@@ -56,6 +56,7 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             DimAnalyzedOrganisms: false,
             HideGeoCountInBioSystem: true,
             DisableBioPredictions: true,
+            ShowTemperatureRangeDebug: true,
             AutoShowLastFssBody: false,
             AutoShowFssInfo: false,
             ShowFssInfoInSystemMap: true,

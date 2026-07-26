@@ -34,6 +34,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "highGravityWarningLevel": 2.75,
               "useExternalData": false,
               "useExternalBioData": true,
+              "tempRange_TEST": true,
               "eddnUpload": true,
               "eddnEnvironment": "live",
               "uploadGGG": true,
@@ -144,6 +145,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(2.75, survey.HighGravityWarningLevel);
         Assert.False(survey.UseExternalData);
         Assert.True(survey.UseExternalBioData);
+        Assert.True(survey.ShowTemperatureRangeDebug);
         Assert.Equal(4, survey.SurfaceRadarSize);
         Assert.False(survey.HighlightDssCandidates);
         Assert.Equal(7_654_321, survey.DssValueFloor);

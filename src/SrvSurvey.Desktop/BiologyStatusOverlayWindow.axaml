@@ -156,6 +156,50 @@
         </StackPanel>
       </Grid>
 
+      <Border Padding="9"
+              Background="{DynamicResource RavenSurfaceBrush}"
+              BorderBrush="{DynamicResource RavenBorderBrush}"
+              BorderThickness="1"
+              CornerRadius="7"
+              IsVisible="{Binding Survey.BiologyStatus.HasTemperatureRange}">
+        <StackPanel Spacing="5">
+          <TextBlock Classes="eyebrow" Text="TEMPERATURE DIAGNOSTICS" />
+          <TextBlock FontSize="9"
+                     Text="{Binding Survey.BiologyStatus.TemperatureRange.ExpectedRangeText}"
+                     TextWrapping="Wrap" />
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBlock Classes="muted"
+                       FontSize="9"
+                       Text="{Binding Survey.BiologyStatus.TemperatureRange.BodyTemperatureText}" />
+            <TextBlock Grid.Column="1"
+                       Classes="monospace"
+                       FontSize="9"
+                       Text="{Binding Survey.BiologyStatus.TemperatureRange.BodyPositionPercent, StringFormat={}{0:N0}%}" />
+          </Grid>
+          <ProgressBar Height="3"
+                       Minimum="0"
+                       Maximum="100"
+                       Value="{Binding Survey.BiologyStatus.TemperatureRange.BodyPositionPercent}" />
+          <Grid ColumnDefinitions="*,Auto"
+                ColumnSpacing="8"
+                IsVisible="{Binding Survey.BiologyStatus.TemperatureRange.HasLiveTemperature}">
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                       FontSize="9"
+                       Text="{Binding Survey.BiologyStatus.TemperatureRange.LiveTemperatureText}" />
+            <TextBlock Grid.Column="1"
+                       Classes="monospace"
+                       Foreground="{DynamicResource RavenWarningBrush}"
+                       FontSize="9"
+                       Text="{Binding Survey.BiologyStatus.TemperatureRange.LivePositionPercent, StringFormat={}{0:N0}%}" />
+          </Grid>
+          <ProgressBar Height="3"
+                       IsVisible="{Binding Survey.BiologyStatus.TemperatureRange.HasLiveTemperature}"
+                       Minimum="0"
+                       Maximum="100"
+                       Value="{Binding Survey.BiologyStatus.TemperatureRange.LivePositionPercent}" />
+        </StackPanel>
+      </Border>
+
       <ItemsControl IsVisible="{Binding Survey.BiologyStatus.ShowSignalSummary}"
                     ItemsSource="{Binding Survey.BiologyStatus.Signals}">
         <ItemsControl.ItemsPanel>
