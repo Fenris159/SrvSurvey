@@ -1359,6 +1359,32 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         RefreshDisplay();
     }
 
+    public bool SetCurrentBodyFirstFootfall(bool value)
+    {
+        if (!state.SetCurrentBodyFirstFootfall(value))
+        {
+            return false;
+        }
+
+        snapshot = state.CreateSnapshot();
+        RefreshDisplay();
+        RaiseVisibilityProperties();
+        return true;
+    }
+
+    public bool SetBodyFirstFootfall(int bodyId, bool value)
+    {
+        if (!state.SetBodyFirstFootfall(bodyId, value))
+        {
+            return false;
+        }
+
+        snapshot = state.CreateSnapshot();
+        RefreshDisplay();
+        RaiseVisibilityProperties();
+        return true;
+    }
+
     public void SetRepeatVisitBiologySuppression(bool suppress)
     {
         if (!SetField(

@@ -122,6 +122,8 @@ public sealed partial class App : Application
 
             var targetFrontierId =
                 commanderPreferenceResolution.TargetFrontierId;
+            var firstFootfallInferenceService =
+                FirstFootfallInferenceService.CreateCurrent();
             var viewModel = new MainWindowViewModel(
                 configuredJournalDirectory,
                 themeService,
@@ -135,7 +137,9 @@ public sealed partial class App : Application
                 commanderPreferenceCommandLineOverride:
                     commanderPreferenceResolution.IsCommandLineOverride,
                 commanderPreferenceInitialStatus:
-                    commanderPreferenceResolution.StatusMessage);
+                    commanderPreferenceResolution.StatusMessage,
+                firstFootfallInferenceService:
+                    firstFootfallInferenceService);
             IGameWindowTracker CreateOverlayGameWindowTracker()
             {
                 return new OverlayGameWindowTracker(

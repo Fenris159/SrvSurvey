@@ -219,6 +219,22 @@ public sealed class ExobiologyStateTests
         Assert.False(state.CurrentBodyFirstFootfall);
     }
 
+    [Fact]
+    public void FirstFootfallCorrectionWithoutOrganicScansAdvancesVersion()
+    {
+        var state = CreateState();
+        state.Apply(Event(
+            "{\"event\":\"Scan\",\"SystemAddress\":123456,\"BodyID\":7,"
+                + "\"BodyName\":\"Test A 1\",\"WasFootfalled\":true}"));
+        var before = state.Version;
+
+        Assert.True(state.SetCurrentBodyFirstFootfall(true));
+
+        Assert.Equal(before + 1, state.Version);
+        Assert.True(state.CurrentBodyFirstFootfall);
+        Assert.Empty(state.CreateSnapshot().ScannedBioEntryIds);
+    }
+
     private static ExobiologyState CreateState(
         params ExobiologyReference[] additional)
     {

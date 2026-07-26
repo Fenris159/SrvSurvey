@@ -46,6 +46,10 @@ public sealed class ExobiologyState
             ? body.FirstFootfall
             : null;
 
+    public long? CurrentBodySystemAddress => currentBodyKey?.SystemAddress;
+
+    public int? CurrentBodyId => currentBodyKey?.BodyId;
+
     public string? ActiveSpeciesDisplayName { get; private set; }
 
     public double? NearestActiveSampleDistance { get; private set; }
@@ -156,6 +160,7 @@ public sealed class ExobiologyState
     {
         var key = new BodyKey(systemAddress, bodyId);
         var body = bodies.GetValueOrDefault(key) ?? new BodyState();
+        var bodyChanged = body.FirstFootfall != value;
         body.FirstFootfall = value;
         bodies[key] = body;
 
@@ -176,11 +181,26 @@ public sealed class ExobiologyState
             changed = true;
         }
 
-        if (changed)
+        if (changed || bodyChanged)
         {
-            RecalculateRewards();
+            if (changed)
+            {
+                RecalculateRewards();
+            }
+
             Version++;
         }
+    }
+
+    public bool SetCurrentBodyFirstFootfall(bool value)
+    {
+        if (currentBodyKey is not { } key)
+        {
+            return false;
+        }
+
+        SetFirstFootfall(key.SystemAddress, key.BodyId, value);
+        return true;
     }
 
     public bool ToggleCurrentBodyFirstFootfall()
@@ -190,11 +210,7 @@ public sealed class ExobiologyState
             return false;
         }
 
-        SetFirstFootfall(
-            key.SystemAddress,
-            key.BodyId,
-            CurrentBodyFirstFootfall != true);
-        return true;
+        return SetCurrentBodyFirstFootfall(CurrentBodyFirstFootfall != true);
     }
 
     private void ApplyBodyScan(JsonElement root)

@@ -8,6 +8,7 @@ using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Theming;
 using System.Text.Json.Nodes;
 
@@ -1209,6 +1210,142 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task LiveFirstFootfallInferenceSynchronizesBothLegacyStores()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-first-footfall-inference-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-25T120000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"Population\":0}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            var inference = new StubFirstFootfallInferenceService(
+                new FirstFootfallInferenceResult(
+                    FirstFootfallInferenceOutcome.Detected,
+                    0.004,
+                    2,
+                    null));
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                firstFootfallInferenceService: inference);
+            await viewModel.RefreshAsync();
+            Assert.Equal(0, inference.CallCount);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-25T12:00:03Z\",\"event\":\"Disembark\",\"SystemAddress\":42,\"Body\":\"Test 1\",\"BodyID\":1,\"OnPlanet\":true,\"OnStation\":false}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(1, inference.CallCount);
+            Assert.True(Assert.Single(
+                viewModel.SystemSurvey.Snapshot.Bodies).IsFirstFootfall);
+            var systemPath = Assert.Single(Directory.GetFiles(
+                Path.Combine(profile, "systems"),
+                "*.json",
+                SearchOption.AllDirectories));
+            var system = JsonNode.Parse(
+                await File.ReadAllTextAsync(systemPath))!.AsObject();
+            Assert.True(
+                system["bodies"]![0]!["firstFootFall"]!.GetValue<bool>());
+
+            const string variant = "$Codex_Ent_Aleoids_01_B_Name;";
+            const string species = "$Codex_Ent_Aleoids_01_Name;";
+            const string genus = "$Codex_Ent_Aleoids_Genus_Name;";
+            await File.AppendAllTextAsync(
+                journalPath,
+                $"{{\"timestamp\":\"2026-07-25T12:00:04Z\",\"event\":\"ScanOrganic\",\"ScanType\":\"Log\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":1}}\n"
+                    + $"{{\"timestamp\":\"2026-07-25T12:00:05Z\",\"event\":\"ScanOrganic\",\"ScanType\":\"Sample\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":1}}\n"
+                    + $"{{\"timestamp\":\"2026-07-25T12:00:06Z\",\"event\":\"ScanOrganic\",\"ScanType\":\"Analyse\",\"Genus\":\"{genus}\",\"Species\":\"{species}\",\"Variant\":\"{variant}\",\"SystemAddress\":42,\"Body\":1}}\n");
+            await viewModel.RefreshAsync();
+            var saved = await new CommanderProfileStore(profile)
+                .LoadAsync("F123", true);
+            Assert.All(
+                saved.Data!.Exobiology.ScannedBioEntryIds,
+                entry => Assert.EndsWith("_True", entry));
+
+            Assert.True(await viewModel.ToggleCurrentBodyFirstFootfallAsync());
+            saved = await new CommanderProfileStore(profile)
+                .LoadAsync("F123", true);
+            Assert.All(
+                saved.Data!.Exobiology.ScannedBioEntryIds,
+                entry => Assert.EndsWith("_False", entry));
+            system = JsonNode.Parse(
+                await File.ReadAllTextAsync(systemPath))!.AsObject();
+            Assert.False(
+                system["bodies"]![0]!["firstFootFall"]!.GetValue<bool>());
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task BootstrapReplayNeverRunsFirstFootfallInference()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-first-footfall-bootstrap-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-25T120000.01.log"),
+                "{\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"Population\":0}\n"
+                    + "{\"event\":\"Disembark\",\"SystemAddress\":42,\"Body\":\"Test 1\",\"BodyID\":1,\"OnPlanet\":true,\"OnStation\":false}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "profile"),
+                Path.Combine(root, "cache"),
+                []);
+            var inference = new StubFirstFootfallInferenceService(
+                new FirstFootfallInferenceResult(
+                    FirstFootfallInferenceOutcome.Detected,
+                    1,
+                    1,
+                    null));
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                firstFootfallInferenceService: inference);
+
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(0, inference.CallCount);
+            Assert.False(Assert.Single(
+                viewModel.SystemSurvey.Snapshot.Bodies).IsFirstFootfall);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task LiveOrganicSamplesPopulateGroundedSurfaceHistory()
     {
         var root = Path.Combine(
@@ -1549,6 +1686,29 @@ public sealed class MainWindowViewModelTests
             Events = journalEvents;
             CommanderName = commanderName;
             return Task.FromResult(ScreenshotProcessingResult.Empty);
+        }
+    }
+
+    private sealed class StubFirstFootfallInferenceService(
+        FirstFootfallInferenceResult result)
+        : IFirstFootfallInferenceService
+    {
+        public int CallCount { get; private set; }
+
+        public bool IsAvailable => true;
+
+        public string? UnavailableReason => null;
+
+        public Task<FirstFootfallInferenceResult> DetectAsync(
+            FirstFootfallInferencePreferences preferences,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return Task.FromResult(result);
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

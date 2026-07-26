@@ -19,6 +19,43 @@ public sealed class SystemScanPersistenceStore
         SystemScanSnapshot snapshot,
         CancellationToken cancellationToken = default)
     {
+        return await SaveCoreAsync(
+                context,
+                snapshot,
+                null,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<SystemScanPersistenceResult>
+        SaveFirstFootfallCorrectionAsync(
+            SystemScanPersistenceContext context,
+            SystemScanSnapshot snapshot,
+            int bodyId,
+            bool value,
+            CancellationToken cancellationToken = default)
+    {
+        if (!snapshot.Bodies.Any(body => body.BodyId == bodyId))
+        {
+            throw new ArgumentException(
+                "The corrected body is not present in the system snapshot.",
+                nameof(bodyId));
+        }
+
+        return await SaveCoreAsync(
+                context,
+                snapshot,
+                (bodyId, value),
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<SystemScanPersistenceResult> SaveCoreAsync(
+        SystemScanPersistenceContext context,
+        SystemScanSnapshot snapshot,
+        (int BodyId, bool Value)? firstFootfallCorrection,
+        CancellationToken cancellationToken)
+    {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentException.ThrowIfNullOrWhiteSpace(context.FrontierId);
@@ -39,10 +76,40 @@ public sealed class SystemScanPersistenceStore
             snapshot.StarPosition);
         var mutation = await fileStore.UpdateWithResultAsync(
                 fileContext,
-                root => Merge(root, context, snapshot),
+                root =>
+                {
+                    var result = Merge(root, context, snapshot);
+                    if (firstFootfallCorrection is { } correction)
+                    {
+                        ApplyFirstFootfallCorrection(
+                            root,
+                            correction.BodyId,
+                            correction.Value);
+                    }
+
+                    return result;
+                },
                 cancellationToken)
             .ConfigureAwait(false);
         return mutation.Value with { Path = mutation.Path };
+    }
+
+    private static void ApplyFirstFootfallCorrection(
+        JsonObject root,
+        int bodyId,
+        bool value)
+    {
+        if (root["bodies"] is not JsonArray bodies)
+        {
+            throw new InvalidDataException(
+                "The legacy system body collection is malformed and was not overwritten.");
+        }
+
+        var body = bodies.OfType<JsonObject>().FirstOrDefault(candidate =>
+            ReadInt32(candidate["id"]) == bodyId)
+            ?? throw new InvalidDataException(
+                "The corrected body could not be represented in the legacy system data.");
+        body["firstFootFall"] = value;
     }
 
     private static SystemScanPersistenceResult Merge(

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows.Input;
 using SrvSurvey.Core.Combat;
 using SrvSurvey.Core.Colonization;
@@ -36,6 +37,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly CommanderCodexStore commanderCodexStore;
     private readonly CommanderCodexJournalTracker commanderCodexJournalTracker;
     private readonly SystemScanPersistenceStore systemScanPersistenceStore;
+    private readonly FirstFootfallInferenceSettingsStore
+        firstFootfallInferenceSettingsStore;
+    private readonly IFirstFootfallInferenceService
+        firstFootfallInferenceService;
+    private readonly CancellationTokenSource firstFootfallInferenceCancellation =
+        new();
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
     private readonly RavenThemeService? themeService;
@@ -148,7 +155,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         CommanderPreferenceSettingsStore?
             commanderPreferenceSettingsStore = null,
         bool commanderPreferenceCommandLineOverride = false,
-        string? commanderPreferenceInitialStatus = null)
+        string? commanderPreferenceInitialStatus = null,
+        FirstFootfallInferenceSettingsStore?
+            firstFootfallInferenceSettingsStore = null,
+        IFirstFootfallInferenceService? firstFootfallInferenceService = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -188,6 +198,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             commanderCodexStore);
         this.systemScanPersistenceStore = systemScanPersistenceStore
             ?? new SystemScanPersistenceStore(AppDataPaths.DataDirectory);
+        this.firstFootfallInferenceSettingsStore =
+            firstFootfallInferenceSettingsStore
+                ?? new FirstFootfallInferenceSettingsStore(
+                    AppDataPaths.UiSettingsPath);
+        this.firstFootfallInferenceService = firstFootfallInferenceService
+            ?? new UnavailableFirstFootfallInferenceService();
         InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
             OverlayPlatformCapabilities.DetectCurrent());
@@ -1592,6 +1608,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.JournalEvents,
             update.Status,
             exobiologyAfter);
+        if (await TryInferFirstFootfallAsync(update))
+        {
+            exobiologyAfter = exobiologyState.CreateSnapshot();
+            SystemSurvey.ApplyUpdate([], null, exobiologyAfter);
+        }
+
         await PersistSystemScanAsync(update.JournalEvents);
         await RefreshSystemSurveyCommanderCodexAsync(
             forceRefresh: commanderCodexResult.DiscoveryEventCount > 0);
@@ -2061,14 +2083,52 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
+        await PersistCurrentSystemScanAsync(snapshot, visitedAt);
+    }
+
+    private async Task PersistCurrentSystemScanAsync(
+        (int BodyId, bool Value)? firstFootfallCorrection = null)
+    {
+        var snapshot = SystemSurvey.Snapshot;
+        if (snapshot.SystemAddress is not { } systemAddress
+            || activeSystemVisitAddress != systemAddress
+            || activeSystemVisitedAt is not { } visitedAt)
+        {
+            return;
+        }
+
+        await PersistCurrentSystemScanAsync(
+            snapshot,
+            visitedAt,
+            firstFootfallCorrection);
+    }
+
+    private async Task PersistCurrentSystemScanAsync(
+        SystemScanSnapshot snapshot,
+        DateTimeOffset visitedAt,
+        (int BodyId, bool Value)? firstFootfallCorrection = null)
+    {
+        if (string.IsNullOrWhiteSpace(activeProfileFrontierId))
+        {
+            return;
+        }
+
         try
         {
-            var result = await systemScanPersistenceStore.SaveAsync(
-                new SystemScanPersistenceContext(
-                    activeProfileFrontierId,
-                    activeProfileCommanderName ?? journalState.CommanderName,
-                    visitedAt),
-                snapshot);
+            var context = new SystemScanPersistenceContext(
+                activeProfileFrontierId,
+                activeProfileCommanderName ?? journalState.CommanderName,
+                visitedAt);
+            var result = firstFootfallCorrection is { } correction
+                ? await systemScanPersistenceStore
+                    .SaveFirstFootfallCorrectionAsync(
+                        context,
+                        snapshot,
+                        correction.BodyId,
+                        correction.Value)
+                : await systemScanPersistenceStore.SaveAsync(
+                    context,
+                    snapshot);
             SystemSurvey.SetRepeatVisitBiologySuppression(
                 result.ShouldSuppressBiologyOverlays);
         }
@@ -2174,18 +2234,132 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public async Task<bool> ToggleCurrentBodyFirstFootfallAsync()
     {
-        if (!exobiologyState.ToggleCurrentBodyFirstFootfall())
+        var system = SystemSurvey.Snapshot;
+        if (exobiologyState.CurrentBodySystemAddress is not { } systemAddress
+            || exobiologyState.CurrentBodyId is not { } bodyId
+            || system.SystemAddress != systemAddress)
         {
             ExobiologyStatusMessage =
                 "First-footfall state cannot be changed until the current body is known.";
             return false;
         }
 
+        var value = exobiologyState.CurrentBodyFirstFootfall != true;
+        if (!SystemSurvey.SetBodyFirstFootfall(bodyId, value))
+        {
+            ExobiologyStatusMessage =
+                "First-footfall state cannot be changed until the current body is known.";
+            return false;
+        }
+
+        exobiologyState.SetFirstFootfall(systemAddress, bodyId, value);
         var snapshot = exobiologyState.CreateSnapshot();
         UpdateExobiologyDisplay(snapshot);
         SystemSurvey.ApplyUpdate([], null, snapshot);
         await SaveExobiologyAsync(snapshot);
+        await PersistCurrentSystemScanAsync((bodyId, value));
         return true;
+    }
+
+    private async Task<bool> TryInferFirstFootfallAsync(
+        JournalMonitorUpdate update)
+    {
+        var preferences = firstFootfallInferenceSettingsStore.Load();
+        var system = SystemSurvey.Snapshot;
+        var body = system.CurrentBodyId is { } bodyId
+            ? system.Bodies.FirstOrDefault(candidate =>
+                candidate.BodyId == bodyId)
+            : null;
+        if (update.IsBootstrapRead
+            || !preferences.Enabled
+            || Guardian.ActiveSite is not null
+            || !update.JournalEvents.Any(IsSurfaceDisembark)
+            || system.SystemAddress is not { } systemAddress
+            || body is null
+            || system.Population != 0
+            || body.IsFirstFootfall
+            || body.WasFootfalled == false
+            || IsKnownLegacyValuableBody(body.Kind))
+        {
+            return false;
+        }
+
+        FirstFootfallInferenceResult result;
+        try
+        {
+            result = await firstFootfallInferenceService.DetectAsync(
+                preferences,
+                firstFootfallInferenceCancellation.Token);
+        }
+        catch (OperationCanceledException) when (
+            firstFootfallInferenceCancellation.IsCancellationRequested)
+        {
+            return false;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidOperationException
+                or NotSupportedException)
+        {
+            applicationLogService?.Append(
+                "First-footfall notification detection stopped safely: "
+                    + exception.Message);
+            return false;
+        }
+
+        if (!result.Detected)
+        {
+            return false;
+        }
+
+        var current = SystemSurvey.Snapshot;
+        if (Guardian.ActiveSite is not null
+            || current.SystemAddress != systemAddress
+            || current.CurrentBodyId != body.BodyId
+            || current.Population != 0)
+        {
+            applicationLogService?.Append(
+                "Ignored a first-footfall notification because the active "
+                    + "system or body changed during detection.");
+            return false;
+        }
+
+        if (!SystemSurvey.SetCurrentBodyFirstFootfall(true))
+        {
+            return false;
+        }
+
+        exobiologyState.SetFirstFootfall(systemAddress, body.BodyId, true);
+        var message = "First footfall inferred from Elite's on-screen notification "
+            + $"after {result.SampleCount:N0} sample(s); match ratio "
+            + $"{result.MaximumMatchRatio:P3}.";
+        applicationLogService?.Append(message);
+        ExobiologyStatusMessage = message;
+        return true;
+    }
+
+    private static bool IsSurfaceDisembark(
+        JournalEventEnvelope journalEvent)
+    {
+        if (journalEvent.EventName != "Disembark")
+        {
+            return false;
+        }
+
+        var root = journalEvent.Payload;
+        return root.TryGetProperty("OnPlanet", out var onPlanet)
+            && onPlanet.ValueKind is JsonValueKind.True
+            && (!root.TryGetProperty("OnStation", out var onStation)
+                || onStation.ValueKind is not JsonValueKind.True);
+    }
+
+    private static bool IsKnownLegacyValuableBody(SystemBodyKind kind)
+    {
+        return kind is SystemBodyKind.Star
+            or SystemBodyKind.GasGiant
+            or SystemBodyKind.Planet
+            or SystemBodyKind.LandablePlanet;
     }
 
     private Task CancelResetExobiologyAsync()
@@ -2230,6 +2404,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         disposed = true;
+        firstFootfallInferenceCancellation.Cancel();
+        firstFootfallInferenceService.Dispose();
+        firstFootfallInferenceCancellation.Dispose();
         GalaxyMap.Dispose();
         QuestWorkspace.Dispose();
         CommanderInstances.Dispose();

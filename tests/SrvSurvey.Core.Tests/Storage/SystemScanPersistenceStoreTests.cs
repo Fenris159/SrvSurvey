@@ -12,6 +12,36 @@ public sealed class SystemScanPersistenceStoreTests : IDisposable
         "SrvSurvey-SystemScanPersistence-" + Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public async Task ExplicitFirstFootfallCorrectionCanClearPersistedTrue()
+    {
+        var path = CreateSystemFile(
+            "Test_42.json",
+            """
+            {
+              "name": "Test",
+              "address": 42,
+              "bodies": [{ "name": "Test 1", "id": 1, "firstFootFall": true }]
+            }
+            """);
+        var snapshot = CreateSnapshot(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}""",
+            """{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}""");
+        var store = new SystemScanPersistenceStore(temporaryDirectory);
+
+        await store.SaveFirstFootfallCorrectionAsync(
+            new SystemScanPersistenceContext(
+                "F123",
+                "Drew",
+                DateTimeOffset.Parse("2026-07-25T00:00:00Z")),
+            snapshot,
+            1,
+            false);
+
+        var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.False(saved["bodies"]![0]!["firstFootFall"]!.GetValue<bool>());
+    }
+
+    [Fact]
     public async Task SavePreservesImportedDataAndDetectsCompletedRepeatVisit()
     {
         var path = CreateSystemFile(

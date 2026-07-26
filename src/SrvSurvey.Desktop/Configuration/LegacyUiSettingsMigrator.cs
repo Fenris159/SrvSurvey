@@ -134,6 +134,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("showNonBodySignals", "ShowNonBodySignals"),
                 ]);
                 mappedCount += MapFssTuningDetector(legacy, root);
+                mappedCount += MapFirstFootfallInference(legacy, root);
                 mappedCount += MapSection(legacy, root, "BiologyPredictions",
                 [
                     ("formPredictionsCurrentBodyOnly", "CurrentBodyOnly", 0),
@@ -294,13 +295,18 @@ public sealed class LegacyUiSettingsMigrator
             ("CommanderPreference", "preferredCommander", "PreferredCommanderName"),
             ("GuardianGestures", "blinkTigger", "BlinkTrigger"),
             ("GuardianGestures", "blinkDuration", "BlinkDurationMilliseconds"),
+            ("FirstFootfallInference", "inferTolerance", "Tolerance"),
+            ("FirstFootfallInference", "inferThreshold", "Threshold"),
         };
         var pending = mappings.Where(mapping =>
             legacy[mapping.Legacy] is not null
             && (existing[mapping.Section] is not JsonObject section
                 || !section.ContainsKey(mapping.Current)))
             .ToArray();
-        if (pending.Length == 0)
+        var shouldMapColor = legacy["inferColor"] is JsonObject
+            && (existing["FirstFootfallInference"] is not JsonObject inference
+                || !inference.ContainsKey("Color"));
+        if (pending.Length == 0 && !shouldMapColor)
         {
             return LegacyUiSettingsMigrationResult.NotRequired;
         }
@@ -316,10 +322,43 @@ public sealed class LegacyUiSettingsMigrator
                     GetOrCreateObject(root, mapping.Section),
                     mapping.Current);
             }
+
+            if (shouldMapColor)
+            {
+                mappedCount += MapFirstFootfallColor(legacy, root);
+            }
         });
         return mappedCount == 0
             ? LegacyUiSettingsMigrationResult.NotRequired
             : new LegacyUiSettingsMigrationResult(true, mappedCount, null, null);
+    }
+
+    private static int MapFirstFootfallInference(
+        JsonObject legacy,
+        JsonObject target)
+    {
+        var section = GetOrCreateObject(target, "FirstFootfallInference");
+        var count = Copy(legacy, "inferTolerance", section, "Tolerance");
+        count += Copy(legacy, "inferThreshold", section, "Threshold");
+        count += MapFirstFootfallColor(legacy, target);
+        return count;
+    }
+
+    private static int MapFirstFootfallColor(
+        JsonObject legacy,
+        JsonObject target)
+    {
+        if (legacy["inferColor"] is not JsonObject source)
+        {
+            return 0;
+        }
+
+        var section = GetOrCreateObject(target, "FirstFootfallInference");
+        var color = GetOrCreateObject(section, "Color");
+        var count = Copy(source, "R", color, "Red");
+        count += Copy(source, "G", color, "Green");
+        count += Copy(source, "B", color, "Blue");
+        return count;
     }
 
     private static int MapCodexImages(

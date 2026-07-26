@@ -7,6 +7,21 @@ namespace SrvSurvey.Core.Tests.Exploration;
 public sealed class SystemScanStateTests
 {
     [Fact]
+    public void ExplicitFirstFootfallCorrectionRequiresAndUpdatesCurrentBody()
+    {
+        var state = new SystemScanState();
+        Assert.False(state.SetCurrentBodyFirstFootfall(true));
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse(
+            """{"event":"Disembark","SystemAddress":42,"Body":"Test 1","BodyID":1,"OnPlanet":true,"OnStation":false}"""));
+
+        Assert.True(state.SetCurrentBodyFirstFootfall(true));
+
+        Assert.True(Assert.Single(state.CreateSnapshot().Bodies).IsFirstFootfall);
+    }
+
+    [Fact]
     public void ApplyBuildsReusableSystemAndBodyScanState()
     {
         var state = new SystemScanState();

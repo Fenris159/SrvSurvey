@@ -152,6 +152,23 @@ public sealed class SystemScanState
             bodySnapshots);
     }
 
+    public bool SetCurrentBodyFirstFootfall(bool value)
+    {
+        return CurrentBodyId is { } bodyId
+            && SetBodyFirstFootfall(bodyId, value);
+    }
+
+    public bool SetBodyFirstFootfall(int bodyId, bool value)
+    {
+        if (!bodies.TryGetValue(bodyId, out var body))
+        {
+            return false;
+        }
+
+        body.IsFirstFootfall = value;
+        return true;
+    }
+
     private void ApplySystemLocation(JsonElement root)
     {
         var address = GetInt64(root, "SystemAddress");

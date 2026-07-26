@@ -428,6 +428,48 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
     }
 
     [Fact]
+    public async Task ExistingImportMarkerReceivesMissingFirstFootfallInference()
+    {
+        var paths = CreatePaths();
+        var source = Path.Combine(temporaryDirectory, "legacy-footfall-upgrade");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            """
+            {
+              "inferColor": { "A": 255, "R": 12, "G": 34, "B": 56 },
+              "inferTolerance": 17,
+              "inferThreshold": 0.004
+            }
+            """);
+        await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups-footfall-upgrade"));
+        var migrator = new LegacyUiSettingsMigrator();
+        Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
+        var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
+        document.Update(root => root.Remove("FirstFootfallInference"));
+
+        var result = migrator.MigrateIfNeeded(paths);
+
+        Assert.True(result.Migrated);
+        Assert.Equal(5, result.MappedPreferenceCount);
+        Assert.Equal(
+            FirstFootfallInferencePreferences.Default with
+            {
+                Red = 12,
+                Green = 34,
+                Blue = 56,
+                Tolerance = 17,
+                Threshold = 0.004,
+            },
+            new FirstFootfallInferenceSettingsStore(paths.UiSettingsPath)
+                .Load());
+        Assert.Null(result.PreviousSettingsBackupPath);
+    }
+
+    [Fact]
     public async Task MalformedLegacySettingsDoNotChangeCurrentUiSettings()
     {
         var paths = CreatePaths();
