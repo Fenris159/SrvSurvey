@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using SrvSurvey.Core.Navigation;
 
 namespace SrvSurvey.Core.Settlements;
@@ -211,66 +212,80 @@ public sealed class HumanSiteNavigation(HumanSiteTemplateCatalog templates)
 
 public static class HumanSiteVehicleOffsets
 {
-    private static readonly IReadOnlyDictionary<string, HumanSiteMapPoint>
-        Offsets = new Dictionary<string, HumanSiteMapPoint>(
-            StringComparer.OrdinalIgnoreCase)
-        {
-            ["sidewinder"] = new(0.003973524156032526, -1.8918079917214574),
-            ["eagle"] = new(0.2022841743348611, -9.475366622689792),
-            ["hauler"] = new(0.09697669984436012, -12.599239384408765),
-            ["adder"] = new(-1.0448119356622934, -11.715904797681277),
-            ["empire_eagle"] = new(0.24583362859945412, -8.536714551074842),
-            ["viper"] = new(0.12291616974324898, -7.182614926481333),
-            ["cobramkiii"] = new(-0.15764970873549044, -9.031276393889643),
-            ["viper_mkiv"] = new(-0.000002767397930854968, -8.065723234733316),
-            ["diamondback"] = new(-0.000004161491337663819, -9.890813997121282),
-            ["type6"] = new(0, -20.957581116002204),
-            ["dolphin"] = new(0.24276978, -19.054316),
-            ["diamondbackxl"] = new(0.5462154, -18.501362),
-            ["empire_courier"] = new(0, -14.442907807215595),
-            ["independant_trader"] = new(0, -21.080499480318932),
-            ["asp_scout"] = new(0.23624479066336016, -24.01767627376691),
-            ["vulture"] = new(0.24582565904236156, -16.13144680685502),
-            ["asp"] = new(0, -25.075346320612607),
-            ["federation_dropship"] = new(0.0330741525538769, -34.46660635414665),
-            ["type7"] = new(-0.3844698663548397, -36.25912276792104),
-            ["typex"] = new(0, -26.1201524173048),
-            ["federation_dropship_mkii"] = new(-0.03360819181317313, -34.48447154692093),
-            ["empire_trader"] = new(-1.6299010929385205, -42.45929907453549),
-            ["typex_2"] = new(-0.1340211463206372, -25.743781130382647),
-            ["typex_3"] = new(-0.14999680198641616, -23.32654308111006),
-            ["federation_gunship"] = new(-0.03360819181317313, -34.48447154692093),
-            ["krait_light"] = new(0.6031567730891499, -29.808101534971505),
-            ["krait_mkii"] = new(-0.439005506050203, -28.642501220707378),
-            ["orca"] = new(0.8935034127811378, -60.66695165859758),
-            ["ferdelance"] = new(-1.2886041335053922, -11.051961482268358),
-            ["mamba"] = new(-0.3384479441319697, -17.0160874323599),
-            ["python"] = new(0.02428152046769198, -27.8032388647518),
-            ["python_nx"] = new(-0.19850712748954485, -27.652575857555383),
-            ["type8"] = new(-0.29301020868417604, -19.568625297953936),
-            ["type9"] = new(0, -41.97662141416277),
-            ["belugaliner"] = new(-0.15900690862724954, -96.06768779190353),
-            ["type9_military"] = new(0, -41.97662141416277),
-            ["anaconda"] = new(-0.2973854218978083, 11.835423460533919),
-            ["federation_corvette"] = new(0, 17.57732609729217),
-            ["cutter"] = new(0, -78.97504907349804),
-            ["mandalay"] = new(-0.07054133462671332, -19.3093099026056),
-            ["cobramkv"] = new(0.06363939123438424, -13.024934562983267),
-            ["corsair"] = new(-0.3444149294353526, -28.23179340609525),
-            ["panthermkii"] = new(-1.3078012419992395, -54.711916783483),
-            ["lakonminer"] = new(3.2158969190817974, -30.937907691306424),
-            ["explorer_nx"] = new(-0.7820737162192071, -62.305031957744566),
-            ["smallcombat01_nx"] = new(0.20853152946436159, -14.369195925926613),
-            ["mediumtransport01"] = new(-0.6075405725357383, -42.08868797230343),
-            ["taxi"] = new(-0.999665340505111, -11.913859432190865),
-            ["foot"] = default,
-        };
+    private static readonly ConcurrentDictionary<string, HumanSiteMapPoint>
+        Offsets = new(
+            new Dictionary<string, HumanSiteMapPoint>
+            {
+                ["sidewinder"] = new(0.003973524156032526, -1.8918079917214574),
+                ["eagle"] = new(0.2022841743348611, -9.475366622689792),
+                ["hauler"] = new(0.09697669984436012, -12.599239384408765),
+                ["adder"] = new(-1.0448119356622934, -11.715904797681277),
+                ["empire_eagle"] = new(0.24583362859945412, -8.536714551074842),
+                ["viper"] = new(0.12291616974324898, -7.182614926481333),
+                ["cobramkiii"] = new(-0.15764970873549044, -9.031276393889643),
+                ["viper_mkiv"] = new(-0.000002767397930854968, -8.065723234733316),
+                ["diamondback"] = new(-0.000004161491337663819, -9.890813997121282),
+                ["type6"] = new(0, -20.957581116002204),
+                ["dolphin"] = new(0.24276978, -19.054316),
+                ["diamondbackxl"] = new(0.5462154, -18.501362),
+                ["empire_courier"] = new(0, -14.442907807215595),
+                ["independant_trader"] = new(0, -21.080499480318932),
+                ["asp_scout"] = new(0.23624479066336016, -24.01767627376691),
+                ["vulture"] = new(0.24582565904236156, -16.13144680685502),
+                ["asp"] = new(0, -25.075346320612607),
+                ["federation_dropship"] = new(0.0330741525538769, -34.46660635414665),
+                ["type7"] = new(-0.3844698663548397, -36.25912276792104),
+                ["typex"] = new(0, -26.1201524173048),
+                ["federation_dropship_mkii"] = new(-0.03360819181317313, -34.48447154692093),
+                ["empire_trader"] = new(-1.6299010929385205, -42.45929907453549),
+                ["typex_2"] = new(-0.1340211463206372, -25.743781130382647),
+                ["typex_3"] = new(-0.14999680198641616, -23.32654308111006),
+                ["federation_gunship"] = new(-0.03360819181317313, -34.48447154692093),
+                ["krait_light"] = new(0.6031567730891499, -29.808101534971505),
+                ["krait_mkii"] = new(-0.439005506050203, -28.642501220707378),
+                ["orca"] = new(0.8935034127811378, -60.66695165859758),
+                ["ferdelance"] = new(-1.2886041335053922, -11.051961482268358),
+                ["mamba"] = new(-0.3384479441319697, -17.0160874323599),
+                ["python"] = new(0.02428152046769198, -27.8032388647518),
+                ["python_nx"] = new(-0.19850712748954485, -27.652575857555383),
+                ["type8"] = new(-0.29301020868417604, -19.568625297953936),
+                ["type9"] = new(0, -41.97662141416277),
+                ["belugaliner"] = new(-0.15900690862724954, -96.06768779190353),
+                ["type9_military"] = new(0, -41.97662141416277),
+                ["anaconda"] = new(-0.2973854218978083, 11.835423460533919),
+                ["federation_corvette"] = new(0, 17.57732609729217),
+                ["cutter"] = new(0, -78.97504907349804),
+                ["mandalay"] = new(-0.07054133462671332, -19.3093099026056),
+                ["cobramkv"] = new(0.06363939123438424, -13.024934562983267),
+                ["corsair"] = new(-0.3444149294353526, -28.23179340609525),
+                ["panthermkii"] = new(-1.3078012419992395, -54.711916783483),
+                ["lakonminer"] = new(3.2158969190817974, -30.937907691306424),
+                ["explorer_nx"] = new(-0.7820737162192071, -62.305031957744566),
+                ["smallcombat01_nx"] = new(0.20853152946436159, -14.369195925926613),
+                ["mediumtransport01"] = new(-0.6075405725357383, -42.08868797230343),
+                ["taxi"] = new(-0.999665340505111, -11.913859432190865),
+                ["foot"] = default,
+            },
+            StringComparer.OrdinalIgnoreCase);
 
     public static HumanSiteMapPoint Find(string? vehicle)
     {
         return string.IsNullOrWhiteSpace(vehicle)
             ? default
             : Offsets.GetValueOrDefault(vehicle);
+    }
+
+    public static void Set(string vehicle, HumanSiteMapPoint offset)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(vehicle);
+        if (!offset.IsFinite)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(offset),
+                "The vehicle offset must be finite.");
+        }
+
+        Offsets[vehicle.Trim()] = offset;
     }
 }
 

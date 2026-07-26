@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Input;
@@ -58,6 +59,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly ApplicationLogService? applicationLogService;
     private Func<DirectoryInfo, Task<bool>>? journalCommandDirectoryLauncher;
     private Func<Task>? journalCommandShutdownRequester;
+    private Func<string, Task>? journalCommandClipboardWriter;
     private readonly AsyncCommand importLegacyProfileCommand;
     private readonly AsyncCommand resetExplorationCommand;
     private readonly AsyncCommand cancelResetExplorationCommand;
@@ -1303,10 +1305,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public void SetJournalCommandPlatformServices(
         Func<DirectoryInfo, Task<bool>>? launchDirectory,
-        Func<Task>? requestShutdown)
+        Func<Task>? requestShutdown,
+        Func<string, Task>? writeClipboard)
     {
         journalCommandDirectoryLauncher = launchDirectory;
         journalCommandShutdownRequester = requestShutdown;
+        journalCommandClipboardWriter = writeClipboard;
     }
 
     public async Task ImportLegacyProfileAsync()
@@ -2666,10 +2670,238 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                             site.Location.Longitude),
                         "The active settlement origin is now the ground target.");
                     break;
+                case "@@":
+                    await CaptureShipCockpitOffsetAsync();
+                    break;
+                case "!!":
+                    await CopyGroundTargetOffsetAsync();
+                    break;
+                case "..":
+                    await CopySettlementOffsetAsync();
+                    break;
+                case "//":
+                    CompareSettlementOffsetCalculations();
+                    break;
             }
         }
 
         return requestShutdown;
+    }
+
+    private async Task CaptureShipCockpitOffsetAsync()
+    {
+        if (!TryGetSurfaceCommandContext(
+                out var currentStatus,
+                out var currentLocation,
+                out var radius)
+            || string.IsNullOrWhiteSpace(journalState.ShipType))
+        {
+            StatusMessage =
+                "A current ship and surface position are required to calibrate its cockpit offset.";
+            return;
+        }
+
+        var shipType = journalState.ShipType;
+        var offset = HumanSiteNavigation.GetSiteOffset(
+            GroundTarget.Target,
+            currentLocation,
+            radius,
+            currentStatus.NormalizedHeading);
+        HumanSiteVehicleOffsets.Set(shipType, offset);
+        var text = string.Create(
+            CultureInfo.InvariantCulture,
+            $"{{ \"{shipType}\", new HumanSiteMapPoint({offset.X:R}, {offset.Y:R}) }}, ");
+        applicationLogService?.Append("Cockpit offset: " + text);
+        if (await WriteJournalCommandClipboardAsync(text))
+        {
+            StatusMessage =
+                $"Captured and copied the {shipType} cockpit offset for this session.";
+        }
+    }
+
+    private async Task CopyGroundTargetOffsetAsync()
+    {
+        if (!TryGetAlignedSettlementCommandContext(
+                out var currentStatus,
+                out var currentLocation,
+                out var radius,
+                out var siteHeading))
+        {
+            return;
+        }
+
+        var offset = HumanSiteNavigation.GetSiteOffset(
+            GroundTarget.Target,
+            currentLocation,
+            radius,
+            siteHeading);
+        var rotation = SurfaceNavigation.NormalizeDegrees(
+            currentStatus.NormalizedHeading - siteHeading);
+        var text = "\"offset\": " + FormatMapPoint(offset);
+        if (rotation != 0)
+        {
+            text += string.Create(
+                CultureInfo.InvariantCulture,
+                $", \"rot\": {rotation:R}");
+        }
+
+        applicationLogService?.Append(text);
+        if (await WriteJournalCommandClipboardAsync(text))
+        {
+            StatusMessage =
+                "Copied the ground-target offset and settlement-relative rotation.";
+        }
+    }
+
+    private async Task CopySettlementOffsetAsync()
+    {
+        if (!TryGetAlignedSettlementCommandContext(
+                out _,
+                out var currentLocation,
+                out var radius,
+                out var siteHeading)
+            || HumanSite.ActiveSite is not { } site)
+        {
+            return;
+        }
+
+        var offset = HumanSiteNavigation.GetSiteOffset(
+            new SurfaceCoordinate(
+                site.Location.Latitude,
+                site.Location.Longitude),
+            currentLocation,
+            radius,
+            siteHeading);
+        var text = FormatMapPoint(offset);
+        applicationLogService?.Append(
+            "Relative to settlement origin: " + text);
+        if (await WriteJournalCommandClipboardAsync(text))
+        {
+            StatusMessage = "Copied the current settlement-relative offset.";
+        }
+    }
+
+    private void CompareSettlementOffsetCalculations()
+    {
+        if (!TryGetAlignedSettlementCommandContext(
+                out _,
+                out var currentLocation,
+                out var radius,
+                out var siteHeading)
+            || HumanSite.ActiveSite is not { } site)
+        {
+            return;
+        }
+
+        var siteLocation = new SurfaceCoordinate(
+            site.Location.Latitude,
+            site.Location.Longitude);
+        var direct = HumanSiteNavigation.GetSiteOffset(
+            siteLocation,
+            currentLocation,
+            radius,
+            siteHeading);
+        var distance = SurfaceNavigation.GetDistance(
+            siteLocation,
+            currentLocation,
+            radius);
+        var angle = SurfaceNavigation.NormalizeDegrees(
+            SurfaceNavigation.GetBearing(siteLocation, currentLocation)
+                - siteHeading);
+        var legacyRadians = (180 - angle) * Math.PI / 180;
+        var alternate = new HumanSiteMapPoint(
+            Math.Sin(legacyRadians) * distance,
+            Math.Cos(legacyRadians) * distance);
+        applicationLogService?.Append(
+            "Settlement offset comparison: alternate "
+                + FormatMapPoint(alternate)
+                + " vs direct "
+                + FormatMapPoint(direct));
+        StatusMessage =
+            "Settlement offset comparison was written to the application log.";
+    }
+
+    private bool TryGetAlignedSettlementCommandContext(
+        out EliteStatus currentStatus,
+        out SurfaceCoordinate currentLocation,
+        out double radius,
+        out double siteHeading)
+    {
+        siteHeading = 0;
+        if (!TryGetSurfaceCommandContext(
+                out currentStatus,
+                out currentLocation,
+                out radius)
+            || HumanSite.ActiveSite is not { Heading: { } heading })
+        {
+            StatusMessage =
+                "An aligned settlement and current surface position are required for this measurement.";
+            return false;
+        }
+
+        siteHeading = heading;
+        return true;
+    }
+
+    private bool TryGetSurfaceCommandContext(
+        out EliteStatus currentStatus,
+        out SurfaceCoordinate currentLocation,
+        out double radius)
+    {
+        currentStatus = latestStatus!;
+        currentLocation = default;
+        radius = 0;
+        if (latestStatus is not { HasLatitudeLongitude: true } status
+            || status.PlanetRadius <= 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            currentLocation = new SurfaceCoordinate(
+                status.Latitude,
+                status.Longitude);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return false;
+        }
+
+        currentStatus = status;
+        radius = (double)status.PlanetRadius;
+        return double.IsFinite(radius) && radius > 0;
+    }
+
+    private async Task<bool> WriteJournalCommandClipboardAsync(string text)
+    {
+        if (journalCommandClipboardWriter is null)
+        {
+            StatusMessage = "The desktop clipboard is not available.";
+            return false;
+        }
+
+        try
+        {
+            await journalCommandClipboardWriter(text);
+            return true;
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or NotSupportedException
+                or UnauthorizedAccessException)
+        {
+            StatusMessage = "The measurement could not be copied: "
+                + exception.Message;
+            return false;
+        }
+    }
+
+    private static string FormatMapPoint(HumanSiteMapPoint point)
+    {
+        return string.Create(
+            CultureInfo.InvariantCulture,
+            $"{{ \"X\": {point.X:R}, \"Y\": {point.Y:R} }}");
     }
 
     private async Task<bool> OpenCurrentSystemScreenshotFolderAsync()

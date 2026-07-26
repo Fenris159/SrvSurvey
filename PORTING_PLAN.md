@@ -495,8 +495,11 @@ UI tests where practical, and live Windows/Linux evidence.
   with the legacy short-genus aliases, and `.ff`/`.firstFoot <body>` updates
   both system history and organic rewards. `.imgs`, `.kill`, and `!` use the
   cross-platform folder launcher, graceful shutdown path, and current settlement
-  origin respectively. Bootstrap replay cannot execute any of these commands or
-  desktop actions. Human-site arbitration is wired into the same coordinator.
+  origin respectively. The legacy `@@`, `!!`, `..`, and `//` developer
+  measurements now use the portable surface transform, session cockpit-offset
+  table, application log, and Avalonia clipboard boundary. Bootstrap replay
+  cannot execute any of these commands or desktop actions. Human-site
+  arbitration is wired into the same coordinator.
   `PlotSphericalSearch` now
   consolidates spherical-limit, Boxel-search, and followed-route Galaxy Map
   guidance at the original top-right anchor.

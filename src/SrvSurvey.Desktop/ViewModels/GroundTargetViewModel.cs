@@ -140,6 +140,8 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
 
     public bool IsTargetActive => state.IsActive;
 
+    public SurfaceCoordinate Target => state.Target;
+
     public string TargetStatusLabel => state.IsActive ? "ACTIVE" : "INACTIVE";
 
     public bool ShouldShow => state.IsActive

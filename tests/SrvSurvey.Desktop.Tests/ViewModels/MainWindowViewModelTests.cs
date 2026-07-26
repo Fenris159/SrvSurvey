@@ -1,4 +1,5 @@
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
@@ -7,6 +8,7 @@ using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Core.Settlements;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
@@ -1524,7 +1526,8 @@ public sealed class MainWindowViewModelTests
                 {
                     shutdownCount++;
                     return Task.CompletedTask;
-                });
+                },
+                _ => Task.CompletedTask);
 
             await viewModel.RefreshAsync();
 
@@ -1554,6 +1557,131 @@ public sealed class MainWindowViewModelTests
                 double.Parse(
                     viewModel.GroundTarget.TargetLongitude,
                     CultureInfo.CurrentCulture));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task DeveloperMeasurementCommandsUsePortableGeometryAndClipboard()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-developer-measurement-commands-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-25T120000.01.log");
+            const string shipType = "test_measurement_ship";
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + $"{{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"LoadGame\",\"Commander\":\"Drew\",\"FID\":\"F123\",\"Ship\":\"{shipType}\"}}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:03Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:04Z\",\"event\":\"ApproachSettlement\",\"Name\":\"Haberlandt Survey\",\"MarketID\":12345,\"SystemAddress\":42,\"BodyID\":3,\"BodyName\":\"Test 1\",\"Latitude\":-12.5,\"Longitude\":44.25,\"StationEconomy\":\"$economy_Agri;\",\"StationEconomy_Localised\":\"Agriculture\",\"StationServices\":[\"dock\"]}\n");
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Status.json"),
+                "{\"event\":\"Status\",\"Flags\":69206016,\"Flags2\":0,\"Latitude\":-12.49,\"Longitude\":44.26,\"Heading\":90,\"Altitude\":10,\"BodyName\":\"Test 1\",\"PlanetRadius\":1000}");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            await new GroundTargetSettingsStore(profile).SaveAsync(
+                new GroundTargetSnapshot(
+                    true,
+                    new SurfaceCoordinate(-12.5, 44.25)));
+            await new HumanSiteKnowledgeStore(profile).SaveAsync(
+                new HumanSiteKnowledgeContext(
+                    "F123",
+                    "Drew",
+                    "Test",
+                    42,
+                    null,
+                    1000),
+                new HumanSiteLiveSnapshot(
+                    "Haberlandt Survey",
+                    "Haberlandt Survey",
+                    12345,
+                    42,
+                    3,
+                    "Test 1",
+                    new HumanSiteSurfaceLocation(-12.5, 44.25),
+                    HumanSiteEconomy.Agriculture,
+                    "$economy_Agri;",
+                    "Agriculture",
+                    string.Empty,
+                    null,
+                    string.Empty,
+                    string.Empty,
+                    ["dock"],
+                    "OnFootSettlement",
+                    HumanSiteLandingPads.Empty,
+                    1,
+                    null,
+                    30,
+                    HumanSiteDockingStatus.None,
+                    0,
+                    null,
+                    false,
+                    DateTimeOffset.Parse("2026-07-25T12:00:04Z"),
+                    DateTimeOffset.Parse("2026-07-25T12:00:04Z")),
+                HumanSiteGeometrySource.ManualFoot);
+            var log = new ApplicationLogService(profile);
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                applicationLogService: log);
+            var clipboardWrites = new List<string>();
+            viewModel.SetJournalCommandPlatformServices(
+                null,
+                null,
+                text =>
+                {
+                    clipboardWrites.Add(text);
+                    return Task.CompletedTask;
+                });
+            await viewModel.RefreshAsync();
+            Assert.Equal(30, viewModel.HumanSite.ActiveSite?.Heading);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-25T12:00:05Z\",\"event\":\"SendText\",\"Message\":\"@@\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:06Z\",\"event\":\"SendText\",\"Message\":\"!!\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:07Z\",\"event\":\"SendText\",\"Message\":\"..\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:08Z\",\"event\":\"SendText\",\"Message\":\"//\"}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Collection(
+                clipboardWrites,
+                text =>
+                {
+                    Assert.Contains(shipType, text);
+                    Assert.Contains("HumanSiteMapPoint", text);
+                },
+                text =>
+                {
+                    Assert.StartsWith("\"offset\":", text);
+                    Assert.Contains("\"rot\": 60", text);
+                },
+                text => Assert.StartsWith("{ \"X\":", text));
+            Assert.NotEqual(
+                default,
+                HumanSiteVehicleOffsets.Find(shipType));
+            Assert.Contains(
+                "Settlement offset comparison:",
+                log.Text,
+                StringComparison.Ordinal);
         }
         finally
         {

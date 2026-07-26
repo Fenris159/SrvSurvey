@@ -255,7 +255,8 @@ public sealed partial class App : Application
                 directory => mainWindow.Launcher.LaunchDirectoryInfoAsync(
                     directory),
                 async () => await Dispatcher.UIThread.InvokeAsync(
-                    () => desktop.Shutdown()));
+                    () => desktop.Shutdown()),
+                WriteClipboardAsync);
 
             var errorReports = new ErrorReportWindowCoordinator(
                 mainWindow,
@@ -735,7 +736,7 @@ public sealed partial class App : Application
             globalControllerInputService.Start();
             desktop.Exit += (_, _) =>
             {
-                viewModel.SetJournalCommandPlatformServices(null, null);
+                viewModel.SetJournalCommandPlatformServices(null, null, null);
                 viewModel.ProfileImportCompleted -=
                     RestartAfterProfileImportAsync;
                 viewModel.JournalSettings.RestartRequested -=
