@@ -107,11 +107,25 @@ jobs:
           -Version "${{ needs.release-metadata.outputs.version }}"
           -RuntimeIdentifier "${{ matrix.rid }}"
 
+      - name: Prepare package output
+        shell: pwsh
+        run: New-Item -ItemType Directory -Path packages -Force | Out-Null
+
+      - name: Generate SPDX software bill of materials
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610
+        with:
+          path: artifacts/${{ matrix.rid }}
+          format: spdx-json
+          output-file: packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-${{ matrix.rid }}.spdx.json
+          syft-version: v1.49.0
+          upload-artifact: false
+          upload-release-assets: false
+          dependency-snapshot: false
+
       - name: Package Windows application
         if: matrix.archive == 'zip'
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Path packages -Force | Out-Null
           $archive = "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-${{ matrix.rid }}.zip"
           Compress-Archive -Path "artifacts/${{ matrix.rid }}/*" -DestinationPath $archive
 
@@ -119,7 +133,6 @@ jobs:
         if: matrix.archive == 'tar.gz'
         shell: bash
         run: |
-          mkdir -p packages
           tar --create --gzip \
             --file "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-${{ matrix.rid }}.tar.gz" \
             --directory "artifacts/${{ matrix.rid }}" .

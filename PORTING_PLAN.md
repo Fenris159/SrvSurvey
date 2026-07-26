@@ -777,8 +777,10 @@ the gap.
 - [x] Add a PNG application icon, desktop entry, AppStream metadata, and GPL
   license to the AppImage. No application-owned MIME type or URL scheme is
   required by the current feature set.
-- [ ] Generate checksums and a software bill of materials. Package and archive
-  SHA-256 manifests are generated and exercised; SBOM generation remains open.
+- [x] Generate checksums and a software bill of materials. Each tested publish
+  directory receives the per-file SHA-256 release manifest before a pinned Syft
+  scan creates a platform-specific SPDX JSON SBOM; package SHA-256 values and
+  both SBOMs are retained with review artifacts and tagged releases.
 - [ ] Test install, upgrade, downgrade/rollback, and uninstall on clean systems.
 
 A Docker image is useful for reproducible Linux builds; the GUI application is

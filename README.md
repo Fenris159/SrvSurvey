@@ -58,8 +58,9 @@ Diagnostics. Catalog updates are staged, validated, backed up, and activated
 independently of application releases.
 
 Cross-platform CI produces checksum-indexed self-contained Windows and Linux
-archives. The Linux job also creates a desktop-integrated AppImage from the same
-tested publish output and structurally inspects it without starting the UI.
+archives plus platform-specific SPDX software bills of materials. The Linux job
+also creates a desktop-integrated AppImage from the same tested publish output
+and structurally inspects it without starting the UI.
 
 ## Feedback
 
