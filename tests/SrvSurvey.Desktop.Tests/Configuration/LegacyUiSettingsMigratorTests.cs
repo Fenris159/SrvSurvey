@@ -36,6 +36,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "keepOverlays": true,
               "hidePlottersFromCombatSuits": true,
               "hidePlottersFromMaverickSuits": false,
+              "plotterScale": 16.0,
               "focusGameOnStart": false,
               "focusGameOnMinimize": false,
               "focusGameAfterFsdJump": true,
@@ -184,6 +185,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new OverlayBehaviorPreferences(true, true, false),
             new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            new OverlayScalePreferences(16),
+            new OverlayScaleSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new DesktopBehaviorPreferences(false, false, true, true),
             new DesktopBehaviorSettingsStore(paths.UiSettingsPath).Load());
@@ -421,6 +425,41 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new CommanderPreferencePreferences("Drew", null),
             new CommanderPreferenceSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            "green-light",
+            new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Null(result.PreviousSettingsBackupPath);
+    }
+
+    [Fact]
+    public async Task ExistingImportMarkerReceivesMissingOverlayScaleOnly()
+    {
+        var paths = CreatePaths();
+        var source = Path.Combine(temporaryDirectory, "legacy-scale-upgrade");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "{\"plotterScale\":22.0,\"darkTheme\":true}");
+        await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups-scale-upgrade"));
+        var migrator = new LegacyUiSettingsMigrator();
+        Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
+        var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
+        document.Update(root =>
+        {
+            root.Remove("OverlayScale");
+            root["Theme"] = "green-light";
+        });
+
+        var result = migrator.MigrateIfNeeded(paths);
+
+        Assert.True(result.Migrated);
+        Assert.Equal(1, result.MappedPreferenceCount);
+        Assert.Equal(
+            new OverlayScalePreferences(22),
+            new OverlayScaleSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             "green-light",
             new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());

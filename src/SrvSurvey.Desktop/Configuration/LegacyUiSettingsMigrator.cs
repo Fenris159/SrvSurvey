@@ -65,6 +65,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("hidePlottersFromCombatSuits", "HideInDominatorSuit"),
                     ("hidePlottersFromMaverickSuits", "HideInMaverickSuit"),
                 ]);
+                mappedCount += MapOverlayScale(legacy, root);
                 mappedCount += MapSection(legacy, root, "DesktopBehavior",
                 [
                     ("focusGameOnStart", "FocusGameOnStart"),
@@ -306,7 +307,12 @@ public sealed class LegacyUiSettingsMigrator
         var shouldMapColor = legacy["inferColor"] is JsonObject
             && (existing["FirstFootfallInference"] is not JsonObject inference
                 || !inference.ContainsKey("Color"));
-        if (pending.Length == 0 && !shouldMapColor)
+        var shouldMapOverlayScale = legacy["plotterScale"] is not null
+            && (existing["OverlayScale"] is not JsonObject overlayScale
+                || !overlayScale.ContainsKey("Index"));
+        if (pending.Length == 0
+            && !shouldMapColor
+            && !shouldMapOverlayScale)
         {
             return LegacyUiSettingsMigrationResult.NotRequired;
         }
@@ -327,6 +333,11 @@ public sealed class LegacyUiSettingsMigrator
             {
                 mappedCount += MapFirstFootfallColor(legacy, root);
             }
+
+            if (shouldMapOverlayScale)
+            {
+                mappedCount += MapOverlayScale(legacy, root);
+            }
         });
         return mappedCount == 0
             ? LegacyUiSettingsMigrationResult.NotRequired
@@ -342,6 +353,47 @@ public sealed class LegacyUiSettingsMigrator
         count += Copy(legacy, "inferThreshold", section, "Threshold");
         count += MapFirstFootfallColor(legacy, target);
         return count;
+    }
+
+    private static int MapOverlayScale(
+        JsonObject legacy,
+        JsonObject target)
+    {
+        if (!TryGetOverlayScaleIndex(legacy["plotterScale"], out var index)
+            || !OverlayScaleCatalog.IsSupported(index))
+        {
+            return 0;
+        }
+
+        GetOrCreateObject(target, "OverlayScale")["Index"] = index;
+        return 1;
+    }
+
+    private static bool TryGetOverlayScaleIndex(
+        JsonNode? node,
+        out int index)
+    {
+        index = 0;
+        if (node is not JsonValue value)
+        {
+            return false;
+        }
+
+        if (value.TryGetValue<int>(out index))
+        {
+            return true;
+        }
+
+        if (!value.TryGetValue<double>(out var numeric)
+            || !double.IsFinite(numeric)
+            || numeric != Math.Truncate(numeric)
+            || numeric is < int.MinValue or > int.MaxValue)
+        {
+            return false;
+        }
+
+        index = (int)numeric;
+        return true;
     }
 
     private static int MapFirstFootfallColor(
