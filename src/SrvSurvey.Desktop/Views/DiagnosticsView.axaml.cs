@@ -10,6 +10,7 @@ public sealed partial class DiagnosticsView : UserControl
 {
     private DiagnosticsLogViewModel? connectedViewModel;
     private JournalInspectorViewModel? connectedInspector;
+    private ReleaseUpdateViewModel? connectedReleaseUpdates;
 
     public DiagnosticsView()
     {
@@ -26,10 +27,12 @@ public sealed partial class DiagnosticsView : UserControl
         {
             connectedViewModel = viewModel.DiagnosticsLog;
             connectedInspector = viewModel.JournalInspector;
+            connectedReleaseUpdates = viewModel.ReleaseUpdates;
             connectedViewModel.SetPlatformServices(
                 WriteClipboardAsync,
                 LaunchDirectoryAsync);
             connectedInspector.SetClipboardWriter(WriteClipboardAsync);
+            connectedReleaseUpdates.SetUriLauncher(LaunchUriAsync);
         }
     }
 
@@ -37,8 +40,10 @@ public sealed partial class DiagnosticsView : UserControl
     {
         connectedViewModel?.SetPlatformServices(null, null);
         connectedInspector?.SetClipboardWriter(null);
+        connectedReleaseUpdates?.SetUriLauncher(null);
         connectedViewModel = null;
         connectedInspector = null;
+        connectedReleaseUpdates = null;
     }
 
     private async Task WriteClipboardAsync(string text)
@@ -56,6 +61,14 @@ public sealed partial class DiagnosticsView : UserControl
             ?? throw new InvalidOperationException(
                 "The desktop launcher is not available.");
         return launcher.LaunchDirectoryInfoAsync(directory);
+    }
+
+    private Task<bool> LaunchUriAsync(Uri uri)
+    {
+        var launcher = TopLevel.GetTopLevel(this)?.Launcher
+            ?? throw new InvalidOperationException(
+                "The desktop launcher is not available.");
+        return launcher.LaunchUriAsync(uri);
     }
 
     private async void ChooseVisitedStarsCache_Click(

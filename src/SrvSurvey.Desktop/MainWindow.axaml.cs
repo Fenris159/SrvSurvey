@@ -45,6 +45,7 @@ public sealed partial class MainWindow : Window
         Opened -= OnOpened;
         var cancellation = new CancellationTokenSource();
         monitorCancellation = cancellation;
+        _ = viewModel.ReleaseUpdates.CheckAsync();
         await viewModel.RefreshAsync();
         if (!cancellation.IsCancellationRequested)
         {

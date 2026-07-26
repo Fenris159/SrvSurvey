@@ -33,6 +33,44 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Application updates" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Checks the same signed-off release index used by the original SrvSurvey. The check never installs files or changes profile data." />
+          </StackPanel>
+
+          <Grid ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
+            <TextBlock Classes="muted" Text="Installed" />
+            <TextBlock Grid.Column="1"
+                       FontWeight="SemiBold"
+                       Text="{Binding ReleaseUpdates.CurrentVersion}" />
+            <TextBlock Grid.Column="2" Classes="muted" Text="Published" />
+            <TextBlock Grid.Column="3"
+                       FontWeight="SemiBold"
+                       Text="{Binding ReleaseUpdates.LatestVersion}" />
+          </Grid>
+
+          <WrapPanel Orientation="Horizontal">
+            <Button Classes="secondary"
+                    Margin="0,0,8,8"
+                    Command="{Binding ReleaseUpdates.CheckCommand}"
+                    Content="{Binding ReleaseUpdates.CheckButtonText}" />
+            <Button Classes="primary"
+                    Margin="0,0,0,8"
+                    IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
+                    Command="{Binding ReleaseUpdates.OpenReleaseCommand}"
+                    Content="Open releases" />
+          </WrapPanel>
+
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding ReleaseUpdates.StatusMessage}" />
+        </StackPanel>
+      </Border>
+
       <Border Classes="card raised">
         <StackPanel Spacing="14">
           <StackPanel Spacing="4">

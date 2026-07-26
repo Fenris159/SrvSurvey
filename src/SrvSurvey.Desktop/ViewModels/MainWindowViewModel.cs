@@ -16,6 +16,7 @@ using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Travel;
+using SrvSurvey.Core.Updates;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform;
@@ -160,7 +161,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         FirstFootfallInferenceSettingsStore?
             firstFootfallInferenceSettingsStore = null,
         IFirstFootfallInferenceService? firstFootfallInferenceService = null,
-        RavenServiceSettingsStore? ravenServiceSettingsStore = null)
+        RavenServiceSettingsStore? ravenServiceSettingsStore = null,
+        ReleaseUpdateViewModel? releaseUpdates = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -185,6 +187,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             SystemNicknameCatalog.Load(AppDataPaths.DataDirectory),
             new SystemNicknameSettingsStore(AppDataPaths.UiSettingsPath));
         DiagnosticsLog = new DiagnosticsLogViewModel(applicationLogService);
+        ReleaseUpdates = releaseUpdates ?? new ReleaseUpdateViewModel(
+            new ReleaseUpdateService(),
+            typeof(MainWindowViewModel).Assembly.GetName().Version
+                ?? new Version(0, 0));
         JournalInspector = new JournalInspectorViewModel(
             ReplayQuestJournalEventAsync);
         var sharedJournalSettingsStore = journalSettingsStore
@@ -637,6 +643,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public SystemNicknameViewModel SystemNicknames { get; }
 
     public DiagnosticsLogViewModel DiagnosticsLog { get; }
+
+    public ReleaseUpdateViewModel ReleaseUpdates { get; }
 
     public JournalInspectorViewModel JournalInspector { get; }
 

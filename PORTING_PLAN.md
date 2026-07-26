@@ -502,6 +502,14 @@ UI tests where practical, and live Windows/Linux evidence.
   stale legacy sidecar cannot corrupt activation. Visual verification remains
   intentionally deferred to the final parity pass.
 - [ ] Network integrations, update behavior, diagnostics, and remaining tools.
+  The original non-store release check is now restored without its
+  Windows-only self-installer: Avalonia reads and validates the same published
+  `data.json` contract, compares the four-part `ghVer` against its corrected
+  `2.0.95.0` file version, checks asynchronously after the window opens, and
+  offers the original GitHub releases page. HTTP, rate-limit, timeout, and
+  malformed-index failures are contained and explicitly leave both the
+  installation and profile untouched. Reference-data refresh, packaged update
+  installation/rollback, and the remaining network audit keep this phase open.
 - [ ] Localization review for every migrated surface.
 
 Features may be explicitly deferred, but the release notes and UI must identify
