@@ -35,6 +35,14 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "useExternalData": false,
               "useExternalBioData": true,
               "tempRange_TEST": true,
+              "watchFssSettings_TEST": {
+                "saveDebugImages": true,
+                "yellowHorizontalTolerance": 77,
+                "yellowBar": {"t":11,"color":{"R":12,"G":13,"B":14}},
+                "blackArea": {"t":21,"color":{"R":22,"G":23,"B":24}},
+                "whiteText": {"t":31,"color":{"R":32,"G":33,"B":34}},
+                "yellowText": {"t":41,"color":{"R":42,"G":43,"B":44}}
+              },
               "eddnUpload": true,
               "eddnEnvironment": "live",
               "uploadGGG": true,
@@ -147,6 +155,16 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.False(survey.UseExternalData);
         Assert.True(survey.UseExternalBioData);
         Assert.True(survey.ShowTemperatureRangeDebug);
+        Assert.Equal(
+            new FssTuningDetectorSettings(
+                true,
+                true,
+                new FssPixelColor(12, 13, 14, 11),
+                77,
+                new FssPixelColor(22, 23, 24, 21),
+                new FssPixelColor(32, 33, 34, 31),
+                new FssPixelColor(42, 43, 44, 41)),
+            survey.FssTuningDetector);
         Assert.Equal(4, survey.SurfaceRadarSize);
         Assert.False(survey.HighlightDssCandidates);
         Assert.Equal(7_654_321, survey.DssValueFloor);
@@ -257,6 +275,30 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             import.Manifest.ImportedAtUtc,
             migrated["LegacyImport"]?["ImportedAtUtc"]
                 ?.GetValue<DateTimeOffset>());
+    }
+
+    [Fact]
+    public async Task ExplicitlyDisabledLegacyFssDetectorRemainsDisabled()
+    {
+        var paths = CreatePaths();
+        var source = Path.Combine(temporaryDirectory, "legacy-disabled-fss");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "{\"watchFssSettings_TEST\":null}");
+        await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups-disabled-fss"));
+
+        var result = new LegacyUiSettingsMigrator().MigrateIfNeeded(paths);
+
+        Assert.True(result.Migrated);
+        Assert.False(
+            new SystemSurveySettingsStore(paths.UiSettingsPath)
+                .Load()
+                .FssTuningDetector
+                .Enabled);
     }
 
     [Fact]

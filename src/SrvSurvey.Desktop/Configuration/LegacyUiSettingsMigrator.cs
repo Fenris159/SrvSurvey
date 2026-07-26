@@ -104,6 +104,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("skipRingsDSS", "SkipRingsForDss"),
                     ("showNonBodySignals", "ShowNonBodySignals"),
                 ]);
+                mappedCount += MapFssTuningDetector(legacy, root);
                 mappedCount += MapSection(legacy, root, "BiologyPredictions",
                 [
                     ("formPredictionsCurrentBodyOnly", "CurrentBodyOnly", 0),
@@ -224,6 +225,66 @@ public sealed class LegacyUiSettingsMigrator
             && blackValue;
         target["Theme"] = black ? "orange-dark" : dark ? "blue-dark" : "blue-light";
         return 1;
+    }
+
+    private static int MapFssTuningDetector(
+        JsonObject legacy,
+        JsonObject target)
+    {
+        if (!legacy.TryGetPropertyValue(
+                "watchFssSettings_TEST",
+                out var legacyDetector))
+        {
+            return 0;
+        }
+
+        var systemSurvey = GetOrCreateObject(target, "SystemSurvey");
+        var detector = GetOrCreateObject(
+            systemSurvey,
+            "FssTuningDetector");
+        if (legacyDetector is not JsonObject source)
+        {
+            detector["Enabled"] = false;
+            return 1;
+        }
+
+        detector["Enabled"] = true;
+        var count = 1;
+        count += Copy(
+            source,
+            "saveDebugImages",
+            detector,
+            "SaveDiagnosticImages");
+        count += Copy(
+            source,
+            "yellowHorizontalTolerance",
+            detector,
+            "YellowHorizontalTolerance");
+        count += MapFssPixelColor(source, "yellowBar", detector, "YellowBar");
+        count += MapFssPixelColor(source, "blackArea", detector, "BlackArea");
+        count += MapFssPixelColor(source, "whiteText", detector, "WhiteText");
+        count += MapFssPixelColor(source, "yellowText", detector, "YellowText");
+        return count;
+    }
+
+    private static int MapFssPixelColor(
+        JsonObject source,
+        string sourceName,
+        JsonObject target,
+        string targetName)
+    {
+        if (source[sourceName] is not JsonObject watchColor
+            || watchColor["color"] is not JsonObject color)
+        {
+            return 0;
+        }
+
+        var mapped = GetOrCreateObject(target, targetName);
+        var count = Copy(watchColor, "t", mapped, "Tolerance");
+        count += Copy(color, "R", mapped, "Red");
+        count += Copy(color, "G", mapped, "Green");
+        count += Copy(color, "B", mapped, "Blue");
+        return count;
     }
 
     private static int MapColonization(JsonObject legacy, JsonObject target)

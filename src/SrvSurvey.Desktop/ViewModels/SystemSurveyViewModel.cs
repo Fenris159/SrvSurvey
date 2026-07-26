@@ -80,6 +80,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool skipGasGiantsForDss;
     private bool skipRingsForDss;
     private bool showNonBodySignals;
+    private FssTuningDetectorSettings fssTuningDetector =
+        FssTuningDetectorSettings.Default;
     private bool forceShowFssInfo;
     private bool manuallyHideFssInfo;
     private bool forceShowBodyInfo;
@@ -153,6 +155,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         skipGasGiantsForDss = preferences.SkipGasGiantsForDss;
         skipRingsForDss = preferences.SkipRingsForDss;
         showNonBodySignals = preferences.ShowNonBodySignals;
+        fssTuningDetector = preferences.FssTuningDetector;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -557,6 +560,22 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 OnPropertyChanged(nameof(NonBodySignalsText));
             }
         }
+    }
+
+    public FssTuningDetectorSettings FssTuningDetector => fssTuningDetector;
+
+    public bool FssTuningDetectorEnabled
+    {
+        get => FssTuningDetector.Enabled;
+        set => SetFssTuningDetectorPreference(
+            FssTuningDetector with { Enabled = value });
+    }
+
+    public bool SaveFssTuningDiagnosticImages
+    {
+        get => FssTuningDetector.SaveDiagnosticImages;
+        set => SetFssTuningDetectorPreference(
+            FssTuningDetector with { SaveDiagnosticImages = value });
     }
 
     public string SettingsStatus
@@ -2016,7 +2035,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 DssDistanceLimitLs,
                 SkipGasGiantsForDss,
                 SkipRingsForDss,
-                ShowNonBodySignals));
+                ShowNonBodySignals,
+                FssTuningDetector));
             SettingsStatus = string.Empty;
         }
         catch (Exception exception) when (
@@ -2028,6 +2048,22 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 + "session but could not be saved: "
                 + exception.Message;
         }
+    }
+
+    private void SetFssTuningDetectorPreference(
+        FssTuningDetectorSettings value)
+    {
+        if (fssTuningDetector == value)
+        {
+            return;
+        }
+
+        fssTuningDetector = value;
+        OnPropertyChanged(nameof(FssTuningDetector));
+        OnPropertyChanged(nameof(FssTuningDetectorEnabled));
+        OnPropertyChanged(nameof(SaveFssTuningDiagnosticImages));
+        SavePreferences();
+        RaiseVisibilityProperties();
     }
 
     private void RaiseVisibilityProperties()

@@ -70,7 +70,15 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
             DssDistanceLimitLs: 50_000,
             SkipGasGiantsForDss: false,
             SkipRingsForDss: false,
-            ShowNonBodySignals: true);
+            ShowNonBodySignals: true,
+            FssTuningDetector: new FssTuningDetectorSettings(
+                false,
+                true,
+                new FssPixelColor(1, 2, 3, 4),
+                5,
+                new FssPixelColor(6, 7, 8, 9),
+                new FssPixelColor(10, 11, 12, 13),
+                new FssPixelColor(14, 15, 16, 17)));
 
         store.Save(expected);
 
@@ -90,7 +98,10 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
                 + "\"BodyInfoBubbleSizeLy\":-4,"
                 + "\"PriorScanMinimumValue\":-5,"
                 + "\"HighGravityWarningLevel\":75,"
-                + "\"SurfaceRadarSize\":99}}");
+                + "\"SurfaceRadarSize\":99,"
+                + "\"FssTuningDetector\":{"
+                + "\"YellowHorizontalTolerance\":999,"
+                + "\"YellowBar\":{\"Red\":-1,\"Green\":999}}}}");
 
         var preferences = new SystemSurveySettingsStore(path).Load();
 
@@ -101,6 +112,41 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
         Assert.Equal(0, preferences.PriorScanMinimumValue);
         Assert.Equal(50, preferences.HighGravityWarningLevel);
         Assert.Equal(4, preferences.SurfaceRadarSize);
+        Assert.Equal(
+            255,
+            preferences.FssTuningDetector.YellowHorizontalTolerance);
+        Assert.Equal(0, preferences.FssTuningDetector.YellowBar.Red);
+        Assert.Equal(255, preferences.FssTuningDetector.YellowBar.Green);
+        Assert.Equal(
+            FssTuningDetectorSettings.Default.YellowBar.Blue,
+            preferences.FssTuningDetector.YellowBar.Blue);
+    }
+
+    [Fact]
+    public void SavingDetectorSettingsPreservesFutureNestedValues()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        File.WriteAllText(
+            path,
+            "{\"SystemSurvey\":{\"FssTuningDetector\":{"
+                + "\"FutureOption\":42,"
+                + "\"YellowBar\":{\"FutureColor\":true}}}}");
+        var store = new SystemSurveySettingsStore(path);
+        var preferences = store.Load() with
+        {
+            FssTuningDetector = FssTuningDetectorSettings.Default with
+            {
+                Enabled = false,
+            },
+        };
+
+        store.Save(preferences);
+
+        var json = File.ReadAllText(path);
+        Assert.Contains("FutureOption", json);
+        Assert.Contains("FutureColor", json);
+        Assert.False(store.Load().FssTuningDetector.Enabled);
     }
 
     public void Dispose()

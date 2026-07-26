@@ -201,7 +201,10 @@ public sealed class SystemSurveySettingsStore
             GetBoolean(
                 settings,
                 "ShowNonBodySignals",
-                defaults.ShowNonBodySignals));
+                defaults.ShowNonBodySignals),
+            GetFssTuningDetectorSettings(
+                settings?["FssTuningDetector"] as JsonObject,
+                defaults.FssTuningDetector));
     }
 
     public void Save(SystemSurveyPreferences preferences)
@@ -290,7 +293,90 @@ public sealed class SystemSurveySettingsStore
             settings["SkipGasGiantsForDss"] = preferences.SkipGasGiantsForDss;
             settings["SkipRingsForDss"] = preferences.SkipRingsForDss;
             settings["ShowNonBodySignals"] = preferences.ShowNonBodySignals;
+            WriteFssTuningDetectorSettings(
+                settings,
+                preferences.FssTuningDetector);
         });
+    }
+
+    private static FssTuningDetectorSettings GetFssTuningDetectorSettings(
+        JsonObject? source,
+        FssTuningDetectorSettings fallback)
+    {
+        return new FssTuningDetectorSettings(
+            GetBoolean(source, "Enabled", fallback.Enabled),
+            GetBoolean(
+                source,
+                "SaveDiagnosticImages",
+                fallback.SaveDiagnosticImages),
+            GetFssPixelColor(
+                source?["YellowBar"] as JsonObject,
+                fallback.YellowBar),
+            GetInt32(
+                source,
+                "YellowHorizontalTolerance",
+                fallback.YellowHorizontalTolerance,
+                0,
+                255),
+            GetFssPixelColor(
+                source?["BlackArea"] as JsonObject,
+                fallback.BlackArea),
+            GetFssPixelColor(
+                source?["WhiteText"] as JsonObject,
+                fallback.WhiteText),
+            GetFssPixelColor(
+                source?["YellowText"] as JsonObject,
+                fallback.YellowText));
+    }
+
+    private static FssPixelColor GetFssPixelColor(
+        JsonObject? source,
+        FssPixelColor fallback)
+    {
+        return new FssPixelColor(
+            GetInt32(source, "Red", fallback.Red, 0, 255),
+            GetInt32(source, "Green", fallback.Green, 0, 255),
+            GetInt32(source, "Blue", fallback.Blue, 0, 255),
+            GetInt32(source, "Tolerance", fallback.Tolerance, 0, 255));
+    }
+
+    private static void WriteFssTuningDetectorSettings(
+        JsonObject settings,
+        FssTuningDetectorSettings preferences)
+    {
+        var detector = settings["FssTuningDetector"] as JsonObject;
+        if (detector is null)
+        {
+            detector = [];
+            settings["FssTuningDetector"] = detector;
+        }
+
+        detector["Enabled"] = preferences.Enabled;
+        detector["SaveDiagnosticImages"] = preferences.SaveDiagnosticImages;
+        detector["YellowHorizontalTolerance"] =
+            preferences.YellowHorizontalTolerance;
+        WriteFssPixelColor(detector, "YellowBar", preferences.YellowBar);
+        WriteFssPixelColor(detector, "BlackArea", preferences.BlackArea);
+        WriteFssPixelColor(detector, "WhiteText", preferences.WhiteText);
+        WriteFssPixelColor(detector, "YellowText", preferences.YellowText);
+    }
+
+    private static void WriteFssPixelColor(
+        JsonObject detector,
+        string propertyName,
+        FssPixelColor color)
+    {
+        var target = detector[propertyName] as JsonObject;
+        if (target is null)
+        {
+            target = [];
+            detector[propertyName] = target;
+        }
+
+        target["Red"] = color.Red;
+        target["Green"] = color.Green;
+        target["Blue"] = color.Blue;
+        target["Tolerance"] = color.Tolerance;
     }
 
     private static bool GetBoolean(
@@ -379,7 +465,8 @@ public sealed record SystemSurveyPreferences(
     int DssDistanceLimitLs,
     bool SkipGasGiantsForDss,
     bool SkipRingsForDss,
-    bool ShowNonBodySignals)
+    bool ShowNonBodySignals,
+    FssTuningDetectorSettings FssTuningDetector)
 {
     public static SystemSurveyPreferences Default { get; } = new(
         AutoShowBodyInfo: true,
@@ -428,5 +515,31 @@ public sealed record SystemSurveyPreferences(
         DssDistanceLimitLs: 100_000,
         SkipGasGiantsForDss: true,
         SkipRingsForDss: true,
-        ShowNonBodySignals: false);
+        ShowNonBodySignals: false,
+        FssTuningDetector: FssTuningDetectorSettings.Default);
 }
+
+public sealed record FssTuningDetectorSettings(
+    bool Enabled,
+    bool SaveDiagnosticImages,
+    FssPixelColor YellowBar,
+    int YellowHorizontalTolerance,
+    FssPixelColor BlackArea,
+    FssPixelColor WhiteText,
+    FssPixelColor YellowText)
+{
+    public static FssTuningDetectorSettings Default { get; } = new(
+        Enabled: true,
+        SaveDiagnosticImages: false,
+        YellowBar: new FssPixelColor(193, 156, 65, 60),
+        YellowHorizontalTolerance: 100,
+        BlackArea: new FssPixelColor(0, 0, 0, 30),
+        WhiteText: new FssPixelColor(255, 255, 255, 50),
+        YellowText: new FssPixelColor(233, 197, 24, 50));
+}
+
+public sealed record FssPixelColor(
+    int Red,
+    int Green,
+    int Blue,
+    int Tolerance);
