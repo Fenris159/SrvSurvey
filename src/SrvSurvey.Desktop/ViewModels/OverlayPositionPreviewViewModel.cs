@@ -4,48 +4,15 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed record OverlayPositionPreviewViewModel(
     OverlayLayoutDefinition Definition,
+    string Subtitle,
+    string Context,
     IReadOnlyList<OverlayPositionPreviewRowViewModel> Rows,
+    string Footer,
+    string CompactText,
+    bool IsCompact,
+    bool ShowSubtitle,
     bool ShowFooter)
 {
-    private static readonly IReadOnlyDictionary<
-        OverlayLayoutCategory,
-        IReadOnlyList<OverlayPositionPreviewRowViewModel>> CategoryRows =
-        new Dictionary<
-            OverlayLayoutCategory,
-            IReadOnlyList<OverlayPositionPreviewRowViewModel>>
-        {
-            [OverlayLayoutCategory.ExplorationAndNavigation] =
-            [
-                new("System", "Example AA-A h42"),
-                new("Scan progress", "18 / 24 bodies", 75),
-                new("Signals", "3 biological • 2 geological"),
-            ],
-            [OverlayLayoutCategory.BiologyAndSurface] =
-            [
-                new("Species", "Bacterium Acies"),
-                new("Sample progress", "2 of 3", 67),
-                new("Distance", "146 m"),
-            ],
-            [OverlayLayoutCategory.SitesAndQuests] =
-            [
-                new("Site", "Guardian structure"),
-                new("Survey progress", "7 / 12", 58),
-                new("Objective", "Scan active obelisks"),
-            ],
-            [OverlayLayoutCategory.CombatAndColonization] =
-            [
-                new("Location", "Construction site"),
-                new("Progress", "68%", 68),
-                new("Remaining", "Steel • 2,450 t"),
-            ],
-            [OverlayLayoutCategory.StatusAndUtilities] =
-            [
-                new("Status", "Monitoring"),
-                new("Activity", "Journal event received"),
-                new("Updated", "Just now"),
-            ],
-        };
-
     public string Title => Definition.DisplayName;
 
     public bool HasRows => Rows.Count > 0;
@@ -53,11 +20,32 @@ public sealed record OverlayPositionPreviewViewModel(
     public static OverlayPositionPreviewViewModel Create(
         OverlayLayoutDefinition definition)
     {
+        return Create(definition, OverlayPreviewSimulationState.Default);
+    }
+
+    internal static OverlayPositionPreviewViewModel Create(
+        OverlayLayoutDefinition definition,
+        OverlayPreviewSimulationState simulation)
+    {
         ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(simulation);
+        var content = OverlayPreviewSimulationProjector.Project(
+            definition,
+            simulation);
+        var isCompact = definition.PreviewSize.Height < 50;
+        var showSubtitle = !isCompact
+            && definition.PreviewSize.Height >= 140
+            && definition.PreviewSize.Width >= 150;
+        var showFooter = !isCompact
+            && definition.PreviewSize.Height >= 70
+            && definition.PreviewSize.Width >= 120;
+        var reservedHeight = 42
+            + (showSubtitle ? 24 : 0)
+            + (showFooter ? 14 : 0);
         var availableRows = Math.Clamp(
-            (definition.PreviewSize.Height - 42) / 24,
+            (definition.PreviewSize.Height - reservedHeight) / 24,
             0,
-            CategoryRows[definition.Category].Count);
+            content.Rows.Count);
         if (definition.PreviewSize.Width < 150)
         {
             availableRows = Math.Min(availableRows, 1);
@@ -65,9 +53,16 @@ public sealed record OverlayPositionPreviewViewModel(
 
         return new OverlayPositionPreviewViewModel(
             definition,
-            CategoryRows[definition.Category].Take(availableRows).ToArray(),
-            definition.PreviewSize.Height >= 70
-                && definition.PreviewSize.Width >= 120);
+            content.Subtitle,
+            content.Context,
+            content.Rows.Take(availableRows).ToArray(),
+            content.Footer,
+            string.IsNullOrWhiteSpace(content.CompactText)
+                ? content.Footer
+                : content.CompactText,
+            isCompact,
+            showSubtitle,
+            showFooter);
     }
 }
 
