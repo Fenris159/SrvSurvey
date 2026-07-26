@@ -563,8 +563,13 @@ UI tests where practical, and live Windows/Linux evidence.
   a unique app-data partial file with exact response-length bounds and
   incremental SHA-256 validation; only a fully verified stream atomically
   replaces the cache, an already-valid cache is reused, and a failed replacement
-  leaves the prior bytes untouched. Strict archive extraction,
-  installation/rollback, and the remaining network audit keep this phase open.
+  leaves the prior bytes untouched. ZIP and tar-gzip candidates are then staged
+  with strict manifest/version/RID/file-set validation, portable path and link
+  rejection, bounded expansion, per-file size/SHA-256 checks, preserved Linux
+  executable mode, and a verified ready-directory swap that preserves the prior
+  candidate on failure. Both full self-contained CI packages passed this staging
+  path. Installation/rollback and the remaining network audit keep this phase
+  open.
   The legacy regional-Codex Google Sheet now refreshes on the original
   weekly cadence or with a Codex-reference update. Its live 26-column CSV
   contract is parsed with bounded RFC-style quoting, numeric region IDs remain
