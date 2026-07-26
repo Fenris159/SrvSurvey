@@ -741,6 +741,19 @@ public sealed class GuardianViewModelTests
             Assert.Equal("MISSING", ramTahLog.ArtifactStatus);
             Assert.Equal("A01", ramTahLog.ObeliskNamesText);
 
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"CollectCargo","Type":"ancientcasket"}""")],
+                "Drew");
+            Assert.True(viewModel.HasCurrentObeliskArtifacts);
+            viewModel.ClearCargo();
+            Assert.False(viewModel.HasCurrentObeliskArtifacts);
+            viewModel.UpdateCargo(new CargoSnapshot(
+                DateTimeOffset.UtcNow,
+                "Cargo",
+                "SRV",
+                1,
+                [new CargoItem("ancientcasket", "Guardian Casket", 1, 0)]));
+
             viewModel.AutoZoomNearObelisks = false;
             Assert.Equal(0.65, viewModel.ActiveMapScale);
             Assert.True(viewModel.AdjustMapZoom(zoomIn: true));

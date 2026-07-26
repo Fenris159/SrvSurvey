@@ -81,6 +81,74 @@ public sealed class GuardianArtifactInventoryStateTests
     }
 
     [Fact]
+    public void MarketAndMainShipTransfersUpdateArtifactCounts()
+    {
+        var state = new GuardianArtifactInventoryState();
+        state.Reset(new CargoSnapshot(
+            DateTimeOffset.UtcNow,
+            "Cargo",
+            "Ship",
+            2,
+            [new CargoItem("ancientcasket", null, 2, 0)]));
+
+        Assert.True(state.Apply(Event(
+            "MarketBuy",
+            "\"Type\":\"ancientcasket\",\"Count\":3")));
+        Assert.True(state.Apply(Event(
+            "MarketSell",
+            "\"Type\":\"ancientcasket\",\"Count\":1")));
+        Assert.True(state.Apply(Event(
+            "CargoTransfer",
+            "\"Transfers\":["
+                + "{\"Type\":\"ancientcasket\",\"Count\":2,\"Direction\":\"tocarrier\"},"
+                + "{\"Type\":\"ancientorb\",\"Count\":1,\"Direction\":\"toship\"}]")));
+
+        Assert.Equal(2, state.GetCount("ca"));
+        Assert.Equal(1, state.GetCount("or"));
+    }
+
+    [Fact]
+    public void SrvTransfersUseTheCurrentVehicleDirection()
+    {
+        var state = new GuardianArtifactInventoryState();
+
+        Assert.True(state.Apply(
+            Event(
+                "CargoTransfer",
+                "\"Transfers\":["
+                    + "{\"Type\":\"ancienttablet\",\"Count\":3,\"Direction\":\"tosrv\"},"
+                    + "{\"Type\":\"ancientrelic\",\"Count\":1,\"Direction\":\"toship\"}]"),
+            isInSrv: true));
+        Assert.True(state.Apply(
+            Event(
+                "CargoTransfer",
+                "\"Transfers\":["
+                    + "{\"Type\":\"ancienttablet\",\"Count\":1,\"Direction\":\"toship\"}]"),
+            isInSrv: true));
+
+        Assert.Equal(2, state.GetCount("ta"));
+        Assert.Equal(0, state.GetCount("re"));
+    }
+
+    [Fact]
+    public void ArtifactDeltasClampWithoutOverflow()
+    {
+        var state = new GuardianArtifactInventoryState();
+        state.Reset(new CargoSnapshot(
+            DateTimeOffset.UtcNow,
+            "Cargo",
+            "Ship",
+            int.MaxValue,
+            [new CargoItem("ancienturn", null, int.MaxValue, 0)]));
+
+        Assert.False(state.Apply(Event(
+            "MarketBuy",
+            "\"Type\":\"ancienturn\",\"Count\":1")));
+
+        Assert.Equal(int.MaxValue, state.GetCount("ur"));
+    }
+
+    [Fact]
     public void CargoJournalInventoryReplacesStaleCounts()
     {
         var state = new GuardianArtifactInventoryState();

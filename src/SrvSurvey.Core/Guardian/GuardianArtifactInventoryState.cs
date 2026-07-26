@@ -43,7 +43,9 @@ public sealed class GuardianArtifactInventoryState
         return true;
     }
 
-    public bool Apply(JournalEventEnvelope journalEvent)
+    public bool Apply(
+        JournalEventEnvelope journalEvent,
+        bool isInSrv = false)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
         var changed = journalEvent.EventName switch
@@ -54,6 +56,15 @@ public sealed class GuardianArtifactInventoryState
             "EjectCargo" => ApplyDelta(
                 GetString(journalEvent.Payload, "Type"),
                 -Math.Max(0, GetInt32(journalEvent.Payload, "Count") ?? 0)),
+            "MarketBuy" => ApplyDelta(
+                GetString(journalEvent.Payload, "Type"),
+                Math.Max(0, GetInt32(journalEvent.Payload, "Count") ?? 0)),
+            "MarketSell" => ApplyDelta(
+                GetString(journalEvent.Payload, "Type"),
+                -Math.Max(0, GetInt32(journalEvent.Payload, "Count") ?? 0)),
+            "CargoTransfer" => ApplyTransfers(
+                journalEvent.Payload,
+                isInSrv),
             "Cargo" => ApplyCargoEvent(journalEvent.Payload),
             _ => false,
         };
@@ -121,9 +132,11 @@ public sealed class GuardianArtifactInventoryState
             var count = GetInt32(item, "Count") ?? 0;
             if (TryResolve(name, out var definition) && count > 0)
             {
-                replacement[definition.CommodityName] =
-                    replacement.GetValueOrDefault(definition.CommodityName)
-                    + count;
+                replacement[definition.CommodityName] = (int)Math.Min(
+                    int.MaxValue,
+                    (long)replacement.GetValueOrDefault(
+                        definition.CommodityName)
+                    + count);
             }
         }
 
@@ -151,7 +164,10 @@ public sealed class GuardianArtifactInventoryState
         }
 
         var previous = counts.GetValueOrDefault(definition.CommodityName);
-        var next = Math.Max(0, previous + delta);
+        var next = (int)Math.Clamp(
+            (long)previous + delta,
+            0,
+            int.MaxValue);
         if (next == previous)
         {
             return false;
@@ -167,6 +183,45 @@ public sealed class GuardianArtifactInventoryState
         }
 
         return true;
+    }
+
+    private bool ApplyTransfers(JsonElement root, bool isInSrv)
+    {
+        if (!root.TryGetProperty("Transfers", out var transfers)
+            || transfers.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        var changed = false;
+        foreach (var transfer in transfers.EnumerateArray())
+        {
+            var count = GetInt32(transfer, "Count") ?? 0;
+            var direction = GetString(transfer, "Direction");
+            if (count <= 0)
+            {
+                continue;
+            }
+
+            var delta = isInSrv
+                ? direction switch
+                {
+                    "tosrv" => count,
+                    "toship" => -count,
+                    _ => 0,
+                }
+                : direction switch
+                {
+                    "toship" => count,
+                    "tocarrier" => -count,
+                    _ => 0,
+                };
+            changed |= ApplyDelta(
+                GetString(transfer, "Type"),
+                delta);
+        }
+
+        return changed;
     }
 
     private static bool TryResolve(

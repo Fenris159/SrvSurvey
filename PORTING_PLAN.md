@@ -238,6 +238,14 @@ without deleting system survey history or active massacre missions. This also
 prevents a stale Fleet Carrier dock from authorizing Raven cargo deltas after a
 rebuy. Focused reducer and Avalonia presentation fixtures cover each exit path.
 
+Guardian artifact inventory now treats `Cargo.json` as an authoritative snapshot
+only when the monitor actually observes a new verified file. Unchanged poll
+ticks no longer erase journal-applied cargo, and collect/eject, market buy/sell,
+plus direction-aware ship/SRV transfers update Ram Tah requirements immediately.
+Counts clamp safely at zero and `Int32.MaxValue`; explicit multi-client
+suppression still clears the inventory because the shared file cannot be
+attributed to one commander.
+
 Exit gate: the supported event inventory has a fixture and parity result; unknown
 events remain non-fatal and observable.
 

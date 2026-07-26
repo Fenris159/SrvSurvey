@@ -1699,9 +1699,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         await Guardian.ApplyJournalEventsAsync(
             update.JournalEvents,
             activeProfileCommanderName,
-            allowLiveCommands: !update.IsBootstrapRead);
+            allowLiveCommands: !update.IsBootstrapRead,
+            status: latestStatus);
         await RamTah.ApplyJournalEventsAsync(update.JournalEvents);
-        Guardian.UpdateCargo(allowSharedCargo ? update.Cargo : null);
+        if (!allowSharedCargo)
+        {
+            Guardian.ClearCargo();
+        }
+        else if (update.Cargo is not null)
+        {
+            Guardian.UpdateCargo(update.Cargo);
+        }
         await Colonization.UpdateCargoAsync(
             allowSharedCargo ? update.Cargo : null);
         await Colonization.UpdateMarketAsync(update.Market);
@@ -2648,7 +2656,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         if (value)
         {
             latestCargo = null;
-            Guardian.UpdateCargo(null);
+            Guardian.ClearCargo();
         }
 
         DockToDock.SetSharedCargoSuppressed(value);

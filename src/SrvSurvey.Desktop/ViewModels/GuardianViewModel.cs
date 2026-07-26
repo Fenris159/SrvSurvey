@@ -1279,9 +1279,19 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         }
     }
 
-    public void UpdateCargo(CargoSnapshot? cargo)
+    public void UpdateCargo(CargoSnapshot cargo)
     {
+        ArgumentNullException.ThrowIfNull(cargo);
         if (artifactInventory.Reset(cargo))
+        {
+            NotifyCurrentObeliskChanged();
+            NotifyAuxiliaryOverlayState();
+        }
+    }
+
+    public void ClearCargo()
+    {
+        if (artifactInventory.Reset(null))
         {
             NotifyCurrentObeliskChanged();
             NotifyAuxiliaryOverlayState();
@@ -1318,6 +1328,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         string? commanderName,
         bool allowLiveCommands = true,
+        EliteStatus? status = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
@@ -1325,9 +1336,10 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         var surveyChanged = false;
         var inventoryChanged = false;
         string? saveStatus = null;
+        var isInSrv = (status ?? currentStatus)?.InSrv == true;
         foreach (var journalEvent in journalEvents)
         {
-            inventoryChanged |= artifactInventory.Apply(journalEvent);
+            inventoryChanged |= artifactInventory.Apply(journalEvent, isInSrv);
             var previous = liveSiteState.CurrentSite;
             var recognized = liveSiteState.Apply(journalEvent);
             if (liveSiteState.CurrentSite != previous)
