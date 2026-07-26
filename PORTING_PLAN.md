@@ -526,7 +526,7 @@ UI tests where practical, and live Windows/Linux evidence.
 
 ### Phase 6 — Remaining feature parity
 
-- [ ] System/body/FSS information and route overlays.
+- [x] System/body/FSS information and route overlays.
   Followed-route Galaxy Map guidance, `PlotJumpInfo`, `PlotFSSInfo`, and
   `PlotSysStatus` are implemented. The journal-backed `PlotFSS` card is
   implemented together with its migrated cross-platform pixel tuning detector;
@@ -566,7 +566,10 @@ UI tests where practical, and live Windows/Linux evidence.
   arbitration is wired into the same coordinator.
   `PlotSphericalSearch` now
   consolidates spherical-limit, Boxel-search, and followed-route Galaxy Map
-  guidance at the original top-right anchor.
+  guidance at the original top-right anchor. An exact inventory gate now maps
+  all 22 legacy overlay designers to production Avalonia surfaces and assertion
+  evidence. Rendering and live-game attachment remain deliberately reserved for
+  the final visual/runtime pass rather than holding implementation parity open.
 - [x] Human settlements and post-processing tools. The passive human-settlement
   map now covers all 28 templates, compatible-site and mode gates, docking and
   manual foot alignment, lossless saved geometry and calculation provenance,
@@ -688,7 +691,7 @@ UI tests where practical, and live Windows/Linux evidence.
   definition is embedded in the atomic commander-state update so a missing or
   stale legacy sidecar cannot corrupt activation. Visual verification remains
   intentionally deferred to the final parity pass.
-- [ ] Network integrations, update behavior, diagnostics, and remaining tools.
+- [x] Network integrations, update behavior, diagnostics, and remaining tools.
   The non-store release check now targets only cross-platform packages from this
   fork instead of offering an incompatible upstream WinForms asset. It ignores
   drafts, prereleases, and legacy releases without `release-index.json`, bounds
@@ -742,8 +745,8 @@ UI tests where practical, and live Windows/Linux evidence.
   reports its retained rollback backup, while rollback/abort relaunches strip a
   separate internal result argument and strictly reload the matching atomic
   outcome so the restored UI explains what happened even if its asynchronous
-  release check completes later. Final packaged process testing and the remaining
-  network audit keep this phase open.
+  release check completes later. Final packaged process testing remains the
+  separate Phase 7 runtime gate.
   The legacy regional-Codex Google Sheet now refreshes on the original
   weekly cadence or with a Codex-reference update. Its live 26-column CSV
   contract is parsed with bounded RFC-style quoting, numeric region IDs remain
@@ -781,8 +784,12 @@ UI tests where practical, and live Windows/Linux evidence.
   original Settings options: 126 translate directly, while the seven remaining
   WinForms implementation switches are either superseded by native separate,
   click-through Avalonia overlays or already consumed losslessly from imported
-  overlay/Journey settings.
-- [ ] Localization review for every migrated surface.
+  overlay/Journey settings. The completed network audit maps all 15 legacy
+  `SrvSurvey/net` files to production and assertion evidence, locks the startup
+  version-check/download contract, and requires every response-producing HTTP
+  owner to use header-only completion and an explicit byte limit before parsing
+  or persistence.
+- [x] Localization review for every migrated surface.
 
 Features may be explicitly deferred, but the release notes and UI must identify
 the gap.
@@ -852,7 +859,7 @@ Validation updated on 2026-07-26 using Windows build `10.0.26200` and .NET SDK
 - `dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release`
   completed with zero warnings and zero errors.
 - `dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-build`
-  passed all 1,450 tests: 820 Core tests and 630 Desktop tests.
+  passed all 1,466 tests: 832 Core tests and 634 Desktop tests.
 - `dotnet format SrvSurvey.CrossPlatform.slnx --verify-no-changes` passed.
 - Automated quest migration coverage loads known legacy commander,
   development-definition, objective, chapter, message, variable, retained

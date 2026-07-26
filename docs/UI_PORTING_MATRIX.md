@@ -1,6 +1,6 @@
 # Avalonia UI porting matrix
 
-Last audited: 2026-07-25
+Last audited: 2026-07-26
 
 This document is the review checklist for translating the legacy WinForms UI to
 Avalonia. A view is marked complete only when its behavior is backed by the
@@ -20,8 +20,9 @@ parity.
   `SrvSurvey.Core`, but it did not reproduce the legacy navigation, theme
   behavior, or information hierarchy.
 - The legacy theme system supports normal, dark, and experimental black window
-  treatments plus editable orange and cyan game-overlay colours. Overlay colour
-  semantics in `theme.json` remain a separate Phase 4 porting concern.
+  treatments plus editable game-overlay colours. Avalonia application themes
+  and the imported `theme.json` overlay palette are implemented as independent
+  control groups; changing one does not reapply or modify the other.
 
 ## Target information architecture
 
@@ -66,7 +67,9 @@ bookmark alias merging, bounded zoom/reset, all eight
   with legacy genus aliases, body-selectable `.ff`/`.firstFoot` corrections,
   and a compact tracker-only state. The dedicated
 `PlotMiniTrack` replacement and human-site arbitration are now wired into that
-same coordinator; remaining biology-specific auxiliary cues stay open.
+same coordinator. The exact legacy overlay-designer inventory is enforced by
+`LegacyOverlayParityTests`; final rendering and live-game behavior remain in the
+requested last visual/runtime pass.
 
 The current-system reducer also restores the original EDSM and Spansh body
 hydration path. Downloaded physical/orbital details fill missing journal or
@@ -367,9 +370,11 @@ using platform-native focus, disabled, hover, and accessibility behavior.
 | Green (light) | Light | `#F9FFF7` | `#3C8223` | `#163D08` | `#E6F2E1` | `#B7DAAA` |
 | Green (dark) | Dark | `#1E3533` | `#D1D93B` | `#FFFFFF` | `#325752` | `#83A377` |
 
-The cross-platform shell should default to Blue (dark), expose all five choices,
-and persist the selection in the cross-platform application settings directory.
-This does not yet replace the legacy custom `theme.json` overlay importer.
+The cross-platform shell defaults to Blue (dark), exposes all five choices, and
+persists the selection in the cross-platform application settings directory.
+The legacy custom `theme.json` is imported byte-for-byte and controls only the
+in-game overlay resources, including named custom overlay states; application
+theme selection does not modify or reapply it.
 
 Implementation status: all five definitions are present in
 `RavenThemeCatalog`, application resources switch at runtime, Avalonia's native
