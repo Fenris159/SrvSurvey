@@ -66,6 +66,19 @@ public sealed partial class GroundTargetState
         Version++;
     }
 
+    public bool SetActive(bool value)
+    {
+        if (IsActive == value)
+        {
+            return false;
+        }
+
+        IsActive = value;
+        Calculate();
+        Version++;
+        return true;
+    }
+
     public bool TrySetTarget(
         string latitude,
         string longitude,

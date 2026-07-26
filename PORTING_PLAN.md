@@ -489,7 +489,12 @@ UI tests where practical, and live Windows/Linux evidence.
   circles, ship/SRV markers, Composition Scanner auto-tracking, cross-system
   death marking, adjustable radar scale, all eight quick-location chords, and a
   compact tracker-only Raven state plus the dedicated `PlotMiniTrack`
-  replacement. Human-site arbitration is wired into the same coordinator.
+  replacement. The original live `SendText` controls are restored as well:
+  `.target here/on/off` and `@` preserve the ground-target coordinates,
+  `+name`, `-name`, `=name`, `--name`, and `---` update named surface trackers
+  with the legacy short-genus aliases, and `.ff`/`.firstFoot <body>` updates
+  both system history and organic rewards. Bootstrap replay cannot execute any
+  of these commands. Human-site arbitration is wired into the same coordinator.
   `PlotSphericalSearch` now
   consolidates spherical-limit, Boxel-search, and followed-route Galaxy Map
   guidance at the original top-right anchor.

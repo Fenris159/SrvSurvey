@@ -160,6 +160,18 @@ public sealed class SystemSurfaceStore
             .ConfigureAwait(false);
     }
 
+    public async Task<string> ClearBookmarksAsync(
+        SystemSurfaceContext context,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateContext(context);
+        return await fileStore.UpdateAsync(
+                ToFileContext(context),
+                root => FindBody(root, context)?.Remove("bookmarks"),
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     public async Task<SurfaceBookmarkMutationResult> ToggleBookmarkGroupAsync(
         SystemSurfaceContext context,
         string name,

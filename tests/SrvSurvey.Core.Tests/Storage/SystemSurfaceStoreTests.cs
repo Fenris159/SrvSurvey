@@ -289,6 +289,26 @@ public sealed class SystemSurfaceStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task ClearBookmarksPreservesOtherLegacyBodyData()
+    {
+        var store = new SystemSurfaceStore(temporaryDirectory);
+        await store.AddBookmarkAsync(
+            Context(),
+            "Aleoida",
+            new SurfaceCoordinate(1, 2));
+        var path = CreateSystemPath();
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        root["bodies"]![0]!["futureBody"] = 42;
+        await File.WriteAllTextAsync(path, root.ToJsonString());
+
+        await store.ClearBookmarksAsync(Context());
+
+        var saved = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Null(saved["bodies"]![0]!["bookmarks"]);
+        Assert.Equal(42, saved["bodies"]![0]!["futureBody"]!.GetValue<int>());
+    }
+
+    [Fact]
     public async Task NoteAndSurfaceStoresSerializeUpdatesToTheSameFile()
     {
         var noteStore = new SystemNoteStore(temporaryDirectory);

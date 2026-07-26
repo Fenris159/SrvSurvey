@@ -1588,6 +1588,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             GroundTarget.UpdateStatus(update.Status);
             Colonization.UpdateStatus(update.Status);
         }
+        await GroundTarget.ApplyJournalEventsAsync(
+            update.JournalEvents,
+            allowCommands: !update.IsBootstrapRead);
 
         var scansLostToDeath = new HashSet<string>(StringComparer.Ordinal);
         var greenGasGiantResult =
@@ -1847,6 +1850,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.JournalEvents,
             update.Status,
             exobiologyAfter);
+        if (!update.IsBootstrapRead
+            && await ApplyFirstFootfallTextCommandsAsync(update.JournalEvents) > 0)
+        {
+            exobiologyAfter = exobiologyState.CreateSnapshot();
+            SystemSurvey.ApplyUpdate([], null, exobiologyAfter);
+        }
+
         if (await TryInferFirstFootfallAsync(update))
         {
             exobiologyAfter = exobiologyState.CreateSnapshot();
@@ -1867,12 +1877,28 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             && !string.IsNullOrWhiteSpace(journalState.SystemName)
             && journalState.SystemAddress is > 0)
         {
+            var surfaceBody = SystemSurvey.Snapshot.CurrentBodyId is { } bodyId
+                ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(body =>
+                    body.BodyId == bodyId)
+                : null;
+            surfaceBody ??= latestStatus?.BodyName is { Length: > 0 } bodyName
+                ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(body =>
+                    string.Equals(
+                        body.Name,
+                        bodyName,
+                        StringComparison.OrdinalIgnoreCase))
+                : null;
             surfaceSession = new SurfaceSurveySessionContext(
                 activeProfileFrontierId,
                 activeProfileCommanderName ?? journalState.CommanderName,
                 journalState.SystemName,
                 journalState.SystemAddress.Value,
-                journalState.StarPosition);
+                journalState.StarPosition,
+                surfaceBody?.BodyId,
+                surfaceBody?.Name,
+                latestStatus?.PlanetRadius is > 0
+                    ? (double)latestStatus.PlanetRadius
+                    : surfaceBody?.RadiusMeters ?? 0);
         }
 
         await SurfaceSurvey.ApplyUpdateAsync(
@@ -2517,6 +2543,96 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         await SaveExobiologyAsync(snapshot);
         await PersistCurrentSystemScanAsync((bodyId, value));
         return true;
+    }
+
+    private async Task<int> ApplyFirstFootfallTextCommandsAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents)
+    {
+        var applied = 0;
+        foreach (var journalEvent in journalEvents)
+        {
+            if (journalEvent.EventName != "SendText"
+                || !journalEvent.Payload.TryGetProperty("Message", out var value)
+                || value.ValueKind != JsonValueKind.String)
+            {
+                continue;
+            }
+
+            var message = value.GetString()?.Trim().ToLowerInvariant();
+            if (message is null
+                || !(message.StartsWith(".firstfoot", StringComparison.Ordinal)
+                    || message.StartsWith(".ff", StringComparison.Ordinal)))
+            {
+                continue;
+            }
+
+            var bodyName = message.Split(' ', 2) is { Length: 2 } parts
+                ? parts[1].Trim()
+                : null;
+            var system = SystemSurvey.Snapshot;
+            if (system.SystemAddress is not { } systemAddress)
+            {
+                ExobiologyStatusMessage =
+                    "First-footfall state cannot be changed until the current system is known.";
+                continue;
+            }
+
+            var body = string.IsNullOrWhiteSpace(bodyName)
+                ? null
+                : system.Bodies.FirstOrDefault(candidate =>
+                    BodyNameMatchesCommand(candidate, system.SystemName, bodyName));
+            body ??= system.CurrentBodyId is { } currentBodyId
+                ? system.Bodies.FirstOrDefault(candidate =>
+                    candidate.BodyId == currentBodyId)
+                : null;
+            if (body is null)
+            {
+                ExobiologyStatusMessage =
+                    "First-footfall state cannot be changed until the current body is known.";
+                continue;
+            }
+
+            var firstFootfall = !body.IsFirstFootfall;
+            if (!SystemSurvey.SetBodyFirstFootfall(body.BodyId, firstFootfall))
+            {
+                continue;
+            }
+
+            exobiologyState.SetFirstFootfall(
+                systemAddress,
+                body.BodyId,
+                firstFootfall);
+            await PersistCurrentSystemScanAsync((body.BodyId, firstFootfall));
+            ExobiologyStatusMessage = firstFootfall
+                ? $"Recorded first footfall for {body.Name}."
+                : $"Cleared first footfall for {body.Name}.";
+            applied++;
+        }
+
+        return applied;
+    }
+
+    private static bool BodyNameMatchesCommand(
+        SystemScanBodySnapshot body,
+        string? systemName,
+        string requestedName)
+    {
+        var localName = !string.IsNullOrWhiteSpace(systemName)
+            && body.Name.StartsWith(systemName, StringComparison.OrdinalIgnoreCase)
+                ? body.Name[systemName.Length..].Trim()
+                : body.Name;
+        return string.Equals(
+                localName,
+                requestedName,
+                StringComparison.OrdinalIgnoreCase)
+            || string.Equals(
+                localName.Replace(" ", string.Empty, StringComparison.Ordinal),
+                requestedName,
+                StringComparison.OrdinalIgnoreCase)
+            || string.Equals(
+                body.ShortName,
+                requestedName,
+                StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<bool> TryInferFirstFootfallAsync(

@@ -252,7 +252,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                 ? journalEvents
                 : journalEvents
                     .Where(item => item.EventName is not "ScanOrganic"
-                        and not "CodexEntry")
+                        and not "CodexEntry"
+                        and not "SendText")
                     .ToArray();
             SurfaceSurveyJournalUpdateResult? journalResult = null;
             SurfaceDeathMarkResult? deathResult = null;

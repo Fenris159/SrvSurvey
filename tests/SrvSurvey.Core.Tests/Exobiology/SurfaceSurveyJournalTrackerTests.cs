@@ -272,6 +272,80 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
         Assert.Single(result.Warnings);
     }
 
+    [Fact]
+    public async Task LiveTextCommandsManageNamedAndShortGenusTrackers()
+    {
+        var (tracker, store) = CreateTracker();
+        var session = Session();
+
+        await ApplyAtAsync(
+            tracker,
+            session,
+            0,
+            0,
+            "{\"event\":\"SendText\",\"Message\":\"+ale\"}");
+        await ApplyAtAsync(
+            tracker,
+            session,
+            0,
+            10,
+            "{\"event\":\"SendText\",\"Message\":\"+ale\"}");
+        var loaded = await store.LoadBodyAsync(BodyContext());
+        Assert.Equal(2, loaded.Snapshot!.Bookmarks[AleoidaGenus].Count);
+
+        await ApplyAtAsync(
+            tracker,
+            session,
+            0,
+            1,
+            "{\"event\":\"SendText\",\"Message\":\"=ale\"}");
+        loaded = await store.LoadBodyAsync(BodyContext());
+        Assert.Equal(
+            new SurfaceCoordinate(0, 0),
+            Assert.Single(loaded.Snapshot!.Bookmarks[AleoidaGenus]));
+        await ApplyAtAsync(
+            tracker,
+            session,
+            0,
+            10,
+            "{\"event\":\"SendText\",\"Message\":\"+ale\"}");
+
+        await ApplyAtAsync(
+            tracker,
+            session,
+            0,
+            1,
+            "{\"event\":\"SendText\",\"Message\":\"-ale\"}");
+        loaded = await store.LoadBodyAsync(BodyContext());
+        Assert.Equal(
+            new SurfaceCoordinate(0, 10),
+            Assert.Single(loaded.Snapshot!.Bookmarks[AleoidaGenus]));
+
+        await ApplyAtAsync(
+            tracker,
+            session,
+            1,
+            1,
+            "{\"event\":\"SendText\",\"Message\":\"+custom\"}");
+        await ApplyAtAsync(
+            tracker,
+            session,
+            1,
+            1,
+            "{\"event\":\"SendText\",\"Message\":\"--custom\"}");
+        loaded = await store.LoadBodyAsync(BodyContext());
+        Assert.DoesNotContain("custom", loaded.Snapshot!.Bookmarks.Keys);
+
+        await ApplyAtAsync(
+            tracker,
+            session,
+            0,
+            0,
+            "{\"event\":\"SendText\",\"Message\":\"---\"}");
+        Assert.Empty((await store.LoadBodyAsync(BodyContext()))
+            .Snapshot!.Bookmarks);
+    }
+
     private (SurfaceSurveyJournalTracker Tracker, SystemSurfaceStore Store)
         CreateTracker(params ExobiologyReference[] additional)
     {
@@ -345,7 +419,10 @@ public sealed class SurfaceSurveyJournalTrackerTests : IDisposable
             "Drew",
             "Test System",
             42,
-            null);
+            null,
+            7,
+            "Test System 1 a",
+            1_000);
     }
 
     private static SystemSurfaceContext BodyContext()

@@ -151,6 +151,55 @@ public sealed class GroundTargetViewModelTests : IDisposable
         Assert.Equal(new SurfaceCoordinate(1, 2), store.Load().Snapshot!.Target);
     }
 
+    [Fact]
+    public async Task LiveTextCommandsPreserveTargetAndUseCurrentCoordinates()
+    {
+        var store = new GroundTargetSettingsStore(temporaryDirectory);
+        var original = new SurfaceCoordinate(1, 2);
+        await store.SaveAsync(new GroundTargetSnapshot(true, original));
+        var viewModel = new GroundTargetViewModel(store);
+        viewModel.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip,
+            Latitude = 3,
+            Longitude = 4,
+            PlanetRadius = 1_000,
+        });
+
+        Assert.Equal(1, await viewModel.ApplyJournalEventsAsync(
+            [Event(".target off")],
+            allowCommands: true));
+        Assert.False(store.Load().Snapshot!.IsActive);
+        Assert.Equal(original, store.Load().Snapshot!.Target);
+
+        Assert.Equal(1, await viewModel.ApplyJournalEventsAsync(
+            [Event(".target on")],
+            allowCommands: true));
+        Assert.True(store.Load().Snapshot!.IsActive);
+        Assert.Equal(original, store.Load().Snapshot!.Target);
+
+        Assert.Equal(1, await viewModel.ApplyJournalEventsAsync(
+            [Event("@")],
+            allowCommands: true));
+        Assert.Equal(
+            new SurfaceCoordinate(3, 4),
+            store.Load().Snapshot!.Target);
+
+        Assert.Equal(0, await viewModel.ApplyJournalEventsAsync(
+            [Event(".target off")],
+            allowCommands: false));
+        Assert.True(store.Load().Snapshot!.IsActive);
+    }
+
+    private static JournalEventEnvelope Event(string message)
+    {
+        Assert.True(JournalEventEnvelope.TryParse(
+            $$"""{"event":"SendText","Message":"{{message}}"}""",
+            out var journalEvent,
+            out var error), error);
+        return journalEvent!;
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

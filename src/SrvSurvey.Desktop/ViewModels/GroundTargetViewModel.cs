@@ -209,6 +209,60 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         await SaveAsync("The current surface location is now the active target.");
     }
 
+    public async Task<bool> SetActiveAsync(bool value)
+    {
+        if (!state.SetActive(value))
+        {
+            return false;
+        }
+
+        await SaveAsync(value
+            ? "Ground-target guidance enabled."
+            : "Ground-target guidance hidden; the saved coordinates were retained.");
+        return true;
+    }
+
+    public async Task<int> ApplyJournalEventsAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents,
+        bool allowCommands)
+    {
+        ArgumentNullException.ThrowIfNull(journalEvents);
+        if (!allowCommands)
+        {
+            return 0;
+        }
+
+        var applied = 0;
+        foreach (var journalEvent in journalEvents)
+        {
+            if (journalEvent.EventName != "SendText"
+                || !journalEvent.Payload.TryGetProperty("Message", out var value)
+                || value.ValueKind != System.Text.Json.JsonValueKind.String)
+            {
+                continue;
+            }
+
+            var message = value.GetString()?.Trim().ToLowerInvariant();
+            switch (message)
+            {
+                case ".target here":
+                case "@":
+                    var before = state.Version;
+                    await UseCurrentLocationAsync();
+                    applied += state.Version != before ? 1 : 0;
+                    break;
+                case ".target off":
+                    applied += await SetActiveAsync(false) ? 1 : 0;
+                    break;
+                case ".target on":
+                    applied += await SetActiveAsync(true) ? 1 : 0;
+                    break;
+            }
+        }
+
+        return applied;
+    }
+
     public async Task ClearTargetAsync()
     {
         state.Clear();

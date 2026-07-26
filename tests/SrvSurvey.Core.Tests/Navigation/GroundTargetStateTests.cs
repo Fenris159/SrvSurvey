@@ -69,6 +69,21 @@ public sealed class GroundTargetStateTests
     }
 
     [Fact]
+    public void VisibilityCanChangeWithoutDiscardingTheSavedTarget()
+    {
+        var target = new SurfaceCoordinate(12.5, -45.25);
+        var state = new GroundTargetState(new GroundTargetSnapshot(true, target));
+
+        Assert.True(state.SetActive(false));
+        Assert.False(state.IsActive);
+        Assert.Equal(target, state.Target);
+        Assert.True(state.SetActive(true));
+        Assert.True(state.IsActive);
+        Assert.Equal(target, state.Target);
+        Assert.False(state.SetActive(true));
+    }
+
+    [Fact]
     public void InvalidOrOutOfRangeCoordinatesAreRejectedWithoutChangingTarget()
     {
         var state = new GroundTargetState(

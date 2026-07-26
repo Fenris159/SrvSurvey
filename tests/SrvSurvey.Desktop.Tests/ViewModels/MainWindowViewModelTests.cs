@@ -1412,6 +1412,67 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task LiveFirstFootfallTextCommandCanTargetAnotherBody()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-first-footfall-text-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-25T120000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:03Z\",\"event\":\"Scan\",\"SystemAddress\":42,\"BodyName\":\"Test 1\",\"BodyID\":1,\"PlanetClass\":\"Rocky body\",\"WasFootfalled\":true}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:04Z\",\"event\":\"Scan\",\"SystemAddress\":42,\"BodyName\":\"Test 2\",\"BodyID\":2,\"PlanetClass\":\"Rocky body\",\"WasFootfalled\":true}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:05Z\",\"event\":\"ApproachBody\",\"StarSystem\":\"Test\",\"SystemAddress\":42,\"Body\":\"Test 1\",\"BodyID\":1}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths);
+            await viewModel.RefreshAsync();
+            Assert.Equal(1, viewModel.SystemSurvey.Snapshot.CurrentBodyId);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-25T12:00:06Z\",\"event\":\"SendText\",\"Message\":\".ff 2\"}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.False(viewModel.SystemSurvey.Snapshot.Bodies.Single(body =>
+                body.BodyId == 1).IsFirstFootfall);
+            Assert.True(viewModel.SystemSurvey.Snapshot.Bodies.Single(body =>
+                body.BodyId == 2).IsFirstFootfall);
+            var systemPath = Assert.Single(Directory.GetFiles(
+                Path.Combine(profile, "systems"),
+                "*.json",
+                SearchOption.AllDirectories));
+            var bodies = JsonNode.Parse(
+                await File.ReadAllTextAsync(systemPath))!["bodies"]!.AsArray();
+            Assert.True(bodies.Single(body =>
+                body!["id"]!.GetValue<int>() == 2)!["firstFootFall"]!
+                .GetValue<bool>());
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task LiveFirstFootfallInferenceSynchronizesBothLegacyStores()
     {
         var root = Path.Combine(

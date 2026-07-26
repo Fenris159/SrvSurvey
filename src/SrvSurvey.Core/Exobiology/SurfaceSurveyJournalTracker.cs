@@ -15,6 +15,32 @@ public sealed class SurfaceSurveyJournalTracker
     private const string FixedLifeRing = "$Fixed_Event_Life_Ring;";
     private const double TrackerRemovalDistanceMeters = 150;
 
+    private static readonly IReadOnlyDictionary<string, string> GenusShortNames =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["ale"] = "Aleoida",
+            ["amp"] = "Amphora Plant",
+            ["bac"] = "Bacterium",
+            ["bar"] = "Bark Mounds",
+            ["bra"] = "Brain Tree",
+            ["cac"] = "Cactoida",
+            ["cly"] = "Clypeus",
+            ["con"] = "Concha",
+            ["cry"] = "Crystalline Shards",
+            ["ele"] = "Electricae",
+            ["fon"] = "Fonticulua",
+            ["fru"] = "Frutexa",
+            ["fum"] = "Fumerola",
+            ["fun"] = "Fungoida",
+            ["ane"] = "Anemone",
+            ["oss"] = "Osseus",
+            ["rec"] = "Recepta",
+            ["sin"] = "Sinuous Tubers",
+            ["str"] = "Stratum",
+            ["tub"] = "Tubus",
+            ["tus"] = "Tussock",
+        };
+
     private readonly SystemSurfaceStore store;
     private readonly ExobiologyReferenceCatalog catalog;
     private string? lastOrganicScan;
@@ -99,6 +125,10 @@ public sealed class SurfaceSurveyJournalTracker
                         options,
                         warnings,
                         cancellationToken).ConfigureAwait(false),
+                    "SendText" => await ApplyBookmarkCommandAsync(
+                        session,
+                        journalEvent.Payload,
+                        cancellationToken).ConfigureAwait(false),
                     _ => 0,
                 };
             }
@@ -122,6 +152,161 @@ public sealed class SurfaceSurveyJournalTracker
         return new SurfaceSurveyJournalUpdateResult(
             mutationCount,
             warnings);
+    }
+
+    private async Task<int> ApplyBookmarkCommandAsync(
+        SurfaceSurveySessionContext session,
+        JsonElement root,
+        CancellationToken cancellationToken)
+    {
+        var message = GetString(root, "Message")?.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(message)
+            || !(message.StartsWith('+')
+                || message.StartsWith('-')
+                || message.StartsWith('=')))
+        {
+            return 0;
+        }
+
+        if (status is null
+            || !TryCreateBodyContext(session, status, out var context))
+        {
+            return 0;
+        }
+
+        if (message == "---")
+        {
+            await store.ClearBookmarksAsync(context, cancellationToken)
+                .ConfigureAwait(false);
+            return 1;
+        }
+
+        var prefixLength = message.StartsWith("--", StringComparison.Ordinal)
+            ? 2
+            : 1;
+        var requestedName = message[prefixLength..].Trim();
+        if (requestedName.Length == 0)
+        {
+            return 0;
+        }
+
+        var loaded = await store.LoadBodyAsync(context, cancellationToken)
+            .ConfigureAwait(false);
+        var name = ResolveBookmarkName(requestedName, loaded.Snapshot?.Bookmarks);
+        if (message.StartsWith("--", StringComparison.Ordinal))
+        {
+            await store.RemoveBookmarkGroupAsync(context, name, cancellationToken)
+                .ConfigureAwait(false);
+            return 1;
+        }
+
+        if (!TryGetStatusCoordinate(status, out var location))
+        {
+            return 0;
+        }
+
+        var result = message[0] switch
+        {
+            '+' => await store.AddBookmarkAsync(
+                context,
+                name,
+                location,
+                cancellationToken: cancellationToken).ConfigureAwait(false),
+            '-' => await store.RemoveBookmarkAsync(
+                context,
+                name,
+                location,
+                nearest: true,
+                cancellationToken: cancellationToken).ConfigureAwait(false),
+            '=' => await store.RemoveBookmarkAsync(
+                context,
+                name,
+                location,
+                nearest: false,
+                cancellationToken: cancellationToken).ConfigureAwait(false),
+            _ => null,
+        };
+        return result?.Mutation is SurfaceBookmarkMutation.Added
+            or SurfaceBookmarkMutation.Removed
+                ? 1
+                : 0;
+    }
+
+    private string ResolveBookmarkName(
+        string requestedName,
+        IReadOnlyDictionary<string, IReadOnlyList<SurfaceCoordinate>>? bookmarks)
+    {
+        var existing = bookmarks?.Keys.FirstOrDefault(name => string.Equals(
+            name,
+            requestedName,
+            StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        if (!GenusShortNames.TryGetValue(requestedName, out var displayName))
+        {
+            return requestedName;
+        }
+
+        return catalog.BiologyEntries
+            .Select(entry => ExobiologyReferenceCatalog.GetGenusName(
+                entry.SpeciesName))
+            .Distinct(StringComparer.Ordinal)
+            .FirstOrDefault(genus => string.Equals(
+                ExobiologyReferenceCatalog.GetGenusDisplayName(genus),
+                displayName,
+                StringComparison.OrdinalIgnoreCase))
+            ?? requestedName;
+    }
+
+    private static bool TryCreateBodyContext(
+        SurfaceSurveySessionContext session,
+        EliteStatus currentStatus,
+        out SystemSurfaceContext context)
+    {
+        context = null!;
+        if (session.BodyId is not { } bodyId
+            || string.IsNullOrWhiteSpace(session.BodyName)
+            || session.BodyRadiusMeters <= 0)
+        {
+            return false;
+        }
+
+        context = new SystemSurfaceContext(
+            session.FrontierId,
+            session.CommanderName,
+            session.SystemName,
+            session.SystemAddress,
+            session.StarPosition,
+            bodyId,
+            session.BodyName,
+            session.BodyRadiusMeters);
+        return true;
+    }
+
+    private static bool TryGetStatusCoordinate(
+        EliteStatus currentStatus,
+        out SurfaceCoordinate coordinate)
+    {
+        coordinate = default;
+        if (!currentStatus.HasLatitudeLongitude)
+        {
+            return false;
+        }
+
+        try
+        {
+            coordinate = new SurfaceCoordinate(
+                currentStatus.Latitude,
+                currentStatus.Longitude);
+            return true;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return false;
+        }
     }
 
     private async Task<int> ApplyTouchdownAsync(
@@ -539,7 +724,10 @@ public sealed record SurfaceSurveySessionContext(
     string? CommanderName,
     string SystemName,
     long SystemAddress,
-    GalacticCoordinate? StarPosition);
+    GalacticCoordinate? StarPosition,
+    int? BodyId = null,
+    string? BodyName = null,
+    double BodyRadiusMeters = 0);
 
 public sealed record SurfaceSurveyTrackingOptions(
     bool AutoRemoveTrackerOnSampling,
