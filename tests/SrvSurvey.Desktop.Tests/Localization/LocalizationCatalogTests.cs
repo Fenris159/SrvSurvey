@@ -31,6 +31,31 @@ public sealed class LocalizationCatalogTests : IDisposable
     }
 
     [Theory]
+    [InlineData("Close", "Schließen")]
+    [InlineData("CURRENT SYSTEM", "AKTUELLES SYSTEM")]
+    [InlineData("ATMOSPHERE", "ATMOSPHÄRE")]
+    [InlineData("Next jump", "Nächster Sprung")]
+    public void SafeLegacyLabelVariantsReuseUniqueTranslations(
+        string source,
+        string expected)
+    {
+        LocalizationCatalog.Initialize("de");
+
+        Assert.Equal(expected, LocalizationCatalog.Translate(source));
+    }
+
+    [Fact]
+    public void NovelAvaloniaTextStillFallsBackWithoutGuessing()
+    {
+        LocalizationCatalog.Initialize("de");
+
+        Assert.Equal(
+            "Cross-platform exploration companion",
+            LocalizationCatalog.Translate(
+                "Cross-platform exploration companion"));
+    }
+
+    [Theory]
     [InlineData("DE", "de")]
     [InlineData("pt-br", "pt-BR")]
     [InlineData("zh-hans", "zh-Hans")]

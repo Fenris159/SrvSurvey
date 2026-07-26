@@ -37,6 +37,17 @@ public sealed class LocalizationBehaviorTests : IDisposable
             TextBlock.TextProperty));
     }
 
+    [Fact]
+    public void EnabledBehaviorTranslatesLegacyAcceleratorVariant()
+    {
+        LocalizationCatalog.Initialize("de");
+        var button = new Button { Content = "Close" };
+
+        LocalizationBehavior.SetEnabled(button, true);
+
+        Assert.Equal("Schließen", button.Content);
+    }
+
     public void Dispose()
     {
         LocalizationCatalog.Initialize("en");

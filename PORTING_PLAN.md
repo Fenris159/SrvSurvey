@@ -160,10 +160,13 @@ on Windows and Linux.
   applies the imported `lang` preference before constructing controls, literal
   control text is translated without replacing bindings, and Settings persists
   later changes only in the isolated cross-platform file with a controlled
-  restart. A markup coverage audit currently matches 10 of 983 unique Avalonia
-  literals to the legacy source catalog; the remaining 973 port-only literals
-  and bound/dynamic presentation strings still require explicit translations,
-  so localization parity remains open.
+  restart. The current markup audit finds 1,015 unique Avalonia literals: 12
+  exact legacy matches plus 29 unique, collision-rejected variants that differ
+  only by WinForms accelerator marks, label punctuation, or casing. Those safe
+  variants now reuse the original translations while preserving Avalonia's
+  presentation shape. The remaining port-only literals and bound/dynamic
+  presentation strings still require explicit translations, so localization
+  parity remains open.
 - [x] Test unknown fields, corrupt files, concurrent writes, and copied-profile
   upgrades.
 
