@@ -553,9 +553,13 @@ UI tests where practical, and live Windows/Linux evidence.
   pre/post-swap failures. Refresh runs without blocking journal startup and a
   controlled restart applies the immutable catalogs. Raven system nicknames now
   refresh in the same transaction: the service array is normalized into the
-  legacy map only after every row and the non-empty result validate. Packaged
-  update installation/rollback and the remaining network audit keep this phase
-  open. The legacy regional-Codex Google Sheet now refreshes on the original
+  legacy map only after every row and the non-empty result validate. Tagged
+  cross-platform builds now establish the installable artifact contract:
+  version-validated Windows ZIP and Linux tarball assets contain a per-file
+  SHA-256 manifest, while the release index records the exact RID, archive type,
+  byte length, and SHA-256 for both packages. Packaged update discovery,
+  installation/rollback, and the remaining network audit keep this phase open.
+  The legacy regional-Codex Google Sheet now refreshes on the original
   weekly cadence or with a Codex-reference update. Its live 26-column CSV
   contract is parsed with bounded RFC-style quoting, numeric region IDs remain
   authoritative over display-name drift, unresolved unpublished variants are
@@ -581,12 +585,15 @@ the gap.
 
 ### Phase 7 — Packaging and release
 
-- [ ] Produce self-contained Windows and Linux publish directories.
+- [x] Produce self-contained Windows and Linux publish directories. Branch and
+  pull-request builds retain review packages for 14 days; version tags publish
+  the same tested packages and checksum index as GitHub release assets.
 - [ ] Decide whether Windows single-file publishing is compatible with native
   Avalonia dependencies, diagnostics, and update requirements.
 - [ ] Build the Linux AppImage from the tested publish output.
 - [ ] Add icons, desktop entry, MIME/URL handling if required, and licenses.
-- [ ] Generate checksums and a software bill of materials.
+- [ ] Generate checksums and a software bill of materials. Package and archive
+  SHA-256 manifests are generated and exercised; SBOM generation remains open.
 - [ ] Test install, upgrade, downgrade/rollback, and uninstall on clean systems.
 
 A Docker image is useful for reproducible Linux builds; the GUI application is

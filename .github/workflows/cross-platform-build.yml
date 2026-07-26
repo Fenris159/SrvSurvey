@@ -1,9 +1,12 @@
-name: Cross-platform foundation
+name: Cross-platform build and release
 
 on:
   push:
     branches:
       - cross-platform-development
+    tags:
+      - "[0-9]*.[0-9]*.[0-9]*"
+      - "v[0-9]*.[0-9]*.[0-9]*"
   pull_request:
   workflow_dispatch:
 
@@ -15,8 +18,42 @@ env:
   DOTNET_NOLOGO: "1"
 
 jobs:
+  release-metadata:
+    name: Resolve release metadata
+    runs-on: ubuntu-latest
+    outputs:
+      is_release: ${{ steps.metadata.outputs.is_release }}
+      version: ${{ steps.metadata.outputs.version }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Resolve and validate version
+        id: metadata
+        shell: pwsh
+        run: |
+          $project = [xml](Get-Content src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj)
+          $versionText = [string]$project.Project.PropertyGroup.FileVersion
+          $isRelease = $env:GITHUB_REF_TYPE -eq "tag"
+          if ($isRelease) {
+            $versionText = $env:GITHUB_REF_NAME.TrimStart("v")
+          }
+
+          $version = $null
+          if (-not [Version]::TryParse($versionText, [ref]$version) -or
+              $version.Major -lt 0 -or
+              $version.Minor -lt 0 -or
+              $version.Build -lt 0) {
+            throw "'$versionText' is not a valid three- or four-part release version."
+          }
+
+          "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "version=$version" >> $env:GITHUB_OUTPUT
+
   build-test-publish:
     name: ${{ matrix.name }}
+    needs: release-metadata
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -25,16 +62,18 @@ jobs:
           - name: Windows x64
             os: windows-latest
             rid: win-x64
+            archive: zip
           - name: Linux x64
             os: ubuntu-latest
             rid: linux-x64
+            archive: tar.gz
 
     steps:
       - name: Check out source
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install .NET SDK
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
@@ -47,20 +86,91 @@ jobs:
       - name: Test
         run: dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-build --no-restore
 
-      - name: Publish self-contained desktop shell
-        run: >-
-          dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj
-          --configuration Release
-          --runtime ${{ matrix.rid }}
-          --self-contained true
-          --output artifacts/${{ matrix.rid }}
-          -p:DebugType=None
-          -p:DebugSymbols=false
+      - name: Publish self-contained desktop application
+        shell: pwsh
+        run: |
+          dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj `
+            --configuration Release `
+            --runtime "${{ matrix.rid }}" `
+            --self-contained true `
+            --output "artifacts/${{ matrix.rid }}" `
+            -p:Version="${{ needs.release-metadata.outputs.version }}" `
+            -p:FileVersion="${{ needs.release-metadata.outputs.version }}" `
+            -p:DebugType=None `
+            -p:DebugSymbols=false
 
-      - name: Upload publish directory
-        uses: actions/upload-artifact@v6
+      - name: Generate package manifest
+        shell: pwsh
+        run: >-
+          ./scripts/New-CrossPlatformPackageManifest.ps1
+          -PublishDirectory "artifacts/${{ matrix.rid }}"
+          -Version "${{ needs.release-metadata.outputs.version }}"
+          -RuntimeIdentifier "${{ matrix.rid }}"
+
+      - name: Package Windows application
+        if: matrix.archive == 'zip'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path packages -Force | Out-Null
+          $archive = "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-${{ matrix.rid }}.zip"
+          Compress-Archive -Path "artifacts/${{ matrix.rid }}/*" -DestinationPath $archive
+
+      - name: Package Linux application
+        if: matrix.archive == 'tar.gz'
+        shell: bash
+        run: |
+          mkdir -p packages
+          tar --create --gzip \
+            --file "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-${{ matrix.rid }}.tar.gz" \
+            --directory "artifacts/${{ matrix.rid }}" .
+
+      - name: Upload review package
+        uses: actions/upload-artifact@v7
         with:
-          name: SrvSurvey-development-${{ matrix.rid }}
-          path: artifacts/${{ matrix.rid }}
+          name: SrvSurvey-package-${{ matrix.rid }}
+          path: packages/*
           if-no-files-found: error
           retention-days: 14
+
+  publish-release:
+    name: Publish GitHub release assets
+    if: needs.release-metadata.outputs.is_release == 'true'
+    needs:
+      - release-metadata
+      - build-test-publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Download platform packages
+        uses: actions/download-artifact@v8
+        with:
+          pattern: SrvSurvey-package-*
+          path: packages
+          merge-multiple: true
+
+      - name: Generate release index
+        shell: pwsh
+        run: >-
+          ./scripts/New-CrossPlatformReleaseIndex.ps1
+          -PackageDirectory packages
+          -Version "${{ needs.release-metadata.outputs.version }}"
+          -OutputPath packages/release-index.json
+
+      - name: Create or repair release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" packages/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" packages/* \
+              --verify-tag \
+              --generate-notes \
+              --title "SrvSurvey ${{ needs.release-metadata.outputs.version }}"
+          fi
