@@ -208,6 +208,7 @@ public sealed class MainWindowViewModelTests
                 SuppressForActiveBuildProjects: true,
                 AutoZoomNearObelisks: false,
                 AutoZoomInSrvTurret: true,
+                ShowComponentMaterials: true,
                 OverlaySizeIndex: 3,
                 DisableRuinsMeasurementGrid: true,
                 DisableAerialAlignmentGrid: false));
@@ -227,6 +228,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(viewModel.Guardian.SuppressForActiveBuildProjects);
             Assert.False(viewModel.Guardian.AutoZoomNearObelisks);
             Assert.True(viewModel.Guardian.AutoZoomInSrvTurret);
+            Assert.True(viewModel.Guardian.ShowComponentMaterials);
             Assert.False(viewModel.Guardian.ShowRuinsMeasurementGrid);
             Assert.True(viewModel.Guardian.ShowAerialAlignmentGrid);
             Assert.Equal(800, viewModel.Guardian.PreferredOverlayWidth);

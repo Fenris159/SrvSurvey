@@ -123,6 +123,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("buildProjectsSuppressOtherOverlays", "SuppressForActiveBuildProjects"),
                     ("autoZoomGuardianNearObelisks", "AutoZoomNearObelisks"),
                     ("autoZoomGuardianInTurret", "AutoZoomInSrvTurret"),
+                    ("guardianComponentMaterials_TEST", "ShowComponentMaterials"),
                     ("idxGuardianPlotter", "OverlaySizeIndex"),
                     ("disableRuinsMeasurementGrid", "DisableRuinsMeasurementGrid"),
                     ("disableAerialAlignmentGrid", "DisableAerialAlignmentGrid"),

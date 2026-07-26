@@ -740,6 +740,32 @@
                                          FormatString="0"
                                          Value="{Binding Guardian.SurveyEditor.SelectedPoint.RelicHeading, Mode=TwoWay}" />
                         </StackPanel>
+                        <StackPanel Spacing="8"
+                                    IsVisible="{Binding Guardian.SurveyEditor.SelectedPoint.CanEditComponentMaterials}">
+                          <TextBlock Classes="muted" Text="COMPONENT MATERIALS" />
+                          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <TextBlock VerticalAlignment="Center" Text="Panel / top" />
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding Guardian.SurveyEditor.SelectedPoint.ComponentMaterialOptions}"
+                                      SelectedItem="{Binding Guardian.SurveyEditor.SelectedPoint.TopComponentMaterial, Mode=TwoWay}" />
+                          </Grid>
+                          <Grid ColumnDefinitions="Auto,*"
+                                ColumnSpacing="10"
+                                IsVisible="{Binding Guardian.SurveyEditor.SelectedPoint.SupportsMultipleComponentMaterials}">
+                            <TextBlock VerticalAlignment="Center" Text="Middle" />
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding Guardian.SurveyEditor.SelectedPoint.ComponentMaterialOptions}"
+                                      SelectedItem="{Binding Guardian.SurveyEditor.SelectedPoint.MiddleComponentMaterial, Mode=TwoWay}" />
+                          </Grid>
+                          <Grid ColumnDefinitions="Auto,*"
+                                ColumnSpacing="10"
+                                IsVisible="{Binding Guardian.SurveyEditor.SelectedPoint.SupportsMultipleComponentMaterials}">
+                            <TextBlock VerticalAlignment="Center" Text="Bottom" />
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding Guardian.SurveyEditor.SelectedPoint.ComponentMaterialOptions}"
+                                      SelectedItem="{Binding Guardian.SurveyEditor.SelectedPoint.BottomComponentMaterial, Mode=TwoWay}" />
+                          </Grid>
+                        </StackPanel>
                         <Button Classes="secondary"
                                 HorizontalAlignment="Left"
                                 IsVisible="{Binding Guardian.SurveyEditor.HasSelectedRawPoint}"
@@ -783,6 +809,18 @@
                              Fill="{DynamicResource RavenAccentBrush}" />
                     <TextBlock Grid.Row="4" Grid.Column="1" Text="Active obelisk" />
                   </Grid>
+                  <StackPanel Spacing="7"
+                              IsVisible="{Binding Guardian.ShowComponentMaterials}">
+                    <TextBlock Classes="muted" Text="COMPONENT MATERIALS" />
+                    <WrapPanel>
+                      <Border Width="10" Height="10" Margin="0,4,6,0" Background="Lime" />
+                      <TextBlock Margin="0,0,16,0" Text="Power Cell" />
+                      <Border Width="10" Height="10" Margin="0,4,6,0" Background="Cyan" />
+                      <TextBlock Margin="0,0,16,0" Text="Power Conduit" />
+                      <Border Width="10" Height="10" Margin="0,4,6,0" Background="OrangeRed" />
+                      <TextBlock Text="Technology Component" />
+                    </WrapPanel>
+                  </StackPanel>
                 </StackPanel>
               </Border>
 
@@ -804,7 +842,7 @@
               <StackPanel Spacing="12">
                 <TextBlock Classes="card-title" Text="Share Guardian discoveries" />
                 <TextBlock Classes="muted"
-                           Text="Compare commander surveys with the published Guardian catalog, then package only new headings, locations, POI states, relic data, groups, and raw map points."
+                           Text="Compare commander surveys with the published Guardian catalog, then package only new headings, locations, POI states, relic and component-material data, groups, and raw map points."
                            TextWrapping="Wrap" />
                 <Button Classes="primary"
                         HorizontalAlignment="Left"

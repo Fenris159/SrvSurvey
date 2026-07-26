@@ -434,6 +434,12 @@
                         Content="Zoom in near Guardian obelisks" />
               <CheckBox IsChecked="{Binding Guardian.AutoZoomInSrvTurret, Mode=TwoWay}"
                         Content="Zoom in while using the SRV turret" />
+              <CheckBox IsChecked="{Binding Guardian.ShowComponentMaterials, Mode=TwoWay}"
+                        Content="Track Guardian component materials" />
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Text="Shows tower loadouts and destructible panels and preserves the original component survey format." />
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="6">
               <TextBlock Classes="eyebrow" Text="OVERLAY SIZE" />

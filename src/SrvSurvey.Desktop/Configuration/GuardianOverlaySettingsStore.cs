@@ -40,6 +40,10 @@ public sealed class GuardianOverlaySettingsStore
                 settings,
                 "AutoZoomInSrvTurret",
                 defaults.AutoZoomInSrvTurret),
+            GetBoolean(
+                settings,
+                "ShowComponentMaterials",
+                defaults.ShowComponentMaterials),
             GetInteger(
                 settings,
                 "OverlaySizeIndex",
@@ -77,6 +81,8 @@ public sealed class GuardianOverlaySettingsStore
                 preferences.AutoZoomNearObelisks;
             settings["AutoZoomInSrvTurret"] =
                 preferences.AutoZoomInSrvTurret;
+            settings["ShowComponentMaterials"] =
+                preferences.ShowComponentMaterials;
             settings["OverlaySizeIndex"] = Math.Clamp(
                 preferences.OverlaySizeIndex,
                 0,
@@ -118,6 +124,7 @@ public sealed record GuardianOverlayPreferences(
     bool SuppressForActiveBuildProjects,
     bool AutoZoomNearObelisks,
     bool AutoZoomInSrvTurret,
+    bool ShowComponentMaterials,
     int OverlaySizeIndex,
     bool DisableRuinsMeasurementGrid,
     bool DisableAerialAlignmentGrid)
@@ -129,6 +136,7 @@ public sealed record GuardianOverlayPreferences(
         SuppressForActiveBuildProjects: false,
         AutoZoomNearObelisks: true,
         AutoZoomInSrvTurret: false,
+        ShowComponentMaterials: false,
         OverlaySizeIndex: 0,
         DisableRuinsMeasurementGrid: false,
         DisableAerialAlignmentGrid: false);

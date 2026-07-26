@@ -332,9 +332,24 @@ public sealed class GuardianSiteMapControl : Control
                 break;
 
             case GuardianPoiType.Component:
-            case GuardianPoiType.DestructiblePanel:
                 context.DrawRectangle(
                     point.Status == GuardianPoiStatus.Present ? brush : null,
+                    pen,
+                    new Rect(location.X - 3.5, location.Y - 3.5, 7, 7));
+                DrawComponentMaterials(
+                    context,
+                    location,
+                    point.ComponentMaterials);
+                break;
+
+            case GuardianPoiType.DestructiblePanel:
+                var materialBrush = GetComponentMaterialBrush(
+                    point.ComponentMaterials.FirstOrDefault());
+                context.DrawRectangle(
+                    materialBrush
+                        ?? (point.Status == GuardianPoiStatus.Present
+                            ? brush
+                            : null),
                     pen,
                     new Rect(location.X - 3.5, location.Y - 3.5, 7, 7));
                 break;
@@ -360,6 +375,48 @@ public sealed class GuardianSiteMapControl : Control
                     4);
                 break;
         }
+    }
+
+    private static void DrawComponentMaterials(
+        DrawingContext context,
+        Point location,
+        IReadOnlyList<GuardianComponentMaterial> materials)
+    {
+        var offsets = new[]
+        {
+            new Point(0, -8),
+            new Point(-7, 5),
+            new Point(7, 5),
+        };
+        for (var index = 0; index < offsets.Length && index < materials.Count;
+             index++)
+        {
+            var brush = GetComponentMaterialBrush(materials[index]);
+            if (brush is null)
+            {
+                continue;
+            }
+
+            var center = location + offsets[index];
+            context.DrawEllipse(
+                brush,
+                new Pen(Brushes.Black, 1),
+                center,
+                3,
+                3);
+        }
+    }
+
+    private static IBrush? GetComponentMaterialBrush(
+        GuardianComponentMaterial material)
+    {
+        return material switch
+        {
+            GuardianComponentMaterial.Cell => Brushes.Lime,
+            GuardianComponentMaterial.Conduit => Brushes.Cyan,
+            GuardianComponentMaterial.Tech => Brushes.OrangeRed,
+            _ => null,
+        };
     }
 
     private void DrawGroup(

@@ -38,6 +38,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
 
         Assert.True(editor.IsAvailable);
         Assert.Equal(3, editor.Points.Count);
+        Assert.False(editor.Points.Single(point => point.Name == "c1")
+            .CanEditComponentMaterials);
         Assert.Equal(2, editor.ObeliskGroups.Count);
         editor.SiteHeading = 123;
         editor.RelicTowerHeading = 45;
@@ -124,6 +126,47 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
         Assert.Empty(editor.Points);
         Assert.Equal(0, callbackCount);
         Assert.Contains("Visit the selected site", editor.StatusMessage);
+    }
+
+    [Fact]
+    public async Task EditsLegacyComponentTowersAndDestructiblePanels()
+    {
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var initial = CreateSurvey();
+        var path = await store.SaveAsync("F123", isOdyssey: true, initial);
+        var editor = new GuardianSurveyEditorViewModel(
+            store,
+            (_, _) => Task.CompletedTask);
+        editor.Load(
+            "F123",
+            isOdyssey: true,
+            initial with { Path = path },
+            CreateTemplate(),
+            showComponentMaterials: true);
+
+        var tower = editor.Points.Single(point => point.Name == "c1");
+        Assert.True(tower.CanEditComponentMaterials);
+        Assert.True(tower.SupportsMultipleComponentMaterials);
+        Assert.Equal(
+            GuardianComponentMaterial.Cell,
+            tower.TopComponentMaterial);
+        tower.MiddleComponentMaterial = GuardianComponentMaterial.Conduit;
+        var panel = editor.Points.Single(point => point.Name == "d1");
+        Assert.True(panel.SupportsComponentMaterials);
+        Assert.False(panel.SupportsMultipleComponentMaterials);
+        panel.TopComponentMaterial = GuardianComponentMaterial.Tech;
+
+        await editor.SaveAsync();
+
+        var saved = Assert.Single(
+            (await new GuardianCommanderDataReader(temporaryDirectory)
+                .ReadAsync("F123", isOdyssey: true)).Surveys);
+        Assert.Equal(
+            GuardianComponentMaterial.Conduit,
+            saved.Survey.ComponentMaterials["c1"].GetItem(1));
+        Assert.Equal(
+            GuardianComponentMaterial.Tech,
+            saved.Survey.ComponentMaterials["d1"].GetItem(0));
     }
 
     [Fact]
@@ -278,6 +321,18 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                     ["c1"] = GuardianPoiStatus.Present,
                 },
                 RelicHeadings = new Dictionary<string, int>(),
+                ComponentMaterials = new Dictionary<
+                    string,
+                    GuardianComponentLoadout>
+                {
+                    ["c1"] = new GuardianComponentLoadout(
+                        "c1",
+                        [
+                            GuardianComponentMaterial.Cell,
+                            GuardianComponentMaterial.Unknown,
+                            GuardianComponentMaterial.Tech,
+                        ]),
+                },
             },
             [new GuardianObelisk("A01", "H1", true, ["ca"])],
             new HashSet<char> { 'A' });
@@ -317,7 +372,14 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
                     40,
                     0),
             ],
-            [],
+            [
+                new GuardianPointOfInterest(
+                    "d1",
+                    GuardianPoiType.DestructiblePanel,
+                    45,
+                    35,
+                    0),
+            ],
             new Dictionary<string, GuardianMapPoint>
             {
                 ["A"] = new GuardianMapPoint(0, 20),

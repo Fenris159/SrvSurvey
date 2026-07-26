@@ -82,6 +82,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private bool suppressForActiveBuildProjects;
     private bool autoZoomNearObelisks;
     private bool autoZoomInSrvTurret;
+    private bool showComponentMaterials;
     private bool showRuinsMeasurementGrid;
     private bool showAerialAlignmentGrid;
     private GuardianOverlaySizeOption selectedOverlaySize;
@@ -127,6 +128,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             overlayPreferences.SuppressForActiveBuildProjects;
         autoZoomNearObelisks = overlayPreferences.AutoZoomNearObelisks;
         autoZoomInSrvTurret = overlayPreferences.AutoZoomInSrvTurret;
+        showComponentMaterials = overlayPreferences.ShowComponentMaterials;
         showRuinsMeasurementGrid =
             !overlayPreferences.DisableRuinsMeasurementGrid;
         showAerialAlignmentGrid =
@@ -371,6 +373,21 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             {
                 SaveOverlayPreferences();
                 NotifyGuardianGuidanceChanged();
+            }
+        }
+    }
+
+    public bool ShowComponentMaterials
+    {
+        get => showComponentMaterials;
+        set
+        {
+            if (SetField(ref showComponentMaterials, value))
+            {
+                SaveOverlayPreferences();
+                UpdateMapProjection();
+                UpdateSurveyEditor();
+                UpdateProximity();
             }
         }
     }
@@ -785,11 +802,40 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             : "No live Guardian site detected.";
 
     public string NearbyPointText => Proximity?.NearestPoint is { } nearby
-        ? $"Nearest: {nearby.Point.Name} · {nearby.Point.Type} · "
-            + $"{nearby.Distance:N1} m"
+        ? GetNearbyPointText(nearby)
         : HasActiveSite
             ? "No selectable mapped object is available."
             : "Approach a Guardian site to begin proximity tracking.";
+
+    private string GetNearbyPointText(GuardianNearbyPoint nearby)
+    {
+        if (nearby.Point.Type == GuardianPoiType.DestructiblePanel)
+        {
+            var survey = ActiveSite is { } site ? FindSurvey(site) : null;
+            var material = survey?.Survey.ComponentMaterials
+                .GetValueOrDefault(nearby.Point.Name)
+                ?.GetItem(0) ?? GuardianComponentMaterial.Unknown;
+            return $"Destructible panel {nearby.Point.Name}: "
+                + $"{GetComponentMaterialName(material)} · "
+                + $"{nearby.Distance:N1} m";
+        }
+
+        return $"Nearest: {nearby.Point.Name} · {nearby.Point.Type} · "
+            + $"{nearby.Distance:N1} m";
+    }
+
+    private static string GetComponentMaterialName(
+        GuardianComponentMaterial material)
+    {
+        return material switch
+        {
+            GuardianComponentMaterial.Unknown => "?",
+            GuardianComponentMaterial.Cell => "Power Cell",
+            GuardianComponentMaterial.Conduit => "Power Conduit",
+            GuardianComponentMaterial.Tech => "Technology Component",
+            _ => material.ToString(),
+        };
+    }
 
     public string CurrentObeliskTitle => CurrentObelisk is { } obelisk
         ? $"{obelisk.Name} · active obelisk"
@@ -2212,6 +2258,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 SuppressForActiveBuildProjects,
                 AutoZoomNearObelisks,
                 AutoZoomInSrvTurret,
+                ShowComponentMaterials,
                 SelectedOverlaySize.Index,
                 DisableRuinsMeasurementGrid: !ShowRuinsMeasurementGrid,
                 DisableAerialAlignmentGrid: !ShowAerialAlignmentGrid));
@@ -2573,6 +2620,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             Location = source.Location,
             PoiStatuses = poiStatuses ?? source.PoiStatuses,
             RelicHeadings = relicHeadings ?? source.RelicHeadings,
+            ComponentMaterials = source.ComponentMaterials,
             RawPointsOfInterest = replaceRawPoints
                 ? rawPoints
                 : source.RawPointsOfInterest,
@@ -2626,7 +2674,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             template,
             survey?.Survey,
             activeObelisks,
-            obeliskGroups);
+            obeliskGroups,
+            ShowComponentMaterials);
         if (currentStatus is null || location is null)
         {
             NotifyCurrentObeliskChanged();
@@ -2643,7 +2692,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             template,
             survey?.Survey,
             activeObelisks,
-            obeliskGroups);
+            obeliskGroups,
+            ShowComponentMaterials);
         if (proximity is { } measurement
             && reference is not null
             && SelectedSite?.Reference == reference)
@@ -2695,7 +2745,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                 template,
                 survey?.Survey,
                 GetMergedActiveObelisks(row.Reference, survey),
-                GetObeliskGroups(published, survey));
+                GetObeliskGroups(published, survey),
+                ShowComponentMaterials);
         NotifyMapTextChanged();
     }
 
@@ -2744,7 +2795,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             activeFrontierId,
             activeIsOdyssey,
             survey,
-            template);
+            template,
+            ShowComponentMaterials);
         TemplateAuthoring.UpdateContext(template, measurement: null);
     }
 

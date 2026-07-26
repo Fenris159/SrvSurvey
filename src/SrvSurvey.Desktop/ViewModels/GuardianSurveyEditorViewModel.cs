@@ -17,6 +17,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private readonly AsyncCommand removeRawPointCommand;
     private string? frontierId;
     private bool isOdyssey = true;
+    private bool showComponentMaterials;
     private GuardianCommanderSiteSurvey? originalSurvey;
     private bool isAvailable;
     private bool isBusy;
@@ -174,10 +175,12 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         string? frontierId,
         bool isOdyssey,
         GuardianCommanderSiteSurvey? survey,
-        GuardianSiteTemplate? template)
+        GuardianSiteTemplate? template,
+        bool showComponentMaterials = false)
     {
         this.frontierId = frontierId;
         this.isOdyssey = isOdyssey;
+        this.showComponentMaterials = showComponentMaterials;
         originalSurvey = survey;
         IsAvailable = frontierId is not null
             && survey is not null
@@ -200,13 +203,19 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         Notes = survey.Notes;
         var rawPoints = survey.Survey.RawPointsOfInterest ?? [];
         Points = template.SurveyPoints
+            .Concat(showComponentMaterials
+                ? template.DestructiblePanels
+                : [])
             .Select(point => new GuardianSurveyPoiViewModel(
                 point,
                 survey.Survey.PoiStatuses.GetValueOrDefault(point.Name),
                 survey.Survey.RelicHeadings.GetValueOrDefault(
                     point.Name,
                     -1),
-                isRaw: false))
+                isRaw: false,
+                survey.Survey.ComponentMaterials.GetValueOrDefault(
+                    point.Name),
+                showComponentMaterials))
             .Concat(rawPoints.Select(point => new GuardianSurveyPoiViewModel(
                 point,
                 survey.Survey.PoiStatuses.GetValueOrDefault(
@@ -215,7 +224,10 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 point.Type == GuardianPoiType.Relic
                     ? (int)point.Rotation
                     : -1,
-                isRaw: true)))
+                isRaw: true,
+                survey.Survey.ComponentMaterials.GetValueOrDefault(
+                    point.Name),
+                showComponentMaterials)))
             .OrderBy(point => point.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         ObeliskGroups = template.ObeliskGroupNameLocations.Keys
@@ -277,7 +289,8 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             point,
             GuardianPoiStatus.Present,
             point.Type == GuardianPoiType.Relic ? (int)point.Rotation : -1,
-            isRaw: true);
+            isRaw: true,
+            componentModeEnabled: showComponentMaterials);
         Points = Points
             .Append(row)
             .OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
@@ -346,6 +359,11 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             var relicHeadings = new Dictionary<string, int>(
                 originalSurvey.Survey.RelicHeadings,
                 StringComparer.Ordinal);
+            var componentMaterials = new Dictionary<
+                string,
+                GuardianComponentLoadout>(
+                    originalSurvey.Survey.ComponentMaterials,
+                    StringComparer.Ordinal);
             var retainedRawNames = Points
                 .Where(point => point.IsRaw)
                 .Select(point => point.Name)
@@ -356,10 +374,17 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             {
                 statuses.Remove(removedName);
                 relicHeadings.Remove(removedName);
+                componentMaterials.Remove(removedName);
             }
 
             foreach (var point in Points)
             {
+                if (point.HasComponentRecord)
+                {
+                    componentMaterials[point.Name] =
+                        point.CreateComponentLoadout();
+                }
+
                 if (point.IsRaw)
                 {
                     continue;
@@ -401,6 +426,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                     Location = originalSurvey.Survey.Location,
                     PoiStatuses = statuses,
                     RelicHeadings = relicHeadings,
+                    ComponentMaterials = componentMaterials,
                     RawPointsOfInterest = rawPoints.Length == 0
                         ? null
                         : rawPoints,
@@ -532,17 +558,32 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
     ];
     private GuardianPoiStatus status;
     private decimal relicHeading;
+    private GuardianComponentMaterial topComponentMaterial;
+    private GuardianComponentMaterial middleComponentMaterial;
+    private GuardianComponentMaterial bottomComponentMaterial;
+    private bool hasComponentRecord;
+    private readonly bool componentModeEnabled;
 
     public GuardianSurveyPoiViewModel(
         GuardianPointOfInterest point,
         GuardianPoiStatus status,
         int relicHeading,
-        bool isRaw = false)
+        bool isRaw = false,
+        GuardianComponentLoadout? componentMaterials = null,
+        bool componentModeEnabled = false)
     {
         Point = point;
         this.status = status;
         this.relicHeading = relicHeading;
         IsRaw = isRaw;
+        this.componentModeEnabled = componentModeEnabled;
+        hasComponentRecord = componentMaterials is not null;
+        topComponentMaterial = componentMaterials?.GetItem(0)
+            ?? GuardianComponentMaterial.Unknown;
+        middleComponentMaterial = componentMaterials?.GetItem(1)
+            ?? GuardianComponentMaterial.Unknown;
+        bottomComponentMaterial = componentMaterials?.GetItem(2)
+            ?? GuardianComponentMaterial.Unknown;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -562,6 +603,55 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
     public string PositionText => $"{Point.Distance:N1} m · {Point.Angle:N1}°";
 
     public bool SupportsRelicHeading => Type == GuardianPoiType.Relic;
+
+    public bool SupportsComponentMaterials => Type is GuardianPoiType.Component
+        or GuardianPoiType.DestructiblePanel;
+
+    public bool SupportsMultipleComponentMaterials =>
+        Type == GuardianPoiType.Component;
+
+    public bool CanEditComponentMaterials => componentModeEnabled
+        && SupportsComponentMaterials;
+
+    public IReadOnlyList<GuardianComponentMaterial> ComponentMaterialOptions { get; }
+        = Enum.GetValues<GuardianComponentMaterial>();
+
+    public bool HasComponentRecord => hasComponentRecord;
+
+    public GuardianComponentMaterial TopComponentMaterial
+    {
+        get => topComponentMaterial;
+        set => SetComponentMaterial(
+            ref topComponentMaterial,
+            value,
+            nameof(TopComponentMaterial));
+    }
+
+    public GuardianComponentMaterial MiddleComponentMaterial
+    {
+        get => middleComponentMaterial;
+        set => SetComponentMaterial(
+            ref middleComponentMaterial,
+            value,
+            nameof(MiddleComponentMaterial));
+    }
+
+    public GuardianComponentMaterial BottomComponentMaterial
+    {
+        get => bottomComponentMaterial;
+        set => SetComponentMaterial(
+            ref bottomComponentMaterial,
+            value,
+            nameof(BottomComponentMaterial));
+    }
+
+    public string ComponentMaterialSummary => !SupportsComponentMaterials
+        ? string.Empty
+        : SupportsMultipleComponentMaterials
+            ? $"Top {GetMaterialName(TopComponentMaterial)} / "
+                + $"middle {GetMaterialName(MiddleComponentMaterial)} / "
+                + $"bottom {GetMaterialName(BottomComponentMaterial)}"
+            : GetMaterialName(TopComponentMaterial);
 
     public bool SupportsEmptyStatus => Type is GuardianPoiType.Unknown
         or GuardianPoiType.Orb
@@ -605,6 +695,61 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
                 this,
                 new PropertyChangedEventArgs(nameof(RelicHeading)));
         }
+    }
+
+    public GuardianComponentLoadout CreateComponentLoadout()
+    {
+        if (!SupportsComponentMaterials)
+        {
+            throw new InvalidOperationException(
+                $"{Name} does not support Guardian component materials.");
+        }
+
+        return new GuardianComponentLoadout(
+            Name,
+            SupportsMultipleComponentMaterials
+                ?
+                [
+                    TopComponentMaterial,
+                    MiddleComponentMaterial,
+                    BottomComponentMaterial,
+                ]
+                : [TopComponentMaterial]);
+    }
+
+    private void SetComponentMaterial(
+        ref GuardianComponentMaterial field,
+        GuardianComponentMaterial value,
+        string propertyName)
+    {
+        if (field == value)
+        {
+            return;
+        }
+
+        field = value;
+        hasComponentRecord = true;
+        PropertyChanged?.Invoke(
+            this,
+            new PropertyChangedEventArgs(propertyName));
+        PropertyChanged?.Invoke(
+            this,
+            new PropertyChangedEventArgs(nameof(HasComponentRecord)));
+        PropertyChanged?.Invoke(
+            this,
+            new PropertyChangedEventArgs(nameof(ComponentMaterialSummary)));
+    }
+
+    private static string GetMaterialName(GuardianComponentMaterial material)
+    {
+        return material switch
+        {
+            GuardianComponentMaterial.Unknown => "?",
+            GuardianComponentMaterial.Cell => "Power Cell",
+            GuardianComponentMaterial.Conduit => "Power Conduit",
+            GuardianComponentMaterial.Tech => "Technology Component",
+            _ => material.ToString(),
+        };
     }
 }
 
