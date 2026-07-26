@@ -2,6 +2,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Navigation;
 
 namespace SrvSurvey.Core.Updates;
 
@@ -30,7 +31,8 @@ public sealed record PublishedReferenceUris(
     Uri GuardianStructures,
     Uri GuardianSurveyArchive,
     Uri HumanSettlementsArchive,
-    Uri GreenGasGiants)
+    Uri GreenGasGiants,
+    Uri RavenNicknames)
 {
     public static PublishedReferenceUris Default { get; } = new(
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/refs/heads/main/docs/codexRef.json"),
@@ -40,7 +42,8 @@ public sealed record PublishedReferenceUris(
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/allStructures.json"),
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/data/guardian.zip"),
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/data/settlements.zip"),
-        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/ggg.json"));
+        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/ggg.json"),
+        new Uri("https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/api/misc/nicknames"));
 }
 
 internal enum PublishedReferenceUpdateCheckpoint
@@ -145,13 +148,17 @@ public sealed class PublishedReferenceUpdateService
             previous.GreenGasGiants,
             remote.GreenGasGiantsVersion,
             sources["Green Gas Giant criteria"]);
+        var currentNicknames = SystemNicknameCatalog.Load(root);
+        var updateNicknames = remote.NicknamesVersion > previous.Nicknames
+            || currentNicknames.RavenCount == 0;
         var updated = new List<string>();
         if (!updateCodex
             && !updateBiology
             && !updateGuardianTemplates
             && !updateGuardian
             && !updateSettlements
-            && !updateGreenGasGiants)
+            && !updateGreenGasGiants
+            && !updateNicknames)
         {
             return new PublishedReferenceUpdateResult(
                 previous,
@@ -269,6 +276,24 @@ public sealed class PublishedReferenceUpdateService
                 updated.Add("Green Gas Giant criteria");
             }
 
+            if (updateNicknames)
+            {
+                var bytes = await DownloadAsync(uris.RavenNicknames, cancellationToken)
+                    .ConfigureAwait(false);
+                var nicknameMap = ParseNicknameMap(bytes);
+                await File.WriteAllTextAsync(
+                        Path.Combine(stagePublished, "nicknames.json"),
+                        JsonSerializer.Serialize(
+                            nicknameMap,
+                            new JsonSerializerOptions
+                            {
+                                WriteIndented = true,
+                            }),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                updated.Add("Raven system nicknames");
+            }
+
             var next = new PublishedReferenceVersions(
                 updateCodex
                     ? Math.Max(previous.CodexReference, remote.CodexReferenceVersion)
@@ -290,7 +315,9 @@ public sealed class PublishedReferenceUpdateService
                 updateSettlements
                     ? Math.Max(previous.Settlements, remote.SettlementsVersion)
                     : previous.Settlements,
-                previous.Nicknames,
+                updateNicknames
+                    ? Math.Max(previous.Nicknames, remote.NicknamesVersion)
+                    : previous.Nicknames,
                 updateGreenGasGiants
                     ? Math.Max(
                         previous.GreenGasGiants,
@@ -447,6 +474,19 @@ public sealed class PublishedReferenceUpdateService
         }).ToHashSet(StringComparer.Ordinal);
         foreach (var catalogName in expectedSources)
         {
+            if (catalogName == "Raven system nicknames")
+            {
+                var nicknames = SystemNicknameCatalog.Load(candidateRoot);
+                if (nicknames.RavenCount == 0 || nicknames.Warnings.Count > 0)
+                {
+                    throw new InvalidDataException(
+                        nicknames.Warnings.FirstOrDefault()
+                            ?? "The staged Raven nickname catalog is empty.");
+                }
+
+                continue;
+            }
+
             var source = result.Sources.Single(candidate => string.Equals(
                 candidate.Catalog,
                 catalogName,
@@ -470,6 +510,59 @@ public sealed class PublishedReferenceUpdateService
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllBytesAsync(path, bytes, cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    private static SortedDictionary<string, string> ParseNicknameMap(byte[] bytes)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(bytes);
+            if (document.RootElement.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidDataException(
+                    "The Raven nickname response is not a JSON array.");
+            }
+
+            var result = new SortedDictionary<string, string>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var row in document.RootElement.EnumerateArray())
+            {
+                if (row.ValueKind != JsonValueKind.Object
+                    || !row.TryGetProperty("name", out var nameValue)
+                    || nameValue.ValueKind != JsonValueKind.String
+                    || !row.TryGetProperty("nickname", out var nicknameValue)
+                    || nicknameValue.ValueKind != JsonValueKind.String)
+                {
+                    throw new InvalidDataException(
+                        "The Raven nickname response contains an invalid row.");
+                }
+
+                var name = nameValue.GetString()?.Trim();
+                var nickname = nicknameValue.GetString()?.Trim();
+                if (string.IsNullOrWhiteSpace(name)
+                    || string.IsNullOrWhiteSpace(nickname))
+                {
+                    throw new InvalidDataException(
+                        "The Raven nickname response contains a blank name or nickname.");
+                }
+
+                result[name] = nickname;
+            }
+
+            if (result.Count == 0)
+            {
+                throw new InvalidDataException(
+                    "The Raven nickname response contains no nicknames.");
+            }
+
+            return result;
+        }
+        catch (JsonException exception)
+        {
+            throw new InvalidDataException(
+                "The Raven nickname response is not valid JSON.",
+                exception);
+        }
     }
 
     private async Task<byte[]> DownloadAsync(

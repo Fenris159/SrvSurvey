@@ -527,8 +527,10 @@ UI tests where practical, and live Windows/Linux evidence.
   candidates must parse at full embedded coverage, existing references receive
   checksum-verified backups, and activation rolls back as a unit on injected
   pre/post-swap failures. Refresh runs without blocking journal startup and a
-  controlled restart applies the immutable catalogs. Raven nicknames, packaged
-  update installation/rollback, and the remaining network audit keep this phase
+  controlled restart applies the immutable catalogs. Raven system nicknames now
+  refresh in the same transaction: the service array is normalized into the
+  legacy map only after every row and the non-empty result validate. Packaged
+  update installation/rollback and the remaining network audit keep this phase
   open.
 - [ ] Localization review for every migrated surface.
 

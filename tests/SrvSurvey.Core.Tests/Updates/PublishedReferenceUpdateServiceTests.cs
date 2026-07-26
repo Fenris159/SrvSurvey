@@ -20,7 +20,8 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         new Uri("https://example.test/structures.json"),
         new Uri("https://example.test/guardian.zip"),
         new Uri("https://example.test/settlements.zip"),
-        new Uri("https://example.test/ggg.json"));
+        new Uri("https://example.test/ggg.json"),
+        new Uri("https://example.test/nicknames.json"));
 
     [Fact]
     public async Task RefreshAsyncActivatesAllValidatedCatalogsAndPreservesBackup()
@@ -30,7 +31,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
 
         var result = await service.RefreshAsync(root);
 
-        Assert.Equal(6, result.UpdatedCatalogs.Count);
+        Assert.Equal(7, result.UpdatedCatalogs.Count);
         Assert.True(result.RestartRequired);
         Assert.NotNull(result.BackupDirectory);
         Assert.Equal(
@@ -53,6 +54,11 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         Assert.Equal(68, versions.Guardian);
         Assert.Equal(15, versions.Settlements);
         Assert.Equal(1, versions.GreenGasGiants);
+        Assert.Equal(1, versions.Nicknames);
+        Assert.Equal(
+            "The Lantern",
+            SrvSurvey.Core.Navigation.SystemNicknameCatalog.Load(root)
+                .Resolve("Tir"));
         Assert.Empty(FindOperationDirectories(".reference-update-"));
         Assert.Empty(FindOperationDirectories(".reference-rollback-"));
     }
@@ -136,6 +142,24 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         Assert.False(File.Exists(Path.Combine(root, "escape.json")));
     }
 
+    [Fact]
+    public async Task RefreshAsyncRejectsEmptyNicknameResponse()
+    {
+        WriteExistingReferences();
+        var payloads = CreatePayloads();
+        payloads[uris.RavenNicknames] = Encoding.UTF8.GetBytes("[]");
+        var service = CreateService(payloads);
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(
+            () => service.RefreshAsync(root));
+
+        Assert.Contains("no nicknames", exception.Message);
+        Assert.False(File.Exists(Path.Combine(root, "pub", "nicknames.json")));
+        Assert.Equal(
+            "keep me",
+            File.ReadAllText(Path.Combine(root, "pub", "keep.txt")));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(root))
@@ -186,6 +210,8 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
                 ReadResource("SrvSurvey.Core.Resources.humanSiteTemplates.json"))),
             [uris.GreenGasGiants] = ReadResource(
                 "SrvSurvey.Core.Resources.ggg.json"),
+            [uris.RavenNicknames] = Encoding.UTF8.GetBytes(
+                "[{\"name\":\"Tir\",\"nickname\":\"The Lantern\"}]"),
         };
     }
 
