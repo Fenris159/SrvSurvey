@@ -188,6 +188,43 @@ public sealed class HumanSiteLiveStateTests
         Assert.False(state.ApplyKnowledge(knowledge with { MarketId = 999 }));
     }
 
+    [Fact]
+    public void ExternalKnowledgeFillsMissingFieldsWithoutReplacingLocalGeometry()
+    {
+        var state = CreateState();
+        state.Apply(Parse(ApproachJson));
+        var local = new HumanSiteKnowledge(
+            "Haberlandt Survey",
+            12345,
+            42,
+            3,
+            HumanSiteEconomy.Agriculture,
+            "$economy_Agri;",
+            new HumanSiteSurfaceLocation(12.5, -45.25),
+            4,
+            275,
+            HumanSiteLandingPads.Empty,
+            HumanSiteGeometrySource.AutoDock);
+        var external = local with
+        {
+            SubType = 1,
+            Heading = 90,
+            AvailablePads = new HumanSiteLandingPads(2, 0, 1),
+            GeometrySource = HumanSiteGeometrySource.ManualFoot,
+        };
+        state.ApplyKnowledge(local);
+
+        Assert.True(state.ApplyKnowledge(
+            external,
+            HumanSiteKnowledgeMergeMode.FillMissing));
+
+        Assert.Equal(4, state.CurrentSite!.SubType);
+        Assert.Equal(275, state.CurrentSite.Heading);
+        Assert.Equal(
+            new HumanSiteLandingPads(2, 0, 1),
+            state.CurrentSite.AvailablePads);
+    }
+
     private static HumanSiteLiveState CreateState()
     {
         return new HumanSiteLiveState(

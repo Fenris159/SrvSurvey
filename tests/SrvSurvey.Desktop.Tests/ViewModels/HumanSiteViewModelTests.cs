@@ -500,6 +500,125 @@ public sealed class HumanSiteViewModelTests
         }
     }
 
+    [Fact]
+    public async Task CanonnGeometryLoadsForALiveApproachWithoutReplacingJournalIdentity()
+    {
+        var client = new StubCanonnClient(new CanonnHumanSiteLookupResult(
+            [CreateCanonnKnowledge()],
+            []));
+        var viewModel = new HumanSiteViewModel(
+            templateCatalog: HumanSiteTemplateCatalog.LoadEmbedded(),
+            canonnClient: client,
+            useExternalData: () => true);
+
+        await viewModel.ApplyUpdateAsync(
+            [Parse(Approach())],
+            OnFootStatus(0, 0, 0),
+            "foot");
+
+        Assert.Equal(1, client.RequestCount);
+        Assert.Equal(42, client.SystemAddress);
+        Assert.Equal("Haberlandt Survey", viewModel.SiteName);
+        Assert.Equal(4, viewModel.ActiveSite!.SubType);
+        Assert.Equal(275, viewModel.ActiveSite.Heading);
+        Assert.Equal("Fornax", viewModel.ActiveSite.Template!.Name);
+        Assert.Contains("Canonn", viewModel.StatusMessage);
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task CanonnGeometryRespectsPrivacyAndBootstrapGates(
+        bool externalDataEnabled,
+        bool allowExternalData)
+    {
+        var client = new StubCanonnClient(new CanonnHumanSiteLookupResult(
+            [CreateCanonnKnowledge()],
+            []));
+        var viewModel = new HumanSiteViewModel(
+            canonnClient: client,
+            useExternalData: () => externalDataEnabled);
+
+        await viewModel.ApplyUpdateAsync(
+            [Parse(Approach())],
+            OnFootStatus(0, 0, 0),
+            "foot",
+            allowExternalData);
+
+        Assert.Equal(0, client.RequestCount);
+        Assert.False(viewModel.HasKnownGeometry);
+    }
+
+    [Fact]
+    public async Task CanonnFailureDoesNotInterruptJournalProcessing()
+    {
+        var client = new StubCanonnClient(new HttpRequestException("offline"));
+        var viewModel = new HumanSiteViewModel(
+            canonnClient: client,
+            useExternalData: () => true);
+
+        await viewModel.ApplyUpdateAsync(
+            [Parse(Approach())],
+            OnFootStatus(0, 0, 0),
+            "foot");
+
+        Assert.NotNull(viewModel.ActiveSite);
+        Assert.Contains("unavailable", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task LoadedGeometryRetainsItsProvenanceAfterApproachSave()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-human-provenance-{Guid.NewGuid():N}");
+        try
+        {
+            var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
+            var seed = new HumanSiteLiveState(catalog);
+            seed.Apply(Parse(Approach()));
+            var site = seed.CurrentSite! with
+            {
+                SubType = 4,
+                Template = catalog.Find(HumanSiteEconomy.Agriculture, 4),
+                Heading = 275,
+            };
+            var context = new HumanSiteKnowledgeContext(
+                "F123",
+                "Drew",
+                "Test",
+                42,
+                null,
+                6_000_000);
+            var store = new HumanSiteKnowledgeStore(root);
+            await store.SaveAsync(
+                context,
+                site,
+                HumanSiteGeometrySource.AutoDock);
+            var viewModel = new HumanSiteViewModel(
+                knowledgeStore: store,
+                templateCatalog: catalog);
+            viewModel.UpdateContext("F123", "Drew", "Test", 42, null);
+
+            await viewModel.ApplyUpdateAsync(
+                [Parse(Approach())],
+                OnFootStatus(0, 0, 0),
+                "foot");
+
+            var reloaded = await store.LoadAsync(context, 12345);
+            Assert.Equal(
+                HumanSiteGeometrySource.AutoDock,
+                reloaded.Knowledge!.GeometrySource);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     private static EliteStatus OnFootStatus(
         double latitude,
         double longitude,
@@ -538,6 +657,22 @@ public sealed class HumanSiteViewModelTests
         return Assert.IsType<JournalEventEnvelope>(value);
     }
 
+    private static HumanSiteKnowledge CreateCanonnKnowledge()
+    {
+        return new HumanSiteKnowledge(
+            "Remote name",
+            12345,
+            42,
+            3,
+            HumanSiteEconomy.Agriculture,
+            "$economy_Agri;",
+            new HumanSiteSurfaceLocation(0, 0),
+            4,
+            275,
+            new HumanSiteLandingPads(2, 0, 1),
+            HumanSiteGeometrySource.AutoDock);
+    }
+
     private static QuestRuntimeSnapshot CreateQuestSnapshot(
         IReadOnlyDictionary<string, string> locations,
         IReadOnlyList<RavenQuestRoute> routes)
@@ -556,5 +691,36 @@ public sealed class HumanSiteViewModelTests
             new HashSet<string>(),
             locations,
             routes);
+    }
+
+    private sealed class StubCanonnClient : ICanonnHumanSiteClient
+    {
+        private readonly CanonnHumanSiteLookupResult? result;
+        private readonly Exception? exception;
+
+        public StubCanonnClient(CanonnHumanSiteLookupResult result)
+        {
+            this.result = result;
+        }
+
+        public StubCanonnClient(Exception exception)
+        {
+            this.exception = exception;
+        }
+
+        public int RequestCount { get; private set; }
+
+        public long SystemAddress { get; private set; }
+
+        public Task<CanonnHumanSiteLookupResult> GetStationsAsync(
+            long systemAddress,
+            CancellationToken cancellationToken = default)
+        {
+            RequestCount++;
+            SystemAddress = systemAddress;
+            return exception is null
+                ? Task.FromResult(result!)
+                : Task.FromException<CanonnHumanSiteLookupResult>(exception);
+        }
     }
 }

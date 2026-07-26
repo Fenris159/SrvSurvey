@@ -116,7 +116,9 @@ public sealed class HumanSiteKnowledgeStoreTests : IDisposable
             Site() with { SubType = 4, Heading = 270 },
             HumanSiteGeometrySource.AutoDock);
 
-        await store.SaveAsync(Context(), Site());
+        await store.SaveAsync(
+            Context(),
+            Site() with { SubType = 4, Heading = 270 });
         var result = await store.LoadAsync(Context(), 12345);
 
         Assert.Equal(4, result.Knowledge!.SubType);

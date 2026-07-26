@@ -142,7 +142,12 @@ public sealed class HumanSiteKnowledgeStore
         if (site.Heading is { } heading && double.IsFinite(heading))
         {
             station["heading"] = heading;
-            station["calcMethod"] = geometrySource.ToString();
+            if (geometrySource != HumanSiteGeometrySource.Unknown
+                || isNew
+                || GetProperty(station, "calcMethod") is null)
+            {
+                station["calcMethod"] = geometrySource.ToString();
+            }
         }
         else if (isNew && existingHeading is null)
         {

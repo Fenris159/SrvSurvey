@@ -48,7 +48,10 @@ public sealed class HumanSiteLiveState(
         return true;
     }
 
-    public bool ApplyKnowledge(HumanSiteKnowledge knowledge)
+    public bool ApplyKnowledge(
+        HumanSiteKnowledge knowledge,
+        HumanSiteKnowledgeMergeMode mergeMode =
+            HumanSiteKnowledgeMergeMode.PreferIncoming)
     {
         ArgumentNullException.ThrowIfNull(knowledge);
         if (CurrentSite is null
@@ -59,17 +62,25 @@ public sealed class HumanSiteLiveState(
             return false;
         }
 
-        var template = knowledge.SubType > 0
+        var incomingTemplate = knowledge.SubType > 0
             ? templates.Find(knowledge.Economy, knowledge.SubType)
             : null;
-        var heading = knowledge.Heading is { } savedHeading
-            ? SurfaceNavigation.NormalizeDegrees(savedHeading)
-            : CurrentSite.Heading;
+        var template = mergeMode == HumanSiteKnowledgeMergeMode.FillMissing
+                && CurrentSite.Template is not null
+            ? CurrentSite.Template
+            : incomingTemplate ?? CurrentSite.Template;
+        var heading = mergeMode == HumanSiteKnowledgeMergeMode.FillMissing
+                && CurrentSite.Heading is not null
+            ? CurrentSite.Heading
+            : knowledge.Heading is { } savedHeading
+                ? SurfaceNavigation.NormalizeDegrees(savedHeading)
+                : CurrentSite.Heading;
         var pads = knowledge.AvailablePads.Total > 0
+                && (mergeMode != HumanSiteKnowledgeMergeMode.FillMissing
+                    || CurrentSite.AvailablePads.Total == 0)
             ? knowledge.AvailablePads
             : CurrentSite.AvailablePads;
         var subType = template?.SubType ?? CurrentSite.SubType;
-        template ??= CurrentSite.Template;
         if (CurrentSite.SubType == subType
             && CurrentSite.Template == template
             && CurrentSite.Heading == heading
@@ -616,4 +627,10 @@ public enum HumanSiteGeometrySource
     ManualDock,
     ManualFoot,
     TaxiDock,
+}
+
+public enum HumanSiteKnowledgeMergeMode
+{
+    PreferIncoming,
+    FillMissing,
 }

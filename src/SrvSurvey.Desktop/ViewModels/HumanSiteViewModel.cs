@@ -26,6 +26,8 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private readonly HumanSiteSettingsStore? settingsStore;
     private readonly HumanSiteKnowledgeStore? knowledgeStore;
     private readonly HumanSiteMaterialStore? materialStore;
+    private readonly ICanonnHumanSiteClient? canonnClient;
+    private readonly Func<bool> useExternalData;
     private EliteStatus? status;
     private string? frontierId;
     private string? commanderName;
@@ -34,6 +36,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private GalacticCoordinate? starPosition;
     private string? vehicle;
     private string? loadedSiteKey;
+    private string? loadedCanonnSiteKey;
     private string? loadedMaterialSiteKey;
     private bool activeBuildProjects;
     private bool stationInfoVisible;
@@ -67,11 +70,15 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         HumanSiteSettingsStore? settingsStore = null,
         HumanSiteKnowledgeStore? knowledgeStore = null,
         HumanSiteMaterialStore? materialStore = null,
-        HumanSiteTemplateCatalog? templateCatalog = null)
+        HumanSiteTemplateCatalog? templateCatalog = null,
+        ICanonnHumanSiteClient? canonnClient = null,
+        Func<bool>? useExternalData = null)
     {
         this.settingsStore = settingsStore;
         this.knowledgeStore = knowledgeStore;
         this.materialStore = materialStore;
+        this.canonnClient = canonnClient;
+        this.useExternalData = useExternalData ?? (() => true);
         var templates = templateCatalog
             ?? HumanSiteTemplateCatalog.LoadEmbedded();
         TemplateAuthor = new HumanSiteTemplateAuthoringViewModel(
@@ -444,6 +451,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                 StringComparison.OrdinalIgnoreCase))
         {
             loadedSiteKey = null;
+            loadedCanonnSiteKey = null;
             loadedMaterialSiteKey = null;
             ThreatLevel = -1;
         }
@@ -458,7 +466,8 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     public async Task ApplyUpdateAsync(
         IEnumerable<JournalEventEnvelope> journalEvents,
         EliteStatus? currentStatus,
-        string? currentVehicle = null)
+        string? currentVehicle = null,
+        bool allowExternalData = true)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (currentStatus is not null)
@@ -479,7 +488,20 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             if (journalEvent.EventName == "ApproachSettlement"
                 && state.CurrentSite is not null)
             {
-                await LoadKnowledgeAsync();
+                var loadedSource = await LoadKnowledgeAsync();
+                if (source == HumanSiteGeometrySource.Unknown
+                    && loadedSource != HumanSiteGeometrySource.Unknown)
+                {
+                    source = loadedSource;
+                }
+
+                var canonnSource = await LoadCanonnKnowledgeAsync(
+                    allowExternalData);
+                if (source == HumanSiteGeometrySource.Unknown
+                    && canonnSource != HumanSiteGeometrySource.Unknown)
+                {
+                    source = canonnSource;
+                }
             }
 
             var inferredSource = TryInferGeometry(
@@ -521,6 +543,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         if (state.CurrentSite is null)
         {
             loadedSiteKey = null;
+            loadedCanonnSiteKey = null;
             loadedMaterialSiteKey = null;
         }
 
@@ -917,19 +940,19 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         }
     }
 
-    private async Task LoadKnowledgeAsync()
+    private async Task<HumanSiteGeometrySource> LoadKnowledgeAsync()
     {
         if (knowledgeStore is null
             || ActiveSite is not { } site
             || CreateKnowledgeContext() is not { } context)
         {
-            return;
+            return HumanSiteGeometrySource.Unknown;
         }
 
         var key = $"{site.SystemAddress}/{site.MarketId}";
         if (string.Equals(key, loadedSiteKey, StringComparison.Ordinal))
         {
-            return;
+            return HumanSiteGeometrySource.Unknown;
         }
 
         loadedSiteKey = key;
@@ -940,6 +963,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             {
                 state.ApplyKnowledge(result.Knowledge);
                 StatusMessage = "Loaded saved settlement type and alignment.";
+                return result.Knowledge.GeometrySource;
             }
             else if (result.Error is not null)
             {
@@ -954,6 +978,59 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             StatusMessage =
                 $"Settlement geometry could not be loaded: {exception.Message}";
         }
+
+        return HumanSiteGeometrySource.Unknown;
+    }
+
+    private async Task<HumanSiteGeometrySource> LoadCanonnKnowledgeAsync(
+        bool allowExternalData)
+    {
+        if (!allowExternalData
+            || canonnClient is null
+            || !useExternalData()
+            || ActiveSite is not { } site)
+        {
+            return HumanSiteGeometrySource.Unknown;
+        }
+
+        var key = $"{site.SystemAddress}/{site.MarketId}";
+        if (string.Equals(key, loadedCanonnSiteKey, StringComparison.Ordinal))
+        {
+            return HumanSiteGeometrySource.Unknown;
+        }
+
+        try
+        {
+            var result = await canonnClient.GetStationsAsync(site.SystemAddress);
+            loadedCanonnSiteKey = key;
+            var station = result.Stations.FirstOrDefault(candidate =>
+                candidate.MarketId == site.MarketId);
+            if (station is not null
+                && state.ApplyKnowledge(
+                    station,
+                    HumanSiteKnowledgeMergeMode.FillMissing))
+            {
+                StatusMessage =
+                    "Loaded compatible Canonn settlement type and alignment.";
+                return station.GeometrySource;
+            }
+            else if (result.Warnings.Count > 0)
+            {
+                StatusMessage = "Some Canonn settlement data was ignored: "
+                    + result.Warnings[0];
+            }
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or TaskCanceledException
+                or IOException
+                or InvalidDataException)
+        {
+            StatusMessage =
+                $"Canonn settlement geometry is unavailable: {exception.Message}";
+        }
+
+        return HumanSiteGeometrySource.Unknown;
     }
 
     private async Task SaveKnowledgeAsync(

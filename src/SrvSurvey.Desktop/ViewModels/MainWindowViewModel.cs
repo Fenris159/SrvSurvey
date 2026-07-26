@@ -14,6 +14,7 @@ using SrvSurvey.Core.Navigation;
 using SrvSurvey.Core.Quests;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Core.Settlements;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Travel;
 using SrvSurvey.Core.Updates;
@@ -164,7 +165,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         RavenServiceSettingsStore? ravenServiceSettingsStore = null,
         ReleaseUpdateViewModel? releaseUpdates = null,
         ReferenceDataUpdateViewModel? referenceDataUpdates = null,
-        LocalizationViewModel? localization = null)
+        LocalizationViewModel? localization = null,
+        ICanonnHumanSiteClient? canonnHumanSiteClient = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -412,12 +414,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             sharedSystemSummaryClient,
             stationInfoSettingsStore
                 ?? new StationInfoSettingsStore(AppDataPaths.UiSettingsPath));
-        HumanSite = new HumanSiteViewModel(
-            humanSiteSettingsStore
-                ?? new HumanSiteSettingsStore(AppDataPaths.UiSettingsPath),
-            new HumanSiteKnowledgeStore(AppDataPaths.DataDirectory),
-            new HumanSiteMaterialStore(AppDataPaths.DataDirectory),
-            legacyReferences.HumanSiteTemplates);
         BiologyRewards = new BiologyRewardSettingsViewModel(
             biologyRewardSettingsStore
                 ?? new BiologyRewardSettingsStore(AppDataPaths.UiSettingsPath));
@@ -428,6 +424,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             biologyRewardThresholds: BiologyRewards.Thresholds,
             biologyCriteria: legacyReferences.BiologyCriteria,
             regionalCodexCandidates: regionalCodexCandidates);
+        HumanSite = new HumanSiteViewModel(
+            humanSiteSettingsStore
+                ?? new HumanSiteSettingsStore(AppDataPaths.UiSettingsPath),
+            new HumanSiteKnowledgeStore(AppDataPaths.DataDirectory),
+            new HumanSiteMaterialStore(AppDataPaths.DataDirectory),
+            legacyReferences.HumanSiteTemplates,
+            canonnHumanSiteClient,
+            () => SystemSurvey.UseExternalData);
         BiologyRewards.PropertyChanged += OnBiologyRewardsChanged;
         Combat = new CombatViewModel(
             combatSettingsStore
@@ -1681,7 +1685,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         await HumanSite.ApplyUpdateAsync(
             update.JournalEvents,
             update.Status,
-            journalState.ShipType);
+            journalState.ShipType,
+            allowExternalData: !update.IsBootstrapRead);
         if (!update.IsBootstrapRead)
         {
             var guardianScreenshotContext = Guardian.ActiveSite is { } site

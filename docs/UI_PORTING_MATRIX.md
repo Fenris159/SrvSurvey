@@ -170,14 +170,19 @@ points, terminals, conflict-zone points, processed-terminal state, and optional
 material pickup dots. Active quest target circles and widened waypoint routes
 are projected onto the aligned map from the losslessly migrated quest state;
 malformed imported coordinates are retained on disk but fail closed in the
-renderer. Geometry remains lossless in the legacy system JSON, and
+renderer. Geometry remains lossless in the legacy system JSON, including its
+calculation provenance. On live approaches only, the migrated external-data
+preference gates bounded read-only lookup through the original Canonn station
+endpoint; compatible results fill missing type, heading, and pad fields without
+overwriting stronger local measurements or replaying network calls at startup.
 material surveys use the legacy `footMatStats/<FID>` layout with corrupt-file
 protection and `.stop` completion. The coordinator preserves station-info and
 surface/biology overlay priority plus the global map and visibility actions.
 Template authoring for both human settlements (`FormBuilder`) and Guardian maps
 (`FormEditMap`) is implemented. Threat-level survey metadata and the `.threat` command are
 implemented independently of material tracking. Automated reducer,
-persistence, settings, placement, control-transform, integration, and XAML
+persistence, live Canonn contract/parser/privacy/merge behavior, settings,
+placement, control-transform, integration, and XAML
 checks pass; per request, the window has not been opened and awaits the final
 visual/theme pass.
 `PlotSphericalSearch` is implemented as a
