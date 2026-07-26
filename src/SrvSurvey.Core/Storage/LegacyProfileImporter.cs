@@ -63,6 +63,8 @@ public sealed class LegacyProfileImporter
         var backupStage = $"{finalBackup}.importing";
         var destinationStage = $"{destination}.importing-{operationId}";
         var rollbackDirectory = $"{destination}.rollback-{operationId}";
+        var failedActivationDirectory =
+            $"{destination}.failed-import-{operationId}";
         var backupProfileStage = Path.Combine(backupStage, "profile");
         var previousDestinationStage = Path.Combine(
             backupStage,
@@ -81,6 +83,11 @@ public sealed class LegacyProfileImporter
                     overwrite: false,
                     cancellationToken)
                 .ConfigureAwait(false);
+            await VerifyExactProfileAsync(
+                    backupProfileStage,
+                    sourceInventory,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             if (destinationInventory.Entries.Count > 0
                 || destinationInventory.RelativeDirectories.Count > 0)
@@ -91,6 +98,11 @@ public sealed class LegacyProfileImporter
                         previousDestinationStage,
                         destinationInventory,
                         overwrite: false,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                await VerifyExactProfileAsync(
+                        previousDestinationStage,
+                        destinationInventory,
                         cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -133,10 +145,11 @@ public sealed class LegacyProfileImporter
                     overwrite: true,
                     cancellationToken)
                 .ConfigureAwait(false);
-            await VerifyMergedProfileAsync(
+            await VerifyMergedProfileExactAsync(
                     destinationStage,
                     sourceInventory,
                     destinationInventory,
+                    hasImportManifest: false,
                     cancellationToken)
                 .ConfigureAwait(false);
             await WriteManifestAsync(
@@ -146,6 +159,18 @@ public sealed class LegacyProfileImporter
                 .ConfigureAwait(false);
 
             checkpoint?.Invoke(ProfileImportCheckpoint.BeforeActivationValidation);
+            await VerifyMergedProfileExactAsync(
+                    destinationStage,
+                    sourceInventory,
+                    destinationInventory,
+                    hasImportManifest: true,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            await VerifyManifestCopyAsync(
+                    Path.Combine(finalBackup, ManifestFileName),
+                    Path.Combine(destinationStage, ManifestFileName),
+                    cancellationToken)
+                .ConfigureAwait(false);
             await VerifyInventoryUnchangedAsync(
                     source,
                     sourceInventory,
@@ -174,10 +199,11 @@ public sealed class LegacyProfileImporter
                     "The current cross-platform profile changed during import activation",
                     cancellationToken)
                 .ConfigureAwait(false);
-            await VerifyMergedProfileAsync(
+            await VerifyMergedProfileExactAsync(
                     destination,
                     sourceInventory,
                     destinationInventory,
+                    hasImportManifest: true,
                     cancellationToken)
                 .ConfigureAwait(false);
             await VerifyManifestCopyAsync(
@@ -196,7 +222,10 @@ public sealed class LegacyProfileImporter
         {
             if (profileActivated)
             {
-                RollBackActivatedProfile(destination, rollbackDirectory);
+                RollBackActivatedProfile(
+                    destination,
+                    rollbackDirectory,
+                    failedActivationDirectory);
             }
 
             throw;
@@ -206,6 +235,7 @@ public sealed class LegacyProfileImporter
             DeleteStagingDirectory(backupStage);
             DeleteStagingDirectory(destinationStage);
             RestoreRollbackIfRequired(destination, rollbackDirectory);
+            TryDeleteVerifiedRollback(failedActivationDirectory);
         }
     }
 
@@ -262,36 +292,67 @@ public sealed class LegacyProfileImporter
         }
     }
 
-    private static async Task VerifyMergedProfileAsync(
+    private static async Task VerifyMergedProfileExactAsync(
         string destinationRoot,
         ProfileInventory sourceInventory,
         ProfileInventory previousInventory,
+        bool hasImportManifest,
         CancellationToken cancellationToken)
     {
-        var sourcePaths = sourceInventory.Entries
-            .Select(entry => entry.RelativePath)
-            .ToHashSet(PathComparer);
-        foreach (var entry in previousInventory.Entries.Where(
-                     entry => !sourcePaths.Contains(entry.RelativePath)))
-        {
-            await VerifyEntryAsync(
-                    ProfileInventory.ResolveEntryPath(
-                        destinationRoot,
-                        entry.RelativePath),
-                    entry,
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
-
+        var mergedEntries = previousInventory.Entries.ToDictionary(
+            entry => entry.RelativePath,
+            PathComparer);
         foreach (var entry in sourceInventory.Entries)
         {
-            await VerifyEntryAsync(
-                    ProfileInventory.ResolveEntryPath(
-                        destinationRoot,
-                        entry.RelativePath),
-                    entry,
-                    cancellationToken)
-                .ConfigureAwait(false);
+            mergedEntries[entry.RelativePath] = entry;
+        }
+
+        var actual = await ProfileInventory.CreateAsync(
+                destinationRoot,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var actualEntries = actual.Entries
+            .Where(entry => hasImportManifest
+                && string.Equals(
+                    entry.RelativePath,
+                    ManifestFileName,
+                    PathComparison)
+                    ? false
+                    : true)
+            .ToArray();
+        var expectedDirectories = sourceInventory.RelativeDirectories
+            .Concat(previousInventory.RelativeDirectories)
+            .Distinct(PathComparer)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        if (!expectedDirectories.SequenceEqual(
+                actual.RelativeDirectories,
+                PathComparer)
+            || !EntriesMatchContent(
+                mergedEntries.Values.ToArray(),
+                actualEntries))
+        {
+            throw new IOException(
+                "The staged profile contains unexpected, missing, or changed files.");
+        }
+    }
+
+    private static async Task VerifyExactProfileAsync(
+        string destinationRoot,
+        ProfileInventory expected,
+        CancellationToken cancellationToken)
+    {
+        var actual = await ProfileInventory.CreateAsync(
+                destinationRoot,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (!expected.RelativeDirectories.SequenceEqual(
+                actual.RelativeDirectories,
+                PathComparer)
+            || !EntriesMatchContent(expected.Entries, actual.Entries))
+        {
+            throw new IOException(
+                "A verified profile backup contains unexpected, missing, or changed files.");
         }
     }
 
@@ -403,6 +464,27 @@ public sealed class LegacyProfileImporter
         return true;
     }
 
+    private static bool EntriesMatchContent(
+        IReadOnlyCollection<ProfileInventoryEntry> expected,
+        IReadOnlyCollection<ProfileInventoryEntry> current)
+    {
+        if (expected.Count != current.Count)
+        {
+            return false;
+        }
+
+        var currentByPath = current.ToDictionary(
+            entry => entry.RelativePath,
+            PathComparer);
+        return expected.All(entry =>
+            currentByPath.TryGetValue(entry.RelativePath, out var currentEntry)
+            && entry.Length == currentEntry.Length
+            && string.Equals(
+                entry.Sha256,
+                currentEntry.Sha256,
+                StringComparison.Ordinal));
+    }
+
     private static IReadOnlyList<ProfileImportConflict> FindConflicts(
         ProfileInventory source,
         ProfileInventory destination)
@@ -436,6 +518,10 @@ public sealed class LegacyProfileImporter
         ? StringComparer.OrdinalIgnoreCase
         : StringComparer.Ordinal;
 
+    private static StringComparison PathComparison => OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal;
+
     private static void ActivateStagedProfile(
         string destination,
         string destinationStage,
@@ -459,13 +545,33 @@ public sealed class LegacyProfileImporter
 
     private static void RollBackActivatedProfile(
         string destination,
-        string rollbackDirectory)
+        string rollbackDirectory,
+        string failedActivationDirectory)
     {
-        DeleteStagingDirectory(destination);
-        if (Directory.Exists(rollbackDirectory))
+        if (Directory.Exists(destination))
         {
-            Directory.Move(rollbackDirectory, destination);
+            Directory.Move(destination, failedActivationDirectory);
         }
+
+        try
+        {
+            if (Directory.Exists(rollbackDirectory))
+            {
+                Directory.Move(rollbackDirectory, destination);
+            }
+        }
+        catch
+        {
+            if (!Directory.Exists(destination)
+                && Directory.Exists(failedActivationDirectory))
+            {
+                Directory.Move(failedActivationDirectory, destination);
+            }
+
+            throw;
+        }
+
+        TryDeleteVerifiedRollback(failedActivationDirectory);
     }
 
     private static async Task WriteManifestAsync(

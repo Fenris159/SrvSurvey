@@ -219,6 +219,48 @@ public sealed class LegacyProfileImporterTests : IDisposable
     }
 
     [Fact]
+    public async Task ImportRejectsUnexpectedFilesInjectedIntoTheStagedProfile()
+    {
+        var source = Path.Combine(temporaryDirectory, "legacy");
+        var destination = Path.Combine(temporaryDirectory, "current");
+        var backups = Path.Combine(temporaryDirectory, "backups");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(destination);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "legacy settings");
+        await File.WriteAllTextAsync(
+            Path.Combine(destination, "current.json"),
+            "current settings");
+        var importer = new LegacyProfileImporter(
+            null,
+            checkpoint =>
+            {
+                if (checkpoint != ProfileImportCheckpoint.BeforeActivationValidation)
+                {
+                    return;
+                }
+
+                var stage = Assert.Single(Directory.EnumerateDirectories(
+                    temporaryDirectory,
+                    "current.importing-*"));
+                File.WriteAllText(
+                    Path.Combine(stage, "unexpected.json"),
+                    "injected");
+            });
+
+        var exception = await Assert.ThrowsAsync<IOException>(() =>
+            importer.ImportAsync(source, destination, backups));
+
+        Assert.Contains("unexpected, missing, or changed", exception.Message);
+        Assert.Equal(
+            "current settings",
+            await File.ReadAllTextAsync(Path.Combine(destination, "current.json")));
+        Assert.False(File.Exists(
+            Path.Combine(destination, LegacyProfileImporter.ManifestFileName)));
+    }
+
+    [Fact]
     public async Task ImportRestoresCurrentProfileWhenItChangesDuringSwap()
     {
         var source = Path.Combine(temporaryDirectory, "legacy");
@@ -262,6 +304,47 @@ public sealed class LegacyProfileImporterTests : IDisposable
                 Path.Combine(destination, "late-journal-write.json")));
         Assert.False(File.Exists(
             Path.Combine(destination, LegacyProfileImporter.ManifestFileName)));
+    }
+
+    [Fact]
+    public async Task ImportRestoresCurrentProfileWhenActivatedCopyIsChanged()
+    {
+        var source = Path.Combine(temporaryDirectory, "legacy");
+        var destination = Path.Combine(temporaryDirectory, "current");
+        var backups = Path.Combine(temporaryDirectory, "backups");
+        Directory.CreateDirectory(source);
+        Directory.CreateDirectory(destination);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "legacy settings");
+        await File.WriteAllTextAsync(
+            Path.Combine(destination, "settings.json"),
+            "current settings");
+        var importer = new LegacyProfileImporter(
+            null,
+            checkpoint =>
+            {
+                if (checkpoint == ProfileImportCheckpoint.AfterProfileActivation)
+                {
+                    File.WriteAllText(
+                        Path.Combine(destination, "unexpected.json"),
+                        "injected");
+                }
+            });
+
+        var exception = await Assert.ThrowsAsync<IOException>(() =>
+            importer.ImportAsync(source, destination, backups));
+
+        Assert.Contains("unexpected, missing, or changed", exception.Message);
+        Assert.Equal(
+            "current settings",
+            await File.ReadAllTextAsync(Path.Combine(destination, "settings.json")));
+        Assert.False(File.Exists(Path.Combine(destination, "unexpected.json")));
+        Assert.False(File.Exists(
+            Path.Combine(destination, LegacyProfileImporter.ManifestFileName)));
+        Assert.Empty(Directory.EnumerateDirectories(
+            temporaryDirectory,
+            "current.failed-import-*"));
     }
 
     [Fact]
