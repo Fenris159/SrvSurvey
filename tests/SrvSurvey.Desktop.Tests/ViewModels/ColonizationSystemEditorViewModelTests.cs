@@ -317,6 +317,14 @@ public sealed class ColonizationSystemEditorViewModelTests
             return Task.FromResult(Current);
         }
 
+        public Task PatchSystemSiteAsync(
+            string systemNameOrAddress,
+            string siteId,
+            ColonizationSystemSitePatch patch,
+            string apiKey,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
         public Task<ColonizationCommanderProjects> GetCommanderProjectsAsync(
             string commanderName,
             CancellationToken cancellationToken = default) =>

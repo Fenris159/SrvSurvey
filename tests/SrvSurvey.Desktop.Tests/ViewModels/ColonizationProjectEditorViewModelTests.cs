@@ -312,6 +312,14 @@ public sealed class ColonizationProjectEditorViewModelTests
             CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
+        public Task PatchSystemSiteAsync(
+            string systemNameOrAddress,
+            string siteId,
+            ColonizationSystemSitePatch patch,
+            string apiKey,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
         public Task<ColonizationProject?> CreateProjectAsync(
             ColonizationProjectCreate project,
             CancellationToken cancellationToken = default)

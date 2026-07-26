@@ -71,6 +71,13 @@ public interface IRavenColonialClient
         string apiKey,
         CancellationToken cancellationToken = default);
 
+    Task PatchSystemSiteAsync(
+        string systemNameOrAddress,
+        string siteId,
+        ColonizationSystemSitePatch patch,
+        string apiKey,
+        CancellationToken cancellationToken = default);
+
     Task<ColonizationProject?> CreateProjectAsync(
         ColonizationProjectCreate project,
         CancellationToken cancellationToken = default);
@@ -452,6 +459,50 @@ public sealed class RavenColonialClient : IRavenColonialClient
                 "update colonisation system sites",
                 cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    public async Task PatchSystemSiteAsync(
+        string systemNameOrAddress,
+        string siteId,
+        ColonizationSystemSitePatch patch,
+        string apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(systemNameOrAddress);
+        ArgumentException.ThrowIfNullOrWhiteSpace(siteId);
+        ArgumentNullException.ThrowIfNull(patch);
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
+        if (patch.MarketId is null && patch.Name is null)
+        {
+            throw new ArgumentException(
+                "A system-site patch must contain a market ID or name.",
+                nameof(patch));
+        }
+
+        using var request = new HttpRequestMessage(
+            HttpMethod.Patch,
+            CreateUri(
+                $"api/v2/system/{Uri.EscapeDataString(systemNameOrAddress.Trim())}/sites/"
+                    + Uri.EscapeDataString(siteId.Trim())))
+        {
+            Content = JsonContent.Create(patch, options: JsonOptions),
+        };
+        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        using var response = await httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            var detail = await ReadBoundedTextAsync(
+                response.Content,
+                MaximumErrorDetailBytes,
+                cancellationToken).ConfigureAwait(false);
+            throw new RavenColonialServiceException(
+                response.StatusCode,
+                "repair a colonisation system site",
+                detail);
+        }
     }
 
     public async Task<ColonizationProject?> CreateProjectAsync(
@@ -1055,6 +1106,9 @@ public sealed record ColonizationResourceRequirementPayload
 
 public sealed record ColonizationSystemSite
 {
+    private ColonizationSystemSiteStatus status;
+    private bool hasExplicitStatus;
+
     [JsonPropertyName("id")]
     public string Id { get; init; } = string.Empty;
 
@@ -1074,7 +1128,18 @@ public sealed record ColonizationSystemSite
     public long? MarketId { get; init; }
 
     [JsonPropertyName("status")]
-    public ColonizationSystemSiteStatus Status { get; init; }
+    public ColonizationSystemSiteStatus Status
+    {
+        get => status;
+        init
+        {
+            status = value;
+            hasExplicitStatus = true;
+        }
+    }
+
+    [JsonIgnore]
+    public bool HasExplicitStatus => hasExplicitStatus;
 
     [JsonExtensionData]
     public Dictionary<string, JsonElement> ExtensionData { get; init; } = [];
@@ -1175,4 +1240,15 @@ public sealed record ColonizationSystemSiteUpdate
     [JsonPropertyName("reserveLevel")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ReserveLevel { get; init; }
+}
+
+public sealed record ColonizationSystemSitePatch
+{
+    [JsonPropertyName("marketId")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public long? MarketId { get; init; }
+
+    [JsonPropertyName("name")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Name { get; init; }
 }

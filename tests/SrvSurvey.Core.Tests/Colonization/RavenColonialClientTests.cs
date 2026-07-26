@@ -176,6 +176,51 @@ public sealed class RavenColonialClientTests
     }
 
     [Fact]
+    public async Task PatchesOneEscapedSystemSiteFieldWithApiKey()
+    {
+        string? body = null;
+        var client = Create(new StubHandler(async request =>
+        {
+            Assert.Equal(HttpMethod.Patch, request.Method);
+            Assert.Equal(
+                "/root/api/v2/system/123456789/sites/%264310842115",
+                request.RequestUri!.AbsolutePath);
+            Assert.Equal(
+                "secret-key",
+                Assert.Single(request.Headers.GetValues("rcc-key")));
+            body = await request.Content!.ReadAsStringAsync();
+            return new HttpResponseMessage(HttpStatusCode.NoContent);
+        }));
+
+        await client.PatchSystemSiteAsync(
+            "123456789",
+            "&4310842115",
+            new ColonizationSystemSitePatch { MarketId = 4_310_842_115 },
+            "secret-key");
+
+        Assert.Equal("{\"marketId\":4310842115}", body);
+    }
+
+    [Fact]
+    public async Task RejectsEmptySystemSitePatchBeforeSending()
+    {
+        var sent = false;
+        var client = Create(new StubHandler(_ =>
+        {
+            sent = true;
+            return new HttpResponseMessage(HttpStatusCode.NoContent);
+        }));
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            client.PatchSystemSiteAsync(
+                "123456789",
+                "site-1",
+                new ColonizationSystemSitePatch(),
+                "secret-key"));
+        Assert.False(sent);
+    }
+
+    [Fact]
     public async Task LoadsAndImportsFullSystemRecords()
     {
         var requests = new List<(HttpMethod Method, string Path)>();
