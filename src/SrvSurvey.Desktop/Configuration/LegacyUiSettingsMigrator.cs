@@ -60,6 +60,12 @@ public sealed class LegacyUiSettingsMigrator
                     ("galMapFactions", "ShowFactions"),
                 ]);
                 mappedCount += MapPulseOverlay(legacy, root);
+                mappedCount += MapSection(legacy, root, "OverlayBehavior",
+                [
+                    ("keepOverlays", "KeepWhenGameLosesFocus"),
+                    ("hidePlottersFromCombatSuits", "HideInDominatorSuit"),
+                    ("hidePlottersFromMaverickSuits", "HideInMaverickSuit"),
+                ]);
                 mappedCount += MapSection(legacy, root, "SystemSurvey",
                 [
                     ("autoShowPlotBodyInfo", "AutoShowBodyInfo"),

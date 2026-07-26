@@ -289,6 +289,33 @@
       </Border>
 
       <Border Classes="card raised">
+        <StackPanel Spacing="12">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="card-title" Text="Global overlay behavior" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Apply the original focus and Odyssey suit rules consistently to every passive overlay." />
+          </StackPanel>
+          <CheckBox IsChecked="{Binding OverlayBehavior.KeepWhenGameLosesFocus, Mode=TwoWay}"
+                    Content="Keep overlays visible when Elite loses focus" />
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <CheckBox IsChecked="{Binding OverlayBehavior.HideInDominatorSuit, Mode=TwoWay}"
+                      Content="Hide overlays in a Dominator suit" />
+            <CheckBox Grid.Column="1"
+                      IsChecked="{Binding OverlayBehavior.HideInMaverickSuit, Mode=TwoWay}"
+                      Content="Hide overlays in a Maverick suit" />
+          </Grid>
+          <TextBlock Classes="muted"
+                     FontSize="11"
+                     Text="{Binding OverlayBehavior.CurrentSuitText}" />
+          <TextBlock IsVisible="{Binding OverlayBehavior.HasSettingsStatus}"
+                     Foreground="{DynamicResource RavenWarningBrush}"
+                     Text="{Binding OverlayBehavior.SettingsStatus}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
         <StackPanel Spacing="10">
           <StackPanel Spacing="4">
             <TextBlock Classes="card-title" Text="Journal activity and SCO status" />

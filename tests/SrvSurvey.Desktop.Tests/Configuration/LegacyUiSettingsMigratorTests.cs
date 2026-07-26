@@ -32,6 +32,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "autoShowPlotGalMap": false,
               "galMapFactions": false,
               "hideJournalWriteTimer": true,
+              "keepOverlays": true,
+              "hidePlottersFromCombatSuits": true,
+              "hidePlottersFromMaverickSuits": false,
               "autoShowPlotBodyInfo": false,
               "bodyInfoBubbleSize": 321,
               "highGravityWarningLevel": 2.75,
@@ -159,6 +162,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             new PulseOverlayPreferences(false),
             new PulseOverlaySettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            new OverlayBehaviorPreferences(true, true, false),
+            new OverlayBehaviorSettingsStore(paths.UiSettingsPath).Load());
 
         var survey = new SystemSurveySettingsStore(paths.UiSettingsPath).Load();
         Assert.False(survey.AutoShowBodyInfo);

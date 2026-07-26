@@ -45,6 +45,17 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
 
     public bool IsSuppressed => isSuppressed;
 
+    public void SetSuppressed(bool value)
+    {
+        if (disposed || isSuppressed == value)
+        {
+            return;
+        }
+
+        isSuppressed = value;
+        SynchronizeWindow();
+    }
+
     public void Dispose()
     {
         if (disposed)

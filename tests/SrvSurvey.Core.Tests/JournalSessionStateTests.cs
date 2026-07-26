@@ -58,6 +58,27 @@ public sealed class JournalSessionStateTests
         Assert.Null(state.ActiveSrvType);
     }
 
+    [Theory]
+    [InlineData("flightsuit_class1", OdysseySuitType.Flight)]
+    [InlineData("explorationsuit_class5", OdysseySuitType.Artemis)]
+    [InlineData("utilitysuit_class3", OdysseySuitType.Maverick)]
+    [InlineData("tacticalsuit_class5", OdysseySuitType.Dominator)]
+    [InlineData("future_suit", OdysseySuitType.Unknown)]
+    public void SuitLoadoutsTrackLegacySuitCategories(
+        string suitName,
+        OdysseySuitType expected)
+    {
+        var state = new JournalSessionState();
+
+        Assert.True(state.Apply(Parse(
+            $$"""{"event":"SuitLoadout","SuitName":"{{suitName}}"}""")));
+        Assert.Equal(expected, state.CurrentSuit);
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"SwitchSuitLoadout","SuitName":"tacticalsuit_class2"}""")));
+        Assert.Equal(OdysseySuitType.Dominator, state.CurrentSuit);
+    }
+
     private static JournalEventEnvelope Parse(string json)
     {
         var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);

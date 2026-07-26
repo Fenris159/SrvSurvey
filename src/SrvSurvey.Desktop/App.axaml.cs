@@ -115,6 +115,13 @@ public sealed partial class App : Application
                 overlayLayoutStore: overlayLayoutStore,
                 overlayLayout: overlayLayout,
                 targetFrontierId: targetFrontierId);
+            IGameWindowTracker CreateOverlayGameWindowTracker()
+            {
+                return new OverlayGameWindowTracker(
+                    GameWindowTracker.CreateCurrent(),
+                    () => viewModel.OverlayBehavior.KeepWhenGameLosesFocus);
+            }
+
             var mainWindow = new MainWindow(viewModel);
             desktop.MainWindow = mainWindow;
             async Task RestartAfterProfileImportAsync()
@@ -199,45 +206,45 @@ public sealed partial class App : Application
                 viewModel.BoxelSearch,
                 viewModel.Route,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 overlayLayout,
                 viewModel.SystemNicknames);
             guardianOverlayCoordinator = new GuardianOverlayCoordinator(
                 viewModel.Guardian,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 overlayLayout);
             jumpInfoOverlayCoordinator = new JumpInfoOverlayCoordinator(
                 viewModel.JumpInfo,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 overlayLayout,
                 viewModel.SystemNicknames);
             groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
                 viewModel.GroundTarget,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 overlayLayout);
             combatOverlayCoordinator = new CombatOverlayCoordinator(
                 viewModel.Combat,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 overlayLayout);
             stationInfoOverlayCoordinator = new StationInfoOverlayCoordinator(
                 viewModel.StationInfo,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 overlayLayout);
             humanSiteOverlayCoordinator = new HumanSiteOverlayCoordinator(
                 viewModel.HumanSite,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 overlayLayout);
             systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
                 viewModel.SystemSurvey,
                 viewModel.SurfaceSurvey,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 () => viewModel.CommanderName,
                 overlayLayout: overlayLayout,
                 fssDiagnosticDirectory: Path.Combine(
@@ -246,29 +253,29 @@ public sealed partial class App : Application
             questIndicatorOverlayCoordinator = new QuestIndicatorOverlayCoordinator(
                 viewModel.QuestIndicator,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 overlayLayout);
             notificationOverlayCoordinator = new NotificationOverlayCoordinator(
                 viewModel.Notifications,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 overlayLayout);
             pulseOverlayCoordinator = new PulseOverlayCoordinator(
                 viewModel.PulseOverlay,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 overlayLayout);
             streamOverlayCoordinator = new StreamOverlayCoordinator(
                 viewModel.StreamOverlay,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent());
+                CreateOverlayGameWindowTracker());
             vrOverlayCoordinator = new VrOverlayCoordinator(
                 viewModel.VrOverlay,
                 modeProvider: () => viewModel.CurrentVrOverlayMode);
             galaxyMapOverlayCoordinator = new GalaxyMapOverlayCoordinator(
                 viewModel.GalaxyMap,
                 OverlayPlatformService.CreateCurrent(),
-                GameWindowTracker.CreateCurrent(),
+                CreateOverlayGameWindowTracker(),
                 overlayLayout);
 
             void SynchronizeOverlayPriority()
@@ -319,8 +326,44 @@ public sealed partial class App : Application
                 new ColonizationCommodityOverlayCoordinator(
                     viewModel.Colonization.CommodityOverlay,
                     OverlayPlatformService.CreateCurrent(),
-                    GameWindowTracker.CreateCurrent(),
+                    CreateOverlayGameWindowTracker(),
                     overlayLayout);
+            var manualOverlaySuppressed = false;
+            void ApplyOverlaySuppression()
+            {
+                var suppress = manualOverlaySuppressed
+                    || viewModel.OverlayBehavior.ShouldSuppressForSuit;
+                jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
+                systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
+                groundTargetOverlayCoordinator?.SetSuppressed(suppress);
+                combatOverlayCoordinator?.SetSuppressed(suppress);
+                guardianOverlayCoordinator?.SetSuppressed(suppress);
+                stationInfoOverlayCoordinator?.SetSuppressed(suppress);
+                humanSiteOverlayCoordinator?.SetSuppressed(suppress);
+                sphericalSearchOverlayCoordinator?.SetSuppressed(suppress);
+                colonizationCommodityOverlayCoordinator?.SetSuppressed(suppress);
+                questIndicatorOverlayCoordinator?.SetSuppressed(suppress);
+                notificationOverlayCoordinator?.SetSuppressed(suppress);
+                pulseOverlayCoordinator?.SetSuppressed(suppress);
+                galaxyMapOverlayCoordinator?.SetSuppressed(suppress);
+            }
+
+            void HandleOverlayBehaviorChanged(
+                object? sender,
+                System.ComponentModel.PropertyChangedEventArgs eventArgs)
+            {
+                if (eventArgs.PropertyName is
+                    nameof(OverlayBehaviorViewModel.ShouldSuppressForSuit)
+                    or nameof(OverlayBehaviorViewModel.HideInDominatorSuit)
+                    or nameof(OverlayBehaviorViewModel.HideInMaverickSuit))
+                {
+                    ApplyOverlaySuppression();
+                }
+            }
+
+            viewModel.OverlayBehavior.PropertyChanged +=
+                HandleOverlayBehaviorChanged;
+            ApplyOverlaySuppression();
             globalKeyboardHookService = new GlobalKeyboardHookService(
                 inputSettings.CurrentSettings,
                 capabilities.Host,
@@ -391,33 +434,9 @@ public sealed partial class App : Application
                             break;
 
                         case GlobalInputAction.ToggleAllVisibility:
-                            var suppress =
-                                guardianOverlayCoordinator?.IsVisible == true
-                                || jumpInfoOverlayCoordinator?.IsVisible == true
-                                || systemSurveyOverlayCoordinator?.IsVisible == true
-                                || groundTargetOverlayCoordinator?.IsVisible == true
-                                || combatOverlayCoordinator?.IsVisible == true
-                                || stationInfoOverlayCoordinator?.IsVisible == true
-                                || humanSiteOverlayCoordinator?.IsVisible == true
-                                || sphericalSearchOverlayCoordinator?.IsVisible == true
-                                || colonizationCommodityOverlayCoordinator
-                                    ?.IsVisible == true
-                                || questIndicatorOverlayCoordinator?.IsVisible == true
-                                || notificationOverlayCoordinator?.IsVisible == true
-                                || pulseOverlayCoordinator?.IsVisible == true;
-                            jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
-                            systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
-                            groundTargetOverlayCoordinator?.SetSuppressed(suppress);
-                            combatOverlayCoordinator?.SetSuppressed(suppress);
-                            guardianOverlayCoordinator?.SetSuppressed(suppress);
-                            stationInfoOverlayCoordinator?.SetSuppressed(suppress);
-                            humanSiteOverlayCoordinator?.SetSuppressed(suppress);
-                            sphericalSearchOverlayCoordinator?.SetSuppressed(suppress);
-                            colonizationCommodityOverlayCoordinator
-                                ?.SetSuppressed(suppress);
-                            questIndicatorOverlayCoordinator?.SetSuppressed(suppress);
-                            notificationOverlayCoordinator?.SetSuppressed(suppress);
-                            pulseOverlayCoordinator?.SetSuppressed(suppress);
+                            manualOverlaySuppressed =
+                                !manualOverlaySuppressed;
+                            ApplyOverlaySuppression();
                             handled = true;
                             break;
 
@@ -602,6 +621,8 @@ public sealed partial class App : Application
             {
                 viewModel.ProfileImportCompleted -=
                     RestartAfterProfileImportAsync;
+                viewModel.OverlayBehavior.PropertyChanged -=
+                    HandleOverlayBehaviorChanged;
                 Dispatcher.UIThread.UnhandledException -= HandleUiException;
                 TaskScheduler.UnobservedTaskException -=
                     HandleUnobservedTaskException;

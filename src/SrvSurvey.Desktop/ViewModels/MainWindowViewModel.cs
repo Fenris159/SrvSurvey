@@ -131,7 +131,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         VrOverlaySettingsStore? vrOverlaySettingsStore = null,
         VrOverlayCalibrationStore? vrOverlayCalibrationStore = null,
         GalaxyMapSettingsStore? galaxyMapSettingsStore = null,
-        PulseOverlaySettingsStore? pulseOverlaySettingsStore = null)
+        PulseOverlaySettingsStore? pulseOverlaySettingsStore = null,
+        OverlayBehaviorSettingsStore? overlayBehaviorSettingsStore = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -171,6 +172,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         OverlayLayout = new OverlayLayoutSettingsViewModel(
             sharedOverlayLayoutStore,
             overlayLayout ?? sharedOverlayLayoutStore.Load());
+        OverlayBehavior = new OverlayBehaviorViewModel(
+            overlayBehaviorSettingsStore
+                ?? new OverlayBehaviorSettingsStore(AppDataPaths.UiSettingsPath));
         ScreenshotProcessing = new ScreenshotProcessingViewModel(
             new ScreenshotProcessingSettingsStore(AppDataPaths.UiSettingsPath),
             screenshotProcessingService);
@@ -442,6 +446,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public GlobalInputSettingsViewModel InputSettings { get; }
 
     public OverlayLayoutSettingsViewModel OverlayLayout { get; }
+
+    public OverlayBehaviorViewModel OverlayBehavior { get; }
 
     public ScreenshotProcessingViewModel ScreenshotProcessing { get; }
 
@@ -1275,6 +1281,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             journalState.Apply(journalEvent);
         }
+        OverlayBehavior.UpdateContext(
+            journalState.CurrentSuit,
+            latestStatus?.OnFoot == true);
         JournalPostProcessor.SelectCommander(journalState.FrontierId);
 
         var commanderCodexResult =

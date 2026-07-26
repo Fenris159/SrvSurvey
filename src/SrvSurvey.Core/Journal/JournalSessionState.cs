@@ -21,6 +21,8 @@ public sealed class JournalSessionState
 
     public string? ActiveSrvType { get; private set; }
 
+    public OdysseySuitType CurrentSuit { get; private set; }
+
     public bool IsFighterLaunched { get; private set; }
 
     public string? SystemName { get; private set; }
@@ -95,6 +97,11 @@ public sealed class JournalSessionState
 
             case "DockFighter":
                 IsFighterLaunched = false;
+                break;
+
+            case "SuitLoadout":
+            case "SwitchSuitLoadout":
+                CurrentSuit = ParseSuitType(GetString(root, "SuitName"));
                 break;
 
             case "Location":
@@ -220,4 +227,38 @@ public sealed class JournalSessionState
             coordinates[1].GetDouble(),
             coordinates[2].GetDouble());
     }
+
+    private static OdysseySuitType ParseSuitType(string? suitName)
+    {
+        if (string.IsNullOrWhiteSpace(suitName))
+        {
+            return OdysseySuitType.Unknown;
+        }
+
+        return suitName switch
+        {
+            _ when suitName.StartsWith(
+                "flightsuit",
+                StringComparison.OrdinalIgnoreCase) => OdysseySuitType.Flight,
+            _ when suitName.StartsWith(
+                "explorationsuit",
+                StringComparison.OrdinalIgnoreCase) => OdysseySuitType.Artemis,
+            _ when suitName.StartsWith(
+                "utilitysuit",
+                StringComparison.OrdinalIgnoreCase) => OdysseySuitType.Maverick,
+            _ when suitName.StartsWith(
+                "tacticalsuit",
+                StringComparison.OrdinalIgnoreCase) => OdysseySuitType.Dominator,
+            _ => OdysseySuitType.Unknown,
+        };
+    }
+}
+
+public enum OdysseySuitType
+{
+    Unknown,
+    Flight,
+    Artemis,
+    Maverick,
+    Dominator,
 }
