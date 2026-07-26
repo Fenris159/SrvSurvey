@@ -868,8 +868,11 @@ Validation performed on 2026-07-25 using Windows build `10.0.26200` and .NET SDK
   refuses bootstrap or background-window capture, and has Windows/X11 capture
   implementations. The joined stream action now persists and composes registered live
   overlays into the legacy-named `SrvSurveyWindowOne` capture surface. The two
-  VR adjustment actions remain the only listed bindings without a new-platform
-  destination. The real Windows SharpHook
+  `adjustVR` now opens and activates the Avalonia Settings calibration workflow,
+  while `resetVR` calls the active OpenVR coordinator and fails closed with an
+  explicit status when projection is disabled. Catalog and coordinator tests
+  cover both legacy action names, the `Alt+V` default, runtime dispatch endpoints,
+  and disabled-state safety. The real Windows SharpHook
   service reached its active state.
   SDL3 initialized and enumerated successfully with no controller connected;
   physical button/HOTAS input has not been exercised on this machine.

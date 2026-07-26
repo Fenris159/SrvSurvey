@@ -26,6 +26,12 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
             "ALT CTRL I",
             GlobalInputActionCatalog.Get(
                 GlobalInputAction.ToggleImageEmbed).DefaultChord);
+        Assert.Equal(
+            new("adjustVR", "ALT V"),
+            GetLegacyBinding(GlobalInputAction.AdjustVr));
+        Assert.Equal(
+            new("resetVR", string.Empty),
+            GetLegacyBinding(GlobalInputAction.ResetVr));
     }
 
     [Fact]
@@ -124,5 +130,14 @@ public sealed class GlobalInputSettingsStoreTests : IDisposable
         {
             Directory.Delete(temporaryDirectory, true);
         }
+    }
+
+    private static KeyValuePair<string, string> GetLegacyBinding(
+        GlobalInputAction action)
+    {
+        var definition = GlobalInputActionCatalog.Get(action);
+        return new KeyValuePair<string, string>(
+            definition.LegacyName,
+            definition.DefaultChord);
     }
 }

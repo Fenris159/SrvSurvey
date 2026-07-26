@@ -319,8 +319,9 @@ use route, in-boxel, and clipboard precedence with SharpHook text simulation,
 `showSystemNotes` opens or activates the current-system notes window. The
 `streamOne` action now toggles a persisted, game-sized `SrvSurveyWindowOne`
 surface that rasterizes every registered live overlay at its game-relative
-position for a single streaming-software capture. Only the two VR adjustment
-actions still need new-platform destinations. Wayland keyboard capture remains disabled, while SDL controller
+position for a single streaming-software capture. The `adjustVR` binding opens
+the Avalonia calibration workflow, and `resetVR` captures headset orientation
+through the active OpenVR coordinator with disabled-state safety. Wayland keyboard capture remains disabled, while SDL controller
 input can operate when the Avalonia app itself is active.
 
 The code-rendered legacy `PlotBuildCommodities` surface is not part of the 22
