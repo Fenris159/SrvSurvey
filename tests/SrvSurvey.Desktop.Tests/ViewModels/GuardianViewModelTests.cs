@@ -551,6 +551,94 @@ public sealed class GuardianViewModelTests
     }
 
     [Fact]
+    public async Task DoubleCockpitModeToggleSavesGuardianHeadingOnlyWhenLive()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference();
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([reference]),
+                new GuardianPublishedSiteCatalog(
+                    [CreatePublishedSite(reference, [])]),
+                new GuardianSiteTemplateCatalog(
+                [
+                    new GuardianSiteTemplate(
+                        "Test",
+                        "Test",
+                        string.Empty,
+                        new GuardianMapPoint(0, 0),
+                        1,
+                        [],
+                        [],
+                        new Dictionary<string, GuardianMapPoint>()),
+                ]));
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+            [
+                Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}"""),
+            ],
+            "Drew");
+            Assert.Equal(GuardianLiveMapMode.Heading, viewModel.LiveMapMode);
+            var started = new DateTimeOffset(
+                2026,
+                7,
+                25,
+                12,
+                0,
+                0,
+                TimeSpan.Zero);
+            var normal = StatusNorthOfSite(10) with { Heading = 123 };
+            var analysis = normal with
+            {
+                Flags = normal.Flags | StatusFlags.HudInAnalysisMode,
+            };
+
+            await viewModel.UpdateStatusAsync(
+                normal,
+                allowGesture: true,
+                observedAt: started);
+            await viewModel.UpdateStatusAsync(
+                analysis,
+                allowGesture: true,
+                observedAt: started.AddSeconds(1));
+            Assert.True(viewModel.IsBlinkGesturePrimed);
+            await viewModel.UpdateStatusAsync(
+                normal,
+                allowGesture: true,
+                observedAt: started.AddSeconds(2));
+
+            var saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            Assert.Equal(123, Assert.Single(saved.Surveys).Survey.SiteHeading);
+            Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
+            Assert.Contains("blink gesture", viewModel.StatusMessage);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"SendText","Message":".heading 90"}""")],
+                "Drew");
+            viewModel.UpdateStatus(normal);
+            await viewModel.UpdateStatusAsync(
+                analysis,
+                allowGesture: true,
+                observedAt: started.AddSeconds(3));
+            await viewModel.UpdateStatusAsync(
+                normal,
+                allowGesture: false,
+                observedAt: started.AddSeconds(4));
+            saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            Assert.Equal(90, Assert.Single(saved.Surveys).Survey.SiteHeading);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public async Task LiveObeliskTracksArtifactsScanStateAndRamTahProgress()
     {
         var root = CreateTemporaryDirectory();

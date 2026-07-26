@@ -31,6 +31,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private GuardianSurveyCompletionCalculator completionCalculator;
     private readonly GuardianSiteMapProjector mapProjector = new();
     private readonly GuardianSiteProximityEvaluator proximityEvaluator = new();
+    private readonly StatusBlinkDetector statusBlinkDetector;
     private readonly GuardianArtifactInventoryState artifactInventory = new();
     private readonly GuardianCommanderDataReader commanderDataReader;
     private readonly GuardianCommanderSurveyStore commanderSurveyStore;
@@ -101,6 +102,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     private string shareStatusMessage =
         "Prepare a bundle to find commander survey data not present in the published catalog.";
     private bool isPreparingShareBundle;
+    private bool isBlinkGesturePrimed;
 
     public GuardianViewModel(
         string dataDirectory,
@@ -110,7 +112,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         RamTahViewModel? ramTah = null,
         GuardianOverlaySettingsStore? overlaySettingsStore = null,
         IStarSystemResolver? systemResolver = null,
-        Func<GuardianAerialAltitudes>? aerialAltitudeProvider = null)
+        Func<GuardianAerialAltitudes>? aerialAltitudeProvider = null,
+        GuardianGesturePreferences? gesturePreferences = null)
     {
         this.references = references ?? GuardianSiteCatalog.LoadEmbedded();
         this.publishedSites = publishedSites
@@ -121,6 +124,10 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         this.aerialAltitudeProvider = aerialAltitudeProvider
             ?? (() => GuardianAerialAltitudes.Default);
         this.systemResolver = systemResolver ?? new SpanshStarSystemResolver();
+        var gestures = gesturePreferences ?? GuardianGesturePreferences.Default;
+        statusBlinkDetector = new StatusBlinkDetector(
+            gestures.BlinkTrigger,
+            TimeSpan.FromMilliseconds(gestures.BlinkDurationMilliseconds));
         var overlayPreferences = overlaySettingsStore?.Load()
             ?? GuardianOverlayPreferences.Default;
         enableGuardianSites = overlayPreferences.EnableGuardianSites;
@@ -479,6 +486,24 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     }
 
     public bool HasLiveMapPrompt => LiveMapMode != GuardianLiveMapMode.Map;
+
+    public bool IsBlinkGesturePrimed
+    {
+        get => isBlinkGesturePrimed;
+        private set
+        {
+            if (SetField(ref isBlinkGesturePrimed, value))
+            {
+                OnPropertyChanged(nameof(BlinkGestureText));
+            }
+        }
+    }
+
+    public string BlinkGestureText => IsBlinkGesturePrimed
+        ? "GESTURE READY · toggle once more to confirm"
+        : currentStatus?.OnFoot == true
+            ? "Toggle shields twice to confirm the nearby Guardian action"
+            : "Toggle cockpit mode twice to confirm the nearby Guardian action";
 
     public string LiveMapPromptTitle => LiveMapMode switch
     {
@@ -1226,8 +1251,32 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     {
         ArgumentNullException.ThrowIfNull(status);
         currentStatus = status;
+        OnPropertyChanged(nameof(BlinkGestureText));
+        var blink = statusBlinkDetector.Update(status, DateTimeOffset.UtcNow);
+        IsBlinkGesturePrimed = blink.IsPrimed;
         UpdateProximity();
         NotifyAuxiliaryOverlayState();
+    }
+
+    public async Task UpdateStatusAsync(
+        EliteStatus status,
+        bool allowGesture,
+        DateTimeOffset? observedAt = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(status);
+        currentStatus = status;
+        OnPropertyChanged(nameof(BlinkGestureText));
+        var blink = statusBlinkDetector.Update(
+            status,
+            observedAt ?? DateTimeOffset.UtcNow);
+        IsBlinkGesturePrimed = blink.IsPrimed;
+        UpdateProximity();
+        NotifyAuxiliaryOverlayState();
+        if (allowGesture && blink.Detected)
+        {
+            await HandleBlinkGestureAsync(status, cancellationToken);
+        }
     }
 
     public void UpdateCargo(CargoSnapshot? cargo)
@@ -1330,6 +1379,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
         if (activeSiteChanged)
         {
+            statusBlinkDetector.Reset();
+            IsBlinkGesturePrimed = false;
             SetTargetObelisk(null);
             NotifyActiveSiteChanged();
             UpdateProximity();
@@ -1699,6 +1750,223 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         {
             await RemoveNearestRawPointAsync(cancellationToken);
         }
+    }
+
+    private async Task HandleBlinkGestureAsync(
+        EliteStatus status,
+        CancellationToken cancellationToken)
+    {
+        if (ActiveSite is null)
+        {
+            return;
+        }
+
+        if (status.OnFoot
+            && string.Equals(
+                status.SelectedWeapon,
+                "$humanoid_companalyser_name;",
+                StringComparison.Ordinal))
+        {
+            await ApplyOnFootRelicGestureAsync(status, cancellationToken);
+            return;
+        }
+
+        var inVehicle = status.InSrv
+            || status.InFighter
+            || status.InMainShip && !status.Docked;
+        if (!inVehicle)
+        {
+            return;
+        }
+
+        if (LiveMapMode == GuardianLiveMapMode.SiteType
+            && ActiveSite.Kind == GuardianSiteKind.Ruins)
+        {
+            var type = PositiveModulo(status.FireGroup, 3) switch
+            {
+                0 => "Alpha",
+                1 => "Beta",
+                _ => "Gamma",
+            };
+            if (await SaveActiveSurveyMutationAsync(
+                survey => survey with
+                {
+                    SiteType = type,
+                    Survey = CopySurveyData(survey.Survey, siteType: type),
+                },
+                $"Guardian blink gesture set the site type to {type}.",
+                cancellationToken))
+            {
+                SetLiveMapModeFromSurvey();
+            }
+
+            return;
+        }
+
+        if (LiveMapMode == GuardianLiveMapMode.Heading)
+        {
+            var heading = status.NormalizedHeading;
+            if (await SaveActiveSurveyMutationAsync(
+                survey => survey with
+                {
+                    Survey = CopySurveyData(
+                        survey.Survey,
+                        siteHeading: heading),
+                },
+                $"Guardian blink gesture set the site heading to {heading}°.",
+                cancellationToken))
+            {
+                LiveMapMode = heading == 0
+                    ? GuardianLiveMapMode.Heading
+                    : GuardianLiveMapMode.Map;
+            }
+
+            return;
+        }
+
+        if (LiveMapMode != GuardianLiveMapMode.Map)
+        {
+            return;
+        }
+
+        if (CurrentObelisk is not null)
+        {
+            await ToggleCurrentObeliskScannedAsync();
+            return;
+        }
+
+        var pointStatus = PositiveModulo(status.FireGroup, 3) switch
+        {
+            0 => GuardianPoiStatus.Present,
+            1 => GuardianPoiStatus.Absent,
+            _ => GuardianPoiStatus.Empty,
+        };
+        await SetNearestPointStatusFromGestureAsync(
+            pointStatus,
+            cancellationToken);
+    }
+
+    private async Task ApplyOnFootRelicGestureAsync(
+        EliteStatus status,
+        CancellationToken cancellationToken)
+    {
+        var nearestRelic = Proximity?.NearestPoint?.Point is
+        { Type: GuardianPoiType.Relic } point
+                ? point
+                : null;
+        if (ActiveSite?.Kind != GuardianSiteKind.Ruins
+            && nearestRelic is null)
+        {
+            return;
+        }
+
+        var heading = status.NormalizedHeading;
+        await SaveActiveSurveyMutationAsync(
+            survey =>
+            {
+                var data = survey.Survey;
+                var statuses = new Dictionary<string, GuardianPoiStatus>(
+                    data.PoiStatuses,
+                    StringComparer.Ordinal);
+                var headings = new Dictionary<string, int>(
+                    data.RelicHeadings,
+                    StringComparer.Ordinal);
+                var rawPoints = data.RawPointsOfInterest?.ToArray();
+                if (nearestRelic is not null)
+                {
+                    statuses[nearestRelic.Name] = GuardianPoiStatus.Present;
+                    var rawIndex = Array.FindIndex(
+                        rawPoints ?? [],
+                        candidate => string.Equals(
+                            candidate.Name,
+                            nearestRelic.Name,
+                            StringComparison.Ordinal));
+                    if (rawIndex >= 0 && rawPoints is not null)
+                    {
+                        rawPoints[rawIndex] = rawPoints[rawIndex] with
+                        {
+                            Rotation = heading,
+                        };
+                    }
+                    else
+                    {
+                        headings[nearestRelic.Name] = heading;
+                    }
+                }
+
+                return survey with
+                {
+                    Survey = CopySurveyData(
+                        data,
+                        relicTowerHeading:
+                            ActiveSite?.Kind == GuardianSiteKind.Ruins
+                                ? heading
+                                : null,
+                        poiStatuses: statuses,
+                        relicHeadings: headings,
+                        rawPoints: rawPoints,
+                        replaceRawPoints: rawPoints is not null),
+                };
+            },
+            nearestRelic is null
+                ? $"Guardian blink gesture set the ruins relic-tower heading to {heading}°."
+                : $"Guardian blink gesture set relic tower {nearestRelic.Name} to {heading}°.",
+            cancellationToken);
+    }
+
+    private async Task SetNearestPointStatusFromGestureAsync(
+        GuardianPoiStatus pointStatus,
+        CancellationToken cancellationToken)
+    {
+        if (Proximity?.NearestPoint?.Point is not { } point
+            || point.Type is GuardianPoiType.Obelisk
+                or GuardianPoiType.BrokenObelisk
+                or GuardianPoiType.EmptyPuddle
+            || ActiveSite is not { } site
+            || FindSurvey(site) is not { } existing
+            || FindTemplate(existing.SiteType) is not { } template
+            || !template.PointsOfInterest.Any(candidate => string.Equals(
+                candidate.Name,
+                point.Name,
+                StringComparison.Ordinal)))
+        {
+            return;
+        }
+
+        if (pointStatus == GuardianPoiStatus.Empty
+            && point.Type is not GuardianPoiType.Orb
+                and not GuardianPoiType.Casket
+                and not GuardianPoiType.Tablet
+                and not GuardianPoiType.Totem
+                and not GuardianPoiType.Urn)
+        {
+            StatusMessage = $"Guardian point {point.Name} cannot be marked empty.";
+            return;
+        }
+
+        await SaveActiveSurveyMutationAsync(
+            survey =>
+            {
+                var statuses = new Dictionary<string, GuardianPoiStatus>(
+                    survey.Survey.PoiStatuses,
+                    StringComparer.Ordinal)
+                {
+                    [point.Name] = pointStatus,
+                };
+                return survey with
+                {
+                    Survey = CopySurveyData(
+                        survey.Survey,
+                        poiStatuses: statuses),
+                };
+            },
+            $"Guardian blink gesture marked {point.Name} {pointStatus.ToString().ToLowerInvariant()}.",
+            cancellationToken);
+    }
+
+    private static int PositiveModulo(int value, int divisor)
+    {
+        return ((value % divisor) + divisor) % divisor;
     }
 
     private async Task<bool> SaveActiveSurveyMutationAsync(

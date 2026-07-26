@@ -135,16 +135,22 @@
         </Grid>
       </Border>
 
-      <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+      <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
         <TextBlock Classes="muted"
                    FontSize="9"
                    TextTrimming="CharacterEllipsis"
                    Text="{Binding PlatformStatus}" />
         <TextBlock Grid.Column="1"
+                   Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="9"
+                   TextAlignment="Center"
+                   TextTrimming="CharacterEllipsis"
+                   Text="{Binding Guardian.BlinkGestureText}" />
+        <TextBlock Grid.Column="2"
                    Classes="monospace"
                    FontSize="10"
                    Text="{Binding Guardian.ActiveMapScaleText}" />
-        <TextBlock Grid.Column="2"
+        <TextBlock Grid.Column="3"
                    Classes="monospace"
                    FontSize="10"
                    Text="{Binding Guardian.TargetObeliskText}" />

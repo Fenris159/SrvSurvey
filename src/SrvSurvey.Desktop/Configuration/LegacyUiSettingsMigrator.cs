@@ -35,7 +35,7 @@ public sealed class LegacyUiSettingsMigrator
             var existing = store.Load();
             if (HasMigrationMarker(existing, manifest))
             {
-                return MigrateCommanderPreferenceIfMissing(
+                return MigrateNewPreferencesIfMissing(
                     legacy,
                     existing,
                     store);
@@ -166,6 +166,11 @@ public sealed class LegacyUiSettingsMigrator
                     ("mapShowNotes", "ShowMapNotes"),
                     ("mapShowLegend", "ShowMapLegend"),
                 ]);
+                mappedCount += MapSection(legacy, root, "GuardianGestures",
+                [
+                    ("blinkTigger", "BlinkTrigger"),
+                    ("blinkDuration", "BlinkDurationMilliseconds"),
+                ]);
                 mappedCount += MapSection(legacy, root, "HumanSite",
                 [
                     ("autoShowHumanSitesTest", "AutoShow"),
@@ -279,13 +284,23 @@ public sealed class LegacyUiSettingsMigrator
     }
 
     private static LegacyUiSettingsMigrationResult
-        MigrateCommanderPreferenceIfMissing(
+        MigrateNewPreferencesIfMissing(
             JsonObject legacy,
             JsonObject existing,
             UiSettingsDocumentStore store)
     {
-        if (existing["CommanderPreference"] is JsonObject preference
-            && preference.ContainsKey("PreferredCommanderName"))
+        var mappings = new (string Section, string Legacy, string Current)[]
+        {
+            ("CommanderPreference", "preferredCommander", "PreferredCommanderName"),
+            ("GuardianGestures", "blinkTigger", "BlinkTrigger"),
+            ("GuardianGestures", "blinkDuration", "BlinkDurationMilliseconds"),
+        };
+        var pending = mappings.Where(mapping =>
+            legacy[mapping.Legacy] is not null
+            && (existing[mapping.Section] is not JsonObject section
+                || !section.ContainsKey(mapping.Current)))
+            .ToArray();
+        if (pending.Length == 0)
         {
             return LegacyUiSettingsMigrationResult.NotRequired;
         }
@@ -293,10 +308,14 @@ public sealed class LegacyUiSettingsMigrator
         var mappedCount = 0;
         store.Update(root =>
         {
-            mappedCount += MapSection(legacy, root, "CommanderPreference",
-            [
-                ("preferredCommander", "PreferredCommanderName"),
-            ]);
+            foreach (var mapping in pending)
+            {
+                mappedCount += Copy(
+                    legacy,
+                    mapping.Legacy,
+                    GetOrCreateObject(root, mapping.Section),
+                    mapping.Current);
+            }
         });
         return mappedCount == 0
             ? LegacyUiSettingsMigrationResult.NotRequired

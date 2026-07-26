@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
@@ -83,6 +84,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "disableAerialAlignmentGrid": true,
               "mapShowNotes": false,
               "mapShowLegend": false,
+              "blinkTigger": 134217728,
+              "blinkDuration": 2500,
               "autoShowHumanSitesTest": false,
               "plotHumanSiteWidth": 720,
               "plotHumanSiteHeight": 640,
@@ -238,6 +241,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
                 false,
                 false),
             new GuardianOverlaySettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
+            new GuardianGesturePreferences(StatusFlags.HudInAnalysisMode, 2_500),
+            new GuardianGestureSettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new HumanSitePreferences(
                 false,

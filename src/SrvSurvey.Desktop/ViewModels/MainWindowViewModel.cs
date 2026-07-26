@@ -381,6 +381,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             overlaySettingsStore: guardianOverlaySettingsStore
                 ?? new GuardianOverlaySettingsStore(
                     AppDataPaths.UiSettingsPath),
+            gesturePreferences: new GuardianGestureSettingsStore(
+                AppDataPaths.UiSettingsPath).Load(),
             aerialAltitudeProvider: () => new GuardianAerialAltitudes(
                 ScreenshotProcessing.AerialAltitudeAlpha,
                 ScreenshotProcessing.AerialAltitudeBeta,
@@ -1505,7 +1507,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         if (update.Status is not null)
         {
-            Guardian.UpdateStatus(update.Status);
+            await Guardian.UpdateStatusAsync(
+                update.Status,
+                allowGesture: !update.IsBootstrapRead);
             StationInfo.UpdateStatus(update.Status);
             await Route.UpdateStatusAsync(update.Status);
             await BoxelSearch.UpdateStatusAsync(
