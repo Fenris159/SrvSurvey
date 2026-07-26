@@ -801,11 +801,37 @@ public sealed partial class App : Application
             };
             try
             {
-                if (ApplicationUpdateBootstrap
+                var updateOutcome = ApplicationUpdateBootstrap
+                    .ConsumePendingOutcomeAsync(appDataPaths)
+                    .GetAwaiter()
+                    .GetResult();
+                if (updateOutcome is not null)
+                {
+                    viewModel.ReleaseUpdates.SetPreviousInstallationOutcome(
+                        updateOutcome);
+                    applicationLog.Append(
+                        $"Update {updateOutcome.Version} outcome: "
+                            + updateOutcome.Status
+                            + (string.IsNullOrWhiteSpace(updateOutcome.Error)
+                                ? string.Empty
+                                : " - " + updateOutcome.Error));
+                }
+
+                var confirmedUpdate = ApplicationUpdateBootstrap
                     .ConfirmPendingHealthyAsync(appDataPaths)
                     .GetAwaiter()
-                    .GetResult())
+                    .GetResult();
+                if (confirmedUpdate is not null)
                 {
+                    viewModel.ReleaseUpdates.SetPreviousInstallationOutcome(
+                        new ReleaseInstallationOutcome(
+                            ReleaseInstallationOutcomeStatus.Installed,
+                            confirmedUpdate.Preparation.RequestId,
+                            confirmedUpdate.Preparation.Version,
+                            DateTimeOffset.UtcNow,
+                            confirmedUpdate.Preparation.BackupDirectory,
+                            null,
+                            null));
                     applicationLog.Append(
                         "Verified update replacement startup with the handoff helper.");
                 }

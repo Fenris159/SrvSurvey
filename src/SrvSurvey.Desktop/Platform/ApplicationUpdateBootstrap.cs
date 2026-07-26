@@ -9,6 +9,7 @@ internal enum ApplicationUpdateStartupMode
     Normal,
     Apply,
     Confirm,
+    Result,
 }
 
 internal sealed record ApplicationUpdateStartup(
@@ -101,10 +102,12 @@ internal static class ApplicationUpdateBootstrap
 {
     internal const string ApplyArgument = "--apply-update";
     internal const string ConfirmArgument = "--confirm-update";
+    internal const string ResultArgument = "--update-result";
     private static readonly TimeSpan ParentExitTimeout = TimeSpan.FromMinutes(2);
     private static readonly TimeSpan HealthTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan ReplacementExitTimeout = TimeSpan.FromSeconds(15);
     private static string? pendingConfirmationPlanPath;
+    private static string? pendingOutcomePlanPath;
 
     public static ApplicationUpdateStartup ParseStartupArguments(
         IReadOnlyList<string> arguments)
@@ -112,11 +115,12 @@ internal static class ApplicationUpdateBootstrap
         ArgumentNullException.ThrowIfNull(arguments);
         string? applyPath = null;
         string? confirmPath = null;
+        string? resultPath = null;
         var applicationArguments = new List<string>();
         for (var index = 0; index < arguments.Count; index++)
         {
             var argument = arguments[index];
-            if (argument is not (ApplyArgument or ConfirmArgument))
+            if (argument is not (ApplyArgument or ConfirmArgument or ResultArgument))
             {
                 applicationArguments.Add(argument);
                 continue;
@@ -140,7 +144,7 @@ internal static class ApplicationUpdateBootstrap
 
                 applyPath = planPath;
             }
-            else
+            else if (argument == ConfirmArgument)
             {
                 if (confirmPath is not null)
                 {
@@ -150,12 +154,25 @@ internal static class ApplicationUpdateBootstrap
 
                 confirmPath = planPath;
             }
+            else
+            {
+                if (resultPath is not null)
+                {
+                    throw new InvalidDataException(
+                        "The internal update result argument was repeated.");
+                }
+
+                resultPath = planPath;
+            }
         }
 
-        if (applyPath is not null && confirmPath is not null)
+        var internalModeCount = (applyPath is null ? 0 : 1)
+            + (confirmPath is null ? 0 : 1)
+            + (resultPath is null ? 0 : 1);
+        if (internalModeCount > 1)
         {
             throw new InvalidDataException(
-                "Update apply and confirmation modes cannot be combined.");
+                "Internal update helper modes cannot be combined.");
         }
 
         if (applyPath is not null)
@@ -180,6 +197,14 @@ internal static class ApplicationUpdateBootstrap
                 applicationArguments);
         }
 
+        if (resultPath is not null)
+        {
+            return new ApplicationUpdateStartup(
+                ApplicationUpdateStartupMode.Result,
+                resultPath,
+                applicationArguments);
+        }
+
         return new ApplicationUpdateStartup(
             ApplicationUpdateStartupMode.Normal,
             null,
@@ -193,7 +218,53 @@ internal static class ApplicationUpdateBootstrap
             : Path.GetFullPath(planPath);
     }
 
-    public static async Task<bool> ConfirmPendingHealthyAsync(
+    public static void SetPendingOutcome(string? planPath)
+    {
+        pendingOutcomePlanPath = string.IsNullOrWhiteSpace(planPath)
+            ? null
+            : Path.GetFullPath(planPath);
+    }
+
+    public static async Task<ReleaseInstallationOutcome?>
+        ConsumePendingOutcomeAsync(
+            AppDataPaths paths,
+            CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(paths);
+        var planPath = pendingOutcomePlanPath;
+        if (planPath is null)
+        {
+            return null;
+        }
+
+        var store = new ReleaseInstallationPlanStore();
+        var plan = await store.LoadAsync(
+                paths.DataDirectory,
+                planPath,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        if (!string.Equals(
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(
+                    plan.Preparation.InstallationDirectory)),
+                Path.TrimEndingDirectorySeparator(Path.GetFullPath(
+                    AppContext.BaseDirectory)),
+                comparison))
+        {
+            throw new InvalidDataException(
+                "The update outcome was not opened by its installation directory.");
+        }
+
+        var outcome = await store.ReadOutcomeAsync(plan, cancellationToken)
+            .ConfigureAwait(false);
+        pendingOutcomePlanPath = null;
+        return outcome;
+    }
+
+    public static async Task<ReleaseInstallationHandoffPlan?>
+        ConfirmPendingHealthyAsync(
         AppDataPaths paths,
         CancellationToken cancellationToken = default)
     {
@@ -201,7 +272,7 @@ internal static class ApplicationUpdateBootstrap
         var planPath = pendingConfirmationPlanPath;
         if (planPath is null)
         {
-            return false;
+            return null;
         }
 
         var store = new ReleaseInstallationPlanStore();
@@ -217,7 +288,7 @@ internal static class ApplicationUpdateBootstrap
         await store.WriteHealthMarkerAsync(plan, cancellationToken)
             .ConfigureAwait(false);
         pendingConfirmationPlanPath = null;
-        return true;
+        return plan;
     }
 
     public static async Task<int> RunHelperAsync(
@@ -269,7 +340,8 @@ internal static class ApplicationUpdateBootstrap
                     Path.Combine(
                         plan.Preparation.InstallationDirectory,
                         plan.Preparation.EntryPoint),
-                    plan.Preparation.StartupArguments);
+                    plan.Preparation.StartupArguments,
+                    plan.PlanPath);
                 return 3;
             }
 
@@ -322,7 +394,8 @@ internal static class ApplicationUpdateBootstrap
                     {
                         StartWithoutConfirmation(
                             originalEntryPoint,
-                            plan.Preparation.StartupArguments);
+                            plan.Preparation.StartupArguments,
+                            plan.PlanPath);
                     }
                     catch (Exception launchException) when (
                         launchException is IOException
@@ -496,12 +569,15 @@ internal static class ApplicationUpdateBootstrap
 
     private static void StartWithoutConfirmation(
         string entryPoint,
-        IReadOnlyList<string> arguments)
+        IReadOnlyList<string> arguments,
+        string resultPlanPath)
     {
         var startInfo = CreateReplacementStartInfo(
             entryPoint,
             arguments,
             confirmationPlanPath: null);
+        startInfo.ArgumentList.Add(ResultArgument);
+        startInfo.ArgumentList.Add(Path.GetFullPath(resultPlanPath));
         using var process = Process.Start(startInfo)
             ?? throw new InvalidOperationException(
                 "SrvSurvey could not restart after update rollback.");

@@ -586,9 +586,12 @@ UI tests where practical, and live Windows/Linux evidence.
   exposes this pipeline only after an explicit close/verify/rollback consent,
   reports byte progress and every guarded phase, disables replacement for local
   or unpackaged folders without `release-package.json`, and leaves the releases
-  link available for manual installation. Persisted post-restart outcome display,
-  final packaged process testing, and the remaining network audit keep this phase
-  open.
+  link available for manual installation. The confirmed replacement immediately
+  reports its retained rollback backup, while rollback/abort relaunches strip a
+  separate internal result argument and strictly reload the matching atomic
+  outcome so the restored UI explains what happened even if its asynchronous
+  release check completes later. Final packaged process testing and the remaining
+  network audit keep this phase open.
   The legacy regional-Codex Google Sheet now refreshes on the original
   weekly cadence or with a Codex-reference update. Its live 26-column CSV
   contract is parsed with bounded RFC-style quoting, numeric region IDs remain

@@ -49,6 +49,22 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
         Assert.Equal("C:\\Data\\plan.json", startup.PlanPath);
     }
 
+    [Fact]
+    public void ResultModeStripsPlanAndPreservesApplicationArguments()
+    {
+        var startup = ApplicationUpdateBootstrap.ParseStartupArguments(
+        [
+            "--frontier-id",
+            "F123",
+            ApplicationUpdateBootstrap.ResultArgument,
+            "C:\\Data\\plan.json",
+        ]);
+
+        Assert.Equal(ApplicationUpdateStartupMode.Result, startup.Mode);
+        Assert.Equal("C:\\Data\\plan.json", startup.PlanPath);
+        Assert.Equal(["--frontier-id", "F123"], startup.ApplicationArguments);
+    }
+
     [Theory]
     [InlineData("--apply-update")]
     [InlineData("--apply-update", "plan.json", "--frontier-id", "F123")]
@@ -153,6 +169,7 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     public void Dispose()
     {
         ApplicationUpdateBootstrap.SetPendingConfirmation(null);
+        ApplicationUpdateBootstrap.SetPendingOutcome(null);
         if (Directory.Exists(temporaryDirectory))
         {
             Directory.Delete(temporaryDirectory, recursive: true);

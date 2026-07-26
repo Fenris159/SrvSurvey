@@ -316,6 +316,79 @@ public sealed class ReleaseInstallationPlanStore
             .ConfigureAwait(false);
     }
 
+    public async Task<ReleaseInstallationOutcome> ReadOutcomeAsync(
+        ReleaseInstallationHandoffPlan plan,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        var info = new FileInfo(plan.OutcomePath);
+        if (!info.Exists || info.Length is <= 0 or > MaximumPlanBytes)
+        {
+            throw new InvalidDataException(
+                "The update outcome is missing or outside the supported size.");
+        }
+
+        var bytes = await File.ReadAllBytesAsync(
+                plan.OutcomePath,
+                cancellationToken)
+            .ConfigureAwait(false);
+        try
+        {
+            using var document = JsonDocument.Parse(bytes);
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object
+                || ReadInt32(root, "schemaVersion") != SchemaVersion
+                || !Enum.TryParse<ReleaseInstallationOutcomeStatus>(
+                    ReadString(root, "status"),
+                    ignoreCase: false,
+                    out var status))
+            {
+                throw new InvalidDataException(
+                    "The update outcome schema or status is invalid.");
+            }
+
+            var requestId = ReadGuid(root, "RequestId");
+            var versionText = ReadString(root, "version");
+            if (!Version.TryParse(versionText, out var version)
+                || requestId != plan.Preparation.RequestId
+                || version != plan.Preparation.Version)
+            {
+                throw new InvalidDataException(
+                    "The update outcome does not match its handoff plan.");
+            }
+
+            var backupDirectory = ReadOptionalString(root, "BackupDirectory");
+            var failedDirectory = ReadOptionalString(root, "FailedDirectory");
+            if ((backupDirectory is not null
+                    && !PathsEqual(
+                        backupDirectory,
+                        plan.Preparation.BackupDirectory))
+                || (failedDirectory is not null
+                    && !PathsEqual(
+                        failedDirectory,
+                        plan.Preparation.FailedDirectory)))
+            {
+                throw new InvalidDataException(
+                    "The update outcome contains an unexpected recovery path.");
+            }
+
+            return new ReleaseInstallationOutcome(
+                status,
+                requestId,
+                version,
+                ReadDateTimeOffset(root, "CompletedAtUtc"),
+                backupDirectory,
+                failedDirectory,
+                ReadOptionalString(root, "Error"));
+        }
+        catch (JsonException exception)
+        {
+            throw new InvalidDataException(
+                "The update outcome is not valid JSON.",
+                exception);
+        }
+    }
+
     private static async Task WriteJsonAtomicallyAsync<T>(
         string path,
         T value,
@@ -452,6 +525,25 @@ public sealed class ReleaseInstallationPlanStore
         }
 
         return value;
+    }
+
+    private static string? ReadOptionalString(
+        JsonElement element,
+        string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var property)
+            || property.ValueKind == JsonValueKind.Null)
+        {
+            return null;
+        }
+
+        if (property.ValueKind != JsonValueKind.String)
+        {
+            throw new InvalidDataException(
+                $"The update handoff '{propertyName}' value is invalid.");
+        }
+
+        return property.GetString();
     }
 
     private static int ReadInt32(JsonElement element, string propertyName)

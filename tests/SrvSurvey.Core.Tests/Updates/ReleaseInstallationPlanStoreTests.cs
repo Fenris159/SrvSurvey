@@ -159,7 +159,9 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
             Error = "health timeout",
         };
         await store.WriteOutcomeAsync(plan, rolledBack);
+        var loaded = await store.ReadOutcomeAsync(plan);
 
+        Assert.Equal(rolledBack, loaded);
         using var document = JsonDocument.Parse(
             await File.ReadAllBytesAsync(plan.OutcomePath));
         Assert.Equal(

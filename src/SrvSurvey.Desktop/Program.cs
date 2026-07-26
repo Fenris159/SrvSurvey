@@ -32,6 +32,10 @@ internal static class Program
             updateStartup.Mode == ApplicationUpdateStartupMode.Confirm
                 ? updateStartup.PlanPath
                 : null);
+        ApplicationUpdateBootstrap.SetPendingOutcome(
+            updateStartup.Mode == ApplicationUpdateStartupMode.Result
+                ? updateStartup.PlanPath
+                : null);
         var appDataPaths = AppDataPaths.ResolveCurrent();
         var language = LocalizationSettingsStore.ResolveCurrent(appDataPaths);
         LocalizationCatalog.Initialize(language);

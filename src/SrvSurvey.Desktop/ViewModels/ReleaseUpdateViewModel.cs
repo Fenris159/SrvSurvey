@@ -22,6 +22,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     private string latestVersion = "Not checked";
     private string statusMessage = "Update status has not been checked.";
     private string installProgressText = string.Empty;
+    private string? previousInstallationOutcomeMessage;
     private bool isChecking;
     private bool isUpdateAvailable;
     private bool isInstalling;
@@ -206,6 +207,31 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         installCommand.RaiseCanExecuteChanged();
     }
 
+    public void SetPreviousInstallationOutcome(
+        ReleaseInstallationOutcome outcome)
+    {
+        ArgumentNullException.ThrowIfNull(outcome);
+        previousInstallationOutcomeMessage = outcome.Status switch
+        {
+            ReleaseInstallationOutcomeStatus.RolledBack =>
+                $"Update {FormatVersion(outcome.Version)} was rolled back; the previous installation was restored."
+                    + (string.IsNullOrWhiteSpace(outcome.Error)
+                        ? string.Empty
+                        : " " + outcome.Error),
+            ReleaseInstallationOutcomeStatus.Aborted =>
+                $"Update {FormatVersion(outcome.Version)} was aborted before completion; the active installation was preserved."
+                    + (string.IsNullOrWhiteSpace(outcome.Error)
+                        ? string.Empty
+                        : " " + outcome.Error),
+            _ =>
+                $"Update {FormatVersion(outcome.Version)} installed successfully."
+                    + (string.IsNullOrWhiteSpace(outcome.BackupDirectory)
+                        ? string.Empty
+                        : " Rollback backup: " + outcome.BackupDirectory),
+        };
+        StatusMessage = AppendPreviousOutcome(StatusMessage);
+    }
+
     public async Task CheckAsync()
     {
         if (IsChecking || IsInstalling)
@@ -225,11 +251,11 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             InstallConfirmed = false;
             LatestVersion = FormatVersion(result.LatestVersion);
             IsUpdateAvailable = result.IsUpdateAvailable;
-            StatusMessage = result.IsUpdateAvailable
+            StatusMessage = AppendPreviousOutcome(result.IsUpdateAvailable
                 ? CanInstallCurrentInstallation
                     ? $"SrvSurvey {LatestVersion} is available. Confirm the guarded install when ready."
                     : $"SrvSurvey {LatestVersion} is available. This development or unpackaged build cannot replace itself; use Open releases."
-                : $"SrvSurvey {CurrentVersion} is current with the published release index.";
+                : $"SrvSurvey {CurrentVersion} is current with the published release index.");
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {
@@ -239,9 +265,10 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             InstallConfirmed = false;
             LatestVersion = "Unavailable";
             IsUpdateAvailable = false;
-            StatusMessage = "The update check was unavailable: "
+            StatusMessage = AppendPreviousOutcome(
+                "The update check was unavailable: "
                 + exception.Message
-                + " The installation and profile were not changed.";
+                + " The installation and profile were not changed.");
         }
         finally
         {
@@ -366,6 +393,16 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             : version.Build >= 0
                 ? version.ToString(3)
                 : version.ToString(2);
+    }
+
+    private string AppendPreviousOutcome(string message)
+    {
+        return previousInstallationOutcomeMessage is null
+            || message.Contains(
+                previousInstallationOutcomeMessage,
+                StringComparison.Ordinal)
+            ? message
+            : message + " " + previousInstallationOutcomeMessage;
     }
 
     private bool SetField<T>(

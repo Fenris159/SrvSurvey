@@ -109,6 +109,28 @@ public sealed class ReleaseUpdateViewModelTests
         Assert.Contains("profile were not changed", viewModel.StatusMessage);
     }
 
+    [Fact]
+    public async Task PreviousRollbackOutcomeSurvivesAutomaticUpdateCheck()
+    {
+        var viewModel = new ReleaseUpdateViewModel(
+            new StubService(CreateResult(isAvailable: false)),
+            new Version(2, 0, 95, 0));
+        viewModel.SetPreviousInstallationOutcome(new ReleaseInstallationOutcome(
+            ReleaseInstallationOutcomeStatus.RolledBack,
+            Guid.NewGuid(),
+            new Version(2, 0, 95, 23),
+            DateTimeOffset.UtcNow,
+            null,
+            "C:\\failed",
+            "Replacement health timed out."));
+
+        await viewModel.CheckAsync();
+
+        Assert.Contains("was rolled back", viewModel.StatusMessage);
+        Assert.Contains("previous installation was restored", viewModel.StatusMessage);
+        Assert.Contains("health timed out", viewModel.StatusMessage);
+    }
+
     private static ReleaseUpdateResult CreateResult(bool isAvailable)
     {
         return new ReleaseUpdateResult(
