@@ -71,6 +71,46 @@ public sealed class RegionalCodexCandidateCatalogTests : IDisposable
         Assert.True(reloaded.IsCandidate(18, 2310102));
     }
 
+    [Fact]
+    public void PublishedCsvParsesQuotedFieldsAndResolvesBlankEntryIds()
+    {
+        var references = ExobiologyReferenceCatalog.LoadEmbedded();
+        var resolved = references.FindByDisplayName(
+            "Aleoida Coronamus - Lime");
+        Assert.NotNull(resolved);
+        var csv = string.Join(
+            "\r\n",
+            "\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"",
+            "\"1\",\"Galactic Centre\",\"Aleoida Arcus - Yellow\",\"0\",\"0\",\"2310101\",\"$Codex_Ent_Aleoids_01_B_Name;\",\"B\"",
+            "\"18\",\"Inner Orion Spur\",\"Aleoida Coronamus - Lime\",\"0\",\"0\",\"\",\"value with \"\"quotes\"\", and comma\",\"Lime\"",
+            "\"18\",\"Inner Orion Spur\",\"Unpublished variant\",\"0\",\"0\",\"\",\"\",\"test\"",
+            "\"18\",\"Inner Orion Spur\",\"Already found\",\"1\",\"0\",\"2310102\",\"ignored\",\"ignored\"");
+
+        var catalog = RegionalCodexCandidateCatalog.ParsePublishedCsv(
+            System.Text.Encoding.UTF8.GetBytes(csv),
+            references);
+
+        Assert.Equal(2, catalog.Count);
+        Assert.True(catalog.IsCandidate(1, 2310101));
+        Assert.True(catalog.IsCandidate(18, resolved.EntryId));
+        Assert.Equal("Lime", catalog.Entries.Single(
+            entry => entry.RegionId == 18).Variant);
+    }
+
+    [Theory]
+    [InlineData("\"RegionID\",\"RegionName\"\r\n\"1\",\"Galactic Centre\"")]
+    [InlineData("\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"\r\n\"1\",\"Galactic Centre\",\"Test\",\"maybe\",\"0\",\"1\",\"name\",\"A\"")]
+    [InlineData("\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"\r\n\"99\",\"Unknown\",\"Test\",\"0\",\"0\",\"1\",\"name\",\"A\"")]
+    [InlineData("\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"\r\n\"1\",\"Galactic Centre\",\"Test\",\"1\",\"0\",\"not-an-id\",\"name\",\"A\"")]
+    [InlineData("\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"\r\n\"1\",\"Galactic Centre\",\"unterminated,\"0\",\"0\",\"1\",\"name\",\"A\"")]
+    public void PublishedCsvRejectsIncompatibleOrMalformedContent(string csv)
+    {
+        Assert.Throws<InvalidDataException>(() =>
+            RegionalCodexCandidateCatalog.ParsePublishedCsv(
+                System.Text.Encoding.UTF8.GetBytes(csv),
+                ExobiologyReferenceCatalog.LoadEmbedded()));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

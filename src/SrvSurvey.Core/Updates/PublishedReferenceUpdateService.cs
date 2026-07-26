@@ -25,6 +25,7 @@ public sealed record PublishedReferenceUpdateResult(
 
 public sealed record PublishedReferenceUris(
     Uri CodexReference,
+    Uri RegionalCodexCandidatesCsv,
     Uri BiologyCriteriaArchive,
     Uri GuardianTemplates,
     Uri GuardianRuins,
@@ -36,6 +37,7 @@ public sealed record PublishedReferenceUris(
 {
     public static PublishedReferenceUris Default { get; } = new(
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/refs/heads/main/docs/codexRef.json"),
+        new Uri("https://docs.google.com/spreadsheets/d/1TpPZUFd61KUQWy1sV8VhScZiVbRWJ435wTN8xjN0Qv0/gviz/tq?tqx=out:csv&sheet=Individual+Items"),
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/data/bio-criteria.zip"),
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/guardianSiteTemplates.json"),
         new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/allRuins.json"),
@@ -120,6 +122,12 @@ public sealed class PublishedReferenceUpdateService
             previous.CodexReference,
             remote.CodexReferenceVersion,
             sources["Codex reference"]);
+        var regionalCodexCandidates = RegionalCodexCandidateCatalog.Load(root);
+        var updateRegionalCodexCandidates = updateCodex
+            || RegionalCodexCandidatesNeedUpdate(
+                root,
+                regionalCodexCandidates,
+                timeProvider.GetUtcNow());
         var updateBiology = NeedsUpdate(
             previous.BiologyCriteria,
             remote.BiologyCriteriaVersion,
@@ -153,6 +161,7 @@ public sealed class PublishedReferenceUpdateService
             || currentNicknames.RavenCount == 0;
         var updated = new List<string>();
         if (!updateCodex
+            && !updateRegionalCodexCandidates
             && !updateBiology
             && !updateGuardianTemplates
             && !updateGuardian
@@ -193,6 +202,28 @@ public sealed class PublishedReferenceUpdateService
                         cancellationToken)
                     .ConfigureAwait(false);
                 updated.Add("Codex reference");
+            }
+
+            if (updateRegionalCodexCandidates)
+            {
+                var bytes = await DownloadAsync(
+                        uris.RegionalCodexCandidatesCsv,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                var references = LegacyReferenceCatalogLoader.Load(stageRoot)
+                    .Exobiology;
+                var regional = RegionalCodexCandidateCatalog.ParsePublishedCsv(
+                    bytes,
+                    references);
+                await File.WriteAllTextAsync(
+                        Path.Combine(stageRoot, RegionalCodexCandidateCatalog.LegacyFileName),
+                        regional.SerializeLegacy(),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                File.SetLastWriteTimeUtc(
+                    Path.Combine(stageRoot, RegionalCodexCandidateCatalog.LegacyFileName),
+                    timeProvider.GetUtcNow().UtcDateTime);
+                updated.Add("regional Codex candidates");
             }
 
             var stagePublished = Path.Combine(stageRoot, "pub");
@@ -386,15 +417,26 @@ public sealed class PublishedReferenceUpdateService
     {
         var livePublished = Path.Combine(root, "pub");
         var liveCodex = Path.Combine(root, "codexRef.json");
+        var liveRegionalCodex = Path.Combine(
+            root,
+            RegionalCodexCandidateCatalog.LegacyFileName);
         var stagePublished = Path.Combine(stageRoot, "pub");
         var stageCodex = Path.Combine(stageRoot, "codexRef.json");
+        var stageRegionalCodex = Path.Combine(
+            stageRoot,
+            RegionalCodexCandidateCatalog.LegacyFileName);
         var rollbackPublished = Path.Combine(rollbackRoot, "pub");
         var rollbackCodex = Path.Combine(rollbackRoot, "codexRef.json");
+        var rollbackRegionalCodex = Path.Combine(
+            rollbackRoot,
+            RegionalCodexCandidateCatalog.LegacyFileName);
         Directory.CreateDirectory(rollbackRoot);
         var publishedMoved = false;
         var codexMoved = false;
+        var regionalCodexMoved = false;
         var candidatePublishedActivated = false;
         var candidateCodexActivated = false;
+        var candidateRegionalCodexActivated = false;
         try
         {
             if (Directory.Exists(livePublished))
@@ -409,6 +451,12 @@ public sealed class PublishedReferenceUpdateService
                 codexMoved = true;
             }
 
+            if (File.Exists(liveRegionalCodex))
+            {
+                File.Move(liveRegionalCodex, rollbackRegionalCodex);
+                regionalCodexMoved = true;
+            }
+
             checkpoint?.Invoke(
                 PublishedReferenceUpdateCheckpoint.ExistingReferencesMoved);
             Directory.Move(stagePublished, livePublished);
@@ -417,6 +465,12 @@ public sealed class PublishedReferenceUpdateService
             {
                 File.Move(stageCodex, liveCodex);
                 candidateCodexActivated = true;
+            }
+
+            if (File.Exists(stageRegionalCodex))
+            {
+                File.Move(stageRegionalCodex, liveRegionalCodex);
+                candidateRegionalCodexActivated = true;
             }
 
             checkpoint?.Invoke(PublishedReferenceUpdateCheckpoint.CandidateActivated);
@@ -439,6 +493,14 @@ public sealed class PublishedReferenceUpdateService
                     Path.Combine(stageRoot, "failed-codexRef.json"));
             }
 
+            if (candidateRegionalCodexActivated
+                && File.Exists(liveRegionalCodex))
+            {
+                File.Move(
+                    liveRegionalCodex,
+                    Path.Combine(stageRoot, "failed-codexNotFound.json"));
+            }
+
             if (publishedMoved && Directory.Exists(rollbackPublished))
             {
                 Directory.Move(rollbackPublished, livePublished);
@@ -447,6 +509,11 @@ public sealed class PublishedReferenceUpdateService
             if (codexMoved && File.Exists(rollbackCodex))
             {
                 File.Move(rollbackCodex, liveCodex);
+            }
+
+            if (regionalCodexMoved && File.Exists(rollbackRegionalCodex))
+            {
+                File.Move(rollbackRegionalCodex, liveRegionalCodex);
             }
 
             throw;
@@ -459,6 +526,26 @@ public sealed class PublishedReferenceUpdateService
         ReferenceCatalogSource source)
     {
         return remoteVersion > currentVersion || !source.IsLocal;
+    }
+
+    private static bool RegionalCodexCandidatesNeedUpdate(
+        string root,
+        RegionalCodexCandidateCatalog catalog,
+        DateTimeOffset now)
+    {
+        var path = Path.Combine(
+            root,
+            RegionalCodexCandidateCatalog.LegacyFileName);
+        if (!catalog.HasData
+            || catalog.Warnings.Count > 0
+            || !File.Exists(path))
+        {
+            return true;
+        }
+
+        var lastWrite = File.GetLastWriteTimeUtc(path);
+        return lastWrite > now.UtcDateTime.AddMinutes(5)
+            || now.UtcDateTime - lastWrite >= TimeSpan.FromDays(7);
     }
 
     private static void ValidateCandidate(
@@ -474,6 +561,19 @@ public sealed class PublishedReferenceUpdateService
         }).ToHashSet(StringComparer.Ordinal);
         foreach (var catalogName in expectedSources)
         {
+            if (catalogName == "regional Codex candidates")
+            {
+                var regional = RegionalCodexCandidateCatalog.Load(candidateRoot);
+                if (!regional.HasData || regional.Warnings.Count > 0)
+                {
+                    throw new InvalidDataException(
+                        regional.Warnings.FirstOrDefault()
+                            ?? "The staged regional Codex candidate catalog is empty.");
+                }
+
+                continue;
+            }
+
             if (catalogName == "Raven system nicknames")
             {
                 var nicknames = SystemNicknameCatalog.Load(candidateRoot);
@@ -707,6 +807,20 @@ public sealed class PublishedReferenceUpdateService
             await CopyFileVerifiedAsync(
                     sourceCodex,
                     Path.Combine(destinationRoot, "codexRef.json"),
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        var sourceRegionalCodex = Path.Combine(
+            sourceRoot,
+            RegionalCodexCandidateCatalog.LegacyFileName);
+        if (File.Exists(sourceRegionalCodex))
+        {
+            await CopyFileVerifiedAsync(
+                    sourceRegionalCodex,
+                    Path.Combine(
+                        destinationRoot,
+                        RegionalCodexCandidateCatalog.LegacyFileName),
                     cancellationToken)
                 .ConfigureAwait(false);
         }

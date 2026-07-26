@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using SrvSurvey.Core.Navigation;
 
@@ -16,6 +17,19 @@ public sealed class RegionalCodexCandidateCatalog
 
     private const long MaximumFileBytes = 16L * 1024 * 1024;
     private const int MaximumEntries = 100_000;
+    private const int MaximumCsvColumns = 64;
+    private const int MaximumCsvFieldCharacters = 1_048_576;
+    private static readonly string[] PublishedCsvColumns =
+    [
+        "RegionID",
+        "RegionName",
+        "EnglishName",
+        "Found",
+        "NotExpectedToBeFound",
+        "EntryID",
+        "Name",
+        "Varient",
+    ];
     private readonly IReadOnlyDictionary<int, IReadOnlySet<long>> entryIdsByRegion;
 
     private RegionalCodexCandidateCatalog(
@@ -186,6 +200,142 @@ public sealed class RegionalCodexCandidateCatalog
         });
     }
 
+    internal static RegionalCodexCandidateCatalog ParsePublishedCsv(
+        byte[] bytes,
+        ExobiologyReferenceCatalog references)
+    {
+        ArgumentNullException.ThrowIfNull(bytes);
+        ArgumentNullException.ThrowIfNull(references);
+        if (bytes.Length == 0)
+        {
+            throw new InvalidDataException(
+                "The published regional Codex candidate CSV is empty.");
+        }
+
+        string text;
+        try
+        {
+            text = new UTF8Encoding(
+                encoderShouldEmitUTF8Identifier: false,
+                throwOnInvalidBytes: true).GetString(bytes);
+        }
+        catch (DecoderFallbackException exception)
+        {
+            throw new InvalidDataException(
+                "The published regional Codex candidate CSV is not valid UTF-8.",
+                exception);
+        }
+
+        var rows = ParseCsvRows(text);
+        if (rows.Count < 2)
+        {
+            throw new InvalidDataException(
+                "The published regional Codex candidate CSV contains no data rows.");
+        }
+
+        var header = rows[0];
+        if (header.Count < PublishedCsvColumns.Length
+            || !PublishedCsvColumns.Select((column, index) => string.Equals(
+                    header[index].TrimStart('\uFEFF'),
+                    column,
+                    StringComparison.Ordinal))
+                .All(matches => matches))
+        {
+            throw new InvalidDataException(
+                "The published regional Codex candidate CSV header is incompatible.");
+        }
+
+        var regionsById = GalacticRegionMap.Regions.ToDictionary(
+            region => region.Id);
+        var candidates = new List<RegionalCodexCandidate>();
+        for (var rowIndex = 1; rowIndex < rows.Count; rowIndex++)
+        {
+            var row = rows[rowIndex];
+            if (row.Count < PublishedCsvColumns.Length)
+            {
+                throw new InvalidDataException(
+                    $"Published regional Codex row {rowIndex + 1:N0} has too few columns.");
+            }
+
+            if (!int.TryParse(
+                    row[0],
+                    NumberStyles.Integer,
+                    CultureInfo.InvariantCulture,
+                    out var regionId)
+                || !regionsById.TryGetValue(regionId, out var region))
+            {
+                throw new InvalidDataException(
+                    $"Published regional Codex row {rowIndex + 1:N0} has an unknown region.");
+            }
+
+            var found = ParseCsvBoolean(row[3], rowIndex, "Found");
+            var notExpected = ParseCsvBoolean(
+                row[4],
+                rowIndex,
+                "NotExpectedToBeFound");
+            ExobiologyReference? reference = null;
+            long entryId;
+            if (string.IsNullOrWhiteSpace(row[5]))
+            {
+                reference = references.FindByDisplayName(row[2].Trim());
+                if (reference is null)
+                {
+                    continue;
+                }
+
+                entryId = reference.EntryId;
+            }
+            else if (!long.TryParse(
+                         row[5],
+                         NumberStyles.Integer,
+                         CultureInfo.InvariantCulture,
+                         out entryId)
+                     || entryId <= 0)
+            {
+                throw new InvalidDataException(
+                    $"Published regional Codex row {rowIndex + 1:N0} has an invalid entry ID.");
+            }
+
+            if (found || notExpected)
+            {
+                continue;
+            }
+
+            reference ??= references.FindByEntryId(entryId);
+            var variant = row[7].Trim();
+            if (variant.Length == 0)
+            {
+                variant = reference?.VariantName
+                    ?? row[6].Trim();
+            }
+
+            if (variant.Length == 0)
+            {
+                throw new InvalidDataException(
+                    $"Published regional Codex row {rowIndex + 1:N0} has no variant.");
+            }
+
+            candidates.Add(new RegionalCodexCandidate(
+                region.Id,
+                region.Name,
+                entryId,
+                variant));
+            if (candidates.Count > MaximumEntries)
+            {
+                throw new InvalidDataException(
+                    "The published regional Codex candidate CSV contains too many candidates.");
+            }
+        }
+
+        if (candidates.Count == 0)
+        {
+            throw new InvalidDataException(
+                "The published regional Codex candidate CSV contains no candidates.");
+        }
+
+        return Create(candidates, null);
+    }
+
     private static RegionalCodexCandidateCatalog Create(
         IEnumerable<RegionalCodexCandidate> entries,
         string? sourcePath)
@@ -222,6 +372,136 @@ public sealed class RegionalCodexCandidateCatalog
         }
 
         return new RegionalCodexCandidateCatalog(distinct, sourcePath, []);
+    }
+
+    private static IReadOnlyList<IReadOnlyList<string>> ParseCsvRows(string text)
+    {
+        var rows = new List<IReadOnlyList<string>>();
+        var row = new List<string>();
+        var field = new StringBuilder();
+        var inQuotes = false;
+        var closedQuote = false;
+
+        void AddField()
+        {
+            row.Add(field.ToString());
+            if (row.Count > MaximumCsvColumns)
+            {
+                throw new InvalidDataException(
+                    "The published regional Codex candidate CSV has too many columns.");
+            }
+
+            field.Clear();
+            closedQuote = false;
+        }
+
+        void AddRow()
+        {
+            AddField();
+            if (row.Any(value => value.Length > 0))
+            {
+                rows.Add(row.ToArray());
+                if (rows.Count > MaximumEntries + 1)
+                {
+                    throw new InvalidDataException(
+                        "The published regional Codex candidate CSV has too many rows.");
+                }
+            }
+
+            row.Clear();
+        }
+
+        for (var index = 0; index < text.Length; index++)
+        {
+            var character = text[index];
+            if (inQuotes)
+            {
+                if (character == '"')
+                {
+                    if (index + 1 < text.Length && text[index + 1] == '"')
+                    {
+                        field.Append('"');
+                        index++;
+                    }
+                    else
+                    {
+                        inQuotes = false;
+                        closedQuote = true;
+                    }
+                }
+                else
+                {
+                    field.Append(character);
+                }
+            }
+            else if (character == '"')
+            {
+                if (field.Length > 0 || closedQuote)
+                {
+                    throw new InvalidDataException(
+                        "The published regional Codex candidate CSV contains an invalid quote.");
+                }
+
+                inQuotes = true;
+            }
+            else if (character == ',')
+            {
+                AddField();
+            }
+            else if (character is '\r' or '\n')
+            {
+                AddRow();
+                if (character == '\r'
+                    && index + 1 < text.Length
+                    && text[index + 1] == '\n')
+                {
+                    index++;
+                }
+            }
+            else
+            {
+                if (closedQuote)
+                {
+                    throw new InvalidDataException(
+                        "The published regional Codex candidate CSV contains text after a closing quote.");
+                }
+
+                field.Append(character);
+            }
+
+            if (field.Length > MaximumCsvFieldCharacters)
+            {
+                throw new InvalidDataException(
+                    "The published regional Codex candidate CSV contains an oversized field.");
+            }
+        }
+
+        if (inQuotes)
+        {
+            throw new InvalidDataException(
+                "The published regional Codex candidate CSV ends inside a quoted field.");
+        }
+
+        if (field.Length > 0 || row.Count > 0 || closedQuote)
+        {
+            AddRow();
+        }
+
+        return rows;
+    }
+
+    private static bool ParseCsvBoolean(
+        string value,
+        int zeroBasedRowIndex,
+        string column)
+    {
+        return value.Trim() switch
+        {
+            "0" => false,
+            "1" => true,
+            _ => throw new InvalidDataException(
+                $"Published regional Codex row {zeroBasedRowIndex + 1:N0} has an invalid {column} flag."),
+        };
     }
 
     private static bool TryParseLegacyEntry(

@@ -14,6 +14,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         Guid.NewGuid().ToString("N"));
     private readonly PublishedReferenceUris uris = new(
         new Uri("https://example.test/codex.json"),
+        new Uri("https://example.test/regional-codex.csv"),
         new Uri("https://example.test/bio.zip"),
         new Uri("https://example.test/guardian-templates.json"),
         new Uri("https://example.test/ruins.json"),
@@ -31,7 +32,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
 
         var result = await service.RefreshAsync(root);
 
-        Assert.Equal(7, result.UpdatedCatalogs.Count);
+        Assert.Equal(8, result.UpdatedCatalogs.Count);
         Assert.True(result.RestartRequired);
         Assert.NotNull(result.BackupDirectory);
         Assert.Equal(
@@ -43,6 +44,11 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
                 result.BackupDirectory!,
                 "pub",
                 "keep.txt")));
+        Assert.Equal(
+            LegacyRegionalCatalog,
+            File.ReadAllText(Path.Combine(
+                result.BackupDirectory!,
+                RegionalCodexCandidateCatalog.LegacyFileName)));
         var active = LegacyReferenceCatalogLoader.Load(root);
         Assert.Equal(7, active.LocalCatalogCount);
         Assert.Empty(active.Warnings);
@@ -59,6 +65,13 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
             "The Lantern",
             SrvSurvey.Core.Navigation.SystemNicknameCatalog.Load(root)
                 .Resolve("Tir"));
+        var regional = RegionalCodexCandidateCatalog.Load(root);
+        Assert.Equal(2, regional.Count);
+        Assert.True(regional.IsCandidate(1, 2310101));
+        var resolved = active.Exobiology.FindByDisplayName(
+            "Aleoida Coronamus - Lime");
+        Assert.NotNull(resolved);
+        Assert.True(regional.IsCandidate(18, resolved.EntryId));
         Assert.Empty(FindOperationDirectories(".reference-update-"));
         Assert.Empty(FindOperationDirectories(".reference-rollback-"));
     }
@@ -91,10 +104,38 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RefreshAsyncRejectsMalformedRegionalCsvBeforeTouchingLiveFiles()
+    {
+        WriteExistingReferences();
+        var regionalPath = Path.Combine(
+            root,
+            RegionalCodexCandidateCatalog.LegacyFileName);
+        var originalRegional = File.ReadAllBytes(regionalPath);
+        var payloads = CreatePayloads();
+        payloads[uris.RegionalCodexCandidatesCsv] = Encoding.UTF8.GetBytes(
+            "\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"\r\n"
+                + "\"99\",\"Unknown\",\"bad\",\"0\",\"0\",\"1\",\"name\",\"A\"");
+        var service = CreateService(payloads);
+
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => service.RefreshAsync(root));
+
+        Assert.Equal(originalRegional, File.ReadAllBytes(regionalPath));
+        Assert.Equal(
+            "keep me",
+            File.ReadAllText(Path.Combine(root, "pub", "keep.txt")));
+        Assert.Empty(FindOperationDirectories(".reference-update-"));
+        Assert.Empty(FindOperationDirectories(".reference-rollback-"));
+    }
+
+    [Fact]
     public async Task RefreshAsyncRollsBackAfterPostActivationFailure()
     {
         WriteExistingReferences();
         var originalCodex = File.ReadAllBytes(Path.Combine(root, "codexRef.json"));
+        var originalRegional = File.ReadAllBytes(Path.Combine(
+            root,
+            RegionalCodexCandidateCatalog.LegacyFileName));
         var originalSentinel = File.ReadAllBytes(Path.Combine(root, "pub", "keep.txt"));
         var service = CreateService(
             CreatePayloads(),
@@ -113,6 +154,11 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         Assert.Equal(
             originalCodex,
             File.ReadAllBytes(Path.Combine(root, "codexRef.json")));
+        Assert.Equal(
+            originalRegional,
+            File.ReadAllBytes(Path.Combine(
+                root,
+                RegionalCodexCandidateCatalog.LegacyFileName)));
         Assert.Equal(
             originalSentinel,
             File.ReadAllBytes(Path.Combine(root, "pub", "keep.txt")));
@@ -160,6 +206,45 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
             File.ReadAllText(Path.Combine(root, "pub", "keep.txt")));
     }
 
+    [Fact]
+    public async Task RefreshAsyncSkipsFreshRegionalCatalogWhenVersionsAreCurrent()
+    {
+        WriteExistingReferences();
+        await CreateService(CreatePayloads()).RefreshAsync(root);
+
+        var result = await CreateService(new Dictionary<Uri, byte[]>())
+            .RefreshAsync(root);
+
+        Assert.Empty(result.UpdatedCatalogs);
+        Assert.False(result.RestartRequired);
+        Assert.Null(result.BackupDirectory);
+    }
+
+    [Fact]
+    public async Task RefreshAsyncRefreshesOnlyAStaleRegionalCatalog()
+    {
+        WriteExistingReferences();
+        await CreateService(CreatePayloads()).RefreshAsync(root);
+        var regionalPath = Path.Combine(
+            root,
+            RegionalCodexCandidateCatalog.LegacyFileName);
+        File.SetLastWriteTimeUtc(
+            regionalPath,
+            new DateTime(2026, 7, 17, 12, 0, 0, DateTimeKind.Utc));
+        var payloads = new Dictionary<Uri, byte[]>
+        {
+            [uris.RegionalCodexCandidatesCsv] = CreateRegionalCodexCsv(),
+        };
+
+        var result = await CreateService(payloads).RefreshAsync(root);
+
+        Assert.Equal(
+            ["regional Codex candidates"],
+            result.UpdatedCatalogs);
+        Assert.True(result.RestartRequired);
+        Assert.Equal(2, RegionalCodexCandidateCatalog.Load(root).Count);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(root))
@@ -188,6 +273,11 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         CopyResource(
             "SrvSurvey.Core.Resources.codexRef.json",
             Path.Combine(root, "codexRef.json"));
+        File.WriteAllText(
+            Path.Combine(
+                root,
+                RegionalCodexCandidateCatalog.LegacyFileName),
+            LegacyRegionalCatalog);
     }
 
     private Dictionary<Uri, byte[]> CreatePayloads()
@@ -196,6 +286,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
         {
             [uris.CodexReference] = ReadResource(
                 "SrvSurvey.Core.Resources.codexRef.json"),
+            [uris.RegionalCodexCandidatesCsv] = CreateRegionalCodexCsv(),
             [uris.BiologyCriteriaArchive] = CreateBiologyArchive(),
             [uris.GuardianTemplates] = ReadResource(
                 "SrvSurvey.Core.Resources.guardianSiteTemplates.json"),
@@ -240,6 +331,17 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
             .Select(name => (name[prefix.Length..], ReadResource(name)))
             .ToArray();
         return CreateArchive(entries);
+    }
+
+    private static byte[] CreateRegionalCodexCsv()
+    {
+        var csv = string.Join(
+            "\r\n",
+            "\"RegionID\",\"RegionName\",\"EnglishName\",\"Found\",\"NotExpectedToBeFound\",\"EntryID\",\"Name\",\"Varient\"",
+            "\"1\",\"Galactic Centre\",\"Aleoida Arcus - Yellow\",\"0\",\"0\",\"2310101\",\"$Codex_Ent_Aleoids_01_B_Name;\",\"B\"",
+            "\"18\",\"Inner Orion Spur\",\"Aleoida Coronamus - Lime\",\"0\",\"0\",\"\",\"$Codex_Ent_Aleoids_02_C_Name;\",\"C\"",
+            "\"18\",\"Inner Orion Spur\",\"Already found\",\"1\",\"0\",\"2310102\",\"ignored\",\"ignored\"");
+        return Encoding.UTF8.GetBytes(csv);
     }
 
     private static byte[] CreateArchive(params (string Name, byte[] Bytes)[] entries)
@@ -326,4 +428,7 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     }
 
     private sealed class InjectedFailureException : Exception;
+
+    private const string LegacyRegionalCatalog =
+        "{\"Inner Orion Spur\":[\"2310101_old\"]}";
 }

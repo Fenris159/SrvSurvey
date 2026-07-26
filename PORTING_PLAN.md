@@ -546,7 +546,12 @@ UI tests where practical, and live Windows/Linux evidence.
   refresh in the same transaction: the service array is normalized into the
   legacy map only after every row and the non-empty result validate. Packaged
   update installation/rollback and the remaining network audit keep this phase
-  open.
+  open. The legacy regional-Codex Google Sheet now refreshes on the original
+  weekly cadence or with a Codex-reference update. Its live 26-column CSV
+  contract is parsed with bounded RFC-style quoting, numeric region IDs remain
+  authoritative over display-name drift, unresolved unpublished variants are
+  skipped as before, and the generated `codexNotFound.json` joins the same
+  verified backup/stage/activation/rollback transaction.
 - [ ] Localization review for every migrated surface.
 
 Features may be explicitly deferred, but the release notes and UI must identify
