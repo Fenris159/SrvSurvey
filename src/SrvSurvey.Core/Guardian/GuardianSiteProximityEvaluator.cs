@@ -15,7 +15,8 @@ public sealed class GuardianSiteProximityEvaluator
         GuardianSiteTemplate template,
         GuardianSurveyData? survey = null,
         IReadOnlyList<GuardianObelisk>? activeObelisks = null,
-        IReadOnlySet<char>? obeliskGroups = null)
+        IReadOnlySet<char>? obeliskGroups = null,
+        bool includeComponentMaterials = false)
     {
         ArgumentNullException.ThrowIfNull(status);
         ArgumentNullException.ThrowIfNull(template);
@@ -52,6 +53,9 @@ public sealed class GuardianSiteProximityEvaluator
 
         GuardianNearbyPoint? nearest = null;
         foreach (var point in template.PointsOfInterest
+                     .Concat(includeComponentMaterials
+                         ? template.DestructiblePanels
+                         : [])
                      .Concat(survey?.RawPointsOfInterest ?? []))
         {
             if (!IsSelectable(

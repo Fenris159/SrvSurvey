@@ -220,6 +220,12 @@ public sealed class GuardianSurveyData
     public IReadOnlyDictionary<string, int> RelicHeadings { get; init; }
         = new Dictionary<string, int>(StringComparer.Ordinal);
 
+    public IReadOnlyDictionary<string, GuardianComponentLoadout>
+        ComponentMaterials
+    { get; init; }
+        = new Dictionary<string, GuardianComponentLoadout>(
+            StringComparer.Ordinal);
+
     public IReadOnlyList<GuardianPointOfInterest>? RawPointsOfInterest { get; init; }
 }
 

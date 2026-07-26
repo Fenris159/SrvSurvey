@@ -117,6 +117,74 @@ public sealed class GuardianSiteMapProjectorTests
     }
 
     [Fact]
+    public void ComponentModeProjectsTowerMaterialsAndDestructiblePanels()
+    {
+        var template = new GuardianSiteTemplate(
+            "Test",
+            "Test",
+            string.Empty,
+            new GuardianMapPoint(0, 0),
+            1,
+            [
+                new GuardianPointOfInterest(
+                    "c1",
+                    GuardianPoiType.Component,
+                    0,
+                    10,
+                    0),
+            ],
+            [
+                new GuardianPointOfInterest(
+                    "d1",
+                    GuardianPoiType.DestructiblePanel,
+                    90,
+                    20,
+                    0),
+            ],
+            new Dictionary<string, GuardianMapPoint>());
+        var survey = new GuardianSurveyData
+        {
+            ComponentMaterials = new Dictionary<
+                string,
+                GuardianComponentLoadout>
+            {
+                ["c1"] = new GuardianComponentLoadout(
+                    "c1",
+                    [
+                        GuardianComponentMaterial.Cell,
+                        GuardianComponentMaterial.Conduit,
+                        GuardianComponentMaterial.Tech,
+                    ]),
+                ["d1"] = new GuardianComponentLoadout(
+                    "d1",
+                    [GuardianComponentMaterial.Tech]),
+            },
+        };
+        var projector = new GuardianSiteMapProjector();
+
+        var standard = projector.Project(template, survey);
+        var componentMode = projector.Project(
+            template,
+            survey,
+            includeComponentMaterials: true);
+
+        Assert.DoesNotContain(standard.Points, point => point.Name == "d1");
+        Assert.Equal(
+            [
+                GuardianComponentMaterial.Cell,
+                GuardianComponentMaterial.Conduit,
+                GuardianComponentMaterial.Tech,
+            ],
+            componentMode.Points.Single(point => point.Name == "c1")
+                .ComponentMaterials);
+        var panel = componentMode.Points.Single(point => point.Name == "d1");
+        Assert.Equal(GuardianPoiStatus.Present, panel.Status);
+        Assert.Equal(
+            GuardianComponentMaterial.Tech,
+            Assert.Single(panel.ComponentMaterials));
+    }
+
+    [Fact]
     public void EmbeddedTemplatesAllProduceFiniteMapGeometry()
     {
         var templates = GuardianSiteTemplateCatalog.LoadEmbedded();

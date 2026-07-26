@@ -92,6 +92,7 @@ public sealed class GuardianSiteVisitCatalog
             Location = survey.Survey.Location,
             PoiStatuses = survey.Survey.PoiStatuses,
             RelicHeadings = survey.Survey.RelicHeadings,
+            ComponentMaterials = survey.Survey.ComponentMaterials,
             RawPointsOfInterest = survey.Survey.RawPointsOfInterest,
         };
         var completion = completionCalculator.Calculate(surveyData, published);

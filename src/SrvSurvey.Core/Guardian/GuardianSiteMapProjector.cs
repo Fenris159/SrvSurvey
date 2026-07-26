@@ -6,16 +6,21 @@ public sealed class GuardianSiteMapProjector
         GuardianSiteTemplate template,
         GuardianSurveyData? survey = null,
         IReadOnlyList<GuardianObelisk>? activeObelisks = null,
-        IReadOnlySet<char>? obeliskGroups = null)
+        IReadOnlySet<char>? obeliskGroups = null,
+        bool includeComponentMaterials = false)
     {
         ArgumentNullException.ThrowIfNull(template);
         var points = template.PointsOfInterest
+            .Concat(includeComponentMaterials
+                ? template.DestructiblePanels
+                : [])
             .Concat(survey?.RawPointsOfInterest ?? [])
             .Where(point => IsVisible(point, obeliskGroups))
             .Select(point => ProjectPoint(
                 point,
                 survey?.PoiStatuses,
                 survey?.RawPointsOfInterest,
+                survey?.ComponentMaterials,
                 activeObelisks))
             .ToArray();
         var groups = template.ObeliskGroupNameLocations
@@ -43,12 +48,15 @@ public sealed class GuardianSiteMapProjector
         GuardianPointOfInterest point,
         IReadOnlyDictionary<string, GuardianPoiStatus>? statuses,
         IReadOnlyList<GuardianPointOfInterest>? rawPoints,
+        IReadOnlyDictionary<string, GuardianComponentLoadout>? components,
         IReadOnlyList<GuardianObelisk>? activeObelisks)
     {
         var active = activeObelisks?.FirstOrDefault(obelisk => string.Equals(
             obelisk.Name,
             point.Name,
             StringComparison.OrdinalIgnoreCase));
+        GuardianComponentLoadout? componentLoadout = null;
+        components?.TryGetValue(point.Name, out componentLoadout);
         var status = statuses?.TryGetValue(point.Name, out var explicitStatus)
             == true
                 ? explicitStatus
@@ -58,7 +66,12 @@ public sealed class GuardianSiteMapProjector
                         point.Name,
                         StringComparison.Ordinal)) == true
                     ? GuardianPoiStatus.Present
-                    : GuardianPoiStatus.Unknown;
+                    : point.Type == GuardianPoiType.DestructiblePanel
+                        && componentLoadout is not null
+                        && componentLoadout.GetItem(0)
+                            != GuardianComponentMaterial.Unknown
+                            ? GuardianPoiStatus.Present
+                            : GuardianPoiStatus.Unknown;
         var location = ProjectPolar(point.Angle, point.Distance);
         return new GuardianProjectedPoint(
             point.Name,
@@ -71,7 +84,8 @@ public sealed class GuardianSiteMapProjector
             status,
             active is not null,
             active?.Scanned == true,
-            active?.LogCode ?? string.Empty);
+            active?.LogCode ?? string.Empty,
+            componentLoadout?.Items ?? []);
     }
 
     private static GuardianProjectedGroup ProjectGroup(
@@ -119,11 +133,13 @@ public sealed record GuardianSiteMapProjection(
 {
     public int SurveyablePointCount => Points.Count(point =>
         point.Type is not GuardianPoiType.Obelisk
-            and not GuardianPoiType.BrokenObelisk);
+            and not GuardianPoiType.BrokenObelisk
+            and not GuardianPoiType.DestructiblePanel);
 
     public int ConfirmedPointCount => Points.Count(point =>
         point.Type is not GuardianPoiType.Obelisk
             and not GuardianPoiType.BrokenObelisk
+            and not GuardianPoiType.DestructiblePanel
             && point.Status != GuardianPoiStatus.Unknown);
 }
 
@@ -138,7 +154,8 @@ public sealed record GuardianProjectedPoint(
     GuardianPoiStatus Status,
     bool IsActiveObelisk,
     bool IsScannedObelisk,
-    string LogCode);
+    string LogCode,
+    IReadOnlyList<GuardianComponentMaterial> ComponentMaterials);
 
 public sealed record GuardianProjectedGroup(
     string Name,

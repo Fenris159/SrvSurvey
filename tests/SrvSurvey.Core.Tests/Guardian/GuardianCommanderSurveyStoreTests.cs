@@ -28,7 +28,12 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
               "futureSurveyOption":{"enabled":true},
               "location":{"lat":0,"long":0,"futureCoordinate":8},
               "poiStatus":{"old":"present"},
-              "confirmedPOI":{"older":true}
+              "confirmedPOI":{"older":true},
+              "components":[
+                "future-format",
+                "c1,unknown,unknown,unknown",
+                "future,quantum"
+              ]
             }
             """);
 
@@ -50,6 +55,16 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
         Assert.Equal(
             "brokeObelisk",
             root["rawPoi"]![0]!["type"]!.GetValue<string>());
+        Assert.Equal(
+            [
+                "future-format",
+                "c1,cell,conduit,tech",
+                "future,quantum",
+                "d1,tech",
+            ],
+            root["components"]!.AsArray()
+                .Select(item => item!.GetValue<string>())
+                .ToArray());
 
         var loaded = await new GuardianCommanderDataReader(temporaryDirectory)
             .ReadAsync("F123", true);
@@ -61,6 +76,12 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
             GuardianPoiStatus.Present,
             roundTrip.Survey.PoiStatuses["p1"]);
         Assert.Equal(45, roundTrip.Survey.RelicHeadings["t1"]);
+        Assert.Equal(
+            GuardianComponentMaterial.Conduit,
+            roundTrip.Survey.ComponentMaterials["c1"].GetItem(1));
+        Assert.Equal(
+            GuardianComponentMaterial.Tech,
+            roundTrip.Survey.ComponentMaterials["d1"].GetItem(0));
         Assert.Equal(['A', 'C', 'D'], roundTrip.ObeliskGroups.Order());
         Assert.True(Assert.Single(roundTrip.ActiveObelisks).Scanned);
         Assert.Equal(
@@ -85,6 +106,7 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
                 Location = source.Survey.Location,
                 PoiStatuses = source.Survey.PoiStatuses,
                 RelicHeadings = source.Survey.RelicHeadings,
+                ComponentMaterials = source.Survey.ComponentMaterials,
                 RawPointsOfInterest = source.Survey.RawPointsOfInterest,
             },
         };
@@ -181,6 +203,21 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
                 RelicHeadings = new Dictionary<string, int>
                 {
                     ["t1"] = 45,
+                },
+                ComponentMaterials = new Dictionary<
+                    string,
+                    GuardianComponentLoadout>
+                {
+                    ["c1"] = new GuardianComponentLoadout(
+                        "c1",
+                        [
+                            GuardianComponentMaterial.Cell,
+                            GuardianComponentMaterial.Conduit,
+                            GuardianComponentMaterial.Tech,
+                        ]),
+                    ["d1"] = new GuardianComponentLoadout(
+                        "d1",
+                        [GuardianComponentMaterial.Tech]),
                 },
                 RawPointsOfInterest =
                 [

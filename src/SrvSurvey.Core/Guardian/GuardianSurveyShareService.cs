@@ -29,6 +29,11 @@ public sealed class GuardianSurveyShareService
             reasons.Add("Raw points of interest");
         }
 
+        if (survey.Survey.ComponentMaterials.Count > 0)
+        {
+            reasons.Add("Component materials");
+        }
+
         var kind = GetKind(survey);
         var published = publishedSites.Find(
             kind,
@@ -253,6 +258,7 @@ public sealed class GuardianSurveyShareService
             || survey.Survey.Location is not null
             || survey.Survey.PoiStatuses.Count > 0
             || survey.Survey.RelicHeadings.Count > 0
+            || survey.Survey.ComponentMaterials.Count > 0
             || survey.Survey.RawPointsOfInterest?.Count > 0
             || survey.ObeliskGroups.Count > 0;
     }

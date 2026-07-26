@@ -132,6 +132,7 @@ public sealed class GuardianCommanderDataReader(string dataDirectory)
                         Location = ReadLocation(root),
                         PoiStatuses = ReadPoiStatuses(root),
                         RelicHeadings = ReadRelicHeadings(root),
+                        ComponentMaterials = ReadComponentMaterials(root),
                         RawPointsOfInterest = ReadRawPoints(root),
                     },
                     ReadActiveObelisks(root),
@@ -347,6 +348,36 @@ public sealed class GuardianCommanderDataReader(string dataDirectory)
         }
 
         return headings;
+    }
+
+    private static IReadOnlyDictionary<string, GuardianComponentLoadout>
+        ReadComponentMaterials(JsonElement root)
+    {
+        var components = new Dictionary<string, GuardianComponentLoadout>(
+            StringComparer.Ordinal);
+        if (!root.TryGetProperty("components", out var value)
+            || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        {
+            return components;
+        }
+
+        if (value.ValueKind != JsonValueKind.Array)
+        {
+            return components;
+        }
+
+        foreach (var item in value.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.String
+                && GuardianComponentLoadout.TryParseLegacy(
+                    item.GetString(),
+                    out var loadout))
+            {
+                components[loadout.Name] = loadout;
+            }
+        }
+
+        return components;
     }
 
     private static IReadOnlyList<GuardianPointOfInterest>? ReadRawPoints(

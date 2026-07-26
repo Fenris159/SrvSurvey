@@ -1,4 +1,5 @@
 using System.Text.Json;
+using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Core.Tests.Storage;
@@ -83,6 +84,56 @@ public sealed class LegacyProfileImporterTests : IDisposable
             malformedSettings,
             await File.ReadAllTextAsync(
                 Path.Combine(result.BackupDirectory, "profile", "settings.json")));
+    }
+
+    [Fact]
+    public async Task ImportPreservesAndLoadsGuardianComponentSurveyData()
+    {
+        var source = Path.Combine(temporaryDirectory, "legacy");
+        var destination = Path.Combine(temporaryDirectory, "current");
+        var backups = Path.Combine(temporaryDirectory, "backups");
+        var relativePath = Path.Combine(
+            "guardian",
+            "F123",
+            "Test A 1-ruins-1.json");
+        var sourcePath = Path.Combine(source, relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(sourcePath)!);
+        await File.WriteAllTextAsync(
+            sourcePath,
+            """
+            {
+              "type":"Beta",
+              "index":1,
+              "bodyName":"Test A 1",
+              "components":["c1,cell,conduit,tech","d1,tech"]
+            }
+            """);
+        var expectedBytes = await File.ReadAllBytesAsync(sourcePath);
+
+        var result = await new LegacyProfileImporter().ImportAsync(
+            source,
+            destination,
+            backups);
+
+        Assert.Equal(
+            expectedBytes,
+            await File.ReadAllBytesAsync(Path.Combine(destination, relativePath)));
+        Assert.Equal(
+            expectedBytes,
+            await File.ReadAllBytesAsync(Path.Combine(
+                result.BackupDirectory,
+                "profile",
+                relativePath)));
+        var read = await new GuardianCommanderDataReader(destination)
+            .ReadAsync("F123", isOdyssey: true);
+        var survey = Assert.Single(read.Surveys);
+        Assert.Empty(read.Errors);
+        Assert.Equal(
+            GuardianComponentMaterial.Conduit,
+            survey.Survey.ComponentMaterials["c1"].GetItem(1));
+        Assert.Equal(
+            GuardianComponentMaterial.Tech,
+            survey.Survey.ComponentMaterials["d1"].GetItem(0));
     }
 
     [Fact]

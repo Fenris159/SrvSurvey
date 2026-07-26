@@ -34,6 +34,11 @@ public sealed class GuardianCommanderDataReaderTests
                   "obeliskGroups":"ACD",
                   "activeObelisks":["A08!-ca,ca-H9-"],
                   "relicHeadings":{"t1":45},
+                  "components":[
+                    "c1,cell,conduit,tech",
+                    "d1,tech",
+                    "future,quantum"
+                  ],
                   "poiPresent":"p1,t1",
                   "poiAbsent":"p2",
                   "poiEmpty":"p3"
@@ -72,6 +77,19 @@ public sealed class GuardianCommanderDataReaderTests
             Assert.Equal(GuardianPoiStatus.Absent, survey.Survey.PoiStatuses["p2"]);
             Assert.Equal(GuardianPoiStatus.Empty, survey.Survey.PoiStatuses["p3"]);
             Assert.Equal(45, survey.Survey.RelicHeadings["t1"]);
+            Assert.Equal(
+                [
+                    GuardianComponentMaterial.Cell,
+                    GuardianComponentMaterial.Conduit,
+                    GuardianComponentMaterial.Tech,
+                ],
+                survey.Survey.ComponentMaterials["c1"].Items);
+            Assert.Equal(
+                GuardianComponentMaterial.Tech,
+                survey.Survey.ComponentMaterials["d1"].GetItem(0));
+            Assert.DoesNotContain(
+                "future",
+                survey.Survey.ComponentMaterials.Keys);
             Assert.Equal(['A', 'C', 'D'], survey.ObeliskGroups.Order());
             var obelisk = Assert.Single(survey.ActiveObelisks);
             Assert.True(obelisk.Scanned);

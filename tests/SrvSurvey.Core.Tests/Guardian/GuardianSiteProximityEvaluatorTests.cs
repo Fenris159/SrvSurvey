@@ -178,6 +178,47 @@ public sealed class GuardianSiteProximityEvaluatorTests
     }
 
     [Fact]
+    public void ComponentModeMakesDestructiblePanelsSelectable()
+    {
+        var template = new GuardianSiteTemplate(
+            "Test",
+            "Test",
+            string.Empty,
+            new GuardianMapPoint(0, 0),
+            1,
+            [],
+            [
+                new GuardianPointOfInterest(
+                    "d1",
+                    GuardianPoiType.DestructiblePanel,
+                    180,
+                    10,
+                    0),
+            ],
+            new Dictionary<string, GuardianMapPoint>());
+        var status = StatusAt(Bearing.North, 10, inSrv: true);
+        var evaluator = new GuardianSiteProximityEvaluator();
+
+        var standard = evaluator.Evaluate(
+            status,
+            SiteLocation,
+            0,
+            template);
+        var componentMode = evaluator.Evaluate(
+            status,
+            SiteLocation,
+            0,
+            template,
+            includeComponentMaterials: true);
+
+        Assert.Null(standard?.NearestPoint);
+        var nearby = Assert.IsType<GuardianNearbyPoint>(
+            componentMode?.NearestPoint);
+        Assert.Equal("d1", nearby.Point.Name);
+        Assert.Equal(0, nearby.Distance, precision: 5);
+    }
+
+    [Fact]
     public void ReturnsUnavailableWithoutSurfaceGeometryOrKnownHeading()
     {
         var evaluator = new GuardianSiteProximityEvaluator();

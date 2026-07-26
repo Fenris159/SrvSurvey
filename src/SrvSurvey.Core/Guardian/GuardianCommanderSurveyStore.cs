@@ -134,6 +134,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         root["rawPoi"] = survey.Survey.RawPointsOfInterest is null
             ? null
             : WriteRawPoints(survey.Survey.RawPointsOfInterest);
+        WriteComponentMaterials(root, survey.Survey.ComponentMaterials);
     }
 
     private static void WriteLocation(
@@ -234,6 +235,78 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         }
 
         return array;
+    }
+
+    private static void WriteComponentMaterials(
+        JsonObject root,
+        IReadOnlyDictionary<string, GuardianComponentLoadout> components)
+    {
+        if (components.Count == 0)
+        {
+            return;
+        }
+
+        var pending = new Dictionary<string, GuardianComponentLoadout>(
+            components,
+            StringComparer.Ordinal);
+        var written = new HashSet<string>(StringComparer.Ordinal);
+        var output = new JsonArray();
+        if (root["components"] is { } existingNode)
+        {
+            if (existingNode is not JsonArray existing)
+            {
+                throw new InvalidDataException(
+                    "The Guardian component-material data uses an unsupported JSON shape and was not overwritten.");
+            }
+
+            foreach (var node in existing)
+            {
+                if (node is JsonValue value
+                    && value.TryGetValue<string>(out var encoded)
+                    && TryGetComponentName(encoded, out var name)
+                    && components.TryGetValue(name, out var replacement))
+                {
+                    if (written.Add(name))
+                    {
+                        output.Add(replacement.ToLegacyString());
+                        pending.Remove(name);
+                    }
+                }
+                else
+                {
+                    output.Add(node?.DeepClone());
+                }
+            }
+        }
+
+        foreach (var component in pending.Values.OrderBy(
+                     item => item.Name,
+                     StringComparer.Ordinal))
+        {
+            output.Add(component.ToLegacyString());
+        }
+
+        root["components"] = output;
+    }
+
+    private static bool TryGetComponentName(
+        string? encoded,
+        out string name)
+    {
+        name = string.Empty;
+        if (string.IsNullOrWhiteSpace(encoded))
+        {
+            return false;
+        }
+
+        var separator = encoded.IndexOf(',');
+        if (separator <= 0)
+        {
+            return false;
+        }
+
+        name = encoded[..separator].Trim();
+        return name.Length > 0;
     }
 
     private static string GetLegacyPoiType(GuardianPoiType type)

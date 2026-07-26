@@ -108,6 +108,9 @@ public sealed class GuardianLiveSiteState(
                         StringComparer.Ordinal),
                 RelicHeadings = survey?.RelicHeadings
                     ?? new Dictionary<string, int>(StringComparer.Ordinal),
+                ComponentMaterials = survey?.ComponentMaterials
+                    ?? new Dictionary<string, GuardianComponentLoadout>(
+                        StringComparer.Ordinal),
                 RawPointsOfInterest = survey?.RawPointsOfInterest,
             },
             existing?.ActiveObelisks ?? [],
