@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
              x:Class="SrvSurvey.Desktop.Views.GuidesView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
@@ -18,6 +19,7 @@
       </StackPanel>
 
       <TextBox Grid.Column="1"
+               Classes="guide-search"
                VerticalAlignment="Center"
                PlaceholderText="Search guides, settings, symbols, or workflows"
                Text="{Binding Guides.SearchText, Mode=TwoWay}" />
@@ -119,11 +121,43 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <Border Classes="card"
-                    IsVisible="{Binding Guides.SelectedCategory.HasIcons}">
-              <TextBlock Classes="muted"
-                         Text="The visual glossary will appear here." />
-            </Border>
+            <ItemsControl IsVisible="{Binding Guides.SelectedCategory.HasIcons}"
+                          ItemsSource="{Binding Guides.SelectedCategory.Icons}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:GuideIconViewModel">
+                  <Border Classes="card" Margin="0,0,0,14" Padding="14">
+                    <Grid ColumnDefinitions="72,*" ColumnSpacing="14">
+                      <controls:GuideIconPreviewControl Width="72"
+                                                        Height="72"
+                                                        VerticalAlignment="Top"
+                                                        Kind="{Binding Kind}"
+                                                        Symbol="{Binding Symbol}"
+                                                        BackgroundBrush="{DynamicResource RavenOverlayWindowBrush}"
+                                                        PrimaryBrush="{DynamicResource RavenOverlayPrimaryBrush}"
+                                                        SecondaryBrush="{DynamicResource RavenOverlaySecondaryBrush}"
+                                                        MutedBrush="{DynamicResource RavenOverlayMutedTextBrush}"
+                                                        SuccessBrush="{DynamicResource RavenOverlaySuccessBrush}"
+                                                        WarningBrush="{DynamicResource RavenOverlayWarningBrush}"
+                                                        DangerBrush="{DynamicResource RavenOverlayDangerBrush}"
+                                                        GoldBrush="{DynamicResource RavenOverlayBioGoldBrush}" />
+                      <StackPanel Grid.Column="1" Spacing="5">
+                        <TextBlock FontWeight="SemiBold"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding Name}" />
+                        <TextBlock Classes="muted"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding Meaning}" />
+                        <TextBlock FontSize="11"
+                                   Foreground="{DynamicResource RavenAccentBrush}"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding AppearsIn, StringFormat=Appears in: {0}}" />
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
           </StackPanel>
 
           <StackPanel IsVisible="{Binding Guides.IsSearching}" Spacing="14">

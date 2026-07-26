@@ -92,9 +92,15 @@
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
   </Style>
+  <Style Selector="ListBox.nav ListBoxItem:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
   <Style Selector="ListBox.nav ListBoxItem:selected">
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+  <Style Selector="ListBox.nav ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
   </Style>
 
   <Style Selector="ListBox.guide-categories">
@@ -112,9 +118,25 @@
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
   </Style>
+  <Style Selector="ListBox.guide-categories ListBoxItem:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
   <Style Selector="ListBox.guide-categories ListBoxItem:selected">
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+  <Style Selector="ListBox.guide-categories ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
+
+  <Style Selector="TextBox.guide-search">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+  <Style Selector="TextBox.guide-search:focus /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
   </Style>
 
   <Style Selector="ComboBox">

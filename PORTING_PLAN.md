@@ -1196,6 +1196,18 @@ Validation updated on 2026-07-26 using Windows build `10.0.26200` and .NET SDK
   exact market reconciliation, consent gating, and pending sync state. The main
   workspace and detached shopping overlay were visually checked without
   publishing commander or carrier data.
+- The main shell now includes navigation item 11, Guides. Its 12 searchable
+  categories reconcile the repository README, original project wiki, porting
+  and parity matrices, biology-criteria documentation, and the current code so
+  legacy Windows-only instructions are not repeated as Avalonia behavior. The
+  52-entry visual glossary uses code-rendered previews for every catalogued
+  glyph family, biology reward PIP state, surface-radar marker, route node,
+  Guardian point/heading/state, and human-settlement/conflict-zone symbol.
+  Automated tests enforce unique categories, required workflow searches, and
+  an entry for every preview kind. Navigation, category browsing, full-text
+  MarketID-repair search, application-theme selection colors, and the solid,
+  predicted, and unknown biology PIP previews were visually checked in the
+  saved Orange (dark) theme.
 - The workflow YAML and `global.json` parsed successfully.
 
 Not validated in this environment:
