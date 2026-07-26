@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Journal;
@@ -249,6 +250,12 @@ public sealed partial class App : Application
                         "The desktop clipboard is not available.");
                 return await clipboard.TryGetValueAsync(DataFormat.Text);
             }
+
+            viewModel.SetJournalCommandPlatformServices(
+                directory => mainWindow.Launcher.LaunchDirectoryInfoAsync(
+                    directory),
+                async () => await Dispatcher.UIThread.InvokeAsync(
+                    () => desktop.Shutdown()));
 
             var errorReports = new ErrorReportWindowCoordinator(
                 mainWindow,
@@ -728,6 +735,7 @@ public sealed partial class App : Application
             globalControllerInputService.Start();
             desktop.Exit += (_, _) =>
             {
+                viewModel.SetJournalCommandPlatformServices(null, null);
                 viewModel.ProfileImportCompleted -=
                     RestartAfterProfileImportAsync;
                 viewModel.JournalSettings.RestartRequested -=

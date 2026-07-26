@@ -56,6 +56,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly QuestSettingsStore questSettingsStore;
     private readonly HttpClient? visitedStarsHttpClient;
     private readonly ApplicationLogService? applicationLogService;
+    private Func<DirectoryInfo, Task<bool>>? journalCommandDirectoryLauncher;
+    private Func<Task>? journalCommandShutdownRequester;
     private readonly AsyncCommand importLegacyProfileCommand;
     private readonly AsyncCommand resetExplorationCommand;
     private readonly AsyncCommand cancelResetExplorationCommand;
@@ -1299,6 +1301,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
+    public void SetJournalCommandPlatformServices(
+        Func<DirectoryInfo, Task<bool>>? launchDirectory,
+        Func<Task>? requestShutdown)
+    {
+        journalCommandDirectoryLauncher = launchDirectory;
+        journalCommandShutdownRequester = requestShutdown;
+    }
+
     public async Task ImportLegacyProfileAsync()
     {
         if (!CanImportLegacyProfile())
@@ -1780,6 +1790,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.Status,
             journalState.ShipType,
             allowExternalData: !update.IsBootstrapRead);
+        var requestShutdown = !update.IsBootstrapRead
+            && await ApplyDesktopTextCommandsAsync(update.JournalEvents);
+
         if (!update.IsBootstrapRead)
         {
             var guardianScreenshotContext = Guardian.ActiveSite is { } site
@@ -1962,6 +1975,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         foreach (var warning in eddnResult.Warnings)
         {
             applicationLogService?.Append(warning);
+        }
+
+        if (requestShutdown
+            && journalCommandShutdownRequester is { } requestShutdownAsync)
+        {
+            await requestShutdownAsync();
         }
     }
 
@@ -2610,6 +2629,92 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         return applied;
+    }
+
+    private async Task<bool> ApplyDesktopTextCommandsAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents)
+    {
+        var requestShutdown = false;
+        foreach (var journalEvent in journalEvents)
+        {
+            if (journalEvent.EventName != "SendText"
+                || !journalEvent.Payload.TryGetProperty("Message", out var value)
+                || value.ValueKind != JsonValueKind.String)
+            {
+                continue;
+            }
+
+            switch (value.GetString()?.Trim().ToLowerInvariant())
+            {
+                case ".imgs":
+                    await OpenCurrentSystemScreenshotFolderAsync();
+                    break;
+                case ".kill":
+                    if (journalCommandShutdownRequester is null)
+                    {
+                        StatusMessage =
+                            "The desktop shutdown service is not available.";
+                        break;
+                    }
+
+                    requestShutdown = true;
+                    break;
+                case "!" when HumanSite.ActiveSite is { } site:
+                    await GroundTarget.SetTargetAsync(
+                        new SurfaceCoordinate(
+                            site.Location.Latitude,
+                            site.Location.Longitude),
+                        "The active settlement origin is now the ground target.");
+                    break;
+            }
+        }
+
+        return requestShutdown;
+    }
+
+    private async Task<bool> OpenCurrentSystemScreenshotFolderAsync()
+    {
+        if (string.IsNullOrWhiteSpace(journalState.SystemName))
+        {
+            StatusMessage =
+                "The screenshot folder cannot be opened until the current system is known.";
+            return false;
+        }
+
+        var folder = Path.Combine(
+            ScreenshotProcessing.TargetFolder,
+            SystemNoteStore.MakeSafeFileName(journalState.SystemName));
+        if (!Directory.Exists(folder))
+        {
+            StatusMessage =
+                $"No screenshot folder exists for {journalState.SystemName}.";
+            return false;
+        }
+
+        if (journalCommandDirectoryLauncher is null)
+        {
+            StatusMessage = "The desktop folder launcher is not available.";
+            return false;
+        }
+
+        try
+        {
+            var launched = await journalCommandDirectoryLauncher(
+                new DirectoryInfo(folder));
+            StatusMessage = launched
+                ? "Opened the current system screenshot folder."
+                : "The operating system could not open the screenshot folder.";
+            return launched;
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or NotSupportedException
+                or UnauthorizedAccessException)
+        {
+            StatusMessage = "The screenshot folder could not be opened: "
+                + exception.Message;
+            return false;
+        }
     }
 
     private static bool BodyNameMatchesCommand(

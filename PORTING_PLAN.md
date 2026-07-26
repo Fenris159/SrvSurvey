@@ -493,8 +493,10 @@ UI tests where practical, and live Windows/Linux evidence.
   `.target here/on/off` and `@` preserve the ground-target coordinates,
   `+name`, `-name`, `=name`, `--name`, and `---` update named surface trackers
   with the legacy short-genus aliases, and `.ff`/`.firstFoot <body>` updates
-  both system history and organic rewards. Bootstrap replay cannot execute any
-  of these commands. Human-site arbitration is wired into the same coordinator.
+  both system history and organic rewards. `.imgs`, `.kill`, and `!` use the
+  cross-platform folder launcher, graceful shutdown path, and current settlement
+  origin respectively. Bootstrap replay cannot execute any of these commands or
+  desktop actions. Human-site arbitration is wired into the same coordinator.
   `PlotSphericalSearch` now
   consolidates spherical-limit, Boxel-search, and followed-route Galaxy Map
   guidance at the original top-right anchor.

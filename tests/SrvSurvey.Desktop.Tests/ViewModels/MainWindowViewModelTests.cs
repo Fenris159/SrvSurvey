@@ -11,6 +11,7 @@ using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Theming;
+using System.Globalization;
 using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -1462,6 +1463,97 @@ public sealed class MainWindowViewModelTests
             Assert.True(bodies.Single(body =>
                 body!["id"]!.GetValue<int>() == 2)!["firstFootFall"]!
                 .GetValue<bool>());
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task DesktopTextCommandsAreLiveOnlyAndUsePlatformBoundaries()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-desktop-text-commands-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            var screenshots = Path.Combine(root, "screenshots");
+            var systemScreenshots = Path.Combine(screenshots, "Test");
+            Directory.CreateDirectory(journals);
+            Directory.CreateDirectory(systemScreenshots);
+            var journalPath = Path.Combine(
+                journals,
+                "Journal.2026-07-25T120000.01.log");
+            await File.WriteAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-25T12:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:02Z\",\"event\":\"Location\",\"StarSystem\":\"Test\",\"SystemAddress\":42}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:03Z\",\"event\":\"ApproachSettlement\",\"Name\":\"Haberlandt Survey\",\"MarketID\":12345,\"SystemAddress\":42,\"BodyID\":3,\"BodyName\":\"Test 1\",\"Latitude\":-12.5,\"Longitude\":44.25,\"StationEconomy\":\"$economy_Agri;\",\"StationEconomy_Localised\":\"Agriculture\",\"StationServices\":[\"dock\"]}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:04Z\",\"event\":\"SendText\",\"Message\":\".imgs\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:05Z\",\"event\":\"SendText\",\"Message\":\"!\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:06Z\",\"event\":\"SendText\",\"Message\":\".kill\"}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            new ScreenshotProcessingSettingsStore(paths.UiSettingsPath).Save(
+                ScreenshotProcessingPreferences.CreateDefaults() with
+                {
+                    TargetFolder = screenshots,
+                });
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths);
+            DirectoryInfo? launchedDirectory = null;
+            var shutdownCount = 0;
+            viewModel.SetJournalCommandPlatformServices(
+                directory =>
+                {
+                    launchedDirectory = directory;
+                    return Task.FromResult(true);
+                },
+                () =>
+                {
+                    shutdownCount++;
+                    return Task.CompletedTask;
+                });
+
+            await viewModel.RefreshAsync();
+
+            Assert.Null(launchedDirectory);
+            Assert.Equal(0, shutdownCount);
+            Assert.False(viewModel.GroundTarget.IsTargetActive);
+
+            await File.AppendAllTextAsync(
+                journalPath,
+                "{\"timestamp\":\"2026-07-25T12:00:07Z\",\"event\":\"SendText\",\"Message\":\".imgs\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:08Z\",\"event\":\"SendText\",\"Message\":\"!\"}\n"
+                    + "{\"timestamp\":\"2026-07-25T12:00:09Z\",\"event\":\"SendText\",\"Message\":\".kill\"}\n");
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(
+                Path.GetFullPath(systemScreenshots),
+                launchedDirectory?.FullName);
+            Assert.Equal(1, shutdownCount);
+            Assert.True(viewModel.GroundTarget.IsTargetActive);
+            Assert.Equal(
+                -12.5,
+                double.Parse(
+                    viewModel.GroundTarget.TargetLatitude,
+                    CultureInfo.CurrentCulture));
+            Assert.Equal(
+                44.25,
+                double.Parse(
+                    viewModel.GroundTarget.TargetLongitude,
+                    CultureInfo.CurrentCulture));
         }
         finally
         {

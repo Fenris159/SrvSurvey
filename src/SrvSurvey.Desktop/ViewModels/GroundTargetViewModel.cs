@@ -185,6 +185,16 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         await SaveAsync("Ground target saved.");
     }
 
+    public async Task SetTargetAsync(
+        SurfaceCoordinate target,
+        string successMessage)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(successMessage);
+        state.SetTarget(target);
+        UpdateTargetInputs(state.Target);
+        await SaveAsync(successMessage);
+    }
+
     public async Task ApplyPastedTextAsync(string? text)
     {
         if (!state.TrySetTarget(text ?? string.Empty, out var error))
