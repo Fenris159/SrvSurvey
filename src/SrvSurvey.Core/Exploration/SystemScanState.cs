@@ -713,12 +713,9 @@ public sealed class SystemScanState
             ref target.Volcanism,
             source.Volcanism,
             allowEmpty: true);
-        if (includeBiologicalData)
-        {
-            changed |= SetMaximum(
-                ref target.BiologicalSignalCount,
-                source.BiologicalSignalCount);
-        }
+        changed |= SetMaximum(
+            ref target.BiologicalSignalCount,
+            source.BiologicalSignalCount);
         changed |= SetMaximum(
             ref target.GeologicalSignalCount,
             source.GeologicalSignalCount);
@@ -842,12 +839,31 @@ public sealed class SystemScanState
         var changed = false;
         foreach (var ring in source)
         {
-            if (!rings.Any(existing => string.Equals(
-                    existing.Name,
-                    ring.Name,
-                    StringComparison.OrdinalIgnoreCase)))
+            var index = rings.FindIndex(existing => string.Equals(
+                existing.Name,
+                ring.Name,
+                StringComparison.OrdinalIgnoreCase));
+            if (index < 0)
             {
                 rings.Add(ring);
+                changed = true;
+                continue;
+            }
+
+            var existing = rings[index];
+            var merged = existing with
+            {
+                RingClass = existing.RingClass ?? ring.RingClass,
+                InnerRadius = existing.InnerRadius == 0
+                    ? ring.InnerRadius
+                    : existing.InnerRadius,
+                OuterRadius = existing.OuterRadius == 0
+                    ? ring.OuterRadius
+                    : existing.OuterRadius,
+            };
+            if (merged != existing)
+            {
+                rings[index] = merged;
                 changed = true;
             }
         }

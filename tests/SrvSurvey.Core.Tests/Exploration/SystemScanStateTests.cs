@@ -276,7 +276,13 @@ public sealed class SystemScanStateTests
               "PlanetClass":"Rocky body",
               "Landable":true,
               "WasDiscovered":false,
-              "SurfaceGravity":20
+              "SurfaceGravity":20,
+              "Rings":[{
+                "Name":"Test 1 A Ring",
+                "RingClass":"eRingClass_Rocky",
+                "InnerRad":0,
+                "OuterRad":0
+              }]
             }
             """));
         var knownState = new SystemScanState();
@@ -302,7 +308,13 @@ public sealed class SystemScanStateTests
               "SurfaceGravity":9,
               "SurfaceTemperature":180,
               "AtmosphereType":"Argon",
-              "Materials":[{"Name":"iron","Percent":20}]
+              "Materials":[{"Name":"iron","Percent":20}],
+              "Rings":[{
+                "Name":"Test 1 A Ring",
+                "RingClass":"eRingClass_Rocky",
+                "InnerRad":10,
+                "OuterRad":20
+              }]
             }
             """));
         knownState.Apply(Parse(
@@ -336,6 +348,8 @@ public sealed class SystemScanStateTests
         Assert.Equal(180, body.SurfaceTemperature);
         Assert.Equal("Argon", body.AtmosphereType);
         Assert.Equal(20, body.Materials["iron"]);
+        Assert.Equal(10, Assert.Single(body.Rings).InnerRadius);
+        Assert.Equal(20, Assert.Single(body.Rings).OuterRadius);
         Assert.Equal(1, body.BiologicalSignalCount);
         Assert.Equal("Aleoida", Assert.Single(body.Organisms).GenusLocalized);
 
@@ -343,6 +357,34 @@ public sealed class SystemScanStateTests
         other.Apply(Parse(
             """{"event":"Location","StarSystem":"Other","SystemAddress":99}"""));
         Assert.False(live.MergeKnownData(other.CreateSnapshot()));
+    }
+
+    [Fact]
+    public void ExternalBiologyConsentOnlyControlsGenusConfirmations()
+    {
+        var live = new SystemScanState();
+        live.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        var known = new SystemScanState();
+        known.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        known.Apply(Parse(
+            """{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""));
+
+        Assert.True(live.MergeKnownData(
+            known.CreateSnapshot(),
+            includeBiologicalData: false));
+        var signalsOnly = Assert.Single(live.CreateSnapshot().Bodies);
+        Assert.Equal(2, signalsOnly.BiologicalSignalCount);
+        Assert.Empty(signalsOnly.Organisms);
+
+        Assert.True(live.MergeKnownData(
+            known.CreateSnapshot(),
+            includeBiologicalData: true));
+        Assert.Equal(
+            "Aleoida",
+            Assert.Single(Assert.Single(live.CreateSnapshot().Bodies).Organisms)
+                .GenusLocalized);
     }
 
     private const string PlanetScan = """
