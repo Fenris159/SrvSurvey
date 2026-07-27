@@ -20,8 +20,8 @@ public static class GameWindowTracker
             return new WindowsGameWindowTracker();
         }
 
-        if (OverlayPlatformCapabilities.DetectCurrent().Host
-            == OverlayHostKind.LinuxX11)
+        if (OverlayPlatformCapabilities.DetectCurrent()
+            .UsesX11Compatibility)
         {
             return X11GameWindowTracker.TryCreate()
                 ?? new UnavailableGameWindowTracker();

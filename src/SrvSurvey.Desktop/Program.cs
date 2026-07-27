@@ -2,9 +2,10 @@ using System.Diagnostics;
 using Avalonia;
 using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Storage;
-using SrvSurvey.Desktop.Platform;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Localization;
+using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop;
 
@@ -48,6 +49,8 @@ internal static class Program
         applicationLog.Append($"Data folder: {appDataPaths.DataDirectory}");
         applicationLog.Append(
             $"Platform: {Environment.OSVersion.Platform} ({Environment.OSVersion.VersionString})");
+        applicationLog.Append(
+            $"Display host: {OverlayPlatformCapabilities.DetectCurrent().Host}");
         using var traceListener = new ApplicationLogTraceListener(applicationLog);
         void HandleUnhandledException(
             object sender,

@@ -20,7 +20,8 @@ public static class GameTextInputService
     public static IGameTextInputService CreateCurrent()
     {
         var host = OverlayPlatformCapabilities.DetectCurrent().Host;
-        if (host is OverlayHostKind.Windows or OverlayHostKind.LinuxX11)
+        if (host == OverlayHostKind.Windows
+            || OverlayPlatformCapabilities.IsX11Compatible(host))
         {
             return new SharpHookGameTextInputService();
         }

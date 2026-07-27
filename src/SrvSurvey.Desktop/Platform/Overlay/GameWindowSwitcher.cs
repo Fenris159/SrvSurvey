@@ -23,8 +23,8 @@ public static class GameWindowSwitcher
             return new WindowsGameWindowSwitcher();
         }
 
-        if (OverlayPlatformCapabilities.DetectCurrent().Host
-            == OverlayHostKind.LinuxX11)
+        if (OverlayPlatformCapabilities.DetectCurrent()
+            .UsesX11Compatibility)
         {
             return X11GameWindowSwitcher.TryCreate()
                 ?? new UnavailableGameWindowSwitcher();

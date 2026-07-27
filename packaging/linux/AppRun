@@ -5,4 +5,13 @@ if [ -z "${APPDIR:-}" ]; then
     APPDIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 fi
 
+app_library_directory="$APPDIR/usr/lib/srvsurvey"
+system_library_directory="$APPDIR/usr/lib"
+if [ -n "${LD_LIBRARY_PATH:-}" ]; then
+    LD_LIBRARY_PATH="$app_library_directory:$system_library_directory:$LD_LIBRARY_PATH"
+else
+    LD_LIBRARY_PATH="$app_library_directory:$system_library_directory"
+fi
+export LD_LIBRARY_PATH
+
 exec "$APPDIR/usr/lib/srvsurvey/SrvSurvey.Desktop" "$@"

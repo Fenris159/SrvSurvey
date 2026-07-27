@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 5 ]]; then
-    echo "Usage: $0 PUBLISH_DIRECTORY VERSION ICON_PATH APPIMAGETOOL OUTPUT_PATH" >&2
+if [[ $# -ne 6 ]]; then
+    echo "Usage: $0 PUBLISH_DIRECTORY VERSION ICON_PATH LINUXDEPLOY APPIMAGETOOL OUTPUT_PATH" >&2
     exit 2
 fi
 
 publish_directory=$(realpath "$1")
 version=$2
 icon_path=$(realpath "$3")
-appimagetool=$(realpath "$4")
-output_path=$5
+linuxdeploy=$(realpath "$4")
+appimagetool=$(realpath "$5")
+output_path=$6
 repository_root=$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")
 packaging_root="$repository_root/packaging/linux"
 
@@ -26,6 +27,21 @@ fi
 
 if [[ ! -f "$publish_directory/release-package.json" ]]; then
     echo "The checksum-indexed release-package.json manifest is missing." >&2
+    exit 1
+fi
+
+if [[ ! -x "$linuxdeploy" ]]; then
+    echo "linuxdeploy is missing or is not executable." >&2
+    exit 1
+fi
+
+if [[ ! -x "$appimagetool" ]]; then
+    echo "appimagetool is missing or is not executable." >&2
+    exit 1
+fi
+
+if ! command -v pwsh >/dev/null 2>&1; then
+    echo "PowerShell is required to refresh the post-deployment package manifest." >&2
     exit 1
 fi
 
@@ -62,6 +78,17 @@ install -m 0644 \
     "$repository_root/LICENSE" \
     "$app_dir/usr/share/licenses/srvsurvey/LICENSE"
 ln -s srvsurvey.png "$app_dir/.DirIcon"
+
+NO_STRIP=1 "$linuxdeploy" --appimage-extract-and-run \
+    --appdir="$app_dir" \
+    --deploy-deps-only="$app_dir/usr/lib/srvsurvey" \
+    --custom-apprun="$packaging_root/AppRun"
+
+pwsh -NoLogo -NoProfile -File \
+    "$repository_root/scripts/New-CrossPlatformPackageManifest.ps1" \
+    -PublishDirectory "$app_dir/usr/lib/srvsurvey" \
+    -Version "$version" \
+    -RuntimeIdentifier linux-x64
 
 mkdir -p "$(dirname "$output_path")"
 ARCH=x86_64 VERSION="$version" \

@@ -54,7 +54,7 @@ public sealed class GlobalKeyboardHookService : IDisposable
         }
 
         if (host is not OverlayHostKind.Windows
-            and not OverlayHostKind.LinuxX11)
+            && !OverlayPlatformCapabilities.IsX11Compatible(host))
         {
             SetStatus("Global keyboard input is unavailable on this platform.");
             return;

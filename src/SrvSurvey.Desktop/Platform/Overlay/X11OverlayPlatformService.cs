@@ -7,12 +7,14 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService
     private nint display;
     private readonly bool shapeAvailable;
 
-    private X11OverlayPlatformService(nint display, bool shapeAvailable)
+    private X11OverlayPlatformService(
+        nint display,
+        bool shapeAvailable,
+        OverlayHostKind host)
     {
         this.display = display;
         this.shapeAvailable = shapeAvailable;
-        Capabilities = OverlayPlatformCapabilities.ForHost(
-                OverlayHostKind.LinuxX11)
+        Capabilities = OverlayPlatformCapabilities.ForHost(host)
             with
         {
             SupportsClickThrough = shapeAvailable,
@@ -22,9 +24,10 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService
 
     public OverlayPlatformCapabilities Capabilities { get; }
 
-    public static IOverlayPlatformService? TryCreate()
+    public static IOverlayPlatformService? TryCreate(OverlayHostKind host)
     {
-        if (!OperatingSystem.IsLinux())
+        if (!OperatingSystem.IsLinux()
+            || !OverlayPlatformCapabilities.IsX11Compatible(host))
         {
             return null;
         }
@@ -63,7 +66,10 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService
             // X11 tracking can still work when the XShape extension is missing.
         }
 
-        return new X11OverlayPlatformService(display, shapeAvailable);
+        return new X11OverlayPlatformService(
+            display,
+            shapeAvailable,
+            host);
     }
 
     public OverlayPreparationResult PreparePassiveWindow(Window window)

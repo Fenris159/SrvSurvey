@@ -144,6 +144,7 @@ public sealed class GlobalControllerInputService : IDisposable
     {
         return host is OverlayHostKind.Windows
             or OverlayHostKind.LinuxX11
+            or OverlayHostKind.LinuxXWayland
             or OverlayHostKind.LinuxWayland;
     }
 

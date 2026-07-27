@@ -66,6 +66,17 @@ public sealed class GlobalInputSettingsViewModelTests : IDisposable
     }
 
     [Fact]
+    public void XWaylandCanEnableKeyboardHook()
+    {
+        var viewModel = Create(OverlayHostKind.LinuxXWayland);
+
+        viewModel.KeyboardEnabled = true;
+
+        Assert.True(viewModel.IsKeyboardAvailable);
+        Assert.True(viewModel.KeyboardEnabled);
+    }
+
+    [Fact]
     public void RestoreDefaultsUpdatesEditedBindings()
     {
         var viewModel = Create(OverlayHostKind.Windows);

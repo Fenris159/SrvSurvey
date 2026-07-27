@@ -1,0 +1,22 @@
+name: Build Windows and Linux packages
+
+run-name: Build packages (${{ inputs.version || 'project version' }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Optional three- or four-part package version
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  build-release-packages:
+    name: Build release files
+    uses: ./.github/workflows/cross-platform-build.yml
+    with:
+      version: ${{ inputs.version }}

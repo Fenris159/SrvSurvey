@@ -23,9 +23,9 @@ public static class OverlayPlatformService
         }
 
         var capabilities = OverlayPlatformCapabilities.DetectCurrent();
-        if (capabilities.Host == OverlayHostKind.LinuxX11)
+        if (capabilities.UsesX11Compatibility)
         {
-            return X11OverlayPlatformService.TryCreate()
+            return X11OverlayPlatformService.TryCreate(capabilities.Host)
                 ?? new PortableOverlayPlatformService(
                     capabilities with
                     {

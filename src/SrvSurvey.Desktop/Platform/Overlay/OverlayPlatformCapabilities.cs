@@ -11,6 +11,8 @@ public sealed record OverlayPlatformCapabilities(
     public bool SupportsPassiveOverlay => SupportsTopmost
         && SupportsTransparency;
 
+    public bool UsesX11Compatibility => IsX11Compatible(Host);
+
     public string StatusText => Host switch
     {
         OverlayHostKind.Windows => SupportsClickThrough
@@ -22,6 +24,10 @@ public sealed record OverlayPlatformCapabilities(
             SupportsClickThrough && SupportsGameWindowTracking
                 ? "X11 topmost transparency, XShape click-through, game-window tracking, and global keyboard input are available."
                 : "X11 is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
+        OverlayHostKind.LinuxXWayland =>
+            SupportsClickThrough && SupportsGameWindowTracking
+                ? "XWayland topmost transparency, XShape click-through, game-window tracking, and global keyboard input are available."
+                : "XWayland is present, but click-through or game-window tracking could not be initialized; detached overlays are disabled.",
         OverlayHostKind.LinuxWayland =>
             "Wayland overlay positioning, transparency, click-through, and global input require compositor support and are not enabled.",
         _ => "Detached overlays are unavailable on this platform.",
@@ -36,13 +42,10 @@ public sealed record OverlayPlatformCapabilities(
 
         if (OperatingSystem.IsLinux())
         {
-            var session = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE");
-            return ForHost(string.Equals(
-                session,
-                "wayland",
-                StringComparison.OrdinalIgnoreCase)
-                    ? OverlayHostKind.LinuxWayland
-                    : OverlayHostKind.LinuxX11);
+            return ForHost(DetectLinuxHost(
+                Environment.GetEnvironmentVariable("XDG_SESSION_TYPE"),
+                Environment.GetEnvironmentVariable("DISPLAY"),
+                Environment.GetEnvironmentVariable("WAYLAND_DISPLAY")));
         }
 
         return ForHost(OverlayHostKind.Other);
@@ -59,7 +62,9 @@ public sealed record OverlayPlatformCapabilities(
                 SupportsClickThrough: true,
                 SupportsGameWindowTracking: true,
                 SupportsGlobalInput: true),
-            OverlayHostKind.LinuxX11 => new OverlayPlatformCapabilities(
+            OverlayHostKind.LinuxX11
+                or OverlayHostKind.LinuxXWayland =>
+                new OverlayPlatformCapabilities(
                 host,
                 SupportsTopmost: true,
                 SupportsTransparency: true,
@@ -82,12 +87,41 @@ public sealed record OverlayPlatformCapabilities(
                 SupportsGlobalInput: false),
         };
     }
+
+    public static bool IsX11Compatible(OverlayHostKind host)
+    {
+        return host is OverlayHostKind.LinuxX11
+            or OverlayHostKind.LinuxXWayland;
+    }
+
+    internal static OverlayHostKind DetectLinuxHost(
+        string? sessionType,
+        string? display,
+        string? waylandDisplay)
+    {
+        var isWaylandSession = string.Equals(
+                sessionType?.Trim(),
+                "wayland",
+                StringComparison.OrdinalIgnoreCase)
+            || !string.IsNullOrWhiteSpace(waylandDisplay);
+        if (!string.IsNullOrWhiteSpace(display))
+        {
+            return isWaylandSession
+                ? OverlayHostKind.LinuxXWayland
+                : OverlayHostKind.LinuxX11;
+        }
+
+        return isWaylandSession
+            ? OverlayHostKind.LinuxWayland
+            : OverlayHostKind.Other;
+    }
 }
 
 public enum OverlayHostKind
 {
     Windows,
     LinuxX11,
+    LinuxXWayland,
     LinuxWayland,
     Other,
 }

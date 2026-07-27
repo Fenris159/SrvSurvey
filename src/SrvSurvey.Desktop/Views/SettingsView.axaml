@@ -11,6 +11,18 @@
   <ScrollViewer HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="32" Spacing="24" MaxWidth="1100">
       <StackPanel Spacing="5">
+        <TextBlock Classes="eyebrow" Text="QUICK ACCESS" />
+        <Button Classes="link"
+                HorizontalAlignment="Left"
+                Click="ScrollToLegacyImport_Click">
+          <TextBlock Text="Import SrvSurvey User Data" />
+        </Button>
+        <TextBlock Classes="muted"
+                   TextWrapping="Wrap"
+                   Text="Jump directly to the source picker and the backed-up, verified import workflow." />
+      </StackPanel>
+
+      <StackPanel Spacing="5">
         <TextBlock Classes="eyebrow" Text="APPEARANCE" />
         <TextBlock Classes="page-title" Text="Themes" />
         <TextBlock Classes="muted"
@@ -1996,7 +2008,8 @@
         </StackPanel>
       </Border>
 
-      <Border Classes="card raised">
+      <Border x:Name="LegacyImportSection"
+              Classes="card raised">
         <StackPanel Spacing="16">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
             <StackPanel Spacing="5">

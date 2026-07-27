@@ -8,7 +8,13 @@ on:
       - "[0-9]*.[0-9]*.[0-9]*"
       - "v[0-9]*.[0-9]*.[0-9]*"
   pull_request:
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      version:
+        description: Optional package version override
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -32,12 +38,16 @@ jobs:
       - name: Resolve and validate version
         id: metadata
         shell: pwsh
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           $project = [xml](Get-Content src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj)
           $versionText = [string]$project.Project.PropertyGroup.FileVersion
           $isRelease = $env:GITHUB_REF_TYPE -eq "tag"
           if ($isRelease) {
             $versionText = $env:GITHUB_REF_NAME.TrimStart("v")
+          } elseif (-not [string]::IsNullOrWhiteSpace($env:REQUESTED_VERSION)) {
+            $versionText = $env:REQUESTED_VERSION.Trim()
           }
 
           $version = $null
@@ -142,7 +152,20 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install --yes appstream desktop-file-utils imagemagick
+          sudo apt-get install --yes \
+            appstream \
+            binutils \
+            desktop-file-utils \
+            file \
+            imagemagick \
+            libfontconfig1 \
+            libice6 \
+            libsm6 \
+            libx11-6 \
+            libxext6 \
+            patchelf \
+            xauth \
+            xvfb
 
       - name: Validate Linux desktop metadata
         if: matrix.archive == 'tar.gz'
@@ -156,6 +179,13 @@ jobs:
         shell: bash
         run: |
           mkdir -p "$RUNNER_TEMP/appimage-tools" artifacts/appimage
+          linuxdeploy="$RUNNER_TEMP/appimage-tools/linuxdeploy-x86_64.AppImage"
+          curl --fail --location --retry 3 \
+            --output "$linuxdeploy" \
+            "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          echo "e87ee0815d109282fdda73e34c2361d64d02b0ffaea3674b18f1fd1f6a687dcf  $linuxdeploy" \
+            | sha256sum --check --strict
+          chmod +x "$linuxdeploy"
           tool="$RUNNER_TEMP/appimage-tools/appimagetool-x86_64.AppImage"
           curl --fail --location --retry 3 \
             --output "$tool" \
@@ -171,6 +201,7 @@ jobs:
             "artifacts/${{ matrix.rid }}" \
             "${{ needs.release-metadata.outputs.version }}" \
             "artifacts/appimage/srvsurvey.png" \
+            "$linuxdeploy" \
             "$tool" \
             "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-x86_64.AppImage"
 
@@ -190,6 +221,13 @@ jobs:
           test -f squashfs-root/srvsurvey.png
           test -f squashfs-root/usr/share/metainfo/io.github.fenris159.SrvSurvey.metainfo.xml
           test -f squashfs-root/usr/share/licenses/srvsurvey/LICENSE
+
+      - name: Validate AppImage runtime dependencies and XWayland startup
+        if: matrix.archive == 'tar.gz'
+        shell: bash
+        run: >-
+          bash ./scripts/Test-LinuxAppImageRuntime.sh
+          "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-x86_64.AppImage"
 
       - name: Upload review package
         uses: actions/upload-artifact@v7

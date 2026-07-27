@@ -28,6 +28,13 @@ covered by automated parity tests. Final whole-application visual, live Elite,
 and native Linux runtime verification is still in progress, so these builds
 remain review builds rather than the upstream production release.
 
+Download or manually build the cross-platform review packages through the
+[Build Windows and Linux packages workflow](https://github.com/Fenris159/SrvSurvey/actions/workflows/manual-release-packages.yml),
+then follow the platform guide:
+
+- [Install the Windows portable package](docs/INSTALL_WINDOWS.md)
+- [Install the Linux AppImage or portable archive](docs/INSTALL_LINUX.md)
+
 See [PORTING_PLAN.md](PORTING_PLAN.md) for the validated status, architecture, milestones, and platform-specific risks.
 
 The current development shell requires the .NET 10 SDK:
@@ -60,7 +67,18 @@ independently of application releases.
 Cross-platform CI produces checksum-indexed self-contained Windows and Linux
 archives plus platform-specific SPDX software bills of materials. The Linux job
 also creates a desktop-integrated AppImage from the same tested publish output
-and structurally inspects it without starting the UI.
+and verifies its ELF dependency closure before starting it in XWayland mode on
+an isolated X11 display.
+
+The complete Linux overlay path supports native X11 and XWayland. On a Wayland
+desktop, XWayland must provide an X11 `DISPLAY`; SrvSurvey detects that path and
+uses XShape click-through, X11 Elite-window tracking and capture, and the X11
+global-input backend. A pure native Wayland session without XWayland is not a
+supported full-functionality mode and may fail to open because this build uses
+Avalonia's X11 backend. The host must provide its graphics driver, XWayland,
+`libX11`, `libXext`, `libICE`, `libSM`, and `fontconfig`; the AppImage bundles
+the self-contained .NET runtime and the application-specific SDL, SharpHook,
+Skia, and HarfBuzz native libraries.
 
 ## Feedback
 

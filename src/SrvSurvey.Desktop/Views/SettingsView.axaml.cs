@@ -13,6 +13,13 @@ public sealed partial class SettingsView : UserControl
         InitializeComponent();
     }
 
+    private void ScrollToLegacyImport_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        LegacyImportSection.BringIntoView();
+    }
+
     private void BeginVrAdjustment_Click(
         object? sender,
         RoutedEventArgs eventArgs)

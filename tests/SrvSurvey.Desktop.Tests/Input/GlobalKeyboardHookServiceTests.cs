@@ -79,6 +79,23 @@ public sealed class GlobalKeyboardHookServiceTests
             service.Status);
     }
 
+    [Fact]
+    public void StartsHookThroughXWaylandCompatibility()
+    {
+        using var testHook = new TestGlobalHook(TestThreadingMode.Simple);
+        using var service = new GlobalKeyboardHookService(
+            EnabledSettings(),
+            OverlayHostKind.LinuxXWayland,
+            new StubGameWindowTracker(),
+            isApplicationActive: () => true,
+            hookFactory: () => testHook);
+
+        service.Start();
+
+        Assert.True(service.IsRunning);
+        Assert.Equal("Global keyboard input is active.", service.Status);
+    }
+
     private static GlobalInputSettings EnabledSettings()
     {
         var bindings = GlobalInputSettings.Default.Bindings.ToDictionary();

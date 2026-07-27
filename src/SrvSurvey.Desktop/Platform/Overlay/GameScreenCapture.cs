@@ -77,8 +77,8 @@ public static class GameScreenCapture
             return new WindowsGameScreenCapture();
         }
 
-        if (OverlayPlatformCapabilities.DetectCurrent().Host
-            == OverlayHostKind.LinuxX11)
+        if (OverlayPlatformCapabilities.DetectCurrent()
+            .UsesX11Compatibility)
         {
             return X11GameScreenCapture.TryCreate()
                 ?? new UnavailableGameScreenCapture(

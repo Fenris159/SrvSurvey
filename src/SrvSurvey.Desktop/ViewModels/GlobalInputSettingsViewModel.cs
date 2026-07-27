@@ -69,6 +69,7 @@ public sealed class GlobalInputSettingsViewModel : INotifyPropertyChanged
     public bool IsControllerAvailable => Capabilities.Host is
         OverlayHostKind.Windows
         or OverlayHostKind.LinuxX11
+        or OverlayHostKind.LinuxXWayland
         or OverlayHostKind.LinuxWayland;
 
     public IReadOnlyList<ControllerDeviceOptionViewModel> ControllerDevices
