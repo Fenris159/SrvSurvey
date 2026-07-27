@@ -1,2 +1,0 @@
-/plotters/PlotHumanSite.zh-Hans.resx
-	HasInterstellar

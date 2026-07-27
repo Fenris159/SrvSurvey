@@ -28,8 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\legacy-localization.json"
-                      LogicalName="SrvSurvey.Desktop.Resources.legacy-localization.json" />
+    <EmbeddedResource Include="Resources\baseline-localization.json"
+                      LogicalName="SrvSurvey.Desktop.Resources.baseline-localization.json" />
     <EmbeddedResource Include="Resources\avalonia-localization.json"
                       LogicalName="SrvSurvey.Desktop.Resources.avalonia-localization.json" />
     <EmbeddedResource Include="Resources\avalonia-localization-source.json"
@@ -41,11 +41,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\SrvSurvey\plotters.json"
+    <Content Include="Resources\plotters.json"
              Link="plotters.json"
              CopyToOutputDirectory="PreserveNewest" />
-    <AvaloniaResource Include="..\..\SrvSurvey\logo.ico"
-                       Link="Assets\logo.ico" />
+    <AvaloniaResource Include="Assets\logo.ico" />
   </ItemGroup>
 
 </Project>

@@ -13,29 +13,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\SrvSurvey\EliteDangerousRegionMap\RegionMapData.cs"
-             Link="Navigation\RegionMapData.cs" />
-    <EmbeddedResource Include="..\..\docs\codexRef.json"
+    <EmbeddedResource Include="Resources\ReferenceData\codexRef.json"
                       LogicalName="SrvSurvey.Core.Resources.codexRef.json" />
-    <EmbeddedResource Include="..\..\docs\nebulae.json"
+    <EmbeddedResource Include="Resources\ReferenceData\nebulae.json"
                       LogicalName="SrvSurvey.Core.Resources.nebulae.json" />
-    <EmbeddedResource Include="..\..\SrvSurvey\allRuins.json"
+    <EmbeddedResource Include="Resources\ReferenceData\allRuins.json"
                       LogicalName="SrvSurvey.Core.Resources.allRuins.json" />
-    <EmbeddedResource Include="..\..\SrvSurvey\allStructures.json"
+    <EmbeddedResource Include="Resources\ReferenceData\allStructures.json"
                       LogicalName="SrvSurvey.Core.Resources.allStructures.json" />
-    <EmbeddedResource Include="..\..\SrvSurvey\allBeacons.json"
+    <EmbeddedResource Include="Resources\ReferenceData\allBeacons.json"
                       LogicalName="SrvSurvey.Core.Resources.allBeacons.json" />
-    <EmbeddedResource Include="..\..\SrvSurvey\guardianSiteTemplates.json"
+    <EmbeddedResource Include="Resources\ReferenceData\guardianSiteTemplates.json"
                       LogicalName="SrvSurvey.Core.Resources.guardianSiteTemplates.json" />
-    <EmbeddedResource Include="..\..\SrvSurvey\settlements\humanSiteTemplates.json"
+    <EmbeddedResource Include="Resources\ReferenceData\humanSiteTemplates.json"
                       LogicalName="SrvSurvey.Core.Resources.humanSiteTemplates.json" />
-    <EmbeddedResource Include="..\..\data\guardian.zip"
+    <EmbeddedResource Include="Resources\ReferenceData\guardian.zip"
                       LogicalName="SrvSurvey.Core.Resources.guardian.zip" />
-    <EmbeddedResource Include="..\..\SrvSurvey\colonization-costs2.json"
+    <EmbeddedResource Include="Resources\ReferenceData\colonization-costs2.json"
                       LogicalName="SrvSurvey.Core.Resources.colonization-costs2.json" />
-    <EmbeddedResource Include="..\..\SrvSurvey\ggg.json"
+    <EmbeddedResource Include="Resources\ReferenceData\ggg.json"
                       LogicalName="SrvSurvey.Core.Resources.ggg.json" />
-    <EmbeddedResource Include="..\..\SrvSurvey\bio-criteria\*.json"
+    <EmbeddedResource Include="Resources\bio-criteria\*.json"
                       LogicalName="SrvSurvey.Core.Resources.bio-criteria.%(Filename)%(Extension)" />
   </ItemGroup>
 

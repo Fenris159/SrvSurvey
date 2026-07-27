@@ -3,23 +3,22 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
 WORKDIR /source
 
-COPY global.json SrvSurvey.CrossPlatform.slnx ./
+COPY global.json SrvSurvey.slnx ./
 COPY src/SrvSurvey.Core/SrvSurvey.Core.csproj src/SrvSurvey.Core/
 COPY src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj src/SrvSurvey.Desktop/
 COPY tests/SrvSurvey.Core.Tests/SrvSurvey.Core.Tests.csproj tests/SrvSurvey.Core.Tests/
 COPY tests/SrvSurvey.Desktop.Tests/SrvSurvey.Desktop.Tests.csproj tests/SrvSurvey.Desktop.Tests/
+COPY tools/SrvSurvey.LocalizationTool/SrvSurvey.LocalizationTool.csproj tools/SrvSurvey.LocalizationTool/
 
-RUN dotnet restore SrvSurvey.CrossPlatform.slnx \
+RUN dotnet restore SrvSurvey.slnx \
     && dotnet restore src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj --runtime linux-x64
 
 FROM restore AS test
 COPY src/ src/
 COPY tests/ tests/
-COPY docs/ docs/
-COPY data/ data/
-COPY SrvSurvey/ SrvSurvey/
-RUN dotnet build SrvSurvey.CrossPlatform.slnx --configuration Release --no-restore \
-    && dotnet test SrvSurvey.CrossPlatform.slnx --configuration Release --no-build --no-restore
+COPY tools/ tools/
+RUN dotnet build SrvSurvey.slnx --configuration Release --no-restore \
+    && dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
 
 FROM test AS publish
 RUN dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj \

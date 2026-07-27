@@ -17,6 +17,6 @@ permissions:
 jobs:
   build-release-packages:
     name: Build release files
-    uses: ./.github/workflows/cross-platform-build.yml
+    uses: ./.github/workflows/avalonia-build.yml
     with:
       version: ${{ inputs.version }}

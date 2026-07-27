@@ -8,7 +8,7 @@ namespace SrvSurvey.Desktop.Localization;
 public static class LocalizationCatalog
 {
     private const string LegacyResourceName =
-        "SrvSurvey.Desktop.Resources.legacy-localization.json";
+        "SrvSurvey.Desktop.Resources.baseline-localization.json";
     private const string ApplicationResourceName =
         "SrvSurvey.Desktop.Resources.avalonia-localization.json";
     private const string SourceResourceName =

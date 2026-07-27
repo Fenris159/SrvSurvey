@@ -1,0 +1,53 @@
+# Development and Validation
+
+Last updated: 2026-07-26
+
+## Branch purpose
+
+`SrvSurvey-Avalonia` is the standalone converted application branch. It builds
+without the WinForms project, Windows Application Packaging Project, helper
+executables, or source-comparison tree. The pre-cleanup implementation and its
+full porting audit remain recoverable on `cross-platform-development`.
+
+## Build contract
+
+The supported solution is `SrvSurvey.slnx` and requires the .NET
+10 SDK. Release validation uses:
+
+```console
+dotnet restore SrvSurvey.slnx
+dotnet build SrvSurvey.slnx --configuration Release --no-restore
+dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
+```
+
+The Docker build runs the same solution build and test before exporting a
+self-contained `linux-x64` publish directory. GitHub Actions additionally
+creates checksum-indexed Windows and Linux archives, SPDX SBOMs, and an AppImage
+validated for metadata, native dependency closure, extraction, and isolated
+XWayland startup.
+
+## Regression contract
+
+- Journal coverage is a checked-in 68-event inventory. Each event needs a
+  production consumer and event-specific assertions.
+- Network coverage inventories all runtime surfaces and every `HttpClient`
+  owner, including bounded streaming requirements.
+- Overlay coverage inventories all 22 supported overlay contracts and requires
+  production markup plus assertion evidence.
+- Profile import remains backup-first, hash-verified, staged, and recoverable.
+  Compatibility code and tests are part of the converted product, not a build
+  dependency on the previous implementation.
+
+## Runtime verification
+
+Automated builds do not replace native testing with a live Elite Dangerous
+session. Before promoting a release, verify on clean supported systems:
+
+1. Windows portable startup, upgrade, rollback, and removal.
+2. Linux AppImage startup on native X11 and XWayland.
+3. Journal attachment, game-window tracking, click-through overlays, global
+   input, capture-dependent features, and overlay update cost during play.
+4. Backup/import/restart using a representative existing profile.
+
+Record release-specific runtime results in the release notes or issue tracker;
+do not reintroduce the previous application source as a test oracle.

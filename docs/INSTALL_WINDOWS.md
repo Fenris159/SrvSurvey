@@ -1,6 +1,6 @@
 # Install SrvSurvey on Windows
 
-These instructions apply to the portable Avalonia review package named
+These instructions apply to the portable Avalonia package named
 `SrvSurvey-Avalonia-<version>-win-x64.zip`. It is self-contained and does not
 use `setup.exe` or require a separate .NET installation.
 

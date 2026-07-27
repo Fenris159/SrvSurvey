@@ -1,2 +1,0 @@
-/plotters/PlotHumanSite.ru.resx
-	HasInterstellar
