@@ -288,7 +288,9 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
             survey.DisableBioPredictions,
             survey.BiologyRewardThresholds,
             survey.BiologyPredictionEvaluator,
-            survey.BiologyReferenceCatalog);
+            survey.BiologyReferenceCatalog,
+            highlightRegionalFirsts: survey.HighlightRegionalFirsts,
+            discoveryContext: survey.CurrentBiologyDiscoveryContext);
         if (overview is null)
         {
             SystemName = snapshot.SystemName ?? "No biological signals";

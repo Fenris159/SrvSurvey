@@ -90,6 +90,8 @@ public sealed record BiologySurveyViewModel(
                 snapshot,
                 status,
                 biologicalBodies,
+                highlightRegionalFirsts,
+                discoveryContext ?? BiologyDiscoveryContext.Unavailable,
                 disablePredictions,
                 exobiology.CountRadicoidaUnica,
                 rewardThresholds ?? BiologyRewardThresholds.Default,
@@ -116,7 +118,9 @@ public sealed record BiologySurveyViewModel(
         BiologyRewardThresholds? rewardThresholds = null,
         BiologyPredictionEvaluator? predictionEvaluator = null,
         ExobiologyReferenceCatalog? referenceCatalog = null,
-        int radicoidaUnicaCount = 0)
+        int radicoidaUnicaCount = 0,
+        bool highlightRegionalFirsts = false,
+        BiologyDiscoveryContext? discoveryContext = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         var biologicalBodies = snapshot.Bodies
@@ -129,6 +133,8 @@ public sealed record BiologySurveyViewModel(
                 snapshot,
                 status,
                 biologicalBodies,
+                highlightRegionalFirsts,
+                discoveryContext ?? BiologyDiscoveryContext.Unavailable,
                 disablePredictions,
                 radicoidaUnicaCount,
                 rewardThresholds ?? BiologyRewardThresholds.Default,
@@ -177,7 +183,9 @@ public sealed record BiologySurveyViewModel(
             bool disablePredictions,
             BiologyRewardThresholds? rewardThresholds = null,
             BiologyPredictionEvaluator? predictionEvaluator = null,
-            ExobiologyReferenceCatalog? referenceCatalog = null)
+            ExobiologyReferenceCatalog? referenceCatalog = null,
+            bool highlightRegionalFirsts = false,
+            BiologyDiscoveryContext? discoveryContext = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(body);
@@ -188,13 +196,20 @@ public sealed record BiologySurveyViewModel(
             disablePredictions,
             predictionEvaluator ?? DefaultPredictionEvaluator.Value,
             referenceCatalog ?? DefaultBioReferenceCatalog.Value);
-        return CreateSystemRewardBands(body, predictions, thresholds);
+        return CreateSystemRewardBands(
+            body,
+            predictions,
+            highlightRegionalFirsts,
+            discoveryContext ?? BiologyDiscoveryContext.Unavailable,
+            thresholds);
     }
 
     private static BiologySurveyViewModel CreateSystem(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
         IReadOnlyList<SystemScanBodySnapshot> biologicalBodies,
+        bool highlightRegionalFirsts,
+        BiologyDiscoveryContext discoveryContext,
         bool disablePredictions,
         int radicoidaUnicaCount,
         BiologyRewardThresholds rewardThresholds,
@@ -219,6 +234,8 @@ public sealed record BiologySurveyViewModel(
                 var rewardBands = CreateSystemRewardBands(
                     body,
                     predictions,
+                    highlightRegionalFirsts,
+                    discoveryContext,
                     rewardThresholds);
                 var row = new BiologyBodyRowViewModel(
                     body.BodyId,
@@ -422,19 +439,10 @@ public sealed record BiologySurveyViewModel(
             && !organism.IsAnalyzed
             && string.Equals(scan.Body, body.Name, StringComparison.OrdinalIgnoreCase)
             && string.Equals(scan.Genus, organism.Genus, StringComparison.Ordinal);
-        var globalRegionalFirst = organism.IsRegionalFirst
-            || organism.EntryId is { } globalRegionalEntryId
-                && discoveryContext.IsGlobalRegionalNew(globalRegionalEntryId);
-        var commanderFirst = !globalRegionalFirst
-            && organism.EntryId is { } entryId
-            && discoveryContext.IsPersonalFirst(
-                entryId,
-                body.BodyId);
-        var regionalFirst = !globalRegionalFirst
-            && organism.EntryId is { } regionalEntryId
-                && !organism.IsAnalyzed
-                && !commanderFirst
-                && discoveryContext.IsRegionalNew(regionalEntryId);
+        var firstDiscovery = ClassifyOrganismFirst(
+            body,
+            organism,
+            discoveryContext);
 
         return new BiologyOrganismRowViewModel(
             displayName,
@@ -444,12 +452,10 @@ public sealed record BiologySurveyViewModel(
             organism.Reward ?? 0,
             organism.Reward is not null,
             organism.IsAnalyzed,
-            commanderFirst,
-            regionalFirst,
-            globalRegionalFirst,
-            globalRegionalFirst
-                || commanderFirst
-                || highlightRegionalFirsts && regionalFirst,
+            firstDiscovery.IsCommanderFirst,
+            firstDiscovery.IsRegionalFirst,
+            firstDiscovery.IsGlobalRegionalFirst,
+            firstDiscovery.IsHighlighted(highlightRegionalFirsts),
             activeSample,
             false,
             organism.Variant is null,
@@ -479,15 +485,9 @@ public sealed record BiologySurveyViewModel(
                     scan.Genus,
                     StringComparison.Ordinal));
         var reward = prediction.Reference?.Reward ?? 0;
-        var globalRegionalFirst = prediction.Reference is { } globalReference
-            && discoveryContext.IsGlobalRegionalNew(globalReference.EntryId);
-        var commanderFirst = !globalRegionalFirst
-            && prediction.Reference is { } reference
-            && discoveryContext.IsCommanderNew(reference.EntryId);
-        var regionalFirst = !globalRegionalFirst
-            && prediction.Reference is { } regionalReference
-            && !commanderFirst
-            && discoveryContext.IsRegionalNew(regionalReference.EntryId);
+        var firstDiscovery = ClassifyPredictionFirst(
+            prediction.Reference,
+            discoveryContext);
 
         return new BiologyOrganismRowViewModel(
             prediction.Prediction.Name,
@@ -497,12 +497,10 @@ public sealed record BiologySurveyViewModel(
             reward,
             reward > 0,
             false,
-            commanderFirst,
-            regionalFirst,
-            globalRegionalFirst,
-            globalRegionalFirst
-                || commanderFirst
-                || highlightRegionalFirsts && regionalFirst,
+            firstDiscovery.IsCommanderFirst,
+            firstDiscovery.IsRegionalFirst,
+            firstDiscovery.IsGlobalRegionalFirst,
+            firstDiscovery.IsHighlighted(highlightRegionalFirsts),
             activeSample,
             true,
             false,
@@ -612,6 +610,8 @@ public sealed record BiologySurveyViewModel(
         CreateSystemRewardBands(
             SystemScanBodySnapshot body,
             BiologyPredictionSet predictionSet,
+            bool highlightRegionalFirsts,
+            BiologyDiscoveryContext discoveryContext,
             BiologyRewardThresholds rewardThresholds)
     {
         var predictionsByGenus = predictionSet.Predictions
@@ -623,7 +623,11 @@ public sealed record BiologySurveyViewModel(
                 group => group.Key,
                 group => new BiologySignalRewardRange(
                     group.Min(prediction => prediction.Reference!.Reward),
-                    group.Max(prediction => prediction.Reference!.Reward)),
+                    group.Max(prediction => prediction.Reference!.Reward),
+                    group.Any(prediction => ClassifyPredictionFirst(
+                            prediction.Reference,
+                            discoveryContext)
+                        .IsHighlighted(highlightRegionalFirsts))),
                 StringComparer.OrdinalIgnoreCase);
         var consumedPredictionGenera = new HashSet<string>(
             StringComparer.OrdinalIgnoreCase);
@@ -636,11 +640,16 @@ public sealed record BiologySurveyViewModel(
         {
             var genus = organism.GenusLocalized
                 ?? FormatJournalName(organism.Genus);
+            var isHighlighted = ClassifyOrganismFirst(
+                    body,
+                    organism,
+                    discoveryContext)
+                .IsHighlighted(highlightRegionalFirsts);
             if (organism.Reward is { } reward && reward > 0)
             {
                 bands.Add(BiologySignalRewardBandViewModel.Known(
                     reward,
-                    organism.IsRegionalFirst,
+                    isHighlighted,
                     organism.IsAnalyzed,
                     rewardThresholds));
                 consumedPredictionGenera.Add(genus);
@@ -652,7 +661,7 @@ public sealed record BiologySurveyViewModel(
                 bands.Add(BiologySignalRewardBandViewModel.Predicted(
                     prediction.Minimum,
                     prediction.Maximum,
-                    organism.IsRegionalFirst,
+                    isHighlighted || prediction.IsHighlighted,
                     rewardThresholds));
                 consumedPredictionGenera.Add(genus);
                 continue;
@@ -673,7 +682,7 @@ public sealed record BiologySurveyViewModel(
             bands.Add(BiologySignalRewardBandViewModel.Predicted(
                 prediction.Value.Minimum,
                 prediction.Value.Maximum,
-                false,
+                prediction.Value.IsHighlighted,
                 rewardThresholds));
         }
 
@@ -793,6 +802,49 @@ public sealed record BiologySurveyViewModel(
             : normalized;
     }
 
+    private static BiologyFirstDiscoveryState ClassifyOrganismFirst(
+        SystemScanBodySnapshot body,
+        SystemOrganismSnapshot organism,
+        BiologyDiscoveryContext discoveryContext)
+    {
+        var globalRegionalFirst = organism.IsRegionalFirst
+            || organism.EntryId is { } globalRegionalEntryId
+                && discoveryContext.IsGlobalRegionalNew(globalRegionalEntryId);
+        var commanderFirst = !globalRegionalFirst
+            && organism.EntryId is { } entryId
+            && discoveryContext.IsPersonalFirst(
+                entryId,
+                body.BodyId);
+        var regionalFirst = !globalRegionalFirst
+            && organism.EntryId is { } regionalEntryId
+            && !organism.IsAnalyzed
+            && !commanderFirst
+            && discoveryContext.IsRegionalNew(regionalEntryId);
+        return new BiologyFirstDiscoveryState(
+            commanderFirst,
+            regionalFirst,
+            globalRegionalFirst);
+    }
+
+    private static BiologyFirstDiscoveryState ClassifyPredictionFirst(
+        ExobiologyReference? reference,
+        BiologyDiscoveryContext discoveryContext)
+    {
+        var globalRegionalFirst = reference is not null
+            && discoveryContext.IsGlobalRegionalNew(reference.EntryId);
+        var commanderFirst = !globalRegionalFirst
+            && reference is not null
+            && discoveryContext.IsCommanderNew(reference.EntryId);
+        var regionalFirst = !globalRegionalFirst
+            && reference is not null
+            && !commanderFirst
+            && discoveryContext.IsRegionalNew(reference.EntryId);
+        return new BiologyFirstDiscoveryState(
+            commanderFirst,
+            regionalFirst,
+            globalRegionalFirst);
+    }
+
     private static readonly Lazy<BiologyPredictionEvaluator>
         DefaultPredictionEvaluator =
         new(() => new BiologyPredictionEvaluator(
@@ -826,7 +878,19 @@ public sealed record BiologySurveyViewModel(
 
     private sealed record BiologySignalRewardRange(
         long Minimum,
-        long Maximum);
+        long Maximum,
+        bool IsHighlighted);
+
+    private readonly record struct BiologyFirstDiscoveryState(
+        bool IsCommanderFirst,
+        bool IsRegionalFirst,
+        bool IsGlobalRegionalFirst)
+    {
+        public bool IsHighlighted(bool highlightRegionalFirsts) =>
+            IsGlobalRegionalFirst
+            || IsCommanderFirst
+            || highlightRegionalFirsts && IsRegionalFirst;
+    }
 }
 
 public enum BiologySurveyMode

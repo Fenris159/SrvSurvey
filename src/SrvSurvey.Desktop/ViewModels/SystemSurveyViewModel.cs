@@ -962,7 +962,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 snapshot,
                 body,
                 DisableBioPredictions,
-                BiologyRewardThresholds)
+                BiologyRewardThresholds,
+                highlightRegionalFirsts: HighlightRegionalFirsts,
+                discoveryContext: biologyDiscoveryContext)
             : [];
 
     public string LastFssBiologyRewardText => LastFssBody is { } body
