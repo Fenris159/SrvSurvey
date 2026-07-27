@@ -116,6 +116,19 @@ jobs:
             -p:DebugType=None `
             -p:DebugSymbols=false
 
+      - name: Remove optional Linux LTTng tracing provider
+        if: matrix.rid == 'linux-x64'
+        shell: pwsh
+        run: |
+          $provider = "artifacts/${{ matrix.rid }}/libcoreclrtraceptprovider.so"
+          if (Test-Path -LiteralPath $provider -PathType Leaf) {
+            # This optional CoreCLR diagnostics provider requires the obsolete
+            # liblttng-ust.so.0 ABI; SrvSurvey does not use LTTng tracing.
+            Remove-Item -LiteralPath $provider -Force
+          } else {
+            Write-Host "The SDK did not publish the optional LTTng provider."
+          }
+
       - name: Generate package manifest
         shell: pwsh
         run: >-
