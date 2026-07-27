@@ -15,6 +15,11 @@ on:
         required: false
         type: string
         default: ""
+      publish_release:
+        description: Publish packages to a GitHub Release
+        required: false
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       version:
@@ -22,6 +27,11 @@ on:
         required: false
         type: string
         default: ""
+      publish_release:
+        description: Publish packages to a GitHub Release
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -36,6 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_release: ${{ steps.metadata.outputs.is_release }}
+      release_tag: ${{ steps.metadata.outputs.release_tag }}
       version: ${{ steps.metadata.outputs.version }}
 
     steps:
@@ -46,12 +57,15 @@ jobs:
         id: metadata
         shell: pwsh
         env:
+          REQUESTED_PUBLISH_RELEASE: ${{ inputs.publish_release }}
           REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           $project = [xml](Get-Content src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj)
           $versionText = [string]$project.Project.PropertyGroup.FileVersion
-          $isRelease = $env:GITHUB_REF_TYPE -eq "tag"
-          if ($isRelease) {
+          $isTagRelease = $env:GITHUB_REF_TYPE -eq "tag"
+          $isManualRelease = $env:REQUESTED_PUBLISH_RELEASE -eq "true"
+          $isRelease = $isTagRelease -or $isManualRelease
+          if ($isTagRelease) {
             $versionText = $env:GITHUB_REF_NAME.TrimStart("v")
           } elseif (-not [string]::IsNullOrWhiteSpace($env:REQUESTED_VERSION)) {
             $versionText = $env:REQUESTED_VERSION.Trim()
@@ -65,7 +79,9 @@ jobs:
             throw "'$versionText' is not a valid three- or four-part release version."
           }
 
+          $releaseTag = if ($isTagRelease) { $env:GITHUB_REF_NAME } else { "v$version" }
           "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "release_tag=$releaseTag" >> $env:GITHUB_OUTPUT
           "version=$version" >> $env:GITHUB_OUTPUT
 
   build-test-publish:
@@ -290,12 +306,18 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.release-metadata.outputs.release_tag }}
         run: |
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" packages/* --clobber
-          else
-            gh release create "$GITHUB_REF_NAME" packages/* \
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" packages/* --clobber
+          elif git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" packages/* \
               --verify-tag \
+              --generate-notes \
+              --title "SrvSurvey ${{ needs.release-metadata.outputs.version }}"
+          else
+            gh release create "$RELEASE_TAG" packages/* \
+              --target "$GITHUB_SHA" \
               --generate-notes \
               --title "SrvSurvey ${{ needs.release-metadata.outputs.version }}"
           fi

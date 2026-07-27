@@ -1,22 +1,22 @@
-name: Build Windows and Linux packages
+name: Publish Windows and Linux release
 
-run-name: Build packages (${{ inputs.version || 'project version' }})
+run-name: Publish SrvSurvey ${{ inputs.version }}
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: Optional three- or four-part package version
-        required: false
+        description: Release version (for example, 2.0.95 or 2.0.95.1)
+        required: true
         type: string
-        default: ""
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build-release-packages:
-    name: Build release files
+  publish-release:
+    name: Build, test, and publish release
     uses: ./.github/workflows/avalonia-build.yml
     with:
       version: ${{ inputs.version }}
+      publish_release: true

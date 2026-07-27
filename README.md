@@ -12,8 +12,8 @@ modified.
 
 ## Install
 
-Download a Windows or Linux release artifact from the
-[manual release workflow](https://github.com/Fenris159/SrvSurvey/actions/workflows/manual-release-packages.yml),
+Download the Windows or Linux package from the
+[latest GitHub release](https://github.com/Fenris159/SrvSurvey/releases/latest),
 then follow the platform guide:
 
 - [Windows portable installation](docs/INSTALL_WINDOWS.md)

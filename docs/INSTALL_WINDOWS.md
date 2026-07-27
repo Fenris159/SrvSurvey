@@ -6,20 +6,18 @@ use `setup.exe` or require a separate .NET installation.
 
 ## Download the package
 
-You can download the Windows ZIP directly from a tagged GitHub release. To
-build the latest branch yourself:
+Download `SrvSurvey-Avalonia-<version>-win-x64.zip` from the repository's
+[latest GitHub release](https://github.com/Fenris159/SrvSurvey/releases/latest).
+
+Repository maintainers can build and publish a new release as follows:
 
 1. Open the repository's
-   [Build Windows and Linux packages workflow](https://github.com/Fenris159/SrvSurvey/actions/workflows/manual-release-packages.yml).
-2. Select **Run workflow**, optionally enter a three- or four-part version, and
+   [Publish Windows and Linux release workflow](https://github.com/Fenris159/SrvSurvey/actions/workflows/manual-release-packages.yml).
+2. Select **Run workflow**, enter a three- or four-part release version, and
    start the run.
-3. Open the completed run and download the `SrvSurvey-package-win-x64`
-   artifact.
-4. Extract the downloaded Actions artifact. It contains the actual
-   `SrvSurvey-Avalonia-<version>-win-x64.zip` package and its SPDX bill of
-   materials.
-
-GitHub Actions artifacts expire after the retention period shown on the run.
+3. After all builds and tests pass, the workflow creates the corresponding
+   `v<version>` tag and GitHub Release and attaches the Windows ZIP, Linux
+   packages, checksums, release index, and software bills of materials.
 
 ## Extract and run it
 

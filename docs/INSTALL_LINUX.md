@@ -6,19 +6,19 @@ are self-contained and do not require a separate .NET installation.
 
 ## Download the package
 
-You can download the AppImage and portable archive directly from a tagged
-GitHub release. To build the latest branch yourself:
+Download the AppImage or portable archive from the repository's
+[latest GitHub release](https://github.com/Fenris159/SrvSurvey/releases/latest).
+
+Repository maintainers can build and publish a new release as follows:
 
 1. Open the repository's
-   [Build Windows and Linux packages workflow](https://github.com/Fenris159/SrvSurvey/actions/workflows/manual-release-packages.yml).
-2. Select **Run workflow**, optionally enter a three- or four-part version, and
+   [Publish Windows and Linux release workflow](https://github.com/Fenris159/SrvSurvey/actions/workflows/manual-release-packages.yml).
+2. Select **Run workflow**, enter a three- or four-part release version, and
    start the run.
-3. Open the completed run and download the `SrvSurvey-package-linux-x64`
-   artifact.
-4. Extract the downloaded Actions artifact. It contains the AppImage, the
-   portable `.tar.gz` archive, and SPDX bills of materials.
-
-GitHub Actions artifacts expire after the retention period shown on the run.
+3. After all builds and tests pass, the workflow creates the corresponding
+   `v<version>` tag and GitHub Release and attaches the AppImage, portable
+   archive, Windows ZIP, checksums, release index, and software bills of
+   materials.
 
 ## Run the AppImage
 
