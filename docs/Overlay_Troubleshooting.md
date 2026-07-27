@@ -21,9 +21,11 @@ KDE Plasma can refuse to place normal application windows above an exclusive ful
 | **Window title** | Regular expression → `^SrvSurvey .* overlay$` |
 | **Layer** | Force → **On-screen display** |
 
+![KDE Plasma Window Rules configured for SrvSurvey overlays](kde-window-rules-srvsurvey-overlays.png)
+
 4. Click **Apply**.
 
-(The matching rule dialog looks like the System Settings → Window Rules page with the values above filled in. You can also use **Detect Window Properties** while an overlay is visible to capture the class and title, then set the Layer to On-screen display.)
+You can also use **Detect Window Properties** while an overlay is visible to capture the class and title, then set the Layer to **On-screen display**.
 
 The regular expression matches the titles used by the current Avalonia overlays (they begin with `SrvSurvey` and end with `overlay`). If a future overlay uses a different title pattern you can widen the expression or add a second rule.
 
