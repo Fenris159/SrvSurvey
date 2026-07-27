@@ -1,7 +1,7 @@
-# SrvSurvey Avalonia
+# SrvSurvey Cross-Platform
 
-SrvSurvey Avalonia is a cross-platform Elite Dangerous companion application
-for Windows and Linux. It reads the game's journal and auxiliary files to drive
+This build of SrvSurvey is a cross-platform version of the Elite Dangerous companion application
+for Windows and now Linux. It reads the game's journal and auxiliary files to drive
 exploration, exobiology, travel, Guardian, settlement, combat, quest,
 colonization, notification, and in-game overlay features.
 
