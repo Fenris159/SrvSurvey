@@ -204,6 +204,36 @@ public sealed class InaraMapperTests
     }
 
     [Fact]
+    public void EventQueueBoundsBacklogAndTakesOneCommanderBatch()
+    {
+        var first = new InaraCredentials("First", "F1", "key-1");
+        var second = new InaraCredentials("Second", "F2", "key-2");
+        var queue = new InaraEventQueue();
+
+        var dropped = queue.Enqueue(
+            first,
+            Enumerable.Range(0, 5).Select(index => new InaraEvent(
+                $"first-{index}",
+                "2026-07-28T12:00:00Z",
+                new JObject())),
+            maximumCount: 4);
+        Assert.Equal(1, dropped);
+        queue.Enqueue(
+            second,
+            [new InaraEvent(
+                "second",
+                "2026-07-28T12:00:00Z",
+                new JObject())],
+            maximumCount: 5);
+
+        var batch = queue.TakeBatch(2);
+
+        Assert.Equal(["first-1", "first-2"], batch.Select(item => item.Event.Name));
+        Assert.All(batch, item => Assert.Equal(first, item.Credentials));
+        Assert.Equal(3, queue.Count);
+    }
+
+    [Fact]
     public void MulticrewSuppressesUploadsUntilCrewIsLeft()
     {
         var mapper = new InaraEventMapper();
@@ -240,6 +270,73 @@ public sealed class InaraMapperTests
         Assert.Contains(
             resumed,
             item => item.Name == "addCommanderTravelFSDJump");
+    }
+
+    [Fact]
+    public void MulticrewRequiresFreshInventorySnapshotsAfterReturning()
+    {
+        var mapper = new InaraEventMapper();
+        var ownCargo = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:00:00Z",
+              "event": "Cargo",
+              "Vessel": "Ship",
+              "Inventory": [{ "Name": "tea", "Count": 2 }]
+            }
+            """), Context, true);
+        Assert.Contains(
+            ownCargo,
+            item => item.Name == "setCommanderInventoryCargo");
+
+        mapper.Process(JObject.Parse("""
+            { "timestamp": "2026-07-28T12:01:00Z", "event": "JoinACrew" }
+            """), Context, true);
+        var crewCargo = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:02:00Z",
+              "event": "Cargo",
+              "Vessel": "Ship",
+              "Inventory": [{ "Name": "gold", "Count": 50 }],
+              "Multicrew": true
+            }
+            """), Context, true);
+        Assert.Empty(crewCargo);
+
+        var leaving = mapper.Process(JObject.Parse("""
+            { "timestamp": "2026-07-28T12:03:00Z", "event": "QuitACrew" }
+            """), Context, true);
+        Assert.DoesNotContain(
+            leaving,
+            item => item.Name == "setCommanderInventoryCargo");
+
+        var resumed = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:04:00Z",
+              "event": "FSDJump",
+              "StarSystem": "Sirius",
+              "StarPos": [6.25, -1.25, -5.75],
+              "JumpDist": 8.6
+            }
+            """), Context, true);
+        Assert.DoesNotContain(
+            resumed,
+            item => item.Name == "setCommanderInventoryCargo");
+
+        var refreshed = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:05:00Z",
+              "event": "Cargo",
+              "Vessel": "Ship",
+              "Inventory": [{ "Name": "tea", "Count": 3 }]
+            }
+            """), Context, true);
+        var snapshot = Assert.Single(
+            refreshed,
+            item => item.Name == "setCommanderInventoryCargo");
+        var item = Assert.Single(
+            Assert.IsType<JArray>(snapshot.Data).OfType<JObject>());
+        Assert.Equal("tea", item.Value<string>("itemName"));
+        Assert.Equal(3, item.Value<int>("itemCount"));
     }
 
     [Fact]

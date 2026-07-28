@@ -59,6 +59,7 @@ namespace SrvSurvey.Core.Inara
 
     internal sealed class InaraEventQueue
     {
+        public const int DefaultMaximumCount = 4096;
         private readonly object sync = new();
         private readonly List<InaraQueuedEvent> pending = new();
 
@@ -71,7 +72,10 @@ namespace SrvSurvey.Core.Inara
             }
         }
 
-        public void Enqueue(InaraCredentials credentials, IEnumerable<InaraEvent> events)
+        public int Enqueue(
+            InaraCredentials credentials,
+            IEnumerable<InaraEvent> events,
+            int maximumCount = DefaultMaximumCount)
         {
             lock (sync)
             {
@@ -86,6 +90,30 @@ namespace SrvSurvey.Core.Inara
 
                     pending.Add(new InaraQueuedEvent(credentials, entry));
                 }
+
+                return trimToMaximum(maximumCount);
+            }
+        }
+
+        public List<InaraQueuedEvent> TakeBatch(int maximumCount)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(maximumCount, 1);
+            lock (sync)
+            {
+                if (pending.Count == 0)
+                    return [];
+
+                var credentials = pending[0].Credentials;
+                var indexes = pending
+                    .Select((item, index) => (item, index))
+                    .Where(pair => pair.item.Credentials == credentials)
+                    .Take(maximumCount)
+                    .Select(pair => pair.index)
+                    .ToArray();
+                var batch = indexes.Select(index => pending[index]).ToList();
+                foreach (var index in indexes.Reverse())
+                    pending.RemoveAt(index);
+                return batch;
             }
         }
 
@@ -99,7 +127,9 @@ namespace SrvSurvey.Core.Inara
             }
         }
 
-        public void Requeue(IEnumerable<InaraQueuedEvent> events)
+        public int Requeue(
+            IEnumerable<InaraQueuedEvent> events,
+            int maximumCount = DefaultMaximumCount)
         {
             lock (sync)
             {
@@ -109,7 +139,17 @@ namespace SrvSurvey.Core.Inara
                             && current.Event.ReplaceKey == item.Event.ReplaceKey))
                     .ToList();
                 pending.InsertRange(0, retained);
+                return trimToMaximum(maximumCount);
             }
+        }
+
+        private int trimToMaximum(int maximumCount)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(maximumCount, 1);
+            var dropped = Math.Max(0, pending.Count - maximumCount);
+            if (dropped > 0)
+                pending.RemoveRange(0, dropped);
+            return dropped;
         }
     }
 }

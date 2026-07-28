@@ -46,12 +46,20 @@ namespace SrvSurvey.Core.Inara
             if (name == "LoadGame")
                 Reset();
 
+            var wasInMulticrew = InMulticrew;
             updateMulticrewState(name, entry);
+            if (wasInMulticrew != InMulticrew)
+                clearInventoryState();
+
             creditTracker.Observe(entry, InMulticrew);
-            var inventoryChanged = updateInventoryState(name, entry);
+            var inventoryChanged = InMulticrew
+                ? (cargo: false, materials: false)
+                : updateInventoryState(name, entry);
             updateRankState(name, entry);
 
-            if (!collectEvents || InMulticrew)
+            if (!collectEvents
+                || InMulticrew
+                || (wasInMulticrew && name == "QuitACrew"))
             {
                 sessionStarted = false;
                 return [];
@@ -288,6 +296,14 @@ namespace SrvSurvey.Core.Inara
             }
 
             return (cargoChanged, materialsChanged);
+        }
+
+        private void clearInventoryState()
+        {
+            cargo.Clear();
+            materials.Clear();
+            hasCargoSnapshot = false;
+            hasMaterialsSnapshot = false;
         }
 
         private void updateRankState(string name, JObject entry)

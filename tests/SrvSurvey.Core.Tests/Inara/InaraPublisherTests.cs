@@ -138,7 +138,7 @@ public sealed class InaraPublisherTests
             "2.0.95.0",
             new HttpClient(handler));
 
-        var result = await publisher.ApplyAsync(CreateUpdate(
+        await publisher.ApplyAsync(CreateUpdate(
             [
                 Event("""
                     {
@@ -158,6 +158,7 @@ public sealed class InaraPublisherTests
             cargo: null,
             allowPublishing: true,
             allowSharedData: true));
+        var result = await publisher.FlushAsync(Options);
 
         Assert.True(result.AcceptedEventCount > 0);
         Assert.Equal(0, result.PendingEventCount);
@@ -177,6 +178,7 @@ public sealed class InaraPublisherTests
             "2.0.95.0",
             new HttpClient(handler));
 
+        var developerOptions = Options with { DeveloperTestMode = true };
         await publisher.ApplyAsync(CreateUpdate(
             [
                 Event("""
@@ -196,7 +198,8 @@ public sealed class InaraPublisherTests
             cargo: null,
             allowPublishing: true,
             allowSharedData: true,
-            Options with { DeveloperTestMode = true }));
+            developerOptions));
+        await publisher.FlushAsync(developerOptions);
 
         var payload = Assert.IsType<JObject>(handler.LastPayload);
         var header = Assert.IsType<JObject>(payload["header"]);
@@ -212,7 +215,7 @@ public sealed class InaraPublisherTests
             "2.0.95.0",
             new HttpClient(handler));
 
-        var deferred = await publisher.ApplyAsync(CreateUpdate(
+        await publisher.ApplyAsync(CreateUpdate(
             [
                 Event("""
                     {
@@ -221,16 +224,11 @@ public sealed class InaraPublisherTests
                       "Credits": 1000
                     }
                     """),
-                Event("""
-                    {
-                      "timestamp": "2026-07-28T12:01:00Z",
-                      "event": "Shutdown"
-                    }
-                    """),
             ],
             cargo: null,
             allowPublishing: true,
             allowSharedData: true));
+        var deferred = await publisher.FlushAsync(Options);
 
         Assert.True(deferred.PendingEventCount > 0);
         Assert.Contains(
@@ -256,7 +254,38 @@ public sealed class InaraPublisherTests
             "2.0.95.0",
             new HttpClient(handler));
 
-        var deferred = await publisher.ApplyAsync(CreateUpdate(
+        await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:00:00Z",
+                      "event": "LoadGame",
+                      "Credits": 1000
+                    }
+                    """),
+            ],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+        var deferred = await publisher.FlushAsync(Options);
+
+        Assert.True(deferred.PendingEventCount > 0);
+        Assert.Contains(
+            deferred.Warnings,
+            warning => warning.Contains(
+                nameof(InvalidDataException),
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ShutdownStartsUploadWithoutBlockingJournalProcessing()
+    {
+        var handler = new BlockingInaraHandler();
+        var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(handler));
+
+        var applyTask = publisher.ApplyAsync(CreateUpdate(
             [
                 Event("""
                     {
@@ -276,12 +305,395 @@ public sealed class InaraPublisherTests
             allowPublishing: true,
             allowSharedData: true));
 
-        Assert.True(deferred.PendingEventCount > 0);
+        await applyTask.WaitAsync(TimeSpan.FromSeconds(1));
+        await handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        var disposeTask = Task.Run(publisher.Dispose);
+        await handler.RequestCancelled.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        await disposeTask.WaitAsync(TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task BatchUsesContextAtEachJournalEvent()
+    {
+        var handler = new InaraResponseHandler();
+        using var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(handler));
+
+        await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:00:00Z",
+                      "event": "LoadGame",
+                      "Commander": "Test Commander",
+                      "FID": "F123456",
+                      "Credits": 1000
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:00:01Z",
+                      "event": "Location",
+                      "StarSystem": "Sol",
+                      "Docked": true,
+                      "StationName": "Galileo"
+                    }
+                    """),
+            ],
+            cargo: null,
+            allowPublishing: false,
+            allowSharedData: true));
+        await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:01:00Z",
+                      "event": "MissionAccepted",
+                      "MissionID": 42,
+                      "Name": "Mission_Delivery",
+                      "Faction": "Pilots Federation"
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:01:01Z",
+                      "event": "Undocked",
+                      "StationName": "Galileo"
+                    }
+                    """),
+            ],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true) with
+        { StationName = null });
+
+        await publisher.FlushAsync(Options);
+
+        var mission = Assert.Single(
+            handler.LastPayload!["events"]!.OfType<JObject>(),
+            item => item.Value<string>("eventName") == "addCommanderMission");
+        var data = Assert.IsType<JObject>(mission["eventData"]);
+        Assert.Equal("Sol", data.Value<string>("starsystemNameOrigin"));
+        Assert.Equal("Galileo", data.Value<string>("stationNameOrigin"));
+    }
+
+    [Fact]
+    public async Task CommanderMismatchFailsClosed()
+    {
+        using var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(new InaraResponseHandler()));
+
+        var result = await publisher.ApplyAsync(CreateUpdate(
+            [Event("""
+                {
+                  "timestamp": "2026-07-28T12:00:00Z",
+                  "event": "LoadGame",
+                  "Commander": "Different Commander",
+                  "FID": "F999999",
+                  "Credits": 1000
+                }
+                """)],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+
+        Assert.Equal(0, result.QueuedEventCount);
+        Assert.Equal(0, result.PendingEventCount);
+    }
+
+    [Fact]
+    public async Task MulticrewJournalEventsCannotReplaceCommanderContext()
+    {
+        var handler = new InaraResponseHandler();
+        using var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(handler));
+        await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:00:00Z",
+                      "event": "LoadGame",
+                      "Commander": "Test Commander",
+                      "FID": "F123456",
+                      "Ship": "CobraMkIII",
+                      "ShipID": 42,
+                      "Credits": 1000
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:00:01Z",
+                      "event": "Location",
+                      "StarSystem": "Sol",
+                      "Docked": true,
+                      "StationName": "Galileo"
+                    }
+                    """),
+            ],
+            cargo: null,
+            allowPublishing: false,
+            allowSharedData: true));
+
+        await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    { "timestamp": "2026-07-28T12:01:00Z", "event": "JoinACrew" }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:01:01Z",
+                      "event": "Loadout",
+                      "Ship": "Anaconda",
+                      "ShipID": 99
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:01:02Z",
+                      "event": "FSDJump",
+                      "StarSystem": "Sirius",
+                      "StarPos": [6.25, -1.25, -5.75]
+                    }
+                    """),
+                Event("""
+                    { "timestamp": "2026-07-28T12:01:03Z", "event": "QuitACrew" }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:01:04Z",
+                      "event": "MissionAccepted",
+                      "MissionID": 42,
+                      "Name": "Mission_Delivery"
+                    }
+                    """),
+            ],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+        await publisher.FlushAsync(Options);
+
+        var ship = Assert.Single(
+            handler.LastPayload!["events"]!.OfType<JObject>(),
+            item => item.Value<string>("eventName") == "setCommanderShip");
+        Assert.Equal(42, ship["eventData"]!.Value<int>("shipGameID"));
+        var mission = Assert.Single(
+            handler.LastPayload["events"]!.OfType<JObject>(),
+            item => item.Value<string>("eventName") == "addCommanderMission");
+        Assert.Equal(
+            "Sol",
+            mission["eventData"]!.Value<string>("starsystemNameOrigin"));
+        Assert.DoesNotContain(
+            handler.LastPayload["events"]!.OfType<JObject>(),
+            item => item["eventData"]?.Value<int?>("shipGameID") == 99);
+    }
+
+    [Fact]
+    public async Task OneFlushSendsOnlyOneBoundedRequest()
+    {
+        var handler = new InaraResponseHandler();
+        using var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(handler));
+        var events = Enumerable.Range(0, 140)
+            .Select(index => Event($$"""
+                {
+                  "timestamp": "2026-07-28T12:00:00Z",
+                  "event": "Friends",
+                  "Status": "Added",
+                  "Name": "Friend {{index}}"
+                }
+                """))
+            .ToArray();
+
+        await publisher.ApplyAsync(CreateUpdate(
+            events,
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+        var first = await publisher.FlushAsync(Options);
+        await publisher.ApplyAsync(CreateUpdate(
+            [Event("""
+                {
+                  "timestamp": "2026-07-28T12:00:01Z",
+                  "event": "Music",
+                  "MusicTrack": "Exploration"
+                }
+                """)],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+
+        Assert.Equal(1, handler.RequestCount);
+        Assert.Equal(128, handler.LastPayload!["events"]!.Count());
+        Assert.True(first.PendingEventCount > 0);
+    }
+
+    [Fact]
+    public async Task OversizedBatchIsSplitAndRemainderRetained()
+    {
+        var handler = new InaraResponseHandler();
+        using var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(handler));
+        var largeName = new string('x', 600_000);
+
+        await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event($$"""
+                    {
+                      "timestamp": "2026-07-28T12:00:00Z",
+                      "event": "Friends",
+                      "Status": "Added",
+                      "Name": "a{{largeName}}"
+                    }
+                    """),
+                Event($$"""
+                    {
+                      "timestamp": "2026-07-28T12:00:01Z",
+                      "event": "Friends",
+                      "Status": "Added",
+                      "Name": "b{{largeName}}"
+                    }
+                    """),
+            ],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+        var result = await publisher.FlushAsync(Options);
+
+        Assert.Equal(1, handler.RequestCount);
+        Assert.True(result.AcceptedEventCount > 0);
+        Assert.True(result.PendingEventCount > 0);
+        Assert.True(
+            Encoding.UTF8.GetByteCount(handler.LastPayload!.ToString())
+                < 1024 * 1024);
+    }
+
+    [Fact]
+    public async Task EventLevelTransientStatusIsRetriedAndRedirectIsRejected()
+    {
+        var handler = new InaraResponseHandler
+        {
+            EventStatusSelector = index => index switch
+            {
+                0 => 200,
+                1 => 429,
+                _ => 400,
+            },
+        };
+        using var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(handler));
+        await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:00:00Z",
+                      "event": "LoadGame",
+                      "Credits": 1000
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:00:01Z",
+                      "event": "Friends",
+                      "Status": "Added",
+                      "Name": "Third Result"
+                    }
+                    """),
+            ],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+
+        var result = await publisher.FlushAsync(Options);
+
+        Assert.Equal(1, result.AcceptedEventCount);
+        Assert.Equal(1, result.PendingEventCount);
+        Assert.Contains(result.Warnings, warning => warning.Contains("deferred"));
+        Assert.Contains(result.Warnings, warning => warning.Contains("rejected"));
+
+        var redirectHandler = new InaraResponseHandler
+        {
+            HeaderEventStatus = 302,
+        };
+        using var redirectPublisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(redirectHandler));
+        await redirectPublisher.ApplyAsync(CreateUpdate(
+            [Event("""
+                {
+                  "timestamp": "2026-07-28T12:00:00Z",
+                  "event": "LoadGame",
+                  "Credits": 1000
+                }
+                """)],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+        var redirected = await redirectPublisher.FlushAsync(Options);
+        Assert.Equal(0, redirected.AcceptedEventCount);
+        Assert.Equal(0, redirected.PendingEventCount);
         Assert.Contains(
-            deferred.Warnings,
-            warning => warning.Contains(
-                nameof(InvalidDataException),
-                StringComparison.Ordinal));
+            redirected.Warnings,
+            warning => warning.Contains("API status 302"));
+    }
+
+    [Fact]
+    public async Task RetryAfterExtendsAutomaticRetryWindow()
+    {
+        var time = new MutableTimeProvider(
+            DateTimeOffset.Parse("2026-07-28T12:00:00Z"));
+        var handler = new InaraResponseHandler(HttpStatusCode.TooManyRequests)
+        {
+            RetryAfter = TimeSpan.FromMinutes(2),
+        };
+        using var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(handler),
+            time);
+        await publisher.ApplyAsync(CreateUpdate(
+            [Event("""
+                {
+                  "timestamp": "2026-07-28T12:00:00Z",
+                  "event": "LoadGame",
+                  "Credits": 1000
+                }
+                """)],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+        await publisher.FlushAsync(Options);
+        handler.StatusCode = HttpStatusCode.OK;
+
+        time.Advance(TimeSpan.FromMinutes(1));
+        await publisher.ApplyAsync(CreateUpdate(
+            [Event("""
+                {
+                  "timestamp": "2026-07-28T12:01:00Z",
+                  "event": "Music"
+                }
+                """)],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+        Assert.Equal(1, handler.RequestCount);
+
+        time.Advance(TimeSpan.FromMinutes(1));
+        await publisher.ApplyAsync(CreateUpdate(
+            [Event("""
+                {
+                  "timestamp": "2026-07-28T12:02:00Z",
+                  "event": "Music"
+                }
+                """)],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+        await WaitForAsync(() => handler.RequestCount == 2);
     }
 
     private static InaraPublicationUpdate CreateUpdate(
@@ -316,29 +728,56 @@ public sealed class InaraPublisherTests
         return Assert.IsType<JournalEventEnvelope>(parsed);
     }
 
+    private static async Task WaitForAsync(Func<bool> predicate)
+    {
+        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(2);
+        while (!predicate() && DateTimeOffset.UtcNow < deadline)
+        {
+            await Task.Delay(10);
+        }
+
+        Assert.True(predicate(), "The expected asynchronous operation did not complete.");
+    }
+
     private sealed class InaraResponseHandler(HttpStatusCode? initialStatus = null)
         : HttpMessageHandler
     {
+        private int requestCount;
+
         public HttpStatusCode StatusCode { get; set; } =
             initialStatus ?? HttpStatusCode.OK;
 
-        public int RequestCount { get; private set; }
+        public int RequestCount => Volatile.Read(ref requestCount);
 
         public JToken? LastPayload { get; private set; }
 
         public bool ReturnOversizedResponse { get; init; }
 
+        public int HeaderEventStatus { get; init; } = 200;
+
+        public Func<int, int> EventStatusSelector { get; init; } = _ => 200;
+
+        public TimeSpan? RetryAfter { get; init; }
+
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            RequestCount++;
+            Interlocked.Increment(ref requestCount);
             var body = await request.Content!
                 .ReadAsStringAsync(cancellationToken);
             LastPayload = JToken.Parse(body);
-            if (StatusCode != HttpStatusCode.OK)
+            if ((int)StatusCode is < 200 or > 299)
             {
-                return new HttpResponseMessage(StatusCode);
+                var failed = new HttpResponseMessage(StatusCode);
+                if (RetryAfter is { } retryAfter)
+                {
+                    failed.Headers.RetryAfter =
+                        new System.Net.Http.Headers.RetryConditionHeaderValue(
+                            retryAfter);
+                }
+
+                return failed;
             }
 
             if (ReturnOversizedResponse)
@@ -352,21 +791,61 @@ public sealed class InaraPublisherTests
             var eventCount = LastPayload["events"]?.Count() ?? 0;
             var responseEvents = new JArray(Enumerable
                 .Range(0, eventCount)
-                .Select(_ => new JObject { ["eventStatus"] = 200 }));
-            return new HttpResponseMessage(HttpStatusCode.OK)
+                .Select(index => new JObject
+                {
+                    ["eventStatus"] = EventStatusSelector(index),
+                }));
+            return new HttpResponseMessage(StatusCode)
             {
                 Content = new StringContent(
                     new JObject
                     {
                         ["header"] = new JObject
                         {
-                            ["eventStatus"] = 200,
+                            ["eventStatus"] = HeaderEventStatus,
                         },
                         ["events"] = responseEvents,
                     }.ToString(),
                     Encoding.UTF8,
                     "application/json"),
             };
+        }
+    }
+
+    private sealed class BlockingInaraHandler : HttpMessageHandler
+    {
+        public TaskCompletionSource RequestStarted { get; } = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource RequestCancelled { get; } = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            RequestStarted.TrySetResult();
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                throw new InvalidOperationException("The request should be cancelled.");
+            }
+            catch (OperationCanceledException)
+            {
+                RequestCancelled.TrySetResult();
+                throw;
+            }
+        }
+    }
+
+    private sealed class MutableTimeProvider(DateTimeOffset utcNow)
+        : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utcNow;
+
+        public void Advance(TimeSpan duration)
+        {
+            utcNow += duration;
         }
     }
 }
