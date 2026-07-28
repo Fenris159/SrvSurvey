@@ -10,6 +10,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Exobiology/CodexDiscoveryLocationClient.cs",
         "src/SrvSurvey.Core/Exploration/GreenGasGiantClient.cs",
         "src/SrvSurvey.Core/Exploration/SystemBodyDataClient.cs",
+        "src/SrvSurvey.Core/Inara/InaraPublisher.cs",
         "src/SrvSurvey.Core/Navigation/SystemSummaryClient.cs",
         "src/SrvSurvey.Core/Network/EddnPublisher.cs",
         "src/SrvSurvey.Core/Quests/RavenQuestClient.cs",
@@ -98,6 +99,10 @@ public sealed class NetworkSurfaceCoverageTests
             "eddn-publication",
             ["src/SrvSurvey.Core/Network/EddnPublisher.cs"],
             ["tests/SrvSurvey.Core.Tests/Network/EddnPublisherTests.cs"]),
+        new(
+            "inara-publication",
+            ["src/SrvSurvey.Core/Inara/InaraPublisher.cs"],
+            ["tests/SrvSurvey.Core.Tests/Inara/InaraPublisherTests.cs"]),
         new(
             "raven-colonial-quests-and-ggg",
             [

@@ -245,6 +245,45 @@ public sealed class InaraPublisherTests
         Assert.Equal(0, retried.PendingEventCount);
     }
 
+    [Fact]
+    public async Task OversizedResponseRetainsBatchWithoutParsingIt()
+    {
+        var handler = new InaraResponseHandler
+        {
+            ReturnOversizedResponse = true,
+        };
+        using var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(handler));
+
+        var deferred = await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:00:00Z",
+                      "event": "LoadGame",
+                      "Credits": 1000
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:01:00Z",
+                      "event": "Shutdown"
+                    }
+                    """),
+            ],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+
+        Assert.True(deferred.PendingEventCount > 0);
+        Assert.Contains(
+            deferred.Warnings,
+            warning => warning.Contains(
+                nameof(InvalidDataException),
+                StringComparison.Ordinal));
+    }
+
     private static InaraPublicationUpdate CreateUpdate(
         IReadOnlyList<JournalEventEnvelope> events,
         CargoSnapshot? cargo,
@@ -287,6 +326,8 @@ public sealed class InaraPublisherTests
 
         public JToken? LastPayload { get; private set; }
 
+        public bool ReturnOversizedResponse { get; init; }
+
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
@@ -298,6 +339,14 @@ public sealed class InaraPublisherTests
             if (StatusCode != HttpStatusCode.OK)
             {
                 return new HttpResponseMessage(StatusCode);
+            }
+
+            if (ReturnOversizedResponse)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(new byte[1024 * 1024 + 1]),
+                };
             }
 
             var eventCount = LastPayload["events"]?.Count() ?? 0;

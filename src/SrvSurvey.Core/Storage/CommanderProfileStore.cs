@@ -79,7 +79,8 @@ public sealed class CommanderProfileStore(string profileDirectory)
             ReadRamTah(root),
             ReadCombat(root),
             GetString(root, "rccApiKey"),
-            GetString(root, "activeJourney"));
+            GetString(root, "activeJourney"),
+            GetString(root, "inaraApiKey"));
         return new CommanderProfileLoadResult(path, true, data, null);
     }
 
@@ -224,6 +225,34 @@ public sealed class CommanderProfileStore(string profileDirectory)
                 else
                 {
                     root["rccApiKey"] = normalized;
+                }
+            },
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task SaveInaraApiKeyAsync(
+        string frontierId,
+        string? commanderName,
+        bool isOdyssey,
+        string? apiKey,
+        CancellationToken cancellationToken = default)
+    {
+        var normalized = string.IsNullOrWhiteSpace(apiKey)
+            ? null
+            : apiKey.Trim();
+        await SaveFieldsAsync(
+            frontierId,
+            commanderName,
+            isOdyssey,
+            root =>
+            {
+                if (normalized is null)
+                {
+                    root.Remove("inaraApiKey");
+                }
+                else
+                {
+                    root["inaraApiKey"] = normalized;
                 }
             },
             cancellationToken).ConfigureAwait(false);
@@ -764,7 +793,8 @@ public sealed record CommanderProfileData(
     RamTahSnapshot RamTah,
     CombatSnapshot Combat,
     string? RavenColonialApiKey = null,
-    string? ActiveJourneyFileName = null);
+    string? ActiveJourneyFileName = null,
+    string? InaraApiKey = null);
 
 public sealed record CommanderProfileLoadResult(
     string Path,

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -26,6 +27,9 @@ public sealed class InaraPublisher : IInaraPublisher
 {
     public const string Endpoint = "https://inara.cz/inapi/v1/";
     public static readonly TimeSpan SendInterval = TimeSpan.FromSeconds(35);
+    private const int MaximumEventsPerRequest = 128;
+    private const int MaximumPayloadBytes = 1024 * 1024;
+    private const int MaximumResponseBytes = 1024 * 1024;
 
     private readonly HttpClient httpClient;
     private readonly bool ownsHttpClient;
@@ -268,119 +272,145 @@ public sealed class InaraPublisher : IInaraPublisher
 
             var accepted = 0;
             var warnings = new List<string>();
-            foreach (var group in pending.GroupBy(item => item.Credentials))
+            foreach (var credentialGroup in pending.GroupBy(
+                         item => item.Credentials))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                var batch = group.ToList();
-                if (string.Equals(
-                        options.CommanderName,
-                        group.Key.Commander,
-                        StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(
-                        options.ApiKey?.Trim(),
-                        group.Key.ApiKey,
-                        StringComparison.Ordinal))
+                foreach (var chunk in credentialGroup.Chunk(
+                             MaximumEventsPerRequest))
                 {
-                    warnings.Add(
-                        $"Inara discarded {batch.Count} queued event(s) after the commander API key changed.");
-                    continue;
-                }
-
-                try
-                {
-                    var payload = InaraPayloadBuilder.Build(
-                        appVersion,
-                        group.Key,
-                        batch.Select(item => item.Event).ToArray(),
-                        options.DeveloperTestMode);
-                    using var content = new StringContent(
-                        payload.ToString(Formatting.None),
-                        Encoding.UTF8,
-                        "application/json");
-                    using var response = await httpClient.PostAsync(
-                            Endpoint,
-                            content,
-                            cancellationToken)
-                        .ConfigureAwait(false);
-
-                    if (IsTransient(response.StatusCode))
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var batch = chunk.ToList();
+                    if (string.Equals(
+                            options.CommanderName,
+                            credentialGroup.Key.Commander,
+                            StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(
+                            options.ApiKey?.Trim(),
+                            credentialGroup.Key.ApiKey,
+                            StringComparison.Ordinal))
                     {
-                        Requeue(batch);
                         warnings.Add(
-                            $"Inara upload was deferred after HTTP {(int)response.StatusCode}; {batch.Count} event(s) were retained.");
+                            $"Inara discarded {batch.Count} queued event(s) after the commander API key changed.");
                         continue;
                     }
 
-                    if (!response.IsSuccessStatusCode)
+                    try
                     {
-                        warnings.Add(
-                            $"Inara rejected {batch.Count} event(s) with HTTP {(int)response.StatusCode}.");
-                        continue;
-                    }
-
-                    var body = await response.Content
-                        .ReadAsStringAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                    if (string.IsNullOrWhiteSpace(body))
-                    {
-                        Requeue(batch);
-                        warnings.Add(
-                            $"Inara returned an empty response; {batch.Count} event(s) were retained.");
-                        continue;
-                    }
-
-                    var result = JObject.Parse(body);
-                    var headerStatus = result
-                        .SelectToken("header.eventStatus")
-                        ?.Value<int?>();
-                    var responseEvents = result["events"] as JArray;
-                    var responseIsComplete = headerStatus is not null
-                        && responseEvents?.Count == batch.Count
-                        && responseEvents.OfType<JObject>().All(eventResult =>
-                            eventResult["eventStatus"] is not null);
-                    if (!responseIsComplete)
-                    {
-                        Requeue(batch);
-                        warnings.Add(
-                            $"Inara returned an incomplete response; {batch.Count} event(s) were retained.");
-                        continue;
-                    }
-
-                    if (headerStatus >= 400)
-                    {
-                        warnings.Add(
-                            $"Inara rejected a batch of {batch.Count} event(s) with API status {headerStatus}.");
-                        continue;
-                    }
-
-                    var failed = responseEvents!
-                        .OfType<JObject>()
-                        .Select((eventResult, index) => new
+                        var payload = InaraPayloadBuilder.Build(
+                            appVersion,
+                            credentialGroup.Key,
+                            batch.Select(item => item.Event).ToArray(),
+                            options.DeveloperTestMode);
+                        var payloadBytes = Encoding.UTF8.GetBytes(
+                            payload.ToString(Formatting.None));
+                        if (payloadBytes.Length > MaximumPayloadBytes)
                         {
-                            Index = index,
-                            Status = eventResult.Value<int?>("eventStatus"),
-                        })
-                        .Where(item => item.Status >= 400)
-                        .ToArray();
-                    accepted += batch.Count - failed.Length;
-                    if (failed.Length > 0)
-                    {
-                        var names = failed
-                            .Where(item => item.Index < batch.Count)
-                            .Select(item => batch[item.Index].Event.Name)
-                            .Distinct(StringComparer.Ordinal);
-                        warnings.Add(
-                            $"Inara rejected {failed.Length} event(s): {string.Join(", ", names)}.");
+                            warnings.Add(
+                                $"Inara skipped an oversized {batch.Count}-event batch ({payloadBytes.Length:N0} bytes)."
+                                + " No journal processing was affected.");
+                            continue;
+                        }
+
+                        using var request = new HttpRequestMessage(
+                            HttpMethod.Post,
+                            Endpoint)
+                        {
+                            Content = new ByteArrayContent(payloadBytes),
+                        };
+                        request.Content.Headers.ContentType =
+                            new MediaTypeHeaderValue("application/json")
+                            {
+                                CharSet = "utf-8",
+                            };
+                        using var response = await httpClient.SendAsync(
+                                request,
+                                HttpCompletionOption.ResponseHeadersRead,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+
+                        if (IsTransient(response.StatusCode))
+                        {
+                            Requeue(batch);
+                            warnings.Add(
+                                $"Inara upload was deferred after HTTP {(int)response.StatusCode}; {batch.Count} event(s) were retained.");
+                            continue;
+                        }
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            warnings.Add(
+                                $"Inara rejected {batch.Count} event(s) with HTTP {(int)response.StatusCode}.");
+                            continue;
+                        }
+
+                        var body = await ReadBoundedTextAsync(
+                                response.Content,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                        if (string.IsNullOrWhiteSpace(body))
+                        {
+                            Requeue(batch);
+                            warnings.Add(
+                                $"Inara returned an empty response; {batch.Count} event(s) were retained.");
+                            continue;
+                        }
+
+                        var result = JObject.Parse(body);
+                        var headerStatus = result
+                            .SelectToken("header.eventStatus")
+                            ?.Value<int?>();
+                        var responseEvents = result["events"] as JArray;
+                        var responseIsComplete = headerStatus is not null
+                            && responseEvents?.Count == batch.Count
+                            && responseEvents.OfType<JObject>().All(
+                                eventResult =>
+                                    eventResult["eventStatus"] is not null);
+                        if (!responseIsComplete)
+                        {
+                            Requeue(batch);
+                            warnings.Add(
+                                $"Inara returned an incomplete response; {batch.Count} event(s) were retained.");
+                            continue;
+                        }
+
+                        if (headerStatus >= 400)
+                        {
+                            warnings.Add(
+                                $"Inara rejected a batch of {batch.Count} event(s) with API status {headerStatus}.");
+                            continue;
+                        }
+
+                        var failed = responseEvents!
+                            .OfType<JObject>()
+                            .Select((eventResult, index) => new
+                            {
+                                Index = index,
+                                Status = eventResult.Value<int?>(
+                                    "eventStatus"),
+                            })
+                            .Where(item => item.Status >= 400)
+                            .ToArray();
+                        accepted += batch.Count - failed.Length;
+                        if (failed.Length > 0)
+                        {
+                            var names = failed
+                                .Where(item => item.Index < batch.Count)
+                                .Select(item => batch[item.Index].Event.Name)
+                                .Distinct(StringComparer.Ordinal);
+                            warnings.Add(
+                                $"Inara rejected {failed.Length} event(s): {string.Join(", ", names)}.");
+                        }
                     }
-                }
-                catch (Exception exception) when (
-                    exception is HttpRequestException
-                        or TaskCanceledException
-                        or JsonException)
-                {
-                    Requeue(batch);
-                    warnings.Add(
-                        $"Inara upload was deferred ({exception.GetType().Name}); {batch.Count} event(s) were retained.");
+                    catch (Exception exception) when (
+                        exception is HttpRequestException
+                            or TaskCanceledException
+                            or JsonException
+                            or InvalidDataException)
+                    {
+                        Requeue(batch);
+                        warnings.Add(
+                            $"Inara upload was deferred ({exception.GetType().Name}); {batch.Count} event(s) were retained.");
+                    }
                 }
             }
 
@@ -518,6 +548,42 @@ public sealed class InaraPublisher : IInaraPublisher
         return statusCode is HttpStatusCode.RequestTimeout
                 or HttpStatusCode.TooManyRequests
             || (int)statusCode >= 500;
+    }
+
+    private static async Task<string> ReadBoundedTextAsync(
+        HttpContent content,
+        CancellationToken cancellationToken)
+    {
+        if (content.Headers.ContentLength is > MaximumResponseBytes)
+        {
+            throw new InvalidDataException(
+                $"Inara response exceeded {MaximumResponseBytes:N0} bytes.");
+        }
+
+        await using var input = await content.ReadAsStreamAsync(
+                cancellationToken)
+            .ConfigureAwait(false);
+        using var output = new MemoryStream();
+        var buffer = new byte[16 * 1024];
+        while (true)
+        {
+            var read = await input.ReadAsync(buffer, cancellationToken)
+                .ConfigureAwait(false);
+            if (read == 0)
+            {
+                break;
+            }
+
+            if (output.Length + read > MaximumResponseBytes)
+            {
+                throw new InvalidDataException(
+                    $"Inara response exceeded {MaximumResponseBytes:N0} bytes.");
+            }
+
+            output.Write(buffer, 0, read);
+        }
+
+        return Encoding.UTF8.GetString(output.ToArray());
     }
 }
 

@@ -9,6 +9,7 @@ using SrvSurvey.Core.Diagnostics;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Guardian;
+using SrvSurvey.Core.Inara;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Journeys;
 using SrvSurvey.Core.Navigation;
@@ -53,6 +54,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
     private readonly IEddnPublisher eddnPublisher;
+    private readonly IInaraPublisher inaraPublisher;
     private readonly RavenThemeService? themeService;
     private readonly LegacyProfileImporter profileImporter;
     private readonly QuestRuntimeCoordinator questRuntimeCoordinator;
@@ -184,7 +186,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         ICanonnHumanSiteClient? canonnHumanSiteClient = null,
         ICanonnHumanSitePublisher? canonnHumanSitePublisher = null,
         IEddnPublisher? eddnPublisher = null,
-        ISystemBodyDataClient? systemBodyDataClient = null)
+        ISystemBodyDataClient? systemBodyDataClient = null,
+        IInaraPublisher? inaraPublisher = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
@@ -362,6 +365,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 ?? new VrOverlayCalibrationStore(AppDataPaths.DataDirectory));
         NetworkPrivacy = new NetworkPrivacyViewModel(
             new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
+        Inara = new InaraSettingsViewModel(
+            new InaraSettingsStore(AppDataPaths.UiSettingsPath),
+            commanderProfileStore);
+        this.inaraPublisher = inaraPublisher ?? new InaraPublisher(
+            (typeof(MainWindowViewModel).Assembly.GetName().Version
+                ?? new Version(0, 0)).ToString());
         this.eddnPublisher = eddnPublisher ?? new EddnPublisher(
             (typeof(MainWindowViewModel).Assembly.GetName().Version
                 ?? new Version(0, 0)).ToString());
@@ -707,6 +716,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public GalaxyMapOverlayViewModel GalaxyMap { get; }
 
     public NetworkPrivacyViewModel NetworkPrivacy { get; }
+
+    public InaraSettingsViewModel Inara { get; }
 
     public QuestWorkspaceViewModel QuestWorkspace { get; }
 
@@ -2008,6 +2019,48 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             applicationLogService?.Append(warning);
         }
 
+        try
+        {
+            var inaraResult = await inaraPublisher.ApplyAsync(
+                new InaraPublicationUpdate(
+                    update.JournalEvents,
+                    latestStatus,
+                    latestCargo,
+                    update.JournalPath,
+                    AllowPublishing: !update.IsBootstrapRead,
+                    AllowSharedData: allowSharedCargo,
+                    journalState.SystemName,
+                    journalState.StationName,
+                    journalState.BodyName,
+                    journalState.ShipType,
+                    journalState.ShipId,
+                    journalState.ShipName,
+                    journalState.ShipIdent,
+                    new InaraPublicationOptions(
+                        Inara.UploadEnabled,
+                        Inara.DeveloperTestMode,
+                        Inara.StoredApiKey,
+                        activeProfileCommanderName
+                            ?? journalState.CommanderName,
+                        activeProfileFrontierId
+                            ?? journalState.FrontierId,
+                        journalState.GameVersion,
+                        journalState.IsOdyssey ?? true)));
+            Inara.ReportPublicationResult(inaraResult);
+            foreach (var warning in inaraResult.Warnings)
+            {
+                applicationLogService?.Append(warning);
+            }
+        }
+        catch (Exception exception) when (
+            exception is not OperationCanceledException)
+        {
+            Inara.ReportPublicationFailure(exception);
+            applicationLogService?.Append(
+                "Inara processing was isolated from journal tracking: "
+                + exception.Message);
+        }
+
         if (requestShutdown
             && journalCommandShutdownRequester is { } requestShutdownAsync)
         {
@@ -2204,6 +2257,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         if (result.Data is null)
         {
             activeProfileRavenApiKey = null;
+            Inara.SetCommanderProfile(
+                null,
+                journalState.CommanderName,
+                isOdyssey,
+                inaraApiKey: null);
             SurfaceSurvey.Reset();
             Combat.LoadProfile(null, null, isOdyssey, CombatSnapshot.Empty);
             Colonization.SetCommanderProfile(null, isOdyssey, apiKey: null);
@@ -2223,6 +2281,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         activeProfileRavenApiKey = result.Data.RavenColonialApiKey;
+        Inara.SetCommanderProfile(
+            result.Data.FrontierId,
+            activeProfileCommanderName,
+            result.Data.IsOdyssey,
+            result.Data.InaraApiKey);
         Colonization.SetCommanderProfile(
             result.Data.FrontierId,
             result.Data.IsOdyssey,
@@ -3285,6 +3348,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Colonization.Dispose();
         GalaxyMap.Dispose();
         QuestWorkspace.Dispose();
+        inaraPublisher.Dispose();
         CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged;
         CommanderInstances.Dispose();
         BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged;

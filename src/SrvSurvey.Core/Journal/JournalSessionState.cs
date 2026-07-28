@@ -19,6 +19,12 @@ public sealed class JournalSessionState
 
     public string? ShipType { get; private set; }
 
+    public long? ShipId { get; private set; }
+
+    public string? ShipName { get; private set; }
+
+    public string? ShipIdent { get; private set; }
+
     public string? ActiveSrvType { get; private set; }
 
     public OdysseySuitType CurrentSuit { get; private set; }
@@ -26,6 +32,8 @@ public sealed class JournalSessionState
     public bool IsFighterLaunched { get; private set; }
 
     public string? SystemName { get; private set; }
+
+    public string? StationName { get; private set; }
 
     public long? SystemAddress { get; private set; }
 
@@ -72,15 +80,39 @@ public sealed class JournalSessionState
                 GameBuild = GetString(root, "build") ?? GameBuild;
                 IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
                 ShipType = GetString(root, "Ship") ?? ShipType;
+                ShipId = GetInt64(root, "ShipID") ?? ShipId;
+                ShipName = GetString(root, "ShipName") ?? ShipName;
+                ShipIdent = GetString(root, "ShipIdent") ?? ShipIdent;
                 IsShutdown = false;
                 break;
 
             case "Loadout":
                 ShipType = GetString(root, "Ship") ?? ShipType;
+                ShipId = GetInt64(root, "ShipID") ?? ShipId;
+                ShipName = GetString(root, "ShipName") ?? ShipName;
+                ShipIdent = GetString(root, "ShipIdent")
+                    ?? GetString(root, "ShipIDent")
+                    ?? ShipIdent;
                 break;
 
             case "ShipyardSwap":
                 ShipType = GetString(root, "ShipType") ?? ShipType;
+                ShipId = GetInt64(root, "ShipID") ?? ShipId;
+                break;
+
+            case "ShipyardBuy":
+            case "ShipyardNew":
+                ShipType = GetString(root, "ShipType") ?? ShipType;
+                ShipId = GetInt64(root, "NewShipID")
+                    ?? GetInt64(root, "ShipID")
+                    ?? ShipId;
+                break;
+
+            case "SetUserShipName":
+                ShipType = GetString(root, "Ship") ?? ShipType;
+                ShipId = GetInt64(root, "ShipID") ?? ShipId;
+                ShipName = GetString(root, "UserShipName") ?? ShipName;
+                ShipIdent = GetString(root, "UserShipId") ?? ShipIdent;
                 break;
 
             case "LaunchSRV":
@@ -105,6 +137,28 @@ public sealed class JournalSessionState
                 break;
 
             case "Location":
+                SystemName = GetString(root, "StarSystem") ?? SystemName;
+                SystemAddress = GetInt64(root, "SystemAddress") ?? SystemAddress;
+                StarPosition = GetGalacticCoordinate(root, "StarPos")
+                    ?? StarPosition;
+                BodyName = GetCurrentPlanetName(root);
+                StationName = GetBoolean(root, "Docked") == true
+                    ? GetString(root, "StationName") ?? StationName
+                    : null;
+                IsShutdown = false;
+                break;
+
+            case "Docked":
+                SystemName = GetString(root, "StarSystem") ?? SystemName;
+                SystemAddress = GetInt64(root, "SystemAddress") ?? SystemAddress;
+                StationName = GetString(root, "StationName") ?? StationName;
+                IsShutdown = false;
+                break;
+
+            case "Undocked":
+                StationName = null;
+                break;
+
             case "SupercruiseExit":
             case "FSDJump":
             case "CarrierJump":
@@ -113,6 +167,7 @@ public sealed class JournalSessionState
                 StarPosition = GetGalacticCoordinate(root, "StarPos")
                     ?? StarPosition;
                 BodyName = GetCurrentPlanetName(root);
+                StationName = null;
                 IsShutdown = false;
                 break;
 

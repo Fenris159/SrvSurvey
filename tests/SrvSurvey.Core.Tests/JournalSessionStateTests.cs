@@ -162,6 +162,44 @@ public sealed class JournalSessionStateTests
         Assert.Equal(OdysseySuitType.Dominator, state.CurrentSuit);
     }
 
+    [Fact]
+    public void TracksShipAndStationIdentityForExternalEventMapping()
+    {
+        var state = new JournalSessionState();
+
+        Assert.True(state.Apply(Parse("""
+            {
+              "event": "Loadout",
+              "Ship": "mandalay",
+              "ShipID": 42,
+              "ShipName": "Surveyor",
+              "ShipIdent": "SRV-42"
+            }
+            """)));
+        Assert.True(state.Apply(Parse("""
+            {
+              "event": "Docked",
+              "StarSystem": "Sol",
+              "SystemAddress": 10477373803,
+              "StationName": "Galileo"
+            }
+            """)));
+
+        Assert.Equal("mandalay", state.ShipType);
+        Assert.Equal(42, state.ShipId);
+        Assert.Equal("Surveyor", state.ShipName);
+        Assert.Equal("SRV-42", state.ShipIdent);
+        Assert.Equal("Galileo", state.StationName);
+
+        Assert.True(state.Apply(Parse("""
+            {
+              "event": "Undocked",
+              "StationName": "Galileo"
+            }
+            """)));
+        Assert.Null(state.StationName);
+    }
+
     private static JournalEventEnvelope Parse(string json)
     {
         var success = JournalEventEnvelope.TryParse(json, out var journalEvent, out var error);
