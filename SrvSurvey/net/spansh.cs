@@ -1136,6 +1136,12 @@ namespace SrvSurvey.net
                 public int bodyId;
                 public double? distanceToArrival;
                 public double? semiMajorAxis;
+                public double? orbitalPeriod;
+                public double? orbitalEccentricity;
+                public double? orbitalInclination;
+                public double? argOfPeriapsis;
+                public double? ascendingNode;
+                public double? meanAnomaly;
                 public long? id64;
                 public string luminosity;
                 public bool? mainStar;
@@ -1152,6 +1158,7 @@ namespace SrvSurvey.net
                 public double? surfacePressure;
                 public string type;
                 public DateTimeOffset updateTime;
+                public Dictionary<string, DateTimeOffset>? timestamps;
 
                 public double? earthMasses;
                 public decimal? radius;

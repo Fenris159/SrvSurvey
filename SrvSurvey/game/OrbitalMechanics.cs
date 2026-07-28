@@ -266,6 +266,65 @@ namespace SrvSurvey.game
         }
     }
 
+    internal readonly record struct OrbitalElementsSnapshot(
+        double SemiMajorAxisMeters,
+        double Eccentricity,
+        double Inclination,
+        double ArgumentOfPeriapsis,
+        double LongitudeAscendingNode,
+        double MeanAnomalyAtEpoch,
+        DateTimeOffset Epoch,
+        double OrbitalPeriodSeconds);
+
+    internal static class OrbitalDataConversions
+    {
+        private const double MetersPerAstronomicalUnit = 149_597_870_700d;
+        private const double SecondsPerDay = 86_400d;
+
+        public static double AuToMeters(double astronomicalUnits)
+            => astronomicalUnits * MetersPerAstronomicalUnit;
+
+        public static bool TryNormalizeSpanshOrbit(
+            double? semiMajorAxisAu,
+            double? orbitalPeriodDays,
+            double? eccentricity,
+            double? inclination,
+            double? argumentOfPeriapsis,
+            double? longitudeAscendingNode,
+            double? meanAnomaly,
+            DateTimeOffset? meanAnomalyTimestamp,
+            out OrbitalElementsSnapshot snapshot)
+        {
+            snapshot = default;
+            if (!semiMajorAxisAu.HasValue || !orbitalPeriodDays.HasValue || !eccentricity.HasValue
+                || !inclination.HasValue || !argumentOfPeriapsis.HasValue || !longitudeAscendingNode.HasValue
+                || !meanAnomaly.HasValue || !meanAnomalyTimestamp.HasValue)
+                return false;
+
+            double semiMajorAxisMeters = AuToMeters(semiMajorAxisAu.Value);
+            double orbitalPeriodSeconds = orbitalPeriodDays.Value * SecondsPerDay;
+            if (!double.IsFinite(semiMajorAxisMeters) || semiMajorAxisMeters <= 0
+                || !double.IsFinite(orbitalPeriodSeconds) || orbitalPeriodSeconds <= 0
+                || !double.IsFinite(eccentricity.Value) || eccentricity.Value < 0 || eccentricity.Value >= 1
+                || !double.IsFinite(inclination.Value)
+                || !double.IsFinite(argumentOfPeriapsis.Value)
+                || !double.IsFinite(longitudeAscendingNode.Value)
+                || !double.IsFinite(meanAnomaly.Value))
+                return false;
+
+            snapshot = new OrbitalElementsSnapshot(
+                semiMajorAxisMeters,
+                eccentricity.Value,
+                inclination.Value,
+                argumentOfPeriapsis.Value,
+                longitudeAscendingNode.Value,
+                meanAnomaly.Value,
+                meanAnomalyTimestamp.Value.ToUniversalTime(),
+                orbitalPeriodSeconds);
+            return true;
+        }
+    }
+
     /// <summary>
     /// Route optimizer: exact dynamic-programming solution for small systems, heuristic for large ones.
     /// </summary>
