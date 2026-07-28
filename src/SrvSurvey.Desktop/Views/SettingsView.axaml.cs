@@ -140,6 +140,15 @@ public sealed partial class SettingsView : UserControl
             "the Raven Colonial Green Gas Giant guide");
     }
 
+    private async void OpenInaraApiKeyPage_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        await OpenSettingsUriAsync(
+            new Uri("https://inara.cz/elite/cmdr-settings-api/"),
+            "the Inara API key page");
+    }
+
     private async Task OpenSettingsUriAsync(Uri uri, string description)
     {
         if (DataContext is not MainWindowViewModel viewModel)
