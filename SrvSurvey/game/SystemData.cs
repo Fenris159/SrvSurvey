@@ -1377,7 +1377,8 @@ namespace SrvSurvey.game
                 if (body.type == SystemBodyType.SolidBody && entry.isLandable == true) body.type = SystemBodyType.LandableBody;
 
                 if (body.distanceFromArrivalLS == 0) body.distanceFromArrivalLS = entry.distanceToArrival;
-                if (body.semiMajorAxis == 0) body.semiMajorAxis = Util.lsToM(entry.semiMajorAxis ?? 0); // convert from LS to M
+                if (body.semiMajorAxis == 0 && entry.semiMajorAxis > 0)
+                    body.semiMajorAxis = Util.auToM(entry.semiMajorAxis.Value);
                 if (body.absoluteMagnitude == 0) body.absoluteMagnitude = entry.absoluteMagnitude;
                 if (body.radius == 0 && entry.radius > 0) body.radius = entry.radius * 1000;
                 body.planetClass ??= getPlanetClassFromExternal(entry.subType);
@@ -1490,6 +1491,7 @@ namespace SrvSurvey.game
             }
 
             var shouldPredictBios = false;
+            var orbitalDataChanged = false;
 
             // update bodies from response
             foreach (var entry in spanshSystem.bodies)
@@ -1509,11 +1511,38 @@ namespace SrvSurvey.game
                 if (body.type == SystemBodyType.SolidBody && entry.isLandable == true) body.type = SystemBodyType.LandableBody;
 
                 if (body.distanceFromArrivalLS == 0) body.distanceFromArrivalLS = entry.distanceToArrival ?? 0;
-                if (body.semiMajorAxis == 0) body.semiMajorAxis = Util.lsToM(entry.semiMajorAxis ?? 0); // convert from LS to M
+                if (body.semiMajorAxis == 0 && entry.semiMajorAxis > 0)
+                    body.semiMajorAxis = Util.auToM(entry.semiMajorAxis.Value);
                 if (body.absoluteMagnitude == 0) body.absoluteMagnitude = entry.absoluteMagnitude ?? 0;
                 if (body.radius == 0 && entry.radius != null) body.radius = entry.radius.Value * 1000;
                 if (body.radius == 0 && entry.solarRadius != null) body.radius = (decimal)entry.solarRadius * 695_700_000; // radius of the sun in m
-                if (body.parents == null && entry.parents != null) body.parents = entry.parents;
+                if (body.parents == null && entry.parents != null)
+                {
+                    body.parents = entry.parents;
+                    orbitalDataChanged = true;
+                }
+                if (!body.orbitalEpoch.HasValue
+                    && OrbitalDataConversions.TryNormalizeSpanshOrbit(
+                        entry.semiMajorAxis,
+                        entry.orbitalPeriod,
+                        entry.orbitalEccentricity,
+                        entry.orbitalInclination,
+                        entry.argOfPeriapsis,
+                        entry.ascendingNode,
+                        entry.meanAnomaly,
+                        entry.timestamps?.GetValueOrDefault("meanAnomaly"),
+                        out var orbit))
+                {
+                    body.semiMajorAxis = orbit.SemiMajorAxisMeters;
+                    body.eccentricity = orbit.Eccentricity;
+                    body.orbitalInclination = orbit.Inclination;
+                    body.periapsis = orbit.ArgumentOfPeriapsis;
+                    body.ascendingNode = orbit.LongitudeAscendingNode;
+                    body.meanAnomaly = orbit.MeanAnomalyAtEpoch;
+                    body.orbitalEpoch = orbit.Epoch;
+                    body.orbitalPeriod = orbit.OrbitalPeriodSeconds;
+                    orbitalDataChanged = true;
+                }
                 if (body.planetClass == null) body.planetClass = getPlanetClassFromExternal(entry.subType);
                 if (!body.tidalLock.HasValue && entry.rotationalPeriodTidallyLocked.HasValue) body.tidalLock = entry.rotationalPeriodTidallyLocked.Value;
                 if (!string.IsNullOrEmpty(entry.terraformingState))
@@ -1605,6 +1634,9 @@ namespace SrvSurvey.game
                 // and keep track of any space stations
                 this.spanshStations = spanshSystem.getAllStations();
             }
+
+            if (orbitalDataChanged)
+                this.invalidateOptimalRoute();
 
             if (shouldPredictBios && Game.ready)
             {

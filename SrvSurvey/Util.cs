@@ -56,10 +56,9 @@ static class Util
         return m / 299_792_458d;
     }
 
-    public static double auToM(double ls)
+    public static double auToM(double au)
     {
-        // 299792458 M per AU
-        return 299_792_458d * ls;
+        return OrbitalDataConversions.AuToMeters(au);
     }
 
     public static string metersToString(decimal m, bool asDelta = false)

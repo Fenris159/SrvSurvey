@@ -62,6 +62,74 @@ public class OrbitalMechanicsTests
     }
 
     [Fact]
+    public void TryNormalizeSpanshOrbit_converts_units_and_preserves_the_mean_anomaly_epoch()
+    {
+        var epoch = DateTimeOffset.Parse("2026-07-28T05:13:09-05:00");
+
+        bool success = OrbitalDataConversions.TryNormalizeSpanshOrbit(
+            semiMajorAxisAu: 1,
+            orbitalPeriodDays: 2,
+            eccentricity: 0.25,
+            inclination: 3,
+            argumentOfPeriapsis: 4,
+            longitudeAscendingNode: 5,
+            meanAnomaly: 6,
+            meanAnomalyTimestamp: epoch,
+            out var snapshot);
+
+        Assert.True(success);
+        Assert.Equal(149_597_870_700d, snapshot.SemiMajorAxisMeters);
+        Assert.Equal(172_800d, snapshot.OrbitalPeriodSeconds);
+        Assert.Equal(0.25, snapshot.Eccentricity);
+        Assert.Equal(3, snapshot.Inclination);
+        Assert.Equal(4, snapshot.ArgumentOfPeriapsis);
+        Assert.Equal(5, snapshot.LongitudeAscendingNode);
+        Assert.Equal(6, snapshot.MeanAnomalyAtEpoch);
+        Assert.Equal(epoch.ToUniversalTime(), snapshot.Epoch);
+    }
+
+    [Theory]
+    [InlineData(null, 1d, 0d)]
+    [InlineData(1d, null, 0d)]
+    [InlineData(1d, 1d, -0.1d)]
+    [InlineData(1d, 1d, 1d)]
+    public void TryNormalizeSpanshOrbit_rejects_incomplete_or_non_elliptical_data(
+        double? semiMajorAxisAu,
+        double? orbitalPeriodDays,
+        double? eccentricity)
+    {
+        bool success = OrbitalDataConversions.TryNormalizeSpanshOrbit(
+            semiMajorAxisAu,
+            orbitalPeriodDays,
+            eccentricity,
+            inclination: 0,
+            argumentOfPeriapsis: 0,
+            longitudeAscendingNode: 0,
+            meanAnomaly: 0,
+            meanAnomalyTimestamp: DateTimeOffset.UnixEpoch,
+            out _);
+
+        Assert.False(success);
+    }
+
+    [Fact]
+    public void TryNormalizeSpanshOrbit_requires_the_mean_anomaly_timestamp()
+    {
+        bool success = OrbitalDataConversions.TryNormalizeSpanshOrbit(
+            semiMajorAxisAu: 1,
+            orbitalPeriodDays: 1,
+            eccentricity: 0,
+            inclination: 0,
+            argumentOfPeriapsis: 0,
+            longitudeAscendingNode: 0,
+            meanAnomaly: 0,
+            meanAnomalyTimestamp: null,
+            out _);
+
+        Assert.False(success);
+    }
+
+    [Fact]
     public void OptimizeRoute_finds_the_shortest_open_path_and_removes_duplicates()
     {
         var calculator = CalculatorWithFixedPositions(0, 1, 2, 3);
