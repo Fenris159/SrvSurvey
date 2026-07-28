@@ -1,0 +1,317 @@
+using Newtonsoft.Json.Linq;
+using SrvSurvey.Core.Inara;
+
+namespace SrvSurvey.Core.Tests.Inara;
+
+public sealed class InaraMapperTests
+{
+    private static readonly InaraContext Context = new(
+        "Test Commander",
+        "F123456",
+        "Sol",
+        "Galileo",
+        "Earth",
+        "CobraMkIII",
+        42,
+        "Surveyor",
+        "SRV-42",
+        false);
+
+    [Fact]
+    public void PayloadUsesOnlyTheCommandersPersonalKey()
+    {
+        var credentials = new InaraCredentials(
+            "Test Commander",
+            "F123456",
+            "personal-key");
+        var events = new[]
+        {
+            new InaraEvent(
+                "getCommanderProfile",
+                "2026-07-28T12:00:00Z",
+                new JObject()),
+        };
+
+        var payload = InaraPayloadBuilder.Build(
+            "2.0.95.0",
+            credentials,
+            events,
+            false);
+        var header = Assert.IsType<JObject>(payload["header"]);
+
+        Assert.Equal("SrvSurvey", header.Value<string>("appName"));
+        Assert.Equal("personal-key", header.Value<string>("APIkey"));
+        Assert.Equal(
+            "Test Commander",
+            header.Value<string>("commanderName"));
+        Assert.Equal(
+            "F123456",
+            header.Value<string>("commanderFrontierID"));
+        Assert.False(header.Value<bool>("isBeingDeveloped"));
+        Assert.Null(header["applicationKey"]);
+        Assert.Null(header["applicationAccessToken"]);
+    }
+
+    [Fact]
+    public void DeveloperTestModeIsSentOnlyWhenEnabled()
+    {
+        var payload = InaraPayloadBuilder.Build(
+            "2.0.95.0",
+            new InaraCredentials(
+                "Test Commander",
+                "F123456",
+                "personal-key"),
+            [
+                new InaraEvent(
+                    "getCommanderProfile",
+                    "2026-07-28T12:00:00Z",
+                    new JObject()),
+            ],
+            true);
+
+        var header = Assert.IsType<JObject>(payload["header"]);
+        Assert.True(header.Value<bool>("isBeingDeveloped"));
+    }
+
+    [Theory]
+    [InlineData(true, "key", "4.0.0.1900", false, false, true)]
+    [InlineData(false, "key", "4.0.0.1900", false, false, false)]
+    [InlineData(true, null, "4.0.0.1900", false, false, false)]
+    [InlineData(true, "key", "3.8.0.0", false, false, false)]
+    [InlineData(true, "key", "4.0 Beta", false, false, false)]
+    [InlineData(true, "key", "4.0.0.1900", false, true, false)]
+    public void UploadPolicyRequiresExplicitSafeConditions(
+        bool enabled,
+        string? apiKey,
+        string gameVersion,
+        bool isOdyssey,
+        bool inMulticrew,
+        bool expected)
+    {
+        Assert.Equal(
+            expected,
+            InaraPublisher.CanUpload(
+                enabled,
+                apiKey,
+                gameVersion,
+                isOdyssey,
+                inMulticrew));
+    }
+
+    [Theory]
+    [InlineData("4.0.0.1900", false, true)]
+    [InlineData("4.1.0.100", false, true)]
+    [InlineData("3.8.0.0", false, false)]
+    [InlineData(null, true, true)]
+    [InlineData(null, false, false)]
+    public void LiveGalaxyDetectionIncludesHorizonsFour(
+        string? gameVersion,
+        bool isOdyssey,
+        bool expected)
+    {
+        Assert.Equal(
+            expected,
+            InaraPublisher.IsLiveVersion(gameVersion, isOdyssey));
+    }
+
+    [Fact]
+    public void FsdJumpMapsToInaraTravelEvent()
+    {
+        var mapper = new InaraEventMapper();
+        var mapped = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:00:00Z",
+              "event": "FSDJump",
+              "StarSystem": "Alpha Centauri",
+              "StarPos": [3.03125, -0.09375, 3.15625],
+              "JumpDist": 4.37
+            }
+            """), Context, true);
+
+        var jump = Assert.Single(
+            mapped,
+            item => item.Name == "addCommanderTravelFSDJump");
+        Assert.Equal(
+            "Alpha Centauri",
+            jump.Data.Value<string>("starsystemName"));
+        Assert.Equal(4.37, jump.Data.Value<double>("jumpDistance"));
+        Assert.Equal(42, jump.Data.Value<long>("shipGameID"));
+    }
+
+    [Fact]
+    public void UnknownTaxiStateDoesNotClaimTheCommandersShip()
+    {
+        var mapper = new InaraEventMapper();
+        var mapped = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:00:00Z",
+              "event": "FSDJump",
+              "StarSystem": "Alpha Centauri",
+              "StarPos": [3.03125, -0.09375, 3.15625],
+              "JumpDist": 4.37
+            }
+            """), Context with { IsTaxi = null }, true);
+
+        var jump = Assert.Single(
+            mapped,
+            item => item.Name == "addCommanderTravelFSDJump");
+        Assert.Null(jump.Data["isTaxiShuttle"]);
+        Assert.Null(jump.Data["shipGameID"]);
+        Assert.Null(jump.Data["shipType"]);
+    }
+
+    [Fact]
+    public void CargoSnapshotsReplaceOlderQueuedSnapshots()
+    {
+        var mapper = new InaraEventMapper();
+        var credentials = new InaraCredentials(
+            "Test Commander",
+            "F123456",
+            "personal-key");
+        var queue = new InaraEventQueue();
+
+        var initial = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:00:00Z",
+              "event": "Cargo",
+              "Vessel": "Ship",
+              "Inventory": [{ "Name": "tea", "Count": 2 }]
+            }
+            """), Context, true);
+        queue.Enqueue(
+            credentials,
+            initial.Where(item => item.ReplaceKey == "inventory:cargo"));
+
+        var changed = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:01:00Z",
+              "event": "CargoTransfer",
+              "Transfers": [
+                { "Type": "tea", "Count": 3, "Direction": "toship" }
+              ]
+            }
+            """), Context, true);
+        queue.Enqueue(
+            credentials,
+            changed.Where(item => item.ReplaceKey == "inventory:cargo"));
+
+        var queued = Assert.Single(queue.TakeAll());
+        var cargo = Assert.IsType<JArray>(queued.Event.Data);
+        Assert.Equal(
+            5,
+            Assert.Single(cargo.OfType<JObject>())
+                .Value<int>("itemCount"));
+    }
+
+    [Fact]
+    public void MulticrewSuppressesUploadsUntilCrewIsLeft()
+    {
+        var mapper = new InaraEventMapper();
+        mapper.Process(JObject.Parse("""
+            { "timestamp": "2026-07-28T12:00:00Z", "event": "JoinACrew" }
+            """), Context, true);
+
+        var suppressed = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:01:00Z",
+              "event": "FSDJump",
+              "StarSystem": "Sirius",
+              "StarPos": [6.25, -1.25, -5.75],
+              "JumpDist": 8.6
+            }
+            """), Context, true);
+        Assert.True(mapper.InMulticrew);
+        Assert.Empty(suppressed);
+
+        mapper.Process(JObject.Parse("""
+            { "timestamp": "2026-07-28T12:02:00Z", "event": "QuitACrew" }
+            """), Context, true);
+        var resumed = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:03:00Z",
+              "event": "FSDJump",
+              "StarSystem": "Sirius",
+              "StarPos": [6.25, -1.25, -5.75],
+              "JumpDist": 8.6
+            }
+            """), Context, true);
+
+        Assert.False(mapper.InMulticrew);
+        Assert.Contains(
+            resumed,
+            item => item.Name == "addCommanderTravelFSDJump");
+    }
+
+    [Fact]
+    public void CreditTransactionsUseTheDocumentedHourlyCadence()
+    {
+        var mapper = new InaraEventMapper();
+        var startup = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:00:00Z",
+              "event": "LoadGame",
+              "Credits": 1000,
+              "Loan": 0
+            }
+            """), Context, true);
+        Assert.Single(
+            startup,
+            item => item.Name == "setCommanderCredits");
+
+        var purchase = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:10:00Z",
+              "event": "MarketBuy",
+              "Type": "tea",
+              "Count": 1,
+              "TotalCost": 100
+            }
+            """), Context, true);
+        Assert.DoesNotContain(
+            purchase,
+            item => item.Name == "setCommanderCredits");
+
+        var hourly = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T13:00:00Z",
+              "event": "Music",
+              "MusicTrack": "Exploration"
+            }
+            """), Context, true);
+        var report = Assert.Single(
+            hourly,
+            item => item.Name == "setCommanderCredits");
+        Assert.Equal(900, report.Data.Value<long>("commanderCredits"));
+    }
+
+    [Fact]
+    public void ShutdownFlushesAChangedBalanceBeforeTheHourlyWindow()
+    {
+        var mapper = new InaraEventMapper();
+        mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:00:00Z",
+              "event": "LoadGame",
+              "Credits": 1000,
+              "Loan": 0
+            }
+            """), Context, true);
+        mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:05:00Z",
+              "event": "MarketSell",
+              "Type": "tea",
+              "Count": 1,
+              "TotalSale": 250
+            }
+            """), Context, true);
+
+        var shutdown = mapper.Process(JObject.Parse("""
+            { "timestamp": "2026-07-28T12:06:00Z", "event": "Shutdown" }
+            """), Context, true);
+        var report = Assert.Single(
+            shutdown,
+            item => item.Name == "setCommanderCredits");
+        Assert.Equal(1250, report.Data.Value<long>("commanderCredits"));
+    }
+}
