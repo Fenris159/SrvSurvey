@@ -114,6 +114,46 @@ public sealed class EddnPublisherTests
     }
 
     [Fact]
+    public async Task JumpFlushesSignalBatchAgainstSourceSystem()
+    {
+        var requests = new List<RecordedRequest>();
+        using var publisher = CreatePublisher(requests);
+        await BootstrapAsync(publisher);
+
+        var result = await publisher.ApplyAsync(
+            [
+                Event("""
+                    {"timestamp":"2026-07-25T12:01:00Z","event":"FSSSignalDiscovered","SystemAddress":123,"SignalName":"High Grade Emissions","SignalType":"USS","USSType":"$USS_Type_VeryValuableSalvage;","ThreatLevel":0}
+                    """),
+                Event("""
+                    {"timestamp":"2026-07-25T12:02:00Z","event":"FSDJump","StarSystem":"Test B","SystemAddress":456,"StarPos":[4,5,6]}
+                    """),
+            ],
+            status: null,
+            enabled: true,
+            environment: "dev",
+            allowPublishing: true);
+        await publisher.ProcessPendingAsync();
+
+        Assert.Equal(2, result.Published.Count);
+        Assert.Equal(2, requests.Count);
+        using var signalPayload = JsonDocument.Parse(requests[0].Content);
+        var signalMessage = signalPayload.RootElement.GetProperty("message");
+        Assert.Equal(
+            "FSSSignalDiscovered",
+            signalMessage.GetProperty("event").GetString());
+        Assert.Equal(123, signalMessage.GetProperty("SystemAddress").GetInt64());
+        Assert.Equal("Test A", signalMessage.GetProperty("StarSystem").GetString());
+        Assert.Single(signalMessage.GetProperty("signals").EnumerateArray());
+        using var jumpPayload = JsonDocument.Parse(requests[1].Content);
+        Assert.Equal(
+            "Test B",
+            jumpPayload.RootElement.GetProperty("message")
+                .GetProperty("StarSystem")
+                .GetString());
+    }
+
+    [Fact]
     public async Task CodexBodyIdentityOnlyUsesContextWhenStatusAndJournalAgree()
     {
         var requests = new List<RecordedRequest>();

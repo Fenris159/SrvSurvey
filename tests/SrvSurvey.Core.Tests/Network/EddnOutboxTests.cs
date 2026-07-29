@@ -230,6 +230,87 @@ public sealed class EddnOutboxTests
         }
     }
 
+    [Fact]
+    public async Task OptOutFromNonOwnerCancelsOwnerAndDiscardsSharedQueue()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var handler = new CancelThenSucceedHandler();
+        using var client = new HttpClient(handler);
+        var transport = new EddnTransport(
+            client,
+            new Dictionary<string, Uri>(StringComparer.Ordinal)
+            {
+                ["dev"] = new("https://dev.example.test/upload/"),
+                ["beta"] = new("https://beta.example.test/upload/"),
+                ["live"] = new("https://live.example.test/upload/"),
+            });
+        using var owner = outbox(path, transport, () => now);
+        using var otherInstance = outbox(path, transport, () => now);
+        owner.setEnabled(true, discardPendingWhenDisabled: false);
+        otherInstance.setEnabled(true, discardPendingWhenDisabled: false);
+        Assert.True(owner.enqueue(queued(now)));
+        var processing = owner.processDue();
+        await handler.Entered.WaitAsync(TimeSpan.FromSeconds(2));
+
+        otherInstance.setEnabled(false, discardPendingWhenDisabled: true);
+
+        await processing.WaitAsync(TimeSpan.FromSeconds(2));
+        await waitUntil(
+            () => owner.pendingCount == 0 && !File.Exists(path),
+            TimeSpan.FromSeconds(2));
+        owner.setEnabled(true, discardPendingWhenDisabled: false);
+
+        Assert.False(owner.enqueue(queued(now, "Must Not Upload")));
+        Assert.Equal(0, owner.pendingCount);
+
+        otherInstance.setEnabled(true, discardPendingWhenDisabled: false);
+        await waitUntil(
+            () => owner.hasExclusiveOwnership
+                || otherInstance.hasExclusiveOwnership,
+            TimeSpan.FromSeconds(2));
+        Assert.True(
+            owner.enqueue(queued(now, "Sharing Restored"))
+                || otherInstance.enqueue(queued(now, "Sharing Restored")));
+    }
+
+    [Fact]
+    public void NullSchemaInPersistedQueueIsQuarantinedWithoutCrashing()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        File.WriteAllText(
+            path,
+            $$"""
+            [{
+              "id":"{{Guid.NewGuid()}}",
+              "created":"2026-07-28T12:00:00Z",
+              "nextAttempt":"2026-07-28T12:00:00Z",
+              "attempts":0,
+              "environment":"live",
+              "schemaRef":null,
+              "header":{"uploaderID":"Test Cmdr"},
+              "message":{"timestamp":"2026-07-28T12:00:00Z","event":"DockingGranted"}
+            }]
+            """);
+        var logs = new List<string>();
+
+        using var queue = new EddnOutbox(
+            path,
+            EddnTransportTests.createTransport(_ => Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK))),
+            logs.Add,
+            automaticProcessing: false);
+
+        Assert.Equal(0, queue.pendingCount);
+        Assert.False(File.Exists(path));
+        Assert.Single(Directory.GetFiles(folder.path, "*.bad-*"));
+        Assert.Contains(
+            logs,
+            line => line.Contains("invalid", StringComparison.OrdinalIgnoreCase));
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.BadRequest)]
     [InlineData(HttpStatusCode.RequestEntityTooLarge)]
@@ -394,6 +475,22 @@ public sealed class EddnOutboxTests
                 ["StationName"] = stationName,
             },
         };
+    }
+
+    private static async Task waitUntil(
+        Func<bool> condition,
+        TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (!condition())
+        {
+            if (DateTime.UtcNow >= deadline)
+            {
+                Assert.Fail("The expected cross-process state was not observed.");
+            }
+
+            await Task.Delay(20);
+        }
     }
 
     private sealed class TemporaryFolder : IDisposable

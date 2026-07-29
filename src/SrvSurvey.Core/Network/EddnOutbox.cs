@@ -20,6 +20,7 @@ namespace SrvSurvey.Core.Network
 
         private readonly string filepath;
         private readonly string ownershipPath;
+        private readonly string sharedDisablePath;
         private readonly EddnTransport transport;
         private readonly Action<string> log;
         private readonly Func<DateTimeOffset> utcNow;
@@ -28,9 +29,11 @@ namespace SrvSurvey.Core.Network
         private readonly SemaphoreSlim processing = new(1, 1);
         private readonly System.Threading.Timer timer;
         private readonly CancellationTokenSource shutdown = new();
+        private readonly FileSystemWatcher? sharedConsentWatcher;
         private CancellationTokenSource activityCancellation = new();
         private List<EddnQueuedMessage> pending;
         private FileStream? ownershipLease;
+        private bool? requestedEnabled;
         private bool enabled;
         private bool suspended;
         private bool ownershipWarningReported;
@@ -47,6 +50,7 @@ namespace SrvSurvey.Core.Network
             ArgumentNullException.ThrowIfNull(transport);
             this.filepath = filepath;
             ownershipPath = getOwnershipPath(filepath);
+            sharedDisablePath = ownershipPath + ".sharing-disabled";
             this.transport = transport;
             this.log = log ?? (_ => { });
             this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
@@ -63,6 +67,8 @@ namespace SrvSurvey.Core.Network
             {
                 tryAcquireOwnershipLocked(ownershipLogs);
             }
+
+            sharedConsentWatcher = createSharedConsentWatcher(ownershipLogs);
 
             writeLogs(ownershipLogs);
         }
@@ -85,6 +91,37 @@ namespace SrvSurvey.Core.Network
 
         internal void setEnabled(bool value, bool discardPendingWhenDisabled)
         {
+            bool publishDisable;
+            bool publishEnable;
+            lock (sync)
+            {
+                if (disposed) return;
+                publishDisable = !value && requestedEnabled != false;
+                publishEnable = value && requestedEnabled == false;
+                requestedEnabled = value;
+            }
+
+            string? markerLog = null;
+            if (publishDisable)
+            {
+                markerLog = writeSharedDisableMarker();
+            }
+            else if (publishEnable)
+            {
+                markerLog = clearSharedDisableMarker();
+            }
+
+            writeLog(markerLog);
+            var sharedDisabled = isSharedConsentDisabled();
+            applyEnabledState(
+                value && !sharedDisabled,
+                discardPendingWhenDisabled || sharedDisabled);
+        }
+
+        private void applyEnabledState(
+            bool value,
+            bool discardPendingWhenDisabled)
+        {
             var changed = false;
             string? persistenceLog = null;
             string? sharingLog = null;
@@ -92,7 +129,7 @@ namespace SrvSurvey.Core.Network
             List<string> ownershipLogs = [];
             var canSchedule = false;
             var acquiredOwnership = false;
-            var releaseOwnershipAfterUpdate = false;
+            var shouldReleaseOwnership = false;
             lock (sync)
             {
                 if (disposed) return;
@@ -119,11 +156,12 @@ namespace SrvSurvey.Core.Network
                         sharingLog = $"EDDN discarded {count:N0} pending upload(s) because sharing was disabled.";
                     }
 
-                    releaseOwnershipAfterUpdate = ownershipLease is not null;
                 }
 
                 canSchedule = enabled
                     && !suspended
+                    && ownershipLease is not null;
+                shouldReleaseOwnership = !enabled
                     && ownershipLease is not null;
             }
 
@@ -131,9 +169,9 @@ namespace SrvSurvey.Core.Network
             writeLogs(ownershipLogs);
             writeLog(persistenceLog);
             writeLog(sharingLog);
-            if (releaseOwnershipAfterUpdate)
+            if (shouldReleaseOwnership)
             {
-                releaseOwnership();
+                releaseOwnershipIfIdle();
             }
 
             if (canSchedule
@@ -176,15 +214,23 @@ namespace SrvSurvey.Core.Network
             }
         }
 
-        internal bool enqueue(EddnQueuedMessage message)
+        internal bool enqueue(
+            EddnQueuedMessage message,
+            bool allowWhileSuspended = false)
         {
             ArgumentNullException.ThrowIfNull(message);
+            if (isSharedConsentDisabled())
+            {
+                applyEnabledState(false, discardPendingWhenDisabled: true);
+                return false;
+            }
+
             string? persistenceLog = null;
             var queued = false;
             lock (sync)
             {
                 if (!enabled
-                    || suspended
+                    || (suspended && !allowWhileSuspended)
                     || disposed
                     || ownershipLease is null)
                 {
@@ -211,7 +257,7 @@ namespace SrvSurvey.Core.Network
             writeLog(persistenceLog);
             if (!queued) return false;
 
-            if (automaticProcessing) schedule(TimeSpan.Zero);
+            if (automaticProcessing && !suspended) schedule(TimeSpan.Zero);
             return true;
         }
 
@@ -222,6 +268,14 @@ namespace SrvSurvey.Core.Network
             {
                 while (true)
                 {
+                    if (isSharedConsentDisabled())
+                    {
+                        applyEnabledState(
+                            false,
+                            discardPendingWhenDisabled: true);
+                        return;
+                    }
+
                     EddnQueuedMessage? next;
                     CancellationToken activityToken;
                     lock (sync)
@@ -331,11 +385,13 @@ namespace SrvSurvey.Core.Network
             }
             finally
             {
-                if (disposed)
+                bool shouldReleaseOwnership;
+                lock (sync)
                 {
-                    releaseOwnership();
+                    shouldReleaseOwnership = disposed || !enabled;
                 }
 
+                if (shouldReleaseOwnership) releaseOwnership();
                 processing.Release();
             }
         }
@@ -366,6 +422,7 @@ namespace SrvSurvey.Core.Network
             cancellation.Cancel();
             shutdown.Cancel();
             timer.Dispose();
+            sharedConsentWatcher?.Dispose();
 
             if (processing.Wait(0))
             {
@@ -605,6 +662,7 @@ namespace SrvSurvey.Core.Network
                 && message.nextAttempt != default
                 && message.attempts >= 0
                 && message.environment is "live" or "beta" or "dev"
+                && !string.IsNullOrWhiteSpace(message.schemaRef)
                 && message.schemaRef.StartsWith(
                     "https://eddn.edcd.io/schemas/",
                     StringComparison.Ordinal)
@@ -630,6 +688,119 @@ namespace SrvSurvey.Core.Network
                 "SrvSurvey",
                 "eddn-outbox-locks",
                 hash + ".lock");
+        }
+
+        private FileSystemWatcher? createSharedConsentWatcher(
+            List<string> messages)
+        {
+            try
+            {
+                var folder = Path.GetDirectoryName(sharedDisablePath);
+                if (string.IsNullOrWhiteSpace(folder)) return null;
+                Directory.CreateDirectory(folder);
+                var watcher = new FileSystemWatcher(
+                    folder,
+                    Path.GetFileName(sharedDisablePath))
+                {
+                    NotifyFilter = NotifyFilters.FileName
+                        | NotifyFilters.LastWrite
+                        | NotifyFilters.CreationTime,
+                    IncludeSubdirectories = false,
+                };
+                watcher.Created += onSharedConsentChanged;
+                watcher.Changed += onSharedConsentChanged;
+                watcher.Deleted += onSharedConsentChanged;
+                watcher.Renamed += onSharedConsentChanged;
+                watcher.EnableRaisingEvents = true;
+                return watcher;
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or ArgumentException)
+            {
+                messages.Add(
+                    "EDDN could not monitor shared opt-out state: "
+                        + exception.Message);
+                return null;
+            }
+        }
+
+        private void onSharedConsentChanged(
+            object sender,
+            FileSystemEventArgs eventArgs)
+        {
+            bool shouldEnable;
+            lock (sync)
+            {
+                if (disposed) return;
+                shouldEnable = requestedEnabled == true;
+            }
+
+            var sharedDisabled = isSharedConsentDisabled();
+            applyEnabledState(
+                shouldEnable && !sharedDisabled,
+                discardPendingWhenDisabled: sharedDisabled);
+        }
+
+        private bool isSharedConsentDisabled()
+        {
+            return File.Exists(sharedDisablePath);
+        }
+
+        private string? writeSharedDisableMarker()
+        {
+            try
+            {
+                var folder = Path.GetDirectoryName(sharedDisablePath);
+                if (!string.IsNullOrWhiteSpace(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+
+                File.WriteAllText(
+                    sharedDisablePath,
+                    "EDDN sharing is disabled for all SrvSurvey instances.");
+                return null;
+            }
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException)
+            {
+                return "EDDN could not publish the shared opt-out state: "
+                    + exception.Message;
+            }
+        }
+
+        private string? clearSharedDisableMarker()
+        {
+            try
+            {
+                if (File.Exists(sharedDisablePath))
+                {
+                    File.Delete(sharedDisablePath);
+                }
+
+                return null;
+            }
+            catch (Exception exception) when (
+                exception is IOException or UnauthorizedAccessException)
+            {
+                return "EDDN could not clear the shared opt-out state: "
+                    + exception.Message;
+            }
+        }
+
+        private void releaseOwnershipIfIdle()
+        {
+            if (!processing.Wait(0)) return;
+            try
+            {
+                releaseOwnership();
+            }
+            finally
+            {
+                processing.Release();
+            }
         }
 
         private static TimeSpan getRetryDelay(int attempts)

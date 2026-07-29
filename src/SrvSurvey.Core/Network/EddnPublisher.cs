@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SrvSurvey.Core.Journal;
+using System.Threading.Channels;
 
 namespace SrvSurvey.Core.Network;
 
@@ -28,8 +29,9 @@ public interface IEddnPublisher
 
 /// <summary>
 /// Converts live Elite journal activity into schema-specific EDDN messages and
-/// commits those messages to a durable sender queue. No network request is
-/// awaited by the journal projection path.
+/// hands them to a single ordered persistence writer. Each message is committed
+/// to the durable outbox before the outbox can send it, while journal projection
+/// performs no queue-file I/O and awaits no network request.
 /// </summary>
 public sealed class EddnPublisher : IEddnPublisher, IDisposable
 {
@@ -57,6 +59,8 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     private readonly object companionTasksSync = new();
     private readonly EddnTransport transport;
     private readonly EddnOutbox outbox;
+    private readonly Channel<OutboxWriteCommand> outboxWrites;
+    private readonly Task outboxWriterTask;
     private readonly Action<string> log;
     private readonly string softwareVersion;
     private readonly CancellationTokenSource lifetimeCancellation = new();
@@ -66,6 +70,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     private readonly HashSet<Task> companionTasks = [];
     private UploadPayloadHeader? header;
     private EddnLocationContext? location;
+    private EddnLocationContext? pendingSignalLocation;
     private string? currentJournalPath;
     private string? statusBodyName;
     private string? trackedBodyName;
@@ -77,6 +82,9 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     private bool sharingEnabled;
     private bool publishingSuspended;
     private long sessionGeneration;
+    private long consentGeneration;
+    private int stagedWriteCount;
+    private volatile bool acceptingWrites = true;
     private volatile bool disposed;
 
     public EddnPublisher(
@@ -104,9 +112,19 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             WriteLog,
             utcNow,
             automaticProcessing);
+        outboxWrites = Channel.CreateBounded<OutboxWriteCommand>(
+            new BoundedChannelOptions(4096)
+            {
+                SingleReader = true,
+                SingleWriter = false,
+                FullMode = BoundedChannelFullMode.Wait,
+                AllowSynchronousContinuations = false,
+            });
+        outboxWriterTask = RunOutboxWriterAsync();
     }
 
-    public int PendingCount => outbox.pendingCount;
+    public int PendingCount => outbox.pendingCount
+        + Math.Max(0, Volatile.Read(ref stagedWriteCount));
 
     public static string NormalizeEnvironment(string? value)
     {
@@ -128,7 +146,8 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             if (changed && !enabled)
             {
                 sessionGeneration++;
-                pendingSignals.Clear();
+                consentGeneration++;
+                ClearPendingSignals();
                 stationSignatures.Clear();
             }
         }
@@ -151,7 +170,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             if (suspended)
             {
                 sessionGeneration++;
-                pendingSignals.Clear();
+                ClearPendingSignals();
                 stationSignatures.Clear();
             }
         }
@@ -237,7 +256,16 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                 if (eventName != "FSSSignalDiscovered"
                     && pendingSignals.Count > 0)
                 {
-                    var batchLocation = eventLocation ?? location;
+                    var batchLocation = pendingSignalLocation;
+                    if (batchLocation is null
+                        && eventLocation is not null
+                        && pendingSignals.All(signal =>
+                            signal.Value<long?>("SystemAddress")
+                                == eventLocation.systemAddress))
+                    {
+                        batchLocation = eventLocation;
+                    }
+
                     if (EddnMessageSanitizer.tryBuildSignalBatch(
                         pendingSignals,
                         batchLocation,
@@ -267,7 +295,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                                 + batchReason);
                     }
 
-                    pendingSignals.Clear();
+                    ClearPendingSignals();
                 }
 
                 if (eventLocation is not null)
@@ -295,6 +323,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                         && !isCrewMember
                         && HasUsableHeader())
                     {
+                        pendingSignalLocation ??= location;
                         pendingSignals.Add(new JObject(raw));
                     }
                 }
@@ -373,9 +402,11 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         return Task.FromResult(new EddnPublicationResult(queued, warnings));
     }
 
-    public Task ProcessPendingAsync(CancellationToken cancellationToken = default)
+    public async Task ProcessPendingAsync(
+        CancellationToken cancellationToken = default)
     {
-        return outbox.processDue(cancellationToken);
+        await FlushOutboxWritesAsync(cancellationToken).ConfigureAwait(false);
+        await outbox.processDue(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task WaitForCompanionReadsAsync(
@@ -396,6 +427,20 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 
     public void Dispose()
     {
+        acceptingWrites = false;
+        lifetimeCancellation.Cancel();
+        outboxWrites.Writer.TryComplete();
+        try
+        {
+            outboxWriterTask.GetAwaiter().GetResult();
+        }
+        catch (Exception exception)
+        {
+            WriteLog(
+                "EDDN queue writer stopped during shutdown: "
+                    + exception.GetBaseException().Message);
+        }
+
         lock (sync)
         {
             if (disposed)
@@ -406,11 +451,10 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             disposed = true;
             sharingEnabled = false;
             sessionGeneration++;
-            pendingSignals.Clear();
+            ClearPendingSignals();
             stationSignatures.Clear();
         }
 
-        lifetimeCancellation.Cancel();
         outbox.Dispose();
 
         // Companion continuations can still observe cancellation and outbox
@@ -460,7 +504,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         horizons = null;
         odyssey = null;
         isCrewMember = false;
-        pendingSignals.Clear();
+        ClearPendingSignals();
         stationSignatures.Clear();
     }
 
@@ -613,7 +657,10 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             candidate.Prepared.schemaRef,
             candidate.Header,
             candidate.Environment);
-        if (outbox.enqueue(item))
+        if (TryStageOutboxWrite(
+            item,
+            candidate.Generation,
+            candidate.Prepared.eventName))
         {
             queued.Add(new EddnPublishedEvent(
                 candidate.Prepared.eventName,
@@ -710,7 +757,11 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                 prepared.schemaRef,
                 candidate.Header,
                 candidate.Environment);
-            if (!outbox.enqueue(item))
+            if (!TryStageOutboxWrite(
+                item,
+                candidate.Generation,
+                eventName,
+                () => ReleaseStationSignature(signatureKey, signature)))
             {
                 ReleaseStationSignature(signatureKey, signature);
                 if (IsCurrentSession(candidate.Generation))
@@ -791,6 +842,117 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         }
     }
 
+    private bool TryStageOutboxWrite(
+        EddnQueuedMessage item,
+        long generation,
+        string eventName,
+        Action? rejected = null)
+    {
+        long acceptedConsentGeneration;
+        lock (sync)
+        {
+            if (!acceptingWrites || !IsCurrentSessionLocked(generation))
+            {
+                return false;
+            }
+
+            acceptedConsentGeneration = consentGeneration;
+        }
+
+        Interlocked.Increment(ref stagedWriteCount);
+        if (outboxWrites.Writer.TryWrite(new PersistOutboxWrite(
+            item,
+            acceptedConsentGeneration,
+            eventName,
+            rejected)))
+        {
+            return true;
+        }
+
+        Interlocked.Decrement(ref stagedWriteCount);
+        return false;
+    }
+
+    private async Task RunOutboxWriterAsync()
+    {
+        await foreach (var command in outboxWrites.Reader.ReadAllAsync())
+        {
+            if (command is FlushOutboxWrites flush)
+            {
+                flush.Completion.TrySetResult();
+                continue;
+            }
+
+            var write = (PersistOutboxWrite)command;
+            var persisted = false;
+            try
+            {
+                persisted = IsConsentCurrent(write.ConsentGeneration)
+                    && outbox.enqueue(
+                        write.Item,
+                        allowWhileSuspended: true);
+                if (!persisted)
+                {
+                    write.Rejected?.Invoke();
+                    if (IsConsentCurrent(write.ConsentGeneration))
+                    {
+                        WriteLog(
+                            $"EDDN could not persist {write.EventName} for upload.");
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                write.Rejected?.Invoke();
+                WriteLog(
+                    $"EDDN could not persist {write.EventName} for upload: "
+                        + exception.Message);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref stagedWriteCount);
+            }
+        }
+    }
+
+    private async Task FlushOutboxWritesAsync(
+        CancellationToken cancellationToken)
+    {
+        var completion = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        try
+        {
+            await outboxWrites.Writer.WriteAsync(
+                new FlushOutboxWrites(completion),
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (ChannelClosedException)
+        {
+            await outboxWriterTask.WaitAsync(cancellationToken)
+                .ConfigureAwait(false);
+            return;
+        }
+
+        await completion.Task.WaitAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private bool IsConsentCurrent(long generation)
+    {
+        lock (sync)
+        {
+            return !disposed
+                && sharingEnabled
+                && consentGeneration == generation;
+        }
+    }
+
+    private void ClearPendingSignals()
+    {
+        pendingSignals.Clear();
+        pendingSignalLocation = null;
+    }
+
     private bool IsCurrentSession(long generation)
     {
         lock (sync)
@@ -837,6 +999,17 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         string Environment,
         long Generation,
         string JournalDirectory);
+
+    private abstract record OutboxWriteCommand;
+
+    private sealed record PersistOutboxWrite(
+        EddnQueuedMessage Item,
+        long ConsentGeneration,
+        string EventName,
+        Action? Rejected) : OutboxWriteCommand;
+
+    private sealed record FlushOutboxWrites(
+        TaskCompletionSource Completion) : OutboxWriteCommand;
 }
 
 public sealed record EddnPublishedEvent(
