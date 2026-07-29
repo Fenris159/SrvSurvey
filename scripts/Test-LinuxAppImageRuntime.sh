@@ -99,4 +99,13 @@ if ! grep -R -Fq \
     exit 1
 fi
 
-echo "AppImage ELF dependency closure and XWayland-mode startup passed."
+if ! grep -R -Fq \
+    "X11 overlay stacking policy: standard topmost" \
+    "$smoke_root/data/SrvSurvey/logs"; then
+    echo "The AppImage did not use the safe overlay fallback when no window manager advertised KDE OSD support." >&2
+    cat "$smoke_log" >&2
+    find "$smoke_root/data" -maxdepth 4 -type f -print -exec sed -n '1,120p' {} \; >&2
+    exit 1
+fi
+
+echo "AppImage ELF dependency closure, XWayland startup, and overlay policy fallback passed."

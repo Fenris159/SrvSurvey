@@ -86,26 +86,38 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
             .ToArray();
         SelectedOverlay = Overlays.FirstOrDefault();
         StatusMessage = layout.Error
-            ?? "Positions are ready. Changes apply to visible overlays after Save.";
+            ?? "Opacity overrides are ready. Changes apply to visible overlays after Save.";
         OnPropertyChanged(nameof(Overlays));
         OnEditorChanged();
     }
 
     private void Save()
     {
-        var changed = Overlays
+        var dirty = Overlays
             .Where(overlay => overlay.IsDirty)
-            .ToDictionary(
-                overlay => overlay.Name,
-                overlay => overlay.Placement,
-                StringComparer.Ordinal);
-        if (changed.Count == 0 || hasLoadError)
+            .ToArray();
+        if (dirty.Length == 0 || hasLoadError)
         {
             return;
         }
 
         try
         {
+            var latest = store.Load();
+            if (latest.Error is not null)
+            {
+                throw new InvalidDataException(latest.Error);
+            }
+
+            var changed = dirty.ToDictionary(
+                overlay => overlay.Name,
+                overlay => overlay.HasPositionChanges
+                    ? overlay.Placement
+                    : overlay.ApplyOpacityTo(
+                        latest.Placements.GetValueOrDefault(
+                            overlay.Name,
+                            overlay.Placement)),
+                StringComparer.Ordinal);
             var result = store.Save(changed);
             var updated = store.Load();
             if (updated.Error is not null)
@@ -119,7 +131,7 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
                 overlay.AcceptChanges();
             }
 
-            StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} overlay position(s). "
+            StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} overlay setting(s). "
                 + "Visible overlays update immediately."
                 + (result.BackupPath is null
                     ? string.Empty
@@ -290,6 +302,19 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
         UseCustomOpacity ? CustomOpacityPercent / 100d : null);
 
     public bool IsDirty => Placement != acceptedPlacement;
+
+    public bool HasPositionChanges =>
+        HorizontalAnchor != acceptedPlacement.Horizontal
+        || HorizontalOffset != acceptedPlacement.HorizontalOffset
+        || VerticalAnchor != acceptedPlacement.Vertical
+        || VerticalOffset != acceptedPlacement.VerticalOffset;
+
+    public LegacyOverlayPlacement ApplyOpacityTo(
+        LegacyOverlayPlacement placement)
+    {
+        ArgumentNullException.ThrowIfNull(placement);
+        return placement with { Opacity = Placement.Opacity };
+    }
 
     public void ResetToDefault()
     {

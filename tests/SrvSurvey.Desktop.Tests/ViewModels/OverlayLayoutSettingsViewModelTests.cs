@@ -42,7 +42,7 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
 
         Assert.False(viewModel.IsDirty);
         Assert.False(viewModel.SaveCommand.CanExecute(null));
-        Assert.Contains("Saved 1 overlay position", viewModel.StatusMessage);
+        Assert.Contains("Saved 1 overlay setting", viewModel.StatusMessage);
         Assert.Contains("Previous layout backup", viewModel.StatusMessage);
         Assert.Equal(0.35, activeLayout.GetOpacity("PlotJumpInfo"));
         Assert.Equal(
@@ -79,6 +79,39 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
                 null),
             viewModel.SelectedOverlay.Placement);
         Assert.True(viewModel.IsDirty);
+    }
+
+    [Fact]
+    public void OpacitySavePreservesPositionChangedByDragEditor()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotJumpInfo\":\"center:0,top:8\"}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var viewModel = new OverlayLayoutSettingsViewModel(store, activeLayout);
+        var editor = viewModel.Overlays.Single(
+            overlay => overlay.Name == "PlotJumpInfo");
+        var draggedPlacement = new LegacyOverlayPlacement(
+            LegacyHorizontalAnchor.Screen,
+            -240,
+            LegacyVerticalAnchor.Bottom,
+            72,
+            null);
+        store.Save(new Dictionary<string, LegacyOverlayPlacement>
+        {
+            [editor.Name] = draggedPlacement,
+        });
+        activeLayout.ReplaceWith(store.Load());
+
+        editor.UseCustomOpacity = true;
+        editor.CustomOpacityPercent = 35;
+        viewModel.SaveCommand.Execute(null);
+
+        var saved = store.Load().Placements[editor.Name];
+        Assert.Equal(draggedPlacement with { Opacity = 0.35 }, saved);
+        Assert.Equal(saved, activeLayout.Placements[editor.Name]);
     }
 
     [Fact]

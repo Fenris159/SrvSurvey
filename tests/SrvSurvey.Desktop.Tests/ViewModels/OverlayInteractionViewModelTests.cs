@@ -219,6 +219,57 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.Contains("center:20, top:110", File.ReadAllText(path));
     }
 
+    [Fact]
+    public void OpacityPreviewCancelAndSaveShareThePositionEditSession()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var plottersPath = Path.Combine(temporaryDirectory, "plotters.json");
+        var settingsPath = Path.Combine(temporaryDirectory, "settings.json");
+        File.WriteAllText(
+            plottersPath,
+            "{\"PlotJumpInfo\":\"center:0, top:8\"}");
+        File.WriteAllText(settingsPath, "{\"plotterOpacity\":65}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            activeLayout,
+            new OverlayWindowRegistry(),
+            host);
+
+        Assert.True(viewModel.Begin());
+        Assert.Equal(65, viewModel.GlobalOpacityPercent);
+        viewModel.GlobalOpacityPercent = 40;
+        host.ChangeOpacity("PlotJumpInfo", 0.8);
+
+        Assert.Equal(40, host.LastDefaultOpacityPercent);
+        Assert.Equal(80, host.LastEffectiveOpacityPercent["PlotJumpInfo"]);
+        Assert.Equal("{\"plotterOpacity\":65}", File.ReadAllText(settingsPath));
+        Assert.DoesNotContain(", 0.8", File.ReadAllText(plottersPath));
+
+        viewModel.Cancel();
+
+        Assert.Equal(0.65, activeLayout.DefaultOpacity);
+        Assert.Null(activeLayout.Placements["PlotJumpInfo"].Opacity);
+
+        Assert.True(viewModel.Begin());
+        viewModel.GlobalOpacityPercent = 40;
+        host.ChangeOpacity("PlotJumpInfo", 0.8);
+        viewModel.Save();
+
+        Assert.False(viewModel.IsEditing);
+        Assert.Equal(0.4, activeLayout.DefaultOpacity);
+        Assert.Equal(0.8, activeLayout.Placements["PlotJumpInfo"].Opacity);
+        Assert.Contains(
+            "Saved 1 overlay position/opacity override",
+            viewModel.StatusMessage);
+        Assert.Contains("\"plotterOpacity\": 40", File.ReadAllText(settingsPath));
+        Assert.Contains(", 0.8", File.ReadAllText(plottersPath));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -269,6 +320,9 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     {
         public event EventHandler<OverlayPreviewMovedEventArgs>? PreviewMoved;
 
+        public event EventHandler<OverlayPreviewOpacityChangedEventArgs>?
+            PreviewOpacityChanged;
+
         public event EventHandler? Closed
         {
             add { }
@@ -280,6 +334,11 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         public PixelRect? PreferredHostBounds { get; private set; }
 
         public List<OverlayLayoutCategory> ShownCategories { get; } = [];
+
+        public double LastDefaultOpacityPercent { get; private set; }
+
+        public Dictionary<string, double> LastEffectiveOpacityPercent { get; } =
+            new(StringComparer.Ordinal);
 
         public bool Open(
             OverlayInteractionViewModel viewModel,
@@ -300,6 +359,16 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             ShownCategories.Add(category);
         }
 
+        public void RefreshPreviewOpacities(OverlayPositionEditSession session)
+        {
+            LastDefaultOpacityPercent = session.DefaultOpacity * 100d;
+            foreach (var definition in OverlayLayoutCatalog.Supported)
+            {
+                LastEffectiveOpacityPercent[definition.Name] =
+                    session.GetOpacity(definition.Name) * 100d;
+            }
+        }
+
         public void Close(bool restoreRuntimeWindows = true)
         {
             IsOpen = false;
@@ -318,6 +387,15 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
                     position,
                     previewSize,
                     hostBounds));
+        }
+
+        public void ChangeOpacity(string plotterName, double? opacityOverride)
+        {
+            PreviewOpacityChanged?.Invoke(
+                this,
+                new OverlayPreviewOpacityChangedEventArgs(
+                    plotterName,
+                    opacityOverride));
         }
 
         public void Dispose()

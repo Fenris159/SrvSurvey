@@ -24,10 +24,10 @@ public sealed class EddnTransportTests
             message(),
             "https://eddn.edcd.io/schemas/dockinggranted/1",
             header(),
-            "live");
+            useTestSchemas: false);
 
         Assert.True(result.isSuccess);
-        Assert.Equal("live", result.environment);
+        Assert.False(result.useTestSchemas);
         Assert.NotNull(recorded);
         Assert.Equal("https://live.example.test/upload/", recorded.uri.ToString());
         Assert.Equal(HttpVersion.Version11, recorded.version);
@@ -48,10 +48,8 @@ public sealed class EddnTransportTests
         Assert.Null(payloadHeader["gameVersion"]);
     }
 
-    [Theory]
-    [InlineData("dev")]
-    [InlineData("beta")]
-    public async Task NonLiveUploadSerializesTheTestSchemaReference(string environment)
+    [Fact]
+    public async Task TestSchemaUploadStillUsesTheLiveGateway()
     {
         RecordedRequest? recorded = null;
         var transport = createTransport(async request =>
@@ -64,13 +62,12 @@ public sealed class EddnTransportTests
             message(),
             "https://eddn.edcd.io/schemas/dockinggranted/1",
             header(),
-            environment);
+            useTestSchemas: true);
 
         Assert.True(result.isSuccess);
+        Assert.True(result.useTestSchemas);
         Assert.NotNull(recorded);
-        Assert.Equal(
-            $"https://{environment}.example.test/upload/",
-            recorded.uri.ToString());
+        Assert.Equal("https://live.example.test/upload/", recorded.uri.ToString());
         Assert.Equal(
             "https://eddn.edcd.io/schemas/dockinggranted/1/test",
             JObject.Parse(recorded.content).Value<string>("$schemaRef"));
@@ -94,7 +91,7 @@ public sealed class EddnTransportTests
             oversized,
             "https://eddn.edcd.io/schemas/dockinggranted/1",
             header(),
-            "live");
+            useTestSchemas: false);
 
         Assert.Equal(0, calls);
         Assert.False(result.isSuccess);
@@ -119,7 +116,7 @@ public sealed class EddnTransportTests
             oversized,
             "https://eddn.edcd.io/schemas/dockinggranted/1",
             header(),
-            "live");
+            useTestSchemas: false);
 
         Assert.Equal(0, calls);
         Assert.False(result.isSuccess);
@@ -144,7 +141,7 @@ public sealed class EddnTransportTests
             message(),
             "https://eddn.edcd.io/schemas/dockinggranted/1",
             header(),
-            "live");
+            useTestSchemas: false);
 
         Assert.Equal(expectedRetryable, result.isRetryable);
     }
@@ -162,24 +159,11 @@ public sealed class EddnTransportTests
             message(),
             "https://eddn.edcd.io/schemas/dockinggranted/1",
             header(),
-            "live");
+            useTestSchemas: false);
 
         Assert.False(result.isSuccess);
         Assert.Equal(HttpStatusCode.BadRequest, result.statusCode);
         Assert.Equal(EddnTransport.MaximumResponseDetailBytes, result.responseDetail.Length);
-    }
-
-    [Theory]
-    [InlineData(null, "live")]
-    [InlineData("", "live")]
-    [InlineData("unexpected", "live")]
-    [InlineData(" BETA ", "beta")]
-    [InlineData("DEV", "dev")]
-    public void EnvironmentIsRestrictedToKnownDestinations(
-        string? value,
-        string expected)
-    {
-        Assert.Equal(expected, EddnTransport.normalizeEnvironment(value));
     }
 
     internal static EddnTransport createTransport(
@@ -187,12 +171,7 @@ public sealed class EddnTransportTests
     {
         return new EddnTransport(
             new HttpClient(new StubHandler(response)),
-            new Dictionary<string, Uri>(StringComparer.Ordinal)
-            {
-                ["dev"] = new("https://dev.example.test/upload/"),
-                ["beta"] = new("https://beta.example.test/upload/"),
-                ["live"] = new("https://live.example.test/upload/"),
-            });
+            new Uri("https://live.example.test/upload/"));
     }
 
     internal static UploadPayloadHeader header()

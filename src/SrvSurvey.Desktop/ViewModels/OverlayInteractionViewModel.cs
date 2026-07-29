@@ -28,6 +28,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
     private PixelRect liveHostBounds;
     private bool disposed;
     private string statusMessage;
+    private double globalOpacityPercent = 100d;
 
     public OverlayInteractionViewModel(OverlayPlatformCapabilities capabilities)
     {
@@ -65,6 +66,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         this.registry = registry ?? OverlayWindowRegistry.Shared;
         this.editorHost = editorHost
             ?? new AvaloniaOverlayPositionEditorHost(
+                platform,
                 this.registry);
         Capabilities = platform.Capabilities;
         Categories = OverlayLayoutCatalog.Categories;
@@ -79,6 +81,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             ? "Choose Edit Overlay Positions to load categorized previews from an isolated simulated game state. Elite does not need to be running."
             : Capabilities.StatusText;
         this.editorHost.PreviewMoved += OnPreviewMoved;
+        this.editorHost.PreviewOpacityChanged += OnPreviewOpacityChanged;
         this.editorHost.Closed += OnEditorClosed;
     }
 
@@ -159,6 +162,32 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         private set => SetField(ref statusMessage, value);
     }
 
+    public double GlobalOpacityPercent
+    {
+        get => globalOpacityPercent;
+        set
+        {
+            var normalized = Math.Clamp(value, 0, 100);
+            if (!SetField(ref globalOpacityPercent, normalized))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(GlobalOpacityLabel));
+            if (!IsEditing
+                || editSession is null
+                || !editSession.SetDefaultOpacity(normalized / 100d))
+            {
+                return;
+            }
+
+            editorHost?.RefreshPreviewOpacities(editSession);
+            StatusMessage = $"Global overlay opacity set to {normalized:N0}%. Use ✓ to save all changes or × to cancel them.";
+        }
+    }
+
+    public string GlobalOpacityLabel => $"{GlobalOpacityPercent:N0}%";
+
     public ICommand ToggleCommand { get; }
 
     public ICommand SaveCommand { get; }
@@ -221,6 +250,9 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
         var session = new OverlayPositionEditSession(activeLayout);
         editSession = session;
+        globalOpacityPercent = session.DefaultOpacity * 100d;
+        OnPropertyChanged(nameof(GlobalOpacityPercent));
+        OnPropertyChanged(nameof(GlobalOpacityLabel));
         IsEditing = true;
         var game = gameWindowTracker.GetSnapshot();
         var preferredBounds = game.IsAvailable
@@ -253,16 +285,20 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         var changes = editSession.Changes;
-        if (changes.Count == 0)
+        var saveDefaultOpacity = editSession.HasDefaultOpacityChange;
+        if (changes.Count == 0 && !saveDefaultOpacity)
         {
             EndSession(closeHost: true, restoreRuntimeWindows: true);
-            StatusMessage = "Overlay position editing closed; no positions changed.";
+            StatusMessage = "Overlay editing closed; no positions or opacity values changed.";
             return;
         }
 
         try
         {
-            var result = layoutStore.Save(changes);
+            var result = layoutStore.Save(
+                changes,
+                editSession.DefaultOpacity,
+                saveDefaultOpacity);
             var updated = layoutStore.Load();
             if (updated.Error is not null)
             {
@@ -271,7 +307,8 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
             activeLayout.ReplaceWith(updated);
             EndSession(closeHost: true, restoreRuntimeWindows: true);
-            StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} overlay position(s)."
+            StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} overlay position/opacity override(s)"
+                + (saveDefaultOpacity ? " and the global opacity." : ".")
                 + (result.BackupPath is null
                     ? string.Empty
                     : $" Previous layout backup: {result.BackupPath}");
@@ -283,7 +320,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 or InvalidOperationException
                 or ArgumentException)
         {
-            StatusMessage = "Overlay positions were not saved: " + exception.Message;
+            StatusMessage = "Overlay positions and opacity were not saved: " + exception.Message;
         }
     }
 
@@ -295,7 +332,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         EndSession(closeHost: true, restoreRuntimeWindows: true);
-        StatusMessage = "Overlay position changes were cancelled.";
+        StatusMessage = "Overlay position and opacity changes were cancelled.";
     }
 
     private bool BeginLiveInteraction()
@@ -467,7 +504,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             return;
         }
 
-        window.BeginMoveDrag(eventArgs);
+        platform?.BeginMoveDrag(window, eventArgs);
         eventArgs.Handled = true;
     }
 
@@ -542,6 +579,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         if (editorHost is not null)
         {
             editorHost.PreviewMoved -= OnPreviewMoved;
+            editorHost.PreviewOpacityChanged -= OnPreviewOpacityChanged;
             editorHost.Closed -= OnEditorClosed;
             editorHost.Close(restoreRuntimeWindows: false);
             editorHost.Dispose();
@@ -614,6 +652,31 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         StatusMessage = $"Moved {displayName}. Use ✓ to save all changes or ✕ to cancel them.";
     }
 
+    private void OnPreviewOpacityChanged(
+        object? sender,
+        OverlayPreviewOpacityChangedEventArgs eventArgs)
+    {
+        if (!IsEditing
+            || editSession is null
+            || !editSession.SetOpacityOverride(
+                eventArgs.PlotterName,
+                eventArgs.OpacityOverride))
+        {
+            return;
+        }
+
+        editorHost?.RefreshPreviewOpacities(editSession);
+        var displayName = OverlayLayoutCatalog.Supported
+            .First(definition => string.Equals(
+                definition.Name,
+                eventArgs.PlotterName,
+                StringComparison.Ordinal))
+            .DisplayName;
+        StatusMessage = eventArgs.OpacityOverride is null
+            ? $"{displayName} now uses global opacity. Use ✓ to save all changes or × to cancel them."
+            : $"{displayName} opacity set to {eventArgs.OpacityOverride.Value * 100d:N0}%. Use ✓ to save all changes or × to cancel them.";
+    }
+
     private void OnEditorClosed(object? sender, EventArgs eventArgs)
     {
         if (!IsEditing)
@@ -622,7 +685,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         EndSession(closeHost: false, restoreRuntimeWindows: true);
-        StatusMessage = "Overlay position changes were cancelled.";
+        StatusMessage = "Overlay position and opacity changes were cancelled.";
     }
 
     private void EndSession(bool closeHost, bool restoreRuntimeWindows)

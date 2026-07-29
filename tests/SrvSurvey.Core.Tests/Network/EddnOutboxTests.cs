@@ -1,5 +1,7 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SrvSurvey.Core.Network;
+using System.IO.Compression;
 using System.Net;
 using Xunit;
 
@@ -23,6 +25,9 @@ public sealed class EddnOutboxTests
             Assert.True(first.enqueue(queued(now)));
             Assert.True(File.Exists(path));
             Assert.Equal(1, first.pendingCount);
+            var persisted = await File.ReadAllTextAsync(path);
+            Assert.Contains("\"useTestSchemas\"", persisted);
+            Assert.DoesNotContain("\"environment\"", persisted);
         }
 
         var calls = 0;
@@ -41,6 +46,56 @@ public sealed class EddnOutboxTests
 
         Assert.Equal(1, calls);
         Assert.Equal(0, restarted.pendingCount);
+        Assert.False(File.Exists(path));
+    }
+
+    [Theory]
+    [InlineData("beta")]
+    [InlineData("dev")]
+    public async Task LegacyNonLiveQueueUsesTestSchemasOnLiveGateway(
+        string legacyEnvironment)
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        File.WriteAllText(
+            path,
+            $$"""
+            [{
+              "id":"{{Guid.NewGuid()}}",
+              "created":"2026-07-28T12:00:00Z",
+              "nextAttempt":"2026-07-28T12:00:00Z",
+              "attempts":0,
+              "environment":"{{legacyEnvironment}}",
+              "schemaRef":"https://eddn.edcd.io/schemas/dockinggranted/1",
+              "header":{"uploaderID":"Test Cmdr"},
+              "message":{"timestamp":"2026-07-28T12:00:00Z","event":"DockingGranted"}
+            }]
+            """);
+        Uri? requestUri = null;
+        string? schemaRef = null;
+        var transport = EddnTransportTests.createTransport(async request =>
+        {
+            requestUri = request.RequestUri;
+            var compressed = await request.Content!.ReadAsByteArrayAsync();
+            using var input = new MemoryStream(compressed);
+            using var gzip = new GZipStream(input, CompressionMode.Decompress);
+            using var reader = new StreamReader(gzip);
+            schemaRef = JObject.Parse(await reader.ReadToEndAsync())
+                .Value<string>("$schemaRef");
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+        using var queue = outbox(
+            path,
+            transport,
+            () => DateTimeOffset.Parse("2026-07-28T12:00:00Z"));
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+
+        await queue.processDue();
+
+        Assert.Equal("https://live.example.test/upload/", requestUri?.ToString());
+        Assert.Equal(
+            "https://eddn.edcd.io/schemas/dockinggranted/1/test",
+            schemaRef);
         Assert.False(File.Exists(path));
     }
 
@@ -163,12 +218,7 @@ public sealed class EddnOutboxTests
         using var client = new HttpClient(handler);
         var transport = new EddnTransport(
             client,
-            new Dictionary<string, Uri>(StringComparer.Ordinal)
-            {
-                ["dev"] = new("https://dev.example.test/upload/"),
-                ["beta"] = new("https://beta.example.test/upload/"),
-                ["live"] = new("https://live.example.test/upload/"),
-            });
+            new Uri("https://live.example.test/upload/"));
         using var queue = outbox(path, transport, () => now);
         queue.setEnabled(true, discardPendingWhenDisabled: false);
         Assert.True(queue.enqueue(queued(now)));
@@ -240,12 +290,7 @@ public sealed class EddnOutboxTests
         using var client = new HttpClient(handler);
         var transport = new EddnTransport(
             client,
-            new Dictionary<string, Uri>(StringComparer.Ordinal)
-            {
-                ["dev"] = new("https://dev.example.test/upload/"),
-                ["beta"] = new("https://beta.example.test/upload/"),
-                ["live"] = new("https://live.example.test/upload/"),
-            });
+            new Uri("https://live.example.test/upload/"));
         using var owner = outbox(path, transport, () => now);
         using var otherInstance = outbox(path, transport, () => now);
         owner.setEnabled(true, discardPendingWhenDisabled: false);
@@ -464,7 +509,6 @@ public sealed class EddnOutboxTests
             id = Guid.NewGuid(),
             created = created,
             nextAttempt = created,
-            environment = "live",
             schemaRef = "https://eddn.edcd.io/schemas/dockinggranted/1",
             header = EddnTransportTests.header(),
             message = new Newtonsoft.Json.Linq.JObject

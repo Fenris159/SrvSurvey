@@ -144,7 +144,7 @@ shared library rather than installing an untrusted binary manually.
 ## Troubleshooting
 
 Common launch and library problems are listed below. For a fuller set of issues
-(including KDE Plasma overlay layer rules) see the dedicated
+(including KDE Plasma's automatic overlay handling and its manual fallback) see the dedicated
 **[Linux Troubleshooting](Linux_Troubleshooting.md)** document.
 
 - `Permission denied`: run `chmod +x` on the AppImage or
@@ -155,7 +155,8 @@ Common launch and library problems are listed below. For a fuller set of issues
   above and start the application again from its complete container folder.
 - Overlays do not follow Elite: confirm `DISPLAY` is set, both applications are
   on the same display, and neither was started as a different user.
-  **On KDE Plasma** overlays frequently need an explicit window rule — see
+  **On KDE Plasma**, current builds request KWin's advertised on-screen-display
+  window type automatically. If that does not work, use the manual fallback in
   [Overlay Troubleshooting](Overlay_Troubleshooting.md).
 - `DISPLAY` is empty in a Wayland session: enable XWayland or log into an Xorg
   session; native Wayland is not the backend used by this package.
@@ -163,7 +164,7 @@ Common launch and library problems are listed below. For a fuller set of issues
 ## Reference documentation
 
 - [Linux Troubleshooting](Linux_Troubleshooting.md)
-- [Overlay Troubleshooting (KDE Plasma window rules)](Overlay_Troubleshooting.md)
+- [Overlay Troubleshooting (KDE Plasma automatic handling and fallback rule)](Overlay_Troubleshooting.md)
 - [Avalonia Linux platform behavior](https://docs.avaloniaui.net/docs/platform-specific-guides/linux)
 - [Avalonia Linux runtime dependencies](https://docs.avaloniaui.net/docs/deployment/linux)
 - [AppImage FUSE setup and extract-and-run fallback](https://docs.appimage.org/user-guide/troubleshooting/fuse.html)

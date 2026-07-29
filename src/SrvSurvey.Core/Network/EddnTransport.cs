@@ -13,47 +13,46 @@ namespace SrvSurvey.Core.Network
         internal const int MaximumUncompressedPayloadBytes = 10 * 1024 * 1024;
         internal const int MaximumResponseDetailBytes = 2048;
 
-        private static readonly IReadOnlyDictionary<string, Uri> defaultEndpoints =
-            new Dictionary<string, Uri>(StringComparer.Ordinal)
-            {
-                ["dev"] = new("https://dev.eddn.edcd.io:4432/upload/"),
-                ["beta"] = new("https://beta.eddn.edcd.io:4431/upload/"),
-                ["live"] = new("https://eddn.edcd.io:4430/upload/"),
-            };
+        private static readonly Uri defaultEndpoint =
+            new("https://eddn.edcd.io:4430/upload/");
 
         private readonly HttpClient client;
-        private readonly IReadOnlyDictionary<string, Uri> endpoints;
+        private readonly Uri endpoint;
 
         internal EddnTransport(
             HttpClient? client = null,
-            IReadOnlyDictionary<string, Uri>? endpoints = null,
+            Uri? endpoint = null,
             string? userAgent = null)
         {
             this.client = client ?? createClient(userAgent ?? "SrvSurvey");
-            this.endpoints = endpoints ?? defaultEndpoints;
-            validateEndpoints(this.endpoints);
+            this.endpoint = endpoint ?? defaultEndpoint;
+            validateEndpoint(this.endpoint);
         }
 
         internal EddnQueuedMessage prepare(
             JObject message,
             string schemaRef,
             UploadPayloadHeader header,
-            string? environment)
+            bool useTestSchemas)
         {
             ArgumentNullException.ThrowIfNull(message);
             ArgumentException.ThrowIfNullOrWhiteSpace(schemaRef);
             ArgumentNullException.ThrowIfNull(header);
 
-            var normalizedEnvironment = normalizeEnvironment(environment);
-            if (normalizedEnvironment != "live" && !schemaRef.EndsWith("/test", StringComparison.Ordinal))
+            useTestSchemas = useTestSchemas
+                || schemaRef.EndsWith("/test", StringComparison.Ordinal);
+            if (useTestSchemas
+                && !schemaRef.EndsWith("/test", StringComparison.Ordinal))
+            {
                 schemaRef += "/test";
+            }
 
             return new EddnQueuedMessage
             {
                 id = Guid.NewGuid(),
                 created = DateTimeOffset.UtcNow,
                 nextAttempt = DateTimeOffset.UtcNow,
-                environment = normalizedEnvironment,
+                useTestSchemas = useTestSchemas,
                 schemaRef = schemaRef,
                 header = header.clone(),
                 message = new JObject(message),
@@ -64,11 +63,11 @@ namespace SrvSurvey.Core.Network
             JObject message,
             string schemaRef,
             UploadPayloadHeader header,
-            string? environment,
+            bool useTestSchemas,
             CancellationToken cancellationToken = default)
         {
             return await upload(
-                prepare(message, schemaRef, header, environment),
+                prepare(message, schemaRef, header, useTestSchemas),
                 cancellationToken).ConfigureAwait(false);
         }
 
@@ -77,6 +76,7 @@ namespace SrvSurvey.Core.Network
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(queued);
+            queued.normalizeSchemaMode();
 
             var payload = JsonConvert.SerializeObject(
                 queued.toPayload(),
@@ -85,7 +85,7 @@ namespace SrvSurvey.Core.Network
             if (payloadBytes.Length > MaximumUncompressedPayloadBytes)
             {
                 return EddnUploadResult.skipped(
-                    queued.environment,
+                    queued.useTestSchemas,
                     queued.schemaRef,
                     $"the encoded message exceeded {MaximumUncompressedPayloadBytes:N0} uncompressed bytes");
             }
@@ -94,14 +94,14 @@ namespace SrvSurvey.Core.Network
             if (compressed.Length > MaximumPayloadBytes)
             {
                 return EddnUploadResult.skipped(
-                    queued.environment,
+                    queued.useTestSchemas,
                     queued.schemaRef,
                     $"the compressed message exceeded {MaximumPayloadBytes:N0} bytes");
             }
 
             using var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                endpoints[queued.environment])
+                endpoint)
             {
                 Version = HttpVersion.Version11,
                 VersionPolicy = HttpVersionPolicy.RequestVersionExact,
@@ -122,22 +122,12 @@ namespace SrvSurvey.Core.Network
                 : await readBoundedResponse(response.Content, cancellationToken).ConfigureAwait(false);
 
             return new EddnUploadResult(
-                queued.environment,
+                queued.useTestSchemas,
                 queued.schemaRef,
                 response.StatusCode,
                 response.ReasonPhrase ?? string.Empty,
                 detail,
                 null);
-        }
-
-        internal static string normalizeEnvironment(string? value)
-        {
-            return value?.Trim().ToLowerInvariant() switch
-            {
-                "dev" => "dev",
-                "beta" => "beta",
-                _ => "live",
-            };
         }
 
         private static byte[] compress(byte[] payload)
@@ -177,25 +167,21 @@ namespace SrvSurvey.Core.Network
             return Encoding.UTF8.GetString(buffer, 0, total);
         }
 
-        private static void validateEndpoints(IReadOnlyDictionary<string, Uri> endpoints)
+        private static void validateEndpoint(Uri endpoint)
         {
-            ArgumentNullException.ThrowIfNull(endpoints);
-            foreach (var environment in new[] { "dev", "beta", "live" })
+            ArgumentNullException.ThrowIfNull(endpoint);
+            if (!endpoint.IsAbsoluteUri
+                || endpoint.Scheme != Uri.UriSchemeHttps)
             {
-                if (!endpoints.TryGetValue(environment, out var endpoint)
-                    || !endpoint.IsAbsoluteUri
-                    || endpoint.Scheme != Uri.UriSchemeHttps)
-                {
-                    throw new ArgumentException(
-                        $"The EDDN {environment} endpoint must be an absolute HTTPS URI.",
-                        nameof(endpoints));
-                }
+                throw new ArgumentException(
+                    "The EDDN endpoint must be an absolute HTTPS URI.",
+                    nameof(endpoint));
             }
         }
     }
 
     internal sealed record EddnUploadResult(
-        string environment,
+        bool useTestSchemas,
         string schemaRef,
         HttpStatusCode? statusCode,
         string reasonPhrase,
@@ -212,12 +198,12 @@ namespace SrvSurvey.Core.Network
                 or HttpStatusCode.UpgradeRequired);
 
         internal static EddnUploadResult skipped(
-            string environment,
+            bool useTestSchemas,
             string schemaRef,
             string reason)
         {
             return new EddnUploadResult(
-                environment,
+                useTestSchemas,
                 schemaRef,
                 null,
                 string.Empty,
@@ -232,10 +218,37 @@ namespace SrvSurvey.Core.Network
         public DateTimeOffset created;
         public DateTimeOffset nextAttempt;
         public int attempts;
-        public string environment = "live";
+        public bool useTestSchemas;
+        [JsonProperty("environment", NullValueHandling = NullValueHandling.Ignore)]
+        public string? legacyEnvironment;
         public string schemaRef = string.Empty;
         public UploadPayloadHeader header = new();
         public JObject message = new();
+
+        internal void normalizeSchemaMode()
+        {
+            var schemaUsesTestSchemas = schemaRef?.EndsWith(
+                "/test",
+                StringComparison.Ordinal) == true;
+            if (schemaUsesTestSchemas
+                || (!string.IsNullOrWhiteSpace(legacyEnvironment)
+                    && !string.Equals(
+                        legacyEnvironment.Trim(),
+                        "live",
+                        StringComparison.OrdinalIgnoreCase)))
+            {
+                useTestSchemas = true;
+            }
+
+            if (useTestSchemas
+                && !string.IsNullOrWhiteSpace(schemaRef)
+                && !schemaUsesTestSchemas)
+            {
+                schemaRef += "/test";
+            }
+
+            legacyEnvironment = null;
+        }
 
         internal JObject toPayload()
         {

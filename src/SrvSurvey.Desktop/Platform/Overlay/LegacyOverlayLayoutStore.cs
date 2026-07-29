@@ -17,6 +17,7 @@ public sealed class LegacyOverlayLayoutStore
             : StringComparer.Ordinal);
     private readonly string dataDirectory;
     private readonly string plottersPath;
+    private readonly string settingsPath;
     private readonly object fileLock;
 
     public LegacyOverlayLayoutStore(string dataDirectory)
@@ -24,6 +25,7 @@ public sealed class LegacyOverlayLayoutStore
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         this.dataDirectory = Path.GetFullPath(dataDirectory);
         plottersPath = Path.Combine(this.dataDirectory, "plotters.json");
+        settingsPath = Path.Combine(this.dataDirectory, "settings.json");
         fileLock = FileLocks.GetOrAdd(plottersPath, _ => new object());
     }
 
@@ -49,6 +51,76 @@ public sealed class LegacyOverlayLayoutStore
         lock (fileLock)
         {
             return SaveCore(placements);
+        }
+    }
+
+    public LegacyOverlayLayoutSaveResult Save(
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements,
+        double defaultOpacity,
+        bool updateDefaultOpacity)
+    {
+        ArgumentNullException.ThrowIfNull(placements);
+        if (placements.Count == 0 && !updateDefaultOpacity)
+        {
+            throw new ArgumentException(
+                "At least one overlay placement or a global opacity change is required.",
+                nameof(placements));
+        }
+
+        if (updateDefaultOpacity
+            && (!double.IsFinite(defaultOpacity)
+                || defaultOpacity is < 0 or > 1))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(defaultOpacity),
+                "Global overlay opacity must be from 0 to 1.");
+        }
+
+        lock (fileLock)
+        {
+            if (!updateDefaultOpacity)
+            {
+                return SaveCore(placements);
+            }
+
+            var settingsExisted = File.Exists(settingsPath);
+            var settingsBackupPath = SaveDefaultOpacityCore(defaultOpacity);
+            try
+            {
+                var result = placements.Count > 0
+                    ? SaveCore(placements)
+                    : new LegacyOverlayLayoutSaveResult(
+                        settingsPath,
+                        null,
+                        0);
+                return result with
+                {
+                    SettingsBackupPath = settingsBackupPath,
+                    UpdatedDefaultOpacity = true,
+                };
+            }
+            catch (Exception saveException)
+            {
+                try
+                {
+                    if (settingsExisted && settingsBackupPath is not null)
+                    {
+                        File.Copy(settingsBackupPath, settingsPath, true);
+                    }
+                    else if (!settingsExisted && File.Exists(settingsPath))
+                    {
+                        File.Delete(settingsPath);
+                    }
+                }
+                catch (Exception rollbackException)
+                {
+                    throw new IOException(
+                        "The overlay layout save failed and its global-opacity rollback also failed.",
+                        new AggregateException(saveException, rollbackException));
+                }
+
+                throw;
+            }
         }
     }
 
@@ -166,7 +238,65 @@ public sealed class LegacyOverlayLayoutStore
             placements.Count);
     }
 
+    private string? SaveDefaultOpacityCore(double defaultOpacity)
+    {
+        var root = File.Exists(settingsPath)
+            ? ParseObject(settingsPath)
+            : [];
+        root["plotterOpacity"] = defaultOpacity * 100d;
+
+        Directory.CreateDirectory(dataDirectory);
+        var backupPath = File.Exists(settingsPath)
+            ? CreateVerifiedBackup(settingsPath, "settings")
+            : null;
+        var temporaryPath = $"{settingsPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            using (var stream = new FileStream(
+                       temporaryPath,
+                       FileMode.CreateNew,
+                       FileAccess.Write,
+                       FileShare.None))
+            using (var writer = new Utf8JsonWriter(
+                       stream,
+                       new JsonWriterOptions
+                       {
+                           Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                           Indented = true,
+                       }))
+            {
+                root.WriteTo(writer);
+            }
+
+            var verified = ParseObject(temporaryPath);
+            if (verified["plotterOpacity"] is not JsonValue value
+                || !value.TryGetValue<double>(out var percent)
+                || !double.IsFinite(percent)
+                || Math.Abs((percent / 100d) - defaultOpacity) > 0.0001d)
+            {
+                throw new InvalidDataException(
+                    "Global overlay opacity could not be verified before saving.");
+            }
+
+            File.Move(temporaryPath, settingsPath, true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+
+        return backupPath;
+    }
+
     private string CreateVerifiedBackup()
+    {
+        return CreateVerifiedBackup(plottersPath, "plotters");
+    }
+
+    private string CreateVerifiedBackup(string sourcePath, string filePrefix)
     {
         var backupDirectory = Path.Combine(
             dataDirectory,
@@ -174,11 +304,11 @@ public sealed class LegacyOverlayLayoutStore
         Directory.CreateDirectory(backupDirectory);
         var backupPath = Path.Combine(
             backupDirectory,
-            $"plotters-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffffffZ}-{Guid.NewGuid():N}.json");
-        File.Copy(plottersPath, backupPath, false);
+            $"{filePrefix}-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssfffffffZ}-{Guid.NewGuid():N}.json");
+        File.Copy(sourcePath, backupPath, false);
 
         if (!CryptographicOperations.FixedTimeEquals(
-                SHA256.HashData(File.ReadAllBytes(plottersPath)),
+                SHA256.HashData(File.ReadAllBytes(sourcePath)),
                 SHA256.HashData(File.ReadAllBytes(backupPath))))
         {
             File.Delete(backupPath);
@@ -257,7 +387,6 @@ public sealed class LegacyOverlayLayoutStore
 
     private double? LoadDefaultOpacity(ICollection<string> errors)
     {
-        var settingsPath = Path.Combine(dataDirectory, "settings.json");
         if (!File.Exists(settingsPath))
         {
             return null;
@@ -564,7 +693,12 @@ public sealed record LegacyOverlayPlacement(
 public sealed record LegacyOverlayLayoutSaveResult(
     string Path,
     string? BackupPath,
-    int UpdatedPlacementCount);
+    int UpdatedPlacementCount)
+{
+    public string? SettingsBackupPath { get; init; }
+
+    public bool UpdatedDefaultOpacity { get; init; }
+}
 
 public enum LegacyHorizontalAnchor
 {

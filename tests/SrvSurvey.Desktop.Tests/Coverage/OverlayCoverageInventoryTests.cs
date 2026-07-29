@@ -7,9 +7,11 @@ public sealed class OverlayCoverageInventoryTests
         Map("PlotBase", [
             "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs",
             "src/SrvSurvey.Desktop/Platform/Overlay/OverlayWindowRegistry.cs",
+            "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayWindowManagerPolicy.cs",
         ], [
             "tests/SrvSurvey.Desktop.Tests/Platform/OverlayPlatformCapabilitiesTests.cs",
             "tests/SrvSurvey.Desktop.Tests/Platform/OverlayWindowPlacementTests.cs",
+            "tests/SrvSurvey.Desktop.Tests/Platform/X11OverlayWindowManagerPolicyTests.cs",
         ]),
         Map("PlotBioStatus", ["src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/BiologyStatusViewModelTests.cs",
@@ -158,9 +160,12 @@ public sealed class OverlayCoverageInventoryTests
     public void PositionEditorUsesCategorizedForcedPreviewsAndExplicitCommitControls()
     {
         var root = FindRepositoryRoot();
-        var settings = File.ReadAllText(Path.Combine(
+        var settingsShell = File.ReadAllText(Path.Combine(
             root,
             Native("src/SrvSurvey.Desktop/Views/SettingsView.axaml")));
+        var overlaySettings = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml")));
         var editor = File.ReadAllText(Path.Combine(
             root,
             Native("src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml")));
@@ -172,7 +177,7 @@ public sealed class OverlayCoverageInventoryTests
             Native("src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs")));
 
         Assert.Contains("Edit Overlay Positions", interaction);
-        Assert.Contains("OverlayInteraction.ToggleCommand", settings);
+        Assert.Contains("OverlayInteraction.ToggleCommand", overlaySettings);
         Assert.Contains("ItemsSource=\"{Binding Categories}\"", editor);
         Assert.Contains("SelectedItem=\"{Binding SelectedCategory, Mode=TwoWay}\"", editor);
         Assert.Contains("Command=\"{Binding SaveCommand}\"", editor);
@@ -193,11 +198,24 @@ public sealed class OverlayCoverageInventoryTests
         Assert.Contains("? game.ClientBounds", interaction);
         Assert.Contains(": (PixelRect?)null", interaction);
         Assert.Contains("ToggleLiveOverlayInteraction", interaction);
-        Assert.Contains("<Expander", settings);
-        Assert.Contains("Classes=\"theme-selector\"", settings);
-        Assert.Contains("Text=\"Theme selection\"", settings);
-        Assert.Contains("BorderThickness=\"1\"", settings);
-        Assert.Contains("Command=\"{Binding OverlayTheme.PreviewCommand}\"", settings);
+        Assert.Contains("<Expander", overlaySettings);
+        Assert.Contains("Classes=\"theme-selector\"", settingsShell);
+        Assert.Contains("Text=\"Theme selection\"", settingsShell);
+        Assert.Contains("Header=\"Overlay Settings\"", settingsShell);
+        Assert.Contains("<views:OverlaySettingsView", settingsShell);
+        Assert.Contains("BorderThickness=\"1\"", overlaySettings);
+        Assert.Contains(
+            "Command=\"{Binding OverlayTheme.PreviewCommand}\"",
+            settingsShell);
+        Assert.Contains("Overlay Opacity Override", overlaySettings);
+        Assert.Contains("OverlayLayout.SelectedOverlay", overlaySettings);
+        Assert.Contains("OverlayLayout.SaveCommand", overlaySettings);
+        Assert.DoesNotContain("HorizontalAnchorOptions", overlaySettings);
+        Assert.DoesNotContain("VerticalAnchorOptions", overlaySettings);
+        Assert.DoesNotContain("GalaxyMap.AutoShow", settingsShell);
+        Assert.Contains("GalaxyMap.AutoShow", overlaySettings);
+        Assert.DoesNotContain("Notifications.Enabled", settingsShell);
+        Assert.Contains("Notifications.Enabled", overlaySettings);
     }
 
     private static OverlayMapping Map(

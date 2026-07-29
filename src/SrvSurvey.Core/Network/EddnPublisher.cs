@@ -15,7 +15,7 @@ public interface IEddnPublisher
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? status,
         bool enabled,
-        string environment,
+        bool useTestSchemas,
         bool allowPublishing,
         string? journalDirectory = null,
         string? journalPath = null,
@@ -90,7 +90,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     public EddnPublisher(
         string softwareVersion,
         HttpClient? client = null,
-        IReadOnlyDictionary<string, Uri>? endpoints = null,
+        Uri? endpoint = null,
         string? outboxPath = null,
         Action<string>? log = null,
         Func<DateTimeOffset>? utcNow = null,
@@ -101,7 +101,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         this.log = log ?? (_ => { });
         transport = new EddnTransport(
             client,
-            endpoints,
+            endpoint,
             $"SrvSurvey/{this.softwareVersion}");
         outbox = new EddnOutbox(
             outboxPath ?? Path.Combine(
@@ -125,11 +125,6 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 
     public int PendingCount => outbox.pendingCount
         + Math.Max(0, Volatile.Read(ref stagedWriteCount));
-
-    public static string NormalizeEnvironment(string? value)
-    {
-        return EddnTransport.normalizeEnvironment(value);
-    }
 
     public void SetEnabled(bool enabled)
     {
@@ -184,7 +179,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? status,
         bool enabled,
-        string environment,
+        bool useTestSchemas,
         bool allowPublishing,
         string? journalDirectory = null,
         string? journalPath = null,
@@ -283,7 +278,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                             signalBatch = new QueueCandidate(
                                 preparedBatch!,
                                 header!.clone(),
-                                environment,
+                                useTestSchemas,
                                 sessionGeneration);
                         }
                     }
@@ -351,7 +346,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                                 new JObject(raw),
                                 context,
                                 header!.clone(),
-                                environment,
+                                useTestSchemas,
                                 sessionGeneration,
                                 journalDirectory);
                         }
@@ -367,7 +362,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                             journalCandidate = new QueueCandidate(
                                 prepared!,
                                 header!.clone(),
-                                environment,
+                                useTestSchemas,
                                 sessionGeneration);
                         }
                         else
@@ -656,7 +651,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             candidate.Prepared.message,
             candidate.Prepared.schemaRef,
             candidate.Header,
-            candidate.Environment);
+            candidate.UseTestSchemas);
         if (TryStageOutboxWrite(
             item,
             candidate.Generation,
@@ -665,7 +660,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             queued.Add(new EddnPublishedEvent(
                 candidate.Prepared.eventName,
                 item.schemaRef,
-                item.environment));
+                item.useTestSchemas));
         }
         else if (IsCurrentSession(candidate.Generation))
         {
@@ -756,7 +751,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                 prepared!.message,
                 prepared.schemaRef,
                 candidate.Header,
-                candidate.Environment);
+                candidate.UseTestSchemas);
             if (!TryStageOutboxWrite(
                 item,
                 candidate.Generation,
@@ -989,14 +984,14 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     private sealed record QueueCandidate(
         EddnPreparedMessage Prepared,
         UploadPayloadHeader Header,
-        string Environment,
+        bool UseTestSchemas,
         long Generation);
 
     private sealed record CompanionCandidate(
         JObject JournalEvent,
         EddnMessageContext Context,
         UploadPayloadHeader Header,
-        string Environment,
+        bool UseTestSchemas,
         long Generation,
         string JournalDirectory);
 
@@ -1015,7 +1010,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 public sealed record EddnPublishedEvent(
     string EventName,
     string SchemaReference,
-    string Environment);
+    bool UsesTestSchemas);
 
 public sealed record EddnPublicationResult(
     IReadOnlyList<EddnPublishedEvent> Published,

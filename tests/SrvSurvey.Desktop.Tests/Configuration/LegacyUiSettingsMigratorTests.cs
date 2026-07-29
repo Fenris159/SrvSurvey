@@ -65,7 +65,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
                 "yellowText": {"t":41,"color":{"R":42,"G":43,"B":44}}
               },
               "eddnUpload": true,
-              "eddnEnvironment": "live",
+              "eddnEnvironment": "dev",
               "uploadGGG": true,
               "inaraUpload": true,
               "inaraDeveloperTestMode": true,
@@ -290,7 +290,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             new SystemNicknameSettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.True(new QuestSettingsStore(paths.UiSettingsPath).LoadEnabled());
         Assert.Equal(
-            new NetworkPrivacyPreferences(true, "live", true),
+            new NetworkPrivacyPreferences(true, true, true),
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
             new InaraPreferences(true, true),

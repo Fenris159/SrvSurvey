@@ -239,9 +239,9 @@ public sealed class LegacyUiSettingsMigrator
                 mappedCount += MapSection(legacy, root, "NetworkPrivacy",
                 [
                     ("eddnUpload", "EddnUploadEnabled"),
-                    ("eddnEnvironment", "EddnEnvironment"),
                     ("uploadGGG", "UploadGreenGasGiantCandidates"),
                 ]);
+                mappedCount += MapLegacyEddnSchemaMode(legacy, root);
                 mappedCount += MapSection(legacy, root, "Inara",
                 [
                     ("inaraUpload", "UploadEnabled"),
@@ -759,6 +759,24 @@ public sealed class LegacyUiSettingsMigrator
             target,
             sectionName,
             mappings.Select(mapping => (mapping.Legacy, mapping.Current, 0)).ToArray());
+    }
+
+    private static int MapLegacyEddnSchemaMode(
+        JsonObject legacy,
+        JsonObject target)
+    {
+        if (legacy["eddnEnvironment"] is not JsonValue value
+            || !value.TryGetValue<string>(out var environment))
+        {
+            return 0;
+        }
+
+        GetOrCreateObject(target, "NetworkPrivacy")["EddnUseTestSchemas"] =
+            !string.Equals(
+                environment?.Trim(),
+                "live",
+                StringComparison.OrdinalIgnoreCase);
+        return 1;
     }
 
     private static int Copy(

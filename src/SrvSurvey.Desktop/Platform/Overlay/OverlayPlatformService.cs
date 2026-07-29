@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Avalonia.Controls;
+using Avalonia.Input;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -11,6 +12,18 @@ public interface IOverlayPlatformService : IDisposable
     OverlayPreparationResult PreparePassiveWindow(Window window);
 
     OverlayInteractionResult SetInteractive(Window window, bool interactive);
+
+    OverlayInteractionResult PrepareInteractiveWindow(Window window)
+    {
+        return SetInteractive(window, interactive: true);
+    }
+
+    void BeginMoveDrag(Window window, PointerPressedEventArgs eventArgs)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentNullException.ThrowIfNull(eventArgs);
+        window.BeginMoveDrag(eventArgs);
+    }
 }
 
 public static class OverlayPlatformService

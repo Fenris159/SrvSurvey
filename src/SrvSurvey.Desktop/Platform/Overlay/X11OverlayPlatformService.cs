@@ -1,4 +1,7 @@
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Input;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
@@ -6,14 +9,29 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService
 {
     private nint display;
     private readonly bool shapeAvailable;
+    private readonly X11OverlayStackingMode stackingMode;
+    private readonly nuint atomType;
+    private readonly nuint windowTypeAtom;
+    private readonly nuint kdeOnScreenDisplayAtom;
+    private readonly nuint normalWindowAtom;
 
     private X11OverlayPlatformService(
         nint display,
         bool shapeAvailable,
-        OverlayHostKind host)
+        OverlayHostKind host,
+        X11OverlayStackingMode stackingMode,
+        nuint atomType,
+        nuint windowTypeAtom,
+        nuint kdeOnScreenDisplayAtom,
+        nuint normalWindowAtom)
     {
         this.display = display;
         this.shapeAvailable = shapeAvailable;
+        this.stackingMode = stackingMode;
+        this.atomType = atomType;
+        this.windowTypeAtom = windowTypeAtom;
+        this.kdeOnScreenDisplayAtom = kdeOnScreenDisplayAtom;
+        this.normalWindowAtom = normalWindowAtom;
         Capabilities = OverlayPlatformCapabilities.ForHost(host)
             with
         {
@@ -66,10 +84,58 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService
             // X11 tracking can still work when the XShape extension is missing.
         }
 
+        nuint atomType = 0;
+        nuint windowTypeAtom = 0;
+        nuint kdeOnScreenDisplayAtom = 0;
+        nuint normalWindowAtom = 0;
+        var stackingMode = X11OverlayStackingMode.StandardTopmost;
+        try
+        {
+            atomType = X11Native.XInternAtom(
+                display,
+                "ATOM",
+                onlyIfExists: 1);
+            windowTypeAtom = X11Native.XInternAtom(
+                display,
+                X11OverlayWindowManagerPolicy.WindowTypeAtomName,
+                onlyIfExists: 0);
+            kdeOnScreenDisplayAtom = X11Native.XInternAtom(
+                display,
+                X11OverlayWindowManagerPolicy.KdeOnScreenDisplayAtomName,
+                onlyIfExists: 1);
+            normalWindowAtom = X11Native.XInternAtom(
+                display,
+                X11OverlayWindowManagerPolicy.NormalWindowAtomName,
+                onlyIfExists: 0);
+            var supportedAtoms = ReadSupportedAtoms(display, atomType);
+            stackingMode = X11OverlayWindowManagerPolicy.Select(
+                kdeOnScreenDisplayAtom,
+                supportedAtoms);
+        }
+        catch (Exception exception) when (
+            exception is DllNotFoundException
+                or EntryPointNotFoundException
+                or BadImageFormatException)
+        {
+            Trace.TraceWarning(
+                "X11 window-manager capabilities could not be queried; "
+                + $"using standard topmost overlays: {exception.Message}");
+        }
+
+        Trace.TraceInformation(
+            stackingMode == X11OverlayStackingMode.KdeOnScreenDisplay
+                ? "X11 overlay stacking policy: KDE on-screen display (advertised by the window manager)."
+                : "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).");
+
         return new X11OverlayPlatformService(
             display,
             shapeAvailable,
-            host);
+            host,
+            stackingMode,
+            atomType,
+            windowTypeAtom,
+            kdeOnScreenDisplayAtom,
+            normalWindowAtom);
     }
 
     public OverlayPreparationResult PreparePassiveWindow(Window window)
@@ -103,6 +169,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService
 
         try
         {
+            var stackingApplied = ApplyWindowType(handle);
             if (interactive)
             {
                 X11Native.XShapeCombineMask(
@@ -133,9 +200,7 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService
             return new OverlayInteractionResult(
                 IsPrepared: true,
                 IsInteractive: interactive,
-                interactive
-                    ? "Overlay edit mode is active through the X11 input region."
-                    : Capabilities.StatusText);
+                CreateStatus(interactive, stackingApplied));
         }
         catch (Exception exception) when (
             exception is DllNotFoundException
@@ -149,6 +214,21 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService
         }
     }
 
+    public void BeginMoveDrag(
+        Window window,
+        PointerPressedEventArgs eventArgs)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentNullException.ThrowIfNull(eventArgs);
+        if (stackingMode == X11OverlayStackingMode.KdeOnScreenDisplay)
+        {
+            ManagedOverlayWindowDragSession.Begin(window, eventArgs);
+            return;
+        }
+
+        window.BeginMoveDrag(eventArgs);
+    }
+
     public void Dispose()
     {
         var currentDisplay = display;
@@ -157,5 +237,115 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService
         {
             _ = X11Native.XCloseDisplay(currentDisplay);
         }
+    }
+
+    private static nuint[] ReadSupportedAtoms(nint display, nuint atomType)
+    {
+        if (atomType == 0)
+        {
+            return [];
+        }
+
+        var supportedAtom = X11Native.XInternAtom(
+            display,
+            X11OverlayWindowManagerPolicy.SupportedAtomName,
+            onlyIfExists: 1);
+        if (supportedAtom == 0)
+        {
+            return [];
+        }
+
+        var root = X11Native.XDefaultRootWindow(display);
+        var status = X11Native.XGetWindowProperty(
+            display,
+            root,
+            supportedAtom,
+            0,
+            16_384,
+            delete: 0,
+            atomType,
+            out var actualType,
+            out var actualFormat,
+            out var itemCount,
+            out _,
+            out var propertyData);
+        try
+        {
+            if (status != 0
+                || propertyData == nint.Zero
+                || actualType != atomType
+                || actualFormat != 32
+                || itemCount > int.MaxValue)
+            {
+                return [];
+            }
+
+            var atoms = new nuint[(int)itemCount];
+            for (var index = 0; index < atoms.Length; index++)
+            {
+                atoms[index] = unchecked((nuint)Marshal.ReadIntPtr(
+                    propertyData,
+                    index * nint.Size));
+            }
+
+            return atoms;
+        }
+        finally
+        {
+            if (propertyData != nint.Zero)
+            {
+                _ = X11Native.XFree(propertyData);
+            }
+        }
+    }
+
+    private unsafe bool ApplyWindowType(nint handle)
+    {
+        var windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
+            stackingMode,
+            kdeOnScreenDisplayAtom,
+            normalWindowAtom);
+        if (windowTypes.Length == 0)
+        {
+            return stackingMode == X11OverlayStackingMode.StandardTopmost;
+        }
+
+        if (atomType == 0 || windowTypeAtom == 0)
+        {
+            return false;
+        }
+
+        var values = stackalloc nint[windowTypes.Length];
+        for (var index = 0; index < windowTypes.Length; index++)
+        {
+            values[index] = unchecked((nint)windowTypes[index]);
+        }
+
+        return X11Native.XChangeProperty(
+            display,
+            unchecked((nuint)handle),
+            windowTypeAtom,
+            atomType,
+            format: 32,
+            X11Native.PropertyReplace,
+            (nint)values,
+            windowTypes.Length) != 0;
+    }
+
+    private string CreateStatus(bool interactive, bool stackingApplied)
+    {
+        if (!stackingApplied)
+        {
+            return "The KDE on-screen-display stacking hint could not be applied; the overlay is using standard topmost behavior.";
+        }
+
+        if (!interactive)
+        {
+            return Capabilities.StatusText;
+        }
+
+        return stackingMode == X11OverlayStackingMode.KdeOnScreenDisplay
+            ? "Overlay edit mode is active through the X11 input region with KDE on-screen-display stacking."
+            : "Overlay edit mode is active through the X11 input region.";
     }
 }

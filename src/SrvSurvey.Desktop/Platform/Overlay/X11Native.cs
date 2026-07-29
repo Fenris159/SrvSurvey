@@ -9,6 +9,7 @@ internal static partial class X11Native
     internal const int ShapeSet = 0;
     internal const int Unsorted = 0;
     internal const int ZPixmap = 2;
+    internal const int PropertyReplace = 0;
 
     [LibraryImport("libX11.so.6")]
     internal static partial nint XOpenDisplay(nint displayName);
@@ -39,6 +40,17 @@ internal static partial class X11Native
         out nuint itemCount,
         out nuint bytesAfter,
         out nint propertyData);
+
+    [LibraryImport("libX11.so.6")]
+    internal static partial int XChangeProperty(
+        nint display,
+        nuint window,
+        nuint property,
+        nuint type,
+        int format,
+        int mode,
+        nint data,
+        int elementCount);
 
     [LibraryImport("libX11.so.6")]
     internal static partial int XGetWindowAttributes(

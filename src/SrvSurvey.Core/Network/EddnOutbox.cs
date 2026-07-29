@@ -365,7 +365,11 @@ namespace SrvSurvey.Core.Network
 
                             if (result?.isSuccess == true)
                             {
-                                resultLog = $"EDDN uploaded {eventName(next)} to {next.environment}.";
+                                var schemaMode = next.useTestSchemas
+                                    ? "test"
+                                    : "live";
+                                resultLog =
+                                    $"EDDN uploaded {eventName(next)} using {schemaMode} schemas.";
                             }
                             else
                             {
@@ -496,6 +500,10 @@ namespace SrvSurvey.Core.Network
 
                 var json = File.ReadAllText(filepath);
                 var loaded = JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(json) ?? [];
+                foreach (var item in loaded)
+                {
+                    item.normalizeSchemaMode();
+                }
                 if (loaded.Count > maximumPendingMessages
                     || loaded.Any(item => !isValid(item)))
                 {
@@ -665,7 +673,6 @@ namespace SrvSurvey.Core.Network
                 && message.created != default
                 && message.nextAttempt != default
                 && message.attempts >= 0
-                && message.environment is "live" or "beta" or "dev"
                 && !string.IsNullOrWhiteSpace(message.schemaRef)
                 && message.schemaRef.StartsWith(
                     "https://eddn.edcd.io/schemas/",

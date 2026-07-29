@@ -73,4 +73,59 @@ public sealed class OverlayPositionEditSessionTests
                 definition.PreviewSize));
         Assert.Equal(0.75, session.GetPlacement(definition.Name).Opacity);
     }
+
+    [Fact]
+    public void GlobalAndPerOverlayOpacityChangesRemainInTheEditSession()
+    {
+        var active = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotBioStatus"] = new(
+                    LegacyHorizontalAnchor.Center,
+                    0,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    null),
+                ["PlotJumpInfo"] = new(
+                    LegacyHorizontalAnchor.Center,
+                    0,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    0.75),
+            },
+            0.65,
+            null);
+        var session = new OverlayPositionEditSession(active);
+
+        Assert.True(session.SetDefaultOpacity(0.5));
+        Assert.True(session.SetOpacityOverride("PlotBioStatus", 0.8));
+        Assert.True(session.SetOpacityOverride("PlotJumpInfo", null));
+
+        Assert.True(session.HasChanges);
+        Assert.True(session.HasDefaultOpacityChange);
+        Assert.Equal(0.5, session.DefaultOpacity);
+        Assert.Equal(0.8, session.GetOpacity("PlotBioStatus"));
+        Assert.Equal(0.5, session.GetOpacity("PlotJumpInfo"));
+        Assert.Equal(0.65, active.DefaultOpacity);
+        Assert.Null(active.Placements["PlotBioStatus"].Opacity);
+        Assert.Equal(0.75, active.Placements["PlotJumpInfo"].Opacity);
+    }
+
+    [Fact]
+    public void ReturningAnImplicitFullOpacityDefaultClearsTheChange()
+    {
+        var session = new OverlayPositionEditSession(
+            new LegacyOverlayLayout(
+                new Dictionary<string, LegacyOverlayPlacement>(),
+                null,
+                null));
+
+        Assert.True(session.SetDefaultOpacity(0.4));
+        Assert.True(session.HasDefaultOpacityChange);
+        Assert.True(session.SetDefaultOpacity(1d));
+
+        Assert.False(session.HasDefaultOpacityChange);
+        Assert.False(session.HasChanges);
+        Assert.Equal(1d, session.DefaultOpacity);
+    }
 }

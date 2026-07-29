@@ -2026,7 +2026,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 update.JournalEvents,
                 latestStatus,
                 NetworkPrivacy.EddnUploadEnabled,
-                NetworkPrivacy.EddnEnvironment,
+                NetworkPrivacy.EddnUseTestSchemas,
                 allowPublishing: !update.IsBootstrapRead
                     && !hasMultipleGameWindows,
                 journalDirectory: folderResolution.SelectedPath,
