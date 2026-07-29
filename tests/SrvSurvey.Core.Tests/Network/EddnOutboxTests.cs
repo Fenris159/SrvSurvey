@@ -1,0 +1,556 @@
+using Newtonsoft.Json;
+using SrvSurvey.Core.Network;
+using System.Net;
+using Xunit;
+
+namespace SrvSurvey.Core.Tests.Network;
+
+public sealed class EddnOutboxTests
+{
+    [Fact]
+    public async Task QueueIsPersistedBeforeSendingAndSurvivesRestart()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        using (var first = outbox(
+            path,
+            EddnTransportTests.createTransport(_ => Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK))),
+            () => now))
+        {
+            first.setEnabled(true, discardPendingWhenDisabled: false);
+            Assert.True(first.enqueue(queued(now)));
+            Assert.True(File.Exists(path));
+            Assert.Equal(1, first.pendingCount);
+        }
+
+        var calls = 0;
+        using var restarted = outbox(
+            path,
+            EddnTransportTests.createTransport(_ =>
+            {
+                calls++;
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+            }),
+            () => now);
+        Assert.Equal(1, restarted.pendingCount);
+        restarted.setEnabled(true, discardPendingWhenDisabled: false);
+
+        await restarted.processDue();
+
+        Assert.Equal(1, calls);
+        Assert.Equal(0, restarted.pendingCount);
+        Assert.False(File.Exists(path));
+    }
+
+    [Fact]
+    public async Task TransientFailureWaitsAtLeastOneMinuteAndPreservesOrder()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var calls = 0;
+        var logs = new List<string>();
+        using var queue = new EddnOutbox(
+            path,
+            EddnTransportTests.createTransport(_ =>
+            {
+                calls++;
+                return Task.FromResult(
+                    new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+            }),
+            logs.Add,
+            () => now,
+            automaticProcessing: false);
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+        Assert.True(queue.enqueue(queued(now, "first")));
+        Assert.True(queue.enqueue(queued(now.AddSeconds(1), "second")));
+
+        await queue.processDue();
+
+        Assert.Equal(1, calls);
+        Assert.Equal(2, queue.pendingCount);
+        var saved = JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(
+            await File.ReadAllTextAsync(path));
+        Assert.NotNull(saved);
+        Assert.True(saved[0].nextAttempt >= now.AddMinutes(1));
+        Assert.Equal(now.AddSeconds(1), saved[1].nextAttempt);
+        Assert.Equal(1, saved[0].attempts);
+        Assert.Equal(0, saved[1].attempts);
+        Assert.Contains(logs, line => line.Contains("will retry", StringComparison.Ordinal));
+
+        await queue.processDue();
+        Assert.Equal(1, calls);
+    }
+
+    [Fact]
+    public async Task NewlyQueuedMessageCannotOvertakeRetriedHead()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var calls = 0;
+        using var queue = outbox(
+            path,
+            EddnTransportTests.createTransport(_ =>
+            {
+                calls++;
+                return Task.FromResult(new HttpResponseMessage(
+                    calls == 1
+                        ? HttpStatusCode.ServiceUnavailable
+                        : HttpStatusCode.OK));
+            }),
+            () => now);
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+        Assert.True(queue.enqueue(queued(now, "First Port")));
+
+        await queue.processDue();
+        Assert.Equal(1, calls);
+        Assert.True(queue.enqueue(queued(now, "Second Port")));
+
+        await queue.processDue();
+        Assert.Equal(1, calls);
+
+        now = now.AddMinutes(1);
+        await queue.processDue();
+
+        Assert.Equal(3, calls);
+        Assert.Equal(0, queue.pendingCount);
+    }
+
+    [Fact]
+    public async Task SuspensionPreservesPendingMessagesUntilResumed()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var calls = 0;
+        using var queue = outbox(
+            path,
+            EddnTransportTests.createTransport(_ =>
+            {
+                calls++;
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+            }),
+            () => now);
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+        Assert.True(queue.enqueue(queued(now)));
+
+        queue.setSuspended(true);
+        await queue.processDue();
+
+        Assert.Equal(0, calls);
+        Assert.Equal(1, queue.pendingCount);
+        Assert.True(File.Exists(path));
+        Assert.False(queue.enqueue(queued(now, "Blocked Port")));
+
+        queue.setSuspended(false);
+        await queue.processDue();
+
+        Assert.Equal(1, calls);
+        Assert.Equal(0, queue.pendingCount);
+        Assert.False(File.Exists(path));
+    }
+
+    [Fact]
+    public async Task SuspensionCancelsActiveUploadWithoutMutatingRetryState()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var handler = new CancelThenSucceedHandler();
+        using var client = new HttpClient(handler);
+        var transport = new EddnTransport(
+            client,
+            new Dictionary<string, Uri>(StringComparer.Ordinal)
+            {
+                ["dev"] = new("https://dev.example.test/upload/"),
+                ["beta"] = new("https://beta.example.test/upload/"),
+                ["live"] = new("https://live.example.test/upload/"),
+            });
+        using var queue = outbox(path, transport, () => now);
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+        Assert.True(queue.enqueue(queued(now)));
+        var processing = queue.processDue();
+        await handler.Entered.WaitAsync(TimeSpan.FromSeconds(2));
+
+        queue.setSuspended(true);
+        await processing.WaitAsync(TimeSpan.FromSeconds(2));
+
+        var saved = Assert.Single(
+            JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(
+                await File.ReadAllTextAsync(path))!);
+        Assert.Equal(0, saved.attempts);
+        Assert.Equal(now, saved.nextAttempt);
+
+        queue.setSuspended(false);
+        await queue.processDue();
+
+        Assert.Equal(2, handler.Calls);
+        Assert.Equal(0, queue.pendingCount);
+    }
+
+    [Fact]
+    public void OnlyOneProcessCanOwnAndRewriteAnOutbox()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var transport = EddnTransportTests.createTransport(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+        var first = outbox(path, transport, () => now);
+        var second = outbox(path, transport, () => now);
+        try
+        {
+            first.setEnabled(true, discardPendingWhenDisabled: false);
+            second.setEnabled(true, discardPendingWhenDisabled: false);
+            Assert.True(first.hasExclusiveOwnership);
+            Assert.False(second.hasExclusiveOwnership);
+            Assert.True(first.enqueue(queued(now, "First Port")));
+            Assert.False(second.enqueue(queued(now, "Second Port")));
+            Assert.Single(JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(
+                File.ReadAllText(path))!);
+
+            first.Dispose();
+            second.setEnabled(true, discardPendingWhenDisabled: false);
+
+            Assert.True(second.hasExclusiveOwnership);
+            Assert.Equal(1, second.pendingCount);
+            Assert.True(second.enqueue(queued(now, "Second Port")));
+            Assert.Equal(
+                2,
+                JsonConvert.DeserializeObject<List<EddnQueuedMessage>>(
+                    File.ReadAllText(path))!.Count);
+        }
+        finally
+        {
+            second.Dispose();
+            first.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task OptOutFromNonOwnerCancelsOwnerAndDiscardsSharedQueue()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var handler = new CancelThenSucceedHandler();
+        using var client = new HttpClient(handler);
+        var transport = new EddnTransport(
+            client,
+            new Dictionary<string, Uri>(StringComparer.Ordinal)
+            {
+                ["dev"] = new("https://dev.example.test/upload/"),
+                ["beta"] = new("https://beta.example.test/upload/"),
+                ["live"] = new("https://live.example.test/upload/"),
+            });
+        using var owner = outbox(path, transport, () => now);
+        using var otherInstance = outbox(path, transport, () => now);
+        owner.setEnabled(true, discardPendingWhenDisabled: false);
+        otherInstance.setEnabled(true, discardPendingWhenDisabled: false);
+        Assert.True(owner.enqueue(queued(now)));
+        var processing = owner.processDue();
+        await handler.Entered.WaitAsync(TimeSpan.FromSeconds(2));
+
+        otherInstance.setEnabled(false, discardPendingWhenDisabled: true);
+
+        await processing.WaitAsync(TimeSpan.FromSeconds(2));
+        await waitUntil(
+            () => owner.pendingCount == 0 && !File.Exists(path),
+            TimeSpan.FromSeconds(2));
+        owner.setEnabled(true, discardPendingWhenDisabled: false);
+
+        Assert.False(owner.enqueue(queued(now, "Must Not Upload")));
+        Assert.Equal(0, owner.pendingCount);
+
+        otherInstance.setEnabled(true, discardPendingWhenDisabled: false);
+        await waitUntil(
+            () => owner.hasExclusiveOwnership
+                || otherInstance.hasExclusiveOwnership,
+            TimeSpan.FromSeconds(2));
+        Assert.True(
+            owner.enqueue(queued(now, "Sharing Restored"))
+                || otherInstance.enqueue(queued(now, "Sharing Restored")));
+    }
+
+    [Fact]
+    public void NullSchemaInPersistedQueueIsQuarantinedWithoutCrashing()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        File.WriteAllText(
+            path,
+            $$"""
+            [{
+              "id":"{{Guid.NewGuid()}}",
+              "created":"2026-07-28T12:00:00Z",
+              "nextAttempt":"2026-07-28T12:00:00Z",
+              "attempts":0,
+              "environment":"live",
+              "schemaRef":null,
+              "header":{"uploaderID":"Test Cmdr"},
+              "message":{"timestamp":"2026-07-28T12:00:00Z","event":"DockingGranted"}
+            }]
+            """);
+        var logs = new List<string>();
+
+        using var queue = new EddnOutbox(
+            path,
+            EddnTransportTests.createTransport(_ => Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK))),
+            logs.Add,
+            automaticProcessing: false);
+
+        Assert.Equal(0, queue.pendingCount);
+        Assert.False(File.Exists(path));
+        Assert.Single(Directory.GetFiles(folder.path, "*.bad-*"));
+        Assert.Contains(
+            logs,
+            line => line.Contains("invalid", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.RequestEntityTooLarge)]
+    [InlineData(HttpStatusCode.UpgradeRequired)]
+    public async Task PermanentGatewayRejectionIsDropped(HttpStatusCode statusCode)
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        using var queue = outbox(
+            path,
+            EddnTransportTests.createTransport(_ => Task.FromResult(
+                new HttpResponseMessage(statusCode))),
+            () => now);
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+        Assert.True(queue.enqueue(queued(now)));
+
+        await queue.processDue();
+
+        Assert.Equal(0, queue.pendingCount);
+        Assert.False(File.Exists(path));
+    }
+
+    [Fact]
+    public void DisablingSharingDeletesPendingUploads()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        using var queue = outbox(
+            path,
+            EddnTransportTests.createTransport(_ => Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK))),
+            () => now);
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+        Assert.True(queue.enqueue(queued(now)));
+
+        queue.setEnabled(false, discardPendingWhenDisabled: true);
+
+        Assert.Equal(0, queue.pendingCount);
+        Assert.False(File.Exists(path));
+    }
+
+    [Fact]
+    public async Task UploadLoggingNeverRunsWhileTheQueueLockIsHeld()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var callbackCouldInspectQueue = false;
+        EddnOutbox? queue = null;
+        queue = new EddnOutbox(
+            path,
+            EddnTransportTests.createTransport(_ => Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK))),
+            _ =>
+            {
+                callbackCouldInspectQueue = canInspectQueueFromAnotherThread(
+                    queue!);
+            },
+            () => now,
+            automaticProcessing: false);
+        using (queue)
+        {
+            queue.setEnabled(true, discardPendingWhenDisabled: false);
+            Assert.True(queue.enqueue(queued(now)));
+
+            await queue.processDue();
+
+            Assert.True(callbackCouldInspectQueue);
+        }
+    }
+
+    [Fact]
+    public void DisableLoggingNeverRunsWhileTheQueueLockIsHeld()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var callbackCouldInspectQueue = false;
+        EddnOutbox? queue = null;
+        queue = new EddnOutbox(
+            path,
+            EddnTransportTests.createTransport(_ => Task.FromResult(
+                new HttpResponseMessage(HttpStatusCode.OK))),
+            _ =>
+            {
+                callbackCouldInspectQueue = canInspectQueueFromAnotherThread(
+                    queue!);
+            },
+            () => now,
+            automaticProcessing: false);
+        using (queue)
+        {
+            queue.setEnabled(true, discardPendingWhenDisabled: false);
+            Assert.True(queue.enqueue(queued(now)));
+
+            queue.setEnabled(false, discardPendingWhenDisabled: true);
+
+            Assert.True(callbackCouldInspectQueue);
+        }
+    }
+
+    [Fact]
+    public async Task DisposeDoesNotRaceAnActiveUpload()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var enteredTransport = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseTransport = new TaskCompletionSource<HttpResponseMessage>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var queue = outbox(
+            path,
+            EddnTransportTests.createTransport(_ =>
+            {
+                enteredTransport.SetResult();
+                return releaseTransport.Task;
+            }),
+            () => now);
+        queue.setEnabled(true, discardPendingWhenDisabled: false);
+        Assert.True(queue.enqueue(queued(now)));
+        var processing = queue.processDue();
+        await enteredTransport.Task;
+
+        queue.Dispose();
+        releaseTransport.SetResult(new HttpResponseMessage(HttpStatusCode.OK));
+
+        await processing;
+    }
+
+    private static EddnOutbox outbox(
+        string path,
+        EddnTransport transport,
+        Func<DateTimeOffset> clock)
+    {
+        return new EddnOutbox(
+            path,
+            transport,
+            utcNow: clock,
+            automaticProcessing: false);
+    }
+
+    private static EddnQueuedMessage queued(
+        DateTimeOffset created,
+        string stationName = "Test Port")
+    {
+        return new EddnQueuedMessage
+        {
+            id = Guid.NewGuid(),
+            created = created,
+            nextAttempt = created,
+            environment = "live",
+            schemaRef = "https://eddn.edcd.io/schemas/dockinggranted/1",
+            header = EddnTransportTests.header(),
+            message = new Newtonsoft.Json.Linq.JObject
+            {
+                ["timestamp"] = "2026-07-28T12:00:00Z",
+                ["event"] = "DockingGranted",
+                ["MarketID"] = 1,
+                ["StationName"] = stationName,
+            },
+        };
+    }
+
+    private static async Task waitUntil(
+        Func<bool> condition,
+        TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (!condition())
+        {
+            if (DateTime.UtcNow >= deadline)
+            {
+                Assert.Fail("The expected cross-process state was not observed.");
+            }
+
+            await Task.Delay(20);
+        }
+    }
+
+    private static bool canInspectQueueFromAnotherThread(EddnOutbox queue)
+    {
+        var inspected = false;
+        var inspection = new Thread(() =>
+        {
+            _ = queue.pendingCount;
+            inspected = true;
+        })
+        {
+            IsBackground = true,
+        };
+        inspection.Start();
+        return inspection.Join(TimeSpan.FromSeconds(2)) && inspected;
+    }
+
+    private sealed class TemporaryFolder : IDisposable
+    {
+        internal readonly string path = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-EddnTests-" + Guid.NewGuid().ToString("N"));
+
+        internal TemporaryFolder()
+        {
+            Directory.CreateDirectory(path);
+        }
+
+        public void Dispose()
+        {
+            if (Directory.Exists(path)) Directory.Delete(path, recursive: true);
+        }
+    }
+
+    private sealed class CancelThenSucceedHandler : HttpMessageHandler
+    {
+        private int calls;
+
+        internal Task Entered => entered.Task;
+
+        internal int Calls => calls;
+
+        private readonly TaskCompletionSource entered = new(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            if (Interlocked.Increment(ref calls) == 1)
+            {
+                entered.TrySetResult();
+                await Task.Delay(
+                    Timeout.InfiniteTimeSpan,
+                    cancellationToken);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+    }
+}
+
+

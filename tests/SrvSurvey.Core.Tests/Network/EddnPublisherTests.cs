@@ -1,4 +1,5 @@
 using System.Net;
+using System.IO.Compression;
 using System.Text.Json;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Network;
@@ -37,6 +38,7 @@ public sealed class EddnPublisherTests
             enabled: true,
             environment: "dev",
             allowPublishing: true);
+        await publisher.ProcessPendingAsync();
 
         Assert.Empty(bootstrap.Published);
         Assert.Empty(bootstrap.Warnings);
@@ -50,6 +52,8 @@ public sealed class EddnPublisherTests
         Assert.Equal(HttpVersion.Version11, request.Version);
         Assert.Equal(HttpMethod.Post, request.Method);
         Assert.StartsWith("application/json", request.ContentType);
+        Assert.Equal("gzip", request.ContentEncoding);
+        Assert.Null(request.Authorization);
         using var json = JsonDocument.Parse(request.Content);
         var root = json.RootElement;
         Assert.Equal(
@@ -90,6 +94,7 @@ public sealed class EddnPublisherTests
             enabled: true,
             environment: "live",
             allowPublishing: true);
+        await publisher.ProcessPendingAsync();
 
         Assert.Single(result.Published);
         using var json = JsonDocument.Parse(Assert.Single(requests).Content);
@@ -109,7 +114,47 @@ public sealed class EddnPublisherTests
     }
 
     [Fact]
-    public async Task CodexBodyIdentityRequiresStatusAndJournalAgreement()
+    public async Task JumpFlushesSignalBatchAgainstSourceSystem()
+    {
+        var requests = new List<RecordedRequest>();
+        using var publisher = CreatePublisher(requests);
+        await BootstrapAsync(publisher);
+
+        var result = await publisher.ApplyAsync(
+            [
+                Event("""
+                    {"timestamp":"2026-07-25T12:01:00Z","event":"FSSSignalDiscovered","SystemAddress":123,"SignalName":"High Grade Emissions","SignalType":"USS","USSType":"$USS_Type_VeryValuableSalvage;","ThreatLevel":0}
+                    """),
+                Event("""
+                    {"timestamp":"2026-07-25T12:02:00Z","event":"FSDJump","StarSystem":"Test B","SystemAddress":456,"StarPos":[4,5,6]}
+                    """),
+            ],
+            status: null,
+            enabled: true,
+            environment: "dev",
+            allowPublishing: true);
+        await publisher.ProcessPendingAsync();
+
+        Assert.Equal(2, result.Published.Count);
+        Assert.Equal(2, requests.Count);
+        using var signalPayload = JsonDocument.Parse(requests[0].Content);
+        var signalMessage = signalPayload.RootElement.GetProperty("message");
+        Assert.Equal(
+            "FSSSignalDiscovered",
+            signalMessage.GetProperty("event").GetString());
+        Assert.Equal(123, signalMessage.GetProperty("SystemAddress").GetInt64());
+        Assert.Equal("Test A", signalMessage.GetProperty("StarSystem").GetString());
+        Assert.Single(signalMessage.GetProperty("signals").EnumerateArray());
+        using var jumpPayload = JsonDocument.Parse(requests[1].Content);
+        Assert.Equal(
+            "Test B",
+            jumpPayload.RootElement.GetProperty("message")
+                .GetProperty("StarSystem")
+                .GetString());
+    }
+
+    [Fact]
+    public async Task CodexBodyIdentityOnlyUsesContextWhenStatusAndJournalAgree()
     {
         var requests = new List<RecordedRequest>();
         var publisher = CreatePublisher(requests);
@@ -125,6 +170,7 @@ public sealed class EddnPublisherTests
             enabled: true,
             environment: "dev",
             allowPublishing: true);
+        await publisher.ProcessPendingAsync();
         await publisher.ApplyAsync(
             [CodexEvent("2026-07-25T12:04:00Z")],
             new EliteStatus { BodyName = "Test A 2" },
@@ -137,6 +183,7 @@ public sealed class EddnPublisherTests
             enabled: true,
             environment: "dev",
             allowPublishing: true);
+        await publisher.ProcessPendingAsync();
 
         Assert.Equal(3, requests.Count);
         using var matching = JsonDocument.Parse(requests[0].Content);
@@ -148,13 +195,13 @@ public sealed class EddnPublisherTests
 
         using var mismatched = JsonDocument.Parse(requests[1].Content);
         var mismatchedMessage = mismatched.RootElement.GetProperty("message");
-        Assert.Equal("Test A 2", mismatchedMessage.GetProperty("BodyName").GetString());
-        Assert.False(mismatchedMessage.TryGetProperty("BodyID", out _));
+        Assert.False(mismatchedMessage.TryGetProperty("BodyName", out _));
+        Assert.Equal(4, mismatchedMessage.GetProperty("BodyID").GetInt32());
 
         using var absent = JsonDocument.Parse(requests[2].Content);
         var absentMessage = absent.RootElement.GetProperty("message");
         Assert.False(absentMessage.TryGetProperty("BodyName", out _));
-        Assert.False(absentMessage.TryGetProperty("BodyID", out _));
+        Assert.Equal(4, absentMessage.GetProperty("BodyID").GetInt32());
     }
 
     [Fact]
@@ -231,18 +278,323 @@ public sealed class EddnPublisherTests
             enabled: true,
             environment: "dev",
             allowPublishing: true);
+        await publisher.ProcessPendingAsync();
 
         Assert.Equal(2, calls);
         Assert.Equal(2, requests.Count);
+        Assert.Equal(2, result.Published.Count);
+        Assert.Empty(result.Warnings);
+    }
+
+    [Fact]
+    public async Task MatchingMarketCompanionFileIsQueuedWithoutBlockingJournalApply()
+    {
+        var directory = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-EddnCompanion-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(directory, "Market.json"),
+                """
+                {"timestamp":"2026-07-25T12:01:01Z","event":"Market","MarketID":42,"StationName":"Test Port","StationType":"Orbis","StarSystem":"Test A","Items":[]}
+                """);
+            var requests = new List<RecordedRequest>();
+            using var publisher = CreatePublisher(requests);
+            await publisher.ApplyAsync(
+                [
+                    Event("""{"timestamp":"2026-07-25T12:00:00Z","event":"Fileheader","gameversion":"4.1.2.3","build":"r123/r0","Odyssey":true}"""),
+                    Event("""{"timestamp":"2026-07-25T12:00:01Z","event":"LoadGame","Commander":"Test Cmdr","Horizons":true,"Odyssey":true}"""),
+                    Event("""{"timestamp":"2026-07-25T12:00:02Z","event":"Location","StarSystem":"Test A","SystemAddress":123,"StarPos":[1.5,-2,3]}"""),
+                ],
+                status: null,
+                enabled: true,
+                environment: "dev",
+                allowPublishing: false,
+                journalDirectory: directory);
+
+            var result = await publisher.ApplyAsync(
+                [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"Market","MarketID":42}""")],
+                status: null,
+                enabled: true,
+                environment: "dev",
+                allowPublishing: true,
+                journalDirectory: directory);
+
+            Assert.Empty(result.Published);
+            await publisher.WaitForCompanionReadsAsync();
+            Assert.Equal(1, publisher.PendingCount);
+            await publisher.ProcessPendingAsync();
+
+            using var payload = JsonDocument.Parse(Assert.Single(requests).Content);
+            Assert.Equal(
+                "https://eddn.edcd.io/schemas/commodity/3/test",
+                payload.RootElement.GetProperty("$schemaRef").GetString());
+            var message = payload.RootElement.GetProperty("message");
+            Assert.Equal("Test A", message.GetProperty("systemName").GetString());
+            Assert.Equal(42, message.GetProperty("marketId").GetInt64());
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task MulticrewAndSharedCompanionInputsAreSuppressedIndependently()
+    {
+        var requests = new List<RecordedRequest>();
+        using var publisher = CreatePublisher(requests);
+        await BootstrapAsync(publisher);
+
+        var crew = await publisher.ApplyAsync(
+            [
+                Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"JoinACrew"}"""),
+                Event("""{"timestamp":"2026-07-25T12:01:01Z","event":"DockingGranted","MarketID":1,"StationName":"Port","LandingPad":2}"""),
+            ],
+            status: null,
+            enabled: true,
+            environment: "live",
+            allowPublishing: true);
+        var shared = await publisher.ApplyAsync(
+            [
+                Event("""{"timestamp":"2026-07-25T12:01:59Z","event":"QuitACrew"}"""),
+                Event("""{"timestamp":"2026-07-25T12:02:00Z","event":"Market","MarketID":1}"""),
+            ],
+            status: null,
+            enabled: true,
+            environment: "live",
+            allowPublishing: true,
+            journalDirectory: Path.GetTempPath(),
+            allowSharedData: false);
+
+        Assert.Empty(crew.Published);
+        Assert.Empty(shared.Published);
+        Assert.Contains(
+            shared.Warnings,
+            warning => warning.Contains(
+                "shared companion files are suppressed",
+                StringComparison.Ordinal));
+        Assert.Equal(0, publisher.PendingCount);
+        Assert.Empty(requests);
+    }
+
+    [Fact]
+    public async Task OptOutDiscardsQueuedMessagesBeforeNetworkDelivery()
+    {
+        var requests = new List<RecordedRequest>();
+        using var publisher = CreatePublisher(requests);
+        await BootstrapAsync(publisher);
+        var queued = await publisher.ApplyAsync(
+            [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"DockingGranted","MarketID":1,"StationName":"Port","LandingPad":2}""")],
+            status: null,
+            enabled: true,
+            environment: "live",
+            allowPublishing: true);
+
+        Assert.Single(queued.Published);
+        Assert.Equal(1, publisher.PendingCount);
+        publisher.SetEnabled(false);
+        await publisher.ProcessPendingAsync();
+
+        Assert.Equal(0, publisher.PendingCount);
+        Assert.Empty(requests);
+    }
+
+    [Fact]
+    public async Task OperationalSuspensionPreservesQueueAndBlocksNewMessages()
+    {
+        var requests = new List<RecordedRequest>();
+        using var publisher = CreatePublisher(requests);
+        await BootstrapAsync(publisher);
+        var queued = await publisher.ApplyAsync(
+            [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"DockingGranted","MarketID":1,"StationName":"First Port","LandingPad":2}""")],
+            status: null,
+            enabled: true,
+            environment: "live",
+            allowPublishing: true);
+        Assert.Single(queued.Published);
+
+        publisher.SetSuspended(true);
+        var blocked = await publisher.ApplyAsync(
+            [Event("""{"timestamp":"2026-07-25T12:02:00Z","event":"DockingGranted","MarketID":2,"StationName":"Second Port","LandingPad":3}""")],
+            status: null,
+            enabled: true,
+            environment: "live",
+            allowPublishing: true);
+        await publisher.ProcessPendingAsync();
+
+        Assert.Empty(blocked.Published);
+        Assert.Contains(
+            blocked.Warnings,
+            warning => warning.Contains(
+                "multiple Elite windows",
+                StringComparison.Ordinal));
+        Assert.Equal(1, publisher.PendingCount);
+        Assert.Empty(requests);
+
+        publisher.SetSuspended(false);
+        await publisher.ProcessPendingAsync();
+
+        Assert.Equal(0, publisher.PendingCount);
+        Assert.Single(requests);
+    }
+
+    [Fact]
+    public async Task ContinuedJournalPartPreservesCommanderIdentityAndContext()
+    {
+        var requests = new List<RecordedRequest>();
+        using var publisher = CreatePublisher(requests);
+        var firstPath = Path.Combine(
+            Path.GetTempPath(),
+            "Journal.2026-07-25T120000.01.log");
+        var secondPath = Path.Combine(
+            Path.GetTempPath(),
+            "Journal.2026-07-25T120000.02.log");
+        await publisher.ApplyAsync(
+            [
+                Event("""{"timestamp":"2026-07-25T12:00:00Z","event":"Fileheader","part":1,"gameversion":"4.1","build":"r1","Odyssey":true}"""),
+                Event("""{"timestamp":"2026-07-25T12:00:01Z","event":"LoadGame","Commander":"Test Cmdr","Odyssey":true}"""),
+                Event("""{"timestamp":"2026-07-25T12:00:02Z","event":"Location","StarSystem":"Test A","SystemAddress":123,"StarPos":[1,2,3]}"""),
+            ],
+            status: null,
+            enabled: true,
+            environment: "live",
+            allowPublishing: false,
+            journalPath: firstPath);
+        await publisher.ApplyAsync(
+            [
+                Event("""{"timestamp":"2026-07-25T12:10:00Z","event":"Fileheader","part":2,"gameversion":"4.1","build":"r2","Odyssey":true}"""),
+                Event("""{"timestamp":"2026-07-25T12:10:01Z","event":"Continued","Part":1}"""),
+            ],
+            status: null,
+            enabled: true,
+            environment: "live",
+            allowPublishing: false,
+            journalPath: secondPath);
+
+        var result = await publisher.ApplyAsync(
+            [Event("""{"timestamp":"2026-07-25T12:11:00Z","event":"FSSBodySignals","SystemAddress":123,"BodyName":"Test A 1","BodyID":4,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}]}""")],
+            status: null,
+            enabled: true,
+            environment: "live",
+            allowPublishing: true,
+            journalPath: secondPath);
+        await publisher.ProcessPendingAsync();
+
         Assert.Single(result.Published);
-        var warning = Assert.Single(result.Warnings);
-        Assert.Contains("HTTP 400", warning);
-        Assert.True(warning.Length < 2_200);
+        using var payload = JsonDocument.Parse(Assert.Single(requests).Content);
+        var header = payload.RootElement.GetProperty("header");
+        Assert.Equal("Test Cmdr", header.GetProperty("uploaderID").GetString());
+        Assert.Equal("r2", header.GetProperty("gamebuild").GetString());
+        Assert.Equal(
+            "Test A",
+            payload.RootElement.GetProperty("message")
+                .GetProperty("StarSystem")
+                .GetString());
     }
 
     [Theory]
-    [InlineData(null, "dev")]
-    [InlineData("unknown", "dev")]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task UnrelatedJournalFileRequiresFreshCommanderIdentity(
+        int part)
+    {
+        var requests = new List<RecordedRequest>();
+        using var publisher = CreatePublisher(requests);
+        await publisher.ApplyAsync(
+            [
+                Event("""{"timestamp":"2026-07-25T12:00:00Z","event":"Fileheader","part":1,"gameversion":"4.1","build":"r1"}"""),
+                Event("""{"timestamp":"2026-07-25T12:00:01Z","event":"LoadGame","Commander":"Test Cmdr","Odyssey":true}"""),
+            ],
+            status: null,
+            enabled: true,
+            environment: "live",
+            allowPublishing: false,
+            journalPath: Path.Combine(
+                Path.GetTempPath(),
+                "Journal.2026-07-25T120000.01.log"));
+        await publisher.ApplyAsync(
+            [Event($$"""{"timestamp":"2026-07-25T12:10:00Z","event":"Fileheader","part":{{part}},"gameversion":"4.1","build":"r2"}""")],
+            status: null,
+            enabled: true,
+            environment: "live",
+            allowPublishing: false,
+            journalPath: Path.Combine(
+                Path.GetTempPath(),
+                "Journal.2026-07-25T121000.01.log"));
+
+        var result = await publisher.ApplyAsync(
+            [Event("""{"timestamp":"2026-07-25T12:11:00Z","event":"DockingGranted","MarketID":1,"StationName":"Port","LandingPad":2}""")],
+            status: null,
+            enabled: true,
+            environment: "live",
+            allowPublishing: true);
+        await publisher.ProcessPendingAsync();
+
+        Assert.Empty(result.Published);
+        Assert.Equal(0, publisher.PendingCount);
+        Assert.Empty(requests);
+    }
+
+    [Fact]
+    public async Task CompanionReadFromReplacedSessionCannotEnterOutbox()
+    {
+        var directory = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-EddnGeneration-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var requests = new List<RecordedRequest>();
+            using var publisher = CreatePublisher(requests);
+            await publisher.ApplyAsync(
+                [
+                    Event("""{"timestamp":"2026-07-25T12:00:00Z","event":"Fileheader","gameversion":"4.1","build":"r1"}"""),
+                    Event("""{"timestamp":"2026-07-25T12:00:01Z","event":"LoadGame","Commander":"First Cmdr","Odyssey":true}"""),
+                    Event("""{"timestamp":"2026-07-25T12:00:02Z","event":"Location","StarSystem":"Test A","SystemAddress":123,"StarPos":[1,2,3]}"""),
+                ],
+                null,
+                enabled: true,
+                environment: "live",
+                allowPublishing: false,
+                journalDirectory: directory);
+            await publisher.ApplyAsync(
+                [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"Market","MarketID":42}""")],
+                null,
+                enabled: true,
+                environment: "live",
+                allowPublishing: true,
+                journalDirectory: directory);
+
+            await publisher.ApplyAsync(
+                [Event("""{"timestamp":"2026-07-25T12:02:00Z","event":"Fileheader","gameversion":"4.1","build":"r2"}""")],
+                null,
+                enabled: true,
+                environment: "live",
+                allowPublishing: false,
+                journalDirectory: directory);
+            await File.WriteAllTextAsync(
+                Path.Combine(directory, "Market.json"),
+                """
+                {"timestamp":"2026-07-25T12:01:01Z","event":"Market","MarketID":42,"StationName":"Old Port","StationType":"Orbis","StarSystem":"Test A","Items":[]}
+                """);
+
+            await publisher.WaitForCompanionReadsAsync();
+
+            Assert.Equal(0, publisher.PendingCount);
+            Assert.Empty(requests);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(null, "live")]
+    [InlineData("unknown", "live")]
     [InlineData(" BETA ", "beta")]
     [InlineData("LIVE", "live")]
     public void EnvironmentIsNormalized(string? value, string expected)
@@ -311,18 +663,41 @@ public sealed class EddnPublisherTests
                 ["dev"] = new("https://dev.example.test/upload/"),
                 ["beta"] = new("https://beta.example.test/upload/"),
                 ["live"] = new("https://live.example.test/upload/"),
-            });
+            },
+            Path.Combine(
+                Path.GetTempPath(),
+                "SrvSurvey-EddnPublisherTests-"
+                    + Guid.NewGuid().ToString("N")
+                    + ".json"),
+            automaticProcessing: false);
     }
 
     private static async Task<RecordedRequest> RecordAsync(
         HttpRequestMessage request)
     {
+        var requestContent = request.Content!;
+        var bytes = await requestContent.ReadAsByteArrayAsync();
+        string content;
+        if (requestContent.Headers.ContentEncoding.Contains("gzip"))
+        {
+            using var input = new MemoryStream(bytes);
+            using var gzip = new GZipStream(input, CompressionMode.Decompress);
+            using var reader = new StreamReader(gzip);
+            content = await reader.ReadToEndAsync();
+        }
+        else
+        {
+            content = System.Text.Encoding.UTF8.GetString(bytes);
+        }
+
         return new RecordedRequest(
             request.Method,
             request.RequestUri!,
             request.Version,
-            request.Content?.Headers.ContentType?.ToString() ?? string.Empty,
-            await request.Content!.ReadAsStringAsync());
+            requestContent.Headers.ContentType?.ToString() ?? string.Empty,
+            string.Join(',', requestContent.Headers.ContentEncoding),
+            request.Headers.Authorization?.ToString(),
+            content);
     }
 
     private sealed record RecordedRequest(
@@ -330,6 +705,8 @@ public sealed class EddnPublisherTests
         Uri Uri,
         Version Version,
         string ContentType,
+        string ContentEncoding,
+        string? Authorization,
         string Content);
 
     private sealed class StubHandler(

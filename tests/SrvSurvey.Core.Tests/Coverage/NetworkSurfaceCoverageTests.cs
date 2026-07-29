@@ -13,6 +13,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Inara/InaraPublisher.cs",
         "src/SrvSurvey.Core/Navigation/SystemSummaryClient.cs",
         "src/SrvSurvey.Core/Network/EddnPublisher.cs",
+        "src/SrvSurvey.Core/Network/EddnTransport.cs",
         "src/SrvSurvey.Core/Quests/RavenQuestClient.cs",
         "src/SrvSurvey.Core/Routes/SpanshRouteClient.cs",
         "src/SrvSurvey.Core/Search/NearestSystemsClient.cs",
@@ -31,8 +32,11 @@ public sealed class NetworkSurfaceCoverageTests
     private static readonly string[] ResponseOwners =
         HttpClientOwners
             .Where(path => !path.EndsWith(
-                "MainWindowViewModel.cs",
-                StringComparison.Ordinal))
+                    "MainWindowViewModel.cs",
+                    StringComparison.Ordinal)
+                && !path.EndsWith(
+                    "EddnPublisher.cs",
+                    StringComparison.Ordinal))
             .ToArray();
 
     private static readonly NetworkSurface[] Surfaces =
@@ -97,8 +101,20 @@ public sealed class NetworkSurfaceCoverageTests
             ]),
         new(
             "eddn-publication",
-            ["src/SrvSurvey.Core/Network/EddnPublisher.cs"],
-            ["tests/SrvSurvey.Core.Tests/Network/EddnPublisherTests.cs"]),
+            [
+                "src/SrvSurvey.Core/Network/EddnPublisher.cs",
+                "src/SrvSurvey.Core/Network/EddnMessageSanitizer.cs",
+                "src/SrvSurvey.Core/Network/EddnCompanionFileReader.cs",
+                "src/SrvSurvey.Core/Network/EddnOutbox.cs",
+                "src/SrvSurvey.Core/Network/EddnTransport.cs",
+            ],
+            [
+                "tests/SrvSurvey.Core.Tests/Network/EddnPublisherTests.cs",
+                "tests/SrvSurvey.Core.Tests/Network/EddnMessageSanitizerTests.cs",
+                "tests/SrvSurvey.Core.Tests/Network/EddnCompanionFileReaderTests.cs",
+                "tests/SrvSurvey.Core.Tests/Network/EddnOutboxTests.cs",
+                "tests/SrvSurvey.Core.Tests/Network/EddnTransportTests.cs",
+            ]),
         new(
             "inara-publication",
             ["src/SrvSurvey.Core/Inara/InaraPublisher.cs"],

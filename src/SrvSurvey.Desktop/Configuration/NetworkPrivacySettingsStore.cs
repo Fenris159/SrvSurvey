@@ -62,7 +62,8 @@ public sealed class NetworkPrivacySettingsStore
         {
             "live" => "live",
             "beta" => "beta",
-            _ => "dev",
+            "dev" => "dev",
+            _ => "live",
         };
     }
 
@@ -94,7 +95,7 @@ public sealed record NetworkPrivacyPreferences(
 {
     public static NetworkPrivacyPreferences Default { get; } = new(
         EddnUploadEnabled: false,
-        EddnEnvironment: "dev",
+        EddnEnvironment: "live",
         UploadGreenGasGiantCandidates: false,
         UploadHumanSettlementGeometry: false);
 }

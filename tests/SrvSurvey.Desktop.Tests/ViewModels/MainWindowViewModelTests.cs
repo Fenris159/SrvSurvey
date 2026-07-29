@@ -307,7 +307,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(bootstrap.Enabled);
             Assert.Equal("beta", bootstrap.Environment);
             Assert.Equal(3, bootstrap.Events.Count);
-            Assert.DoesNotContain("Published", viewModel.NetworkPrivacy.StatusMessage);
+            Assert.DoesNotContain("Queued", viewModel.NetworkPrivacy.StatusMessage);
 
             await File.AppendAllTextAsync(
                 journalPath,
@@ -319,7 +319,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(live.AllowPublishing);
             Assert.Equal("DockingGranted", Assert.Single(live.Events).EventName);
             Assert.Contains(
-                "Published DockingGranted to EDDN (beta)",
+                "Queued DockingGranted for EDDN (beta)",
                 viewModel.NetworkPrivacy.StatusMessage);
         }
         finally
@@ -2417,14 +2417,17 @@ public sealed class MainWindowViewModelTests
             {
                 AvailableWindowCount = 2,
             };
+            var eddnPublisher = new RecordingEddnPublisher();
             using var viewModel = new MainWindowViewModel(
                 journals,
                 appDataPaths: paths,
-                gameWindowSwitcher: switcher);
+                gameWindowSwitcher: switcher,
+                eddnPublisher: eddnPublisher);
 
             Assert.True(viewModel.IsSharedCargoSuppressed);
             Assert.True(viewModel.DockToDock.SharedCargoSuppressed);
             Assert.True(viewModel.Colonization.SharedCargoSuppressed);
+            Assert.True(eddnPublisher.SuspensionStates[^1]);
 
             switcher.AvailableWindowCount = 1;
             viewModel.CommanderInstances.RefreshGameWindowCount();
@@ -2432,11 +2435,13 @@ public sealed class MainWindowViewModelTests
             Assert.False(viewModel.IsSharedCargoSuppressed);
             Assert.False(viewModel.DockToDock.SharedCargoSuppressed);
             Assert.False(viewModel.Colonization.SharedCargoSuppressed);
+            Assert.False(eddnPublisher.SuspensionStates[^1]);
 
             switcher.AvailableWindowCount = 2;
             viewModel.CommanderInstances.RefreshGameWindowCount();
 
             Assert.True(viewModel.IsSharedCargoSuppressed);
+            Assert.True(eddnPublisher.SuspensionStates[^1]);
             Assert.Contains(
                 "cannot be attributed safely",
                 viewModel.DockToDock.StatusMessage);
@@ -2750,19 +2755,25 @@ public sealed class MainWindowViewModelTests
     {
         public List<EddnCall> Calls { get; } = [];
 
+        public List<bool> SuspensionStates { get; } = [];
+
         public Task<EddnPublicationResult> ApplyAsync(
             IReadOnlyList<JournalEventEnvelope> journalEvents,
             EliteStatus? status,
             bool enabled,
             string environment,
             bool allowPublishing,
+            string? journalDirectory = null,
+            string? journalPath = null,
+            bool allowSharedData = true,
             CancellationToken cancellationToken = default)
         {
             Calls.Add(new EddnCall(
                 journalEvents.ToArray(),
                 enabled,
                 environment,
-                allowPublishing));
+                allowPublishing,
+                allowSharedData));
             IReadOnlyList<EddnPublishedEvent> published =
                 enabled && allowPublishing && journalEvents.Count > 0
                     ? [new EddnPublishedEvent(
@@ -2772,13 +2783,23 @@ public sealed class MainWindowViewModelTests
                     : [];
             return Task.FromResult(new EddnPublicationResult(published, []));
         }
+
+        public void SetEnabled(bool enabled)
+        {
+        }
+
+        public void SetSuspended(bool suspended)
+        {
+            SuspensionStates.Add(suspended);
+        }
     }
 
     private sealed record EddnCall(
         IReadOnlyList<JournalEventEnvelope> Events,
         bool Enabled,
         string Environment,
-        bool AllowPublishing);
+        bool AllowPublishing,
+        bool AllowSharedData);
 
     private sealed class CountingScreenshotProcessor
         : IScreenshotProcessingService

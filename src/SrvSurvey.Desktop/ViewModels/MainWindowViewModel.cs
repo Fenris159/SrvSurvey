@@ -374,7 +374,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Inara.UploadDisabled += OnInaraUploadDisabled;
         this.eddnPublisher = eddnPublisher ?? new EddnPublisher(
             (typeof(MainWindowViewModel).Assembly.GetName().Version
-                ?? new Version(0, 0)).ToString());
+                ?? new Version(0, 0)).ToString(),
+            outboxPath: Path.Combine(
+                AppDataPaths.DataDirectory,
+                "eddn-outbox-v1.json"),
+            log: message => applicationLogService?.Append(message));
+        NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
+        this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
         this.greenGasGiantPublicationCoordinator =
             greenGasGiantPublicationCoordinator
                 ?? new GreenGasGiantPublicationCoordinator(
@@ -601,6 +607,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             sharedGameWindowSwitcher);
         CommanderInstances.PropertyChanged += OnCommanderInstancesPropertyChanged;
         SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
+        this.eddnPublisher.SetSuspended(
+            CommanderInstances.HasMultipleGameWindows);
         if (visitedStarsCache is null)
         {
             var processDetector = new EliteGameProcessDetector();
@@ -2008,16 +2016,34 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         // External publication runs after every local reducer and persistence
         // path so an unavailable gateway cannot delay live state projection.
-        var eddnResult = await eddnPublisher.ApplyAsync(
-            update.JournalEvents,
-            latestStatus,
-            NetworkPrivacy.EddnUploadEnabled,
-            NetworkPrivacy.EddnEnvironment,
-            allowPublishing: !update.IsBootstrapRead);
-        NetworkPrivacy.ReportPublicationResult(eddnResult);
-        foreach (var warning in eddnResult.Warnings)
+        try
         {
-            applicationLogService?.Append(warning);
+            CommanderInstances.RefreshGameWindowCount();
+            var hasMultipleGameWindows =
+                CommanderInstances.HasMultipleGameWindows;
+            eddnPublisher.SetSuspended(hasMultipleGameWindows);
+            var eddnResult = await eddnPublisher.ApplyAsync(
+                update.JournalEvents,
+                latestStatus,
+                NetworkPrivacy.EddnUploadEnabled,
+                NetworkPrivacy.EddnEnvironment,
+                allowPublishing: !update.IsBootstrapRead
+                    && !hasMultipleGameWindows,
+                journalDirectory: folderResolution.SelectedPath,
+                journalPath: update.JournalPath,
+                allowSharedData: !hasMultipleGameWindows);
+            NetworkPrivacy.ReportPublicationResult(eddnResult);
+            foreach (var warning in eddnResult.Warnings)
+            {
+                applicationLogService?.Append(warning);
+            }
+        }
+        catch (Exception exception) when (
+            exception is not OperationCanceledException)
+        {
+            applicationLogService?.Append(
+                "EDDN processing was isolated from journal tracking: "
+                    + exception.Message);
         }
 
         try
@@ -3361,8 +3387,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged;
         OverlayInteraction.Dispose();
         visitedStarsHttpClient?.Dispose();
+        NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged;
+        if (eddnPublisher is IDisposable disposableEddnPublisher)
+        {
+            disposableEddnPublisher.Dispose();
+        }
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    }
+
+    private void OnEddnUploadEnabledChanged(bool enabled)
+    {
+        eddnPublisher.SetEnabled(enabled);
     }
 
     private void OnCommanderInstancesPropertyChanged(
@@ -3375,7 +3411,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
+        var hasMultipleGameWindows =
+            CommanderInstances.HasMultipleGameWindows;
+        SetSharedCargoSuppressed(hasMultipleGameWindows);
+        eddnPublisher.SetSuspended(hasMultipleGameWindows);
         OnPropertyChanged(nameof(IsSharedCargoSuppressed));
     }
 
