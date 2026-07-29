@@ -26,6 +26,7 @@ namespace SrvSurvey.Core.Network
         private readonly Func<DateTimeOffset> utcNow;
         private readonly bool automaticProcessing;
         private readonly object sync = new();
+        private readonly object sharedConsentSync = new();
         private readonly SemaphoreSlim processing = new(1, 1);
         private readonly System.Threading.Timer timer;
         private readonly CancellationTokenSource shutdown = new();
@@ -91,31 +92,34 @@ namespace SrvSurvey.Core.Network
 
         internal void setEnabled(bool value, bool discardPendingWhenDisabled)
         {
-            bool publishDisable;
-            bool publishEnable;
-            lock (sync)
+            lock (sharedConsentSync)
             {
-                if (disposed) return;
-                publishDisable = !value && requestedEnabled != false;
-                publishEnable = value && requestedEnabled == false;
-                requestedEnabled = value;
-            }
+                bool publishDisable;
+                bool publishEnable;
+                lock (sync)
+                {
+                    if (disposed) return;
+                    publishDisable = !value && requestedEnabled != false;
+                    publishEnable = value && requestedEnabled == false;
+                    requestedEnabled = value;
+                }
 
-            string? markerLog = null;
-            if (publishDisable)
-            {
-                markerLog = writeSharedDisableMarker();
-            }
-            else if (publishEnable)
-            {
-                markerLog = clearSharedDisableMarker();
-            }
+                string? markerLog = null;
+                if (publishDisable)
+                {
+                    markerLog = writeSharedDisableMarker();
+                }
+                else if (publishEnable)
+                {
+                    markerLog = clearSharedDisableMarker();
+                }
 
-            writeLog(markerLog);
-            var sharedDisabled = isSharedConsentDisabled();
-            applyEnabledState(
-                value && !sharedDisabled,
-                discardPendingWhenDisabled || sharedDisabled);
+                writeLog(markerLog);
+                var sharedDisabled = isSharedConsentDisabled();
+                applyEnabledState(
+                    value && !sharedDisabled,
+                    discardPendingWhenDisabled || sharedDisabled);
+            }
         }
 
         private void applyEnabledState(
@@ -730,17 +734,20 @@ namespace SrvSurvey.Core.Network
             object sender,
             FileSystemEventArgs eventArgs)
         {
-            bool shouldEnable;
-            lock (sync)
+            lock (sharedConsentSync)
             {
-                if (disposed) return;
-                shouldEnable = requestedEnabled == true;
-            }
+                bool shouldEnable;
+                lock (sync)
+                {
+                    if (disposed) return;
+                    shouldEnable = requestedEnabled == true;
+                }
 
-            var sharedDisabled = isSharedConsentDisabled();
-            applyEnabledState(
-                shouldEnable && !sharedDisabled,
-                discardPendingWhenDisabled: sharedDisabled);
+                var sharedDisabled = isSharedConsentDisabled();
+                applyEnabledState(
+                    shouldEnable && !sharedDisabled,
+                    discardPendingWhenDisabled: sharedDisabled);
+            }
         }
 
         private bool isSharedConsentDisabled()
