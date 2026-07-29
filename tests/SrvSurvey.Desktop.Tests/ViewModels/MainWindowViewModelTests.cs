@@ -2259,14 +2259,17 @@ public sealed class MainWindowViewModelTests
             {
                 AvailableWindowCount = 2,
             };
+            var eddnPublisher = new RecordingEddnPublisher();
             using var viewModel = new MainWindowViewModel(
                 journals,
                 appDataPaths: paths,
-                gameWindowSwitcher: switcher);
+                gameWindowSwitcher: switcher,
+                eddnPublisher: eddnPublisher);
 
             Assert.True(viewModel.IsSharedCargoSuppressed);
             Assert.True(viewModel.DockToDock.SharedCargoSuppressed);
             Assert.True(viewModel.Colonization.SharedCargoSuppressed);
+            Assert.True(eddnPublisher.SuspensionStates[^1]);
 
             switcher.AvailableWindowCount = 1;
             viewModel.CommanderInstances.RefreshGameWindowCount();
@@ -2274,11 +2277,13 @@ public sealed class MainWindowViewModelTests
             Assert.False(viewModel.IsSharedCargoSuppressed);
             Assert.False(viewModel.DockToDock.SharedCargoSuppressed);
             Assert.False(viewModel.Colonization.SharedCargoSuppressed);
+            Assert.False(eddnPublisher.SuspensionStates[^1]);
 
             switcher.AvailableWindowCount = 2;
             viewModel.CommanderInstances.RefreshGameWindowCount();
 
             Assert.True(viewModel.IsSharedCargoSuppressed);
+            Assert.True(eddnPublisher.SuspensionStates[^1]);
             Assert.Contains(
                 "cannot be attributed safely",
                 viewModel.DockToDock.StatusMessage);
@@ -2528,6 +2533,8 @@ public sealed class MainWindowViewModelTests
     {
         public List<EddnCall> Calls { get; } = [];
 
+        public List<bool> SuspensionStates { get; } = [];
+
         public Task<EddnPublicationResult> ApplyAsync(
             IReadOnlyList<JournalEventEnvelope> journalEvents,
             EliteStatus? status,
@@ -2543,7 +2550,8 @@ public sealed class MainWindowViewModelTests
                 journalEvents.ToArray(),
                 enabled,
                 environment,
-                allowPublishing));
+                allowPublishing,
+                allowSharedData));
             IReadOnlyList<EddnPublishedEvent> published =
                 enabled && allowPublishing && journalEvents.Count > 0
                     ? [new EddnPublishedEvent(
@@ -2557,13 +2565,19 @@ public sealed class MainWindowViewModelTests
         public void SetEnabled(bool enabled)
         {
         }
+
+        public void SetSuspended(bool suspended)
+        {
+            SuspensionStates.Add(suspended);
+        }
     }
 
     private sealed record EddnCall(
         IReadOnlyList<JournalEventEnvelope> Events,
         bool Enabled,
         string Environment,
-        bool AllowPublishing);
+        bool AllowPublishing,
+        bool AllowSharedData);
 
     private sealed class CountingScreenshotProcessor
         : IScreenshotProcessingService

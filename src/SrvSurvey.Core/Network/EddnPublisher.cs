@@ -22,6 +22,8 @@ public interface IEddnPublisher
         CancellationToken cancellationToken = default);
 
     void SetEnabled(bool enabled);
+
+    void SetSuspended(bool suspended);
 }
 
 /// <summary>
@@ -73,6 +75,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     private bool? odyssey;
     private bool isCrewMember;
     private bool sharingEnabled;
+    private bool publishingSuspended;
     private long sessionGeneration;
     private volatile bool disposed;
 
@@ -135,6 +138,29 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         outbox.setEnabled(enabled, discardPendingWhenDisabled: !enabled);
     }
 
+    public void SetSuspended(bool suspended)
+    {
+        lock (sync)
+        {
+            if (disposed || publishingSuspended == suspended)
+            {
+                return;
+            }
+
+            publishingSuspended = suspended;
+            if (suspended)
+            {
+                sessionGeneration++;
+                pendingSignals.Clear();
+                stationSignatures.Clear();
+            }
+        }
+
+        // Suspension is operational, not consent: pending uploads remain on
+        // disk and resume in order once commander attribution is unambiguous.
+        outbox.setSuspended(suspended);
+    }
+
     public Task<EddnPublicationResult> ApplyAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? status,
@@ -156,6 +182,20 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         SetEnabled(enabled);
         var queued = new List<EddnPublishedEvent>();
         var warnings = new List<string>();
+        bool suspended;
+        lock (sync)
+        {
+            suspended = publishingSuspended;
+        }
+
+        if (enabled
+            && allowPublishing
+            && suspended
+            && journalEvents.Count > 0)
+        {
+            warnings.Add(
+                "EDDN sharing is paused while multiple Elite windows are active; pending uploads were preserved.");
+        }
 
         foreach (var journalEvent in journalEvents)
         {
@@ -206,14 +246,15 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                         out var preparedBatch,
                         out var batchReason))
                     {
-                        if (header is not null
+                        if (HasUsableHeader()
                             && enabled
                             && allowPublishing
+                            && !publishingSuspended
                             && !suppressBatchForCrew)
                         {
                             signalBatch = new QueueCandidate(
                                 preparedBatch!,
-                                header.clone(),
+                                header!.clone(),
                                 environment,
                                 sessionGeneration);
                         }
@@ -250,16 +291,18 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                 {
                     if (enabled
                         && allowPublishing
+                        && !publishingSuspended
                         && !isCrewMember
-                        && header is not null)
+                        && HasUsableHeader())
                     {
                         pendingSignals.Add(new JObject(raw));
                     }
                 }
                 else if (enabled
                     && allowPublishing
+                    && !publishingSuspended
                     && !isCrewMember
-                    && header is not null)
+                    && HasUsableHeader())
                 {
                     var context = CreateContext();
                     if (EddnMessageSanitizer.isCompanionEvent(eventName))
@@ -278,7 +321,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                             companionCandidate = new CompanionCandidate(
                                 new JObject(raw),
                                 context,
-                                header.clone(),
+                                header!.clone(),
                                 environment,
                                 sessionGeneration,
                                 journalDirectory);
@@ -294,7 +337,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                         {
                             journalCandidate = new QueueCandidate(
                                 prepared!,
-                                header.clone(),
+                                header!.clone(),
                                 environment,
                                 sessionGeneration);
                         }
@@ -395,6 +438,19 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             return;
         }
 
+        var isContinuedPart = eventName == "Fileheader"
+            && raw.Value<int?>("part") is > 1
+            && HasUsableHeader()
+            && (!pathChanged
+                || IsSameJournalSeries(
+                    currentJournalPath,
+                    normalizedJournalPath));
+        if (isContinuedPart)
+        {
+            currentJournalPath = normalizedJournalPath ?? currentJournalPath;
+            return;
+        }
+
         sessionGeneration++;
         currentJournalPath = normalizedJournalPath ?? currentJournalPath;
         header = null;
@@ -414,7 +470,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         if (eventName == "Fileheader")
         {
             header = new UploadPayloadHeader(
-                string.Empty,
+                header?.uploaderID ?? string.Empty,
                 raw.Value<string>("gameversion"),
                 raw.Value<string>("build"),
                 softwareVersion);
@@ -484,6 +540,50 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         trackedBodyName = null;
         trackedBodyId = null;
         trackedBodyType = null;
+    }
+
+    private bool HasUsableHeader()
+    {
+        return header is not null
+            && !string.IsNullOrWhiteSpace(header.uploaderID);
+    }
+
+    private static bool IsSameJournalSeries(
+        string? currentPath,
+        string? nextPath)
+    {
+        var currentSeries = GetJournalSeriesPath(currentPath);
+        var nextSeries = GetJournalSeriesPath(nextPath);
+        return currentSeries is not null
+            && nextSeries is not null
+            && string.Equals(
+                currentSeries,
+                nextSeries,
+                OperatingSystem.IsWindows()
+                    ? StringComparison.OrdinalIgnoreCase
+                    : StringComparison.Ordinal);
+    }
+
+    private static string? GetJournalSeriesPath(string? journalPath)
+    {
+        if (string.IsNullOrWhiteSpace(journalPath))
+        {
+            return null;
+        }
+
+        var filenameParts = Path.GetFileName(journalPath).Split('.');
+        if (filenameParts.Length < 4
+            || !int.TryParse(filenameParts[^2], out _))
+        {
+            return null;
+        }
+
+        var seriesName = string.Join('.', filenameParts[..^2])
+            + "."
+            + filenameParts[^1];
+        return Path.Combine(
+            Path.GetDirectoryName(journalPath) ?? string.Empty,
+            seriesName);
     }
 
     private EddnMessageContext CreateContext()
@@ -703,6 +803,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     {
         return !disposed
             && sharingEnabled
+            && !publishingSuspended
             && sessionGeneration == generation;
     }
 

@@ -597,6 +597,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             sharedGameWindowSwitcher);
         CommanderInstances.PropertyChanged += OnCommanderInstancesPropertyChanged;
         SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
+        this.eddnPublisher.SetSuspended(
+            CommanderInstances.HasMultipleGameWindows);
         if (visitedStarsCache is null)
         {
             var processDetector = new EliteGameProcessDetector();
@@ -2004,15 +2006,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         // path so an unavailable gateway cannot delay live state projection.
         try
         {
+            CommanderInstances.RefreshGameWindowCount();
+            var hasMultipleGameWindows =
+                CommanderInstances.HasMultipleGameWindows;
+            eddnPublisher.SetSuspended(hasMultipleGameWindows);
             var eddnResult = await eddnPublisher.ApplyAsync(
                 update.JournalEvents,
                 latestStatus,
                 NetworkPrivacy.EddnUploadEnabled,
                 NetworkPrivacy.EddnEnvironment,
-                allowPublishing: !update.IsBootstrapRead,
+                allowPublishing: !update.IsBootstrapRead
+                    && !hasMultipleGameWindows,
                 journalDirectory: folderResolution.SelectedPath,
                 journalPath: update.JournalPath,
-                allowSharedData: !CommanderInstances.HasMultipleGameWindows);
+                allowSharedData: !hasMultipleGameWindows);
             NetworkPrivacy.ReportPublicationResult(eddnResult);
             foreach (var warning in eddnResult.Warnings)
             {
@@ -3333,7 +3340,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
+        var hasMultipleGameWindows =
+            CommanderInstances.HasMultipleGameWindows;
+        SetSharedCargoSuppressed(hasMultipleGameWindows);
+        eddnPublisher.SetSuspended(hasMultipleGameWindows);
         OnPropertyChanged(nameof(IsSharedCargoSuppressed));
     }
 

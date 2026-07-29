@@ -1475,12 +1475,6 @@
                      Classes="muted"
                      TextWrapping="Wrap"
                      Text="Also displays the overlay in supercruise when the navigation destination matches the next followed-route system." />
-          <CheckBox IsChecked="{Binding JumpInfo.UseSpanshLastUpdated, Mode=TwoWay}"
-                    Content="Use Spansh for the system last-updated time" />
-          <TextBlock Margin="28,-8,0,0"
-                     Classes="muted"
-                     TextWrapping="Wrap"
-                     Text="Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries." />
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                      IsVisible="{Binding JumpInfo.HasSettingsStatus}"
                      TextWrapping="Wrap"
@@ -1810,11 +1804,21 @@
                          TextWrapping="Wrap"
                          Text="Shares supported new journal events, signal batches, market, outfitting, shipyard, Fleet Carrier material, and navigation-route data. Startup history and multicrew activity are never uploaded." />
               <TextBlock Classes="muted"
+                          TextWrapping="Wrap"
+                          Text="No EDDN account, API key, or token is required. Messages are sanitized and saved locally before background delivery; disabling this option deletes pending uploads. Dev and beta use EDDN test schemas." />
+              <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="No EDDN account, API key, or token is required. Messages are sanitized and saved locally before background delivery; disabling this option deletes pending uploads. Dev and beta use EDDN test schemas." />
+                         Text="When multiple Elite windows are detected, EDDN queueing and delivery pause without deleting pending uploads. Only one SrvSurvey process can own the durable outbox at a time." />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Spacing="12">
+              <TextBlock Classes="card-title" Text="Spansh lookup" />
+              <CheckBox IsChecked="{Binding JumpInfo.UseSpanshLastUpdated, Mode=TwoWay}"
+                        Content="Use Spansh for the system last-updated time" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Uses the Spansh system timestamp instead of the newest EDSM body timestamp in Jump Info and Galaxy Map summaries. This is a read-only lookup and does not publish journal data." />
+              <Separator Margin="0,4" />
               <TextBlock Classes="card-title" Text="Green Gas Giants" />
               <CheckBox IsChecked="{Binding NetworkPrivacy.UploadGreenGasGiantCandidates, Mode=TwoWay}"
                         Content="Upload matching candidates to Raven Colonial" />
