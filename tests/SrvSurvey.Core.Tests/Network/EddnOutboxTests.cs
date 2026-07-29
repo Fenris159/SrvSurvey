@@ -368,8 +368,8 @@ public sealed class EddnOutboxTests
                 new HttpResponseMessage(HttpStatusCode.OK))),
             _ =>
             {
-                var inspection = Task.Run(() => queue!.pendingCount);
-                callbackCouldInspectQueue = inspection.Wait(TimeSpan.FromSeconds(1));
+                callbackCouldInspectQueue = canInspectQueueFromAnotherThread(
+                    queue!);
             },
             () => now,
             automaticProcessing: false);
@@ -398,8 +398,8 @@ public sealed class EddnOutboxTests
                 new HttpResponseMessage(HttpStatusCode.OK))),
             _ =>
             {
-                var inspection = Task.Run(() => queue!.pendingCount);
-                callbackCouldInspectQueue = inspection.Wait(TimeSpan.FromSeconds(1));
+                callbackCouldInspectQueue = canInspectQueueFromAnotherThread(
+                    queue!);
             },
             () => now,
             automaticProcessing: false);
@@ -491,6 +491,21 @@ public sealed class EddnOutboxTests
 
             await Task.Delay(20);
         }
+    }
+
+    private static bool canInspectQueueFromAnotherThread(EddnOutbox queue)
+    {
+        var inspected = false;
+        var inspection = new Thread(() =>
+        {
+            _ = queue.pendingCount;
+            inspected = true;
+        })
+        {
+            IsBackground = true,
+        };
+        inspection.Start();
+        return inspection.Join(TimeSpan.FromSeconds(2)) && inspected;
     }
 
     private sealed class TemporaryFolder : IDisposable
