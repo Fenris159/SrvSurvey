@@ -32,6 +32,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
               "countDSS": 5,
               "countLanded": 6,
               "rccApiKey": "legacy-secret",
+              "inaraApiKey": "inara-secret",
               "futureSetting": { "enabled": true }
             }
             """);
@@ -44,6 +45,7 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.NotNull(result.Data);
         Assert.Equal("Drew", result.Data.CommanderName);
         Assert.Equal("legacy-secret", result.Data.RavenColonialApiKey);
+        Assert.Equal("inara-secret", result.Data.InaraApiKey);
         Assert.Equal(
             new ExplorationSnapshot(123456, 42.5, 3, 4, 5, 6),
             result.Data.Exploration);
@@ -212,6 +214,40 @@ public sealed class CommanderProfileStoreTests : IDisposable
         Assert.Null(cleared.Data?.RavenColonialApiKey);
         root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.False(root.ContainsKey("rccApiKey"));
+        Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
+    }
+
+    [Fact]
+    public async Task SavesAndClearsCommanderScopedInaraApiKeyLosslessly()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "F123-live.json");
+        await File.WriteAllTextAsync(
+            path,
+            "{\"fid\":\"F123\",\"futureSetting\":42}");
+        var store = new CommanderProfileStore(temporaryDirectory);
+
+        await store.SaveInaraApiKeyAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            "  personal-key  ");
+
+        var saved = await store.LoadAsync("F123", isOdyssey: true);
+        Assert.Equal("personal-key", saved.Data?.InaraApiKey);
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
+
+        await store.SaveInaraApiKeyAsync(
+            "F123",
+            "Drew",
+            isOdyssey: true,
+            "  ");
+
+        var cleared = await store.LoadAsync("F123", isOdyssey: true);
+        Assert.Null(cleared.Data?.InaraApiKey);
+        root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.False(root.ContainsKey("inaraApiKey"));
         Assert.Equal(42, root["futureSetting"]!.GetValue<int>());
     }
 

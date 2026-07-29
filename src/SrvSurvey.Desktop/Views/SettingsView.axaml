@@ -1832,6 +1832,73 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card raised">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="card-title" Text="Inara" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Share supported live commander activity using the active commander's personal Inara API key." />
+            </StackPanel>
+            <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+              <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                         FontWeight="SemiBold"
+                         Text="OPT-IN" />
+            </Border>
+          </Grid>
+
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
+            <StackPanel Spacing="12">
+              <CheckBox IsChecked="{Binding Inara.UploadEnabled, Mode=TwoWay}"
+                        Content="Upload supported commander data to Inara" />
+              <CheckBox IsChecked="{Binding Inara.DeveloperTestMode, Mode=TwoWay}"
+                        IsEnabled="{Binding Inara.UploadEnabled}"
+                        Content="Developer test mode" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Developer test mode is off by default. Enable it for the initial live verification; once Artie confirms the application for production on Inara, leave it off." />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="New live events are batched for about 35 seconds. Credit changes are reconstructed from journal transactions and coalesced to Inara's hourly recommendation, with session-boundary updates." />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="10">
+              <TextBlock FontWeight="SemiBold"
+                         Text="{Binding Inara.CommanderDisplayName}" />
+              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                <TextBox Text="{Binding Inara.ApiKey, Mode=TwoWay}"
+                         PasswordChar="*"
+                         IsEnabled="{Binding Inara.HasCommanderProfile}"
+                         PlaceholderText="Personal Inara API key" />
+                <Button Grid.Column="1"
+                        Classes="secondary"
+                        Command="{Binding Inara.SaveApiKeyCommand}"
+                        Content="Save key" />
+                <Button Grid.Column="2"
+                        Classes="secondary"
+                        Click="OpenInaraApiKeyPage_Click"
+                        Content="Get API key" />
+              </Grid>
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding Inara.CredentialStatus}" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="The personal key is stored only in this commander profile. No application token is embedded or required for write events." />
+            </StackPanel>
+          </Grid>
+
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="Startup history, Legacy/alpha/beta sessions, and multicrew activity are not uploaded. With multiple Elite windows, shared Cargo.json, ShipLocker.json, and Status.json data is suppressed while attributable journal activity continues for this instance's commander." />
+          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                     IsVisible="{Binding Inara.HasPublicationStatus}"
+                     TextWrapping="Wrap"
+                     Text="{Binding Inara.PublicationStatus}" />
+        </StackPanel>
+      </Border>
+
       <Separator />
 
       <StackPanel Spacing="5">

@@ -59,7 +59,8 @@ target for this build.
 
 See [development and validation status](docs/DEVELOPMENT.md),
 [journal coverage](docs/JOURNAL_COVERAGE.md),
-[network coverage](docs/NETWORK_COVERAGE.md), and
+[network coverage](docs/NETWORK_COVERAGE.md),
+[network publication privacy](docs/PRIVACY.md), and
 [profile migration](docs/DATA_MIGRATION.md).
 
 ## Feedback

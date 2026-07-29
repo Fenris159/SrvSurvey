@@ -67,6 +67,8 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
               "eddnUpload": true,
               "eddnEnvironment": "live",
               "uploadGGG": true,
+              "inaraUpload": true,
+              "inaraDeveloperTestMode": true,
               "bioPlotSize": 4,
               "bioRingBucketOne": 2.5,
               "bioRingBucketTwo": 6.5,
@@ -291,6 +293,9 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
             new NetworkPrivacyPreferences(true, "live", true),
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Load());
         Assert.Equal(
+            new InaraPreferences(true, true),
+            new InaraSettingsStore(paths.UiSettingsPath).Load());
+        Assert.Equal(
             new ScreenshotProcessingPreferences(
                 true,
                 false,
@@ -442,6 +447,35 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(
             "green-light",
             new ThemePreferenceStore(paths.UiSettingsPath).LoadThemeKey());
+        Assert.Null(result.PreviousSettingsBackupPath);
+    }
+
+    [Fact]
+    public async Task ExistingImportMarkerReceivesMissingInaraPreferences()
+    {
+        var paths = CreatePaths();
+        var source = Path.Combine(temporaryDirectory, "legacy-inara-upgrade");
+        Directory.CreateDirectory(source);
+        await File.WriteAllTextAsync(
+            Path.Combine(source, "settings.json"),
+            "{\"darkTheme\":true,\"inaraUpload\":true,"
+                + "\"inaraDeveloperTestMode\":true}");
+        await new LegacyProfileImporter().ImportAsync(
+            source,
+            paths.DataDirectory,
+            Path.Combine(temporaryDirectory, "backups-inara-upgrade"));
+        var migrator = new LegacyUiSettingsMigrator();
+        Assert.True(migrator.MigrateIfNeeded(paths).Migrated);
+        var document = new UiSettingsDocumentStore(paths.UiSettingsPath);
+        document.Update(root => root.Remove("Inara"));
+
+        var result = migrator.MigrateIfNeeded(paths);
+
+        Assert.True(result.Migrated);
+        Assert.Equal(2, result.MappedPreferenceCount);
+        Assert.Equal(
+            new InaraPreferences(true, true),
+            new InaraSettingsStore(paths.UiSettingsPath).Load());
         Assert.Null(result.PreviousSettingsBackupPath);
     }
 

@@ -1,6 +1,6 @@
 # Network and Update Coverage Matrix
 
-Last audited: 2026-07-26
+Last audited: 2026-07-28
 
 The converted application keeps reference-data delivery separate from
 application releases. Startup checks the published reference index and downloads
@@ -16,6 +16,7 @@ size, SHA-256, staging, health-confirmation, and rollback contract.
 | Spansh search and routes | `SpanshRouteClient`, `SpanshBoxelClient`, `NearestSystemsClient` | Request/response shapes, polling states, page limits, coordinate validation, route-kind mapping and bounded streaming |
 | Canonn services | Challenge, system-POI, nearest-system and human-site clients | Commander Codex import, biology/POI enrichment, settlement lookup/publication, privacy gates and duplicate suppression |
 | EDDN publication | `EddnPublisher` | Sixteen event contracts, environment routing, context hydration, schema validation, privacy/bootstrap gates and bounded payloads |
+| Inara publication | `InaraPublisher` | Personal commander credentials, 35-second batching, bounded requests/responses, startup and live-galaxy gates, multicrew/multi-box suppression, event mapping and retry retention |
 | Raven services | `RavenColonialClient`, `ColonizationBuildSiteRepair`, `RavenQuestClient`, `GreenGasGiantClient` | Projects, systems, authenticated repair, Fleet Carriers/cargo, quests, GGG publication, ownership checks and endpoint/payload tests |
 | Downloaded caches and images | `VisitedStarsCacheService`, `CodexImageCache` | Content-type checks, streamed size bounds, atomic replacement, checksum verification and prior-cache preservation |
 
