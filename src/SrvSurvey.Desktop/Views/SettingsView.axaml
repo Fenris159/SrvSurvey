@@ -1789,15 +1789,29 @@
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="*,*" ColumnSpacing="28">
             <StackPanel Spacing="12">
-              <TextBlock Classes="card-title" Text="EDDN" />
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock Classes="card-title" Text="EDDN" />
+                <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center">
+                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                             FontWeight="SemiBold"
+                             Text="OPT-IN" />
+                </Border>
+              </Grid>
               <CheckBox IsChecked="{Binding NetworkPrivacy.EddnUploadEnabled, Mode=TwoWay}"
-                        Content="Allow supported journal publication" />
-              <ComboBox ItemsSource="{Binding NetworkPrivacy.EddnEnvironments}"
-                        SelectedItem="{Binding NetworkPrivacy.EddnEnvironment, Mode=TwoWay}"
-                        IsEnabled="{Binding NetworkPrivacy.EddnUploadEnabled}" />
+                        Content="Share supported live data with EDDN" />
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <TextBlock VerticalAlignment="Center" Text="Gateway" />
+                <ComboBox Grid.Column="1"
+                          ItemsSource="{Binding NetworkPrivacy.EddnEnvironments}"
+                          SelectedItem="{Binding NetworkPrivacy.EddnEnvironment, Mode=TwoWay}"
+                          IsEnabled="{Binding NetworkPrivacy.EddnUploadEnabled}" />
+              </Grid>
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="Publishes only supported new journal events after startup. Commander-specific and localized fields are removed, and dev/beta always use EDDN test schemas." />
+                         Text="Shares supported new journal events, signal batches, market, outfitting, shipyard, Fleet Carrier material, and navigation-route data. Startup history and multicrew activity are never uploaded." />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="No EDDN account, API key, or token is required. Messages are sanitized and saved locally before background delivery; disabling this option deletes pending uploads. Dev and beta use EDDN test schemas." />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Spacing="12">
