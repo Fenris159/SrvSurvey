@@ -24,9 +24,6 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
 
     public event Action<bool>? EddnUploadEnabledChanged;
 
-    public IReadOnlyList<string> EddnEnvironments { get; } =
-        ["live", "beta", "dev"];
-
     public bool EddnUploadEnabled
     {
         get => preferences.EddnUploadEnabled;
@@ -42,13 +39,12 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
     }
 
-    public string EddnEnvironment
+    public bool EddnUseTestSchemas
     {
-        get => preferences.EddnEnvironment;
+        get => preferences.EddnUseTestSchemas;
         set => Update(preferences with
         {
-            EddnEnvironment =
-                NetworkPrivacySettingsStore.NormalizeEnvironment(value),
+            EddnUseTestSchemas = value,
         });
     }
 
@@ -111,6 +107,10 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
     public void ReportPublicationResult(EddnPublicationResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
+        var schemaMode = result.Published.FirstOrDefault()?.SchemaReference
+            .EndsWith("/test", StringComparison.Ordinal) == true
+                ? "test schemas"
+                : "live schemas";
         if (result.Warnings.Count > 0)
         {
             StatusMessage = string.Join(Environment.NewLine, result.Warnings);
@@ -118,13 +118,13 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         else if (result.Published.Count == 1)
         {
             StatusMessage =
-                $"Queued {result.Published[0].EventName} for EDDN ({result.Published[0].Environment}).";
+                $"Queued {result.Published[0].EventName} for EDDN ({schemaMode}).";
         }
         else if (result.Published.Count > 1)
         {
             StatusMessage =
                 $"Queued {result.Published.Count:N0} journal events for EDDN "
-                + $"({result.Published[0].Environment}).";
+                + $"({schemaMode}).";
         }
     }
 

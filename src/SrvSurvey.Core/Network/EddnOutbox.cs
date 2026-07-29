@@ -365,7 +365,7 @@ namespace SrvSurvey.Core.Network
 
                             if (result?.isSuccess == true)
                             {
-                                resultLog = $"EDDN uploaded {eventName(next)} to {next.environment}.";
+                                resultLog = $"EDDN uploaded {eventName(next)} to the live gateway.";
                             }
                             else
                             {
@@ -501,6 +501,22 @@ namespace SrvSurvey.Core.Network
                 {
                     throw new InvalidDataException(
                         "the queue contained invalid or excessive entries");
+                }
+
+                // Earlier releases persisted beta/dev as destinations. Preserve
+                // that test intent even if a legacy entry lacks its expected
+                // suffix, then normalize delivery to the supported Live gateway.
+                foreach (var item in loaded)
+                {
+                    if (item.environment is "beta" or "dev"
+                        && !item.schemaRef.EndsWith(
+                            "/test",
+                            StringComparison.Ordinal))
+                    {
+                        item.schemaRef += "/test";
+                    }
+
+                    item.environment = "live";
                 }
 
                 return loaded;

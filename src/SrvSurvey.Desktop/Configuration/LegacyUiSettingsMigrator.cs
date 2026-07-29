@@ -236,12 +236,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("displayVR", "Enabled"),
                     ("vrProcessName", "RuntimeProcessName"),
                 ]);
-                mappedCount += MapSection(legacy, root, "NetworkPrivacy",
-                [
-                    ("eddnUpload", "EddnUploadEnabled"),
-                    ("eddnEnvironment", "EddnEnvironment"),
-                    ("uploadGGG", "UploadGreenGasGiantCandidates"),
-                ]);
+                mappedCount += MapNetworkPrivacy(legacy, root);
                 mappedCount += MapSection(legacy, root, "Inara",
                 [
                     ("inaraUpload", "UploadEnabled"),
@@ -372,6 +367,36 @@ public sealed class LegacyUiSettingsMigrator
         var count = Copy(legacy, "inferTolerance", section, "Tolerance");
         count += Copy(legacy, "inferThreshold", section, "Threshold");
         count += MapFirstFootfallColor(legacy, target);
+        return count;
+    }
+
+    private static int MapNetworkPrivacy(
+        JsonObject legacy,
+        JsonObject target)
+    {
+        var section = GetOrCreateObject(target, "NetworkPrivacy");
+        var count = Copy(
+            legacy,
+            "eddnUpload",
+            section,
+            "EddnUploadEnabled");
+        count += Copy(
+            legacy,
+            "uploadGGG",
+            section,
+            "UploadGreenGasGiantCandidates");
+        if (legacy["eddnEnvironment"] is JsonValue environmentValue
+            && environmentValue.TryGetValue<string>(out var environment))
+        {
+            section["EddnUseTestSchemas"] = environment.Trim().Equals(
+                "beta",
+                StringComparison.OrdinalIgnoreCase)
+                || environment.Trim().Equals(
+                    "dev",
+                    StringComparison.OrdinalIgnoreCase);
+            count++;
+        }
+
         return count;
     }
 

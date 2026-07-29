@@ -54,9 +54,13 @@ Spansh, and Inara integrations do not wait for an EDDN network request. Queue
 logging occurs after synchronization locks are released, and shutdown cancels
 workers without disposing synchronization primitives underneath them.
 
-The live gateway uses production schemas. Beta and dev gateways automatically
-append `/test` to schema references so validation traffic cannot enter the
-production stream.
+Every upload uses EDDN's documented Live URL,
+`https://eddn.edcd.io:4430/upload/`. A developer-only setting appends `/test`
+to each `$schemaRef` while continuing to use that same gateway. The intermittent
+Beta and Dev services are EDDN-team infrastructure and are not selectable by
+users. During upgrade, an older saved Beta or Dev choice becomes the test-schema
+setting, and queued test messages retain their `/test` reference while being
+replayed through the Live gateway.
 
 Spansh remains a separate, read-only lookup integration. Its nearby setting
 only chooses the source of system last-updated timestamps and never sends

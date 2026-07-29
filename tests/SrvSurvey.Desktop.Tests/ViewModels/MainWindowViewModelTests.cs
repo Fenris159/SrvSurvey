@@ -234,7 +234,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []);
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
-                new NetworkPrivacyPreferences(false, "dev", true));
+                new NetworkPrivacyPreferences(false, true, true));
             var client = new RecordingGreenGasGiantClient();
             using var viewModel = new MainWindowViewModel(
                 journals,
@@ -293,7 +293,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []);
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
-                new NetworkPrivacyPreferences(true, "beta", false));
+                new NetworkPrivacyPreferences(true, true, false));
             var publisher = new RecordingEddnPublisher();
             using var viewModel = new MainWindowViewModel(
                 journals,
@@ -305,7 +305,7 @@ public sealed class MainWindowViewModelTests
             var bootstrap = Assert.Single(publisher.Calls);
             Assert.False(bootstrap.AllowPublishing);
             Assert.True(bootstrap.Enabled);
-            Assert.Equal("beta", bootstrap.Environment);
+            Assert.True(bootstrap.UseTestSchemas);
             Assert.Equal(3, bootstrap.Events.Count);
             Assert.DoesNotContain("Queued", viewModel.NetworkPrivacy.StatusMessage);
 
@@ -319,7 +319,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(live.AllowPublishing);
             Assert.Equal("DockingGranted", Assert.Single(live.Events).EventName);
             Assert.Contains(
-                "Queued DockingGranted for EDDN (beta)",
+                "Queued DockingGranted for EDDN (test schemas)",
                 viewModel.NetworkPrivacy.StatusMessage);
         }
         finally
@@ -2761,7 +2761,7 @@ public sealed class MainWindowViewModelTests
             IReadOnlyList<JournalEventEnvelope> journalEvents,
             EliteStatus? status,
             bool enabled,
-            string environment,
+            bool useTestSchemas,
             bool allowPublishing,
             string? journalDirectory = null,
             string? journalPath = null,
@@ -2771,15 +2771,17 @@ public sealed class MainWindowViewModelTests
             Calls.Add(new EddnCall(
                 journalEvents.ToArray(),
                 enabled,
-                environment,
+                useTestSchemas,
                 allowPublishing,
                 allowSharedData));
             IReadOnlyList<EddnPublishedEvent> published =
                 enabled && allowPublishing && journalEvents.Count > 0
                     ? [new EddnPublishedEvent(
                         journalEvents[0].EventName,
-                        "https://eddn.edcd.io/schemas/test/1/test",
-                        environment)]
+                        useTestSchemas
+                            ? "https://eddn.edcd.io/schemas/test/1/test"
+                            : "https://eddn.edcd.io/schemas/test/1",
+                        "live")]
                     : [];
             return Task.FromResult(new EddnPublicationResult(published, []));
         }
@@ -2797,7 +2799,7 @@ public sealed class MainWindowViewModelTests
     private sealed record EddnCall(
         IReadOnlyList<JournalEventEnvelope> Events,
         bool Enabled,
-        string Environment,
+        bool UseTestSchemas,
         bool AllowPublishing,
         bool AllowSharedData);
 

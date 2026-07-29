@@ -1792,20 +1792,24 @@
                 </Border>
               </Grid>
               <CheckBox IsChecked="{Binding NetworkPrivacy.EddnUploadEnabled, Mode=TwoWay}"
-                        Content="Share supported live data with EDDN" />
+                         Content="Share supported live data with EDDN" />
               <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                 <TextBlock VerticalAlignment="Center" Text="Gateway" />
-                <ComboBox Grid.Column="1"
-                          ItemsSource="{Binding NetworkPrivacy.EddnEnvironments}"
-                          SelectedItem="{Binding NetworkPrivacy.EddnEnvironment, Mode=TwoWay}"
-                          IsEnabled="{Binding NetworkPrivacy.EddnUploadEnabled}" />
+                <TextBlock Grid.Column="1"
+                           VerticalAlignment="Center"
+                           FontWeight="SemiBold"
+                           Text="Live (eddn.edcd.io:4430)" />
               </Grid>
+              <CheckBox IsChecked="{Binding NetworkPrivacy.EddnUseTestSchemas, Mode=TwoWay}"
+                        IsEnabled="{Binding NetworkPrivacy.EddnUploadEnabled}"
+                        Content="Use EDDN test schemas (developer only)"
+                        ToolTip.Tip="Appends /test to each EDDN schema reference while continuing to use the Live gateway." />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="Shares supported new journal events, signal batches, market, outfitting, shipyard, Fleet Carrier material, and navigation-route data. Startup history and multicrew activity are never uploaded." />
               <TextBlock Classes="muted"
-                          TextWrapping="Wrap"
-                          Text="No EDDN account, API key, or token is required. Messages are sanitized and saved locally before background delivery; disabling this option deletes pending uploads. Dev and beta use EDDN test schemas." />
+                         TextWrapping="Wrap"
+                         Text="No EDDN account, API key, or token is required. Messages are sanitized and saved locally before background delivery; disabling this option deletes pending uploads. Uploads always use the Live gateway; the developer toggle changes only the schema references to their /test forms." />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="When multiple Elite windows are detected, EDDN queueing and delivery pause without deleting pending uploads. Only one SrvSurvey process can own the durable outbox at a time." />
