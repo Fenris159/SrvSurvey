@@ -27,6 +27,7 @@ public sealed partial class StreamOverlayWindow : Window
                 Source = renderedFrame.Bitmap,
                 Width = renderedFrame.Projection.Width,
                 Height = renderedFrame.Projection.Height,
+                Opacity = renderedFrame.Opacity,
             };
             Canvas.SetLeft(image, renderedFrame.Projection.Left);
             Canvas.SetTop(image, renderedFrame.Projection.Top);
@@ -48,4 +49,5 @@ public sealed partial class StreamOverlayWindow : Window
 
 public sealed record StreamOverlayRenderedFrame(
     RenderTargetBitmap Bitmap,
-    StreamOverlayFrame Projection);
+    StreamOverlayFrame Projection,
+    double Opacity = 1d);

@@ -2,6 +2,25 @@
 
 Overlays in SrvSurvey rely on X11 (or XWayland) window management features: click-through, always-on-top / layer placement, window tracking against the Elite Dangerous game window, and (where supported) global input. Most GNOME, Cinnamon, Xfce, and KDE Plasma setups should work out of the box once the display-server requirements in [INSTALL_LINUX.md](INSTALL_LINUX.md) are met.
 
+## Gamescope and the combined overlay host
+
+Ordinary Windows, X11, and XWayland sessions continue to use one native window
+per live overlay. When Gamescope is detected, SrvSurvey reparents the same live
+Avalonia controls into one transparent game-sized host. Opacity, positioning,
+suppression, stream capture, OpenVR capture, and edit-mode dragging continue to
+use the existing overlay models; only the native presentation strategy changes.
+
+Check the application log for either `Overlay presentation: CombinedWindow` or
+`Overlay presentation: MultipleWindows`. If Gamescope detection is missing,
+launch SrvSurvey in the same Gamescope environment as Elite or test explicitly:
+
+```bash
+SRVSURVEY_OVERLAY_HOST=combined ./SrvSurvey.Desktop
+```
+
+To diagnose a compositor regression, restore the previous behavior with
+`SRVSURVEY_OVERLAY_HOST=separate`. The override is read at startup.
+
 ## KDE Plasma — overlays not appearing or not staying above Elite
 
 KDE Plasma can refuse to place normal application windows above an exclusive full-screen game. SrvSurvey now checks the X11 window manager's `_NET_SUPPORTED` capabilities. When KWin advertises `_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY`, SrvSurvey applies that type to runtime overlays, edit previews, and the overlay editor while retaining `_NET_WM_WINDOW_TYPE_NORMAL` as the standards-compatible fallback.

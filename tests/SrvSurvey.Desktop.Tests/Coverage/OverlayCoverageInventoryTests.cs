@@ -5,11 +5,16 @@ public sealed class OverlayCoverageInventoryTests
     private static readonly OverlayMapping[] Mappings =
     [
         Map("PlotBase", [
+            "src/SrvSurvey.Desktop/Platform/Overlay/CombinedOverlayPresentationController.cs",
+            "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs",
+            "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationSession.cs",
             "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs",
             "src/SrvSurvey.Desktop/Platform/Overlay/OverlayWindowRegistry.cs",
             "src/SrvSurvey.Desktop/Platform/Overlay/X11OverlayWindowManagerPolicy.cs",
         ], [
+            "tests/SrvSurvey.Desktop.Tests/Platform/CombinedOverlayProjectionTests.cs",
             "tests/SrvSurvey.Desktop.Tests/Platform/OverlayPlatformCapabilitiesTests.cs",
+            "tests/SrvSurvey.Desktop.Tests/Platform/OverlayPresentationModeSelectorTests.cs",
             "tests/SrvSurvey.Desktop.Tests/Platform/OverlayWindowPlacementTests.cs",
             "tests/SrvSurvey.Desktop.Tests/Platform/X11OverlayWindowManagerPolicyTests.cs",
         ]),

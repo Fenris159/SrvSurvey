@@ -110,6 +110,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             toolbarSize,
             margin: 12);
 
+        (platform as IOverlayPresentationControl)
+            ?.SetRuntimeOverlaysSuppressed(true);
         registry.Changed += OnRegistryChanged;
         SynchronizeRuntimeWindows();
         ShowCategory(session, category);
@@ -186,6 +188,12 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
 
         RestoreRuntimeWindows(restoreRuntimeWindows);
+        if (restoreRuntimeWindows)
+        {
+            (platform as IOverlayPresentationControl)
+                ?.SetRuntimeOverlaysSuppressed(false);
+        }
+
         closing = false;
     }
 
@@ -295,6 +303,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         registry.Changed -= OnRegistryChanged;
         ClosePreviews();
         RestoreRuntimeWindows(restore: true);
+        (platform as IOverlayPresentationControl)
+            ?.SetRuntimeOverlaysSuppressed(false);
         Closed?.Invoke(this, EventArgs.Empty);
     }
 

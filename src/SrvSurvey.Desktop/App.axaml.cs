@@ -51,6 +51,7 @@ public sealed partial class App : Application
     private ErrorReportWindowCoordinator? errorReportWindowCoordinator;
     private GlobalKeyboardHookService? globalKeyboardHookService;
     private GlobalControllerInputService? globalControllerInputService;
+    private OverlayPresentationSession? overlayPresentationSession;
 
     public override void Initialize()
     {
@@ -146,8 +147,13 @@ public sealed partial class App : Application
             var inputSettings = new GlobalInputSettingsViewModel(
                 new GlobalInputSettingsStore(appDataPaths.UiSettingsPath),
                 capabilities);
+            var overlayPresentation = OverlayPresentationSession.CreateCurrent();
+            overlayPresentationSession = overlayPresentation;
+            applicationLog.Append(
+                $"Overlay presentation: {overlayPresentation.Decision.Mode}. "
+                + overlayPresentation.Decision.Reason);
             var overlayInteraction = new OverlayInteractionViewModel(
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 GameWindowTracker.CreateCurrent(),
                 overlayLayoutStore,
                 overlayLayout);
@@ -331,45 +337,45 @@ public sealed partial class App : Application
                 viewModel.Search,
                 viewModel.BoxelSearch,
                 viewModel.Route,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout,
                 viewModel.SystemNicknames);
             guardianOverlayCoordinator = new GuardianOverlayCoordinator(
                 viewModel.Guardian,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
             jumpInfoOverlayCoordinator = new JumpInfoOverlayCoordinator(
                 viewModel.JumpInfo,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout,
                 viewModel.SystemNicknames);
             groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
                 viewModel.GroundTarget,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
             combatOverlayCoordinator = new CombatOverlayCoordinator(
                 viewModel.Combat,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
             stationInfoOverlayCoordinator = new StationInfoOverlayCoordinator(
                 viewModel.StationInfo,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
             humanSiteOverlayCoordinator = new HumanSiteOverlayCoordinator(
                 viewModel.HumanSite,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
             systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
                 viewModel.SystemSurvey,
                 viewModel.SurfaceSurvey,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 () => viewModel.CommanderName,
                 exobiologyCatalog: viewModel.SystemSurvey.BiologyReferenceCatalog,
@@ -379,36 +385,36 @@ public sealed partial class App : Application
                     "fss-diagnostics"));
             questIndicatorOverlayCoordinator = new QuestIndicatorOverlayCoordinator(
                 viewModel.QuestIndicator,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
             notificationOverlayCoordinator = new NotificationOverlayCoordinator(
                 viewModel.Notifications,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
             pulseOverlayCoordinator = new PulseOverlayCoordinator(
                 viewModel.PulseOverlay,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
             streamOverlayCoordinator = new StreamOverlayCoordinator(
                 viewModel.StreamOverlay,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker());
             vrOverlayCoordinator = new VrOverlayCoordinator(
                 viewModel.VrOverlay,
                 modeProvider: () => viewModel.CurrentVrOverlayMode);
             galaxyMapOverlayCoordinator = new GalaxyMapOverlayCoordinator(
                 viewModel.GalaxyMap,
-                OverlayPlatformService.CreateCurrent(),
+                overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
                 overlayLayout);
             multiGameCommanderOverlayCoordinator =
                 new MultiGameCommanderOverlayCoordinator(
                     viewModel.CommanderInstances,
                     viewModel.OverlayBehavior,
-                    OverlayPlatformService.CreateCurrent(),
+                    overlayPresentation.CreatePlatformService(),
                     GameWindowTracker.CreateCurrent(),
                     () => desktop.Windows.Any(window => window.IsActive),
                     overlayLayout);
@@ -460,7 +466,7 @@ public sealed partial class App : Application
             colonizationCommodityOverlayCoordinator =
                 new ColonizationCommodityOverlayCoordinator(
                     viewModel.Colonization.CommodityOverlay,
-                    OverlayPlatformService.CreateCurrent(),
+                    overlayPresentation.CreatePlatformService(),
                     CreateOverlayGameWindowTracker(),
                     overlayLayout);
             var manualOverlaySuppressed = false;
@@ -839,6 +845,8 @@ public sealed partial class App : Application
                 systemSurveyOverlayCoordinator = null;
                 guardianOverlayCoordinator?.Dispose();
                 guardianOverlayCoordinator = null;
+                overlayPresentationSession?.Dispose();
+                overlayPresentationSession = null;
             };
             try
             {

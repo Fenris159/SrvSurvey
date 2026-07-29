@@ -87,10 +87,38 @@ printf 'session=%s\nDISPLAY=%s\nWAYLAND_DISPLAY=%s\n' \
   may fail to open because this build uses Avalonia's X11 backend. Install or
   enable XWayland, or select an Xorg session from the desktop login screen.
 
+### Overlay window strategy
+
+SrvSurvey keeps its established separate-window overlay implementation on
+ordinary X11 and XWayland desktops. When the process environment identifies a
+Gamescope session, live overlay controls are instead placed in one transparent
+window matching the Elite client area. This avoids asking Gamescope to stack
+many independent overlay windows while preserving the existing behavior on
+KWin, Mutter, Xfwm, Muffin, and Windows.
+
+The selected strategy is recorded in the application log as `Overlay
+presentation`. These diagnostic overrides take effect after restarting
+SrvSurvey:
+
+```bash
+# Force one combined host on X11 or XWayland.
+SRVSURVEY_OVERLAY_HOST=combined ./SrvSurvey.Desktop
+
+# Force the established separate-window path, including inside Gamescope.
+SRVSURVEY_OVERLAY_HOST=separate ./SrvSurvey.Desktop
+```
+
+Place the variable before the AppImage command in the same way when using the
+AppImage. Pure native Wayland remains unavailable because topmost placement,
+global positioning, game-window tracking, and click-through still require the
+X11/XWayland integration in this package.
+
 Run Elite Dangerous and SrvSurvey as the same desktop user on the same display.
 Do not start SrvSurvey with `sudo` or from an unrelated SSH session. If Elite is
-inside a nested Gamescope session and cannot be detected, first test with both
-programs in the same normal X11/XWayland desktop session.
+inside a nested Gamescope session, SrvSurvey must be launched into the same
+session so it can see the game window and the Gamescope environment. If it
+cannot detect Elite there, first test both programs in the same normal
+X11/XWayland desktop session.
 
 ## Distribution prerequisites
 

@@ -143,7 +143,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         string? lastError = null;
         foreach (var registration in registrations)
         {
-            if (!registration.Window.IsVisible)
+            if (!registration.IsVisible)
             {
                 continue;
             }
@@ -158,7 +158,11 @@ public sealed class VrOverlayCoordinator : IDisposable
 
             try
             {
-                var frame = VrOverlayFrameRenderer.Render(registration.Window);
+                var renderSource = registration.RenderSource;
+                var frame = VrOverlayFrameRenderer.Render(
+                    renderSource,
+                    renderSource.Bounds.Size,
+                    registration.Window.RenderScaling);
                 var result = runtime.PublishOverlay(
                     registration.PlotterName,
                     frame,

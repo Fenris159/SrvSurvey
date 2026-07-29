@@ -1,11 +1,13 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
 
-internal sealed class X11OverlayPlatformService : IOverlayPlatformService
+internal sealed class X11OverlayPlatformService
+    : IOverlayPlatformService, ICombinedOverlayNativeService
 {
     private nint display;
     private readonly bool shapeAvailable;
@@ -227,6 +229,126 @@ internal sealed class X11OverlayPlatformService : IOverlayPlatformService
         }
 
         window.BeginMoveDrag(eventArgs);
+    }
+
+    public bool SuppressNativeWindow(Window window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        if (display == nint.Zero)
+        {
+            return false;
+        }
+
+        var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
+        if (handle == nint.Zero)
+        {
+            return false;
+        }
+
+        try
+        {
+            _ = X11Native.XUnmapWindow(
+                display,
+                unchecked((nuint)handle));
+            _ = X11Native.XFlush(display);
+            return true;
+        }
+        catch (Exception exception) when (
+            exception is DllNotFoundException
+                or EntryPointNotFoundException
+                or BadImageFormatException)
+        {
+            return false;
+        }
+    }
+
+    public unsafe OverlayInteractionResult SetInteractiveRegions(
+        Window window,
+        IReadOnlyList<PixelRect> regions)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentNullException.ThrowIfNull(regions);
+        if (display == nint.Zero || !shapeAvailable)
+        {
+            return new OverlayInteractionResult(
+                IsPrepared: false,
+                IsInteractive: false,
+                Capabilities.StatusText);
+        }
+
+        var handle = window.TryGetPlatformHandle()?.Handle ?? nint.Zero;
+        if (handle == nint.Zero)
+        {
+            return new OverlayInteractionResult(
+                IsPrepared: false,
+                IsInteractive: false,
+                "The native X11 overlay host is not available.");
+        }
+
+        if (regions.Count == 0)
+        {
+            return SetInteractive(window, interactive: false);
+        }
+
+        try
+        {
+            var rectangles = stackalloc X11Native.XRectangle[regions.Count];
+            var rectangleCount = 0;
+            foreach (var region in regions)
+            {
+                if (region.Width <= 0 || region.Height <= 0)
+                {
+                    continue;
+                }
+
+                var left = Math.Clamp(region.X, short.MinValue, short.MaxValue);
+                var top = Math.Clamp(region.Y, short.MinValue, short.MaxValue);
+                var width = Math.Clamp(region.Width, 1, ushort.MaxValue);
+                var height = Math.Clamp(region.Height, 1, ushort.MaxValue);
+                rectangles[rectangleCount++] = new X11Native.XRectangle
+                {
+                    X = (short)left,
+                    Y = (short)top,
+                    Width = (ushort)width,
+                    Height = (ushort)height,
+                };
+            }
+
+            if (rectangleCount == 0)
+            {
+                return SetInteractive(window, interactive: false);
+            }
+
+            var stackingApplied = ApplyWindowType(handle);
+            X11Native.XShapeCombineRectangles(
+                display,
+                unchecked((nuint)handle),
+                X11Native.ShapeInput,
+                0,
+                0,
+                (nint)rectangles,
+                rectangleCount,
+                X11Native.ShapeSet,
+                X11Native.Unsorted);
+            _ = X11Native.XFlush(display);
+            window.IsHitTestVisible = true;
+            return new OverlayInteractionResult(
+                IsPrepared: true,
+                IsInteractive: true,
+                stackingApplied
+                    ? "Combined overlay edit mode is active through the X11 input region."
+                    : "Combined overlay edit mode is active, but the preferred stacking hint could not be applied.");
+        }
+        catch (Exception exception) when (
+            exception is DllNotFoundException
+                or EntryPointNotFoundException
+                or BadImageFormatException)
+        {
+            return new OverlayInteractionResult(
+                IsPrepared: false,
+                IsInteractive: false,
+                $"The combined X11 overlay input region could not be changed: {exception.Message}");
+        }
     }
 
     public void Dispose()

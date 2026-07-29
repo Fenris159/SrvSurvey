@@ -12,8 +12,16 @@ public static class VrOverlayFrameRenderer
     public static VrOverlayFrame Render(Window window)
     {
         ArgumentNullException.ThrowIfNull(window);
-        var scaling = window.RenderScaling;
-        var pixelSize = PixelSize.FromSize(window.Bounds.Size, scaling);
+        return Render(window, window.Bounds.Size, window.RenderScaling);
+    }
+
+    public static VrOverlayFrame Render(
+        Visual visual,
+        Size size,
+        double scaling)
+    {
+        ArgumentNullException.ThrowIfNull(visual);
+        var pixelSize = PixelSize.FromSize(size, scaling);
         if (pixelSize.Width <= 0 || pixelSize.Height <= 0)
         {
             throw new InvalidOperationException(
@@ -23,7 +31,7 @@ public static class VrOverlayFrameRenderer
         using var bitmap = new RenderTargetBitmap(
             pixelSize,
             new Vector(96 * scaling, 96 * scaling));
-        bitmap.Render(window);
+        bitmap.Render(visual);
         using var stream = new MemoryStream();
         bitmap.Save(stream, PngBitmapEncoderOptions.Default);
         return DecodePng(stream.ToArray());

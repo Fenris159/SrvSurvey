@@ -1,6 +1,6 @@
 # Development and Validation
 
-Last updated: 2026-07-26
+Last updated: 2026-07-29
 
 ## Branch purpose
 
@@ -48,6 +48,14 @@ session. Before promoting a release, verify on clean supported systems:
 3. Journal attachment, game-window tracking, click-through overlays, global
    input, capture-dependent features, and overlay update cost during play.
 4. Backup/import/restart using a representative existing profile.
+
+Overlay runtime testing must cover both presentation backends. Leave
+`SRVSURVEY_OVERLAY_HOST` unset to verify the established separate-window path
+on Windows and ordinary X11/XWayland. Set it to `combined` before process
+startup to exercise the shared host; set it to `separate` to verify the
+fallback. For the combined host, verify dynamic-height panels, per-panel and
+global opacity, stream/OpenVR projection, edit-preview suppression, live drag,
+transparent-gap click-through, game resize, and mixed-DPI monitor movement.
 
 Record release-specific runtime results in the release notes or issue tracker;
 do not reintroduce the previous application source as a test oracle.

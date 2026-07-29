@@ -114,6 +114,9 @@ internal static partial class X11Native
     internal static partial int XMapRaised(nint display, nuint window);
 
     [LibraryImport("libX11.so.6")]
+    internal static partial int XUnmapWindow(nint display, nuint window);
+
+    [LibraryImport("libX11.so.6")]
     internal static partial int XSetInputFocus(
         nint display,
         nuint focusWindow,
@@ -153,6 +156,15 @@ internal static partial class X11Native
     {
         public nint ResourceName;
         public nint ResourceClass;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct XRectangle
+    {
+        public short X;
+        public short Y;
+        public ushort Width;
+        public ushort Height;
     }
 
     [StructLayout(LayoutKind.Sequential)]
