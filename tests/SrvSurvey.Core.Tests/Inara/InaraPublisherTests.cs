@@ -313,6 +313,60 @@ public sealed class InaraPublisherTests
     }
 
     [Fact]
+    public async Task OptOutCancelsAnActiveUploadAndDiscardsItsBatch()
+    {
+        var handler = new BlockingInaraHandler();
+        using var publisher = new InaraPublisher(
+            "2.0.95.0",
+            new HttpClient(handler));
+        await publisher.ApplyAsync(CreateUpdate(
+            [
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:00:00Z",
+                      "event": "LoadGame",
+                      "Credits": 1000
+                    }
+                    """),
+                Event("""
+                    {
+                      "timestamp": "2026-07-28T12:01:00Z",
+                      "event": "Shutdown"
+                    }
+                    """),
+            ],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true));
+        await handler.RequestStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+
+        var disabledOptions = Options with { Enabled = false };
+        var optOut = await publisher.ApplyAsync(CreateUpdate(
+            [Event("""
+                {
+                  "timestamp": "2026-07-28T12:01:01Z",
+                  "event": "Music",
+                  "MusicTrack": "MainMenu"
+                }
+                """)],
+            cargo: null,
+            allowPublishing: true,
+            allowSharedData: true,
+            disabledOptions));
+        await handler.RequestCancelled.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        var cancelled = await publisher.FlushAsync(disabledOptions);
+
+        Assert.Equal(0, optOut.PendingEventCount);
+        Assert.Equal(0, cancelled.AcceptedEventCount);
+        Assert.Equal(0, cancelled.PendingEventCount);
+        Assert.Contains(
+            optOut.Warnings.Concat(cancelled.Warnings),
+            warning => warning.Contains(
+                "cancelled",
+                StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task BatchUsesContextAtEachJournalEvent()
     {
         var handler = new InaraResponseHandler();

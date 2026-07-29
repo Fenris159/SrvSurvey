@@ -10,7 +10,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class InaraSettingsViewModel : INotifyPropertyChanged
 {
     private readonly InaraSettingsStore settingsStore;
-    private readonly CommanderProfileStore commanderProfileStore;
+    private readonly Func<string, string?, bool, string?, CancellationToken, Task>
+        saveInaraApiKeyAsync;
     private readonly AsyncCommand saveApiKeyCommand;
     private InaraPreferences preferences;
     private string apiKey = string.Empty;
@@ -18,6 +19,7 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
     private string? profileFrontierId;
     private string? commanderName;
     private bool profileIsOdyssey = true;
+    private int profileGeneration;
     private string credentialStatus =
         "Load a commander profile to configure an Inara API key.";
     private string publicationStatus = string.Empty;
@@ -25,11 +27,21 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
     public InaraSettingsViewModel(
         InaraSettingsStore settingsStore,
         CommanderProfileStore commanderProfileStore)
+        : this(settingsStore, commanderProfileStore, null)
+    {
+    }
+
+    internal InaraSettingsViewModel(
+        InaraSettingsStore settingsStore,
+        CommanderProfileStore commanderProfileStore,
+        Func<string, string?, bool, string?, CancellationToken, Task>?
+            saveInaraApiKeyAsync)
     {
         this.settingsStore = settingsStore
             ?? throw new ArgumentNullException(nameof(settingsStore));
-        this.commanderProfileStore = commanderProfileStore
-            ?? throw new ArgumentNullException(nameof(commanderProfileStore));
+        ArgumentNullException.ThrowIfNull(commanderProfileStore);
+        this.saveInaraApiKeyAsync = saveInaraApiKeyAsync
+            ?? commanderProfileStore.SaveInaraApiKeyAsync;
         preferences = settingsStore.Load();
         saveApiKeyCommand = new AsyncCommand(
             SaveApiKeyAsync,
@@ -39,12 +51,22 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public event EventHandler? UploadDisabled;
+
     public ICommand SaveApiKeyCommand { get; }
 
     public bool UploadEnabled
     {
         get => preferences.UploadEnabled;
-        set => UpdatePreferences(preferences with { UploadEnabled = value });
+        set
+        {
+            var wasEnabled = preferences.UploadEnabled;
+            UpdatePreferences(preferences with { UploadEnabled = value });
+            if (wasEnabled && !value)
+            {
+                UploadDisabled?.Invoke(this, EventArgs.Empty);
+            }
+        }
     }
 
     public bool DeveloperTestMode
@@ -107,6 +129,7 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
         bool isOdyssey,
         string? inaraApiKey)
     {
+        profileGeneration++;
         profileFrontierId = string.IsNullOrWhiteSpace(frontierId)
             ? null
             : frontierId.Trim();
@@ -171,13 +194,23 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
         var normalized = string.IsNullOrWhiteSpace(ApiKey)
             ? null
             : ApiKey.Trim();
+        var saveGeneration = profileGeneration;
+        var saveFrontierId = profileFrontierId;
+        var saveCommanderName = commanderName;
+        var saveIsOdyssey = profileIsOdyssey;
         try
         {
-            await commanderProfileStore.SaveInaraApiKeyAsync(
-                profileFrontierId,
-                commanderName,
-                profileIsOdyssey,
-                normalized);
+            await saveInaraApiKeyAsync(
+                saveFrontierId,
+                saveCommanderName,
+                saveIsOdyssey,
+                normalized,
+                CancellationToken.None);
+            if (saveGeneration != profileGeneration)
+            {
+                return;
+            }
+
             storedApiKey = normalized;
             ApiKey = normalized ?? string.Empty;
             OnPropertyChanged(nameof(HasStoredApiKey));
@@ -190,8 +223,11 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
                 or UnauthorizedAccessException
                 or InvalidDataException)
         {
-            CredentialStatus =
-                "The Inara API key was not saved: " + exception.Message;
+            if (saveGeneration == profileGeneration)
+            {
+                CredentialStatus =
+                    "The Inara API key was not saved: " + exception.Message;
+            }
         }
         finally
         {

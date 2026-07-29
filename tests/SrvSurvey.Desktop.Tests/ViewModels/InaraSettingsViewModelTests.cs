@@ -54,6 +54,58 @@ public sealed class InaraSettingsViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveCompletionCannotOverwriteAProfileLoadedDuringTheWrite()
+    {
+        var saveStarted = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseSave = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        string? savedFrontierId = null;
+        string? savedApiKey = null;
+        async Task SaveAsync(
+            string frontierId,
+            string? commanderName,
+            bool isOdyssey,
+            string? apiKey,
+            CancellationToken cancellationToken)
+        {
+            savedFrontierId = frontierId;
+            savedApiKey = apiKey;
+            saveStarted.TrySetResult();
+            await releaseSave.Task.WaitAsync(cancellationToken);
+        }
+
+        var viewModel = CreateViewModel(SaveAsync);
+        viewModel.SetCommanderProfile(
+            "F123",
+            "First Commander",
+            isOdyssey: true,
+            inaraApiKey: null);
+        viewModel.ApiKey = "first-key";
+        viewModel.SaveApiKeyCommand.Execute(null);
+        await saveStarted.Task.WaitAsync(TimeSpan.FromSeconds(1));
+
+        viewModel.SetCommanderProfile(
+            "F456",
+            "Second Commander",
+            isOdyssey: true,
+            inaraApiKey: "second-key");
+        var saveFinished = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        viewModel.SaveApiKeyCommand.CanExecuteChanged += (_, _) =>
+            saveFinished.TrySetResult();
+        releaseSave.TrySetResult();
+        await saveFinished.Task.WaitAsync(TimeSpan.FromSeconds(1));
+
+        Assert.Equal("F123", savedFrontierId);
+        Assert.Equal("first-key", savedApiKey);
+        Assert.Equal("second-key", viewModel.ApiKey);
+        Assert.Equal("second-key", viewModel.StoredApiKey);
+        Assert.Contains("Second Commander", viewModel.CredentialStatus);
+        Assert.DoesNotContain("First Commander", viewModel.CredentialStatus);
+    }
+
+    [Fact]
     public void PublicationResultIsPresentedWithoutExposingCredentials()
     {
         var viewModel = CreateViewModel();
@@ -77,13 +129,16 @@ public sealed class InaraSettingsViewModelTests : IDisposable
         }
     }
 
-    private InaraSettingsViewModel CreateViewModel()
+    private InaraSettingsViewModel CreateViewModel(
+        Func<string, string?, bool, string?, CancellationToken, Task>?
+            saveInaraApiKeyAsync = null)
     {
         return new InaraSettingsViewModel(
             new InaraSettingsStore(Path.Combine(
                 temporaryDirectory,
                 "ui-settings.json")),
-            new CommanderProfileStore(temporaryDirectory));
+            new CommanderProfileStore(temporaryDirectory),
+            saveInaraApiKeyAsync);
     }
 
     private static async Task WaitForAsync(Func<bool> predicate)

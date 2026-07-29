@@ -202,14 +202,14 @@ namespace SrvSurvey.Core.Inara
                     break;
                 case "MissionAbandoned":
                     addRequired(events, "setCommanderMissionAbandoned", timestamp,
-                        obj(("missionGameID", entry["MissionID"])), $"mission:{entry["MissionID"]}");
+                        obj(("missionGameID", entry["MissionID"])), $"mission-abandoned:{entry["MissionID"]}");
                     break;
                 case "MissionCompleted":
                     mapMissionCompleted(timestamp, entry, events);
                     break;
                 case "MissionFailed":
                     addRequired(events, "setCommanderMissionFailed", timestamp,
-                        obj(("missionGameID", entry["MissionID"])), $"mission:{entry["MissionID"]}");
+                        obj(("missionGameID", entry["MissionID"])), $"mission-failed:{entry["MissionID"]}");
                     break;
                 case "Died":
                 case "Interdicted":
@@ -682,7 +682,7 @@ namespace SrvSurvey.Core.Inara
                 }
                 if (effects.Count > 0) data["minorfactionEffects"] = effects;
             }
-            addRequired(events, "setCommanderMissionCompleted", timestamp, data, $"mission:{entry["MissionID"]}");
+            addRequired(events, "setCommanderMissionCompleted", timestamp, data, $"mission-completed:{entry["MissionID"]}");
         }
 
         private static JArray mapRewards(JArray rewards) => new(rewards.OfType<JObject>().Select(item => obj(

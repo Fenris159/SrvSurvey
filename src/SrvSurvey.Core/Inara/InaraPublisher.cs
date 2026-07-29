@@ -16,6 +16,8 @@ public interface IInaraPublisher : IDisposable
     Task<InaraPublicationResult> FlushAsync(
         InaraPublicationOptions options,
         CancellationToken cancellationToken = default);
+
+    void CancelPendingPublication();
 }
 
 /// <summary>
@@ -42,6 +44,9 @@ public sealed class InaraPublisher : IInaraPublisher
     private JournalSessionState publicationState = new();
     private string? publicationJournalPath;
     private Task<InaraPublicationResult>? activeSendTask;
+    private CancellationTokenSource? activeSendCancellation;
+    private InaraPublicationOptions? authorizedOptions;
+    private long authorizationGeneration;
     private DateTimeOffset? nextSendAt;
     private int activeBatchCount;
     private int consecutiveTransientFailures;
@@ -84,11 +89,10 @@ public sealed class InaraPublisher : IInaraPublisher
         var warnings = new List<string>();
         var options = update.Options;
         ResetForJournalChange(update.JournalPath);
-        if (!CanPrepareUpload(
-                options.Enabled,
-                options.ApiKey,
-                options.GameVersion,
-                options.IsOdyssey))
+        var publicationAuthorized = UpdatePublicationAuthorization(
+            options,
+            out var authorizationChanged);
+        if (!publicationAuthorized || authorizationChanged)
         {
             queue.TakeAll();
             lock (sendStateSync)
@@ -109,11 +113,7 @@ public sealed class InaraPublisher : IInaraPublisher
                 }
 
                 var entry = JObject.Parse(journalEvent.RawJson);
-                if (CanPrepareUpload(
-                        options.Enabled,
-                        options.ApiKey,
-                        options.GameVersion,
-                        options.IsOdyssey))
+                if (publicationAuthorized)
                 {
                     entry = await AddSidecarDataAsync(
                             entry,
@@ -196,6 +196,14 @@ public sealed class InaraPublisher : IInaraPublisher
         ArgumentNullException.ThrowIfNull(options);
         ObjectDisposedException.ThrowIf(disposed, this);
 
+        var publicationAuthorized = UpdatePublicationAuthorization(
+            options,
+            out var authorizationChanged);
+        if (!publicationAuthorized || authorizationChanged)
+        {
+            queue.TakeAll();
+        }
+
         var completed = TakeCompletedSendResult();
         Task<InaraPublicationResult>? active;
         lock (sendStateSync)
@@ -214,15 +222,39 @@ public sealed class InaraPublisher : IInaraPublisher
         }
 
         var sent = await active.WaitAsync(cancellationToken).ConfigureAwait(false);
+        CancellationTokenSource? completedCancellation = null;
         lock (sendStateSync)
         {
             if (ReferenceEquals(activeSendTask, active))
             {
                 activeSendTask = null;
+                completedCancellation = activeSendCancellation;
+                activeSendCancellation = null;
             }
         }
+        completedCancellation?.Dispose();
 
         return Combine(completed, sent);
+    }
+
+    public void CancelPendingPublication()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        CancellationTokenSource? cancellation;
+        lock (sendStateSync)
+        {
+            authorizedOptions = null;
+            authorizationGeneration++;
+            nextSendAt = null;
+            cancellation = activeSendCancellation;
+        }
+
+        queue.TakeAll();
+        cancellation?.Cancel();
     }
 
     public void Dispose()
@@ -233,6 +265,7 @@ public sealed class InaraPublisher : IInaraPublisher
         }
 
         Task<InaraPublicationResult>? active;
+        CancellationTokenSource? activeCancellation;
         lock (sendStateSync)
         {
             if (disposed)
@@ -241,9 +274,13 @@ public sealed class InaraPublisher : IInaraPublisher
             }
 
             disposed = true;
-            lifetimeCancellation.Cancel();
             active = activeSendTask;
+            activeCancellation = activeSendCancellation;
+            activeSendCancellation = null;
         }
+
+        lifetimeCancellation.Cancel();
+        activeCancellation?.Cancel();
 
         if (active is not null)
         {
@@ -262,6 +299,7 @@ public sealed class InaraPublisher : IInaraPublisher
             httpClient.Dispose();
         }
 
+        activeCancellation?.Dispose();
         lifetimeCancellation.Dispose();
     }
 
@@ -412,6 +450,49 @@ public sealed class InaraPublisher : IInaraPublisher
         }
     }
 
+    private bool UpdatePublicationAuthorization(
+        InaraPublicationOptions options,
+        out bool authorizationChanged)
+    {
+        var canPrepare = CanPrepareUpload(
+            options.Enabled,
+            options.ApiKey,
+            options.GameVersion,
+            options.IsOdyssey);
+        CancellationTokenSource? cancellation;
+        lock (sendStateSync)
+        {
+            if ((canPrepare && authorizedOptions == options)
+                || (!canPrepare && authorizedOptions is null))
+            {
+                authorizationChanged = false;
+                return canPrepare;
+            }
+
+            authorizationChanged = true;
+            authorizedOptions = canPrepare ? options : null;
+            authorizationGeneration++;
+            cancellation = activeSendCancellation;
+            if (!canPrepare)
+            {
+                nextSendAt = null;
+            }
+        }
+
+        cancellation?.Cancel();
+        return canPrepare;
+    }
+
+    private bool IsPublicationAuthorized(long generation)
+    {
+        lock (sendStateSync)
+        {
+            return !disposed
+                && authorizedOptions is not null
+                && authorizationGeneration == generation;
+        }
+    }
+
     private Task<InaraPublicationResult>? StartBackgroundSend(
         InaraPublicationOptions options,
         bool force = false)
@@ -430,8 +511,21 @@ public sealed class InaraPublisher : IInaraPublisher
                 return null;
             }
 
+            if (authorizedOptions is null)
+            {
+                return null;
+            }
+
+            var generation = authorizationGeneration;
+            activeSendCancellation =
+                CancellationTokenSource.CreateLinkedTokenSource(
+                    lifetimeCancellation.Token);
+            var sendCancellation = activeSendCancellation;
             activeSendTask = Task.Run(
-                () => SendPendingAsync(options, lifetimeCancellation.Token),
+                () => SendPendingAsync(
+                    options,
+                    generation,
+                    sendCancellation.Token),
                 CancellationToken.None);
             return activeSendTask;
         }
@@ -440,6 +534,7 @@ public sealed class InaraPublisher : IInaraPublisher
     private InaraPublicationResult TakeCompletedSendResult()
     {
         Task<InaraPublicationResult>? completed;
+        CancellationTokenSource? completedCancellation;
         lock (sendStateSync)
         {
             if (activeSendTask?.IsCompleted != true)
@@ -449,6 +544,8 @@ public sealed class InaraPublisher : IInaraPublisher
 
             completed = activeSendTask;
             activeSendTask = null;
+            completedCancellation = activeSendCancellation;
+            activeSendCancellation = null;
         }
 
         try
@@ -458,6 +555,10 @@ public sealed class InaraPublisher : IInaraPublisher
         catch (OperationCanceledException) when (disposed)
         {
             return InaraPublicationResult.Empty;
+        }
+        finally
+        {
+            completedCancellation?.Dispose();
         }
     }
 
@@ -475,6 +576,7 @@ public sealed class InaraPublisher : IInaraPublisher
 
     private async Task<InaraPublicationResult> SendPendingAsync(
         InaraPublicationOptions options,
+        long generation,
         CancellationToken cancellationToken)
     {
         var batch = queue.TakeBatch(MaximumEventsPerRequest);
@@ -492,6 +594,13 @@ public sealed class InaraPublisher : IInaraPublisher
         var warnings = new List<string>();
         try
         {
+            if (!IsPublicationAuthorized(generation))
+            {
+                warnings.Add(
+                    $"Inara discarded {batch.Count} event(s) after publication authorization changed.");
+                return CreateSendResult(0, warnings);
+            }
+
             if (!CanPrepareUpload(
                     options.Enabled,
                     options.ApiKey,
@@ -538,6 +647,14 @@ public sealed class InaraPublisher : IInaraPublisher
                 {
                     CharSet = "utf-8",
                 };
+            if (!IsPublicationAuthorized(generation))
+            {
+                warnings.Add(
+                    $"Inara discarded {batch.Count} event(s) after publication authorization changed.");
+                return CreateSendResult(0, warnings);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
             using var response = await httpClient.SendAsync(
                     request,
                     HttpCompletionOption.ResponseHeadersRead,
@@ -648,6 +765,13 @@ public sealed class InaraPublisher : IInaraPublisher
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            if (!IsPublicationAuthorized(generation))
+            {
+                warnings.Add(
+                    $"Inara cancelled {batch.Count} event(s) after publication was disabled or its authorization changed.");
+                return CreateSendResult(0, warnings);
+            }
+
             Requeue(batch, warnings);
             throw;
         }
@@ -781,7 +905,9 @@ public sealed class InaraPublisher : IInaraPublisher
     {
         lock (sendStateSync)
         {
-            return queue.Count + activeBatchCount;
+            return authorizedOptions is null
+                ? 0
+                : queue.Count + activeBatchCount;
         }
     }
 

@@ -455,6 +455,40 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public void DisablingInaraImmediatelyCancelsPendingPublication()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-inara-opt-out-{Guid.NewGuid():N}");
+        try
+        {
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            var publisher = new RecordingInaraPublisher();
+            using var viewModel = new MainWindowViewModel(
+                configuredJournalDirectory: null,
+                appDataPaths: paths,
+                inaraPublisher: publisher);
+
+            viewModel.Inara.UploadEnabled = true;
+            Assert.Equal(0, publisher.CancellationCount);
+            viewModel.Inara.UploadEnabled = false;
+
+            Assert.Equal(1, publisher.CancellationCount);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public void GuardianOverlayPreferencesAreWiredIntoMainViewModel()
     {
         var root = Path.Combine(
@@ -2652,6 +2686,8 @@ public sealed class MainWindowViewModelTests
     {
         public List<InaraPublicationUpdate> Calls { get; } = [];
 
+        public int CancellationCount { get; private set; }
+
         public Task<InaraPublicationResult> ApplyAsync(
             InaraPublicationUpdate update,
             CancellationToken cancellationToken = default)
@@ -2675,6 +2711,11 @@ public sealed class MainWindowViewModelTests
             return Task.FromResult(InaraPublicationResult.Empty);
         }
 
+        public void CancelPendingPublication()
+        {
+            CancellationCount++;
+        }
+
         public void Dispose()
         {
         }
@@ -2694,6 +2735,10 @@ public sealed class MainWindowViewModelTests
             CancellationToken cancellationToken = default)
         {
             throw new InvalidOperationException("simulated Inara failure");
+        }
+
+        public void CancelPendingPublication()
+        {
         }
 
         public void Dispose()

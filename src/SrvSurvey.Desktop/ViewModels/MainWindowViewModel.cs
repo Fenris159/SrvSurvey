@@ -371,6 +371,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         this.inaraPublisher = inaraPublisher ?? new InaraPublisher(
             (typeof(MainWindowViewModel).Assembly.GetName().Version
                 ?? new Version(0, 0)).ToString());
+        Inara.UploadDisabled += OnInaraUploadDisabled;
         this.eddnPublisher = eddnPublisher ?? new EddnPublisher(
             (typeof(MainWindowViewModel).Assembly.GetName().Version
                 ?? new Version(0, 0)).ToString());
@@ -3333,6 +3334,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         return string.IsNullOrWhiteSpace(value) ? Unavailable : value;
     }
 
+    private void OnInaraUploadDisabled(object? sender, EventArgs eventArgs)
+    {
+        inaraPublisher.CancelPendingPublication();
+    }
+
     public void Dispose()
     {
         if (disposed)
@@ -3348,6 +3354,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Colonization.Dispose();
         GalaxyMap.Dispose();
         QuestWorkspace.Dispose();
+        Inara.UploadDisabled -= OnInaraUploadDisabled;
         inaraPublisher.Dispose();
         CommanderInstances.PropertyChanged -= OnCommanderInstancesPropertyChanged;
         CommanderInstances.Dispose();

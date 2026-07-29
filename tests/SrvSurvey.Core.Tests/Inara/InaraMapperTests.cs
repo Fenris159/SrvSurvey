@@ -233,6 +233,57 @@ public sealed class InaraMapperTests
         Assert.Equal(3, queue.Count);
     }
 
+    [Theory]
+    [InlineData("MissionCompleted", "setCommanderMissionCompleted")]
+    [InlineData("MissionFailed", "setCommanderMissionFailed")]
+    [InlineData("MissionAbandoned", "setCommanderMissionAbandoned")]
+    public void MissionTerminalTransitionDoesNotReplaceQueuedAcceptance(
+        string terminalJournalEvent,
+        string terminalInaraEvent)
+    {
+        var mapper = new InaraEventMapper();
+        var credentials = new InaraCredentials(
+            "Test Commander",
+            "F123456",
+            "personal-key");
+        var queue = new InaraEventQueue();
+        var accepted = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:00:00Z",
+              "event": "MissionAccepted",
+              "MissionID": 42,
+              "Name": "Mission_Delivery",
+              "Faction": "Pilots Federation",
+              "DestinationSystem": "Sirius"
+            }
+            """), Context, true);
+        queue.Enqueue(credentials, accepted);
+        var terminal = mapper.Process(JObject.Parse($$"""
+            {
+              "timestamp": "2026-07-28T12:01:00Z",
+              "event": "{{terminalJournalEvent}}",
+              "MissionID": 42
+            }
+            """), Context, true);
+        queue.Enqueue(credentials, terminal);
+
+        var missionEvents = queue.TakeAll()
+            .Where(item => item.Event.Name.Contains(
+                "Mission",
+                StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.Equal(
+            ["addCommanderMission", terminalInaraEvent],
+            missionEvents.Select(item => item.Event.Name));
+        Assert.NotEqual(
+            missionEvents[0].Event.ReplaceKey,
+            missionEvents[1].Event.ReplaceKey);
+        Assert.Equal(
+            "Mission_Delivery",
+            missionEvents[0].Event.Data.Value<string>("missionName"));
+    }
+
     [Fact]
     public void MulticrewSuppressesUploadsUntilCrewIsLeft()
     {
