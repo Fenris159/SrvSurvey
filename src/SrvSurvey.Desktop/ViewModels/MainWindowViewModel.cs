@@ -364,7 +364,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             new NetworkPrivacySettingsStore(AppDataPaths.UiSettingsPath));
         this.eddnPublisher = eddnPublisher ?? new EddnPublisher(
             (typeof(MainWindowViewModel).Assembly.GetName().Version
-                ?? new Version(0, 0)).ToString());
+                ?? new Version(0, 0)).ToString(),
+            outboxPath: Path.Combine(
+                AppDataPaths.DataDirectory,
+                "eddn-outbox-v1.json"),
+            log: message => applicationLogService?.Append(message));
+        NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
+        this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
         this.greenGasGiantPublicationCoordinator =
             greenGasGiantPublicationCoordinator
                 ?? new GreenGasGiantPublicationCoordinator(
@@ -1996,16 +2002,29 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         // External publication runs after every local reducer and persistence
         // path so an unavailable gateway cannot delay live state projection.
-        var eddnResult = await eddnPublisher.ApplyAsync(
-            update.JournalEvents,
-            latestStatus,
-            NetworkPrivacy.EddnUploadEnabled,
-            NetworkPrivacy.EddnEnvironment,
-            allowPublishing: !update.IsBootstrapRead);
-        NetworkPrivacy.ReportPublicationResult(eddnResult);
-        foreach (var warning in eddnResult.Warnings)
+        try
         {
-            applicationLogService?.Append(warning);
+            var eddnResult = await eddnPublisher.ApplyAsync(
+                update.JournalEvents,
+                latestStatus,
+                NetworkPrivacy.EddnUploadEnabled,
+                NetworkPrivacy.EddnEnvironment,
+                allowPublishing: !update.IsBootstrapRead,
+                journalDirectory: folderResolution.SelectedPath,
+                journalPath: update.JournalPath,
+                allowSharedData: !CommanderInstances.HasMultipleGameWindows);
+            NetworkPrivacy.ReportPublicationResult(eddnResult);
+            foreach (var warning in eddnResult.Warnings)
+            {
+                applicationLogService?.Append(warning);
+            }
+        }
+        catch (Exception exception) when (
+            exception is not OperationCanceledException)
+        {
+            applicationLogService?.Append(
+                "EDDN processing was isolated from journal tracking: "
+                    + exception.Message);
         }
 
         if (requestShutdown
@@ -3290,8 +3309,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged;
         OverlayInteraction.Dispose();
         visitedStarsHttpClient?.Dispose();
+        NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged;
+        if (eddnPublisher is IDisposable disposableEddnPublisher)
+        {
+            disposableEddnPublisher.Dispose();
+        }
         questRuntimeCoordinator.Changed -= OnQuestCoordinatorChanged;
         questRuntimeCoordinator.DisposeAsync().AsTask().GetAwaiter().GetResult();
+    }
+
+    private void OnEddnUploadEnabledChanged(bool enabled)
+    {
+        eddnPublisher.SetEnabled(enabled);
     }
 
     private void OnCommanderInstancesPropertyChanged(

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="LuaCSharp" Version="0.5.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
   <ItemGroup>

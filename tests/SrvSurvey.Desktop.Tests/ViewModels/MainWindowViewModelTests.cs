@@ -306,7 +306,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(bootstrap.Enabled);
             Assert.Equal("beta", bootstrap.Environment);
             Assert.Equal(3, bootstrap.Events.Count);
-            Assert.DoesNotContain("Published", viewModel.NetworkPrivacy.StatusMessage);
+            Assert.DoesNotContain("Queued", viewModel.NetworkPrivacy.StatusMessage);
 
             await File.AppendAllTextAsync(
                 journalPath,
@@ -318,7 +318,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(live.AllowPublishing);
             Assert.Equal("DockingGranted", Assert.Single(live.Events).EventName);
             Assert.Contains(
-                "Published DockingGranted to EDDN (beta)",
+                "Queued DockingGranted for EDDN (beta)",
                 viewModel.NetworkPrivacy.StatusMessage);
         }
         finally
@@ -2534,6 +2534,9 @@ public sealed class MainWindowViewModelTests
             bool enabled,
             string environment,
             bool allowPublishing,
+            string? journalDirectory = null,
+            string? journalPath = null,
+            bool allowSharedData = true,
             CancellationToken cancellationToken = default)
         {
             Calls.Add(new EddnCall(
@@ -2549,6 +2552,10 @@ public sealed class MainWindowViewModelTests
                         environment)]
                     : [];
             return Task.FromResult(new EddnPublicationResult(published, []));
+        }
+
+        public void SetEnabled(bool enabled)
+        {
         }
     }
 

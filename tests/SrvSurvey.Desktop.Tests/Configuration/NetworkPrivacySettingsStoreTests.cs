@@ -33,9 +33,9 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null, "dev")]
-    [InlineData("", "dev")]
-    [InlineData("unexpected", "dev")]
+    [InlineData(null, "live")]
+    [InlineData("", "live")]
+    [InlineData("unexpected", "live")]
     [InlineData(" BETA ", "beta")]
     [InlineData("LIVE", "live")]
     public void EnvironmentIsRestrictedToKnownDestinations(

@@ -22,13 +22,24 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public event Action<bool>? EddnUploadEnabledChanged;
+
     public IReadOnlyList<string> EddnEnvironments { get; } =
-        ["dev", "beta", "live"];
+        ["live", "beta", "dev"];
 
     public bool EddnUploadEnabled
     {
         get => preferences.EddnUploadEnabled;
-        set => Update(preferences with { EddnUploadEnabled = value });
+        set
+        {
+            if (preferences.EddnUploadEnabled == value)
+            {
+                return;
+            }
+
+            Update(preferences with { EddnUploadEnabled = value });
+            EddnUploadEnabledChanged?.Invoke(value);
+        }
     }
 
     public string EddnEnvironment
@@ -107,12 +118,12 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         else if (result.Published.Count == 1)
         {
             StatusMessage =
-                $"Published {result.Published[0].EventName} to EDDN ({result.Published[0].Environment}).";
+                $"Queued {result.Published[0].EventName} for EDDN ({result.Published[0].Environment}).";
         }
         else if (result.Published.Count > 1)
         {
             StatusMessage =
-                $"Published {result.Published.Count:N0} journal events to EDDN "
+                $"Queued {result.Published.Count:N0} journal events for EDDN "
                 + $"({result.Published[0].Environment}).";
         }
     }
