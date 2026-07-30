@@ -1,0 +1,644 @@
+using SrvSurvey.Core.Frontier;
+using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Platform.Frontier;
+using SrvSurvey.Desktop.ViewModels;
+
+namespace SrvSurvey.Desktop.Tests.ViewModels;
+
+public sealed class CommanderProfileViewModelTests
+{
+    [Fact]
+    public async Task UnlinkedStateShowsConnectionExperienceWithoutFetching()
+    {
+        var account = new StubAccountService(
+            new FrontierAccountState(false, null, null));
+        using var viewModel = new CommanderProfileViewModel(account);
+
+        await viewModel.OpenAsync();
+
+        Assert.True(viewModel.IsUnlinked);
+        Assert.False(viewModel.IsLinked);
+        Assert.False(viewModel.HasSnapshot);
+        Assert.Equal(0, account.RefreshCount);
+    }
+
+    [Fact]
+    public async Task CachedSnapshotProjectsCompactCommanderAndCarrierRows()
+    {
+        var snapshot = CreateSnapshot(DateTimeOffset.UtcNow);
+        var account = new StubAccountService(
+            new FrontierAccountState(true, snapshot, snapshot.FetchedAt));
+        using var viewModel = new CommanderProfileViewModel(account);
+
+        await viewModel.OpenAsync();
+
+        Assert.True(viewModel.IsLinked);
+        Assert.Equal("Fenris", viewModel.CommanderName);
+        Assert.Contains("1,000", viewModel.Balance);
+        Assert.Equal("Surveyor · Cobra Mk III", viewModel.CurrentShipDescription);
+        Assert.Equal("Sol · Galileo", viewModel.CurrentLocation);
+        Assert.Equal("Raven's Rest · RAV-001", viewModel.CarrierTitle);
+        Assert.Single(viewModel.Ships);
+        Assert.Single(viewModel.CarrierCargo);
+        Assert.Single(viewModel.CarrierBuyOrders);
+        Assert.Equal("Not For Sale", Assert.Single(viewModel.CarrierCapacityRows).Category);
+        Assert.Contains("24,000", viewModel.CarrierCapacityHeader);
+        Assert.Single(viewModel.CommanderReputation);
+        Assert.EndsWith(
+            "/Ranks/exploration/rank-9.png",
+            Assert.Single(viewModel.Ranks).IconPath);
+        Assert.EndsWith("/Factions/federation.png", viewModel.FactionIconPath);
+        Assert.Single(viewModel.MarketCommodities);
+        Assert.Single(viewModel.ShipyardShips);
+        Assert.Single(viewModel.ShipyardModules);
+        var goal = Assert.Single(viewModel.CommunityGoals);
+        Assert.Equal(50, goal.Progress);
+        Assert.Contains("250", goal.PlayerContribution);
+        Assert.Equal(0, account.RefreshCount);
+    }
+
+    [Fact]
+    public async Task JournalReputationPopulatesCommanderWithoutFleetCarrier()
+    {
+        var fetchedAt = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+        var snapshot = CreateSnapshot(fetchedAt) with
+        {
+            Carrier = null,
+            CommanderReputation = [],
+            CommanderReputationFetchedAt = null,
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(
+                true,
+                snapshot,
+                snapshot.FetchedAt)));
+        await viewModel.OpenAsync();
+
+        viewModel.UpdateJournalReputation(
+            "Fenris",
+            [ParseJournalEvent(
+                """
+                {"timestamp":"2026-07-29T12:05:00Z","event":"Reputation","Empire":25.5,"Federation":91,"Independent":100,"Alliance":-12}
+                """)]);
+
+        Assert.Null(viewModel.Carrier);
+        Assert.Equal(4, viewModel.CommanderReputation.Count);
+        Assert.Equal(
+            "91%",
+            viewModel.CommanderReputation.Single(item =>
+                item.Faction == "Federation").Score);
+
+        viewModel.UpdateJournalReputation("Another Commander", []);
+
+        Assert.Empty(viewModel.CommanderReputation);
+    }
+
+    [Fact]
+    public async Task OlderJournalReputationDoesNotOverrideNewerCapiData()
+    {
+        var fetchedAt = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+        var snapshot = CreateSnapshot(fetchedAt) with
+        {
+            Carrier = null,
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(
+                true,
+                snapshot,
+                snapshot.FetchedAt)));
+        await viewModel.OpenAsync();
+
+        viewModel.UpdateJournalReputation(
+            "Fenris",
+            [ParseJournalEvent(
+                """
+                {"timestamp":"2026-07-29T11:00:00Z","event":"Reputation","Federation":10}
+                """)]);
+
+        Assert.Equal(
+            "100%",
+            Assert.Single(viewModel.CommanderReputation).Score);
+    }
+
+    [Fact]
+    public async Task PaneExpansionStateIsCachedAndIsolatedAcrossTabs()
+    {
+        var snapshot = CreateSnapshot(DateTimeOffset.UtcNow);
+        var account = new StubAccountService(new FrontierAccountState(
+            true,
+            snapshot,
+            snapshot.FetchedAt));
+        using var viewModel = new CommanderProfileViewModel(account);
+        await viewModel.OpenAsync();
+        var profileNotifications = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => profileNotifications.Add(args.PropertyName);
+
+        var ownedFleet = viewModel.PaneStates.CommanderOwnedFleet;
+        var currentShipCargo = viewModel.PaneStates.CurrentShipCargo;
+        var carrierCargo = viewModel.PaneStates.CarrierStoredCargo;
+        Assert.NotSame(ownedFleet, currentShipCargo);
+        Assert.NotSame(currentShipCargo, carrierCargo);
+
+        ownedFleet.IsExpanded = false;
+
+        Assert.False(ownedFleet.IsExpanded);
+        Assert.True(currentShipCargo.IsExpanded);
+        Assert.True(carrierCargo.IsExpanded);
+        Assert.Empty(profileNotifications);
+
+        currentShipCargo.IsExpanded = false;
+
+        Assert.False(currentShipCargo.IsExpanded);
+        Assert.True(carrierCargo.IsExpanded);
+        Assert.Empty(profileNotifications);
+
+        var goalPane = Assert.Single(viewModel.CommunityGoals).PaneState;
+        goalPane.IsExpanded = true;
+        Assert.Same(goalPane, Assert.Single(viewModel.CommunityGoals).PaneState);
+
+        var refreshed = CreateSnapshot(snapshot.FetchedAt.AddMinutes(1));
+        account.SetState(new FrontierAccountState(
+            true,
+            refreshed,
+            refreshed.FetchedAt));
+        await viewModel.OpenAsync();
+
+        Assert.False(ownedFleet.IsExpanded);
+        Assert.False(currentShipCargo.IsExpanded);
+        Assert.True(carrierCargo.IsExpanded);
+        Assert.Same(goalPane, Assert.Single(viewModel.CommunityGoals).PaneState);
+        Assert.True(goalPane.IsExpanded);
+    }
+
+    [Fact]
+    public void LocalCompanionInventoryIsProjectedAndSuppressedWhenAmbiguous()
+    {
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(false, null, null)));
+        var timestamp = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+        var cargo = new CargoSnapshot(
+            timestamp,
+            "Cargo",
+            "Ship",
+            3,
+            [new CargoItem("gold", "Gold", 3, 1)]);
+        var locker = new ShipLockerSnapshot(
+            timestamp,
+            "ShipLocker",
+            [
+                new ShipLockerItem("Components", "microelectrode", "Microelectrode", 4),
+                new ShipLockerItem("Items", "healthmonitor", "Health Monitor", 2),
+                new ShipLockerItem("Data", "opinionpolls", "Opinion Polls", 1),
+            ]);
+
+        viewModel.UpdateLocalInventory(cargo, locker, isSuppressed: false);
+
+        Assert.Equal("Gold", Assert.Single(viewModel.CurrentShipCargo).Name);
+        Assert.Contains("stolen", Assert.Single(viewModel.CurrentShipCargo).Detail);
+        Assert.Equal(3, viewModel.CurrentShipLocker.Count);
+        Assert.Equal(["Items", "Components", "Data"],
+            viewModel.CurrentShipLockerGroups.Select(group => group.Category));
+        var lockerGroup = viewModel.CurrentShipLockerGroups[0];
+        Assert.False(lockerGroup.IsExpanded);
+        lockerGroup.ToggleCommand.Execute(null);
+        Assert.True(lockerGroup.IsExpanded);
+        viewModel.UpdateLocalInventory(cargo, locker, isSuppressed: false);
+        Assert.Same(lockerGroup, viewModel.CurrentShipLockerGroups
+            .Single(group => group.Category == lockerGroup.Category));
+        var refreshedLocker = locker with
+        {
+            Timestamp = locker.Timestamp.AddSeconds(1),
+        };
+        viewModel.UpdateLocalInventory(cargo, refreshedLocker, isSuppressed: false);
+        var rebuiltLockerGroup = viewModel.CurrentShipLockerGroups
+            .Single(group => group.Category == lockerGroup.Category);
+        Assert.NotSame(lockerGroup, rebuiltLockerGroup);
+        Assert.True(rebuiltLockerGroup.IsExpanded);
+        Assert.Equal("Microelectrode",
+            viewModel.CurrentShipLocker.Single(item => item.Category == "Components").Name);
+        Assert.Contains("updated", viewModel.LocalInventoryStatus);
+
+        viewModel.UpdateLocalInventory(cargo, locker, isSuppressed: true);
+
+        Assert.Empty(viewModel.CurrentShipCargo);
+        Assert.Empty(viewModel.CurrentShipLocker);
+        Assert.Contains("multiple Elite windows", viewModel.LocalInventoryStatus);
+    }
+
+    [Fact]
+    public async Task CurrentShipSeparatesLiveryAndGroupsLocalizedModuleLoadout()
+    {
+        var fetchedAt = DateTimeOffset.UtcNow;
+        var original = CreateSnapshot(fetchedAt);
+        var ship = original.CurrentShip! with
+        {
+            Paintwork = 62_060,
+            Modules =
+            [
+                new FrontierShipModuleSnapshot(
+                    "MainEngines",
+                    101,
+                    "Int_Engine_Size2_Class1_Name",
+                    "Standard propulsion system for ships.",
+                    9_000,
+                    false,
+                    99,
+                    true,
+                    1,
+                    "Felicity Farseer",
+                    "engine_tuned",
+                    3,
+                    ["drag_drives"],
+                    string.Empty),
+                new FrontierShipModuleSnapshot(
+                    "PaintJob",
+                    102,
+                    "PaintJob_PantherMkII_03_02_Name",
+                    "PaintJob_PantherMkII_03_02_Info",
+                    0,
+                    false,
+                    100,
+                    true,
+                    1,
+                    string.Empty,
+                    string.Empty,
+                    null,
+                    [],
+                    string.Empty),
+                new FrontierShipModuleSnapshot(
+                    "Decal1",
+                    103,
+                    "Decal_SquadronLogo_Dynamic_Name",
+                    "Decal_SquadronLogo_Dynamic_Info",
+                    0,
+                    false,
+                    100,
+                    true,
+                    1,
+                    string.Empty,
+                    string.Empty,
+                    null,
+                    [],
+                    string.Empty),
+            ],
+            DataPoints =
+            [
+                new FrontierDataPointSnapshot(
+                    "ship.modules.MainEngines.module.name",
+                    "int_engine_size2_class1"),
+                new FrontierDataPointSnapshot(
+                    "ship.modules.PaintJob.module.name",
+                    "PaintJob_PantherMkII_03_02"),
+                new FrontierDataPointSnapshot(
+                    "ship.modules.Decal1.module.name",
+                    "Decal_SquadronLogo_Dynamic"),
+            ],
+        };
+        var snapshot = original with
+        {
+            CurrentShip = ship,
+            Ships = [ship],
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(
+                true,
+                snapshot,
+                snapshot.FetchedAt)));
+
+        await viewModel.OpenAsync();
+
+        var module = Assert.Single(viewModel.CurrentShipModules);
+        Assert.Equal("Thrusters", module.Name);
+        Assert.Equal("2E", module.ClassRating);
+        Assert.Equal("Core Internal", module.Group);
+        Assert.True(module.HasEngineering);
+        var moduleGroup = Assert.Single(viewModel.CurrentShipModuleGroups);
+        Assert.True(moduleGroup.IsExpanded);
+        moduleGroup.ToggleCommand.Execute(null);
+        Assert.False(moduleGroup.IsExpanded);
+        viewModel.UpdateLocalInventory(null, null, isSuppressed: false);
+        Assert.Same(moduleGroup, Assert.Single(viewModel.CurrentShipModuleGroups));
+        Assert.False(moduleGroup.IsExpanded);
+        Assert.Equal(2, viewModel.CurrentShipLivery.Count);
+        Assert.All(viewModel.CurrentShipLivery,
+            item => Assert.DoesNotContain("_", item.Name));
+        Assert.Equal("Squadron Logo",
+            viewModel.CurrentShipLivery.Single(item => item.Category == "Decal").Name);
+        Assert.Equal("6%", viewModel.CurrentShipPaintwork);
+        Assert.DoesNotContain(viewModel.CurrentShipConditionRows,
+            item => item.Label == "Paintwork");
+    }
+
+    [Fact]
+    public async Task OpeningStaleLinkedProfileRefreshesOnlyOncePerViewSession()
+    {
+        var stale = CreateSnapshot(DateTimeOffset.UtcNow.AddHours(-1));
+        var refreshed = CreateSnapshot(DateTimeOffset.UtcNow);
+        var account = new StubAccountService(
+            new FrontierAccountState(true, stale, stale.FetchedAt),
+            refreshed);
+        using var viewModel = new CommanderProfileViewModel(account);
+
+        await viewModel.OpenAsync();
+        await viewModel.OpenAsync();
+
+        Assert.Equal(1, account.RefreshCount);
+        Assert.Equal(refreshed.FetchedAt, viewModel.Snapshot!.FetchedAt);
+    }
+
+    [Fact]
+    public async Task CommanderCardNavigationSelectsProfileOutsideCategoryList()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-profile-navigation-{Guid.NewGuid():N}");
+        try
+        {
+            var profile = new CommanderProfileViewModel(
+                new StubAccountService(new FrontierAccountState(false, null, null)));
+            using var main = new MainWindowViewModel(
+                Path.Combine(root, "journals"),
+                frontierProfile: profile);
+
+            await main.ShowProfileAsync();
+
+            Assert.True(main.IsProfileSelected);
+            Assert.Null(main.SelectedNavigation);
+            Assert.False(main.IsOverviewSelected);
+
+            main.SelectedNavigation = main.NavigationItems.Single(
+                item => item.Key == "exploration");
+
+            Assert.False(main.IsProfileSelected);
+            Assert.True(main.IsExplorationSelected);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task MainJournalRefreshSuppliesReputationWhenCarrierIsAbsent()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-profile-reputation-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-29T120000.01.log"),
+                """
+                {"timestamp":"2026-07-29T12:00:00Z","event":"Commander","Name":"Fenris","FID":"F123"}
+                {"timestamp":"2026-07-29T12:00:01Z","event":"LoadGame","Commander":"Fenris","FID":"F123","Odyssey":true}
+                {"timestamp":"2026-07-29T12:05:00Z","event":"Reputation","Empire":25.5,"Federation":91,"Independent":100,"Alliance":-12}
+
+                """);
+            var fetchedAt = DateTimeOffset.Parse("2026-07-29T12:00:00Z");
+            var snapshot = CreateSnapshot(fetchedAt) with
+            {
+                Carrier = null,
+                CommanderReputation = [],
+                CommanderReputationFetchedAt = null,
+            };
+            var profile = new CommanderProfileViewModel(
+                new StubAccountService(new FrontierAccountState(
+                    true,
+                    snapshot,
+                    snapshot.FetchedAt)));
+            await profile.OpenAsync();
+            using var main = new MainWindowViewModel(
+                journals,
+                appDataPaths: new AppDataPaths(
+                    Path.Combine(root, "config"),
+                    Path.Combine(root, "profile"),
+                    Path.Combine(root, "cache"),
+                    []),
+                frontierProfile: profile);
+
+            await main.RefreshAsync();
+
+            Assert.Null(profile.Carrier);
+            Assert.Equal(4, profile.CommanderReputation.Count);
+            Assert.Equal(
+                "91%",
+                profile.CommanderReputation.Single(item =>
+                    item.Faction == "Federation").Score);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    private static FrontierAccountSnapshot CreateSnapshot(DateTimeOffset fetchedAt)
+    {
+        var ship = new FrontierShipSnapshot(
+            7,
+            "Cobra Mk III",
+            "Surveyor",
+            "SRV-07",
+            "Sol",
+            "Galileo",
+            250_000,
+            true,
+            100,
+            100);
+        var carrier = new FrontierCarrierSnapshot(
+            "RAV-001",
+            "Raven's Rest",
+            "Colonia",
+            "Normal Operation",
+            "All",
+            5_000_000,
+            100_000,
+            200_000,
+            300_000,
+            400_000,
+            500_000,
+            900,
+            1000,
+            24000,
+            [new FrontierCapacitySnapshot("Cargo Not For Sale", 1000)],
+            [new FrontierInventorySnapshot("Cargo", "Tritium", 10, 500_000)],
+            [],
+            [],
+            [new FrontierMarketOrderSnapshot("Commodity", "Gold", 10, 5, 1000, false)],
+            ["Refuel"]);
+        return new FrontierAccountSnapshot(
+            "Fenris",
+            1000,
+            0,
+            true,
+            true,
+            "Sol",
+            "Galileo",
+            ship,
+            [new FrontierRankSnapshot("explore", "Exploration", 8, "Elite")],
+            [ship],
+            ["Horizons"],
+            carrier,
+            fetchedAt,
+            LastSystemDetails: new FrontierLocationSnapshot(
+                1,
+                2,
+                "Sol",
+                "Federation",
+                "Pilots Federation",
+                []),
+            LastStationDetails: new FrontierLocationSnapshot(
+                3,
+                2,
+                "Galileo",
+                "Federation",
+                "Pilots Federation",
+                ["Shipyard", "Market"]),
+            Market: new FrontierMarketSnapshot(
+                3,
+                "Galileo",
+                "Starport",
+                [],
+                [],
+                [],
+                [],
+                [],
+                [new FrontierCommoditySnapshot(
+                    4,
+                    "Metals",
+                    "Gold",
+                    "Legal",
+                    100,
+                    90,
+                    95,
+                    2,
+                    3,
+                    50,
+                    200,
+                    [])],
+                fetchedAt),
+            Shipyard: new FrontierShipyardSnapshot(
+                3,
+                "Galileo",
+                "Starport",
+                [],
+                [],
+                [],
+                [],
+                [],
+                [new FrontierOutfittingModuleSnapshot(
+                    4,
+                    "Utility",
+                    "Heat Sink Launcher",
+                    3_500,
+                    string.Empty,
+                    7)],
+                [new FrontierShipForSaleSnapshot(
+                    5,
+                    "Sidewinder",
+                    32_000,
+                    string.Empty,
+                    -1)],
+                fetchedAt),
+            CommunityGoals:
+            [
+                new FrontierCommunityGoalSnapshot(
+                    6,
+                    "Deliver medicines",
+                    "Support the relief effort.",
+                    "Deliver Basic Medicines",
+                    "Global reward",
+                    "Sol",
+                    "Galileo",
+                    fetchedAt.AddDays(2),
+                    false,
+                    5_000,
+                    10_000,
+                    250,
+                    40,
+                    "Tier 2",
+                    25,
+                    1_500_000,
+                    10,
+                    false),
+            ],
+            CommanderReputation:
+            [
+                new FrontierReputationSnapshot("Federation", 100),
+            ],
+            CommanderReputationFetchedAt: fetchedAt);
+    }
+
+    private static JournalEventEnvelope ParseJournalEvent(string json)
+    {
+        Assert.True(JournalEventEnvelope.TryParse(
+            json,
+            out var journalEvent,
+            out var error), error);
+        return Assert.IsType<JournalEventEnvelope>(journalEvent);
+    }
+
+    private sealed class StubAccountService : IFrontierAccountService
+    {
+        private FrontierAccountState state;
+        private readonly FrontierAccountSnapshot? refreshed;
+
+        public StubAccountService(
+            FrontierAccountState state,
+            FrontierAccountSnapshot? refreshed = null)
+        {
+            this.state = state;
+            this.refreshed = refreshed;
+        }
+
+        public int RefreshCount { get; private set; }
+
+        public void SetState(FrontierAccountState value)
+        {
+            state = value;
+        }
+
+        public Task<FrontierAccountState> GetStateAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(state);
+        }
+
+        public Task<FrontierAccountSnapshot> ConnectAsync(
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
+
+        public Task CancelConnectionAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<FrontierAccountSnapshot> RefreshAsync(
+            CancellationToken cancellationToken = default)
+        {
+            RefreshCount++;
+            return Task.FromResult(refreshed ?? state.Snapshot
+                ?? throw new InvalidOperationException("No snapshot configured."));
+        }
+
+        public Task UnlinkAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+}

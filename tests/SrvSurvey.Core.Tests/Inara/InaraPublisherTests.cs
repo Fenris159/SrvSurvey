@@ -53,6 +53,16 @@ public sealed class InaraPublisherTests
                     """),
                 Event("""
                     {
+                      "timestamp": "2026-07-28T12:00:30Z",
+                      "event": "Statistics",
+                      "Multicrew": {
+                        "Multicrew_Time_Total": 14483,
+                        "Multicrew_Credits_Total": 0
+                      }
+                    }
+                    """),
+                Event("""
+                    {
                       "timestamp": "2026-07-28T12:01:00Z",
                       "event": "FSDJump",
                       "StarSystem": "Sirius",

@@ -76,6 +76,25 @@
   <Style Selector="Button.secondary:pointerover">
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
   </Style>
+  <Style Selector="Button.commander-card">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="9" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="12" />
+  </Style>
+  <Style Selector="Button.commander-card:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
+  <Style Selector="Button.commander-card.selected">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
+  <Style Selector="Button.compact-danger">
+    <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+    <Setter Property="Padding" Value="10,6" />
+  </Style>
   <Style Selector="Button.link">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
@@ -186,6 +205,144 @@
   </Style>
   <Style Selector="Expander.theme-selector /template/ ToggleButton:pointerover">
     <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
+  <Style Selector="Expander.profile-section">
+    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Expander.profile-section /template/ ToggleButton">
+    <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="Padding" Value="14" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="Expander.profile-section /template/ ToggleButton:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+  </Style>
+  <Style Selector="Expander.profile-subsection">
+    <Setter Property="Background" Value="{DynamicResource RavenWindowBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Expander.profile-subsection /template/ ToggleButton">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+  </Style>
+  <Style Selector="Border.rank-card">
+    <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="9" />
+    <Setter Property="Padding" Value="10" />
+  </Style>
+  <Style Selector="Border.detail-tile">
+    <Setter Property="Background" Value="{DynamicResource RavenWindowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="12" />
+  </Style>
+  <Style Selector="Border.dashboard-row">
+    <Setter Property="Background" Value="{DynamicResource RavenWindowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Padding" Value="10,8" />
+    <Setter Property="Margin" Value="0,0,0,5" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="Border.dashboard-row.compact">
+    <Setter Property="Padding" Value="8,5" />
+    <Setter Property="Margin" Value="0,0,0,3" />
+  </Style>
+  <Style Selector="Border.subexpander-panel">
+    <Setter Property="Background" Value="{DynamicResource RavenWindowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="7" />
+    <Setter Property="ClipToBounds" Value="True" />
+  </Style>
+  <Style Selector="Button.dashboard-subexpander">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="Padding" Value="12,10" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="Button.dashboard-subexpander:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
+  </Style>
+  <Style Selector="Button.dashboard-subexpander:pressed">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+  <Style Selector="Border.module-group">
+    <Setter Property="Background" Value="{DynamicResource RavenWindowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="7" />
+  </Style>
+  <Style Selector="Button.module-group-toggle">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="Padding" Value="11,8" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+  </Style>
+  <Style Selector="Button.module-group-toggle:pointerover">
+    <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
+  </Style>
+  <Style Selector="Button.module-group-toggle:pressed">
+    <Setter Property="Background" Value="{DynamicResource RavenAccentBrush}" />
+  </Style>
+  <Style Selector="Border.module-row">
+    <Setter Property="Background" Value="{DynamicResource RavenWindowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Padding" Value="9,8" />
+  </Style>
+  <Style Selector="Border.module-icon">
+    <Setter Property="Width" Value="32" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="5" />
+  </Style>
+  <Style Selector="Border.module-class-badge">
+    <Setter Property="MinWidth" Value="30" />
+    <Setter Property="Height" Value="25" />
+    <Setter Property="Padding" Value="5,3" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="4" />
+  </Style>
+  <Style Selector="Border.module-engineering">
+    <Setter Property="Margin" Value="0,4,0,0" />
+    <Setter Property="Padding" Value="7,5" />
+    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="BorderThickness" Value="2,0,0,0" />
+  </Style>
+  <Style Selector="TextBlock.table-heading">
+    <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
+    <Setter Property="FontSize" Value="10" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TabItem.commander-profile-tab">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Padding" Value="10,8" />
+    <Setter Property="MinWidth" Value="0" />
   </Style>
   <Style Selector="TabControl.theme-selector">
     <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />

@@ -169,6 +169,26 @@ Package names can change between distribution releases. If one is unavailable,
 search your distribution for the package that provides the corresponding
 shared library rather than installing an untrusted binary manually.
 
+### Secure Frontier account storage
+
+Frontier account linking additionally requires the `secret-tool` command and
+an unlocked Secret Service-compatible keyring. Full GNOME and KDE Plasma
+installations commonly already provide the keyring service. Install the package
+that supplies `secret-tool` if it is missing:
+
+```bash
+# Ubuntu and Debian derivatives
+sudo apt install libsecret-tools
+
+# Arch Linux and Manjaro
+sudo pacman -S --needed libsecret
+```
+
+Package names vary on Fedora and openSUSE; use the distribution package search
+to find the package providing `/usr/bin/secret-tool`. SrvSurvey deliberately
+does not fall back to a plaintext token file. Linking remains unavailable until
+both `secret-tool` and an unlocked keyring service are present.
+
 ## Troubleshooting
 
 Common launch and library problems are listed below. For a fuller set of issues
@@ -188,11 +208,15 @@ Common launch and library problems are listed below. For a fuller set of issues
   [Overlay Troubleshooting](Overlay_Troubleshooting.md).
 - `DISPLAY` is empty in a Wayland session: enable XWayland or log into an Xorg
   session; native Wayland is not the backend used by this package.
+- Frontier linking reports that secure token storage is unavailable: install
+  `secret-tool`, make sure the desktop keyring is unlocked, and restart
+  SrvSurvey. See [Frontier account linking](FRONTIER.md).
 
 ## Reference documentation
 
 - [Linux Troubleshooting](Linux_Troubleshooting.md)
 - [Overlay Troubleshooting (KDE Plasma automatic handling and fallback rule)](Overlay_Troubleshooting.md)
+- [Frontier account linking and local data](FRONTIER.md)
 - [Avalonia Linux platform behavior](https://docs.avaloniaui.net/docs/platform-specific-guides/linux)
 - [Avalonia Linux runtime dependencies](https://docs.avaloniaui.net/docs/deployment/linux)
 - [AppImage FUSE setup and extract-and-run fallback](https://docs.appimage.org/user-guide/troubleshooting/fuse.html)

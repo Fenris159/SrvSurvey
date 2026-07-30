@@ -870,7 +870,9 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 
     private async Task RunOutboxWriterAsync()
     {
-        await foreach (var command in outboxWrites.Reader.ReadAllAsync())
+        await foreach (var command in outboxWrites.Reader
+                           .ReadAllAsync()
+                           .ConfigureAwait(false))
         {
             if (command is FlushOutboxWrites flush)
             {

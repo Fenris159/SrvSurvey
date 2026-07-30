@@ -1,0 +1,158 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:core="using:SrvSurvey.Core.Frontier"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.FrontierShipyardTabView"
+             x:DataType="vm:CommanderProfileViewModel">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="4,16,4,18" Spacing="16">
+      <Border Classes="card" IsVisible="{Binding HasShipyardError}">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="card-title" Text="Shipyard update warning" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding ShipyardError}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="eyebrow" Text="SHIPYARD &amp; OUTFITTING" />
+          <TextBlock FontSize="24" FontWeight="SemiBold" Text="{Binding ShipyardTitle}" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding ShipyardSubtitle}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card" IsVisible="{Binding !HasShipyard}">
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Shipyard and outfitting information becomes available after Frontier has a supported last-docked station for the commander." />
+      </Border>
+
+      <StackPanel IsVisible="{Binding HasShipyard}" Spacing="16">
+        <Expander Classes="profile-section"
+                  IsExpanded="{Binding PaneStates.ShipyardShips.IsExpanded, Mode=TwoWay}">
+          <Expander.Header>
+            <TextBlock Text="{Binding ShipyardShips.Count, StringFormat=Ships for sale ({0})}" />
+          </Expander.Header>
+          <StackPanel Grid.IsSharedSizeScope="True" Margin="8">
+            <Grid ColumnSpacing="12" Margin="10,4">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" MinWidth="260" SharedSizeGroup="ShipSaleName" />
+                <ColumnDefinition Width="Auto" MinWidth="130" SharedSizeGroup="ShipSalePrice" />
+                <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="ShipSaleStock" />
+                <ColumnDefinition Width="Auto" MinWidth="180" SharedSizeGroup="ShipSaleSku" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Classes="table-heading" Text="SHIP" />
+              <TextBlock Grid.Column="1" Classes="table-heading" Text="PRICE" />
+              <TextBlock Grid.Column="2" Classes="table-heading" Text="STOCK" />
+              <TextBlock Grid.Column="3" Classes="table-heading" Text="SKU" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding ShipyardShips}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:FrontierShipForSaleRowViewModel">
+                  <Border Classes="dashboard-row">
+                    <Grid ColumnSpacing="12">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MinWidth="260" SharedSizeGroup="ShipSaleName" />
+                        <ColumnDefinition Width="Auto" MinWidth="130" SharedSizeGroup="ShipSalePrice" />
+                        <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="ShipSaleStock" />
+                        <ColumnDefinition Width="Auto" MinWidth="180" SharedSizeGroup="ShipSaleSku" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock TextWrapping="Wrap" Text="{Binding Name}" />
+                      <TextBlock Grid.Column="1" Text="{Binding Price}" />
+                      <TextBlock Grid.Column="2" Text="{Binding Stock}" />
+                      <TextBlock Grid.Column="3" Classes="muted" TextWrapping="Wrap" Text="{Binding Sku}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Expander>
+
+        <Expander Classes="profile-section"
+                  IsExpanded="{Binding PaneStates.ShipyardModules.IsExpanded, Mode=TwoWay}">
+          <Expander.Header>
+            <TextBlock Text="{Binding ShipyardModules.Count, StringFormat=Outfitting modules ({0})}" />
+          </Expander.Header>
+          <StackPanel Grid.IsSharedSizeScope="True" Margin="8">
+            <Grid ColumnSpacing="12" Margin="10,4">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" MinWidth="150" SharedSizeGroup="ModuleCategory" />
+                <ColumnDefinition Width="Auto" MinWidth="280" SharedSizeGroup="ModuleName" />
+                <ColumnDefinition Width="Auto" MinWidth="130" SharedSizeGroup="ModulePrice" />
+                <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="ModuleStock" />
+                <ColumnDefinition Width="Auto" MinWidth="180" SharedSizeGroup="ModuleSku" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Classes="table-heading" Text="CATEGORY" />
+              <TextBlock Grid.Column="1" Classes="table-heading" Text="MODULE" />
+              <TextBlock Grid.Column="2" Classes="table-heading" Text="PRICE" />
+              <TextBlock Grid.Column="3" Classes="table-heading" Text="STOCK" />
+              <TextBlock Grid.Column="4" Classes="table-heading" Text="SKU" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding ShipyardModules}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:FrontierOutfittingModuleRowViewModel">
+                  <Border Classes="dashboard-row">
+                    <Grid ColumnSpacing="12">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MinWidth="150" SharedSizeGroup="ModuleCategory" />
+                        <ColumnDefinition Width="Auto" MinWidth="280" SharedSizeGroup="ModuleName" />
+                        <ColumnDefinition Width="Auto" MinWidth="130" SharedSizeGroup="ModulePrice" />
+                        <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="ModuleStock" />
+                        <ColumnDefinition Width="Auto" MinWidth="180" SharedSizeGroup="ModuleSku" />
+                      </Grid.ColumnDefinitions>
+                      <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding Category}" />
+                      <TextBlock Grid.Column="1" TextWrapping="Wrap" Text="{Binding Name}" />
+                      <TextBlock Grid.Column="2" Text="{Binding Price}" />
+                      <TextBlock Grid.Column="3" Text="{Binding Stock}" />
+                      <TextBlock Grid.Column="4" Classes="muted" TextWrapping="Wrap" Text="{Binding Sku}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Expander>
+
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+          <Expander Classes="profile-section"
+                    IsExpanded="{Binding PaneStates.ShipyardServices.IsExpanded, Mode=TwoWay}">
+            <Expander.Header>
+              <TextBlock Text="{Binding ShipyardServices.Count, StringFormat=Station services ({0})}" />
+            </Expander.Header>
+            <ItemsControl ItemsSource="{Binding ShipyardServices}" Margin="8">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="core:FrontierNamedValueSnapshot">
+                  <Border Classes="dashboard-row compact">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                      <TextBlock TextWrapping="Wrap" Text="{Binding Name}" />
+                      <TextBlock Grid.Column="1" Classes="muted" Text="{Binding Value}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Expander>
+
+          <Expander Grid.Column="1" Classes="profile-section"
+                    IsExpanded="{Binding PaneStates.ShipyardData.IsExpanded, Mode=TwoWay}">
+            <Expander.Header>
+              <TextBlock Text="{Binding ShipyardData.Count, StringFormat=All shipyard data points ({0})}" />
+            </Expander.Header>
+            <ItemsControl ItemsSource="{Binding ShipyardData}" Margin="8" MaxHeight="500">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="core:FrontierDataPointSnapshot">
+                  <Border Classes="dashboard-row compact">
+                    <Grid ColumnDefinitions="1.1*,1.4*" ColumnSpacing="12">
+                      <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap" Text="{Binding Path}" />
+                      <TextBlock Grid.Column="1" FontSize="11" TextWrapping="Wrap" Text="{Binding Value}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Expander>
+        </Grid>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

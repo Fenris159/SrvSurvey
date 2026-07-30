@@ -773,6 +773,14 @@ public sealed class PublishedReferenceUpdateService
                     $"The published reference archive has an unsafe path: {entry.FullName}");
             }
 
+            if (string.Equals(
+                    normalized,
+                    "readme.md",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             if (!allowedExtensions.Contains(
                     Path.GetExtension(entry.Name),
                     StringComparer.OrdinalIgnoreCase))

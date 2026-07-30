@@ -1,0 +1,351 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.FrontierCurrentShipTabView"
+             x:DataType="vm:CommanderProfileViewModel">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="4,16,4,18" Spacing="16">
+      <Border Classes="card raised">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+          <StackPanel Spacing="3">
+            <TextBlock Classes="eyebrow" Text="CURRENT SHIP" />
+            <TextBlock FontSize="24" FontWeight="SemiBold"
+                       TextWrapping="Wrap" Text="{Binding CurrentShipDescription}" />
+            <TextBlock Classes="muted" Text="{Binding CurrentLocation}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" HorizontalAlignment="Right"
+                      VerticalAlignment="Center">
+            <TextBlock Classes="muted" FontSize="10" Text="CONDITION" />
+            <TextBlock FontSize="16" FontWeight="SemiBold"
+                       Text="{Binding CurrentShipHealth}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <Border Classes="card" IsVisible="{Binding !HasCurrentShip}">
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="Frontier did not return a current ship for this commander." />
+      </Border>
+
+      <Grid IsVisible="{Binding HasCurrentShip}"
+            ColumnDefinitions="*,*" ColumnSpacing="14">
+        <StackPanel Spacing="14">
+          <Border Classes="card">
+            <StackPanel Spacing="9">
+              <TextBlock Classes="card-title" Text="Condition" />
+              <ItemsControl ItemsSource="{Binding CurrentShipConditionRows}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierDetailRowViewModel">
+                    <Border Classes="dashboard-row">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <TextBlock Classes="muted" Text="{Binding Label}" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                          <TextBlock FontWeight="SemiBold" Text="{Binding Value}" />
+                          <TextBlock Classes="muted" Text="{Binding Detail}" />
+                        </StackPanel>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Expander Classes="profile-section"
+                    IsExpanded="{Binding PaneStates.CurrentShipCargo.IsExpanded, Mode=TwoWay}">
+            <Expander.Header>
+              <TextBlock Text="{Binding CurrentShipCargo.Count, StringFormat=Current cargo ({0})}" />
+            </Expander.Header>
+            <StackPanel Grid.IsSharedSizeScope="True" Margin="8">
+              <Grid Margin="10,4">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" MinWidth="220" SharedSizeGroup="ShipCargoName" />
+                  <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="ShipCargoAmount" />
+                  <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="ShipCargoDetail" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Classes="table-heading" Text="ITEM" />
+                <TextBlock Grid.Column="1" Classes="table-heading" Text="AMOUNT" />
+                <TextBlock Grid.Column="2" Classes="table-heading" Text="DETAIL" />
+              </Grid>
+              <ItemsControl ItemsSource="{Binding CurrentShipCargo}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierLocalInventoryRowViewModel">
+                    <Border Classes="dashboard-row">
+                      <Grid>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="Auto" MinWidth="220" SharedSizeGroup="ShipCargoName" />
+                          <ColumnDefinition Width="Auto" MinWidth="90" SharedSizeGroup="ShipCargoAmount" />
+                          <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="ShipCargoDetail" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock TextWrapping="Wrap" Text="{Binding Name}" />
+                        <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="{Binding Quantity}" />
+                        <TextBlock Grid.Column="2" Classes="muted" Text="{Binding Detail}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Margin="10" Classes="muted"
+                         IsVisible="{Binding !HasCurrentShipCargo}"
+                         Text="No current ship cargo was returned by Cargo.json." />
+            </StackPanel>
+          </Expander>
+
+          <Expander Classes="profile-section"
+                    IsExpanded="{Binding PaneStates.CurrentShipLaunchBays.IsExpanded, Mode=TwoWay}"
+                    IsVisible="{Binding HasCurrentShipLaunchBays}">
+            <Expander.Header>
+              <TextBlock Text="{Binding CurrentShipLaunchBays.Count, StringFormat=Launch bays ({0})}" />
+            </Expander.Header>
+            <ItemsControl ItemsSource="{Binding CurrentShipLaunchBays}" Margin="8">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:FrontierLaunchBayRowViewModel">
+                  <Border Classes="dashboard-row">
+                    <Grid ColumnDefinitions="*,*,*,Auto" ColumnSpacing="12">
+                      <TextBlock Classes="muted" Text="{Binding Slot}" />
+                      <TextBlock Grid.Column="1" Text="{Binding Vehicle}" />
+                      <TextBlock Grid.Column="2" Text="{Binding Loadout}" />
+                      <TextBlock Grid.Column="3" Classes="muted" Text="{Binding Rebuilds}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Expander>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Spacing="14">
+          <Border Classes="card">
+            <StackPanel Spacing="9">
+              <TextBlock Classes="card-title" Text="Valuation" />
+              <ItemsControl ItemsSource="{Binding CurrentShipValueRows}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierDetailRowViewModel">
+                    <Border Classes="dashboard-row">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <TextBlock Classes="muted" Text="{Binding Label}" />
+                        <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="{Binding Value}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Expander Classes="profile-section"
+                    IsExpanded="{Binding PaneStates.CurrentShipLivery.IsExpanded, Mode=TwoWay}"
+                    IsVisible="{Binding HasCurrentShipLivery}">
+            <Expander.Header>
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <TextBlock Text="Livery" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                  <TextBlock Classes="muted" Text="Paintwork" />
+                  <TextBlock FontWeight="SemiBold" Text="{Binding CurrentShipPaintwork}" />
+                </StackPanel>
+              </Grid>
+            </Expander.Header>
+            <StackPanel Margin="8" Spacing="4">
+              <ItemsControl ItemsSource="{Binding CurrentShipLivery}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierLiveryRowViewModel">
+                    <Border Classes="dashboard-row compact">
+                      <Grid ColumnDefinitions="120,*" ColumnSpacing="12">
+                        <TextBlock Classes="muted" Text="{Binding Category}" />
+                        <StackPanel Grid.Column="1" Spacing="1">
+                          <TextBlock FontWeight="SemiBold" TextWrapping="Wrap"
+                                     Text="{Binding Name}" />
+                          <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap"
+                                     IsVisible="{Binding HasDescription}"
+                                     Text="{Binding Description}" />
+                        </StackPanel>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Expander>
+        </StackPanel>
+      </Grid>
+
+      <Expander Classes="profile-section"
+                IsExpanded="{Binding PaneStates.CurrentShipLocker.IsExpanded, Mode=TwoWay}"
+                IsVisible="{Binding HasCurrentShip}">
+        <Expander.Header>
+          <TextBlock Text="{Binding CurrentShipLocker.Count, StringFormat=Ship locker ({0})}" />
+        </Expander.Header>
+        <StackPanel Margin="8" Spacing="8">
+          <ItemsControl ItemsSource="{Binding CurrentShipLockerGroups}"
+                        HorizontalAlignment="Stretch">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" ItemWidth="260" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:FrontierLockerCategoryViewModel">
+                <Border Width="250" Classes="subexpander-panel" Margin="5"
+                        VerticalAlignment="Top">
+                  <StackPanel>
+                    <Button Classes="dashboard-subexpander"
+                            Command="{Binding ToggleCommand}">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBlock Text="{Binding Title}" />
+                        <Grid Grid.Column="1">
+                          <TextBlock FontSize="18" Text="&#x2304;"
+                                     IsVisible="{Binding !IsExpanded}" />
+                          <TextBlock FontSize="18" Text="&#x2303;"
+                                     IsVisible="{Binding IsExpanded}" />
+                        </Grid>
+                      </Grid>
+                    </Button>
+                    <StackPanel Margin="6" IsVisible="{Binding IsExpanded}">
+                      <Grid Margin="8,3" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBlock Classes="table-heading" Text="ITEM" />
+                        <TextBlock Grid.Column="1" Classes="table-heading" Text="AMOUNT" />
+                      </Grid>
+                      <ItemsControl ItemsSource="{Binding Items}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:FrontierLocalInventoryRowViewModel">
+                            <Border Classes="dashboard-row compact">
+                              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <TextBlock TextWrapping="Wrap" Text="{Binding Name}" />
+                                <TextBlock Grid.Column="1" FontWeight="SemiBold"
+                                           Text="{Binding Quantity}" />
+                              </Grid>
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Margin="10" Classes="muted"
+                     IsVisible="{Binding !HasCurrentShipLocker}"
+                     Text="No on-foot materials are currently available from ShipLocker.json." />
+        </StackPanel>
+      </Expander>
+
+      <TextBlock Classes="muted" TextWrapping="Wrap"
+                 Text="{Binding LocalInventoryStatus}" />
+
+      <Border Padding="1,1,1,16"
+              Background="{DynamicResource RavenSurfaceBrush}"
+              BorderBrush="{DynamicResource RavenBorderBrush}"
+              BorderThickness="1"
+              CornerRadius="12"
+              IsVisible="{Binding HasCurrentShip}">
+        <Expander Classes="theme-selector"
+                  ExpandDirection="Down"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Stretch"
+                  IsExpanded="{Binding PaneStates.CurrentShipModules.IsExpanded, Mode=TwoWay}">
+          <Expander.Header>
+            <StackPanel Margin="4,0,0,6" Spacing="2">
+              <TextBlock Classes="card-title"
+                         Text="{Binding CurrentShipModules.Count, StringFormat=Modules and engineering ({0})}" />
+              <TextBlock Classes="muted" FontSize="11"
+                         Text="Fitted loadout grouped by hardpoints, utility, core, military, and optional slots" />
+            </StackPanel>
+          </Expander.Header>
+          <ItemsControl ItemsSource="{Binding CurrentShipModuleGroups}"
+                        Margin="8,14,8,0">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" ItemWidth="515" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:FrontierShipModuleGroupViewModel">
+                <Border Width="500" Classes="module-group" Margin="0,0,14,14">
+                  <StackPanel>
+                    <Button Classes="module-group-toggle"
+                            Command="{Binding ToggleCommand}">
+                      <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="9">
+                        <TextBlock FontSize="17" Foreground="{DynamicResource RavenAccentBrush}"
+                                   Text="{Binding Glyph}" />
+                        <TextBlock Grid.Column="1" FontWeight="SemiBold"
+                                   Text="{Binding Name}" />
+                        <TextBlock Grid.Column="2" Classes="muted"
+                                   Text="{Binding Modules.Count}" />
+                        <Grid Grid.Column="3">
+                          <TextBlock FontSize="18" Text="&#x2304;"
+                                     IsVisible="{Binding !IsExpanded}" />
+                          <TextBlock FontSize="18" Text="&#x2303;"
+                                     IsVisible="{Binding IsExpanded}" />
+                        </Grid>
+                      </Grid>
+                    </Button>
+                    <ItemsControl ItemsSource="{Binding Modules}"
+                                  IsVisible="{Binding IsExpanded}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FrontierShipModuleRowViewModel">
+                          <Border Classes="module-row">
+                            <Grid ColumnDefinitions="36,Auto,*,Auto" ColumnSpacing="9">
+                              <Border Classes="module-icon">
+                                <TextBlock HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="17"
+                                           Text="{Binding Glyph}" />
+                              </Border>
+                              <Border Grid.Column="1" Classes="module-class-badge"
+                                      IsVisible="{Binding HasClassRating}">
+                                <TextBlock FontWeight="Bold" FontSize="11"
+                                           Text="{Binding ClassRating}" />
+                              </Border>
+                              <StackPanel Grid.Column="2" Spacing="2">
+                                <TextBlock FontWeight="SemiBold" TextWrapping="Wrap"
+                                           Text="{Binding Name}" />
+                                <TextBlock Classes="muted" FontSize="10"
+                                           Text="{Binding Slot}" />
+                                <TextBlock Classes="muted" FontSize="10"
+                                           MaxLines="2" TextTrimming="CharacterEllipsis"
+                                           TextWrapping="Wrap"
+                                           IsVisible="{Binding HasDescription}"
+                                           Text="{Binding Description}" />
+                                <Border Classes="module-engineering"
+                                        IsVisible="{Binding HasEngineering}">
+                                  <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="7">
+                                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                               FontWeight="Bold"
+                                               Text="{Binding EngineeringGrade}" />
+                                    <StackPanel Grid.Column="1" Spacing="1">
+                                      <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                                 FontWeight="SemiBold" TextWrapping="Wrap"
+                                                 Text="{Binding Engineering}" />
+                                      <TextBlock Classes="muted" FontSize="9"
+                                                 Text="{Binding Engineer}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2" Classes="muted" FontSize="9"
+                                               MaxWidth="120" TextWrapping="Wrap"
+                                               Text="{Binding ExperimentalEffects}" />
+                                  </Grid>
+                                </Border>
+                              </StackPanel>
+                              <StackPanel Grid.Column="3" MinWidth="86"
+                                          HorizontalAlignment="Right" Spacing="1">
+                                <TextBlock HorizontalAlignment="Right" Text="{Binding Value}" />
+                                <TextBlock HorizontalAlignment="Right" Classes="muted"
+                                           FontSize="10" Text="{Binding Health}" />
+                                <TextBlock HorizontalAlignment="Right" Classes="muted"
+                                           FontSize="10" Text="{Binding Power}" />
+                              </StackPanel>
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Expander>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

@@ -24,6 +24,7 @@ using SrvSurvey.Core.Updates;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.Platform.Frontier;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.Theming;
 
@@ -104,7 +105,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private string? activeProfileFrontierId;
     private string? activeProfileCommanderName;
     private bool activeProfileIsOdyssey = true;
-    private NavigationItemViewModel selectedNavigation;
+    private NavigationItemViewModel? selectedNavigation;
+    private bool isProfileSelected;
     private ThemeOptionViewModel selectedTheme;
     private LegacyProfileOptionViewModel? selectedLegacyProfile;
     private string legacyProfileSourcePath;
@@ -121,6 +123,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private string? loadedSystemBodyDataKey;
     private EliteStatus? latestStatus;
     private CargoSnapshot? latestCargo;
+    private ShipLockerSnapshot? latestShipLocker;
     private bool awaitFreshCargoSnapshot;
     private bool disposed;
 
@@ -187,12 +190,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         ICanonnHumanSitePublisher? canonnHumanSitePublisher = null,
         IEddnPublisher? eddnPublisher = null,
         ISystemBodyDataClient? systemBodyDataClient = null,
-        IInaraPublisher? inaraPublisher = null)
+        IInaraPublisher? inaraPublisher = null,
+        CommanderProfileViewModel? frontierProfile = null)
     {
         this.themeService = themeService;
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         this.applicationLogService = applicationLogService;
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        FrontierProfile = frontierProfile ?? new CommanderProfileViewModel(
+            FrontierAccountService.CreateCurrent(AppDataPaths.DataDirectory));
         var legacyReferences = LegacyReferenceCatalogLoader.Load(
             AppDataPaths.DataDirectory);
         var regionalCodexCandidates = RegionalCodexCandidateCatalog.Load(
@@ -641,6 +647,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 folderResolution.SelectedPath,
                 TargetFrontierId);
         RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
+        ShowProfileCommand = new AsyncCommand(ShowProfileAsync, () => true);
         resetExplorationCommand = new AsyncCommand(
             ResetExplorationAsync,
             () => activeProfileFrontierId is not null);
@@ -691,6 +698,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public IReadOnlyList<ThemeOptionViewModel> ThemeOptions { get; }
 
     public GuidesViewModel Guides { get; }
+
+    public CommanderProfileViewModel FrontierProfile { get; }
 
     public GlobalInputSettingsViewModel InputSettings { get; }
 
@@ -933,7 +942,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public ICommand RefreshCommand { get; }
 
-    public NavigationItemViewModel SelectedNavigation
+    public ICommand ShowProfileCommand { get; }
+
+    public NavigationItemViewModel? SelectedNavigation
     {
         get => selectedNavigation;
         set
@@ -943,42 +954,78 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 return;
             }
 
-            OnPropertyChanged(nameof(IsOverviewSelected));
-            OnPropertyChanged(nameof(IsExplorationSelected));
-            OnPropertyChanged(nameof(IsExobiologySelected));
-            OnPropertyChanged(nameof(IsTravelSelected));
-            OnPropertyChanged(nameof(IsSearchSelected));
-            OnPropertyChanged(nameof(IsGuardianSelected));
-            OnPropertyChanged(nameof(IsQuestsSelected));
-            OnPropertyChanged(nameof(IsColonizationSelected));
-            OnPropertyChanged(nameof(IsDiagnosticsSelected));
-            OnPropertyChanged(nameof(IsSettingsSelected));
-            OnPropertyChanged(nameof(IsGuidesSelected));
+            if (value is not null)
+            {
+                isProfileSelected = false;
+            }
+
+            RaiseNavigationSelectionChanged();
         }
     }
 
-    public bool IsOverviewSelected => SelectedNavigation.Key == "overview";
+    public bool IsProfileSelected => isProfileSelected;
 
-    public bool IsExplorationSelected => SelectedNavigation.Key == "exploration";
+    public bool IsOverviewSelected => SelectedNavigation?.Key == "overview"
+        && !IsProfileSelected;
 
-    public bool IsExobiologySelected => SelectedNavigation.Key == "exobiology";
+    public bool IsExplorationSelected => SelectedNavigation?.Key == "exploration"
+        && !IsProfileSelected;
 
-    public bool IsTravelSelected => SelectedNavigation.Key == "travel";
+    public bool IsExobiologySelected => SelectedNavigation?.Key == "exobiology"
+        && !IsProfileSelected;
 
-    public bool IsSearchSelected => SelectedNavigation.Key == "search";
+    public bool IsTravelSelected => SelectedNavigation?.Key == "travel"
+        && !IsProfileSelected;
 
-    public bool IsGuardianSelected => SelectedNavigation.Key == "guardian";
+    public bool IsSearchSelected => SelectedNavigation?.Key == "search"
+        && !IsProfileSelected;
 
-    public bool IsQuestsSelected => SelectedNavigation.Key == "quests";
+    public bool IsGuardianSelected => SelectedNavigation?.Key == "guardian"
+        && !IsProfileSelected;
+
+    public bool IsQuestsSelected => SelectedNavigation?.Key == "quests"
+        && !IsProfileSelected;
 
     public bool IsColonizationSelected =>
-        SelectedNavigation.Key == "colonisation";
+        SelectedNavigation?.Key == "colonisation" && !IsProfileSelected;
 
-    public bool IsDiagnosticsSelected => SelectedNavigation.Key == "diagnostics";
+    public bool IsDiagnosticsSelected => SelectedNavigation?.Key == "diagnostics"
+        && !IsProfileSelected;
 
-    public bool IsSettingsSelected => SelectedNavigation.Key == "settings";
+    public bool IsSettingsSelected => SelectedNavigation?.Key == "settings"
+        && !IsProfileSelected;
 
-    public bool IsGuidesSelected => SelectedNavigation.Key == "guides";
+    public bool IsGuidesSelected => SelectedNavigation?.Key == "guides"
+        && !IsProfileSelected;
+
+    public async Task ShowProfileAsync()
+    {
+        if (!isProfileSelected)
+        {
+            isProfileSelected = true;
+            selectedNavigation = null;
+            OnPropertyChanged(nameof(SelectedNavigation));
+            RaiseNavigationSelectionChanged();
+        }
+
+        await FrontierProfile.OpenAsync();
+    }
+
+    private void RaiseNavigationSelectionChanged()
+    {
+        OnPropertyChanged(nameof(IsProfileSelected));
+        OnPropertyChanged(nameof(IsOverviewSelected));
+        OnPropertyChanged(nameof(IsExplorationSelected));
+        OnPropertyChanged(nameof(IsExobiologySelected));
+        OnPropertyChanged(nameof(IsTravelSelected));
+        OnPropertyChanged(nameof(IsSearchSelected));
+        OnPropertyChanged(nameof(IsGuardianSelected));
+        OnPropertyChanged(nameof(IsQuestsSelected));
+        OnPropertyChanged(nameof(IsColonizationSelected));
+        OnPropertyChanged(nameof(IsDiagnosticsSelected));
+        OnPropertyChanged(nameof(IsSettingsSelected));
+        OnPropertyChanged(nameof(IsGuidesSelected));
+    }
 
     public void ShowDiagnostics()
     {
@@ -1607,6 +1654,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             cargoChanged = cargoInventoryState.Reset(null);
             latestCargo = null;
+            latestShipLocker = null;
         }
         else if (awaitFreshCargoSnapshot)
         {
@@ -1633,6 +1681,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
             latestCargo = cargoInventoryState.CreateSnapshot();
         }
+
+        if (allowSharedCargo && update.ShipLocker is not null)
+        {
+            latestShipLocker = update.ShipLocker;
+        }
+
+        FrontierProfile.UpdateLocalInventory(
+            latestCargo,
+            latestShipLocker,
+            isSuppressed: !allowSharedCargo);
         DockToDock.ApplyUpdate(
             update.JournalEvents,
             latestCargo,
@@ -1671,6 +1729,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             journalState.Apply(journalEvent);
         }
+        FrontierProfile.UpdateJournalReputation(
+            journalState.CommanderName,
+            update.JournalEvents);
         OverlayBehavior.UpdateContext(
             journalState.CurrentSuit,
             latestStatus?.OnFoot == true);
@@ -3386,6 +3447,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         CommanderInstances.Dispose();
         BiologyRewards.PropertyChanged -= OnBiologyRewardsChanged;
         OverlayInteraction.Dispose();
+        FrontierProfile.Dispose();
         visitedStarsHttpClient?.Dispose();
         NetworkPrivacy.EddnUploadEnabledChanged -= OnEddnUploadEnabledChanged;
         if (eddnPublisher is IDisposable disposableEddnPublisher)
@@ -3425,8 +3487,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             awaitFreshCargoSnapshot = true;
             cargoInventoryState.Reset(null);
             latestCargo = null;
+            latestShipLocker = null;
             Guardian.ClearCargo();
         }
+
+        FrontierProfile.UpdateLocalInventory(
+            latestCargo,
+            latestShipLocker,
+            isSuppressed: value);
 
         DockToDock.SetSharedCargoSuppressed(value);
         Colonization.SetSharedCargoSuppressed(value);

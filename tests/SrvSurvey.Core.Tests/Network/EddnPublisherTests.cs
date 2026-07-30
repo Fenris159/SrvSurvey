@@ -593,6 +593,42 @@ public sealed class EddnPublisherTests
         }
     }
 
+    [Fact]
+    public void DisposeCompletesWhenPublisherWasCreatedOnUiSynchronizationContext()
+    {
+        using var completed = new ManualResetEventSlim();
+        Exception? failure = null;
+        var thread = new Thread(() =>
+        {
+            SynchronizationContext.SetSynchronizationContext(
+                new NonPumpingSynchronizationContext());
+            try
+            {
+                using var publisher = CreatePublisher([]);
+            }
+            catch (Exception exception)
+            {
+                failure = exception;
+            }
+            finally
+            {
+                completed.Set();
+            }
+        })
+        {
+            IsBackground = true,
+            Name = "EDDN UI-context disposal test",
+        };
+
+        thread.Start();
+
+        Assert.True(
+            completed.Wait(TimeSpan.FromSeconds(5)),
+            "EDDN disposal deadlocked while waiting for its UI-context-bound writer.");
+        Assert.Null(failure);
+        Assert.True(thread.Join(TimeSpan.FromSeconds(1)));
+    }
+
     private static async Task BootstrapAsync(
         IEddnPublisher publisher,
         params JournalEventEnvelope[] additionalEvents)
@@ -704,6 +740,14 @@ public sealed class EddnPublisherTests
             CancellationToken cancellationToken)
         {
             return response(request);
+        }
+    }
+
+    private sealed class NonPumpingSynchronizationContext
+        : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback callback, object? state)
+        {
         }
     }
 }

@@ -252,7 +252,11 @@ namespace SrvSurvey.Core.Inara
                 InMulticrew = false;
             else if (name is "JoinACrew" or "ChangeCrewRole")
                 InMulticrew = true;
-            else if (entry.Value<bool?>("Multicrew") == true)
+            else if (entry["Multicrew"] is JValue
+                     {
+                         Type: JTokenType.Boolean,
+                         Value: true,
+                     })
                 InMulticrew = true;
             else if (name == "LoadGame")
                 InMulticrew = false;

@@ -519,18 +519,26 @@
         <Border Grid.Column="1" Classes="card">
           <StackPanel Spacing="16">
             <TextBlock Classes="card-title" Text="Selected result" />
-            <StackPanel Spacing="5">
-              <TextBlock Classes="muted" Text="SYSTEM" />
-              <TextBlock FontWeight="SemiBold"
-                         TextWrapping="Wrap"
-                         Text="{Binding NearestSystems.SelectedResult.SystemName, FallbackValue='Select a result'}" />
-            </StackPanel>
-            <StackPanel Spacing="5">
-              <TextBlock Classes="muted" Text="GALACTIC POSITION" />
-              <TextBlock Classes="monospace"
-                         TextWrapping="Wrap"
-                         Text="{Binding NearestSystems.SelectedResult.Coordinate, FallbackValue='—'}" />
-            </StackPanel>
+            <ContentControl Content="{Binding NearestSystems.SelectedResult}">
+              <ContentControl.ContentTemplate>
+                <DataTemplate x:DataType="vm:NearestSystemRowViewModel">
+                  <StackPanel Spacing="16">
+                    <StackPanel Spacing="5">
+                      <TextBlock Classes="muted" Text="SYSTEM" />
+                      <TextBlock FontWeight="SemiBold"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding SystemName}" />
+                    </StackPanel>
+                    <StackPanel Spacing="5">
+                      <TextBlock Classes="muted" Text="GALACTIC POSITION" />
+                      <TextBlock Classes="monospace"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding Coordinate}" />
+                    </StackPanel>
+                  </StackPanel>
+                </DataTemplate>
+              </ContentControl.ContentTemplate>
+            </ContentControl>
             <WrapPanel Orientation="Horizontal">
               <Button Classes="secondary"
                       Margin="0,0,10,10"

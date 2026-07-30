@@ -389,9 +389,12 @@ public sealed class InaraPublisher : IInaraPublisher
         JObject entry)
     {
         var eventName = journalEvent.EventName;
+        var multicrewToken = entry["Multicrew"];
+        var journalSaysMulticrew = multicrewToken?.Type == JTokenType.Boolean
+            && multicrewToken.Value<bool>();
         var entersOrContinuesMulticrew = mapper.InMulticrew
             || eventName is "JoinACrew" or "ChangeCrewRole"
-            || entry.Value<bool?>("Multicrew") == true;
+            || journalSaysMulticrew;
         if (entersOrContinuesMulticrew
             && eventName is not "QuitACrew" and not "LoadGame" and not "Fileheader")
         {

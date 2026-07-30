@@ -41,6 +41,14 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
             "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Cargo\","
                 + "\"Vessel\":\"SRV\",\"Count\":1,\"Inventory\":[{\"Name\":"
                 + "\"ancientorb\",\"Count\":1,\"Stolen\":0}]}");
+        var shipLockerPath = Path.Combine(
+            temporaryDirectory,
+            ShipLockerFileReader.FileName);
+        await File.WriteAllTextAsync(
+            shipLockerPath,
+            "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"ShipLocker\","
+                + "\"Items\":[{\"Name\":\"healthmonitor\",\"Count\":2}],"
+                + "\"Components\":[],\"Consumables\":[],\"Data\":[]}");
         var marketPath = Path.Combine(
             temporaryDirectory,
             MarketFileReader.FileName);
@@ -62,6 +70,7 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
             "Praea Euq IL-P c5-2",
             Assert.Single(initial.NavRoute.Route).StarSystem);
         Assert.Equal(1, initial.Cargo?.GetCount("ancientorb"));
+        Assert.Equal(2, Assert.Single(initial.ShipLocker!.Items).Count);
         Assert.Equal(125, initial.Market?.FindItem("steel")?.Stock);
         Assert.Empty(initial.Errors);
         Assert.True(initial.IsBootstrapRead);
@@ -78,6 +87,7 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         var completed = await monitor.PollAsync();
         Assert.Equal("FutureEvent", Assert.Single(completed.JournalEvents).EventName);
         Assert.Null(completed.Cargo);
+        Assert.Null(completed.ShipLocker);
         Assert.Null(completed.Market);
         Assert.Empty(completed.Errors);
 
@@ -89,6 +99,15 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         var cargoChanged = await monitor.PollAsync();
         Assert.Equal(2, cargoChanged.Cargo?.GetCount("ancientorb"));
         Assert.Equal(2, monitor.CurrentCargo?.Count);
+
+        await File.WriteAllTextAsync(
+            shipLockerPath,
+            "{\"timestamp\":\"2026-07-24T10:00:02Z\",\"event\":\"ShipLocker\","
+                + "\"Items\":[{\"Name\":\"healthmonitor\",\"Count\":5}],"
+                + "\"Components\":[],\"Consumables\":[],\"Data\":[]}");
+        var shipLockerChanged = await monitor.PollAsync();
+        Assert.Equal(5, Assert.Single(shipLockerChanged.ShipLocker!.Items).Count);
+        Assert.Equal(5, Assert.Single(monitor.CurrentShipLocker!.Items).Count);
 
         await File.WriteAllTextAsync(
             marketPath,

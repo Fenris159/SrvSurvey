@@ -2484,6 +2484,14 @@ public sealed class MainWindowViewModelTests
                 """
                 {"timestamp":"2026-07-25T12:00:02Z","event":"Cargo","Vessel":"Ship","Count":2,"Inventory":[{"Name":"gold","Count":2,"Stolen":0}]}
                 """);
+            var shipLockerPath = Path.Combine(
+                journals,
+                ShipLockerFileReader.FileName);
+            await File.WriteAllTextAsync(
+                shipLockerPath,
+                """
+                {"timestamp":"2026-07-25T12:00:02Z","event":"ShipLocker","Items":[{"Name":"healthmonitor","Name_Localised":"Health Monitor","Count":2}],"Components":[],"Consumables":[],"Data":[]}
+                """);
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
@@ -2500,6 +2508,8 @@ public sealed class MainWindowViewModelTests
 
             await viewModel.RefreshAsync();
             Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));
+            Assert.Single(viewModel.FrontierProfile.CurrentShipCargo);
+            Assert.Single(viewModel.FrontierProfile.CurrentShipLocker);
 
             await File.AppendAllTextAsync(
                 journalPath,
@@ -2516,6 +2526,11 @@ public sealed class MainWindowViewModelTests
             viewModel.CommanderInstances.RefreshGameWindowCount();
             Assert.Null(viewModel.CurrentCargo);
             Assert.True(viewModel.IsWaitingForFreshCargoSnapshot);
+            Assert.Empty(viewModel.FrontierProfile.CurrentShipCargo);
+            Assert.Empty(viewModel.FrontierProfile.CurrentShipLocker);
+            Assert.Contains(
+                "multiple Elite windows",
+                viewModel.FrontierProfile.LocalInventoryStatus);
 
             switcher.AvailableWindowCount = 1;
             viewModel.CommanderInstances.RefreshGameWindowCount();
@@ -2539,6 +2554,8 @@ public sealed class MainWindowViewModelTests
 
             Assert.Equal(5, viewModel.CurrentCargo?.GetCount("gold"));
             Assert.False(viewModel.IsWaitingForFreshCargoSnapshot);
+            Assert.Single(viewModel.FrontierProfile.CurrentShipCargo);
+            Assert.Empty(viewModel.FrontierProfile.CurrentShipLocker);
         }
         finally
         {

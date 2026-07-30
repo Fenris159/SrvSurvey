@@ -15,6 +15,7 @@ public sealed class JournalDirectoryMonitor
     private string? statusContentHash;
     private string? navRouteContentHash;
     private string? cargoContentHash;
+    private string? shipLockerContentHash;
     private string? marketContentHash;
     private bool hasCompletedFirstPoll;
 
@@ -50,6 +51,8 @@ public sealed class JournalDirectoryMonitor
     public NavRouteSnapshot? CurrentNavRoute { get; private set; }
 
     public CargoSnapshot? CurrentCargo { get; private set; }
+
+    public ShipLockerSnapshot? CurrentShipLocker { get; private set; }
 
     public MarketSnapshot? CurrentMarket { get; private set; }
 
@@ -163,6 +166,33 @@ public sealed class JournalDirectoryMonitor
                 }
             }
 
+            ShipLockerSnapshot? shipLocker = null;
+            var shipLockerPath = Path.Combine(
+                journalDirectory,
+                ShipLockerFileReader.FileName);
+            if (File.Exists(shipLockerPath))
+            {
+                var shipLockerResult = await ShipLockerFileReader.ReadAsync(
+                        shipLockerPath,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+                if (shipLockerResult.Snapshot is not null
+                    && shipLockerResult.ContentHash is not null
+                    && !string.Equals(
+                        shipLockerResult.ContentHash,
+                        shipLockerContentHash,
+                        StringComparison.Ordinal))
+                {
+                    shipLockerContentHash = shipLockerResult.ContentHash;
+                    CurrentShipLocker = shipLockerResult.Snapshot;
+                    shipLocker = shipLockerResult.Snapshot;
+                }
+                else if (shipLockerResult.Error is not null)
+                {
+                    errors.Add(shipLockerResult.Error);
+                }
+            }
+
             MarketSnapshot? market = null;
             var marketPath = Path.Combine(
                 journalDirectory,
@@ -198,7 +228,8 @@ public sealed class JournalDirectoryMonitor
                 cargo,
                 market,
                 errors,
-                IsBootstrapRead: !hasCompletedFirstPoll);
+                IsBootstrapRead: !hasCompletedFirstPoll,
+                ShipLocker: shipLocker);
             hasCompletedFirstPoll = true;
         }
         finally
@@ -483,4 +514,5 @@ public sealed record JournalMonitorUpdate(
     CargoSnapshot? Cargo,
     MarketSnapshot? Market,
     IReadOnlyList<string> Errors,
-    bool IsBootstrapRead);
+    bool IsBootstrapRead,
+    ShipLockerSnapshot? ShipLocker = null);

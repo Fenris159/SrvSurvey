@@ -61,7 +61,10 @@ See [development and validation status](docs/DEVELOPMENT.md),
 [journal coverage](docs/JOURNAL_COVERAGE.md),
 [network coverage](docs/NETWORK_COVERAGE.md),
 [network publication privacy](docs/PRIVACY.md), and
-[profile migration](docs/DATA_MIGRATION.md).
+[profile migration](docs/DATA_MIGRATION.md). Frontier account linking and the
+commander dashboard are documented in [Frontier account linking](docs/FRONTIER.md).
+Bundled third-party artwork is identified in
+[third-party notices](THIRD-PARTY-NOTICES.md).
 
 ## Feedback
 

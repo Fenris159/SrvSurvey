@@ -1,0 +1,188 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:core="using:SrvSurvey.Core.Frontier"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.FrontierCommanderTabView"
+             x:DataType="vm:CommanderProfileViewModel">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="4,16,4,18" Spacing="16">
+      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+        <Border Classes="card" Padding="16">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="muted" FontSize="10" Text="AVAILABLE BALANCE" />
+            <TextBlock Classes="metric" Text="{Binding Balance}" />
+            <TextBlock Classes="muted" FontSize="11" Text="{Binding Debt, StringFormat=Debt: {0}}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Classes="card" Padding="16">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="muted" FontSize="10" Text="ESTIMATED NET WORTH" />
+            <TextBlock Classes="metric" Text="{Binding NetWorth}" />
+            <TextBlock Classes="muted" FontSize="11" Text="Cash, fleet and carrier bank" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="2" Classes="card" Padding="16">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="muted" FontSize="10" Text="FLEET VALUE" />
+            <TextBlock Classes="metric" Text="{Binding FleetValue}" />
+            <TextBlock Classes="muted" FontSize="11" Text="{Binding FleetCount}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="3" Classes="card" Padding="16">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="muted" FontSize="10" Text="CURRENT LOCATION" />
+            <TextBlock FontSize="16" FontWeight="SemiBold"
+                       TextWrapping="Wrap" Text="{Binding CurrentLocation}" />
+            <TextBlock Classes="muted" FontSize="11" Text="{Binding CommanderState}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Grid ColumnDefinitions=".9*,1.6*" ColumnSpacing="14">
+        <StackPanel Spacing="14">
+          <Border Classes="card">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="card-title" Text="Identity and location" />
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                <Image Width="58" Height="58"
+                       IsVisible="{Binding HasFactionIcon}"
+                       Source="{Binding FactionIconPath, Converter={StaticResource FrontierAssetImageConverter}}"
+                       Stretch="Uniform" />
+                <StackPanel Grid.Column="1" Spacing="3">
+                  <TextBlock FontSize="18" FontWeight="SemiBold" Text="{Binding CommanderName}" />
+                  <TextBlock Classes="muted" Text="{Binding CommanderId, StringFormat=Frontier commander ID: {0}}" />
+                  <TextBlock Text="{Binding LocationAllegiance}" />
+                </StackPanel>
+              </Grid>
+              <TextBlock Classes="muted" Text="Last docked services" />
+              <ItemsControl ItemsSource="{Binding StationServices}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="badge" Margin="0,0,6,6"><TextBlock Text="{Binding}" /></Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Expander Classes="profile-section"
+                    IsExpanded="{Binding PaneStates.CommanderFactionReputation.IsExpanded, Mode=TwoWay}">
+            <Expander.Header>
+              <TextBlock Text="{Binding CommanderReputation.Count, StringFormat=Faction reputation ({0})}" />
+            </Expander.Header>
+            <ItemsControl ItemsSource="{Binding CommanderReputation}" Margin="8">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:FrontierReputationRowViewModel">
+                  <Border Classes="dashboard-row">
+                    <Grid ColumnDefinitions="42,*,Auto" ColumnSpacing="12">
+                      <Image Width="36" Height="36"
+                             Source="{Binding IconPath, Converter={StaticResource FrontierAssetImageConverter}}"
+                             Stretch="Uniform" />
+                      <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding Faction}" />
+                      <TextBlock Grid.Column="2" FontWeight="SemiBold"
+                                 VerticalAlignment="Center" Text="{Binding Score}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Expander>
+
+          <Border Classes="card" IsVisible="{Binding HasCapabilities}">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="card-title" Text="Account capabilities" />
+              <ItemsControl ItemsSource="{Binding Capabilities}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate><DataTemplate><Border Classes="badge" Margin="0,0,6,6"><TextBlock Text="{Binding}" /></Border></DataTemplate></ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Spacing="14">
+          <Border Classes="card">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="card-title" Text="Ranks" />
+              <ItemsControl ItemsSource="{Binding Ranks}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierRankCardViewModel">
+                    <Border Classes="rank-card" Width="190" MinHeight="76" Margin="0,0,8,8">
+                      <Grid ColumnDefinitions="56,*" ColumnSpacing="10">
+                        <Image Width="52" Height="52"
+                               Source="{Binding IconPath, Converter={StaticResource FrontierAssetImageConverter}}"
+                               Stretch="Uniform" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                          <TextBlock Classes="muted" FontSize="10" Text="{Binding Category}" />
+                          <TextBlock FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Name}" />
+                        </StackPanel>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Expander Classes="profile-section"
+                    IsExpanded="{Binding PaneStates.CommanderOwnedFleet.IsExpanded, Mode=TwoWay}">
+            <Expander.Header>
+              <Grid ColumnDefinitions="*,Auto" Margin="6,2">
+                <TextBlock Classes="card-title" Text="Owned fleet" />
+                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding FleetCount}" />
+              </Grid>
+            </Expander.Header>
+            <ItemsControl ItemsSource="{Binding Ships}" Margin="8">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:FrontierShipRowViewModel">
+                  <Border Classes="dashboard-row">
+                    <Grid ColumnDefinitions="1.15*,1.05*,140" ColumnSpacing="14">
+                      <StackPanel Spacing="2">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                          <TextBlock FontWeight="SemiBold" TextWrapping="Wrap"
+                                     MaxLines="2" Text="{Binding Name}" />
+                          <TextBlock Grid.Column="1" Classes="eyebrow"
+                                     VerticalAlignment="Top" Text="{Binding Status}" />
+                        </Grid>
+                        <TextBlock Classes="muted" FontSize="11" Text="{Binding Type}" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="1" Classes="muted" VerticalAlignment="Center"
+                                 MaxLines="2" TextTrimming="CharacterEllipsis"
+                                 TextWrapping="Wrap" Text="{Binding Location}" />
+                      <TextBlock Grid.Column="2" FontWeight="SemiBold" VerticalAlignment="Center"
+                                 HorizontalAlignment="Right" Text="{Binding Value}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Expander>
+        </StackPanel>
+      </Grid>
+
+      <Expander Classes="profile-section"
+                IsExpanded="{Binding PaneStates.CommanderProfileData.IsExpanded, Mode=TwoWay}">
+        <Expander.Header>
+          <TextBlock Text="{Binding ProfileData.Count, StringFormat=All profile data points ({0})}" />
+        </Expander.Header>
+        <ItemsControl ItemsSource="{Binding ProfileData}" Margin="8" MaxHeight="440">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="core:FrontierDataPointSnapshot">
+              <Border Classes="dashboard-row compact">
+                <Grid ColumnDefinitions="1.1*,1.4*" ColumnSpacing="12">
+                  <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap" Text="{Binding Path}" />
+                  <TextBlock Grid.Column="1" FontSize="11" TextWrapping="Wrap" Text="{Binding Value}" />
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Expander>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
