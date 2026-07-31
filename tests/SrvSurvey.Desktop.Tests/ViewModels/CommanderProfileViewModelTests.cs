@@ -24,6 +24,20 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public void AuthorizationCallbackIsForwardedForWindowActivation()
+    {
+        var account = new StubAccountService(
+            new FrontierAccountState(false, null, null));
+        using var viewModel = new CommanderProfileViewModel(account);
+        var received = 0;
+        viewModel.AuthorizationCallbackReceived += (_, _) => received++;
+
+        account.RaiseAuthorizationCallbackReceived();
+
+        Assert.Equal(1, received);
+    }
+
+    [Fact]
     public async Task CachedSnapshotProjectsCompactCommanderAndCarrierRows()
     {
         var snapshot = CreateSnapshot(DateTimeOffset.UtcNow);
@@ -55,7 +69,55 @@ public sealed class CommanderProfileViewModelTests
         var goal = Assert.Single(viewModel.CommunityGoals);
         Assert.Equal(50, goal.Progress);
         Assert.Contains("250", goal.PlayerContribution);
+        Assert.Equal("Trade delivery", goal.Activity);
+        Assert.Equal("Sol · Galileo", goal.Location);
+        Assert.Equal("5,000 / 10,000", goal.ProgressText);
+        Assert.True(goal.HasBriefing);
         Assert.Equal(0, account.RefreshCount);
+    }
+
+    [Fact]
+    public async Task CachedRawGoalFieldsUpgradeWithoutNetworkRefresh()
+    {
+        var fetchedAt = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+        var snapshot = CreateSnapshot(fetchedAt);
+        var cachedGoal = Assert.Single(snapshot.CommunityGoals!) with
+        {
+            Description = string.Empty,
+            System = string.Empty,
+            Market = string.Empty,
+            CurrentTotal = 0,
+            TargetTotal = null,
+            ActivityType = string.Empty,
+            HasPlayerContributionData = false,
+            HasContributorData = false,
+            DataPoints =
+            [
+                new("goal.starsystem_name", "Carcosa"),
+                new("goal.market_name", "Robardin Rock"),
+                new("goal.activityType", "tradelist"),
+                new("goal.qty", "1971753"),
+                new("goal.target_qty", "34500000"),
+                new("goal.bulletin", "Colonia Council calls on pilots.\n\n- Cargo rack reward"),
+            ],
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(
+                true,
+                snapshot with { CommunityGoals = [cachedGoal] },
+                fetchedAt)),
+            () => fetchedAt);
+
+        await viewModel.OpenAsync();
+
+        var goal = Assert.Single(viewModel.CommunityGoals);
+        Assert.Equal("Robardin Rock", goal.Market);
+        Assert.Equal("Carcosa", goal.System);
+        Assert.Equal("Trade delivery", goal.Activity);
+        Assert.Equal("1,971,753 / 34,500,000", goal.ProgressText);
+        Assert.Equal("5.72% complete", goal.ProgressPercent);
+        Assert.Contains("Cargo rack reward", goal.Briefing);
+        Assert.Equal("Personal progress not supplied by Frontier", goal.PlayerContribution);
     }
 
     [Fact]
@@ -321,9 +383,12 @@ public sealed class CommanderProfileViewModelTests
             null,
             isSuppressed: false);
 
-        Assert.Equal(3, viewModel.CommanderSelectionOptions.Count);
+        Assert.Equal(2, viewModel.CommanderSelectionOptions.Count);
         Assert.True(viewModel.SelectedCommanderOption!.IsAutomatic);
         Assert.True(viewModel.HasCurrentShipCargo);
+        Assert.DoesNotContain(
+            viewModel.CommanderSelectionOptions,
+            option => option.FrontierId == "F123" && !option.IsAutomatic);
 
         var secondOption = Assert.Single(
             viewModel.CommanderSelectionOptions,
@@ -733,7 +798,11 @@ public sealed class CommanderProfileViewModelTests
                     25,
                     1_500_000,
                     10,
-                    false),
+                    false,
+                    DataPoints: [],
+                    ActivityType: "tradelist",
+                    HasPlayerContributionData: true,
+                    HasContributorData: true),
             ],
             CommanderReputation:
             [
@@ -767,6 +836,8 @@ public sealed class CommanderProfileViewModelTests
         }
 
         public int RefreshCount { get; private set; }
+
+        public event EventHandler? AuthorizationCallbackReceived;
 
         public string? ActiveFrontierId { get; private set; }
 
@@ -839,6 +910,11 @@ public sealed class CommanderProfileViewModelTests
 
         public void Dispose()
         {
+        }
+
+        public void RaiseAuthorizationCallbackReceived()
+        {
+            AuthorizationCallbackReceived?.Invoke(this, EventArgs.Empty);
         }
     }
 }

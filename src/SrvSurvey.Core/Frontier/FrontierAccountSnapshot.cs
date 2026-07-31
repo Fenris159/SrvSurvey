@@ -283,7 +283,10 @@ public sealed record FrontierCommunityGoalSnapshot(
     long Bonus,
     int? TopRankSize,
     bool PlayerInTopRank,
-    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null);
+    IReadOnlyList<FrontierDataPointSnapshot>? DataPoints = null,
+    string ActivityType = "",
+    bool HasPlayerContributionData = false,
+    bool HasContributorData = false);
 
 public sealed record FrontierDataPointSnapshot(
     string Path,

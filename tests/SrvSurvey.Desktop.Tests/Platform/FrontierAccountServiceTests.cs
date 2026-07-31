@@ -396,9 +396,9 @@ public sealed class FrontierAccountServiceTests
 
                     return token == "access-a"
                         ? Json(HttpStatusCode.OK,
-                            "{\"commander\":{\"id\":123,\"name\":\"Fenris\",\"credits\":100,\"rank\":{}},\"ships\":[]}")
+                            "{\"commander\":{\"id\":739749,\"name\":\"Fenris\",\"credits\":100,\"rank\":{}},\"ships\":[]}")
                         : Json(HttpStatusCode.OK,
-                            "{\"commander\":{\"id\":456,\"name\":\"Second\",\"credits\":200,\"rank\":{}},\"ships\":[]}");
+                            "{\"commander\":{\"id\":831234,\"name\":\"Second\",\"credits\":200,\"rank\":{}},\"ships\":[]}");
                 })),
                 store,
                 frontierId => new FrontierProfileCacheStore(Path.Combine(
@@ -442,6 +442,189 @@ public sealed class FrontierAccountServiceTests
                     Assert.Equal("F456", commander.FrontierId);
                     Assert.Equal("Second", commander.CommanderName);
                 });
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task JournalFidAndCapiCommanderIdAreIndependentIdentifiers()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-frontier-id-domains-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var store = new MemoryCredentialStore
+            {
+                Document = new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential>
+                    {
+                        ["F472567"] = ScopedCredential("access", now),
+                    },
+                },
+            };
+            using var service = new FrontierAccountService(
+                new HttpClient(new StubHandler(request =>
+                    request.RequestUri!.AbsolutePath == "/profile"
+                        ? Json(HttpStatusCode.OK,
+                            "{\"commander\":{\"id\":739749,\"name\":\"Fenris Nihilus\",\"rank\":{}},\"ships\":[]}")
+                        : Json(HttpStatusCode.NoContent, string.Empty))),
+                store,
+                frontierId => new FrontierProfileCacheStore(Path.Combine(
+                    root,
+                    frontierId + ".json")),
+                utcNow: () => now,
+                openBrowser: (_, _) => Task.CompletedTask,
+                registerProtocol: _ => Task.CompletedTask);
+            service.SetActiveCommander("F472567", "Fenris Nihilus");
+
+            var snapshot = await service.RefreshAsync();
+
+            Assert.Equal(739749, snapshot.CommanderId);
+            Assert.True(store.Document!.Accounts.ContainsKey("F472567"));
+            Assert.False(store.Document.Accounts.ContainsKey("F739749"));
+            Assert.True(File.Exists(Path.Combine(root, "F472567.json")));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task MiskeyedCapiIdAliasIsRemovedWithoutMergingAnotherCommander()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-frontier-capi-alias-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var store = new MemoryCredentialStore
+            {
+                Document = new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential>
+                    {
+                        ["F472567"] = ScopedCredential("correct", now),
+                        ["F739749"] = ScopedCredential("alias", now),
+                        ["F831234"] = ScopedCredential("second", now),
+                    },
+                },
+            };
+            var activeCache = new FrontierProfileCacheStore(Path.Combine(
+                root,
+                "F472567.json"));
+            var aliasCache = new FrontierProfileCacheStore(Path.Combine(
+                root,
+                "F739749.json"));
+            var secondCache = new FrontierProfileCacheStore(Path.Combine(
+                root,
+                "F831234.json"));
+            await activeCache.SaveAsync(FrontierCapiSnapshotParser.Parse(
+                "{\"commander\":{\"id\":739749,\"name\":\"Fenris Nihilus\",\"rank\":{}},\"ships\":[]}",
+                null,
+                now.AddMinutes(-5)));
+            await aliasCache.SaveAsync(FrontierCapiSnapshotParser.Parse(
+                "{\"commander\":{\"id\":739749,\"name\":\"Fenris Nihilus\",\"credits\":42,\"rank\":{}},\"ships\":[]}",
+                null,
+                now));
+            await secondCache.SaveAsync(FrontierCapiSnapshotParser.Parse(
+                "{\"commander\":{\"id\":831234,\"name\":\"Second\",\"rank\":{}},\"ships\":[]}",
+                null,
+                now));
+            using var service = new FrontierAccountService(
+                new HttpClient(new StubHandler(_ => Json(HttpStatusCode.OK, "{}"))),
+                store,
+                frontierId => new FrontierProfileCacheStore(Path.Combine(
+                    root,
+                    frontierId + ".json")),
+                utcNow: () => now,
+                openBrowser: (_, _) => Task.CompletedTask,
+                registerProtocol: _ => Task.CompletedTask);
+            service.SetActiveCommander("F472567", "Fenris Nihilus");
+
+            var linked = await service.GetLinkedCommandersAsync();
+
+            Assert.Collection(
+                linked,
+                commander =>
+                {
+                    Assert.Equal("F472567", commander.FrontierId);
+                    Assert.Equal("Fenris Nihilus", commander.CommanderName);
+                },
+                commander =>
+                {
+                    Assert.Equal("F831234", commander.FrontierId);
+                    Assert.Equal("Second", commander.CommanderName);
+                });
+            Assert.Equal(
+                "correct",
+                store.Document!.Accounts["F472567"].AccessToken);
+            Assert.False(store.Document.Accounts.ContainsKey("F739749"));
+            Assert.True(store.Document.Accounts.ContainsKey("F831234"));
+            Assert.False(File.Exists(Path.Combine(root, "F739749.json")));
+            Assert.Equal(42, (await activeCache.LoadAsync())!.Credits);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task MiskeyedCapiIdCredentialMovesToJournalFidWhenItIsTheOnlyCopy()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-frontier-capi-alias-move-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var store = new MemoryCredentialStore
+            {
+                Document = new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential>
+                    {
+                        ["F739749"] = ScopedCredential("alias", now),
+                    },
+                },
+            };
+            await new FrontierProfileCacheStore(Path.Combine(root, "F739749.json"))
+                .SaveAsync(FrontierCapiSnapshotParser.Parse(
+                    "{\"commander\":{\"id\":739749,\"name\":\"Fenris Nihilus\",\"rank\":{}},\"ships\":[]}",
+                    null,
+                    now));
+            using var service = new FrontierAccountService(
+                new HttpClient(new StubHandler(_ => Json(HttpStatusCode.OK, "{}"))),
+                store,
+                frontierId => new FrontierProfileCacheStore(Path.Combine(
+                    root,
+                    frontierId + ".json")),
+                utcNow: () => now,
+                openBrowser: (_, _) => Task.CompletedTask,
+                registerProtocol: _ => Task.CompletedTask);
+            service.SetActiveCommander("F472567", "Fenris Nihilus");
+
+            var state = await service.GetStateAsync();
+
+            Assert.True(state.IsLinked);
+            Assert.Equal("Fenris Nihilus", state.Snapshot!.CommanderName);
+            Assert.Equal(
+                "alias",
+                store.Document!.Accounts["F472567"].AccessToken);
+            Assert.False(store.Document.Accounts.ContainsKey("F739749"));
+            Assert.True(File.Exists(Path.Combine(root, "F472567.json")));
+            Assert.False(File.Exists(Path.Combine(root, "F739749.json")));
         }
         finally
         {
@@ -534,7 +717,7 @@ public sealed class FrontierAccountServiceTests
                 root,
                 "frontier-profile-cache.json"));
             var snapshot = FrontierCapiSnapshotParser.Parse(
-                "{\"commander\":{\"id\":123,\"name\":\"Fenris\",\"rank\":{}},\"ships\":[]}",
+                "{\"commander\":{\"id\":739749,\"name\":\"Fenris\",\"rank\":{}},\"ships\":[]}",
                 null,
                 now);
             await legacyCache.SaveAsync(snapshot);
