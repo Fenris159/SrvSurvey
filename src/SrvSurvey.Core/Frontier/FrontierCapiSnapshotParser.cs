@@ -903,20 +903,56 @@ public static partial class FrontierCapiSnapshotParser
             ?? GetObject(goal, "contribution")
             ?? GetObject(goal, "player");
         var progress = GetObject(goal, "progress");
+        var title = GetStringAny(
+            goal,
+            "title",
+            "name",
+            "communitygoalName");
+        var briefing = CleanCommunityGoalText(
+            FirstNonEmpty(
+                GetStringAny(goal, "bulletin"),
+                GetStringAny(
+                    goal,
+                    "description",
+                    "descriptionText",
+                    "goalDescriptionText",
+                    "locDescription"),
+                GetStringAny(goal, "news")),
+            title);
         return new FrontierCommunityGoalSnapshot(
             GetInt64Any(goal, "id", "cgid", "communitygoalGameID"),
-            GetStringAny(goal, "title", "name", "communitygoalName"),
-            GetStringAny(goal, "description", "descriptionText", "goalDescriptionText", "locDescription"),
+            title,
+            briefing,
             GetStringAny(goal, "objective", "objectiveText", "goalObjectiveText"),
             GetStringAny(goal, "reward", "rewardText", "goalRewardText"),
-            GetStringAny(goal, "systemName", "starsystemName", "system"),
-            GetStringAny(goal, "marketName", "stationName", "market"),
+            GetStringAny(
+                goal,
+                "systemName",
+                "starsystemName",
+                "starsystem_name",
+                "system"),
+            GetStringAny(
+                goal,
+                "marketName",
+                "market_name",
+                "stationName",
+                "market"),
             GetDateTimeOffsetAny(goal, "expiry", "expiresAt", "goalExpiry"),
             GetBooleanAny(goal, "isComplete", "completed") ?? false,
-            GetInt64Any(goal, "currentTotal", "contributionsTotal", "total")
+            GetInt64Any(
+                    goal,
+                    "currentTotal",
+                    "contributionsTotal",
+                    "total",
+                    "qty")
                 ?? GetInt64Any(progress, "current", "total")
                 ?? 0,
-            GetInt64Any(goal, "targetTotal", "target", "goalTarget")
+            GetInt64Any(
+                    goal,
+                    "targetTotal",
+                    "target",
+                    "goalTarget",
+                    "target_qty")
                 ?? GetInt64Any(progress, "target", "maximum"),
             GetInt64Any(goal, "playerContribution", "contribution")
                 ?? GetInt64Any(commander, "playerContribution", "contribution")
@@ -932,7 +968,47 @@ public static partial class FrontierCapiSnapshotParser
             GetBooleanAny(goal, "playerInTopRank", "isTopRank")
                 ?? GetBooleanAny(commander, "playerInTopRank", "isTopRank")
                 ?? false,
-            Flatten(goal, "goal"));
+            Flatten(goal, "goal"),
+            GetStringAny(goal, "activityType", "activity_type", "type"),
+            HasAnyProperty(goal, "playerContribution", "contribution")
+                || HasAnyProperty(
+                    commander,
+                    "playerContribution",
+                    "contribution"),
+            HasAnyProperty(
+                goal,
+                "numContributors",
+                "contributorsNum",
+                "contributors"));
+    }
+
+    private static string CleanCommunityGoalText(string value, string title)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var normalized = value
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace('\r', '\n')
+            .Replace("{{top5}}", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Trim();
+        if (!string.IsNullOrWhiteSpace(title)
+            && normalized.StartsWith(title, StringComparison.OrdinalIgnoreCase))
+        {
+            normalized = normalized[title.Length..].TrimStart('\n', ' ');
+        }
+
+        while (normalized.Contains("\n\n\n", StringComparison.Ordinal))
+        {
+            normalized = normalized.Replace(
+                "\n\n\n",
+                "\n\n",
+                StringComparison.Ordinal);
+        }
+
+        return normalized.Trim();
     }
 
     private static IReadOnlyList<FrontierInventorySnapshot> ParseLocker(
@@ -1208,6 +1284,14 @@ public static partial class FrontierCapiSnapshotParser
         }
 
         return null;
+    }
+
+    private static bool HasAnyProperty(
+        JsonElement? owner,
+        params string[] names)
+    {
+        return owner is { } value
+            && names.Any(name => GetProperty(value, name) is not null);
     }
 
     private static DateTimeOffset? GetDateTimeOffsetAny(

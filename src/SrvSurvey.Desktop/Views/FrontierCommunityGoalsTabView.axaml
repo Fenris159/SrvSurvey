@@ -30,22 +30,72 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:FrontierCommunityGoalCardViewModel">
             <Border Classes="card raised" Margin="0,0,0,12">
-              <StackPanel Spacing="12">
+              <StackPanel Spacing="14">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-                  <StackPanel Spacing="3">
-                    <TextBlock FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Title}" />
-                    <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding Location}" />
+                  <StackPanel Spacing="5">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Classes="eyebrow" Text="{Binding GoalReference}" />
+                      <TextBlock Classes="eyebrow" Text="·" />
+                      <TextBlock Classes="eyebrow" Text="{Binding Activity}" />
+                    </StackPanel>
+                    <TextBlock FontSize="22" FontWeight="SemiBold"
+                               TextWrapping="Wrap" Text="{Binding Title}" />
                   </StackPanel>
-                  <TextBlock Grid.Column="1" Classes="eyebrow" VerticalAlignment="Top" Text="{Binding Expiry}" />
+                  <Border Grid.Column="1" Classes="detail-tile"
+                          Padding="12,8" VerticalAlignment="Top">
+                    <StackPanel Spacing="2" HorizontalAlignment="Right">
+                      <TextBlock Classes="eyebrow" HorizontalAlignment="Right"
+                                 Text="{Binding Status}" />
+                      <TextBlock Classes="muted" HorizontalAlignment="Right"
+                                 Text="{Binding TimeRemaining}" />
+                    </StackPanel>
+                  </Border>
                 </Grid>
 
-                <TextBlock TextWrapping="Wrap" Text="{Binding Description}" />
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                  <Border Classes="detail-tile" IsVisible="{Binding HasLocation}">
+                    <StackPanel Spacing="4">
+                      <TextBlock Classes="eyebrow" Text="DESTINATION" />
+                      <TextBlock FontWeight="SemiBold" TextWrapping="Wrap"
+                                 Text="{Binding Market}" />
+                      <TextBlock Classes="muted" TextWrapping="Wrap"
+                                 Text="{Binding System}" />
+                    </StackPanel>
+                  </Border>
+                  <Border Grid.Column="1" Classes="detail-tile"
+                          IsVisible="{Binding HasObjective}">
+                    <StackPanel Spacing="4">
+                      <TextBlock Classes="eyebrow" Text="OBJECTIVE" />
+                      <TextBlock FontWeight="SemiBold" TextWrapping="Wrap"
+                                 Text="{Binding Objective}" />
+                      <TextBlock Classes="muted" TextWrapping="Wrap"
+                                 Text="{Binding Activity}" />
+                    </StackPanel>
+                  </Border>
+                  <Border Grid.Column="2" Classes="detail-tile">
+                    <StackPanel Spacing="4">
+                      <TextBlock Classes="eyebrow" Text="DEADLINE" />
+                      <TextBlock FontWeight="SemiBold" TextWrapping="Wrap"
+                                 Text="{Binding Expiry}" />
+                      <TextBlock Classes="muted" Text="{Binding TimeRemaining}" />
+                    </StackPanel>
+                  </Border>
+                </Grid>
 
                 <Border Classes="detail-tile">
-                  <StackPanel Spacing="7">
+                  <StackPanel Spacing="8">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                      <TextBlock FontWeight="SemiBold" Text="Goal progress" />
-                      <TextBlock Grid.Column="1" Classes="muted" Text="{Binding ProgressText}" />
+                      <StackPanel Spacing="2">
+                        <TextBlock Classes="eyebrow" Text="GLOBAL PROGRESS" />
+                        <TextBlock FontSize="18" FontWeight="SemiBold"
+                                   Text="{Binding ProgressText}" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" Spacing="2" HorizontalAlignment="Right">
+                        <TextBlock FontSize="18" FontWeight="SemiBold"
+                                   HorizontalAlignment="Right" Text="{Binding ProgressPercent}" />
+                        <TextBlock Classes="muted" HorizontalAlignment="Right"
+                                   IsVisible="{Binding HasTarget}" Text="{Binding RemainingText}" />
+                      </StackPanel>
                     </Grid>
                     <ProgressBar Minimum="0" Maximum="100" Height="10" Value="{Binding Progress}" />
                   </StackPanel>
@@ -53,41 +103,49 @@
 
                 <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
                   <Border Classes="detail-tile">
-                    <StackPanel Spacing="3">
-                      <TextBlock Classes="eyebrow" Text="COMMANDER" />
+                    <StackPanel Spacing="4">
+                      <TextBlock Classes="eyebrow" Text="YOUR CONTRIBUTION" />
                       <TextBlock TextWrapping="Wrap" Text="{Binding PlayerContribution}" />
                       <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding PlayerStanding}" />
                     </StackPanel>
                   </Border>
                   <Border Grid.Column="1" Classes="detail-tile">
-                    <StackPanel Spacing="3">
-                      <TextBlock Classes="eyebrow" Text="PARTICIPATION" />
+                    <StackPanel Spacing="4">
+                      <TextBlock Classes="eyebrow" Text="COMMUNITY" />
                       <TextBlock Text="{Binding Contributors}" />
                     </StackPanel>
                   </Border>
                   <Border Grid.Column="2" Classes="detail-tile">
-                    <StackPanel Spacing="3">
-                      <TextBlock Classes="eyebrow" Text="TIER" />
+                    <StackPanel Spacing="4">
+                      <TextBlock Classes="eyebrow" Text="CURRENT TIER" />
                       <TextBlock TextWrapping="Wrap" Text="{Binding Tier}" />
                     </StackPanel>
                   </Border>
                 </Grid>
 
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                  <StackPanel Spacing="4">
-                    <TextBlock Classes="eyebrow" Text="OBJECTIVE" />
-                    <TextBlock TextWrapping="Wrap" Text="{Binding Objective}" />
+                <Border Classes="detail-tile" IsVisible="{Binding HasBriefing}">
+                  <StackPanel Spacing="8">
+                    <TextBlock Classes="eyebrow" Text="MISSION BRIEFING" />
+                    <TextBlock TextWrapping="Wrap" LineHeight="22"
+                               Text="{Binding Briefing}" />
                   </StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="4">
+                </Border>
+
+                <Border Classes="detail-tile" IsVisible="{Binding HasReward}">
+                  <StackPanel Spacing="4">
                     <TextBlock Classes="eyebrow" Text="REWARD" />
                     <TextBlock TextWrapping="Wrap" Text="{Binding Reward}" />
                   </StackPanel>
-                </Grid>
+                </Border>
+
+                <TextBlock Classes="muted" FontSize="11"
+                           IsVisible="{Binding HasSourceStatus}"
+                           TextWrapping="Wrap" Text="{Binding SourceStatus}" />
 
                 <Expander Classes="profile-subsection"
                           IsExpanded="{Binding PaneState.IsExpanded, Mode=TwoWay}">
                   <Expander.Header>
-                    <TextBlock Text="{Binding DataPoints.Count, StringFormat=All goal data points ({0})}" />
+                    <TextBlock Text="{Binding DataPoints.Count, StringFormat=Raw endpoint fields ({0})}" />
                   </Expander.Header>
                   <ItemsControl ItemsSource="{Binding DataPoints}" Margin="8" MaxHeight="400">
                     <ItemsControl.ItemTemplate>

@@ -54,8 +54,14 @@ internal static class Program
                 frontier.HandleCallbackAsync(frontierCallback)
                     .GetAwaiter()
                     .GetResult();
+                var activated = DesktopApplicationActivator
+                    .TryActivateExistingInstance();
                 applicationLog.Append(
                     "Frontier authorization callback completed securely.");
+                applicationLog.Append(
+                    activated
+                        ? "Frontier callback restored the running application."
+                        : "Frontier callback completed without a running application window to restore.");
                 Environment.ExitCode = 0;
             }
             catch (Exception exception) when (

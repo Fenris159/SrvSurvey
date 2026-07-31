@@ -212,6 +212,15 @@ public sealed partial class App : Application
 
             var mainWindow = new MainWindow(viewModel);
             desktop.MainWindow = mainWindow;
+            void HandleFrontierAuthorizationCallback(
+                object? sender,
+                EventArgs eventArgs)
+            {
+                mainWindow.RestoreAndActivate();
+            }
+
+            viewModel.FrontierProfile.AuthorizationCallbackReceived +=
+                HandleFrontierAuthorizationCallback;
             async Task RestartApplicationAsync(string reason)
             {
                 new ApplicationRestartService().StartReplacement();
@@ -783,6 +792,8 @@ public sealed partial class App : Application
                     RestartAfterCommanderPreferenceChangeAsync;
                 viewModel.OverlayBehavior.PropertyChanged -=
                     HandleOverlayBehaviorChanged;
+                viewModel.FrontierProfile.AuthorizationCallbackReceived -=
+                    HandleFrontierAuthorizationCallback;
                 Dispatcher.UIThread.UnhandledException -= HandleUiException;
                 TaskScheduler.UnobservedTaskException -=
                     HandleUnobservedTaskException;

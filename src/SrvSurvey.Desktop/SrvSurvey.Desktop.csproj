@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SrvSurvey.Desktop</RootNamespace>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
-    <Version>2.0.95</Version>
-    <FileVersion>2.0.95.0</FileVersion>
+    <Version>2.1.0</Version>
+    <FileVersion>2.1.0.0</FileVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -42,6 +42,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SrvSurvey.Core\SrvSurvey.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InaraApplicationApiKey)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SrvSurvey.Inara.ReadKey</_Parameter1>
+      <_Parameter2>$(InaraApplicationApiKey)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>

@@ -198,8 +198,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         this.profileImporter = profileImporter ?? new LegacyProfileImporter();
         this.applicationLogService = applicationLogService;
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
+        var sharedJournalSettingsStore = journalSettingsStore
+            ?? new JournalSettingsStore(AppDataPaths.UiSettingsPath);
+        folderResolution = JournalFolderLocator.ResolveCurrent(
+            configuredJournalDirectory
+                ?? sharedJournalSettingsStore.Load().Directory);
+        ICommunityGoalJournalHistoryReader? communityGoalHistoryReader =
+            folderResolution.SelectedPath is { } journalPath
+                ? new CommunityGoalJournalHistoryReader(journalPath)
+                : null;
         FrontierProfile = frontierProfile ?? new CommanderProfileViewModel(
-            FrontierAccountService.CreateCurrent(AppDataPaths.DataDirectory));
+            FrontierAccountService.CreateCurrent(AppDataPaths.DataDirectory),
+            communityGoalHistoryReader: communityGoalHistoryReader);
         var legacyReferences = LegacyReferenceCatalogLoader.Load(
             AppDataPaths.DataDirectory);
         var regionalCodexCandidates = RegionalCodexCandidateCatalog.Load(
@@ -288,14 +298,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 ?? new Version(0, 0));
         JournalInspector = new JournalInspectorViewModel(
             ReplayQuestJournalEventAsync);
-        var sharedJournalSettingsStore = journalSettingsStore
-            ?? new JournalSettingsStore(AppDataPaths.UiSettingsPath);
         JournalSettings = new JournalSettingsViewModel(
             sharedJournalSettingsStore,
             configuredJournalDirectory);
-        folderResolution = JournalFolderLocator.ResolveCurrent(
-            configuredJournalDirectory
-                ?? sharedJournalSettingsStore.Load().Directory);
         commanderProfileStore = new CommanderProfileStore(
             AppDataPaths.DataDirectory);
         commanderCodexStore = new CommanderCodexStore(
@@ -1763,6 +1768,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             applicationLogService?.Append(warning);
         }
         FrontierProfile.UpdateJournalReputation(
+            journalState.CommanderName,
+            update.JournalEvents);
+        FrontierProfile.UpdateJournalCommunityGoals(
             journalState.CommanderName,
             update.JournalEvents);
         OverlayBehavior.UpdateContext(

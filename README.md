@@ -58,6 +58,7 @@ target for this build.
 - `tools` — current development utilities, including localization extraction.
 
 See [development and validation status](docs/DEVELOPMENT.md),
+[current release notes](CurrentReleaseNotes.md),
 [journal coverage](docs/JOURNAL_COVERAGE.md),
 [network coverage](docs/NETWORK_COVERAGE.md),
 [network publication privacy](docs/PRIVACY.md), and

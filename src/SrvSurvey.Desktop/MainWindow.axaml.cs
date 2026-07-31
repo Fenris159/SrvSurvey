@@ -193,6 +193,17 @@ public sealed partial class MainWindow : Window
         Activate();
     }
 
+    public void RestoreAndActivate()
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            RestoreFromTrayCore();
+            return;
+        }
+
+        Dispatcher.UIThread.Post(RestoreFromTrayCore);
+    }
+
     private void OnElementGotFocus(
         object? sender,
         RoutedEventArgs eventArgs)

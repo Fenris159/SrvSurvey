@@ -27,6 +27,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Updates/ReleasePackageDownloadService.cs",
         "src/SrvSurvey.Desktop/Platform/CodexImageCache.cs",
         "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs",
+        "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs",
         "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs",
     ];
 
@@ -120,6 +121,15 @@ public sealed class NetworkSurfaceCoverageTests
             "inara-publication",
             ["src/SrvSurvey.Core/Inara/InaraPublisher.cs"],
             ["tests/SrvSurvey.Core.Tests/Inara/InaraPublisherTests.cs"]),
+        new(
+            "inara-community-goal-read",
+            [
+                "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs",
+                "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalEnricher.cs",
+            ],
+            [
+                "tests/SrvSurvey.Desktop.Tests/Platform/InaraCommunityGoalClientTests.cs",
+            ]),
         new(
             "raven-colonial-quests-and-ggg",
             [

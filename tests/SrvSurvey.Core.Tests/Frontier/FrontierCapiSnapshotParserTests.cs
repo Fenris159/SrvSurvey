@@ -225,8 +225,70 @@ public sealed class FrontierCapiSnapshotParserTests
         Assert.Equal(10_000, goal.TargetTotal);
         Assert.Equal(250, goal.PlayerContribution);
         Assert.Equal(25, goal.PlayerPercentile);
+        Assert.True(goal.HasPlayerContributionData);
+        Assert.True(goal.HasContributorData);
         Assert.Contains(goal.DataPoints!, point =>
             point.Path == "goal.futureGoalField" && point.Value == "retained");
+    }
+
+    [Fact]
+    public void ParsesCurrentCapiCommunityGoalAliasesAndBriefing()
+    {
+        const string communityGoals =
+            """
+            {
+              "activeCommunityGoals":[{
+                "id":855,
+                "title":"Carcosa Calls for Assistance",
+                "expiry":"2026-08-06 10:00:00",
+                "market_name":"Robardin Rock",
+                "starsystem_name":"Carcosa",
+                "activityType":"tradelist",
+                "target_qty":34500000,
+                "qty":1971753,
+                "objective":"Curated Commodity Package",
+                "news":"Carcosa Calls for Assistance\n\nDuplicate news copy.\n\n{{top5}}",
+                "bulletin":"Colonia Council is calling on pilots.\n\n- Credits and a cargo rack."
+              }]
+            }
+            """;
+
+        var goal = Assert.Single(
+            FrontierCapiSnapshotParser.ParseCommunityGoals(communityGoals));
+
+        Assert.Equal(855, goal.Id);
+        Assert.Equal("Robardin Rock", goal.Market);
+        Assert.Equal("Carcosa", goal.System);
+        Assert.Equal("tradelist", goal.ActivityType);
+        Assert.Equal(34_500_000, goal.TargetTotal);
+        Assert.Equal(1_971_753, goal.CurrentTotal);
+        Assert.Equal(
+            "Colonia Council is calling on pilots.\n\n- Credits and a cargo rack.",
+            goal.Description);
+        Assert.DoesNotContain("{{top5}}", goal.Description);
+        Assert.False(goal.HasPlayerContributionData);
+        Assert.False(goal.HasContributorData);
+    }
+
+    [Fact]
+    public void ParsesEveryGoalInCurrentCapiActiveArray()
+    {
+        const string communityGoals =
+            """
+            {
+              "activeCommunityGoals":[
+                {"id":855,"title":"Carcosa","expiry":"2026-08-06 10:00:00"},
+                {"id":856,"title":"Einheriar","expiry":"2026-08-06 10:00:00"},
+                {"id":857,"title":"Randgnid","expiry":"2026-08-06 10:00:00"}
+              ]
+            }
+            """;
+
+        var goals = FrontierCapiSnapshotParser.ParseCommunityGoals(
+            communityGoals);
+
+        Assert.Equal(3, goals.Count);
+        Assert.Equal([855, 856, 857], goals.Select(goal => goal.Id));
     }
 
     [Fact]
