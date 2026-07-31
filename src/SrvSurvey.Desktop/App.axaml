@@ -1,6 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:localization="using:SrvSurvey.Desktop.Localization"
+             xmlns:presentation="using:SrvSurvey.Desktop.Presentation"
              x:Class="SrvSurvey.Desktop.App"
              RequestedThemeVariant="Dark">
   <Application.Resources>
@@ -18,6 +19,8 @@
     <SolidColorBrush x:Key="RavenSuccessBrush" Color="#6CCB72" />
     <SolidColorBrush x:Key="RavenWarningBrush" Color="#F7C948" />
     <SolidColorBrush x:Key="RavenDangerBrush" Color="#FF7B72" />
+    <presentation:FrontierAssetImageConverter
+        x:Key="FrontierAssetImageConverter" />
   </Application.Resources>
   <Application.Styles>
     <FluentTheme />

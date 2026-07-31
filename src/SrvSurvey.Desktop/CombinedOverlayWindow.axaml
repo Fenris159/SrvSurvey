@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SrvSurvey.Desktop.CombinedOverlayWindow"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey combined overlay host">
+  <Canvas x:Name="OverlayCanvas"
+          Background="Transparent"
+          ClipToBounds="True" />
+</Window>

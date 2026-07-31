@@ -234,7 +234,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []);
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
-                new NetworkPrivacyPreferences(false, "dev", true));
+                new NetworkPrivacyPreferences(false, true, true));
             var client = new RecordingGreenGasGiantClient();
             using var viewModel = new MainWindowViewModel(
                 journals,
@@ -293,7 +293,7 @@ public sealed class MainWindowViewModelTests
                 Path.Combine(root, "cache"),
                 []);
             new NetworkPrivacySettingsStore(paths.UiSettingsPath).Save(
-                new NetworkPrivacyPreferences(true, "beta", false));
+                new NetworkPrivacyPreferences(true, true, false));
             var publisher = new RecordingEddnPublisher();
             using var viewModel = new MainWindowViewModel(
                 journals,
@@ -305,7 +305,7 @@ public sealed class MainWindowViewModelTests
             var bootstrap = Assert.Single(publisher.Calls);
             Assert.False(bootstrap.AllowPublishing);
             Assert.True(bootstrap.Enabled);
-            Assert.Equal("beta", bootstrap.Environment);
+            Assert.True(bootstrap.UseTestSchemas);
             Assert.Equal(3, bootstrap.Events.Count);
             Assert.DoesNotContain("Queued", viewModel.NetworkPrivacy.StatusMessage);
 
@@ -319,7 +319,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(live.AllowPublishing);
             Assert.Equal("DockingGranted", Assert.Single(live.Events).EventName);
             Assert.Contains(
-                "Queued DockingGranted for EDDN (beta)",
+                "Queued DockingGranted for EDDN (test schemas)",
                 viewModel.NetworkPrivacy.StatusMessage);
         }
         finally
@@ -2484,6 +2484,14 @@ public sealed class MainWindowViewModelTests
                 """
                 {"timestamp":"2026-07-25T12:00:02Z","event":"Cargo","Vessel":"Ship","Count":2,"Inventory":[{"Name":"gold","Count":2,"Stolen":0}]}
                 """);
+            var shipLockerPath = Path.Combine(
+                journals,
+                ShipLockerFileReader.FileName);
+            await File.WriteAllTextAsync(
+                shipLockerPath,
+                """
+                {"timestamp":"2026-07-25T12:00:02Z","event":"ShipLocker","Items":[{"Name":"healthmonitor","Name_Localised":"Health Monitor","Count":2}],"Components":[],"Consumables":[],"Data":[]}
+                """);
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 Path.Combine(root, "profile"),
@@ -2500,6 +2508,8 @@ public sealed class MainWindowViewModelTests
 
             await viewModel.RefreshAsync();
             Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));
+            Assert.Single(viewModel.FrontierProfile.CurrentShipCargo);
+            Assert.Single(viewModel.FrontierProfile.CurrentShipLocker);
 
             await File.AppendAllTextAsync(
                 journalPath,
@@ -2516,6 +2526,11 @@ public sealed class MainWindowViewModelTests
             viewModel.CommanderInstances.RefreshGameWindowCount();
             Assert.Null(viewModel.CurrentCargo);
             Assert.True(viewModel.IsWaitingForFreshCargoSnapshot);
+            Assert.Empty(viewModel.FrontierProfile.CurrentShipCargo);
+            Assert.Empty(viewModel.FrontierProfile.CurrentShipLocker);
+            Assert.Contains(
+                "multiple Elite windows",
+                viewModel.FrontierProfile.LocalInventoryStatus);
 
             switcher.AvailableWindowCount = 1;
             viewModel.CommanderInstances.RefreshGameWindowCount();
@@ -2539,6 +2554,90 @@ public sealed class MainWindowViewModelTests
 
             Assert.Equal(5, viewModel.CurrentCargo?.GetCount("gold"));
             Assert.False(viewModel.IsWaitingForFreshCargoSnapshot);
+            Assert.Single(viewModel.FrontierProfile.CurrentShipCargo);
+            Assert.Empty(viewModel.FrontierProfile.CurrentShipLocker);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task CommanderSwitchRejectsPreviousAccountsCompanionInventory()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-commander-inventory-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-25T120000.01.log"),
+                """
+                {"timestamp":"2026-07-25T12:00:00Z","event":"Commander","Name":"First","FID":"F123"}
+                {"timestamp":"2026-07-25T12:00:01Z","event":"LoadGame","Commander":"First","FID":"F123","Odyssey":true}
+
+                """);
+            var cargoPath = Path.Combine(journals, CargoFileReader.FileName);
+            var lockerPath = Path.Combine(journals, ShipLockerFileReader.FileName);
+            await File.WriteAllTextAsync(
+                cargoPath,
+                """
+                {"timestamp":"2026-07-25T12:00:02Z","event":"Cargo","Vessel":"Ship","Count":2,"Inventory":[{"Name":"gold","Count":2,"Stolen":0}]}
+                """);
+            await File.WriteAllTextAsync(
+                lockerPath,
+                """
+                {"timestamp":"2026-07-25T12:00:02Z","event":"ShipLocker","Items":[{"Name":"healthmonitor","Count":2}],"Components":[],"Consumables":[],"Data":[]}
+                """);
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: new AppDataPaths(
+                    Path.Combine(root, "config"),
+                    Path.Combine(root, "profile"),
+                    Path.Combine(root, "cache"),
+                    []));
+
+            await viewModel.RefreshAsync();
+            Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));
+            Assert.Single(viewModel.FrontierProfile.CurrentShipLocker);
+
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-25T130000.01.log"),
+                """
+                {"timestamp":"2026-07-25T13:00:00Z","event":"Commander","Name":"Second","FID":"F456"}
+                {"timestamp":"2026-07-25T13:00:01Z","event":"LoadGame","Commander":"Second","FID":"F456","Odyssey":true}
+
+                """);
+            await viewModel.RefreshAsync();
+
+            Assert.Equal("Second", viewModel.CommanderName);
+            Assert.Null(viewModel.CurrentCargo);
+            Assert.Empty(viewModel.FrontierProfile.CurrentShipLocker);
+            Assert.True(viewModel.IsWaitingForFreshCargoSnapshot);
+
+            await File.WriteAllTextAsync(
+                cargoPath,
+                """
+                {"timestamp":"2026-07-25T13:00:02Z","event":"Cargo","Vessel":"Ship","Count":3,"Inventory":[{"Name":"silver","Count":3,"Stolen":0}]}
+                """);
+            await File.WriteAllTextAsync(
+                lockerPath,
+                """
+                {"timestamp":"2026-07-25T13:00:02Z","event":"ShipLocker","Items":[],"Components":[{"Name":"microelectrode","Count":4}],"Consumables":[],"Data":[]}
+                """);
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(3, viewModel.CurrentCargo?.GetCount("silver"));
+            Assert.False(viewModel.IsWaitingForFreshCargoSnapshot);
+            Assert.Equal(
+                "Microelectrode",
+                Assert.Single(viewModel.FrontierProfile.CurrentShipLocker).Name);
         }
         finally
         {
@@ -2761,7 +2860,7 @@ public sealed class MainWindowViewModelTests
             IReadOnlyList<JournalEventEnvelope> journalEvents,
             EliteStatus? status,
             bool enabled,
-            string environment,
+            bool useTestSchemas,
             bool allowPublishing,
             string? journalDirectory = null,
             string? journalPath = null,
@@ -2771,7 +2870,7 @@ public sealed class MainWindowViewModelTests
             Calls.Add(new EddnCall(
                 journalEvents.ToArray(),
                 enabled,
-                environment,
+                useTestSchemas,
                 allowPublishing,
                 allowSharedData));
             IReadOnlyList<EddnPublishedEvent> published =
@@ -2779,7 +2878,7 @@ public sealed class MainWindowViewModelTests
                     ? [new EddnPublishedEvent(
                         journalEvents[0].EventName,
                         "https://eddn.edcd.io/schemas/test/1/test",
-                        environment)]
+                        useTestSchemas)]
                     : [];
             return Task.FromResult(new EddnPublicationResult(published, []));
         }
@@ -2797,7 +2896,7 @@ public sealed class MainWindowViewModelTests
     private sealed record EddnCall(
         IReadOnlyList<JournalEventEnvelope> Events,
         bool Enabled,
-        string Environment,
+        bool UseTestSchemas,
         bool AllowPublishing,
         bool AllowSharedData);
 

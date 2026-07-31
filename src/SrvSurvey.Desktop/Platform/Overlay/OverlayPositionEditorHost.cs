@@ -10,6 +10,9 @@ public interface IOverlayPositionEditorHost : IDisposable
 {
     event EventHandler<OverlayPreviewMovedEventArgs>? PreviewMoved;
 
+    event EventHandler<OverlayPreviewOpacityChangedEventArgs>?
+        PreviewOpacityChanged;
+
     event EventHandler? Closed;
 
     bool Open(
@@ -22,6 +25,8 @@ public interface IOverlayPositionEditorHost : IDisposable
         OverlayPositionEditSession session,
         OverlayLayoutCategory category);
 
+    void RefreshPreviewOpacities(OverlayPositionEditSession session);
+
     void Close(bool restoreRuntimeWindows = true);
 }
 
@@ -31,8 +36,13 @@ public sealed record OverlayPreviewMovedEventArgs(
     PixelSize PreviewSize,
     PixelRect HostBounds);
 
+public sealed record OverlayPreviewOpacityChangedEventArgs(
+    string PlotterName,
+    double? OpacityOverride);
+
 public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHost
 {
+    private readonly IOverlayPlatformService platform;
     private readonly OverlayWindowRegistry registry;
     private readonly List<OverlayPositionPreviewWindow> previews = [];
     private readonly Dictionary<Window, RuntimeWindowState> runtimeWindows = [];
@@ -43,12 +53,18 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     private bool disposed;
 
     public AvaloniaOverlayPositionEditorHost(
+        IOverlayPlatformService platform,
         OverlayWindowRegistry? registry = null)
     {
+        this.platform = platform
+            ?? throw new ArgumentNullException(nameof(platform));
         this.registry = registry ?? OverlayWindowRegistry.Shared;
     }
 
     public event EventHandler<OverlayPreviewMovedEventArgs>? PreviewMoved;
+
+    public event EventHandler<OverlayPreviewOpacityChangedEventArgs>?
+        PreviewOpacityChanged;
 
     public event EventHandler? Closed;
 
@@ -66,6 +82,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         }
 
         var toolbar = new OverlayPositionEditorWindow(viewModel);
+        toolbar.Opened += OnEditorOpened;
         toolbar.Closed += OnEditorClosed;
         editor = toolbar;
         toolbar.Show();
@@ -93,6 +110,8 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             toolbarSize,
             margin: 12);
 
+        (platform as IOverlayPresentationControl)
+            ?.SetRuntimeOverlaysSuppressed(true);
         registry.Changed += OnRegistryChanged;
         SynchronizeRuntimeWindows();
         ShowCategory(session, category);
@@ -124,14 +143,29 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
                 position,
                 previewSize,
                 hostBounds);
+            preview.ConfigureOpacity(
+                session.DefaultOpacity,
+                session.GetPlacement(definition.Name).Opacity);
             preview.PointerPressed += OnPreviewPointerPressed;
             preview.PositionChanged += OnPreviewPositionChanged;
+            preview.OpacityOverrideChanged += OnPreviewOpacityOverrideChanged;
             preview.Opened += OnPreviewOpened;
             previews.Add(preview);
             preview.Show();
         }
 
         editor.Activate();
+    }
+
+    public void RefreshPreviewOpacities(OverlayPositionEditSession session)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        foreach (var preview in previews)
+        {
+            preview.ConfigureOpacity(
+                session.DefaultOpacity,
+                session.GetPlacement(preview.Definition.Name).Opacity);
+        }
     }
 
     public void Close(bool restoreRuntimeWindows = true)
@@ -148,11 +182,18 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         editor = null;
         if (toolbar is not null)
         {
+            toolbar.Opened -= OnEditorOpened;
             toolbar.Closed -= OnEditorClosed;
             toolbar.Close();
         }
 
         RestoreRuntimeWindows(restoreRuntimeWindows);
+        if (restoreRuntimeWindows)
+        {
+            (platform as IOverlayPresentationControl)
+                ?.SetRuntimeOverlaysSuppressed(false);
+        }
+
         closing = false;
     }
 
@@ -189,7 +230,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
-        preview.BeginMoveDrag(eventArgs);
+        platform.BeginMoveDrag(preview, eventArgs);
         eventArgs.Handled = true;
     }
 
@@ -211,6 +252,13 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
                 hostBounds));
     }
 
+    private void OnPreviewOpacityOverrideChanged(
+        object? sender,
+        OverlayPreviewOpacityChangedEventArgs eventArgs)
+    {
+        PreviewOpacityChanged?.Invoke(this, eventArgs);
+    }
+
     private void OnPreviewOpened(object? sender, EventArgs eventArgs)
     {
         if (sender is not OverlayPositionPreviewWindow preview)
@@ -218,6 +266,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
+        _ = platform.PrepareInteractiveWindow(preview);
         preview.Position = ClampToHost(
             preview.Position,
             preview.GetCurrentPixelSize(hostScaling),
@@ -230,6 +279,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             preview.PointerPressed -= OnPreviewPointerPressed;
             preview.PositionChanged -= OnPreviewPositionChanged;
+            preview.OpacityOverrideChanged -= OnPreviewOpacityOverrideChanged;
             preview.Opened -= OnPreviewOpened;
             preview.Close();
         }
@@ -244,11 +294,26 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
+        if (sender is Window toolbar)
+        {
+            toolbar.Opened -= OnEditorOpened;
+        }
+
         editor = null;
         registry.Changed -= OnRegistryChanged;
         ClosePreviews();
         RestoreRuntimeWindows(restore: true);
+        (platform as IOverlayPresentationControl)
+            ?.SetRuntimeOverlaysSuppressed(false);
         Closed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnEditorOpened(object? sender, EventArgs eventArgs)
+    {
+        if (sender is Window toolbar)
+        {
+            _ = platform.PrepareInteractiveWindow(toolbar);
+        }
     }
 
     private void OnRegistryChanged(object? sender, EventArgs eventArgs)

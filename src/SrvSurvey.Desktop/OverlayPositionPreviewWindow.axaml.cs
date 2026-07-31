@@ -1,5 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -7,6 +9,10 @@ namespace SrvSurvey.Desktop;
 
 public sealed partial class OverlayPositionPreviewWindow : Window
 {
+    private bool updatingOpacityControls;
+    private double globalOpacity = 1d;
+    private double? opacityOverride;
+
     public OverlayPositionPreviewWindow()
     {
         InitializeComponent();
@@ -30,6 +36,9 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
     public OverlayPositionPreviewViewModel Preview { get; }
 
+    public event EventHandler<OverlayPreviewOpacityChangedEventArgs>?
+        OpacityOverrideChanged;
+
     public PixelSize GetExpectedPixelSize(double scaling) =>
         Preview.GetEstimatedPixelSize(scaling);
 
@@ -50,5 +59,79 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         Width = Preview.PreferredWidth;
         MinWidth = Width;
         MaxWidth = Width;
+    }
+
+    public void ConfigureOpacity(double global, double? overlayOverride)
+    {
+        ValidateOpacity(global, nameof(global));
+        if (overlayOverride is not null)
+        {
+            ValidateOpacity(overlayOverride.Value, nameof(overlayOverride));
+        }
+
+        updatingOpacityControls = true;
+        globalOpacity = global;
+        opacityOverride = overlayOverride;
+        UseGlobalOpacityCheckBox.IsChecked = overlayOverride is null;
+        OpacityOverrideSlider.IsEnabled = overlayOverride is not null;
+        OpacityOverrideSlider.Value = (overlayOverride ?? global) * 100d;
+        UpdateOpacityDisplay();
+        updatingOpacityControls = false;
+    }
+
+    private void OnUseGlobalOpacityChanged(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (updatingOpacityControls)
+        {
+            return;
+        }
+
+        opacityOverride = UseGlobalOpacityCheckBox.IsChecked == true
+            ? null
+            : OpacityOverrideSlider.Value / 100d;
+        OpacityOverrideSlider.IsEnabled = opacityOverride is not null;
+        UpdateOpacityDisplay();
+        OpacityOverrideChanged?.Invoke(
+            this,
+            new OverlayPreviewOpacityChangedEventArgs(
+                Definition.Name,
+                opacityOverride));
+    }
+
+    private void OnOpacityOverrideValueChanged(
+        object? sender,
+        RangeBaseValueChangedEventArgs eventArgs)
+    {
+        if (updatingOpacityControls || opacityOverride is null)
+        {
+            return;
+        }
+
+        opacityOverride = eventArgs.NewValue / 100d;
+        UpdateOpacityDisplay();
+        OpacityOverrideChanged?.Invoke(
+            this,
+            new OverlayPreviewOpacityChangedEventArgs(
+                Definition.Name,
+                opacityOverride));
+    }
+
+    private void UpdateOpacityDisplay()
+    {
+        var effectiveOpacity = opacityOverride ?? globalOpacity;
+        PreviewSurface.Opacity = effectiveOpacity;
+        OpacityOverrideValueText.Text = $"{effectiveOpacity * 100d:N0}%";
+    }
+
+    private static void ValidateOpacity(double opacity, string parameterName)
+    {
+        if (!double.IsFinite(opacity) || opacity is < 0 or > 1)
+        {
+            throw new ArgumentOutOfRangeException(
+                parameterName,
+                "Overlay opacity must be from 0 to 1.");
+        }
     }
 }

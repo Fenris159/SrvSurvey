@@ -24,9 +24,6 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
 
     public event Action<bool>? EddnUploadEnabledChanged;
 
-    public IReadOnlyList<string> EddnEnvironments { get; } =
-        ["live", "beta", "dev"];
-
     public bool EddnUploadEnabled
     {
         get => preferences.EddnUploadEnabled;
@@ -42,14 +39,10 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
     }
 
-    public string EddnEnvironment
+    public bool EddnUseTestSchemas
     {
-        get => preferences.EddnEnvironment;
-        set => Update(preferences with
-        {
-            EddnEnvironment =
-                NetworkPrivacySettingsStore.NormalizeEnvironment(value),
-        });
+        get => preferences.EddnUseTestSchemas;
+        set => Update(preferences with { EddnUseTestSchemas = value });
     }
 
     public bool UploadGreenGasGiantCandidates
@@ -117,14 +110,20 @@ public sealed class NetworkPrivacyViewModel : INotifyPropertyChanged
         }
         else if (result.Published.Count == 1)
         {
+            var schemaMode = result.Published[0].UsesTestSchemas
+                ? "test"
+                : "live";
             StatusMessage =
-                $"Queued {result.Published[0].EventName} for EDDN ({result.Published[0].Environment}).";
+                $"Queued {result.Published[0].EventName} for EDDN ({schemaMode} schemas).";
         }
         else if (result.Published.Count > 1)
         {
+            var schemaMode = result.Published[0].UsesTestSchemas
+                ? "test"
+                : "live";
             StatusMessage =
                 $"Queued {result.Published.Count:N0} journal events for EDDN "
-                + $"({result.Published[0].Environment}).";
+                + $"({schemaMode} schemas).";
         }
     }
 

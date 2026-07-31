@@ -227,6 +227,45 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task RefreshAsyncIgnoresRootReadmeInPublishedArchive()
+    {
+        WriteExistingReferences();
+        var payloads = CreatePayloads();
+        payloads[uris.BiologyCriteriaArchive] = AppendArchiveEntry(
+            payloads[uris.BiologyCriteriaArchive],
+            "readme.md",
+            Encoding.UTF8.GetBytes("Reference data documentation."));
+        var service = CreateService(payloads);
+
+        var result = await service.RefreshAsync(root);
+
+        Assert.Contains("biology criteria", result.UpdatedCatalogs);
+        Assert.False(File.Exists(Path.Combine(
+            root,
+            "pub",
+            "bio-criteria",
+            "readme.md")));
+    }
+
+    [Fact]
+    public async Task RefreshAsyncStillRejectsOtherUnexpectedArchiveFiles()
+    {
+        WriteExistingReferences();
+        var payloads = CreatePayloads();
+        payloads[uris.BiologyCriteriaArchive] = AppendArchiveEntry(
+            payloads[uris.BiologyCriteriaArchive],
+            "notes.md",
+            Encoding.UTF8.GetBytes("Unexpected metadata."));
+        var service = CreateService(payloads);
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(
+            () => service.RefreshAsync(root));
+
+        Assert.Contains("unexpected file: notes.md", exception.Message);
+        Assert.False(File.Exists(Path.Combine(root, "pub", "notes.md")));
+    }
+
+    [Fact]
     public async Task RefreshAsyncRejectsEmptyNicknameResponse()
     {
         WriteExistingReferences();
@@ -433,6 +472,27 @@ public sealed class PublishedReferenceUpdateServiceTests : IDisposable
                 using var target = entry.Open();
                 target.Write(bytes);
             }
+        }
+
+        return stream.ToArray();
+    }
+
+    private static byte[] AppendArchiveEntry(
+        byte[] archiveBytes,
+        string name,
+        byte[] bytes)
+    {
+        using var stream = new MemoryStream();
+        stream.Write(archiveBytes);
+        stream.Position = 0;
+        using (var archive = new ZipArchive(
+                   stream,
+                   ZipArchiveMode.Update,
+                   leaveOpen: true))
+        {
+            var entry = archive.CreateEntry(name, CompressionLevel.Fastest);
+            using var target = entry.Open();
+            target.Write(bytes);
         }
 
         return stream.ToArray();

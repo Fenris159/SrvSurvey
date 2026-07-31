@@ -1,0 +1,281 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:core="using:SrvSurvey.Core.Frontier"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.FrontierCarrierTabView"
+             x:DataType="vm:CommanderProfileViewModel">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="4,16,4,18" Spacing="16">
+      <Border Classes="card" IsVisible="{Binding HasCarrierError}">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="card-title" Text="Fleet Carrier update warning" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding CarrierError}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised" Padding="28" IsVisible="{Binding !HasCarrier}">
+        <StackPanel Spacing="8" HorizontalAlignment="Center">
+          <TextBlock FontSize="22" FontWeight="SemiBold" Text="No Fleet Carrier" />
+          <TextBlock Classes="muted" TextAlignment="Center" Text="{Binding CarrierTitle}" />
+          <TextBlock Classes="muted" FontSize="11"
+                     Text="A no-carrier response is cached normally and does not trigger repeated refreshes." />
+        </StackPanel>
+      </Border>
+
+      <StackPanel IsVisible="{Binding HasCarrier}" Spacing="16">
+        <Border Classes="card raised">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+            <StackPanel>
+              <TextBlock Classes="eyebrow" Text="FLEET CARRIER" />
+              <TextBlock FontSize="25" FontWeight="SemiBold" Text="{Binding CarrierTitle}" />
+              <TextBlock Classes="muted" Text="{Binding CarrierLocation}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+              <TextBlock Classes="muted" FontSize="10" Text="BANK BALANCE" />
+              <TextBlock Classes="metric" Text="{Binding CarrierBalance}" />
+              <TextBlock Classes="muted" HorizontalAlignment="Right" Text="{Binding CarrierCapacity}" />
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <Grid ColumnDefinitions=".85*,1.4*" ColumnSpacing="14">
+          <Border Classes="card">
+            <StackPanel Spacing="9">
+              <TextBlock Classes="card-title" Text="Operations" />
+              <ItemsControl ItemsSource="{Binding CarrierOperations}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierDetailRowViewModel">
+                    <Border Classes="dashboard-row compact">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <TextBlock Classes="muted" Text="{Binding Label}" />
+                        <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="{Binding Value}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="1" Classes="card">
+            <StackPanel Spacing="9">
+              <TextBlock Classes="card-title" Text="Finances" />
+              <ItemsControl ItemsSource="{Binding CarrierFinances}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierDetailRowViewModel">
+                    <Border Classes="detail-tile" Width="190" Margin="0,0,8,8" Padding="10">
+                      <StackPanel>
+                        <TextBlock Classes="muted" FontSize="10" Text="{Binding Label}" />
+                        <TextBlock FontWeight="SemiBold" Text="{Binding Value}" />
+                        <TextBlock Classes="muted" FontSize="10" Text="{Binding Detail}" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
+          <StackPanel Spacing="14">
+            <Expander Classes="profile-section"
+                      IsExpanded="{Binding PaneStates.CarrierStoredCargo.IsExpanded, Mode=TwoWay}">
+              <Expander.Header>
+                <TextBlock Text="{Binding CarrierCargo.Count, StringFormat=Stored cargo ({0})}" />
+              </Expander.Header>
+              <StackPanel Grid.IsSharedSizeScope="True" Margin="8">
+                <Grid Margin="10,4" ColumnDefinitions="*,85,135" ColumnSpacing="10">
+                  <TextBlock Classes="table-heading" Text="NAME" />
+                  <TextBlock Grid.Column="1" Classes="table-heading"
+                             HorizontalAlignment="Right" Text="AMOUNT" />
+                  <TextBlock Grid.Column="2" Classes="table-heading"
+                             HorizontalAlignment="Right" Text="CREDIT VALUE" />
+                </Grid>
+                <ItemsControl ItemsSource="{Binding CarrierCargo}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:FrontierInventoryRowViewModel">
+                      <Border Classes="dashboard-row">
+                        <Grid ColumnDefinitions="*,85,135" ColumnSpacing="10">
+                          <TextBlock TextWrapping="Wrap" Text="{Binding Name}" />
+                          <TextBlock Grid.Column="1" FontWeight="SemiBold"
+                                     HorizontalAlignment="Right" Text="{Binding Quantity}" />
+                          <TextBlock Grid.Column="2" HorizontalAlignment="Right"
+                                     TextTrimming="CharacterEllipsis" Text="{Binding Value}" />
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Expander>
+
+            <Expander Classes="profile-section"
+                      IsExpanded="{Binding PaneStates.CarrierLocker.IsExpanded, Mode=TwoWay}">
+              <Expander.Header>
+                <TextBlock Text="{Binding CarrierLocker.Count, StringFormat=Carrier locker ({0})}" />
+              </Expander.Header>
+              <ItemsControl ItemsSource="{Binding CarrierLocker}" Margin="8">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierInventoryRowViewModel">
+                    <Border Classes="dashboard-row">
+                      <Grid ColumnDefinitions="110,*,Auto" ColumnSpacing="12">
+                        <TextBlock Classes="muted" Text="{Binding Category}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" />
+                        <TextBlock Grid.Column="2" FontWeight="SemiBold" Text="{Binding Quantity}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Expander>
+
+            <Expander Classes="profile-section"
+                      IsExpanded="{Binding PaneStates.CarrierTravelHistory.IsExpanded, Mode=TwoWay}">
+              <Expander.Header>
+                <TextBlock Text="{Binding CarrierItinerary.Count, StringFormat=Travel history ({0})}" />
+              </Expander.Header>
+              <ItemsControl ItemsSource="{Binding CarrierItinerary}" Margin="8">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierCarrierJumpRowViewModel">
+                    <Border Classes="dashboard-row">
+                      <Grid ColumnDefinitions="1.3*,1.1*,1.1*,Auto" ColumnSpacing="12">
+                        <StackPanel>
+                          <TextBlock FontWeight="SemiBold" Text="{Binding System}" />
+                          <TextBlock Classes="muted" FontSize="10" Text="{Binding State}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Classes="muted" Text="{Binding Arrived}" />
+                        <TextBlock Grid.Column="2" Classes="muted" Text="{Binding Departed}" />
+                        <TextBlock Grid.Column="3" Text="{Binding Duration}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Expander>
+          </StackPanel>
+
+          <StackPanel Grid.Column="1" Spacing="14">
+            <Expander Classes="profile-section"
+                      IsExpanded="{Binding PaneStates.CarrierCapacity.IsExpanded, Mode=TwoWay}">
+              <Expander.Header><TextBlock Text="{Binding CarrierCapacityHeader}" /></Expander.Header>
+              <StackPanel Margin="8" Spacing="5">
+                <Border Classes="detail-tile">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <StackPanel>
+                      <TextBlock FontWeight="SemiBold" Text="Capacity" />
+                      <TextBlock Classes="muted" FontSize="10" Text="Remaining / total" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" FontWeight="SemiBold"
+                               VerticalAlignment="Center" Text="{Binding CarrierCapacity}" />
+                  </Grid>
+                </Border>
+                <ItemsControl ItemsSource="{Binding CarrierCapacityRows}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:FrontierCapacityRowViewModel">
+                      <Border Classes="dashboard-row">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                          <TextBlock Text="{Binding Category}" />
+                          <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="{Binding Used}" />
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Expander>
+
+            <Expander Classes="profile-section"
+                      IsExpanded="{Binding PaneStates.CarrierSellOrders.IsExpanded, Mode=TwoWay}">
+              <Expander.Header><TextBlock Text="{Binding CarrierSellOrders.Count, StringFormat=Sell orders ({0})}" /></Expander.Header>
+              <ItemsControl ItemsSource="{Binding CarrierSellOrders}" Margin="8">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierOrderRowViewModel">
+                    <Border Classes="dashboard-row">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <StackPanel><TextBlock FontWeight="SemiBold" Text="{Binding Name}" /><TextBlock Classes="muted" FontSize="10" Text="{Binding Quantity}" /></StackPanel>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding Price}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Expander>
+
+            <Expander Classes="profile-section"
+                      IsExpanded="{Binding PaneStates.CarrierBuyOrders.IsExpanded, Mode=TwoWay}">
+              <Expander.Header><TextBlock Text="{Binding CarrierBuyOrders.Count, StringFormat=Buy orders ({0})}" /></Expander.Header>
+              <ItemsControl ItemsSource="{Binding CarrierBuyOrders}" Margin="8">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierOrderRowViewModel">
+                    <Border Classes="dashboard-row">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <StackPanel><TextBlock FontWeight="SemiBold" Text="{Binding Name}" /><TextBlock Classes="muted" FontSize="10" Text="{Binding Quantity}" /></StackPanel>
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding Price}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Expander>
+
+            <Expander Classes="profile-section"
+                      IsExpanded="{Binding PaneStates.CarrierServices.IsExpanded, Mode=TwoWay}">
+              <Expander.Header><TextBlock Text="{Binding CarrierServices.Count, StringFormat=Installed services ({0})}" /></Expander.Header>
+              <StackPanel Margin="8" Spacing="10">
+                <ItemsControl ItemsSource="{Binding CarrierServices}">
+                  <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate><DataTemplate><Border Classes="badge" Margin="0,0,6,6"><TextBlock Text="{Binding}" /></Border></DataTemplate></ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <ItemsControl ItemsSource="{Binding CarrierServiceTaxation}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:FrontierDetailRowViewModel">
+                      <Border Classes="dashboard-row compact">
+                        <Grid ColumnDefinitions="*,Auto"><TextBlock Classes="muted" Text="{Binding Label}" /><TextBlock Grid.Column="1" Text="{Binding Value}" /></Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Expander>
+
+            <Expander Classes="profile-section"
+                      IsExpanded="{Binding PaneStates.CarrierCrew.IsExpanded, Mode=TwoWay}">
+              <Expander.Header><TextBlock Text="{Binding CarrierCrew.Count, StringFormat=Service crew ({0})}" /></Expander.Header>
+              <ItemsControl ItemsSource="{Binding CarrierCrew}" Margin="8">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierCarrierCrewRowViewModel">
+                    <Border Classes="dashboard-row">
+                      <Grid ColumnDefinitions="1.1*,1.2*,Auto" ColumnSpacing="12">
+                        <StackPanel><TextBlock Classes="muted" FontSize="10" Text="{Binding Service}" /><TextBlock FontWeight="SemiBold" Text="{Binding Name}" /></StackPanel>
+                        <StackPanel Grid.Column="1"><TextBlock Text="{Binding Faction}" /><TextBlock Classes="muted" FontSize="10" Text="{Binding LastChanged}" /></StackPanel>
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Right"><TextBlock Text="{Binding Salary}" /><TextBlock Classes="eyebrow" Text="{Binding Status}" /></StackPanel>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Expander>
+          </StackPanel>
+        </Grid>
+
+        <Expander Classes="profile-section"
+                  IsExpanded="{Binding PaneStates.CarrierData.IsExpanded, Mode=TwoWay}">
+          <Expander.Header><TextBlock Text="{Binding CarrierData.Count, StringFormat=All Fleet Carrier data points ({0})}" /></Expander.Header>
+          <ItemsControl ItemsSource="{Binding CarrierData}" Margin="8" MaxHeight="520">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="core:FrontierDataPointSnapshot">
+                <Border Classes="dashboard-row compact">
+                  <Grid ColumnDefinitions="1.1*,1.4*" ColumnSpacing="12">
+                    <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap" Text="{Binding Path}" />
+                    <TextBlock Grid.Column="1" FontSize="11" TextWrapping="Wrap" Text="{Binding Value}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Expander>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

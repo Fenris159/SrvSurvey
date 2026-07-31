@@ -26,6 +26,7 @@ public sealed class NetworkSurfaceCoverageTests
         "src/SrvSurvey.Core/Updates/PublishedReferenceUpdateService.cs",
         "src/SrvSurvey.Core/Updates/ReleasePackageDownloadService.cs",
         "src/SrvSurvey.Desktop/Platform/CodexImageCache.cs",
+        "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs",
         "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs",
     ];
 
@@ -130,6 +131,16 @@ public sealed class NetworkSurfaceCoverageTests
                 "tests/SrvSurvey.Core.Tests/Colonization/RavenColonialClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Quests/RavenQuestClientTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exploration/GreenGasGiantClientTests.cs",
+            ]),
+        new(
+            "frontier-commander-profile",
+            [
+                "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs",
+                "src/SrvSurvey.Core/Frontier/FrontierCapiSnapshotParser.cs",
+            ],
+            [
+                "tests/SrvSurvey.Desktop.Tests/Platform/FrontierAccountServiceTests.cs",
+                "tests/SrvSurvey.Core.Tests/Frontier/FrontierCapiSnapshotParserTests.cs",
             ]),
         new(
             "downloaded-caches-and-images",

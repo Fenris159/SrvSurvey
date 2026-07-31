@@ -1,10 +1,35 @@
 # Overlay Troubleshooting (Linux)
 
-Overlays in SrvSurvey rely on X11 (or XWayland) window management features: click-through, always-on-top / layer placement, window tracking against the Elite Dangerous game window, and (where supported) global input. Most GNOME, Cinnamon, and Xfce setups work out of the box once the display-server requirements in [INSTALL_LINUX.md](INSTALL_LINUX.md) are met. KDE Plasma is stricter about which windows may paint over exclusive full-screen applications and therefore often needs an explicit window rule.
+Overlays in SrvSurvey rely on X11 (or XWayland) window management features: click-through, always-on-top / layer placement, window tracking against the Elite Dangerous game window, and (where supported) global input. Most GNOME, Cinnamon, Xfce, and KDE Plasma setups should work out of the box once the display-server requirements in [INSTALL_LINUX.md](INSTALL_LINUX.md) are met.
+
+## Gamescope and the combined overlay host
+
+Ordinary Windows, X11, and XWayland sessions continue to use one native window
+per live overlay. When Gamescope is detected, SrvSurvey reparents the same live
+Avalonia controls into one transparent game-sized host. Opacity, positioning,
+suppression, stream capture, OpenVR capture, and edit-mode dragging continue to
+use the existing overlay models; only the native presentation strategy changes.
+
+Check the application log for either `Overlay presentation: CombinedWindow` or
+`Overlay presentation: MultipleWindows`. If Gamescope detection is missing,
+launch SrvSurvey in the same Gamescope environment as Elite or test explicitly:
+
+```bash
+SRVSURVEY_OVERLAY_HOST=combined ./SrvSurvey.Desktop
+```
+
+To diagnose a compositor regression, restore the previous behavior with
+`SRVSURVEY_OVERLAY_HOST=separate`. The override is read at startup.
 
 ## KDE Plasma — overlays not appearing or not staying above Elite
 
-KDE Plasma can refuse to place normal application windows above an exclusive full-screen game. A community report confirmed that forcing the overlay windows onto the **On-screen display** layer resolves the problem.
+KDE Plasma can refuse to place normal application windows above an exclusive full-screen game. SrvSurvey now checks the X11 window manager's `_NET_SUPPORTED` capabilities. When KWin advertises `_KDE_NET_WM_WINDOW_TYPE_ON_SCREEN_DISPLAY`, SrvSurvey applies that type to runtime overlays, edit previews, and the overlay editor while retaining `_NET_WM_WINDOW_TYPE_NORMAL` as the standards-compatible fallback.
+
+This check is capability-based rather than distribution- or desktop-name-based. Other X11 window managers keep Avalonia's existing normal/topmost behavior, and a failed capability check also falls back to that behavior.
+
+The edit previews remain interactive. Because KWin treats OSD windows as special windows and does not provide its normal interactive move operation for them, SrvSurvey moves those windows directly while the pointer is captured.
+
+If overlays still remain behind Elite, use the following manual rule as a fallback.
 
 ### Create the window rule
 
@@ -17,23 +42,25 @@ KDE Plasma can refuse to place normal application windows above an exclusive ful
 | **Description** | `SRV Survey Overlays` |
 | **Window class (application)** | Exact match → `SrvSurvey.Desktop SrvSurvey.Desktop` |
 | **Match whole window class** | Yes |
-| **Window types** | Normal window |
-| **Window title** | Regular expression → `^SrvSurvey .* overlay$` |
+| **Window types** | All window types |
+| **Window title** | Regular expression → `^(SrvSurvey .+|SrvSurveyWindowOne|Overlay position preview|Edit overlay positions)$` |
 | **Layer** | Force → **On-screen display** |
 
 ![KDE Plasma Window Rules configured for SrvSurvey overlays](kde-window-rules-srvsurvey-overlays.png)
+
+The screenshot was captured with an older build and may show **Normal window**. Use **All window types** as listed in the table because current builds can classify the overlay as an OSD window before the fallback rule is evaluated.
 
 4. Click **Apply**.
 
 You can also use **Detect Window Properties** while an overlay is visible to capture the class and title, then set the Layer to **On-screen display**.
 
-The regular expression matches the titles used by the current Avalonia overlays (they begin with `SrvSurvey` and end with `overlay`). If a future overlay uses a different title pattern you can widen the expression or add a second rule.
+The regular expression matches the current runtime overlay titles and the two position-editor window titles without matching the main `SrvSurvey` window. If a future overlay uses a different title pattern you can widen the expression or add a second rule.
 
 After applying the rule, restart SrvSurvey (or simply close and re-open the affected overlays). The overlays should now appear above Elite Dangerous even when the game is exclusive full-screen.
 
-### Why this is needed on Plasma
+### Why the OSD layer is used on Plasma
 
-Plasma is more restrictive than GNOME about the stacking order of windows relative to exclusive full-screen clients. Setting the layer to **On-screen display** places the overlays in the same category as system notifications and on-screen indicators, which are allowed to paint above full-screen applications.
+Plasma is more restrictive than GNOME about the stacking order of windows relative to exclusive full-screen clients. The **On-screen display** layer is intended for short-lived indicators that must paint above full-screen applications; SrvSurvey uses the same KWin-recognized window type for its overlay surfaces.
 
 ## Other desktop environments
 

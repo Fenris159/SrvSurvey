@@ -87,10 +87,38 @@ printf 'session=%s\nDISPLAY=%s\nWAYLAND_DISPLAY=%s\n' \
   may fail to open because this build uses Avalonia's X11 backend. Install or
   enable XWayland, or select an Xorg session from the desktop login screen.
 
+### Overlay window strategy
+
+SrvSurvey keeps its established separate-window overlay implementation on
+ordinary X11 and XWayland desktops. When the process environment identifies a
+Gamescope session, live overlay controls are instead placed in one transparent
+window matching the Elite client area. This avoids asking Gamescope to stack
+many independent overlay windows while preserving the existing behavior on
+KWin, Mutter, Xfwm, Muffin, and Windows.
+
+The selected strategy is recorded in the application log as `Overlay
+presentation`. These diagnostic overrides take effect after restarting
+SrvSurvey:
+
+```bash
+# Force one combined host on X11 or XWayland.
+SRVSURVEY_OVERLAY_HOST=combined ./SrvSurvey.Desktop
+
+# Force the established separate-window path, including inside Gamescope.
+SRVSURVEY_OVERLAY_HOST=separate ./SrvSurvey.Desktop
+```
+
+Place the variable before the AppImage command in the same way when using the
+AppImage. Pure native Wayland remains unavailable because topmost placement,
+global positioning, game-window tracking, and click-through still require the
+X11/XWayland integration in this package.
+
 Run Elite Dangerous and SrvSurvey as the same desktop user on the same display.
 Do not start SrvSurvey with `sudo` or from an unrelated SSH session. If Elite is
-inside a nested Gamescope session and cannot be detected, first test with both
-programs in the same normal X11/XWayland desktop session.
+inside a nested Gamescope session, SrvSurvey must be launched into the same
+session so it can see the game window and the Gamescope environment. If it
+cannot detect Elite there, first test both programs in the same normal
+X11/XWayland desktop session.
 
 ## Distribution prerequisites
 
@@ -141,10 +169,30 @@ Package names can change between distribution releases. If one is unavailable,
 search your distribution for the package that provides the corresponding
 shared library rather than installing an untrusted binary manually.
 
+### Secure Frontier account storage
+
+Frontier account linking additionally requires the `secret-tool` command and
+an unlocked Secret Service-compatible keyring. Full GNOME and KDE Plasma
+installations commonly already provide the keyring service. Install the package
+that supplies `secret-tool` if it is missing:
+
+```bash
+# Ubuntu and Debian derivatives
+sudo apt install libsecret-tools
+
+# Arch Linux and Manjaro
+sudo pacman -S --needed libsecret
+```
+
+Package names vary on Fedora and openSUSE; use the distribution package search
+to find the package providing `/usr/bin/secret-tool`. SrvSurvey deliberately
+does not fall back to a plaintext token file. Linking remains unavailable until
+both `secret-tool` and an unlocked keyring service are present.
+
 ## Troubleshooting
 
 Common launch and library problems are listed below. For a fuller set of issues
-(including KDE Plasma overlay layer rules) see the dedicated
+(including KDE Plasma's automatic overlay handling and its manual fallback) see the dedicated
 **[Linux Troubleshooting](Linux_Troubleshooting.md)** document.
 
 - `Permission denied`: run `chmod +x` on the AppImage or
@@ -155,15 +203,20 @@ Common launch and library problems are listed below. For a fuller set of issues
   above and start the application again from its complete container folder.
 - Overlays do not follow Elite: confirm `DISPLAY` is set, both applications are
   on the same display, and neither was started as a different user.
-  **On KDE Plasma** overlays frequently need an explicit window rule — see
+  **On KDE Plasma**, current builds request KWin's advertised on-screen-display
+  window type automatically. If that does not work, use the manual fallback in
   [Overlay Troubleshooting](Overlay_Troubleshooting.md).
 - `DISPLAY` is empty in a Wayland session: enable XWayland or log into an Xorg
   session; native Wayland is not the backend used by this package.
+- Frontier linking reports that secure token storage is unavailable: install
+  `secret-tool`, make sure the desktop keyring is unlocked, and restart
+  SrvSurvey. See [Frontier account linking](FRONTIER.md).
 
 ## Reference documentation
 
 - [Linux Troubleshooting](Linux_Troubleshooting.md)
-- [Overlay Troubleshooting (KDE Plasma window rules)](Overlay_Troubleshooting.md)
+- [Overlay Troubleshooting (KDE Plasma automatic handling and fallback rule)](Overlay_Troubleshooting.md)
+- [Frontier account linking and local data](FRONTIER.md)
 - [Avalonia Linux platform behavior](https://docs.avaloniaui.net/docs/platform-specific-guides/linux)
 - [Avalonia Linux runtime dependencies](https://docs.avaloniaui.net/docs/deployment/linux)
 - [AppImage FUSE setup and extract-and-run fallback](https://docs.appimage.org/user-guide/troubleshooting/fuse.html)

@@ -1,0 +1,155 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="using:SrvSurvey.Desktop.Views"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.CommanderProfileView"
+             x:DataType="vm:CommanderProfileViewModel"
+             mc:Ignorable="d">
+  <Grid>
+    <ScrollViewer IsVisible="{Binding IsUnlinked}"
+                  HorizontalScrollBarVisibility="Disabled">
+      <Grid Margin="32" MinHeight="500">
+        <Border Classes="card raised"
+                MaxWidth="620"
+                Padding="36"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+          <StackPanel Spacing="18" HorizontalAlignment="Center">
+            <StackPanel Width="360" MaxWidth="520" Spacing="6">
+              <TextBlock Classes="eyebrow" Text="COMMANDER SELECTION" />
+              <ComboBox ItemsSource="{Binding CommanderSelectionOptions}"
+                        SelectedItem="{Binding SelectedCommanderOption, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierCommanderSelectionOption">
+                    <TextBlock Margin="4" Text="{Binding DisplayName}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Text="{Binding CommanderSelectionDescription}" />
+            </StackPanel>
+            <Border Width="64" Height="64"
+                    CornerRadius="18"
+                    Background="{DynamicResource RavenAccentMutedBrush}"
+                    HorizontalAlignment="Center">
+              <TextBlock Text="CMDR"
+                         FontSize="14"
+                         FontWeight="Bold"
+                         Foreground="{DynamicResource RavenAccentBrush}"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center" />
+            </Border>
+            <TextBlock FontSize="26"
+                       FontWeight="SemiBold"
+                       TextAlignment="Center"
+                       Text="Connect to Frontier to view this page." />
+            <TextBlock Classes="eyebrow"
+                       TextAlignment="Center"
+                       Text="{Binding ActiveCommanderDescription}" />
+            <TextBlock MaxWidth="520"
+                       Classes="muted"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Text="SrvSurvey stores the authorization and cached profile data only on this device. It does not send your Frontier account information to SrvSurvey or share it with third parties." />
+            <Button Classes="primary"
+                    MinWidth="190"
+                    HorizontalAlignment="Center"
+                    Command="{Binding ConnectCommand}"
+                    Content="{Binding ConnectButtonText}" />
+            <Button Classes="secondary"
+                    IsVisible="{Binding IsConnecting}"
+                    HorizontalAlignment="Center"
+                    Command="{Binding CancelConnectionCommand}"
+                    Content="Cancel" />
+            <TextBlock Classes="muted"
+                       MaxWidth="520"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Text="{Binding StatusMessage}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+    </ScrollViewer>
+
+    <Grid IsVisible="{Binding IsLinked}"
+          RowDefinitions="Auto,*">
+      <Border Margin="22,18,22,0"
+              Classes="card raised"
+              Padding="16">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+          <StackPanel Spacing="3">
+            <TextBlock Classes="eyebrow" Text="FRONTIER COMMANDER CONSOLE" />
+            <Grid Margin="0,5,0,4"
+                  ColumnDefinitions="Auto,*"
+                  ColumnSpacing="10">
+              <TextBlock VerticalAlignment="Center"
+                         Classes="muted"
+                         Text="View commander" />
+              <ComboBox Grid.Column="1"
+                        MinWidth="280"
+                        MaxWidth="420"
+                        ItemsSource="{Binding CommanderSelectionOptions}"
+                        SelectedItem="{Binding SelectedCommanderOption, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierCommanderSelectionOption">
+                    <TextBlock Margin="4" Text="{Binding DisplayName}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </Grid>
+            <TextBlock FontSize="23"
+                       FontWeight="SemiBold"
+                       Text="{Binding CommanderName}" />
+            <TextBlock Classes="muted" Text="{Binding LastUpdated}" />
+            <TextBlock Classes="muted"
+                       Text="{Binding CommanderSelectionDescription}" />
+            <TextBlock Classes="muted"
+                       IsVisible="{Binding !IsBusy}"
+                       TextWrapping="Wrap"
+                       Text="{Binding StatusMessage}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1"
+                      Orientation="Horizontal"
+                      Spacing="10"
+                      VerticalAlignment="Center">
+            <ProgressBar Width="90"
+                         IsIndeterminate="True"
+                         IsVisible="{Binding IsBusy}" />
+            <Button Classes="secondary"
+                    Command="{Binding RefreshCommand}"
+                    Content="Refresh Frontier" />
+            <Button Classes="secondary compact-danger"
+                    Command="{Binding UnlinkCommand}"
+                    Content="Unlink Frontier" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <TabControl Grid.Row="1"
+                  Margin="22,12,22,18">
+        <TabItem Classes="commander-profile-tab" Header="Commander">
+          <views:FrontierCommanderTabView />
+        </TabItem>
+        <TabItem Classes="commander-profile-tab" Header="Current Ship">
+          <views:FrontierCurrentShipTabView />
+        </TabItem>
+        <TabItem Classes="commander-profile-tab" Header="Fleet Carrier">
+          <views:FrontierCarrierTabView />
+        </TabItem>
+        <TabItem Classes="commander-profile-tab" Header="Market">
+          <views:FrontierMarketTabView />
+        </TabItem>
+        <TabItem Classes="commander-profile-tab" Header="Shipyard">
+          <views:FrontierShipyardTabView />
+        </TabItem>
+        <TabItem Classes="commander-profile-tab" Header="Community Goals">
+          <views:FrontierCommunityGoalsTabView />
+        </TabItem>
+      </TabControl>
+    </Grid>
+  </Grid>
+</UserControl>

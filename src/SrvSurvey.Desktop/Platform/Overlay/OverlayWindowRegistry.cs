@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Avalonia;
 using Avalonia.Controls;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -43,11 +44,57 @@ public sealed class OverlayWindowRegistry
 
             result.Add(new RegisteredOverlayWindow(
                 window,
-                registration.PlotterName));
+                registration.PlotterName,
+                registration.PresentationVisual,
+                registration.PresentationVisual is null
+                    ? window.IsVisible
+                    : registration.PresentationVisible));
         }
 
         result.Reverse();
         return result;
+    }
+
+    internal bool TryGetPlotterName(Window window, out string plotterName)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        if (registrations.TryGetValue(window, out var registration))
+        {
+            plotterName = registration.PlotterName;
+            return true;
+        }
+
+        plotterName = string.Empty;
+        return false;
+    }
+
+    internal void SetPresentationVisual(
+        Window window,
+        Visual? presentationVisual)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        if (!registrations.TryGetValue(window, out var registration))
+        {
+            return;
+        }
+
+        registration.PresentationVisual = presentationVisual;
+        registration.PresentationVisible = presentationVisual is not null;
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    internal void SetPresentationVisible(Window window, bool visible)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        if (!registrations.TryGetValue(window, out var registration)
+            || registration.PresentationVisual is null
+            || registration.PresentationVisible == visible)
+        {
+            return;
+        }
+
+        registration.PresentationVisible = visible;
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     private void Unregister(Window window)
@@ -71,11 +118,25 @@ public sealed class OverlayWindowRegistry
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    private sealed record Registration(
-        string PlotterName,
-        EventHandler ClosedHandler);
+    private sealed class Registration(
+        string plotterName,
+        EventHandler closedHandler)
+    {
+        public string PlotterName { get; } = plotterName;
+
+        public EventHandler ClosedHandler { get; } = closedHandler;
+
+        public Visual? PresentationVisual { get; set; }
+
+        public bool PresentationVisible { get; set; }
+    }
 }
 
 public sealed record RegisteredOverlayWindow(
     Window Window,
-    string PlotterName);
+    string PlotterName,
+    Visual? PresentationVisual = null,
+    bool IsVisible = false)
+{
+    public Visual RenderSource => PresentationVisual ?? Window;
+}

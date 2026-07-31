@@ -1,0 +1,127 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:core="using:SrvSurvey.Core.Frontier"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Views.FrontierCommunityGoalsTabView"
+             x:DataType="vm:CommanderProfileViewModel">
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="4,16,4,18" Spacing="16">
+      <Border Classes="card" IsVisible="{Binding HasCommunityGoalsError}">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="card-title" Text="Community Goals update warning" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding CommunityGoalsError}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card raised">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="eyebrow" Text="COMMUNITY GOALS" />
+          <TextBlock FontSize="24" FontWeight="SemiBold" Text="Galactic initiatives" />
+          <TextBlock Classes="muted" Text="{Binding CommunityGoalsMessage}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card" IsVisible="{Binding !HasCommunityGoals}">
+        <TextBlock Classes="muted" TextWrapping="Wrap"
+                   Text="There are no active or recently completed Community Goals associated with this commander right now." />
+      </Border>
+
+      <ItemsControl ItemsSource="{Binding CommunityGoals}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:FrontierCommunityGoalCardViewModel">
+            <Border Classes="card raised" Margin="0,0,0,12">
+              <StackPanel Spacing="12">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                  <StackPanel Spacing="3">
+                    <TextBlock FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding Title}" />
+                    <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding Location}" />
+                  </StackPanel>
+                  <TextBlock Grid.Column="1" Classes="eyebrow" VerticalAlignment="Top" Text="{Binding Expiry}" />
+                </Grid>
+
+                <TextBlock TextWrapping="Wrap" Text="{Binding Description}" />
+
+                <Border Classes="detail-tile">
+                  <StackPanel Spacing="7">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                      <TextBlock FontWeight="SemiBold" Text="Goal progress" />
+                      <TextBlock Grid.Column="1" Classes="muted" Text="{Binding ProgressText}" />
+                    </Grid>
+                    <ProgressBar Minimum="0" Maximum="100" Height="10" Value="{Binding Progress}" />
+                  </StackPanel>
+                </Border>
+
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
+                  <Border Classes="detail-tile">
+                    <StackPanel Spacing="3">
+                      <TextBlock Classes="eyebrow" Text="COMMANDER" />
+                      <TextBlock TextWrapping="Wrap" Text="{Binding PlayerContribution}" />
+                      <TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding PlayerStanding}" />
+                    </StackPanel>
+                  </Border>
+                  <Border Grid.Column="1" Classes="detail-tile">
+                    <StackPanel Spacing="3">
+                      <TextBlock Classes="eyebrow" Text="PARTICIPATION" />
+                      <TextBlock Text="{Binding Contributors}" />
+                    </StackPanel>
+                  </Border>
+                  <Border Grid.Column="2" Classes="detail-tile">
+                    <StackPanel Spacing="3">
+                      <TextBlock Classes="eyebrow" Text="TIER" />
+                      <TextBlock TextWrapping="Wrap" Text="{Binding Tier}" />
+                    </StackPanel>
+                  </Border>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                  <StackPanel Spacing="4">
+                    <TextBlock Classes="eyebrow" Text="OBJECTIVE" />
+                    <TextBlock TextWrapping="Wrap" Text="{Binding Objective}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Classes="eyebrow" Text="REWARD" />
+                    <TextBlock TextWrapping="Wrap" Text="{Binding Reward}" />
+                  </StackPanel>
+                </Grid>
+
+                <Expander Classes="profile-subsection"
+                          IsExpanded="{Binding PaneState.IsExpanded, Mode=TwoWay}">
+                  <Expander.Header>
+                    <TextBlock Text="{Binding DataPoints.Count, StringFormat=All goal data points ({0})}" />
+                  </Expander.Header>
+                  <ItemsControl ItemsSource="{Binding DataPoints}" Margin="8" MaxHeight="400">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="core:FrontierDataPointSnapshot">
+                        <Grid ColumnDefinitions="1.1*,1.4*" ColumnSpacing="12" Margin="4,3">
+                          <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap" Text="{Binding Path}" />
+                          <TextBlock Grid.Column="1" FontSize="11" TextWrapping="Wrap" Text="{Binding Value}" />
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Expander>
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <Expander Classes="profile-section"
+                IsExpanded="{Binding PaneStates.CommunityResponseData.IsExpanded, Mode=TwoWay}">
+        <Expander.Header>
+          <TextBlock Text="{Binding CommunityGoalsData.Count, StringFormat=All Community Goals response data ({0})}" />
+        </Expander.Header>
+        <ItemsControl ItemsSource="{Binding CommunityGoalsData}" Margin="8" MaxHeight="500">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="core:FrontierDataPointSnapshot">
+              <Grid ColumnDefinitions="1.1*,1.4*" ColumnSpacing="12" Margin="4,3">
+                <TextBlock Classes="muted" FontSize="10" TextWrapping="Wrap" Text="{Binding Path}" />
+                <TextBlock Grid.Column="1" FontSize="11" TextWrapping="Wrap" Text="{Binding Value}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Expander>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

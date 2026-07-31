@@ -4,9 +4,9 @@ This page collects common problems and fixes for the Linux AppImage / portable b
 
 ## Overlay windows do not appear or stay behind Elite Dangerous
 
-**Most common on KDE Plasma.** Plasma is stricter about window layers over exclusive full-screen applications.
+**Most common on KDE Plasma.** Plasma is stricter about window layers over exclusive full-screen applications. Current builds automatically use KWin's on-screen-display type when the window manager advertises it.
 
-→ See the dedicated guide: **[Overlay Troubleshooting](Overlay_Troubleshooting.md)** (includes the required KDE Plasma Layer rule that forces overlays to On-screen display).
+→ See the dedicated **[Overlay Troubleshooting](Overlay_Troubleshooting.md)** guide for behavior details and a manual KDE Plasma Layer rule if the automatic path is insufficient.
 
 ## Permission denied when launching the AppImage or binary
 

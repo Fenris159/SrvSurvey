@@ -184,15 +184,18 @@ public sealed class StreamOverlayCoordinator : IDisposable
             foreach (var registered in registry.Snapshot())
             {
                 var source = registered.Window;
-                if (!source.IsVisible || source.Bounds.Width <= 0
-                    || source.Bounds.Height <= 0)
+                var renderSource = registered.RenderSource;
+                var renderBounds = renderSource.Bounds;
+                if (!registered.IsVisible
+                    || renderBounds.Width <= 0
+                    || renderBounds.Height <= 0)
                 {
                     continue;
                 }
 
                 var sourceScaling = source.RenderScaling;
                 var pixelSize = PixelSize.FromSize(
-                    source.Bounds.Size,
+                    renderBounds.Size,
                     sourceScaling);
                 var projection = StreamOverlayProjection.Create(
                     gameBounds,
@@ -210,10 +213,13 @@ public sealed class StreamOverlayCoordinator : IDisposable
                     bitmap = new RenderTargetBitmap(
                         pixelSize,
                         new Vector(96 * sourceScaling, 96 * sourceScaling));
-                    bitmap.Render(source);
+                    bitmap.Render(renderSource);
                     rendered.Add(new StreamOverlayRenderedFrame(
                         bitmap,
-                        projection));
+                        projection,
+                        registered.PresentationVisual is null
+                            ? 1d
+                            : source.Opacity));
                     bitmap = null;
                 }
                 catch

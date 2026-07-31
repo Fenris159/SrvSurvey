@@ -233,6 +233,23 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         Assert.Equal("100", complete.NeededText);
     }
 
+    [Fact]
+    public void PresentsUntrackedFleetCarrierWarning()
+    {
+        var viewModel = new ColonizationCommodityOverlayViewModel();
+
+        viewModel.Apply(
+            Plan() with { IsDockedAtUntrackedFleetCarrier = true },
+            Status(GuiFocus.NoFocus),
+            updatedIsSquadronBankOpen: true);
+
+        Assert.True(viewModel.HasWarning);
+        Assert.True(viewModel.ShouldAutoShow);
+        Assert.Equal(
+            "The current Fleet Carrier is not linked to this commander in Raven Colonial.",
+            viewModel.WarningText);
+    }
+
     private static ColonizationCommodityPlan Plan()
     {
         return new ColonizationCommodityPlan(
@@ -261,6 +278,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
             2,
             80,
             2,
+            false,
             false,
             false,
             false,

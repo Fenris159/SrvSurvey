@@ -192,6 +192,28 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     }
 
     [Fact]
+    public void GlobalOpacitySaveIsBackedUpAndPreservesUnknownSettings()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var settingsPath = Path.Combine(temporaryDirectory, "settings.json");
+        const string original = "{\"futureSetting\":true,\"plotterOpacity\":55}";
+        File.WriteAllText(settingsPath, original);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+
+        var result = store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>(),
+            0.42,
+            updateDefaultOpacity: true);
+
+        Assert.True(result.UpdatedDefaultOpacity);
+        Assert.Equal(0, result.UpdatedPlacementCount);
+        Assert.NotNull(result.SettingsBackupPath);
+        Assert.Equal(original, File.ReadAllText(result.SettingsBackupPath!));
+        Assert.Contains("\"futureSetting\": true", File.ReadAllText(settingsPath));
+        Assert.Equal(0.42, store.Load().DefaultOpacity);
+    }
+
+    [Fact]
     public void ReplacingPositionsPreservesIndependentGlobalScale()
     {
         var active = new LegacyOverlayLayout(

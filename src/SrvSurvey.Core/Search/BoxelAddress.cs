@@ -218,6 +218,126 @@ public sealed partial record BoxelAddress(
         return true;
     }
 
+    /// <summary>
+    /// Returns an authoritative address supplied by the journal or known-system
+    /// catalog, or calculates the procedural system address when one is absent.
+    /// </summary>
+    public bool TryGetSystemAddress(out long systemAddress)
+    {
+        if (SystemAddress > 0)
+        {
+            systemAddress = SystemAddress;
+            return true;
+        }
+
+        return TryEncodeSystemAddress(out systemAddress);
+    }
+
+    /// <summary>
+    /// Calculates the system address represented by this procedural boxel name.
+    /// Hand-authored sector names intentionally remain unsupported until their
+    /// region geometry is completed; callers should use a journal or catalog
+    /// address for those systems.
+    /// </summary>
+    public bool TryEncodeSystemAddress(out long systemAddress)
+    {
+        systemAddress = 0;
+        if (!IsValidMassCode(MassCode)
+            || N1 < 0
+            || N2 < 0
+            || string.IsNullOrEmpty(Letters)
+            || Letters.Length != 4
+            || Letters[2] != '-'
+            || Letters[0] is < 'A' or > 'Z'
+            || Letters[1] is < 'A' or > 'Z'
+            || Letters[3] is < 'A' or > 'Z'
+            || !BoxelSectorNameResolver.IsValidSectorName(Sector))
+        {
+            return false;
+        }
+
+        var sector = BoxelSectorNameResolver.GetSectorCoordinates(
+            Sector,
+            MassCode);
+        if (sector is null
+            || sector.Value.x is < 0 or >= 128
+            || sector.Value.y is < 0 or >= 64
+            || sector.Value.z is < 0 or >= 128)
+        {
+            return false;
+        }
+
+        var relative = GetRelativeCoordinates();
+        var massCodeValue = MassCode - MinimumMassCode;
+        var relativeBitCount = MaximumMassCode - MassCode;
+        var relativeLimit = 1 << relativeBitCount;
+        if (relative.X is < 0 || relative.X >= relativeLimit
+            || relative.Y is < 0 || relative.Y >= relativeLimit
+            || relative.Z is < 0 || relative.Z >= relativeLimit)
+        {
+            return false;
+        }
+
+        var systemNumberBits = 11 + (massCodeValue * 3);
+        var systemNumberLimit = 1UL << systemNumberBits;
+        if ((ulong)N2 >= systemNumberLimit)
+        {
+            return false;
+        }
+
+        long address = 0;
+        address = BoxelSectorNameResolver.pack_and_shift(address, 0, 9);
+        address = BoxelSectorNameResolver.pack_and_shift(
+            address,
+            N2,
+            systemNumberBits);
+        address = BoxelSectorNameResolver.pack_and_shift(
+            address,
+            sector.Value.x,
+            7);
+        address = BoxelSectorNameResolver.pack_and_shift(
+            address,
+            relative.X,
+            relativeBitCount);
+        address = BoxelSectorNameResolver.pack_and_shift(
+            address,
+            sector.Value.y,
+            6);
+        address = BoxelSectorNameResolver.pack_and_shift(
+            address,
+            relative.Y,
+            relativeBitCount);
+        address = BoxelSectorNameResolver.pack_and_shift(
+            address,
+            sector.Value.z,
+            7);
+        address = BoxelSectorNameResolver.pack_and_shift(
+            address,
+            relative.Z,
+            relativeBitCount);
+        address = BoxelSectorNameResolver.pack_and_shift(
+            address,
+            massCodeValue,
+            3);
+        if (address <= 0)
+        {
+            return false;
+        }
+
+        if (!TryFromSystemAddress(address, null, out var decoded)
+            || decoded is null
+            || !string.Equals(
+                GeneratedName,
+                decoded.GeneratedName,
+                StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        systemAddress = address;
+        return true;
+    }
+
     public static bool IsValidMassCode(char massCode)
     {
         return massCode is >= MinimumMassCode and <= MaximumMassCode;
@@ -256,12 +376,15 @@ public sealed partial record BoxelAddress(
             throw new ArgumentOutOfRangeException(nameof(systemNumber));
         }
 
-        return this with
+        var candidate = this with
         {
             N2 = systemNumber,
             SystemAddress = 0,
             PublicName = null,
         };
+        return candidate.TryEncodeSystemAddress(out var systemAddress)
+            ? candidate with { SystemAddress = systemAddress }
+            : candidate;
     }
 
     public bool Contains(BoxelAddress? child)

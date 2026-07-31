@@ -99,4 +99,54 @@ if ! grep -R -Fq \
     exit 1
 fi
 
-echo "AppImage ELF dependency closure and XWayland-mode startup passed."
+if ! grep -R -Fq \
+    "X11 overlay stacking policy: standard topmost" \
+    "$smoke_root/data/SrvSurvey/logs"; then
+    echo "The AppImage did not use the safe overlay fallback when no window manager advertised KDE OSD support." >&2
+    cat "$smoke_log" >&2
+    find "$smoke_root/data" -maxdepth 4 -type f -print -exec sed -n '1,120p' {} \; >&2
+    exit 1
+fi
+
+if ! grep -R -Fq \
+    "Overlay presentation: MultipleWindows" \
+    "$smoke_root/data/SrvSurvey/logs"; then
+    echo "The ordinary XWayland smoke run did not preserve separate overlay windows." >&2
+    cat "$smoke_log" >&2
+    find "$smoke_root/data" -maxdepth 4 -type f -print -exec sed -n '1,160p' {} \; >&2
+    exit 1
+fi
+
+gamescope_log="$smoke_root/gamescope-process.log"
+set +e
+timeout --signal=TERM --kill-after=2s 8s \
+    xvfb-run --auto-servernum --server-args="-screen 0 1280x800x24" \
+    env \
+        HOME="$smoke_root/home" \
+        XDG_CONFIG_HOME="$smoke_root/config" \
+        XDG_DATA_HOME="$smoke_root/data" \
+        XDG_CACHE_HOME="$smoke_root/cache" \
+        XDG_RUNTIME_DIR="$smoke_root/runtime" \
+        XDG_SESSION_TYPE=wayland \
+        WAYLAND_DISPLAY=wayland-ci \
+        GAMESCOPE_WAYLAND_DISPLAY=gamescope-ci \
+        "$app_dir/AppRun" >"$gamescope_log" 2>&1
+gamescope_status=$?
+set -e
+
+if [[ $gamescope_status -ne 124 ]]; then
+    echo "The AppImage did not remain running for the Gamescope combined-host smoke window (status $gamescope_status)." >&2
+    cat "$gamescope_log" >&2
+    exit 1
+fi
+
+if ! grep -R -Fq \
+    "Overlay presentation: CombinedWindow" \
+    "$smoke_root/data/SrvSurvey/logs"; then
+    echo "The Gamescope smoke run did not select the combined overlay host." >&2
+    cat "$gamescope_log" >&2
+    find "$smoke_root/data" -maxdepth 4 -type f -print -exec sed -n '1,180p' {} \; >&2
+    exit 1
+fi
+
+echo "AppImage dependency closure, ordinary XWayland behavior, and Gamescope combined-host selection passed."

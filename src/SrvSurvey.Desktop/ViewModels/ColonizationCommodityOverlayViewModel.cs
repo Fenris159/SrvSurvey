@@ -56,13 +56,17 @@ public sealed class ColonizationCommodityOverlayViewModel
     public bool IsConstructionFailed => Plan.IsConstructionFailed;
 
     public bool HasWarning => Plan.IsLocalProjectUntracked
+        || Plan.IsDockedAtUntrackedFleetCarrier
         || IsConstructionFailed;
 
     public string WarningText => IsConstructionFailed
         ? "Construction failed"
         : Plan.IsLocalProjectUntracked
             ? "This construction site is not in the active project list."
-            : string.Empty;
+            : Plan.IsDockedAtUntrackedFleetCarrier
+                ? "The current Fleet Carrier is not linked to this "
+                    + "commander in Raven Colonial."
+                : string.Empty;
 
     public string RemainingSummary
     {
@@ -263,6 +267,7 @@ public sealed class ColonizationCommodityOverlayViewModel
             null,
             0,
             null,
+            false,
             false,
             false,
             false,

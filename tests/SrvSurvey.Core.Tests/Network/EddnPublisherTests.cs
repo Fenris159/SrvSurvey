@@ -9,7 +9,7 @@ namespace SrvSurvey.Core.Tests.Network;
 public sealed class EddnPublisherTests
 {
     [Fact]
-    public async Task BootstrapBuildsContextAndDevPublishesSanitizedLiveEvent()
+    public async Task BootstrapBuildsContextAndTestSchemasPublishThroughLiveGateway()
     {
         var requests = new List<RecordedRequest>();
         var publisher = CreatePublisher(requests);
@@ -28,7 +28,7 @@ public sealed class EddnPublisherTests
             ],
             status: null,
             enabled: true,
-            environment: "dev",
+            useTestSchemas: true,
             allowPublishing: false);
         var live = await publisher.ApplyAsync(
             [Event("""
@@ -36,7 +36,7 @@ public sealed class EddnPublisherTests
                 """)],
             status: null,
             enabled: true,
-            environment: "dev",
+            useTestSchemas: true,
             allowPublishing: true);
         await publisher.ProcessPendingAsync();
 
@@ -47,8 +47,9 @@ public sealed class EddnPublisherTests
         Assert.Equal(
             "https://eddn.edcd.io/schemas/fssbodysignals/1/test",
             published.SchemaReference);
+        Assert.True(published.UsesTestSchemas);
         var request = Assert.Single(requests);
-        Assert.Equal("https://dev.example.test/upload/", request.Uri.ToString());
+        Assert.Equal("https://live.example.test/upload/", request.Uri.ToString());
         Assert.Equal(HttpVersion.Version11, request.Version);
         Assert.Equal(HttpMethod.Post, request.Method);
         Assert.StartsWith("application/json", request.ContentType);
@@ -92,7 +93,7 @@ public sealed class EddnPublisherTests
                 """)],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: true);
         await publisher.ProcessPendingAsync();
 
@@ -131,7 +132,7 @@ public sealed class EddnPublisherTests
             ],
             status: null,
             enabled: true,
-            environment: "dev",
+            useTestSchemas: true,
             allowPublishing: true);
         await publisher.ProcessPendingAsync();
 
@@ -168,20 +169,20 @@ public sealed class EddnPublisherTests
             [CodexEvent("2026-07-25T12:03:00Z")],
             new EliteStatus { BodyName = "Test A 1" },
             enabled: true,
-            environment: "dev",
+            useTestSchemas: true,
             allowPublishing: true);
         await publisher.ProcessPendingAsync();
         await publisher.ApplyAsync(
             [CodexEvent("2026-07-25T12:04:00Z")],
             new EliteStatus { BodyName = "Test A 2" },
             enabled: true,
-            environment: "dev",
+            useTestSchemas: true,
             allowPublishing: true);
         await publisher.ApplyAsync(
             [CodexEvent("2026-07-25T12:05:00Z")],
             new EliteStatus(),
             enabled: true,
-            environment: "dev",
+            useTestSchemas: true,
             allowPublishing: true);
         await publisher.ProcessPendingAsync();
 
@@ -217,7 +218,7 @@ public sealed class EddnPublisherTests
                 """)],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: true);
 
         Assert.Empty(requests);
@@ -238,7 +239,7 @@ public sealed class EddnPublisherTests
                 """)],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: true);
 
         Assert.Empty(requests);
@@ -276,7 +277,7 @@ public sealed class EddnPublisherTests
             ],
             status: null,
             enabled: true,
-            environment: "dev",
+            useTestSchemas: true,
             allowPublishing: true);
         await publisher.ProcessPendingAsync();
 
@@ -310,7 +311,7 @@ public sealed class EddnPublisherTests
                 ],
                 status: null,
                 enabled: true,
-                environment: "dev",
+                useTestSchemas: true,
                 allowPublishing: false,
                 journalDirectory: directory);
 
@@ -318,7 +319,7 @@ public sealed class EddnPublisherTests
                 [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"Market","MarketID":42}""")],
                 status: null,
                 enabled: true,
-                environment: "dev",
+                useTestSchemas: true,
                 allowPublishing: true,
                 journalDirectory: directory);
 
@@ -355,7 +356,7 @@ public sealed class EddnPublisherTests
             ],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: true);
         var shared = await publisher.ApplyAsync(
             [
@@ -364,7 +365,7 @@ public sealed class EddnPublisherTests
             ],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: true,
             journalDirectory: Path.GetTempPath(),
             allowSharedData: false);
@@ -390,7 +391,7 @@ public sealed class EddnPublisherTests
             [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"DockingGranted","MarketID":1,"StationName":"Port","LandingPad":2}""")],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: true);
 
         Assert.Single(queued.Published);
@@ -412,7 +413,7 @@ public sealed class EddnPublisherTests
             [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"DockingGranted","MarketID":1,"StationName":"First Port","LandingPad":2}""")],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: true);
         Assert.Single(queued.Published);
 
@@ -421,7 +422,7 @@ public sealed class EddnPublisherTests
             [Event("""{"timestamp":"2026-07-25T12:02:00Z","event":"DockingGranted","MarketID":2,"StationName":"Second Port","LandingPad":3}""")],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: true);
         await publisher.ProcessPendingAsync();
 
@@ -460,7 +461,7 @@ public sealed class EddnPublisherTests
             ],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: false,
             journalPath: firstPath);
         await publisher.ApplyAsync(
@@ -470,7 +471,7 @@ public sealed class EddnPublisherTests
             ],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: false,
             journalPath: secondPath);
 
@@ -478,7 +479,7 @@ public sealed class EddnPublisherTests
             [Event("""{"timestamp":"2026-07-25T12:11:00Z","event":"FSSBodySignals","SystemAddress":123,"BodyName":"Test A 1","BodyID":4,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":2}]}""")],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: true,
             journalPath: secondPath);
         await publisher.ProcessPendingAsync();
@@ -510,7 +511,7 @@ public sealed class EddnPublisherTests
             ],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: false,
             journalPath: Path.Combine(
                 Path.GetTempPath(),
@@ -519,7 +520,7 @@ public sealed class EddnPublisherTests
             [Event($$"""{"timestamp":"2026-07-25T12:10:00Z","event":"Fileheader","part":{{part}},"gameversion":"4.1","build":"r2"}""")],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: false,
             journalPath: Path.Combine(
                 Path.GetTempPath(),
@@ -529,7 +530,7 @@ public sealed class EddnPublisherTests
             [Event("""{"timestamp":"2026-07-25T12:11:00Z","event":"DockingGranted","MarketID":1,"StationName":"Port","LandingPad":2}""")],
             status: null,
             enabled: true,
-            environment: "live",
+            useTestSchemas: false,
             allowPublishing: true);
         await publisher.ProcessPendingAsync();
 
@@ -557,14 +558,14 @@ public sealed class EddnPublisherTests
                 ],
                 null,
                 enabled: true,
-                environment: "live",
+                useTestSchemas: false,
                 allowPublishing: false,
                 journalDirectory: directory);
             await publisher.ApplyAsync(
                 [Event("""{"timestamp":"2026-07-25T12:01:00Z","event":"Market","MarketID":42}""")],
                 null,
                 enabled: true,
-                environment: "live",
+                useTestSchemas: false,
                 allowPublishing: true,
                 journalDirectory: directory);
 
@@ -572,7 +573,7 @@ public sealed class EddnPublisherTests
                 [Event("""{"timestamp":"2026-07-25T12:02:00Z","event":"Fileheader","gameversion":"4.1","build":"r2"}""")],
                 null,
                 enabled: true,
-                environment: "live",
+                useTestSchemas: false,
                 allowPublishing: false,
                 journalDirectory: directory);
             await File.WriteAllTextAsync(
@@ -592,14 +593,40 @@ public sealed class EddnPublisherTests
         }
     }
 
-    [Theory]
-    [InlineData(null, "live")]
-    [InlineData("unknown", "live")]
-    [InlineData(" BETA ", "beta")]
-    [InlineData("LIVE", "live")]
-    public void EnvironmentIsNormalized(string? value, string expected)
+    [Fact]
+    public void DisposeCompletesWhenPublisherWasCreatedOnUiSynchronizationContext()
     {
-        Assert.Equal(expected, EddnPublisher.NormalizeEnvironment(value));
+        using var completed = new ManualResetEventSlim();
+        Exception? failure = null;
+        var thread = new Thread(() =>
+        {
+            SynchronizationContext.SetSynchronizationContext(
+                new NonPumpingSynchronizationContext());
+            try
+            {
+                using var publisher = CreatePublisher([]);
+            }
+            catch (Exception exception)
+            {
+                failure = exception;
+            }
+            finally
+            {
+                completed.Set();
+            }
+        })
+        {
+            IsBackground = true,
+            Name = "EDDN UI-context disposal test",
+        };
+
+        thread.Start();
+
+        Assert.True(
+            completed.Wait(TimeSpan.FromSeconds(5)),
+            "EDDN disposal deadlocked while waiting for its UI-context-bound writer.");
+        Assert.Null(failure);
+        Assert.True(thread.Join(TimeSpan.FromSeconds(1)));
     }
 
     private static async Task BootstrapAsync(
@@ -621,7 +648,7 @@ public sealed class EddnPublisherTests
             ],
             status: null,
             enabled: true,
-            environment: "dev",
+            useTestSchemas: true,
             allowPublishing: false);
     }
 
@@ -658,12 +685,7 @@ public sealed class EddnPublisherTests
         return new EddnPublisher(
             "2.0.95",
             new HttpClient(handler),
-            new Dictionary<string, Uri>(StringComparer.Ordinal)
-            {
-                ["dev"] = new("https://dev.example.test/upload/"),
-                ["beta"] = new("https://beta.example.test/upload/"),
-                ["live"] = new("https://live.example.test/upload/"),
-            },
+            new Uri("https://live.example.test/upload/"),
             Path.Combine(
                 Path.GetTempPath(),
                 "SrvSurvey-EddnPublisherTests-"
@@ -718,6 +740,14 @@ public sealed class EddnPublisherTests
             CancellationToken cancellationToken)
         {
             return response(request);
+        }
+    }
+
+    private sealed class NonPumpingSynchronizationContext
+        : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback callback, object? state)
+        {
         }
     }
 }

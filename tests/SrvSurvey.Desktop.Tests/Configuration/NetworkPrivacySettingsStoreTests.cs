@@ -24,7 +24,7 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
         File.WriteAllText(path, "{\"Theme\":\"blue-dark\"}");
         var store = new NetworkPrivacySettingsStore(path);
-        var expected = new NetworkPrivacyPreferences(true, "live", true, true);
+        var expected = new NetworkPrivacyPreferences(true, true, true, true);
 
         store.Save(expected);
 
@@ -33,18 +33,44 @@ public sealed class NetworkPrivacySettingsStoreTests : IDisposable
     }
 
     [Theory]
-    [InlineData(null, "live")]
-    [InlineData("", "live")]
-    [InlineData("unexpected", "live")]
-    [InlineData(" BETA ", "beta")]
-    [InlineData("LIVE", "live")]
-    public void EnvironmentIsRestrictedToKnownDestinations(
-        string? value,
-        string expected)
+    [InlineData("live", false)]
+    [InlineData("beta", true)]
+    [InlineData("dev", true)]
+    [InlineData("unexpected", true)]
+    public void LegacyGatewayPreferenceMigratesToSchemaMode(
+        string environment,
+        bool expected)
     {
-        Assert.Equal(
-            expected,
-            NetworkPrivacySettingsStore.NormalizeEnvironment(value));
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        File.WriteAllText(
+            path,
+            $"{{\"NetworkPrivacy\":{{\"EddnEnvironment\":\"{environment}\"}}}}");
+        var store = new NetworkPrivacySettingsStore(path);
+
+        var preferences = store.Load();
+        store.Save(preferences);
+
+        Assert.Equal(expected, preferences.EddnUseTestSchemas);
+        var saved = File.ReadAllText(path);
+        Assert.Contains("EddnUseTestSchemas", saved);
+        Assert.DoesNotContain("EddnEnvironment", saved);
+    }
+
+    [Fact]
+    public void ExplicitSchemaModeTakesPrecedenceOverLegacyGateway()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        File.WriteAllText(
+            path,
+            """
+            {"NetworkPrivacy":{"EddnUseTestSchemas":false,"EddnEnvironment":"dev"}}
+            """);
+
+        var preferences = new NetworkPrivacySettingsStore(path).Load();
+
+        Assert.False(preferences.EddnUseTestSchemas);
     }
 
     public void Dispose()

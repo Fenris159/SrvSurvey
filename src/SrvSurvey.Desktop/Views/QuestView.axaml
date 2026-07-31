@@ -93,14 +93,19 @@
             <ScrollViewer HorizontalScrollBarVisibility="Disabled">
               <StackPanel Spacing="14">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                  <StackPanel Spacing="4">
-                    <TextBlock Classes="eyebrow"
-                               Text="{Binding QuestWorkspace.SelectedMessage.From}" />
-                    <TextBlock Classes="card-title"
-                               FontSize="21"
-                               TextWrapping="Wrap"
-                               Text="{Binding QuestWorkspace.SelectedMessage.Subject}" />
-                  </StackPanel>
+                  <ContentControl Content="{Binding QuestWorkspace.SelectedMessage}">
+                    <ContentControl.ContentTemplate>
+                      <DataTemplate x:DataType="vm:QuestMessageRowViewModel">
+                        <StackPanel Spacing="4">
+                          <TextBlock Classes="eyebrow" Text="{Binding From}" />
+                          <TextBlock Classes="card-title"
+                                     FontSize="21"
+                                     TextWrapping="Wrap"
+                                     Text="{Binding Subject}" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                  </ContentControl>
                   <Button Grid.Column="1"
                           Classes="secondary"
                           VerticalAlignment="Top"
@@ -108,16 +113,23 @@
                           CommandParameter="{Binding QuestWorkspace.SelectedMessage}"
                           Content="Open / mark read" />
                 </Grid>
-                <TextBlock Classes="muted"
-                           Text="{Binding QuestWorkspace.SelectedMessage.TagsLabel}" />
-                <Separator />
-                <TextBlock FontSize="14"
-                           LineHeight="22"
-                           TextWrapping="Wrap"
-                           Text="{Binding QuestWorkspace.SelectedMessage.Body}" />
-                <TextBlock Classes="muted"
-                           FontWeight="SemiBold"
-                           Text="{Binding QuestWorkspace.SelectedMessage.Replied, StringFormat='Response: {0}'}" />
+                <ContentControl Content="{Binding QuestWorkspace.SelectedMessage}">
+                  <ContentControl.ContentTemplate>
+                    <DataTemplate x:DataType="vm:QuestMessageRowViewModel">
+                      <StackPanel Spacing="14">
+                        <TextBlock Classes="muted" Text="{Binding TagsLabel}" />
+                        <Separator />
+                        <TextBlock FontSize="14"
+                                   LineHeight="22"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding Body}" />
+                        <TextBlock Classes="muted"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding Replied, StringFormat='Response: {0}'}" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ContentControl.ContentTemplate>
+                </ContentControl>
                 <ItemsControl ItemsSource="{Binding QuestWorkspace.MessageActions}">
                   <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -171,16 +183,21 @@
             <ScrollViewer HorizontalScrollBarVisibility="Disabled">
               <StackPanel Spacing="14">
                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                  <StackPanel Spacing="4">
-                    <TextBlock Classes="eyebrow"
-                               Text="{Binding QuestWorkspace.SelectedQuest.StateLabel}" />
-                    <TextBlock Classes="card-title"
-                               FontSize="21"
-                               Text="{Binding QuestWorkspace.SelectedQuest.Title}" />
-                    <TextBlock Classes="muted"
-                               TextWrapping="Wrap"
-                               Text="{Binding QuestWorkspace.SelectedQuest.Subtitle}" />
-                  </StackPanel>
+                  <ContentControl Content="{Binding QuestWorkspace.SelectedQuest}">
+                    <ContentControl.ContentTemplate>
+                      <DataTemplate x:DataType="vm:QuestCardViewModel">
+                        <StackPanel Spacing="4">
+                          <TextBlock Classes="eyebrow" Text="{Binding StateLabel}" />
+                          <TextBlock Classes="card-title"
+                                     FontSize="21"
+                                     Text="{Binding Title}" />
+                          <TextBlock Classes="muted"
+                                     TextWrapping="Wrap"
+                                     Text="{Binding Subtitle}" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                  </ContentControl>
                   <Button Grid.Column="1"
                           Classes="secondary"
                           VerticalAlignment="Top"
@@ -192,43 +209,50 @@
                           Command="{Binding QuestWorkspace.RemoveQuestCommand}"
                           Content="{Binding QuestWorkspace.RemoveQuestButtonText}" />
                 </Grid>
-                <TextBlock Classes="muted"
-                           Text="{Binding QuestWorkspace.SelectedQuest.TagsLabel}" />
-                <Separator />
-                <TextBlock Classes="card-title" Text="Objectives" />
-                <ItemsControl ItemsSource="{Binding QuestWorkspace.SelectedQuest.Objectives}">
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:QuestObjectiveRowViewModel">
-                      <Border BorderBrush="{DynamicResource RavenBorderBrush}"
-                              BorderThickness="0,1,0,0"
-                              Padding="0,10">
-                        <Grid ColumnDefinitions="*,100,90" ColumnSpacing="10">
-                          <TextBlock TextWrapping="Wrap" Text="{Binding Label}" />
-                          <TextBlock Grid.Column="1"
-                                     FontWeight="SemiBold"
-                                     Foreground="{DynamicResource RavenAccentBrush}"
-                                     Text="{Binding State}" />
-                          <TextBlock Grid.Column="2"
-                                     HorizontalAlignment="Right"
-                                     Text="{Binding Progress}" />
-                        </Grid>
-                      </Border>
+                <ContentControl Content="{Binding QuestWorkspace.SelectedQuest}">
+                  <ContentControl.ContentTemplate>
+                    <DataTemplate x:DataType="vm:QuestCardViewModel">
+                      <StackPanel Spacing="14">
+                        <TextBlock Classes="muted" Text="{Binding TagsLabel}" />
+                        <Separator />
+                        <TextBlock Classes="card-title" Text="Objectives" />
+                        <ItemsControl ItemsSource="{Binding Objectives}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:QuestObjectiveRowViewModel">
+                              <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                                      BorderThickness="0,1,0,0"
+                                      Padding="0,10">
+                                <Grid ColumnDefinitions="*,100,90" ColumnSpacing="10">
+                                  <TextBlock TextWrapping="Wrap" Text="{Binding Label}" />
+                                  <TextBlock Grid.Column="1"
+                                             FontWeight="SemiBold"
+                                             Foreground="{DynamicResource RavenAccentBrush}"
+                                             Text="{Binding State}" />
+                                  <TextBlock Grid.Column="2"
+                                             HorizontalAlignment="Right"
+                                             Text="{Binding Progress}" />
+                                </Grid>
+                              </Border>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Classes="card-title" Text="Tracked locations" />
+                        <ItemsControl ItemsSource="{Binding Locations}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:QuestLocationRowViewModel">
+                              <Grid ColumnDefinitions="*,Auto" Margin="0,4">
+                                <TextBlock Text="{Binding Label}" />
+                                <TextBlock Grid.Column="1"
+                                           Classes="muted"
+                                           Text="{Binding Coordinates}" />
+                              </Grid>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
                     </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <TextBlock Classes="card-title" Text="Tracked locations" />
-                <ItemsControl ItemsSource="{Binding QuestWorkspace.SelectedQuest.Locations}">
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:QuestLocationRowViewModel">
-                      <Grid ColumnDefinitions="*,Auto" Margin="0,4">
-                        <TextBlock Text="{Binding Label}" />
-                        <TextBlock Grid.Column="1"
-                                   Classes="muted"
-                                   Text="{Binding Coordinates}" />
-                      </Grid>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                  </ContentControl.ContentTemplate>
+                </ContentControl>
               </StackPanel>
             </ScrollViewer>
           </Border>
@@ -257,17 +281,21 @@
           </Border>
           <Border Grid.Column="1" Classes="card raised">
             <StackPanel Spacing="14">
-              <TextBlock Classes="eyebrow"
-                         Text="{Binding QuestWorkspace.SelectedCatalogQuest.Duration}" />
-              <TextBlock Classes="card-title"
-                         FontSize="21"
-                         Text="{Binding QuestWorkspace.SelectedCatalogQuest.Title}" />
-              <TextBlock Classes="muted"
-                         Text="{Binding QuestWorkspace.SelectedCatalogQuest.Identity}" />
-              <TextBlock TextWrapping="Wrap"
-                         Text="{Binding QuestWorkspace.SelectedCatalogQuest.Description}" />
-              <TextBlock Classes="muted"
-                         Text="{Binding QuestWorkspace.SelectedCatalogQuest.TagsLabel}" />
+              <ContentControl Content="{Binding QuestWorkspace.SelectedCatalogQuest}">
+                <ContentControl.ContentTemplate>
+                  <DataTemplate x:DataType="vm:QuestCatalogRowViewModel">
+                    <StackPanel Spacing="14">
+                      <TextBlock Classes="eyebrow" Text="{Binding Duration}" />
+                      <TextBlock Classes="card-title"
+                                 FontSize="21"
+                                 Text="{Binding Title}" />
+                      <TextBlock Classes="muted" Text="{Binding Identity}" />
+                      <TextBlock TextWrapping="Wrap" Text="{Binding Description}" />
+                      <TextBlock Classes="muted" Text="{Binding TagsLabel}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ContentControl.ContentTemplate>
+              </ContentControl>
               <Button Classes="primary"
                       HorizontalAlignment="Left"
                       Command="{Binding QuestWorkspace.ActivateQuestCommand}"

@@ -14,13 +14,51 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="Overlay position preview">
-  <Border Margin="1"
+  <Border x:Name="PreviewSurface"
+          Margin="1"
           Padding="5"
           Background="{DynamicResource RavenWindowBrush}"
           BorderBrush="{DynamicResource RavenWarningBrush}"
           BorderThickness="2"
-          CornerRadius="5"
-          Opacity="0.96">
+          CornerRadius="5">
+    <Border.ContextFlyout>
+      <Flyout>
+        <Border Padding="12"
+                Background="{DynamicResource RavenSurfaceBrush}"
+                BorderBrush="{DynamicResource RavenAccentBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+          <StackPanel MinWidth="170" Spacing="8">
+            <TextBlock FontWeight="SemiBold"
+                       Text="Overlay opacity" />
+            <TextBlock Classes="muted"
+                       FontSize="11"
+                       Text="Override this overlay only"
+                       TextWrapping="Wrap" />
+            <CheckBox x:Name="UseGlobalOpacityCheckBox"
+                      Content="Use global opacity"
+                      IsThreeState="False"
+                      IsCheckedChanged="OnUseGlobalOpacityChanged" />
+            <Grid HorizontalAlignment="Center"
+                  ColumnDefinitions="Auto,Auto"
+                  ColumnSpacing="10">
+              <Slider x:Name="OpacityOverrideSlider"
+                      Height="170"
+                      Minimum="0"
+                      Maximum="100"
+                      Orientation="Vertical"
+                      TickFrequency="1"
+                      ValueChanged="OnOpacityOverrideValueChanged" />
+              <TextBlock x:Name="OpacityOverrideValueText"
+                         Grid.Column="1"
+                         MinWidth="42"
+                         VerticalAlignment="Center"
+                         FontWeight="SemiBold" />
+            </Grid>
+          </StackPanel>
+        </Border>
+      </Flyout>
+    </Border.ContextFlyout>
     <Grid>
       <TextBlock HorizontalAlignment="Center"
                  VerticalAlignment="Center"
@@ -169,7 +207,7 @@
                    IsVisible="{Binding ShowFooter}"
                    Text="{Binding Footer}"
                    TextTrimming="CharacterEllipsis"
-                   ToolTip.Tip="SIMULATED GAME STATE • DRAG TO MOVE" />
+                   ToolTip.Tip="SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY" />
       </Grid>
     </Grid>
   </Border>

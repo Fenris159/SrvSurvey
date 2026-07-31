@@ -5,9 +5,18 @@ public sealed class OverlayPresentationContractTests
     private static readonly PresentationContract[] Contracts =
     [
         Contract("PlotBase", [
+            "src/SrvSurvey.Desktop/Platform/Overlay/CombinedOverlayPresentationController.cs",
+            "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs",
             "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformService.cs",
             "src/SrvSurvey.Desktop/Platform/Overlay/OverlayWindowRegistry.cs",
-        ], ["SupportsClickThrough", "SupportsGameWindowTracking", "Register"]),
+        ], [
+            "SupportsClickThrough",
+            "SupportsGameWindowTracking",
+            "Register",
+            "MultipleWindows",
+            "CombinedWindow",
+            "SetInteractiveRegions",
+        ]),
         Contract("PlotBioStatus", ["src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml"], [
             "ProgressText", "TrackedCompletionPercent", "ActiveSample", "Signals", "Warning", "Footer",
         ]),

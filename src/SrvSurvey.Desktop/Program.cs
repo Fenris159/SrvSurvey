@@ -5,6 +5,7 @@ using SrvSurvey.Core.Storage;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Localization;
 using SrvSurvey.Desktop.Platform;
+using SrvSurvey.Desktop.Platform.Frontier;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop;
@@ -43,6 +44,38 @@ internal static class Program
         LocalizationCatalog.ApplyCulture(language);
         var applicationLog = new ApplicationLogService(appDataPaths.DataDirectory);
         ApplicationLog = applicationLog;
+        var frontierCallback = FrontierOAuthCallback.Find(StartupArguments);
+        if (frontierCallback is not null)
+        {
+            try
+            {
+                using var frontier = FrontierAccountService.CreateCurrent(
+                    appDataPaths.DataDirectory);
+                frontier.HandleCallbackAsync(frontierCallback)
+                    .GetAwaiter()
+                    .GetResult();
+                applicationLog.Append(
+                    "Frontier authorization callback completed securely.");
+                Environment.ExitCode = 0;
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or InvalidDataException
+                    or InvalidOperationException
+                    or NotSupportedException
+                    or HttpRequestException
+                    or TaskCanceledException
+                    or UnauthorizedAccessException)
+            {
+                applicationLog.Append(
+                    "Frontier authorization callback failed: "
+                    + exception.Message);
+                Environment.ExitCode = 1;
+            }
+
+            return;
+        }
+
         applicationLog.Append(
             $"SrvSurvey {typeof(Program).Assembly.GetName().Version}");
         applicationLog.Append($"New log path: {applicationLog.CurrentLogPath}");
