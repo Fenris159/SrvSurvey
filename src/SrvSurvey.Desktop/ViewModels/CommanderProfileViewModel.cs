@@ -15,6 +15,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private static readonly TimeSpan AutomaticRefreshAge = TimeSpan.FromMinutes(15);
 
     private readonly IFrontierAccountService accountService;
+    private readonly ICommunityGoalJournalHistoryReader? communityGoalHistoryReader;
     private readonly Func<DateTimeOffset> now;
     private readonly AsyncCommand connectCommand;
     private readonly AsyncCommand cancelConnectionCommand;
@@ -32,8 +33,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private string? journalReputationCommanderName;
     private DateTimeOffset? journalReputationUpdatedAt;
     private IReadOnlyList<FrontierCommunityGoalSnapshot> journalCommunityGoals = [];
+    private IReadOnlyList<FrontierCommunityGoalSnapshot>
+        journalCommunityGoalHistory = [];
     private string? journalCommunityGoalCommanderName;
     private DateTimeOffset? journalCommunityGoalsUpdatedAt;
+    private string journalCommunityGoalHistoryError = string.Empty;
     private string? detectedFrontierId;
     private string? detectedCommanderName;
     private string? activeFrontierId;
@@ -57,10 +61,12 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public CommanderProfileViewModel(
         IFrontierAccountService accountService,
-        Func<DateTimeOffset>? now = null)
+        Func<DateTimeOffset>? now = null,
+        ICommunityGoalJournalHistoryReader? communityGoalHistoryReader = null)
     {
         this.accountService = accountService
             ?? throw new ArgumentNullException(nameof(accountService));
+        this.communityGoalHistoryReader = communityGoalHistoryReader;
         this.accountService.AuthorizationCallbackReceived +=
             HandleAuthorizationCallbackReceived;
         this.now = now ?? (() => DateTimeOffset.Now);
@@ -558,15 +564,19 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         {
             journalCommunityGoalCommanderName = normalizedCommander;
             journalCommunityGoals = [];
+            journalCommunityGoalHistory = [];
             journalCommunityGoalsUpdatedAt = null;
+            journalCommunityGoalHistoryError = string.Empty;
         }
 
-        var latest = journalEvents.LastOrDefault(journalEvent =>
-            string.Equals(
+        var goalEvents = journalEvents
+            .Where(journalEvent => string.Equals(
                 journalEvent.EventName,
                 "CommunityGoal",
-                StringComparison.OrdinalIgnoreCase));
-        if (latest is null)
+                StringComparison.OrdinalIgnoreCase))
+            .OrderBy(journalEvent => journalEvent.Timestamp ?? DateTimeOffset.MinValue)
+            .ToArray();
+        if (goalEvents.Length == 0)
         {
             if (commanderChanged)
             {
@@ -576,18 +586,33 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return;
         }
 
-        try
+        var updated = false;
+        foreach (var goalEvent in goalEvents)
         {
-            journalCommunityGoals = FrontierCapiSnapshotParser
-                .ParseCommunityGoals(latest.RawJson);
-            journalCommunityGoalsUpdatedAt = latest.Timestamp;
-            RaiseCommunityGoalProperties();
+            try
+            {
+                var parsed = FrontierCapiSnapshotParser
+                    .ParseCommunityGoals(goalEvent.RawJson);
+                journalCommunityGoals = StampJournalCommunityGoals(
+                    parsed,
+                    goalEvent.Timestamp);
+                journalCommunityGoalsUpdatedAt = goalEvent.Timestamp;
+                journalCommunityGoalHistory = MergeJournalCommunityGoalHistory(
+                    journalCommunityGoalHistory,
+                    journalCommunityGoals);
+                updated = true;
+            }
+            catch (Exception exception) when (
+                exception is JsonException or InvalidDataException)
+            {
+                // The journal monitor reports malformed journal input. Preserve
+                // the last valid Community Goal state in this projection.
+            }
         }
-        catch (Exception exception) when (
-            exception is JsonException or InvalidDataException)
+
+        if (updated)
         {
-            // The journal monitor reports malformed journal input. Preserve
-            // the last valid Community Goal state in this projection.
+            RaiseCommunityGoalProperties();
         }
     }
 
@@ -879,9 +904,28 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public bool HasCommunityGoals => CommunityGoals.Count > 0;
 
-    public string CommunityGoalsMessage => HasCommunityGoals
-        ? $"{CommunityGoals.Count:N0} active or recently completed goal(s)"
-        : "No community goals were returned for this commander.";
+    public string CommunityGoalsMessage
+    {
+        get
+        {
+            var goals = EffectiveCommunityGoals();
+            if (goals.Count == 0)
+            {
+                return "No community goals were returned for this commander.";
+            }
+
+            var currentTime = now().ToUniversalTime();
+            var active = goals
+                .Where(goal => !goal.IsComplete
+                    && (goal.ExpiresAt is null || goal.ExpiresAt > currentTime))
+                .ToArray();
+            var frontierActive = active.Count(goal => !IsInaraOnlyGoal(goal));
+            var inaraActive = active.Length - frontierActive;
+            var ended = goals.Count - active.Length;
+            return $"{active.Length:N0} active ({frontierActive:N0} Frontier, "
+                + $"{inaraActive:N0} Inara) · {ended:N0} recently completed or ended";
+        }
+    }
 
     public string CommunityGoalsError => string.Join(
         Environment.NewLine,
@@ -889,6 +933,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         {
             Snapshot?.CommunityGoalsError,
             Snapshot?.InaraCommunityGoalsError,
+            journalCommunityGoalHistoryError,
         }.Where(message => !string.IsNullOrWhiteSpace(message)));
 
     public bool HasCommunityGoalsError =>
@@ -970,13 +1015,30 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         var inaraFetchedAt = CommunityGoalDataDateTimeOffset(
             dataPoints,
             "inara.fetchedAt");
+        var journalRecordedAt = CommunityGoalDataDateTimeOffset(
+            dataPoints,
+            "journal.communityGoalTimestamp");
         var hasInaraData = inaraLastUpdated is not null || inaraFetchedAt is not null;
-        var sourceStatus = hasInaraData
-            ? "Global details supplemented by Inara"
+        var isInaraOnly = IsInaraOnlyGoal(item);
+        var sourceStatusParts = new List<string>();
+        if (hasInaraData)
+        {
+            sourceStatusParts.Add(
+                (isInaraOnly
+                    ? "Global goal supplied by Inara"
+                    : "Frontier goal supplemented by Inara")
                 + (inaraLastUpdated is { } updated
                     ? $" · updated {updated.ToLocalTime():g}"
-                    : string.Empty)
-            : string.Empty;
+                    : string.Empty));
+        }
+
+        if (journalRecordedAt is { } recordedAt)
+        {
+            sourceStatusParts.Add(
+                $"Personal progress restored from local journals · recorded {recordedAt.ToLocalTime():g}");
+        }
+
+        var sourceStatus = string.Join(" · ", sourceStatusParts);
         var currentTime = now().ToUniversalTime();
         var progress = target is { } targetTotal
             ? Math.Clamp((double)currentTotal / targetTotal * 100, 0, 100)
@@ -1027,7 +1089,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 ? playerContribution > 0
                     ? $"{playerContribution:N0} contributed"
                     : "Signed up · no contribution recorded"
-                : "Personal progress not supplied by Frontier",
+                : "Personal progress not supplied by Frontier or local journals",
             standing,
             hasContributorData
                 ? $"{contributors:N0} commanders"
@@ -1074,8 +1136,14 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             journalReputationUpdatedAt = null;
             journalCommunityGoalCommanderName = normalizedName;
             journalCommunityGoals = [];
+            journalCommunityGoalHistory = [];
             journalCommunityGoalsUpdatedAt = null;
+            journalCommunityGoalHistoryError = string.Empty;
             UpdateLocalInventory(null, null, isSuppressed: false);
+            await LoadJournalCommunityGoalHistoryAsync(
+                normalizedId,
+                normalizedName,
+                cancellationToken);
         }
 
         await TryRefreshCommanderSelectionOptionsAsync(cancellationToken);
@@ -1086,6 +1154,48 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 : manuallySelectedCommanderName,
             refreshIfOpen,
             cancellationToken);
+    }
+
+    private async Task LoadJournalCommunityGoalHistoryAsync(
+        string? frontierId,
+        string? commanderName,
+        CancellationToken cancellationToken)
+    {
+        if (communityGoalHistoryReader is null || frontierId is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await communityGoalHistoryReader
+                .ReadAsync(frontierId, cancellationToken);
+            if (!string.Equals(
+                    detectedFrontierId,
+                    frontierId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            journalCommunityGoalCommanderName = commanderName;
+            journalCommunityGoalHistory = result.Goals;
+            journalCommunityGoalHistoryError = result.Warning;
+            RaiseCommunityGoalProperties();
+            OnPropertyChanged(nameof(CommunityGoalsError));
+            OnPropertyChanged(nameof(HasCommunityGoalsError));
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            journalCommunityGoalHistoryError =
+                "Local Community Goal history could not be read: "
+                + exception.Message;
+            OnPropertyChanged(nameof(CommunityGoalsError));
+            OnPropertyChanged(nameof(HasCommunityGoalsError));
+        }
     }
 
     private async Task ActivateFrontierCommanderAsync(
@@ -1922,7 +2032,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private IReadOnlyList<FrontierCommunityGoalSnapshot> EffectiveCommunityGoals()
     {
         var accountGoals = Snapshot?.CommunityGoals ?? [];
-        if (journalCommunityGoals.Count == 0
+        var journalCandidates = journalCommunityGoalHistory.Count > 0
+            ? journalCommunityGoalHistory
+            : journalCommunityGoals;
+        if (journalCandidates.Count == 0
             || Snapshot is null
             || manuallySelectedFrontierId is not null
                 && !string.Equals(
@@ -1934,12 +2047,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 journalCommunityGoalCommanderName,
                 StringComparison.OrdinalIgnoreCase))
         {
-            return accountGoals;
+            return FrontierCommunityGoalOrdering.Order(accountGoals);
         }
 
-        var journalIsCurrent = Snapshot.CommunityGoalsFetchedAt is null
-            || journalCommunityGoalsUpdatedAt is { } journalUpdatedAt
-                && journalUpdatedAt >= Snapshot.CommunityGoalsFetchedAt;
         var matchedJournalGoals = new HashSet<int>();
         var result = new List<FrontierCommunityGoalSnapshot>(
             accountGoals.Count + journalCommunityGoals.Count);
@@ -1947,7 +2057,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         {
             var matchIndex = FindCommunityGoalMatch(
                 accountGoal,
-                journalCommunityGoals,
+                journalCandidates,
                 matchedJournalGoals);
             if (matchIndex is null)
             {
@@ -1956,27 +2066,120 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             }
 
             matchedJournalGoals.Add(matchIndex.Value);
+            var journalGoal = journalCandidates[matchIndex.Value];
+            var journalUpdatedAt = JournalCommunityGoalTimestamp(journalGoal)
+                ?? journalCommunityGoalsUpdatedAt;
+            var journalIsCurrent = Snapshot.CommunityGoalsFetchedAt is null
+                || journalUpdatedAt is { } timestamp
+                    && timestamp >= Snapshot.CommunityGoalsFetchedAt;
             result.Add(MergeJournalCommunityGoal(
                 accountGoal,
-                journalCommunityGoals[matchIndex.Value],
+                journalGoal,
                 journalIsCurrent,
-                journalCommunityGoalsUpdatedAt));
+                journalUpdatedAt));
         }
 
-        for (var index = 0; index < journalCommunityGoals.Count; index++)
+        foreach (var currentGoal in journalCommunityGoals)
         {
-            if (!matchedJournalGoals.Contains(index))
+            if (FindCommunityGoalMatch(
+                    currentGoal,
+                    result,
+                    new HashSet<int>()) is null)
             {
-                result.Add(journalCommunityGoals[index]);
+                result.Add(currentGoal);
             }
         }
 
-        return result
-            .OrderBy(goal => goal.IsComplete)
-            .ThenBy(goal => goal.ExpiresAt ?? DateTimeOffset.MaxValue)
-            .ThenBy(goal => goal.Title, StringComparer.CurrentCultureIgnoreCase)
+        return FrontierCommunityGoalOrdering.Order(result);
+    }
+
+    private static IReadOnlyList<FrontierCommunityGoalSnapshot>
+        StampJournalCommunityGoals(
+            IReadOnlyList<FrontierCommunityGoalSnapshot> goals,
+            DateTimeOffset? timestamp)
+    {
+        if (timestamp is null)
+        {
+            return goals;
+        }
+
+        return goals.Select(goal =>
+        {
+            var data = new Dictionary<string, string>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var point in goal.DataPoints ?? [])
+            {
+                data[point.Path] = point.Value;
+            }
+
+            data["journal.communityGoalTimestamp"] = timestamp.Value.ToString(
+                "O",
+                CultureInfo.InvariantCulture);
+            return goal with
+            {
+                DataPoints = data
+                    .Select(pair => new FrontierDataPointSnapshot(
+                        pair.Key,
+                        pair.Value))
+                    .ToArray(),
+            };
+        }).ToArray();
+    }
+
+    private static IReadOnlyList<FrontierCommunityGoalSnapshot>
+        MergeJournalCommunityGoalHistory(
+            IReadOnlyList<FrontierCommunityGoalSnapshot> existing,
+            IReadOnlyList<FrontierCommunityGoalSnapshot> incoming)
+    {
+        var history = new Dictionary<string, FrontierCommunityGoalSnapshot>(
+            StringComparer.Ordinal);
+        foreach (var goal in existing.Concat(incoming))
+        {
+            var key = CommunityGoalHistoryKey(goal);
+            if (!history.TryGetValue(key, out var prior)
+                || (JournalCommunityGoalTimestamp(goal)
+                        ?? DateTimeOffset.MinValue)
+                    >= (JournalCommunityGoalTimestamp(prior)
+                        ?? DateTimeOffset.MinValue))
+            {
+                history[key] = goal;
+            }
+        }
+
+        return history.Values
+            .OrderByDescending(
+                goal => JournalCommunityGoalTimestamp(goal)
+                    ?? DateTimeOffset.MinValue)
+            .Take(250)
             .ToArray();
     }
+
+    private static DateTimeOffset? JournalCommunityGoalTimestamp(
+        FrontierCommunityGoalSnapshot goal) =>
+        CommunityGoalDataDateTimeOffset(
+            goal.DataPoints ?? [],
+            "journal.communityGoalTimestamp");
+
+    private static string CommunityGoalHistoryKey(
+        FrontierCommunityGoalSnapshot goal) =>
+        goal.Id is { } id
+            ? $"id:{id.ToString(CultureInfo.InvariantCulture)}"
+            : "goal:"
+                + NormalizeLookupKey(goal.Title)
+                + ":"
+                + (goal.ExpiresAt?.ToUniversalTime().ToString(
+                    "O",
+                    CultureInfo.InvariantCulture) ?? string.Empty);
+
+    private static bool IsInaraOnlyGoal(FrontierCommunityGoalSnapshot goal) =>
+        goal.DataPoints?.Any(point => string.Equals(
+                point.Path,
+                "inara.sourceOnly",
+                StringComparison.OrdinalIgnoreCase)
+            && string.Equals(
+                point.Value,
+                "true",
+                StringComparison.OrdinalIgnoreCase)) == true;
 
     private static int? FindCommunityGoalMatch(
         FrontierCommunityGoalSnapshot goal,

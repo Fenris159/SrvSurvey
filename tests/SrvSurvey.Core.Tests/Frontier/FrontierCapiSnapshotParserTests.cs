@@ -271,6 +271,27 @@ public sealed class FrontierCapiSnapshotParserTests
     }
 
     [Fact]
+    public void ParsesEveryGoalInCurrentCapiActiveArray()
+    {
+        const string communityGoals =
+            """
+            {
+              "activeCommunityGoals":[
+                {"id":855,"title":"Carcosa","expiry":"2026-08-06 10:00:00"},
+                {"id":856,"title":"Einheriar","expiry":"2026-08-06 10:00:00"},
+                {"id":857,"title":"Randgnid","expiry":"2026-08-06 10:00:00"}
+              ]
+            }
+            """;
+
+        var goals = FrontierCapiSnapshotParser.ParseCommunityGoals(
+            communityGoals);
+
+        Assert.Equal(3, goals.Count);
+        Assert.Equal([855, 856, 857], goals.Select(goal => goal.Id));
+    }
+
+    [Fact]
     public void RejectsProfileWithoutCommanderIdentity()
     {
         var exception = Assert.Throws<InvalidDataException>(() =>

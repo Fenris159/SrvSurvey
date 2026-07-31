@@ -34,8 +34,13 @@ commander upload setting and does not include a commander name, Frontier ID, or
 personal Inara API key. It supplements missing global fields such as the current
 tier, contributor count, total contribution, description, reward, and Inara
 page URL. Personal contribution and standing remain local Frontier/journal
-data. Responses are cached in the local SrvSurvey data directory for at least
-15 minutes; a stale cached response is retained when Inara is unavailable.
+data. Inara does not provide a documented API event for reading a commander's
+Community Goal contribution history, even when a personal API key is present.
+SrvSurvey instead recovers matching contribution, percentile, and reward data
+from that commander's local journal history without uploading it. Responses
+from the public Inara feed are cached in the local SrvSurvey data directory for
+at least 15 minutes; a stale cached response is retained when Inara is
+unavailable.
 
 Release builds receive the generic application key from the repository's
 `INARA_APPLICATION_API_KEY` secret. The value is added to assembly metadata at

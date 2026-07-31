@@ -117,7 +117,9 @@ public sealed class CommanderProfileViewModelTests
         Assert.Equal("1,971,753 / 34,500,000", goal.ProgressText);
         Assert.Equal("5.72% complete", goal.ProgressPercent);
         Assert.Contains("Cargo rack reward", goal.Briefing);
-        Assert.Equal("Personal progress not supplied by Frontier", goal.PlayerContribution);
+        Assert.Equal(
+            "Personal progress not supplied by Frontier or local journals",
+            goal.PlayerContribution);
     }
 
     [Fact]
@@ -254,9 +256,115 @@ public sealed class CommanderProfileViewModelTests
         viewModel.UpdateJournalCommunityGoals("Another Commander", []);
 
         goal = Assert.Single(viewModel.CommunityGoals);
-        Assert.Equal("Personal progress not supplied by Frontier", goal.PlayerContribution);
+        Assert.Equal(
+            "Personal progress not supplied by Frontier or local journals",
+            goal.PlayerContribution);
         Assert.Equal("2,913 commanders", goal.Contributors);
         Assert.Equal("Tier 0 / 1", goal.Tier);
+    }
+
+    [Fact]
+    public async Task HistoricalJournalProgressSupplementsCompletedInaraGoal()
+    {
+        var fetchedAt = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
+        var accountGoal = Assert.Single(CreateSnapshot(fetchedAt).CommunityGoals!) with
+        {
+            Id = null,
+            Title = "Vista Genomics Exobiology Initiative",
+            ExpiresAt = DateTimeOffset.Parse("2026-07-09T10:00:00Z"),
+            IsComplete = true,
+            PlayerContribution = 0,
+            PlayerPercentile = null,
+            Bonus = 0,
+            HasPlayerContributionData = false,
+            DataPoints =
+            [
+                new("inara.sourceOnly", "true"),
+                new("inara.fetchedAt", fetchedAt.ToString("O")),
+                new("inara.lastUpdate", "2026-07-09T10:10:00Z"),
+            ],
+        };
+        var snapshot = CreateSnapshot(fetchedAt) with
+        {
+            CommunityGoals = [accountGoal],
+            CommunityGoalsFetchedAt = fetchedAt,
+        };
+        var historyGoal = accountGoal with
+        {
+            Id = 850,
+            PlayerContribution = 2,
+            PlayerPercentile = 100,
+            Bonus = 45_000_000,
+            HasPlayerContributionData = true,
+            DataPoints =
+            [
+                new(
+                    "journal.communityGoalTimestamp",
+                    "2026-07-23T06:54:24Z"),
+            ],
+        };
+        var history = new StubCommunityGoalHistoryReader(
+            new CommunityGoalJournalHistoryReadResult([historyGoal], string.Empty));
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(
+                true,
+                snapshot,
+                snapshot.FetchedAt)),
+            communityGoalHistoryReader: history);
+
+        await viewModel.SetCommanderContextAsync(
+            "F472567",
+            "Fenris",
+            refreshIfOpen: false);
+        await viewModel.OpenAsync();
+
+        var goal = Assert.Single(viewModel.CommunityGoals);
+        Assert.Equal("2 contributed", goal.PlayerContribution);
+        Assert.Contains("Top 100%", goal.PlayerStanding);
+        Assert.Contains("45,000,000 CR", goal.PlayerStanding);
+        Assert.Contains("Global goal supplied by Inara", goal.SourceStatus);
+        Assert.Contains("Personal progress restored from local journals", goal.SourceStatus);
+        Assert.Equal("F472567", history.RequestedFrontierId);
+    }
+
+    [Fact]
+    public async Task CompletedGoalsArePresentedNewestFirst()
+    {
+        var fetchedAt = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
+        var template = Assert.Single(CreateSnapshot(fetchedAt).CommunityGoals!);
+        FrontierCommunityGoalSnapshot Completed(
+            string title,
+            string lastUpdate) => template with
+            {
+                Id = null,
+                Title = title,
+                IsComplete = true,
+                ExpiresAt = DateTimeOffset.Parse(lastUpdate).AddHours(1),
+                DataPoints =
+            [
+                new("inara.lastUpdate", lastUpdate),
+            ],
+            };
+        var snapshot = CreateSnapshot(fetchedAt) with
+        {
+            CommunityGoals =
+            [
+                Completed("Distant Worlds III", "2026-03-27T14:00:00Z"),
+                Completed("Newest completion", "2026-07-23T10:00:00Z"),
+                Completed("Middle completion", "2026-06-18T09:00:00Z"),
+            ],
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(
+                true,
+                snapshot,
+                snapshot.FetchedAt)));
+
+        await viewModel.OpenAsync();
+
+        Assert.Equal(
+            ["Newest completion", "Middle completion", "Distant Worlds III"],
+            viewModel.CommunityGoals.Select(goal => goal.Title));
     }
 
     [Fact]
@@ -991,6 +1099,21 @@ public sealed class CommanderProfileViewModelTests
         public void RaiseAuthorizationCallbackReceived()
         {
             AuthorizationCallbackReceived?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private sealed class StubCommunityGoalHistoryReader(
+        CommunityGoalJournalHistoryReadResult result)
+        : ICommunityGoalJournalHistoryReader
+    {
+        public string? RequestedFrontierId { get; private set; }
+
+        public Task<CommunityGoalJournalHistoryReadResult> ReadAsync(
+            string frontierId,
+            CancellationToken cancellationToken = default)
+        {
+            RequestedFrontierId = frontierId;
+            return Task.FromResult(result);
         }
     }
 }

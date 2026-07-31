@@ -39,11 +39,7 @@ public static class InaraCommunityGoalEnricher
             }
         }
 
-        return result
-            .OrderBy(goal => goal.IsComplete)
-            .ThenBy(goal => goal.ExpiresAt ?? DateTimeOffset.MaxValue)
-            .ThenBy(goal => goal.Title, StringComparer.CurrentCultureIgnoreCase)
-            .ToArray();
+        return FrontierCommunityGoalOrdering.Order(result);
     }
 
     private static int? FindMatch(
