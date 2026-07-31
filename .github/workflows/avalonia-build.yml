@@ -317,10 +317,12 @@ jobs:
             gh release create "$RELEASE_TAG" packages/* \
               --verify-tag \
               --generate-notes \
+              --notes "$(cat CurrentReleaseNotes.md)" \
               --title "SrvSurvey ${{ needs.release-metadata.outputs.version }}"
           else
             gh release create "$RELEASE_TAG" packages/* \
               --target "$GITHUB_SHA" \
               --generate-notes \
+              --notes "$(cat CurrentReleaseNotes.md)" \
               --title "SrvSurvey ${{ needs.release-metadata.outputs.version }}"
           fi
