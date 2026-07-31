@@ -12,8 +12,8 @@ public sealed class LocalizationCatalogTests : IDisposable
 
         Assert.Equal("de", LocalizationCatalog.CurrentLanguage);
         Assert.Equal(1_090, LocalizationCatalog.LegacyTranslationCount);
-        Assert.Equal(3_773, LocalizationCatalog.ApplicationTranslationCount);
-        Assert.Equal(3_773, LocalizationCatalog.SourceCount);
+        Assert.Equal(4_974, LocalizationCatalog.ApplicationTranslationCount);
+        Assert.Equal(4_974, LocalizationCatalog.SourceCount);
         Assert.Equal("Himmelskörper", LocalizationCatalog.Translate("Bodies"));
         Assert.Equal(
             "Plattformübergreifender Erkundungsbegleiter",
@@ -64,6 +64,23 @@ public sealed class LocalizationCatalogTests : IDisposable
         Assert.NotEqual(
             "Loaded {0} active Raven Colonial projects.",
             template);
+    }
+
+    [Theory]
+    [InlineData(
+        "Codex details available · type .show",
+        "Codex-Details verfügbar · Typ .show")]
+    [InlineData(
+        "Reference image available · type .show",
+        "Referenzbild verfügbar · Typ .show")]
+    [InlineData("· FF bonus", "· FF-Bonus")]
+    public void BiologyStatusTextUsesTheCorrectUnicodeCatalogKeys(
+        string source,
+        string expected)
+    {
+        LocalizationCatalog.Initialize("de");
+
+        Assert.Equal(expected, LocalizationCatalog.Translate(source));
     }
 
     [Fact]

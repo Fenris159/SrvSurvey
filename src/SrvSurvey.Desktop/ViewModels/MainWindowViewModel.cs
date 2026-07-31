@@ -125,6 +125,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private CargoSnapshot? latestCargo;
     private ShipLockerSnapshot? latestShipLocker;
     private bool awaitFreshCargoSnapshot;
+    private DateTimeOffset? companionIdentityChangedAt;
     private bool disposed;
 
     public MainWindowViewModel(
@@ -1648,6 +1649,38 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         JournalInspector.ApplyUpdate(update.JournalEvents, latestStatus);
 
+        var previousFrontierId = journalState.FrontierId;
+        var previousCommanderName = journalState.CommanderName;
+        foreach (var journalEvent in update.JournalEvents)
+        {
+            journalState.Apply(journalEvent);
+        }
+
+        var commanderChanged = !string.Equals(
+                previousFrontierId,
+                journalState.FrontierId,
+                StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(
+                previousCommanderName,
+                journalState.CommanderName,
+                StringComparison.OrdinalIgnoreCase);
+        if (commanderChanged)
+        {
+            awaitFreshCargoSnapshot = true;
+            companionIdentityChangedAt = update.JournalEvents
+                .Where(journalEvent => journalEvent.EventName is "Commander" or "LoadGame")
+                .Select(journalEvent => journalEvent.Timestamp)
+                .LastOrDefault(timestamp => timestamp is not null)
+                ?? journalState.LastEventTimestamp;
+            cargoInventoryState.Reset(null);
+            latestCargo = null;
+            latestShipLocker = null;
+            await FrontierProfile.SetCommanderContextAsync(
+                journalState.FrontierId,
+                journalState.CommanderName,
+                refreshIfOpen: IsProfileSelected);
+        }
+
         var allowSharedCargo = !IsSharedCargoSuppressed;
         var cargoChanged = false;
         if (!allowSharedCargo)
@@ -1658,7 +1691,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
         else if (awaitFreshCargoSnapshot)
         {
-            if (update.Cargo is not null)
+            if (update.Cargo is not null
+                && IsCurrentCommanderCompanionSnapshot(update.Cargo.Timestamp))
             {
                 cargoChanged = cargoInventoryState.Reset(update.Cargo);
                 awaitFreshCargoSnapshot = false;
@@ -1674,7 +1708,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                     latestStatus?.InSrv == true);
             }
 
-            if (update.Cargo is not null)
+            if (update.Cargo is not null
+                && IsCurrentCommanderCompanionSnapshot(update.Cargo.Timestamp))
             {
                 cargoChanged |= cargoInventoryState.Reset(update.Cargo);
             }
@@ -1682,7 +1717,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             latestCargo = cargoInventoryState.CreateSnapshot();
         }
 
-        if (allowSharedCargo && update.ShipLocker is not null)
+        if (allowSharedCargo
+            && update.ShipLocker is not null
+            && IsCurrentCommanderCompanionSnapshot(update.ShipLocker.Timestamp))
         {
             latestShipLocker = update.ShipLocker;
         }
@@ -1724,10 +1761,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         foreach (var warning in greenGasGiantResult.Warnings)
         {
             applicationLogService?.Append(warning);
-        }
-        foreach (var journalEvent in update.JournalEvents)
-        {
-            journalState.Apply(journalEvent);
         }
         FrontierProfile.UpdateJournalReputation(
             journalState.CommanderName,
@@ -3499,6 +3532,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         DockToDock.SetSharedCargoSuppressed(value);
         Colonization.SetSharedCargoSuppressed(value);
     }
+
+    private bool IsCurrentCommanderCompanionSnapshot(DateTimeOffset timestamp) =>
+        companionIdentityChangedAt is not { } changedAt || timestamp >= changedAt;
 
     private void OnQuestCoordinatorChanged(object? sender, EventArgs eventArgs)
     {

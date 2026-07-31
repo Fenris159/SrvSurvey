@@ -64,6 +64,85 @@ public sealed class BoxelAddressTests
         Assert.True(decoded);
         Assert.Equal(expectedName, boxel?.GeneratedName);
         Assert.Equal(systemAddress, boxel?.SystemAddress);
+        Assert.NotNull(boxel);
+        Assert.True(boxel.TryEncodeSystemAddress(out var encoded));
+        Assert.Equal(systemAddress, encoded);
+    }
+
+    [Theory]
+    [InlineData('a')]
+    [InlineData('b')]
+    [InlineData('c')]
+    [InlineData('d')]
+    [InlineData('e')]
+    [InlineData('f')]
+    [InlineData('g')]
+    [InlineData('h')]
+    public void ProceduralAddressRoundTripsEveryMassCode(char massCode)
+    {
+        var original = BoxelAddress.Parse($"Wregoe AA-A {massCode}0");
+
+        Assert.True(original.TryEncodeSystemAddress(out var address));
+        Assert.True(BoxelAddress.TryFromSystemAddress(address, null, out var decoded));
+        Assert.Equal(original.GeneratedName, decoded?.GeneratedName);
+    }
+
+    [Fact]
+    public void MassCodeHRetainsItsThirtyTwoBitSystemNumber()
+    {
+        var original = BoxelAddress.Parse("Wregoe AA-A h2147483647");
+
+        Assert.True(original.TryEncodeSystemAddress(out var address));
+        Assert.True(BoxelAddress.TryFromSystemAddress(address, null, out var decoded));
+        Assert.Equal(original.GeneratedName, decoded?.GeneratedName);
+    }
+
+    [Fact]
+    public void WithSystemNumberPopulatesTheProceduralAddress()
+    {
+        var system = BoxelAddress.Parse("Wregoe BU-Y b2-0")
+            .WithSystemNumber(7);
+
+        Assert.True(system.SystemAddress > 0);
+        Assert.True(BoxelAddress.TryFromSystemAddress(
+            system.SystemAddress,
+            null,
+            out var decoded));
+        Assert.Equal(system.GeneratedName, decoded?.GeneratedName);
+    }
+
+    [Fact]
+    public void KnownHandAuthoredSystemKeepsItsAuthoritativeAddress()
+    {
+        var system = BoxelAddress.Parse("Sol|10477373803");
+
+        Assert.True(system.TryGetSystemAddress(out var address));
+        Assert.Equal(10477373803, address);
+        Assert.True(system.TryEncodeSystemAddress(out var encoded));
+        Assert.Equal(address, encoded);
+    }
+
+    [Fact]
+    public void UnsupportedHandAuthoredSectorFailsEncodingWithoutThrowing()
+    {
+        var system = new BoxelAddress(
+            "Col 173 Sector",
+            "JX-K",
+            'b',
+            24,
+            0);
+
+        Assert.False(system.TryEncodeSystemAddress(out var address));
+        Assert.Equal(0, address);
+    }
+
+    [Fact]
+    public void OutOfRangeSystemNumberFailsEncodingWithoutTruncation()
+    {
+        var system = BoxelAddress.Parse("Wregoe AA-A a2048");
+
+        Assert.False(system.TryEncodeSystemAddress(out var address));
+        Assert.Equal(0, address);
     }
 
     [Fact]

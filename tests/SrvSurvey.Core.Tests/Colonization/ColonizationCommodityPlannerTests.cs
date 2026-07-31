@@ -218,6 +218,63 @@ public sealed class ColonizationCommodityPlannerTests
     }
 
     [Fact]
+    public void UntrackedFleetCarrierWarningUsesStationTypeAndCommanderInventory()
+    {
+        var construction = EmptyConstruction() with
+        {
+            CurrentDock = new ColonizationDockingSnapshot(
+                900,
+                99,
+                "Test System",
+                "Untracked Carrier",
+                "Test Faction",
+                ["squadronBank"],
+                DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+                "FleetCarrier"),
+        };
+
+        var untracked = ColonizationCommodityPlanner.Create(
+            [],
+            [],
+            primaryBuildId: null,
+            "Test Cmdr",
+            [],
+            shipCargo: null,
+            construction);
+
+        Assert.True(untracked.IsDockedAtUntrackedFleetCarrier);
+        Assert.True(untracked.HasContent);
+
+        var linked = ColonizationCommodityPlanner.Create(
+            [],
+            [],
+            primaryBuildId: null,
+            "Test Cmdr",
+            [new ColonizationFleetCarrier { MarketId = 900 }],
+            shipCargo: null,
+            construction);
+
+        Assert.False(linked.IsDockedAtUntrackedFleetCarrier);
+
+        var ordinaryStation = ColonizationCommodityPlanner.Create(
+            [],
+            [],
+            primaryBuildId: null,
+            "Test Cmdr",
+            [],
+            shipCargo: null,
+            construction with
+            {
+                CurrentDock = construction.CurrentDock! with
+                {
+                    StationType = "Coriolis",
+                },
+            });
+
+        Assert.False(ordinaryStation.IsDockedAtUntrackedFleetCarrier);
+    }
+
+    [Fact]
     public void CompletedConstructionStillHasVisibleCompletionState()
     {
         var construction = Construction(

@@ -2566,6 +2566,88 @@ public sealed class MainWindowViewModelTests
         }
     }
 
+    [Fact]
+    public async Task CommanderSwitchRejectsPreviousAccountsCompanionInventory()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-commander-inventory-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-25T120000.01.log"),
+                """
+                {"timestamp":"2026-07-25T12:00:00Z","event":"Commander","Name":"First","FID":"F123"}
+                {"timestamp":"2026-07-25T12:00:01Z","event":"LoadGame","Commander":"First","FID":"F123","Odyssey":true}
+
+                """);
+            var cargoPath = Path.Combine(journals, CargoFileReader.FileName);
+            var lockerPath = Path.Combine(journals, ShipLockerFileReader.FileName);
+            await File.WriteAllTextAsync(
+                cargoPath,
+                """
+                {"timestamp":"2026-07-25T12:00:02Z","event":"Cargo","Vessel":"Ship","Count":2,"Inventory":[{"Name":"gold","Count":2,"Stolen":0}]}
+                """);
+            await File.WriteAllTextAsync(
+                lockerPath,
+                """
+                {"timestamp":"2026-07-25T12:00:02Z","event":"ShipLocker","Items":[{"Name":"healthmonitor","Count":2}],"Components":[],"Consumables":[],"Data":[]}
+                """);
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: new AppDataPaths(
+                    Path.Combine(root, "config"),
+                    Path.Combine(root, "profile"),
+                    Path.Combine(root, "cache"),
+                    []));
+
+            await viewModel.RefreshAsync();
+            Assert.Equal(2, viewModel.CurrentCargo?.GetCount("gold"));
+            Assert.Single(viewModel.FrontierProfile.CurrentShipLocker);
+
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-25T130000.01.log"),
+                """
+                {"timestamp":"2026-07-25T13:00:00Z","event":"Commander","Name":"Second","FID":"F456"}
+                {"timestamp":"2026-07-25T13:00:01Z","event":"LoadGame","Commander":"Second","FID":"F456","Odyssey":true}
+
+                """);
+            await viewModel.RefreshAsync();
+
+            Assert.Equal("Second", viewModel.CommanderName);
+            Assert.Null(viewModel.CurrentCargo);
+            Assert.Empty(viewModel.FrontierProfile.CurrentShipLocker);
+            Assert.True(viewModel.IsWaitingForFreshCargoSnapshot);
+
+            await File.WriteAllTextAsync(
+                cargoPath,
+                """
+                {"timestamp":"2026-07-25T13:00:02Z","event":"Cargo","Vessel":"Ship","Count":3,"Inventory":[{"Name":"silver","Count":3,"Stolen":0}]}
+                """);
+            await File.WriteAllTextAsync(
+                lockerPath,
+                """
+                {"timestamp":"2026-07-25T13:00:02Z","event":"ShipLocker","Items":[],"Components":[{"Name":"microelectrode","Count":4}],"Consumables":[],"Data":[]}
+                """);
+            await viewModel.RefreshAsync();
+
+            Assert.Equal(3, viewModel.CurrentCargo?.GetCount("silver"));
+            Assert.False(viewModel.IsWaitingForFreshCargoSnapshot);
+            Assert.Equal(
+                "Microelectrode",
+                Assert.Single(viewModel.FrontierProfile.CurrentShipLocker).Name);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     private static Task WriteSurfaceStatusAsync(
         string path,
         double latitude,

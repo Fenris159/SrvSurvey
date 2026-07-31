@@ -17,7 +17,9 @@ public sealed class FrontierAccountServiceTests
                 PendingAuthorization = new FrontierPendingAuthorization(
                     "expected-state",
                     "verifier-value",
-                    DateTimeOffset.UnixEpoch),
+                    DateTimeOffset.UnixEpoch,
+                    "F123",
+                    "Fenris"),
             },
         };
         string? tokenBody = null;
@@ -39,8 +41,9 @@ public sealed class FrontierAccountServiceTests
         Assert.Contains("code_verifier=verifier-value", tokenBody);
         Assert.Contains("client_id=" + FrontierAccountService.ClientId, tokenBody);
         Assert.DoesNotContain("client_secret", tokenBody);
-        Assert.Equal("access", store.Document!.AccessToken);
-        Assert.Equal("refresh", store.Document.RefreshToken);
+        var account = store.Document!.Accounts["F123"];
+        Assert.Equal("access", account.AccessToken);
+        Assert.Equal("refresh", account.RefreshToken);
         Assert.Null(store.Document.PendingAuthorization);
         Assert.True(store.Document.AuthorizationResult!.Succeeded);
     }
@@ -55,7 +58,9 @@ public sealed class FrontierAccountServiceTests
                 PendingAuthorization = new FrontierPendingAuthorization(
                     "expected",
                     "verifier",
-                    DateTimeOffset.UnixEpoch),
+                    DateTimeOffset.UnixEpoch,
+                    "F123",
+                    "Fenris"),
             },
         };
         var requestCount = 0;
@@ -117,8 +122,9 @@ public sealed class FrontierAccountServiceTests
                     "/communitygoals",
                 ],
                 requests);
-            Assert.NotNull(store.Document!.LastCapiRefreshAt);
-            Assert.NotNull(store.Document.LastCapiAttemptAt);
+            var credential = store.Document!.Accounts["F123"];
+            Assert.NotNull(credential.LastCapiRefreshAt);
+            Assert.NotNull(credential.LastCapiAttemptAt);
             var cooldown = await Assert.ThrowsAsync<FrontierRefreshCooldownException>(
                 () => service.RefreshAsync());
             Assert.True(cooldown.Remaining > TimeSpan.FromSeconds(50));
@@ -259,6 +265,7 @@ public sealed class FrontierAccountServiceTests
                 () => now,
                 (_, _) => Task.CompletedTask,
                 _ => Task.CompletedTask);
+            service.SetActiveCommander("F123", "Fenris");
 
             var snapshot = await service.RefreshAsync();
 
@@ -340,11 +347,225 @@ public sealed class FrontierAccountServiceTests
 
             await Assert.ThrowsAsync<HttpRequestException>(
                 () => service.RefreshAsync());
-            Assert.Equal(now, store.Document!.LastCapiAttemptAt);
+            Assert.Equal(
+                now,
+                store.Document!.LastCapiAttemptAt);
 
             await Assert.ThrowsAsync<FrontierRefreshCooldownException>(
                 () => service.RefreshAsync());
             Assert.Equal(1, requestCount);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task SwitchingCommanderUsesIndependentCredentialsAndCaches()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-frontier-multi-account-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var store = new MemoryCredentialStore
+            {
+                Document = new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential>
+                    {
+                        ["F123"] = ScopedCredential("access-a", now),
+                        ["F456"] = ScopedCredential("access-b", now),
+                    },
+                },
+            };
+            var requestedTokens = new List<string>();
+            using var service = new FrontierAccountService(
+                new HttpClient(new StubHandler(request =>
+                {
+                    var token = request.Headers.Authorization?.Parameter ?? string.Empty;
+                    requestedTokens.Add(token);
+                    now = now.AddSeconds(1);
+                    if (request.RequestUri!.AbsolutePath != "/profile")
+                    {
+                        return Json(HttpStatusCode.NoContent, string.Empty);
+                    }
+
+                    return token == "access-a"
+                        ? Json(HttpStatusCode.OK,
+                            "{\"commander\":{\"id\":123,\"name\":\"Fenris\",\"credits\":100,\"rank\":{}},\"ships\":[]}")
+                        : Json(HttpStatusCode.OK,
+                            "{\"commander\":{\"id\":456,\"name\":\"Second\",\"credits\":200,\"rank\":{}},\"ships\":[]}");
+                })),
+                store,
+                frontierId => new FrontierProfileCacheStore(Path.Combine(
+                    root,
+                    frontierId + ".json")),
+                utcNow: () => now,
+                openBrowser: (_, _) => Task.CompletedTask,
+                registerProtocol: _ => Task.CompletedTask);
+
+            service.SetActiveCommander("F123", "Fenris");
+            var first = await service.RefreshAsync();
+            service.SetActiveCommander("F456", "Second");
+            var second = await service.RefreshAsync();
+
+            Assert.Equal("Fenris", first.CommanderName);
+            Assert.Equal(100, first.Credits);
+            Assert.Equal("Second", second.CommanderName);
+            Assert.Equal(200, second.Credits);
+            Assert.Contains("access-a", requestedTokens);
+            Assert.Contains("access-b", requestedTokens);
+
+            service.SetActiveCommander("F123", "Fenris");
+            var firstState = await service.GetStateAsync();
+            service.SetActiveCommander("F456", "Second");
+            var secondState = await service.GetStateAsync();
+            Assert.Equal("Fenris", firstState.Snapshot!.CommanderName);
+            Assert.Equal("Second", secondState.Snapshot!.CommanderName);
+            Assert.True(File.Exists(Path.Combine(root, "F123.json")));
+            Assert.True(File.Exists(Path.Combine(root, "F456.json")));
+
+            var linkedCommanders = await service.GetLinkedCommandersAsync();
+            Assert.Collection(
+                linkedCommanders,
+                commander =>
+                {
+                    Assert.Equal("F123", commander.FrontierId);
+                    Assert.Equal("Fenris", commander.CommanderName);
+                },
+                commander =>
+                {
+                    Assert.Equal("F456", commander.FrontierId);
+                    Assert.Equal("Second", commander.CommanderName);
+                });
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task MismatchedOAuthIsRejectedWithoutReplacingAnotherCommander()
+    {
+        var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+        var store = new MemoryCredentialStore
+        {
+            Document = new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential>
+                {
+                    ["F123"] = ScopedCredential("existing-a", now),
+                },
+                PendingAuthorization = new FrontierPendingAuthorization(
+                    "state-b",
+                    "verifier-b",
+                    now,
+                    "F456",
+                    "Second"),
+            },
+        };
+        using var service = CreateService(
+            store,
+            request => request.RequestUri!.AbsolutePath == "/token"
+                ? Json(HttpStatusCode.OK,
+                    "{\"access_token\":\"wrong-account\",\"refresh_token\":\"wrong-refresh\",\"token_type\":\"Bearer\",\"expires_in\":14400}")
+                : Json(HttpStatusCode.OK,
+                    "{\"commander\":{\"id\":123,\"name\":\"Fenris\",\"rank\":{}},\"ships\":[]}"),
+            now: () => now);
+
+        await service.HandleCallbackAsync(new FrontierOAuthCallback(
+            "code-b",
+            "state-b",
+            string.Empty,
+            string.Empty));
+        service.SetActiveCommander("F456", "Second");
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.RefreshAsync());
+
+        Assert.Contains("active journal", error.Message);
+        Assert.True(store.Document!.Accounts.ContainsKey("F123"));
+        Assert.False(store.Document.Accounts.ContainsKey("F456"));
+        Assert.Equal("existing-a", store.Document.Accounts["F123"].AccessToken);
+    }
+
+    [Fact]
+    public async Task UnlinkRemovesOnlyTheActiveCommander()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var store = new MemoryCredentialStore
+        {
+            Document = new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential>
+                {
+                    ["F123"] = ScopedCredential("access-a", now),
+                    ["F456"] = ScopedCredential("access-b", now),
+                },
+            },
+        };
+        using var service = CreateService(
+            store,
+            _ => Json(HttpStatusCode.OK, "{}"));
+        service.SetActiveCommander("F456", "Second");
+
+        await service.UnlinkAsync();
+
+        Assert.True(store.Document!.Accounts.ContainsKey("F123"));
+        Assert.False(store.Document.Accounts.ContainsKey("F456"));
+    }
+
+    [Fact]
+    public async Task LegacySingleAccountAuthorizationMigratesToVerifiedFid()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-frontier-legacy-migration-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var legacyCache = new FrontierProfileCacheStore(Path.Combine(
+                root,
+                "frontier-profile-cache.json"));
+            var snapshot = FrontierCapiSnapshotParser.Parse(
+                "{\"commander\":{\"id\":123,\"name\":\"Fenris\",\"rank\":{}},\"ships\":[]}",
+                null,
+                now);
+            await legacyCache.SaveAsync(snapshot);
+            var store = new MemoryCredentialStore
+            {
+                Document = LinkedCredential(now),
+            };
+            using var service = new FrontierAccountService(
+                new HttpClient(new StubHandler(_ => Json(HttpStatusCode.OK, "{}"))),
+                store,
+                frontierId => new FrontierProfileCacheStore(Path.Combine(
+                    root,
+                    "frontier-profile-cache",
+                    frontierId + ".json")),
+                legacyCache,
+                () => now,
+                (_, _) => Task.CompletedTask,
+                _ => Task.CompletedTask);
+            service.SetActiveCommander("F123", "Fenris");
+
+            var state = await service.GetStateAsync();
+
+            Assert.True(state.IsLinked);
+            Assert.Equal("Fenris", state.Snapshot!.CommanderName);
+            Assert.False(store.Document!.IsLinked);
+            Assert.True(store.Document.Accounts.ContainsKey("F123"));
+            Assert.False(File.Exists(Path.Combine(root, "frontier-profile-cache.json")));
+            Assert.True(File.Exists(Path.Combine(
+                root,
+                "frontier-profile-cache",
+                "F123.json")));
         }
         finally
         {
@@ -399,6 +620,7 @@ public sealed class FrontierAccountServiceTests
                 new HttpClient(new StubHandler(_ => Json(HttpStatusCode.OK, "{}"))),
                 store,
                 new FrontierProfileCacheStore(cachePath));
+            service.SetActiveCommander("F123", "Fenris");
 
             await service.UnlinkAsync();
 
@@ -426,10 +648,18 @@ public sealed class FrontierAccountServiceTests
         try
         {
             var store = FrontierCredentialStore.CreateCurrent(root);
-            var document = LinkedCredential(DateTimeOffset.UtcNow) with
+            var account = ScopedCredential(
+                "plain-access-token",
+                DateTimeOffset.UtcNow) with
             {
-                AccessToken = "plain-access-token",
                 RefreshToken = "plain-refresh-token",
+            };
+            var document = new FrontierCredentialDocument
+            {
+                Accounts = new Dictionary<string, FrontierAccountCredential>
+                {
+                    ["F123"] = account,
+                },
             };
 
             await store.SaveAsync(document);
@@ -437,9 +667,11 @@ public sealed class FrontierAccountServiceTests
             var bytes = await File.ReadAllBytesAsync(
                 Path.Combine(root, "frontier-auth.dat"));
             var persistedText = Encoding.UTF8.GetString(bytes);
-            Assert.DoesNotContain(document.AccessToken, persistedText);
-            Assert.DoesNotContain(document.RefreshToken, persistedText);
-            Assert.Equal(document.AccessToken, (await store.LoadAsync())!.AccessToken);
+            Assert.DoesNotContain(account.AccessToken, persistedText);
+            Assert.DoesNotContain(account.RefreshToken, persistedText);
+            Assert.Equal(
+                account.AccessToken,
+                (await store.LoadAsync())!.Accounts["F123"].AccessToken);
 
             await store.ClearAsync();
             Assert.Null(await store.LoadAsync());
@@ -466,13 +698,15 @@ public sealed class FrontierAccountServiceTests
             Directory.CreateDirectory(root);
         }
 
-        return new FrontierAccountService(
+        var service = new FrontierAccountService(
             new HttpClient(new StubHandler(response)),
             store,
             new FrontierProfileCacheStore(cachePath),
             now,
             (_, _) => Task.CompletedTask,
             _ => Task.CompletedTask);
+        service.SetActiveCommander("F123", "Fenris");
+        return service;
     }
 
     private static FrontierCredentialDocument LinkedCredential(
@@ -487,6 +721,18 @@ public sealed class FrontierAccountServiceTests
             AuthorizedAt = now,
         };
     }
+
+    private static FrontierAccountCredential ScopedCredential(
+        string accessToken,
+        DateTimeOffset now) =>
+        new()
+        {
+            AccessToken = accessToken,
+            RefreshToken = accessToken + "-refresh",
+            TokenType = "Bearer",
+            ExpiresAt = now.AddHours(1),
+            AuthorizedAt = now,
+        };
 
     private static HttpResponseMessage Json(HttpStatusCode status, string content)
     {
@@ -510,6 +756,8 @@ public sealed class FrontierAccountServiceTests
 
     private sealed class MemoryCredentialStore : IFrontierCredentialStore
     {
+        private readonly SemaphoreSlim gate = new(1, 1);
+
         public FrontierCredentialDocument? Document { get; set; }
 
         public Task<FrontierCredentialDocument?> LoadAsync(
@@ -530,6 +778,22 @@ public sealed class FrontierAccountServiceTests
         {
             Document = null;
             return Task.CompletedTask;
+        }
+
+        public async Task<IAsyncDisposable> AcquireLeaseAsync(
+            CancellationToken cancellationToken = default)
+        {
+            await gate.WaitAsync(cancellationToken);
+            return new MemoryLease(gate);
+        }
+
+        private sealed class MemoryLease(SemaphoreSlim gate) : IAsyncDisposable
+        {
+            public ValueTask DisposeAsync()
+            {
+                gate.Release();
+                return ValueTask.CompletedTask;
+            }
         }
     }
 }

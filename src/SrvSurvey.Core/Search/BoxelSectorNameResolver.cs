@@ -29,6 +29,13 @@ internal static class BoxelSectorNameResolver
         return get_sector_name(new SectorCoordinate(x, y, z), false);
     }
 
+    public static SectorCoordinate? GetSectorCoordinates(
+        string sectorName,
+        char massCode)
+    {
+        return getSectorCoords(sectorName, massCode);
+    }
+
     public static bool IsValidSectorName(string? sectorName)
     {
         return is_valid_sector_name(sectorName);
@@ -873,9 +880,15 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     public static long pack_and_shift(long value, int newData, int bits)
     {
+        if (bits is < 0 or > 32)
+        {
+            throw new ArgumentOutOfRangeException(nameof(bits));
+        }
+
         var shifted = value << bits;
-        var tail = (newData & ((1 << bits) - 1));
-        return shifted + tail;
+        var mask = bits == 0 ? 0 : (1L << bits) - 1;
+        var tail = (long)newData & mask;
+        return shifted | tail;
     }
 
     private static int Interleave(int val1, int val2, int maxbits)

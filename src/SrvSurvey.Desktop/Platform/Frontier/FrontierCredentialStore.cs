@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Runtime.Versioning;
 
 namespace SrvSurvey.Desktop.Platform.Frontier;
@@ -17,9 +18,71 @@ public interface IFrontierCredentialStore
         CancellationToken cancellationToken = default);
 
     Task ClearAsync(CancellationToken cancellationToken = default);
+
+    Task<IAsyncDisposable> AcquireLeaseAsync(
+        CancellationToken cancellationToken = default);
 }
 
 public sealed record FrontierCredentialDocument
+{
+    public int Version { get; init; } = 2;
+
+    public IReadOnlyDictionary<string, FrontierAccountCredential> Accounts
+    {
+        get;
+        init;
+    } = new Dictionary<string, FrontierAccountCredential>(
+        StringComparer.OrdinalIgnoreCase);
+
+    // These top-level fields are retained only to migrate the original
+    // single-account credential document without discarding authorization.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string AccessToken { get; init; } = string.Empty;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string RefreshToken { get; init; } = string.Empty;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string TokenType { get; init; } = "Bearer";
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public DateTimeOffset? ExpiresAt { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public DateTimeOffset? AuthorizedAt { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public DateTimeOffset? LastCapiRefreshAt { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public DateTimeOffset? LastCapiAttemptAt { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string LegacyFrontierId { get; init; } = string.Empty;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string LegacyCommanderName { get; init; } = string.Empty;
+
+    public FrontierPendingAuthorization? PendingAuthorization { get; init; }
+
+    public FrontierAuthorizationResult? AuthorizationResult { get; init; }
+
+    public bool IsLinked => !string.IsNullOrWhiteSpace(AccessToken)
+        || !string.IsNullOrWhiteSpace(RefreshToken);
+
+    public FrontierAccountCredential LegacyCredential => new()
+    {
+        AccessToken = AccessToken,
+        RefreshToken = RefreshToken,
+        TokenType = TokenType,
+        ExpiresAt = ExpiresAt,
+        AuthorizedAt = AuthorizedAt,
+        LastCapiRefreshAt = LastCapiRefreshAt,
+        LastCapiAttemptAt = LastCapiAttemptAt,
+    };
+}
+
+public sealed record FrontierAccountCredential
 {
     public string AccessToken { get; init; } = string.Empty;
 
@@ -35,10 +98,6 @@ public sealed record FrontierCredentialDocument
 
     public DateTimeOffset? LastCapiAttemptAt { get; init; }
 
-    public FrontierPendingAuthorization? PendingAuthorization { get; init; }
-
-    public FrontierAuthorizationResult? AuthorizationResult { get; init; }
-
     public bool IsLinked => !string.IsNullOrWhiteSpace(AccessToken)
         || !string.IsNullOrWhiteSpace(RefreshToken);
 }
@@ -46,7 +105,9 @@ public sealed record FrontierCredentialDocument
 public sealed record FrontierPendingAuthorization(
     string State,
     string CodeVerifier,
-    DateTimeOffset StartedAt);
+    DateTimeOffset StartedAt,
+    string FrontierId = "",
+    string CommanderName = "");
 
 public sealed record FrontierAuthorizationResult(
     string State,
@@ -68,7 +129,9 @@ public static class FrontierCredentialStore
 
         if (OperatingSystem.IsLinux())
         {
-            return new LinuxSecretServiceFrontierCredentialStore();
+            return new LinuxSecretServiceFrontierCredentialStore(Path.Combine(
+                dataDirectory,
+                "frontier-auth.lock"));
         }
 
         return new UnsupportedFrontierCredentialStore();
@@ -154,9 +217,13 @@ internal sealed class WindowsFrontierCredentialStore(string path)
 
         return Task.CompletedTask;
     }
+
+    public Task<IAsyncDisposable> AcquireLeaseAsync(
+        CancellationToken cancellationToken = default) =>
+        CredentialStoreLease.AcquireAsync(path + ".lock", cancellationToken);
 }
 
-internal sealed class LinuxSecretServiceFrontierCredentialStore
+internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath)
     : IFrontierCredentialStore
 {
     private const string UnavailableMessage =
@@ -238,6 +305,10 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore
         }
     }
 
+    public Task<IAsyncDisposable> AcquireLeaseAsync(
+        CancellationToken cancellationToken = default) =>
+        CredentialStoreLease.AcquireAsync(leasePath, cancellationToken);
+
     private static async Task<ProcessResult> RunAsync(
         IReadOnlyList<string> arguments,
         string? standardInput,
@@ -305,4 +376,47 @@ internal sealed class UnsupportedFrontierCredentialStore
 
     public Task ClearAsync(CancellationToken cancellationToken = default) =>
         Task.FromException(CreateException());
+
+    public Task<IAsyncDisposable> AcquireLeaseAsync(
+        CancellationToken cancellationToken = default) =>
+        Task.FromException<IAsyncDisposable>(CreateException());
+}
+
+internal static class CredentialStoreLease
+{
+    public static async Task<IAsyncDisposable> AcquireAsync(
+        string path,
+        CancellationToken cancellationToken)
+    {
+        var directory = Path.GetDirectoryName(path)
+            ?? throw new InvalidOperationException(
+                "Frontier credential lock has no parent directory.");
+        Directory.CreateDirectory(directory);
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                return new Lease(new FileStream(
+                    path,
+                    FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite,
+                    FileShare.None,
+                    bufferSize: 1,
+                    useAsync: true));
+            }
+            catch (IOException)
+            {
+                await Task.Delay(
+                        TimeSpan.FromMilliseconds(100),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
+    }
+
+    private sealed class Lease(FileStream stream) : IAsyncDisposable
+    {
+        public ValueTask DisposeAsync() => stream.DisposeAsync();
+    }
 }

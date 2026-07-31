@@ -75,8 +75,27 @@ and a Secret Service-compatible keyring on Linux. Linux linking requires
 `secret-tool`; the application will not save tokens in plaintext when a secure
 store is unavailable.
 
-SrvSurvey allows at most one CAPI refresh attempt per minute, including after a
-failed request and across concurrently running SrvSurvey processes. It
+Authorizations and cached snapshots are isolated by the stable Frontier ID
+from the active journal. Switching Elite accounts selects that commander's
+saved authorization without reusing another commander's token or cache. A
+commander that has not been linked remains disconnected until the user presses
+**Connect to Frontier**. After authorization, SrvSurvey verifies the `/profile`
+identity against the active journal before attaching the token. The original
+single-account credential and cache files are migrated only after the cached or
+live profile identity can be verified.
+
+The console's commander selector defaults to **Automatic**, which follows the
+active journal commander. It also lists every locally linked Frontier account
+so the user can inspect another commander's cached dashboard without changing
+which commander the rest of SrvSurvey is tracking. While the selection differs
+from the active journal, journal-only reputation, `Cargo.json`, and
+`ShipLocker.json` data are withheld rather than being shown against the wrong
+Frontier profile. Returning the selector to **Automatic** resumes journal
+following immediately.
+
+SrvSurvey allows at most one CAPI refresh attempt per commander per minute,
+including after a failed request and across concurrently running SrvSurvey
+processes that track that commander. It
 automatically refreshes only when no cached snapshot exists or the snapshot is at least 15
 minutes old, and attempts that automatic refresh only once per application
 session. All endpoint calls are serialized and responses are read with
@@ -87,9 +106,12 @@ their last good section data and display a warning instead of failing the
 entire dashboard. Frontier `429` responses are surfaced with their
 `Retry-After` delay instead of being retried aggressively.
 
-Selecting **Unlink Frontier** removes the tokens and cached profile from the
-device. Frontier can also revoke an authorization independently; SrvSurvey then
-returns to the disconnected state the next time it attempts to refresh.
+Selecting **Unlink Frontier** removes only the commander currently selected in
+the console and its cached profile from the device; other linked commanders
+remain available. If a manually selected account is unlinked, the console
+returns to **Automatic**.
+Frontier can also revoke an authorization independently; SrvSurvey then returns
+that commander to the disconnected state the next time it attempts to refresh.
 
 ## References
 

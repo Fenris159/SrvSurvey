@@ -11,8 +11,9 @@ namespace SrvSurvey.Desktop;
 public sealed partial class MainWindow : Window
 {
     private readonly MainWindowViewModel viewModel;
-    private CancellationTokenSource? monitorCancellation;
-    private Task? monitorTask;
+    private readonly JournalMonitorSession monitorSession = new();
+    private Task? closePreparationTask;
+    private bool closeReady;
     private TrayIcon? trayIcon;
 
     public MainWindow()
@@ -43,16 +44,18 @@ public sealed partial class MainWindow : Window
     private async void OnOpened(object? sender, EventArgs eventArgs)
     {
         Opened -= OnOpened;
-        var cancellation = new CancellationTokenSource();
-        monitorCancellation = cancellation;
+        await monitorSession.Start(RunMonitorAsync);
+    }
+
+    private async Task RunMonitorAsync(CancellationToken cancellationToken)
+    {
         _ = viewModel.ReleaseUpdates.CheckAsync();
         _ = viewModel.ReferenceDataUpdates.RefreshAsync();
         await viewModel.RefreshAsync();
-        if (!cancellation.IsCancellationRequested)
+        if (!cancellationToken.IsCancellationRequested)
         {
-            monitorTask = viewModel.MonitorAsync(
-                cancellationToken: cancellation.Token);
             _ = viewModel.DesktopBehavior.RequestStartupFocus();
+            await viewModel.MonitorAsync(cancellationToken: cancellationToken);
         }
     }
 
@@ -74,22 +77,38 @@ public sealed partial class MainWindow : Window
 
     private async Task StopMonitorForProfileImportAsync()
     {
-        var cancellation = monitorCancellation;
-        var runningMonitor = monitorTask;
-        monitorCancellation = null;
-        monitorTask = null;
-        if (cancellation is null)
+        await monitorSession.StopAsync();
+    }
+
+    protected override void OnClosing(WindowClosingEventArgs eventArgs)
+    {
+        if (!closeReady)
         {
+            eventArgs.Cancel = true;
+            base.OnClosing(eventArgs);
+            closePreparationTask ??= PrepareToCloseAsync();
             return;
         }
 
-        cancellation.Cancel();
-        if (runningMonitor is not null)
-        {
-            await runningMonitor;
-        }
+        base.OnClosing(eventArgs);
+    }
 
-        cancellation.Dispose();
+    private async Task PrepareToCloseAsync()
+    {
+        try
+        {
+            await monitorSession.StopAsync();
+        }
+        catch (Exception exception)
+        {
+            Program.ApplicationLog?.Append(
+                "Journal monitor shutdown failed: " + exception);
+        }
+        finally
+        {
+            closeReady = true;
+            Dispatcher.UIThread.Post(Close);
+        }
     }
 
     protected override void OnClosed(EventArgs eventArgs)
@@ -97,10 +116,6 @@ public sealed partial class MainWindow : Window
         InputContext.SetActive(false);
         InputContext.SetTextInputActive(false);
         viewModel.ProfileImportPreparing -= StopMonitorForProfileImportAsync;
-        monitorCancellation?.Cancel();
-        monitorCancellation?.Dispose();
-        monitorCancellation = null;
-        monitorTask = null;
         trayIcon?.Dispose();
         trayIcon = null;
         base.OnClosed(eventArgs);

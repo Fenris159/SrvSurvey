@@ -46,19 +46,26 @@ SrvSurvey, another SrvSurvey user, or a third party. Authentication tokens are
 protected with Windows Data Protection on Windows or a Secret Service-compatible
 keyring on Linux; there is no plaintext fallback. A normalized dashboard cache,
 including detailed ship, carrier, market, shipyard, and Community Goal fields,
-is kept in the commander's local SrvSurvey data directory. Raw API responses
+is kept separately for each journal Frontier ID in the commander's local
+SrvSurvey data directory. Tokens are selected only for the active journal
+commander unless the user explicitly chooses another locally linked account in
+the console's manual selector. A newly authorized `/profile` identity must
+match the journal commander for which linking began before the account is
+attached. Raw API responses
 are not persisted.
 
 The **Current Ship** tab may also display the active ship's cargo and Odyssey
 materials from Elite's local `Cargo.json` and `ShipLocker.json` files. This
 local inventory is not sent to Frontier or any other service, and it is hidden
-when multiple Elite game processes make commander attribution ambiguous.
+when multiple Elite game processes make commander attribution ambiguous or
+when the console is manually displaying a different Frontier commander.
 
 A manual refresh attempt is limited to one per minute, including after a failed
 request. Automatic refresh is attempted only when there is no cached profile or
 the cache is at least 15
 minutes old, and only once per application session. **Unlink Frontier** removes
-the stored authorization and the local profile cache. See
+only the console's currently selected commander's stored authorization and
+local profile cache. See
 [Frontier account linking](FRONTIER.md) for implementation and troubleshooting
 details.
 

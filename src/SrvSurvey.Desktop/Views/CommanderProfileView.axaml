@@ -17,6 +17,21 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
           <StackPanel Spacing="18" HorizontalAlignment="Center">
+            <StackPanel Width="360" MaxWidth="520" Spacing="6">
+              <TextBlock Classes="eyebrow" Text="COMMANDER SELECTION" />
+              <ComboBox ItemsSource="{Binding CommanderSelectionOptions}"
+                        SelectedItem="{Binding SelectedCommanderOption, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierCommanderSelectionOption">
+                    <TextBlock Margin="4" Text="{Binding DisplayName}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <TextBlock Classes="muted"
+                         FontSize="11"
+                         TextWrapping="Wrap"
+                         Text="{Binding CommanderSelectionDescription}" />
+            </StackPanel>
             <Border Width="64" Height="64"
                     CornerRadius="18"
                     Background="{DynamicResource RavenAccentMutedBrush}"
@@ -32,6 +47,9 @@
                        FontWeight="SemiBold"
                        TextAlignment="Center"
                        Text="Connect to Frontier to view this page." />
+            <TextBlock Classes="eyebrow"
+                       TextAlignment="Center"
+                       Text="{Binding ActiveCommanderDescription}" />
             <TextBlock MaxWidth="520"
                        Classes="muted"
                        TextAlignment="Center"
@@ -65,10 +83,30 @@
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
           <StackPanel Spacing="3">
             <TextBlock Classes="eyebrow" Text="FRONTIER COMMANDER CONSOLE" />
+            <Grid Margin="0,5,0,4"
+                  ColumnDefinitions="Auto,*"
+                  ColumnSpacing="10">
+              <TextBlock VerticalAlignment="Center"
+                         Classes="muted"
+                         Text="View commander" />
+              <ComboBox Grid.Column="1"
+                        MinWidth="280"
+                        MaxWidth="420"
+                        ItemsSource="{Binding CommanderSelectionOptions}"
+                        SelectedItem="{Binding SelectedCommanderOption, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FrontierCommanderSelectionOption">
+                    <TextBlock Margin="4" Text="{Binding DisplayName}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </Grid>
             <TextBlock FontSize="23"
                        FontWeight="SemiBold"
                        Text="{Binding CommanderName}" />
             <TextBlock Classes="muted" Text="{Binding LastUpdated}" />
+            <TextBlock Classes="muted"
+                       Text="{Binding CommanderSelectionDescription}" />
             <TextBlock Classes="muted"
                        IsVisible="{Binding !IsBusy}"
                        TextWrapping="Wrap"

@@ -1,6 +1,6 @@
 # Development and Validation
 
-Last updated: 2026-07-29
+Last updated: 2026-07-30
 
 ## Branch purpose
 
@@ -37,6 +37,20 @@ XWayland startup.
 - Profile import remains backup-first, hash-verified, staged, and recoverable.
   Compatibility code and tests are part of the converted product, not a build
   dependency on the previous implementation.
+
+## Upstream parity baseline
+
+The latest source comparison was completed on 2026-07-30 against upstream
+commit `c8068866db8fc98061922a391922b74842b6cef3`. Its organic-scan recovery is
+covered by the Avalonia system reducer's body lookup/creation path. Its
+colonisation shopping-overlay correction is preserved by classifying an
+untracked Fleet Carrier from the journal's `StationType` value and the complete
+commander-linked Raven carrier inventory; station economy is not used as a
+Fleet Carrier proxy. Focused planner and presentation tests lock this behavior.
+
+Because this branch intentionally excludes the previous application source,
+future upstream commits must receive an explicit delta review rather than being
+assumed covered by the standalone journal, network, and overlay inventories.
 
 ## Runtime verification
 

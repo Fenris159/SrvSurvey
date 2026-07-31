@@ -69,6 +69,12 @@ public static class ColonizationCommodityPlanner
         var dockedAtLinkedCarrier = dock is not null
             && relevantCarriers.Any(carrier =>
                 carrier.MarketId == dock.MarketId);
+        var isDockedAtUntrackedFleetCarrier = dock is not null
+            && string.Equals(
+                dock.StationType,
+                "FleetCarrier",
+                StringComparison.OrdinalIgnoreCase)
+            && !carriers.Any(carrier => carrier.MarketId == dock.MarketId);
         var rows = requirements
             .Where(requirement => requirement.Value.Remaining > 0)
             .Select(requirement => CreateRow(
@@ -112,6 +118,7 @@ public static class ColonizationCommodityPlanner
                 : null,
             atConstructionSite,
             atConstructionSite && localProject is null,
+            isDockedAtUntrackedFleetCarrier,
             hasCurrentDepot && depot?.IsComplete == true,
             hasCurrentDepot && depot?.IsFailed == true);
     }
@@ -454,11 +461,13 @@ public sealed record ColonizationCommodityPlan(
     long? FleetCarrierDeficitTrips,
     bool IsAtConstructionSite,
     bool IsLocalProjectUntracked,
+    bool IsDockedAtUntrackedFleetCarrier,
     bool IsConstructionComplete,
     bool IsConstructionFailed)
 {
     public bool HasContent => Rows.Count > 0
         || IsAtConstructionSite
+        || IsDockedAtUntrackedFleetCarrier
         || IsConstructionComplete
         || IsConstructionFailed;
 }

@@ -227,6 +227,169 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task CommanderSwitchSelectsSavedProfileAndClearsLocalInventory()
+    {
+        var first = CreateSnapshot(DateTimeOffset.UtcNow) with
+        {
+            CommanderId = 123,
+        };
+        var second = CreateSnapshot(DateTimeOffset.UtcNow.AddMinutes(1)) with
+        {
+            CommanderName = "Second",
+            CommanderId = 456,
+            Credits = 2_000,
+        };
+        var account = new StubAccountService(
+            new FrontierAccountState(false, null, null));
+        account.SetStateForCommander(
+            "F123",
+            new FrontierAccountState(true, first, first.FetchedAt));
+        account.SetStateForCommander(
+            "F456",
+            new FrontierAccountState(true, second, second.FetchedAt));
+        using var viewModel = new CommanderProfileViewModel(account);
+
+        await viewModel.SetCommanderContextAsync(
+            "F123",
+            "Fenris",
+            refreshIfOpen: true);
+        viewModel.UpdateLocalInventory(
+            new CargoSnapshot(
+                DateTimeOffset.UtcNow,
+                "Cargo",
+                "Ship",
+                1,
+                [new CargoItem("gold", "Gold", 1, 0)]),
+            null,
+            isSuppressed: false);
+        Assert.Equal("Fenris", viewModel.CommanderName);
+        Assert.True(viewModel.HasCurrentShipCargo);
+
+        await viewModel.SetCommanderContextAsync(
+            "F456",
+            "Second",
+            refreshIfOpen: true);
+
+        Assert.Equal("Second", viewModel.CommanderName);
+        Assert.Contains("2,000", viewModel.Balance);
+        Assert.False(viewModel.HasCurrentShipCargo);
+        Assert.Equal("F456", account.ActiveFrontierId);
+
+        await viewModel.SetCommanderContextAsync(
+            "F123",
+            "Fenris",
+            refreshIfOpen: true);
+
+        Assert.Equal("Fenris", viewModel.CommanderName);
+        Assert.Equal("F123", account.ActiveFrontierId);
+    }
+
+    [Fact]
+    public async Task ManualCommanderSelectionOverridesConsoleWithoutMixingJournalInventory()
+    {
+        var fetchedAt = DateTimeOffset.UtcNow;
+        var first = CreateSnapshot(fetchedAt) with
+        {
+            CommanderId = 123,
+        };
+        var second = CreateSnapshot(fetchedAt) with
+        {
+            CommanderName = "Second",
+            CommanderId = 456,
+            Credits = 2_000,
+        };
+        var account = new StubAccountService(
+            new FrontierAccountState(false, null, null));
+        account.SetStateForCommander(
+            "F123",
+            new FrontierAccountState(true, first, first.FetchedAt));
+        account.SetStateForCommander(
+            "F456",
+            new FrontierAccountState(true, second, second.FetchedAt));
+        using var viewModel = new CommanderProfileViewModel(account);
+        await viewModel.SetCommanderContextAsync(
+            "F123",
+            "Fenris",
+            refreshIfOpen: true);
+        viewModel.UpdateLocalInventory(
+            new CargoSnapshot(
+                fetchedAt,
+                "Cargo",
+                "Ship",
+                1,
+                [new CargoItem("gold", "Gold", 1, 0)]),
+            null,
+            isSuppressed: false);
+
+        Assert.Equal(3, viewModel.CommanderSelectionOptions.Count);
+        Assert.True(viewModel.SelectedCommanderOption!.IsAutomatic);
+        Assert.True(viewModel.HasCurrentShipCargo);
+
+        var secondOption = Assert.Single(
+            viewModel.CommanderSelectionOptions,
+            option => option.FrontierId == "F456" && !option.IsAutomatic);
+        await viewModel.SelectCommanderAsync(secondOption);
+
+        Assert.False(viewModel.IsAutomaticCommanderSelection);
+        Assert.Equal("F456", account.ActiveFrontierId);
+        Assert.Equal("Second", viewModel.CommanderName);
+        Assert.False(viewModel.HasCurrentShipCargo);
+        Assert.Contains("different Frontier account", viewModel.LocalInventoryStatus);
+
+        var automatic = Assert.Single(
+            viewModel.CommanderSelectionOptions,
+            option => option.IsAutomatic);
+        await viewModel.SelectCommanderAsync(automatic);
+
+        Assert.True(viewModel.IsAutomaticCommanderSelection);
+        Assert.Equal("F123", account.ActiveFrontierId);
+        Assert.Equal("Fenris", viewModel.CommanderName);
+        Assert.True(viewModel.HasCurrentShipCargo);
+    }
+
+    [Fact]
+    public async Task ManualCommanderSelectionSurvivesJournalCommanderDetection()
+    {
+        var fetchedAt = DateTimeOffset.UtcNow;
+        var first = CreateSnapshot(fetchedAt) with
+        {
+            CommanderId = 123,
+        };
+        var second = CreateSnapshot(fetchedAt) with
+        {
+            CommanderName = "Second",
+            CommanderId = 456,
+        };
+        var account = new StubAccountService(
+            new FrontierAccountState(false, null, null));
+        account.SetStateForCommander(
+            "F123",
+            new FrontierAccountState(true, first, first.FetchedAt));
+        account.SetStateForCommander(
+            "F456",
+            new FrontierAccountState(true, second, second.FetchedAt));
+        using var viewModel = new CommanderProfileViewModel(account);
+        await viewModel.SetCommanderContextAsync(
+            "F123",
+            "Fenris",
+            refreshIfOpen: true);
+        var secondOption = Assert.Single(
+            viewModel.CommanderSelectionOptions,
+            option => option.FrontierId == "F456" && !option.IsAutomatic);
+        await viewModel.SelectCommanderAsync(secondOption);
+
+        await viewModel.SetCommanderContextAsync(
+            "F789",
+            "Third",
+            refreshIfOpen: true);
+
+        Assert.False(viewModel.IsAutomaticCommanderSelection);
+        Assert.Equal("F456", account.ActiveFrontierId);
+        Assert.Equal("Second", viewModel.CommanderName);
+        Assert.Contains("Third (F789)", viewModel.CommanderSelectionDescription);
+    }
+
+    [Fact]
     public async Task CurrentShipSeparatesLiveryAndGroupsLocalizedModuleLoadout()
     {
         var fetchedAt = DateTimeOffset.UtcNow;
@@ -407,11 +570,11 @@ public sealed class CommanderProfileViewModelTests
                 CommanderReputation = [],
                 CommanderReputationFetchedAt = null,
             };
-            var profile = new CommanderProfileViewModel(
-                new StubAccountService(new FrontierAccountState(
-                    true,
-                    snapshot,
-                    snapshot.FetchedAt)));
+            var account = new StubAccountService(new FrontierAccountState(
+                true,
+                snapshot,
+                snapshot.FetchedAt));
+            var profile = new CommanderProfileViewModel(account);
             await profile.OpenAsync();
             using var main = new MainWindowViewModel(
                 journals,
@@ -422,8 +585,10 @@ public sealed class CommanderProfileViewModelTests
                     []),
                 frontierProfile: profile);
 
+            await main.ShowProfileAsync();
             await main.RefreshAsync();
 
+            Assert.Equal("F123", account.ActiveFrontierId);
             Assert.Null(profile.Carrier);
             Assert.Equal(4, profile.CommanderReputation.Count);
             Assert.Equal(
@@ -590,6 +755,8 @@ public sealed class CommanderProfileViewModelTests
     {
         private FrontierAccountState state;
         private readonly FrontierAccountSnapshot? refreshed;
+        private readonly Dictionary<string, FrontierAccountState> commanderStates =
+            new(StringComparer.OrdinalIgnoreCase);
 
         public StubAccountService(
             FrontierAccountState state,
@@ -601,15 +768,48 @@ public sealed class CommanderProfileViewModelTests
 
         public int RefreshCount { get; private set; }
 
+        public string? ActiveFrontierId { get; private set; }
+
+        public string? ActiveCommanderName { get; private set; }
+
+        public void SetActiveCommander(string? frontierId, string? commanderName)
+        {
+            ActiveFrontierId = frontierId;
+            ActiveCommanderName = commanderName;
+        }
+
         public void SetState(FrontierAccountState value)
         {
             state = value;
         }
 
+        public void SetStateForCommander(
+            string frontierId,
+            FrontierAccountState value)
+        {
+            commanderStates[frontierId] = value;
+        }
+
+        public Task<IReadOnlyList<FrontierLinkedCommander>> GetLinkedCommandersAsync(
+            CancellationToken cancellationToken = default)
+        {
+            IReadOnlyList<FrontierLinkedCommander> linked = commanderStates
+                .Where(pair => pair.Value.IsLinked)
+                .Select(pair => new FrontierLinkedCommander(
+                    pair.Key,
+                    pair.Value.Snapshot?.CommanderName ?? pair.Key))
+                .ToArray();
+            return Task.FromResult(linked);
+        }
+
         public Task<FrontierAccountState> GetStateAsync(
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(state);
+            return Task.FromResult(
+                ActiveFrontierId is not null
+                && commanderStates.TryGetValue(ActiveFrontierId, out var scoped)
+                    ? scoped
+                    : state);
         }
 
         public Task<FrontierAccountSnapshot> ConnectAsync(

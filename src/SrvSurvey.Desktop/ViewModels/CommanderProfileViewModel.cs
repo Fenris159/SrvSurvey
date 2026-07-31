@@ -22,6 +22,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private readonly AsyncCommand unlinkCommand;
     private CancellationTokenSource? connectionCancellation;
     private FrontierAccountSnapshot? snapshot;
+    private CargoSnapshot? detectedShipCargo;
+    private ShipLockerSnapshot? detectedShipLocker;
     private CargoSnapshot? localShipCargo;
     private ShipLockerSnapshot? localShipLocker;
     private IReadOnlyList<FrontierShipModuleGroupViewModel> currentShipModuleGroups = [];
@@ -29,6 +31,19 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private IReadOnlyList<FrontierReputationSnapshot> journalReputation = [];
     private string? journalReputationCommanderName;
     private DateTimeOffset? journalReputationUpdatedAt;
+    private string? detectedFrontierId;
+    private string? detectedCommanderName;
+    private string? activeFrontierId;
+    private string? activeCommanderName;
+    private string? manuallySelectedFrontierId;
+    private string? manuallySelectedCommanderName;
+    private IReadOnlyList<FrontierCommanderSelectionOption> commanderSelectionOptions =
+        [FrontierCommanderSelectionOption.Automatic(null, null)];
+    private FrontierCommanderSelectionOption? selectedCommanderOption;
+    private bool isUpdatingCommanderSelection;
+    private long commanderContextVersion;
+    private bool isCompanionInventorySuppressed;
+    private bool isManualInventorySuppressed;
     private bool isLocalInventorySuppressed;
     private bool isLinked;
     private bool isBusy;
@@ -44,7 +59,9 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         this.accountService = accountService
             ?? throw new ArgumentNullException(nameof(accountService));
         this.now = now ?? (() => DateTimeOffset.Now);
-        connectCommand = new AsyncCommand(ConnectAsync, () => !IsBusy && !IsLinked);
+        connectCommand = new AsyncCommand(
+            ConnectAsync,
+            () => !IsBusy && !IsLinked && activeFrontierId is not null);
         cancelConnectionCommand = new AsyncCommand(
             CancelConnectionAsync,
             () => IsConnecting);
@@ -54,6 +71,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         CancelConnectionCommand = cancelConnectionCommand;
         RefreshCommand = refreshCommand;
         UnlinkCommand = unlinkCommand;
+        selectedCommanderOption = commanderSelectionOptions[0];
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -82,6 +100,51 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     }
 
     public bool IsUnlinked => !IsLinked;
+
+    public IReadOnlyList<FrontierCommanderSelectionOption> CommanderSelectionOptions
+    {
+        get => commanderSelectionOptions;
+        private set => SetField(ref commanderSelectionOptions, value);
+    }
+
+    public FrontierCommanderSelectionOption? SelectedCommanderOption
+    {
+        get => selectedCommanderOption;
+        set
+        {
+            if (!SetField(ref selectedCommanderOption, value)
+                || isUpdatingCommanderSelection
+                || value is null)
+            {
+                return;
+            }
+
+            _ = SelectCommanderAsync(value);
+        }
+    }
+
+    public bool IsAutomaticCommanderSelection => manuallySelectedFrontierId is null;
+
+    public string DetectedCommanderDescription => detectedFrontierId is null
+        ? "Waiting for active journal commander"
+        : string.IsNullOrWhiteSpace(detectedCommanderName)
+            ? detectedFrontierId
+            : $"{detectedCommanderName} ({detectedFrontierId})";
+
+    public string ActiveCommanderDescription => activeFrontierId is null
+        ? "No Frontier commander selected"
+        : string.IsNullOrWhiteSpace(activeCommanderName)
+            ? activeFrontierId
+            : $"{activeCommanderName} ({activeFrontierId})";
+
+    public string CommanderSelectionDescription => IsAutomaticCommanderSelection
+        ? $"Automatic · Journal: {DetectedCommanderDescription}"
+        : string.Equals(
+            activeFrontierId,
+            detectedFrontierId,
+            StringComparison.OrdinalIgnoreCase)
+                ? "Manual selection · Matches the active journal commander"
+                : $"Manual selection · Journal remains {DetectedCommanderDescription}";
 
     public bool IsBusy
     {
@@ -350,6 +413,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         {
             if (isLocalInventorySuppressed)
             {
+                if (isManualInventorySuppressed)
+                {
+                    return "Local cargo and ship-locker inventory belongs to the active journal commander and is hidden while viewing a different Frontier account.";
+                }
+
                 return "Local cargo and ship-locker inventory is hidden while multiple Elite windows are running because the shared companion files cannot be attributed safely.";
             }
 
@@ -373,18 +441,37 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         ShipLockerSnapshot? shipLocker,
         bool isSuppressed)
     {
-        var nextCargo = !isSuppressed
-            && string.Equals(cargo?.Vessel, "Ship", StringComparison.OrdinalIgnoreCase)
-                ? cargo
+        detectedShipCargo = cargo;
+        detectedShipLocker = shipLocker;
+        isCompanionInventorySuppressed = isSuppressed;
+        ApplyLocalInventorySelection();
+    }
+
+    private void ApplyLocalInventorySelection()
+    {
+        var manualSuppression = manuallySelectedFrontierId is not null
+            && !string.Equals(
+                manuallySelectedFrontierId,
+                detectedFrontierId,
+                StringComparison.OrdinalIgnoreCase);
+        var suppression = isCompanionInventorySuppressed || manualSuppression;
+        var nextCargo = !suppression
+            && string.Equals(
+                detectedShipCargo?.Vessel,
+                "Ship",
+                StringComparison.OrdinalIgnoreCase)
+                ? detectedShipCargo
                 : null;
-        var nextShipLocker = isSuppressed ? null : shipLocker;
+        var nextShipLocker = suppression ? null : detectedShipLocker;
         var cargoChanged = !ReferenceEquals(localShipCargo, nextCargo);
         var shipLockerChanged = !ReferenceEquals(localShipLocker, nextShipLocker);
-        var suppressionChanged = isLocalInventorySuppressed != isSuppressed;
+        var suppressionChanged = isLocalInventorySuppressed != suppression
+            || isManualInventorySuppressed != manualSuppression;
 
         localShipCargo = nextCargo;
         localShipLocker = nextShipLocker;
-        isLocalInventorySuppressed = isSuppressed;
+        isLocalInventorySuppressed = suppression;
+        isManualInventorySuppressed = manualSuppression;
 
         if (shipLockerChanged || suppressionChanged)
         {
@@ -775,6 +862,184 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     public IReadOnlyList<FrontierDataPointSnapshot> CommunityGoalsData =>
         Snapshot?.CommunityGoalsData ?? [];
 
+    public async Task SetCommanderContextAsync(
+        string? frontierId,
+        string? commanderName,
+        bool refreshIfOpen,
+        CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+        var normalizedId = NormalizeFrontierId(frontierId);
+        var normalizedName = string.IsNullOrWhiteSpace(commanderName)
+            ? null
+            : commanderName.Trim();
+        var detectedIdentityChanged = !string.Equals(
+            detectedFrontierId,
+            normalizedId,
+            StringComparison.OrdinalIgnoreCase);
+
+        detectedFrontierId = normalizedId;
+        detectedCommanderName = normalizedName;
+        OnPropertyChanged(nameof(DetectedCommanderDescription));
+        OnPropertyChanged(nameof(CommanderSelectionDescription));
+        if (detectedIdentityChanged)
+        {
+            journalReputationCommanderName = normalizedName;
+            journalReputation = [];
+            journalReputationUpdatedAt = null;
+            UpdateLocalInventory(null, null, isSuppressed: false);
+        }
+
+        await TryRefreshCommanderSelectionOptionsAsync(cancellationToken);
+        await ActivateFrontierCommanderAsync(
+            manuallySelectedFrontierId ?? detectedFrontierId,
+            manuallySelectedFrontierId is null
+                ? detectedCommanderName
+                : manuallySelectedCommanderName,
+            refreshIfOpen,
+            cancellationToken);
+    }
+
+    private async Task ActivateFrontierCommanderAsync(
+        string? frontierId,
+        string? commanderName,
+        bool refreshIfOpen,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedId = NormalizeFrontierId(frontierId);
+        var normalizedName = string.IsNullOrWhiteSpace(commanderName)
+            ? null
+            : commanderName.Trim();
+        var identityChanged = !string.Equals(
+            activeFrontierId,
+            normalizedId,
+            StringComparison.OrdinalIgnoreCase);
+
+        activeFrontierId = normalizedId;
+        activeCommanderName = normalizedName;
+        accountService.SetActiveCommander(normalizedId, normalizedName);
+        OnPropertyChanged(nameof(ActiveCommanderDescription));
+        OnPropertyChanged(nameof(CommanderSelectionDescription));
+        ApplyLocalInventorySelection();
+        OnPropertyChanged(nameof(CommanderReputation));
+        if (!identityChanged)
+        {
+            RaiseCommandStates();
+            return;
+        }
+
+        Interlocked.Increment(ref commanderContextVersion);
+        var previousConnection = connectionCancellation;
+        connectionCancellation = null;
+        previousConnection?.Cancel();
+        previousConnection?.Dispose();
+        IsBusy = false;
+        IsConnecting = false;
+        Snapshot = null;
+        IsLinked = false;
+        initialized = false;
+        StatusMessage = string.Empty;
+        RaiseCommandStates();
+
+        if (refreshIfOpen && normalizedId is not null)
+        {
+            await OpenAsync(cancellationToken);
+        }
+    }
+
+    public async Task SelectCommanderAsync(
+        FrontierCommanderSelectionOption selection,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(selection);
+        ThrowIfDisposed();
+        if (!Equals(SelectedCommanderOption, selection))
+        {
+            isUpdatingCommanderSelection = true;
+            try
+            {
+                SelectedCommanderOption = selection;
+            }
+            finally
+            {
+                isUpdatingCommanderSelection = false;
+            }
+        }
+
+        manuallySelectedFrontierId = selection.IsAutomatic
+            ? null
+            : selection.FrontierId;
+        manuallySelectedCommanderName = selection.IsAutomatic
+            ? null
+            : selection.CommanderName;
+        OnPropertyChanged(nameof(IsAutomaticCommanderSelection));
+        OnPropertyChanged(nameof(CommanderSelectionDescription));
+        ApplyLocalInventorySelection();
+        try
+        {
+            await ActivateFrontierCommanderAsync(
+                selection.IsAutomatic ? detectedFrontierId : selection.FrontierId,
+                selection.IsAutomatic ? detectedCommanderName : selection.CommanderName,
+                refreshIfOpen: true,
+                cancellationToken);
+        }
+        catch (Exception exception) when (IsExpected(exception))
+        {
+            StatusMessage = exception.Message;
+        }
+    }
+
+    private async Task TryRefreshCommanderSelectionOptionsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var linkedCommanders = await accountService
+                .GetLinkedCommandersAsync(cancellationToken);
+            var automatic = FrontierCommanderSelectionOption.Automatic(
+                detectedFrontierId,
+                detectedCommanderName);
+            var linkedOptions = linkedCommanders
+                .Select(FrontierCommanderSelectionOption.Linked)
+                .ToArray();
+            var selected = manuallySelectedFrontierId is null
+                ? automatic
+                : linkedOptions.FirstOrDefault(option => string.Equals(
+                    option.FrontierId,
+                    manuallySelectedFrontierId,
+                    StringComparison.OrdinalIgnoreCase));
+            if (selected is null)
+            {
+                manuallySelectedFrontierId = null;
+                manuallySelectedCommanderName = null;
+                selected = automatic;
+                OnPropertyChanged(nameof(IsAutomaticCommanderSelection));
+            }
+            else if (!selected.IsAutomatic)
+            {
+                manuallySelectedCommanderName = selected.CommanderName;
+            }
+
+            CommanderSelectionOptions = [automatic, .. linkedOptions];
+            isUpdatingCommanderSelection = true;
+            try
+            {
+                SelectedCommanderOption = selected;
+            }
+            finally
+            {
+                isUpdatingCommanderSelection = false;
+            }
+
+            OnPropertyChanged(nameof(CommanderSelectionDescription));
+            ApplyLocalInventorySelection();
+        }
+        catch (Exception exception) when (IsExpected(exception))
+        {
+            StatusMessage = exception.Message;
+        }
+    }
+
     public async Task OpenAsync(CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
@@ -783,10 +1048,16 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return;
         }
 
+        var contextVersion = Interlocked.Read(ref commanderContextVersion);
         try
         {
             IsBusy = true;
             var state = await accountService.GetStateAsync(cancellationToken);
+            if (contextVersion != Interlocked.Read(ref commanderContextVersion))
+            {
+                return;
+            }
+
             IsLinked = state.IsLinked;
             if (Snapshot is null
                 || state.Snapshot is { } cached
@@ -814,7 +1085,13 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             if (!initialized && shouldRefresh && !cooldownActive)
             {
                 StatusMessage = "Refreshing commander data from Frontier...";
-                Snapshot = await accountService.RefreshAsync(cancellationToken);
+                var refreshed = await accountService.RefreshAsync(cancellationToken);
+                if (contextVersion != Interlocked.Read(ref commanderContextVersion))
+                {
+                    return;
+                }
+
+                Snapshot = refreshed;
             }
 
             StatusMessage = string.Empty;
@@ -822,17 +1099,24 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
         catch (Exception exception) when (IsExpected(exception))
         {
-            StatusMessage = exception.Message;
-            initialized = true;
+            if (contextVersion == Interlocked.Read(ref commanderContextVersion))
+            {
+                StatusMessage = exception.Message;
+                initialized = true;
+            }
         }
         finally
         {
-            IsBusy = false;
+            if (contextVersion == Interlocked.Read(ref commanderContextVersion))
+            {
+                IsBusy = false;
+            }
         }
     }
 
     private async Task ConnectAsync()
     {
+        var contextVersion = Interlocked.Read(ref commanderContextVersion);
         connectionCancellation?.Dispose();
         connectionCancellation = new CancellationTokenSource();
         try
@@ -841,26 +1125,42 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             IsConnecting = true;
             StatusMessage =
                 "Complete authorization in your browser. SrvSurvey will update this page when Frontier returns.";
-            Snapshot = await accountService.ConnectAsync(connectionCancellation.Token);
+            var connected = await accountService.ConnectAsync(connectionCancellation.Token);
+            if (contextVersion != Interlocked.Read(ref commanderContextVersion))
+            {
+                return;
+            }
+
+            Snapshot = connected;
             IsLinked = true;
             initialized = true;
             StatusMessage = "Frontier account connected.";
+            await TryRefreshCommanderSelectionOptionsAsync();
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "Frontier authorization was cancelled.";
+            if (contextVersion == Interlocked.Read(ref commanderContextVersion))
+            {
+                StatusMessage = "Frontier authorization was cancelled.";
+            }
         }
         catch (Exception exception) when (IsExpected(exception))
         {
-            StatusMessage = exception.Message;
-            await TryReloadStateAsync();
+            if (contextVersion == Interlocked.Read(ref commanderContextVersion))
+            {
+                StatusMessage = exception.Message;
+                await TryReloadStateAsync();
+            }
         }
         finally
         {
-            IsConnecting = false;
-            IsBusy = false;
-            connectionCancellation?.Dispose();
-            connectionCancellation = null;
+            if (contextVersion == Interlocked.Read(ref commanderContextVersion))
+            {
+                IsConnecting = false;
+                IsBusy = false;
+                connectionCancellation?.Dispose();
+                connectionCancellation = null;
+            }
         }
     }
 
@@ -873,42 +1173,78 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private async Task RefreshAsync()
     {
+        var contextVersion = Interlocked.Read(ref commanderContextVersion);
         try
         {
             IsBusy = true;
             StatusMessage = "Refreshing commander data from Frontier...";
-            Snapshot = await accountService.RefreshAsync();
+            var refreshed = await accountService.RefreshAsync();
+            if (contextVersion != Interlocked.Read(ref commanderContextVersion))
+            {
+                return;
+            }
+
+            Snapshot = refreshed;
             StatusMessage = "Commander data refreshed.";
+            await TryRefreshCommanderSelectionOptionsAsync();
         }
         catch (Exception exception) when (IsExpected(exception))
         {
-            StatusMessage = exception.Message;
-            await TryReloadStateAsync();
+            if (contextVersion == Interlocked.Read(ref commanderContextVersion))
+            {
+                StatusMessage = exception.Message;
+                await TryReloadStateAsync();
+            }
         }
         finally
         {
-            IsBusy = false;
+            if (contextVersion == Interlocked.Read(ref commanderContextVersion))
+            {
+                IsBusy = false;
+            }
         }
     }
 
     private async Task UnlinkAsync()
     {
+        var contextVersion = Interlocked.Read(ref commanderContextVersion);
+        var wasManuallySelected = manuallySelectedFrontierId is not null;
         try
         {
             IsBusy = true;
             await accountService.UnlinkAsync();
+            if (contextVersion != Interlocked.Read(ref commanderContextVersion))
+            {
+                return;
+            }
+
             Snapshot = null;
             IsLinked = false;
             initialized = true;
             StatusMessage = string.Empty;
+            await TryRefreshCommanderSelectionOptionsAsync();
+            if (wasManuallySelected && manuallySelectedFrontierId is null)
+            {
+                IsBusy = false;
+                await ActivateFrontierCommanderAsync(
+                    detectedFrontierId,
+                    detectedCommanderName,
+                    refreshIfOpen: true);
+            }
         }
         catch (Exception exception) when (IsExpected(exception))
         {
-            StatusMessage = exception.Message;
+            if (contextVersion == Interlocked.Read(ref commanderContextVersion))
+            {
+                StatusMessage = exception.Message;
+            }
         }
         finally
         {
-            IsBusy = false;
+            if (contextVersion == Interlocked.Read(ref commanderContextVersion))
+            {
+                IsBusy = false;
+            }
         }
     }
 
@@ -1384,6 +1720,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             : Carrier?.Reputation ?? [];
         if (journalReputation.Count == 0
             || Snapshot is null
+            || manuallySelectedFrontierId is not null
+                && !string.Equals(
+                    manuallySelectedFrontierId,
+                    detectedFrontierId,
+                    StringComparison.OrdinalIgnoreCase)
             || !string.Equals(
                 Snapshot.CommanderName,
                 journalReputationCommanderName,
@@ -1554,6 +1895,17 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             : $"{system} · {station}";
     }
 
+    private static string? NormalizeFrontierId(string? frontierId)
+    {
+        var normalized = frontierId?.Trim().ToUpperInvariant();
+        return normalized is not null
+            && normalized.Length > 1
+            && normalized[0] == 'F'
+            && normalized[1..].All(char.IsAsciiDigit)
+                ? normalized
+                : null;
+    }
+
     private static bool IsExpected(Exception exception)
     {
         return exception is IOException
@@ -1648,6 +2000,44 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
+}
+
+public sealed record FrontierCommanderSelectionOption(
+    string FrontierId,
+    string CommanderName,
+    string DisplayName,
+    bool IsAutomatic)
+{
+    public static FrontierCommanderSelectionOption Automatic(
+        string? frontierId,
+        string? commanderName)
+    {
+        var commander = string.IsNullOrWhiteSpace(commanderName)
+            ? frontierId
+            : commanderName.Trim();
+        var detail = string.IsNullOrWhiteSpace(commander)
+            ? "waiting for journal"
+            : string.IsNullOrWhiteSpace(frontierId)
+                ? commander
+                : $"{commander} ({frontierId})";
+        return new FrontierCommanderSelectionOption(
+            frontierId ?? string.Empty,
+            commander ?? string.Empty,
+            $"Automatic · {detail}",
+            true);
+    }
+
+    public static FrontierCommanderSelectionOption Linked(
+        FrontierLinkedCommander commander) => new(
+        commander.FrontierId,
+        commander.CommanderName,
+        string.Equals(
+            commander.CommanderName,
+            commander.FrontierId,
+            StringComparison.OrdinalIgnoreCase)
+                ? commander.FrontierId
+                : $"{commander.CommanderName} ({commander.FrontierId})",
+        false);
 }
 
 public sealed record FrontierShipRowViewModel(
