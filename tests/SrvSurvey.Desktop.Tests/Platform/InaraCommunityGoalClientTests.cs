@@ -89,6 +89,36 @@ public sealed class InaraCommunityGoalClientTests
     }
 
     [Fact]
+    public void TemporaryCacheCleanupDoesNotMaskPrimaryFailure()
+    {
+        var primaryFailure = new InvalidOperationException("primary save failure");
+        foreach (var cleanupFailure in new Exception[]
+                 {
+                     new IOException("cleanup I/O failure"),
+                     new UnauthorizedAccessException("cleanup access failure"),
+                     new System.Security.SecurityException("cleanup security failure"),
+                 })
+        {
+            var observed = Record.Exception((Action)(() =>
+            {
+                try
+                {
+                    throw primaryFailure;
+                }
+                finally
+                {
+                    InaraCommunityGoalClient.TryDeleteTemporaryFile(
+                        "community-goals.tmp",
+                        _ => true,
+                        _ => throw cleanupFailure);
+                }
+            }));
+
+            Assert.Same(primaryFailure, observed);
+        }
+    }
+
+    [Fact]
     public void EnrichmentFillsGlobalFieldsWithoutReplacingFrontierValues()
     {
         var fetchedAt = DateTimeOffset.Parse("2026-07-31T12:00:00Z");

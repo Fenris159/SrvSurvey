@@ -646,6 +646,109 @@ public sealed class FrontierAccountServiceTests
     }
 
     [Fact]
+    public async Task BlankCommanderNameDoesNotMatchOrMigrateMiskeyedAlias()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-frontier-blank-name-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var snapshot = FrontierCapiSnapshotParser.Parse(
+                "{\"commander\":{\"id\":739749,\"name\":\"Fenris Nihilus\",\"rank\":{}},\"ships\":[]}",
+                null,
+                now);
+            var identity = FrontierCommanderIdentity.Create("F472567", null)!;
+            Assert.False(identity.Matches(snapshot));
+
+            var store = new MemoryCredentialStore
+            {
+                Document = new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential>
+                    {
+                        ["F739749"] = ScopedCredential("alias", now),
+                    },
+                },
+            };
+            await new FrontierProfileCacheStore(Path.Combine(root, "F739749.json"))
+                .SaveAsync(snapshot);
+            using var service = new FrontierAccountService(
+                new HttpClient(new StubHandler(_ => Json(HttpStatusCode.OK, "{}"))),
+                store,
+                frontierId => new FrontierProfileCacheStore(Path.Combine(
+                    root,
+                    frontierId + ".json")),
+                utcNow: () => now,
+                openBrowser: (_, _) => Task.CompletedTask,
+                registerProtocol: _ => Task.CompletedTask);
+            service.SetActiveCommander("F472567", null);
+
+            var linked = await service.GetLinkedCommandersAsync();
+
+            var commander = Assert.Single(linked);
+            Assert.Equal("F739749", commander.FrontierId);
+            Assert.True(store.Document!.Accounts.ContainsKey("F739749"));
+            Assert.False(store.Document.Accounts.ContainsKey("F472567"));
+            Assert.True(File.Exists(Path.Combine(root, "F739749.json")));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task BlankCommanderNameDoesNotDeleteScopedCache()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-frontier-blank-name-cache-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var now = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
+            var store = new MemoryCredentialStore
+            {
+                Document = new FrontierCredentialDocument
+                {
+                    Accounts = new Dictionary<string, FrontierAccountCredential>
+                    {
+                        ["F472567"] = ScopedCredential("correct", now),
+                    },
+                },
+            };
+            var cachePath = Path.Combine(root, "F472567.json");
+            await new FrontierProfileCacheStore(cachePath).SaveAsync(
+                FrontierCapiSnapshotParser.Parse(
+                    "{\"commander\":{\"id\":739749,\"name\":\"Fenris Nihilus\",\"rank\":{}},\"ships\":[]}",
+                    null,
+                    now));
+            using var service = new FrontierAccountService(
+                new HttpClient(new StubHandler(_ => Json(HttpStatusCode.OK, "{}"))),
+                store,
+                frontierId => new FrontierProfileCacheStore(Path.Combine(
+                    root,
+                    frontierId + ".json")),
+                utcNow: () => now,
+                openBrowser: (_, _) => Task.CompletedTask,
+                registerProtocol: _ => Task.CompletedTask);
+            service.SetActiveCommander("F472567", null);
+
+            var state = await service.GetStateAsync();
+
+            Assert.True(state.IsLinked);
+            Assert.Null(state.Snapshot);
+            Assert.True(File.Exists(cachePath));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task MiskeyedCapiIdCredentialMovesToJournalFidWhenItIsTheOnlyCopy()
     {
         var root = Path.Combine(

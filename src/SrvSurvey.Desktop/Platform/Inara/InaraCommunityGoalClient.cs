@@ -297,10 +297,30 @@ public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
         }
         finally
         {
-            if (File.Exists(temporaryPath))
+            TryDeleteTemporaryFile(temporaryPath);
+        }
+    }
+
+    internal static void TryDeleteTemporaryFile(
+        string temporaryPath,
+        Func<string, bool>? fileExists = null,
+        Action<string>? deleteFile = null)
+    {
+        fileExists ??= File.Exists;
+        deleteFile ??= File.Delete;
+        try
+        {
+            if (fileExists(temporaryPath))
             {
-                File.Delete(temporaryPath);
+                deleteFile(temporaryPath);
             }
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or System.Security.SecurityException)
+        {
+            // Best-effort cleanup must not replace the cache save failure.
         }
     }
 

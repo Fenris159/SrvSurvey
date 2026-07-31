@@ -67,8 +67,8 @@ internal sealed record FrontierCommanderIdentity(
     public bool Matches(FrontierAccountSnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
-        return string.IsNullOrWhiteSpace(CommanderName)
-            || string.Equals(
+        return !string.IsNullOrWhiteSpace(CommanderName)
+            && string.Equals(
                 CommanderName,
                 snapshot.CommanderName,
                 StringComparison.OrdinalIgnoreCase);
@@ -314,7 +314,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
             if (snapshot is not null && !commander.Matches(snapshot))
             {
                 snapshot = null;
-                await cache.ClearAsync(cancellationToken).ConfigureAwait(false);
+                if (!string.IsNullOrWhiteSpace(commander.CommanderName))
+                {
+                    await cache.ClearAsync(cancellationToken).ConfigureAwait(false);
+                }
             }
         }
         catch (JsonException)
@@ -342,6 +345,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
     {
         ThrowIfDisposed();
         var commander = RequireActiveCommander();
+        EnsureCommanderNameIsAvailable(commander);
         await registerProtocol(cancellationToken).ConfigureAwait(false);
 
         var now = utcNow();
@@ -418,6 +422,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         FrontierCommanderIdentity commander,
         CancellationToken cancellationToken)
     {
+        EnsureCommanderNameIsAvailable(commander);
         var cache = CacheFor(commander);
         await using var refreshLease = await cache
             .AcquireRefreshLeaseAsync(cancellationToken)
@@ -1358,6 +1363,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
             FrontierCredentialDocument document,
             CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(commander.CommanderName))
+        {
+            return document;
+        }
+
         var candidates = new List<(string FrontierId, FrontierAccountSnapshot Snapshot)>();
         foreach (var account in document.Accounts.Where(pair =>
                      pair.Value.IsLinked
@@ -1476,6 +1486,16 @@ public sealed class FrontierAccountService : IFrontierAccountService
         await CacheFor(commander).SaveAsync(bestSnapshot, cancellationToken)
             .ConfigureAwait(false);
         return document;
+    }
+
+    private static void EnsureCommanderNameIsAvailable(
+        FrontierCommanderIdentity commander)
+    {
+        if (string.IsNullOrWhiteSpace(commander.CommanderName))
+        {
+            throw new InvalidOperationException(
+                "Wait for the active commander name to load from the journal before connecting to Frontier or refreshing this page.");
+        }
     }
 
     private async Task SavePendingAuthorizationAsync(
