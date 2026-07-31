@@ -7,9 +7,12 @@ internal sealed class JournalMonitorSession
     private Task? runningTask;
     private Task? stopTask;
 
-    public Task Start(Func<CancellationToken, Task> runAsync)
+    public Task Start(
+        Func<CancellationToken, Task> runAsync,
+        Action<Exception> reportFailure)
     {
         ArgumentNullException.ThrowIfNull(runAsync);
+        ArgumentNullException.ThrowIfNull(reportFailure);
 
         lock (sync)
         {
@@ -24,7 +27,10 @@ internal sealed class JournalMonitorSession
             var source = new CancellationTokenSource();
             try
             {
-                runningTask = runAsync(source.Token);
+                runningTask = RunObservedAsync(
+                    runAsync,
+                    reportFailure,
+                    source.Token);
                 cancellation = source;
                 return runningTask;
             }
@@ -33,6 +39,26 @@ internal sealed class JournalMonitorSession
                 source.Dispose();
                 throw;
             }
+        }
+    }
+
+    private static async Task RunObservedAsync(
+        Func<CancellationToken, Task> runAsync,
+        Action<Exception> reportFailure,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await runAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+            when (cancellationToken.IsCancellationRequested)
+        {
+            // Normal session shutdown.
+        }
+        catch (Exception exception)
+        {
+            reportFailure(exception);
         }
     }
 

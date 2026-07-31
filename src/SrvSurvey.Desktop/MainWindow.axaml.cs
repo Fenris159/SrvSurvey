@@ -41,10 +41,13 @@ public sealed partial class MainWindow : Window
 
     public ApplicationInputContext InputContext { get; }
 
-    private async void OnOpened(object? sender, EventArgs eventArgs)
+    private void OnOpened(object? sender, EventArgs eventArgs)
     {
         Opened -= OnOpened;
-        await monitorSession.Start(RunMonitorAsync);
+        _ = monitorSession.Start(
+            RunMonitorAsync,
+            exception => Program.ApplicationLog?.Append(
+                "Journal monitor stopped unexpectedly: " + exception));
     }
 
     private async Task RunMonitorAsync(CancellationToken cancellationToken)
