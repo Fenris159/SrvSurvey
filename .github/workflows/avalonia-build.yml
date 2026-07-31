@@ -121,6 +121,8 @@ jobs:
 
       - name: Publish self-contained desktop application
         shell: pwsh
+        env:
+          INARA_APPLICATION_API_KEY: ${{ secrets.INARA_APPLICATION_API_KEY }}
         run: |
           dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj `
             --configuration Release `
@@ -129,6 +131,7 @@ jobs:
             --output "artifacts/${{ matrix.rid }}" `
             -p:Version="${{ needs.release-metadata.outputs.version }}" `
             -p:FileVersion="${{ needs.release-metadata.outputs.version }}" `
+            -p:InaraApplicationApiKey="$env:INARA_APPLICATION_API_KEY" `
             -p:DebugType=None `
             -p:DebugSymbols=false
 

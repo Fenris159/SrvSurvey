@@ -1765,6 +1765,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         FrontierProfile.UpdateJournalReputation(
             journalState.CommanderName,
             update.JournalEvents);
+        FrontierProfile.UpdateJournalCommunityGoals(
+            journalState.CommanderName,
+            update.JournalEvents);
         OverlayBehavior.UpdateContext(
             journalState.CurrentSuit,
             latestStatus?.OnFoot == true);

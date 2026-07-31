@@ -138,6 +138,10 @@
                   </StackPanel>
                 </Border>
 
+                <TextBlock Classes="muted" FontSize="11"
+                           IsVisible="{Binding HasSourceStatus}"
+                           TextWrapping="Wrap" Text="{Binding SourceStatus}" />
+
                 <Expander Classes="profile-subsection"
                           IsExpanded="{Binding PaneState.IsExpanded, Mode=TwoWay}">
                   <Expander.Header>

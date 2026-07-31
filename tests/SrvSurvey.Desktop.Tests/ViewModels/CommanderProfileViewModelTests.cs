@@ -184,6 +184,82 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task JournalAddsPersonalGoalProgressWithoutLosingInaraDetails()
+    {
+        var fetchedAt = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
+        var accountGoal = Assert.Single(CreateSnapshot(fetchedAt).CommunityGoals!) with
+        {
+            Description = "Expanded global briefing",
+            PlayerContribution = 0,
+            PlayerPercentile = null,
+            Bonus = 0,
+            HasPlayerContributionData = false,
+            Contributors = 2_913,
+            TierReached = "Tier 0 / 1",
+            HasContributorData = true,
+            DataPoints =
+            [
+                new("inara.fetchedAt", fetchedAt.ToString("O")),
+            ],
+        };
+        var snapshot = CreateSnapshot(fetchedAt) with
+        {
+            CommunityGoals = [accountGoal],
+            CommunityGoalsFetchedAt = fetchedAt,
+            InaraCommunityGoalsFetchedAt = fetchedAt,
+        };
+        using var viewModel = new CommanderProfileViewModel(
+            new StubAccountService(new FrontierAccountState(
+                true,
+                snapshot,
+                snapshot.FetchedAt)));
+        await viewModel.OpenAsync();
+
+        viewModel.UpdateJournalCommunityGoals(
+            "Fenris",
+            [ParseJournalEvent(
+                """
+                {
+                  "timestamp":"2026-07-31T12:05:00Z",
+                  "event":"CommunityGoal",
+                  "CurrentGoals":[
+                    {
+                      "CGID":6,
+                      "Title":"Deliver medicines",
+                      "SystemName":"Sol",
+                      "MarketName":"Galileo",
+                      "Expiry":"2026-08-02T12:00:00Z",
+                      "IsComplete":false,
+                      "CurrentTotal":6000,
+                      "PlayerContribution":325,
+                      "NumContributors":3000,
+                      "TierReached":"Tier 1",
+                      "PlayerPercentileBand":25,
+                      "Bonus":2000000
+                    }
+                  ]
+                }
+                """)]);
+
+        var goal = Assert.Single(viewModel.CommunityGoals);
+        Assert.Equal("Expanded global briefing", goal.Briefing);
+        Assert.Equal("6,000 / 10,000", goal.ProgressText);
+        Assert.Equal("325 contributed", goal.PlayerContribution);
+        Assert.Contains("Top 25%", goal.PlayerStanding);
+        Assert.Equal("3,000 commanders", goal.Contributors);
+        Assert.Equal("Tier 1", goal.Tier);
+        Assert.True(goal.HasSourceStatus);
+        Assert.Contains("Inara", goal.SourceStatus);
+
+        viewModel.UpdateJournalCommunityGoals("Another Commander", []);
+
+        goal = Assert.Single(viewModel.CommunityGoals);
+        Assert.Equal("Personal progress not supplied by Frontier", goal.PlayerContribution);
+        Assert.Equal("2,913 commanders", goal.Contributors);
+        Assert.Equal("Tier 0 / 1", goal.Tier);
+    }
+
+    [Fact]
     public async Task PaneExpansionStateIsCachedAndIsolatedAcrossTabs()
     {
         var snapshot = CreateSnapshot(DateTimeOffset.UtcNow);

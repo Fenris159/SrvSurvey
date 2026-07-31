@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using SrvSurvey.Core.Frontier;
+using SrvSurvey.Desktop.Platform.Inara;
 
 namespace SrvSurvey.Desktop.Platform.Frontier;
 
@@ -115,6 +116,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
     private readonly Func<DateTimeOffset> utcNow;
     private readonly Func<Uri, CancellationToken, Task> openBrowser;
     private readonly Func<CancellationToken, Task> registerProtocol;
+    private readonly IInaraCommunityGoalClient? inaraCommunityGoals;
     private readonly SemaphoreSlim capiGate = new(1, 1);
     private DateTimeOffset? lastCapiRequestAt;
     private FrontierCommanderIdentity? activeCommander;
@@ -128,7 +130,8 @@ public sealed class FrontierAccountService : IFrontierAccountService
         FrontierProfileCacheStore cache,
         Func<DateTimeOffset>? utcNow = null,
         Func<Uri, CancellationToken, Task>? openBrowser = null,
-        Func<CancellationToken, Task>? registerProtocol = null)
+        Func<CancellationToken, Task>? registerProtocol = null,
+        IInaraCommunityGoalClient? inaraCommunityGoals = null)
     {
         this.httpClient = httpClient
             ?? throw new ArgumentNullException(nameof(httpClient));
@@ -140,6 +143,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         this.openBrowser = openBrowser ?? OpenBrowserAsync;
         this.registerProtocol = registerProtocol
             ?? FrontierProtocolRegistration.RegisterCurrentAsync;
+        this.inaraCommunityGoals = inaraCommunityGoals;
     }
 
     public FrontierAccountService(
@@ -149,7 +153,8 @@ public sealed class FrontierAccountService : IFrontierAccountService
         FrontierProfileCacheStore? legacyCache = null,
         Func<DateTimeOffset>? utcNow = null,
         Func<Uri, CancellationToken, Task>? openBrowser = null,
-        Func<CancellationToken, Task>? registerProtocol = null)
+        Func<CancellationToken, Task>? registerProtocol = null,
+        IInaraCommunityGoalClient? inaraCommunityGoals = null)
     {
         this.httpClient = httpClient
             ?? throw new ArgumentNullException(nameof(httpClient));
@@ -162,6 +167,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
         this.openBrowser = openBrowser ?? OpenBrowserAsync;
         this.registerProtocol = registerProtocol
             ?? FrontierProtocolRegistration.RegisterCurrentAsync;
+        this.inaraCommunityGoals = inaraCommunityGoals;
     }
 
     public static FrontierAccountService CreateCurrent(string dataDirectory)
@@ -174,6 +180,17 @@ public sealed class FrontierAccountService : IFrontierAccountService
             .GetName().Version?.ToString(3) ?? "unknown";
         client.DefaultRequestHeaders.UserAgent.ParseAdd(
             $"SrvSurvey/{version} (+https://github.com/nithomson/SrvSurvey)");
+        var inaraApiKey = InaraApplicationKeyProvider.GetApplicationKey();
+        IInaraCommunityGoalClient? inaraCommunityGoals =
+            string.IsNullOrWhiteSpace(inaraApiKey)
+                ? null
+                : new InaraCommunityGoalClient(
+                    client,
+                    inaraApiKey,
+                    version,
+                    Path.Combine(
+                        dataDirectory,
+                        "inara-community-goals.json"));
         return new FrontierAccountService(
             client,
             FrontierCredentialStore.CreateCurrent(dataDirectory),
@@ -183,7 +200,8 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 frontierId + ".json")),
             new FrontierProfileCacheStore(Path.Combine(
                 dataDirectory,
-                "frontier-profile-cache.json")));
+                "frontier-profile-cache.json")),
+            inaraCommunityGoals: inaraCommunityGoals);
     }
 
     public void SetActiveCommander(string? frontierId, string? commanderName)
@@ -302,6 +320,14 @@ public sealed class FrontierAccountService : IFrontierAccountService
         catch (JsonException)
         {
             await cache.ClearAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        if (snapshot is not null)
+        {
+            snapshot = await TryEnrichCommunityGoalsAsync(
+                    snapshot,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         return new FrontierAccountState(
@@ -533,6 +559,8 @@ public sealed class FrontierAccountService : IFrontierAccountService
             previousSnapshot,
             communityGoals,
             fetchedAt);
+        snapshot = await TryEnrichCommunityGoalsAsync(snapshot, cancellationToken)
+            .ConfigureAwait(false);
         await cache.SaveAsync(snapshot, cancellationToken).ConfigureAwait(false);
         await SaveAccountCredentialAsync(
                 commander,
@@ -817,6 +845,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 CommunityGoalsData = previous?.CommunityGoalsData,
                 CommunityGoalsFetchedAt = previous?.CommunityGoalsFetchedAt,
                 CommunityGoalsError = result.Error,
+                InaraCommunityGoalsFetchedAt =
+                    previous?.InaraCommunityGoalsFetchedAt,
+                InaraCommunityGoalsError =
+                    previous?.InaraCommunityGoalsError ?? string.Empty,
             };
         }
 
@@ -834,6 +866,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
                         "communitygoals"),
                 CommunityGoalsFetchedAt = fetchedAt,
                 CommunityGoalsError = string.Empty,
+                InaraCommunityGoalsFetchedAt =
+                    previous?.InaraCommunityGoalsFetchedAt,
+                InaraCommunityGoalsError =
+                    previous?.InaraCommunityGoalsError ?? string.Empty,
             };
         }
         catch (Exception exception) when (exception is JsonException or InvalidDataException)
@@ -845,6 +881,49 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 CommunityGoalsFetchedAt = previous?.CommunityGoalsFetchedAt,
                 CommunityGoalsError =
                     "Frontier community-goal data could not be read: " + exception.Message,
+                InaraCommunityGoalsFetchedAt =
+                    previous?.InaraCommunityGoalsFetchedAt,
+                InaraCommunityGoalsError =
+                    previous?.InaraCommunityGoalsError ?? string.Empty,
+            };
+        }
+    }
+
+    private async Task<FrontierAccountSnapshot> TryEnrichCommunityGoalsAsync(
+        FrontierAccountSnapshot snapshot,
+        CancellationToken cancellationToken)
+    {
+        if (inaraCommunityGoals is null)
+        {
+            return snapshot;
+        }
+
+        try
+        {
+            var result = await inaraCommunityGoals
+                .GetRecentAsync(cancellationToken)
+                .ConfigureAwait(false);
+            return snapshot with
+            {
+                CommunityGoals = InaraCommunityGoalEnricher.Enrich(
+                    snapshot.CommunityGoals,
+                    result),
+                InaraCommunityGoalsFetchedAt = result.FetchedAt,
+                InaraCommunityGoalsError = result.Warning,
+            };
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or IOException
+                or InvalidDataException
+                or JsonException
+                or TimeoutException)
+        {
+            return snapshot with
+            {
+                InaraCommunityGoalsError =
+                    "Inara Community Goal enrichment could not be refreshed: "
+                    + exception.Message,
             };
         }
     }

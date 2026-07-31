@@ -3,6 +3,8 @@
 SrvSurvey Avalonia keeps every optional publication surface off until the user
 explicitly enables it in Settings. Local journal parsing, overlays, exploration,
 exobiology, colonization, quest, and route tracking do not depend on Inara.
+The Community Goals dashboard can make a separate read-only Inara request for
+public global-goal details as described below.
 
 ## Inara
 
@@ -11,7 +13,7 @@ live-game events after startup. It does not replay historical journal activity,
 and it does not upload Legacy, alpha, beta, or multicrew activity.
 
 Write events use the commander's personal Inara API key. The key is stored in
-that commander's local profile and is placed in Inara's `APIkey` request header.
+that commander's local profile and is placed in Inara's `APIkey` message header.
 SrvSurvey identifies itself with `appName: SrvSurvey`; it does not embed or send
 an application access token. A queued event is discarded if the active
 commander's key changes before transmission.
@@ -25,6 +27,22 @@ Developer test mode is a separate setting and is disabled by default. During
 initial live verification it sets `isBeingDeveloped: true`. Once Artie confirms
 the application is approved for production on Inara, users should leave this
 setting off so requests use `isBeingDeveloped: false`.
+
+The Community Goals dashboard uses Inara's generic application API key to read
+the public `getCommunityGoalsRecent` feed. This request is independent of the
+commander upload setting and does not include a commander name, Frontier ID, or
+personal Inara API key. It supplements missing global fields such as the current
+tier, contributor count, total contribution, description, reward, and Inara
+page URL. Personal contribution and standing remain local Frontier/journal
+data. Responses are cached in the local SrvSurvey data directory for at least
+15 minutes; a stale cached response is retained when Inara is unavailable.
+
+Release builds receive the generic application key from the repository's
+`INARA_APPLICATION_API_KEY` secret. The value is added to assembly metadata at
+publish time rather than committed to source. It is an application identifier,
+not a commander credential, and should not be treated as protection against a
+determined inspection of the distributed binary. Local developer builds can use
+the `SRVSURVEY_INARA_APPLICATION_API_KEY` environment variable instead.
 
 When more than one Elite Dangerous game window is detected, SrvSurvey cannot
 safely attribute shared `Cargo.json`, `ShipLocker.json`, or `Status.json` data to

@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using SrvSurvey.Core.Frontier;
 using SrvSurvey.Desktop.Platform.Frontier;
+using SrvSurvey.Desktop.Platform.Inara;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
@@ -129,6 +130,71 @@ public sealed class FrontierAccountServiceTests
                 () => service.RefreshAsync());
             Assert.True(cooldown.Remaining > TimeSpan.FromSeconds(50));
             Assert.Equal(5, requests.Count);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RefreshEnrichesCommunityGoalsWithGenericInaraReadData()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-frontier-inara-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        try
+        {
+            var now = DateTimeOffset.Parse("2026-07-31T12:00:00Z");
+            var store = new MemoryCredentialStore
+            {
+                Document = LinkedCredential(now),
+            };
+            var inara = new StubInaraCommunityGoalClient(new(
+                [new InaraCommunityGoalSnapshot(
+                    "Deliver medicines",
+                    "Expanded global briefing",
+                    "Deliver Basic Medicines",
+                    "Credits",
+                    "Sol",
+                    "Galileo",
+                    now.AddDays(2),
+                    false,
+                    2,
+                    5,
+                    1_234,
+                    5_000,
+                    now.AddMinutes(-1),
+                    "https://inara.cz/elite/communitygoals/6/")],
+                now,
+                false,
+                string.Empty));
+            using var service = CreateService(
+                store,
+                request => request.RequestUri!.AbsolutePath switch
+                {
+                    "/profile" => Json(HttpStatusCode.OK,
+                        "{\"commander\":{\"name\":\"Fenris\",\"rank\":{}},\"ships\":[]}"),
+                    "/communitygoals" => Json(HttpStatusCode.OK,
+                        "{\"goals\":[{\"id\":6,\"title\":\"Deliver medicines\",\"systemName\":\"Sol\",\"marketName\":\"Galileo\",\"expiry\":\"2026-08-02T12:00:00Z\",\"currentTotal\":0}]}"),
+                    _ => Json(HttpStatusCode.NoContent, string.Empty),
+                },
+                root,
+                () => now,
+                inara);
+
+            var snapshot = await service.RefreshAsync();
+
+            var goal = Assert.Single(snapshot.CommunityGoals!);
+            Assert.Equal("Expanded global briefing", goal.Description);
+            Assert.Equal("Tier 2 / 5", goal.TierReached);
+            Assert.Equal(1_234, goal.Contributors);
+            Assert.Equal(now, snapshot.InaraCommunityGoalsFetchedAt);
+            Assert.Equal(1, inara.RequestCount);
+            var cached = await new FrontierProfileCacheStore(
+                Path.Combine(root, "cache.json")).LoadAsync();
+            Assert.Equal("Tier 2 / 5", Assert.Single(cached!.CommunityGoals!).TierReached);
         }
         finally
         {
@@ -869,7 +935,8 @@ public sealed class FrontierAccountServiceTests
         MemoryCredentialStore store,
         Func<HttpRequestMessage, HttpResponseMessage> response,
         string? root = null,
-        Func<DateTimeOffset>? now = null)
+        Func<DateTimeOffset>? now = null,
+        IInaraCommunityGoalClient? inaraCommunityGoals = null)
     {
         var cachePath = root is null
             ? Path.Combine(
@@ -887,7 +954,8 @@ public sealed class FrontierAccountServiceTests
             new FrontierProfileCacheStore(cachePath),
             now,
             (_, _) => Task.CompletedTask,
-            _ => Task.CompletedTask);
+            _ => Task.CompletedTask,
+            inaraCommunityGoals);
         service.SetActiveCommander("F123", "Fenris");
         return service;
     }
@@ -934,6 +1002,19 @@ public sealed class FrontierAccountServiceTests
             CancellationToken cancellationToken)
         {
             return Task.FromResult(response(request));
+        }
+    }
+
+    private sealed class StubInaraCommunityGoalClient(
+        InaraCommunityGoalsResult result) : IInaraCommunityGoalClient
+    {
+        public int RequestCount { get; private set; }
+
+        public Task<InaraCommunityGoalsResult> GetRecentAsync(
+            CancellationToken cancellationToken = default)
+        {
+            RequestCount++;
+            return Task.FromResult(result);
         }
     }
 

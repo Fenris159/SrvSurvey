@@ -44,6 +44,13 @@
     <ProjectReference Include="..\SrvSurvey.Core\SrvSurvey.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(InaraApplicationApiKey)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SrvSurvey.Inara.ReadKey</_Parameter1>
+      <_Parameter2>$(InaraApplicationApiKey)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
   <ItemGroup>
     <Content Include="Resources\plotters.json"
              Link="plotters.json"
