@@ -1,0 +1,96 @@
+name: SonarQube analysis
+
+on:
+  push:
+    branches:
+      - SrvSurvey-Avalonia
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+
+jobs:
+  analyze:
+    name: Build and analyze
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: "17"
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~\sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache SonarQube scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}\sonar-scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: Install SonarQube scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          New-Item -Path "${{ runner.temp }}\sonar-scanner" -ItemType Directory -Force | Out-Null
+          dotnet tool update dotnet-sonarscanner --tool-path "${{ runner.temp }}\sonar-scanner"
+
+      - name: Begin SonarQube analysis
+        shell: pwsh
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: >-
+          & "${{ runner.temp }}\sonar-scanner\dotnet-sonarscanner"
+          begin
+          /k:"Fenris159_SrvSurvey"
+          /o:"fenris159"
+          /d:sonar.token="$env:SONAR_TOKEN"
+
+      - name: Restore
+        run: dotnet restore SrvSurvey.slnx
+
+      - name: Build
+        run: dotnet build SrvSurvey.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
+
+      - name: Complete SonarQube analysis
+        if: success()
+        shell: pwsh
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: >-
+          & "${{ runner.temp }}\sonar-scanner\dotnet-sonarscanner"
+          end
+          /d:sonar.token="$env:SONAR_TOKEN"
