@@ -222,7 +222,7 @@ jobs:
           curl --fail --location --retry 3 \
             --output "$linuxdeploy" \
             "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
-          echo "e87ee0815d109282fdda73e34c2361d64d02b0ffaea3674b18f1fd1f6a687dcf  $linuxdeploy" \
+          echo "421ca71d5c69ea97c6309276232990d43df1dcece0edfaa26bbf926ff96ed12e  $linuxdeploy" \
             | sha256sum --check --strict
           chmod +x "$linuxdeploy"
           tool="$RUNNER_TEMP/appimage-tools/appimagetool-x86_64.AppImage"
