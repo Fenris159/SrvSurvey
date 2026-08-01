@@ -815,13 +815,15 @@ public sealed class FollowRouteStore
                 "Fleet-carrier routes do not use the standard legacy route location.");
         }
 
-        return GetLegacyPaths(frontierId)
+        var path = GetLegacyPaths(frontierId)
             .FirstOrDefault(path => File.Exists(path)
                 && string.Equals(
                     Path.GetFileName(path),
                     fileName,
-                    StringComparison.OrdinalIgnoreCase))
-            ?? GetPath(frontierId);
+                    StringComparison.OrdinalIgnoreCase));
+        return path ?? throw new FileNotFoundException(
+            "The selected legacy route no longer exists.",
+            fileName);
     }
 
     private string ResolveWritablePath(FollowRouteDocument route)

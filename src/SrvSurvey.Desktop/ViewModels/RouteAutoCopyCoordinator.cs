@@ -69,7 +69,7 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
         fleetCarrierRoute.PropertyChanged -= OnRoutePropertyChanged;
     }
 
-    private async void OnRoutePropertyChanged(
+    private void OnRoutePropertyChanged(
         object? sender,
         PropertyChangedEventArgs eventArgs)
     {
@@ -85,11 +85,26 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
             return;
         }
 
-        await ClaimAsync(source);
+        _ = ClaimAfterPropertyChangeAsync(source);
+    }
+
+    internal async Task ClaimAfterPropertyChangeAsync(
+        RouteWorkspaceViewModel source)
+    {
+        try
+        {
+            await ClaimAsync(source);
+        }
+        catch (ObjectDisposedException) when (disposed)
+        {
+            // Disposal can race a PropertyChanged notification that was already
+            // dispatched. Shutdown must not surface that expected race as an
+            // unhandled exception on the UI synchronization context.
+        }
     }
 
     private static bool CanOwnAutoCopy(RouteWorkspaceViewModel route)
     {
-        return route.HasSavedRoute && route.AutoCopy;
+        return route.HasSavedRoute && route.ShouldAutoCopyNextHop;
     }
 }

@@ -175,6 +175,35 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
     }
 
     [Fact]
+    public async Task PollReportsCompanionStampFailuresOnceUntilRecovery()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var failStatusStamp = true;
+        const string error = "Status.json metadata is unavailable.";
+        var monitor = new JournalDirectoryMonitor(
+            temporaryDirectory,
+            targetFrontierId: null,
+            path => Path.GetFileName(path) == StatusFileReader.FileName
+                && failStatusStamp
+                    ? new JournalDirectoryMonitor.CompanionFileStampReadResult(
+                        Stamp: null,
+                        error)
+                    : default);
+
+        var failed = await monitor.PollAsync();
+        var repeated = await monitor.PollAsync();
+        failStatusStamp = false;
+        var recovered = await monitor.PollAsync();
+        failStatusStamp = true;
+        var failedAgain = await monitor.PollAsync();
+
+        Assert.Equal(error, Assert.Single(failed.Errors));
+        Assert.Empty(repeated.Errors);
+        Assert.Empty(recovered.Errors);
+        Assert.Equal(error, Assert.Single(failedAgain.Errors));
+    }
+
+    [Fact]
     public async Task PollSelectsNewestJournalForRequestedCommander()
     {
         Directory.CreateDirectory(temporaryDirectory);

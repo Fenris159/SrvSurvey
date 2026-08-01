@@ -380,6 +380,40 @@ public sealed class FollowRouteStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task StaleLegacyCatalogNameCannotDeleteCommanderRoute()
+    {
+        var path = Path.Combine(
+            temporaryDirectory,
+            "Routes",
+            "F123.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "active": true,
+              "autoCopy": true,
+              "last": -1,
+              "hops": [{ "name": "Sol", "id64": 1 }]
+            }
+            """);
+        var store = new FollowRouteStore(temporaryDirectory);
+
+        await Assert.ThrowsAsync<FileNotFoundException>(
+            () => store.DeleteNamedAsync(
+                "F123",
+                "stale-catalog-entry.json",
+                isLegacy: true));
+
+        Assert.True(File.Exists(path));
+        Assert.False(Directory.Exists(Path.Combine(
+            temporaryDirectory,
+            "Routes",
+            "F123",
+            ".trash")));
+    }
+
+    [Fact]
     public async Task SpanshAndCsvExportsPreservePortableRouteData()
     {
         var store = new FollowRouteStore(temporaryDirectory);

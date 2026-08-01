@@ -40,14 +40,46 @@ public sealed class RouteAutoCopyCoordinatorTests : IDisposable
         Assert.True(carrierSaved.Route!.AutoCopy);
     }
 
+    [Fact]
+    public async Task InactiveRouteDoesNotTakeOwnershipFromActiveRoute()
+    {
+        var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        var carrier = await CreateWorkspaceAsync(
+            FollowRouteKind.FleetCarrier,
+            isActive: false);
+        using var coordinator = new RouteAutoCopyCoordinator(standard, carrier);
+
+        await coordinator.ClaimAsync(carrier);
+
+        Assert.True(standard.ShouldAutoCopyNextHop);
+        Assert.False(carrier.ShouldAutoCopyNextHop);
+        Assert.True(standard.AutoCopy);
+        Assert.True(carrier.AutoCopy);
+    }
+
+    [Fact]
+    public async Task LatePropertyChangeClaimIsIgnoredAfterDisposal()
+    {
+        var standard = await CreateWorkspaceAsync(FollowRouteKind.Standard);
+        var carrier = await CreateWorkspaceAsync(FollowRouteKind.FleetCarrier);
+        var coordinator = new RouteAutoCopyCoordinator(standard, carrier);
+        coordinator.Dispose();
+
+        await coordinator.ClaimAfterPropertyChangeAsync(standard);
+
+        Assert.True(standard.AutoCopy);
+        Assert.True(carrier.AutoCopy);
+    }
+
     private async Task<RouteWorkspaceViewModel> CreateWorkspaceAsync(
-        FollowRouteKind kind)
+        FollowRouteKind kind,
+        bool isActive = true)
     {
         var store = new FollowRouteStore(temporaryDirectory, kind);
         await store.SaveAsAsync(
             (await store.CreateNewAsync("F123")) with
             {
-                IsActive = true,
+                IsActive = isActive,
                 AutoCopy = true,
                 LastReachedIndex = 0,
                 Hops =
