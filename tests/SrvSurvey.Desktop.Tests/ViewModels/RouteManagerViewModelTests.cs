@@ -145,6 +145,31 @@ public sealed class RouteManagerViewModelTests : IDisposable
         Assert.False(manager.CanToggleAutoCopy);
     }
 
+    [Fact]
+    public async Task RenamePreservesBoundRowSelectionAndLoadedWorkspace()
+    {
+        var (_, workspace, manager) = await CreateViewModelsAsync();
+        var beta = manager.Routes.Single(route => route.Name == "Beta");
+        var oldPath = beta.FilePath;
+        beta.IsSelected = true;
+
+        beta.RenameCommand.Execute(null);
+        Assert.True(manager.IsRenameVisible);
+        Assert.Equal("Beta", manager.RenameDraft);
+        manager.RenameDraft = "Gamma Route";
+        await manager.SaveRenameAsync();
+
+        var renamed = manager.Routes.Single(route => route.Name == "Gamma Route");
+        Assert.Same(beta, renamed);
+        Assert.True(renamed.IsSelected);
+        Assert.Equal("Gamma Route.json", renamed.FileName);
+        Assert.False(File.Exists(oldPath));
+        Assert.True(File.Exists(renamed.FilePath));
+        Assert.Equal("Gamma Route", workspace.RouteName);
+        Assert.Equal(renamed.FilePath, workspace.LoadedSavedRoutePath);
+        Assert.False(manager.IsDialogVisible);
+    }
+
     private async Task<(
         FollowRouteStore Store,
         RouteWorkspaceViewModel Workspace,

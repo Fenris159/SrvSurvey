@@ -456,6 +456,144 @@ public sealed class FollowRouteStore
         return exported;
     }
 
+    public Task<IReadOnlyList<string>> ExportSpanshAsync(
+        string frontierId,
+        IReadOnlyList<FollowRouteCatalogEntry> routes,
+        string destinationDirectory,
+        CancellationToken cancellationToken = default)
+    {
+        return ExportFormattedAsync(
+            frontierId,
+            routes,
+            destinationDirectory,
+            route => route.FileName,
+            FollowRouteExportWriter.WriteSpanshAsync,
+            cancellationToken);
+    }
+
+    public Task<IReadOnlyList<string>> ExportCsvAsync(
+        string frontierId,
+        IReadOnlyList<FollowRouteCatalogEntry> routes,
+        string destinationDirectory,
+        CancellationToken cancellationToken = default)
+    {
+        return ExportFormattedAsync(
+            frontierId,
+            routes,
+            destinationDirectory,
+            route => Path.ChangeExtension(route.FileName, ".csv"),
+            FollowRouteExportWriter.WriteCsvAsync,
+            cancellationToken);
+    }
+
+    public async Task<FollowRouteRenameResult> RenameAsync(
+        string frontierId,
+        string fileName,
+        bool isLegacy,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        var source = ResolveCatalogPath(frontierId, fileName, isLegacy);
+        var normalizedName = NormalizeRouteName(name);
+        var destination = GetNamedPath(frontierId, normalizedName);
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        var samePath = string.Equals(source, destination, comparison);
+
+        await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (!File.Exists(source))
+            {
+                throw new FileNotFoundException(
+                    "The saved route no longer exists.",
+                    source);
+            }
+
+            if (!samePath && File.Exists(destination))
+            {
+                throw new IOException(
+                    $"A saved route named '{normalizedName}' already exists.");
+            }
+
+            var root = await ReadRequiredObjectAsync(source, cancellationToken)
+                .ConfigureAwait(false);
+            root["name"] = normalizedName;
+            var createdAt = File.GetCreationTimeUtc(source);
+            await WriteObjectAsync(
+                    samePath ? source : destination,
+                    root,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (!samePath)
+            {
+                try
+                {
+                    File.SetCreationTimeUtc(destination, createdAt);
+                    File.Delete(source);
+                }
+                catch
+                {
+                    if (File.Exists(source) && File.Exists(destination))
+                    {
+                        File.Delete(destination);
+                    }
+
+                    throw;
+                }
+            }
+
+            var selection = await ReadSelectionAsync(frontierId, cancellationToken)
+                .ConfigureAwait(false);
+            if (selection.Error is not null)
+            {
+                throw new InvalidDataException(selection.Error);
+            }
+
+            if (selection.FileName is not null
+                && selection.IsLegacy == isLegacy
+                && string.Equals(
+                    selection.FileName,
+                    fileName,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                await WriteSelectionObjectAsync(
+                        frontierId,
+                        Path.GetFileName(destination),
+                        isLegacy: false,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            var loaded = await LoadFromPathAsync(
+                    frontierId,
+                    destination,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            var renamed = loaded.Route ?? throw new InvalidDataException(
+                loaded.Error ?? "The renamed route could not be reloaded.");
+            var entry = new FollowRouteCatalogEntry(
+                normalizedName,
+                Path.GetFileName(destination),
+                destination,
+                IsLegacy: false,
+                new DateTimeOffset(
+                    File.GetLastWriteTimeUtc(destination),
+                    TimeSpan.Zero),
+                new DateTimeOffset(
+                    File.GetCreationTimeUtc(destination),
+                    TimeSpan.Zero),
+                renamed.Notes,
+                renamed.IsFavorite);
+            return new FollowRouteRenameResult(source, renamed, entry);
+        }
+        finally
+        {
+            saveLock.Release();
+        }
+    }
+
     public async Task<string> DeleteNamedAsync(
         string frontierId,
         string fileName,
@@ -765,6 +903,42 @@ public sealed class FollowRouteStore
         return LoadFromPathAsync(frontierId, path, cancellationToken);
     }
 
+    private async Task<IReadOnlyList<string>> ExportFormattedAsync(
+        string frontierId,
+        IReadOnlyList<FollowRouteCatalogEntry> routes,
+        string destinationDirectory,
+        Func<FollowRouteCatalogEntry, string> getFileName,
+        Func<FollowRouteDocument, string, CancellationToken, Task> write,
+        CancellationToken cancellationToken)
+    {
+        ValidateFileName(frontierId, nameof(frontierId));
+        ArgumentNullException.ThrowIfNull(routes);
+        ArgumentException.ThrowIfNullOrWhiteSpace(destinationDirectory);
+        var fullDestination = Path.GetFullPath(destinationDirectory);
+        Directory.CreateDirectory(fullDestination);
+        var exported = new List<string>(routes.Count);
+        foreach (var route in routes)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var loaded = await LoadNamedWithoutSelectionAsync(
+                    frontierId,
+                    route.FileName,
+                    route.IsLegacy,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            var document = loaded.Route ?? throw new InvalidDataException(
+                loaded.Error ?? "The saved route could not be loaded for export.");
+            var destination = GetAvailableExportPath(
+                fullDestination,
+                getFileName(route));
+            await write(document, destination, cancellationToken)
+                .ConfigureAwait(false);
+            exported.Add(destination);
+        }
+
+        return exported;
+    }
+
     private async Task SaveRouteObjectAsync(
         FollowRouteDocument route,
         string path,
@@ -789,6 +963,10 @@ public sealed class FollowRouteStore
 
         WriteOptional(root, "name", NormalizeOptionalText(route.Name));
         WriteOptional(root, "notes", NormalizeNotes(route.Notes));
+        WriteOptional(
+            root,
+            "spanshRouteKind",
+            route.SourceSpanshKind?.ToString());
         if (route.Kind == FollowRouteKind.FleetCarrier)
         {
             root["routeType"] = "fleetCarrier";
@@ -1019,7 +1197,27 @@ public sealed class FollowRouteStore
             NormalizeOptionalText(GetString(root, "name")),
             NormalizeNotes(GetString(root, "notes")),
             GetBoolean(root, "favorite") ?? false,
-            parsedKind);
+            parsedKind,
+            ParseSpanshRouteKind(path, GetString(root, "spanshRouteKind")));
+    }
+
+    private static SpanshRouteKind? ParseSpanshRouteKind(
+        string path,
+        string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return Enum.TryParse<SpanshRouteKind>(
+            value,
+            ignoreCase: true,
+            out var kind)
+                ? kind
+                : throw InvalidRoute(
+                    path,
+                    $"spanshRouteKind '{value}' is not supported");
     }
 
     private static FollowRouteHop ParseHop(

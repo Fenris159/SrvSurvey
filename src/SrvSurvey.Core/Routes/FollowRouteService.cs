@@ -121,6 +121,47 @@ public sealed class FollowRouteService(FollowRouteStore store)
             cancellationToken);
     }
 
+    public Task<IReadOnlyList<string>> ExportSpanshAsync(
+        string frontierId,
+        IReadOnlyList<FollowRouteCatalogEntry> routes,
+        string destinationDirectory,
+        CancellationToken cancellationToken = default)
+    {
+        return store.ExportSpanshAsync(
+            frontierId,
+            routes,
+            destinationDirectory,
+            cancellationToken);
+    }
+
+    public Task<IReadOnlyList<string>> ExportCsvAsync(
+        string frontierId,
+        IReadOnlyList<FollowRouteCatalogEntry> routes,
+        string destinationDirectory,
+        CancellationToken cancellationToken = default)
+    {
+        return store.ExportCsvAsync(
+            frontierId,
+            routes,
+            destinationDirectory,
+            cancellationToken);
+    }
+
+    public Task<FollowRouteRenameResult> RenameAsync(
+        string frontierId,
+        string fileName,
+        bool isLegacy,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        return store.RenameAsync(
+            frontierId,
+            fileName,
+            isLegacy,
+            name,
+            cancellationToken);
+    }
+
     public Task<string> DeleteNamedAsync(
         string frontierId,
         string fileName,

@@ -380,6 +380,109 @@ public sealed class FollowRouteStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task SpanshAndCsvExportsPreservePortableRouteData()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        var saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                SourceSpanshKind = SpanshRouteKind.Exobiology,
+                Hops =
+                [
+                    new FollowRouteHop(
+                        "Test System",
+                        42,
+                        new GalacticCoordinate(1.25, -2.5, 3.75),
+                        "Scan, then \"map\"",
+                        true,
+                        false,
+                        [
+                            new FollowRouteBioTarget(
+                                "A 2",
+                                7,
+                                ["Stratum Tectonicas", "Bacterium Acies"],
+                                Subtype: "High metal content world",
+                                DistanceToArrivalLs: 1245.75,
+                                EstimatedScanValue: 125000,
+                                EstimatedMappingValue: 625000,
+                                EstimatedBiologyValue: 27428800,
+                                IsTerraformable: true,
+                                IsBiological: true),
+                        ]),
+                ],
+            },
+            "Portable Route");
+        var entry = Assert.Single(await store.ListAsync("F123"));
+        var exportDirectory = Path.Combine(temporaryDirectory, "portable");
+
+        var spanshPath = Assert.Single(await store.ExportSpanshAsync(
+            "F123",
+            [entry],
+            exportDirectory));
+        var csvPath = Assert.Single(await store.ExportCsvAsync(
+            "F123",
+            [entry],
+            exportDirectory));
+
+        var spansh = JsonNode.Parse(
+            await File.ReadAllTextAsync(spanshPath))!.AsObject();
+        var hop = spansh["result"]!.AsArray().Single()!.AsObject();
+        Assert.Equal("ok", spansh["status"]!.GetValue<string>());
+        Assert.Equal("Test System", hop["name"]!.GetValue<string>());
+        Assert.True(hop["must_refuel"]!.GetValue<bool>());
+        var body = hop["bodies"]!.AsArray().Single()!.AsObject();
+        Assert.Equal("Test System A 2", body["name"]!.GetValue<string>());
+        Assert.Equal(
+            ["Stratum Tectonicas", "Bacterium Acies"],
+            body["landmarks"]!.AsArray()
+                .Select(node => node!["subtype"]!.GetValue<string>()));
+
+        var csv = await File.ReadAllTextAsync(csvPath);
+        Assert.EndsWith(".csv", csvPath, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Sequence,System,SystemAddress", csv, StringComparison.Ordinal);
+        Assert.Contains("\"Scan, then \"\"map\"\"\"", csv, StringComparison.Ordinal);
+        Assert.Contains("Stratum Tectonicas; Bacterium Acies", csv, StringComparison.Ordinal);
+
+        var reloaded = await store.ReloadAsync(saved);
+        Assert.Equal(SpanshRouteKind.Exobiology, reloaded.Route!.SourceSpanshKind);
+        Assert.Equal("Scan, then \"map\"", reloaded.Route.Hops[0].Notes);
+    }
+
+    [Fact]
+    public async Task RenameChangesFileEmbeddedNameAndCurrentSelection()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        var saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Notes = "Keep this note",
+                IsFavorite = true,
+                SourceSpanshKind = SpanshRouteKind.Neutron,
+                Hops = [new FollowRouteHop("Jackson's Lighthouse", 42, null, null, false, true)],
+            },
+            "Old Name");
+        var oldPath = saved.FilePath;
+
+        var renamed = await store.RenameAsync(
+            "F123",
+            Path.GetFileName(oldPath),
+            isLegacy: false,
+            "New Name");
+
+        Assert.Equal(oldPath, renamed.PreviousPath);
+        Assert.False(File.Exists(oldPath));
+        Assert.True(File.Exists(renamed.Route.FilePath));
+        Assert.Equal("New Name.json", Path.GetFileName(renamed.Route.FilePath));
+        Assert.Equal("New Name", renamed.Route.Name);
+        Assert.Equal("Keep this note", renamed.Route.Notes);
+        Assert.True(renamed.Route.IsFavorite);
+        Assert.Equal(SpanshRouteKind.Neutron, renamed.Route.SourceSpanshKind);
+        var selected = await store.LoadAsync("F123");
+        Assert.Equal(renamed.Route.FilePath, selected.Path);
+        Assert.Equal("New Name", selected.Route!.Name);
+    }
+
+    [Fact]
     public async Task FleetCarrierLibraryIsSeparatedAndRejectsStandardRoutes()
     {
         var standardStore = new FollowRouteStore(temporaryDirectory);
@@ -428,6 +531,19 @@ public sealed class FollowRouteStoreTests : IDisposable
         Assert.Equal(
             "fleetCarrier",
             carrierJson["routeType"]!.GetValue<string>());
+
+        var carrierEntry = Assert.Single(await carrierStore.ListAsync("F123"));
+        var carrierExport = Assert.Single(await carrierStore.ExportSpanshAsync(
+            "F123",
+            [carrierEntry],
+            Path.Combine(temporaryDirectory, "carrier-export")));
+        var carrierSpansh = JsonNode.Parse(
+            await File.ReadAllTextAsync(carrierExport))!.AsObject();
+        var carrierJump = carrierSpansh["result"]!["jumps"]!
+            .AsArray()
+            .Single()!
+            .AsObject();
+        Assert.Equal("Colonia", carrierJump["name"]!.GetValue<string>());
 
         await Assert.ThrowsAsync<InvalidDataException>(
             () => standardStore.ImportAsync("F456", carrier.FilePath));

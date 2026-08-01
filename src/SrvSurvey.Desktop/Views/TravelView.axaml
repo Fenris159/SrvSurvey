@@ -113,6 +113,16 @@
                               IsEnabled="{Binding RouteManager.CanExport}"
                               Click="ExportRoutes_Click"
                               Content="Export" />
+                      <Button Classes="secondary"
+                              Margin="0,0,8,8"
+                              IsEnabled="{Binding RouteManager.CanExport}"
+                              Click="ExportSpanshRoutes_Click"
+                              Content="Exp Spansh" />
+                      <Button Classes="secondary"
+                              Margin="0,0,8,8"
+                              IsEnabled="{Binding RouteManager.CanExport}"
+                              Click="ExportCsvRoutes_Click"
+                              Content="Exp CSV" />
                       <Button Classes="secondary compact-danger"
                               Width="44"
                               Height="38"
@@ -226,17 +236,34 @@
                                            VerticalAlignment="Center"
                                            Text="{Binding FavoriteGlyph}" />
                               </Button>
-                              <StackPanel Grid.Column="2"
-                                          VerticalAlignment="Center"
-                                          Spacing="2">
+                              <Grid Grid.Column="2"
+                                    RowDefinitions="Auto,Auto"
+                                    ColumnDefinitions="*,Auto"
+                                    VerticalAlignment="Center">
                                 <TextBlock FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
                                            Text="{Binding Name}"
                                            TextTrimming="CharacterEllipsis" />
-                                <TextBlock Classes="muted"
+                                <Button Grid.Column="1"
+                                        Classes="link"
+                                        Width="28"
+                                        Height="28"
+                                        Padding="5"
+                                        Command="{Binding RenameCommand}"
+                                        ToolTip.Tip="Rename route">
+                                  <Path Data="M 3,15 L 4,11 L 12,3 L 15,6 L 7,14 Z M 11,4 L 14,7"
+                                        Stroke="{DynamicResource RavenTextBrush}"
+                                        StrokeLineCap="Round"
+                                        StrokeThickness="1.5"
+                                        Stretch="Uniform" />
+                                </Button>
+                                <TextBlock Grid.Row="1"
+                                           Grid.ColumnSpan="2"
+                                           Classes="muted"
                                            FontSize="10"
                                            Text="{Binding FileName}"
                                            TextTrimming="CharacterEllipsis" />
-                              </StackPanel>
+                              </Grid>
                               <TextBlock Grid.Column="3"
                                          Classes="muted"
                                          VerticalAlignment="Center"
@@ -492,6 +519,16 @@
                             IsEnabled="{Binding FleetCarrierRouteManager.CanExport}"
                             Click="ExportFleetCarrierRoutes_Click"
                             Content="Export" />
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            IsEnabled="{Binding FleetCarrierRouteManager.CanExport}"
+                            Click="ExportSpanshFleetCarrierRoutes_Click"
+                            Content="Exp Spansh" />
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            IsEnabled="{Binding FleetCarrierRouteManager.CanExport}"
+                            Click="ExportCsvFleetCarrierRoutes_Click"
+                            Content="Exp CSV" />
                     <Button Classes="secondary compact-danger"
                             Width="44"
                             Height="38"
@@ -605,17 +642,34 @@
                                          VerticalAlignment="Center"
                                          Text="{Binding FavoriteGlyph}" />
                             </Button>
-                            <StackPanel Grid.Column="2"
-                                        VerticalAlignment="Center"
-                                        Spacing="2">
+                            <Grid Grid.Column="2"
+                                  RowDefinitions="Auto,Auto"
+                                  ColumnDefinitions="*,Auto"
+                                  VerticalAlignment="Center">
                               <TextBlock FontWeight="SemiBold"
+                                         VerticalAlignment="Center"
                                          Text="{Binding Name}"
                                          TextTrimming="CharacterEllipsis" />
-                              <TextBlock Classes="muted"
+                              <Button Grid.Column="1"
+                                      Classes="link"
+                                      Width="28"
+                                      Height="28"
+                                      Padding="5"
+                                      Command="{Binding RenameCommand}"
+                                      ToolTip.Tip="Rename fleet-carrier route">
+                                <Path Data="M 3,15 L 4,11 L 12,3 L 15,6 L 7,14 Z M 11,4 L 14,7"
+                                      Stroke="{DynamicResource RavenTextBrush}"
+                                      StrokeLineCap="Round"
+                                      StrokeThickness="1.5"
+                                      Stretch="Uniform" />
+                              </Button>
+                              <TextBlock Grid.Row="1"
+                                         Grid.ColumnSpan="2"
+                                         Classes="muted"
                                          FontSize="10"
                                          Text="{Binding FileName}"
                                          TextTrimming="CharacterEllipsis" />
-                            </StackPanel>
+                            </Grid>
                             <TextBlock Grid.Column="3"
                                        Classes="muted"
                                        VerticalAlignment="Center"
@@ -768,6 +822,35 @@
 
     <Grid Panel.ZIndex="20"
           Background="#99000000"
+          IsVisible="{Binding RouteManager.IsRenameVisible}">
+      <Border Classes="card raised"
+              Width="520"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="15">
+          <TextBlock Classes="page-title" FontSize="22" Text="Rename route" />
+          <TextBlock Classes="muted"
+                     Text="{Binding RouteManager.EditingRoute.FileName, StringFormat='Rename {0}'}"
+                     TextWrapping="Wrap" />
+          <TextBox Text="{Binding RouteManager.RenameDraft, Mode=TwoWay}"
+                   PlaceholderText="Route name" />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding RouteManager.CancelDialogCommand}"
+                    Content="Cancel" />
+            <Button Classes="primary"
+                    Command="{Binding RouteManager.SaveRenameCommand}"
+                    Content="Save" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Panel.ZIndex="20"
+          Background="#99000000"
           IsVisible="{Binding FleetCarrierRouteManager.IsDeleteConfirmationVisible}">
       <Border Classes="card raised"
               Width="470"
@@ -823,6 +906,37 @@
                     Content="Close" />
             <Button Classes="primary"
                     Command="{Binding FleetCarrierRouteManager.SaveNotesCommand}"
+                    Content="Save" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding FleetCarrierRouteManager.IsRenameVisible}">
+      <Border Classes="card raised"
+              Width="520"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="15">
+          <TextBlock Classes="page-title"
+                     FontSize="22"
+                     Text="Rename fleet-carrier route" />
+          <TextBlock Classes="muted"
+                     Text="{Binding FleetCarrierRouteManager.EditingRoute.FileName, StringFormat='Rename {0}'}"
+                     TextWrapping="Wrap" />
+          <TextBox Text="{Binding FleetCarrierRouteManager.RenameDraft, Mode=TwoWay}"
+                   PlaceholderText="Fleet-carrier route name" />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding FleetCarrierRouteManager.CancelDialogCommand}"
+                    Content="Cancel" />
+            <Button Classes="primary"
+                    Command="{Binding FleetCarrierRouteManager.SaveRenameCommand}"
                     Content="Save" />
           </StackPanel>
         </StackPanel>

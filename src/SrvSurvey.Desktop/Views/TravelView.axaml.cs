@@ -133,6 +133,34 @@ public sealed partial class TravelView : UserControl
         }
     }
 
+    private async void ExportSpanshRoutes_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            await ExportWithPickerAsync(
+                viewModel.RouteManager,
+                "Export selected routes as Spansh JSON",
+                viewModel.RouteManager.ExportSelectedSpanshAsync,
+                "Spansh export");
+        }
+    }
+
+    private async void ExportCsvRoutes_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            await ExportWithPickerAsync(
+                viewModel.RouteManager,
+                "Export selected routes as CSV",
+                viewModel.RouteManager.ExportSelectedCsvAsync,
+                "CSV export");
+        }
+    }
+
     private async void ImportFleetCarrierRoutes_Click(
         object? sender,
         RoutedEventArgs eventArgs)
@@ -212,6 +240,69 @@ public sealed partial class TravelView : UserControl
             viewModel.FleetCarrierRouteManager.ReportFilePickerError(
                 "export",
                 exception);
+        }
+    }
+
+    private async void ExportSpanshFleetCarrierRoutes_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            await ExportWithPickerAsync(
+                viewModel.FleetCarrierRouteManager,
+                "Export selected fleet-carrier routes as Spansh JSON",
+                viewModel.FleetCarrierRouteManager.ExportSelectedSpanshAsync,
+                "Spansh export");
+        }
+    }
+
+    private async void ExportCsvFleetCarrierRoutes_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            await ExportWithPickerAsync(
+                viewModel.FleetCarrierRouteManager,
+                "Export selected fleet-carrier routes as CSV",
+                viewModel.FleetCarrierRouteManager.ExportSelectedCsvAsync,
+                "CSV export");
+        }
+    }
+
+    private async Task ExportWithPickerAsync(
+        RouteManagerViewModel manager,
+        string title,
+        Func<string, Task> export,
+        string operation)
+    {
+        if (TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage)
+        {
+            return;
+        }
+
+        try
+        {
+            var folders = await storage.OpenFolderPickerAsync(
+                new FolderPickerOpenOptions
+                {
+                    Title = title,
+                    AllowMultiple = false,
+                });
+            var path = folders.FirstOrDefault()?.TryGetLocalPath();
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                await export(path);
+            }
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or NotSupportedException
+                or InvalidOperationException)
+        {
+            manager.ReportFilePickerError(operation, exception);
         }
     }
 

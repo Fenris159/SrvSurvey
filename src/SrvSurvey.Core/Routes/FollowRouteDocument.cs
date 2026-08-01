@@ -12,7 +12,8 @@ public sealed record FollowRouteDocument(
     string? Name = null,
     string? Notes = null,
     bool IsFavorite = false,
-    FollowRouteKind Kind = FollowRouteKind.Standard)
+    FollowRouteKind Kind = FollowRouteKind.Standard,
+    SpanshRouteKind? SourceSpanshKind = null)
 {
     public bool IsStarted => LastReachedIndex >= 0;
 
@@ -93,6 +94,11 @@ public sealed record FollowRouteCatalogEntry(
     DateTimeOffset CreatedAt = default,
     string? Notes = null,
     bool IsFavorite = false);
+
+public sealed record FollowRouteRenameResult(
+    string PreviousPath,
+    FollowRouteDocument Route,
+    FollowRouteCatalogEntry CatalogEntry);
 
 public sealed record FollowRouteArrivalResult(
     FollowRouteDocument Route,

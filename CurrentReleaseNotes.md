@@ -40,9 +40,10 @@ Detailed engineering and validation status is maintained in
   restored without uploading it.
 - Direct overlay editing with drag positioning, live previews, global opacity,
   and per-panel opacity controls, plus a dedicated Overlay Settings workspace.
-- Per-commander Route Manager and FC Routes libraries with import/export,
-  favorites, sortable metadata, editable notes, direct activation and
-  deactivation, and recoverable deletion. Their focused workspaces support
+- Per-commander Route Manager and FC Routes libraries with import, native
+  backup export, portable Spansh JSON and universal CSV exports, in-place route
+  renaming, favorites, sortable metadata, editable notes, direct activation
+  and deactivation, and recoverable deletion. Their focused workspaces support
   progress-only saves and undo/reset controls, while normal jumps and carrier
   jumps advance only their matching route type. The two libraries are stored
   separately under the application profile's `Routes` folder, and only one may

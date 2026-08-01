@@ -17,6 +17,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand confirmDeleteCommand;
     private readonly AsyncCommand saveNotesCommand;
+    private readonly AsyncCommand saveRenameCommand;
     private readonly RelayCommand requestDeleteCommand;
     private readonly RelayCommand cancelDialogCommand;
     private readonly RelayCommand sortNameCommand;
@@ -32,8 +33,10 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
     private bool sortAscending = true;
     private bool isDeleteConfirmationVisible;
     private bool isNotesVisible;
+    private bool isRenameVisible;
     private RouteManagerItemViewModel? editingRoute;
     private string notesDraft = string.Empty;
+    private string renameDraft = string.Empty;
     private string statusMessage = "Waiting for a commander profile.";
 
     public RouteManagerViewModel(
@@ -71,6 +74,12 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         saveNotesCommand = new AsyncCommand(
             SaveNotesAsync,
             () => EditingRoute is not null && !IsBusy && IsNotesVisible);
+        saveRenameCommand = new AsyncCommand(
+            SaveRenameAsync,
+            () => EditingRoute is not null
+                && !string.IsNullOrWhiteSpace(RenameDraft)
+                && !IsBusy
+                && IsRenameVisible);
         sortNameCommand = new RelayCommand(SortByName, () => !IsBusy);
         sortDateCommand = new RelayCommand(SortByDate, () => !IsBusy);
         selectAllCommand = new RelayCommand(
@@ -195,7 +204,22 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool IsDialogVisible => IsDeleteConfirmationVisible || IsNotesVisible;
+    public bool IsRenameVisible
+    {
+        get => isRenameVisible;
+        private set
+        {
+            if (SetField(ref isRenameVisible, value))
+            {
+                OnPropertyChanged(nameof(IsDialogVisible));
+                RaiseCommands();
+            }
+        }
+    }
+
+    public bool IsDialogVisible => IsDeleteConfirmationVisible
+        || IsNotesVisible
+        || IsRenameVisible;
 
     public RouteManagerItemViewModel? EditingRoute
     {
@@ -207,6 +231,18 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
     {
         get => notesDraft;
         set => SetField(ref notesDraft, value);
+    }
+
+    public string RenameDraft
+    {
+        get => renameDraft;
+        set
+        {
+            if (SetField(ref renameDraft, value))
+            {
+                saveRenameCommand.RaiseCanExecuteChanged();
+            }
+        }
     }
 
     public string DeleteConfirmationText => SelectedCount == 1
@@ -236,6 +272,8 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
     public ICommand CancelDialogCommand => cancelDialogCommand;
 
     public ICommand SaveNotesCommand => saveNotesCommand;
+
+    public ICommand SaveRenameCommand => saveRenameCommand;
 
     public ICommand SortNameCommand => sortNameCommand;
 
@@ -328,6 +366,62 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         catch (Exception exception) when (IsExpectedException(exception))
         {
             StatusMessage = "The selected routes could not be exported: "
+                + exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public Task ExportSelectedSpanshAsync(string destinationDirectory)
+    {
+        return ExportSelectedFormattedAsync(
+            destinationDirectory,
+            routeService.ExportSpanshAsync,
+            "Spansh JSON");
+    }
+
+    public Task ExportSelectedCsvAsync(string destinationDirectory)
+    {
+        return ExportSelectedFormattedAsync(
+            destinationDirectory,
+            routeService.ExportCsvAsync,
+            "CSV");
+    }
+
+    private async Task ExportSelectedFormattedAsync(
+        string destinationDirectory,
+        Func<
+            string,
+            IReadOnlyList<FollowRouteCatalogEntry>,
+            string,
+            CancellationToken,
+            Task<IReadOnlyList<string>>> export,
+        string format)
+    {
+        if (frontierId is null || !CanExport)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            var selected = Routes
+                .Where(route => route.IsSelected)
+                .Select(route => route.ToCatalogEntry())
+                .ToArray();
+            var exported = await export(
+                frontierId,
+                selected,
+                destinationDirectory,
+                CancellationToken.None);
+            StatusMessage = $"Exported {exported.Count:N0} {format} route file{(exported.Count == 1 ? string.Empty : "s")} to {Path.GetFullPath(destinationDirectory)}.";
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            StatusMessage = $"The selected routes could not be exported as {format}: "
                 + exception.Message;
         }
         finally
@@ -489,6 +583,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
                     OnSelectionChanged,
                     ToggleFavoriteAsync,
                     OpenNotes,
+                    OpenRename,
                     ActivateAsync));
             }
         }
@@ -543,6 +638,45 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         EditingRoute = route;
         NotesDraft = route.Notes ?? string.Empty;
         IsNotesVisible = true;
+    }
+
+    private void OpenRename(RouteManagerItemViewModel route)
+    {
+        EditingRoute = route;
+        RenameDraft = route.Name;
+        IsRenameVisible = true;
+    }
+
+    public async Task SaveRenameAsync()
+    {
+        if (frontierId is null || EditingRoute is not { } route)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            var result = await routeService.RenameAsync(
+                frontierId,
+                route.FileName,
+                route.IsLegacy,
+                RenameDraft);
+            route.Update(result.CatalogEntry);
+            await workspace.HandleRouteRenamedAsync(result);
+            ReorderRoutes();
+            StatusMessage = $"Renamed route to {result.Route.Name}.";
+            CloseDialogs();
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            StatusMessage = "The route could not be renamed: "
+                + exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     public async Task SaveNotesAsync()
@@ -633,8 +767,10 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
     {
         IsDeleteConfirmationVisible = false;
         IsNotesVisible = false;
+        IsRenameVisible = false;
         EditingRoute = null;
         NotesDraft = string.Empty;
+        RenameDraft = string.Empty;
     }
 
     private void SortByName()
@@ -784,6 +920,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         refreshCommand.RaiseCanExecuteChanged();
         confirmDeleteCommand.RaiseCanExecuteChanged();
         saveNotesCommand.RaiseCanExecuteChanged();
+        saveRenameCommand.RaiseCanExecuteChanged();
         requestDeleteCommand.RaiseCanExecuteChanged();
         cancelDialogCommand.RaiseCanExecuteChanged();
         sortNameCommand.RaiseCanExecuteChanged();
@@ -918,9 +1055,11 @@ public sealed class RouteManagerItemViewModel : INotifyPropertyChanged
     private readonly Action selectionChanged;
     private readonly Func<RouteManagerItemViewModel, Task> toggleFavorite;
     private readonly Action<RouteManagerItemViewModel> editNotes;
+    private readonly Action<RouteManagerItemViewModel> rename;
     private readonly Func<RouteManagerItemViewModel, Task> activate;
     private readonly AsyncCommand toggleFavoriteCommand;
     private readonly RelayCommand editNotesCommand;
+    private readonly RelayCommand renameCommand;
     private readonly AsyncCommand activateCommand;
     private string name;
     private string fileName;
@@ -937,11 +1076,13 @@ public sealed class RouteManagerItemViewModel : INotifyPropertyChanged
         Action selectionChanged,
         Func<RouteManagerItemViewModel, Task> toggleFavorite,
         Action<RouteManagerItemViewModel> editNotes,
+        Action<RouteManagerItemViewModel> rename,
         Func<RouteManagerItemViewModel, Task> activate)
     {
         this.selectionChanged = selectionChanged;
         this.toggleFavorite = toggleFavorite;
         this.editNotes = editNotes;
+        this.rename = rename;
         this.activate = activate;
         name = entry.Name;
         fileName = entry.FileName;
@@ -954,6 +1095,7 @@ public sealed class RouteManagerItemViewModel : INotifyPropertyChanged
         toggleFavoriteCommand = new AsyncCommand(
             () => this.toggleFavorite(this));
         editNotesCommand = new RelayCommand(() => this.editNotes(this));
+        renameCommand = new RelayCommand(() => this.rename(this));
         activateCommand = new AsyncCommand(() => this.activate(this));
     }
 
@@ -1003,6 +1145,8 @@ public sealed class RouteManagerItemViewModel : INotifyPropertyChanged
     public ICommand ToggleFavoriteCommand => toggleFavoriteCommand;
 
     public ICommand EditNotesCommand => editNotesCommand;
+
+    public ICommand RenameCommand => renameCommand;
 
     public ICommand ActivateCommand => activateCommand;
 
@@ -1055,6 +1199,7 @@ public sealed class RouteManagerItemViewModel : INotifyPropertyChanged
     {
         toggleFavoriteCommand.RaiseCanExecuteChanged();
         editNotesCommand.RaiseCanExecuteChanged();
+        renameCommand.RaiseCanExecuteChanged();
         activateCommand.RaiseCanExecuteChanged();
     }
 

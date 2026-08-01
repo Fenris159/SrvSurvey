@@ -567,6 +567,23 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         loadedRoute = loadedRoute with { IsFavorite = isFavorite };
     }
 
+    public async Task HandleRouteRenamedAsync(FollowRouteRenameResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        if (IsLoadedSavedRoute(result.PreviousPath))
+        {
+            loadedRoute = result.Route;
+            draftNotes = result.Route.Notes;
+            RaiseRouteMetadataProperties();
+        }
+
+        await RefreshCatalogAsync();
+        if (IsLoadedSavedRoute(result.Route.FilePath))
+        {
+            SelectCatalogPath(result.Route.FilePath);
+        }
+    }
+
     public async Task HandleLoadedRouteDeletedAsync()
     {
         if (frontierId is null)
@@ -819,7 +836,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             IsBusy = true;
             StatusMessage = $"Importing Spansh {GetRouteKindLabel(reference.Kind)} route\u2026";
             var importedHops = await spanshClient.GetRouteAsync(reference);
-            ApplyImportedHops(importedHops);
+            ApplyImportedHops(importedHops, reference.Kind);
             StatusMessage = importedHops.Count == 0
                 ? "Spansh returned a route with no systems."
                 : $"Imported {importedHops.Count:N0} systems from Spansh. Review it, then use Save As...";
@@ -1513,8 +1530,15 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         await OpenWorkspaceAsync();
     }
 
-    private void ApplyImportedHops(IReadOnlyList<FollowRouteHop> importedHops)
+    private void ApplyImportedHops(
+        IReadOnlyList<FollowRouteHop> importedHops,
+        SpanshRouteKind? sourceKind = null)
     {
+        if (loadedRoute is not null)
+        {
+            loadedRoute = loadedRoute with { SourceSpanshKind = sourceKind };
+        }
+
         var nextHops = importedHops.ToArray();
         var nextLastIndex = nextHops.Length > 0
             && currentSystemAddress is { } address

@@ -114,6 +114,8 @@ public sealed class TravelViewMarkupTests
         Assert.Contains("Open Route Workspace", buttonContent);
         Assert.Contains("Import", buttonContent);
         Assert.Contains("Export", buttonContent);
+        Assert.Contains("Exp Spansh", buttonContent);
+        Assert.Contains("Exp CSV", buttonContent);
         Assert.Contains("Notes", buttonContent);
         Assert.Contains("Activate", buttonContent);
         Assert.Contains("Deactivate", buttonContent);
@@ -172,6 +174,12 @@ public sealed class TravelViewMarkupTests
             favoriteButton.Descendants()
                 .Single(element => element.Name.LocalName == "TextBlock")
                 .Attribute("FontSize")?.Value);
+        Assert.Contains(
+            "{Binding RenameCommand}",
+            bindings);
+        Assert.Contains(document.Descendants(), element =>
+            element.Attribute("IsVisible")?.Value
+                == "{Binding RouteManager.IsRenameVisible}");
     }
 
     [Fact]
@@ -204,6 +212,9 @@ public sealed class TravelViewMarkupTests
             bindings);
         Assert.Contains("ImportFleetCarrierRoutes_Click", clickHandlers);
         Assert.Contains("ExportFleetCarrierRoutes_Click", clickHandlers);
+        Assert.Contains("ExportSpanshFleetCarrierRoutes_Click", clickHandlers);
+        Assert.Contains("ExportCsvFleetCarrierRoutes_Click", clickHandlers);
+        Assert.Contains("{Binding RenameCommand}", bindings);
 
         Assert.Contains(document.Descendants(), element =>
             element.Attribute("IsVisible")?.Value
@@ -211,6 +222,9 @@ public sealed class TravelViewMarkupTests
         Assert.Contains(document.Descendants(), element =>
             element.Attribute("IsVisible")?.Value
                 == "{Binding FleetCarrierRouteManager.IsNotesVisible}");
+        Assert.Contains(document.Descendants(), element =>
+            element.Attribute("IsVisible")?.Value
+                == "{Binding FleetCarrierRouteManager.IsRenameVisible}");
     }
 
     private static XDocument LoadTravelView() => XDocument.Load(Path.Combine(
