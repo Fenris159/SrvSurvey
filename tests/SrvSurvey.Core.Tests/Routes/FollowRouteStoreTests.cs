@@ -191,6 +191,32 @@ public sealed class FollowRouteStoreTests : IDisposable
         Assert.Equal(malformed, await File.ReadAllTextAsync(path));
     }
 
+    [Theory]
+    [InlineData("99")]
+    [InlineData("1")]
+    [InlineData("Neutron,Riches")]
+    public async Task UnsupportedSpanshRouteKindsAreRejected(string value)
+    {
+        var path = CreateRoutePath();
+        await File.WriteAllTextAsync(
+            path,
+            $$"""
+            {
+              "spanshRouteKind": "{{value}}",
+              "hops": []
+            }
+            """);
+        var store = new FollowRouteStore(temporaryDirectory);
+
+        var result = await store.LoadAsync("F123");
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains(
+            $"spanshRouteKind '{value}' is not supported",
+            result.Error,
+            StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task InvalidRouteAndUnsafeFrontierIdAreReported()
     {

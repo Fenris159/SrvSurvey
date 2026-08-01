@@ -1212,14 +1212,23 @@ public sealed class FollowRouteStore
             return null;
         }
 
-        return Enum.TryParse<SpanshRouteKind>(
-            value,
-            ignoreCase: true,
-            out var kind)
-                ? kind
-                : throw InvalidRoute(
-                    path,
-                    $"spanshRouteKind '{value}' is not supported");
+        var normalizedValue = value.Trim();
+        if (Enum.TryParse<SpanshRouteKind>(
+                normalizedValue,
+                ignoreCase: true,
+                out var kind)
+            && Enum.IsDefined(kind)
+            && string.Equals(
+                Enum.GetName(kind),
+                normalizedValue,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return kind;
+        }
+
+        throw InvalidRoute(
+            path,
+            $"spanshRouteKind '{value}' is not supported");
     }
 
     private static FollowRouteHop ParseHop(
