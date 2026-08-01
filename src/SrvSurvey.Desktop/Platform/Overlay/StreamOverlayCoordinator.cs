@@ -13,7 +13,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly OverlayWindowRegistry registry;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private StreamOverlayWindow? window;
     private bool disposed;
 
@@ -32,7 +32,7 @@ public sealed class StreamOverlayCoordinator : IDisposable
         this.registry = registry ?? OverlayWindowRegistry.Shared;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         this.registry.Changed += OnRegistryChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

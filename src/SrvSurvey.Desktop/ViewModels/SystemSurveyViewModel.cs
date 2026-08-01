@@ -1286,6 +1286,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         ExobiologySnapshot? nextExobiology = null)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
+        if (journalEvents.Count == 0
+            && nextStatus is null
+            && (nextExobiology is null
+                || HasSameExobiology(exobiology, nextExobiology)))
+        {
+            return;
+        }
+
         var previousAddress = snapshot.SystemAddress;
         var previousStatus = status;
         foreach (var journalEvent in journalEvents)
@@ -1391,6 +1399,20 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
         RefreshDisplay();
         RaiseVisibilityProperties();
+    }
+
+    private static bool HasSameExobiology(
+        ExobiologySnapshot current,
+        ExobiologySnapshot candidate)
+    {
+        return current.LastOrganicScan == candidate.LastOrganicScan
+            && Equals(current.ScanOne, candidate.ScanOne)
+            && Equals(current.ScanTwo, candidate.ScanTwo)
+            && current.OrganicRewards == candidate.OrganicRewards
+            && current.CountRadicoidaUnica == candidate.CountRadicoidaUnica
+            && current.ScannedBioEntryIds.SequenceEqual(
+                candidate.ScannedBioEntryIds,
+                StringComparer.Ordinal);
     }
 
     public void UpdateCommanderCodexContext(

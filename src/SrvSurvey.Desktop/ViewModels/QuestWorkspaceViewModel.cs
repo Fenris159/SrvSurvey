@@ -31,6 +31,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
     private QuestCatalogRowViewModel? selectedCatalogQuest;
     private QuestHistoryRowViewModel? selectedHistoryQuest;
     private IReadOnlyList<QuestMessageActionViewModel> messageActions = [];
+    private IReadOnlyList<QuestRuntimeSnapshot>? appliedRuntimeSnapshots;
     private RavenQuestReference? pendingRemoval;
 
     public QuestWorkspaceViewModel(
@@ -249,7 +250,10 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
     {
         ArgumentNullException.ThrowIfNull(result);
         IsEnabled = enabled;
-        RebuildRuntimeRows(result.Quests);
+        if (!ReferenceEquals(appliedRuntimeSnapshots, result.Quests))
+        {
+            RebuildRuntimeRows(result.Quests);
+        }
         StatusMessage = result.Warnings.Count > 0
             ? string.Join(Environment.NewLine, result.Warnings)
             : !enabled
@@ -516,6 +520,7 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
     private void RebuildRuntimeRows(
         IReadOnlyList<QuestRuntimeSnapshot> snapshots)
     {
+        appliedRuntimeSnapshots = snapshots;
         var selectedReference = SelectedQuest?.Reference;
         (RavenQuestReference Quest, string Id)? selectedMessageIdentity =
             SelectedMessage is null

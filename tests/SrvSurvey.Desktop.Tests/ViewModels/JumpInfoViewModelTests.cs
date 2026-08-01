@@ -91,13 +91,18 @@ public sealed class JumpInfoViewModelTests : IDisposable
         await viewModel.PendingSummaryLoad;
 
         Assert.True(viewModel.ShouldShow);
-        Assert.Contains(
+        var followedRouteLine = Assert.Single(
             viewModel.DetailLines,
-            line => line.Label == "Followed route"
-                && line.Value.Contains("Hop 2 of 2")
-                && line.Value.Contains("Survey the A ring")
-                && line.Value.Contains("Neutron boost")
-                && line.Value.Contains("Refuel stop"));
+            line => line.Label == "Followed route");
+        Assert.Contains("Hop 2 of 2", followedRouteLine.Value);
+        Assert.Contains("Survey the A ring", followedRouteLine.Value);
+        Assert.DoesNotContain(
+            viewModel.DetailLines,
+            line => line.Value.Contains("Neutron boost")
+                || line.Value.Contains("Refuel stop"));
+        Assert.True(followedRouteLine.Neutron);
+        Assert.True(followedRouteLine.Refuel);
+        Assert.True(followedRouteLine.HasRouteBadges);
     }
 
     [Fact]

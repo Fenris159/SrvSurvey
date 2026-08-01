@@ -132,7 +132,7 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
                 24,
                 null),
             notification.Placement);
-        Assert.Equal(26, viewModel.Overlays.Count);
+        Assert.Equal(27, viewModel.Overlays.Count);
         Assert.Equal(
             new LegacyOverlayPlacement(
                 LegacyHorizontalAnchor.Right,

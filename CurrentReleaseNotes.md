@@ -40,6 +40,19 @@ Detailed engineering and validation status is maintained in
   restored without uploading it.
 - Direct overlay editing with drag positioning, live previews, global opacity,
   and per-panel opacity controls, plus a dedicated Overlay Settings workspace.
+- Per-commander Route Manager and FC Routes libraries with import/export,
+  favorites, sortable metadata, editable notes, direct activation and
+  deactivation, and recoverable deletion. Their focused workspaces support
+  progress-only saves and undo/reset controls, while normal jumps and carrier
+  jumps advance only their matching route type. The two libraries are stored
+  separately under the application profile's `Routes` folder, and only one may
+  own next-hop auto-copy at a time. Spansh result URLs can be imported across
+  its neutron, valuable-world, trade, tourist, fleet-carrier, galaxy,
+  exobiology, and colonisation planner families.
+- Expressway to Exomastery imports retain structured per-body biology targets
+  separately from route notes. The Route Workspace groups those targets beneath
+  each system, while a dedicated current-system route-biology overlay shares
+  the same immediately persisted body-completion checkboxes.
 - Cross-platform overlay hosting and Linux-specific X11/XWayland integration,
   including KDE-aware window hints while preserving the standard fallback.
 - Hardened opt-in EDDN delivery with a durable outbox, schema validation, and a

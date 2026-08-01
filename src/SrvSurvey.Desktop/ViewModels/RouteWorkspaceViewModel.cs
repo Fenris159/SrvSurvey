@@ -5,6 +5,7 @@ using System.Windows.Input;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
+using SrvSurvey.Desktop.Presentation;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -15,17 +16,41 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private readonly FollowRouteService routeService;
     private readonly RouteNameImporter nameImporter;
     private readonly ISpanshRouteClient spanshClient;
+    private readonly FollowRouteKind routeKind;
+    private readonly SemaphoreSlim bioProgressLock = new(1, 1);
     private readonly AsyncCommand openWindowCommand;
     private readonly AsyncCommand refreshCommand;
     private readonly AsyncCommand saveCommand;
     private readonly AsyncCommand discardCommand;
     private readonly AsyncCommand copyNextHopCommand;
+    private readonly AsyncCommand loadSelectedRouteCommand;
+    private readonly AsyncCommand newCommand;
+    private readonly AsyncCommand confirmNewCommand;
+    private readonly AsyncCommand resetCommand;
+    private readonly AsyncCommand saveAsCommand;
+    private readonly AsyncCommand confirmSaveAsCommand;
+    private readonly AsyncCommand notesCommand;
+    private readonly AsyncCommand saveNotesCommand;
+    private readonly AsyncCommand deleteCommand;
+    private readonly AsyncCommand confirmDeleteCommand;
+    private readonly AsyncCommand cancelDialogCommand;
     private string? frontierId;
     private string? initializedFrontierId;
     private string? currentSystemName;
     private long? currentSystemAddress;
     private GalacticCoordinate? currentPosition;
     private FollowRouteDocument? loadedRoute;
+    private bool hasSavedRoute;
+    private string? draftNotes;
+    private IReadOnlyList<SavedRouteItemViewModel> savedRoutes = [];
+    private SavedRouteItemViewModel? selectedSavedRoute;
+    private string saveAsName = string.Empty;
+    private string saveAsError = string.Empty;
+    private string notesDraft = string.Empty;
+    private bool isNewConfirmationVisible;
+    private bool isDeleteConfirmationVisible;
+    private bool isSaveAsVisible;
+    private bool isNotesVisible;
     private IReadOnlyList<FollowRouteHop> draftHops = [];
     private IReadOnlyList<RouteHopItemViewModel> hops = [];
     private int lastReachedIndex = -1;
@@ -43,7 +68,8 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     public RouteWorkspaceViewModel(
         FollowRouteService routeService,
         RouteNameImporter nameImporter,
-        ISpanshRouteClient spanshClient)
+        ISpanshRouteClient spanshClient,
+        FollowRouteKind routeKind = FollowRouteKind.Standard)
     {
         this.routeService = routeService
             ?? throw new ArgumentNullException(nameof(routeService));
@@ -51,22 +77,176 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             ?? throw new ArgumentNullException(nameof(nameImporter));
         this.spanshClient = spanshClient
             ?? throw new ArgumentNullException(nameof(spanshClient));
+        this.routeKind = routeKind;
         openWindowCommand = new AsyncCommand(OpenWindowAsync, CanOpenWindow);
         refreshCommand = new AsyncCommand(RefreshAsync, HasProfileAndNotBusy);
-        saveCommand = new AsyncCommand(SaveAsync, () => IsDirty && !IsBusy);
+        saveCommand = new AsyncCommand(SaveAsync, () => CanSaveChanges);
         discardCommand = new AsyncCommand(
             DiscardAsync,
-            () => IsDirty && !IsBusy);
+            () => IsDirty && !IsBusy && !IsDialogVisible);
         copyNextHopCommand = new AsyncCommand(
             CopyNextHopAsync,
             () => NextHop is not null && clipboardWriter is not null && !IsBusy);
+        loadSelectedRouteCommand = new AsyncCommand(
+            LoadSelectedRouteAsync,
+            () => SelectedSavedRoute is not null
+                && !IsDirty
+                && !IsBusy
+                && !IsDialogVisible);
+        newCommand = new AsyncCommand(
+            () => ShowDialogAsync(RouteDialog.New),
+            HasProfileAndIdleWorkspace);
+        confirmNewCommand = new AsyncCommand(ConfirmNewAsync, HasProfileAndNotBusy);
+        resetCommand = new AsyncCommand(
+            ResetAsync,
+            () => HasRoute && !IsBusy && !IsDialogVisible);
+        saveAsCommand = new AsyncCommand(
+            () => ShowDialogAsync(RouteDialog.SaveAs),
+            () => HasRoute && !IsBusy && !IsDialogVisible);
+        confirmSaveAsCommand = new AsyncCommand(
+            ConfirmSaveAsAsync,
+            () => HasRoute && !IsBusy && IsSaveAsVisible);
+        notesCommand = new AsyncCommand(
+            () => ShowDialogAsync(RouteDialog.Notes),
+            HasProfileAndIdleWorkspace);
+        saveNotesCommand = new AsyncCommand(
+            SaveNotesAsync,
+            () => !IsBusy && IsNotesVisible);
+        deleteCommand = new AsyncCommand(
+            () => ShowDialogAsync(RouteDialog.Delete),
+            () => HasSavedRoute && !IsBusy && !IsDialogVisible);
+        confirmDeleteCommand = new AsyncCommand(
+            ConfirmDeleteAsync,
+            () => HasSavedRoute && !IsBusy && IsDeleteConfirmationVisible);
+        cancelDialogCommand = new AsyncCommand(
+            CancelDialogAsync,
+            () => IsDialogVisible);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public event EventHandler? CatalogChanged;
+
+    public FollowRouteKind RouteKind => routeKind;
+
+    public bool IsFleetCarrierWorkspace => routeKind == FollowRouteKind.FleetCarrier;
+
+    public string WindowTitle => IsFleetCarrierWorkspace
+        ? "FC Route Workspace"
+        : "Route Workspace";
+
+    public string WorkspaceEyebrow => IsFleetCarrierWorkspace
+        ? "FLEET CARRIER ROUTE"
+        : "FOLLOWED ROUTE";
+
+    public string WorkspaceHeading => IsFleetCarrierWorkspace
+        ? "Fleet carrier itinerary"
+        : "Navigation itinerary";
+
+    public string WorkspaceDescription => IsFleetCarrierWorkspace
+        ? "Import a fleet-carrier route, track each carrier jump, and keep the next destination ready."
+        : "Import a route, track each arrival, and keep the next system ready for the Galaxy Map.";
+
     public bool HasProfile => !string.IsNullOrWhiteSpace(frontierId);
 
     public bool HasRoute => draftHops.Count > 0;
+
+    public bool HasSavedRoute
+    {
+        get => hasSavedRoute;
+        private set
+        {
+            if (SetField(ref hasSavedRoute, value))
+            {
+                OnPropertyChanged(nameof(RouteFileName));
+                OnPropertyChanged(nameof(ShouldShowRouteBioOverlay));
+                RaiseCommands();
+            }
+        }
+    }
+
+    public IReadOnlyList<SavedRouteItemViewModel> SavedRoutes
+    {
+        get => savedRoutes;
+        private set => SetField(ref savedRoutes, value);
+    }
+
+    public SavedRouteItemViewModel? SelectedSavedRoute
+    {
+        get => selectedSavedRoute;
+        set
+        {
+            if (SetField(ref selectedSavedRoute, value))
+            {
+                loadSelectedRouteCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string SaveAsName
+    {
+        get => saveAsName;
+        set
+        {
+            if (SetField(ref saveAsName, value))
+            {
+                SaveAsError = string.Empty;
+            }
+        }
+    }
+
+    public string SaveAsError
+    {
+        get => saveAsError;
+        private set => SetField(ref saveAsError, value);
+    }
+
+    public string NotesDraft
+    {
+        get => notesDraft;
+        set => SetField(ref notesDraft, value);
+    }
+
+    public bool IsNewConfirmationVisible
+    {
+        get => isNewConfirmationVisible;
+        private set => SetDialogField(
+            ref isNewConfirmationVisible,
+            value,
+            nameof(IsNewConfirmationVisible));
+    }
+
+    public bool IsDeleteConfirmationVisible
+    {
+        get => isDeleteConfirmationVisible;
+        private set => SetDialogField(
+            ref isDeleteConfirmationVisible,
+            value,
+            nameof(IsDeleteConfirmationVisible));
+    }
+
+    public bool IsSaveAsVisible
+    {
+        get => isSaveAsVisible;
+        private set => SetDialogField(
+            ref isSaveAsVisible,
+            value,
+            nameof(IsSaveAsVisible));
+    }
+
+    public bool IsNotesVisible
+    {
+        get => isNotesVisible;
+        private set => SetDialogField(
+            ref isNotesVisible,
+            value,
+            nameof(IsNotesVisible));
+    }
+
+    public bool IsDialogVisible => IsNewConfirmationVisible
+        || IsDeleteConfirmationVisible
+        || IsSaveAsVisible
+        || IsNotesVisible;
 
     public bool IsBusy
     {
@@ -126,13 +306,31 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     public bool IsComplete => HasRoute
         && lastReachedIndex >= draftHops.Count - 1;
 
-    public bool IsDirty => loadedRoute is not null
+    public bool HasDefinitionChanges => loadedRoute is not null
+        && !loadedRoute.Hops.SequenceEqual(draftHops);
+
+    public bool HasProgressChanges => loadedRoute is not null
         && ((loadedRoute.IsActive
                 && loadedRoute.Hops.Count > 0
                 && !loadedRoute.IsComplete) != IsActive
             || loadedRoute.AutoCopy != AutoCopy
-            || loadedRoute.LastReachedIndex != lastReachedIndex
-            || !loadedRoute.Hops.SequenceEqual(draftHops));
+            || loadedRoute.LastReachedIndex != lastReachedIndex);
+
+    public bool HasNotesChanges => loadedRoute is not null
+        && !string.Equals(
+            loadedRoute.Notes?.Trim(),
+            draftNotes?.Trim(),
+            StringComparison.Ordinal);
+
+    public bool IsDirty => HasDefinitionChanges
+        || HasProgressChanges
+        || HasNotesChanges;
+
+    public bool CanSaveChanges => HasSavedRoute
+        && HasProgressChanges
+        && !HasDefinitionChanges
+        && !IsBusy
+        && !IsDialogVisible;
 
     public int RouteCount => draftHops.Count;
 
@@ -164,6 +362,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 LastReachedIndex = lastReachedIndex,
                 IsActive = IsActive,
                 AutoCopy = AutoCopy,
+                Notes = draftNotes,
             };
     }
 
@@ -234,7 +433,26 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public string RouteFileName => loadedRoute is null
         ? Unavailable
-        : Path.GetFileName(loadedRoute.FilePath);
+        : HasSavedRoute
+            ? Path.GetFileName(loadedRoute.FilePath)
+            : "Not saved";
+
+    public string RouteName => loadedRoute?.Name
+        ?? (HasSavedRoute
+            ? Path.GetFileNameWithoutExtension(RouteFileName)
+            : HasRoute
+                ? "New route"
+                : "No active route");
+
+    public string RouteNotesPreview => string.IsNullOrWhiteSpace(draftNotes)
+        ? "No route notes."
+        : draftNotes;
+
+    public bool HasRouteNotes => !string.IsNullOrWhiteSpace(draftNotes);
+
+    public string? LoadedSavedRoutePath => HasSavedRoute
+        ? loadedRoute?.FilePath
+        : null;
 
     public ICommand OpenWindowCommand => openWindowCommand;
 
@@ -245,6 +463,48 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     public ICommand DiscardCommand => discardCommand;
 
     public ICommand CopyNextHopCommand => copyNextHopCommand;
+
+    public ICommand LoadSelectedRouteCommand => loadSelectedRouteCommand;
+
+    public ICommand NewCommand => newCommand;
+
+    public ICommand ConfirmNewCommand => confirmNewCommand;
+
+    public ICommand ResetCommand => resetCommand;
+
+    public ICommand SaveAsCommand => saveAsCommand;
+
+    public ICommand ConfirmSaveAsCommand => confirmSaveAsCommand;
+
+    public ICommand NotesCommand => notesCommand;
+
+    public ICommand SaveNotesCommand => saveNotesCommand;
+
+    public ICommand DeleteCommand => deleteCommand;
+
+    public ICommand ConfirmDeleteCommand => confirmDeleteCommand;
+
+    public ICommand CancelDialogCommand => cancelDialogCommand;
+
+    public void DismissDialogs()
+    {
+        CloseDialogs();
+    }
+
+    public RouteHopItemViewModel? CurrentBioHop => Hops.FirstOrDefault(hop =>
+        hop.IsCurrent && hop.HasBioTargets);
+
+    public IReadOnlyList<RouteBioTargetItemViewModel> CurrentBioTargets =>
+        CurrentBioHop?.BioTargets
+        ?? Array.Empty<RouteBioTargetItemViewModel>();
+
+    public bool HasCurrentBioTargets => CurrentBioTargets.Count > 0;
+
+    public bool ShouldShowRouteBioOverlay => HasSavedRoute
+        && HasCurrentBioTargets
+        && (IsActive || IsComplete);
+
+    public string CurrentBioSystemName => CurrentBioHop?.Name ?? CurrentSystem;
 
     public void SetWindowOpener(Func<Task<bool>>? opener)
     {
@@ -258,15 +518,85 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         copyNextHopCommand.RaiseCanExecuteChanged();
     }
 
+    public async Task<bool> OpenWorkspaceAsync()
+    {
+        if (windowOpener is null || !await windowOpener())
+        {
+            StatusMessage = "The route workspace requires a commander profile.";
+            return false;
+        }
+
+        return true;
+    }
+
+    public bool IsLoadedSavedRoute(string path)
+    {
+        if (!HasSavedRoute || loadedRoute is null)
+        {
+            return false;
+        }
+
+        return string.Equals(
+            Path.GetFullPath(loadedRoute.FilePath),
+            Path.GetFullPath(path),
+            OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal);
+    }
+
+    public void ApplyExternalNotes(string path, string? notes)
+    {
+        if (!IsLoadedSavedRoute(path) || loadedRoute is null)
+        {
+            return;
+        }
+
+        var normalized = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
+        loadedRoute = loadedRoute with { Notes = normalized };
+        draftNotes = normalized;
+        RaiseRouteMetadataProperties();
+    }
+
+    public void ApplyExternalFavorite(string path, bool isFavorite)
+    {
+        if (!IsLoadedSavedRoute(path) || loadedRoute is null)
+        {
+            return;
+        }
+
+        loadedRoute = loadedRoute with { IsFavorite = isFavorite };
+    }
+
+    public async Task HandleLoadedRouteDeletedAsync()
+    {
+        if (frontierId is null)
+        {
+            return;
+        }
+
+        HasSavedRoute = false;
+        ApplyDocument(await routeService.CreateNewAsync(frontierId));
+        await RefreshCatalogAsync();
+        StatusMessage =
+            "The loaded route was removed. A new route workspace is ready.";
+    }
+
     public async Task<bool> UpdateContextAsync(
         string? nextFrontierId,
         string? nextSystemName,
         long? nextSystemAddress,
         GalacticCoordinate? nextPosition)
     {
-        frontierId = string.IsNullOrWhiteSpace(nextFrontierId)
+        var normalizedFrontierId = string.IsNullOrWhiteSpace(nextFrontierId)
             ? null
             : nextFrontierId;
+        var contextChanged = !string.Equals(
+                currentSystemName,
+                nextSystemName,
+                StringComparison.Ordinal)
+            || currentSystemAddress != nextSystemAddress
+            || currentPosition != nextPosition;
+        frontierId = normalizedFrontierId;
         currentSystemName = nextSystemName;
         currentSystemAddress = nextSystemAddress;
         currentPosition = nextPosition;
@@ -278,7 +608,11 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             frontierId,
             StringComparison.OrdinalIgnoreCase))
         {
-            RefreshPresentation();
+            if (contextChanged)
+            {
+                RefreshPresentation();
+            }
+
             return false;
         }
 
@@ -286,6 +620,10 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         if (frontierId is null)
         {
             loadedRoute = null;
+            HasSavedRoute = false;
+            SavedRoutes = [];
+            SelectedSavedRoute = null;
+            draftNotes = null;
             ApplyDraft([], -1, false, true);
             StatusMessage = "Waiting for a commander profile.";
             return true;
@@ -299,7 +637,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
-        if (loadedRoute is null || journalEvents.Count == 0)
+        if (loadedRoute is null || !HasSavedRoute || journalEvents.Count == 0)
         {
             return;
         }
@@ -309,11 +647,14 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             var hadUnsavedChanges = IsDirty;
             var changed = false;
             int? reachedIndex = null;
+            var arrivalEvent = IsFleetCarrierWorkspace
+                ? "CarrierJump"
+                : "FSDJump";
             foreach (var journalEvent in journalEvents)
             {
                 if (!string.Equals(
                     journalEvent.EventName,
-                    "FSDJump",
+                    arrivalEvent,
                     StringComparison.Ordinal))
                 {
                     continue;
@@ -459,6 +800,20 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             return;
         }
 
+        if (IsFleetCarrierWorkspace
+            && reference.Kind != SpanshRouteKind.FleetCarrier)
+        {
+            StatusMessage = "FC Routes accepts Spansh Fleet Carrier Router result URLs only.";
+            return;
+        }
+
+        if (!IsFleetCarrierWorkspace
+            && reference.Kind == SpanshRouteKind.FleetCarrier)
+        {
+            StatusMessage = "Import Fleet Carrier Router results from the FC Routes tab.";
+            return;
+        }
+
         try
         {
             IsBusy = true;
@@ -467,7 +822,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             ApplyImportedHops(importedHops);
             StatusMessage = importedHops.Count == 0
                 ? "Spansh returned a route with no systems."
-                : $"Imported {importedHops.Count:N0} systems from Spansh. Review and save the route.";
+                : $"Imported {importedHops.Count:N0} systems from Spansh. Review it, then use Save As...";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
@@ -496,9 +851,81 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         RefreshPresentation();
     }
 
+    public async Task SetBioTargetCompletedAsync(
+        RouteBioTargetItemViewModel target,
+        bool isCompleted)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        await bioProgressLock.WaitAsync();
+        try
+        {
+            if (target.HopIndex < 0
+                || target.HopIndex >= draftHops.Count
+                || target.TargetIndex < 0
+                || target.TargetIndex
+                    >= draftHops[target.HopIndex].BioTargets.Count)
+            {
+                return;
+            }
+
+            var current = draftHops[target.HopIndex]
+                .BioTargets[target.TargetIndex];
+            if (!target.Matches(current) || current.IsCompleted == isCompleted)
+            {
+                return;
+            }
+
+            var original = current;
+            ReplaceDraftBioTarget(
+                target.HopIndex,
+                target.TargetIndex,
+                current with { IsCompleted = isCompleted });
+            RefreshPresentation();
+            if (loadedRoute is null || !HasSavedRoute)
+            {
+                StatusMessage = isCompleted
+                    ? $"Marked {target.BodyName} complete in the route draft."
+                    : $"Reopened {target.BodyName} in the route draft.";
+                return;
+            }
+
+            try
+            {
+                loadedRoute = await routeService.SetBioTargetCompletedAsync(
+                    loadedRoute,
+                    target.HopIndex,
+                    target.TargetIndex,
+                    isCompleted);
+                ReplaceDraftBioTarget(
+                    target.HopIndex,
+                    target.TargetIndex,
+                    loadedRoute.Hops[target.HopIndex]
+                        .BioTargets[target.TargetIndex]);
+                RefreshPresentation();
+                StatusMessage = isCompleted
+                    ? $"Marked {target.BodyName} complete."
+                    : $"Reopened {target.BodyName}.";
+            }
+            catch (Exception exception) when (IsExpectedException(exception))
+            {
+                ReplaceDraftBioTarget(
+                    target.HopIndex,
+                    target.TargetIndex,
+                    original);
+                RefreshPresentation();
+                StatusMessage = "Body destination progress could not be saved: "
+                    + exception.Message;
+            }
+        }
+        finally
+        {
+            bioProgressLock.Release();
+        }
+    }
+
     public async Task SaveAsync()
     {
-        if (loadedRoute is null || !IsDirty)
+        if (loadedRoute is null || !CanSaveChanges)
         {
             return;
         }
@@ -506,19 +933,19 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var saved = await routeService.ReplaceAsync(
-                loadedRoute,
-                draftHops,
-                lastReachedIndex,
-                IsActive,
-                AutoCopy,
-                currentSystemAddress);
+            var saved = await routeService.SaveProgressAsync(
+                loadedRoute with
+                {
+                    LastReachedIndex = lastReachedIndex,
+                    IsActive = IsActive,
+                    AutoCopy = AutoCopy,
+                });
             ApplyDocument(saved);
             StatusMessage = saved.IsComplete
-                ? "Route saved as complete."
+                ? "Route progress saved as complete."
                 : saved.IsActive
-                    ? $"Route saved. Next system: {saved.NextHop?.Name ?? Unavailable}."
-                    : "Route saved in a paused state.";
+                    ? $"Changes saved. Next system: {saved.NextHop?.Name ?? Unavailable}."
+                    : "Route progress saved in a paused state.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
@@ -530,15 +957,482 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
-    public Task DiscardAsync()
+    public async Task DiscardAsync()
     {
-        if (loadedRoute is not null)
+        if (loadedRoute is null)
+        {
+            return;
+        }
+
+        if (!HasSavedRoute)
         {
             ApplyDocument(loadedRoute);
-            StatusMessage = "Unsaved route changes were discarded.";
+            StatusMessage = "The new route draft was restored to its initial state.";
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            var result = await routeService.ReloadAsync(loadedRoute);
+            if (result.Route is null)
+            {
+                StatusMessage = result.Error ?? "The saved route could not be restored.";
+                return;
+            }
+
+            ApplyDocument(result.Route);
+            StatusMessage = "Changes were undone to the route's last saved state.";
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            StatusMessage = "The route could not be restored: " + exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public Task ResetAsync()
+    {
+        if (!HasRoute)
+        {
+            return Task.CompletedTask;
+        }
+
+        lastReachedIndex = -1;
+        isActive = draftHops.Count > 0;
+        RefreshPresentation();
+        StatusMessage = "Route progress reset in the draft. Save Changes to keep it.";
+        return Task.CompletedTask;
+    }
+
+    private Task ShowDialogAsync(RouteDialog dialog)
+    {
+        CloseDialogs();
+        switch (dialog)
+        {
+            case RouteDialog.New:
+                IsNewConfirmationVisible = true;
+                break;
+            case RouteDialog.SaveAs:
+                SaveAsName = loadedRoute?.Name ?? string.Empty;
+                SaveAsError = string.Empty;
+                IsSaveAsVisible = true;
+                break;
+            case RouteDialog.Notes:
+                NotesDraft = draftNotes ?? string.Empty;
+                IsNotesVisible = true;
+                break;
+            case RouteDialog.Delete:
+                IsDeleteConfirmationVisible = true;
+                break;
         }
 
         return Task.CompletedTask;
+    }
+
+    private Task CancelDialogAsync()
+    {
+        CloseDialogs();
+        return Task.CompletedTask;
+    }
+
+    public async Task ConfirmNewAsync()
+    {
+        if (frontierId is null)
+        {
+            return;
+        }
+
+        CloseDialogs();
+        try
+        {
+            IsBusy = true;
+            var route = await routeService.CreateNewAsync(frontierId);
+            HasSavedRoute = false;
+            ApplyDocument(route);
+            await RefreshCatalogAsync();
+            StatusMessage = "New route workspace ready. Import a route, then use Save As...";
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            StatusMessage = "A new route could not be started: " + exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task ConfirmSaveAsAsync()
+    {
+        var snapshot = CreateSnapshot();
+        if (snapshot is null || !HasRoute)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            var saved = await routeService.SaveAsAsync(snapshot, SaveAsName);
+            HasSavedRoute = true;
+            ApplyDocument(saved);
+            CloseDialogs();
+            await RefreshCatalogAsync();
+            SelectCatalogPath(saved.FilePath);
+            StatusMessage = $"Saved route as {saved.Name}.";
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            SaveAsError = exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task SaveNotesAsync()
+    {
+        var normalized = string.IsNullOrWhiteSpace(NotesDraft)
+            ? null
+            : NotesDraft.Trim();
+        try
+        {
+            IsBusy = true;
+            if (HasSavedRoute && loadedRoute is not null)
+            {
+                loadedRoute = await routeService.SaveNotesAsync(
+                    loadedRoute,
+                    normalized);
+            }
+
+            draftNotes = normalized;
+            RaiseRouteMetadataProperties();
+            CloseDialogs();
+            StatusMessage = HasSavedRoute
+                ? "Route notes saved."
+                : "Notes added to the draft. Use Save As... to keep them.";
+            if (HasSavedRoute)
+            {
+                CatalogChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            StatusMessage = "The route notes could not be saved: " + exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task ConfirmDeleteAsync()
+    {
+        if (!HasSavedRoute || loadedRoute is null || frontierId is null)
+        {
+            return;
+        }
+
+        CloseDialogs();
+        try
+        {
+            IsBusy = true;
+            await routeService.DeleteAsync(loadedRoute);
+            HasSavedRoute = false;
+            var route = await routeService.CreateNewAsync(frontierId);
+            ApplyDocument(route);
+            await RefreshCatalogAsync();
+            StatusMessage = "The saved route was removed and moved to route recovery storage.";
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            StatusMessage = "The route could not be deleted: " + exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task LoadSelectedRouteAsync()
+    {
+        if (frontierId is null || SelectedSavedRoute is not { } selected)
+        {
+            return;
+        }
+
+        await LoadSavedRouteAsync(selected.FileName, selected.IsLegacy);
+    }
+
+    public async Task LoadSavedRouteAsync(string fileName, bool isLegacy)
+    {
+        if (frontierId is null)
+        {
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            var result = await routeService.LoadNamedAsync(
+                frontierId,
+                fileName,
+                isLegacy);
+            if (result.Route is null)
+            {
+                StatusMessage = result.Error ?? "The saved route could not be loaded.";
+                return;
+            }
+
+            HasSavedRoute = true;
+            ApplyDocument(result.Route);
+            SelectCatalogPath(result.Path);
+            StatusMessage =
+                $"Loaded {result.Route.Hops.Count:N0} systems from "
+                + $"{result.Route.Name ?? Path.GetFileNameWithoutExtension(result.Path)}.";
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            StatusMessage = "The saved route could not be loaded: " + exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task<bool> ActivateSavedRouteAsync(
+        string fileName,
+        bool isLegacy,
+        string filePath)
+    {
+        if (frontierId is null || IsBusy)
+        {
+            return false;
+        }
+
+        if (IsDirty)
+        {
+            StatusMessage =
+                "Save or undo the current Route Workspace changes before activating another route.";
+            return false;
+        }
+
+        try
+        {
+            IsBusy = true;
+            if (loadedRoute is not null
+                && HasSavedRoute
+                && loadedRoute.IsActive
+                && !IsLoadedSavedRoute(filePath))
+            {
+                var paused = await routeService.SetActiveAsync(
+                    loadedRoute,
+                    isActive: false,
+                    currentSystemAddress: currentSystemAddress);
+                ApplyDocument(paused);
+            }
+
+            var result = await routeService.LoadNamedAsync(
+                frontierId,
+                fileName,
+                isLegacy);
+            if (result.Route is null)
+            {
+                StatusMessage = result.Error
+                    ?? "The saved route could not be activated.";
+                return false;
+            }
+
+            var activated = await routeService.SetActiveAsync(
+                result.Route,
+                isActive: true,
+                currentSystemAddress: currentSystemAddress);
+            HasSavedRoute = true;
+            ApplyDocument(activated);
+            SelectCatalogPath(result.Path);
+            if (activated.IsActive)
+            {
+                StatusMessage =
+                    $"Activated {activated.Name ?? Path.GetFileNameWithoutExtension(result.Path)}."
+                    + $" Next system: {activated.NextHop?.Name ?? Unavailable}.";
+                return true;
+            }
+
+            StatusMessage = activated.Hops.Count == 0
+                ? "The selected route has no systems and cannot be activated."
+                : "The selected route is complete. Reset its progress before activating it.";
+            return false;
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            StatusMessage = "The saved route could not be activated: "
+                + exception.Message;
+            return false;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task<bool> DeactivateCurrentRouteAsync()
+    {
+        if (frontierId is null
+            || loadedRoute is null
+            || !HasSavedRoute
+            || IsBusy)
+        {
+            return false;
+        }
+
+        if (HasDefinitionChanges || HasNotesChanges)
+        {
+            StatusMessage =
+                "Save or undo the current Route Workspace definition and note changes before deactivating it.";
+            return false;
+        }
+
+        try
+        {
+            IsBusy = true;
+            await routeService.SaveProgressAsync(
+                loadedRoute with
+                {
+                    LastReachedIndex = lastReachedIndex,
+                    IsActive = false,
+                    AutoCopy = AutoCopy,
+                });
+            var blankRoute = await routeService.CreateNewAsync(frontierId);
+            HasSavedRoute = false;
+            ApplyDocument(blankRoute);
+            await RefreshCatalogAsync();
+            StatusMessage =
+                "Route tracking deactivated. The saved route and its progress were preserved.";
+            return true;
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            StatusMessage = "The current route could not be deactivated: "
+                + exception.Message;
+            return false;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task<bool> SetAutoCopyAsync(bool enabled)
+    {
+        if (frontierId is null
+            || loadedRoute is null
+            || !HasSavedRoute
+            || IsBusy)
+        {
+            StatusMessage =
+                "Activate a saved route before changing next-hop auto-copy.";
+            return false;
+        }
+
+        var loadedIsActive = loadedRoute.IsActive
+            && loadedRoute.Hops.Count > 0
+            && !loadedRoute.IsComplete;
+        var hasTrackingChanges = loadedIsActive != IsActive
+            || loadedRoute.LastReachedIndex != lastReachedIndex;
+        if (HasDefinitionChanges || HasNotesChanges || hasTrackingChanges)
+        {
+            StatusMessage =
+                "Save or undo the current Route Workspace changes before changing next-hop auto-copy here.";
+            return false;
+        }
+
+        if (loadedRoute.AutoCopy == enabled && AutoCopy == enabled)
+        {
+            StatusMessage = enabled
+                ? "Next-hop auto-copy is already enabled."
+                : "Next-hop auto-copy is already disabled.";
+            return true;
+        }
+
+        try
+        {
+            IsBusy = true;
+            var saved = await routeService.SaveProgressAsync(
+                loadedRoute with
+                {
+                    LastReachedIndex = lastReachedIndex,
+                    IsActive = IsActive,
+                    AutoCopy = enabled,
+                });
+            ApplyDocument(saved);
+            StatusMessage = enabled
+                ? "Next-hop auto-copy enabled for this route."
+                : "Next-hop auto-copy disabled for this route.";
+            return true;
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            StatusMessage = "Next-hop auto-copy could not be changed: "
+                + exception.Message;
+            return false;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task DisableAutoCopyForCompetingRouteAsync()
+    {
+        if (!AutoCopy)
+        {
+            return;
+        }
+
+        if (frontierId is null
+            || loadedRoute is null
+            || !HasSavedRoute
+            || IsBusy
+            || HasDefinitionChanges
+            || HasNotesChanges)
+        {
+            AutoCopy = false;
+            StatusMessage =
+                "Next-hop auto-copy moved to the other active route workspace.";
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+            var saved = await routeService.SaveProgressAsync(
+                loadedRoute with
+                {
+                    LastReachedIndex = lastReachedIndex,
+                    IsActive = IsActive,
+                    AutoCopy = false,
+                });
+            ApplyDocument(saved);
+            StatusMessage =
+                "Next-hop auto-copy moved to the other active route workspace.";
+        }
+        catch (Exception exception) when (IsExpectedException(exception))
+        {
+            AutoCopy = false;
+            StatusMessage = "Next-hop auto-copy was disabled for this session, "
+                + "but the route file could not be updated: "
+                + exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     public async Task CopyNextHopAsync()
@@ -577,12 +1471,17 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             if (result.Route is null)
             {
                 loadedRoute = null;
+                HasSavedRoute = false;
                 ApplyDraft([], -1, false, true);
+                await RefreshCatalogAsync();
                 StatusMessage = result.Error ?? "The route could not be loaded.";
                 return;
             }
 
+            HasSavedRoute = result.Exists;
             ApplyDocument(result.Route);
+            await RefreshCatalogAsync();
+            SelectCatalogPath(result.Path);
             StatusMessage = result.Exists
                 ? $"Loaded {result.Route.Hops.Count:N0} route systems from "
                     + Path.GetFileName(result.Path)
@@ -611,10 +1510,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     private async Task OpenWindowAsync()
     {
-        if (windowOpener is null || !await windowOpener())
-        {
-            StatusMessage = "The route workspace requires a commander profile.";
-        }
+        await OpenWorkspaceAsync();
     }
 
     private void ApplyImportedHops(IReadOnlyList<FollowRouteHop> importedHops)
@@ -635,11 +1531,52 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private void ApplyDocument(FollowRouteDocument route)
     {
         loadedRoute = route;
+        draftNotes = route.Notes;
         ApplyDraft(
             route.Hops,
             route.LastReachedIndex,
             route.IsActive && !route.IsComplete,
             route.AutoCopy);
+        RaiseRouteMetadataProperties();
+    }
+
+    private async Task RefreshCatalogAsync()
+    {
+        if (frontierId is null)
+        {
+            SavedRoutes = [];
+            SelectedSavedRoute = null;
+            return;
+        }
+
+        var entries = await routeService.ListAsync(frontierId);
+        SavedRoutes = entries
+            .Select(entry => new SavedRouteItemViewModel(
+                entry.Name,
+                entry.FileName,
+                entry.FilePath,
+                entry.IsLegacy,
+                entry.LastModified))
+            .ToArray();
+        if (loadedRoute is not null && HasSavedRoute)
+        {
+            SelectCatalogPath(loadedRoute.FilePath);
+        }
+        else
+        {
+            SelectedSavedRoute = null;
+        }
+
+        CatalogChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void SelectCatalogPath(string path)
+    {
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        SelectedSavedRoute = SavedRoutes.FirstOrDefault(route =>
+            string.Equals(route.FilePath, path, comparison));
     }
 
     private void ApplyDraft(
@@ -673,7 +1610,23 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             lastCopiedHopName = null;
         }
 
-        var rows = new List<RouteHopItemViewModel>(draftHops.Count);
+        var canReuseRows = hops.Count == draftHops.Count;
+        if (canReuseRows)
+        {
+            for (var index = 0; index < draftHops.Count; index++)
+            {
+                if (hops[index].Index != index
+                    || !hops[index].MatchesIdentity(draftHops[index]))
+                {
+                    canReuseRows = false;
+                    break;
+                }
+            }
+        }
+
+        List<RouteHopItemViewModel>? rows = canReuseRows
+            ? null
+            : new List<RouteHopItemViewModel>(draftHops.Count);
         for (var index = 0; index < draftHops.Count; index++)
         {
             var hop = draftHops[index];
@@ -687,22 +1640,44 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 : (double?)null;
             var isCurrent = IsCurrentSystem(hop);
             var isNext = IsActive && index == lastReachedIndex + 1;
-            rows.Add(new RouteHopItemViewModel(
-                index,
-                index + 1,
-                hop,
-                distance is null ? "?" : $"{distance:N2} ly",
-                CreateNotes(hop),
-                index <= lastReachedIndex,
-                isCurrent,
-                isNext));
+            var distanceText = distance is null ? "?" : $"{distance:N2} ly";
+            var notes = CreateNotes(hop);
+            if (canReuseRows)
+            {
+                hops[index].UpdatePresentation(
+                    hop,
+                    distanceText,
+                    notes,
+                    index <= lastReachedIndex,
+                    isCurrent,
+                    isNext);
+            }
+            else
+            {
+                rows!.Add(new RouteHopItemViewModel(
+                    index,
+                    index + 1,
+                    hop,
+                    distanceText,
+                    notes,
+                    index <= lastReachedIndex,
+                    isCurrent,
+                    isNext));
+            }
         }
 
-        Hops = rows;
+        if (rows is not null)
+        {
+            Hops = rows;
+        }
         OnPropertyChanged(nameof(HasRoute));
         OnPropertyChanged(nameof(CanActivate));
         OnPropertyChanged(nameof(IsComplete));
         OnPropertyChanged(nameof(IsDirty));
+        OnPropertyChanged(nameof(HasDefinitionChanges));
+        OnPropertyChanged(nameof(HasProgressChanges));
+        OnPropertyChanged(nameof(HasNotesChanges));
+        OnPropertyChanged(nameof(CanSaveChanges));
         OnPropertyChanged(nameof(RouteCount));
         OnPropertyChanged(nameof(ReachedCount));
         OnPropertyChanged(nameof(NextHop));
@@ -710,8 +1685,39 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ProgressSummary));
         OnPropertyChanged(nameof(AutoCopySummary));
         OnPropertyChanged(nameof(ShouldAutoCopyNextHop));
+        OnPropertyChanged(nameof(CurrentBioHop));
+        OnPropertyChanged(nameof(CurrentBioTargets));
+        OnPropertyChanged(nameof(HasCurrentBioTargets));
+        OnPropertyChanged(nameof(ShouldShowRouteBioOverlay));
+        OnPropertyChanged(nameof(CurrentBioSystemName));
         RaiseOverlayProperties();
         RaiseCommands();
+    }
+
+    private void RaiseRouteMetadataProperties()
+    {
+        OnPropertyChanged(nameof(RouteFileName));
+        OnPropertyChanged(nameof(RouteName));
+        OnPropertyChanged(nameof(RouteNotesPreview));
+        OnPropertyChanged(nameof(HasRouteNotes));
+        OnPropertyChanged(nameof(HasNotesChanges));
+        OnPropertyChanged(nameof(IsDirty));
+        OnPropertyChanged(nameof(CanSaveChanges));
+        RaiseCommands();
+    }
+
+    private void CloseDialogs()
+    {
+        IsNewConfirmationVisible = false;
+        IsDeleteConfirmationVisible = false;
+        IsSaveAsVisible = false;
+        IsNotesVisible = false;
+        SaveAsError = string.Empty;
+    }
+
+    private bool HasProfileAndIdleWorkspace()
+    {
+        return HasProfile && !IsBusy && !IsDialogVisible;
     }
 
     private bool IsNextHop(StatusDestination? destination)
@@ -772,14 +1778,34 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         return parts.Count == 0 ? Unavailable : string.Join(" \u2022 ", parts);
     }
 
+    private void ReplaceDraftBioTarget(
+        int hopIndex,
+        int targetIndex,
+        FollowRouteBioTarget target)
+    {
+        var bioTargets = draftHops[hopIndex].BioTargets.ToArray();
+        bioTargets[targetIndex] = target;
+        var updatedHops = draftHops.ToArray();
+        updatedHops[hopIndex] = updatedHops[hopIndex] with
+        {
+            Bio = bioTargets,
+        };
+        draftHops = updatedHops;
+    }
+
     private static string GetRouteKindLabel(SpanshRouteKind kind)
     {
         return kind switch
         {
-            SpanshRouteKind.Generic => "search",
+            SpanshRouteKind.Generic => "route",
+            SpanshRouteKind.Riches => "valuable-world",
+            SpanshRouteKind.Exobiology => "exobiology",
             SpanshRouteKind.Tourist => "tourist",
             SpanshRouteKind.Neutron => "neutron",
             SpanshRouteKind.Galaxy => "galaxy",
+            SpanshRouteKind.FleetCarrier => "fleet-carrier",
+            SpanshRouteKind.Colonisation => "colonisation",
+            SpanshRouteKind.Trade => "trade",
             _ => "followed",
         };
     }
@@ -827,6 +1853,20 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         return true;
     }
 
+    private void SetDialogField(
+        ref bool field,
+        bool value,
+        string propertyName)
+    {
+        if (!SetField(ref field, value, propertyName))
+        {
+            return;
+        }
+
+        OnPropertyChanged(nameof(IsDialogVisible));
+        RaiseCommands();
+    }
+
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -839,24 +1879,49 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         saveCommand.RaiseCanExecuteChanged();
         discardCommand.RaiseCanExecuteChanged();
         copyNextHopCommand.RaiseCanExecuteChanged();
+        loadSelectedRouteCommand.RaiseCanExecuteChanged();
+        newCommand.RaiseCanExecuteChanged();
+        confirmNewCommand.RaiseCanExecuteChanged();
+        resetCommand.RaiseCanExecuteChanged();
+        saveAsCommand.RaiseCanExecuteChanged();
+        confirmSaveAsCommand.RaiseCanExecuteChanged();
+        notesCommand.RaiseCanExecuteChanged();
+        saveNotesCommand.RaiseCanExecuteChanged();
+        deleteCommand.RaiseCanExecuteChanged();
+        confirmDeleteCommand.RaiseCanExecuteChanged();
+        cancelDialogCommand.RaiseCanExecuteChanged();
     }
 
     private sealed class AsyncCommand(
         Func<Task> execute,
         Func<bool> canExecute) : ICommand
     {
+        private bool isExecuting;
+
         public event EventHandler? CanExecuteChanged;
 
         public bool CanExecute(object? parameter)
         {
-            return canExecute();
+            return !isExecuting && canExecute();
         }
 
         public async void Execute(object? parameter)
         {
-            if (CanExecute(parameter))
+            if (!CanExecute(parameter))
+            {
+                return;
+            }
+
+            isExecuting = true;
+            RaiseCanExecuteChanged();
+            try
             {
                 await execute();
+            }
+            finally
+            {
+                isExecuting = false;
+                RaiseCanExecuteChanged();
             }
         }
 
@@ -865,19 +1930,89 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
+
+    private enum RouteDialog
+    {
+        New,
+        SaveAs,
+        Notes,
+        Delete,
+    }
 }
 
-public sealed record RouteHopItemViewModel(
-    int Index,
-    int Number,
-    FollowRouteHop Hop,
-    string Distance,
-    string Notes,
-    bool IsReached,
-    bool IsCurrent,
-    bool IsNext)
+public sealed record SavedRouteItemViewModel(
+    string Name,
+    string FileName,
+    string FilePath,
+    bool IsLegacy,
+    DateTimeOffset LastModified)
 {
+    public string DisplayName => Name;
+}
+
+public sealed class RouteHopItemViewModel : INotifyPropertyChanged
+{
+    private FollowRouteHop hop;
+    private string distance;
+    private string notes;
+    private bool isReached;
+    private bool isCurrent;
+    private bool isNext;
+
+    public RouteHopItemViewModel(
+        int index,
+        int number,
+        FollowRouteHop hop,
+        string distance,
+        string notes,
+        bool isReached,
+        bool isCurrent,
+        bool isNext)
+    {
+        Index = index;
+        Number = number;
+        this.hop = hop;
+        this.distance = distance;
+        this.notes = notes;
+        this.isReached = isReached;
+        this.isCurrent = isCurrent;
+        this.isNext = isNext;
+        BioTargets = CreateBioTargets(hop);
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public int Index { get; }
+
+    public int Number { get; }
+
+    public FollowRouteHop Hop => hop;
+
     public string Name => Hop.Name;
+
+    public string Distance => distance;
+
+    public string Notes => notes;
+
+    public string RouteNotes => Hop.Notes ?? string.Empty;
+
+    public bool HasNotes => !string.IsNullOrWhiteSpace(Hop.Notes);
+
+    public bool Refuel => Hop.Refuel;
+
+    public bool Neutron => Hop.Neutron;
+
+    public bool HasGuidance => HasNotes || Refuel || Neutron;
+
+    public IReadOnlyList<RouteBioTargetItemViewModel> BioTargets { get; private set; }
+
+    public bool HasBioTargets => BioTargets.Count > 0;
+
+    public bool IsReached => isReached;
+
+    public bool IsCurrent => isCurrent;
+
+    public bool IsNext => isNext;
 
     public string State => IsCurrent
         ? "CURRENT"
@@ -888,4 +2023,334 @@ public sealed record RouteHopItemViewModel(
                 : string.Empty;
 
     public bool HasState => State.Length > 0;
+
+    public bool MatchesIdentity(FollowRouteHop candidate)
+    {
+        return Hop.SystemAddress is { } address
+            && candidate.SystemAddress is { } candidateAddress
+                ? address == candidateAddress
+                : string.Equals(
+                    Hop.Name,
+                    candidate.Name,
+                    StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void UpdatePresentation(
+        FollowRouteHop nextHop,
+        string nextDistance,
+        string nextNotes,
+        bool nextIsReached,
+        bool nextIsCurrent,
+        bool nextIsNext)
+    {
+        var hopChanged = !Equals(hop, nextHop);
+        hop = nextHop;
+        if (hopChanged)
+        {
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(Hop)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(Name)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(HasNotes)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(RouteNotes)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(Refuel)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(Neutron)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(HasGuidance)));
+            RefreshBioTargets(nextHop);
+        }
+
+        SetField(ref distance, nextDistance, nameof(Distance));
+        SetField(ref notes, nextNotes, nameof(Notes));
+        var stateChanged = isReached != nextIsReached
+            || isCurrent != nextIsCurrent
+            || isNext != nextIsNext;
+        SetField(ref isReached, nextIsReached, nameof(IsReached));
+        SetField(ref isCurrent, nextIsCurrent, nameof(IsCurrent));
+        SetField(ref isNext, nextIsNext, nameof(IsNext));
+        if (stateChanged)
+        {
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(State)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(HasState)));
+        }
+    }
+
+    private IReadOnlyList<RouteBioTargetItemViewModel> CreateBioTargets(
+        FollowRouteHop source)
+    {
+        return source.BioTargets
+            .Select((target, index) => new RouteBioTargetItemViewModel(
+                Index,
+                index,
+                target))
+            .ToArray();
+    }
+
+    private void RefreshBioTargets(FollowRouteHop source)
+    {
+        var canReuse = BioTargets.Count == source.BioTargets.Count;
+        if (canReuse)
+        {
+            for (var index = 0; index < BioTargets.Count; index++)
+            {
+                if (!BioTargets[index].Matches(source.BioTargets[index]))
+                {
+                    canReuse = false;
+                    break;
+                }
+            }
+        }
+
+        if (canReuse)
+        {
+            for (var index = 0; index < BioTargets.Count; index++)
+            {
+                BioTargets[index].Update(source.BioTargets[index]);
+            }
+        }
+        else
+        {
+            BioTargets = CreateBioTargets(source);
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(BioTargets)));
+        }
+
+        PropertyChanged?.Invoke(
+            this,
+            new PropertyChangedEventArgs(nameof(HasBioTargets)));
+    }
+
+    private void SetField<T>(ref T field, T value, string propertyName)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return;
+        }
+
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
+{
+    private FollowRouteBioTarget target;
+    private RouteBodyVisual bodyVisual;
+
+    public RouteBioTargetItemViewModel(
+        int hopIndex,
+        int targetIndex,
+        FollowRouteBioTarget target)
+    {
+        HopIndex = hopIndex;
+        TargetIndex = targetIndex;
+        this.target = target ?? throw new ArgumentNullException(nameof(target));
+        bodyVisual = RouteBodyAssetResolver.Resolve(target.Subtype);
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public int HopIndex { get; }
+
+    public int TargetIndex { get; }
+
+    public string BodyName => target.BodyName;
+
+    public long? BodyId => target.BodyId;
+
+    public IReadOnlyList<string> Species => target.Species;
+
+    public bool HasSpecies => Species.Count > 0;
+
+    public bool NeedsScan => target.IsBiological && Species.Count == 0;
+
+    public string Subtype => target.Subtype ?? string.Empty;
+
+    public bool HasSubtype => !string.IsNullOrWhiteSpace(target.Subtype);
+
+    public string BodyIconAssetPath => bodyVisual.AssetPath;
+
+    public string BodyIconAccessibleName => bodyVisual.AccessibleName;
+
+    public string DistanceToArrival => target.DistanceToArrivalLs is { } distance
+        ? distance < 100
+            ? $"{distance:N2} LS"
+            : $"{distance:N0} LS"
+        : string.Empty;
+
+    public bool HasDistanceToArrival => target.DistanceToArrivalLs is not null;
+
+    public string EstimatedScanValue => FormatCredits(target.EstimatedScanValue);
+
+    public bool HasEstimatedScanValue => target.EstimatedScanValue is not null;
+
+    public string EstimatedMappingValue => FormatCredits(
+        target.EstimatedMappingValue);
+
+    public bool HasEstimatedMappingValue => target.EstimatedMappingValue is not null;
+
+    public string EstimatedBiologyValue => FormatCredits(
+        target.EstimatedBiologyValue);
+
+    public bool HasEstimatedBiologyValue => target.EstimatedBiologyValue is not null;
+
+    public bool IsTerraformable => target.IsTerraformable;
+
+    public bool HasDetails => HasSubtype
+        || HasDistanceToArrival
+        || HasEstimatedScanValue
+        || HasEstimatedMappingValue
+        || HasEstimatedBiologyValue
+        || IsTerraformable;
+
+    public bool IsCompleted => target.IsCompleted;
+
+    public string CompletionLabel => IsCompleted ? "COMPLETE" : "TO VISIT";
+
+    public bool Matches(FollowRouteBioTarget candidate)
+    {
+        return BodyId is { } bodyId && candidate.BodyId is { } candidateId
+            ? bodyId == candidateId
+            : string.Equals(
+                BodyName,
+                candidate.BodyName,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void Update(FollowRouteBioTarget next)
+    {
+        if (Equals(target, next))
+        {
+            return;
+        }
+
+        var identityChanged = !Matches(next);
+        var speciesChanged = !target.Species.SequenceEqual(
+            next.Species,
+            StringComparer.Ordinal);
+        var completionChanged = target.IsCompleted != next.IsCompleted;
+        var subtypeChanged = !string.Equals(
+            target.Subtype,
+            next.Subtype,
+            StringComparison.Ordinal);
+        var distanceChanged = target.DistanceToArrivalLs
+            != next.DistanceToArrivalLs;
+        var scanValueChanged = target.EstimatedScanValue
+            != next.EstimatedScanValue;
+        var mappingValueChanged = target.EstimatedMappingValue
+            != next.EstimatedMappingValue;
+        var biologyValueChanged = target.EstimatedBiologyValue
+            != next.EstimatedBiologyValue;
+        var terraformableChanged = target.IsTerraformable
+            != next.IsTerraformable;
+        var biologicalChanged = target.IsBiological != next.IsBiological;
+        var nextBodyVisual = subtypeChanged
+            ? RouteBodyAssetResolver.Resolve(next.Subtype)
+            : bodyVisual;
+        var bodyVisualChanged = bodyVisual != nextBodyVisual;
+        target = next;
+        bodyVisual = nextBodyVisual;
+        if (identityChanged)
+        {
+            Raise(nameof(BodyName));
+            Raise(nameof(BodyId));
+        }
+
+        if (speciesChanged)
+        {
+            Raise(nameof(Species));
+            Raise(nameof(HasSpecies));
+            Raise(nameof(NeedsScan));
+        }
+
+        if (subtypeChanged)
+        {
+            Raise(nameof(Subtype));
+            Raise(nameof(HasSubtype));
+        }
+
+        if (bodyVisualChanged)
+        {
+            Raise(nameof(BodyIconAssetPath));
+            Raise(nameof(BodyIconAccessibleName));
+        }
+
+        if (distanceChanged)
+        {
+            Raise(nameof(DistanceToArrival));
+            Raise(nameof(HasDistanceToArrival));
+        }
+
+        if (scanValueChanged)
+        {
+            Raise(nameof(EstimatedScanValue));
+            Raise(nameof(HasEstimatedScanValue));
+        }
+
+        if (mappingValueChanged)
+        {
+            Raise(nameof(EstimatedMappingValue));
+            Raise(nameof(HasEstimatedMappingValue));
+        }
+
+        if (biologyValueChanged)
+        {
+            Raise(nameof(EstimatedBiologyValue));
+            Raise(nameof(HasEstimatedBiologyValue));
+        }
+
+        if (terraformableChanged)
+        {
+            Raise(nameof(IsTerraformable));
+        }
+
+        if (biologicalChanged)
+        {
+            Raise(nameof(NeedsScan));
+        }
+
+        if (subtypeChanged
+            || distanceChanged
+            || scanValueChanged
+            || mappingValueChanged
+            || biologyValueChanged
+            || terraformableChanged)
+        {
+            Raise(nameof(HasDetails));
+        }
+
+        if (completionChanged)
+        {
+            Raise(nameof(IsCompleted));
+            Raise(nameof(CompletionLabel));
+        }
+    }
+
+    private void Raise(string propertyName)
+    {
+        PropertyChanged?.Invoke(
+            this,
+            new PropertyChangedEventArgs(propertyName));
+    }
+
+    private static string FormatCredits(long? value)
+    {
+        return value is null ? string.Empty : $"{value.Value:N0} CR";
+    }
 }

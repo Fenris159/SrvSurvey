@@ -513,9 +513,19 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         string? systemName,
         GalacticCoordinate? position)
     {
-        CurrentSystemName = string.IsNullOrWhiteSpace(systemName)
+        var nextSystemName = string.IsNullOrWhiteSpace(systemName)
             ? Unavailable
             : systemName;
+        if (string.Equals(
+                currentSystemName,
+                nextSystemName,
+                StringComparison.OrdinalIgnoreCase)
+            && currentPosition == position)
+        {
+            return;
+        }
+
+        CurrentSystemName = nextSystemName;
         currentPosition = position;
         UpdateSystemRows();
     }

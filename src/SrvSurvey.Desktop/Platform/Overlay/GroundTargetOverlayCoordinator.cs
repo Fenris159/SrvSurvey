@@ -13,7 +13,7 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private GroundTargetOverlayWindow? window;
     private bool isSuppressed;
@@ -36,7 +36,7 @@ public sealed class GroundTargetOverlayCoordinator : IDisposable
             groundTarget,
             platform.Capabilities);
         groundTarget.PropertyChanged += OnGroundTargetPropertyChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

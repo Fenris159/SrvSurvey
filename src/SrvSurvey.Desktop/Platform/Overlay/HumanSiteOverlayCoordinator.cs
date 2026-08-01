@@ -13,7 +13,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private HumanSiteOverlayWindow? window;
     private bool isSuppressed;
@@ -36,7 +36,7 @@ public sealed class HumanSiteOverlayCoordinator : IDisposable
             humanSite,
             platform.Capabilities);
         humanSite.PropertyChanged += OnHumanSitePropertyChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

@@ -26,6 +26,7 @@
   "PlotGuardianSystem": "left:10, top:8 { s: 10, p: <-8, 10, 45>, r: <0, 0, 0>}",
   "PlotHumanSite": "left:8, middle:0 { s: 10, p: <-20.51811, 15.310758, 18.06471>, r: <-2.5494804, -54.370968, 0>}",
   "PlotJumpInfo": "center:0, top:8 { s: 20, p: <0.06868008, 23.358482, 19.957216>, r: <-20.24308, 0, 0>}",
+  "PlotRouteBio": "right:8, top:8 { s: 10, p: <18, 18, 32>, r: <0, 32, 0>}",
   "PlotMassacre": "right:8, top:8 { s: 10, p: <-8, 10, 45>, r: <0, 0, 0>}",
   "PlotMiniTrack": "right:8, top:8 { s: 10, p: <21.321388, 18.282234, 38.582367>, r: <0.83643997, 19.883081, 0>}",
   "PlotPriorScans": "left:8, middle:0 { s: 10, p: <-17.692802, 17.214205, 31.163607>, r: <0, 0, 0>}",

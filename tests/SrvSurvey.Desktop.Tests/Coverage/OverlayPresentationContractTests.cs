@@ -66,6 +66,14 @@ public sealed class OverlayPresentationContractTests
         Contract("PlotJumpInfo", ["src/SrvSurvey.Desktop/JumpInfoOverlayWindow.axaml"], [
             "TargetName", "StarClass", "JumpProgress", "RouteLegs", "TotalDistance", "DiscoveryText",
             "TrafficText", "PointsOfInterestText", "DetailLines", "IsQuestTagged",
+            "HasRouteBadges", "Refuel", "Neutron", "Assets/Routes/refuel-star.png",
+            "Assets/Routes/neutron-star.png",
+        ]),
+        Contract("PlotRouteBio", ["src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml"], [
+            "SystemName", "Targets", "IsCompleted", "CompletionLabel", "Species",
+            "Subtype", "DistanceToArrival", "EstimatedScanValue", "EstimatedMappingValue",
+            "EstimatedBiologyValue", "IsTerraformable", "BodyIconAssetPath",
+            "BundledAssetImageConverter",
         ]),
         Contract("PlotMassacre", ["src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml"], [
             "TargetFaction", "MissionGiver", "RemainingText", "TextDecorations=\"Strikethrough\"",
@@ -96,7 +104,7 @@ public sealed class OverlayPresentationContractTests
     public void EveryOverlayHasItsInformationGroupsInProductionMarkup()
     {
         var root = FindRepositoryRoot();
-        Assert.Equal(22, Contracts.Length);
+        Assert.Equal(23, Contracts.Length);
         foreach (var contract in Contracts)
         {
             var production = string.Join(

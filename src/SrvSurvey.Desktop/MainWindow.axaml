@@ -62,15 +62,9 @@
                  SelectedItem="{Binding SelectedNavigation}">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:NavigationItemViewModel">
-              <Grid ColumnDefinitions="28,*" ColumnSpacing="8">
-                <TextBlock Foreground="{Binding $parent[ListBoxItem].Foreground}"
-                           FontWeight="SemiBold"
-                           Text="{Binding Glyph}" />
-                <TextBlock Grid.Column="1"
-                           Foreground="{Binding $parent[ListBoxItem].Foreground}"
-                           FontWeight="SemiBold"
-                           Text="{Binding Label}" />
-              </Grid>
+              <TextBlock Foreground="{Binding $parent[ListBoxItem].Foreground}"
+                         FontWeight="SemiBold"
+                         Text="{Binding Label}" />
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>

@@ -247,6 +247,19 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                 return;
             }
 
+            var nextContext = session is null
+                ? null
+                : CreateBodyContext(session);
+            if (journalEvents.Count == 0
+                && status is null
+                && (scansLostToDeath is null
+                    || scansLostToDeath.Count == 0)
+                && Equals(context, nextContext)
+                && HasSameExobiology(exobiology, currentExobiology))
+            {
+                return;
+            }
+
             exobiology = currentExobiology;
             var events = processJournalMutations
                 ? journalEvents
@@ -296,9 +309,6 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                 }
             }
 
-            var nextContext = session is null
-                ? null
-                : CreateBodyContext(session);
             var contextChanged = !Equals(context, nextContext);
             context = nextContext;
             if (context is null)
@@ -518,6 +528,20 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             distance < radiusMeters,
             location,
             isActive);
+    }
+
+    private static bool HasSameExobiology(
+        ExobiologySnapshot current,
+        ExobiologySnapshot candidate)
+    {
+        return current.LastOrganicScan == candidate.LastOrganicScan
+            && Equals(current.ScanOne, candidate.ScanOne)
+            && Equals(current.ScanTwo, candidate.ScanTwo)
+            && current.OrganicRewards == candidate.OrganicRewards
+            && current.CountRadicoidaUnica == candidate.CountRadicoidaUnica
+            && current.ScannedBioEntryIds.SequenceEqual(
+                candidate.ScannedBioEntryIds,
+                StringComparer.Ordinal);
     }
 
     private SystemSurfaceContext? CreateBodyContext(

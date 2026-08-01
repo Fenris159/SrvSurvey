@@ -11,7 +11,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private QuestIndicatorOverlayWindow? window;
     private bool isSuppressed;
@@ -31,7 +31,7 @@ public sealed class QuestIndicatorOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

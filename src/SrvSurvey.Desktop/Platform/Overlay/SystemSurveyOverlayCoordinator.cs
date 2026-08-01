@@ -25,7 +25,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private readonly SemaphoreSlim fssCaptureLock = new(1, 1);
     private readonly CancellationTokenSource disposalCancellation = new();
     private readonly string? fssDiagnosticDirectory;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private BiologySurveyOverlayWindow? biologyWindow;
     private BiologyStatusOverlayWindow? biologyStatusWindow;
@@ -95,7 +95,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         surfaceSurvey.PropertyChanged += OnSurfaceSurveyPropertyChanged;
         priorScansViewModel.PropertyChanged +=
             OnPriorScansPropertyChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

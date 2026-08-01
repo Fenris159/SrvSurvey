@@ -112,6 +112,25 @@
     <Setter Property="TextDecorations" Value="Underline" />
   </Style>
 
+  <Style Selector="Button.favorite-star">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+    <Setter Property="Padding" Value="0" />
+  </Style>
+  <Style Selector="Button.favorite-star:pointerover">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenAccentHoverBrush}" />
+  </Style>
+  <Style Selector="Button.favorite-star:pressed">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.favorite-star TextBlock">
+    <Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" />
+  </Style>
+
   <Style Selector="ListBox.nav">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
@@ -346,19 +365,11 @@
   </Style>
   <Style Selector="TabControl.theme-selector">
     <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
   </Style>
   <Style Selector="TabItem.theme-selector">
-    <Setter Property="Background" Value="{DynamicResource RavenSurfaceBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource RavenMutedTextBrush}" />
-  </Style>
-  <Style Selector="TabItem.theme-selector:pointerover">
-    <Setter Property="Background" Value="{DynamicResource RavenAccentMutedBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
-  </Style>
-  <Style Selector="TabItem.theme-selector:selected">
-    <Setter Property="Background" Value="{DynamicResource RavenRaisedSurfaceBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource RavenTextBrush}" />
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="Padding" Value="10,8" />
+    <Setter Property="MinWidth" Value="0" />
   </Style>
   <Style Selector="ProgressBar">
     <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />

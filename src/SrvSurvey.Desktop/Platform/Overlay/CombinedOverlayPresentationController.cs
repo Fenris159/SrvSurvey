@@ -19,7 +19,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
     private readonly OverlayWindowRegistry registry;
     private readonly Dictionary<Window, Entry> entries = [];
     private readonly HashSet<Window> interactiveWindows = [];
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private CombinedOverlayWindow? host;
     private PixelRect hostBounds;
     private OverlayPreparationResult? hostPreparation;
@@ -43,7 +43,7 @@ internal sealed class CombinedOverlayPresentationController : IDisposable
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.registry = registry ?? OverlayWindowRegistry.Shared;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(100),
         };

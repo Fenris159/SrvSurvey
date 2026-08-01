@@ -8,7 +8,11 @@ public sealed record FollowRouteDocument(
     bool IsActive,
     bool AutoCopy,
     int LastReachedIndex,
-    IReadOnlyList<FollowRouteHop> Hops)
+    IReadOnlyList<FollowRouteHop> Hops,
+    string? Name = null,
+    string? Notes = null,
+    bool IsFavorite = false,
+    FollowRouteKind Kind = FollowRouteKind.Standard)
 {
     public bool IsStarted => LastReachedIndex >= 0;
 
@@ -37,8 +41,12 @@ public sealed record FollowRouteHop(
     GalacticCoordinate? Position,
     string? Notes,
     bool Refuel,
-    bool Neutron)
+    bool Neutron,
+    IReadOnlyList<FollowRouteBioTarget>? Bio = null)
 {
+    public IReadOnlyList<FollowRouteBioTarget> BioTargets =>
+        Bio ?? Array.Empty<FollowRouteBioTarget>();
+
     public double? DistanceTo(FollowRouteHop other)
     {
         ArgumentNullException.ThrowIfNull(other);
@@ -48,6 +56,19 @@ public sealed record FollowRouteHop(
     }
 }
 
+public sealed record FollowRouteBioTarget(
+    string BodyName,
+    long? BodyId,
+    IReadOnlyList<string> Species,
+    bool IsCompleted = false,
+    string? Subtype = null,
+    double? DistanceToArrivalLs = null,
+    long? EstimatedScanValue = null,
+    long? EstimatedMappingValue = null,
+    long? EstimatedBiologyValue = null,
+    bool IsTerraformable = false,
+    bool IsBiological = false);
+
 public sealed record FollowRouteLoadResult(
     string Path,
     bool Exists,
@@ -56,6 +77,22 @@ public sealed record FollowRouteLoadResult(
 {
     public bool IsSuccess => Route is not null;
 }
+
+public enum FollowRouteKind
+{
+    Standard,
+    FleetCarrier,
+}
+
+public sealed record FollowRouteCatalogEntry(
+    string Name,
+    string FileName,
+    string FilePath,
+    bool IsLegacy,
+    DateTimeOffset LastModified,
+    DateTimeOffset CreatedAt = default,
+    string? Notes = null,
+    bool IsFavorite = false);
 
 public sealed record FollowRouteArrivalResult(
     FollowRouteDocument Route,

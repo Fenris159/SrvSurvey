@@ -24,7 +24,7 @@ public sealed class FollowRouteStoreTests : IDisposable
         Assert.Equal(-1, result.Route.LastReachedIndex);
         Assert.Empty(result.Route.Hops);
         Assert.Equal(
-            Path.Combine(temporaryDirectory, "routes", "F123.json"),
+            Path.Combine(temporaryDirectory, "Routes", "F123.json"),
             result.Path);
         Assert.False(File.Exists(result.Path));
     }
@@ -206,6 +206,354 @@ public sealed class FollowRouteStoreTests : IDisposable
             () => store.LoadAsync("../outside"));
         await Assert.ThrowsAsync<ArgumentException>(
             () => store.LoadAsync("unsafe:name"));
+    }
+
+    [Fact]
+    public async Task NamedRoutesUseProfileRoutesFolderAndRememberSelection()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        var draft = (await store.CreateNewAsync("F123")) with
+        {
+            Hops =
+            [
+                new FollowRouteHop("Sol", 1, null, null, false, false),
+            ],
+            Notes = "Survey staging route",
+        };
+
+        var saved = await store.SaveAsAsync(draft, "Colonia Run");
+        var reloaded = await store.LoadAsync("F123");
+        var catalog = await store.ListAsync("F123");
+
+        Assert.Equal(
+            Path.Combine(
+                temporaryDirectory,
+                "Routes",
+                "F123",
+                "Colonia Run.json"),
+            saved.FilePath);
+        Assert.True(File.Exists(saved.FilePath));
+        Assert.Equal(saved.FilePath, reloaded.Path);
+        Assert.Equal("Colonia Run", reloaded.Route!.Name);
+        Assert.Equal("Survey staging route", reloaded.Route.Notes);
+        Assert.Equal(saved.FilePath, Assert.Single(catalog).FilePath);
+    }
+
+    [Fact]
+    public async Task ProgressOnlySaveDoesNotRewriteRouteDefinitionOrNotes()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        var saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Hops =
+                [
+                    new FollowRouteHop("Sol", 1, null, null, false, false),
+                    new FollowRouteHop("Achenar", 2, null, null, false, false),
+                ],
+                Notes = "Keep this note",
+            },
+            "Protected Definition");
+
+        await store.SaveProgressAsync(saved with
+        {
+            LastReachedIndex = 0,
+            AutoCopy = false,
+            Notes = "Must not replace",
+            Hops = [new FollowRouteHop("Wrong", 99, null, null, false, false)],
+        });
+
+        var reloaded = await store.ReloadAsync(saved);
+        Assert.Equal(0, reloaded.Route!.LastReachedIndex);
+        Assert.False(reloaded.Route.AutoCopy);
+        Assert.Equal("Keep this note", reloaded.Route.Notes);
+        Assert.Equal(["Sol", "Achenar"], reloaded.Route.Hops.Select(hop => hop.Name));
+    }
+
+    [Fact]
+    public async Task NewWorkspaceLeavesSavedRoutesAndDeleteMovesRouteToRecovery()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        var saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Hops = [new FollowRouteHop("Sol", 1, null, null, false, false)],
+            },
+            "Disposable");
+
+        var blank = await store.CreateNewAsync("F123");
+        Assert.Empty(blank.Hops);
+        Assert.True(File.Exists(saved.FilePath));
+        Assert.False((await store.LoadAsync("F123")).Exists);
+
+        var recoveryPath = await store.DeleteAsync(saved);
+        Assert.False(File.Exists(saved.FilePath));
+        Assert.True(File.Exists(recoveryPath));
+        Assert.Contains(
+            Path.Combine("Routes", "F123", ".trash"),
+            recoveryPath,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task CatalogIncludesNotesCreationTimeAndPersistentFavorite()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        var saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Hops = [new FollowRouteHop("Sol", 1, null, null, false, false)],
+                Notes = "Meet near the primary star.",
+            },
+            "Favorite Run");
+
+        var favorite = await store.SetFavoriteAsync(
+            "F123",
+            Path.GetFileName(saved.FilePath),
+            isLegacy: false,
+            isFavorite: true);
+        var catalog = await store.ListAsync("F123");
+
+        Assert.True(favorite.IsFavorite);
+        var entry = Assert.Single(catalog);
+        Assert.Equal("Meet near the primary star.", entry.Notes);
+        Assert.NotEqual(default, entry.CreatedAt);
+        Assert.True(entry.IsFavorite);
+        var reloaded = await store.ReloadAsync(favorite);
+        Assert.True(reloaded.Route!.IsFavorite);
+    }
+
+    [Fact]
+    public async Task ImportExportAndNamedDeleteDoNotChangeAnotherLoadedRoute()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        var active = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Hops = [new FollowRouteHop("Sol", 1, null, null, false, false)],
+            },
+            "Active Route");
+        var importPath = Path.Combine(temporaryDirectory, "source.json");
+        await File.WriteAllTextAsync(
+            importPath,
+            """
+            {
+              "name": "Imported Route",
+              "notes": "Imported notes",
+              "hops": [
+                { "name": "Achenar", "id64": 2 }
+              ]
+            }
+            """);
+
+        var firstImport = await store.ImportAsync("F123", importPath);
+        var secondImport = await store.ImportAsync("F123", importPath);
+        var loaded = await store.LoadAsync("F123");
+
+        Assert.Equal("Imported Route", firstImport.Name);
+        Assert.Equal("Imported Route (2)", secondImport.Name);
+        Assert.Equal(active.FilePath, loaded.Path);
+
+        var importedEntries = (await store.ListAsync("F123"))
+            .Where(route => route.Name.StartsWith(
+                "Imported Route",
+                StringComparison.Ordinal))
+            .ToArray();
+        var exportDirectory = Path.Combine(temporaryDirectory, "exports");
+        var exported = await store.ExportAsync(
+            "F123",
+            importedEntries,
+            exportDirectory);
+
+        Assert.Equal(2, exported.Count);
+        Assert.All(exported, path => Assert.True(File.Exists(path)));
+
+        var recoveryPath = await store.DeleteNamedAsync(
+            "F123",
+            importedEntries[0].FileName,
+            importedEntries[0].IsLegacy);
+        loaded = await store.LoadAsync("F123");
+
+        Assert.True(File.Exists(recoveryPath));
+        Assert.False(File.Exists(importedEntries[0].FilePath));
+        Assert.Equal(active.FilePath, loaded.Path);
+    }
+
+    [Fact]
+    public async Task FleetCarrierLibraryIsSeparatedAndRejectsStandardRoutes()
+    {
+        var standardStore = new FollowRouteStore(temporaryDirectory);
+        var carrierStore = new FollowRouteStore(
+            temporaryDirectory,
+            FollowRouteKind.FleetCarrier);
+        var standard = await standardStore.SaveAsAsync(
+            (await standardStore.CreateNewAsync("F123")) with
+            {
+                Hops = [new FollowRouteHop("Sol", 1, null, null, false, false)],
+            },
+            "Explorer Route");
+        var carrier = await carrierStore.SaveAsAsync(
+            (await carrierStore.CreateNewAsync("F123")) with
+            {
+                Hops =
+                [
+                    new FollowRouteHop(
+                        "Colonia",
+                        2,
+                        null,
+                        "Refuel 500 t Tritium",
+                        false,
+                        false),
+                ],
+            },
+            "Carrier Run");
+
+        Assert.Equal(FollowRouteKind.Standard, standard.Kind);
+        Assert.Equal(FollowRouteKind.FleetCarrier, carrier.Kind);
+        Assert.DoesNotContain(
+            "FleetCarrier",
+            standard.FilePath,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            Path.Combine("Routes", "FleetCarrier", "F123"),
+            carrier.FilePath,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("Explorer Route", Assert.Single(
+            await standardStore.ListAsync("F123")).Name);
+        Assert.Equal("Carrier Run", Assert.Single(
+            await carrierStore.ListAsync("F123")).Name);
+
+        var carrierJson = JsonNode.Parse(
+            await File.ReadAllTextAsync(carrier.FilePath))!.AsObject();
+        Assert.Equal(
+            "fleetCarrier",
+            carrierJson["routeType"]!.GetValue<string>());
+
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => standardStore.ImportAsync("F456", carrier.FilePath));
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => carrierStore.ImportAsync("F456", standard.FilePath));
+    }
+
+    [Fact]
+    public async Task BioTargetsRoundTripAndProgressOnlySavePreservesDefinition()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        var route = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Hops =
+                [
+                    new FollowRouteHop(
+                        "Test System",
+                        42,
+                        null,
+                        "Meet near the primary star.",
+                        false,
+                        false,
+                        [
+                            new FollowRouteBioTarget(
+                                "A 2",
+                                2,
+                                ["Stratum Tectonicas", "Bacterium Acies"],
+                                Subtype: "High metal content world",
+                                DistanceToArrivalLs: 1245.75,
+                                EstimatedScanValue: 125000,
+                                EstimatedMappingValue: 625000,
+                                EstimatedBiologyValue: 27428800,
+                                IsTerraformable: true,
+                                IsBiological: true),
+                        ]),
+                ],
+            },
+            "Exobiology Run");
+        var root = JsonNode.Parse(
+            await File.ReadAllTextAsync(route.FilePath))!.AsObject();
+        root["hops"]![0]!["bio"]![0]!["source"] = "spansh";
+        await File.WriteAllTextAsync(route.FilePath, root.ToJsonString());
+
+        var completed = route with
+        {
+            Hops =
+            [
+                route.Hops[0] with
+                {
+                    Bio =
+                    [
+                        route.Hops[0].BioTargets[0] with
+                        {
+                            IsCompleted = true,
+                        },
+                    ],
+                },
+            ],
+        };
+        await store.SaveProgressAsync(completed);
+        var reloaded = await store.ReloadAsync(completed);
+
+        var target = Assert.Single(Assert.Single(reloaded.Route!.Hops).BioTargets);
+        Assert.Equal("A 2", target.BodyName);
+        Assert.Equal(2, target.BodyId);
+        Assert.Equal(
+            ["Stratum Tectonicas", "Bacterium Acies"],
+            target.Species);
+        Assert.Equal("High metal content world", target.Subtype);
+        Assert.Equal(1245.75, target.DistanceToArrivalLs);
+        Assert.Equal(125000, target.EstimatedScanValue);
+        Assert.Equal(625000, target.EstimatedMappingValue);
+        Assert.Equal(27428800, target.EstimatedBiologyValue);
+        Assert.True(target.IsTerraformable);
+        Assert.True(target.IsBiological);
+        Assert.True(target.IsCompleted);
+        root = JsonNode.Parse(
+            await File.ReadAllTextAsync(route.FilePath))!.AsObject();
+        Assert.Equal(
+            "spansh",
+            root["hops"]![0]!["bio"]![0]!["source"]!.GetValue<string>());
+        Assert.Equal(
+            "Meet near the primary star.",
+            root["hops"]![0]!["notes"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task BodyTargetTypeRoundTripsAndLegacyBioDefaultsToBiological()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        var route = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                Hops =
+                [
+                    new FollowRouteHop(
+                        "Valuable System",
+                        42,
+                        null,
+                        null,
+                        false,
+                        false,
+                        [
+                            new FollowRouteBioTarget(
+                                "A 2",
+                                2,
+                                [],
+                                Subtype: "Earth-like world",
+                                IsBiological: false),
+                        ]),
+                ],
+            },
+            "Valuable Worlds");
+
+        var root = JsonNode.Parse(
+            await File.ReadAllTextAsync(route.FilePath))!.AsObject();
+        Assert.False(root["hops"]![0]!["bio"]![0]!["biological"]!.GetValue<bool>());
+        var reloaded = await store.ReloadAsync(route);
+        Assert.False(reloaded.Route!.Hops[0].BioTargets[0].IsBiological);
+
+        root["hops"]![0]!["bio"]![0]!.AsObject().Remove("biological");
+        await File.WriteAllTextAsync(route.FilePath, root.ToJsonString());
+
+        reloaded = await store.ReloadAsync(route);
+        Assert.True(reloaded.Route!.Hops[0].BioTargets[0].IsBiological);
     }
 
     private string CreateRoutePath()

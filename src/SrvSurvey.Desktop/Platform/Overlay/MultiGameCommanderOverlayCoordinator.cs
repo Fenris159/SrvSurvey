@@ -16,7 +16,7 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
     private readonly Func<bool> isApplicationActive;
     private readonly LegacyOverlayLayout overlayLayout;
     private readonly TimeProvider timeProvider;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private DateTimeOffset nextInventoryRefresh;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private MultiGameCommanderOverlayWindow? window;
@@ -47,7 +47,7 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         this.timeProvider = timeProvider ?? TimeProvider.System;
         commanderInstances.PropertyChanged += OnStateChanged;
         overlayBehavior.PropertyChanged += OnStateChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

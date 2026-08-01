@@ -30,6 +30,12 @@ public sealed partial class RouteWindow : Window
         Close();
     }
 
+    protected override void OnClosed(EventArgs eventArgs)
+    {
+        viewModel.DismissDialogs();
+        base.OnClosed(eventArgs);
+    }
+
     private void HopCheckBox_Click(object? sender, RoutedEventArgs eventArgs)
     {
         if (sender is CheckBox
@@ -38,6 +44,21 @@ public sealed partial class RouteWindow : Window
             })
         {
             viewModel.SetProgressThrough(hop.Index, !hop.IsReached);
+        }
+    }
+
+    private async void BioTargetCheckBox_Click(
+        object? sender,
+        RoutedEventArgs eventArgs)
+    {
+        if (sender is CheckBox
+            {
+                DataContext: RouteBioTargetItemViewModel target,
+            })
+        {
+            await viewModel.SetBioTargetCompletedAsync(
+                target,
+                !target.IsCompleted);
         }
     }
 

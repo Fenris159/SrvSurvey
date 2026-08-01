@@ -11,6 +11,34 @@ public sealed class QuestRuntimeCoordinatorTests : IDisposable
         $"SrvSurvey-quest-coordinator-tests-{Guid.NewGuid():N}");
 
     [Fact]
+    public async Task IdenticalEmptyUpdateRetainsSnapshotAndDoesNotNotify()
+    {
+        var client = new FakeRavenQuestClient
+        {
+            ActiveQuests = [CreateRemoteProgress(quest: null)],
+            Definition = CreateDefinition("function noop() end"),
+        };
+        await using var coordinator = CreateCoordinator(client);
+        var initial = await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: true);
+        var notifications = 0;
+        coordinator.Changed += (_, _) => notifications++;
+
+        var repeated = await coordinator.ApplyUpdateAsync(
+            Configuration(),
+            temporaryDirectory,
+            [],
+            isBootstrap: false);
+
+        Assert.Same(initial.Quests, repeated.Quests);
+        Assert.Equal(0, notifications);
+        Assert.Equal(0, repeated.ProcessedEventCount);
+    }
+
+    [Fact]
     public async Task BootstrapHydratesRemoteQuestWithoutDispatchingHistory()
     {
         var client = new FakeRavenQuestClient

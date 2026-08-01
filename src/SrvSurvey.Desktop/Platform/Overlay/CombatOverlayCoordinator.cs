@@ -13,7 +13,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private FootCombatOverlayWindow? footCombatWindow;
     private MassacreMissionsOverlayWindow? massacreWindow;
@@ -34,7 +34,7 @@ public sealed class CombatOverlayCoordinator : IDisposable
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel = new CombatOverlayViewModel(combat, platform.Capabilities);
         combat.PropertyChanged += OnCombatPropertyChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

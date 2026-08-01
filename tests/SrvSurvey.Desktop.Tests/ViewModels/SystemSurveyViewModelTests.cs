@@ -14,6 +14,38 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         "SrvSurvey-SystemSurveyViewModel-" + Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public void IdenticalEmptyUpdateRetainsPresentationAndDoesNotNotify()
+    {
+        var viewModel = CreateViewModel();
+        var exobiology = ExobiologySnapshot.Empty with
+        {
+            ScannedBioEntryIds = ["bio-entry"],
+        };
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+        ],
+        new EliteStatus(),
+        exobiology);
+        var fssBodies = viewModel.FssBodies;
+        var dssBodies = viewModel.DssBodies;
+        var biologicalBodies = viewModel.BiologicalBodies;
+        var notifications = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            notifications.Add(eventArgs.PropertyName);
+
+        viewModel.ApplyUpdate(
+            [],
+            null,
+            exobiology with { ScannedBioEntryIds = ["bio-entry"] });
+
+        Assert.Same(fssBodies, viewModel.FssBodies);
+        Assert.Same(dssBodies, viewModel.DssBodies);
+        Assert.Same(biologicalBodies, viewModel.BiologicalBodies);
+        Assert.Empty(notifications);
+    }
+
+    [Fact]
     public void PriorScanEligibilityUsesLegacySurfaceModesAndPreferences()
     {
         var viewModel = CreateViewModel();

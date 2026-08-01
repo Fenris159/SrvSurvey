@@ -21,6 +21,8 @@
     <SolidColorBrush x:Key="RavenDangerBrush" Color="#FF7B72" />
     <presentation:FrontierAssetImageConverter
         x:Key="FrontierAssetImageConverter" />
+    <presentation:BundledAssetImageConverter
+        x:Key="BundledAssetImageConverter" />
   </Application.Resources>
   <Application.Styles>
     <FluentTheme />

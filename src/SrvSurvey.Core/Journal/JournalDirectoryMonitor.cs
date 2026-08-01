@@ -17,6 +17,11 @@ public sealed class JournalDirectoryMonitor
     private string? cargoContentHash;
     private string? shipLockerContentHash;
     private string? marketContentHash;
+    private CompanionFileStamp? statusFileStamp;
+    private CompanionFileStamp? navRouteFileStamp;
+    private CompanionFileStamp? cargoFileStamp;
+    private CompanionFileStamp? shipLockerFileStamp;
+    private CompanionFileStamp? marketFileStamp;
     private bool hasCompletedFirstPoll;
 
     public JournalDirectoryMonitor(
@@ -91,133 +96,173 @@ public sealed class JournalDirectoryMonitor
 
             EliteStatus? status = null;
             var statusPath = Path.Combine(journalDirectory, StatusFileReader.FileName);
-            if (File.Exists(statusPath))
+            if (TryGetFileStamp(statusPath, out var nextStatusFileStamp)
+                && nextStatusFileStamp != statusFileStamp)
             {
                 var statusResult = await StatusFileReader.ReadAsync(
                         statusPath,
                         cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
                 if (statusResult.Status is not null
-                    && statusResult.ContentHash is not null
-                    && !string.Equals(
-                        statusResult.ContentHash,
-                        statusContentHash,
-                        StringComparison.Ordinal))
+                    && statusResult.ContentHash is not null)
                 {
-                    statusContentHash = statusResult.ContentHash;
-                    CurrentStatus = statusResult.Status;
-                    status = statusResult.Status;
+                    statusFileStamp = nextStatusFileStamp;
+                    if (!string.Equals(
+                            statusResult.ContentHash,
+                            statusContentHash,
+                            StringComparison.Ordinal))
+                    {
+                        statusContentHash = statusResult.ContentHash;
+                        CurrentStatus = statusResult.Status;
+                        status = statusResult.Status;
+                    }
                 }
                 else if (statusResult.Error is not null)
                 {
                     errors.Add(statusResult.Error);
                 }
             }
+            else if (!File.Exists(statusPath))
+            {
+                statusFileStamp = null;
+            }
 
             NavRouteSnapshot? navRoute = null;
             var navRoutePath = Path.Combine(
                 journalDirectory,
                 NavRouteFileReader.FileName);
-            if (File.Exists(navRoutePath))
+            if (TryGetFileStamp(navRoutePath, out var nextNavRouteFileStamp)
+                && nextNavRouteFileStamp != navRouteFileStamp)
             {
                 var navRouteResult = await NavRouteFileReader.ReadAsync(
                         navRoutePath,
                         cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
                 if (navRouteResult.Snapshot is not null
-                    && navRouteResult.ContentHash is not null
-                    && !string.Equals(
-                        navRouteResult.ContentHash,
-                        navRouteContentHash,
-                        StringComparison.Ordinal))
+                    && navRouteResult.ContentHash is not null)
                 {
-                    navRouteContentHash = navRouteResult.ContentHash;
-                    CurrentNavRoute = navRouteResult.Snapshot;
-                    navRoute = navRouteResult.Snapshot;
+                    navRouteFileStamp = nextNavRouteFileStamp;
+                    if (!string.Equals(
+                            navRouteResult.ContentHash,
+                            navRouteContentHash,
+                            StringComparison.Ordinal))
+                    {
+                        navRouteContentHash = navRouteResult.ContentHash;
+                        CurrentNavRoute = navRouteResult.Snapshot;
+                        navRoute = navRouteResult.Snapshot;
+                    }
                 }
                 else if (navRouteResult.Error is not null)
                 {
                     errors.Add(navRouteResult.Error);
                 }
             }
+            else if (!File.Exists(navRoutePath))
+            {
+                navRouteFileStamp = null;
+            }
 
             CargoSnapshot? cargo = null;
             var cargoPath = Path.Combine(journalDirectory, CargoFileReader.FileName);
-            if (File.Exists(cargoPath))
+            if (TryGetFileStamp(cargoPath, out var nextCargoFileStamp)
+                && nextCargoFileStamp != cargoFileStamp)
             {
                 var cargoResult = await CargoFileReader.ReadAsync(
                         cargoPath,
                         cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
                 if (cargoResult.Snapshot is not null
-                    && cargoResult.ContentHash is not null
-                    && !string.Equals(
-                        cargoResult.ContentHash,
-                        cargoContentHash,
-                        StringComparison.Ordinal))
+                    && cargoResult.ContentHash is not null)
                 {
-                    cargoContentHash = cargoResult.ContentHash;
-                    CurrentCargo = cargoResult.Snapshot;
-                    cargo = cargoResult.Snapshot;
+                    cargoFileStamp = nextCargoFileStamp;
+                    if (!string.Equals(
+                            cargoResult.ContentHash,
+                            cargoContentHash,
+                            StringComparison.Ordinal))
+                    {
+                        cargoContentHash = cargoResult.ContentHash;
+                        CurrentCargo = cargoResult.Snapshot;
+                        cargo = cargoResult.Snapshot;
+                    }
                 }
                 else if (cargoResult.Error is not null)
                 {
                     errors.Add(cargoResult.Error);
                 }
             }
+            else if (!File.Exists(cargoPath))
+            {
+                cargoFileStamp = null;
+            }
 
             ShipLockerSnapshot? shipLocker = null;
             var shipLockerPath = Path.Combine(
                 journalDirectory,
                 ShipLockerFileReader.FileName);
-            if (File.Exists(shipLockerPath))
+            if (TryGetFileStamp(shipLockerPath, out var nextShipLockerFileStamp)
+                && nextShipLockerFileStamp != shipLockerFileStamp)
             {
                 var shipLockerResult = await ShipLockerFileReader.ReadAsync(
                         shipLockerPath,
                         cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
                 if (shipLockerResult.Snapshot is not null
-                    && shipLockerResult.ContentHash is not null
-                    && !string.Equals(
-                        shipLockerResult.ContentHash,
-                        shipLockerContentHash,
-                        StringComparison.Ordinal))
+                    && shipLockerResult.ContentHash is not null)
                 {
-                    shipLockerContentHash = shipLockerResult.ContentHash;
-                    CurrentShipLocker = shipLockerResult.Snapshot;
-                    shipLocker = shipLockerResult.Snapshot;
+                    shipLockerFileStamp = nextShipLockerFileStamp;
+                    if (!string.Equals(
+                            shipLockerResult.ContentHash,
+                            shipLockerContentHash,
+                            StringComparison.Ordinal))
+                    {
+                        shipLockerContentHash = shipLockerResult.ContentHash;
+                        CurrentShipLocker = shipLockerResult.Snapshot;
+                        shipLocker = shipLockerResult.Snapshot;
+                    }
                 }
                 else if (shipLockerResult.Error is not null)
                 {
                     errors.Add(shipLockerResult.Error);
                 }
             }
+            else if (!File.Exists(shipLockerPath))
+            {
+                shipLockerFileStamp = null;
+            }
 
             MarketSnapshot? market = null;
             var marketPath = Path.Combine(
                 journalDirectory,
                 MarketFileReader.FileName);
-            if (File.Exists(marketPath))
+            if (TryGetFileStamp(marketPath, out var nextMarketFileStamp)
+                && nextMarketFileStamp != marketFileStamp)
             {
                 var marketResult = await MarketFileReader.ReadAsync(
                         marketPath,
                         cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
                 if (marketResult.Snapshot is not null
-                    && marketResult.ContentHash is not null
-                    && !string.Equals(
-                        marketResult.ContentHash,
-                        marketContentHash,
-                        StringComparison.Ordinal))
+                    && marketResult.ContentHash is not null)
                 {
-                    marketContentHash = marketResult.ContentHash;
-                    CurrentMarket = marketResult.Snapshot;
-                    market = marketResult.Snapshot;
+                    marketFileStamp = nextMarketFileStamp;
+                    if (!string.Equals(
+                            marketResult.ContentHash,
+                            marketContentHash,
+                            StringComparison.Ordinal))
+                    {
+                        marketContentHash = marketResult.ContentHash;
+                        CurrentMarket = marketResult.Snapshot;
+                        market = marketResult.Snapshot;
+                    }
                 }
                 else if (marketResult.Error is not null)
                 {
                     errors.Add(marketResult.Error);
                 }
+            }
+            else if (!File.Exists(marketPath))
+            {
+                marketFileStamp = null;
             }
 
             update = new JournalMonitorUpdate(
@@ -504,6 +549,38 @@ public sealed class JournalDirectoryMonitor
         long Length,
         DateTime LastWriteTimeUtc,
         string? FrontierId);
+
+    private static bool TryGetFileStamp(
+        string path,
+        out CompanionFileStamp stamp)
+    {
+        try
+        {
+            var file = new FileInfo(path);
+            if (!file.Exists)
+            {
+                stamp = default;
+                return false;
+            }
+
+            stamp = new CompanionFileStamp(
+                file.Length,
+                file.LastWriteTimeUtc,
+                file.CreationTimeUtc);
+            return true;
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            stamp = default;
+            return false;
+        }
+    }
+
+    private readonly record struct CompanionFileStamp(
+        long Length,
+        DateTime LastWriteTimeUtc,
+        DateTime CreationTimeUtc);
 }
 
 public sealed record JournalMonitorUpdate(
@@ -515,4 +592,14 @@ public sealed record JournalMonitorUpdate(
     MarketSnapshot? Market,
     IReadOnlyList<string> Errors,
     bool IsBootstrapRead,
-    ShipLockerSnapshot? ShipLocker = null);
+    ShipLockerSnapshot? ShipLocker = null)
+{
+    public bool HasChanges => IsBootstrapRead
+        || JournalEvents.Count > 0
+        || Status is not null
+        || NavRoute is not null
+        || Cargo is not null
+        || ShipLocker is not null
+        || Market is not null
+        || Errors.Count > 0;
+}

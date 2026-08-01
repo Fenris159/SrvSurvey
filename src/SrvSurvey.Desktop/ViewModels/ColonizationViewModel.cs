@@ -1243,14 +1243,32 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         GalacticCoordinate? position,
         long? systemAddress = null)
     {
-        currentSystemName = string.IsNullOrWhiteSpace(systemName)
+        var nextSystemName = string.IsNullOrWhiteSpace(systemName)
             ? null
             : systemName.Trim();
-        currentSystemAddress = systemAddress is > 0
+        var nextSystemAddress = systemAddress is > 0
             ? systemAddress
             : null;
-        currentStarPosition = position is GalacticCoordinate coordinate
-            ? [coordinate.X, coordinate.Y, coordinate.Z]
+        var samePosition = position is GalacticCoordinate coordinate
+            ? currentStarPosition.Count == 3
+                && currentStarPosition[0] == coordinate.X
+                && currentStarPosition[1] == coordinate.Y
+                && currentStarPosition[2] == coordinate.Z
+            : currentStarPosition.Count == 0;
+        if (string.Equals(
+                currentSystemName,
+                nextSystemName,
+                StringComparison.OrdinalIgnoreCase)
+            && currentSystemAddress == nextSystemAddress
+            && samePosition)
+        {
+            return;
+        }
+
+        currentSystemName = nextSystemName;
+        currentSystemAddress = nextSystemAddress;
+        currentStarPosition = position is GalacticCoordinate nextCoordinate
+            ? [nextCoordinate.X, nextCoordinate.Y, nextCoordinate.Z]
             : [];
         UpdateProjectEditorContext();
         UpdateSystemEditorContext();

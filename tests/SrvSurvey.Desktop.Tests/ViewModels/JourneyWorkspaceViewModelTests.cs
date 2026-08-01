@@ -30,6 +30,13 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
 
         Assert.True(await viewModel.UpdateContextAsync(
             "F123", "Drew", true, "Sol", 42));
+        var contextNotifications = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            contextNotifications.Add(eventArgs.PropertyName);
+        Assert.False(await viewModel.UpdateContextAsync(
+            "F123", "Drew", true, "Sol", 42));
+        Assert.Empty(contextNotifications);
+
         await viewModel.StartNewJourneyAsync();
         viewModel.NewJourneyName = "Across the black";
         viewModel.NewJourneyDescription = "A long expedition";

@@ -152,6 +152,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "1 / 3 BODIES COMPLETE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
     "Text": "1 GENUS",
     "IsFormat": false,
     "SourceKinds": [
@@ -728,6 +736,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "A 4",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "A 5",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
     "Text": "A Codex image cache directory is required.",
     "IsFormat": false,
     "SourceKinds": [
@@ -1062,6 +1086,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "A new route could not be started: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "A no-carrier response is cached normally and does not trigger repeated refreshes.",
@@ -1721,6 +1753,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Activate",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
     "Text": "Activate a boxel search before auditing its full area.",
     "IsFormat": false,
     "SourceKinds": [
@@ -1745,6 +1785,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "Activate a saved route before changing next-hop auto-copy.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Activate quest",
     "IsFormat": false,
     "SourceKinds": [
@@ -1759,6 +1807,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ReferenceDataUpdateViewModel.cs"
+  },
+  {
+    "Text": "Activated {0}. Next system: {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Active",
@@ -1881,6 +1937,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/JourneyWindow.axaml"
   },
   {
+    "Text": "Add or remove favorite",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Add planning notes, reminders, or a description for this route.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "Add point",
     "IsFormat": false,
     "SourceKinds": [
@@ -1999,6 +2071,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
+  },
+  {
+    "Text": "Added {0} to favorites.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
     "Text": "Adding embedded banner to future screenshots",
@@ -2409,6 +2489,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Theming/OverlayThemeStateStore.cs"
   },
   {
+    "Text": "An overlay timer requires a positive interval.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayDispatcherTimer.cs"
+  },
+  {
     "Text": "Analysis, previews, imports, and historical reconstruction do not imply network publication.",
     "IsFormat": false,
     "SourceKinds": [
@@ -2775,6 +2863,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Arrival distance unknown",
@@ -3601,6 +3697,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/GroundTargetOverlayWindow.axaml"
   },
   {
+    "Text": "BIO",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "BIO SAMPLE 2 / 3",
     "IsFormat": false,
     "SourceKinds": [
@@ -3802,6 +3906,14 @@
   },
   {
     "Text": "Bacterium Acies recorded",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "Bacterium Acies | Stratum Tectonicas",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -4080,6 +4192,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyPredictionsWindow.axaml"
+  },
+  {
+    "Text": "Biology route progress could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Biology sample and colony radius",
@@ -4402,6 +4522,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CombatViewModel.cs"
+  },
+  {
+    "Text": "Bounty hunting",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Boxel",
@@ -4756,6 +4884,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCommodityOverlayWindow.axaml"
   },
   {
+    "Text": "COMMUNITY",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
+    "Text": "COMMUNITY GOAL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "COMMUNITY GOALS",
     "IsFormat": false,
     "SourceKinds": [
@@ -4771,6 +4915,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
+  },
+  {
+    "Text": "COMPLETED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "COMPLETION",
@@ -4943,6 +5095,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
+    "Text": "CURRENT FC ROUTE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
     "Text": "CURRENT LIMIT",
     "IsFormat": false,
     "SourceKinds": [
@@ -4967,6 +5127,15 @@
     "FirstSource": "src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml"
   },
   {
+    "Text": "CURRENT ROUTE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
     "Text": "CURRENT SHIP",
     "IsFormat": false,
     "SourceKinds": [
@@ -4981,6 +5150,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+  },
+  {
+    "Text": "CURRENT TIER",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
     "Text": "CacheDirectory",
@@ -5441,6 +5618,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "Changes saved. Next system: {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Changes were undone to the route\u0027s last saved state.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Changing Blue light, Blue dark, Orange dark, Green light, or Green dark for the application never rewrites theme.json or a named overlay state.",
@@ -6340,6 +6533,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
+    "Text": "Combat bonds",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Combat mission progress changed for this session but could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -6701,6 +6902,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
+    "Text": "Community initiative",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "CommunityGoal",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Compact",
     "IsFormat": false,
     "SourceKinds": [
@@ -6763,14 +6980,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
-  },
-  {
-    "Text": "Completed",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Completed build-site repair",
@@ -7244,6 +7453,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Contributor count not supplied",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Control passive Galaxy Map, route, survey, and status surfaces.",
@@ -7854,14 +8071,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
-    "Text": "Ctrl\u002BShift\u002BN",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
-  },
-  {
     "Text": "Culture",
     "IsFormat": false,
     "SourceKinds": [
@@ -8111,6 +8320,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "DATE CREATED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "DEADLINE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
     "Text": "DEMAND",
     "IsFormat": false,
     "SourceKinds": [
@@ -8138,9 +8363,10 @@
     "Text": "DESTINATION",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
   },
   {
     "Text": "DETAIL",
@@ -8343,6 +8569,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Deactivate",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Deadline not supplied",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Deadline reached",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Deaths",
     "IsFormat": false,
     "SourceKinds": [
@@ -8488,12 +8738,76 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Delete \u0027{0}\u0027? The route will be moved to recovery storage.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
+    "Text": "Delete saved route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Delete selected fleet-carrier routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Delete selected fleet-carrier routes?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Delete selected routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Delete selected routes?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
     "Text": "Delete the original BMP after verification",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Delete this route?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Delete {0} selected routes? They will be moved to recovery storage.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
     "Text": "DeleteOriginal",
@@ -9514,6 +9828,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "EDIT",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
     "Text": "EDSM",
     "IsFormat": false,
     "SourceKinds": [
@@ -9521,6 +9843,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyPredictionsWindow.axaml"
+  },
+  {
+    "Text": "ENDED",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "ENTRY ID",
@@ -9981,14 +10311,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Ends {0}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
     "Text": "Energy pylon",
     "IsFormat": false,
     "SourceKinds": [
@@ -10051,6 +10373,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
+  },
+  {
+    "Text": "Enter a name for this route. It will be stored in your commander route library.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Enter a star-system name to set a custom origin.",
@@ -10398,6 +10728,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
   },
   {
+    "Text": "Exploration data",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Exploration rewards",
     "IsFormat": false,
     "SourceKinds": [
@@ -10454,12 +10792,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "Export",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
     "Text": "Export Guardian template catalog",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml.cs"
+  },
+  {
+    "Text": "Export selected fleet-carrier routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+  },
+  {
+    "Text": "Export selected routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
   },
   {
     "Text": "Export the settlement template catalog",
@@ -10508,6 +10870,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/HumanSiteTemplateAuthoringViewModel.cs"
+  },
+  {
+    "Text": "Exported {0} route file{1} to {2}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
+    "Text": "Expressway to Exomastery targets",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "External data consent",
@@ -10574,6 +10952,31 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationCommodityOverlayViewModel.cs"
   },
   {
+    "Text": "FC Route Workspace",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "FC Routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "FC Routes accepts Spansh Fleet Carrier Router result URLs only.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "FC \u0394",
     "IsFormat": false,
     "SourceKinds": [
@@ -10631,6 +11034,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
   },
   {
+    "Text": "FLEET CARRIER ROUTE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "FLEET VALUE",
     "IsFormat": false,
     "SourceKinds": [
@@ -10658,9 +11069,10 @@
     "Text": "FOLLOWED ROUTE",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"
   },
   {
     "Text": "FROM",
@@ -10981,6 +11393,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
+  },
+  {
+    "Text": "Favorites first",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
     "Text": "Federation",
@@ -11320,12 +11740,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCarrierTabView.axaml"
   },
   {
+    "Text": "Fleet carrier itinerary",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Fleet carriers",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
+  },
+  {
+    "Text": "Fleet-carrier route notes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
     "Text": "FleetCarrier",
@@ -11456,14 +11892,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Follow route - SrvSurvey",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
-  },
-  {
     "Text": "Follow the circular bearing display relative to ship heading. The attack-angle line helps judge descent toward the target.",
     "IsFormat": false,
     "SourceKinds": [
@@ -11475,10 +11903,9 @@
     "Text": "Followed route",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp",
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
     "Text": "FootZoom",
@@ -11737,6 +12164,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
+    "Text": "Frontier callback completed without a running application window to restore.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
+  },
+  {
+    "Text": "Frontier callback restored the running application.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Program.cs"
+  },
+  {
     "Text": "Frontier community-goal data could not be read: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -11767,6 +12210,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
+  },
+  {
+    "Text": "Frontier goal supplemented by Inara",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Frontier is rate limiting requests. Please wait before trying again.",
@@ -11961,12 +12412,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "GLOBAL PROGRESS",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
     "Text": "GLOBAL REGIONAL FIRST",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologyPredictionsWindow.axaml"
+  },
+  {
+    "Text": "GOAL #{0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "GRAVITY",
@@ -12257,6 +12724,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "Global goal supplied by Inara",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Global keyboard input could not start: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -12361,12 +12836,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
-    "Text": "Goal progress",
+    "Text": "Goal completed",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Gold highlights valuable biology, Guardian information, focused targets, or other high-interest rows depending on the overlay.",
@@ -13834,9 +14309,10 @@
     "Text": "Import",
     "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "csharp",
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
     "Text": "Import Canonn",
@@ -13847,6 +14323,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/BiologyCodexBingoWindow.axaml"
   },
   {
+    "Text": "Import Fleet Carrier Router results from the FC Routes tab.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Import SrvSurvey User Data",
     "IsFormat": false,
     "SourceKinds": [
@@ -13855,12 +14339,37 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Import a JSON route or create one in Route Workspace.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
     "Text": "Import a Spansh route or a list of system names.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Import a fleet-carrier route or create one in FC Route Workspace.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
+    "Text": "Import a fleet-carrier route, track each carrier jump, and keep the next destination ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Import a legacy quest development folder to begin.",
@@ -13890,9 +14399,9 @@
     "Text": "Import a route, track each arrival, and keep the next system ready for the Galaxy Map.",
     "IsFormat": false,
     "SourceKinds": [
-      "xaml"
+      "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Import a valid source folder before enabling watch mode.",
@@ -13925,6 +14434,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/QuestView.axaml"
+  },
+  {
+    "Text": "Import saved fleet-carrier routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+  },
+  {
+    "Text": "Import saved routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
   },
   {
     "Text": "Imported data incomplete: inspect the import manifest and logs; do not modify or delete the untouched legacy source while investigating.",
@@ -13983,6 +14508,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
   },
   {
+    "Text": "Imported {0} route file{1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
     "Text": "Imported {0} system bodies. No site edits were published.",
     "IsFormat": true,
     "SourceKinds": [
@@ -13991,7 +14524,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationSystemEditorViewModel.cs"
   },
   {
-    "Text": "Imported {0} systems from Spansh. Review and save the route.",
+    "Text": "Imported {0} systems from Spansh. Review it, then use Save As...",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -14079,7 +14612,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
-    "Text": "Imports replace the on-screen draft. Nothing is written until Save route.",
+    "Text": "Imports replace the on-screen draft. Nothing is written until Saved.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -14120,6 +14653,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Inara Community Goal cache has no parent directory.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
+  },
+  {
+    "Text": "Inara Community Goal enrichment could not be refreshed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
+  },
+  {
     "Text": "Inara accepted {0} event(s).",
     "IsFormat": true,
     "SourceKinds": [
@@ -14142,6 +14691,54 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/InaraSettingsViewModel.cs"
+  },
+  {
+    "Text": "Inara response exceeded {0} bytes.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
+  },
+  {
+    "Text": "Inara returned API status {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
+  },
+  {
+    "Text": "Inara returned Community Goal status {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
+  },
+  {
+    "Text": "Inara returned HTTP {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
+  },
+  {
+    "Text": "Inara returned malformed Community Goal data.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
+  },
+  {
+    "Text": "Inara returned no Community Goal response event.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
   },
   {
     "Text": "Incomplete {0} samples remain on {1}.",
@@ -14497,6 +15094,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml.cs"
   },
   {
+    "Text": "Journal monitor stopped unexpectedly: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/MainWindow.axaml.cs"
+  },
+  {
     "Text": "Journal monitoring is active.",
     "IsFormat": false,
     "SourceKinds": [
@@ -14754,7 +15359,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
-    "Text": "Keep commander notes in the existing per-system data file, with quick links to Canonn, Spansh, EDSM, and screenshots.",
+    "Text": "Keep commander notes in the existing per-system data file.",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -15827,6 +16432,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "Loaded {0} saved route{1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
     "Text": "Loaded {0} site survey file(s) and {1} beacon file(s).",
     "IsFormat": true,
     "SourceKinds": [
@@ -15857,6 +16470,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
+  },
+  {
+    "Text": "Loaded {0} systems from {1}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Loading Canonn signals for {0}\u2026",
@@ -15945,6 +16566,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
+  },
+  {
+    "Text": "Local Community Goal history could not be read: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Local cargo and ship-locker inventory belongs to the active journal commander and is hidden while viewing a different Frontier account.",
@@ -16235,6 +16864,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/GuardianView.axaml"
   },
   {
+    "Text": "MISSION BRIEFING",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
     "Text": "MISSION TRACKER",
     "IsFormat": false,
     "SourceKinds": [
@@ -16305,6 +16942,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Manage saved routes or switch to live planetary surface guidance.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
     "Text": "ManifestVersion",
@@ -16489,6 +17134,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
+  },
+  {
+    "Text": "Marked {0} complete in the route draft.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Marked {0} complete.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Marked {0} empty and advanced to {1}.",
@@ -16910,6 +17571,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Mining delivery",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Missing",
     "IsFormat": false,
     "SourceKinds": [
@@ -17118,6 +17787,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs"
   },
   {
+    "Text": "Moved {0} route file{1} to recovery storage.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
     "Text": "Moved {0}. Use \u2713 to save all changes or \u2715 to cancel them.",
     "IsFormat": true,
     "SourceKinds": [
@@ -17252,6 +17929,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ColonizationCommodityOverlayWindow.axaml"
+  },
+  {
+    "Text": "NEUTRON",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "NEW BUILD",
@@ -17424,12 +18109,20 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
-    "Text": "Navigation itinerary",
+    "Text": "Navigation",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Navigation itinerary",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Near a site, the live map projects the published layout around your current position and heading.",
@@ -17536,6 +18229,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "New",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "New Codex",
     "IsFormat": false,
     "SourceKinds": [
@@ -17582,6 +18283,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "New route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "New route workspace ready. Import a route, then use Save As...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "New site name",
@@ -17648,6 +18365,62 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
+    "Text": "Next-hop auto-copy could not be changed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Next-hop auto-copy disabled for this route.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Next-hop auto-copy enabled for this route.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Next-hop auto-copy is already disabled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Next-hop auto-copy is already enabled.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Next-hop auto-copy moved to the other active route workspace.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Next-hop auto-copy was disabled for this session, but the route file could not be updated: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Next-hop clipboard guidance is disabled.",
     "IsFormat": false,
     "SourceKinds": [
@@ -17686,6 +18459,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "No",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "No Codex entries loaded",
@@ -17878,6 +18659,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "No active route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "No active settlement",
@@ -18120,6 +18909,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCurrentShipTabView.axaml"
   },
   {
+    "Text": "No deadline supplied",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "No default locations are available for this platform.",
     "IsFormat": false,
     "SourceKinds": [
@@ -18174,14 +18971,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
-  },
-  {
-    "Text": "No expiry supplied",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "No factory calibration exists for this overlay.",
@@ -18400,6 +19189,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
   },
   {
+    "Text": "No notes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
     "Text": "No on-foot materials are currently available from ShipLocker.json.",
     "IsFormat": false,
     "SourceKinds": [
@@ -18462,14 +19259,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
-  },
-  {
-    "Text": "No recorded contribution",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "No reference backup created this session.",
@@ -18537,6 +19326,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
+    "Text": "No route notes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "No route or selected Galaxy Map system.",
     "IsFormat": false,
     "SourceKinds": [
@@ -18551,6 +19348,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderInstancesViewModel.cs"
+  },
+  {
+    "Text": "No saved fleet-carrier routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
     "Text": "No saved ground target is active.",
@@ -18575,6 +19380,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "No saved routes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "No saved routes. Import a JSON route or create one in the workspace.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
     "Text": "No saved surface history exists for this body yet.",
@@ -18857,6 +19678,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Not saved",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Not started",
     "IsFormat": false,
     "SourceKinds": [
@@ -18884,9 +19713,18 @@
     "Text": "Notes",
     "IsFormat": false,
     "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Notes added to the draft. Use Save As... to keep them.",
+    "IsFormat": false,
+    "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Notes are available for {0}.",
@@ -19275,6 +20113,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
+    "Text": "Open FC Route Workspace",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
     "Text": "Open Frontier commander profile",
     "IsFormat": false,
     "SourceKinds": [
@@ -19305,6 +20151,23 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml"
+  },
+  {
+    "Text": "Open Route Workspace",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Open Selected",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
     "Text": "Open Settings \u003E In-game overlay appearance and choose colors with the picker beside each overlay control.",
@@ -19459,14 +20322,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/DiagnosticsView.axaml"
   },
   {
-    "Text": "Open route workspace",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
-  },
-  {
     "Text": "Open screenshots",
     "IsFormat": false,
     "SourceKinds": [
@@ -19486,6 +20341,23 @@
     "Text": "Open system notes",
     "IsFormat": false,
     "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Open the FC route workspace and organize this commander\u0027s saved fleet-carrier routes.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
+    "Text": "Open the route workspace and organize this commander\u0027s saved route files.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
@@ -20300,14 +21172,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
-    "Text": "PARTICIPATION",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
-  },
-  {
     "Text": "PASS-THROUGH UNAVAILABLE",
     "IsFormat": false,
     "SourceKinds": [
@@ -20573,6 +21437,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
   },
   {
+    "Text": "Personal progress not supplied by Frontier or local journals",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Personal progress restored from local journals \u00B7 recorded {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Pin this SrvSurvey instance to one commander\u0027s stable Frontier ID, or follow the newest active journal automatically.",
     "IsFormat": false,
     "SourceKinds": [
@@ -20782,6 +21662,14 @@
   },
   {
     "Text": "PlotRamTah",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
+  },
+  {
+    "Text": "PlotRouteBio",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -22154,6 +23042,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
   },
   {
+    "Text": "REFUEL",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "REGION",
     "IsFormat": false,
     "SourceKinds": [
@@ -22208,6 +23104,22 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml"
+  },
+  {
+    "Text": "ROUTE",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "ROUTE BIOLOGY",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml"
   },
   {
     "Text": "ROUTE TARGET",
@@ -23971,12 +24883,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "Removed {0} from favorites.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
     "Text": "Reopen",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BoxelSearchViewModel.cs"
+  },
+  {
+    "Text": "Reopened {0} in the route draft.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Reopened {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Repair",
@@ -24105,6 +25041,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Reset",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Reset VR orientation",
@@ -24435,6 +25379,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Reward: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Rewards, first-footfall multipliers, sale removal, death rollback, active samples, exact predictions, the biology browser, and Codex Bingo use the WinForms contracts. Prior-scan tools remain a separate reviewable surface.",
     "IsFormat": false,
     "SourceKinds": [
@@ -24491,6 +25443,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
+    "Text": "Route Manager",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Route Workspace",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Route and destination intelligence",
     "IsFormat": false,
     "SourceKinds": [
@@ -24515,6 +25484,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
+    "Text": "Route biology",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayLayoutCatalog.cs"
+  },
+  {
     "Text": "Route complete",
     "IsFormat": false,
     "SourceKinds": [
@@ -24525,6 +25502,30 @@
   {
     "Text": "Route complete after arriving at {0}.",
     "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Route name",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Route notes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Route notes saved.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -24555,7 +25556,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
-    "Text": "Route saved as complete.",
+    "Text": "Route progress reset in the draft. Save Changes to keep it.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -24563,7 +25564,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
-    "Text": "Route saved in a paused state.",
+    "Text": "Route progress saved as complete.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -24571,8 +25572,16 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
-    "Text": "Route saved. Next system: {0}.",
-    "IsFormat": true,
+    "Text": "Route progress saved in a paused state.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Route tracking deactivated. The saved route and its progress were preserved.",
+    "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
@@ -24849,6 +25858,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "SELECT",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
     "Text": "SELECTED",
@@ -25237,6 +26254,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/SystemStatusOverlayWindow.axaml"
   },
   {
+    "Text": "Salvage operation",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Sample 1 of 3 recorded",
     "IsFormat": false,
     "SourceKinds": [
@@ -25283,6 +26308,30 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Save",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Save As...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
+    "Text": "Save Changes",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Save a Raven API key before Fleet Carrier cargo can sync.",
@@ -25397,6 +26446,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
   },
   {
+    "Text": "Save or undo the current Route Workspace changes before activating another route.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Save or undo the current Route Workspace changes before changing next-hop auto-copy here.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Save or undo the current Route Workspace definition and note changes before deactivating it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "Save overlay positions and opacity",
     "IsFormat": false,
     "SourceKinds": [
@@ -25405,7 +26478,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/OverlayPositionEditorWindow.axaml"
   },
   {
-    "Text": "Save route",
+    "Text": "Save route as",
     "IsFormat": false,
     "SourceKinds": [
       "xaml"
@@ -25485,6 +26558,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/SystemNotesWindow.axaml"
   },
   {
+    "Text": "Saved notes for {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
     "Text": "Saved notes to {0}.",
     "IsFormat": true,
     "SourceKinds": [
@@ -25523,6 +26604,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml"
+  },
+  {
+    "Text": "Saved route as {0}.",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Saved screenshot: {0}",
@@ -25651,6 +26740,15 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyPredictionsViewModel.cs"
+  },
+  {
+    "Text": "Scan for biological signals",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp",
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml"
   },
   {
     "Text": "Scan old journals",
@@ -25885,6 +26983,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/StationInfoViewModel.cs"
+  },
+  {
+    "Text": "Search and rescue",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "Search by system name",
@@ -27635,6 +28741,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/PriorScansOverlayViewModel.cs"
   },
   {
+    "Text": "Signed up \u00B7 no contribution recorded",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Silver Legal Group",
     "IsFormat": false,
     "SourceKinds": [
@@ -28189,6 +29303,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/ApplicationUpdateBootstrap.cs"
   },
   {
+    "Text": "SrvSurvey fleet-carrier route files",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+  },
+  {
     "Text": "SrvSurvey ground combat zone overlay",
     "IsFormat": false,
     "SourceKinds": [
@@ -28307,6 +29429,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierProtocolRegistration.cs"
+  },
+  {
+    "Text": "SrvSurvey route biology overlay",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml"
+  },
+  {
+    "Text": "SrvSurvey route files",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
   },
   {
     "Text": "SrvSurvey station information overlay",
@@ -28461,6 +29599,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/JumpInfoOverlayWindow.axaml.cs"
   },
   {
+    "Text": "SrvSurvey-Route-Bio-Overlay-Design",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml.cs"
+  },
+  {
     "Text": "SrvSurvey-Route-Design",
     "IsFormat": false,
     "SourceKinds": [
@@ -28483,6 +29629,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml.cs"
+  },
+  {
+    "Text": "SrvSurvey.Inara.ReadKey",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraApplicationKeyProvider.cs"
   },
   {
     "Text": "SrvSurvey/{0} (\u002Bhttps://github.com/nithomson/SrvSurvey)",
@@ -28611,6 +29765,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "Start a new route?",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Start a settlement template draft before exporting.",
@@ -29060,6 +30222,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/CombatSettingsStore.cs"
+  },
+  {
+    "Text": "Surface Navigation",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
   },
   {
     "Text": "Surface bearings update from the live journal status.",
@@ -29639,14 +30809,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
   },
   {
-    "Text": "TIER",
-    "IsFormat": false,
-    "SourceKinds": [
-      "xaml"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
-  },
-  {
     "Text": "TO",
     "IsFormat": false,
     "SourceKinds": [
@@ -29661,6 +30823,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+  },
+  {
+    "Text": "TO VISIT",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "TOP BOXEL OR GENERATED SYSTEM",
@@ -29696,6 +30866,14 @@
   },
   {
     "Text": "Tail",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Target not supplied",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -30769,6 +31947,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "The current route could not be deactivated: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "The current session log was copied to the clipboard.",
     "IsFormat": false,
     "SourceKinds": [
@@ -30975,6 +32161,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "The favorite could not be updated: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
     "Text": "The first-footfall screen detector is optional; its shortcut can override the current body state when automatic inference is unavailable.",
@@ -31337,6 +32531,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationProjectEditorViewModel.cs"
   },
   {
+    "Text": "The loaded route was removed. A new route workspace is ready.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "The local Guardian template draft was discarded. No file was changed.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31519,6 +32721,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "The new route draft was restored to its initial state.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "The new-project context could not be loaded: {0}",
@@ -31953,6 +33163,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "The route could not be deleted: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "The route could not be loaded.",
     "IsFormat": false,
     "SourceKinds": [
@@ -31969,6 +33187,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "The route could not be restored: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "The route could not be saved: {0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -31977,12 +33203,52 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "The route import could not be completed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
+    "Text": "The route library could not be refreshed: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
+    "Text": "The route notes could not be saved: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
+    "Text": "The route workspace is not managed by this coordinator.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteAutoCopyCoordinator.cs"
+  },
+  {
     "Text": "The route workspace requires a commander profile.",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The route {0} picker was unavailable: {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
     "Text": "The route, gravity, search candidate, build state, or other condition needs attention before proceeding.",
@@ -32015,6 +33281,54 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayThemeSettingsViewModel.cs"
+  },
+  {
+    "Text": "The saved route could not be activated.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The saved route could not be activated: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The saved route could not be loaded.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The saved route could not be loaded: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The saved route could not be restored.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The saved route was removed and moved to route recovery storage.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "The scan/task is complete, the condition is valid, or the ship/carrier has enough cargo for the requirement.",
@@ -32111,6 +33425,38 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "The selected route has no systems and cannot be activated.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The selected route is complete. Reset its progress before activating it.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
+    "Text": "The selected routes could not all be deleted: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
+  },
+  {
+    "Text": "The selected routes could not be exported: {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
     "Text": "The selected system could not be opened at {0}.",
@@ -32761,6 +34107,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "Tier not supplied",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Tier {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalEnricher.cs"
+  },
+  {
+    "Text": "Tier {0} / {1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalEnricher.cs"
+  },
+  {
     "Text": "Tier {0}: {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -33001,7 +34371,23 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianSurveyEditorViewModel.cs"
   },
   {
-    "Text": "Top {0}% \u00B7 {1}",
+    "Text": "Top {0} commander",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Top {0}%",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "Top {0}% \u00B7 {1} reward",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -33217,6 +34603,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SurfaceSurveyViewModel.cs"
   },
   {
+    "Text": "Trade delivery",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "Trade policy",
     "IsFormat": false,
     "SourceKinds": [
@@ -33328,6 +34722,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/SearchView.axaml"
+  },
+  {
+    "Text": "Tussock Capillum | Frutexa Flammasis",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/OverlayPreviewSimulationState.cs"
   },
   {
     "Text": "Type .add followed by a valid Guardian point type while at the point.",
@@ -33552,6 +34954,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GalaxyMapOverlayViewModel.cs"
+  },
+  {
+    "Text": "Undo",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Undo committed building",
@@ -33793,14 +35203,6 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JourneyWorkspaceViewModel.cs"
-  },
-  {
-    "Text": "Unsaved route changes were discarded.",
-    "IsFormat": false,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "Unsaved route edits were kept.",
@@ -34289,6 +35691,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
+  },
+  {
+    "Text": "Use the live-overlay interaction shortcut to check bodies.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml"
   },
   {
     "Text": "Use the most recent visit to {0}.",
@@ -34844,6 +36254,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
   },
   {
+    "Text": "Wait for the active commander name to load from the journal before connecting to Frontier or refreshing this page.",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Frontier/FrontierAccountService.cs"
+  },
+  {
     "Text": "Wait for the manifest and verification summary. If activation fails, the staged destination is rolled back and the original folder remains unchanged.",
     "IsFormat": false,
     "SourceKinds": [
@@ -35373,6 +36791,22 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "Write fleet-carrier route notes...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml"
+  },
+  {
+    "Text": "Write route notes...",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
+  },
+  {
     "Text": "Wrong cargo: close extra Elite clients and wait for a fresh Cargo.json write from the intended Commander.",
     "IsFormat": false,
     "SourceKinds": [
@@ -35461,6 +36895,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPlatformCapabilities.cs"
   },
   {
+    "Text": "YOUR CONTRIBUTION",
+    "IsFormat": false,
+    "SourceKinds": [
+      "xaml"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/FrontierCommunityGoalsTabView.axaml"
+  },
+  {
     "Text": "YellowBar",
     "IsFormat": false,
     "SourceKinds": [
@@ -35485,12 +36927,12 @@
     "FirstSource": "src/SrvSurvey.Desktop/Configuration/LegacyUiSettingsMigrator.cs"
   },
   {
-    "Text": "Your contribution: {0}",
-    "IsFormat": true,
+    "Text": "Yes",
+    "IsFormat": false,
     "SourceKinds": [
-      "csharp"
+      "xaml"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/RouteWindow.axaml"
   },
   {
     "Text": "Your data is unchanged. Review the details and prepare a GitHub report, or share them on Discord.",
@@ -35925,6 +37367,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/LegacyOverlayLayoutStore.cs"
   },
   {
+    "Text": "bounty",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "bountyhunt",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "bountyhunting",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "bowl",
     "IsFormat": false,
     "SourceKinds": [
@@ -35947,6 +37413,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml.cs"
+  },
+  {
+    "Text": "bulletin",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "by {0}",
@@ -36093,12 +37567,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "combatbond",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "combatbonds",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "combined",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/OverlayPresentationMode.cs"
+  },
+  {
+    "Text": "commander.contribution",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "common",
@@ -36126,6 +37624,14 @@
   },
   {
     "Text": "consumables",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "contributors",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
@@ -36365,6 +37871,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "events",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
+  },
+  {
     "Text": "exception-message",
     "IsFormat": false,
     "SourceKinds": [
@@ -36397,12 +37911,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "explorationdata",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "explore",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "export",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
   },
   {
     "Text": "facilitator",
@@ -36467,6 +37997,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "fleet-carrier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "followed",
@@ -36645,6 +38183,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuideCatalog.cs"
   },
   {
+    "Text": "goal:{0}:{1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "goto",
     "IsFormat": false,
     "SourceKinds": [
@@ -36723,6 +38269,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "header",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
   },
   {
     "Text": "high",
@@ -36885,6 +38439,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/Views/SettingsView.axaml.cs"
   },
   {
+    "Text": "https://inara.cz/inapi/v1/",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
+  },
+  {
     "Text": "https://signals.canonn.tech/?system={0}",
     "IsFormat": true,
     "SourceKinds": [
@@ -36981,12 +38543,36 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "import",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Views/TravelView.axaml.cs"
+  },
+  {
     "Text": "in",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+  },
+  {
+    "Text": "inara.contributors",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalEnricher.cs"
+  },
+  {
+    "Text": "inara.url",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalEnricher.cs"
   },
   {
     "Text": "independent",
@@ -37165,6 +38751,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "mining",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "missile",
     "IsFormat": false,
     "SourceKinds": [
@@ -37245,6 +38839,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
+    "Text": "news",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "nil",
     "IsFormat": false,
     "SourceKinds": [
@@ -37323,6 +38925,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+  },
+  {
+    "Text": "objective",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "or",
@@ -37525,6 +39135,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianTemplateAuthoringViewModel.cs"
   },
   {
+    "Text": "qty",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "quests",
     "IsFormat": false,
     "SourceKinds": [
@@ -37573,12 +39191,28 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
   },
   {
+    "Text": "rescue",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "return",
     "IsFormat": false,
     "SourceKinds": [
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+  },
+  {
+    "Text": "reward",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "right",
@@ -37597,6 +39231,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
   },
   {
+    "Text": "route",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
+  },
+  {
     "Text": "ru",
     "IsFormat": false,
     "SourceKinds": [
@@ -37611,6 +39253,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/SystemSurveyViewModel.cs"
+  },
+  {
+    "Text": "salvage",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "scanned",
@@ -37651,6 +39301,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/MainWindowViewModel.cs"
+  },
+  {
+    "Text": "searchandrescue",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "secret-tool",
@@ -38029,6 +39687,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "tier",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "timestamp",
     "IsFormat": false,
     "SourceKinds": [
@@ -38165,6 +39831,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
+    "Text": "tradelist",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "translation",
     "IsFormat": false,
     "SourceKinds": [
@@ -38194,7 +39868,7 @@
     "SourceKinds": [
       "csharp"
     ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalInspectorViewModel.cs"
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "tungsten",
@@ -38259,6 +39933,22 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/ColonizationView.axaml.cs"
+  },
+  {
+    "Text": "utf-8",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/Platform/Inara/InaraCommunityGoalClient.cs"
+  },
+  {
+    "Text": "valuable-world",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs"
   },
   {
     "Text": "value",
@@ -38518,6 +40208,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexBingoViewModel.cs"
   },
   {
+    "Text": "{0} / {1} BODIES COMPLETE",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteBioOverlayViewModel.cs"
+  },
+  {
     "Text": "{0} B 3",
     "IsFormat": true,
     "SourceKinds": [
@@ -38702,7 +40400,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/Platform/Overlay/GameScreenCapture.cs"
   },
   {
-    "Text": "{0} active or recently completed goal(s)",
+    "Text": "{0} active ({1} Frontier, {2} Inara) \u00B7 {3} recently completed or ended",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -38806,6 +40504,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
+    "Text": "{0} commanders",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "{0} commodities covered by linked FCs",
     "IsFormat": true,
     "SourceKinds": [
@@ -38822,7 +40528,7 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/ColonizationViewModel.cs"
   },
   {
-    "Text": "{0} contributors",
+    "Text": "{0} contributed",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -39198,14 +40904,6 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JournalPostProcessorViewModel.cs"
   },
   {
-    "Text": "{0} of {1}",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
     "Text": "{0} of {1} analyzed",
     "IsFormat": true,
     "SourceKinds": [
@@ -39252,6 +40950,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RamTahViewModel.cs"
+  },
+  {
+    "Text": "{0} of {1} selected",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
     "Text": "{0} of {1} sites | visited: {2} | surveys complete: {3}",
@@ -39348,6 +41054,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/GuardianViewModel.cs"
+  },
+  {
+    "Text": "{0} saved route{1}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/RouteManagerViewModel.cs"
   },
   {
     "Text": "{0} scan circles \u00B7 {1} trackers",
@@ -39455,14 +41169,6 @@
   },
   {
     "Text": "{0} t remaining \u00B7 {1} t total",
-    "IsFormat": true,
-    "SourceKinds": [
-      "csharp"
-    ],
-    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
-  },
-  {
-    "Text": "{0} total contribution",
     "IsFormat": true,
     "SourceKinds": [
       "csharp"
@@ -39630,6 +41336,14 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/JumpInfoViewModel.cs"
   },
   {
+    "Text": "{0}% complete",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "{0}% of {1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -39686,6 +41400,30 @@
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologyCodexViewModel.cs"
   },
   {
+    "Text": "{0}d {1}h remaining",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "{0}h {1}m remaining",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
+    "Text": "{0}m remaining",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
+  },
+  {
     "Text": "{0}r{1}",
     "IsFormat": true,
     "SourceKinds": [
@@ -39724,6 +41462,14 @@
       "csharp"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/ViewModels/BiologySurveyViewModel.cs"
+  },
+  {
+    "Text": "{{top5}}",
+    "IsFormat": false,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "| {0} trips",
@@ -39804,6 +41550,14 @@
       "xaml"
     ],
     "FirstSource": "src/SrvSurvey.Desktop/Views/OverlaySettingsView.axaml"
+  },
+  {
+    "Text": "\u00B7 updated {0}",
+    "IsFormat": true,
+    "SourceKinds": [
+      "csharp"
+    ],
+    "FirstSource": "src/SrvSurvey.Desktop/ViewModels/CommanderProfileViewModel.cs"
   },
   {
     "Text": "\u0420\u0443\u0441\u0441\u043A\u0438\u0439",

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Original SrvSurvey artwork: scoopable-star outline with a fuel droplet. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <g fill="#FF8A00">
+    <path d="M256 18l27 91h-54l27-91Z"/>
+    <path d="M256 494l-27-91h54l-27 91Z"/>
+    <path d="m18 256 91-27v54l-91-27Z"/>
+    <path d="m494 256-91 27v-54l91 27Z"/>
+    <path d="m88 88 84 45-39 39-45-84Z"/>
+    <path d="m424 424-84-45 39-39 45 84Z"/>
+    <path d="m424 88-45 84-39-39 84-45Z"/>
+    <path d="m88 424 45-84 39 39-84 45Z"/>
+    <path fill-rule="evenodd"
+          d="M256 101a155 155 0 1 1 0 310 155 155 0 0 1 0-310Zm0 42a113 113 0 1 0 0 226 113 113 0 0 0 0-226Z"/>
+    <path fill-rule="evenodd"
+          d="M256 173c-18 25-59 86-59 122 0 35 26 63 59 63s59-28 59-63c0-36-41-97-59-122Zm0 54c12 20 25 46 25 64 0 16-11 29-25 29s-25-13-25-29c0-18 13-44 25-64Z"/>
+  </g>
+</svg>

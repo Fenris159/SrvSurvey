@@ -6,236 +6,827 @@
              x:Class="SrvSurvey.Desktop.Views.TravelView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-    <StackPanel Margin="32" Spacing="24" MaxWidth="1050">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+  <Grid>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="32" Spacing="18" MaxWidth="1120">
         <StackPanel Spacing="5">
           <TextBlock Classes="eyebrow" Text="TRAVEL" />
-          <TextBlock Classes="page-title" Text="Surface navigation" />
+          <TextBlock Classes="page-title" Text="Navigation" />
           <TextBlock Classes="muted"
-                     Text="Set planetary coordinates and follow live distance, bearing, and approach guidance." />
+                     Text="Manage saved routes or switch to live planetary surface guidance." />
         </StackPanel>
-        <Button Grid.Column="1"
-                Classes="primary"
-                MinWidth="116"
-                VerticalAlignment="Center"
-                Command="{Binding RefreshCommand}"
-                Content="{Binding RefreshButtonText}" />
-      </Grid>
 
-      <Border Classes="card raised" Padding="0">
-        <Grid ColumnDefinitions="6,*">
-          <Border Classes="accent-line" CornerRadius="12,0,0,12" />
-          <Grid Grid.Column="1"
-                Margin="28"
-                ColumnDefinitions="2*,*,*"
-                ColumnSpacing="24">
-            <StackPanel Spacing="5">
-              <TextBlock Classes="muted" Text="DISTANCE TO TARGET" />
-              <TextBlock FontSize="38"
-                         FontWeight="SemiBold"
-                         Foreground="{DynamicResource RavenAccentBrush}"
-                         Text="{Binding GroundTarget.DistanceToTarget}" />
-              <TextBlock Classes="muted"
-                         Text="{Binding GroundTarget.ApproachStatus}" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Spacing="5">
-              <TextBlock Classes="muted" Text="BEARING" />
-              <TextBlock Classes="metric"
-                         Text="{Binding GroundTarget.TargetBearing}" />
-              <TextBlock Classes="muted"
-                         Text="{Binding GroundTarget.RelativeHeading}" />
-            </StackPanel>
-            <StackPanel Grid.Column="2" Spacing="5">
-              <TextBlock Classes="muted" Text="APPROACH" />
-              <TextBlock Classes="metric"
-                         Text="{Binding GroundTarget.ApproachAngle}" />
-              <Border Classes="badge" HorizontalAlignment="Left">
-                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                           FontSize="11"
-                           Text="{Binding GroundTarget.TargetStatusLabel}" />
+      <TabControl x:Name="TravelModeTabs"
+                  Classes="theme-selector"
+                  HorizontalContentAlignment="Stretch"
+                  VerticalContentAlignment="Stretch">
+        <TabItem Classes="theme-selector" Header="Route Manager">
+            <StackPanel Margin="0,18,0,0" Spacing="18">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+                <StackPanel Spacing="4">
+                  <TextBlock Classes="page-title" FontSize="24" Text="Route Manager" />
+                  <TextBlock Classes="muted"
+                             TextWrapping="Wrap"
+                             Text="Open the route workspace and organize this commander's saved route files." />
+                </StackPanel>
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Spacing="10">
+                  <Button Classes="secondary"
+                          Command="{Binding RouteManager.DeactivateCommand}"
+                          Content="Deactivate" />
+                  <Button Classes="primary"
+                          Command="{Binding RouteManager.OpenWorkspaceCommand}"
+                          Content="Open Route Workspace" />
+                </StackPanel>
+              </Grid>
+
+              <Border Classes="card raised">
+                <Grid ColumnDefinitions="2*,2*,Auto" ColumnSpacing="22">
+                  <StackPanel Spacing="4">
+                    <TextBlock Classes="muted" Text="CURRENT ROUTE" />
+                    <TextBlock Classes="card-title"
+                               Text="{Binding Route.RouteName}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="muted"
+                               Text="{Binding Route.RouteFileName}"
+                               TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                  <Grid Grid.Column="1"
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="18">
+                    <StackPanel x:Name="NextSystemReadout" Spacing="4">
+                      <TextBlock Classes="muted" Text="NEXT SYSTEM" />
+                      <TextBlock FontWeight="SemiBold"
+                                 Foreground="{DynamicResource RavenAccentBrush}"
+                                 Text="{Binding Route.NextHopName}"
+                                 TextTrimming="CharacterEllipsis" />
+                      <TextBlock Classes="muted"
+                                 Text="{Binding Route.ProgressSummary}"
+                                 TextWrapping="Wrap" />
+                    </StackPanel>
+                    <CheckBox x:Name="AutoCopyNextHopToggle"
+                              Grid.Column="1"
+                              VerticalAlignment="Center"
+                              Command="{Binding RouteManager.ToggleAutoCopyCommand}"
+                              Content="Auto-copy the next hop"
+                              IsChecked="{Binding RouteManager.AutoCopy, Mode=OneWay}" />
+                  </Grid>
+                  <StackPanel Grid.Column="2"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Center"
+                              Spacing="8">
+                    <Border Classes="badge" IsVisible="{Binding Route.IsActive}">
+                      <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                 FontSize="10"
+                                 FontWeight="SemiBold"
+                                 Text="ACTIVE" />
+                    </Border>
+                    <Border Classes="badge" IsVisible="{Binding !Route.IsActive}">
+                      <TextBlock Classes="muted"
+                                 FontSize="10"
+                                 FontWeight="SemiBold"
+                                 Text="READY" />
+                    </Border>
+                  </StackPanel>
+                </Grid>
               </Border>
-            </StackPanel>
-          </Grid>
-        </Grid>
-      </Border>
 
-      <Grid ColumnDefinitions="3*,2*" ColumnSpacing="18">
-        <Border Classes="card">
-          <StackPanel Spacing="16">
-            <TextBlock Classes="card-title" Text="Ground target" />
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-              <StackPanel Spacing="6">
-                <TextBlock Classes="muted" Text="LATITUDE" />
-                <TextBox Text="{Binding GroundTarget.TargetLatitude, Mode=TwoWay}"
-                         PlaceholderText="-90 to 90" />
+              <Border Classes="card" Padding="0">
+                <Grid RowDefinitions="Auto,Auto,*">
+                  <Grid Margin="18"
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="14">
+                    <WrapPanel Orientation="Horizontal">
+                      <Button Classes="secondary"
+                              Margin="0,0,8,8"
+                              Command="{Binding RouteManager.OpenSelectedCommand}"
+                              Content="Open Selected" />
+                      <Button Classes="secondary"
+                              Margin="0,0,8,8"
+                              IsEnabled="{Binding RouteManager.CanImport}"
+                              Click="ImportRoutes_Click"
+                              Content="Import" />
+                      <Button Classes="secondary"
+                              Margin="0,0,8,8"
+                              IsEnabled="{Binding RouteManager.CanExport}"
+                              Click="ExportRoutes_Click"
+                              Content="Export" />
+                      <Button Classes="secondary compact-danger"
+                              Width="44"
+                              Height="38"
+                              Margin="0,0,8,8"
+                              Command="{Binding RouteManager.RequestDeleteCommand}"
+                              ToolTip.Tip="Delete selected routes">
+                        <Path Width="17"
+                              Height="17"
+                              Data="M 3,5 L 17,5 M 7,5 L 7,3 L 13,3 L 13,5 M 5,5 L 6,18 L 14,18 L 15,5 M 8,8 L 8.5,15 M 12,8 L 11.5,15"
+                              Stroke="{DynamicResource RavenDangerBrush}"
+                              StrokeLineCap="Round"
+                              StrokeThickness="1.7"
+                              Stretch="Uniform" />
+                      </Button>
+                      <Button Classes="secondary"
+                              Margin="0,0,8,8"
+                              Command="{Binding RouteManager.RefreshCommand}"
+                              Content="Refresh" />
+                    </WrapPanel>
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Spacing="10">
+                      <CheckBox IsChecked="{Binding RouteManager.FavoritesFirst, Mode=TwoWay}"
+                                Content="Favorites first" />
+                      <TextBlock Classes="muted"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding RouteManager.SelectionSummary}" />
+                    </StackPanel>
+                  </Grid>
+
+                  <Border Grid.Row="1"
+                          Background="{DynamicResource RavenRaisedSurfaceBrush}"
+                          BorderBrush="{DynamicResource RavenBorderBrush}"
+                          BorderThickness="0,1"
+                          Padding="12,9">
+                    <Grid ColumnDefinitions="42,42,2*,160,3*,72,92"
+                          ColumnSpacing="10">
+                    <TextBlock Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="SELECT" />
+                    <TextBlock Grid.Column="1"
+                               Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="&#x2605;" />
+                    <Button Grid.Column="2"
+                            Classes="link"
+                            HorizontalAlignment="Left"
+                            Padding="0"
+                            Command="{Binding RouteManager.SortNameCommand}">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Classes="table-heading" Text="NAME" />
+                        <TextBlock Classes="table-heading"
+                                   Text="{Binding RouteManager.NameSortIndicator}" />
+                      </StackPanel>
+                    </Button>
+                    <Button Grid.Column="3"
+                            Classes="link"
+                            HorizontalAlignment="Left"
+                            Padding="0"
+                            Command="{Binding RouteManager.SortDateCommand}">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Classes="table-heading" Text="DATE CREATED" />
+                        <TextBlock Classes="table-heading"
+                                   Text="{Binding RouteManager.DateSortIndicator}" />
+                      </StackPanel>
+                    </Button>
+                    <TextBlock Grid.Column="4" Classes="table-heading" Text="NOTES" />
+                    <TextBlock Grid.Column="5"
+                               Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="EDIT" />
+                    <TextBlock Grid.Column="6"
+                               Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="ROUTE" />
+                    </Grid>
+                  </Border>
+
+                  <Grid Grid.Row="2" MinHeight="220">
+                    <StackPanel HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="6"
+                                IsVisible="{Binding !RouteManager.HasRoutes}">
+                      <TextBlock Classes="card-title" Text="No saved routes" />
+                      <TextBlock Classes="muted"
+                                 Text="Import a JSON route or create one in Route Workspace." />
+                    </StackPanel>
+
+                    <ItemsControl ItemsSource="{Binding RouteManager.Routes}"
+                                  IsVisible="{Binding RouteManager.HasRoutes}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:RouteManagerItemViewModel">
+                          <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                                  BorderThickness="0,0,0,1"
+                                  Padding="12,11">
+                            <Grid ColumnDefinitions="42,42,2*,160,3*,72,92"
+                                  ColumnSpacing="10">
+                              <CheckBox HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                              <Button Grid.Column="1"
+                                      Classes="favorite-star"
+                                      Width="42"
+                                      Height="42"
+                                      HorizontalAlignment="Center"
+                                      Command="{Binding ToggleFavoriteCommand}"
+                                      ToolTip.Tip="Add or remove favorite">
+                                <TextBlock FontSize="31"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Text="{Binding FavoriteGlyph}" />
+                              </Button>
+                              <StackPanel Grid.Column="2"
+                                          VerticalAlignment="Center"
+                                          Spacing="2">
+                                <TextBlock FontWeight="SemiBold"
+                                           Text="{Binding Name}"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock Classes="muted"
+                                           FontSize="10"
+                                           Text="{Binding FileName}"
+                                           TextTrimming="CharacterEllipsis" />
+                              </StackPanel>
+                              <TextBlock Grid.Column="3"
+                                         Classes="muted"
+                                         VerticalAlignment="Center"
+                                         Text="{Binding CreatedAtText}" />
+                              <TextBlock Grid.Column="4"
+                                         Classes="muted"
+                                         VerticalAlignment="Center"
+                                         MaxLines="2"
+                                         Text="{Binding NotesPreview}"
+                                         TextTrimming="CharacterEllipsis"
+                                         TextWrapping="Wrap" />
+                              <Button Grid.Column="5"
+                                      Classes="secondary"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Padding="10,5"
+                                      Command="{Binding EditNotesCommand}"
+                                      Content="Notes" />
+                              <Button Grid.Column="6"
+                                      Classes="primary"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Center"
+                                      Padding="10,5"
+                                      Command="{Binding ActivateCommand}"
+                                      Content="Activate" />
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </Grid>
+                </Grid>
+              </Border>
+
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding RouteManager.StatusMessage}" />
+            </StackPanel>
+        </TabItem>
+
+        <TabItem Classes="theme-selector" Header="Surface Navigation">
+            <StackPanel Margin="0,18,0,0" Spacing="24">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+                <StackPanel Spacing="5">
+                  <TextBlock Classes="page-title" Text="Surface navigation" />
+                  <TextBlock Classes="muted"
+                             Text="Set planetary coordinates and follow live distance, bearing, and approach guidance." />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Classes="primary"
+                        MinWidth="116"
+                        VerticalAlignment="Center"
+                        Command="{Binding RefreshCommand}"
+                        Content="{Binding RefreshButtonText}" />
+              </Grid>
+
+              <Border Classes="card raised" Padding="0">
+                <Grid ColumnDefinitions="6,*">
+                  <Border Classes="accent-line" CornerRadius="12,0,0,12" />
+                  <Grid Grid.Column="1"
+                        Margin="28"
+                        ColumnDefinitions="2*,*,*"
+                        ColumnSpacing="24">
+                    <StackPanel Spacing="5">
+                      <TextBlock Classes="muted" Text="DISTANCE TO TARGET" />
+                      <TextBlock FontSize="38"
+                                 FontWeight="SemiBold"
+                                 Foreground="{DynamicResource RavenAccentBrush}"
+                                 Text="{Binding GroundTarget.DistanceToTarget}" />
+                      <TextBlock Classes="muted"
+                                 Text="{Binding GroundTarget.ApproachStatus}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="5">
+                      <TextBlock Classes="muted" Text="BEARING" />
+                      <TextBlock Classes="metric"
+                                 Text="{Binding GroundTarget.TargetBearing}" />
+                      <TextBlock Classes="muted"
+                                 Text="{Binding GroundTarget.RelativeHeading}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="5">
+                      <TextBlock Classes="muted" Text="APPROACH" />
+                      <TextBlock Classes="metric"
+                                 Text="{Binding GroundTarget.ApproachAngle}" />
+                      <Border Classes="badge" HorizontalAlignment="Left">
+                        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                   FontSize="11"
+                                   Text="{Binding GroundTarget.TargetStatusLabel}" />
+                      </Border>
+                    </StackPanel>
+                  </Grid>
+                </Grid>
+              </Border>
+
+              <Grid ColumnDefinitions="3*,2*" ColumnSpacing="18">
+                <Border Classes="card">
+                  <StackPanel Spacing="16">
+                    <TextBlock Classes="card-title" Text="Ground target" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                      <StackPanel Spacing="6">
+                        <TextBlock Classes="muted" Text="LATITUDE" />
+                        <TextBox Text="{Binding GroundTarget.TargetLatitude, Mode=TwoWay}"
+                                 PlaceholderText="-90 to 90" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" Spacing="6">
+                        <TextBlock Classes="muted" Text="LONGITUDE" />
+                        <TextBox Text="{Binding GroundTarget.TargetLongitude, Mode=TwoWay}"
+                                 PlaceholderText="-180 to 180" />
+                      </StackPanel>
+                    </Grid>
+                    <WrapPanel Orientation="Horizontal">
+                      <Button Classes="primary"
+                              Margin="0,0,10,10"
+                              Command="{Binding GroundTarget.SetTargetCommand}"
+                              Content="Set target" />
+                      <Button Classes="secondary"
+                              Margin="0,0,10,10"
+                              Command="{Binding GroundTarget.UseCurrentLocationCommand}"
+                              Content="Use current location" />
+                      <Button Classes="secondary"
+                              Margin="0,0,10,10"
+                              Click="PasteTarget_Click"
+                              Content="Paste" />
+                      <Button Classes="secondary"
+                              Margin="0,0,0,10"
+                              Command="{Binding GroundTarget.ClearTargetCommand}"
+                              Content="Clear target" />
+                    </WrapPanel>
+                    <TextBlock Classes="muted"
+                               TextWrapping="Wrap"
+                               Text="{Binding GroundTarget.StatusMessage}" />
+                  </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Classes="card">
+                  <StackPanel Spacing="16">
+                    <TextBlock Classes="card-title" Text="Live position" />
+                    <StackPanel Spacing="5">
+                      <TextBlock Classes="muted" Text="CURRENT COORDINATES" />
+                      <TextBlock FontWeight="SemiBold"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding GroundTarget.CurrentCoordinates}" />
+                    </StackPanel>
+                    <StackPanel Spacing="5">
+                      <TextBlock Classes="muted" Text="BODY" />
+                      <TextBlock FontWeight="SemiBold"
+                                 TextWrapping="Wrap"
+                                 Text="{Binding BodyName}" />
+                    </StackPanel>
+                    <TextBlock Classes="muted"
+                               TextWrapping="Wrap"
+                               Text="Paste accepts decimal pairs separated by spaces, commas, pipes, backticks, or slashes, plus N/S/E/W coordinates." />
+                  </StackPanel>
+                </Border>
+              </Grid>
+            </StackPanel>
+        </TabItem>
+
+        <TabItem Classes="theme-selector" Header="FC Routes">
+          <StackPanel Margin="0,18,0,0" Spacing="18">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="18">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="page-title"
+                           FontSize="24"
+                           Text="{Binding FleetCarrierRouteManager.PanelTitle}" />
+                <TextBlock Classes="muted"
+                           TextWrapping="Wrap"
+                           Text="{Binding FleetCarrierRouteManager.PanelDescription}" />
               </StackPanel>
-              <StackPanel Grid.Column="1" Spacing="6">
-                <TextBlock Classes="muted" Text="LONGITUDE" />
-                <TextBox Text="{Binding GroundTarget.TargetLongitude, Mode=TwoWay}"
-                         PlaceholderText="-180 to 180" />
+              <StackPanel Grid.Column="1"
+                          Orientation="Horizontal"
+                          VerticalAlignment="Center"
+                          Spacing="10">
+                <Button Classes="secondary"
+                        Command="{Binding FleetCarrierRouteManager.DeactivateCommand}"
+                        Content="Deactivate" />
+                <Button Classes="primary"
+                        Command="{Binding FleetCarrierRouteManager.OpenWorkspaceCommand}"
+                        Content="{Binding FleetCarrierRouteManager.OpenWorkspaceLabel}" />
               </StackPanel>
             </Grid>
-            <WrapPanel Orientation="Horizontal">
-              <Button Classes="primary"
-                      Margin="0,0,10,10"
-                      Command="{Binding GroundTarget.SetTargetCommand}"
-                      Content="Set target" />
-              <Button Classes="secondary"
-                      Margin="0,0,10,10"
-                      Command="{Binding GroundTarget.UseCurrentLocationCommand}"
-                      Content="Use current location" />
-              <Button Classes="secondary"
-                      Margin="0,0,10,10"
-                      Click="PasteTarget_Click"
-                      Content="Paste" />
-              <Button Classes="secondary"
-                      Margin="0,0,0,10"
-                      Command="{Binding GroundTarget.ClearTargetCommand}"
-                      Content="Clear target" />
-            </WrapPanel>
+
+            <Border Classes="card raised">
+              <Grid ColumnDefinitions="2*,2*,Auto" ColumnSpacing="22">
+                <StackPanel Spacing="4">
+                  <TextBlock Classes="muted"
+                             Text="{Binding FleetCarrierRouteManager.CurrentRouteLabel}" />
+                  <TextBlock Classes="card-title"
+                             Text="{Binding FleetCarrierRoute.RouteName}"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Classes="muted"
+                             Text="{Binding FleetCarrierRoute.RouteFileName}"
+                             TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+                <Grid Grid.Column="1"
+                      ColumnDefinitions="*,Auto"
+                      ColumnSpacing="18">
+                  <StackPanel x:Name="FleetCarrierNextSystemReadout" Spacing="4">
+                    <TextBlock Classes="muted" Text="NEXT SYSTEM" />
+                    <TextBlock FontWeight="SemiBold"
+                               Foreground="{DynamicResource RavenAccentBrush}"
+                               Text="{Binding FleetCarrierRoute.NextHopName}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="muted"
+                               Text="{Binding FleetCarrierRoute.ProgressSummary}"
+                               TextWrapping="Wrap" />
+                  </StackPanel>
+                  <CheckBox x:Name="FleetCarrierAutoCopyNextHopToggle"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Command="{Binding FleetCarrierRouteManager.ToggleAutoCopyCommand}"
+                            Content="Auto-copy the next hop"
+                            IsChecked="{Binding FleetCarrierRouteManager.AutoCopy, Mode=OneWay}" />
+                </Grid>
+                <StackPanel Grid.Column="2"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Spacing="8">
+                  <Border Classes="badge"
+                          IsVisible="{Binding FleetCarrierRoute.IsActive}">
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               Text="ACTIVE" />
+                  </Border>
+                  <Border Classes="badge"
+                          IsVisible="{Binding !FleetCarrierRoute.IsActive}">
+                    <TextBlock Classes="muted"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               Text="READY" />
+                  </Border>
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Classes="card" Padding="0">
+              <Grid RowDefinitions="Auto,Auto,*">
+                <Grid Margin="18"
+                      ColumnDefinitions="*,Auto"
+                      ColumnSpacing="14">
+                  <WrapPanel Orientation="Horizontal">
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            Command="{Binding FleetCarrierRouteManager.OpenSelectedCommand}"
+                            Content="Open Selected" />
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            IsEnabled="{Binding FleetCarrierRouteManager.CanImport}"
+                            Click="ImportFleetCarrierRoutes_Click"
+                            Content="Import" />
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            IsEnabled="{Binding FleetCarrierRouteManager.CanExport}"
+                            Click="ExportFleetCarrierRoutes_Click"
+                            Content="Export" />
+                    <Button Classes="secondary compact-danger"
+                            Width="44"
+                            Height="38"
+                            Margin="0,0,8,8"
+                            Command="{Binding FleetCarrierRouteManager.RequestDeleteCommand}"
+                            ToolTip.Tip="Delete selected fleet-carrier routes">
+                      <Path Width="17"
+                            Height="17"
+                            Data="M 3,5 L 17,5 M 7,5 L 7,3 L 13,3 L 13,5 M 5,5 L 6,18 L 14,18 L 15,5 M 8,8 L 8.5,15 M 12,8 L 11.5,15"
+                            Stroke="{DynamicResource RavenDangerBrush}"
+                            StrokeLineCap="Round"
+                            StrokeThickness="1.7"
+                            Stretch="Uniform" />
+                    </Button>
+                    <Button Classes="secondary"
+                            Margin="0,0,8,8"
+                            Command="{Binding FleetCarrierRouteManager.RefreshCommand}"
+                            Content="Refresh" />
+                  </WrapPanel>
+                  <StackPanel Grid.Column="1"
+                              Orientation="Horizontal"
+                              VerticalAlignment="Center"
+                              Spacing="10">
+                    <CheckBox IsChecked="{Binding FleetCarrierRouteManager.FavoritesFirst, Mode=TwoWay}"
+                              Content="Favorites first" />
+                    <TextBlock Classes="muted"
+                               VerticalAlignment="Center"
+                               Text="{Binding FleetCarrierRouteManager.SelectionSummary}" />
+                  </StackPanel>
+                </Grid>
+
+                <Border Grid.Row="1"
+                        Background="{DynamicResource RavenRaisedSurfaceBrush}"
+                        BorderBrush="{DynamicResource RavenBorderBrush}"
+                        BorderThickness="0,1"
+                        Padding="12,9">
+                  <Grid ColumnDefinitions="42,42,2*,160,3*,72,92"
+                        ColumnSpacing="10">
+                    <TextBlock Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="SELECT" />
+                    <TextBlock Grid.Column="1"
+                               Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="&#x2605;" />
+                    <Button Grid.Column="2"
+                            Classes="link"
+                            HorizontalAlignment="Left"
+                            Padding="0"
+                            Command="{Binding FleetCarrierRouteManager.SortNameCommand}">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Classes="table-heading" Text="NAME" />
+                        <TextBlock Classes="table-heading"
+                                   Text="{Binding FleetCarrierRouteManager.NameSortIndicator}" />
+                      </StackPanel>
+                    </Button>
+                    <Button Grid.Column="3"
+                            Classes="link"
+                            HorizontalAlignment="Left"
+                            Padding="0"
+                            Command="{Binding FleetCarrierRouteManager.SortDateCommand}">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Classes="table-heading" Text="DATE CREATED" />
+                        <TextBlock Classes="table-heading"
+                                   Text="{Binding FleetCarrierRouteManager.DateSortIndicator}" />
+                      </StackPanel>
+                    </Button>
+                    <TextBlock Grid.Column="4" Classes="table-heading" Text="NOTES" />
+                    <TextBlock Grid.Column="5"
+                               Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="EDIT" />
+                    <TextBlock Grid.Column="6"
+                               Classes="table-heading"
+                               HorizontalAlignment="Center"
+                               Text="ROUTE" />
+                  </Grid>
+                </Border>
+
+                <Grid Grid.Row="2" MinHeight="220">
+                  <StackPanel HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Spacing="6"
+                              IsVisible="{Binding !FleetCarrierRouteManager.HasRoutes}">
+                    <TextBlock Classes="card-title" Text="No saved fleet-carrier routes" />
+                    <TextBlock Classes="muted"
+                               Text="{Binding FleetCarrierRouteManager.EmptyLibraryMessage}" />
+                  </StackPanel>
+
+                  <ItemsControl ItemsSource="{Binding FleetCarrierRouteManager.Routes}"
+                                IsVisible="{Binding FleetCarrierRouteManager.HasRoutes}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:RouteManagerItemViewModel">
+                        <Border BorderBrush="{DynamicResource RavenBorderBrush}"
+                                BorderThickness="0,0,0,1"
+                                Padding="12,11">
+                          <Grid ColumnDefinitions="42,42,2*,160,3*,72,92"
+                                ColumnSpacing="10">
+                            <CheckBox HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                            <Button Grid.Column="1"
+                                    Classes="favorite-star"
+                                    Width="42"
+                                    Height="42"
+                                    HorizontalAlignment="Center"
+                                    Command="{Binding ToggleFavoriteCommand}"
+                                    ToolTip.Tip="Add or remove favorite">
+                              <TextBlock FontSize="31"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         Text="{Binding FavoriteGlyph}" />
+                            </Button>
+                            <StackPanel Grid.Column="2"
+                                        VerticalAlignment="Center"
+                                        Spacing="2">
+                              <TextBlock FontWeight="SemiBold"
+                                         Text="{Binding Name}"
+                                         TextTrimming="CharacterEllipsis" />
+                              <TextBlock Classes="muted"
+                                         FontSize="10"
+                                         Text="{Binding FileName}"
+                                         TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="3"
+                                       Classes="muted"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding CreatedAtText}" />
+                            <TextBlock Grid.Column="4"
+                                       Classes="muted"
+                                       VerticalAlignment="Center"
+                                       MaxLines="2"
+                                       Text="{Binding NotesPreview}"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="Wrap" />
+                            <Button Grid.Column="5"
+                                    Classes="secondary"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Padding="10,5"
+                                    Command="{Binding EditNotesCommand}"
+                                    Content="Notes" />
+                            <Button Grid.Column="6"
+                                    Classes="primary"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center"
+                                    Padding="10,5"
+                                    Command="{Binding ActivateCommand}"
+                                    Content="Activate" />
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </Grid>
+              </Grid>
+            </Border>
+
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="{Binding GroundTarget.StatusMessage}" />
+                       Text="{Binding FleetCarrierRouteManager.StatusMessage}" />
           </StackPanel>
-        </Border>
+        </TabItem>
+      </TabControl>
 
-        <Border Grid.Column="1" Classes="card">
-          <StackPanel Spacing="16">
-            <TextBlock Classes="card-title" Text="Live position" />
-            <StackPanel Spacing="5">
-              <TextBlock Classes="muted" Text="CURRENT COORDINATES" />
-              <TextBlock FontWeight="SemiBold"
-                         TextWrapping="Wrap"
-                         Text="{Binding GroundTarget.CurrentCoordinates}" />
-            </StackPanel>
-            <StackPanel Spacing="5">
-              <TextBlock Classes="muted" Text="BODY" />
-              <TextBlock FontWeight="SemiBold"
-                         TextWrapping="Wrap"
-                         Text="{Binding BodyName}" />
-            </StackPanel>
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="Paste accepts decimal pairs separated by spaces, commas, pipes, backticks, or slashes, plus N/S/E/W coordinates." />
-          </StackPanel>
-        </Border>
-      </Grid>
+        <Border x:Name="TravelTabsSeparator"
+                Height="1"
+                Margin="0,6,0,0"
+                Background="{DynamicResource RavenBorderBrush}" />
 
-      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="18">
-        <Border Classes="card raised">
-          <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <Grid x:Name="TravelSharedPanels"
+              ColumnDefinitions="*,*"
+              ColumnSpacing="18">
+          <Border Classes="card raised">
+            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
               <StackPanel Spacing="4">
                 <TextBlock Classes="card-title" Text="System notes" />
-                <TextBlock Classes="muted"
-                           Text="{Binding SystemNotes.SystemName}" />
+                <TextBlock Classes="muted" Text="{Binding SystemNotes.SystemName}" />
               </StackPanel>
-              <Border Grid.Column="1"
-                      Classes="badge"
-                      VerticalAlignment="Top">
-                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                           FontSize="10"
-                           FontWeight="SemiBold"
-                           Text="READY" />
-              </Border>
-            </Grid>
-            <TextBlock Grid.Row="1"
-                       Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="Keep commander notes in the existing per-system data file, with quick links to Canonn, Spansh, EDSM, and screenshots." />
-            <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="12">
-              <Button Classes="primary"
+              <TextBlock Grid.Row="1"
+                         Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="Keep commander notes in the existing per-system data file." />
+              <Button Grid.Row="2"
+                      Classes="primary"
+                      HorizontalAlignment="Left"
                       Command="{Binding SystemNotes.OpenWindowCommand}"
                       Content="Open system notes" />
-              <TextBlock Grid.Column="1"
-                         Classes="muted"
-                         VerticalAlignment="Center"
-                         Text="Ctrl+Shift+N"
-                         TextTrimming="CharacterEllipsis" />
             </Grid>
-          </Grid>
-        </Border>
+          </Border>
 
-        <Border Grid.Column="1" Classes="card raised">
-          <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <Border Grid.Column="1" Classes="card raised">
+            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
               <StackPanel Spacing="4">
                 <TextBlock Classes="card-title" Text="Commander journeys" />
                 <TextBlock Classes="muted"
                            Text="{Binding Journey.ActiveJourneyName}" />
               </StackPanel>
-              <Border Grid.Column="1"
-                      Classes="badge"
-                      VerticalAlignment="Top"
-                      IsVisible="{Binding Journey.HasActiveJourney}">
-                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                           FontSize="10"
-                           FontWeight="SemiBold"
-                           Text="ACTIVE" />
-              </Border>
-              <Border Grid.Column="1"
-                      Classes="badge"
-                      VerticalAlignment="Top"
-                      IsVisible="{Binding !Journey.HasActiveJourney}">
-                <TextBlock Classes="muted"
-                           FontSize="10"
-                           FontWeight="SemiBold"
-                           Text="READY" />
-              </Border>
+              <TextBlock Grid.Row="1"
+                         Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding Journey.ActiveJourneySummary}" />
+              <Button Grid.Row="2"
+                      Classes="primary"
+                      HorizontalAlignment="Left"
+                      Command="{Binding Journey.OpenWindowCommand}"
+                      Content="Open Journey workspace" />
             </Grid>
-            <TextBlock Grid.Row="1"
-                       Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="{Binding Journey.ActiveJourneySummary}" />
-            <Button Grid.Row="2"
-                    Classes="primary"
-                    HorizontalAlignment="Left"
-                    Command="{Binding Journey.OpenWindowCommand}"
-                    Content="Open Journey workspace" />
-          </Grid>
-        </Border>
+          </Border>
+        </Grid>
+      </StackPanel>
+    </ScrollViewer>
 
-        <Border Grid.Column="2" Classes="card raised">
-          <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-              <StackPanel Spacing="4">
-                <TextBlock Classes="card-title" Text="Followed route" />
-                <TextBlock Classes="muted"
-                           Text="{Binding Route.NextHopName}"
-                           TextTrimming="CharacterEllipsis" />
-              </StackPanel>
-              <Border Grid.Column="1"
-                      Classes="badge"
-                      VerticalAlignment="Top"
-                      IsVisible="{Binding Route.IsActive}">
-                <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                           FontSize="10"
-                           FontWeight="SemiBold"
-                           Text="ACTIVE" />
-              </Border>
-              <Border Grid.Column="1"
-                      Classes="badge"
-                      VerticalAlignment="Top"
-                      IsVisible="{Binding !Route.IsActive}">
-                <TextBlock Classes="muted"
-                           FontSize="10"
-                           FontWeight="SemiBold"
-                           Text="READY" />
-              </Border>
-            </Grid>
-            <TextBlock Grid.Row="1"
-                       Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="{Binding Route.ProgressSummary}" />
-            <Button Grid.Row="2"
-                    Classes="primary"
-                    HorizontalAlignment="Left"
-                    Command="{Binding Route.OpenWindowCommand}"
-                    Content="Open route workspace" />
-          </Grid>
-        </Border>
-      </Grid>
-    </StackPanel>
-  </ScrollViewer>
+    <Grid Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding RouteManager.IsDeleteConfirmationVisible}">
+      <Border Classes="card raised"
+              Width="470"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="18">
+          <TextBlock Classes="page-title"
+                     FontSize="22"
+                     Foreground="{DynamicResource RavenDangerBrush}"
+                     Text="Delete selected routes?" />
+          <TextBlock Text="{Binding RouteManager.DeleteConfirmationText}"
+                     TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding RouteManager.CancelDialogCommand}"
+                    Content="No" />
+            <Button Classes="secondary compact-danger"
+                    Command="{Binding RouteManager.ConfirmDeleteCommand}"
+                    Content="Yes" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding RouteManager.IsNotesVisible}">
+      <Border Classes="card raised"
+              Width="640"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="15">
+          <TextBlock Classes="page-title" FontSize="22" Text="Route notes" />
+          <TextBlock Classes="muted"
+                     Text="{Binding RouteManager.EditingRoute.Name, StringFormat='Edit notes for {0}'}"
+                     TextWrapping="Wrap" />
+          <TextBox Height="280"
+                   AcceptsReturn="True"
+                   Text="{Binding RouteManager.NotesDraft, Mode=TwoWay}"
+                   TextWrapping="Wrap"
+                   PlaceholderText="Write route notes..." />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding RouteManager.CancelDialogCommand}"
+                    Content="Close" />
+            <Button Classes="primary"
+                    Command="{Binding RouteManager.SaveNotesCommand}"
+                    Content="Save" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding FleetCarrierRouteManager.IsDeleteConfirmationVisible}">
+      <Border Classes="card raised"
+              Width="470"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="18">
+          <TextBlock Classes="page-title"
+                     FontSize="22"
+                     Foreground="{DynamicResource RavenDangerBrush}"
+                     Text="Delete selected fleet-carrier routes?" />
+          <TextBlock Text="{Binding FleetCarrierRouteManager.DeleteConfirmationText}"
+                     TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding FleetCarrierRouteManager.CancelDialogCommand}"
+                    Content="No" />
+            <Button Classes="secondary compact-danger"
+                    Command="{Binding FleetCarrierRouteManager.ConfirmDeleteCommand}"
+                    Content="Yes" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding FleetCarrierRouteManager.IsNotesVisible}">
+      <Border Classes="card raised"
+              Width="640"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="15">
+          <TextBlock Classes="page-title"
+                     FontSize="22"
+                     Text="Fleet-carrier route notes" />
+          <TextBlock Classes="muted"
+                     Text="{Binding FleetCarrierRouteManager.EditingRoute.Name, StringFormat='Edit notes for {0}'}"
+                     TextWrapping="Wrap" />
+          <TextBox Height="280"
+                   AcceptsReturn="True"
+                   Text="{Binding FleetCarrierRouteManager.NotesDraft, Mode=TwoWay}"
+                   TextWrapping="Wrap"
+                   PlaceholderText="Write fleet-carrier route notes..." />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding FleetCarrierRouteManager.CancelDialogCommand}"
+                    Content="Close" />
+            <Button Classes="primary"
+                    Command="{Binding FleetCarrierRouteManager.SaveNotesCommand}"
+                    Content="Save" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
 </UserControl>

@@ -12,7 +12,7 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private GalaxyMapOverlayWindow? window;
     private bool isSuppressed;
@@ -32,7 +32,7 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

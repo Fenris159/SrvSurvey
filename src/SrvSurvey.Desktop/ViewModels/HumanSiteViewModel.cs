@@ -490,19 +490,29 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         bool allowExternalData = true)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
+        var events = journalEvents as IReadOnlyList<JournalEventEnvelope>
+            ?? journalEvents.ToArray();
+        var nextVehicle = currentVehicle ?? vehicle;
+        if (events.Count == 0
+            && currentStatus is null
+            && string.Equals(vehicle, nextVehicle, StringComparison.Ordinal))
+        {
+            return;
+        }
+
         if (currentStatus is not null)
         {
             status = currentStatus;
         }
 
-        vehicle = currentVehicle ?? vehicle;
+        vehicle = nextVehicle;
         var versionBefore = state.Version;
         var source = HumanSiteGeometrySource.Unknown;
         var publicationSource = HumanSiteGeometrySource.Unknown;
         var addedMaterials = new List<HumanSiteCollectedMaterial>();
         var completeMaterialSurvey = false;
         int? requestedThreatLevel = null;
-        foreach (var journalEvent in journalEvents)
+        foreach (var journalEvent in events)
         {
             state.Apply(journalEvent);
             vehicleTracker.Apply(journalEvent, status);

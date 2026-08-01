@@ -23,6 +23,12 @@ public sealed class HumanSiteViewModelTests
             viewModel.TemplateText);
         Assert.False(viewModel.HasKnownGeometry);
 
+        var notifications = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            notifications.Add(eventArgs.PropertyName);
+        await viewModel.ApplyUpdateAsync([], null, "foot");
+        Assert.Empty(notifications);
+
         viewModel.SetStationInfoVisible(true);
         Assert.False(viewModel.ShouldShow);
         viewModel.SetStationInfoVisible(false);

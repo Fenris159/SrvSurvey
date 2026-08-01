@@ -12,7 +12,7 @@ public sealed class VrOverlayCoordinator : IDisposable
     private readonly IOpenVrRuntime runtime;
     private readonly Func<string, bool> processDetector;
     private readonly Func<string?> modeProvider;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private readonly HashSet<string> published = new(StringComparer.Ordinal);
     private bool disposed;
 
@@ -32,7 +32,7 @@ public sealed class VrOverlayCoordinator : IDisposable
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         viewModel.CalibrationChanged += OnCalibrationChanged;
         this.registry.Changed += OnRegistryChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

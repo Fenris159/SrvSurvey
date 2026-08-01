@@ -9,6 +9,138 @@ public sealed class FollowRouteService(FollowRouteStore store)
         return store.LoadAsync(frontierId, cancellationToken);
     }
 
+    public Task<IReadOnlyList<FollowRouteCatalogEntry>> ListAsync(
+        string frontierId,
+        CancellationToken cancellationToken = default)
+    {
+        return store.ListAsync(frontierId, cancellationToken);
+    }
+
+    public Task<FollowRouteLoadResult> LoadNamedAsync(
+        string frontierId,
+        string fileName,
+        bool isLegacy,
+        CancellationToken cancellationToken = default)
+    {
+        return store.LoadNamedAsync(
+            frontierId,
+            fileName,
+            isLegacy,
+            cancellationToken);
+    }
+
+    public Task<FollowRouteLoadResult> ReloadAsync(
+        FollowRouteDocument route,
+        CancellationToken cancellationToken = default)
+    {
+        return store.ReloadAsync(route, cancellationToken);
+    }
+
+    public Task<FollowRouteDocument> CreateNewAsync(
+        string frontierId,
+        CancellationToken cancellationToken = default)
+    {
+        return store.CreateNewAsync(frontierId, cancellationToken);
+    }
+
+    public Task<FollowRouteDocument> SaveAsAsync(
+        FollowRouteDocument route,
+        string name,
+        CancellationToken cancellationToken = default)
+    {
+        return store.SaveAsAsync(route, name, cancellationToken);
+    }
+
+    public async Task<FollowRouteDocument> SaveProgressAsync(
+        FollowRouteDocument route,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        var updated = PrepareActivation(route, currentSystemAddress: null);
+        await store.SaveProgressAsync(updated, cancellationToken)
+            .ConfigureAwait(false);
+        return updated;
+    }
+
+    public Task<FollowRouteDocument> SaveNotesAsync(
+        FollowRouteDocument route,
+        string? notes,
+        CancellationToken cancellationToken = default)
+    {
+        return store.SaveNotesAsync(route, notes, cancellationToken);
+    }
+
+    public Task<FollowRouteDocument> SaveNotesAsync(
+        string frontierId,
+        string fileName,
+        bool isLegacy,
+        string? notes,
+        CancellationToken cancellationToken = default)
+    {
+        return store.SaveNotesAsync(
+            frontierId,
+            fileName,
+            isLegacy,
+            notes,
+            cancellationToken);
+    }
+
+    public Task<FollowRouteDocument> SetFavoriteAsync(
+        string frontierId,
+        string fileName,
+        bool isLegacy,
+        bool isFavorite,
+        CancellationToken cancellationToken = default)
+    {
+        return store.SetFavoriteAsync(
+            frontierId,
+            fileName,
+            isLegacy,
+            isFavorite,
+            cancellationToken);
+    }
+
+    public Task<FollowRouteDocument> ImportAsync(
+        string frontierId,
+        string sourcePath,
+        CancellationToken cancellationToken = default)
+    {
+        return store.ImportAsync(frontierId, sourcePath, cancellationToken);
+    }
+
+    public Task<IReadOnlyList<string>> ExportAsync(
+        string frontierId,
+        IReadOnlyList<FollowRouteCatalogEntry> routes,
+        string destinationDirectory,
+        CancellationToken cancellationToken = default)
+    {
+        return store.ExportAsync(
+            frontierId,
+            routes,
+            destinationDirectory,
+            cancellationToken);
+    }
+
+    public Task<string> DeleteNamedAsync(
+        string frontierId,
+        string fileName,
+        bool isLegacy,
+        CancellationToken cancellationToken = default)
+    {
+        return store.DeleteNamedAsync(
+            frontierId,
+            fileName,
+            isLegacy,
+            cancellationToken);
+    }
+
+    public Task<string> DeleteAsync(
+        FollowRouteDocument route,
+        CancellationToken cancellationToken = default)
+    {
+        return store.DeleteAsync(route, cancellationToken);
+    }
+
     public async Task<FollowRouteDocument> ReplaceAsync(
         FollowRouteDocument route,
         IReadOnlyList<FollowRouteHop> hops,
@@ -74,6 +206,43 @@ public sealed class FollowRouteService(FollowRouteStore store)
                 && route.IsActive,
         };
         await store.SaveAsync(updated, cancellationToken).ConfigureAwait(false);
+        return updated;
+    }
+
+    public async Task<FollowRouteDocument> SetBioTargetCompletedAsync(
+        FollowRouteDocument route,
+        int hopIndex,
+        int targetIndex,
+        bool isCompleted,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        if (hopIndex < 0 || hopIndex >= route.Hops.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(hopIndex));
+        }
+
+        var hop = route.Hops[hopIndex];
+        if (targetIndex < 0 || targetIndex >= hop.BioTargets.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(targetIndex));
+        }
+
+        if (hop.BioTargets[targetIndex].IsCompleted == isCompleted)
+        {
+            return route;
+        }
+
+        var targets = hop.BioTargets.ToArray();
+        targets[targetIndex] = targets[targetIndex] with
+        {
+            IsCompleted = isCompleted,
+        };
+        var hops = route.Hops.ToArray();
+        hops[hopIndex] = hop with { Bio = targets };
+        var updated = route with { Hops = hops };
+        await store.SaveProgressAsync(updated, cancellationToken)
+            .ConfigureAwait(false);
         return updated;
     }
 

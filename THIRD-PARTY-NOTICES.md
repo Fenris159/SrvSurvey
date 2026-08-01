@@ -2,8 +2,9 @@
 
 ## EDAssets
 
-The Frontier commander dashboard includes rank and faction artwork obtained
-from [EDAssets](https://edassets.org/) at repository commit
+The Frontier commander dashboard includes rank and faction artwork, and the
+Route Workspace neutron indicator adapts the FSD-reboot symbol, obtained from
+[EDAssets](https://edassets.org/) at repository commit
 `5a9b2f82796fc65abace9439aea000155f1e6eb3`.
 
 Source: [Venefilyn/EDAssets](https://github.com/Venefilyn/EDAssets)
@@ -33,8 +34,22 @@ The EDAssets repository is distributed under the MIT License:
 EDAssets identifies the Pilots Federation rank artwork and the Alliance,
 Empire, and Federation insignias as designed by Frontier Developments plc. The
 Independent dashboard mark is a community recreation credited by EDAssets to
-CMDR SpyTec.
+CMDR SpyTec. The Route Workspace neutron indicator is adapted and recolored
+from `public/static/img/engineer-effects/fsd-reboot.svg`.
 
 Elite Dangerous and its related marks and artwork are the property of Frontier
 Developments plc. SrvSurvey is a community project and is not endorsed by or
 affiliated with Frontier Developments.
+
+## Raven Colonial body visualization
+
+The shared route body-type SVG and PNG assets adapt the body colors, relative
+sizes, asteroid-cluster geometry, and barycentre treatment from
+[RavenColonialWeb](https://github.com/njthomson/RavenColonialWeb) by N. J.
+Thomson, inspected at repository commit
+`baf0abe614e46c466c3787accf65f10f1fd1c560`.
+
+The relevant source is `src/views/SystemView2/SitesBodyView.tsx` in that
+repository. RavenColonialWeb and SrvSurvey are distributed under the GNU
+General Public License version 3, so these adaptations remain available under
+SrvSurvey's GPL-3.0 license.
