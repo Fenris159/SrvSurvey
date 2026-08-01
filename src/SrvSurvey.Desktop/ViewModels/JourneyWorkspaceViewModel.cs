@@ -509,9 +509,28 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         string? nextSystemName,
         long? nextSystemAddress)
     {
-        frontierId = string.IsNullOrWhiteSpace(nextFrontierId)
+        var normalizedFrontierId = string.IsNullOrWhiteSpace(nextFrontierId)
             ? null
             : nextFrontierId;
+        if (string.Equals(
+                frontierId,
+                normalizedFrontierId,
+                StringComparison.OrdinalIgnoreCase)
+            && string.Equals(
+                commanderName,
+                nextCommanderName,
+                StringComparison.Ordinal)
+            && isOdyssey == nextIsOdyssey
+            && string.Equals(
+                currentSystemName,
+                nextSystemName,
+                StringComparison.Ordinal)
+            && currentSystemAddress == nextSystemAddress)
+        {
+            return false;
+        }
+
+        frontierId = normalizedFrontierId;
         commanderName = nextCommanderName;
         isOdyssey = nextIsOdyssey;
         currentSystemName = nextSystemName;

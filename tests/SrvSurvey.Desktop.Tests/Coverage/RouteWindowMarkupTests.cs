@@ -1,0 +1,190 @@
+using System.Xml.Linq;
+
+namespace SrvSurvey.Desktop.Tests.Coverage;
+
+public sealed class RouteWindowMarkupTests
+{
+    [Fact]
+    public void RouteRowsAreNotSelectableAndWindowUsesWorkspaceTitle()
+    {
+        var document = LoadRouteWindow();
+        var window = document.Root
+            ?? throw new InvalidDataException("RouteWindow.axaml has no root element.");
+
+        Assert.Equal("{Binding WindowTitle}", window.Attribute("Title")?.Value);
+
+        var routeItems = window
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "ItemsControl"
+                && element.Attributes().Any(attribute =>
+                    attribute.Name.LocalName == "Name"
+                    && attribute.Value == "RouteHopItems"));
+
+        Assert.Equal(
+            "{Binding Hops}",
+            routeItems.Attributes().Single(attribute =>
+                attribute.Name.LocalName == "ItemsSource").Value);
+        Assert.DoesNotContain(
+            window.Descendants(),
+            element => element.Name.LocalName == "ListBox"
+                && element.Attributes().Any(attribute =>
+                    attribute.Name.LocalName == "ItemsSource"
+                    && attribute.Value == "{Binding Hops}"));
+    }
+
+    [Fact]
+    public void SidebarReservesScrollbarGutterOutsidePanels()
+    {
+        var document = LoadRouteWindow();
+        var sidebar = FindNamedElement(document, "RouteSidebar");
+        var scroller = FindNamedElement(document, "RouteSidebarScroller");
+        var panels = FindNamedElement(document, "RouteSidebarPanels");
+
+        Assert.Equal("18,18,6,18", sidebar.Attribute("Padding")?.Value);
+        Assert.Equal(
+            "Auto",
+            scroller.Attribute("VerticalScrollBarVisibility")?.Value);
+        Assert.Equal("0,0,12,0", panels.Attribute("Margin")?.Value);
+    }
+
+    [Fact]
+    public void RouteListReservesScrollbarGutterOutsidePanels()
+    {
+        var document = LoadRouteWindow();
+        var workspace = FindNamedElement(document, "RouteHopWorkspace");
+        var header = FindNamedElement(document, "RouteHopHeader");
+        var scroller = FindNamedElement(document, "RouteHopScroller");
+        var routeItems = FindNamedElement(document, "RouteHopItems");
+
+        Assert.Equal("20,20,6,20", workspace.Attribute("Margin")?.Value);
+        Assert.Equal("0,0,14,0", header.Attribute("Margin")?.Value);
+        Assert.Equal(
+            "Auto",
+            scroller.Attribute("VerticalScrollBarVisibility")?.Value);
+        Assert.Equal("0,0,14,0", routeItems.Attribute("Margin")?.Value);
+    }
+
+    [Fact]
+    public void RouteRowsExposeStructuredBodyTreeAndSeparateGuidanceIndicators()
+    {
+        var document = LoadRouteWindow();
+        var text = string.Join(
+            " ",
+            document.Descendants()
+                .Select(element => element.Attribute("Text")?.Value)
+                .Where(value => value is not null));
+
+        Assert.Contains("BODIES", text, StringComparison.Ordinal);
+        Assert.Contains("TYPE", text, StringComparison.Ordinal);
+        Assert.Contains("ARRIVAL", text, StringComparison.Ordinal);
+        Assert.Contains("SCAN", text, StringComparison.Ordinal);
+        Assert.Contains("MAP", text, StringComparison.Ordinal);
+        Assert.Contains("BIO", text, StringComparison.Ordinal);
+        Assert.Contains("TERRAFORMABLE", text, StringComparison.Ordinal);
+        Assert.Contains("REFUEL", text, StringComparison.Ordinal);
+        Assert.Contains("NEUTRON", text, StringComparison.Ordinal);
+        Assert.Contains(
+            document.Descendants(),
+            element => element.Name.LocalName == "Image"
+                && element.Attribute("Source")?.Value
+                    == "avares://SrvSurvey.Desktop/Assets/Routes/refuel-star.png");
+        Assert.Contains(
+            document.Descendants(),
+            element => element.Name.LocalName == "Image"
+                && element.Attribute("Source")?.Value
+                    == "avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png");
+        Assert.Contains(
+            document.Descendants(),
+            element => element.Name.LocalName == "Image"
+                && element.Attribute("Source")?.Value
+                    == "{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}");
+        Assert.Contains("Scan for biological signals", text, StringComparison.Ordinal);
+        Assert.Contains(
+            document.Descendants(),
+            element => element.Name.LocalName == "ItemsControl"
+                && element.Attribute("ItemsSource")?.Value == "{Binding BioTargets}");
+        Assert.Contains(
+            document.Descendants(),
+            element => element.Name.LocalName == "CheckBox"
+                && element.Attribute("Click")?.Value == "BioTargetCheckBox_Click");
+    }
+
+    [Fact]
+    public void RouteLifecycleControlsAndDialogsArePresentInRequestedOrder()
+    {
+        var document = LoadRouteWindow();
+        var buttons = document.Descendants()
+            .Where(element => element.Name.LocalName == "Button")
+            .ToArray();
+        var contents = buttons
+            .Select(button => button.Attribute("Content")?.Value)
+            .Where(content => content is not null)
+            .ToArray();
+
+        Assert.Contains("Notes", contents);
+        Assert.Contains("Are you sure?", string.Join(
+            " ",
+            document.Descendants()
+                .Select(element => element.Attribute("Text")?.Value)
+                .Where(text => text is not null)));
+        Assert.Contains(
+            "Imports replace the on-screen draft. Nothing is written until Saved.",
+            document.Descendants()
+                .Select(element => element.Attribute("Text")?.Value));
+
+        var footer = document.Descendants()
+            .Single(element => element.Name.LocalName == "Border"
+                && element.Attribute("Grid.Row")?.Value == "2");
+        Assert.Equal(
+            new[]
+            {
+                "{Binding DeleteCommand}",
+                "{Binding NewCommand}",
+                "{Binding SaveAsCommand}",
+                "{Binding ResetCommand}",
+                "{Binding DiscardCommand}",
+                "{Binding SaveCommand}",
+            },
+            footer.Descendants()
+                .Where(element => element.Name.LocalName == "Button")
+                .Select(element => element.Attribute("Command")?.Value)
+                .OfType<string>()
+                .ToArray());
+
+        Assert.DoesNotContain(
+            document.Descendants(),
+            element => element.Attribute("Text")?.Value == "Route library");
+    }
+
+    private static XDocument LoadRouteWindow() => XDocument.Load(Path.Combine(
+        FindRepositoryRoot(),
+        "src",
+        "SrvSurvey.Desktop",
+        "RouteWindow.axaml"));
+
+    private static XElement FindNamedElement(
+        XDocument document,
+        string name) => document
+        .Descendants()
+        .Single(element => element.Attributes().Any(attribute =>
+            attribute.Name.LocalName == "Name"
+            && attribute.Value == name));
+
+    private static string FindRepositoryRoot()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "SrvSurvey.slnx")))
+            {
+                return current.FullName;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException(
+            "Could not locate the repository root.");
+    }
+}

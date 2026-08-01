@@ -63,6 +63,20 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.True(group.IsActive);
         Assert.Equal("Aleoida", group.Name);
         Assert.All(group.Targets, marker => Assert.True(marker.IsActive));
+
+        var markers = viewModel.RadarMarkers;
+        var groups = viewModel.TrackerGroups;
+        var notifications = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            notifications.Add(eventArgs.PropertyName);
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            null,
+            exobiology with { ScannedBioEntryIds = [] });
+        Assert.Same(markers, viewModel.RadarMarkers);
+        Assert.Same(groups, viewModel.TrackerGroups);
+        Assert.Empty(notifications);
     }
 
     [Fact]

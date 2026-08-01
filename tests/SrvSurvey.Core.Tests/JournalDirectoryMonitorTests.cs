@@ -74,11 +74,30 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
         Assert.Equal(125, initial.Market?.FindItem("steel")?.Stock);
         Assert.Empty(initial.Errors);
         Assert.True(initial.IsBootstrapRead);
+        Assert.True(initial.HasChanges);
+
+        JournalMonitorUpdate unchanged;
+        await using (var unchangedMarketLock = new FileStream(
+            marketPath,
+            FileMode.Open,
+            FileAccess.ReadWrite,
+            FileShare.None))
+        {
+            unchanged = await monitor.PollAsync();
+        }
+        Assert.False(unchanged.HasChanges);
+        Assert.Empty(unchanged.JournalEvents);
+        Assert.Null(unchanged.Status);
+        Assert.Null(unchanged.NavRoute);
+        Assert.Null(unchanged.Cargo);
+        Assert.Null(unchanged.ShipLocker);
+        Assert.Null(unchanged.Market);
 
         await File.AppendAllTextAsync(
             firstJournal,
             "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Future");
         var partial = await monitor.PollAsync();
+        Assert.False(partial.HasChanges);
         Assert.Empty(partial.JournalEvents);
         Assert.Null(partial.NavRoute);
         Assert.Empty(partial.Errors);
@@ -153,6 +172,35 @@ public sealed class JournalDirectoryMonitorTests : IDisposable
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => monitor.RunAsync(TimeSpan.FromMilliseconds(1), cancellation.Token));
+    }
+
+    [Fact]
+    public async Task PollReportsCompanionStampFailuresOnceUntilRecovery()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var failStatusStamp = true;
+        const string error = "Status.json metadata is unavailable.";
+        var monitor = new JournalDirectoryMonitor(
+            temporaryDirectory,
+            targetFrontierId: null,
+            path => Path.GetFileName(path) == StatusFileReader.FileName
+                && failStatusStamp
+                    ? new JournalDirectoryMonitor.CompanionFileStampReadResult(
+                        Stamp: null,
+                        error)
+                    : default);
+
+        var failed = await monitor.PollAsync();
+        var repeated = await monitor.PollAsync();
+        failStatusStamp = false;
+        var recovered = await monitor.PollAsync();
+        failStatusStamp = true;
+        var failedAgain = await monitor.PollAsync();
+
+        Assert.Equal(error, Assert.Single(failed.Errors));
+        Assert.Empty(repeated.Errors);
+        Assert.Empty(recovered.Errors);
+        Assert.Equal(error, Assert.Single(failedAgain.Errors));
     }
 
     [Fact]

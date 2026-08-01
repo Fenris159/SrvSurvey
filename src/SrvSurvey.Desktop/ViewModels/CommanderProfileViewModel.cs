@@ -27,6 +27,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private ShipLockerSnapshot? detectedShipLocker;
     private CargoSnapshot? localShipCargo;
     private ShipLockerSnapshot? localShipLocker;
+    private IReadOnlyList<FrontierLocalInventoryRowViewModel>
+        currentShipCargoRows = [];
+    private IReadOnlyList<FrontierLocalInventoryRowViewModel>
+        currentShipLockerRows = [];
     private IReadOnlyList<FrontierShipModuleGroupViewModel> currentShipModuleGroups = [];
     private IReadOnlyList<FrontierLockerCategoryViewModel> currentShipLockerGroups = [];
     private IReadOnlyList<FrontierReputationSnapshot> journalReputation = [];
@@ -396,22 +400,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     public bool HasCurrentShipLaunchBays => CurrentShipLaunchBays.Count > 0;
 
     public IReadOnlyList<FrontierLocalInventoryRowViewModel> CurrentShipCargo =>
-        localShipCargo?.Inventory
-            .Select(item => new FrontierLocalInventoryRowViewModel(
-                "Cargo",
-                FirstNonEmpty(item.LocalizedName, HumanizeIdentifier(item.Name)),
-                item.Count.ToString("N0", CultureInfo.CurrentCulture),
-                item.Stolen > 0 ? $"{item.Stolen:N0} stolen" : string.Empty))
-            .ToArray() ?? [];
+        currentShipCargoRows;
 
     public IReadOnlyList<FrontierLocalInventoryRowViewModel> CurrentShipLocker =>
-        localShipLocker?.Items
-            .Select(item => new FrontierLocalInventoryRowViewModel(
-                item.Category,
-                FirstNonEmpty(item.LocalizedName, HumanizeIdentifier(item.Name)),
-                item.Count.ToString("N0", CultureInfo.CurrentCulture),
-                string.Empty))
-            .ToArray() ?? [];
+        currentShipLockerRows;
 
     public IReadOnlyList<FrontierLockerCategoryViewModel> CurrentShipLockerGroups =>
         currentShipLockerGroups;
@@ -488,6 +480,15 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
         if (shipLockerChanged || suppressionChanged)
         {
+            currentShipLockerRows = localShipLocker?.Items
+                .Select(item => new FrontierLocalInventoryRowViewModel(
+                    item.Category,
+                    FirstNonEmpty(
+                        item.LocalizedName,
+                        HumanizeIdentifier(item.Name)),
+                    item.Count.ToString("N0", CultureInfo.CurrentCulture),
+                    string.Empty))
+                .ToArray() ?? [];
             RebuildCurrentShipLockerGroups();
             OnPropertyChanged(nameof(CurrentShipLocker));
             OnPropertyChanged(nameof(CurrentShipLockerGroups));
@@ -496,6 +497,17 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
         if (cargoChanged || suppressionChanged)
         {
+            currentShipCargoRows = localShipCargo?.Inventory
+                .Select(item => new FrontierLocalInventoryRowViewModel(
+                    "Cargo",
+                    FirstNonEmpty(
+                        item.LocalizedName,
+                        HumanizeIdentifier(item.Name)),
+                    item.Count.ToString("N0", CultureInfo.CurrentCulture),
+                    item.Stolen > 0
+                        ? $"{item.Stolen:N0} stolen"
+                        : string.Empty))
+                .ToArray() ?? [];
             OnPropertyChanged(nameof(CurrentShipCargo));
             OnPropertyChanged(nameof(HasCurrentShipCargo));
         }

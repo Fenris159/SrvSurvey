@@ -87,6 +87,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
 
         var warnings = new List<string>();
         var processedEvents = 0;
+        var snapshotChanged = false;
         await coordinatorLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -128,7 +129,10 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 registration.Runtime.CommanderContext = context;
             }
 
-            if (!isBootstrap && nextConfiguration.Enabled)
+            var shouldProcessEvents = !isBootstrap
+                && nextConfiguration.Enabled
+                && journalEvents.Count > 0;
+            if (shouldProcessEvents)
             {
                 foreach (var journalEvent in journalEvents)
                 {
@@ -148,14 +152,21 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                 }
             }
 
-            Snapshot = CreateSnapshot();
+            snapshotChanged = identityChanged || shouldProcessEvents;
+            if (snapshotChanged)
+            {
+                Snapshot = CreateSnapshot();
+            }
         }
         finally
         {
             coordinatorLock.Release();
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        if (snapshotChanged)
+        {
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
         return new QuestRuntimeUpdateResult(
             Snapshot,
             warnings,

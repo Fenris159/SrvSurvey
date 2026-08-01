@@ -27,6 +27,7 @@ public sealed partial class App : Application
         colonizationCommodityOverlayCoordinator;
     private SphericalSearchOverlayCoordinator? sphericalSearchOverlayCoordinator;
     private JumpInfoOverlayCoordinator? jumpInfoOverlayCoordinator;
+    private RouteBioOverlayCoordinator? routeBioOverlayCoordinator;
     private GroundTargetOverlayCoordinator? groundTargetOverlayCoordinator;
     private CombatOverlayCoordinator? combatOverlayCoordinator;
     private StationInfoOverlayCoordinator? stationInfoOverlayCoordinator;
@@ -43,6 +44,7 @@ public sealed partial class App : Application
     private SystemNotesWindowCoordinator? systemNotesWindowCoordinator;
     private JourneyWindowCoordinator? journeyWindowCoordinator;
     private RouteWindowCoordinator? routeWindowCoordinator;
+    private RouteWindowCoordinator? fleetCarrierRouteWindowCoordinator;
     private BiologyPredictionsWindowCoordinator?
         biologyPredictionsWindowCoordinator;
     private BiologyCodexWindowCoordinator? biologyCodexWindowCoordinator;
@@ -329,6 +331,9 @@ public sealed partial class App : Application
             routeWindowCoordinator = new RouteWindowCoordinator(
                 viewModel.Route,
                 mainWindow);
+            fleetCarrierRouteWindowCoordinator = new RouteWindowCoordinator(
+                viewModel.FleetCarrierRoute,
+                mainWindow);
             biologyPredictionsWindowCoordinator =
                 new BiologyPredictionsWindowCoordinator(
                     viewModel.BiologyPredictions,
@@ -361,6 +366,11 @@ public sealed partial class App : Application
                 CreateOverlayGameWindowTracker(),
                 overlayLayout,
                 viewModel.SystemNicknames);
+            routeBioOverlayCoordinator = new RouteBioOverlayCoordinator(
+                viewModel.Route,
+                overlayPresentation.CreatePlatformService(),
+                CreateOverlayGameWindowTracker(),
+                overlayLayout);
             groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
                 viewModel.GroundTarget,
                 overlayPresentation.CreatePlatformService(),
@@ -484,6 +494,7 @@ public sealed partial class App : Application
                 var suppress = manualOverlaySuppressed
                     || viewModel.OverlayBehavior.ShouldSuppressForSuit;
                 jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
+                routeBioOverlayCoordinator?.SetSuppressed(suppress);
                 systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
                 groundTargetOverlayCoordinator?.SetSuppressed(suppress);
                 combatOverlayCoordinator?.SetSuppressed(suppress);
@@ -817,6 +828,8 @@ public sealed partial class App : Application
                 journeyWindowCoordinator = null;
                 routeWindowCoordinator?.Dispose();
                 routeWindowCoordinator = null;
+                fleetCarrierRouteWindowCoordinator?.Dispose();
+                fleetCarrierRouteWindowCoordinator = null;
                 biologyPredictionsWindowCoordinator?.Dispose();
                 biologyPredictionsWindowCoordinator = null;
                 viewModel.BiologyPredictions.Dispose();
@@ -831,6 +844,8 @@ public sealed partial class App : Application
                 sphericalSearchOverlayCoordinator = null;
                 jumpInfoOverlayCoordinator?.Dispose();
                 jumpInfoOverlayCoordinator = null;
+                routeBioOverlayCoordinator?.Dispose();
+                routeBioOverlayCoordinator = null;
                 groundTargetOverlayCoordinator?.Dispose();
                 groundTargetOverlayCoordinator = null;
                 combatOverlayCoordinator?.Dispose();

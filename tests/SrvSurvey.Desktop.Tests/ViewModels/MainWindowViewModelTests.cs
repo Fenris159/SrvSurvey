@@ -28,6 +28,24 @@ public sealed class MainWindowViewModelTests
             Path.Combine(Path.GetTempPath(), $"missing-{Guid.NewGuid():N}"));
 
         Assert.Equal(11, viewModel.NavigationItems.Count);
+        Assert.Equal(
+            [
+                "Overview",
+                "Exploration",
+                "Exobiology",
+                "Travel",
+                "Search",
+                "Guardian",
+                "Quests",
+                "Colonisation",
+                "Diagnostics",
+                "Settings",
+                "Guides",
+            ],
+            viewModel.NavigationItems.Select(item => item.Label));
+        Assert.DoesNotContain(
+            typeof(NavigationItemViewModel).GetProperties(),
+            property => property.Name == "Glyph");
         Assert.True(viewModel.IsOverviewSelected);
 
         viewModel.SelectedNavigation = viewModel.NavigationItems.Single(
@@ -2556,6 +2574,49 @@ public sealed class MainWindowViewModelTests
             Assert.False(viewModel.IsWaitingForFreshCargoSnapshot);
             Assert.Single(viewModel.FrontierProfile.CurrentShipCargo);
             Assert.Empty(viewModel.FrontierProfile.CurrentShipLocker);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task IdleMonitorPollsDoNotRepeatUiOrPublicationProjection()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-main-idle-monitor-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            Directory.CreateDirectory(journals);
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                Path.Combine(root, "data"),
+                Path.Combine(root, "cache"),
+                []);
+            var publisher = new RecordingEddnPublisher();
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths,
+                eddnPublisher: publisher);
+            await viewModel.RefreshAsync();
+            var statusBefore = viewModel.StatusMessage;
+            var lastUpdatedBefore = viewModel.LastUpdated;
+            using var cancellation = new CancellationTokenSource(
+                TimeSpan.FromMilliseconds(100));
+
+            await viewModel.MonitorAsync(
+                TimeSpan.FromMilliseconds(5),
+                cancellation.Token);
+
+            Assert.Single(publisher.Calls);
+            Assert.Equal(statusBefore, viewModel.StatusMessage);
+            Assert.Equal(lastUpdatedBefore, viewModel.LastUpdated);
         }
         finally
         {

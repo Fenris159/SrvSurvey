@@ -35,6 +35,7 @@ public sealed class RouteWindowCoordinator : IDisposable
             return true;
         }
 
+        viewModel.DismissDialogs();
         await viewModel.RefreshAsync();
         var routeWindow = new RouteWindow(viewModel);
         routeWindow.Closed += OnWindowClosed;

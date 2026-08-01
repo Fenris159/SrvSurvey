@@ -1,6 +1,6 @@
 # Network and Update Coverage Matrix
 
-Last audited: 2026-07-29
+Last audited: 2026-08-01
 
 The converted application keeps reference-data delivery separate from
 application releases. Startup checks the published reference index and downloads
@@ -13,7 +13,7 @@ size, SHA-256, staging, health-confirmation, and rollback contract.
 | Published reference data | `PublishedDataIndexClient`, `PublishedReferenceUpdateService` | Version-gated downloads, bounded archives, strict catalog validation, transactional activation and rollback |
 | Application releases | `CrossPlatformReleaseClient`, download/staging/install services | Windows/Linux package metadata, bounded streaming, hashes, manifests, safe paths, same-volume replacement, health token and rollback |
 | System lookup and enrichment | `SystemBodyDataClient`, `SystemSummaryClient`, `CodexDiscoveryLocationClient`, `SpanshStarSystemResolver` | EDSM and Spansh isolation, identity and shape validation, bounded responses, cancellation and stale-result containment |
-| Spansh search and routes | `SpanshRouteClient`, `SpanshBoxelClient`, `NearestSystemsClient` | Request/response shapes, polling states, page limits, coordinate validation, route-kind mapping and bounded streaming |
+| Spansh search and routes | `SpanshRouteClient`, `SpanshRouteUrlParser`, `SpanshBoxelClient`, `NearestSystemsClient` | Result-URL mapping for all current planner families, structural detection for bare job IDs, array/system-jump/jump/trade-leg response shapes, bounded exponential polling, page limits, coordinate validation and bounded streaming |
 | Canonn services | Challenge, system-POI, nearest-system and human-site clients | Commander Codex import, biology/POI enrichment, settlement lookup/publication, privacy gates and duplicate suppression |
 | EDDN publication | `EddnPublisher` | Sixteen event contracts, environment routing, context hydration, schema validation, privacy/bootstrap gates and bounded payloads |
 | Inara publication | `InaraPublisher` | Personal commander credentials, 35-second batching, bounded requests/responses, startup and live-galaxy gates, multicrew/multi-box suppression, event mapping and retry retention |

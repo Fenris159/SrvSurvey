@@ -30,6 +30,7 @@ public static class OverlayLayoutCatalog
         Define("PlotGuardianSystem", "Guardian system", OverlayLayoutCategory.SitesAndQuests, 300, 200, LegacyHorizontalAnchor.Left, 10, LegacyVerticalAnchor.Top, 8),
         Define("PlotHumanSite", "Human settlement", OverlayLayoutCategory.SitesAndQuests, 320, 440, LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0),
         Define("PlotJumpInfo", "Next-jump information", OverlayLayoutCategory.ExplorationAndNavigation, 600, 100, LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8),
+        Define("PlotRouteBio", "Route bodies", OverlayLayoutCategory.ExplorationAndNavigation, 430, 420, LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8),
         Define("PlotMassacre", "Massacre missions", OverlayLayoutCategory.CombatAndColonization, 180, 200, LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8),
         Define("PlotMiniTrack", "Mini tracker", OverlayLayoutCategory.BiologyAndSurface, 240, 80, LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8),
         Define("PlotMultiGameCommander", "Multiple Commander indicator", OverlayLayoutCategory.StatusAndUtilities, 340, 36, LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, -34),

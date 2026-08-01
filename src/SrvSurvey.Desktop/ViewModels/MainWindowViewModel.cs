@@ -32,6 +32,9 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 {
+    private static readonly TimeSpan IdleHousekeepingInterval =
+        TimeSpan.FromSeconds(5);
+
     private const string Unavailable = "—";
 
     private readonly JournalFolderResolution folderResolution;
@@ -52,6 +55,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly CancellationTokenSource firstFootfallInferenceCancellation =
         new();
     private CancellationTokenSource? systemBodyDataCancellation;
+    private readonly RouteAutoCopyCoordinator routeAutoCopyCoordinator;
     private readonly GreenGasGiantPublicationCoordinator
         greenGasGiantPublicationCoordinator;
     private readonly IEddnPublisher eddnPublisher;
@@ -126,6 +130,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private ShipLockerSnapshot? latestShipLocker;
     private bool awaitFreshCargoSnapshot;
     private DateTimeOffset? companionIdentityChangedAt;
+    private DateTimeOffset lastIdleHousekeepingAt;
     private bool disposed;
 
     public MainWindowViewModel(
@@ -452,11 +457,30 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             sharedSystemResolver,
             systemNoteStore,
             systemNotesSettingsStore);
+        var spanshRouteClient = new SpanshRouteClient();
+        var routeNameImporter = new RouteNameImporter(sharedSystemResolver);
+        var routeService = new FollowRouteService(
+            new FollowRouteStore(AppDataPaths.DataDirectory));
         Route = new RouteWorkspaceViewModel(
-            new FollowRouteService(
-                new FollowRouteStore(AppDataPaths.DataDirectory)),
-            new RouteNameImporter(sharedSystemResolver),
-            new SpanshRouteClient());
+            routeService,
+            routeNameImporter,
+            spanshRouteClient);
+        RouteManager = new RouteManagerViewModel(routeService, Route);
+        var fleetCarrierRouteService = new FollowRouteService(
+            new FollowRouteStore(
+                AppDataPaths.DataDirectory,
+                FollowRouteKind.FleetCarrier));
+        FleetCarrierRoute = new RouteWorkspaceViewModel(
+            fleetCarrierRouteService,
+            routeNameImporter,
+            spanshRouteClient,
+            FollowRouteKind.FleetCarrier);
+        FleetCarrierRouteManager = new RouteManagerViewModel(
+            fleetCarrierRouteService,
+            FleetCarrierRoute);
+        routeAutoCopyCoordinator = new RouteAutoCopyCoordinator(
+            Route,
+            FleetCarrierRoute);
         var sharedJumpInfoSettingsStore = jumpInfoSettingsStore
             ?? new JumpInfoSettingsStore(AppDataPaths.UiSettingsPath);
         var sharedSystemSummaryClient = systemSummaryClient
@@ -673,17 +697,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         NavigationItems =
         [
-            new("overview", "Overview", "01", "Commander and current journal state"),
-            new("exploration", "Exploration", "02", "Trip totals and body scans"),
-            new("exobiology", "Exobiology", "03", "Organic scans and unclaimed rewards"),
-            new("travel", "Travel", "04", "Ground targets, journeys, and routes"),
-            new("search", "Search", "05", "Spherical and boxel searches"),
-            new("guardian", "Guardian", "06", "Sites, maps, and Ram Tah"),
-            new("quests", "Quests", "07", "Communications and active objectives"),
-            new("colonisation", "Colonisation", "08", "Raven Colonial projects"),
-            new("diagnostics", "Diagnostics", "09", "Journal source and parsed state"),
-            new("settings", "Settings", "10", "Appearance and application options"),
-            new("guides", "Guides", "11", "Help documentation and overlay icon glossary"),
+            new("overview", "Overview", "Commander and current journal state"),
+            new("exploration", "Exploration", "Trip totals and body scans"),
+            new("exobiology", "Exobiology", "Organic scans and unclaimed rewards"),
+            new("travel", "Travel", "Ground targets, journeys, and routes"),
+            new("search", "Search", "Spherical and boxel searches"),
+            new("guardian", "Guardian", "Sites, maps, and Ram Tah"),
+            new("quests", "Quests", "Communications and active objectives"),
+            new("colonisation", "Colonisation", "Raven Colonial projects"),
+            new("diagnostics", "Diagnostics", "Journal source and parsed state"),
+            new("settings", "Settings", "Appearance and application options"),
+            new("guides", "Guides", "Help documentation and overlay icon glossary"),
         ];
         selectedNavigation = NavigationItems[0];
         Guides = new GuidesViewModel(GuideCatalog.Create());
@@ -784,6 +808,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public JourneyWorkspaceViewModel Journey { get; }
 
     public RouteWorkspaceViewModel Route { get; }
+
+    public RouteManagerViewModel RouteManager { get; }
+
+    public RouteWorkspaceViewModel FleetCarrierRoute { get; }
+
+    public RouteManagerViewModel FleetCarrierRouteManager { get; }
 
     public JumpInfoViewModel JumpInfo { get; }
 
@@ -1643,6 +1673,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         JournalMonitorUpdate update,
         bool isManualRefresh)
     {
+        if (!update.HasChanges && !isManualRefresh)
+        {
+            await ApplyIdleHousekeepingAsync(update);
+            return;
+        }
+
         if (update.IsBootstrapRead)
         {
             latestStatus = update.Status;
@@ -1652,7 +1688,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             latestStatus = update.Status;
         }
 
-        JournalInspector.ApplyUpdate(update.JournalEvents, latestStatus);
+        JournalInspector.ApplyUpdate(update.JournalEvents, update.Status);
 
         var previousFrontierId = journalState.FrontierId;
         var previousCommanderName = journalState.CommanderName;
@@ -1719,7 +1755,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 cargoChanged |= cargoInventoryState.Reset(update.Cargo);
             }
 
-            latestCargo = cargoInventoryState.CreateSnapshot();
+            if (cargoChanged || latestCargo is null)
+            {
+                latestCargo = cargoInventoryState.CreateSnapshot();
+            }
         }
 
         if (allowSharedCargo
@@ -1858,9 +1897,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             journalState.SystemName,
             journalState.SystemAddress,
             journalState.StarPosition);
+        await RouteManager.UpdateContextAsync(journalState.FrontierId);
+        await FleetCarrierRoute.UpdateContextAsync(
+            journalState.FrontierId,
+            journalState.SystemName,
+            journalState.SystemAddress,
+            journalState.StarPosition);
+        await FleetCarrierRouteManager.UpdateContextAsync(
+            journalState.FrontierId);
         if (!update.IsBootstrapRead)
         {
             await Route.ApplyJournalEventsAsync(update.JournalEvents);
+            await FleetCarrierRoute.ApplyJournalEventsAsync(
+                update.JournalEvents);
         }
 
         var explorationBefore = explorationState.CreateSnapshot();
@@ -1930,9 +1979,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 allowGesture: !update.IsBootstrapRead);
             StationInfo.UpdateStatus(update.Status);
             await Route.UpdateStatusAsync(update.Status);
+            await FleetCarrierRoute.UpdateStatusAsync(update.Status);
             await BoxelSearch.UpdateStatusAsync(
                 update.Status,
-                allowAutoCopy: !Route.ShouldAutoCopyNextHop);
+                allowAutoCopy: !Route.ShouldAutoCopyNextHop
+                    && !FleetCarrierRoute.ShouldAutoCopyNextHop);
         }
 
         HumanSite.SetStationInfoVisible(StationInfo.ShouldShow);
@@ -2010,10 +2061,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         var exobiologyAfter = exobiologyState.CreateSnapshot();
-        SystemSurvey.ApplyUpdate(
-            update.JournalEvents,
-            update.Status,
-            exobiologyAfter);
+        var exobiologyChanged =
+            exobiologyState.Version != exobiologyVersionBefore;
+        if (update.JournalEvents.Count > 0
+            || update.Status is not null
+            || exobiologyChanged
+            || isManualRefresh)
+        {
+            SystemSurvey.ApplyUpdate(
+                update.JournalEvents,
+                update.Status,
+                exobiologyAfter);
+        }
         await LoadCurrentSystemHistoryAsync();
         PendingSystemBodyDataLoad = LoadCurrentSystemBodyDataAsync();
         if (!update.IsBootstrapRead
@@ -2028,6 +2087,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             exobiologyAfter = exobiologyState.CreateSnapshot();
             SystemSurvey.ApplyUpdate([], null, exobiologyAfter);
         }
+
+        exobiologyChanged =
+            exobiologyState.Version != exobiologyVersionBefore;
 
         await PersistSystemScanAsync(update.JournalEvents);
         await RefreshSystemSurveyCommanderCodexAsync(
@@ -2067,14 +2129,21 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                     : surfaceBody?.RadiusMeters ?? 0);
         }
 
-        await SurfaceSurvey.ApplyUpdateAsync(
-            surfaceSession,
-            update.JournalEvents,
-            update.Status,
-            exobiologyAfter,
-            processJournalMutations: !skipPersistedBootstrapEvents,
-            scansLostToDeath: scansLostToDeath.ToArray());
-        if (exobiologyState.Version != exobiologyVersionBefore)
+        if (update.JournalEvents.Count > 0
+            || update.Status is not null
+            || exobiologyChanged
+            || isManualRefresh)
+        {
+            await SurfaceSurvey.ApplyUpdateAsync(
+                surfaceSession,
+                update.JournalEvents,
+                update.Status,
+                exobiologyAfter,
+                processJournalMutations: !skipPersistedBootstrapEvents,
+                scansLostToDeath: scansLostToDeath.ToArray());
+        }
+
+        if (exobiologyChanged)
         {
             await SaveExobiologyAsync(exobiologyAfter);
         }
@@ -2109,6 +2178,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             || update.Status is not null
             || update.NavRoute is not null
             || update.Cargo is not null
+            || update.ShipLocker is not null
             || update.Market is not null
             || update.Errors.Count > 0
             || isManualRefresh)
@@ -2118,11 +2188,41 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         // External publication runs after every local reducer and persistence
         // path so an unavailable gateway cannot delay live state projection.
+        await ApplyExternalPublicationAsync(update, allowSharedCargo);
+
+        if (requestShutdown
+            && journalCommandShutdownRequester is { } requestShutdownAsync)
+        {
+            await requestShutdownAsync();
+        }
+    }
+
+    private async Task ApplyIdleHousekeepingAsync(JournalMonitorUpdate update)
+    {
+        var now = DateTimeOffset.UtcNow;
+        if (now - lastIdleHousekeepingAt < IdleHousekeepingInterval)
+        {
+            return;
+        }
+
+        lastIdleHousekeepingAt = now;
+        await ApplyExternalPublicationAsync(
+            update,
+            allowSharedCargo: !IsSharedCargoSuppressed);
+    }
+
+    private async Task ApplyExternalPublicationAsync(
+        JournalMonitorUpdate update,
+        bool allowSharedCargo)
+    {
+        lastIdleHousekeepingAt = DateTimeOffset.UtcNow;
+        var canShareCargo = allowSharedCargo;
         try
         {
             CommanderInstances.RefreshGameWindowCount();
             var hasMultipleGameWindows =
                 CommanderInstances.HasMultipleGameWindows;
+            canShareCargo &= !hasMultipleGameWindows;
             eddnPublisher.SetSuspended(hasMultipleGameWindows);
             var eddnResult = await eddnPublisher.ApplyAsync(
                 update.JournalEvents,
@@ -2157,7 +2257,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                     latestCargo,
                     update.JournalPath,
                     AllowPublishing: !update.IsBootstrapRead,
-                    AllowSharedData: allowSharedCargo,
+                    AllowSharedData: canShareCargo,
                     journalState.SystemName,
                     journalState.StationName,
                     journalState.BodyName,
@@ -2187,13 +2287,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             Inara.ReportPublicationFailure(exception);
             applicationLogService?.Append(
                 "Inara processing was isolated from journal tracking: "
-                + exception.Message);
-        }
-
-        if (requestShutdown
-            && journalCommandShutdownRequester is { } requestShutdownAsync)
-        {
-            await requestShutdownAsync();
+                    + exception.Message);
         }
     }
 
@@ -2271,6 +2365,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         try
         {
             var enabled = questSettingsStore.LoadEnabled();
+            var previousQuestSnapshot = questRuntimeCoordinator.Snapshot;
             var result = await questRuntimeCoordinator.ApplyUpdateAsync(
                 new QuestRuntimeConfiguration(
                     enabled,
@@ -2283,9 +2378,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 update.IsBootstrapRead,
                 allowCargoFile: allowCargoFile);
             QuestWorkspace.ApplyRuntimeResult(result, enabled);
-            UpdateQuestOverlayPresentation(result.Quests, enabled);
-            OnPropertyChanged(nameof(Quests));
-            OnPropertyChanged(nameof(QuestUnreadMessageCount));
+            if (ReferenceEquals(previousQuestSnapshot, result.Quests))
+            {
+                // Status can move quest overlay markers without changing the
+                // quest rows. Snapshot changes are handled by the coordinator
+                // event and must not be projected a second time here.
+                UpdateQuestOverlayPresentation(result.Quests, enabled);
+            }
             if (!enabled)
             {
                 QuestStatusMessage = "Quests are disabled.";
@@ -3475,6 +3574,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         disposed = true;
+        routeAutoCopyCoordinator.Dispose();
         CancelSystemBodyDataRequest();
         firstFootfallInferenceCancellation.Cancel();
         firstFootfallInferenceService.Dispose();

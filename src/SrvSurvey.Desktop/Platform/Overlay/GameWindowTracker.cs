@@ -15,6 +15,11 @@ public static class GameWindowTracker
 {
     public static IGameWindowTracker CreateCurrent()
     {
+        return SharedGameWindowTrackerPool.Acquire(CreatePlatformTracker);
+    }
+
+    private static IGameWindowTracker CreatePlatformTracker()
+    {
         if (OperatingSystem.IsWindows())
         {
             return new WindowsGameWindowTracker();
@@ -28,6 +33,141 @@ public static class GameWindowTracker
         }
 
         return new UnavailableGameWindowTracker();
+    }
+}
+
+internal static class SharedGameWindowTrackerPool
+{
+    private static readonly object Gate = new();
+    private static CachedGameWindowTracker? tracker;
+    private static int leaseCount;
+
+    public static IGameWindowTracker Acquire(
+        Func<IGameWindowTracker> trackerFactory)
+    {
+        ArgumentNullException.ThrowIfNull(trackerFactory);
+
+        lock (Gate)
+        {
+            tracker ??= new CachedGameWindowTracker(trackerFactory());
+            leaseCount++;
+            return new SharedGameWindowTrackerLease(tracker, Release);
+        }
+    }
+
+    private static void Release()
+    {
+        CachedGameWindowTracker? releasedTracker = null;
+        lock (Gate)
+        {
+            if (leaseCount == 0)
+            {
+                return;
+            }
+
+            leaseCount--;
+            if (leaseCount == 0)
+            {
+                releasedTracker = tracker;
+                tracker = null;
+            }
+        }
+
+        releasedTracker?.Dispose();
+    }
+}
+
+internal sealed class SharedGameWindowTrackerLease(
+    CachedGameWindowTracker tracker,
+    Action release) : IGameWindowTracker
+{
+    private CachedGameWindowTracker? tracker = tracker;
+    private Action? release = release;
+
+    public GameWindowSnapshot GetSnapshot()
+    {
+        return Volatile.Read(ref tracker)?.GetSnapshot()
+            ?? GameWindowSnapshot.Unavailable;
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref tracker, null) is null)
+        {
+            return;
+        }
+
+        Interlocked.Exchange(ref release, null)?.Invoke();
+    }
+}
+
+internal sealed class CachedGameWindowTracker : IGameWindowTracker
+{
+    internal static readonly TimeSpan DefaultFreshness =
+        TimeSpan.FromMilliseconds(40);
+
+    private readonly object gate = new();
+    private readonly IGameWindowTracker inner;
+    private readonly Func<long> timestampProvider;
+    private readonly long freshnessTimestampTicks;
+    private GameWindowSnapshot snapshot = GameWindowSnapshot.Unavailable;
+    private long sampledAt;
+    private bool hasSnapshot;
+    private bool disposed;
+
+    public CachedGameWindowTracker(
+        IGameWindowTracker inner,
+        TimeSpan? freshness = null,
+        Func<long>? timestampProvider = null)
+    {
+        this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        this.timestampProvider = timestampProvider ?? Stopwatch.GetTimestamp;
+        var effectiveFreshness = freshness ?? DefaultFreshness;
+        if (effectiveFreshness < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(freshness));
+        }
+
+        freshnessTimestampTicks = checked((long)Math.Ceiling(
+            effectiveFreshness.TotalSeconds * Stopwatch.Frequency));
+    }
+
+    public GameWindowSnapshot GetSnapshot()
+    {
+        lock (gate)
+        {
+            if (disposed)
+            {
+                return GameWindowSnapshot.Unavailable;
+            }
+
+            var now = timestampProvider();
+            if (hasSnapshot
+                && now >= sampledAt
+                && now - sampledAt <= freshnessTimestampTicks)
+            {
+                return snapshot;
+            }
+
+            snapshot = inner.GetSnapshot();
+            sampledAt = now;
+            hasSnapshot = true;
+            return snapshot;
+        }
+    }
+
+    public void Dispose()
+    {
+        lock (gate)
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            disposed = true;
+            inner.Dispose();
+        }
     }
 }
 

@@ -13,7 +13,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private JumpInfoOverlayWindow? window;
     private bool isSuppressed;
@@ -38,7 +38,7 @@ public sealed class JumpInfoOverlayCoordinator : IDisposable
             platform.Capabilities,
             systemNicknames);
         jumpInfo.PropertyChanged += OnJumpInfoPropertyChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

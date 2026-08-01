@@ -64,6 +64,9 @@ public sealed class OverlayCoverageInventoryTests
             "tests/SrvSurvey.Desktop.Tests/ViewModels/JumpInfoOverlayViewModelTests.cs",
             "tests/SrvSurvey.Desktop.Tests/ViewModels/JumpInfoViewModelTests.cs",
         ]),
+        Map("PlotRouteBio", ["src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml"], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/RouteWorkspaceViewModelTests.cs",
+        ]),
         Map("PlotMassacre", ["src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/CombatViewModelTests.cs",
         ]),
@@ -95,7 +98,7 @@ public sealed class OverlayCoverageInventoryTests
     [Fact]
     public void InventoryContainsEverySupportedOverlayExactlyOnce()
     {
-        Assert.Equal(22, Mappings.Length);
+        Assert.Equal(23, Mappings.Length);
         Assert.Equal(
             Mappings.Length,
             Mappings.Select(mapping => mapping.ContractName).Distinct().Count());

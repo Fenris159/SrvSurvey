@@ -115,9 +115,42 @@
                 <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                            FontWeight="SemiBold"
                            Text="{Binding Label, StringFormat={}{0}:}" />
-                <TextBlock Grid.Column="1"
-                           Text="{Binding Value}"
-                           TextWrapping="Wrap" />
+                <StackPanel Grid.Column="1" Spacing="5">
+                  <TextBlock Text="{Binding Value}"
+                             TextWrapping="Wrap" />
+                  <StackPanel Orientation="Horizontal"
+                              Spacing="6"
+                              IsVisible="{Binding HasRouteBadges}">
+                    <Border Classes="badge"
+                            IsVisible="{Binding Refuel}"
+                            Padding="7,2">
+                      <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Image Width="14"
+                               Height="14"
+                               Source="avares://SrvSurvey.Desktop/Assets/Routes/refuel-star.png"
+                               Stretch="Uniform" />
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="9"
+                                   Foreground="#FF8A00"
+                                   Text="REFUEL" />
+                      </StackPanel>
+                    </Border>
+                    <Border Classes="badge"
+                            IsVisible="{Binding Neutron}"
+                            Padding="7,2">
+                      <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Image Width="14"
+                               Height="14"
+                               Source="avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png"
+                               Stretch="Uniform" />
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="9"
+                                   Foreground="#4A9EE8"
+                                   Text="NEUTRON" />
+                      </StackPanel>
+                    </Border>
+                  </StackPanel>
+                </StackPanel>
               </Grid>
             </DataTemplate>
           </ItemsControl.ItemTemplate>

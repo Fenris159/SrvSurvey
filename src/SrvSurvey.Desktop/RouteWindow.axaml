@@ -13,7 +13,7 @@
         MinWidth="880"
         MinHeight="560"
         WindowStartupLocation="CenterOwner"
-        Title="Follow route - SrvSurvey">
+        Title="{Binding WindowTitle}">
   <Grid RowDefinitions="Auto,*,Auto">
     <Border Background="{DynamicResource RavenSidebarBrush}"
             BorderBrush="{DynamicResource RavenBorderBrush}"
@@ -21,15 +21,18 @@
             Padding="24,18">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
         <StackPanel Spacing="3">
-          <TextBlock Classes="eyebrow" Text="FOLLOWED ROUTE" />
-          <TextBlock Classes="page-title" FontSize="24" Text="Navigation itinerary" />
+          <TextBlock Classes="eyebrow" Text="{Binding WorkspaceEyebrow}" />
+          <TextBlock Classes="page-title" FontSize="24" Text="{Binding WorkspaceHeading}" />
           <TextBlock Classes="muted"
-                     Text="Import a route, track each arrival, and keep the next system ready for the Galaxy Map." />
+                     Text="{Binding WorkspaceDescription}" />
         </StackPanel>
         <StackPanel Grid.Column="1"
                     Orientation="Horizontal"
                     VerticalAlignment="Center"
                     Spacing="10">
+          <Button Classes="secondary"
+                  Command="{Binding NotesCommand}"
+                  Content="Notes" />
           <Button Classes="secondary"
                   Command="{Binding RefreshCommand}"
                   Content="Reload" />
@@ -39,12 +42,17 @@
     </Border>
 
     <Grid Grid.Row="1" ColumnDefinitions="310,*">
-      <Border Background="{DynamicResource RavenSidebarBrush}"
+      <Border x:Name="RouteSidebar"
+              Background="{DynamicResource RavenSidebarBrush}"
               BorderBrush="{DynamicResource RavenBorderBrush}"
               BorderThickness="0,0,1,0"
-              Padding="18">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-          <StackPanel Spacing="16">
+              Padding="18,18,6,18">
+        <ScrollViewer x:Name="RouteSidebarScroller"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+          <StackPanel x:Name="RouteSidebarPanels"
+                      Margin="0,0,12,0"
+                      Spacing="16">
             <Border Classes="card raised" Padding="18">
               <StackPanel Spacing="11">
                 <TextBlock Classes="muted" FontSize="10" Text="NEXT SYSTEM" />
@@ -84,7 +92,7 @@
                 <TextBlock Classes="muted"
                            FontSize="11"
                            TextWrapping="Wrap"
-                           Text="Imports replace the on-screen draft. Nothing is written until Save route." />
+                           Text="Imports replace the on-screen draft. Nothing is written until Saved." />
                 <Button Classes="secondary"
                         Click="ImportSpansh_Click"
                         IsEnabled="{Binding !IsBusy}"
@@ -111,19 +119,28 @@
         </ScrollViewer>
       </Border>
 
-      <Grid Grid.Column="1" Margin="20" RowDefinitions="Auto,*" RowSpacing="10">
-        <Border Classes="card" Padding="12,9">
-          <Grid ColumnDefinitions="48,*,112,2*" ColumnSpacing="12">
+      <Grid x:Name="RouteHopWorkspace"
+            Grid.Column="1"
+            Margin="20,20,6,20"
+            RowDefinitions="Auto,*"
+            RowSpacing="10">
+        <Border x:Name="RouteHopHeader"
+                Classes="card"
+                Margin="0,0,14,0"
+                Padding="12,9">
+          <Grid ColumnDefinitions="48,*,112,*,2*" ColumnSpacing="12">
             <TextBlock Classes="muted" Text="DONE" />
             <TextBlock Grid.Column="1" Classes="muted" Text="SYSTEM" />
             <TextBlock Grid.Column="2" Classes="muted" Text="DISTANCE" />
             <TextBlock Grid.Column="3" Classes="muted" Text="GUIDANCE / NOTES" />
+            <TextBlock Grid.Column="4" Classes="muted" Text="BODIES" />
           </Grid>
         </Border>
 
         <Grid Grid.Row="1">
           <StackPanel HorizontalAlignment="Center"
                       VerticalAlignment="Center"
+                      Margin="0,0,14,0"
                       Spacing="7"
                       IsVisible="{Binding !HasRoute}">
             <TextBlock Classes="page-title" FontSize="22" Text="No route loaded" />
@@ -131,50 +148,200 @@
                        Text="Import a Spansh route or a list of system names." />
           </StackPanel>
 
-          <ListBox ItemsSource="{Binding Hops}"
-                   IsVisible="{Binding HasRoute}"
-                   Background="Transparent"
-                   BorderThickness="0">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:RouteHopItemViewModel">
-                <Border Classes="card" Padding="12" Margin="0,0,0,8">
-                  <Grid ColumnDefinitions="48,*,112,2*" ColumnSpacing="12">
-                    <CheckBox HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
-                              IsChecked="{Binding IsReached, Mode=OneWay}"
-                              Click="HopCheckBox_Click" />
-                    <StackPanel Grid.Column="1" Spacing="3">
-                      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+          <ScrollViewer x:Name="RouteHopScroller"
+                        IsVisible="{Binding HasRoute}"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="RouteHopItems"
+                          Margin="0,0,14,0"
+                          ItemsSource="{Binding Hops}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:RouteHopItemViewModel">
+                  <Border Classes="card" Padding="12" Margin="0,0,0,8">
+                    <Grid ColumnDefinitions="48,*,112,*,2*" ColumnSpacing="12">
+                      <CheckBox HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding IsReached, Mode=OneWay}"
+                                Click="HopCheckBox_Click" />
+                      <StackPanel Grid.Column="1" Spacing="3">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                          <TextBlock Classes="muted"
+                                     Text="{Binding Number, StringFormat='#{0}'}" />
+                          <TextBlock Grid.Column="1"
+                                     FontWeight="SemiBold"
+                                     Text="{Binding Name}"
+                                     TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                        <Border Classes="badge"
+                                HorizontalAlignment="Left"
+                                IsVisible="{Binding HasState}"
+                                Padding="7,2">
+                          <TextBlock FontSize="9"
+                                     Foreground="{DynamicResource RavenAccentBrush}"
+                                     Text="{Binding State}" />
+                        </Border>
+                      </StackPanel>
+                      <TextBlock Grid.Column="2"
+                                 VerticalAlignment="Center"
+                                 Classes="monospace"
+                                 Text="{Binding Distance}" />
+                      <StackPanel Grid.Column="3"
+                                  VerticalAlignment="Center"
+                                  Spacing="6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                          <Border Classes="badge"
+                                  IsVisible="{Binding Refuel}"
+                                  Padding="7,2">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                              <Image Width="14"
+                                     Height="14"
+                                     Source="avares://SrvSurvey.Desktop/Assets/Routes/refuel-star.png"
+                                     Stretch="Uniform" />
+                              <TextBlock VerticalAlignment="Center"
+                                         FontSize="9"
+                                         Foreground="#FF8A00"
+                                         Text="REFUEL" />
+                            </StackPanel>
+                          </Border>
+                          <Border Classes="badge"
+                                  IsVisible="{Binding Neutron}"
+                                  Padding="7,2">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                              <Image Width="14"
+                                     Height="14"
+                                     Source="avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png"
+                                     Stretch="Uniform" />
+                              <TextBlock VerticalAlignment="Center"
+                                         FontSize="9"
+                                         Foreground="#4A9EE8"
+                                         Text="NEUTRON" />
+                            </StackPanel>
+                          </Border>
+                        </StackPanel>
                         <TextBlock Classes="muted"
-                                   Text="{Binding Number, StringFormat='#{0}'}" />
-                        <TextBlock Grid.Column="1"
-                                   FontWeight="SemiBold"
-                                   Text="{Binding Name}"
-                                   TextTrimming="CharacterEllipsis" />
-                      </Grid>
-                      <Border Classes="badge"
-                              HorizontalAlignment="Left"
-                              IsVisible="{Binding HasState}"
-                              Padding="7,2">
-                        <TextBlock FontSize="9"
-                                   Foreground="{DynamicResource RavenAccentBrush}"
-                                   Text="{Binding State}" />
-                      </Border>
-                    </StackPanel>
-                    <TextBlock Grid.Column="2"
-                               VerticalAlignment="Center"
-                               Classes="monospace"
-                               Text="{Binding Distance}" />
-                    <TextBlock Grid.Column="3"
-                               VerticalAlignment="Center"
-                               Classes="muted"
-                               Text="{Binding Notes}"
-                               TextWrapping="Wrap" />
-                  </Grid>
-                </Border>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
+                                   IsVisible="{Binding HasNotes}"
+                                   Text="{Binding RouteNotes}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Classes="muted"
+                                   IsVisible="{Binding !HasGuidance}"
+                                   Text="—" />
+                      </StackPanel>
+                      <ItemsControl Grid.Column="4"
+                                    IsVisible="{Binding HasBioTargets}"
+                                    ItemsSource="{Binding BioTargets}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:RouteBioTargetItemViewModel">
+                            <Border Margin="0,0,0,6"
+                                    Padding="9,7"
+                                    Background="{DynamicResource RavenPanelBrush}"
+                                    BorderBrush="{DynamicResource RavenBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="7">
+                              <StackPanel Spacing="5">
+                                <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="7">
+                                  <CheckBox VerticalAlignment="Center"
+                                            IsChecked="{Binding IsCompleted, Mode=OneWay}"
+                                            Click="BioTargetCheckBox_Click" />
+                                  <Border Grid.Column="1"
+                                          Width="40"
+                                          Height="40"
+                                          Padding="3"
+                                          VerticalAlignment="Center"
+                                          Background="{DynamicResource RavenAccentMutedBrush}"
+                                          CornerRadius="20"
+                                          ToolTip.Tip="{Binding BodyIconAccessibleName}">
+                                    <Image Source="{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}"
+                                           Stretch="Uniform" />
+                                  </Border>
+                                  <TextBlock Grid.Column="2"
+                                             VerticalAlignment="Center"
+                                             FontWeight="SemiBold"
+                                             Text="{Binding BodyName}" />
+                                  <TextBlock Grid.Column="3"
+                                             VerticalAlignment="Center"
+                                             Classes="eyebrow"
+                                             FontSize="9"
+                                             Text="{Binding CompletionLabel}" />
+                                 </Grid>
+                                 <WrapPanel Margin="74,0,0,0"
+                                            IsVisible="{Binding HasDetails}">
+                                   <Border Classes="badge"
+                                           Margin="0,0,5,5"
+                                           IsVisible="{Binding HasSubtype}">
+                                     <StackPanel Orientation="Horizontal" Spacing="4">
+                                       <TextBlock Classes="eyebrow" FontSize="9" Text="TYPE" />
+                                       <TextBlock Classes="muted" FontSize="10" Text="{Binding Subtype}" />
+                                     </StackPanel>
+                                   </Border>
+                                   <Border Classes="badge"
+                                           Margin="0,0,5,5"
+                                           IsVisible="{Binding HasDistanceToArrival}">
+                                     <StackPanel Orientation="Horizontal" Spacing="4">
+                                       <TextBlock Classes="eyebrow" FontSize="9" Text="ARRIVAL" />
+                                       <TextBlock Classes="muted" FontSize="10" Text="{Binding DistanceToArrival}" />
+                                     </StackPanel>
+                                   </Border>
+                                   <Border Classes="badge"
+                                           Margin="0,0,5,5"
+                                           IsVisible="{Binding HasEstimatedScanValue}">
+                                     <StackPanel Orientation="Horizontal" Spacing="4">
+                                       <TextBlock Classes="eyebrow" FontSize="9" Text="SCAN" />
+                                       <TextBlock Classes="muted" FontSize="10" Text="{Binding EstimatedScanValue}" />
+                                     </StackPanel>
+                                   </Border>
+                                   <Border Classes="badge"
+                                           Margin="0,0,5,5"
+                                           IsVisible="{Binding HasEstimatedMappingValue}">
+                                     <StackPanel Orientation="Horizontal" Spacing="4">
+                                       <TextBlock Classes="eyebrow" FontSize="9" Text="MAP" />
+                                       <TextBlock Classes="muted" FontSize="10" Text="{Binding EstimatedMappingValue}" />
+                                     </StackPanel>
+                                   </Border>
+                                   <Border Classes="badge"
+                                           Margin="0,0,5,5"
+                                           IsVisible="{Binding HasEstimatedBiologyValue}">
+                                     <StackPanel Orientation="Horizontal" Spacing="4">
+                                       <TextBlock Classes="eyebrow" FontSize="9" Text="BIO" />
+                                       <TextBlock Classes="muted" FontSize="10" Text="{Binding EstimatedBiologyValue}" />
+                                     </StackPanel>
+                                   </Border>
+                                   <Border Classes="badge"
+                                           Margin="0,0,5,5"
+                                           IsVisible="{Binding IsTerraformable}">
+                                     <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                                                FontSize="9"
+                                                Text="TERRAFORMABLE" />
+                                   </Border>
+                                 </WrapPanel>
+                                 <ItemsControl Margin="74,0,0,0"
+                                               IsVisible="{Binding HasSpecies}"
+                                              ItemsSource="{Binding Species}">
+                                  <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                      <TextBlock Classes="muted"
+                                                 FontSize="11"
+                                                 Text="{Binding StringFormat=• {0}}"
+                                                 TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                  </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Margin="74,0,0,0"
+                                           Classes="muted"
+                                           FontSize="11"
+                                           FontStyle="Italic"
+                                           IsVisible="{Binding NeedsScan}"
+                                           Text="Scan for biological signals" />
+                              </StackPanel>
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
         </Grid>
       </Grid>
     </Grid>
@@ -199,14 +366,159 @@
                      TextTrimming="CharacterEllipsis" />
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+          <Button Classes="secondary compact-danger"
+                  Width="44"
+                  Command="{Binding DeleteCommand}"
+                  ToolTip.Tip="Delete saved route">
+            <Path Width="17"
+                  Height="17"
+                  Data="M 3,5 L 17,5 M 7,5 L 7,3 L 13,3 L 13,5 M 5,5 L 6,18 L 14,18 L 15,5 M 8,8 L 8.5,15 M 12,8 L 11.5,15"
+                  Stroke="{DynamicResource RavenDangerBrush}"
+                  StrokeLineCap="Round"
+                  StrokeThickness="1.7"
+                  Stretch="Uniform" />
+          </Button>
+          <Button Classes="secondary"
+                  Command="{Binding NewCommand}"
+                  Content="New" />
+          <Button Classes="secondary"
+                  Command="{Binding SaveAsCommand}"
+                  Content="Save As..." />
+          <Button Classes="secondary"
+                  Command="{Binding ResetCommand}"
+                  Content="Reset" />
           <Button Classes="secondary"
                   Command="{Binding DiscardCommand}"
-                  Content="Discard" />
+                  Content="Undo" />
           <Button Classes="primary"
                   Command="{Binding SaveCommand}"
-                  Content="Save route" />
+                  Content="Save Changes" />
         </StackPanel>
       </Grid>
     </Border>
+
+    <Grid Grid.RowSpan="3"
+          Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding IsNewConfirmationVisible}">
+      <Border Classes="card raised"
+              Width="430"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="18">
+          <TextBlock Classes="page-title" FontSize="22" Text="Start a new route?" />
+          <TextBlock Text="Are you sure? Unsaved changes in the workspace will be lost. Saved route files will not be deleted."
+                     TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding CancelDialogCommand}"
+                    Content="No" />
+            <Button Classes="primary"
+                    Command="{Binding ConfirmNewCommand}"
+                    Content="Yes" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Grid.RowSpan="3"
+          Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding IsDeleteConfirmationVisible}">
+      <Border Classes="card raised"
+              Width="430"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="18">
+          <TextBlock Classes="page-title"
+                     FontSize="22"
+                     Foreground="{DynamicResource RavenDangerBrush}"
+                     Text="Delete this route?" />
+          <TextBlock Text="Are you sure? The saved route will be removed from the library and the workspace will return to a new route."
+                     TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding CancelDialogCommand}"
+                    Content="No" />
+            <Button Classes="secondary compact-danger"
+                    Command="{Binding ConfirmDeleteCommand}"
+                    Content="Yes" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Grid.RowSpan="3"
+          Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding IsSaveAsVisible}">
+      <Border Classes="card raised"
+              Width="480"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="15">
+          <TextBlock Classes="page-title" FontSize="22" Text="Save route as" />
+          <TextBlock Classes="muted"
+                     Text="Enter a name for this route. It will be stored in your commander route library."
+                     TextWrapping="Wrap" />
+          <TextBox Text="{Binding SaveAsName, Mode=TwoWay}"
+                   PlaceholderText="Route name" />
+          <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                     IsVisible="{Binding !!SaveAsError}"
+                     Text="{Binding SaveAsError}"
+                     TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding CancelDialogCommand}"
+                    Content="Cancel" />
+            <Button Classes="primary"
+                    Command="{Binding ConfirmSaveAsCommand}"
+                    Content="Save" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Grid Grid.RowSpan="3"
+          Panel.ZIndex="20"
+          Background="#99000000"
+          IsVisible="{Binding IsNotesVisible}">
+      <Border Classes="card raised"
+              Width="620"
+              Padding="26"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+        <StackPanel Spacing="15">
+          <TextBlock Classes="page-title" FontSize="22" Text="Route notes" />
+          <TextBlock Classes="muted"
+                     Text="Add planning notes, reminders, or a description for this route."
+                     TextWrapping="Wrap" />
+          <TextBox Height="260"
+                   AcceptsReturn="True"
+                   Text="{Binding NotesDraft, Mode=TwoWay}"
+                   TextWrapping="Wrap"
+                   PlaceholderText="Write route notes..." />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Right"
+                      Spacing="10">
+            <Button Classes="secondary"
+                    Command="{Binding CancelDialogCommand}"
+                    Content="Cancel" />
+            <Button Classes="primary"
+                    Command="{Binding SaveNotesCommand}"
+                    Content="Save" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
   </Grid>
 </Window>

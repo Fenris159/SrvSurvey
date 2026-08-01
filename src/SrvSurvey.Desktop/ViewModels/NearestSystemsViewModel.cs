@@ -243,11 +243,26 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
         GalacticCoordinate? position,
         string? currentCommanderName)
     {
-        ReferenceSystemName = string.IsNullOrWhiteSpace(systemName)
+        var nextSystemName = string.IsNullOrWhiteSpace(systemName)
             ? Unavailable
             : systemName;
+        var nextCommanderName = currentCommanderName?.Trim() ?? string.Empty;
+        if (string.Equals(
+                referenceSystemName,
+                nextSystemName,
+                StringComparison.OrdinalIgnoreCase)
+            && referencePosition == position
+            && string.Equals(
+                commanderName,
+                nextCommanderName,
+                StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        ReferenceSystemName = nextSystemName;
         referencePosition = position;
-        commanderName = currentCommanderName?.Trim() ?? string.Empty;
+        commanderName = nextCommanderName;
         OnPropertyChanged(nameof(ReferencePosition));
         OnPropertyChanged(nameof(ReferenceSummary));
         searchCommand.RaiseCanExecuteChanged();

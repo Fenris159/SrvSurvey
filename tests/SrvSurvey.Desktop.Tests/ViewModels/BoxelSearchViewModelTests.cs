@@ -58,6 +58,21 @@ public sealed class BoxelSearchViewModelTests : IDisposable
         Assert.True(saved.Data?.BoxelSearch.Active);
         Assert.Equal('c', saved.Data?.BoxelSearch.LowMassCode);
         Assert.True(saved.Data?.BoxelSearch.SkipAlreadyVisited);
+
+        viewModel.UpdateCurrentSystem(
+            "Praea Euq IL-P c5-0",
+            new GalacticCoordinate(1, 2, 3));
+        var rows = viewModel.Systems;
+        var notifications = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            notifications.Add(eventArgs.PropertyName);
+
+        viewModel.UpdateCurrentSystem(
+            "Praea Euq IL-P c5-0",
+            new GalacticCoordinate(1, 2, 3));
+
+        Assert.Same(rows, viewModel.Systems);
+        Assert.Empty(notifications);
     }
 
     [Fact]

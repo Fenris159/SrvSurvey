@@ -445,6 +445,16 @@ public sealed class CommanderProfileViewModelTests
         Assert.Equal(3, viewModel.CurrentShipLocker.Count);
         Assert.Equal(["Items", "Components", "Data"],
             viewModel.CurrentShipLockerGroups.Select(group => group.Category));
+        var cargoRows = viewModel.CurrentShipCargo;
+        var lockerRows = viewModel.CurrentShipLocker;
+        var inventoryNotifications = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            inventoryNotifications.Add(eventArgs.PropertyName);
+        viewModel.UpdateLocalInventory(cargo, locker, isSuppressed: false);
+        Assert.Same(cargoRows, viewModel.CurrentShipCargo);
+        Assert.Same(lockerRows, viewModel.CurrentShipLocker);
+        Assert.Empty(inventoryNotifications);
+
         var lockerGroup = viewModel.CurrentShipLockerGroups[0];
         Assert.False(lockerGroup.IsExpanded);
         lockerGroup.ToggleCommand.Execute(null);

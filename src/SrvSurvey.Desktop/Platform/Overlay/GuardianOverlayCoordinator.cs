@@ -13,7 +13,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private GuardianOverlayWindow? liveSiteWindow;
     private GuardianSystemOverlayWindow? systemSummaryWindow;
@@ -39,7 +39,7 @@ public sealed class GuardianOverlayCoordinator : IDisposable
             guardian,
             platform.Capabilities);
         this.guardian.PropertyChanged += OnGuardianPropertyChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

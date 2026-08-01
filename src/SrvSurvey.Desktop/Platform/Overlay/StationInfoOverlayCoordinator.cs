@@ -13,7 +13,7 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
-    private readonly DispatcherTimer timer;
+    private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private StationInfoOverlayWindow? window;
     private bool isSuppressed;
@@ -36,7 +36,7 @@ public sealed class StationInfoOverlayCoordinator : IDisposable
             stationInfo,
             platform.Capabilities);
         stationInfo.PropertyChanged += OnStationInfoPropertyChanged;
-        timer = new DispatcherTimer
+        timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
         };

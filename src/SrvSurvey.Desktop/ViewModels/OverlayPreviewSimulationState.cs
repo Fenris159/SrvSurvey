@@ -168,6 +168,13 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Destination", state.DestinationSystem, glyph: "►", glyphTone: OverlayPreviewGlyphTone.Primary),
                 Row("Star", "K | scoopable", glyph: "☀", glyphTone: OverlayPreviewGlyphTone.Gold),
                 Row("Traffic", "42 ships in 24 h")),
+            "PlotRouteBio" => Content(
+                state.CurrentSystem,
+                "Route body destinations",
+                "1 / 3 BODIES COMPLETE",
+                Row("A 4", "Rocky body | 1,245 LS | Bio 27.4 M CR", 100),
+                Row("A 5", "Earth-like world | Map 625,000 CR"),
+                Row("B 2", "Scan for biological signals")),
             "PlotMassacre" => Content(
                 "Massacre missions",
                 "3 active mission stacks",

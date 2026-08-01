@@ -528,19 +528,11 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                     routeDetails.Add(nextHop.Notes);
                 }
 
-                if (nextHop.Neutron)
-                {
-                    routeDetails.Add("Neutron boost");
-                }
-
-                if (nextHop.Refuel)
-                {
-                    routeDetails.Add("Refuel stop");
-                }
-
                 lines.Add(new JumpInfoDetailLineViewModel(
                     "Followed route",
-                    string.Join(" \u2022 ", routeDetails)));
+                    string.Join(" \u2022 ", routeDetails),
+                    nextHop.Refuel,
+                    nextHop.Neutron));
             }
 
             var targetPosition = routePlan.TargetPosition ?? summary?.Position;
@@ -761,4 +753,11 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     }
 }
 
-public sealed record JumpInfoDetailLineViewModel(string Label, string Value);
+public sealed record JumpInfoDetailLineViewModel(
+    string Label,
+    string Value,
+    bool Refuel = false,
+    bool Neutron = false)
+{
+    public bool HasRouteBadges => Refuel || Neutron;
+}
