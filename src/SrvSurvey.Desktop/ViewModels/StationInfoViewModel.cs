@@ -38,6 +38,9 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     private bool isBusy;
     private IReadOnlySet<string> questTags = new HashSet<string>(
         StringComparer.OrdinalIgnoreCase);
+    private SystemStationSummary? projectedStation;
+    private IReadOnlyList<StationInfoLineViewModel> economyLines = [];
+    private IReadOnlyList<string> relevantServices = [];
     private string statusMessage = "Waiting for a current system.";
     private string settingsStatus = string.Empty;
     private bool disposed;
@@ -149,41 +152,9 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
                 : $"{station.ControllingFaction} · {station.Government}"
             : "Controlling faction unavailable";
 
-    public IReadOnlyList<StationInfoLineViewModel> EconomyLines =>
-        SelectedStation?.Economies
-            .OrderByDescending(economy => economy.Value)
-            .ThenBy(economy => economy.Key)
-            .Select(economy => new StationInfoLineViewModel(
-                economy.Key,
-                $"{economy.Value:F0}%"))
-            .ToArray()
-        ?? [];
+    public IReadOnlyList<StationInfoLineViewModel> EconomyLines => economyLines;
 
-    public IReadOnlyList<string> RelevantServices
-    {
-        get
-        {
-            if (SelectedStation is not { } station)
-            {
-                return [];
-            }
-
-            var services = InterestingServices
-                .Where(service => station.Services.Contains(
-                    service,
-                    StringComparer.OrdinalIgnoreCase))
-                .ToList();
-            if (string.Equals(
-                station.Government,
-                "Engineer",
-                StringComparison.OrdinalIgnoreCase))
-            {
-                services.Add("Engineer");
-            }
-
-            return services;
-        }
-    }
+    public IReadOnlyList<string> RelevantServices => relevantServices;
 
     public bool HasRelevantServices => RelevantServices.Count > 0;
 
@@ -381,6 +352,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
 
     private void NotifyStationState()
     {
+        RefreshStationCollections();
         OnPropertyChanged(nameof(SelectedStation));
         OnPropertyChanged(nameof(HasSelectedStation));
         OnPropertyChanged(nameof(IsForced));
@@ -397,6 +369,44 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(ProhibitedCommodities));
         OnPropertyChanged(nameof(HasProhibitedCommodities));
         OnPropertyChanged(nameof(UpdatedText));
+    }
+
+    private void RefreshStationCollections()
+    {
+        var station = SelectedStation;
+        if (ReferenceEquals(projectedStation, station))
+        {
+            return;
+        }
+
+        projectedStation = station;
+        economyLines = station?.Economies
+            .OrderByDescending(economy => economy.Value)
+            .ThenBy(economy => economy.Key)
+            .Select(economy => new StationInfoLineViewModel(
+                economy.Key,
+                $"{economy.Value:F0}%"))
+            .ToArray() ?? [];
+        if (station is null)
+        {
+            relevantServices = [];
+            return;
+        }
+
+        var services = InterestingServices
+            .Where(service => station.Services.Contains(
+                service,
+                StringComparer.OrdinalIgnoreCase))
+            .ToList();
+        if (string.Equals(
+            station.Government,
+            "Engineer",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            services.Add("Engineer");
+        }
+
+        relevantServices = services.ToArray();
     }
 
     private bool SetField<T>(

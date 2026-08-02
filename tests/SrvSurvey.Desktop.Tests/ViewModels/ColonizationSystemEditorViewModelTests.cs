@@ -19,6 +19,8 @@ public sealed class ColonizationSystemEditorViewModelTests
 
         Assert.True(editor.IsLoaded);
         Assert.False(editor.CanEdit);
+        Assert.Equal(2, editor.Bodies.Count);
+        Assert.Same(editor.Bodies, editor.Bodies);
         Assert.Equal(1, client.SystemReadCount);
         Assert.Equal(0, client.BodyImportCount);
         Assert.Equal(0, client.UpdateCount);

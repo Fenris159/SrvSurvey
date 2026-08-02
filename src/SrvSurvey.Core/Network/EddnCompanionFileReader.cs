@@ -1,3 +1,4 @@
+using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -101,9 +102,13 @@ namespace SrvSurvey.Core.Network
         {
             if (!DateTimeOffset.TryParse(
                     journalEvent.Value<string>("timestamp"),
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal,
                     out var eventTimestamp)
                 || !DateTimeOffset.TryParse(
                     content.Value<string>("timestamp"),
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.AssumeUniversal,
                     out var fileTimestamp))
             {
                 return true;

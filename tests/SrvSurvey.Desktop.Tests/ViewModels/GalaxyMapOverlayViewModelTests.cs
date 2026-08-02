@@ -21,7 +21,6 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         viewModel.ApplyUpdate(
             "Sol",
             1,
-            new GalacticCoordinate(0, 0, 0),
             CreateRoute(),
             [],
             new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
@@ -54,7 +53,6 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         viewModel.ApplyUpdate(
             "Sol",
             1,
-            new GalacticCoordinate(0, 0, 0),
             CreateRoute(),
             [],
             new EliteStatus { GuiFocus = GuiFocus.NoFocus });
@@ -65,7 +63,6 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         viewModel.ApplyUpdate(
             "Sol",
             1,
-            new GalacticCoordinate(0, 0, 0),
             null,
             [],
             new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
@@ -82,7 +79,6 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         viewModel.ApplyUpdate(
             "Sol",
             1,
-            new GalacticCoordinate(0, 0, 0),
             CreateRoute(),
             [],
             new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
@@ -91,7 +87,6 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         viewModel.ApplyUpdate(
             "Sol",
             1,
-            new GalacticCoordinate(0, 0, 0),
             null,
             [Event("NavRouteClear")],
             null);
@@ -110,7 +105,6 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         viewModel.ApplyUpdate(
             "Sol",
             1,
-            new GalacticCoordinate(0, 0, 0),
             null,
             [Event("FSDTarget", "\"Name\":\"Historical\",\"SystemAddress\":99")],
             new EliteStatus

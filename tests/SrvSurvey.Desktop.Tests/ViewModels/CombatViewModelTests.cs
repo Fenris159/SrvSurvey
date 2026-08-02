@@ -102,6 +102,7 @@ public sealed class CombatViewModelTests : IDisposable
 
         Assert.Equal(0, viewModel.FootCombatKills);
         Assert.Equal(4, Assert.Single(viewModel.MassacreMissions).Remaining);
+        Assert.Same(viewModel.MassacreMissions, viewModel.MassacreMissions);
     }
 
     [Fact]

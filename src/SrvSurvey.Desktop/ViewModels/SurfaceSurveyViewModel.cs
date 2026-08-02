@@ -18,7 +18,9 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     private SystemSurfaceBodySnapshot? surface;
     private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
     private IReadOnlyList<SurfaceRadarMarkerViewModel> radarMarkers = [];
+    private IReadOnlyList<SurfaceRadarMarkerViewModel> navigationMarkers = [];
     private IReadOnlyList<SurfaceTrackerGroupViewModel> trackerGroups = [];
+    private IReadOnlyList<SurfaceTrackerGroupViewModel> quickTrackerGroups = [];
     private string statusText = "Waiting for surface survey context.";
     private double? customRadarScale;
     private bool disposed;
@@ -42,8 +44,16 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         get => radarMarkers;
         private set
         {
+            if (radarMarkers.SequenceEqual(value))
+            {
+                return;
+            }
+
             if (SetField(ref radarMarkers, value))
             {
+                navigationMarkers = value
+                    .Where(marker => marker.IsActiveSample || marker.IsVehicle)
+                    .ToArray();
                 OnPropertyChanged(nameof(NavigationMarkers));
                 OnPropertyChanged(nameof(HasNavigationMarkers));
             }
@@ -51,17 +61,23 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     }
 
     public IReadOnlyList<SurfaceRadarMarkerViewModel> NavigationMarkers =>
-        RadarMarkers
-            .Where(marker => marker.IsActiveSample || marker.IsVehicle)
-            .ToArray();
+        navigationMarkers;
 
     public IReadOnlyList<SurfaceTrackerGroupViewModel> TrackerGroups
     {
         get => trackerGroups;
         private set
         {
+            if (TrackerGroupsEqual(trackerGroups, value))
+            {
+                return;
+            }
+
             if (SetField(ref trackerGroups, value))
             {
+                quickTrackerGroups = value
+                    .Where(group => group.Name.StartsWith('#'))
+                    .ToArray();
                 OnPropertyChanged(nameof(HasTrackers));
                 OnPropertyChanged(nameof(QuickTrackerGroups));
                 OnPropertyChanged(nameof(HasQuickTrackers));
@@ -97,9 +113,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     public bool HasTrackers => TrackerGroups.Count > 0;
 
     public IReadOnlyList<SurfaceTrackerGroupViewModel> QuickTrackerGroups =>
-        TrackerGroups
-            .Where(group => group.Name.StartsWith('#'))
-            .ToArray();
+        quickTrackerGroups;
 
     public bool HasQuickTrackers => QuickTrackerGroups.Count > 0;
 
@@ -717,9 +731,31 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(ShouldShowRadar));
         OnPropertyChanged(nameof(ShouldShow));
         OnPropertyChanged(nameof(IsTrackerOnly));
-        OnPropertyChanged(nameof(QuickTrackerGroups));
-        OnPropertyChanged(nameof(HasQuickTrackers));
         OnPropertyChanged(nameof(ShouldShowMiniTrack));
+    }
+
+    private static bool TrackerGroupsEqual(
+        IReadOnlyList<SurfaceTrackerGroupViewModel> first,
+        IReadOnlyList<SurfaceTrackerGroupViewModel> second)
+    {
+        if (first.Count != second.Count)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < first.Count; index++)
+        {
+            var firstGroup = first[index];
+            var secondGroup = second[index];
+            if (!string.Equals(firstGroup.Name, secondGroup.Name, StringComparison.Ordinal)
+                || firstGroup.IsActive != secondGroup.IsActive
+                || !firstGroup.Targets.SequenceEqual(secondGroup.Targets))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool TryGetCurrentCoordinate(

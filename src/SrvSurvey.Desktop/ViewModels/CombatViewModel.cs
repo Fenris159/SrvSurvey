@@ -22,6 +22,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     private bool hasActiveBuildProjects;
     private bool footSessionActive;
     private string statusMessage = string.Empty;
+    private IReadOnlyList<MassacreMissionViewModel> massacreMissions = [];
 
     public CombatViewModel(
         CombatSettingsStore settingsStore,
@@ -38,6 +39,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         autoShowMassacreMissions = preferences.AutoShowMassacreMissions;
         suppressForActiveBuildProjects =
             preferences.SuppressForActiveBuildProjects;
+        RebuildMassacreMissions();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -110,11 +112,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     public string FootCombatBonds => $"{state.FootCombatBonds:N0} CR";
 
     public IReadOnlyList<MassacreMissionViewModel> MassacreMissions =>
-        state.MassacreMissions
-            .OrderBy(mission => mission.TargetFaction, StringComparer.Ordinal)
-            .ThenBy(mission => mission.MissionGiver, StringComparer.Ordinal)
-            .Select(mission => new MassacreMissionViewModel(mission))
-            .ToArray();
+        massacreMissions;
 
     public bool HasMassacreMissions => state.MassacreMissions.Count > 0;
 
@@ -141,6 +139,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         commanderName = profileCommanderName;
         isOdyssey = profileIsOdyssey;
         state.Reset(snapshot);
+        RebuildMassacreMissions();
         footSessionActive = false;
         StatusMessage = string.Empty;
         NotifyAllState();
@@ -195,6 +194,11 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
         if (stateChanged || currentStatus is not null)
         {
+            if (stateChanged)
+            {
+                RebuildMassacreMissions();
+            }
+
             NotifyAllState();
         }
     }
@@ -275,6 +279,15 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(MassacreMissions));
         OnPropertyChanged(nameof(HasMassacreMissions));
         NotifyOverlayState();
+    }
+
+    private void RebuildMassacreMissions()
+    {
+        massacreMissions = state.MassacreMissions
+            .OrderBy(mission => mission.TargetFaction, StringComparer.Ordinal)
+            .ThenBy(mission => mission.MissionGiver, StringComparer.Ordinal)
+            .Select(mission => new MassacreMissionViewModel(mission))
+            .ToArray();
     }
 
     private void NotifyOverlayState()

@@ -307,9 +307,12 @@ public static class LocalizationCatalog
 
     private sealed class FormatTranslationPattern
     {
+        private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
+
         private static readonly Regex Placeholder = new(
             @"\{(\d+)\}",
-            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+            RegexOptions.Compiled | RegexOptions.CultureInvariant,
+            RegexTimeout);
 
         private readonly Regex matcher;
         private readonly string translation;
@@ -363,7 +366,8 @@ public static class LocalizationCatalog
                     expression.ToString(),
                     RegexOptions.Compiled
                         | RegexOptions.CultureInvariant
-                        | RegexOptions.Singleline),
+                        | RegexOptions.Singleline,
+                    RegexTimeout),
                 literals.MaxBy(value => value.Length) ?? string.Empty);
         }
 

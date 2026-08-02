@@ -30,6 +30,7 @@ namespace SrvSurvey.Core.Network
     {
         private const string schemaRoot = "https://eddn.edcd.io/schemas/";
         private const string horizonsSku = "ELITE_HORIZONS_V_PLANETARY_LANDINGS";
+        private static readonly TimeSpan regexTimeout = TimeSpan.FromSeconds(1);
 
         private static readonly HashSet<string> genericEvents = new(StringComparer.Ordinal)
         {
@@ -52,11 +53,13 @@ namespace SrvSurvey.Core.Network
 
         private static readonly Regex canonicalCommodityName = new(
             @"^\$(.+)_name;$",
-            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
+            regexTimeout);
 
         private static readonly Regex moduleName = new(
             @"^Hpt_|^Int_|Armour_",
-            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
+            regexTimeout);
 
         internal static bool isCompanionEvent(string? eventName)
         {

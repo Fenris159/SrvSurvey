@@ -851,9 +851,14 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
     public Task CancelAuditAsync()
     {
-        auditCancellation?.Cancel();
+        CancelPendingOperations();
         StatusMessage = "Cancelling the full-area audit after the current request\u2026";
         return Task.CompletedTask;
+    }
+
+    public void CancelPendingOperations()
+    {
+        auditCancellation?.Cancel();
     }
 
     public async Task ApplyExpectedSystemCountAsync()

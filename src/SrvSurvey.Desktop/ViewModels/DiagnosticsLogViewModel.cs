@@ -265,16 +265,22 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
         Action execute,
         Func<bool> canExecute) : ICommand
     {
-        public event EventHandler? CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged
+        {
+            add
+            {
+                // Clear availability is fixed for this command's lifetime.
+            }
+            remove
+            {
+                // No subscriber is retained, so there is nothing to remove.
+            }
+        }
 
         public bool CanExecute(object? parameter) => canExecute();
 
         public void Execute(object? parameter) => execute();
 
-        public void RaiseCanExecuteChanged()
-        {
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-        }
     }
 
     private sealed class AsyncCommand(

@@ -21,7 +21,6 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     private GalaxyMapTarget? secondaryTarget;
     private string? currentSystemName;
     private long? currentSystemAddress;
-    private GalacticCoordinate? currentPosition;
     private EliteStatus? status;
     private GalaxyMapSystemViewModel? primarySystem;
     private GalaxyMapSystemViewModel? secondarySystem;
@@ -198,7 +197,6 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     public void ApplyUpdate(
         string? nextCurrentSystemName,
         long? nextCurrentSystemAddress,
-        GalacticCoordinate? nextCurrentPosition,
         NavRouteSnapshot? nextNavRoute,
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? nextStatus,
@@ -208,7 +206,6 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         ArgumentNullException.ThrowIfNull(journalEvents);
         currentSystemName = nextCurrentSystemName;
         currentSystemAddress = nextCurrentSystemAddress;
-        currentPosition = nextCurrentPosition;
         if (nextNavRoute is not null)
         {
             navRoute = nextNavRoute;

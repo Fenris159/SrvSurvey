@@ -13,6 +13,7 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly TimeSpan AutomaticRefreshAge = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
 
     private readonly IFrontierAccountService accountService;
     private readonly ICommunityGoalJournalHistoryReader? communityGoalHistoryReader;
@@ -33,6 +34,30 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         currentShipLockerRows = [];
     private IReadOnlyList<FrontierShipModuleGroupViewModel> currentShipModuleGroups = [];
     private IReadOnlyList<FrontierLockerCategoryViewModel> currentShipLockerGroups = [];
+    private IReadOnlyList<FrontierRankCardViewModel>? rankRows;
+    private IReadOnlyList<FrontierDetailRowViewModel>? currentShipValueRows;
+    private IReadOnlyList<FrontierDetailRowViewModel>? currentShipConditionRows;
+    private IReadOnlyList<FrontierShipModuleRowViewModel>? currentShipModuleRows;
+    private IReadOnlyList<FrontierLiveryRowViewModel>? currentShipLiveryRows;
+    private IReadOnlyList<FrontierLaunchBayRowViewModel>? currentShipLaunchBayRows;
+    private IReadOnlyList<FrontierShipRowViewModel>? shipRows;
+    private IReadOnlyList<FrontierCapacityRowViewModel>? carrierCapacityRows;
+    private IReadOnlyList<FrontierInventoryRowViewModel>? carrierCargoRows;
+    private IReadOnlyList<FrontierInventoryRowViewModel>? carrierLockerRows;
+    private IReadOnlyList<FrontierOrderRowViewModel>? carrierSellOrderRows;
+    private IReadOnlyList<FrontierOrderRowViewModel>? carrierBuyOrderRows;
+    private IReadOnlyList<FrontierDetailRowViewModel>? carrierOperationRows;
+    private IReadOnlyList<FrontierDetailRowViewModel>? carrierFinanceRows;
+    private IReadOnlyList<FrontierDetailRowViewModel>? carrierServiceTaxationRows;
+    private IReadOnlyList<FrontierCarrierCrewRowViewModel>? carrierCrewRows;
+    private IReadOnlyList<FrontierCarrierJumpRowViewModel>? carrierItineraryRows;
+    private IReadOnlyList<FrontierReputationRowViewModel>? carrierReputationRows;
+    private IReadOnlyList<FrontierReputationRowViewModel>? commanderReputationRows;
+    private IReadOnlyList<FrontierCommodityRowViewModel>? marketCommodityRows;
+    private IReadOnlyList<FrontierEconomyRowViewModel>? marketEconomyRows;
+    private IReadOnlyList<FrontierShipForSaleRowViewModel>? shipyardShipRows;
+    private IReadOnlyList<FrontierOutfittingModuleRowViewModel>? shipyardModuleRows;
+    private IReadOnlyList<FrontierCommunityGoalCardViewModel>? communityGoalRows;
     private IReadOnlyList<FrontierReputationSnapshot> journalReputation = [];
     private string? journalReputationCommanderName;
     private DateTimeOffset? journalReputationUpdatedAt;
@@ -209,6 +234,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             }
 
             snapshot = value;
+            ResetSnapshotProjectionCache();
             RebuildCurrentShipModuleGroups();
             OnPropertyChanged();
             RaiseSnapshotProperties();
@@ -310,57 +336,26 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     public IReadOnlyList<string> StationServices =>
         Snapshot?.LastStationDetails?.Services ?? [];
 
-    public IReadOnlyList<FrontierRankCardViewModel> Ranks => Snapshot?.Ranks
-        .Select(rank => new FrontierRankCardViewModel(
-            rank.Category,
-            rank.Name,
-            rank.Level,
-            RankIcon(rank.Key, rank.Level)))
-        .ToArray() ?? [];
+    public IReadOnlyList<FrontierRankCardViewModel> Ranks => rankRows ??=
+        Snapshot?.Ranks
+            .Select(rank => new FrontierRankCardViewModel(
+                rank.Category,
+                rank.Name,
+                rank.Level,
+                RankIcon(rank.Key, rank.Level)))
+            .ToArray() ?? [];
 
     public IReadOnlyList<FrontierDataPointSnapshot> ProfileData =>
         Snapshot?.ProfileData ?? [];
 
-    public IReadOnlyList<FrontierDetailRowViewModel> CurrentShipValueRows
-    {
-        get
-        {
-            var ship = Snapshot?.CurrentShip;
-            return ship is null
-                ? []
-                :
-                [
-                    new("Hull", FormatCredits(ship.HullValue)),
-                    new("Modules", FormatCredits(ship.ModulesValue)),
-                    new("Cargo", FormatCredits(ship.CargoValue)),
-                    new("Total", FormatCredits(ship.Value)),
-                    new("Unloaned", FormatCredits(ship.UnloanedValue)),
-                ];
-        }
-    }
+    public IReadOnlyList<FrontierDetailRowViewModel> CurrentShipValueRows =>
+        currentShipValueRows ??= BuildCurrentShipValueRows();
 
-    public IReadOnlyList<FrontierDetailRowViewModel> CurrentShipConditionRows
-    {
-        get
-        {
-            var ship = Snapshot?.CurrentShip;
-            return ship is null
-                ? []
-                :
-                [
-                    new("Hull", FormatPercent(ship.HullHealth)),
-                    new("Shield", FormatPercent(ship.ShieldHealth),
-                        ship.ShieldUp ? "Up" : "Down"),
-                    new("Integrity", FormatPercent(ship.Integrity)),
-                    new("Cockpit", ship.CockpitBreached ? "Breached" : "Secure"),
-                    new("Oxygen", ship.OxygenRemaining is { } oxygen
-                        ? $"{oxygen:N0} seconds" : "Unavailable"),
-                ];
-        }
-    }
+    public IReadOnlyList<FrontierDetailRowViewModel> CurrentShipConditionRows =>
+        currentShipConditionRows ??= BuildCurrentShipConditionRows();
 
     public IReadOnlyList<FrontierShipModuleRowViewModel> CurrentShipModules =>
-        Snapshot?.CurrentShip?.Modules?
+        currentShipModuleRows ??= Snapshot?.CurrentShip?.Modules?
             .Where(item => !IsLiverySlot(item.Slot))
             .Select(CreateModuleRow)
             .OrderBy(item => ModuleGroupOrder(item.Group))
@@ -372,7 +367,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         currentShipModuleGroups;
 
     public IReadOnlyList<FrontierLiveryRowViewModel> CurrentShipLivery =>
-        Snapshot?.CurrentShip?.Modules?
+        currentShipLiveryRows ??= Snapshot?.CurrentShip?.Modules?
             .Where(item => IsLiverySlot(item.Slot))
             .Select(item => new FrontierLiveryRowViewModel(
                 FriendlyLiverySlot(item.Slot),
@@ -389,7 +384,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         || Snapshot?.CurrentShip?.Paintwork is not null;
 
     public IReadOnlyList<FrontierLaunchBayRowViewModel> CurrentShipLaunchBays =>
-        Snapshot?.CurrentShip?.LaunchBays?
+        currentShipLaunchBayRows ??= Snapshot?.CurrentShip?.LaunchBays?
             .Select(item => new FrontierLaunchBayRowViewModel(
                 item.Slot,
                 item.Vehicle,
@@ -544,6 +539,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         {
             if (commanderChanged)
             {
+                commanderReputationRows = null;
                 OnPropertyChanged(nameof(CommanderReputation));
             }
 
@@ -559,6 +555,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .OrderBy(item => item.Faction, StringComparer.CurrentCultureIgnoreCase)
             .ToArray();
         journalReputationUpdatedAt = latest.Timestamp;
+        commanderReputationRows = null;
         OnPropertyChanged(nameof(CommanderReputation));
     }
 
@@ -628,7 +625,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
     }
 
-    public IReadOnlyList<FrontierShipRowViewModel> Ships => Snapshot?.Ships
+    public IReadOnlyList<FrontierShipRowViewModel> Ships => shipRows ??= Snapshot?.Ships
         .Select(ship => new FrontierShipRowViewModel(
             ship.Name,
             ship.Type,
@@ -672,7 +669,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         : $"{Carrier.SellOrders.Count:N0} sell · {Carrier.BuyOrders.Count:N0} buy · {FormatCredits(Carrier.MarketCargoValue)} cargo value";
 
     public IReadOnlyList<FrontierCapacityRowViewModel> CarrierCapacityRows =>
-        Carrier?.Capacity
+        carrierCapacityRows ??= Carrier?.Capacity
             .OrderBy(item => item.Category.Equals(
                 "Cargo Not For Sale",
                 StringComparison.OrdinalIgnoreCase) ? 0 : 1)
@@ -687,7 +684,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .ToArray() ?? [];
 
     public IReadOnlyList<FrontierInventoryRowViewModel> CarrierCargo =>
-        Carrier?.Cargo
+        carrierCargoRows ??= Carrier?.Cargo
             .Select(item => new FrontierInventoryRowViewModel(
                 item.Category,
                 item.Name,
@@ -696,7 +693,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .ToArray() ?? [];
 
     public IReadOnlyList<FrontierInventoryRowViewModel> CarrierLocker =>
-        Carrier?.Locker
+        carrierLockerRows ??= Carrier?.Locker
             .Select(item => new FrontierInventoryRowViewModel(
                 item.Category,
                 item.Name,
@@ -705,7 +702,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .ToArray() ?? [];
 
     public IReadOnlyList<FrontierOrderRowViewModel> CarrierSellOrders =>
-        Carrier?.SellOrders
+        carrierSellOrderRows ??= Carrier?.SellOrders
             .Select(item => new FrontierOrderRowViewModel(
                 item.Category,
                 item.Name,
@@ -714,7 +711,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .ToArray() ?? [];
 
     public IReadOnlyList<FrontierOrderRowViewModel> CarrierBuyOrders =>
-        Carrier?.BuyOrders
+        carrierBuyOrderRows ??= Carrier?.BuyOrders
             .Select(item => new FrontierOrderRowViewModel(
                 item.Category,
                 item.Name,
@@ -730,47 +727,21 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public bool HasCarrierError => !string.IsNullOrWhiteSpace(CarrierError);
 
-    public IReadOnlyList<FrontierDetailRowViewModel> CarrierOperations => Carrier is null
-        ? []
-        :
-        [
-            new("State", Carrier.State),
-            new("Theme", FirstNonEmpty(Carrier.Theme, "Standard")),
-            new("Docking access", Carrier.DockingAccess),
-            new("Notorious access", Carrier.NotoriousAccess ? "Allowed" : "Denied"),
-            new("Tritium reserve", $"{Carrier.Tritium:N0} t"),
-            new("Distance jumped", $"{Carrier.TotalDistanceJumped:N1} ly"),
-            new("Current jump", FirstNonEmpty(Carrier.CurrentJump, "None plotted")),
-        ];
+    public IReadOnlyList<FrontierDetailRowViewModel> CarrierOperations =>
+        carrierOperationRows ??= BuildCarrierOperations();
 
-    public IReadOnlyList<FrontierDetailRowViewModel> CarrierFinances => Carrier is null
-        ? []
-        :
-        [
-            new("Bank balance", FormatCredits(Carrier.BankBalance)),
-            new("Reserved balance", FormatCredits(Carrier.ReservedBalance)),
-            new("Weekly maintenance", FormatCredits(Carrier.WeeklyMaintenance)),
-            new("Maintenance paid", FormatCredits(Carrier.MaintenanceToDate)),
-            new("Core cost", FormatCredits(Carrier.CoreCost)),
-            new("Services cost", FormatCredits(Carrier.ServicesCost)),
-            new("Services paid", FormatCredits(Carrier.ServicesCostToDate)),
-            new("Jump cost", FormatCredits(Carrier.JumpsCost), $"{Carrier.WeeklyJumps:N0} jumps"),
-            new("Debt threshold", FormatCredits(Carrier.DebtThreshold)),
-            new("Base taxation", $"{Carrier.Taxation:N0}%"),
-            new("Market cargo", FormatCredits(Carrier.MarketCargoValue)),
-            new("Market profit", FormatCredits(Carrier.MarketProfit)),
-            new("Purchase allocation", FormatCredits(Carrier.PurchaseOrderAllocation)),
-        ];
+    public IReadOnlyList<FrontierDetailRowViewModel> CarrierFinances =>
+        carrierFinanceRows ??= BuildCarrierFinances();
 
     public IReadOnlyList<FrontierDetailRowViewModel> CarrierServiceTaxation =>
-        Carrier?.ServiceTaxation?
+        carrierServiceTaxationRows ??= Carrier?.ServiceTaxation?
             .Select(item => new FrontierDetailRowViewModel(
                 item.Name,
                 item.Value + "%"))
             .ToArray() ?? [];
 
     public IReadOnlyList<FrontierCarrierCrewRowViewModel> CarrierCrew =>
-        Carrier?.ServiceCrew?
+        carrierCrewRows ??= Carrier?.ServiceCrew?
             .Select(item => new FrontierCarrierCrewRowViewModel(
                 item.Service,
                 FirstNonEmpty(item.Name, "Unassigned"),
@@ -782,7 +753,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .ToArray() ?? [];
 
     public IReadOnlyList<FrontierCarrierJumpRowViewModel> CarrierItinerary =>
-        Carrier?.Itinerary?
+        carrierItineraryRows ??= Carrier?.Itinerary?
             .Select(item => new FrontierCarrierJumpRowViewModel(
                 item.System,
                 item.State,
@@ -796,7 +767,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .ToArray() ?? [];
 
     public IReadOnlyList<FrontierReputationRowViewModel> CarrierReputation =>
-        Carrier?.Reputation?
+        carrierReputationRows ??= Carrier?.Reputation?
             .Select(item => new FrontierReputationRowViewModel(
                 item.Faction,
                 $"{item.Score:N0}%",
@@ -804,7 +775,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .ToArray() ?? [];
 
     public IReadOnlyList<FrontierReputationRowViewModel> CommanderReputation =>
-        EffectiveCommanderReputation()
+        commanderReputationRows ??= EffectiveCommanderReputation()
             .Select(item => new FrontierReputationRowViewModel(
                 item.Faction,
                 $"{item.Score:N0}%",
@@ -835,7 +806,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     public bool HasMarketError => !string.IsNullOrWhiteSpace(MarketError);
 
     public IReadOnlyList<FrontierCommodityRowViewModel> MarketCommodities =>
-        Market?.Commodities
+        marketCommodityRows ??= Market?.Commodities
             .Select(item => new FrontierCommodityRowViewModel(
                 item.Category,
                 item.Name,
@@ -851,7 +822,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         Market?.Services ?? [];
 
     public IReadOnlyList<FrontierEconomyRowViewModel> MarketEconomies =>
-        Market?.Economies
+        marketEconomyRows ??= Market?.Economies
             .Select(item => new FrontierEconomyRowViewModel(
                 item.Name,
                 $"{item.Proportion:P0}"))
@@ -885,7 +856,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     public bool HasShipyardError => !string.IsNullOrWhiteSpace(ShipyardError);
 
     public IReadOnlyList<FrontierShipForSaleRowViewModel> ShipyardShips =>
-        Shipyard?.Ships
+        shipyardShipRows ??= Shipyard?.Ships
             .Select(item => new FrontierShipForSaleRowViewModel(
                 item.Name,
                 FormatCredits(item.BaseValue),
@@ -894,7 +865,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             .ToArray() ?? [];
 
     public IReadOnlyList<FrontierOutfittingModuleRowViewModel> ShipyardModules =>
-        Shipyard?.Modules
+        shipyardModuleRows ??= Shipyard?.Modules
             .Select(item => new FrontierOutfittingModuleRowViewModel(
                 item.Category,
                 item.Name,
@@ -910,7 +881,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         Shipyard?.DataPoints ?? [];
 
     public IReadOnlyList<FrontierCommunityGoalCardViewModel> CommunityGoals =>
-        EffectiveCommunityGoals()
+        communityGoalRows ??= EffectiveCommunityGoals()
             .Select(CreateCommunityGoalCard)
             .ToArray();
 
@@ -1231,6 +1202,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         OnPropertyChanged(nameof(ActiveCommanderDescription));
         OnPropertyChanged(nameof(CommanderSelectionDescription));
         ApplyLocalInventorySelection();
+        commanderReputationRows = null;
         OnPropertyChanged(nameof(CommanderReputation));
         if (!identityChanged)
         {
@@ -1730,7 +1702,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             internalName,
             @"^(int|hpt)_|_size\d+|_class\d+|_(fixed|gimbal|turret)$",
             string.Empty,
-            RegexOptions.IgnoreCase);
+            RegexOptions.IgnoreCase,
+            RegexTimeout);
         return FirstNonEmpty(
             FriendlyGameIdentifier(cleaned),
             FriendlyGameIdentifier(localizedName),
@@ -1767,10 +1740,26 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             cleaned,
             @"_(Name|Info|Description)$",
             string.Empty,
-            RegexOptions.IgnoreCase);
-        cleaned = Regex.Replace(cleaned, @"([a-z])([A-Z])", "$1 $2");
-        cleaned = Regex.Replace(cleaned, @"([A-Za-z])([0-9])", "$1 $2");
-        cleaned = Regex.Replace(cleaned, @"([0-9])([A-Za-z])", "$1 $2");
+            RegexOptions.IgnoreCase,
+            RegexTimeout);
+        cleaned = Regex.Replace(
+            cleaned,
+            @"([a-z])([A-Z])",
+            "$1 $2",
+            RegexOptions.CultureInvariant,
+            RegexTimeout);
+        cleaned = Regex.Replace(
+            cleaned,
+            @"([A-Za-z])([0-9])",
+            "$1 $2",
+            RegexOptions.CultureInvariant,
+            RegexTimeout);
+        cleaned = Regex.Replace(
+            cleaned,
+            @"([0-9])([A-Za-z])",
+            "$1 $2",
+            RegexOptions.CultureInvariant,
+            RegexTimeout);
         cleaned = HumanizeIdentifier(cleaned);
         return cleaned
             .Replace("Fsd", "FSD", StringComparison.Ordinal)
@@ -1897,7 +1886,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         var match = Regex.Match(
             internalName,
             @"size(?<size>\d+)_class(?<rating>\d+)",
-            RegexOptions.IgnoreCase);
+            RegexOptions.IgnoreCase,
+            RegexTimeout);
         if (match.Success
             && int.TryParse(match.Groups["rating"].Value, out var rating))
         {
@@ -1926,7 +1916,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         var optional = Regex.Match(
             slot,
             @"^Slot(?<number>\d+)\s+Size(?<size>\d+)$",
-            RegexOptions.IgnoreCase);
+            RegexOptions.IgnoreCase,
+            RegexTimeout);
         if (optional.Success)
         {
             return $"Optional {optional.Groups["number"].Value} · Class {optional.Groups["size"].Value}";
@@ -1935,13 +1926,18 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         var utility = Regex.Match(
             slot,
             @"^Tiny\s*Hardpoint(?<number>\d+)$",
-            RegexOptions.IgnoreCase);
+            RegexOptions.IgnoreCase,
+            RegexTimeout);
         if (utility.Success)
         {
             return $"Utility mount {utility.Groups["number"].Value}";
         }
 
-        var cargo = Regex.Match(slot, @"^Cargo(?<number>\d+)$", RegexOptions.IgnoreCase);
+        var cargo = Regex.Match(
+            slot,
+            @"^Cargo(?<number>\d+)$",
+            RegexOptions.IgnoreCase,
+            RegexTimeout);
         if (cargo.Success)
         {
             return $"Cargo slot {cargo.Groups["number"].Value}";
@@ -1975,6 +1971,119 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             "data" => 3,
             _ => 10,
         };
+
+    private IReadOnlyList<FrontierDetailRowViewModel> BuildCurrentShipValueRows()
+    {
+        var ship = Snapshot?.CurrentShip;
+        return ship is null
+            ? []
+            :
+            [
+                new("Hull", FormatCredits(ship.HullValue)),
+                new("Modules", FormatCredits(ship.ModulesValue)),
+                new("Cargo", FormatCredits(ship.CargoValue)),
+                new("Total", FormatCredits(ship.Value)),
+                new("Unloaned", FormatCredits(ship.UnloanedValue)),
+            ];
+    }
+
+    private IReadOnlyList<FrontierDetailRowViewModel> BuildCurrentShipConditionRows()
+    {
+        var ship = Snapshot?.CurrentShip;
+        if (ship is null)
+        {
+            return [];
+        }
+
+        var oxygen = ship.OxygenRemaining is { } oxygenRemaining
+            ? $"{oxygenRemaining:N0} seconds"
+            : "Unavailable";
+        return
+        [
+            new("Hull", FormatPercent(ship.HullHealth)),
+            new(
+                "Shield",
+                FormatPercent(ship.ShieldHealth),
+                ship.ShieldUp ? "Up" : "Down"),
+            new("Integrity", FormatPercent(ship.Integrity)),
+            new("Cockpit", ship.CockpitBreached ? "Breached" : "Secure"),
+            new("Oxygen", oxygen),
+        ];
+    }
+
+    private IReadOnlyList<FrontierDetailRowViewModel> BuildCarrierOperations()
+    {
+        var carrier = Carrier;
+        if (carrier is null)
+        {
+            return [];
+        }
+
+        return
+        [
+            new("State", carrier.State),
+            new("Theme", FirstNonEmpty(carrier.Theme, "Standard")),
+            new("Docking access", carrier.DockingAccess),
+            new("Notorious access", carrier.NotoriousAccess ? "Allowed" : "Denied"),
+            new("Tritium reserve", $"{carrier.Tritium:N0} t"),
+            new("Distance jumped", $"{carrier.TotalDistanceJumped:N1} ly"),
+            new("Current jump", FirstNonEmpty(carrier.CurrentJump, "None plotted")),
+        ];
+    }
+
+    private IReadOnlyList<FrontierDetailRowViewModel> BuildCarrierFinances()
+    {
+        var carrier = Carrier;
+        return carrier is null
+            ? []
+            :
+            [
+                new("Bank balance", FormatCredits(carrier.BankBalance)),
+                new("Reserved balance", FormatCredits(carrier.ReservedBalance)),
+                new("Weekly maintenance", FormatCredits(carrier.WeeklyMaintenance)),
+                new("Maintenance paid", FormatCredits(carrier.MaintenanceToDate)),
+                new("Core cost", FormatCredits(carrier.CoreCost)),
+                new("Services cost", FormatCredits(carrier.ServicesCost)),
+                new("Services paid", FormatCredits(carrier.ServicesCostToDate)),
+                new(
+                    "Jump cost",
+                    FormatCredits(carrier.JumpsCost),
+                    $"{carrier.WeeklyJumps:N0} jumps"),
+                new("Debt threshold", FormatCredits(carrier.DebtThreshold)),
+                new("Base taxation", $"{carrier.Taxation:N0}%"),
+                new("Market cargo", FormatCredits(carrier.MarketCargoValue)),
+                new("Market profit", FormatCredits(carrier.MarketProfit)),
+                new("Purchase allocation", FormatCredits(carrier.PurchaseOrderAllocation)),
+            ];
+    }
+
+    private void ResetSnapshotProjectionCache()
+    {
+        rankRows = null;
+        currentShipValueRows = null;
+        currentShipConditionRows = null;
+        currentShipModuleRows = null;
+        currentShipLiveryRows = null;
+        currentShipLaunchBayRows = null;
+        shipRows = null;
+        carrierCapacityRows = null;
+        carrierCargoRows = null;
+        carrierLockerRows = null;
+        carrierSellOrderRows = null;
+        carrierBuyOrderRows = null;
+        carrierOperationRows = null;
+        carrierFinanceRows = null;
+        carrierServiceTaxationRows = null;
+        carrierCrewRows = null;
+        carrierItineraryRows = null;
+        carrierReputationRows = null;
+        commanderReputationRows = null;
+        marketCommodityRows = null;
+        marketEconomyRows = null;
+        shipyardShipRows = null;
+        shipyardModuleRows = null;
+        communityGoalRows = null;
+    }
 
     private void RebuildCurrentShipModuleGroups()
     {
@@ -2036,6 +2145,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private void RaiseCommunityGoalProperties()
     {
+        communityGoalRows = null;
         OnPropertyChanged(nameof(CommunityGoals));
         OnPropertyChanged(nameof(HasCommunityGoals));
         OnPropertyChanged(nameof(CommunityGoalsMessage));

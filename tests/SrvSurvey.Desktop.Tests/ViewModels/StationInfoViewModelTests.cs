@@ -28,6 +28,8 @@ public sealed class StationInfoViewModelTests
         Assert.Equal(
             ["Shipyard", "Market", "Material Trader"],
             viewModel.RelevantServices);
+        Assert.Same(viewModel.EconomyLines, viewModel.EconomyLines);
+        Assert.Same(viewModel.RelevantServices, viewModel.RelevantServices);
         Assert.Equal(["Narcotics"], viewModel.ProhibitedCommodities);
     }
 

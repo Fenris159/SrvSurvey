@@ -77,6 +77,53 @@ public sealed class CommanderProfileViewModelTests
     }
 
     [Fact]
+    public async Task SnapshotProjectionCollectionsKeepStableIdentityBetweenReads()
+    {
+        var snapshot = CreateSnapshot(DateTimeOffset.UtcNow);
+        var account = new StubAccountService(new FrontierAccountState(
+            true,
+            snapshot,
+            snapshot.FetchedAt));
+        using var viewModel = new CommanderProfileViewModel(account);
+        await viewModel.OpenAsync();
+
+        Assert.Same(viewModel.Ranks, viewModel.Ranks);
+        Assert.Same(viewModel.CurrentShipValueRows, viewModel.CurrentShipValueRows);
+        Assert.Same(viewModel.CurrentShipConditionRows, viewModel.CurrentShipConditionRows);
+        Assert.Same(viewModel.CurrentShipModules, viewModel.CurrentShipModules);
+        Assert.Same(viewModel.CurrentShipLivery, viewModel.CurrentShipLivery);
+        Assert.Same(viewModel.CurrentShipLaunchBays, viewModel.CurrentShipLaunchBays);
+        Assert.Same(viewModel.Ships, viewModel.Ships);
+        Assert.Same(viewModel.CarrierCapacityRows, viewModel.CarrierCapacityRows);
+        Assert.Same(viewModel.CarrierCargo, viewModel.CarrierCargo);
+        Assert.Same(viewModel.CarrierLocker, viewModel.CarrierLocker);
+        Assert.Same(viewModel.CarrierSellOrders, viewModel.CarrierSellOrders);
+        Assert.Same(viewModel.CarrierBuyOrders, viewModel.CarrierBuyOrders);
+        Assert.Same(viewModel.CarrierOperations, viewModel.CarrierOperations);
+        Assert.Same(viewModel.CarrierFinances, viewModel.CarrierFinances);
+        Assert.Same(viewModel.CarrierServiceTaxation, viewModel.CarrierServiceTaxation);
+        Assert.Same(viewModel.CarrierCrew, viewModel.CarrierCrew);
+        Assert.Same(viewModel.CarrierItinerary, viewModel.CarrierItinerary);
+        Assert.Same(viewModel.CarrierReputation, viewModel.CarrierReputation);
+        Assert.Same(viewModel.CommanderReputation, viewModel.CommanderReputation);
+        Assert.Same(viewModel.MarketCommodities, viewModel.MarketCommodities);
+        Assert.Same(viewModel.MarketEconomies, viewModel.MarketEconomies);
+        Assert.Same(viewModel.ShipyardShips, viewModel.ShipyardShips);
+        Assert.Same(viewModel.ShipyardModules, viewModel.ShipyardModules);
+        Assert.Same(viewModel.CommunityGoals, viewModel.CommunityGoals);
+
+        var priorRanks = viewModel.Ranks;
+        var refreshed = CreateSnapshot(snapshot.FetchedAt.AddMinutes(1));
+        account.SetState(new FrontierAccountState(
+            true,
+            refreshed,
+            refreshed.FetchedAt));
+        await viewModel.OpenAsync();
+
+        Assert.NotSame(priorRanks, viewModel.Ranks);
+    }
+
+    [Fact]
     public async Task CachedRawGoalFieldsUpgradeWithoutNetworkRefresh()
     {
         var fetchedAt = DateTimeOffset.Parse("2026-07-30T12:00:00Z");
