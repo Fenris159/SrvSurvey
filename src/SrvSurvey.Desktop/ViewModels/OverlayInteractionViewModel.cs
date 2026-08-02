@@ -169,13 +169,22 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
-    public string ModeLabel => IsEditing
-        ? IsLiveInteractionEnabled
-            ? $"Editing {SelectedCategory.DisplayName} with live overlays"
-            : $"Editing {SelectedCategory.DisplayName}"
-        : IsLiveInteractionEnabled
-            ? "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode."
-            : "Open categorized previews without starting Elite. Changes are saved only with ✓.";
+    public string ModeLabel
+    {
+        get
+        {
+            if (IsEditing)
+            {
+                return IsLiveInteractionEnabled
+                    ? $"Editing {SelectedCategory.DisplayName} with live overlays"
+                    : $"Editing {SelectedCategory.DisplayName}";
+            }
+
+            return IsLiveInteractionEnabled
+                ? "Visible live overlays are clickable and can be dragged. Use the shortcut again to save and restore click-through mode."
+                : "Open categorized previews without starting Elite. Changes are saved only with ✓.";
+        }
+    }
 
     public string ToggleButtonText => IsEditing
         ? "Cancel Position Editing"
@@ -318,7 +327,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
-    public double SelectedOverlayScaleMaximum =>
+    public double SelectedOverlayScaleMaximum { get; } =
         IndividualScaleOptions.Length - 1;
 
     public string SelectedOverlayScaleLabel
@@ -651,12 +660,9 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         if (!saveChanges)
         {
             RestoreLivePlacements(session, changes.Keys);
-            StatusMessage = failures.Count == 0
-                ? changes.Count == 0
-                    ? "Live overlays returned to click-through mode; no positions moved."
-                    : "Live overlays returned to click-through mode; moved positions were restored without saving."
-                : "Live overlay interaction ended, but one or more windows could not be restored: "
-                    + string.Join(" ", failures.Distinct(StringComparer.Ordinal));
+            StatusMessage = GetUnsavedInteractionStatus(
+                changes.Count,
+                failures);
             return;
         }
 
@@ -702,6 +708,21 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             StatusMessage = "Live overlays returned to click-through mode, but their moved positions were not saved: "
                 + exception.Message;
         }
+    }
+
+    private static string GetUnsavedInteractionStatus(
+        int changedPlacementCount,
+        IReadOnlyCollection<string> failures)
+    {
+        if (failures.Count > 0)
+        {
+            return "Live overlay interaction ended, but one or more windows could not be restored: "
+                + string.Join(" ", failures.Distinct(StringComparer.Ordinal));
+        }
+
+        return changedPlacementCount == 0
+            ? "Live overlays returned to click-through mode; no positions moved."
+            : "Live overlays returned to click-through mode; moved positions were restored without saving.";
     }
 
     private void AttachLiveWindow(RegisteredOverlayWindow registered)

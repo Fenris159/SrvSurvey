@@ -6,7 +6,7 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class OverlayPositionEditSession
 {
-    private readonly IReadOnlyDictionary<string, LegacyOverlayPlacement> original;
+    private readonly Dictionary<string, LegacyOverlayPlacement> original;
     private readonly double? originalDefaultOpacity;
     private readonly LegacyOverlayLayout workingLayout;
     private double? workingDefaultOpacity;

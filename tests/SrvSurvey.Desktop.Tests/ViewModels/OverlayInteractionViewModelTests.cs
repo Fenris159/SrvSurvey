@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless.XUnit;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -168,6 +169,120 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         Assert.False(host.IsOpen);
         Assert.Empty(platform.InteractiveStates);
         Assert.Contains("No live overlays", viewModel.StatusMessage);
+    }
+
+    [AvaloniaFact]
+    public void LiveWindowDragPersistsAndIsReloadedByThePositionEditor()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        File.WriteAllText(
+            path,
+            "{\"PlotJumpInfo\":\"center:0, top:8\"}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var platform = new FakeOverlayPlatform();
+        var registry = new OverlayWindowRegistry();
+        var host = new FakeEditorHost();
+        var gameBounds = new PixelRect(100, 200, 1200, 800);
+        var window = new Window
+        {
+            Width = 600,
+            Height = 100,
+            Position = new PixelPoint(400, 208),
+        };
+        registry.Register(window, "PlotJumpInfo");
+        using var viewModel = new OverlayInteractionViewModel(
+            platform,
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                gameBounds,
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            activeLayout,
+            registry,
+            host);
+
+        Assert.True(viewModel.ToggleLiveOverlayInteraction());
+        window.Position = new PixelPoint(420, 310);
+        Assert.Contains("Moved live overlay", viewModel.StatusMessage);
+
+        Assert.True(viewModel.ToggleLiveOverlayInteraction());
+
+        Assert.Equal([true, false], platform.InteractiveStates);
+        Assert.Equal(
+            new PixelPoint(420, 310),
+            store.Load().GetPosition(
+                "PlotJumpInfo",
+                gameBounds,
+                new PixelSize(600, 100)));
+        Assert.Contains("Saved 1 live overlay position", viewModel.StatusMessage);
+
+        Assert.True(viewModel.Begin());
+        Assert.Equal(
+            store.Load().Placements["PlotJumpInfo"],
+            host.OpenedJumpInfoPlacement);
+    }
+
+    [AvaloniaFact]
+    public void LiveDragAndOpenEditorStaySynchronizedAndDisposeRestoresChanges()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotJumpInfo\":\"center:0, top:8\"}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var registry = new OverlayWindowRegistry();
+        var host = new FakeEditorHost();
+        var gameBounds = new PixelRect(100, 200, 1200, 800);
+        var window = new Window
+        {
+            Width = double.NaN,
+            Height = double.NaN,
+            Position = new PixelPoint(400, 208),
+        };
+        registry.Register(window, "PlotJumpInfo");
+        var viewModel = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(new GameWindowSnapshot(
+                (nint)1,
+                42,
+                gameBounds,
+                IsVisible: true,
+                IsForeground: true)),
+            store,
+            activeLayout,
+            registry,
+            host);
+        var original = activeLayout.Placements["PlotJumpInfo"];
+
+        Assert.True(viewModel.Begin());
+        Assert.True(viewModel.ToggleLiveOverlayInteraction());
+        Assert.True(host.RuntimeOverlaysVisibleDuringEditing);
+
+        var definition = OverlayLayoutCatalog.GetRequired("PlotJumpInfo");
+        host.Move(
+            definition.Name,
+            new PixelPoint(460, 340),
+            definition.PreviewSize,
+            gameBounds);
+
+        Assert.NotEqual(original, activeLayout.Placements["PlotJumpInfo"]);
+
+        window.Position = new PixelPoint(500, 360);
+
+        Assert.True(host.PositionRefreshCount > 0);
+        Assert.Equal(
+            activeLayout.Placements["PlotJumpInfo"],
+            host.LastPositionRefreshPlacements["PlotJumpInfo"]);
+
+        viewModel.Dispose();
+
+        Assert.Equal(original, activeLayout.Placements["PlotJumpInfo"]);
+        Assert.False(viewModel.IsLiveInteractionEnabled);
     }
 
     [Fact]
@@ -580,7 +695,7 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         public int PositionRefreshCount { get; private set; }
 
-        public IReadOnlyDictionary<string, LegacyOverlayPlacement>
+        public Dictionary<string, LegacyOverlayPlacement>
             LastPositionRefreshPlacements
         { get; private set; } =
                 new Dictionary<string, LegacyOverlayPlacement>(

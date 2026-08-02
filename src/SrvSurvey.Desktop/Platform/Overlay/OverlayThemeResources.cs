@@ -223,7 +223,7 @@ public static class OverlayThemeResources
             candidate => new LegacyPresentationRegistration(
                 candidate,
                 definition));
-        registration.Apply();
+        registration.ApplyPresentation();
     }
 
     internal static void NormalizeLegacyOverlayControl(
@@ -507,7 +507,7 @@ public static class OverlayThemeResources
             window.Closed += OnWindowClosed;
         }
 
-        public void Apply()
+        public void ApplyPresentation()
         {
             rootSurface ??= ResolveRootSurface(window);
             if (rootSurface is null)
@@ -627,7 +627,7 @@ public static class OverlayThemeResources
 
         private void OnWindowOpened(object? sender, EventArgs eventArgs)
         {
-            Apply();
+            ApplyPresentation();
         }
 
         private void OnLayoutUpdated(object? sender, EventArgs eventArgs)

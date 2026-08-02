@@ -1,6 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Headless.XUnit;
 using Avalonia.Media;
+using Avalonia.Styling;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
@@ -70,6 +74,133 @@ public sealed class OverlayThemeResourcesTests
         Assert.Equal(new Thickness(0), surface.BorderThickness);
         Assert.Equal(new CornerRadius(5), surface.CornerRadius);
         Assert.Equal(1d, surface.Opacity);
+    }
+
+    [AvaloniaFact]
+    public void ApplyThemesAndRefreshesAWindowSurfaceWithoutChangingBadgePalette()
+    {
+        var surface = new Border
+        {
+            Background = Brushes.DarkBlue,
+            BorderBrush = Brushes.Cyan,
+            BorderThickness = new Thickness(4),
+            Opacity = 0.5,
+        };
+        var window = new Window { Content = surface };
+
+        OverlayThemeResources.Apply(window);
+        OverlayThemeResources.Apply(window);
+        OverlayThemeResources.RefreshAll();
+
+        Assert.Equal(ThemeVariant.Dark, window.RequestedThemeVariant);
+        Assert.Equal(new Thickness(0), surface.Margin);
+        Assert.Equal(new Thickness(5), surface.Padding);
+        Assert.Null(surface.BorderBrush);
+        Assert.Equal(new Thickness(0), surface.BorderThickness);
+        Assert.Equal(1d, surface.Opacity);
+    }
+
+    [AvaloniaFact]
+    public void FullApplyTracksPerPanelOpacityScaleAndBaseSizeChanges()
+    {
+        var definition = OverlayLayoutCatalog.GetRequired("PlotJumpInfo");
+        var placement = definition.DefaultPlacement with
+        {
+            Opacity = 0.42,
+            ScaleIndex = 3,
+        };
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal)
+            {
+                [definition.Name] = placement,
+            },
+            defaultOpacity: 0.9,
+            error: null);
+        layout.SetScaleIndex(2);
+        var originalContent = new StackPanel
+        {
+            Children =
+            {
+                new TextBlock { Text = "Route and destination intelligence" },
+                new Border
+                {
+                    Padding = new Thickness(10),
+                    CornerRadius = new CornerRadius(8),
+                    Child = new TextBlock { Text = "Details", FontSize = 18 },
+                },
+            },
+        };
+        var surface = new Border { Child = originalContent };
+        var window = new Window
+        {
+            Width = 400,
+            Height = 100,
+            MinWidth = 700,
+            MaxWidth = 500,
+            Content = surface,
+        };
+
+        OverlayThemeResources.Apply(window, layout, definition.Name);
+
+        var scaleContainer = Assert.IsType<LayoutTransformControl>(window.Content);
+        Assert.Same(surface, scaleContainer.Child);
+        Assert.IsType<ScaleTransform>(scaleContainer.LayoutTransform);
+        Assert.Equal(0.42, window.Opacity);
+        Assert.Equal(definition.PreviewSize.Width * 1.2, window.Width, 5);
+        var presentation = Assert.IsType<StackPanel>(surface.Child);
+        Assert.Equal(definition.DisplayName,
+            Assert.IsType<TextBlock>(presentation.Children[0]).Text);
+        Assert.Same(originalContent, presentation.Children[2]);
+
+        Assert.True(layout.SetPlacement(
+            definition.Name,
+            placement with { Opacity = 0.75, ScaleIndex = 1 }));
+        Assert.Equal(0.75, window.Opacity);
+        Assert.Equal(definition.PreviewSize.Width, window.Width, 5);
+
+        OverlayThemeResources.SetBaseSize(window, layout, 250, 125);
+        OverlayThemeResources.SetBaseSize(window, layout, 250, 125);
+        Assert.Equal(250, window.Width, 5);
+        Assert.Equal(125, window.Height, 5);
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            OverlayThemeResources.SetBaseSize(window, layout, 0, 100));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            OverlayThemeResources.SetBaseSize(window, layout, 100, double.NaN));
+
+        OverlayThemeResources.Apply(window, layout, definition.Name);
+        var otherLayout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal),
+            defaultOpacity: null,
+            error: null);
+        Assert.Throws<InvalidOperationException>(() =>
+            OverlayThemeResources.Apply(
+                window,
+                otherLayout,
+                definition.Name));
+
+        window.Show();
+        window.Close();
+        Assert.True(layout.SetPlacement(
+            definition.Name,
+            placement with { Opacity = 0.5, ScaleIndex = 2 }));
+    }
+
+    [AvaloniaFact]
+    public void ScaleAndFormFactorGracefullyHandleContentlessOrUnknownWindows()
+    {
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>(StringComparer.Ordinal),
+            defaultOpacity: null,
+            error: null);
+        var contentless = new Window { Width = 123 };
+
+        OverlayThemeResources.ApplyScale(contentless, layout);
+        OverlayThemeResources.ApplyScale(contentless, layout, "PlotJumpInfo");
+        OverlayThemeResources.ApplyScale(contentless, scaleIndex: 25, renderScaling: 2);
+        OverlayThemeResources.ApplyLegacyFormFactor(contentless, "UnknownPanel");
+
+        Assert.Equal(123, contentless.Width);
+        Assert.Null(OverlayThemeResources.GetLegacyFormFactorWidth("UnknownPanel"));
     }
 
     [Fact]
@@ -186,16 +317,20 @@ public sealed class OverlayThemeResourcesTests
         heading.Classes.Add("eyebrow");
         var stack = new StackPanel { Spacing = 10 };
         var grid = new Grid { RowSpacing = 9, ColumnSpacing = 12 };
+        var progress = new ProgressBar { Height = 9 };
 
         OverlayThemeResources.NormalizeLegacyOverlayControl(heading, root);
         OverlayThemeResources.NormalizeLegacyOverlayControl(stack, root);
         OverlayThemeResources.NormalizeLegacyOverlayControl(grid, root);
+        OverlayThemeResources.NormalizeLegacyOverlayControl(progress, root);
+        OverlayThemeResources.NormalizeLegacyOverlayControl(root, root);
 
         Assert.False(heading.IsVisible);
         Assert.Equal(12, heading.FontSize);
         Assert.Equal(3, stack.Spacing);
         Assert.Equal(3, grid.RowSpacing);
         Assert.Equal(5, grid.ColumnSpacing);
+        Assert.Equal(3, progress.Height);
     }
 
     [Fact]
@@ -211,5 +346,13 @@ public sealed class OverlayThemeResourcesTests
         Assert.Same(replacement, surface.Child);
         Assert.Equal(2, replacement.Children.Count);
         Assert.Same(original, replacement.Children[1]);
+
+        var emptySurface = new Border();
+        var emptyReplacement = new StackPanel();
+        OverlayThemeResources.ReplaceSurfaceContent(
+            emptySurface,
+            emptyReplacement);
+        Assert.Same(emptyReplacement, emptySurface.Child);
+        Assert.Empty(emptyReplacement.Children);
     }
 }

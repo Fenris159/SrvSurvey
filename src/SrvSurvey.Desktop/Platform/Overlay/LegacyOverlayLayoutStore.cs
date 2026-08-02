@@ -506,9 +506,13 @@ public sealed class LegacyOverlayLayoutStore
 
     private static bool NullableOpacityEquals(double? left, double? right)
     {
-        return left is null || right is null
-            ? left == right
-            : Math.Abs(left.Value - right.Value) <= 0.0000001d;
+        if (left.HasValue != right.HasValue)
+        {
+            return false;
+        }
+
+        return !left.HasValue
+            || Math.Abs(left.Value - right!.Value) <= 0.0000001d;
     }
 
     private static void ValidatePlacement(

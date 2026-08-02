@@ -57,50 +57,69 @@ public sealed class OverlayWindowRegistry
         galaxyMapContextActive = active;
         foreach (var window in GetRegisteredWindows())
         {
-            if (!registrations.TryGetValue(window, out var registration))
+            if (registrations.TryGetValue(window, out var registration))
             {
-                continue;
-            }
-
-            if (registration.PresentationVisual is not null)
-            {
-                registration.PresentationVisible =
-                    ResolvePresentationVisibility(
-                        registration.PlotterName,
-                        registration.RequestedPresentationVisible,
-                        galaxyMapContextActive);
-                continue;
-            }
-
-            if (active)
-            {
-                if (!ShouldPresent(registration.PlotterName)
-                    && window.IsVisible)
-                {
-                    registration.RestoreAfterGalaxyMap = true;
-                    window.Hide();
-                }
-
-                continue;
-            }
-
-            if (!registration.RestoreAfterGalaxyMap)
-            {
-                continue;
-            }
-
-            registration.RestoreAfterGalaxyMap = false;
-            try
-            {
-                window.Show();
-            }
-            catch (InvalidOperationException)
-            {
-                // The owning coordinator closed the panel while the map was open.
+                ApplyGalaxyMapContext(window, registration, active);
             }
         }
 
         Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void ApplyGalaxyMapContext(
+        Window window,
+        Registration registration,
+        bool active)
+    {
+        if (registration.PresentationVisual is not null)
+        {
+            registration.PresentationVisible = ResolvePresentationVisibility(
+                registration.PlotterName,
+                registration.RequestedPresentationVisible,
+                galaxyMapContextActive);
+            return;
+        }
+
+        if (active)
+        {
+            SuppressSeparateWindowForGalaxyMap(window, registration);
+            return;
+        }
+
+        RestoreSeparateWindowAfterGalaxyMap(window, registration);
+    }
+
+    private void SuppressSeparateWindowForGalaxyMap(
+        Window window,
+        Registration registration)
+    {
+        if (ShouldPresent(registration.PlotterName) || !window.IsVisible)
+        {
+            return;
+        }
+
+        registration.RestoreAfterGalaxyMap = true;
+        window.Hide();
+    }
+
+    private static void RestoreSeparateWindowAfterGalaxyMap(
+        Window window,
+        Registration registration)
+    {
+        if (!registration.RestoreAfterGalaxyMap)
+        {
+            return;
+        }
+
+        registration.RestoreAfterGalaxyMap = false;
+        try
+        {
+            window.Show();
+        }
+        catch (InvalidOperationException)
+        {
+            // The owning coordinator closed the panel while the map was open.
+        }
     }
 
     public IReadOnlyList<RegisteredOverlayWindow> Snapshot()
@@ -225,7 +244,7 @@ public sealed class OverlayWindowRegistry
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    private IReadOnlyList<Window> GetRegisteredWindows()
+    private List<Window> GetRegisteredWindows()
     {
         var result = new List<Window>(windows.Count);
         for (var index = windows.Count - 1; index >= 0; index--)
