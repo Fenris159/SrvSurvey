@@ -74,6 +74,7 @@ jobs:
           begin
           /k:"Fenris159_SrvSurvey"
           /o:"fenris159"
+          /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
           /d:sonar.token="$env:SONAR_TOKEN"
 
       - name: Restore
@@ -83,7 +84,14 @@ jobs:
         run: dotnet build SrvSurvey.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test SrvSurvey.slnx --configuration Release --no-build --no-restore
+        run: >-
+          dotnet test SrvSurvey.slnx
+          --configuration Release
+          --no-build
+          --no-restore
+          --collect:"XPlat Code Coverage"
+          --
+          DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
       - name: Complete SonarQube analysis
         if: success()
