@@ -1,0 +1,116 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Controls.RouteBioTargetRow"
+             x:DataType="vm:RouteBioTargetItemViewModel">
+  <UserControl.Styles>
+    <Style Selector="CheckBox.route-body-check">
+      <Setter Property="Width" Value="22" />
+      <Setter Property="Height" Value="22" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid Width="22"
+                Height="22"
+                Background="Transparent">
+            <Border Name="CheckFrame"
+                    Width="12"
+                    Height="12"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource RavenWindowBrush}"
+                    BorderBrush="{DynamicResource RavenPrimaryDimBrush}"
+                    BorderThickness="1"
+                    CornerRadius="2" />
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="CheckBox.route-body-check:pointerover /template/ Border#CheckFrame">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenPrimaryBrush}" />
+      <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+    <Style Selector="CheckBox.route-body-check:checked /template/ Border#CheckFrame">
+      <Setter Property="Background" Value="{DynamicResource RavenPrimaryBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenPrimaryBrush}" />
+    </Style>
+  </UserControl.Styles>
+  <StackPanel Margin="0,2" Spacing="2">
+    <Grid ColumnDefinitions="Auto,Auto,*"
+          ColumnSpacing="7"
+          VerticalAlignment="Top">
+      <CheckBox x:Name="CompletionCheckBox"
+                Classes="route-body-check"
+                Margin="0,1,0,0"
+                VerticalAlignment="Top"
+                IsChecked="{Binding IsCompleted, Mode=OneWay}"
+                Click="CompletionCheckBox_Click" />
+      <Border Grid.Column="1"
+              Width="22"
+              Height="22"
+              Padding="2"
+              Margin="0,1,0,0"
+              VerticalAlignment="Top"
+              Background="Transparent"
+              CornerRadius="11"
+              ToolTip.Tip="{Binding BodyIconAccessibleName}">
+        <Image Source="{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}"
+               Stretch="Uniform" />
+      </Border>
+      <ItemsControl Grid.Column="2"
+                    ItemsSource="{Binding InlineSegments}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:RouteBioDetailSegmentViewModel">
+            <StackPanel Margin="0,0,4,1" Orientation="Horizontal">
+              <TextBlock MaxWidth="128"
+                         Foreground="{DynamicResource RavenPrimaryBrush}"
+                         FontSize="10"
+                         FontWeight="SemiBold"
+                         IsVisible="{Binding IsBodyName}"
+                         Text="{Binding Text}"
+                         TextWrapping="Wrap" />
+              <TextBlock MaxWidth="128"
+                         Foreground="{DynamicResource RavenPrimaryBrush}"
+                         FontSize="10"
+                         IsVisible="{Binding IsDetail}"
+                         Text="{Binding Text}"
+                         TextWrapping="Wrap" />
+              <TextBlock Margin="3,0,0,0"
+                         Foreground="{DynamicResource RavenPrimaryBrush}"
+                         FontSize="10"
+                         IsVisible="{Binding HasSeparator}"
+                         Text="|" />
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Grid>
+
+    <ItemsControl Margin="58,0,0,0"
+                  IsVisible="{Binding HasSpecies}"
+                  ItemsSource="{Binding Species}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Foreground="{DynamicResource RavenPrimaryDimBrush}"
+                     FontSize="9"
+                     Text="{Binding StringFormat=• {0}}"
+                     TextWrapping="Wrap" />
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+    <TextBlock Margin="58,0,0,0"
+               Foreground="{DynamicResource RavenPrimaryDimBrush}"
+               FontSize="9"
+               FontStyle="Italic"
+               IsVisible="{Binding NeedsScan}"
+               Text="Biological targets not listed by route"
+               TextWrapping="Wrap" />
+  </StackPanel>
+</UserControl>

@@ -1,6 +1,6 @@
 # Development and Validation
 
-Last updated: 2026-07-30
+Last updated: 2026-08-02
 
 ## Branch purpose
 
@@ -32,7 +32,7 @@ XWayland startup.
   production consumer and event-specific assertions.
 - Network coverage inventories all runtime surfaces and every `HttpClient`
   owner, including bounded streaming requirements.
-- Overlay coverage inventories all 22 supported overlay contracts and requires
+- Overlay coverage inventories all 28 supported overlay contracts and requires
   production markup plus assertion evidence.
 - Profile import remains backup-first, hash-verified, staged, and recoverable.
   Compatibility code and tests are part of the converted product, not a build
@@ -68,8 +68,11 @@ Overlay runtime testing must cover both presentation backends. Leave
 on Windows and ordinary X11/XWayland. Set it to `combined` before process
 startup to exercise the shared host; set it to `separate` to verify the
 fallback. For the combined host, verify dynamic-height panels, per-panel and
-global opacity, stream/OpenVR projection, edit-preview suppression, live drag,
-transparent-gap click-through, game resize, and mixed-DPI monitor movement.
+global opacity and scale, stream/OpenVR projection, edit-preview suppression,
+live drag, transparent-gap click-through, game resize, and mixed-DPI monitor
+movement. Route-specific validation must also exercise the shared route-body
+preview/live presentation, body completion and scrolling while interaction is
+enabled, Fleet Carrier route progression, and every carrier countdown phase.
 
 Record release-specific runtime results in the release notes or issue tracker;
 do not reintroduce the previous application source as a test oracle.

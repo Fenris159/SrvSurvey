@@ -132,7 +132,7 @@ public static class OverlayThemeResources
     {
         ArgumentNullException.ThrowIfNull(layout);
         Apply(window);
-        ApplyScale(window, layout);
+        ApplyScale(window, layout, plotterName);
         ApplyOpacity(window, layout, plotterName);
         OverlayWindowRegistry.Shared.Register(window, plotterName);
     }
@@ -145,7 +145,7 @@ public static class OverlayThemeResources
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(layout);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
-        ApplyScale(window, layout);
+        ApplyScale(window, layout, plotterName);
         var opacity = layout.GetOpacity(plotterName) ?? 1d;
         if (Math.Abs(window.Opacity - opacity) > 0.0001d)
         {
@@ -159,6 +159,34 @@ public static class OverlayThemeResources
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(layout);
+        var scaleIndex = OverlayWindowRegistry.Shared.TryGetPlotterName(
+            window,
+            out var plotterName)
+                ? layout.GetScaleIndex(plotterName)
+                : layout.ScaleIndex;
+        ApplyScale(window, scaleIndex, window.RenderScaling);
+    }
+
+    public static void ApplyScale(
+        Window window,
+        LegacyOverlayLayout layout,
+        string plotterName)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentNullException.ThrowIfNull(layout);
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        ApplyScale(
+            window,
+            layout.GetScaleIndex(plotterName),
+            window.RenderScaling);
+    }
+
+    public static void ApplyScale(
+        Window window,
+        int scaleIndex,
+        double renderScaling)
+    {
+        ArgumentNullException.ThrowIfNull(window);
         var registration = GetOrCreateScaleRegistration(window);
         if (registration is null)
         {
@@ -166,8 +194,8 @@ public static class OverlayThemeResources
         }
 
         var factor = OverlayScaleCatalog.GetRelativeScale(
-            layout.ScaleIndex,
-            window.RenderScaling);
+            scaleIndex,
+            renderScaling);
         if (Math.Abs(registration.AppliedFactor - factor) <= 0.0001d)
         {
             return;

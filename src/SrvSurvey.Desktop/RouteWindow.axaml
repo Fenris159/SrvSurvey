@@ -278,7 +278,7 @@
                                           Height="40"
                                           Padding="3"
                                           VerticalAlignment="Center"
-                                          Background="{DynamicResource RavenAccentMutedBrush}"
+                                          Background="Transparent"
                                           CornerRadius="20"
                                           ToolTip.Tip="{Binding BodyIconAccessibleName}">
                                     <Image Source="{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}"

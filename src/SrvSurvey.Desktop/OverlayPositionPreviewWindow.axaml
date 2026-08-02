@@ -28,32 +28,60 @@
                 BorderBrush="{DynamicResource RavenAccentBrush}"
                 BorderThickness="1"
                 CornerRadius="8">
-          <StackPanel MinWidth="170" Spacing="8">
+          <StackPanel MinWidth="300" Spacing="8">
             <TextBlock FontWeight="SemiBold"
-                       Text="Overlay opacity" />
+                       Text="Overlay/Scale" />
             <TextBlock Classes="muted"
                        FontSize="11"
                        Text="Override this overlay only"
                        TextWrapping="Wrap" />
-            <CheckBox x:Name="UseGlobalOpacityCheckBox"
-                      Content="Use global opacity"
-                      IsThreeState="False"
-                      IsCheckedChanged="OnUseGlobalOpacityChanged" />
-            <Grid HorizontalAlignment="Center"
-                  ColumnDefinitions="Auto,Auto"
-                  ColumnSpacing="10">
-              <Slider x:Name="OpacityOverrideSlider"
-                      Height="170"
-                      Minimum="0"
-                      Maximum="100"
-                      Orientation="Vertical"
-                      TickFrequency="1"
-                      ValueChanged="OnOpacityOverrideValueChanged" />
-              <TextBlock x:Name="OpacityOverrideValueText"
-                         Grid.Column="1"
-                         MinWidth="42"
-                         VerticalAlignment="Center"
-                         FontWeight="SemiBold" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+              <StackPanel Spacing="7">
+                <TextBlock Classes="eyebrow" Text="OPACITY" />
+                <CheckBox x:Name="UseGlobalOpacityCheckBox"
+                          Content="Use global opacity"
+                          IsThreeState="False"
+                          IsCheckedChanged="OnUseGlobalOpacityChanged" />
+                <Grid HorizontalAlignment="Center"
+                      ColumnDefinitions="Auto,Auto"
+                      ColumnSpacing="8">
+                  <Slider x:Name="OpacityOverrideSlider"
+                          Height="160"
+                          Minimum="0"
+                          Maximum="100"
+                          Orientation="Vertical"
+                          TickFrequency="1"
+                          ValueChanged="OnOpacityOverrideValueChanged" />
+                  <TextBlock x:Name="OpacityOverrideValueText"
+                             Grid.Column="1"
+                             MinWidth="42"
+                             VerticalAlignment="Center"
+                             FontWeight="SemiBold" />
+                </Grid>
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="7">
+                <TextBlock Classes="eyebrow" Text="SCALE" />
+                <CheckBox x:Name="UseGlobalScaleCheckBox"
+                          Content="Use global scale"
+                          IsThreeState="False"
+                          IsCheckedChanged="OnUseGlobalScaleChanged" />
+                <Grid HorizontalAlignment="Center"
+                      ColumnDefinitions="Auto,Auto"
+                      ColumnSpacing="8">
+                  <Slider x:Name="ScaleOverrideSlider"
+                          Height="160"
+                          Minimum="0"
+                          Maximum="24"
+                          Orientation="Vertical"
+                          TickFrequency="1"
+                          ValueChanged="OnScaleOverrideValueChanged" />
+                  <TextBlock x:Name="ScaleOverrideValueText"
+                             Grid.Column="1"
+                             MinWidth="50"
+                             VerticalAlignment="Center"
+                             FontWeight="SemiBold" />
+                </Grid>
+              </StackPanel>
             </Grid>
           </StackPanel>
         </Border>
@@ -98,15 +126,33 @@
                 Background="{DynamicResource RavenWarningBrush}"
                 Opacity="0.65" />
         <ItemsControl Grid.Row="2"
-                      IsVisible="{Binding HasRows}"
+                      IsVisible="{Binding !IsRouteBio}"
                       ItemsSource="{Binding Rows}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:OverlayPositionPreviewRowViewModel">
-              <Grid Margin="0,1"
+              <Grid>
+                <Grid Margin="0,1"
+                    IsVisible="{Binding !IsRouteBody}"
                     RowDefinitions="Auto,Auto"
-                    ColumnDefinitions="Auto,Auto,Auto,*"
+                    ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*"
                     ColumnSpacing="5">
-                <Grid Width="14"
+                <CheckBox IsVisible="{Binding ShowCompletionCheckBox}"
+                          IsHitTestVisible="False"
+                          IsChecked="{Binding IsCompleted}" />
+                <Border Grid.Column="1"
+                        Width="22"
+                        Height="22"
+                        Padding="2"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        CornerRadius="11"
+                        IsVisible="{Binding HasBodyIcon}"
+                        ToolTip.Tip="{Binding BodyIconAccessibleName}">
+                  <Image Source="{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}"
+                         Stretch="Uniform" />
+                </Border>
+                <Grid Grid.Column="2"
+                      Width="14"
                       MinHeight="18"
                       IsVisible="{Binding HasGlyph}">
                   <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
@@ -140,12 +186,12 @@
                              IsVisible="{Binding IsSuccessGlyph}"
                              Text="{Binding Glyph}" />
                 </Grid>
-                <TextBlock Grid.Column="1"
+                <TextBlock Grid.Column="3"
                            Foreground="{DynamicResource RavenPrimaryBrush}"
                            FontSize="10"
                            Text="{Binding Label}"
                            TextTrimming="CharacterEllipsis" />
-                <ItemsControl Grid.Column="2"
+                <ItemsControl Grid.Column="4"
                               Margin="1,0,3,0"
                               VerticalAlignment="Center"
                               IsVisible="{Binding HasRewardBands}"
@@ -180,7 +226,7 @@
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBlock Grid.Column="3"
+                <TextBlock Grid.Column="5"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
                            Foreground="{DynamicResource RavenPrimaryBrush}"
@@ -188,7 +234,7 @@
                            Text="{Binding Value}"
                            TextTrimming="CharacterEllipsis" />
                 <ProgressBar Grid.Row="1"
-                             Grid.Column="1"
+                             Grid.Column="3"
                              Grid.ColumnSpan="3"
                              Height="3"
                              Margin="0,2,0,0"
@@ -196,10 +242,15 @@
                              Minimum="0"
                              Maximum="100"
                              Value="{Binding Progress}" />
+                </Grid>
               </Grid>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <controls:RouteBioTargetList Grid.Row="2"
+                                     IsVisible="{Binding IsRouteBio}"
+                                     ItemsSource="{Binding RouteBioTargets}"
+                                     IsInteractive="False" />
         <TextBlock Grid.Row="3"
                    HorizontalAlignment="Center"
                    Foreground="{DynamicResource RavenMutedTextBrush}"
@@ -207,7 +258,7 @@
                    IsVisible="{Binding ShowFooter}"
                    Text="{Binding Footer}"
                    TextTrimming="CharacterEllipsis"
-                   ToolTip.Tip="SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY" />
+                   ToolTip.Tip="SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE" />
       </Grid>
     </Grid>
   </Border>

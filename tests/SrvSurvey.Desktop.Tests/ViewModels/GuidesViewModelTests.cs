@@ -1,4 +1,5 @@
 using SrvSurvey.Desktop.ViewModels;
+using SrvSurvey.Desktop.Presentation;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
 
@@ -26,12 +27,38 @@ public sealed class GuidesViewModelTests
             Assert.Contains(icons, icon => icon.Kind == kind));
     }
 
+    [Fact]
+    public void GlossaryDocumentsEveryBundledRouteAndBodyIcon()
+    {
+        var icons = GuideCatalog.Create()
+            .SelectMany(category => category.Icons)
+            .Where(icon => icon.HasAsset)
+            .ToArray();
+
+        Assert.All(RouteBodyAssetResolver.SupportedVisuals, visual =>
+            Assert.Contains(icons, icon =>
+                icon.AssetPath == visual.AssetPath
+                && icon.Name == visual.AccessibleName
+                && !string.IsNullOrWhiteSpace(icon.Meaning)));
+        Assert.Contains(icons, icon => icon.AssetPath.EndsWith(
+            "/Assets/Routes/refuel-star.png",
+            StringComparison.Ordinal));
+        Assert.Contains(icons, icon => icon.AssetPath.EndsWith(
+            "/Assets/Routes/neutron-star.png",
+            StringComparison.Ordinal));
+        Assert.Equal(
+            RouteBodyAssetResolver.SupportedVisuals.Count + 2,
+            icons.Length);
+    }
+
     [Theory]
     [InlineData("journal folder", "First launch")]
     [InlineData("marketID repair", "Completed build-site repair")]
     [InlineData("primary port order", "Primary port order safety")]
     [InlineData("power post", "Conflict-zone power post")]
     [InlineData("hatched reward", "Hatched reward PIPs")]
+    [InlineData("rocky body route", "Rocky body")]
+    [InlineData("fuel scoop", "Fuel-scoop stop")]
     [InlineData("checksum manifest", "Import an original SrvSurvey profile")]
     public void SearchFindsWorkflowAndGlossaryContent(
         string query,

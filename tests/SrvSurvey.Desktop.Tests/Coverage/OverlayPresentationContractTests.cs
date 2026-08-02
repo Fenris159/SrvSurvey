@@ -69,11 +69,22 @@ public sealed class OverlayPresentationContractTests
             "HasRouteBadges", "Refuel", "Neutron", "Assets/Routes/refuel-star.png",
             "Assets/Routes/neutron-star.png",
         ]),
-        Contract("PlotRouteBio", ["src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml"], [
+        Contract("PlotFleetCarrierRoute", ["src/SrvSurvey.Desktop/FleetCarrierRouteOverlayWindow.axaml"], [
+            "HopProgress", "SystemName", "JumpSummary", "JumpsLeft",
+            "FuelLeft", "TritiumInMarket", "JumpFuel", "IcyRingLabel",
+            "HasRestockWarning", "RestockAmount", "CountdownTitle",
+            "Countdown", "CountdownPhase", "CountdownPhaseTime",
+        ]),
+        Contract("PlotRouteBio", [
+            "src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/Controls/RouteBioTargetRow.axaml",
+            "src/SrvSurvey.Desktop/Controls/RouteBioTargetList.axaml",
+            "src/SrvSurvey.Desktop/ViewModels/RouteWorkspaceViewModel.cs",
+        ], [
             "SystemName", "Targets", "IsCompleted", "CompletionLabel", "Species",
             "Subtype", "DistanceToArrival", "EstimatedScanValue", "EstimatedMappingValue",
             "EstimatedBiologyValue", "IsTerraformable", "BodyIconAssetPath",
-            "BundledAssetImageConverter",
+            "CompactDetailSegments", "InlineSegments", "BundledAssetImageConverter",
         ]),
         Contract("PlotMassacre", ["src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml"], [
             "TargetFaction", "MissionGiver", "RemainingText", "TextDecorations=\"Strikethrough\"",
@@ -104,7 +115,7 @@ public sealed class OverlayPresentationContractTests
     public void EveryOverlayHasItsInformationGroupsInProductionMarkup()
     {
         var root = FindRepositoryRoot();
-        Assert.Equal(23, Contracts.Length);
+        Assert.Equal(24, Contracts.Length);
         foreach (var contract in Contracts)
         {
             var production = string.Join(

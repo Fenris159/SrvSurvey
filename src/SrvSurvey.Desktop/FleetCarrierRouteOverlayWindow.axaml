@@ -1,0 +1,127 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.FleetCarrierRouteOverlayWindow"
+        x:DataType="vm:FleetCarrierRouteOverlayViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="460"
+        d:DesignHeight="430"
+        Width="460"
+        MinHeight="250"
+        MaxHeight="560"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey fleet carrier route overlay">
+  <Border Margin="8"
+          Padding="17"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="12"
+          Opacity="0.97">
+    <StackPanel Spacing="10">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <TextBlock Classes="eyebrow"
+                   FontSize="11"
+                   Text="FLEET CARRIER ROUTE" />
+        <TextBlock Grid.Column="1"
+                   Classes="eyebrow"
+                   FontSize="11"
+                   Text="{Binding HopProgress}" />
+      </Grid>
+
+      <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                 FontSize="22"
+                 FontWeight="SemiBold"
+                 Text="{Binding SystemName}"
+                 TextTrimming="CharacterEllipsis" />
+      <TextBlock FontSize="12"
+                 FontWeight="SemiBold"
+                 Text="{Binding JumpSummary}" />
+      <TextBlock Classes="muted"
+                 FontSize="11"
+                 Text="{Binding JumpsLeft}" />
+
+      <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+
+      <TextBlock Classes="eyebrow" FontSize="10" Text="TRITIUM" />
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+        <TextBlock Classes="muted" FontSize="12" Text="Fuel left" />
+        <TextBlock Grid.Column="1"
+                   FontSize="12"
+                   FontWeight="SemiBold"
+                   Text="{Binding FuelLeft}" />
+        <TextBlock Grid.Row="1" Classes="muted" FontSize="12" Text="In market" />
+        <TextBlock Grid.Row="1"
+                   Grid.Column="1"
+                   FontSize="12"
+                   FontWeight="SemiBold"
+                   Text="{Binding TritiumInMarket}" />
+        <TextBlock Grid.Row="2" Classes="muted" FontSize="12" Text="Jump fuel" />
+        <TextBlock Grid.Row="2"
+                   Grid.Column="1"
+                   FontSize="12"
+                   FontWeight="SemiBold"
+                   Text="{Binding JumpFuel}" />
+      </Grid>
+
+      <Border Classes="badge"
+              HorizontalAlignment="Left"
+              IsVisible="{Binding HasIcyRing}">
+        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="10"
+                   FontWeight="SemiBold"
+                   Text="{Binding IcyRingLabel, StringFormat='[ {0} ]'}" />
+      </Border>
+
+      <Grid ColumnDefinitions="*,Auto"
+            IsVisible="{Binding HasRestockWarning}">
+        <TextBlock Foreground="#FFFFB347"
+                   FontSize="11"
+                   FontWeight="Bold"
+                   Text="&#x26A0; RESTOCK REQUIRED" />
+        <TextBlock Grid.Column="1"
+                   Foreground="#FFFFB347"
+                   FontSize="12"
+                   FontWeight="Bold"
+                   Text="{Binding RestockAmount}" />
+      </Grid>
+
+      <StackPanel Spacing="7" IsVisible="{Binding HasCountdown}">
+        <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <TextBlock Classes="eyebrow"
+                     FontSize="10"
+                     Text="{Binding CountdownTitle}"
+                     TextTrimming="CharacterEllipsis" />
+          <TextBlock Grid.Column="1"
+                     Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="20"
+                     FontWeight="Bold"
+                     Text="{Binding Countdown}" />
+        </Grid>
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <TextBlock Classes="muted"
+                     FontSize="11"
+                     FontWeight="SemiBold"
+                     Text="{Binding CountdownPhase}" />
+          <TextBlock Grid.Column="1"
+                     Classes="muted"
+                     FontSize="11"
+                     FontWeight="SemiBold"
+                     IsVisible="{Binding HasCountdownPhaseTime}"
+                     Text="{Binding CountdownPhaseTime}" />
+        </Grid>
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</Window>

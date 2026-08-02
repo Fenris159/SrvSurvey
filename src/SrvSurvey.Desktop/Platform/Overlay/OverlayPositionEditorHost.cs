@@ -13,6 +13,9 @@ public interface IOverlayPositionEditorHost : IDisposable
     event EventHandler<OverlayPreviewOpacityChangedEventArgs>?
         PreviewOpacityChanged;
 
+    event EventHandler<OverlayPreviewScaleChangedEventArgs>?
+        PreviewScaleChanged;
+
     event EventHandler? Closed;
 
     bool Open(
@@ -27,6 +30,8 @@ public interface IOverlayPositionEditorHost : IDisposable
 
     void RefreshPreviewOpacities(OverlayPositionEditSession session);
 
+    void RefreshPreviewScales(OverlayPositionEditSession session);
+
     void Close(bool restoreRuntimeWindows = true);
 }
 
@@ -40,6 +45,10 @@ public sealed record OverlayPreviewOpacityChangedEventArgs(
     string PlotterName,
     double? OpacityOverride);
 
+public sealed record OverlayPreviewScaleChangedEventArgs(
+    string PlotterName,
+    int? ScaleOverride);
+
 public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHost
 {
     private readonly IOverlayPlatformService platform;
@@ -49,6 +58,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
     private OverlayPositionEditorWindow? editor;
     private PixelRect hostBounds;
     private double hostScaling = 1;
+    private bool updatingPreviewLayout;
     private bool closing;
     private bool disposed;
 
@@ -65,6 +75,9 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
 
     public event EventHandler<OverlayPreviewOpacityChangedEventArgs>?
         PreviewOpacityChanged;
+
+    public event EventHandler<OverlayPreviewScaleChangedEventArgs>?
+        PreviewScaleChanged;
 
     public event EventHandler? Closed;
 
@@ -134,6 +147,10 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             var preview = new OverlayPositionPreviewWindow(definition);
             OverlayThemeResources.Apply(preview);
+            preview.ConfigureScale(
+                session.ScaleIndex,
+                session.GetPlacement(definition.Name).ScaleIndex,
+                hostScaling);
             var previewSize = preview.GetExpectedPixelSize(hostScaling);
             var position = session.GetPosition(
                 definition.Name,
@@ -149,6 +166,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.PointerPressed += OnPreviewPointerPressed;
             preview.PositionChanged += OnPreviewPositionChanged;
             preview.OpacityOverrideChanged += OnPreviewOpacityOverrideChanged;
+            preview.ScaleOverrideChanged += OnPreviewScaleOverrideChanged;
             preview.Opened += OnPreviewOpened;
             previews.Add(preview);
             preview.Show();
@@ -165,6 +183,35 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.ConfigureOpacity(
                 session.DefaultOpacity,
                 session.GetPlacement(preview.Definition.Name).Opacity);
+        }
+    }
+
+    public void RefreshPreviewScales(OverlayPositionEditSession session)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        updatingPreviewLayout = true;
+        try
+        {
+            foreach (var preview in previews)
+            {
+                preview.ConfigureScale(
+                    session.ScaleIndex,
+                    session.GetPlacement(preview.Definition.Name).ScaleIndex,
+                    hostScaling);
+                var previewSize = preview.GetExpectedPixelSize(hostScaling);
+                var position = session.GetPosition(
+                    preview.Definition.Name,
+                    hostBounds,
+                    previewSize);
+                preview.Position = ClampToHost(
+                    position,
+                    previewSize,
+                    hostBounds);
+            }
+        }
+        finally
+        {
+            updatingPreviewLayout = false;
         }
     }
 
@@ -243,6 +290,11 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             return;
         }
 
+        if (updatingPreviewLayout)
+        {
+            return;
+        }
+
         PreviewMoved?.Invoke(
             this,
             new OverlayPreviewMovedEventArgs(
@@ -257,6 +309,13 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         OverlayPreviewOpacityChangedEventArgs eventArgs)
     {
         PreviewOpacityChanged?.Invoke(this, eventArgs);
+    }
+
+    private void OnPreviewScaleOverrideChanged(
+        object? sender,
+        OverlayPreviewScaleChangedEventArgs eventArgs)
+    {
+        PreviewScaleChanged?.Invoke(this, eventArgs);
     }
 
     private void OnPreviewOpened(object? sender, EventArgs eventArgs)
@@ -280,6 +339,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             preview.PointerPressed -= OnPreviewPointerPressed;
             preview.PositionChanged -= OnPreviewPositionChanged;
             preview.OpacityOverrideChanged -= OnPreviewOpacityOverrideChanged;
+            preview.ScaleOverrideChanged -= OnPreviewScaleOverrideChanged;
             preview.Opened -= OnPreviewOpened;
             preview.Close();
         }

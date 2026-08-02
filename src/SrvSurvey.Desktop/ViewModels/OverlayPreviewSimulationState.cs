@@ -1,5 +1,7 @@
+using SrvSurvey.Core.Routes;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.Presentation;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
@@ -168,13 +170,63 @@ internal static class OverlayPreviewSimulationProjector
                 Row("Destination", state.DestinationSystem, glyph: "►", glyphTone: OverlayPreviewGlyphTone.Primary),
                 Row("Star", "K | scoopable", glyph: "☀", glyphTone: OverlayPreviewGlyphTone.Gold),
                 Row("Traffic", "42 ships in 24 h")),
+            "PlotFleetCarrierRoute" => Content(
+                "Col 359 Sector EE-X b16-1",
+                "Fleet carrier route",
+                "HOP 2 / 46 | JUMP COOLDOWN 4:32",
+                Row("Jump", "499.76 LY | 21,502.09 LY remaining"),
+                Row("Tritium", "1,000 t fuel | 2,799 t market | 93 t jump"),
+                Row("Ring", "Pristine icy ring", glyph: "◆", glyphTone: OverlayPreviewGlyphTone.Information),
+                Row("Restock", "3,892 t required", glyph: "⚠", glyphTone: OverlayPreviewGlyphTone.Gold)),
             "PlotRouteBio" => Content(
                 state.CurrentSystem,
                 "Route body destinations",
-                "1 / 3 BODIES COMPLETE",
-                Row("A 4", "Rocky body | 1,245 LS | Bio 27.4 M CR", 100),
-                Row("A 5", "Earth-like world | Map 625,000 CR"),
-                Row("B 2", "Scan for biological signals")),
+                "1 / 5 BODIES COMPLETE",
+                RouteBodyRow(new FollowRouteBioTarget(
+                    "A 4",
+                    4,
+                    ["Tussock Stigmasis", "Recepta Conditivus"],
+                    IsCompleted: true,
+                    Subtype: "Rocky body",
+                    DistanceToArrivalLs: 1245,
+                    EstimatedBiologyValue: 27428800,
+                    IsBiological: true)),
+                RouteBodyRow(new FollowRouteBioTarget(
+                    "A 5",
+                    5,
+                    ["Bacterium Acies", "Stratum Tectonicas"],
+                    Subtype: "Earth-like world",
+                    DistanceToArrivalLs: 2934,
+                    EstimatedMappingValue: 625000,
+                    EstimatedBiologyValue: 27428800,
+                    IsBiological: true)),
+                RouteBodyRow(new FollowRouteBioTarget(
+                    "B 2",
+                    8,
+                    ["Cactoida Vermis", "Osseus Discus"],
+                    Subtype: "High metal content world",
+                    DistanceToArrivalLs: 4512,
+                    EstimatedScanValue: 125000,
+                    EstimatedBiologyValue: 27428800,
+                    IsBiological: true)),
+                RouteBodyRow(new FollowRouteBioTarget(
+                    "C 1",
+                    10,
+                    ["Concha Aureolas", "Frutexa Metallicum"],
+                    Subtype: "Water world",
+                    DistanceToArrivalLs: 6870,
+                    EstimatedMappingValue: 550000,
+                    EstimatedBiologyValue: 14322000,
+                    IsBiological: true)),
+                RouteBodyRow(new FollowRouteBioTarget(
+                    "C 2",
+                    11,
+                    ["Fonticulua Campestris"],
+                    Subtype: "Icy body",
+                    DistanceToArrivalLs: 9140,
+                    EstimatedScanValue: 94000,
+                    EstimatedBiologyValue: 7630000,
+                    IsBiological: true))),
             "PlotMassacre" => Content(
                 "Massacre missions",
                 "3 active mission stacks",
@@ -312,6 +364,20 @@ internal static class OverlayPreviewSimulationProjector
             Glyph: "☀",
             GlyphTone: OverlayPreviewGlyphTone.Gold,
             RewardBands: bands);
+    }
+
+    private static OverlayPositionPreviewRowViewModel RouteBodyRow(
+        FollowRouteBioTarget target)
+    {
+        var item = new RouteBioTargetItemViewModel(0, 0, target);
+        return new OverlayPositionPreviewRowViewModel(
+            item.BodyName,
+            item.CompactDetails,
+            ShowCompletionCheckBox: true,
+            IsCompleted: item.IsCompleted,
+            BodyIconAssetPath: item.BodyIconAssetPath,
+            BodyIconAccessibleName: item.BodyIconAccessibleName,
+            RouteBody: item);
     }
 
     private static BiologySignalRewardBandViewModel Known(

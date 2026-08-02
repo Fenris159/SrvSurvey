@@ -34,10 +34,20 @@ public static class RouteBodyAssetResolver
     private const string AssetRoot =
         "avares://SrvSurvey.Desktop/Assets/Bodies/";
 
+    public static IReadOnlyList<RouteBodyVisual> SupportedVisuals { get; } =
+        Enum.GetValues<RouteBodyVisualKind>()
+            .Select(CreateVisual)
+            .ToArray();
+
     public static RouteBodyVisual Resolve(string? subtype)
     {
         var normalized = Normalize(subtype);
         var kind = ResolveKind(normalized);
+        return CreateVisual(kind);
+    }
+
+    private static RouteBodyVisual CreateVisual(RouteBodyVisualKind kind)
+    {
         return new RouteBodyVisual(
             kind,
             AssetRoot + GetFileName(kind),

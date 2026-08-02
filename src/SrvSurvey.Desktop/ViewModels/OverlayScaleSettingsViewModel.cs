@@ -55,7 +55,8 @@ public sealed class OverlayScaleSettingsViewModel : INotifyPropertyChanged
                 {
                     OverlayThemeResources.ApplyScale(
                         registered.Window,
-                        activeLayout);
+                        activeLayout,
+                        registered.PlotterName);
                 }
 
                 SettingsStatus =

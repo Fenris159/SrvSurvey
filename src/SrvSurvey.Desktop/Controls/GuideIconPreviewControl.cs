@@ -137,6 +137,8 @@ public sealed class GuideIconPreviewControl : Control
 
         switch (Kind)
         {
+            case GuideIconKind.Asset:
+                break;
             case GuideIconKind.Glyph:
                 DrawGlyph(context, center, GetGlyphBrush(
                     Symbol,

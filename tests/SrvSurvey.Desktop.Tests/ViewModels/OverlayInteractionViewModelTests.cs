@@ -220,6 +220,30 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     }
 
     [Fact]
+    public void ActiveScaleChangesRefreshOpenPositionPreviews()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            activeLayout,
+            new OverlayWindowRegistry(),
+            host);
+
+        Assert.True(viewModel.Begin());
+
+        activeLayout.SetScaleIndex(19);
+
+        Assert.Equal(1, host.ScaleRefreshCount);
+        Assert.Equal(19, host.LastScaleIndex);
+        Assert.Contains("selected scale", viewModel.StatusMessage);
+    }
+
+    [Fact]
     public void OpacityPreviewCancelAndSaveShareThePositionEditSession()
     {
         Directory.CreateDirectory(temporaryDirectory);
@@ -268,6 +292,48 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             viewModel.StatusMessage);
         Assert.Contains("\"plotterOpacity\": 40", File.ReadAllText(settingsPath));
         Assert.Contains(", 0.8", File.ReadAllText(plottersPath));
+    }
+
+    [Fact]
+    public void PerOverlayScaleCanBeCancelledOrSavedIndependently()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var plottersPath = Path.Combine(temporaryDirectory, "plotters.json");
+        File.WriteAllText(
+            plottersPath,
+            "{\"PlotJumpInfo\":\"center:0, top:8\"}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            activeLayout,
+            new OverlayWindowRegistry(),
+            host);
+
+        Assert.True(viewModel.Begin());
+        host.ChangeScale("PlotJumpInfo", 19);
+
+        Assert.Equal(19, host.LastEffectiveScaleIndex["PlotJumpInfo"]);
+        Assert.False(File.Exists(Path.Combine(
+            temporaryDirectory,
+            "overlay-scale-overrides.json")));
+
+        viewModel.Cancel();
+        Assert.Null(activeLayout.Placements["PlotJumpInfo"].ScaleIndex);
+
+        Assert.True(viewModel.Begin());
+        host.ChangeScale("PlotJumpInfo", 19);
+        viewModel.Save();
+
+        Assert.Equal(19, activeLayout.Placements["PlotJumpInfo"].ScaleIndex);
+        Assert.Contains(
+            "\"PlotJumpInfo\": 19",
+            File.ReadAllText(Path.Combine(
+                temporaryDirectory,
+                "overlay-scale-overrides.json")));
     }
 
     public void Dispose()
@@ -323,6 +389,9 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         public event EventHandler<OverlayPreviewOpacityChangedEventArgs>?
             PreviewOpacityChanged;
 
+        public event EventHandler<OverlayPreviewScaleChangedEventArgs>?
+            PreviewScaleChanged;
+
         public event EventHandler? Closed
         {
             add { }
@@ -338,6 +407,13 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         public double LastDefaultOpacityPercent { get; private set; }
 
         public Dictionary<string, double> LastEffectiveOpacityPercent { get; } =
+            new(StringComparer.Ordinal);
+
+        public int ScaleRefreshCount { get; private set; }
+
+        public int LastScaleIndex { get; private set; }
+
+        public Dictionary<string, int> LastEffectiveScaleIndex { get; } =
             new(StringComparer.Ordinal);
 
         public bool Open(
@@ -369,6 +445,17 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             }
         }
 
+        public void RefreshPreviewScales(OverlayPositionEditSession session)
+        {
+            ScaleRefreshCount++;
+            LastScaleIndex = session.ScaleIndex;
+            foreach (var definition in OverlayLayoutCatalog.Supported)
+            {
+                LastEffectiveScaleIndex[definition.Name] =
+                    session.GetScaleIndex(definition.Name);
+            }
+        }
+
         public void Close(bool restoreRuntimeWindows = true)
         {
             IsOpen = false;
@@ -396,6 +483,15 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
                 new OverlayPreviewOpacityChangedEventArgs(
                     plotterName,
                     opacityOverride));
+        }
+
+        public void ChangeScale(string plotterName, int? scaleOverride)
+        {
+            PreviewScaleChanged?.Invoke(
+                this,
+                new OverlayPreviewScaleChangedEventArgs(
+                    plotterName,
+                    scaleOverride));
         }
 
         public void Dispose()

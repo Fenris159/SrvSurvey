@@ -1,39 +1,39 @@
 using Avalonia.Controls;
 using SrvSurvey.Core.Routes;
 using SrvSurvey.Core.Search;
-using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
 
-public sealed partial class RouteBioOverlayWindow : Window
+public sealed partial class FleetCarrierRouteOverlayWindow : Window
 {
-    private readonly RouteBioOverlayViewModel viewModel;
-
-    public RouteBioOverlayWindow()
+    public FleetCarrierRouteOverlayWindow()
         : this(CreateDesignViewModel())
     {
     }
 
-    public RouteBioOverlayWindow(RouteBioOverlayViewModel viewModel)
+    public FleetCarrierRouteOverlayWindow(
+        FleetCarrierRouteOverlayViewModel viewModel)
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
+        ArgumentNullException.ThrowIfNull(viewModel);
         InitializeComponent();
         DataContext = viewModel;
     }
 
-    private static RouteBioOverlayViewModel CreateDesignViewModel()
+    private static FleetCarrierRouteOverlayViewModel CreateDesignViewModel()
     {
         var temporaryDirectory = Path.Combine(
             Path.GetTempPath(),
-            "SrvSurvey-Route-Bio-Overlay-Design");
-        return new RouteBioOverlayViewModel(
+            "SrvSurvey-Fleet-Carrier-Route-Overlay-Design");
+        return new FleetCarrierRouteOverlayViewModel(
             new RouteWorkspaceViewModel(
-                new FollowRouteService(new FollowRouteStore(temporaryDirectory)),
+                new FollowRouteService(new FollowRouteStore(
+                    temporaryDirectory,
+                    FollowRouteKind.FleetCarrier)),
                 new RouteNameImporter(new EmptySystemResolver()),
-                new EmptySpanshRouteClient()),
+                new EmptySpanshRouteClient(),
+                FollowRouteKind.FleetCarrier),
             OverlayPlatformCapabilities.DetectCurrent());
     }
 
@@ -55,14 +55,5 @@ public sealed partial class RouteBioOverlayWindow : Window
         {
             return Task.FromResult<IReadOnlyList<FollowRouteHop>>([]);
         }
-    }
-
-    private async void RouteBioTargetRow_CompletionRequested(
-        object? sender,
-        RouteBioCompletionRequestedEventArgs eventArgs)
-    {
-        await viewModel.SetCompletedAsync(
-            eventArgs.Target,
-            eventArgs.IsCompleted);
     }
 }
