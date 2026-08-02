@@ -1905,7 +1905,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             journalState.StarPosition);
         await FleetCarrierRouteManager.UpdateContextAsync(
             journalState.FrontierId);
-        if (!update.IsBootstrapRead)
+        if (update.IsBootstrapRead)
+        {
+            FleetCarrierRoute.ApplyFleetCarrierJumpEvents(
+                update.JournalEvents);
+        }
+        else
         {
             await Route.ApplyJournalEventsAsync(update.JournalEvents);
             await FleetCarrierRoute.ApplyJournalEventsAsync(

@@ -446,7 +446,7 @@
             </Grid>
 
             <Border Classes="card raised">
-              <Grid ColumnDefinitions="2*,2*,Auto" ColumnSpacing="22">
+              <Grid ColumnDefinitions="1.1*,1.35*,1.15*,Auto" ColumnSpacing="18">
                 <StackPanel Spacing="4">
                   <TextBlock Classes="muted"
                              Text="{Binding FleetCarrierRouteManager.CurrentRouteLabel}" />
@@ -457,10 +457,9 @@
                              Text="{Binding FleetCarrierRoute.RouteFileName}"
                              TextTrimming="CharacterEllipsis" />
                 </StackPanel>
-                <Grid Grid.Column="1"
-                      ColumnDefinitions="*,Auto"
-                      ColumnSpacing="18">
-                  <StackPanel x:Name="FleetCarrierNextSystemReadout" Spacing="4">
+                <StackPanel x:Name="FleetCarrierNextSystemReadout"
+                            Grid.Column="1"
+                            Spacing="4">
                     <TextBlock Classes="muted" Text="NEXT SYSTEM" />
                     <TextBlock FontWeight="SemiBold"
                                Foreground="{DynamicResource RavenAccentBrush}"
@@ -469,15 +468,33 @@
                     <TextBlock Classes="muted"
                                Text="{Binding FleetCarrierRoute.ProgressSummary}"
                                TextWrapping="Wrap" />
-                  </StackPanel>
                   <CheckBox x:Name="FleetCarrierAutoCopyNextHopToggle"
-                            Grid.Column="1"
-                            VerticalAlignment="Center"
+                            Margin="0,5,0,0"
                             Command="{Binding FleetCarrierRouteManager.ToggleAutoCopyCommand}"
                             Content="Auto-copy the next hop"
                             IsChecked="{Binding FleetCarrierRouteManager.AutoCopy, Mode=OneWay}" />
-                </Grid>
-                <StackPanel Grid.Column="2"
+                </StackPanel>
+                <StackPanel x:Name="FleetCarrierJumpCountdownReadout"
+                            Grid.Column="2"
+                            Spacing="4">
+                  <TextBlock Classes="muted"
+                             Text="{Binding FleetCarrierRoute.CarrierJumpCountdownTitle}"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                             FontSize="22"
+                             FontWeight="SemiBold"
+                             Text="{Binding FleetCarrierRoute.CarrierJumpCountdownValue}" />
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Classes="muted"
+                               FontSize="11"
+                               Text="{Binding FleetCarrierRoute.CarrierJumpPhaseLabel}" />
+                    <TextBlock Classes="muted"
+                               FontSize="11"
+                               IsVisible="{Binding FleetCarrierRoute.HasCarrierJumpPhaseCountdown}"
+                               Text="{Binding FleetCarrierRoute.CarrierJumpPhaseCountdown}" />
+                  </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Column="3"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Spacing="8">

@@ -358,7 +358,24 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             GetBoolean(root, "must_refuel") == true,
             GetBoolean(root, "has_neutron") == true
                 || GetBoolean(root, "neutron_star") == true,
-            bodyTargets);
+            bodyTargets,
+            kind == SpanshRouteKind.FleetCarrier
+                ? ParseCarrierHop(root)
+                : null);
+    }
+
+    private static FollowRouteCarrierHop ParseCarrierHop(JsonObject root)
+    {
+        return new FollowRouteCarrierHop(
+            GetDouble(root, "distance"),
+            GetDouble(root, "distance_to_destination"),
+            GetDouble(root, "fuel_remaining"),
+            GetDouble(root, "tritium_in_market"),
+            GetDouble(root, "fuel_used"),
+            GetBoolean(root, "has_icy_ring") == true,
+            GetBoolean(root, "is_system_pristine") == true,
+            GetBoolean(root, "must_restock") == true,
+            GetDouble(root, "restock_amount"));
     }
 
     private static bool SupportsBodyTargets(SpanshRouteKind kind)

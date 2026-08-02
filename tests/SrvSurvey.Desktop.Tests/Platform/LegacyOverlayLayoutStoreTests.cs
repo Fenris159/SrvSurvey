@@ -214,6 +214,38 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
     }
 
     [Fact]
+    public void PerOverlayScaleIsStoredSeparatelyFromLegacyPlacementText()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+
+        var result = store.Save(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotRouteBio"] = new(
+                    LegacyHorizontalAnchor.Right,
+                    8,
+                    LegacyVerticalAnchor.Top,
+                    8,
+                    null,
+                    ScaleIndex: 15),
+            });
+        var layout = store.Load();
+        layout.SetScaleIndex(24);
+
+        Assert.Equal(1, result.UpdatedScaleOverrideCount);
+        Assert.Equal(15, layout.GetScaleIndex("PlotRouteBio"));
+        Assert.Equal(24, layout.GetScaleIndex("PlotJumpInfo"));
+        Assert.DoesNotContain(
+            "15",
+            File.ReadAllText(Path.Combine(temporaryDirectory, "plotters.json")));
+        Assert.Contains(
+            "\"PlotRouteBio\": 15",
+            File.ReadAllText(Path.Combine(
+                temporaryDirectory,
+                "overlay-scale-overrides.json")));
+    }
+
+    [Fact]
     public void ReplacingPositionsPreservesIndependentGlobalScale()
     {
         var active = new LegacyOverlayLayout(

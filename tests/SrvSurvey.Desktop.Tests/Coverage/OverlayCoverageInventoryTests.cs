@@ -1,7 +1,43 @@
+using SrvSurvey.Desktop.Platform.Overlay;
+
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
 public sealed class OverlayCoverageInventoryTests
 {
+    private static readonly IReadOnlyDictionary<string, string>
+        PreviewProductionWindows = new Dictionary<string, string>(
+            StringComparer.Ordinal)
+        {
+            ["PlotBioStatus"] = "BiologyStatusOverlayWindow.axaml",
+            ["PlotBioSystem"] = "BiologySurveyOverlayWindow.axaml",
+            ["PlotBodyInfo"] = "BodyInformationOverlayWindow.axaml",
+            ["PlotBuildCommodities"] = "ColonizationCommodityOverlayWindow.axaml",
+            ["PlotFlightWarning"] = "FlightWarningOverlayWindow.axaml",
+            ["PlotFloatie"] = "NotificationOverlayWindow.axaml",
+            ["PlotFootCombat"] = "FootCombatOverlayWindow.axaml",
+            ["PlotFSS"] = "LastFssBodyOverlayWindow.axaml",
+            ["PlotFSSInfo"] = "FssInfoOverlayWindow.axaml",
+            ["PlotGalMap"] = "GalaxyMapOverlayWindow.axaml",
+            ["PlotGrounded"] = "SurfaceSurveyOverlayWindow.axaml",
+            ["PlotGuardians"] = "GuardianOverlayWindow.axaml",
+            ["PlotGuardianSystem"] = "GuardianSystemOverlayWindow.axaml",
+            ["PlotHumanSite"] = "HumanSiteOverlayWindow.axaml",
+            ["PlotJumpInfo"] = "JumpInfoOverlayWindow.axaml",
+            ["PlotFleetCarrierRoute"] = "FleetCarrierRouteOverlayWindow.axaml",
+            ["PlotRouteBio"] = "RouteBioOverlayWindow.axaml",
+            ["PlotMassacre"] = "MassacreMissionsOverlayWindow.axaml",
+            ["PlotMiniTrack"] = "MiniTrackOverlayWindow.axaml",
+            ["PlotMultiGameCommander"] = "MultiGameCommanderOverlayWindow.axaml",
+            ["PlotPriorScans"] = "PriorScansOverlayWindow.axaml",
+            ["PlotPulse"] = "PulseOverlayWindow.axaml",
+            ["PlotQuestMini"] = "QuestIndicatorOverlayWindow.axaml",
+            ["PlotRamTah"] = "RamTahOverlayWindow.axaml",
+            ["PlotSphericalSearch"] = "SphericalSearchOverlayWindow.axaml",
+            ["PlotStationInfo"] = "StationInfoOverlayWindow.axaml",
+            ["PlotSysStatus"] = "SystemStatusOverlayWindow.axaml",
+            ["PlotTrackTarget"] = "GroundTargetOverlayWindow.axaml",
+        };
+
     private static readonly OverlayMapping[] Mappings =
     [
         Map("PlotBase", [
@@ -64,8 +100,17 @@ public sealed class OverlayCoverageInventoryTests
             "tests/SrvSurvey.Desktop.Tests/ViewModels/JumpInfoOverlayViewModelTests.cs",
             "tests/SrvSurvey.Desktop.Tests/ViewModels/JumpInfoViewModelTests.cs",
         ]),
-        Map("PlotRouteBio", ["src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml"], [
+        Map("PlotFleetCarrierRoute", ["src/SrvSurvey.Desktop/FleetCarrierRouteOverlayWindow.axaml"], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/FleetCarrierRouteOverlayViewModelTests.cs",
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/FleetCarrierJumpCountdownTrackerTests.cs",
+        ]),
+        Map("PlotRouteBio", [
+            "src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml",
+            "src/SrvSurvey.Desktop/Controls/RouteBioTargetRow.axaml",
+            "src/SrvSurvey.Desktop/Controls/RouteBioTargetList.axaml",
+        ], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/RouteWorkspaceViewModelTests.cs",
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/OverlayPositionPreviewViewModelTests.cs",
         ]),
         Map("PlotMassacre", ["src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/CombatViewModelTests.cs",
@@ -98,7 +143,7 @@ public sealed class OverlayCoverageInventoryTests
     [Fact]
     public void InventoryContainsEverySupportedOverlayExactlyOnce()
     {
-        Assert.Equal(23, Mappings.Length);
+        Assert.Equal(24, Mappings.Length);
         Assert.Equal(
             Mappings.Length,
             Mappings.Select(mapping => mapping.ContractName).Distinct().Count());
@@ -127,6 +172,27 @@ public sealed class OverlayCoverageInventoryTests
                     $"Missing {mapping.ContractName} test evidence: {path}");
                 Assert.Contains("Assert.", File.ReadAllText(absolutePath));
             }
+        }
+    }
+
+    [Fact]
+    public void EveryForcedPreviewMapsToAnExistingProductionWindow()
+    {
+        var root = FindRepositoryRoot();
+        Assert.Equal(
+            OverlayLayoutCatalog.Supported
+                .Select(definition => definition.Name)
+                .Order(StringComparer.Ordinal),
+            PreviewProductionWindows.Keys.Order(StringComparer.Ordinal));
+        foreach (var productionWindow in PreviewProductionWindows.Values)
+        {
+            Assert.True(
+                File.Exists(Path.Combine(
+                    root,
+                    "src",
+                    "SrvSurvey.Desktop",
+                    productionWindow)),
+                $"Missing production overlay for preview: {productionWindow}");
         }
     }
 
@@ -199,6 +265,7 @@ public sealed class OverlayCoverageInventoryTests
         Assert.Contains("SizeToContent=\"Height\"", preview);
         Assert.Contains("ItemsSource=\"{Binding RewardBands}\"", preview);
         Assert.Contains("BiologyRewardBandControl", preview);
+        Assert.Contains("RouteBioTargetList", preview);
         Assert.Contains("SIMULATED GAME STATE", preview);
         Assert.Contains("BorderThickness=\"2\"", preview);
         Assert.Contains("simulated game data", interaction);
@@ -224,6 +291,30 @@ public sealed class OverlayCoverageInventoryTests
         Assert.Contains("GalaxyMap.AutoShow", overlaySettings);
         Assert.DoesNotContain("Notifications.Enabled", settingsShell);
         Assert.Contains("Notifications.Enabled", overlaySettings);
+
+        var routeOverlay = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml")));
+        Assert.Contains("RouteBioTargetList", routeOverlay);
+        Assert.Contains("Width=\"220\"", routeOverlay);
+
+        var routeTargetList = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/Controls/RouteBioTargetList.axaml")));
+        var routeTargetListCode = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/Controls/RouteBioTargetList.axaml.cs")));
+        var routeTargetRow = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/Controls/RouteBioTargetRow.axaml")));
+        Assert.Contains("VerticalScrollBarVisibility=\"Hidden\"", routeTargetList);
+        Assert.Contains("ScrollIndicator", routeTargetList);
+        Assert.Contains("MaxVisibleItemCount = 3", routeTargetListCode);
+        Assert.Contains("Classes=\"route-body-check\"", routeTargetRow);
+        Assert.Contains("Width=\"12\"", routeTargetRow);
+        Assert.Contains("Width=\"22\"", routeTargetRow);
+        Assert.Contains("RavenPrimaryBrush", routeTargetRow);
+        Assert.Contains("Background=\"Transparent\"", routeTargetRow);
     }
 
     private static OverlayMapping Map(

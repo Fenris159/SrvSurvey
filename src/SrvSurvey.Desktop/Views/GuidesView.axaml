@@ -127,19 +127,30 @@
                 <DataTemplate x:DataType="vm:GuideIconViewModel">
                   <Border Classes="card" Margin="0,0,0,14" Padding="14">
                     <Grid ColumnDefinitions="72,*" ColumnSpacing="14">
-                      <controls:GuideIconPreviewControl Width="72"
-                                                        Height="72"
-                                                        VerticalAlignment="Top"
-                                                        Kind="{Binding Kind}"
-                                                        Symbol="{Binding Symbol}"
-                                                        BackgroundBrush="{DynamicResource RavenOverlayWindowBrush}"
-                                                        PrimaryBrush="{DynamicResource RavenOverlayPrimaryBrush}"
-                                                        SecondaryBrush="{DynamicResource RavenOverlaySecondaryBrush}"
-                                                        MutedBrush="{DynamicResource RavenOverlayMutedTextBrush}"
-                                                        SuccessBrush="{DynamicResource RavenOverlaySuccessBrush}"
-                                                        WarningBrush="{DynamicResource RavenOverlayWarningBrush}"
-                                                        DangerBrush="{DynamicResource RavenOverlayDangerBrush}"
-                                                        GoldBrush="{DynamicResource RavenOverlayBioGoldBrush}" />
+                      <Grid Width="72"
+                            Height="72"
+                            VerticalAlignment="Top">
+                        <controls:GuideIconPreviewControl IsVisible="{Binding !HasAsset}"
+                                                          Kind="{Binding Kind}"
+                                                          Symbol="{Binding Symbol}"
+                                                          BackgroundBrush="{DynamicResource RavenOverlayWindowBrush}"
+                                                          PrimaryBrush="{DynamicResource RavenOverlayPrimaryBrush}"
+                                                          SecondaryBrush="{DynamicResource RavenOverlaySecondaryBrush}"
+                                                          MutedBrush="{DynamicResource RavenOverlayMutedTextBrush}"
+                                                          SuccessBrush="{DynamicResource RavenOverlaySuccessBrush}"
+                                                          WarningBrush="{DynamicResource RavenOverlayWarningBrush}"
+                                                          DangerBrush="{DynamicResource RavenOverlayDangerBrush}"
+                                                          GoldBrush="{DynamicResource RavenOverlayBioGoldBrush}" />
+                        <Border IsVisible="{Binding HasAsset}"
+                                Background="{DynamicResource RavenOverlayWindowBrush}"
+                                BorderBrush="{DynamicResource RavenOverlayMutedTextBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                          <Image Margin="8"
+                                 Source="{Binding AssetPath, Converter={StaticResource BundledAssetImageConverter}}"
+                                 Stretch="Uniform" />
+                        </Border>
+                      </Grid>
                       <StackPanel Grid.Column="1" Spacing="5">
                         <TextBlock FontWeight="SemiBold"
                                    TextWrapping="Wrap"

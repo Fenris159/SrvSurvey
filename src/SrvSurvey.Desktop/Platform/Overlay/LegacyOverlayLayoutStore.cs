@@ -18,6 +18,7 @@ public sealed class LegacyOverlayLayoutStore
     private readonly string dataDirectory;
     private readonly string plottersPath;
     private readonly string settingsPath;
+    private readonly string scaleOverridesPath;
     private readonly object fileLock;
 
     public LegacyOverlayLayoutStore(string dataDirectory)
@@ -26,6 +27,9 @@ public sealed class LegacyOverlayLayoutStore
         this.dataDirectory = Path.GetFullPath(dataDirectory);
         plottersPath = Path.Combine(this.dataDirectory, "plotters.json");
         settingsPath = Path.Combine(this.dataDirectory, "settings.json");
+        scaleOverridesPath = Path.Combine(
+            this.dataDirectory,
+            "overlay-scale-overrides.json");
         fileLock = FileLocks.GetOrAdd(plottersPath, _ => new object());
     }
 
@@ -40,18 +44,7 @@ public sealed class LegacyOverlayLayoutStore
     public LegacyOverlayLayoutSaveResult Save(
         IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
     {
-        ArgumentNullException.ThrowIfNull(placements);
-        if (placements.Count == 0)
-        {
-            throw new ArgumentException(
-                "At least one overlay placement is required.",
-                nameof(placements));
-        }
-
-        lock (fileLock)
-        {
-            return SaveCore(placements);
-        }
+        return Save(placements, 1d, updateDefaultOpacity: false);
     }
 
     public LegacyOverlayLayoutSaveResult Save(
@@ -78,15 +71,20 @@ public sealed class LegacyOverlayLayoutStore
 
         lock (fileLock)
         {
-            if (!updateDefaultOpacity)
-            {
-                return SaveCore(placements);
-            }
-
             var settingsExisted = File.Exists(settingsPath);
-            var settingsBackupPath = SaveDefaultOpacityCore(defaultOpacity);
+            var scaleOverridesExisted = File.Exists(scaleOverridesPath);
+            string? settingsBackupPath = null;
+            string? scaleOverridesBackupPath = null;
+            var updatedScaleOverrideCount = 0;
             try
             {
+                if (updateDefaultOpacity)
+                {
+                    settingsBackupPath = SaveDefaultOpacityCore(defaultOpacity);
+                }
+
+                (scaleOverridesBackupPath, updatedScaleOverrideCount) =
+                    SaveScaleOverridesCore(placements);
                 var result = placements.Count > 0
                     ? SaveCore(placements)
                     : new LegacyOverlayLayoutSaveResult(
@@ -96,26 +94,35 @@ public sealed class LegacyOverlayLayoutStore
                 return result with
                 {
                     SettingsBackupPath = settingsBackupPath,
-                    UpdatedDefaultOpacity = true,
+                    UpdatedDefaultOpacity = updateDefaultOpacity,
+                    ScaleOverridesBackupPath = scaleOverridesBackupPath,
+                    UpdatedScaleOverrideCount = updatedScaleOverrideCount,
                 };
             }
             catch (Exception saveException)
             {
                 try
                 {
-                    if (settingsExisted && settingsBackupPath is not null)
+                    if (updateDefaultOpacity)
                     {
-                        File.Copy(settingsBackupPath, settingsPath, true);
+                        RestoreFile(
+                            settingsPath,
+                            settingsBackupPath,
+                            settingsExisted);
                     }
-                    else if (!settingsExisted && File.Exists(settingsPath))
+
+                    if (updatedScaleOverrideCount > 0)
                     {
-                        File.Delete(settingsPath);
+                        RestoreFile(
+                            scaleOverridesPath,
+                            scaleOverridesBackupPath,
+                            scaleOverridesExisted);
                     }
                 }
                 catch (Exception rollbackException)
                 {
                     throw new IOException(
-                        "The overlay layout save failed and its global-opacity rollback also failed.",
+                        "The overlay layout save failed and its settings rollback also failed.",
                         new AggregateException(saveException, rollbackException));
                 }
 
@@ -162,6 +169,18 @@ public sealed class LegacyOverlayLayoutStore
         }
 
         var defaultOpacity = LoadDefaultOpacity(errors);
+        var scaleOverrides = LoadScaleOverrides(errors);
+        foreach (var entry in scaleOverrides)
+        {
+            if (positions.TryGetValue(entry.Key, out var placement))
+            {
+                positions[entry.Key] = placement with
+                {
+                    ScaleIndex = entry.Value,
+                };
+            }
+        }
+
         return new LegacyOverlayLayout(
             positions,
             defaultOpacity,
@@ -215,7 +234,8 @@ public sealed class LegacyOverlayLayoutStore
             {
                 if (verified[entry.Key] is not JsonValue value
                     || !value.TryGetValue<string>(out var text)
-                    || ParsePlacement(entry.Key, text) != entry.Value)
+                    || ParsePlacement(entry.Key, text)
+                        != entry.Value with { ScaleIndex = null })
                 {
                     throw new InvalidDataException(
                         $"Overlay position '{entry.Key}' could not be verified before saving.");
@@ -291,6 +311,92 @@ public sealed class LegacyOverlayLayoutStore
         return backupPath;
     }
 
+    private (string? BackupPath, int UpdatedCount) SaveScaleOverridesCore(
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> placements)
+    {
+        if (placements.Count == 0)
+        {
+            return (null, 0);
+        }
+
+        var root = File.Exists(scaleOverridesPath)
+            ? ParseObject(scaleOverridesPath)
+            : [];
+        var updatedCount = 0;
+        foreach (var entry in placements)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(entry.Key);
+            ArgumentNullException.ThrowIfNull(entry.Value);
+            var previous = ReadScaleOverride(root[entry.Key], entry.Key);
+            if (previous == entry.Value.ScaleIndex)
+            {
+                continue;
+            }
+
+            updatedCount++;
+            if (entry.Value.ScaleIndex is { } scaleIndex)
+            {
+                ValidateScaleIndex(entry.Key, scaleIndex);
+                root[entry.Key] = scaleIndex;
+            }
+            else
+            {
+                root.Remove(entry.Key);
+            }
+        }
+
+        if (updatedCount == 0)
+        {
+            return (null, 0);
+        }
+
+        Directory.CreateDirectory(dataDirectory);
+        var backupPath = File.Exists(scaleOverridesPath)
+            ? CreateVerifiedBackup(scaleOverridesPath, "overlay-scale-overrides")
+            : null;
+        var temporaryPath = $"{scaleOverridesPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            using (var stream = new FileStream(
+                       temporaryPath,
+                       FileMode.CreateNew,
+                       FileAccess.Write,
+                       FileShare.None))
+            using (var writer = new Utf8JsonWriter(
+                       stream,
+                       new JsonWriterOptions
+                       {
+                           Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                           Indented = true,
+                       }))
+            {
+                root.WriteTo(writer);
+            }
+
+            var verified = ParseObject(temporaryPath);
+            foreach (var entry in placements)
+            {
+                var actual = ReadScaleOverride(verified[entry.Key], entry.Key);
+                if (actual != entry.Value.ScaleIndex)
+                {
+                    throw new InvalidDataException(
+                        $"Overlay scale override '{entry.Key}' could not be verified before saving.");
+                }
+            }
+
+            File.Move(temporaryPath, scaleOverridesPath, true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+
+        return (backupPath, updatedCount);
+    }
+
     private string CreateVerifiedBackup()
     {
         return CreateVerifiedBackup(plottersPath, "plotters");
@@ -317,6 +423,21 @@ public sealed class LegacyOverlayLayoutStore
         }
 
         return backupPath;
+    }
+
+    private static void RestoreFile(
+        string path,
+        string? backupPath,
+        bool existed)
+    {
+        if (existed && backupPath is not null)
+        {
+            File.Copy(backupPath, path, true);
+        }
+        else if (!existed && File.Exists(path))
+        {
+            File.Delete(path);
+        }
     }
 
     private static void ValidateExistingPlacements(JsonObject root)
@@ -382,6 +503,75 @@ public sealed class LegacyOverlayLayoutStore
             throw new ArgumentOutOfRangeException(
                 nameof(placement),
                 $"Overlay position '{name}' opacity must be from 0 to 1.");
+        }
+
+        if (placement.ScaleIndex is { } scaleIndex)
+        {
+            ValidateScaleIndex(name, scaleIndex);
+        }
+    }
+
+    private Dictionary<string, int> LoadScaleOverrides(
+        List<string> errors)
+    {
+        if (!File.Exists(scaleOverridesPath))
+        {
+            return new Dictionary<string, int>(StringComparer.Ordinal);
+        }
+
+        try
+        {
+            var root = ParseObject(scaleOverridesPath);
+            var result = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (var entry in root)
+            {
+                var scaleIndex = ReadScaleOverride(entry.Value, entry.Key)
+                    ?? throw new InvalidDataException(
+                        $"Overlay scale override '{entry.Key}' must be an integer.");
+                ValidateScaleIndex(entry.Key, scaleIndex);
+                result[entry.Key] = scaleIndex;
+            }
+
+            return result;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or JsonException
+                or InvalidDataException
+                or ArgumentException)
+        {
+            errors.Add(
+                $"Could not read overlay scale overrides '{scaleOverridesPath}': "
+                + exception.Message);
+            return new Dictionary<string, int>(StringComparer.Ordinal);
+        }
+    }
+
+    private static int? ReadScaleOverride(JsonNode? node, string name)
+    {
+        if (node is null)
+        {
+            return null;
+        }
+
+        if (node is JsonValue value
+            && value.TryGetValue<int>(out var scaleIndex))
+        {
+            return scaleIndex;
+        }
+
+        throw new InvalidDataException(
+            $"Overlay scale override '{name}' must be an integer.");
+    }
+
+    private static void ValidateScaleIndex(string name, int scaleIndex)
+    {
+        if (!OverlayScaleCatalog.IsSupported(scaleIndex))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(scaleIndex),
+                $"Overlay scale override '{name}' uses unsupported index {scaleIndex}.");
         }
     }
 
@@ -547,6 +737,8 @@ public sealed class LegacyOverlayLayout
         null,
         null);
 
+    public event EventHandler? ScaleIndexChanged;
+
     public IReadOnlyDictionary<string, LegacyOverlayPlacement> Placements =>
         Volatile.Read(ref state).Placements;
 
@@ -565,7 +757,13 @@ public sealed class LegacyOverlayLayout
                 $"Overlay scale index {index} is not supported.");
         }
 
+        if (Volatile.Read(ref scaleIndex) == index)
+        {
+            return;
+        }
+
         Volatile.Write(ref scaleIndex, index);
+        ScaleIndexChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void ReplaceWith(LegacyOverlayLayout updated)
@@ -677,6 +875,16 @@ public sealed class LegacyOverlayLayout
                 : snapshot.DefaultOpacity;
     }
 
+    public int GetScaleIndex(string plotterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        var snapshot = Volatile.Read(ref state);
+        return snapshot.Placements.TryGetValue(plotterName, out var placement)
+            && placement.ScaleIndex is { } placementScaleIndex
+                ? placementScaleIndex
+                : ScaleIndex;
+    }
+
     private sealed record LayoutState(
         IReadOnlyDictionary<string, LegacyOverlayPlacement> Placements,
         double? DefaultOpacity,
@@ -688,7 +896,8 @@ public sealed record LegacyOverlayPlacement(
     int HorizontalOffset,
     LegacyVerticalAnchor Vertical,
     int VerticalOffset,
-    double? Opacity);
+    double? Opacity,
+    int? ScaleIndex = null);
 
 public sealed record LegacyOverlayLayoutSaveResult(
     string Path,
@@ -698,6 +907,10 @@ public sealed record LegacyOverlayLayoutSaveResult(
     public string? SettingsBackupPath { get; init; }
 
     public bool UpdatedDefaultOpacity { get; init; }
+
+    public string? ScaleOverridesBackupPath { get; init; }
+
+    public int UpdatedScaleOverrideCount { get; init; }
 }
 
 public enum LegacyHorizontalAnchor

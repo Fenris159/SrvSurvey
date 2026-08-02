@@ -139,7 +139,17 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
                 null,
                 "Refuel 500 t Tritium",
                 false,
-                false),
+                false,
+                Carrier: new FollowRouteCarrierHop(
+                    DistanceLy: 499.76,
+                    RemainingLy: 21502.09,
+                    FuelRemainingTonnes: 1000,
+                    TritiumInMarketTonnes: 2799,
+                    FuelUsedTonnes: 93,
+                    HasIcyRing: true,
+                    IsSystemPristine: true,
+                    MustRestock: true,
+                    RestockAmountTonnes: 3892)),
         ]);
         var viewModel = CreateViewModel(
             spanshClient: spanshClient,
@@ -156,7 +166,19 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             "https://spansh.co.uk/fleet-carrier/results/74FA2952-2048-11F1-8302-B948FF6DF5C1");
 
         Assert.Equal(1, spanshClient.CallCount);
-        Assert.Equal("Colonia", Assert.Single(viewModel.Hops).Hop.Name);
+        var hop = Assert.Single(viewModel.Hops);
+        Assert.Equal("Colonia", hop.Hop.Name);
+        Assert.True(hop.IsFleetCarrierHop);
+        Assert.False(hop.IsStandardHop);
+        Assert.Equal($"{499.76:N2}", hop.CarrierDistance);
+        Assert.Equal($"{21502.09:N2}", hop.CarrierRemaining);
+        Assert.Equal(0, hop.JumpsRemaining);
+        Assert.Equal($"{1000:N0}", hop.CarrierFuelRemaining);
+        Assert.Equal($"{2799:N0}", hop.CarrierTritiumInMarket);
+        Assert.Equal($"{93:N0}", hop.CarrierFuelUsed);
+        Assert.Equal("PRISTINE", hop.CarrierIcyRing);
+        Assert.Equal("YES", hop.CarrierRestock);
+        Assert.Equal($"{3892:N0}", hop.CarrierRestockAmount);
     }
 
     [Fact]
@@ -204,6 +226,38 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.True(viewModel.IsComplete);
         var saved = await store.LoadAsync("F123");
         Assert.Equal(1, saved.Route!.LastReachedIndex);
+    }
+
+    [Fact]
+    public async Task FleetCarrierCountdownUsesJournalLifecycleAndResetsForCommander()
+    {
+        var now = DateTimeOffset.Parse("2026-08-01T12:00:00Z");
+        var viewModel = CreateViewModel(
+            routeKind: FollowRouteKind.FleetCarrier,
+            utcNow: () => now);
+        await viewModel.UpdateContextAsync("F123", "Sol", 1, null);
+
+        viewModel.ApplyFleetCarrierJumpEvents(
+        [
+            Parse(
+                """
+                {"timestamp":"2026-08-01T12:00:00Z","event":"CarrierJumpRequest","CarrierID":123,"SystemName":"Colonia","DepartureTime":"2026-08-01T12:15:00Z"}
+                """),
+        ]);
+
+        Assert.True(viewModel.HasCarrierJumpCountdown);
+        Assert.Equal("DEPARTURE TO COLONIA", viewModel.CarrierJumpCountdownTitle);
+        Assert.Equal("15:00", viewModel.CarrierJumpCountdownValue);
+        Assert.Equal("JUMP INITIATION IN", viewModel.CarrierJumpPhaseLabel);
+
+        now = now.AddMinutes(7);
+        viewModel.RefreshCarrierJumpCountdown();
+        Assert.Equal("8:00", viewModel.CarrierJumpCountdownValue);
+        Assert.Equal("PAD LOCKDOWN IN", viewModel.CarrierJumpPhaseLabel);
+
+        await viewModel.UpdateContextAsync("F456", "Sol", 1, null);
+        Assert.False(viewModel.HasCarrierJumpCountdown);
+        Assert.Equal("No jump scheduled", viewModel.CarrierJumpCountdownValue);
     }
 
     [Fact]
@@ -660,6 +714,55 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task BodyArrivalCompletesTheMatchingRouteTarget()
+    {
+        var store = new FollowRouteStore(temporaryDirectory);
+        await store.SaveAsync(new FollowRouteDocument(
+            "F123",
+            store.GetPath("F123"),
+            true,
+            true,
+            0,
+            [
+                new FollowRouteHop(
+                    "Synuefe NL-N C23-4",
+                    101,
+                    new GalacticCoordinate(0, 0, 0),
+                    null,
+                    false,
+                    false,
+                    [
+                        new FollowRouteBioTarget(
+                            "A 4",
+                            10,
+                            ["Bacterium Acies"],
+                            Subtype: "Rocky body"),
+                    ]),
+                Hop("Second", 2, new GalacticCoordinate(3, 4, 0)),
+            ]));
+        var viewModel = CreateViewModel();
+        await viewModel.UpdateContextAsync(
+            "F123",
+            "Synuefe NL-N C23-4",
+            101,
+            new GalacticCoordinate(0, 0, 0));
+        var target = Assert.Single(viewModel.CurrentBioTargets);
+
+        await viewModel.ApplyJournalEventsAsync(
+        [
+            Parse(
+                """
+                {"event":"ApproachBody","StarSystem":"Synuefe NL-N C23-4","SystemAddress":101,"Body":"Synuefe NL-N C23-4 A 4","BodyID":10}
+                """),
+        ]);
+
+        Assert.Same(target, Assert.Single(viewModel.CurrentBioTargets));
+        Assert.True(target.IsCompleted);
+        var reloaded = await store.LoadAsync("F123");
+        Assert.True(reloaded.Route!.Hops[0].BioTargets[0].IsCompleted);
+    }
+
+    [Fact]
     public void BodyArtworkChangesOnlyWhenTheBodySubtypeChanges()
     {
         var source = new FollowRouteBioTarget(
@@ -668,6 +771,8 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             [],
             Subtype: "Rocky body");
         var target = new RouteBioTargetItemViewModel(0, 0, source);
+        var originalSegments = target.CompactDetailSegments;
+        var originalInlineSegments = target.InlineSegments;
         var notifications = new List<string?>();
         target.PropertyChanged += (_, eventArgs) =>
             notifications.Add(eventArgs.PropertyName);
@@ -675,6 +780,14 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         target.Update(source);
 
         Assert.Empty(notifications);
+        Assert.Same(originalSegments, target.CompactDetailSegments);
+        Assert.Same(originalInlineSegments, target.InlineSegments);
+        Assert.Equal("Rocky body", Assert.Single(originalSegments).Text);
+        Assert.Equal(
+            ["A 1", "Rocky body"],
+            originalInlineSegments.Select(segment => segment.Text));
+        Assert.True(originalInlineSegments[0].IsBodyName);
+        Assert.True(originalInlineSegments[1].IsDetail);
         Assert.EndsWith(
             "/Assets/Bodies/rocky-body.png",
             target.BodyIconAssetPath,
@@ -692,6 +805,14 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
         Assert.Contains(
             nameof(RouteBioTargetItemViewModel.BodyIconAccessibleName),
             notifications);
+        Assert.NotSame(originalSegments, target.CompactDetailSegments);
+        Assert.NotSame(originalInlineSegments, target.InlineSegments);
+        Assert.Contains(
+            nameof(RouteBioTargetItemViewModel.CompactDetailSegments),
+            notifications);
+        Assert.Contains(
+            nameof(RouteBioTargetItemViewModel.InlineSegments),
+            notifications);
 
         notifications.Clear();
         target.Update(source with { Subtype = "WATER-WORLD" });
@@ -707,7 +828,8 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     private RouteWorkspaceViewModel CreateViewModel(
         IStarSystemResolver? resolver = null,
         ISpanshRouteClient? spanshClient = null,
-        FollowRouteKind routeKind = FollowRouteKind.Standard)
+        FollowRouteKind routeKind = FollowRouteKind.Standard,
+        Func<DateTimeOffset>? utcNow = null)
     {
         var store = new FollowRouteStore(temporaryDirectory, routeKind);
         return new RouteWorkspaceViewModel(
@@ -717,7 +839,8 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
                     ?? new StubResolver(
                         new Dictionary<string, StarSystemReference>())),
             spanshClient ?? new StubSpanshClient([]),
-            routeKind);
+            routeKind,
+            utcNow);
     }
 
     private async Task SaveRouteAsync(bool isActive, int lastReachedIndex)

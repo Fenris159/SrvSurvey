@@ -210,11 +210,34 @@ public sealed class TravelViewMarkupTests
         Assert.Contains(
             "{Binding FleetCarrierRoute.NextHopName}",
             bindings);
+        Assert.Contains(
+            "{Binding FleetCarrierRoute.CarrierJumpCountdownTitle}",
+            bindings);
+        Assert.Contains(
+            "{Binding FleetCarrierRoute.CarrierJumpCountdownValue}",
+            bindings);
+        Assert.Contains(
+            "{Binding FleetCarrierRoute.CarrierJumpPhaseLabel}",
+            bindings);
         Assert.Contains("ImportFleetCarrierRoutes_Click", clickHandlers);
         Assert.Contains("ExportFleetCarrierRoutes_Click", clickHandlers);
         Assert.Contains("ExportSpanshFleetCarrierRoutes_Click", clickHandlers);
         Assert.Contains("ExportCsvFleetCarrierRoutes_Click", clickHandlers);
         Assert.Contains("{Binding RenameCommand}", bindings);
+
+        var currentRoute = tab.Descendants().First(element =>
+            element.Attribute("Text")?.Value
+                == "{Binding FleetCarrierRoute.RouteName}");
+        var nextSystem = FindNamedElement(
+            document,
+            "FleetCarrierNextSystemReadout");
+        var countdown = FindNamedElement(
+            document,
+            "FleetCarrierJumpCountdownReadout");
+        Assert.Same(currentRoute.Parent?.Parent, nextSystem.Parent);
+        Assert.Same(nextSystem.Parent, countdown.Parent);
+        Assert.True(GetSiblingIndex(currentRoute.Parent!) < GetSiblingIndex(nextSystem));
+        Assert.True(GetSiblingIndex(nextSystem) < GetSiblingIndex(countdown));
 
         Assert.Contains(document.Descendants(), element =>
             element.Attribute("IsVisible")?.Value

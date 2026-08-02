@@ -42,6 +42,59 @@ public sealed class OverlayPositionPreviewViewModelTests
     }
 
     [Fact]
+    public void RouteBodyPreviewUsesCheckboxesAndBodyArtworkInsteadOfProgressBars()
+    {
+        var definition = OverlayLayoutCatalog.Supported.Single(item =>
+            item.Name == "PlotRouteBio");
+
+        var preview = OverlayPositionPreviewViewModel.Create(definition);
+
+        Assert.Equal(220, preview.PreferredWidth);
+        Assert.Equal(5, preview.Rows.Count);
+        Assert.Equal(5, preview.RouteBioTargets.Count);
+        Assert.True(preview.IsRouteBio);
+        Assert.Equal("1 / 5 BODIES COMPLETE", preview.Footer);
+        Assert.All(preview.Rows, row => Assert.True(row.ShowCompletionCheckBox));
+        Assert.All(preview.Rows, row => Assert.True(row.IsRouteBody));
+        Assert.All(preview.Rows, row => Assert.True(row.HasBodyIcon));
+        Assert.All(preview.Rows, row => Assert.False(string.IsNullOrWhiteSpace(row.Value)));
+        Assert.All(preview.Rows, row => Assert.True(row.RouteBody!.HasSpecies));
+        Assert.DoesNotContain(preview.Rows, row => row.HasProgress);
+        Assert.DoesNotContain(
+            preview.Rows,
+            row => row.Value.Contains(
+                "Scan for biological signals",
+                StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(preview.Rows, row => row.IsCompleted);
+        Assert.Contains(
+            preview.Rows,
+            row => row.Label == "A 4"
+                && row.Value == "Rocky body | 1,245 LS | Bio 27.4 M CR"
+                && row.RouteBody!.CompactDetailSegments.Select(segment =>
+                    segment.Text).SequenceEqual(
+                    ["Rocky body", "1,245 LS", "Bio 27.4 M CR"])
+                && row.RouteBody.InlineSegments.Select(segment =>
+                    segment.Text).SequenceEqual(
+                    ["A 4", "Rocky body", "1,245 LS", "Bio 27.4 M CR"])
+                && row.RouteBody.InlineSegments[0].IsBodyName
+                && row.RouteBody.InlineSegments[1].IsDetail
+                && row.RouteBody.CompactDetailSegments[^1].HasSeparator == false
+                && row.RouteBody!.Species.SequenceEqual(
+                    ["Tussock Stigmasis", "Recepta Conditivus"]));
+        Assert.Contains(
+            preview.Rows,
+            row => row.BodyIconAssetPath.EndsWith(
+                "/Assets/Bodies/earth-like-world.png",
+                StringComparison.Ordinal));
+        Assert.Equal(
+            3,
+            preview.Rows.Take(3).Count());
+        Assert.True(
+            preview.EstimatedHeight
+            < 70 + preview.Rows.Sum(row => row.EstimatedHeight) + 22);
+    }
+
+    [Fact]
     public void PreviewWrapsItsSimulatedContentInsteadOfUsingLegacyCanvasSize()
     {
         var jump = OverlayLayoutCatalog.Supported.Single(item =>

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Input;
@@ -17,6 +18,8 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private readonly RouteNameImporter nameImporter;
     private readonly ISpanshRouteClient spanshClient;
     private readonly FollowRouteKind routeKind;
+    private readonly Func<DateTimeOffset> utcNow;
+    private readonly FleetCarrierJumpCountdownTracker carrierJumpCountdown = new();
     private readonly SemaphoreSlim bioProgressLock = new(1, 1);
     private readonly AsyncCommand openWindowCommand;
     private readonly AsyncCommand refreshCommand;
@@ -64,12 +67,15 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private string statusMessage = "Waiting for a commander profile.";
     private Func<Task<bool>>? windowOpener;
     private Func<string, Task>? clipboardWriter;
+    private FleetCarrierJumpCountdownState carrierJumpCountdownState =
+        FleetCarrierJumpCountdownState.Inactive;
 
     public RouteWorkspaceViewModel(
         FollowRouteService routeService,
         RouteNameImporter nameImporter,
         ISpanshRouteClient spanshClient,
-        FollowRouteKind routeKind = FollowRouteKind.Standard)
+        FollowRouteKind routeKind = FollowRouteKind.Standard,
+        Func<DateTimeOffset>? utcNow = null)
     {
         this.routeService = routeService
             ?? throw new ArgumentNullException(nameof(routeService));
@@ -78,6 +84,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         this.spanshClient = spanshClient
             ?? throw new ArgumentNullException(nameof(spanshClient));
         this.routeKind = routeKind;
+        this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
         openWindowCommand = new AsyncCommand(OpenWindowAsync, CanOpenWindow);
         refreshCommand = new AsyncCommand(RefreshAsync, HasProfileAndNotBusy);
         saveCommand = new AsyncCommand(SaveAsync, () => CanSaveChanges);
@@ -160,6 +167,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             {
                 OnPropertyChanged(nameof(RouteFileName));
                 OnPropertyChanged(nameof(ShouldShowRouteBioOverlay));
+                OnPropertyChanged(nameof(ShouldShowFleetCarrierRouteOverlay));
                 RaiseCommands();
             }
         }
@@ -506,6 +514,29 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public string CurrentBioSystemName => CurrentBioHop?.Name ?? CurrentSystem;
 
+    public bool ShouldShowFleetCarrierRouteOverlay =>
+        IsFleetCarrierWorkspace
+        && HasSavedRoute
+        && IsActive
+        && NextHop is not null;
+
+    public bool HasCarrierJumpCountdown => carrierJumpCountdownState.IsActive;
+
+    public string CarrierJumpCountdownTitle => carrierJumpCountdownState.Title;
+
+    public string CarrierJumpCountdownValue => carrierJumpCountdownState.Countdown;
+
+    public string CarrierJumpPhaseLabel => carrierJumpCountdownState.PhaseLabel;
+
+    public string CarrierJumpPhaseCountdown =>
+        carrierJumpCountdownState.PhaseCountdown;
+
+    public bool HasCarrierJumpPhaseCountdown =>
+        carrierJumpCountdownState.HasPhaseCountdown;
+
+    public string CarrierJumpDestination =>
+        carrierJumpCountdownState.Destination;
+
     public void SetWindowOpener(Func<Task<bool>>? opener)
     {
         windowOpener = opener;
@@ -633,6 +664,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             return false;
         }
 
+        ResetCarrierJumpCountdown();
         initializedFrontierId = frontierId;
         if (frontierId is null)
         {
@@ -654,6 +686,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
+        ApplyFleetCarrierJumpEvents(journalEvents);
         if (loadedRoute is null || !HasSavedRoute || journalEvents.Count == 0)
         {
             return;
@@ -698,36 +731,120 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 reachedIndex = result.ReachedIndex;
             }
 
-            if (!changed)
+            if (changed)
             {
-                return;
+                if (!hadUnsavedChanges)
+                {
+                    ApplyDocument(loadedRoute);
+                }
+                else
+                {
+                    RefreshPresentation();
+                }
+
+                var reachedName = reachedIndex is { } index
+                    && index >= 0
+                    && index < loadedRoute.Hops.Count
+                        ? loadedRoute.Hops[index].Name
+                        : currentSystemName ?? "the route";
+                StatusMessage = loadedRoute.IsComplete
+                    ? $"Route complete after arriving at {reachedName}."
+                    : $"Arrived at hop #{reachedIndex + 1:N0}: {reachedName}."
+                        + (hadUnsavedChanges
+                            ? " Unsaved route edits were kept."
+                            : string.Empty);
             }
 
-            if (!hadUnsavedChanges)
-            {
-                ApplyDocument(loadedRoute);
-            }
-            else
-            {
-                RefreshPresentation();
-            }
-
-            var reachedName = reachedIndex is { } index
-                && index >= 0
-                && index < loadedRoute.Hops.Count
-                    ? loadedRoute.Hops[index].Name
-                    : currentSystemName ?? "the route";
-            StatusMessage = loadedRoute.IsComplete
-                ? $"Route complete after arriving at {reachedName}."
-                : $"Arrived at hop #{reachedIndex + 1:N0}: {reachedName}."
-                    + (hadUnsavedChanges
-                        ? " Unsaved route edits were kept."
-                        : string.Empty);
+            await ApplyBioArrivalEventsAsync(journalEvents);
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
             StatusMessage = "Route progress could not be saved: "
                 + exception.Message;
+        }
+    }
+
+    private async Task ApplyBioArrivalEventsAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents)
+    {
+        if (!HasCurrentBioTargets)
+        {
+            return;
+        }
+
+        foreach (var journalEvent in journalEvents)
+        {
+            if (!IsBioArrivalEvent(journalEvent.EventName))
+            {
+                continue;
+            }
+
+            var bodyName = GetString(journalEvent.Payload, "Body")
+                ?? GetString(journalEvent.Payload, "BodyName");
+            var bodyId = GetInt64(journalEvent.Payload, "BodyID");
+            if (string.IsNullOrWhiteSpace(bodyName) && bodyId is null)
+            {
+                continue;
+            }
+
+            var eventSystemAddress = GetInt64(
+                journalEvent.Payload,
+                "SystemAddress");
+            var currentHop = CurrentBioHop;
+            if (currentHop is null
+                || (eventSystemAddress is { } address
+                    && currentHop.Hop.SystemAddress is { } routeAddress
+                    && address != routeAddress))
+            {
+                continue;
+            }
+
+            var target = CurrentBioTargets.FirstOrDefault(candidate =>
+                !candidate.IsCompleted
+                && candidate.MatchesBody(bodyId, bodyName, currentHop.Name));
+            if (target is not null)
+            {
+                await SetBioTargetCompletedAsync(target, isCompleted: true);
+            }
+        }
+    }
+
+    private static bool IsBioArrivalEvent(string eventName)
+    {
+        return eventName is "ApproachBody"
+            or "SupercruiseExit"
+            or "Touchdown"
+            or "Disembark";
+    }
+
+    public void ApplyFleetCarrierJumpEvents(
+        IReadOnlyList<JournalEventEnvelope> journalEvents)
+    {
+        ArgumentNullException.ThrowIfNull(journalEvents);
+        if (!IsFleetCarrierWorkspace || journalEvents.Count == 0)
+        {
+            return;
+        }
+
+        var now = utcNow();
+        var changed = false;
+        foreach (var journalEvent in journalEvents)
+        {
+            changed |= carrierJumpCountdown.Apply(journalEvent, now);
+        }
+
+        if (changed)
+        {
+            ApplyCarrierJumpCountdownState();
+        }
+    }
+
+    public void RefreshCarrierJumpCountdown()
+    {
+        if (IsFleetCarrierWorkspace
+            && carrierJumpCountdown.Refresh(utcNow()))
+        {
+            ApplyCarrierJumpCountdownState();
         }
     }
 
@@ -1672,6 +1789,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     hop,
                     distanceText,
                     notes,
+                    draftHops.Count - index - 1,
                     index <= lastReachedIndex,
                     isCurrent,
                     isNext);
@@ -1684,6 +1802,8 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     hop,
                     distanceText,
                     notes,
+                    draftHops.Count - index - 1,
+                    IsFleetCarrierWorkspace,
                     index <= lastReachedIndex,
                     isCurrent,
                     isNext));
@@ -1714,6 +1834,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasCurrentBioTargets));
         OnPropertyChanged(nameof(ShouldShowRouteBioOverlay));
         OnPropertyChanged(nameof(CurrentBioSystemName));
+        OnPropertyChanged(nameof(ShouldShowFleetCarrierRouteOverlay));
         RaiseOverlayProperties();
         RaiseCommands();
     }
@@ -1768,6 +1889,32 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasNextHopGuidance));
         OnPropertyChanged(nameof(NextHopDestinationStatus));
         OnPropertyChanged(nameof(NextHopClipboardStatus));
+    }
+
+    private void ResetCarrierJumpCountdown()
+    {
+        if (carrierJumpCountdown.Reset())
+        {
+            ApplyCarrierJumpCountdownState();
+        }
+    }
+
+    private void ApplyCarrierJumpCountdownState()
+    {
+        var next = carrierJumpCountdown.Current;
+        if (next == carrierJumpCountdownState)
+        {
+            return;
+        }
+
+        carrierJumpCountdownState = next;
+        OnPropertyChanged(nameof(HasCarrierJumpCountdown));
+        OnPropertyChanged(nameof(CarrierJumpCountdownTitle));
+        OnPropertyChanged(nameof(CarrierJumpCountdownValue));
+        OnPropertyChanged(nameof(CarrierJumpPhaseLabel));
+        OnPropertyChanged(nameof(CarrierJumpPhaseCountdown));
+        OnPropertyChanged(nameof(HasCarrierJumpPhaseCountdown));
+        OnPropertyChanged(nameof(CarrierJumpDestination));
     }
 
     private bool IsCurrentSystem(FollowRouteHop hop)
@@ -1979,6 +2126,7 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
     private FollowRouteHop hop;
     private string distance;
     private string notes;
+    private int jumpsRemaining;
     private bool isReached;
     private bool isCurrent;
     private bool isNext;
@@ -1989,6 +2137,8 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
         FollowRouteHop hop,
         string distance,
         string notes,
+        int jumpsRemaining,
+        bool isFleetCarrierHop,
         bool isReached,
         bool isCurrent,
         bool isNext)
@@ -1998,6 +2148,8 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
         this.hop = hop;
         this.distance = distance;
         this.notes = notes;
+        this.jumpsRemaining = jumpsRemaining;
+        IsFleetCarrierHop = isFleetCarrierHop;
         this.isReached = isReached;
         this.isCurrent = isCurrent;
         this.isNext = isNext;
@@ -2015,6 +2167,62 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
     public string Name => Hop.Name;
 
     public string Distance => distance;
+
+    public string CarrierDistance
+    {
+        get
+        {
+            if (Hop.Carrier?.DistanceLy is { } value)
+            {
+                return $"{value:N2}";
+            }
+
+            return Distance == "?"
+                ? "\u2014"
+                : Distance.Replace(" ly", string.Empty, StringComparison.Ordinal);
+        }
+    }
+
+    public string CarrierRemaining => FormatCarrierNumber(Hop.Carrier?.RemainingLy, 2);
+
+    public int JumpsRemaining => jumpsRemaining;
+
+    public bool IsFleetCarrierHop { get; }
+
+    public bool IsStandardHop => !IsFleetCarrierHop;
+
+    public string CarrierFuelRemaining => FormatCarrierNumber(
+        Hop.Carrier?.FuelRemainingTonnes,
+        0);
+
+    public string CarrierTritiumInMarket => FormatCarrierNumber(
+        Hop.Carrier?.TritiumInMarketTonnes,
+        0);
+
+    public string CarrierFuelUsed => FormatCarrierNumber(
+        Hop.Carrier?.FuelUsedTonnes,
+        0);
+
+    public string CarrierIcyRing
+    {
+        get
+        {
+            if (Hop.Carrier?.HasIcyRing != true)
+            {
+                return "\u2014";
+            }
+
+            return Hop.Carrier.IsSystemPristine ? "PRISTINE" : "YES";
+        }
+    }
+
+    public string CarrierRestock => Hop.Carrier?.MustRestock == true
+        ? "YES"
+        : "—";
+
+    public string CarrierRestockAmount => FormatCarrierNumber(
+        Hop.Carrier?.RestockAmountTonnes,
+        0);
 
     public string Notes => notes;
 
@@ -2063,6 +2271,7 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
         FollowRouteHop nextHop,
         string nextDistance,
         string nextNotes,
+        int nextJumpsRemaining,
         bool nextIsReached,
         bool nextIsCurrent,
         bool nextIsNext)
@@ -2092,11 +2301,49 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
             PropertyChanged?.Invoke(
                 this,
                 new PropertyChangedEventArgs(nameof(HasGuidance)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierDistance)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierRemaining)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierFuelRemaining)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierTritiumInMarket)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierFuelUsed)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierIcyRing)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierRestock)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierRestockAmount)));
             RefreshBioTargets(nextHop);
         }
 
+        var distanceChanged = !string.Equals(
+            distance,
+            nextDistance,
+            StringComparison.Ordinal);
         SetField(ref distance, nextDistance, nameof(Distance));
+        if (distanceChanged)
+        {
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierDistance)));
+        }
         SetField(ref notes, nextNotes, nameof(Notes));
+        SetField(
+            ref jumpsRemaining,
+            nextJumpsRemaining,
+            nameof(JumpsRemaining));
         var stateChanged = isReached != nextIsReached
             || isCurrent != nextIsCurrent
             || isNext != nextIsNext;
@@ -2170,12 +2417,21 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+
+    private static string FormatCarrierNumber(double? value, int decimals)
+    {
+        return value is { } number
+            ? number.ToString($"N{decimals}", CultureInfo.CurrentCulture)
+            : "—";
+    }
 }
 
 public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
 {
     private FollowRouteBioTarget target;
     private RouteBodyVisual bodyVisual;
+    private IReadOnlyList<RouteBioDetailSegmentViewModel> compactDetailSegments;
+    private IReadOnlyList<RouteBioDetailSegmentViewModel> inlineSegments;
 
     public RouteBioTargetItemViewModel(
         int hopIndex,
@@ -2186,6 +2442,8 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
         TargetIndex = targetIndex;
         this.target = target ?? throw new ArgumentNullException(nameof(target));
         bodyVisual = RouteBodyAssetResolver.Resolve(target.Subtype);
+        compactDetailSegments = BuildCompactDetailSegments();
+        inlineSegments = BuildInlineSegments();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -2243,6 +2501,16 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
         || HasEstimatedBiologyValue
         || IsTerraformable;
 
+    public IReadOnlyList<RouteBioDetailSegmentViewModel> CompactDetailSegments =>
+        compactDetailSegments;
+
+    public IReadOnlyList<RouteBioDetailSegmentViewModel> InlineSegments =>
+        inlineSegments;
+
+    public string CompactDetails => string.Join(
+        " | ",
+        compactDetailSegments.Select(segment => segment.Text));
+
     public bool IsCompleted => target.IsCompleted;
 
     public string CompletionLabel => IsCompleted ? "COMPLETE" : "TO VISIT";
@@ -2254,6 +2522,40 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
             : string.Equals(
                 BodyName,
                 candidate.BodyName,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    public bool MatchesBody(
+        long? bodyId,
+        string? bodyName,
+        string systemName)
+    {
+        if (BodyId is { } targetBodyId && bodyId is { } eventBodyId)
+        {
+            return targetBodyId == eventBodyId;
+        }
+
+        if (string.IsNullOrWhiteSpace(bodyName))
+        {
+            return false;
+        }
+
+        var normalizedEventName = bodyName.Trim();
+        if (!string.IsNullOrWhiteSpace(systemName)
+            && normalizedEventName.StartsWith(
+                systemName + " ",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            normalizedEventName = normalizedEventName[
+                (systemName.Length + 1)..];
+        }
+
+        return string.Equals(
+                BodyName.Trim(),
+                normalizedEventName,
+                StringComparison.OrdinalIgnoreCase)
+            || bodyName.EndsWith(
+                " " + BodyName.Trim(),
                 StringComparison.OrdinalIgnoreCase);
     }
 
@@ -2290,80 +2592,95 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
         var bodyVisualChanged = bodyVisual != nextBodyVisual;
         target = next;
         bodyVisual = nextBodyVisual;
-        if (identityChanged)
-        {
-            Raise(nameof(BodyName));
-            Raise(nameof(BodyId));
-        }
+        RaiseChanges(identityChanged, nameof(BodyName), nameof(BodyId));
+        RaiseChanges(
+            speciesChanged,
+            nameof(Species),
+            nameof(HasSpecies),
+            nameof(NeedsScan));
+        RaiseChanges(subtypeChanged, nameof(Subtype), nameof(HasSubtype));
+        RaiseChanges(
+            bodyVisualChanged,
+            nameof(BodyIconAssetPath),
+            nameof(BodyIconAccessibleName));
+        RaiseChanges(
+            distanceChanged,
+            nameof(DistanceToArrival),
+            nameof(HasDistanceToArrival));
+        RaiseChanges(
+            scanValueChanged,
+            nameof(EstimatedScanValue),
+            nameof(HasEstimatedScanValue));
+        RaiseChanges(
+            mappingValueChanged,
+            nameof(EstimatedMappingValue),
+            nameof(HasEstimatedMappingValue));
+        RaiseChanges(
+            biologyValueChanged,
+            nameof(EstimatedBiologyValue),
+            nameof(HasEstimatedBiologyValue));
+        RaiseChanges(terraformableChanged, nameof(IsTerraformable));
+        RaiseChanges(biologicalChanged, nameof(NeedsScan));
 
-        if (speciesChanged)
-        {
-            Raise(nameof(Species));
-            Raise(nameof(HasSpecies));
-            Raise(nameof(NeedsScan));
-        }
-
-        if (subtypeChanged)
-        {
-            Raise(nameof(Subtype));
-            Raise(nameof(HasSubtype));
-        }
-
-        if (bodyVisualChanged)
-        {
-            Raise(nameof(BodyIconAssetPath));
-            Raise(nameof(BodyIconAccessibleName));
-        }
-
-        if (distanceChanged)
-        {
-            Raise(nameof(DistanceToArrival));
-            Raise(nameof(HasDistanceToArrival));
-        }
-
-        if (scanValueChanged)
-        {
-            Raise(nameof(EstimatedScanValue));
-            Raise(nameof(HasEstimatedScanValue));
-        }
-
-        if (mappingValueChanged)
-        {
-            Raise(nameof(EstimatedMappingValue));
-            Raise(nameof(HasEstimatedMappingValue));
-        }
-
-        if (biologyValueChanged)
-        {
-            Raise(nameof(EstimatedBiologyValue));
-            Raise(nameof(HasEstimatedBiologyValue));
-        }
-
-        if (terraformableChanged)
-        {
-            Raise(nameof(IsTerraformable));
-        }
-
-        if (biologicalChanged)
-        {
-            Raise(nameof(NeedsScan));
-        }
-
-        if (subtypeChanged
+        var compactDetailsChanged = subtypeChanged
             || distanceChanged
             || scanValueChanged
             || mappingValueChanged
             || biologyValueChanged
-            || terraformableChanged)
+            || terraformableChanged;
+        RefreshCompactDetails(compactDetailsChanged);
+        RefreshInlineDetails(identityChanged || compactDetailsChanged);
+        RaiseChanges(
+            completionChanged,
+            nameof(IsCompleted),
+            nameof(CompletionLabel));
+    }
+
+    private void RaiseChanges(
+        bool changed,
+        string propertyName,
+        string? secondPropertyName = null,
+        string? thirdPropertyName = null)
+    {
+        if (!changed)
         {
-            Raise(nameof(HasDetails));
+            return;
         }
 
-        if (completionChanged)
+        Raise(propertyName);
+        if (secondPropertyName is not null)
         {
-            Raise(nameof(IsCompleted));
-            Raise(nameof(CompletionLabel));
+            Raise(secondPropertyName);
         }
+
+        if (thirdPropertyName is not null)
+        {
+            Raise(thirdPropertyName);
+        }
+    }
+
+    private void RefreshCompactDetails(bool changed)
+    {
+        if (!changed)
+        {
+            return;
+        }
+
+        compactDetailSegments = BuildCompactDetailSegments();
+        Raise(nameof(HasDetails));
+        Raise(nameof(CompactDetailSegments));
+        Raise(nameof(CompactDetails));
+    }
+
+    private void RefreshInlineDetails(bool changed)
+    {
+        if (!changed)
+        {
+            return;
+        }
+
+        inlineSegments = BuildInlineSegments();
+        Raise(nameof(InlineSegments));
     }
 
     private void Raise(string propertyName)
@@ -2377,4 +2694,78 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
     {
         return value is null ? string.Empty : $"{value.Value:N0} CR";
     }
+
+    private static string FormatCompactCredits(long? value)
+    {
+        if (value is null)
+        {
+            return string.Empty;
+        }
+
+        return Math.Abs(value.Value) >= 1_000_000
+            ? $"{value.Value / 1_000_000d:0.#} M CR"
+            : $"{value.Value:N0} CR";
+    }
+
+    private RouteBioDetailSegmentViewModel[]
+        BuildCompactDetailSegments()
+    {
+        var details = new List<string>(6);
+        if (HasSubtype)
+        {
+            details.Add(Subtype);
+        }
+
+        if (HasDistanceToArrival)
+        {
+            details.Add(DistanceToArrival);
+        }
+
+        if (HasEstimatedScanValue)
+        {
+            details.Add($"Scan {EstimatedScanValue}");
+        }
+
+        if (HasEstimatedMappingValue)
+        {
+            details.Add($"Map {EstimatedMappingValue}");
+        }
+
+        if (HasEstimatedBiologyValue)
+        {
+            details.Add($"Bio {FormatCompactCredits(target.EstimatedBiologyValue)}");
+        }
+
+        if (IsTerraformable)
+        {
+            details.Add("Terraformable");
+        }
+
+        return details
+            .Select((text, index) => new RouteBioDetailSegmentViewModel(
+                text,
+                index < details.Count - 1))
+            .ToArray();
+    }
+
+    private IReadOnlyList<RouteBioDetailSegmentViewModel>
+        BuildInlineSegments()
+    {
+        return
+        [
+            new RouteBioDetailSegmentViewModel(
+                BodyName,
+                HasSeparator: false,
+                IsBodyName: true),
+            .. compactDetailSegments,
+        ];
+    }
+}
+
+public sealed record RouteBioDetailSegmentViewModel(
+    string Text,
+    bool HasSeparator,
+    bool IsBodyName = false)
+{
+    public bool IsDetail => !IsBodyName;
 }

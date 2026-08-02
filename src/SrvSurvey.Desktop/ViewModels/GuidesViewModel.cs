@@ -187,8 +187,11 @@ public sealed record GuideIconViewModel(
     string Name,
     string Meaning,
     string AppearsIn,
-    string SearchTerms = "")
+    string SearchTerms = "",
+    string AssetPath = "")
 {
+    public bool HasAsset => !string.IsNullOrWhiteSpace(AssetPath);
+
     public string SearchableText =>
         $"{Symbol} {Name} {Meaning} {AppearsIn} {SearchTerms}";
 }
@@ -202,6 +205,7 @@ public sealed record GuideSearchResultViewModel(
 public enum GuideIconKind
 {
     Glyph,
+    Asset,
     BiologyRewardKnown,
     BiologyRewardPredicted,
     BiologyRewardUnknown,

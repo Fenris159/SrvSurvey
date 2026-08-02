@@ -43,7 +43,8 @@ public sealed record FollowRouteHop(
     string? Notes,
     bool Refuel,
     bool Neutron,
-    IReadOnlyList<FollowRouteBioTarget>? Bio = null)
+    IReadOnlyList<FollowRouteBioTarget>? Bio = null,
+    FollowRouteCarrierHop? Carrier = null)
 {
     public IReadOnlyList<FollowRouteBioTarget> BioTargets =>
         Bio ?? Array.Empty<FollowRouteBioTarget>();
@@ -56,6 +57,17 @@ public sealed record FollowRouteHop(
             : null;
     }
 }
+
+public sealed record FollowRouteCarrierHop(
+    double? DistanceLy,
+    double? RemainingLy,
+    double? FuelRemainingTonnes,
+    double? TritiumInMarketTonnes,
+    double? FuelUsedTonnes,
+    bool HasIcyRing,
+    bool IsSystemPristine,
+    bool MustRestock,
+    double? RestockAmountTonnes);
 
 public sealed record FollowRouteBioTarget(
     string BodyName,

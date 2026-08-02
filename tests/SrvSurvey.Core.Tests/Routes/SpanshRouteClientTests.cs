@@ -317,7 +317,15 @@ public sealed class SpanshRouteClientTests
                     "x": 4,
                     "y": 5,
                     "z": 6,
+                    "distance": 499.76,
+                    "distance_to_destination": 21502.09,
+                    "fuel_remaining": 1000,
+                    "tritium_in_market": 2799,
+                    "fuel_used": 93,
+                    "has_icy_ring": true,
+                    "is_system_pristine": true,
                     "must_restock": true,
+                    "restock_amount": 3892,
                     "bodies": [{
                       "id": 1,
                       "name": "Carrier Stop 1",
@@ -336,6 +344,16 @@ public sealed class SpanshRouteClientTests
         Assert.Equal("Carrier Stop", hop.Name);
         Assert.Contains("restock", hop.Notes, StringComparison.OrdinalIgnoreCase);
         Assert.Empty(hop.BioTargets);
+        var carrier = Assert.IsType<FollowRouteCarrierHop>(hop.Carrier);
+        Assert.Equal(499.76, carrier.DistanceLy);
+        Assert.Equal(21502.09, carrier.RemainingLy);
+        Assert.Equal(1000, carrier.FuelRemainingTonnes);
+        Assert.Equal(2799, carrier.TritiumInMarketTonnes);
+        Assert.Equal(93, carrier.FuelUsedTonnes);
+        Assert.True(carrier.HasIcyRing);
+        Assert.True(carrier.IsSystemPristine);
+        Assert.True(carrier.MustRestock);
+        Assert.Equal(3892, carrier.RestockAmountTonnes);
     }
 
     [Fact]

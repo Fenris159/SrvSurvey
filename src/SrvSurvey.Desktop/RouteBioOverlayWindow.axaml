@@ -2,14 +2,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="using:SrvSurvey.Desktop.Controls"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.RouteBioOverlayWindow"
         x:DataType="vm:RouteBioOverlayViewModel"
         mc:Ignorable="d"
-        d:DesignWidth="430"
-        d:DesignHeight="520"
-        Width="430"
-        MinHeight="170"
+        d:DesignWidth="220"
+        d:DesignHeight="420"
+        Width="220"
+        MinHeight="150"
         MaxHeight="680"
         SizeToContent="Height"
         CanResize="False"
@@ -21,158 +22,46 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey route bodies overlay">
-  <Border Margin="8"
-          Padding="16"
+  <Border Margin="1"
+          Padding="5"
           Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenBorderBrush}"
-          BorderThickness="1"
-          CornerRadius="12"
-          Opacity="0.97">
-    <StackPanel Spacing="11">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-        <StackPanel Spacing="3">
-          <TextBlock Classes="eyebrow" Text="ROUTE BODIES" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="22"
-                     FontWeight="SemiBold"
-                     Text="{Binding SystemName}"
-                     TextTrimming="CharacterEllipsis" />
-        </StackPanel>
-        <Border Grid.Column="1"
-                Classes="badge"
-                VerticalAlignment="Top">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="9"
-                     FontWeight="SemiBold"
-                     Text="{Binding InputMode}" />
-        </Border>
-      </Grid>
-
-      <Grid ColumnDefinitions="*,Auto">
+          BorderBrush="{DynamicResource RavenWarningBrush}"
+          BorderThickness="2"
+          CornerRadius="5">
+    <Grid Margin="3"
+          RowDefinitions="Auto,Auto,Auto,Auto"
+          RowSpacing="3">
+      <StackPanel>
+        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                   FontSize="12"
+                   FontWeight="SemiBold"
+                   Text="Route bodies" />
+        <TextBlock Foreground="{DynamicResource RavenTextBrush}"
+                   FontSize="10"
+                   FontWeight="SemiBold"
+                   Text="{Binding SystemName}"
+                   TextTrimming="CharacterEllipsis" />
         <TextBlock Classes="muted"
-                   FontSize="10"
-                   Text="Use the live-overlay interaction shortcut to check destinations." />
-        <TextBlock Grid.Column="1"
-                   Classes="eyebrow"
-                   FontSize="10"
-                   Text="{Binding Progress}" />
-      </Grid>
+                   FontSize="9"
+                   Text="Route body destinations" />
+      </StackPanel>
 
-      <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+      <Border Grid.Row="1"
+              Height="1"
+              Background="{DynamicResource RavenWarningBrush}"
+              Opacity="0.65" />
 
-      <ScrollViewer MaxHeight="500"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding Targets}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:RouteBioTargetItemViewModel">
-              <Border Margin="0,0,0,7"
-                      Padding="10,8"
-                      Background="{DynamicResource RavenPanelBrush}"
-                      BorderBrush="{DynamicResource RavenBorderBrush}"
-                      BorderThickness="1"
-                      CornerRadius="8">
-                <StackPanel Spacing="6">
-                  <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
-                    <CheckBox VerticalAlignment="Center"
-                              IsChecked="{Binding IsCompleted, Mode=OneWay}"
-                              Click="BioTargetCheckBox_Click" />
-                    <Border Grid.Column="1"
-                            Width="28"
-                            Height="28"
-                            Padding="2"
-                            VerticalAlignment="Center"
-                            Background="{DynamicResource RavenAccentMutedBrush}"
-                            CornerRadius="14"
-                            ToolTip.Tip="{Binding BodyIconAccessibleName}">
-                      <Image Source="{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}"
-                             Stretch="Uniform" />
-                    </Border>
-                    <TextBlock Grid.Column="2"
-                               VerticalAlignment="Center"
-                               FontSize="15"
-                               FontWeight="SemiBold"
-                               Text="{Binding BodyName}" />
-                    <TextBlock Grid.Column="3"
-                               VerticalAlignment="Center"
-                               Classes="eyebrow"
-                               FontSize="9"
-                               Text="{Binding CompletionLabel}" />
-                   </Grid>
-                   <WrapPanel Margin="64,0,0,0"
-                              IsVisible="{Binding HasDetails}">
-                     <Border Classes="badge"
-                             Margin="0,0,5,5"
-                             IsVisible="{Binding HasSubtype}">
-                       <StackPanel Orientation="Horizontal" Spacing="4">
-                         <TextBlock Classes="eyebrow" FontSize="9" Text="TYPE" />
-                         <TextBlock Classes="muted" FontSize="10" Text="{Binding Subtype}" />
-                       </StackPanel>
-                     </Border>
-                     <Border Classes="badge"
-                             Margin="0,0,5,5"
-                             IsVisible="{Binding HasDistanceToArrival}">
-                       <StackPanel Orientation="Horizontal" Spacing="4">
-                         <TextBlock Classes="eyebrow" FontSize="9" Text="ARRIVAL" />
-                         <TextBlock Classes="muted" FontSize="10" Text="{Binding DistanceToArrival}" />
-                       </StackPanel>
-                     </Border>
-                     <Border Classes="badge"
-                             Margin="0,0,5,5"
-                             IsVisible="{Binding HasEstimatedScanValue}">
-                       <StackPanel Orientation="Horizontal" Spacing="4">
-                         <TextBlock Classes="eyebrow" FontSize="9" Text="SCAN" />
-                         <TextBlock Classes="muted" FontSize="10" Text="{Binding EstimatedScanValue}" />
-                       </StackPanel>
-                     </Border>
-                     <Border Classes="badge"
-                             Margin="0,0,5,5"
-                             IsVisible="{Binding HasEstimatedMappingValue}">
-                       <StackPanel Orientation="Horizontal" Spacing="4">
-                         <TextBlock Classes="eyebrow" FontSize="9" Text="MAP" />
-                         <TextBlock Classes="muted" FontSize="10" Text="{Binding EstimatedMappingValue}" />
-                       </StackPanel>
-                     </Border>
-                     <Border Classes="badge"
-                             Margin="0,0,5,5"
-                             IsVisible="{Binding HasEstimatedBiologyValue}">
-                       <StackPanel Orientation="Horizontal" Spacing="4">
-                         <TextBlock Classes="eyebrow" FontSize="9" Text="BIO" />
-                         <TextBlock Classes="muted" FontSize="10" Text="{Binding EstimatedBiologyValue}" />
-                       </StackPanel>
-                     </Border>
-                     <Border Classes="badge"
-                             Margin="0,0,5,5"
-                             IsVisible="{Binding IsTerraformable}">
-                       <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                                  FontSize="9"
-                                  Text="TERRAFORMABLE" />
-                     </Border>
-                   </WrapPanel>
-                   <ItemsControl Margin="64,0,0,0"
-                                IsVisible="{Binding HasSpecies}"
-                                ItemsSource="{Binding Species}">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate>
-                        <TextBlock Classes="muted"
-                                   FontSize="11"
-                                   Text="{Binding StringFormat=• {0}}"
-                                   TextWrapping="Wrap" />
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                  <TextBlock Margin="64,0,0,0"
-                             Classes="muted"
-                             FontSize="11"
-                             FontStyle="Italic"
-                             IsVisible="{Binding NeedsScan}"
-                             Text="Scan for biological signals" />
-                </StackPanel>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </ScrollViewer>
-    </StackPanel>
+      <controls:RouteBioTargetList Grid.Row="2"
+                                   ItemsSource="{Binding Targets}"
+                                   IsInteractive="True"
+                                   CompletionRequested="RouteBioTargetRow_CompletionRequested" />
+
+      <TextBlock Grid.Row="3"
+                 HorizontalAlignment="Center"
+                 Foreground="{DynamicResource RavenMutedTextBrush}"
+                 FontSize="9"
+                 Text="{Binding Progress}"
+                 TextTrimming="CharacterEllipsis" />
+    </Grid>
   </Border>
 </Window>

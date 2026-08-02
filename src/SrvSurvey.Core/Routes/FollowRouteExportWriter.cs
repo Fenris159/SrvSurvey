@@ -23,6 +23,16 @@ internal static class FollowRouteExportWriter
         "Notes",
         "Refuel",
         "Neutron",
+        "DistanceLy",
+        "RemainingLy",
+        "JumpsLeft",
+        "FuelRemainingTonnes",
+        "TritiumInMarketTonnes",
+        "FuelUsedTonnes",
+        "HasIcyRing",
+        "SystemPristine",
+        "MustRestock",
+        "RestockAmountTonnes",
         "Body",
         "BodyId",
         "BodySubtype",
@@ -76,7 +86,11 @@ internal static class FollowRouteExportWriter
             var hop = route.Hops[hopIndex];
             if (hop.BioTargets.Count == 0)
             {
-                await writer.WriteLineAsync(CreateCsvRow(hopIndex, hop, null))
+                await writer.WriteLineAsync(CreateCsvRow(
+                        hopIndex,
+                        route.Hops.Count,
+                        hop,
+                        null))
                     .ConfigureAwait(false);
                 continue;
             }
@@ -84,7 +98,11 @@ internal static class FollowRouteExportWriter
             foreach (var target in hop.BioTargets)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await writer.WriteLineAsync(CreateCsvRow(hopIndex, hop, target))
+                await writer.WriteLineAsync(CreateCsvRow(
+                        hopIndex,
+                        route.Hops.Count,
+                        hop,
+                        target))
                     .ConfigureAwait(false);
             }
         }
@@ -162,10 +180,16 @@ internal static class FollowRouteExportWriter
                 : "has_neutron"] = true;
         }
 
-        if (kind == SpanshRouteKind.FleetCarrier
-            && hop.Notes?.Contains("restock", StringComparison.OrdinalIgnoreCase) == true)
+        if (kind == SpanshRouteKind.FleetCarrier)
         {
-            root["must_restock"] = true;
+            WriteCarrierHop(root, hop.Carrier);
+            if (hop.Carrier?.MustRestock != true
+                && hop.Notes?.Contains(
+                    "restock",
+                    StringComparison.OrdinalIgnoreCase) == true)
+            {
+                root["must_restock"] = true;
+            }
         }
 
         if (hop.BioTargets.Count > 0)
@@ -176,6 +200,38 @@ internal static class FollowRouteExportWriter
         }
 
         return root;
+    }
+
+    private static void WriteCarrierHop(
+        JsonObject root,
+        FollowRouteCarrierHop? carrier)
+    {
+        if (carrier is null)
+        {
+            return;
+        }
+
+        WriteOptional(root, "distance", carrier.DistanceLy);
+        WriteOptional(root, "distance_to_destination", carrier.RemainingLy);
+        WriteOptional(root, "fuel_remaining", carrier.FuelRemainingTonnes);
+        WriteOptional(root, "tritium_in_market", carrier.TritiumInMarketTonnes);
+        WriteOptional(root, "fuel_used", carrier.FuelUsedTonnes);
+        if (carrier.HasIcyRing)
+        {
+            root["has_icy_ring"] = true;
+        }
+
+        if (carrier.IsSystemPristine)
+        {
+            root["is_system_pristine"] = true;
+        }
+
+        if (carrier.MustRestock)
+        {
+            root["must_restock"] = true;
+        }
+
+        WriteOptional(root, "restock_amount", carrier.RestockAmountTonnes);
     }
 
     private static JsonObject CreateSpanshBody(
@@ -271,6 +327,7 @@ internal static class FollowRouteExportWriter
 
     private static string CreateCsvRow(
         int hopIndex,
+        int hopCount,
         FollowRouteHop hop,
         FollowRouteBioTarget? target)
     {
@@ -285,6 +342,18 @@ internal static class FollowRouteExportWriter
             hop.Notes,
             Format(hop.Refuel),
             Format(hop.Neutron),
+            Format(hop.Carrier?.DistanceLy),
+            Format(hop.Carrier?.RemainingLy),
+            hop.Carrier is null
+                ? null
+                : (hopCount - hopIndex - 1).ToString(CultureInfo.InvariantCulture),
+            Format(hop.Carrier?.FuelRemainingTonnes),
+            Format(hop.Carrier?.TritiumInMarketTonnes),
+            Format(hop.Carrier?.FuelUsedTonnes),
+            hop.Carrier is null ? null : Format(hop.Carrier.HasIcyRing),
+            hop.Carrier is null ? null : Format(hop.Carrier.IsSystemPristine),
+            hop.Carrier is null ? null : Format(hop.Carrier.MustRestock),
+            Format(hop.Carrier?.RestockAmountTonnes),
             target?.BodyName,
             Format(target?.BodyId),
             target?.Subtype,

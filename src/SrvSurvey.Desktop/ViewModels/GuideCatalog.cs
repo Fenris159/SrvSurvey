@@ -1,7 +1,12 @@
+using SrvSurvey.Desktop.Presentation;
+
 namespace SrvSurvey.Desktop.ViewModels;
 
 public static class GuideCatalog
 {
+    private const string AvaloniaResourceScheme = "avares";
+    private const string DesktopAssemblyName = "SrvSurvey.Desktop";
+
     public static IReadOnlyList<GuideCategoryViewModel> Create()
     {
         return
@@ -563,7 +568,7 @@ public static class GuideCatalog
                 "icons",
                 "12",
                 "Overlay icon glossary",
-                "A visual reference for text symbols, biology reward PIPs, surface-radar markers, Guardian points, and human-settlement map icons.",
+                "A visual reference for route and body artwork, text symbols, biology reward PIPs, surface-radar markers, Guardian points, and human-settlement map icons.",
                 [
                     Section(
                         "How to read color",
@@ -596,6 +601,9 @@ public static class GuideCatalog
             Icon(GuideIconKind.Glyph, "L", "Landable", "The body can be landed on.", "FSS information and system survey"),
             Icon(GuideIconKind.Glyph, "?", "Unknown", "The signal, organism, site detail, or reward cannot yet be identified reliably from current data.", "Biology, Guardian, body and system rows"),
             Icon(GuideIconKind.Glyph, "■", "Construction site", "Identifies construction/build context; the exact row color reports whether the item is actionable, satisfied, or unavailable.", "Colonisation shopping"),
+            AssetIcon(DesktopAssetUri("Assets/Routes/refuel-star.png"), "Fuel-scoop stop", "An orange star containing a fuel droplet marks a route waypoint where the ship should refuel by fuel scooping.", "Route Workspace and next-jump overlay", "fuel scoop refuel star route"),
+            AssetIcon(DesktopAssetUri("Assets/Routes/neutron-star.png"), "Neutron boost stop", "A blue neutron-star marker identifies a route waypoint that uses or approaches a neutron-star FSD boost.", "Route Workspace and next-jump overlay", "neutron boost fsd star route"),
+            .. CreateBodyIconGlossary(),
             Icon(GuideIconKind.BiologyRewardKnown, "", "Solid reward PIPs", "Four vertical segments classify a confirmed biological reward against the thresholds configured in Settings. More filled segments mean a higher reward band.", "Bio signals and biology system overlays", "bars pips confirmed solid"),
             Icon(GuideIconKind.BiologyRewardPredicted, "", "Hatched reward PIPs", "Diagonal hatching means the organism and reward are predicted. Dark potential segments cover the possible upper end of a reward range.", "Bio signals and biology predictions", "bars pips estimate range"),
             Icon(GuideIconKind.BiologyRewardUnknown, "", "Unknown reward PIP", "A question mark in the PIP frame means no dependable reward band can be calculated yet.", "Bio signals and unresolved biology", "bars pips"),
@@ -636,6 +644,24 @@ public static class GuideCatalog
             Icon(GuideIconKind.ConflictCheckpoint, "", "Conflict-zone checkpoint", "A labeled circle marks a frontline checkpoint. The local checkpoint uses the configured local/success color.", "Human settlement conflict-zone map", "fcz"),
             Icon(GuideIconKind.ConflictPowerPost, "", "Conflict-zone power post", "A circle with a lightning stroke marks a power post.", "Human settlement conflict-zone map", "fcz"),
         ];
+    }
+
+    private static IEnumerable<GuideIconViewModel> CreateBodyIconGlossary()
+    {
+        return RouteBodyAssetResolver.SupportedVisuals.Select(visual =>
+            AssetIcon(
+                visual.AssetPath,
+                visual.AccessibleName,
+                GetBodyIconMeaning(visual),
+                "Route Workspace and route-bodies overlay",
+                $"body planet stellar route {visual.AccessibleName}"));
+    }
+
+    private static string GetBodyIconMeaning(RouteBodyVisual visual)
+    {
+        return visual.Kind == RouteBodyVisualKind.Unknown
+            ? "The fallback marker used when imported route data does not provide a body subtype that SrvSurvey can identify."
+            : $"Identifies an imported route destination classified as {visual.AccessibleName.ToLowerInvariant()}. The marker appears immediately before the body name.";
     }
 
     private static GuideCategoryViewModel Category(
@@ -679,5 +705,27 @@ public static class GuideCatalog
             meaning,
             appearsIn,
             searchTerms);
+    }
+
+    private static GuideIconViewModel AssetIcon(
+        string assetPath,
+        string name,
+        string meaning,
+        string appearsIn,
+        string searchTerms)
+    {
+        return new GuideIconViewModel(
+            GuideIconKind.Asset,
+            string.Empty,
+            name,
+            meaning,
+            appearsIn,
+            searchTerms,
+            assetPath);
+    }
+
+    private static string DesktopAssetUri(string relativePath)
+    {
+        return $"{AvaloniaResourceScheme}://{DesktopAssemblyName}/{relativePath}";
     }
 }

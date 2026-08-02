@@ -38,8 +38,9 @@ Detailed engineering and validation status is maintained in
   conservatively with Frontier CAPI data and commander-isolated local journal
   history so recent personal contribution and reward information can be
   restored without uploading it.
-- Direct overlay editing with drag positioning, live previews, global opacity,
-  and per-panel opacity controls, plus a dedicated Overlay Settings workspace.
+- Direct overlay editing with drag positioning, production-faithful live
+  previews, global opacity and scale, and per-panel opacity and scale controls,
+  plus a dedicated Overlay Settings workspace.
 - Per-commander Route Manager and FC Routes libraries with import, native
   backup export, portable Spansh JSON and universal CSV exports, in-place route
   renaming, favorites, sortable metadata, editable notes, direct activation
@@ -53,7 +54,22 @@ Detailed engineering and validation status is maintained in
 - Expressway to Exomastery imports retain structured per-body biology targets
   separately from route notes. The Route Workspace groups those targets beneath
   each system, while a dedicated current-system route-biology overlay shares
-  the same immediately persisted body-completion checkboxes.
+  the same immediately persisted body-completion state. The compact live and
+  editor views share body artwork, themed completion controls, wrapped details,
+  and a three-body scrolling viewport. The icon glossary documents every body,
+  refuel, and neutron-route asset used by these workflows.
+- Fleet Carrier routes retain Spansh logistics for distance remaining, jumps,
+  fuel, market tritium, jump usage, icy-ring conditions, and restock amounts.
+  A dedicated compact overlay advances from carrier journal events and reports
+  the active jump-sequence phase and countdown beside the next route hop.
+- High-frequency Commander, survey, search, colonisation, station, and site
+  projections retain stable UI identities between unchanged updates. This
+  reduces polling overhead and prevents bound checkboxes, expanders, and other
+  interactive controls from being recreated while they are in use.
+- Application shutdown now cancels owned journal reconstruction and boxel-audit
+  work. Network, localization, profile, and reference-data paths also receive
+  bounded regular-expression handling, culture-independent timestamp parsing,
+  and HTTPS-only download redirects where applicable.
 - Cross-platform overlay hosting and Linux-specific X11/XWayland integration,
   including KDE-aware window hints while preserving the standard fallback.
 - Hardened opt-in EDDN delivery with a durable outbox, schema validation, and a
@@ -70,6 +86,9 @@ Detailed engineering and validation status is maintained in
   Dangerous. Overlay behavior, game attachment, account switching, updates,
   rollback, and imported profiles should be exercised on representative clean
   systems before this port is promoted as stable.
+- Windows and Linux continuous-integration builds now publish test coverage to
+  SonarCloud so new-code reliability, security, maintainability, duplication,
+  and coverage gates are evaluated together before release changes are merged.
 - Some presentation details and platform-specific edge cases may continue to
   change while testing feedback is incorporated.
 

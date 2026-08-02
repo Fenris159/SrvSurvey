@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.Controls.RouteBioTargetList"
+             x:Name="Root">
+  <Grid ColumnDefinitions="*,4">
+    <ScrollViewer x:Name="BodyScroller"
+                  Grid.Column="0"
+                  HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Hidden"
+                  ScrollChanged="BodyScroller_ScrollChanged">
+      <ItemsControl x:Name="BodyItems">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:RouteBioTargetItemViewModel">
+            <controls:RouteBioTargetRow IsInteractive="{Binding IsInteractive, ElementName=Root}"
+                                        CompletionRequested="RouteBioTargetRow_CompletionRequested" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+    <Grid x:Name="ScrollIndicator"
+          Grid.Column="1"
+          Width="3"
+          Margin="1,1,0,1"
+          IsHitTestVisible="False"
+          IsVisible="False">
+      <Border Width="1"
+              HorizontalAlignment="Center"
+              Background="{DynamicResource RavenPrimaryDimBrush}"
+              Opacity="0.34" />
+      <Border x:Name="ScrollThumb"
+              Width="2"
+              Height="12"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Top"
+              Background="{DynamicResource RavenPrimaryBrush}"
+              CornerRadius="1" />
+    </Grid>
+  </Grid>
+</UserControl>

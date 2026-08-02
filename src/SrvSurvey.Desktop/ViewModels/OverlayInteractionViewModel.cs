@@ -82,7 +82,9 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             : Capabilities.StatusText;
         this.editorHost.PreviewMoved += OnPreviewMoved;
         this.editorHost.PreviewOpacityChanged += OnPreviewOpacityChanged;
+        this.editorHost.PreviewScaleChanged += OnPreviewScaleChanged;
         this.editorHost.Closed += OnEditorClosed;
+        this.activeLayout.ScaleIndexChanged += OnOverlayScaleIndexChanged;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -306,8 +308,19 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             }
 
             activeLayout.ReplaceWith(updated);
+            if (registry is not null)
+            {
+                foreach (var registered in registry.Snapshot())
+                {
+                    OverlayThemeResources.ApplyScale(
+                        registered.Window,
+                        activeLayout,
+                        registered.PlotterName);
+                }
+            }
+
             EndSession(closeHost: true, restoreRuntimeWindows: true);
-            StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} overlay position/opacity override(s)"
+            StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} overlay position/opacity override(s), including scale settings"
                 + (saveDefaultOpacity ? " and the global opacity." : ".")
                 + (result.BackupPath is null
                     ? string.Empty
@@ -320,7 +333,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
                 or InvalidOperationException
                 or ArgumentException)
         {
-            StatusMessage = "Overlay positions and opacity were not saved: " + exception.Message;
+            StatusMessage = "Overlay positions, opacity, and scale were not saved: " + exception.Message;
         }
     }
 
@@ -332,7 +345,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         EndSession(closeHost: true, restoreRuntimeWindows: true);
-        StatusMessage = "Overlay position and opacity changes were cancelled.";
+        StatusMessage = "Overlay position, opacity, and scale changes were cancelled.";
     }
 
     private bool BeginLiveInteraction()
@@ -580,9 +593,15 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         {
             editorHost.PreviewMoved -= OnPreviewMoved;
             editorHost.PreviewOpacityChanged -= OnPreviewOpacityChanged;
+            editorHost.PreviewScaleChanged -= OnPreviewScaleChanged;
             editorHost.Closed -= OnEditorClosed;
             editorHost.Close(restoreRuntimeWindows: false);
             editorHost.Dispose();
+        }
+
+        if (activeLayout is not null)
+        {
+            activeLayout.ScaleIndexChanged -= OnOverlayScaleIndexChanged;
         }
 
         editSession = null;
@@ -677,6 +696,44 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             : $"{displayName} opacity set to {eventArgs.OpacityOverride.Value * 100d:N0}%. Use ✓ to save all changes or × to cancel them.";
     }
 
+    private void OnPreviewScaleChanged(
+        object? sender,
+        OverlayPreviewScaleChangedEventArgs eventArgs)
+    {
+        if (!IsEditing
+            || editSession is null
+            || !editSession.SetScaleOverride(
+                eventArgs.PlotterName,
+                eventArgs.ScaleOverride))
+        {
+            return;
+        }
+
+        editorHost?.RefreshPreviewScales(editSession);
+        var displayName = OverlayLayoutCatalog.Supported
+            .First(definition => string.Equals(
+                definition.Name,
+                eventArgs.PlotterName,
+                StringComparison.Ordinal))
+            .DisplayName;
+        StatusMessage = eventArgs.ScaleOverride is null
+            ? $"{displayName} now uses global scale. Use ✓ to save all changes or × to cancel them."
+            : $"{displayName} now uses its own scale. Use ✓ to save all changes or × to cancel them.";
+    }
+
+    private void OnOverlayScaleIndexChanged(object? sender, EventArgs eventArgs)
+    {
+        if (!IsEditing || editSession is null || activeLayout is null)
+        {
+            return;
+        }
+
+        editSession.SetScaleIndex(activeLayout.ScaleIndex);
+        editorHost?.RefreshPreviewScales(editSession);
+        StatusMessage = "Overlay previews updated to the selected scale. "
+            + "Use ✓ to save position, opacity, or scale changes, or × to cancel them.";
+    }
+
     private void OnEditorClosed(object? sender, EventArgs eventArgs)
     {
         if (!IsEditing)
@@ -685,7 +742,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         }
 
         EndSession(closeHost: false, restoreRuntimeWindows: true);
-        StatusMessage = "Overlay position and opacity changes were cancelled.";
+        StatusMessage = "Overlay position, opacity, and scale changes were cancelled.";
     }
 
     private void EndSession(bool closeHost, bool restoreRuntimeWindows)

@@ -9,7 +9,7 @@ public sealed class OverlayPositionEditSessionTests
     public void CatalogGroupsEveryPositionableOverlayExactlyOnce()
     {
         Assert.Equal(5, OverlayLayoutCatalog.Categories.Count);
-        Assert.Equal(27, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(28, OverlayLayoutCatalog.Supported.Count);
         Assert.Equal(
             OverlayLayoutCatalog.Supported.Count,
             OverlayLayoutCatalog.Supported
@@ -72,6 +72,47 @@ public sealed class OverlayPositionEditSessionTests
                 bounds,
                 definition.PreviewSize));
         Assert.Equal(0.75, session.GetPlacement(definition.Name).Opacity);
+    }
+
+    [Fact]
+    public void ScaleTracksTheActiveSettingWithoutBecomingAnEditorChange()
+    {
+        var active = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>(),
+            null,
+            null);
+        active.SetScaleIndex(7);
+        var session = new OverlayPositionEditSession(active);
+
+        Assert.Equal(7, session.ScaleIndex);
+
+        session.SetScaleIndex(19);
+
+        Assert.Equal(19, session.ScaleIndex);
+        Assert.Equal(7, active.ScaleIndex);
+        Assert.False(session.HasChanges);
+    }
+
+    [Fact]
+    public void PerOverlayScaleOverrideIsAnIsolatedEditorChange()
+    {
+        var active = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>(),
+            null,
+            null);
+        active.SetScaleIndex(7);
+        var session = new OverlayPositionEditSession(active);
+
+        Assert.True(session.SetScaleOverride("PlotRouteBio", 19));
+
+        Assert.True(session.HasChanges);
+        Assert.Equal(19, session.GetScaleIndex("PlotRouteBio"));
+        Assert.Equal(7, session.GetScaleIndex("PlotJumpInfo"));
+        Assert.Null(active.Placements.GetValueOrDefault("PlotRouteBio")?.ScaleIndex);
+
+        Assert.True(session.SetScaleOverride("PlotRouteBio", null));
+        Assert.False(session.HasChanges);
+        Assert.Equal(7, session.GetScaleIndex("PlotRouteBio"));
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using Avalonia;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Platform.Overlay;
@@ -38,6 +39,8 @@ public sealed class OverlayPositionEditSession
 
     public double DefaultOpacity => workingDefaultOpacity ?? 1d;
 
+    public int ScaleIndex => workingLayout.ScaleIndex;
+
     public IReadOnlyDictionary<string, LegacyOverlayPlacement> Changes =>
         workingLayout.Placements
             .Where(entry => original.GetValueOrDefault(entry.Key) != entry.Value)
@@ -58,6 +61,9 @@ public sealed class OverlayPositionEditSession
 
     public double GetOpacity(string plotterName) =>
         GetPlacement(plotterName).Opacity ?? DefaultOpacity;
+
+    public int GetScaleIndex(string plotterName) =>
+        GetPlacement(plotterName).ScaleIndex ?? ScaleIndex;
 
     public bool SetDefaultOpacity(double opacity)
     {
@@ -87,6 +93,27 @@ public sealed class OverlayPositionEditSession
         return workingLayout.SetPlacement(
             plotterName,
             placement with { Opacity = opacity });
+    }
+
+    public bool SetScaleOverride(string plotterName, int? scaleIndex)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        if (scaleIndex is { } value && !OverlayScaleCatalog.IsSupported(value))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(scaleIndex),
+                $"Overlay scale index {value} is not supported.");
+        }
+
+        var placement = GetPlacement(plotterName);
+        return workingLayout.SetPlacement(
+            plotterName,
+            placement with { ScaleIndex = scaleIndex });
+    }
+
+    public void SetScaleIndex(int index)
+    {
+        workingLayout.SetScaleIndex(index);
     }
 
     public PixelPoint GetPosition(
