@@ -406,7 +406,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
             services.Add("Engineer");
         }
 
-        relevantServices = services;
+        relevantServices = services.ToArray();
     }
 
     private bool SetField<T>(

@@ -358,6 +358,20 @@ public sealed class BiologyCriteriaClause
     public static BiologyCriteriaClause Parse(string text)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(text);
+        try
+        {
+            return ParseCore(text);
+        }
+        catch (RegexMatchTimeoutException exception)
+        {
+            throw new InvalidDataException(
+                $"Invalid biology criterion: {text}",
+                exception);
+        }
+    }
+
+    private static BiologyCriteriaClause ParseCore(string text)
+    {
         var trimmed = text.Trim();
         if (trimmed.StartsWith('#'))
         {
