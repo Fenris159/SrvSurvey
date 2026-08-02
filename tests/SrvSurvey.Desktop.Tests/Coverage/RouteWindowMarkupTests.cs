@@ -4,6 +4,33 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 
 public sealed class RouteWindowMarkupTests
 {
+    private static readonly string[] FleetCarrierHeaderTexts =
+    [
+        "DONE",
+        "SYSTEM NAME",
+        "DISTANCE (LY)",
+        "REMAINING (LY)",
+        "JUMPS LEFT",
+        "FUEL LEFT (TONNES)",
+        "TRITIUM IN MARKET",
+        "FUEL USED (TONNES)",
+        "ICY RING",
+        "RESTOCK?",
+        "RESTOCK AMOUNT",
+    ];
+    private static readonly string[] FleetCarrierBindings =
+    [
+        "{Binding CarrierDistance}",
+        "{Binding CarrierRemaining}",
+        "{Binding JumpsRemaining}",
+        "{Binding CarrierFuelRemaining}",
+        "{Binding CarrierTritiumInMarket}",
+        "{Binding CarrierFuelUsed}",
+        "{Binding CarrierIcyRing}",
+        "{Binding CarrierRestock}",
+        "{Binding CarrierRestockAmount}",
+    ];
+
     [Fact]
     public void RouteRowsAreNotSelectableAndWindowUsesWorkspaceTitle()
     {
@@ -82,20 +109,7 @@ public sealed class RouteWindowMarkupTests
             .ToArray();
 
         Assert.Equal(
-            new[]
-            {
-                "DONE",
-                "SYSTEM NAME",
-                "DISTANCE (LY)",
-                "REMAINING (LY)",
-                "JUMPS LEFT",
-                "FUEL LEFT (TONNES)",
-                "TRITIUM IN MARKET",
-                "FUEL USED (TONNES)",
-                "ICY RING",
-                "RESTOCK?",
-                "RESTOCK AMOUNT",
-            },
+            FleetCarrierHeaderTexts,
             headerTexts);
         Assert.Equal(
             "{Binding IsFleetCarrierWorkspace}",
@@ -111,18 +125,7 @@ public sealed class RouteWindowMarkupTests
                 || value == "{Binding JumpsRemaining}")
             .ToArray();
         Assert.Equal(
-            new[]
-            {
-                "{Binding CarrierDistance}",
-                "{Binding CarrierRemaining}",
-                "{Binding JumpsRemaining}",
-                "{Binding CarrierFuelRemaining}",
-                "{Binding CarrierTritiumInMarket}",
-                "{Binding CarrierFuelUsed}",
-                "{Binding CarrierIcyRing}",
-                "{Binding CarrierRestock}",
-                "{Binding CarrierRestockAmount}",
-            },
+            FleetCarrierBindings,
             bindings);
     }
 

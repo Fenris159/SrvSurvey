@@ -32,6 +32,8 @@ internal sealed record OverlayPreviewSimulationState(
 
 internal static class OverlayPreviewSimulationProjector
 {
+    private const string StratumTectonicas = "Stratum Tectonicas";
+
     public static OverlayPreviewSimulationContent Project(
         OverlayLayoutDefinition definition,
         OverlayPreviewSimulationState state)
@@ -135,7 +137,7 @@ internal static class OverlayPreviewSimulationProjector
                 "3 TARGETS | RADAR 1.0 KM",
                 Row("Bacterium Acies", "146 m | 068 degrees", 29, "►", OverlayPreviewGlyphTone.Information),
                 Row("Tussock Capillum", "412 m | 091 degrees", 82, "⚐", OverlayPreviewGlyphTone.Gold),
-                Row("Stratum Tectonicas", "1.24 km | 312 degrees"),
+                Row(StratumTectonicas, "1.24 km | 312 degrees"),
                 Row("Ship", "860 m | 184 degrees"),
                 Row("History", "12 samples | 4 species")),
             "PlotGuardians" => Content(
@@ -194,7 +196,7 @@ internal static class OverlayPreviewSimulationProjector
                 RouteBodyRow(new FollowRouteBioTarget(
                     "A 5",
                     5,
-                    ["Bacterium Acies", "Stratum Tectonicas"],
+                    ["Bacterium Acies", StratumTectonicas],
                     Subtype: "Earth-like world",
                     DistanceToArrivalLs: 2934,
                     EstimatedMappingValue: 625000,
@@ -240,7 +242,7 @@ internal static class OverlayPreviewSimulationProjector
                 "HEADING 074 DEGREES",
                 Row("Bacterium Acies", "146 m"),
                 Row("Tussock Capillum", "412 m"),
-                Row("Stratum Tectonicas", "1.24 km")),
+                Row(StratumTectonicas, "1.24 km")),
             "PlotMultiGameCommander" => Content(
                 "Multiple Elite clients",
                 "2 commanders detected",
@@ -254,7 +256,7 @@ internal static class OverlayPreviewSimulationProjector
                 "LAST SYNC 2 M AGO | RADAR 1.0 KM",
                 Row("Bacterium Acies", "7.62 M cr | active", 67),
                 Row("Tussock Capillum", "19.01 M cr | analyzed", 100),
-                Row("Stratum Tectonicas", "95.19 M cr | 1.24 km", 33),
+                Row(StratumTectonicas, "95.19 M cr | 1.24 km", 33),
                 Row("Historical samples", "9 locations")),
             "PlotPulse" => Content(
                 "Journal activity",

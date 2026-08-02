@@ -4,6 +4,9 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public static class GuideCatalog
 {
+    private const string AvaloniaResourceScheme = "avares";
+    private const string DesktopAssemblyName = "SrvSurvey.Desktop";
+
     public static IReadOnlyList<GuideCategoryViewModel> Create()
     {
         return
@@ -598,8 +601,8 @@ public static class GuideCatalog
             Icon(GuideIconKind.Glyph, "L", "Landable", "The body can be landed on.", "FSS information and system survey"),
             Icon(GuideIconKind.Glyph, "?", "Unknown", "The signal, organism, site detail, or reward cannot yet be identified reliably from current data.", "Biology, Guardian, body and system rows"),
             Icon(GuideIconKind.Glyph, "■", "Construction site", "Identifies construction/build context; the exact row color reports whether the item is actionable, satisfied, or unavailable.", "Colonisation shopping"),
-            AssetIcon("avares://SrvSurvey.Desktop/Assets/Routes/refuel-star.png", "Fuel-scoop stop", "An orange star containing a fuel droplet marks a route waypoint where the ship should refuel by fuel scooping.", "Route Workspace and next-jump overlay", "fuel scoop refuel star route"),
-            AssetIcon("avares://SrvSurvey.Desktop/Assets/Routes/neutron-star.png", "Neutron boost stop", "A blue neutron-star marker identifies a route waypoint that uses or approaches a neutron-star FSD boost.", "Route Workspace and next-jump overlay", "neutron boost fsd star route"),
+            AssetIcon(DesktopAssetUri("Assets/Routes/refuel-star.png"), "Fuel-scoop stop", "An orange star containing a fuel droplet marks a route waypoint where the ship should refuel by fuel scooping.", "Route Workspace and next-jump overlay", "fuel scoop refuel star route"),
+            AssetIcon(DesktopAssetUri("Assets/Routes/neutron-star.png"), "Neutron boost stop", "A blue neutron-star marker identifies a route waypoint that uses or approaches a neutron-star FSD boost.", "Route Workspace and next-jump overlay", "neutron boost fsd star route"),
             .. CreateBodyIconGlossary(),
             Icon(GuideIconKind.BiologyRewardKnown, "", "Solid reward PIPs", "Four vertical segments classify a confirmed biological reward against the thresholds configured in Settings. More filled segments mean a higher reward band.", "Bio signals and biology system overlays", "bars pips confirmed solid"),
             Icon(GuideIconKind.BiologyRewardPredicted, "", "Hatched reward PIPs", "Diagonal hatching means the organism and reward are predicted. Dark potential segments cover the possible upper end of a reward range.", "Bio signals and biology predictions", "bars pips estimate range"),
@@ -719,5 +722,10 @@ public static class GuideCatalog
             appearsIn,
             searchTerms,
             assetPath);
+    }
+
+    private static string DesktopAssetUri(string relativePath)
+    {
+        return $"{AvaloniaResourceScheme}://{DesktopAssemblyName}/{relativePath}";
     }
 }

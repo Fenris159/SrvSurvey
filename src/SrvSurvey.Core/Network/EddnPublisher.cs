@@ -418,6 +418,11 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             await Task.WhenAll(tasks).WaitAsync(cancellationToken)
                 .ConfigureAwait(false);
         }
+
+        // Companion tasks stage durable outbox writes. Waiting for the reads
+        // alone can observe the same item once in the outbox and once in the
+        // staged-write count while the ordered writer finishes its command.
+        await FlushOutboxWritesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public void Dispose()

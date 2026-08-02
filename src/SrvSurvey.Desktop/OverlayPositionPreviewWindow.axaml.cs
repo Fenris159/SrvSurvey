@@ -10,7 +10,7 @@ namespace SrvSurvey.Desktop;
 
 public sealed partial class OverlayPositionPreviewWindow : Window
 {
-    private static readonly IReadOnlyList<OverlayScaleOption>
+    private static readonly OverlayScaleOption[]
         IndividualScaleOptions = OverlayScaleCatalog.Options
             .Where(option => option.AbsoluteScale is not null)
             .OrderBy(option => option.AbsoluteScale)
@@ -244,12 +244,12 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         return IndividualScaleOptions[Math.Clamp(
             ordinal,
             0,
-            IndividualScaleOptions.Count - 1)];
+            IndividualScaleOptions.Length - 1)];
     }
 
     private static int GetScaleOptionOrdinal(int scaleIndex)
     {
-        for (var index = 0; index < IndividualScaleOptions.Count; index++)
+        for (var index = 0; index < IndividualScaleOptions.Length; index++)
         {
             if (IndividualScaleOptions[index].Index == scaleIndex)
             {

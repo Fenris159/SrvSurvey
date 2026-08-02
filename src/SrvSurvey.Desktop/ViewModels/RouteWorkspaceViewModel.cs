@@ -2168,11 +2168,20 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
 
     public string Distance => distance;
 
-    public string CarrierDistance => Hop.Carrier?.DistanceLy is { } value
-        ? $"{value:N2}"
-        : Distance == "?"
-            ? "—"
-            : Distance.Replace(" ly", string.Empty, StringComparison.Ordinal);
+    public string CarrierDistance
+    {
+        get
+        {
+            if (Hop.Carrier?.DistanceLy is { } value)
+            {
+                return $"{value:N2}";
+            }
+
+            return Distance == "?"
+                ? "\u2014"
+                : Distance.Replace(" ly", string.Empty, StringComparison.Ordinal);
+        }
+    }
 
     public string CarrierRemaining => FormatCarrierNumber(Hop.Carrier?.RemainingLy, 2);
 
@@ -2194,11 +2203,18 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
         Hop.Carrier?.FuelUsedTonnes,
         0);
 
-    public string CarrierIcyRing => Hop.Carrier?.HasIcyRing == true
-        ? Hop.Carrier.IsSystemPristine
-            ? "PRISTINE"
-            : "YES"
-        : "—";
+    public string CarrierIcyRing
+    {
+        get
+        {
+            if (Hop.Carrier?.HasIcyRing != true)
+            {
+                return "\u2014";
+            }
+
+            return Hop.Carrier.IsSystemPristine ? "PRISTINE" : "YES";
+        }
+    }
 
     public string CarrierRestock => Hop.Carrier?.MustRestock == true
         ? "YES"
@@ -2576,95 +2592,95 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
         var bodyVisualChanged = bodyVisual != nextBodyVisual;
         target = next;
         bodyVisual = nextBodyVisual;
-        if (identityChanged)
-        {
-            Raise(nameof(BodyName));
-            Raise(nameof(BodyId));
-        }
+        RaiseChanges(identityChanged, nameof(BodyName), nameof(BodyId));
+        RaiseChanges(
+            speciesChanged,
+            nameof(Species),
+            nameof(HasSpecies),
+            nameof(NeedsScan));
+        RaiseChanges(subtypeChanged, nameof(Subtype), nameof(HasSubtype));
+        RaiseChanges(
+            bodyVisualChanged,
+            nameof(BodyIconAssetPath),
+            nameof(BodyIconAccessibleName));
+        RaiseChanges(
+            distanceChanged,
+            nameof(DistanceToArrival),
+            nameof(HasDistanceToArrival));
+        RaiseChanges(
+            scanValueChanged,
+            nameof(EstimatedScanValue),
+            nameof(HasEstimatedScanValue));
+        RaiseChanges(
+            mappingValueChanged,
+            nameof(EstimatedMappingValue),
+            nameof(HasEstimatedMappingValue));
+        RaiseChanges(
+            biologyValueChanged,
+            nameof(EstimatedBiologyValue),
+            nameof(HasEstimatedBiologyValue));
+        RaiseChanges(terraformableChanged, nameof(IsTerraformable));
+        RaiseChanges(biologicalChanged, nameof(NeedsScan));
 
-        if (speciesChanged)
-        {
-            Raise(nameof(Species));
-            Raise(nameof(HasSpecies));
-            Raise(nameof(NeedsScan));
-        }
-
-        if (subtypeChanged)
-        {
-            Raise(nameof(Subtype));
-            Raise(nameof(HasSubtype));
-        }
-
-        if (bodyVisualChanged)
-        {
-            Raise(nameof(BodyIconAssetPath));
-            Raise(nameof(BodyIconAccessibleName));
-        }
-
-        if (distanceChanged)
-        {
-            Raise(nameof(DistanceToArrival));
-            Raise(nameof(HasDistanceToArrival));
-        }
-
-        if (scanValueChanged)
-        {
-            Raise(nameof(EstimatedScanValue));
-            Raise(nameof(HasEstimatedScanValue));
-        }
-
-        if (mappingValueChanged)
-        {
-            Raise(nameof(EstimatedMappingValue));
-            Raise(nameof(HasEstimatedMappingValue));
-        }
-
-        if (biologyValueChanged)
-        {
-            Raise(nameof(EstimatedBiologyValue));
-            Raise(nameof(HasEstimatedBiologyValue));
-        }
-
-        if (terraformableChanged)
-        {
-            Raise(nameof(IsTerraformable));
-        }
-
-        if (biologicalChanged)
-        {
-            Raise(nameof(NeedsScan));
-        }
-
-        if (subtypeChanged
+        var compactDetailsChanged = subtypeChanged
             || distanceChanged
             || scanValueChanged
             || mappingValueChanged
             || biologyValueChanged
-            || terraformableChanged)
+            || terraformableChanged;
+        RefreshCompactDetails(compactDetailsChanged);
+        RefreshInlineDetails(identityChanged || compactDetailsChanged);
+        RaiseChanges(
+            completionChanged,
+            nameof(IsCompleted),
+            nameof(CompletionLabel));
+    }
+
+    private void RaiseChanges(
+        bool changed,
+        string propertyName,
+        string? secondPropertyName = null,
+        string? thirdPropertyName = null)
+    {
+        if (!changed)
         {
-            compactDetailSegments = BuildCompactDetailSegments();
-            Raise(nameof(HasDetails));
-            Raise(nameof(CompactDetailSegments));
-            Raise(nameof(CompactDetails));
+            return;
         }
 
-        if (identityChanged
-            || subtypeChanged
-            || distanceChanged
-            || scanValueChanged
-            || mappingValueChanged
-            || biologyValueChanged
-            || terraformableChanged)
+        Raise(propertyName);
+        if (secondPropertyName is not null)
         {
-            inlineSegments = BuildInlineSegments();
-            Raise(nameof(InlineSegments));
+            Raise(secondPropertyName);
         }
 
-        if (completionChanged)
+        if (thirdPropertyName is not null)
         {
-            Raise(nameof(IsCompleted));
-            Raise(nameof(CompletionLabel));
+            Raise(thirdPropertyName);
         }
+    }
+
+    private void RefreshCompactDetails(bool changed)
+    {
+        if (!changed)
+        {
+            return;
+        }
+
+        compactDetailSegments = BuildCompactDetailSegments();
+        Raise(nameof(HasDetails));
+        Raise(nameof(CompactDetailSegments));
+        Raise(nameof(CompactDetails));
+    }
+
+    private void RefreshInlineDetails(bool changed)
+    {
+        if (!changed)
+        {
+            return;
+        }
+
+        inlineSegments = BuildInlineSegments();
+        Raise(nameof(InlineSegments));
     }
 
     private void Raise(string propertyName)
@@ -2691,7 +2707,7 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
             : $"{value.Value:N0} CR";
     }
 
-    private IReadOnlyList<RouteBioDetailSegmentViewModel>
+    private RouteBioDetailSegmentViewModel[]
         BuildCompactDetailSegments()
     {
         var details = new List<string>(6);

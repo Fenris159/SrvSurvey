@@ -583,6 +583,51 @@ public sealed class FollowRouteStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task FleetCarrierSpanshExportPreservesNotesOnlyRestockGuidance()
+    {
+        var store = new FollowRouteStore(
+            temporaryDirectory,
+            FollowRouteKind.FleetCarrier);
+        var saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F456")) with
+            {
+                SourceSpanshKind = SpanshRouteKind.FleetCarrier,
+                Hops =
+                [
+                    new FollowRouteHop(
+                        "Restock Stop",
+                        82,
+                        new GalacticCoordinate(7, 8, 9),
+                        "Restock required before the next jump",
+                        false,
+                        false,
+                        Carrier: new FollowRouteCarrierHop(
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            false,
+                            false,
+                            false,
+                            null)),
+                ],
+            },
+            "Notes Restock Route");
+        var entry = Assert.Single(await store.ListAsync("F456"));
+
+        var exportPath = Assert.Single(await store.ExportSpanshAsync(
+            "F456",
+            [entry],
+            Path.Combine(temporaryDirectory, "notes-restock-export")));
+        var spansh = JsonNode.Parse(
+            await File.ReadAllTextAsync(exportPath))!.AsObject();
+        var hop = spansh["result"]!["jumps"]!.AsArray().Single()!.AsObject();
+
+        Assert.True(hop["must_restock"]!.GetValue<bool>());
+    }
+
+    [Fact]
     public async Task RenameChangesFileEmbeddedNameAndCurrentSelection()
     {
         var store = new FollowRouteStore(temporaryDirectory);

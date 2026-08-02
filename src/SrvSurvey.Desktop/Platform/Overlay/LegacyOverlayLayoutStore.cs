@@ -511,8 +511,8 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
-    private IReadOnlyDictionary<string, int> LoadScaleOverrides(
-        ICollection<string> errors)
+    private Dictionary<string, int> LoadScaleOverrides(
+        List<string> errors)
     {
         if (!File.Exists(scaleOverridesPath))
         {
@@ -880,8 +880,8 @@ public sealed class LegacyOverlayLayout
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         var snapshot = Volatile.Read(ref state);
         return snapshot.Placements.TryGetValue(plotterName, out var placement)
-            && placement.ScaleIndex is { } scaleIndex
-                ? scaleIndex
+            && placement.ScaleIndex is { } placementScaleIndex
+                ? placementScaleIndex
                 : ScaleIndex;
     }
 

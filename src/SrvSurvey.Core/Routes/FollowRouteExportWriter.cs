@@ -183,7 +183,7 @@ internal static class FollowRouteExportWriter
         if (kind == SpanshRouteKind.FleetCarrier)
         {
             WriteCarrierHop(root, hop.Carrier);
-            if (hop.Carrier is null
+            if (hop.Carrier?.MustRestock != true
                 && hop.Notes?.Contains(
                     "restock",
                     StringComparison.OrdinalIgnoreCase) == true)
