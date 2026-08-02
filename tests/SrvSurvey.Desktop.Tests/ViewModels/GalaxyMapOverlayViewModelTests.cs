@@ -58,6 +58,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.NoFocus });
 
         Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.IsGalaxyMapOpen);
         Assert.Empty(client.Requests);
 
         viewModel.ApplyUpdate(
@@ -68,7 +69,17 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
         await viewModel.PendingLoad;
 
+        Assert.True(viewModel.IsGalaxyMapOpen);
         Assert.Equal(2, client.Requests.Count);
+
+        viewModel.ApplyUpdate(
+            "Sol",
+            1,
+            null,
+            [],
+            new EliteStatus { GuiFocus = GuiFocus.NoFocus });
+
+        Assert.False(viewModel.IsGalaxyMapOpen);
     }
 
     [Fact]

@@ -248,7 +248,7 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
 
     public string DisplayName => definition.DisplayName;
 
-    public string Description => Name;
+    public string Description => definition.ConfigurationBinding;
 
     public LegacyHorizontalAnchor HorizontalAnchor
     {

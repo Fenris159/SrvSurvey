@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -67,6 +68,47 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
                 desiredPosition,
                 layout.GetPosition("overlay", gameBounds, overlaySize));
         }
+    }
+
+    [Fact]
+    public void LiveMovePublishesWorkingPlacementForRuntimeCoordinators()
+    {
+        var original = new LegacyOverlayPlacement(
+            LegacyHorizontalAnchor.Center,
+            0,
+            LegacyVerticalAnchor.Top,
+            8,
+            0.7);
+        var active = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = original,
+            },
+            null,
+            null);
+        var session = new OverlayPositionEditSession(active);
+        var previewSession = new OverlayPositionEditSession(active);
+        var gameBounds = new PixelRect(100, 200, 1200, 800);
+        var overlaySize = new PixelSize(600, 100);
+        var movedPosition = new PixelPoint(420, 310);
+
+        Assert.True(OverlayInteractionViewModel.MoveLiveOverlay(
+            session,
+            active,
+            "PlotJumpInfo",
+            movedPosition,
+            overlaySize,
+            gameBounds,
+            previewSession));
+
+        Assert.Equal(
+            movedPosition,
+            active.GetPosition("PlotJumpInfo", gameBounds, overlaySize));
+        Assert.Equal(original, session.GetOriginalPlacement("PlotJumpInfo"));
+        Assert.Single(session.Changes);
+        Assert.Equal(
+            session.GetPlacement("PlotJumpInfo"),
+            previewSession.GetPlacement("PlotJumpInfo"));
     }
 
     [Fact]
@@ -152,6 +194,92 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             ],
             host.ShownCategories);
         Assert.Contains("Sites & quests", viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public void OpeningEditorReloadsPersistedLayoutInsteadOfStaleMemory()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        File.WriteAllText(
+            path,
+            "{\"PlotJumpInfo\":\"center:0, top:8\"}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            activeLayout,
+            new OverlayWindowRegistry(),
+            host);
+
+        File.WriteAllText(
+            path,
+            "{\"PlotJumpInfo\":\"center:125, top:96\"}");
+
+        Assert.True(viewModel.Begin());
+
+        Assert.Equal(
+            new LegacyOverlayPlacement(
+                LegacyHorizontalAnchor.Center,
+                125,
+                LegacyVerticalAnchor.Top,
+                96,
+                null),
+            host.OpenedJumpInfoPlacement);
+        Assert.Equal(
+            host.OpenedJumpInfoPlacement,
+            activeLayout.Placements["PlotJumpInfo"]);
+    }
+
+    [Fact]
+    public void SnapToCenterCommandIsSavedWithTheOtherEditorChanges()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "plotters.json");
+        File.WriteAllText(
+            path,
+            "{\"PlotJumpInfo\":\"left:315, top:470\","
+                + "\"PlotGuardians\":\"right:40, bottom:60\"}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            activeLayout,
+            new OverlayWindowRegistry(),
+            host);
+
+        Assert.True(viewModel.Begin());
+        viewModel.SnapToCenterCommand.Execute(null);
+
+        Assert.Equal(1, host.PositionRefreshCount);
+        var centered = host.LastPositionRefreshPlacements["PlotJumpInfo"];
+        Assert.Equal(LegacyHorizontalAnchor.Center, centered.Horizontal);
+        Assert.Equal(0, centered.HorizontalOffset);
+        Assert.Equal(LegacyVerticalAnchor.Top, centered.Vertical);
+        Assert.Equal(350, centered.VerticalOffset);
+        Assert.Equal(
+            new LegacyOverlayPlacement(
+                LegacyHorizontalAnchor.Right,
+                40,
+                LegacyVerticalAnchor.Bottom,
+                60,
+                null),
+            host.LastPositionRefreshPlacements["PlotGuardians"]);
+        Assert.Contains("Snapped", viewModel.StatusMessage);
+
+        viewModel.Save();
+
+        var persisted = store.Load();
+        Assert.Equal(centered, persisted.Placements["PlotJumpInfo"]);
+        Assert.Equal(
+            host.LastPositionRefreshPlacements["PlotGuardians"],
+            persisted.Placements["PlotGuardians"]);
     }
 
     [Fact]
@@ -336,6 +464,47 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
                 "overlay-scale-overrides.json")));
     }
 
+    [Fact]
+    public void ToolbarPaneSettingsAreCommittedByTheTopCheckmarkCommand()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        File.WriteAllText(
+            Path.Combine(temporaryDirectory, "plotters.json"),
+            "{\"PlotJumpInfo\":\"center:0, top:8\"}");
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var activeLayout = store.Load();
+        var host = new FakeEditorHost();
+        using var viewModel = new OverlayInteractionViewModel(
+            new FakeOverlayPlatform(),
+            new FakeGameWindowTracker(GameWindowSnapshot.Unavailable),
+            store,
+            activeLayout,
+            new OverlayWindowRegistry(),
+            host);
+
+        Assert.True(viewModel.Begin());
+        viewModel.OpenOverlaySettings("PlotJumpInfo");
+        Assert.True(viewModel.IsOverlaySettingsOpen);
+        viewModel.SelectedOverlayOpacityPercent = 34;
+        viewModel.UseGlobalOverlayOpacity = false;
+        var scaleOptions = OverlayScaleCatalog.Options
+            .Where(option => option.AbsoluteScale is not null)
+            .OrderBy(option => option.AbsoluteScale)
+            .ToArray();
+        viewModel.SelectedOverlayScaleOrdinal = Array.FindIndex(
+            scaleOptions,
+            option => option.Index == 19);
+        viewModel.UseGlobalOverlayScale = false;
+
+        viewModel.SaveCommand.Execute(null);
+
+        Assert.False(viewModel.IsEditing);
+        Assert.False(viewModel.IsOverlaySettingsOpen);
+        Assert.False(host.IsOpen);
+        Assert.Equal(0.34, activeLayout.Placements["PlotJumpInfo"].Opacity);
+        Assert.Equal(19, activeLayout.Placements["PlotJumpInfo"].ScaleIndex);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))
@@ -386,12 +555,6 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
     {
         public event EventHandler<OverlayPreviewMovedEventArgs>? PreviewMoved;
 
-        public event EventHandler<OverlayPreviewOpacityChangedEventArgs>?
-            PreviewOpacityChanged;
-
-        public event EventHandler<OverlayPreviewScaleChangedEventArgs>?
-            PreviewScaleChanged;
-
         public event EventHandler? Closed
         {
             add { }
@@ -399,6 +562,8 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
         }
 
         public bool IsOpen { get; private set; }
+
+        public OverlayInteractionViewModel? ViewModel { get; private set; }
 
         public PixelRect? PreferredHostBounds { get; private set; }
 
@@ -413,6 +578,18 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         public int LastScaleIndex { get; private set; }
 
+        public int PositionRefreshCount { get; private set; }
+
+        public IReadOnlyDictionary<string, LegacyOverlayPlacement>
+            LastPositionRefreshPlacements
+        { get; private set; } =
+                new Dictionary<string, LegacyOverlayPlacement>(
+                    StringComparer.Ordinal);
+
+        public bool RuntimeOverlaysVisibleDuringEditing { get; private set; }
+
+        public LegacyOverlayPlacement? OpenedJumpInfoPlacement { get; private set; }
+
         public Dictionary<string, int> LastEffectiveScaleIndex { get; } =
             new(StringComparer.Ordinal);
 
@@ -423,7 +600,9 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             PixelRect? preferredHostBounds)
         {
             IsOpen = true;
+            ViewModel = viewModel;
             PreferredHostBounds = preferredHostBounds;
+            OpenedJumpInfoPlacement = session.GetPlacement("PlotJumpInfo");
             ShownCategories.Add(category);
             return true;
         }
@@ -456,6 +635,43 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
             }
         }
 
+        public void RefreshPreviewPositions(OverlayPositionEditSession session)
+        {
+            PositionRefreshCount++;
+            LastPositionRefreshPlacements = OverlayLayoutCatalog.Supported
+                .ToDictionary(
+                    definition => definition.Name,
+                    definition => session.GetPlacement(definition.Name),
+                    StringComparer.Ordinal);
+        }
+
+        public int SnapPreviewsToCenter(OverlayPositionEditSession session)
+        {
+            var category = ShownCategories[^1];
+            var bounds = new PixelRect(100, 200, 1200, 800);
+            var definitions = OverlayLayoutCatalog.ForCategory(category);
+            foreach (var definition in definitions)
+            {
+                var size = definition.PreviewSize;
+                var center = new PixelPoint(
+                    bounds.X + ((bounds.Width - size.Width) / 2),
+                    bounds.Y + ((bounds.Height - size.Height) / 2));
+                session.MoveWithDefaultAnchors(
+                    definition.Name,
+                    center,
+                    size,
+                    bounds);
+            }
+
+            RefreshPreviewPositions(session);
+            return definitions.Count;
+        }
+
+        public void SetRuntimeOverlaysVisibleDuringEditing(bool visible)
+        {
+            RuntimeOverlaysVisibleDuringEditing = visible;
+        }
+
         public void Close(bool restoreRuntimeWindows = true)
         {
             IsOpen = false;
@@ -478,20 +694,35 @@ public sealed class OverlayInteractionViewModelTests : IDisposable
 
         public void ChangeOpacity(string plotterName, double? opacityOverride)
         {
-            PreviewOpacityChanged?.Invoke(
-                this,
-                new OverlayPreviewOpacityChangedEventArgs(
-                    plotterName,
-                    opacityOverride));
+            ViewModel!.OpenOverlaySettings(plotterName);
+            if (opacityOverride is null)
+            {
+                ViewModel.UseGlobalOverlayOpacity = true;
+                return;
+            }
+
+            ViewModel.SelectedOverlayOpacityPercent =
+                opacityOverride.Value * 100d;
+            ViewModel.UseGlobalOverlayOpacity = false;
         }
 
         public void ChangeScale(string plotterName, int? scaleOverride)
         {
-            PreviewScaleChanged?.Invoke(
-                this,
-                new OverlayPreviewScaleChangedEventArgs(
-                    plotterName,
-                    scaleOverride));
+            ViewModel!.OpenOverlaySettings(plotterName);
+            if (scaleOverride is null)
+            {
+                ViewModel.UseGlobalOverlayScale = true;
+                return;
+            }
+
+            var options = OverlayScaleCatalog.Options
+                .Where(option => option.AbsoluteScale is not null)
+                .OrderBy(option => option.AbsoluteScale)
+                .ToArray();
+            ViewModel.SelectedOverlayScaleOrdinal = Array.FindIndex(
+                options,
+                option => option.Index == scaleOverride.Value);
+            ViewModel.UseGlobalOverlayScale = false;
         }
 
         public void Dispose()

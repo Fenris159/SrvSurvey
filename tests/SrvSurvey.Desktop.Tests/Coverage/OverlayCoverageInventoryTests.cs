@@ -196,6 +196,60 @@ public sealed class OverlayCoverageInventoryTests
         }
     }
 
+    [Fact]
+    public void EveryIndividualRuntimeOverlayWindowIsAvailableInTheEditor()
+    {
+        var root = FindRepositoryRoot();
+        var overlayDirectory = Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop");
+        var containerWindows = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "CombinedOverlayWindow.axaml",
+            "StreamOverlayWindow.axaml",
+        };
+        var runtimePanels = Directory.GetFiles(
+                overlayDirectory,
+                "*OverlayWindow.axaml")
+            .Select(Path.GetFileName)
+            .Where(name => name is not null && !containerWindows.Contains(name))
+            .Cast<string>()
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(
+            PreviewProductionWindows.Values.Order(StringComparer.Ordinal),
+            runtimePanels);
+    }
+
+    [Fact]
+    public void EveryRuntimeOverlayUsesTheSharedLegacyPresentationPipeline()
+    {
+        var root = FindRepositoryRoot();
+        var coordinatorFiles = Directory.GetFiles(
+                Path.Combine(
+                    root,
+                    Native("src/SrvSurvey.Desktop/Platform/Overlay")),
+                "*Coordinator.cs")
+            .Select(path => new
+            {
+                Path = path,
+                Source = File.ReadAllText(path),
+            })
+            .ToArray();
+        foreach (var definition in OverlayLayoutCatalog.Supported)
+        {
+            var owners = coordinatorFiles.Where(file =>
+                file.Source.Contains(
+                    $"\"{definition.Name}\"",
+                    StringComparison.Ordinal));
+            Assert.Contains(owners, owner => owner.Source.Contains(
+                "OverlayThemeResources.Apply(",
+                StringComparison.Ordinal));
+        }
+    }
+
     [Theory]
     [InlineData("src/SrvSurvey.Desktop/BiologyStatusOverlayWindow.axaml", "IsAnalyzed")]
     [InlineData("src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml", "IsComplete")]
@@ -249,15 +303,33 @@ public sealed class OverlayCoverageInventoryTests
         var interaction = File.ReadAllText(Path.Combine(
             root,
             Native("src/SrvSurvey.Desktop/ViewModels/OverlayInteractionViewModel.cs")));
+        var editorHost = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/Platform/Overlay/OverlayPositionEditorHost.cs")));
+        var themeResources = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/Platform/Overlay/OverlayThemeResources.cs")));
 
         Assert.Contains("Edit Overlay Positions", interaction);
         Assert.Contains("OverlayInteraction.ToggleCommand", overlaySettings);
         Assert.Contains("ItemsSource=\"{Binding Categories}\"", editor);
         Assert.Contains("SelectedItem=\"{Binding SelectedCategory, Mode=TwoWay}\"", editor);
+        Assert.Contains("Command=\"{Binding SnapToCenterCommand}\"", editor);
+        Assert.Contains("Content=\"&#x25CE;\"", editor);
+        Assert.Contains(
+            "Snap every overlay in this category to the center",
+            editor);
         Assert.Contains("Command=\"{Binding SaveCommand}\"", editor);
         Assert.Contains("Content=\"&#x2713;\"", editor);
         Assert.Contains("Command=\"{Binding CancelCommand}\"", editor);
         Assert.Contains("Content=\"&#x00D7;\"", editor);
+        Assert.True(
+            editor.IndexOf(
+                "Command=\"{Binding SnapToCenterCommand}\"",
+                StringComparison.Ordinal)
+            < editor.IndexOf(
+                "Command=\"{Binding SaveCommand}\"",
+                StringComparison.Ordinal));
         Assert.Contains("Text=\"{Binding Title}\"", preview);
         Assert.Contains("ItemsSource=\"{Binding Rows}\"", preview);
         Assert.Contains("Text=\"{Binding CompactText}\"", preview);
@@ -268,11 +340,51 @@ public sealed class OverlayCoverageInventoryTests
         Assert.Contains("RouteBioTargetList", preview);
         Assert.Contains("SIMULATED GAME STATE", preview);
         Assert.Contains("BorderThickness=\"2\"", preview);
+        Assert.DoesNotContain("Save all", preview);
+        Assert.DoesNotContain("OnSaveRequested", preview);
+        Assert.DoesNotContain("OnCancelRequested", preview);
+        Assert.DoesNotContain("ContextFlyout", preview);
+        Assert.Contains(
+            "PointerPressed=\"OnPreviewSurfacePointerPressed\"",
+            preview);
+        Assert.Contains("IsOverlaySettingsOpen", editor);
+        Assert.Contains("UseGlobalOverlayOpacity", editor);
+        Assert.Contains("SelectedOverlayOpacityPercent", editor);
+        Assert.Contains("UseGlobalOverlayScale", editor);
+        Assert.Contains("SelectedOverlayScaleOrdinal", editor);
+        Assert.DoesNotContain("VisiblePreviewOverlays", editor);
+        Assert.DoesNotContain("SelectedPreviewOverlay", editor);
+        Assert.DoesNotContain("Text=\"Overlay panel\"", editor);
+        Assert.Contains("editor?.Activate()", editorHost);
+        Assert.DoesNotContain("BringPreviewToFront", editorHost);
+        Assert.DoesNotContain("ClampToHost", editorHost);
+        Assert.True(
+            editorHost.IndexOf(
+                "preview.Show();",
+                StringComparison.Ordinal)
+            < editorHost.IndexOf(
+                "preview.PositionChanged += OnPreviewPositionChanged;",
+                StringComparison.Ordinal));
+        Assert.Contains("SettingsRequested", editorHost);
+        Assert.Contains("ApplySurfaceChrome", themeResources);
+        Assert.Contains("ApplyLegacyPresentation", themeResources);
+        Assert.Contains("NormalizeLegacyOverlayControl", themeResources);
+        Assert.Contains(
+            "surface.BorderThickness = new Thickness(isEditorPreview ? 2 : 0)",
+            themeResources);
+        Assert.Contains("surface.Padding = new Thickness(5)", themeResources);
         Assert.Contains("simulated game data", interaction);
         Assert.Contains("game.IsAvailable", interaction);
         Assert.Contains("? game.ClientBounds", interaction);
         Assert.Contains(": (PixelRect?)null", interaction);
         Assert.Contains("ToggleLiveOverlayInteraction", interaction);
+        Assert.Contains(
+            "SetRuntimeOverlaysVisibleDuringEditing(true)",
+            interaction);
+        Assert.Contains("RefreshPreviewPositions(editSession)", interaction);
+        Assert.DoesNotContain(
+            "Close the categorized overlay position editor before enabling interaction with live overlays.",
+            interaction);
         Assert.Contains("<Expander", overlaySettings);
         Assert.Contains("Classes=\"theme-selector\"", settingsShell);
         Assert.Contains("Text=\"Theme selection\"", settingsShell);
@@ -297,6 +409,21 @@ public sealed class OverlayCoverageInventoryTests
             Native("src/SrvSurvey.Desktop/RouteBioOverlayWindow.axaml")));
         Assert.Contains("RouteBioTargetList", routeOverlay);
         Assert.Contains("Width=\"220\"", routeOverlay);
+        Assert.DoesNotContain(
+            "BorderBrush=\"{DynamicResource RavenWarningBrush}\"",
+            routeOverlay);
+
+        var biologyOverlay = File.ReadAllText(Path.Combine(
+            root,
+            Native("src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml")));
+        Assert.Contains("Width=\"200\"", biologyOverlay);
+        Assert.Contains("Text=\"System biology\"", biologyOverlay);
+        Assert.Contains("Padding=\"5\"", biologyOverlay);
+        Assert.Contains("BorderThickness=\"0\"", biologyOverlay);
+        Assert.Contains("CornerRadius=\"5\"", biologyOverlay);
+        Assert.DoesNotContain("EXOBIOLOGY SURVEY", biologyOverlay);
+        Assert.DoesNotContain("RavenSurfaceBrush", biologyOverlay);
+        Assert.DoesNotContain("Classes=\"badge\"", biologyOverlay);
 
         var routeTargetList = File.ReadAllText(Path.Combine(
             root,

@@ -50,10 +50,7 @@ public sealed record OverlayPositionPreviewViewModel(
                 .OfType<RouteBioTargetItemViewModel>()
                 .ToArray()
             : [];
-        var preferredWidth = isCompact
-            || isRouteBio
-            ? definition.PreviewSize.Width
-            : CalculatePreferredWidth(definition.DisplayName, content);
+        var preferredWidth = definition.PreviewSize.Width;
         var estimatedHeight = CalculateEstimatedHeight(
             definition,
             rows,
@@ -85,28 +82,6 @@ public sealed record OverlayPositionPreviewViewModel(
         return new PixelSize(
             Math.Max(1, (int)Math.Ceiling(PreferredWidth * safeScaling)),
             Math.Max(1, (int)Math.Ceiling(EstimatedHeight * safeScaling)));
-    }
-
-    private static double CalculatePreferredWidth(
-        string title,
-        OverlayPreviewSimulationContent content)
-    {
-        var maximumCharacters = new[]
-            {
-                title.Length,
-                content.Subtitle.Length,
-                content.Context.Length,
-                content.Footer.Length,
-            }
-            .Concat(content.Rows.Select(row =>
-                row.Label.Length
-                + row.Value.Length
-                + (row.HasGlyph ? 3 : 0)
-                + (row.HasBodyIcon ? 4 : 0)
-                + (row.ShowCompletionCheckBox ? 3 : 0)
-                + (row.HasRewardBands ? row.RewardBands!.Count * 2 : 0)))
-            .Max();
-        return Math.Clamp(32 + maximumCharacters * 6.1, 190, 480);
     }
 
     private static double CalculateEstimatedHeight(

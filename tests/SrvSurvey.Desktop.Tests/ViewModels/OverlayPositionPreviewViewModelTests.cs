@@ -95,7 +95,7 @@ public sealed class OverlayPositionPreviewViewModelTests
     }
 
     [Fact]
-    public void PreviewWrapsItsSimulatedContentInsteadOfUsingLegacyCanvasSize()
+    public void PreviewUsesTheLegacyPlotterWidth()
     {
         var jump = OverlayLayoutCatalog.Supported.Single(item =>
             item.Name == "PlotJumpInfo");
@@ -105,8 +105,8 @@ public sealed class OverlayPositionPreviewViewModelTests
         var jumpPreview = OverlayPositionPreviewViewModel.Create(jump);
         var biologyPreview = OverlayPositionPreviewViewModel.Create(biology);
 
-        Assert.InRange(jumpPreview.PreferredWidth, 190, 480);
-        Assert.True(jumpPreview.PreferredWidth < jump.PreviewSize.Width);
+        Assert.Equal(jump.PreviewSize.Width, jumpPreview.PreferredWidth);
+        Assert.Equal(biology.PreviewSize.Width, biologyPreview.PreferredWidth);
         Assert.True(jumpPreview.EstimatedHeight < jump.PreviewSize.Height * 2);
         Assert.True(biologyPreview.EstimatedHeight > jumpPreview.EstimatedHeight);
         Assert.Equal(

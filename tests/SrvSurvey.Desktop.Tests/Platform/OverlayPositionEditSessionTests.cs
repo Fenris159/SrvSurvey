@@ -75,6 +75,123 @@ public sealed class OverlayPositionEditSessionTests
     }
 
     [Fact]
+    public void OriginalPlacementRemainsAvailableAfterWorkingMove()
+    {
+        var original = new LegacyOverlayPlacement(
+            LegacyHorizontalAnchor.Center,
+            0,
+            LegacyVerticalAnchor.Top,
+            8,
+            0.75);
+        var active = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotBioStatus"] = original,
+            },
+            0.65,
+            null);
+        var session = new OverlayPositionEditSession(active);
+
+        Assert.True(session.Move(
+            "PlotBioStatus",
+            new PixelPoint(530, 360),
+            new PixelSize(480, 80),
+            new PixelRect(100, 200, 1200, 800)));
+
+        Assert.Equal(original, session.GetOriginalPlacement("PlotBioStatus"));
+        Assert.NotEqual(original, session.GetPlacement("PlotBioStatus"));
+    }
+
+    [Fact]
+    public void DraggingRestoresThePanelsStableDefaultAnchors()
+    {
+        var active = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = new(
+                    LegacyHorizontalAnchor.Center,
+                    -28,
+                    LegacyVerticalAnchor.Middle,
+                    -862,
+                    0.7),
+            },
+            null,
+            null);
+        var session = new OverlayPositionEditSession(active);
+        var bounds = new PixelRect(100, 200, 1200, 800);
+        var size = new PixelSize(600, 100);
+        var destination = new PixelPoint(380, 240);
+
+        Assert.True(session.Move(
+            "PlotJumpInfo",
+            destination,
+            size,
+            bounds));
+
+        var placement = session.GetPlacement("PlotJumpInfo");
+        Assert.Equal(LegacyHorizontalAnchor.Center, placement.Horizontal);
+        Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);
+        Assert.Equal(destination, session.GetPosition(
+            "PlotJumpInfo",
+            bounds,
+            size));
+        Assert.Equal(destination.Y, session.GetPosition(
+            "PlotJumpInfo",
+            bounds,
+            new PixelSize(size.Width, size.Height + 18)).Y);
+    }
+
+    [Fact]
+    public void CenteringWithDefaultAnchorsKeepsDynamicPaneTopEdgeStable()
+    {
+        var active = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotJumpInfo"] = new(
+                    LegacyHorizontalAnchor.Left,
+                    315,
+                    LegacyVerticalAnchor.Top,
+                    470,
+                    0.7),
+                ["PlotGuardians"] = new(
+                    LegacyHorizontalAnchor.Right,
+                    40,
+                    LegacyVerticalAnchor.Bottom,
+                    60,
+                    0.8),
+            },
+            null,
+            null);
+        var session = new OverlayPositionEditSession(active);
+        var bounds = new PixelRect(100, 200, 1200, 800);
+        var size = new PixelSize(600, 100);
+        var center = new PixelPoint(400, 550);
+
+        Assert.True(session.MoveWithDefaultAnchors(
+            "PlotJumpInfo",
+            center,
+            size,
+            bounds));
+
+        var placement = session.GetPlacement("PlotJumpInfo");
+        Assert.Equal(LegacyHorizontalAnchor.Center, placement.Horizontal);
+        Assert.Equal(0, placement.HorizontalOffset);
+        Assert.Equal(LegacyVerticalAnchor.Top, placement.Vertical);
+        Assert.Equal(350, placement.VerticalOffset);
+        Assert.Equal(0.7, placement.Opacity);
+        Assert.Equal(
+            active.Placements["PlotGuardians"],
+            session.GetPlacement("PlotGuardians"));
+        Assert.Equal(center, session.GetPosition("PlotJumpInfo", bounds, size));
+        Assert.Equal(
+            center,
+            session.GetPosition(
+                "PlotJumpInfo",
+                bounds,
+                new PixelSize(600, 118)));
+    }
+
+    [Fact]
     public void ScaleTracksTheActiveSettingWithoutBecomingAnEditorChange()
     {
         var active = new LegacyOverlayLayout(

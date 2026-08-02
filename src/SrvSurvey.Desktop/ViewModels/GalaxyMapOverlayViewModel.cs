@@ -91,6 +91,8 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     public bool ShouldShow => AutoShow
         && status?.GuiFocus == GuiFocus.GalaxyMap;
 
+    public bool IsGalaxyMapOpen => status?.GuiFocus == GuiFocus.GalaxyMap;
+
     public string SettingsStatus
     {
         get => settingsStatus;
@@ -215,9 +217,15 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             }
         }
 
+        var wasGalaxyMapOpen = IsGalaxyMapOpen;
         if (nextStatus is not null)
         {
             status = nextStatus;
+        }
+
+        if (wasGalaxyMapOpen != IsGalaxyMapOpen)
+        {
+            OnPropertyChanged(nameof(IsGalaxyMapOpen));
         }
 
         foreach (var journalEvent in journalEvents)

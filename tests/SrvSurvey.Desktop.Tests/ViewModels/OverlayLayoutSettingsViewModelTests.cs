@@ -163,6 +163,25 @@ public sealed class OverlayLayoutSettingsViewModelTests : IDisposable
     }
 
     [Fact]
+    public void PassivePanelPickerIdentifiesItsActualConfigurationSource()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var viewModel = new OverlayLayoutSettingsViewModel(store, store.Load());
+
+        Assert.Equal(
+            "SystemSurvey.AutoShowBioSystem",
+            viewModel.Overlays.Single(overlay =>
+                overlay.Name == "PlotBioSystem").Description);
+        Assert.Equal(
+            "Guardian.AutoShowRamTah",
+            viewModel.Overlays.Single(overlay =>
+                overlay.Name == "PlotRamTah").Description);
+        Assert.All(viewModel.Overlays, overlay =>
+            Assert.False(string.IsNullOrWhiteSpace(overlay.Description)));
+    }
+
+    [Fact]
     public void MalformedLegacyLayoutCannotBeOverwrittenFromEditor()
     {
         Directory.CreateDirectory(temporaryDirectory);

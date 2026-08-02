@@ -44,6 +44,7 @@ public sealed class RavenThemeServiceTests : IDisposable
             Path.Combine(temporaryDirectory, "ui.json"));
         var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
         colors["orange"] = Color.FromArgb(255, 12, 34, 56);
+        colors["orangeDark"] = Color.FromArgb(255, 65, 43, 21);
         colors["bio.gold"] = Color.FromArgb(255, 78, 90, 12);
         var service = new RavenThemeService(
             application,
@@ -56,6 +57,14 @@ public sealed class RavenThemeServiceTests : IDisposable
             Color.FromArgb(255, 12, 34, 56),
             Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenOverlayAccentBrush"]).Color);
+        Assert.Equal(
+            Color.FromArgb(255, 65, 43, 21),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayAccentMutedBrush"]).Color);
+        Assert.Equal(
+            Color.Parse(RavenThemeCatalog.Get(null).AccentMutedColor),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenRouteGuidanceBadgeBrush"]).Color);
         Assert.Equal(
             Color.FromArgb(255, 78, 90, 12),
             Assert.IsType<SolidColorBrush>(

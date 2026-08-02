@@ -20,73 +20,8 @@
           Background="{DynamicResource RavenWindowBrush}"
           BorderBrush="{DynamicResource RavenWarningBrush}"
           BorderThickness="2"
-          CornerRadius="5">
-    <Border.ContextFlyout>
-      <Flyout>
-        <Border Padding="12"
-                Background="{DynamicResource RavenSurfaceBrush}"
-                BorderBrush="{DynamicResource RavenAccentBrush}"
-                BorderThickness="1"
-                CornerRadius="8">
-          <StackPanel MinWidth="300" Spacing="8">
-            <TextBlock FontWeight="SemiBold"
-                       Text="Overlay/Scale" />
-            <TextBlock Classes="muted"
-                       FontSize="11"
-                       Text="Override this overlay only"
-                       TextWrapping="Wrap" />
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
-              <StackPanel Spacing="7">
-                <TextBlock Classes="eyebrow" Text="OPACITY" />
-                <CheckBox x:Name="UseGlobalOpacityCheckBox"
-                          Content="Use global opacity"
-                          IsThreeState="False"
-                          IsCheckedChanged="OnUseGlobalOpacityChanged" />
-                <Grid HorizontalAlignment="Center"
-                      ColumnDefinitions="Auto,Auto"
-                      ColumnSpacing="8">
-                  <Slider x:Name="OpacityOverrideSlider"
-                          Height="160"
-                          Minimum="0"
-                          Maximum="100"
-                          Orientation="Vertical"
-                          TickFrequency="1"
-                          ValueChanged="OnOpacityOverrideValueChanged" />
-                  <TextBlock x:Name="OpacityOverrideValueText"
-                             Grid.Column="1"
-                             MinWidth="42"
-                             VerticalAlignment="Center"
-                             FontWeight="SemiBold" />
-                </Grid>
-              </StackPanel>
-              <StackPanel Grid.Column="1" Spacing="7">
-                <TextBlock Classes="eyebrow" Text="SCALE" />
-                <CheckBox x:Name="UseGlobalScaleCheckBox"
-                          Content="Use global scale"
-                          IsThreeState="False"
-                          IsCheckedChanged="OnUseGlobalScaleChanged" />
-                <Grid HorizontalAlignment="Center"
-                      ColumnDefinitions="Auto,Auto"
-                      ColumnSpacing="8">
-                  <Slider x:Name="ScaleOverrideSlider"
-                          Height="160"
-                          Minimum="0"
-                          Maximum="24"
-                          Orientation="Vertical"
-                          TickFrequency="1"
-                          ValueChanged="OnScaleOverrideValueChanged" />
-                  <TextBlock x:Name="ScaleOverrideValueText"
-                             Grid.Column="1"
-                             MinWidth="50"
-                             VerticalAlignment="Center"
-                             FontWeight="SemiBold" />
-                </Grid>
-              </StackPanel>
-            </Grid>
-          </StackPanel>
-        </Border>
-      </Flyout>
-    </Border.ContextFlyout>
+          CornerRadius="5"
+          PointerPressed="OnPreviewSurfacePointerPressed">
     <Grid>
       <TextBlock HorizontalAlignment="Center"
                  VerticalAlignment="Center"
