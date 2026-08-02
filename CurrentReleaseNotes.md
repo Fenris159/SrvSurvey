@@ -54,6 +54,14 @@ Detailed engineering and validation status is maintained in
   separately from route notes. The Route Workspace groups those targets beneath
   each system, while a dedicated current-system route-biology overlay shares
   the same immediately persisted body-completion checkboxes.
+- High-frequency Commander, survey, search, colonisation, station, and site
+  projections retain stable UI identities between unchanged updates. This
+  reduces polling overhead and prevents bound checkboxes, expanders, and other
+  interactive controls from being recreated while they are in use.
+- Application shutdown now cancels owned journal reconstruction and boxel-audit
+  work. Network, localization, profile, and reference-data paths also receive
+  bounded regular-expression handling, culture-independent timestamp parsing,
+  and HTTPS-only download redirects where applicable.
 - Cross-platform overlay hosting and Linux-specific X11/XWayland integration,
   including KDE-aware window hints while preserving the standard fallback.
 - Hardened opt-in EDDN delivery with a durable outbox, schema validation, and a
@@ -70,6 +78,9 @@ Detailed engineering and validation status is maintained in
   Dangerous. Overlay behavior, game attachment, account switching, updates,
   rollback, and imported profiles should be exercised on representative clean
   systems before this port is promoted as stable.
+- Windows and Linux continuous-integration builds now publish test coverage to
+  SonarCloud so new-code reliability, security, maintainability, duplication,
+  and coverage gates are evaluated together before release changes are merged.
 - Some presentation details and platform-specific edge cases may continue to
   change while testing feedback is incorporated.
 
