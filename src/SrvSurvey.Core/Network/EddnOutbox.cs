@@ -627,7 +627,7 @@ namespace SrvSurvey.Core.Network
         }
 
         private static void addLog(
-            ICollection<string> messages,
+            List<string> messages,
             string? message)
         {
             if (!string.IsNullOrWhiteSpace(message)) messages.Add(message);

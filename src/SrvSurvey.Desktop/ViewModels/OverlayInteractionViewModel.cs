@@ -712,7 +712,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
     private static string GetUnsavedInteractionStatus(
         int changedPlacementCount,
-        IReadOnlyCollection<string> failures)
+        List<string> failures)
     {
         if (failures.Count > 0)
         {

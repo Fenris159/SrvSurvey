@@ -535,7 +535,7 @@ public sealed record BiologySurveyViewModel(
     {
         if (disablePredictions)
         {
-            return BiologyPredictionSet.Empty;
+            return BiologyPredictionSet.NoPredictions;
         }
 
         var inputs = BiologyPredictionContextBuilder.Build(
@@ -878,7 +878,7 @@ public sealed record BiologySurveyViewModel(
         string Status,
         bool IsComplete)
     {
-        public static BiologyPredictionSet Empty { get; } = new(
+        public static BiologyPredictionSet NoPredictions { get; } = new(
             [],
             string.Empty,
             false);
