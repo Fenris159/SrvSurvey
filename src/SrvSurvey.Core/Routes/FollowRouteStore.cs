@@ -1267,7 +1267,35 @@ public sealed class FollowRouteStore
             GetString(root, "notes"),
             GetBoolean(root, "refuel") ?? false,
             GetBoolean(root, "neutron") ?? false,
-            ParseBioTargets(path, index, root["bio"]));
+            ParseBioTargets(path, index, root["bio"]),
+            ParseCarrierHop(path, index, root["carrier"]));
+    }
+
+    private static FollowRouteCarrierHop? ParseCarrierHop(
+        string path,
+        int hopIndex,
+        JsonNode? node)
+    {
+        if (node is null)
+        {
+            return null;
+        }
+
+        if (node is not JsonObject carrier)
+        {
+            throw InvalidRoute(path, $"hops[{hopIndex}].carrier is not an object");
+        }
+
+        return new FollowRouteCarrierHop(
+            GetDouble(carrier, "distanceLy"),
+            GetDouble(carrier, "remainingLy"),
+            GetDouble(carrier, "fuelRemainingTonnes"),
+            GetDouble(carrier, "tritiumInMarketTonnes"),
+            GetDouble(carrier, "fuelUsedTonnes"),
+            GetBoolean(carrier, "hasIcyRing") ?? false,
+            GetBoolean(carrier, "systemPristine") ?? false,
+            GetBoolean(carrier, "mustRestock") ?? false,
+            GetDouble(carrier, "restockAmountTonnes"));
     }
 
     private static IReadOnlyList<FollowRouteBioTarget>? ParseBioTargets(
@@ -1416,6 +1444,34 @@ public sealed class FollowRouteStore
         WriteTrue(root, "refuel", hop.Refuel);
         WriteTrue(root, "neutron", hop.Neutron);
         WriteBioTargets(root, hop.BioTargets);
+        WriteCarrierHop(root, hop.Carrier);
+    }
+
+    private static void WriteCarrierHop(
+        JsonObject root,
+        FollowRouteCarrierHop? carrier)
+    {
+        if (carrier is null)
+        {
+            root.Remove("carrier");
+            return;
+        }
+
+        var node = root["carrier"] as JsonObject;
+        if (node is null)
+        {
+            node = [];
+            root["carrier"] = node;
+        }
+        WriteOptional(node, "distanceLy", carrier.DistanceLy);
+        WriteOptional(node, "remainingLy", carrier.RemainingLy);
+        WriteOptional(node, "fuelRemainingTonnes", carrier.FuelRemainingTonnes);
+        WriteOptional(node, "tritiumInMarketTonnes", carrier.TritiumInMarketTonnes);
+        WriteOptional(node, "fuelUsedTonnes", carrier.FuelUsedTonnes);
+        WriteTrue(node, "hasIcyRing", carrier.HasIcyRing);
+        WriteTrue(node, "systemPristine", carrier.IsSystemPristine);
+        WriteTrue(node, "mustRestock", carrier.MustRestock);
+        WriteOptional(node, "restockAmountTonnes", carrier.RestockAmountTonnes);
     }
 
     private static void WriteBioTargets(

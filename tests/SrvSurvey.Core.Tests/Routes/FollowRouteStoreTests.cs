@@ -509,6 +509,80 @@ public sealed class FollowRouteStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task FleetCarrierLogisticsRoundTripAndExportInSpanshColumns()
+    {
+        var store = new FollowRouteStore(
+            temporaryDirectory,
+            FollowRouteKind.FleetCarrier);
+        var carrier = new FollowRouteCarrierHop(
+            DistanceLy: 499.76,
+            RemainingLy: 21502.09,
+            FuelRemainingTonnes: 1000,
+            TritiumInMarketTonnes: 2799,
+            FuelUsedTonnes: 93,
+            HasIcyRing: true,
+            IsSystemPristine: true,
+            MustRestock: true,
+            RestockAmountTonnes: 3892);
+        var saved = await store.SaveAsAsync(
+            (await store.CreateNewAsync("F123")) with
+            {
+                SourceSpanshKind = SpanshRouteKind.FleetCarrier,
+                Hops =
+                [
+                    new FollowRouteHop(
+                        "Carrier Stop",
+                        81,
+                        new GalacticCoordinate(4, 5, 6),
+                        null,
+                        false,
+                        false,
+                        Carrier: carrier),
+                ],
+            },
+            "Carrier Logistics");
+
+        var reloaded = await store.ReloadAsync(saved);
+        Assert.Equal(carrier, Assert.Single(reloaded.Route!.Hops).Carrier);
+
+        var entry = Assert.Single(await store.ListAsync("F123"));
+        var exportDirectory = Path.Combine(temporaryDirectory, "carrier-export");
+        var spanshPath = Assert.Single(await store.ExportSpanshAsync(
+            "F123",
+            [entry],
+            exportDirectory));
+        var csvPath = Assert.Single(await store.ExportCsvAsync(
+            "F123",
+            [entry],
+            exportDirectory));
+
+        var spansh = JsonNode.Parse(
+            await File.ReadAllTextAsync(spanshPath))!.AsObject();
+        var hop = spansh["result"]!["jumps"]!.AsArray().Single()!.AsObject();
+        Assert.Equal(499.76, hop["distance"]!.GetValue<double>());
+        Assert.Equal(21502.09, hop["distance_to_destination"]!.GetValue<double>());
+        Assert.Equal(1000, hop["fuel_remaining"]!.GetValue<double>());
+        Assert.Equal(2799, hop["tritium_in_market"]!.GetValue<double>());
+        Assert.Equal(93, hop["fuel_used"]!.GetValue<double>());
+        Assert.True(hop["has_icy_ring"]!.GetValue<bool>());
+        Assert.True(hop["is_system_pristine"]!.GetValue<bool>());
+        Assert.True(hop["must_restock"]!.GetValue<bool>());
+        Assert.Equal(3892, hop["restock_amount"]!.GetValue<double>());
+
+        var csv = await File.ReadAllTextAsync(csvPath);
+        Assert.Contains(
+            "DistanceLy,RemainingLy,JumpsLeft,FuelRemainingTonnes,"
+                + "TritiumInMarketTonnes,FuelUsedTonnes,HasIcyRing,"
+                + "SystemPristine,MustRestock,RestockAmountTonnes",
+            csv,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "499.76,21502.09,0,1000,2799,93,true,true,true,3892",
+            csv,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task RenameChangesFileEmbeddedNameAndCurrentSelection()
     {
         var store = new FollowRouteStore(temporaryDirectory);

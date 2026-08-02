@@ -55,14 +55,75 @@ public sealed class RouteWindowMarkupTests
         var workspace = FindNamedElement(document, "RouteHopWorkspace");
         var header = FindNamedElement(document, "RouteHopHeader");
         var scroller = FindNamedElement(document, "RouteHopScroller");
+        var table = FindNamedElement(document, "RouteHopTable");
         var routeItems = FindNamedElement(document, "RouteHopItems");
 
         Assert.Equal("20,20,6,20", workspace.Attribute("Margin")?.Value);
-        Assert.Equal("0,0,14,0", header.Attribute("Margin")?.Value);
+        Assert.Equal("{Binding !IsFleetCarrierWorkspace}", header.Attribute("IsVisible")?.Value);
         Assert.Equal(
             "Auto",
             scroller.Attribute("VerticalScrollBarVisibility")?.Value);
-        Assert.Equal("0,0,14,0", routeItems.Attribute("Margin")?.Value);
+        Assert.Equal(
+            "Auto",
+            scroller.Attribute("HorizontalScrollBarVisibility")?.Value);
+        Assert.Equal("0,0,14,0", table.Attribute("Margin")?.Value);
+        Assert.Null(routeItems.Attribute("Margin"));
+    }
+
+    [Fact]
+    public void FleetCarrierRowsFollowSpanshLogisticsColumnOrder()
+    {
+        var document = LoadRouteWindow();
+        var header = FindNamedElement(document, "FleetCarrierRouteHopHeader");
+        var headerTexts = header.Descendants()
+            .Where(element => element.Name.LocalName == "TextBlock")
+            .Select(element => element.Attribute("Text")?.Value)
+            .OfType<string>()
+            .ToArray();
+
+        Assert.Equal(
+            new[]
+            {
+                "DONE",
+                "SYSTEM NAME",
+                "DISTANCE (LY)",
+                "REMAINING (LY)",
+                "JUMPS LEFT",
+                "FUEL LEFT (TONNES)",
+                "TRITIUM IN MARKET",
+                "FUEL USED (TONNES)",
+                "ICY RING",
+                "RESTOCK?",
+                "RESTOCK AMOUNT",
+            },
+            headerTexts);
+        Assert.Equal(
+            "{Binding IsFleetCarrierWorkspace}",
+            header.Attribute("IsVisible")?.Value);
+
+        var carrierRow = document.Descendants().Single(element =>
+            element.Name.LocalName == "Grid"
+            && element.Attribute("IsVisible")?.Value
+                == "{Binding IsFleetCarrierHop}");
+        var bindings = carrierRow.Descendants()
+            .Select(element => element.Attribute("Text")?.Value)
+            .Where(value => value?.StartsWith("{Binding Carrier", StringComparison.Ordinal) == true
+                || value == "{Binding JumpsRemaining}")
+            .ToArray();
+        Assert.Equal(
+            new[]
+            {
+                "{Binding CarrierDistance}",
+                "{Binding CarrierRemaining}",
+                "{Binding JumpsRemaining}",
+                "{Binding CarrierFuelRemaining}",
+                "{Binding CarrierTritiumInMarket}",
+                "{Binding CarrierFuelUsed}",
+                "{Binding CarrierIcyRing}",
+                "{Binding CarrierRestock}",
+                "{Binding CarrierRestockAmount}",
+            },
+            bindings);
     }
 
     [Fact]

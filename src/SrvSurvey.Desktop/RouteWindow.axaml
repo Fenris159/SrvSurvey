@@ -122,44 +122,65 @@
       <Grid x:Name="RouteHopWorkspace"
             Grid.Column="1"
             Margin="20,20,6,20"
-            RowDefinitions="Auto,*"
-            RowSpacing="10">
-        <Border x:Name="RouteHopHeader"
-                Classes="card"
-                Margin="0,0,14,0"
-                Padding="12,9">
-          <Grid ColumnDefinitions="48,*,112,2*" ColumnSpacing="12">
-            <TextBlock Classes="muted" Text="DONE" />
-            <TextBlock Grid.Column="1" Classes="muted" Text="SYSTEM" />
-            <TextBlock Grid.Column="2" Classes="muted" Text="DISTANCE" />
-            <TextBlock Grid.Column="3" Classes="muted" Text="GUIDANCE / NOTES" />
-          </Grid>
-        </Border>
+            RowDefinitions="*">
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="0,0,14,0"
+                    Spacing="7"
+                    IsVisible="{Binding !HasRoute}">
+          <TextBlock Classes="page-title" FontSize="22" Text="No route loaded" />
+          <TextBlock Classes="muted"
+                     Text="Import a Spansh route or a list of system names." />
+        </StackPanel>
 
-        <Grid Grid.Row="1">
-          <StackPanel HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
-                      Margin="0,0,14,0"
-                      Spacing="7"
-                      IsVisible="{Binding !HasRoute}">
-            <TextBlock Classes="page-title" FontSize="22" Text="No route loaded" />
-            <TextBlock Classes="muted"
-                       Text="Import a Spansh route or a list of system names." />
-          </StackPanel>
+        <ScrollViewer x:Name="RouteHopScroller"
+                      IsVisible="{Binding HasRoute}"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto">
+          <StackPanel x:Name="RouteHopTable" Margin="0,0,14,0" Spacing="10">
+            <Border x:Name="RouteHopHeader"
+                    Classes="card"
+                    Padding="12,9"
+                    IsVisible="{Binding !IsFleetCarrierWorkspace}">
+              <Grid ColumnDefinitions="48,*,112,2*" ColumnSpacing="12">
+                <TextBlock Classes="muted" Text="DONE" />
+                <TextBlock Grid.Column="1" Classes="muted" Text="SYSTEM" />
+                <TextBlock Grid.Column="2" Classes="muted" Text="DISTANCE" />
+                <TextBlock Grid.Column="3" Classes="muted" Text="GUIDANCE / NOTES" />
+              </Grid>
+            </Border>
 
-          <ScrollViewer x:Name="RouteHopScroller"
-                        IsVisible="{Binding HasRoute}"
-                        HorizontalScrollBarVisibility="Disabled"
-                        VerticalScrollBarVisibility="Auto">
+            <Border x:Name="FleetCarrierRouteHopHeader"
+                    Classes="card"
+                    Width="1540"
+                    Padding="12,9"
+                    IsVisible="{Binding IsFleetCarrierWorkspace}">
+              <Grid ColumnDefinitions="48,270,110,125,90,135,145,135,105,100,140"
+                    ColumnSpacing="10">
+                <TextBlock Classes="muted" Text="DONE" />
+                <TextBlock Grid.Column="1" Classes="muted" Text="SYSTEM NAME" />
+                <TextBlock Grid.Column="2" Classes="muted" Text="DISTANCE (LY)" TextAlignment="Right" />
+                <TextBlock Grid.Column="3" Classes="muted" Text="REMAINING (LY)" TextAlignment="Right" />
+                <TextBlock Grid.Column="4" Classes="muted" Text="JUMPS LEFT" TextAlignment="Right" />
+                <TextBlock Grid.Column="5" Classes="muted" Text="FUEL LEFT (TONNES)" TextAlignment="Right" />
+                <TextBlock Grid.Column="6" Classes="muted" Text="TRITIUM IN MARKET" TextAlignment="Right" />
+                <TextBlock Grid.Column="7" Classes="muted" Text="FUEL USED (TONNES)" TextAlignment="Right" />
+                <TextBlock Grid.Column="8" Classes="muted" Text="ICY RING" TextAlignment="Center" />
+                <TextBlock Grid.Column="9" Classes="muted" Text="RESTOCK?" TextAlignment="Center" />
+                <TextBlock Grid.Column="10" Classes="muted" Text="RESTOCK AMOUNT" TextAlignment="Right" />
+              </Grid>
+            </Border>
+
             <ItemsControl x:Name="RouteHopItems"
-                          Margin="0,0,14,0"
                           ItemsSource="{Binding Hops}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:RouteHopItemViewModel">
                   <Border Classes="card" Padding="12" Margin="0,0,0,8">
+                    <Grid>
                     <Grid RowDefinitions="Auto,Auto"
                           ColumnDefinitions="48,*,112,2*"
-                          ColumnSpacing="12">
+                          ColumnSpacing="12"
+                          IsVisible="{Binding IsStandardHop}">
                       <CheckBox HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 IsChecked="{Binding IsReached, Mode=OneWay}"
@@ -348,12 +369,89 @@
                         </ItemsControl>
                       </StackPanel>
                     </Grid>
+                    <Grid Width="1516"
+                          ColumnDefinitions="48,270,110,125,90,135,145,135,105,100,140"
+                          ColumnSpacing="10"
+                          IsVisible="{Binding IsFleetCarrierHop}">
+                      <CheckBox HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                IsChecked="{Binding IsReached, Mode=OneWay}"
+                                Click="HopCheckBox_Click" />
+                      <StackPanel Grid.Column="1" Spacing="3">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                          <TextBlock Classes="muted"
+                                     Text="{Binding Number, StringFormat='#{0}'}" />
+                          <TextBlock Grid.Column="1"
+                                     FontWeight="SemiBold"
+                                     Text="{Binding Name}"
+                                     TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                        <Border Classes="badge"
+                                HorizontalAlignment="Left"
+                                IsVisible="{Binding HasState}"
+                                Padding="7,2">
+                          <TextBlock FontSize="9"
+                                     Foreground="{DynamicResource RavenAccentBrush}"
+                                     Text="{Binding State}" />
+                        </Border>
+                      </StackPanel>
+                      <TextBlock Grid.Column="2"
+                                 VerticalAlignment="Center"
+                                 Classes="monospace"
+                                 Text="{Binding CarrierDistance}"
+                                 TextAlignment="Right" />
+                      <TextBlock Grid.Column="3"
+                                 VerticalAlignment="Center"
+                                 Classes="monospace"
+                                 Text="{Binding CarrierRemaining}"
+                                 TextAlignment="Right" />
+                      <TextBlock Grid.Column="4"
+                                 VerticalAlignment="Center"
+                                 Classes="monospace"
+                                 Text="{Binding JumpsRemaining}"
+                                 TextAlignment="Right" />
+                      <TextBlock Grid.Column="5"
+                                 VerticalAlignment="Center"
+                                 Classes="monospace"
+                                 Text="{Binding CarrierFuelRemaining}"
+                                 TextAlignment="Right" />
+                      <TextBlock Grid.Column="6"
+                                 VerticalAlignment="Center"
+                                 Classes="monospace"
+                                 Text="{Binding CarrierTritiumInMarket}"
+                                 TextAlignment="Right" />
+                      <TextBlock Grid.Column="7"
+                                 VerticalAlignment="Center"
+                                 Classes="monospace"
+                                 Text="{Binding CarrierFuelUsed}"
+                                 TextAlignment="Right" />
+                      <TextBlock Grid.Column="8"
+                                 VerticalAlignment="Center"
+                                 Classes="eyebrow"
+                                 FontSize="10"
+                                 Foreground="{DynamicResource RavenAccentBrush}"
+                                 Text="{Binding CarrierIcyRing}"
+                                 TextAlignment="Center" />
+                      <TextBlock Grid.Column="9"
+                                 VerticalAlignment="Center"
+                                 Classes="eyebrow"
+                                 FontSize="10"
+                                 Foreground="{DynamicResource RavenWarningBrush}"
+                                 Text="{Binding CarrierRestock}"
+                                 TextAlignment="Center" />
+                      <TextBlock Grid.Column="10"
+                                 VerticalAlignment="Center"
+                                 Classes="monospace"
+                                 Text="{Binding CarrierRestockAmount}"
+                                 TextAlignment="Right" />
+                    </Grid>
+                    </Grid>
                   </Border>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-          </ScrollViewer>
-        </Grid>
+          </StackPanel>
+        </ScrollViewer>
       </Grid>
     </Grid>
 

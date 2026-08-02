@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Input;
@@ -1672,6 +1673,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     hop,
                     distanceText,
                     notes,
+                    draftHops.Count - index - 1,
                     index <= lastReachedIndex,
                     isCurrent,
                     isNext);
@@ -1684,6 +1686,8 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     hop,
                     distanceText,
                     notes,
+                    draftHops.Count - index - 1,
+                    IsFleetCarrierWorkspace,
                     index <= lastReachedIndex,
                     isCurrent,
                     isNext));
@@ -1979,6 +1983,7 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
     private FollowRouteHop hop;
     private string distance;
     private string notes;
+    private int jumpsRemaining;
     private bool isReached;
     private bool isCurrent;
     private bool isNext;
@@ -1989,6 +1994,8 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
         FollowRouteHop hop,
         string distance,
         string notes,
+        int jumpsRemaining,
+        bool isFleetCarrierHop,
         bool isReached,
         bool isCurrent,
         bool isNext)
@@ -1998,6 +2005,8 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
         this.hop = hop;
         this.distance = distance;
         this.notes = notes;
+        this.jumpsRemaining = jumpsRemaining;
+        IsFleetCarrierHop = isFleetCarrierHop;
         this.isReached = isReached;
         this.isCurrent = isCurrent;
         this.isNext = isNext;
@@ -2015,6 +2024,46 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
     public string Name => Hop.Name;
 
     public string Distance => distance;
+
+    public string CarrierDistance => Hop.Carrier?.DistanceLy is { } value
+        ? $"{value:N2}"
+        : Distance == "?"
+            ? "—"
+            : Distance.Replace(" ly", string.Empty, StringComparison.Ordinal);
+
+    public string CarrierRemaining => FormatCarrierNumber(Hop.Carrier?.RemainingLy, 2);
+
+    public int JumpsRemaining => jumpsRemaining;
+
+    public bool IsFleetCarrierHop { get; }
+
+    public bool IsStandardHop => !IsFleetCarrierHop;
+
+    public string CarrierFuelRemaining => FormatCarrierNumber(
+        Hop.Carrier?.FuelRemainingTonnes,
+        0);
+
+    public string CarrierTritiumInMarket => FormatCarrierNumber(
+        Hop.Carrier?.TritiumInMarketTonnes,
+        0);
+
+    public string CarrierFuelUsed => FormatCarrierNumber(
+        Hop.Carrier?.FuelUsedTonnes,
+        0);
+
+    public string CarrierIcyRing => Hop.Carrier?.HasIcyRing == true
+        ? Hop.Carrier.IsSystemPristine
+            ? "PRISTINE"
+            : "YES"
+        : "—";
+
+    public string CarrierRestock => Hop.Carrier?.MustRestock == true
+        ? "YES"
+        : "—";
+
+    public string CarrierRestockAmount => FormatCarrierNumber(
+        Hop.Carrier?.RestockAmountTonnes,
+        0);
 
     public string Notes => notes;
 
@@ -2063,6 +2112,7 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
         FollowRouteHop nextHop,
         string nextDistance,
         string nextNotes,
+        int nextJumpsRemaining,
         bool nextIsReached,
         bool nextIsCurrent,
         bool nextIsNext)
@@ -2092,11 +2142,49 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
             PropertyChanged?.Invoke(
                 this,
                 new PropertyChangedEventArgs(nameof(HasGuidance)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierDistance)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierRemaining)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierFuelRemaining)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierTritiumInMarket)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierFuelUsed)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierIcyRing)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierRestock)));
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierRestockAmount)));
             RefreshBioTargets(nextHop);
         }
 
+        var distanceChanged = !string.Equals(
+            distance,
+            nextDistance,
+            StringComparison.Ordinal);
         SetField(ref distance, nextDistance, nameof(Distance));
+        if (distanceChanged)
+        {
+            PropertyChanged?.Invoke(
+                this,
+                new PropertyChangedEventArgs(nameof(CarrierDistance)));
+        }
         SetField(ref notes, nextNotes, nameof(Notes));
+        SetField(
+            ref jumpsRemaining,
+            nextJumpsRemaining,
+            nameof(JumpsRemaining));
         var stateChanged = isReached != nextIsReached
             || isCurrent != nextIsCurrent
             || isNext != nextIsNext;
@@ -2169,6 +2257,13 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
 
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private static string FormatCarrierNumber(double? value, int decimals)
+    {
+        return value is { } number
+            ? number.ToString($"N{decimals}", CultureInfo.CurrentCulture)
+            : "—";
     }
 }
 

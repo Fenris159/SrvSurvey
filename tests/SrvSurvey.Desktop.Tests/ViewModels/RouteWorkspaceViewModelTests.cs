@@ -139,7 +139,17 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
                 null,
                 "Refuel 500 t Tritium",
                 false,
-                false),
+                false,
+                Carrier: new FollowRouteCarrierHop(
+                    DistanceLy: 499.76,
+                    RemainingLy: 21502.09,
+                    FuelRemainingTonnes: 1000,
+                    TritiumInMarketTonnes: 2799,
+                    FuelUsedTonnes: 93,
+                    HasIcyRing: true,
+                    IsSystemPristine: true,
+                    MustRestock: true,
+                    RestockAmountTonnes: 3892)),
         ]);
         var viewModel = CreateViewModel(
             spanshClient: spanshClient,
@@ -156,7 +166,19 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
             "https://spansh.co.uk/fleet-carrier/results/74FA2952-2048-11F1-8302-B948FF6DF5C1");
 
         Assert.Equal(1, spanshClient.CallCount);
-        Assert.Equal("Colonia", Assert.Single(viewModel.Hops).Hop.Name);
+        var hop = Assert.Single(viewModel.Hops);
+        Assert.Equal("Colonia", hop.Hop.Name);
+        Assert.True(hop.IsFleetCarrierHop);
+        Assert.False(hop.IsStandardHop);
+        Assert.Equal($"{499.76:N2}", hop.CarrierDistance);
+        Assert.Equal($"{21502.09:N2}", hop.CarrierRemaining);
+        Assert.Equal(0, hop.JumpsRemaining);
+        Assert.Equal($"{1000:N0}", hop.CarrierFuelRemaining);
+        Assert.Equal($"{2799:N0}", hop.CarrierTritiumInMarket);
+        Assert.Equal($"{93:N0}", hop.CarrierFuelUsed);
+        Assert.Equal("PRISTINE", hop.CarrierIcyRing);
+        Assert.Equal("YES", hop.CarrierRestock);
+        Assert.Equal($"{3892:N0}", hop.CarrierRestockAmount);
     }
 
     [Fact]
