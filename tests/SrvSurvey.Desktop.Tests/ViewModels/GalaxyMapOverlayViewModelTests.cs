@@ -13,6 +13,21 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         $"SrvSurvey-galaxy-map-view-model-tests-{Guid.NewGuid():N}");
 
     [Fact]
+    public void EmptyStateProvidesStableNonNullBindingTargets()
+    {
+        using var viewModel = CreateViewModel(new FakeSummaryClient());
+
+        Assert.False(viewModel.HasPrimarySystem);
+        Assert.False(viewModel.HasSecondarySystem);
+        Assert.Same(
+            GalaxyMapSystemViewModel.Empty,
+            viewModel.PrimarySystemDisplay);
+        Assert.Same(
+            GalaxyMapSystemViewModel.Empty,
+            viewModel.SecondarySystemDisplay);
+    }
+
+    [Fact]
     public async Task GalaxyMapRouteShowsDestinationNextHopAndFactionInfluence()
     {
         var client = new FakeSummaryClient();

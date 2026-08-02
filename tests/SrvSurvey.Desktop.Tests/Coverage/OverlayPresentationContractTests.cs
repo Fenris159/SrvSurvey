@@ -43,8 +43,9 @@ public sealed class OverlayPresentationContractTests
             "BiologicalSignalsText", "GeologicalSignalsText", "TextDecorations=\"Strikethrough\"",
         ]),
         Contract("PlotGalMap", ["src/SrvSurvey.Desktop/GalaxyMapOverlayWindow.axaml"], [
-            "PrimarySystem.DiscoveryText", "PrimarySystem.DiscoveredByText", "SecondarySystem.DiscoveryText",
-            "SecondarySystem.DiscoveredByText", "RouteFooter", "Factions", "IsQuestTagged",
+            "PrimarySystemDisplay.DiscoveryText", "PrimarySystemDisplay.DiscoveredByText",
+            "SecondarySystemDisplay.DiscoveryText", "SecondarySystemDisplay.DiscoveredByText",
+            "RouteFooter", "Factions", "IsQuestTagged",
         ]),
         Contract("PlotGrounded", ["src/SrvSurvey.Desktop/SurfaceSurveyOverlayWindow.axaml"], [
             "BodyName", "HistoryText", "HeadingText", "RadarScaleText", "NavigationMarkers", "TrackerGroups",

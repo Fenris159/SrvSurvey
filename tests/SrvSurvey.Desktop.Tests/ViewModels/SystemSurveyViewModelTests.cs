@@ -14,6 +14,17 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         "SrvSurvey-SystemSurveyViewModel-" + Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public void EmptyBiologyStateProvidesAStableNonNullBindingTarget()
+    {
+        var viewModel = CreateViewModel();
+
+        Assert.False(viewModel.HasBiologySurvey);
+        Assert.Same(
+            BiologySurveyViewModel.Empty,
+            viewModel.BiologySurveyDisplay);
+    }
+
+    [Fact]
     public void IdenticalEmptyUpdateRetainsPresentationAndDoesNotNotify()
     {
         var viewModel = CreateViewModel();

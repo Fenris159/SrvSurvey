@@ -774,11 +774,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             if (SetField(ref biologySurvey, value))
             {
                 OnPropertyChanged(nameof(HasBiologySurvey));
+                OnPropertyChanged(nameof(BiologySurveyDisplay));
             }
         }
     }
 
     public bool HasBiologySurvey => BiologySurvey is not null;
+
+    public BiologySurveyViewModel BiologySurveyDisplay =>
+        BiologySurvey ?? BiologySurveyViewModel.Empty;
 
     public bool HasCanonnBiologyHint
     {

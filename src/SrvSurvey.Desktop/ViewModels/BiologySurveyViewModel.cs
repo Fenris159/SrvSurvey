@@ -20,6 +20,21 @@ public sealed record BiologySurveyViewModel(
     int GeologicalSignalCount,
     IReadOnlyList<string> GeologicalSignals)
 {
+    public static BiologySurveyViewModel Empty { get; } = new(
+        BiologySurveyMode.System,
+        null,
+        string.Empty,
+        string.Empty,
+        [],
+        [],
+        string.Empty,
+        string.Empty,
+        0,
+        false,
+        string.Empty,
+        0,
+        []);
+
     public bool IsBodyDetail => Mode == BiologySurveyMode.Body;
 
     public bool IsSystemOverview => Mode == BiologySurveyMode.System;

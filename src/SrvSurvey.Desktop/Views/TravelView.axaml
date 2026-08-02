@@ -816,7 +816,7 @@
         <StackPanel Spacing="15">
           <TextBlock Classes="page-title" FontSize="22" Text="Route notes" />
           <TextBlock Classes="muted"
-                     Text="{Binding RouteManager.EditingRoute.Name, StringFormat='Edit notes for {0}'}"
+                     Text="{Binding RouteManager.EditingRouteName, StringFormat='Edit notes for {0}'}"
                      TextWrapping="Wrap" />
           <TextBox Height="280"
                    AcceptsReturn="True"
@@ -848,7 +848,7 @@
         <StackPanel Spacing="15">
           <TextBlock Classes="page-title" FontSize="22" Text="Rename route" />
           <TextBlock Classes="muted"
-                     Text="{Binding RouteManager.EditingRoute.FileName, StringFormat='Rename {0}'}"
+                     Text="{Binding RouteManager.EditingRouteFileName, StringFormat='Rename {0}'}"
                      TextWrapping="Wrap" />
           <TextBox Text="{Binding RouteManager.RenameDraft, Mode=TwoWay}"
                    PlaceholderText="Route name" />
@@ -908,7 +908,7 @@
                      FontSize="22"
                      Text="Fleet-carrier route notes" />
           <TextBlock Classes="muted"
-                     Text="{Binding FleetCarrierRouteManager.EditingRoute.Name, StringFormat='Edit notes for {0}'}"
+                     Text="{Binding FleetCarrierRouteManager.EditingRouteName, StringFormat='Edit notes for {0}'}"
                      TextWrapping="Wrap" />
           <TextBox Height="280"
                    AcceptsReturn="True"
@@ -942,7 +942,7 @@
                      FontSize="22"
                      Text="Rename fleet-carrier route" />
           <TextBlock Classes="muted"
-                     Text="{Binding FleetCarrierRouteManager.EditingRoute.FileName, StringFormat='Rename {0}'}"
+                     Text="{Binding FleetCarrierRouteManager.EditingRouteFileName, StringFormat='Rename {0}'}"
                      TextWrapping="Wrap" />
           <TextBox Text="{Binding FleetCarrierRouteManager.RenameDraft, Mode=TwoWay}"
                    PlaceholderText="Fleet-carrier route name" />

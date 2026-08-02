@@ -6,7 +6,8 @@
              x:Class="SrvSurvey.Desktop.Views.DiagnosticsView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+  <ScrollViewer x:Name="DiagnosticsPageScroller"
+                HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="32" Spacing="24" MaxWidth="1000">
       <StackPanel Spacing="5">
         <TextBlock Classes="eyebrow" Text="DIAGNOSTICS" />
@@ -578,16 +579,22 @@
                        Text="{Binding DiagnosticsLog.SessionDescription}" />
           </StackPanel>
 
-          <TextBox MinHeight="260"
-                   MaxHeight="420"
-                   AcceptsReturn="True"
-                   IsReadOnly="True"
-                   TextWrapping="NoWrap"
-                   FontFamily="Consolas, Menlo, monospace"
-                   FontSize="12"
-                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                   Text="{Binding DiagnosticsLog.LogText, Mode=OneWay}" />
+          <Border Background="{DynamicResource RavenSurfaceBrush}"
+                  BorderBrush="{DynamicResource RavenBorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="8">
+            <ScrollViewer x:Name="ApplicationLogScroller"
+                          MinHeight="260"
+                          MaxHeight="420"
+                          Padding="10"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
+              <TextBlock FontFamily="Consolas, Menlo, monospace"
+                         FontSize="12"
+                         TextWrapping="NoWrap"
+                         Text="{Binding DiagnosticsLog.LogText, Mode=OneWay}" />
+            </ScrollViewer>
+          </Border>
 
           <WrapPanel Orientation="Horizontal">
             <Button Classes="primary"

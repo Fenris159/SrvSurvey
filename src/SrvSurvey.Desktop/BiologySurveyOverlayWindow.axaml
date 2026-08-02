@@ -35,11 +35,11 @@
       <TextBlock Foreground="{DynamicResource RavenTextBrush}"
                  FontSize="10"
                  FontWeight="SemiBold"
-                 Text="{Binding Survey.BiologySurvey.Heading}"
+                 Text="{Binding Survey.BiologySurveyDisplay.Heading}"
                  TextTrimming="CharacterEllipsis" />
       <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
                  FontSize="9"
-                 Text="{Binding Survey.BiologySurvey.ProgressText}"
+                 Text="{Binding Survey.BiologySurveyDisplay.ProgressText}"
                  TextTrimming="CharacterEllipsis" />
 
       <Border Height="1"
@@ -51,8 +51,8 @@
                     HorizontalScrollBarVisibility="Disabled"
                     VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="3">
-          <ItemsControl IsVisible="{Binding Survey.BiologySurvey.IsSystemOverview}"
-                        ItemsSource="{Binding Survey.BiologySurvey.Bodies}">
+          <ItemsControl IsVisible="{Binding Survey.BiologySurveyDisplay.IsSystemOverview}"
+                        ItemsSource="{Binding Survey.BiologySurveyDisplay.Bodies}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:BiologyBodyRowViewModel">
                 <Grid Margin="0,1"
@@ -123,7 +123,7 @@
 
           <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                      FontSize="9"
-                     IsVisible="{Binding Survey.BiologySurvey.RequiresDss}"
+                     IsVisible="{Binding Survey.BiologySurveyDisplay.RequiresDss}"
                      Text="DSS scan required"
                      TextWrapping="Wrap" />
           <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
@@ -133,12 +133,12 @@
                      TextWrapping="Wrap" />
           <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
                      FontSize="9"
-                     IsVisible="{Binding Survey.BiologySurvey.HasPredictionStatus}"
-                     Text="{Binding Survey.BiologySurvey.PredictionStatus}"
+                     IsVisible="{Binding Survey.BiologySurveyDisplay.HasPredictionStatus}"
+                     Text="{Binding Survey.BiologySurveyDisplay.PredictionStatus}"
                      TextWrapping="Wrap" />
 
-          <ItemsControl IsVisible="{Binding Survey.BiologySurvey.IsBodyDetail}"
-                        ItemsSource="{Binding Survey.BiologySurvey.Organisms}">
+          <ItemsControl IsVisible="{Binding Survey.BiologySurveyDisplay.IsBodyDetail}"
+                        ItemsSource="{Binding Survey.BiologySurveyDisplay.Organisms}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:BiologyOrganismRowViewModel">
                 <Grid Margin="0,1"
@@ -192,10 +192,10 @@
 
           <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
                      FontSize="9"
-                     IsVisible="{Binding Survey.BiologySurvey.HasGeologicalSignals}"
-                     Text="{Binding Survey.BiologySurvey.GeologicalSignalCount, StringFormat={}{0} geological signals}" />
-          <ItemsControl IsVisible="{Binding Survey.BiologySurvey.HasGeologicalSignals}"
-                        ItemsSource="{Binding Survey.BiologySurvey.GeologicalSignals}">
+                     IsVisible="{Binding Survey.BiologySurveyDisplay.HasGeologicalSignals}"
+                     Text="{Binding Survey.BiologySurveyDisplay.GeologicalSignalCount, StringFormat={}{0} geological signals}" />
+          <ItemsControl IsVisible="{Binding Survey.BiologySurveyDisplay.HasGeologicalSignals}"
+                        ItemsSource="{Binding Survey.BiologySurveyDisplay.GeologicalSignals}">
             <ItemsControl.ItemTemplate>
               <DataTemplate>
                 <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
@@ -206,22 +206,22 @@
           </ItemsControl>
           <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
                      FontSize="9"
-                     IsVisible="{Binding Survey.BiologySurvey.HasRadicoidaUnicaCount}"
-                     Text="{Binding Survey.BiologySurvey.RadicoidaUnicaCountText}" />
+                     IsVisible="{Binding Survey.BiologySurveyDisplay.HasRadicoidaUnicaCount}"
+                     Text="{Binding Survey.BiologySurveyDisplay.RadicoidaUnicaCountText}" />
         </StackPanel>
       </ScrollViewer>
 
       <TextBlock HorizontalAlignment="Center"
                  Foreground="{DynamicResource RavenMutedTextBrush}"
                  FontSize="9"
-                 IsVisible="{Binding Survey.BiologySurvey.HasRewardSummary}"
-                 Text="{Binding Survey.BiologySurvey.RewardSummary}"
+                 IsVisible="{Binding Survey.BiologySurveyDisplay.HasRewardSummary}"
+                 Text="{Binding Survey.BiologySurveyDisplay.RewardSummary}"
                  TextTrimming="CharacterEllipsis" />
       <TextBlock HorizontalAlignment="Center"
                  Foreground="{DynamicResource RavenAccentBrush}"
                  FontSize="9"
-                 IsVisible="{Binding Survey.BiologySurvey.HasFirstFootfallRewardSummary}"
-                 Text="{Binding Survey.BiologySurvey.FirstFootfallRewardSummary}"
+                 IsVisible="{Binding Survey.BiologySurveyDisplay.HasFirstFootfallRewardSummary}"
+                 Text="{Binding Survey.BiologySurveyDisplay.FirstFootfallRewardSummary}"
                  TextTrimming="CharacterEllipsis" />
     </StackPanel>
   </Border>

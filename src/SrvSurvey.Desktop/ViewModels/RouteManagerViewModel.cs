@@ -224,8 +224,19 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
     public RouteManagerItemViewModel? EditingRoute
     {
         get => editingRoute;
-        private set => SetField(ref editingRoute, value);
+        private set
+        {
+            if (SetField(ref editingRoute, value))
+            {
+                OnPropertyChanged(nameof(EditingRouteName));
+                OnPropertyChanged(nameof(EditingRouteFileName));
+            }
+        }
     }
+
+    public string EditingRouteName => EditingRoute?.Name ?? string.Empty;
+
+    public string EditingRouteFileName => EditingRoute?.FileName ?? string.Empty;
 
     public string NotesDraft
     {
