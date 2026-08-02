@@ -267,8 +267,14 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
     {
         public event EventHandler? CanExecuteChanged
         {
-            add { }
-            remove { }
+            add
+            {
+                // Clear availability is fixed for this command's lifetime.
+            }
+            remove
+            {
+                // No subscriber is retained, so there is nothing to remove.
+            }
         }
 
         public bool CanExecute(object? parameter) => canExecute();

@@ -1990,40 +1990,45 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCurrentShipConditionRows()
     {
         var ship = Snapshot?.CurrentShip;
-        return ship is null
-            ? []
-            :
-            [
-                new("Hull", FormatPercent(ship.HullHealth)),
-                new(
-                    "Shield",
-                    FormatPercent(ship.ShieldHealth),
-                    ship.ShieldUp ? "Up" : "Down"),
-                new("Integrity", FormatPercent(ship.Integrity)),
-                new("Cockpit", ship.CockpitBreached ? "Breached" : "Secure"),
-                new(
-                    "Oxygen",
-                    ship.OxygenRemaining is { } oxygen
-                        ? $"{oxygen:N0} seconds"
-                        : "Unavailable"),
-            ];
+        if (ship is null)
+        {
+            return [];
+        }
+
+        var oxygen = ship.OxygenRemaining is { } oxygenRemaining
+            ? $"{oxygenRemaining:N0} seconds"
+            : "Unavailable";
+        return
+        [
+            new("Hull", FormatPercent(ship.HullHealth)),
+            new(
+                "Shield",
+                FormatPercent(ship.ShieldHealth),
+                ship.ShieldUp ? "Up" : "Down"),
+            new("Integrity", FormatPercent(ship.Integrity)),
+            new("Cockpit", ship.CockpitBreached ? "Breached" : "Secure"),
+            new("Oxygen", oxygen),
+        ];
     }
 
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCarrierOperations()
     {
         var carrier = Carrier;
-        return carrier is null
-            ? []
-            :
-            [
-                new("State", carrier.State),
-                new("Theme", FirstNonEmpty(carrier.Theme, "Standard")),
-                new("Docking access", carrier.DockingAccess),
-                new("Notorious access", carrier.NotoriousAccess ? "Allowed" : "Denied"),
-                new("Tritium reserve", $"{carrier.Tritium:N0} t"),
-                new("Distance jumped", $"{carrier.TotalDistanceJumped:N1} ly"),
-                new("Current jump", FirstNonEmpty(carrier.CurrentJump, "None plotted")),
-            ];
+        if (carrier is null)
+        {
+            return [];
+        }
+
+        return
+        [
+            new("State", carrier.State),
+            new("Theme", FirstNonEmpty(carrier.Theme, "Standard")),
+            new("Docking access", carrier.DockingAccess),
+            new("Notorious access", carrier.NotoriousAccess ? "Allowed" : "Denied"),
+            new("Tritium reserve", $"{carrier.Tritium:N0} t"),
+            new("Distance jumped", $"{carrier.TotalDistanceJumped:N1} ly"),
+            new("Current jump", FirstNonEmpty(carrier.CurrentJump, "None plotted")),
+        ];
     }
 
     private IReadOnlyList<FrontierDetailRowViewModel> BuildCarrierFinances()
