@@ -43,6 +43,7 @@ public sealed class ColonizationSystemEditorViewModel
         "Load a live system to review its Raven Colonial sites.";
     private string reviewSummary = string.Empty;
     private IReadOnlyList<ColonizationSystemSiteConflict> conflicts = [];
+    private IReadOnlyList<ColonizationSystemBodyOptionViewModel> bodies = [];
 
     public ColonizationSystemEditorViewModel(
         IRavenColonialClient client,
@@ -129,13 +130,7 @@ public sealed class ColonizationSystemEditorViewModel
     public IReadOnlyList<ColonizationSystemSiteStatus> SiteStatuses { get; } =
         Enum.GetValues<ColonizationSystemSiteStatus>();
 
-    public IReadOnlyList<ColonizationSystemBodyOptionViewModel> Bodies =>
-        system?.Bodies?
-            .OrderBy(body => body.Number)
-            .Select(body => new ColonizationSystemBodyOptionViewModel(
-                body.Number,
-                body.Name))
-            .ToArray() ?? [];
+    public IReadOnlyList<ColonizationSystemBodyOptionViewModel> Bodies => bodies;
 
     public bool CanLoad => !IsBusy
         && context.IsExternalDataEnabled
@@ -630,6 +625,12 @@ public sealed class ColonizationSystemEditorViewModel
     {
         ValidateLoadedSystem(loaded);
         system = CloneSystem(loaded);
+        bodies = system.Bodies?
+            .OrderBy(body => body.Number)
+            .Select(body => new ColonizationSystemBodyOptionViewModel(
+                body.Number,
+                body.Name))
+            .ToArray() ?? [];
         baseline = loaded.Sites.Select(CloneSite).ToList();
         CanEdit = CanCommanderEdit(loaded, context.CommanderName);
         journalTracker = new ColonizationSystemSiteJournalTracker(
@@ -665,6 +666,7 @@ public sealed class ColonizationSystemEditorViewModel
     private void ResetLoadedSystem()
     {
         system = null;
+        bodies = [];
         baseline = [];
         journalTracker = null;
         CanEdit = false;

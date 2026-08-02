@@ -14,6 +14,7 @@ public sealed class ColonizationCommodityOverlayViewModel
     private EliteStatus? status;
     private ColonizationOverlayPreferences preferences =
         ColonizationOverlayPreferences.Default;
+    private IReadOnlyList<string> projectNames = [];
     private IReadOnlyList<ColonizationCommodityGroupViewModel> groups = [];
     private IReadOnlySet<string> pendingCommodities =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -28,13 +29,18 @@ public sealed class ColonizationCommodityOverlayViewModel
     public ColonizationCommodityPlan Plan
     {
         get => plan;
-        private set => SetField(ref plan, value);
+        private set
+        {
+            if (SetField(ref plan, value))
+            {
+                projectNames = value.ProjectNames.Take(8).ToArray();
+            }
+        }
     }
 
     public string Title => Plan.Title;
 
-    public IReadOnlyList<string> ProjectNames => Plan.ProjectNames.Take(8)
-        .ToArray();
+    public IReadOnlyList<string> ProjectNames => projectNames;
 
     public bool HasMultipleProjects => ProjectNames.Count > 1;
 

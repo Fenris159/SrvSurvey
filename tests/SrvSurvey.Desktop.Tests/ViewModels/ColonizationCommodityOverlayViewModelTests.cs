@@ -18,6 +18,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
             Status(GuiFocus.StationServices),
             updatedHasMarketSinceDocking: true);
         Assert.True(viewModel.ShouldAutoShow);
+        Assert.Same(viewModel.ProjectNames, viewModel.ProjectNames);
 
         viewModel.Apply(plan, Status(GuiFocus.InternalPanel));
         Assert.True(viewModel.ShouldAutoShow);

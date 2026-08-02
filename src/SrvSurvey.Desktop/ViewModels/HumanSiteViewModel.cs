@@ -67,6 +67,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private IReadOnlyList<QuestRuntimeSnapshot> quests = [];
     private IReadOnlyList<HumanSiteQuestMarker> questMarkers = [];
     private IReadOnlyList<HumanSiteQuestRoute> questRoutes = [];
+    private IReadOnlyList<HumanSiteMapPoint> processedTerminalOffsets = [];
     private int threatLevel = -1;
     private string statusMessage = "Waiting to approach a human settlement.";
     private string settingsStatus = string.Empty;
@@ -212,13 +213,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         activityTracker.ProcessedTerminalIndexes;
 
     public IReadOnlyList<HumanSiteMapPoint> ProcessedTerminalOffsets =>
-        ActiveSite?.Template is { } template
-            ? activityTracker.ProcessedTerminalIndexes
-                .Where(index => index >= 0
-                    && index < template.DataTerminals.Count)
-                .Select(index => template.DataTerminals[index].Offset)
-                .ToArray()
-            : [];
+        processedTerminalOffsets;
 
     public IReadOnlyList<HumanSiteCollectedMaterial> CollectedMaterials =>
         ShowCollectedMaterials
@@ -1535,6 +1530,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     private void NotifySiteState()
     {
+        RefreshProcessedTerminalOffsets();
         TemplateAuthor.UpdateContext(
             ActiveSite,
             CommanderOffset,
@@ -1580,6 +1576,21 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CommanderPositionText));
         OnPropertyChanged(nameof(ShowOriginWarning));
         OnPropertyChanged(nameof(ShouldShow));
+    }
+
+    private void RefreshProcessedTerminalOffsets()
+    {
+        var updated = ActiveSite?.Template is { } template
+            ? activityTracker.ProcessedTerminalIndexes
+                .Where(index => index >= 0
+                    && index < template.DataTerminals.Count)
+                .Select(index => template.DataTerminals[index].Offset)
+                .ToArray()
+            : [];
+        if (!processedTerminalOffsets.SequenceEqual(updated))
+        {
+            processedTerminalOffsets = updated;
+        }
     }
 
     private bool SetField<T>(

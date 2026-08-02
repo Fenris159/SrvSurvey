@@ -442,6 +442,9 @@ public sealed class HumanSiteViewModelTests
                 "foot");
 
             Assert.Contains(terminal.Offset, viewModel.ProcessedTerminalOffsets);
+            Assert.Same(
+                viewModel.ProcessedTerminalOffsets,
+                viewModel.ProcessedTerminalOffsets);
             Assert.Single(viewModel.CollectedMaterials);
             Assert.Equal(1, viewModel.CollectedMaterialLocationCount);
             var context = new HumanSiteMaterialContext(

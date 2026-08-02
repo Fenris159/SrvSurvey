@@ -65,7 +65,9 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         Assert.All(group.Targets, marker => Assert.True(marker.IsActive));
 
         var markers = viewModel.RadarMarkers;
+        var navigationMarkers = viewModel.NavigationMarkers;
         var groups = viewModel.TrackerGroups;
+        var quickGroups = viewModel.QuickTrackerGroups;
         var notifications = new List<string?>();
         viewModel.PropertyChanged += (_, eventArgs) =>
             notifications.Add(eventArgs.PropertyName);
@@ -75,7 +77,9 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             null,
             exobiology with { ScannedBioEntryIds = [] });
         Assert.Same(markers, viewModel.RadarMarkers);
+        Assert.Same(navigationMarkers, viewModel.NavigationMarkers);
         Assert.Same(groups, viewModel.TrackerGroups);
+        Assert.Same(quickGroups, viewModel.QuickTrackerGroups);
         Assert.Empty(notifications);
     }
 
@@ -211,6 +215,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         survey.AutoShowMiniTrack = true;
         Assert.True(viewModel.ShouldShowMiniTrack);
         Assert.Equal("#1", Assert.Single(viewModel.QuickTrackerGroups).Name);
+        Assert.Same(viewModel.QuickTrackerGroups, viewModel.QuickTrackerGroups);
 
         ApplySurveyContext(
             survey,

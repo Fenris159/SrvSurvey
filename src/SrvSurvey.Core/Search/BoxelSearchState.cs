@@ -11,6 +11,11 @@ public sealed class BoxelSearchState
     private readonly Dictionary<string, BoxelSystemState> systems = new(
         StringComparer.Ordinal);
     private readonly HashSet<string> completed = new(StringComparer.Ordinal);
+    private int projectionVersion = -1;
+    private IReadOnlyList<BoxelSystemState> systemProjection = [];
+    private IReadOnlyList<BoxelAddress> boxelProjection = [];
+    private IReadOnlySet<string> emptyBoxelProjection = new HashSet<string>(
+        StringComparer.Ordinal);
 
     public BoxelSearchState(BoxelSearchSnapshot? seed = null)
     {
@@ -62,18 +67,52 @@ public sealed class BoxelSearchState
     public bool CurrentSystemsComplete => systems.Count > 0
         && systems.Values.All(system => system.IsComplete);
 
-    public IReadOnlyList<BoxelSystemState> Systems => systems.Values
-        .OrderBy(system => system.Boxel.N2)
-        .ToArray();
+    public IReadOnlyList<BoxelSystemState> Systems
+    {
+        get
+        {
+            RefreshProjections();
+            return systemProjection;
+        }
+    }
 
-    public IReadOnlyList<BoxelAddress> Boxels => progress.Keys
-        .Select(prefix => BoxelAddress.Parse(prefix + "0"))
-        .ToArray();
+    public IReadOnlyList<BoxelAddress> Boxels
+    {
+        get
+        {
+            RefreshProjections();
+            return boxelProjection;
+        }
+    }
 
-    public IReadOnlySet<string> EmptyBoxelPrefixes => progress
-        .Where(entry => entry.Value == -1)
-        .Select(entry => entry.Key)
-        .ToHashSet(StringComparer.Ordinal);
+    public IReadOnlySet<string> EmptyBoxelPrefixes
+    {
+        get
+        {
+            RefreshProjections();
+            return emptyBoxelProjection;
+        }
+    }
+
+    private void RefreshProjections()
+    {
+        if (projectionVersion == Version)
+        {
+            return;
+        }
+
+        systemProjection = systems.Values
+            .OrderBy(system => system.Boxel.N2)
+            .ToArray();
+        boxelProjection = progress.Keys
+            .Select(prefix => BoxelAddress.Parse(prefix + "0"))
+            .ToArray();
+        emptyBoxelProjection = progress
+            .Where(entry => entry.Value == -1)
+            .Select(entry => entry.Key)
+            .ToHashSet(StringComparer.Ordinal);
+        projectionVersion = Version;
+    }
 
     public void Reset(BoxelSearchSnapshot? seed = null)
     {

@@ -38,6 +38,24 @@ public sealed class BoxelSearchStateTests
     }
 
     [Fact]
+    public void CollectionProjectionsKeepStableIdentityUntilStateChanges()
+    {
+        var state = CreateActiveState(BoxelCompletionMode.EnterSystem);
+        var systems = state.Systems;
+        var boxels = state.Boxels;
+        var emptyBoxels = state.EmptyBoxelPrefixes;
+
+        Assert.Same(systems, state.Systems);
+        Assert.Same(boxels, state.Boxels);
+        Assert.Same(emptyBoxels, state.EmptyBoxelPrefixes);
+
+        state.MergeSpanshSystems([Observation("Praea Euq IL-P c5-0")]);
+
+        Assert.NotSame(systems, state.Systems);
+        Assert.Single(state.Systems);
+    }
+
+    [Fact]
     public void ActivatingDifferentTopBoxelResetsExpectedSystemCount()
     {
         var state = CreateActiveState(BoxelCompletionMode.EnterSystem);
