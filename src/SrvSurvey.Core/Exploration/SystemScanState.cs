@@ -892,17 +892,6 @@ public sealed class SystemScanState
         return true;
     }
 
-    private static bool SetIfZero(ref long target, long source)
-    {
-        if (target != 0 || source == 0)
-        {
-            return false;
-        }
-
-        target = source;
-        return true;
-    }
-
     private static bool SetIfZero(ref double target, double source)
     {
         if (target != 0 || source == 0 || !double.IsFinite(source))

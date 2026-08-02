@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using SrvSurvey.Core.Combat;
@@ -774,7 +775,11 @@ public sealed class CommanderProfileStore(string profileDirectory)
         }
 
         return value.TryGetValue<string>(out var text)
-            && DateTimeOffset.TryParse(text, out dateTimeOffset)
+            && DateTimeOffset.TryParse(
+                text,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal,
+                out dateTimeOffset)
                 ? dateTimeOffset
                 : null;
     }

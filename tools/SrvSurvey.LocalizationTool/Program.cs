@@ -75,6 +75,8 @@ static async Task NormalizeCatalogAsync(string inputPath, string outputPath)
 
 internal sealed class LocalizationSourceExtractor(string repositoryRoot)
 {
+    private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
+
     private static readonly HashSet<string> LocalizableAttributes =
         new(StringComparer.Ordinal)
         {
@@ -87,16 +89,22 @@ internal sealed class LocalizationSourceExtractor(string repositoryRoot)
             "AutomationProperties.Name",
         };
 
-    private static readonly Regex Whitespace = new(@"\s+", RegexOptions.Compiled);
+    private static readonly Regex Whitespace = new(
+        @"\s+",
+        RegexOptions.Compiled,
+        RegexTimeout);
     private static readonly Regex HexColor = new(
         @"^#[0-9A-Fa-f]{3,8}$",
-        RegexOptions.Compiled);
+        RegexOptions.Compiled,
+        RegexTimeout);
     private static readonly Regex FileOrUri = new(
         @"^(?:https?://|avares://|[A-Za-z]:\\|[/\\]|.*\.(?:json|png|jpe?g|gif|zip|tar|gz|dll|exe|cs|axaml|xaml|resx|xml|lua|csv|dat))$",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        RegexOptions.Compiled | RegexOptions.IgnoreCase,
+        RegexTimeout);
     private static readonly Regex CodeFragment = new(
         "(?:=>|\\b(?:namespace|public|private|internal|class|return|foreach|using)\\s|;\\s*\\}|\\{\\s*\\\")",
-        RegexOptions.Compiled);
+        RegexOptions.Compiled,
+        RegexTimeout);
 
     public IReadOnlyList<LocalizationSourceEntry> Extract()
     {
@@ -292,7 +300,11 @@ internal sealed class LocalizationSourceExtractor(string repositoryRoot)
             || text.StartsWith("*.", StringComparison.Ordinal)
             || text.StartsWith("\"", StringComparison.Ordinal)
             || text.StartsWith(", \"", StringComparison.Ordinal)
-            || Regex.IsMatch(text, @"^-[A-Za-z]")
+            || Regex.IsMatch(
+                text,
+                @"^-[A-Za-z]",
+                RegexOptions.CultureInvariant,
+                RegexTimeout)
             || text.StartsWith("xmlns", StringComparison.OrdinalIgnoreCase)
             || text.StartsWith("x:", StringComparison.Ordinal)
             || (!text.Any(char.IsWhiteSpace) && text.Contains('_'))

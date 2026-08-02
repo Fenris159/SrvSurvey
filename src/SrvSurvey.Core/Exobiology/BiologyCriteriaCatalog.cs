@@ -258,13 +258,17 @@ public sealed record BiologyCriteriaNode(
 
 public sealed class BiologyCriteriaClause
 {
+    private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
+
     private static readonly Regex ClausePattern = new(
         @"^\s*(?<property>\w+)\s*(?<operator>[&!]?)\[(?<value>.*)\]\s*$",
-        RegexOptions.CultureInvariant);
+        RegexOptions.CultureInvariant,
+        RegexTimeout);
 
     private static readonly Regex CompositionPattern = new(
         @"^(?<name>[\w\s]+)>=\s*(?<amount>[.\d]+)$",
-        RegexOptions.CultureInvariant);
+        RegexOptions.CultureInvariant,
+        RegexTimeout);
 
     private static readonly IReadOnlyDictionary<string, string> ValueAliases =
         new Dictionary<string, string>(StringComparer.Ordinal)

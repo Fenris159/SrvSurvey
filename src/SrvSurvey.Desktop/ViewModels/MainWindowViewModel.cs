@@ -2027,7 +2027,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         GalaxyMap.ApplyUpdate(
             journalState.SystemName,
             journalState.SystemAddress,
-            journalState.StarPosition,
             update.NavRoute,
             update.JournalEvents,
             update.Status,
@@ -3575,6 +3574,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         disposed = true;
         routeAutoCopyCoordinator.Dispose();
+        BoxelSearch.CancelPendingOperations();
+        JournalPostProcessor.Cancel();
         CancelSystemBodyDataRequest();
         firstFootfallInferenceCancellation.Cancel();
         firstFootfallInferenceService.Dispose();

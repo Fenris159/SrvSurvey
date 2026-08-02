@@ -1,3 +1,4 @@
+using System.Globalization;
 using Newtonsoft.Json.Linq;
 
 // Behavioral reference: EDMarketConnector's monitor.py and plugins/inara.py.
@@ -147,7 +148,13 @@ namespace SrvSurvey.Core.Inara
         }
 
         private static DateTimeOffset parseTimestamp(string timestamp) =>
-            DateTimeOffset.TryParse(timestamp, out var parsed) ? parsed : DateTimeOffset.UtcNow;
+            DateTimeOffset.TryParse(
+                timestamp,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal,
+                out var parsed)
+                    ? parsed
+                    : DateTimeOffset.UtcNow;
 
         private static long organicDataValue(JObject entry) =>
             (entry["BioData"] as JArray)?.OfType<JObject>()
