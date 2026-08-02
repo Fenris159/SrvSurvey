@@ -111,6 +111,36 @@ public sealed class RouteWindowMarkupTests
     }
 
     [Fact]
+    public void RouteBodiesWrapBelowTheCompactHopSummary()
+    {
+        var document = LoadRouteWindow();
+        var header = FindNamedElement(document, "RouteHopHeader");
+        var bodyItems = document.Descendants().Single(element =>
+            element.Name.LocalName == "ItemsControl"
+            && element.Attribute("ItemsSource")?.Value == "{Binding BioTargets}");
+        var bodySection = bodyItems.Parent
+            ?? throw new InvalidDataException("The route body list has no section.");
+        var bodyPanel = bodyItems.Descendants().Single(element =>
+            element.Name.LocalName == "WrapPanel"
+            && element.Attribute("ItemWidth")?.Value == "520");
+
+        Assert.DoesNotContain(
+            header.Descendants(),
+            element => element.Attribute("Text")?.Value == "BODIES");
+        Assert.Equal("1", bodySection.Attribute("Grid.Row")?.Value);
+        Assert.Equal("4", bodySection.Attribute("Grid.ColumnSpan")?.Value);
+        Assert.Equal("60,12,0,0", bodySection.Attribute("Margin")?.Value);
+        Assert.Equal(
+            "{Binding HasBioTargets}",
+            bodySection.Attribute("IsVisible")?.Value);
+        Assert.Contains(
+            bodySection.Descendants(),
+            element => element.Attribute("Text")?.Value == "BODIES");
+        Assert.Equal("Horizontal", bodyPanel.Attribute("Orientation")?.Value);
+        Assert.Equal("520", bodyPanel.Attribute("ItemWidth")?.Value);
+    }
+
+    [Fact]
     public void RouteLifecycleControlsAndDialogsArePresentInRequestedOrder()
     {
         var document = LoadRouteWindow();

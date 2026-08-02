@@ -128,12 +128,11 @@
                 Classes="card"
                 Margin="0,0,14,0"
                 Padding="12,9">
-          <Grid ColumnDefinitions="48,*,112,*,2*" ColumnSpacing="12">
+          <Grid ColumnDefinitions="48,*,112,2*" ColumnSpacing="12">
             <TextBlock Classes="muted" Text="DONE" />
             <TextBlock Grid.Column="1" Classes="muted" Text="SYSTEM" />
             <TextBlock Grid.Column="2" Classes="muted" Text="DISTANCE" />
             <TextBlock Grid.Column="3" Classes="muted" Text="GUIDANCE / NOTES" />
-            <TextBlock Grid.Column="4" Classes="muted" Text="BODIES" />
           </Grid>
         </Border>
 
@@ -158,7 +157,9 @@
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:RouteHopItemViewModel">
                   <Border Classes="card" Padding="12" Margin="0,0,0,8">
-                    <Grid ColumnDefinitions="48,*,112,*,2*" ColumnSpacing="12">
+                    <Grid RowDefinitions="Auto,Auto"
+                          ColumnDefinitions="48,*,112,2*"
+                          ColumnSpacing="12">
                       <CheckBox HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 IsChecked="{Binding IsReached, Mode=OneWay}"
@@ -226,12 +227,21 @@
                                    IsVisible="{Binding !HasGuidance}"
                                    Text="—" />
                       </StackPanel>
-                      <ItemsControl Grid.Column="4"
-                                    IsVisible="{Binding HasBioTargets}"
-                                    ItemsSource="{Binding BioTargets}">
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate x:DataType="vm:RouteBioTargetItemViewModel">
-                            <Border Margin="0,0,0,6"
+                      <StackPanel Grid.Row="1"
+                                  Grid.ColumnSpan="4"
+                                  Margin="60,12,0,0"
+                                  Spacing="6"
+                                  IsVisible="{Binding HasBioTargets}">
+                        <TextBlock Classes="muted" Text="BODIES" />
+                        <ItemsControl ItemsSource="{Binding BioTargets}">
+                          <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                              <WrapPanel Orientation="Horizontal" ItemWidth="520" />
+                            </ItemsPanelTemplate>
+                          </ItemsControl.ItemsPanel>
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:RouteBioTargetItemViewModel">
+                              <Border Margin="0,0,8,8"
                                     Padding="9,7"
                                     Background="{DynamicResource RavenPanelBrush}"
                                     BorderBrush="{DynamicResource RavenBorderBrush}"
@@ -332,10 +342,11 @@
                                            IsVisible="{Binding NeedsScan}"
                                            Text="Scan for biological signals" />
                               </StackPanel>
-                            </Border>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
+                              </Border>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
                     </Grid>
                   </Border>
                 </DataTemplate>
