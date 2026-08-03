@@ -37,6 +37,10 @@
     </Style>
     <Style Selector="TextBox">
       <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
+      <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
+    </Style>
+    <Style Selector="ListBox">
+      <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
     </Style>
     <Style Selector="Window">
       <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />

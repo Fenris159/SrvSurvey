@@ -7,12 +7,7 @@ public sealed class DiagnosticsViewMarkupTests
     [Fact]
     public void LiveLogUsesAnIndependentNonCaretScrollSurface()
     {
-        var document = XDocument.Load(Path.Combine(
-            FindRepositoryRoot(),
-            "src",
-            "SrvSurvey.Desktop",
-            "Views",
-            "DiagnosticsView.axaml"));
+        var document = LoadDiagnosticsView();
         var pageScroller = FindNamedElement(
             document,
             "DiagnosticsPageScroller");
@@ -30,6 +25,58 @@ public sealed class DiagnosticsViewMarkupTests
             element.Name.LocalName == "TextBox"
             && element.Attribute("Text")?.Value == logBinding);
     }
+
+    [Fact]
+    public void JournalInspectorUsesStableVerticalRowsAndOwnsWheelScrolling()
+    {
+        var document = LoadDiagnosticsView();
+        var eventList = FindNamedElement(
+            document,
+            "JournalInspectorEventList");
+
+        Assert.Equal(
+            "False",
+            FindAttribute(
+                eventList,
+                "ScrollViewer.IsScrollChainingEnabled"));
+        Assert.Contains(
+            eventList.Descendants(),
+            element => element.Name.LocalName == "ItemsPanelTemplate"
+                && element.Descendants().Any(child =>
+                    child.Name.LocalName == "StackPanel"));
+
+        var inspector = eventList.Ancestors().First(element =>
+            element.Name.LocalName == "StackPanel"
+            && element.Descendants().Any(descendant =>
+                descendant.Name.LocalName == "TextBlock"
+                && descendant.Attribute("Text")?.Value
+                    == "Journal inspector"));
+        var nestedScrollers = inspector.Descendants().Where(element =>
+            element.Name.LocalName is "ScrollViewer" or "TextBox");
+        Assert.All(
+            nestedScrollers,
+            element => Assert.Equal(
+                "False",
+                FindAttribute(
+                    element,
+                    "IsScrollChainingEnabled",
+                    "ScrollViewer.IsScrollChainingEnabled")));
+    }
+
+    private static XDocument LoadDiagnosticsView() => XDocument.Load(Path.Combine(
+        FindRepositoryRoot(),
+        "src",
+        "SrvSurvey.Desktop",
+        "Views",
+        "DiagnosticsView.axaml"));
+
+    private static string? FindAttribute(
+        XElement element,
+        params string[] names) => element.Attributes()
+        .FirstOrDefault(attribute => names.Contains(
+            attribute.Name.LocalName,
+            StringComparer.Ordinal))
+        ?.Value;
 
     private static XElement FindNamedElement(
         XDocument document,

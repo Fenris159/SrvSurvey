@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Quests;
 using SrvSurvey.Desktop.ViewModels;
@@ -21,6 +22,45 @@ public sealed class JournalInspectorViewModelTests
         Assert.Equal("Event124", viewModel.Events[0].EventName);
         Assert.Equal("Event5", viewModel.Events[^1].EventName);
         Assert.Equal("Event124", viewModel.SelectedEvent!.EventName);
+    }
+
+    [Fact]
+    public void LiveEventsUpdateIncrementallyWithoutReplacingExistingRows()
+    {
+        var viewModel = new JournalInspectorViewModel();
+        viewModel.ApplyUpdate(
+        [
+            Event("{\"event\":\"Initial0\"}"),
+            Event("{\"event\":\"Initial1\"}"),
+        ], null);
+        var collection = viewModel.Events;
+        var retainedRow = viewModel.Events[1];
+        viewModel.SelectedEvent = retainedRow;
+        var changes = new List<NotifyCollectionChangedEventArgs>();
+        ((INotifyCollectionChanged)collection).CollectionChanged +=
+            (_, eventArgs) => changes.Add(eventArgs);
+
+        viewModel.ApplyUpdate(
+        [
+            Event("{\"event\":\"Live2\"}"),
+            Event("{\"event\":\"Live3\"}"),
+        ], null);
+
+        Assert.Same(collection, viewModel.Events);
+        Assert.Equal(
+            ["Live3", "Live2", "Initial1", "Initial0"],
+            viewModel.Events.Select(item => item.EventName));
+        Assert.Same(retainedRow, viewModel.Events[3]);
+        Assert.Same(retainedRow, viewModel.SelectedEvent);
+        Assert.Equal(2, changes.Count);
+        Assert.All(
+            changes,
+            change => Assert.Equal(
+                NotifyCollectionChangedAction.Add,
+                change.Action));
+        Assert.DoesNotContain(
+            changes,
+            change => change.Action == NotifyCollectionChangedAction.Reset);
     }
 
     [Fact]

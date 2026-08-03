@@ -334,6 +334,7 @@
                      FontFamily="Consolas, Menlo, monospace"
                      FontSize="11"
                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.IsScrollChainingEnabled="False"
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                      Text="{Binding JournalInspector.StatusText}" />
             <Button Grid.Column="1"
@@ -344,10 +345,17 @@
           </Grid>
 
           <Grid ColumnDefinitions="300,*" ColumnSpacing="14">
-            <ListBox MinHeight="280"
+            <ListBox x:Name="JournalInspectorEventList"
+                     MinHeight="280"
                      MaxHeight="400"
                      ItemsSource="{Binding JournalInspector.Events}"
+                     ScrollViewer.IsScrollChainingEnabled="False"
                      SelectedItem="{Binding JournalInspector.SelectedEvent, Mode=TwoWay}">
+              <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel />
+                </ItemsPanelTemplate>
+              </ListBox.ItemsPanel>
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:JournalInspectorEventViewModel">
                   <StackPanel Margin="4" Spacing="2">
@@ -364,6 +372,7 @@
               <ScrollViewer MinHeight="280"
                             MaxHeight="400"
                             HorizontalScrollBarVisibility="Auto"
+                            IsScrollChainingEnabled="False"
                             VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding JournalInspector.Properties}">
                   <ItemsControl.ItemTemplate>
@@ -396,6 +405,7 @@
                        FontFamily="Consolas, Menlo, monospace"
                        FontSize="11"
                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.IsScrollChainingEnabled="False"
                        ScrollViewer.VerticalScrollBarVisibility="Auto"
                        Text="{Binding JournalInspector.RawJson}" />
             </Grid>
@@ -423,6 +433,7 @@
                      FontFamily="Consolas, Menlo, monospace"
                      FontSize="11"
                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.IsScrollChainingEnabled="False"
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                      Text="{Binding JournalInspector.CodeText}" />
             <Button Grid.Column="1"
