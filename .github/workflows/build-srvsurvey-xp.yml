@@ -18,6 +18,7 @@ on:
         description: Stable three- or four-part base version (for example, 2.1.4.0)
         required: true
         type: string
+        default: 2.1.3.0
       release_channel:
         description: Stable publishes the base version; development appends -rc.N and creates a pre-release
         required: true
@@ -67,33 +68,50 @@ jobs:
           REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           $project = [xml](Get-Content src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj)
-          $versionText = [string]$project.Project.PropertyGroup.FileVersion
+          $projectVersionText = ([string]$project.Project.PropertyGroup.Version).Trim()
+          $fileVersionText = ([string]$project.Project.PropertyGroup.FileVersion).Trim()
           $isRelease = $env:GITHUB_EVENT_NAME -eq "workflow_dispatch"
-          if ($isRelease) {
-            $versionText = $env:REQUESTED_VERSION.Trim()
-          }
-
-          $version = $null
-          if (-not [Version]::TryParse($versionText, [ref]$version) -or
-              $version.Major -lt 0 -or
-              $version.Minor -lt 0 -or
-              $version.Build -lt 0) {
-            throw "'$versionText' is not a valid three- or four-part release version."
-          }
-
           $channel = if ($isRelease) { $env:RELEASE_CHANNEL } else { "validation" }
           $isPrerelease = $channel -eq "development"
           if ($isRelease -and $channel -notin @("stable", "development")) {
             throw "Release channel must be stable or development."
           }
 
-          $packageVersion = $version.ToString()
-          if ($isPrerelease) {
-            $rc = 0
-            if (-not [int]::TryParse($env:RC_NUMBER, [ref]$rc) -or $rc -lt 1) {
-              throw "Development releases require an RC number of 1 or greater."
+          if ($isRelease) {
+            $requestedVersion = $env:REQUESTED_VERSION.Trim()
+            $version = $null
+            if (-not [Version]::TryParse($requestedVersion, [ref]$version) -or
+                $version.Major -lt 0 -or
+                $version.Minor -lt 0 -or
+                $version.Build -lt 0) {
+              throw "'$requestedVersion' is not a valid three- or four-part release version."
             }
-            $packageVersion = "$packageVersion-rc.$rc"
+
+            $packageVersion = $version.ToString()
+            $fileVersion = $version.ToString()
+            if ($isPrerelease) {
+              $rc = 0
+              if (-not [int]::TryParse($env:RC_NUMBER, [ref]$rc) -or $rc -lt 1) {
+                throw "Development releases require an RC number of 1 or greater."
+              }
+              $packageVersion = "$packageVersion-rc.$rc"
+            }
+          } else {
+            if ($projectVersionText -notmatch '^\d+\.\d+\.\d+(\.\d+)?(-rc\.[1-9]\d*)?$') {
+              throw "Project Version '$projectVersionText' is not a supported XP release version."
+            }
+
+            $projectCoreVersion = $projectVersionText.Split('-', 2)[0]
+            $coreVersion = $null
+            $fileVersionValue = $null
+            if (-not [Version]::TryParse($projectCoreVersion, [ref]$coreVersion) -or
+                -not [Version]::TryParse($fileVersionText, [ref]$fileVersionValue) -or
+                $coreVersion -ne $fileVersionValue) {
+              throw "Project Version '$projectVersionText' and FileVersion '$fileVersionText' do not share the same numeric version."
+            }
+
+            $packageVersion = $projectVersionText
+            $fileVersion = $fileVersionValue.ToString()
           }
 
           $sourceSha = (git rev-parse HEAD).Trim()
@@ -101,7 +119,7 @@ jobs:
           "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           "release_tag=$releaseTag" >> $env:GITHUB_OUTPUT
           "package_version=$packageVersion" >> $env:GITHUB_OUTPUT
-          "file_version=$version" >> $env:GITHUB_OUTPUT
+          "file_version=$fileVersion" >> $env:GITHUB_OUTPUT
           "is_prerelease=$($isPrerelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           "source_sha=$sourceSha" >> $env:GITHUB_OUTPUT
 

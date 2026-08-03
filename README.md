@@ -1,4 +1,6 @@
-# SrvSurvey Cross-Platform
+# SrvSurvey-XP Cross-Platform
+
+Current release candidate version: **2.1.3.0-rc.1**
 
 This build of SrvSurvey is a cross-platform version of the Elite Dangerous companion application
 for Windows and now Linux. It reads the game's journal and auxiliary files to drive
@@ -12,8 +14,8 @@ modified.
 
 ## Install
 
-Download the Windows or Linux package from the
-[latest GitHub release](https://github.com/Fenris159/SrvSurvey/releases/latest),
+Download the Windows or Linux SrvSurvey-XP package from the
+[repository releases](https://github.com/Fenris159/SrvSurvey/releases),
 then follow the platform guide:
 
 - [Windows portable installation](docs/INSTALL_WINDOWS.md)
@@ -22,6 +24,11 @@ then follow the platform guide:
 Keep every downloaded package in its extracted container folder. The executable
 and its accompanying files form one self-contained installation and should not
 be separated.
+
+The application follows XP development releases from this repository by
+default. Diagnostics can opt out to the stable XP feed in
+`njthomson/SrvSurvey`; that feed reports N/A until an upstream XP release is
+published.
 
 ## Build and run
 
