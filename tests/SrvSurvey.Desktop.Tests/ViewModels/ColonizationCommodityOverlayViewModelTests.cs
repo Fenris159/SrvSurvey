@@ -25,6 +25,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
 
         viewModel.Apply(plan, Status(GuiFocus.GalaxyMap));
         Assert.False(viewModel.ShouldAutoShow);
+        Assert.True(viewModel.CanShowManually);
 
         viewModel.Apply(
             plan,
@@ -143,6 +144,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
             });
 
         Assert.False(viewModel.ShouldAutoShow);
+        Assert.False(viewModel.CanShowManually);
         var deltaRow = Assert.Single(Assert.Single(viewModel.Groups).Rows);
         Assert.Equal("-80", deltaRow.OnFleetCarriersText);
         Assert.Equal("FC Δ", viewModel.FleetCarrierColumnHeader);

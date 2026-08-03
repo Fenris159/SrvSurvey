@@ -73,6 +73,16 @@
                                FontSize="10"
                                Text="{Binding Reference.BodyName}"
                                TextTrimming="CharacterEllipsis" />
+                    <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                               FontSize="9"
+                               IsVisible="{Binding HasBlueprint}"
+                               Text="{Binding BlueprintText}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                               FontSize="9"
+                               IsVisible="{Binding HasRamTahLogs}"
+                               Text="{Binding RamTahLogsText, StringFormat='Ram Tah needed: {0}'}"
+                               TextTrimming="CharacterEllipsis" />
                     <TextBlock Classes="muted"
                                FontSize="9"
                                Text="{Binding Notes}"

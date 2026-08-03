@@ -104,7 +104,9 @@ public sealed class ScreenshotProcessingViewModelTests : IDisposable
             ScreenshotProcessingPreferences preferences,
             string? commanderName,
             CancellationToken cancellationToken = default,
-            ScreenshotGuardianContext? guardianContext = null)
+            IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
+                guardianContexts = null,
+            ScreenshotNavigationContext? navigationContext = null)
         {
             Events = journalEvents;
             CommanderName = commanderName;

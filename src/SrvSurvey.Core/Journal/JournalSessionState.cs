@@ -43,6 +43,12 @@ public sealed class JournalSessionState
 
     public bool IsShutdown { get; private set; }
 
+    public bool IsAtMainMenu { get; private set; }
+
+    public bool IsAtCarrierManagement { get; private set; }
+
+    public string? MusicTrack { get; private set; }
+
     public DateTimeOffset? LastEventTimestamp { get; private set; }
 
     public int ValidEventCount { get; private set; }
@@ -65,6 +71,9 @@ public sealed class JournalSessionState
                 GameBuild = GetString(root, "build") ?? GameBuild;
                 IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
                 IsShutdown = false;
+                IsAtMainMenu = false;
+                IsAtCarrierManagement = false;
+                MusicTrack = null;
                 break;
 
             case "Commander":
@@ -84,6 +93,9 @@ public sealed class JournalSessionState
                 ShipName = GetString(root, "ShipName") ?? ShipName;
                 ShipIdent = GetString(root, "ShipIdent") ?? ShipIdent;
                 IsShutdown = false;
+                IsAtMainMenu = false;
+                IsAtCarrierManagement = false;
+                MusicTrack = null;
                 break;
 
             case "Loadout":
@@ -146,6 +158,7 @@ public sealed class JournalSessionState
                     ? GetString(root, "StationName") ?? StationName
                     : null;
                 IsShutdown = false;
+                IsAtMainMenu = false;
                 break;
 
             case "Docked":
@@ -153,6 +166,7 @@ public sealed class JournalSessionState
                 SystemAddress = GetInt64(root, "SystemAddress") ?? SystemAddress;
                 StationName = GetString(root, "StationName") ?? StationName;
                 IsShutdown = false;
+                IsAtMainMenu = false;
                 break;
 
             case "Undocked":
@@ -169,6 +183,7 @@ public sealed class JournalSessionState
                 BodyName = GetCurrentPlanetName(root);
                 StationName = null;
                 IsShutdown = false;
+                IsAtMainMenu = false;
                 break;
 
             case "ApproachBody":
@@ -196,15 +211,29 @@ public sealed class JournalSessionState
                 IsShutdown = false;
                 break;
 
-            case "Music" when string.Equals(
-                GetString(root, "MusicTrack"),
-                "MainMenu",
-                StringComparison.Ordinal):
-                ClearLiveLocationContext();
+            case "Music":
+                var musicTrack = GetString(root, "MusicTrack");
+                MusicTrack = musicTrack;
+                IsAtMainMenu = string.Equals(
+                    musicTrack,
+                    "MainMenu",
+                    StringComparison.Ordinal);
+                IsAtCarrierManagement = string.Equals(
+                    musicTrack,
+                    "FleetCarrier_Managment",
+                    StringComparison.Ordinal);
+                if (IsAtMainMenu)
+                {
+                    ClearLiveLocationContext();
+                }
+
                 break;
 
             case "Shutdown":
                 IsShutdown = true;
+                IsAtMainMenu = false;
+                IsAtCarrierManagement = false;
+                MusicTrack = null;
                 break;
 
             default:

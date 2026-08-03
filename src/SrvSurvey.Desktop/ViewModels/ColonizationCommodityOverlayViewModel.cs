@@ -12,6 +12,7 @@ public sealed class ColonizationCommodityOverlayViewModel
 {
     private ColonizationCommodityPlan plan = EmptyPlan();
     private EliteStatus? status;
+    private string? musicTrack;
     private ColonizationOverlayPreferences preferences =
         ColonizationOverlayPreferences.Default;
     private IReadOnlyList<string> projectNames = [];
@@ -108,28 +109,64 @@ public sealed class ColonizationCommodityOverlayViewModel
         }
     }
 
-    public bool ShouldAutoShow => preferences.AutoShow
-        && Plan.HasContent
-        && status is not null
-        && !status.FsdChargingJump
-        && !status.Flags.HasFlag(StatusFlags.FsdJump)
-        && status.GuiFocus is not GuiFocus.GalaxyMap
-            and not GuiFocus.ExternalPanel
-        && (status.GuiFocus == GuiFocus.StationServices
+    public bool ShouldAutoShow
+    {
+        get
+        {
+            var mode = OverlayGameModeResolver.Resolve(
+                status,
+                musicTrack: musicTrack);
+            return preferences.AutoShow
+                && Plan.HasContent
+                && mode is not OverlayGameMode.FsdJumping
+                    and not OverlayGameMode.GalaxyMap
+                    and not OverlayGameMode.ExternalPanel
+                && (mode == OverlayGameMode.StationServices
                 && ((hasMarketSinceDocking && Plan.ProjectNames.Count > 0)
                     || Plan.IsAtConstructionSite)
             || preferences.ShowOnRightPanel
-                && status.GuiFocus == GuiFocus.InternalPanel
+                && mode == OverlayGameMode.InternalPanel
                 && Plan.ProjectNames.Count > 0
             || Plan.IsAtConstructionSite
-                && status.Docked
-                && status.GuiFocus == GuiFocus.NoFocus
+                && mode == OverlayGameMode.Docked
             || isSquadronBankOpen);
+        }
+    }
+
+    public bool CanShowManually
+    {
+        get
+        {
+            var mode = OverlayGameModeResolver.Resolve(
+                status,
+                musicTrack: musicTrack);
+            return preferences.AutoShow
+                && Plan.HasContent
+                && mode is not OverlayGameMode.Offline
+                and not OverlayGameMode.FsdJumping
+                and not OverlayGameMode.ExternalPanel;
+        }
+    }
 
     public string CollapseModeText =>
         preferences.CollapseCoveredGroups ^ showSatisfiedGroups
             ? "Covered Fleet Carrier groups collapse automatically."
             : "Covered Fleet Carrier groups are expanded.";
+
+    public void UpdateMusicTrack(string? currentMusicTrack)
+    {
+        if (string.Equals(
+                musicTrack,
+                currentMusicTrack,
+                StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        musicTrack = currentMusicTrack;
+        OnPropertyChanged(nameof(ShouldAutoShow));
+        OnPropertyChanged(nameof(CanShowManually));
+    }
 
     public string FleetCarrierColumnHeader =>
         preferences.InlineFleetCarrierCargo
@@ -260,6 +297,7 @@ public sealed class ColonizationCommodityOverlayViewModel
         OnPropertyChanged(nameof(RemainingSummary));
         OnPropertyChanged(nameof(FleetCarrierSummary));
         OnPropertyChanged(nameof(ShouldAutoShow));
+        OnPropertyChanged(nameof(CanShowManually));
     }
 
     private static ColonizationCommodityPlan EmptyPlan()

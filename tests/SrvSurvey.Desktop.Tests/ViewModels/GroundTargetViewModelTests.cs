@@ -58,6 +58,11 @@ public sealed class GroundTargetViewModelTests : IDisposable
 
         Assert.True(viewModel.ShouldShow);
 
+        viewModel.UpdateMusicTrack("SystemMap");
+        Assert.False(viewModel.ShouldShow);
+        viewModel.UpdateMusicTrack("Exploration");
+        Assert.True(viewModel.ShouldShow);
+
         await viewModel.ApplyPastedTextAsync("12.5°N 45.25°W");
 
         Assert.Equal("12.5", viewModel.TargetLatitude);

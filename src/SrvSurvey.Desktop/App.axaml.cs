@@ -460,10 +460,12 @@ public sealed partial class App : Application
                     guardianOverlayCoordinator?.IsLiveSiteVisible == true;
                 var humanSite =
                     humanSiteOverlayCoordinator?.IsVisible == true;
+                var guardianSystemSummary = guardianOverlayCoordinator
+                    ?.IsSystemSummaryVisible == true;
                 systemSurveyOverlayCoordinator?.SetFssObscured(
-                    liveGuardianSite);
+                    guardianSystemSummary);
                 systemSurveyOverlayCoordinator?.SetBodyInfoObscured(
-                    liveGuardianSite);
+                    guardianSystemSummary);
                 systemSurveyOverlayCoordinator?.SetBiologyObscured(
                     liveGuardianSite || humanSite);
                 systemSurveyOverlayCoordinator?.SetBiologyStatusObscured(
@@ -476,12 +478,8 @@ public sealed partial class App : Application
                     || stationInfoOverlayCoordinator?.IsVisible == true);
                 systemSurveyOverlayCoordinator?.SetSurfaceObscured(
                     liveGuardianSite || humanSite);
-                guardianOverlayCoordinator?.SetObscured(
-                    jumpInfoOverlayCoordinator?.IsVisible == true
-                    || (systemSurveyOverlayCoordinator?.IsFssVisible == true
-                        && viewModel.SystemSurvey.IsFssInfoForced)
-                    || (systemSurveyOverlayCoordinator?.IsBodyInfoVisible == true
-                        && viewModel.SystemSurvey.IsBodyInfoForced));
+                guardianOverlayCoordinator?.SetLiveStatusObscured(
+                    jumpInfoOverlayCoordinator?.IsVisible == true);
                 guardianOverlayCoordinator?.SetSystemSummaryObscured(
                     viewModel.SystemSurvey.IsFssInfoForced
                     || viewModel.SystemSurvey.IsBodyInfoForced);
@@ -508,7 +506,8 @@ public sealed partial class App : Application
             void ApplyOverlaySuppression()
             {
                 var suppress = manualOverlaySuppressed
-                    || viewModel.OverlayBehavior.ShouldSuppressForSuit;
+                    || viewModel.OverlayBehavior.ShouldSuppressForSuit
+                    || viewModel.OverlayBehavior.ShouldSuppressForSession;
                 jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
                 routeBioOverlayCoordinator?.SetSuppressed(suppress);
                 fleetCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
@@ -533,6 +532,7 @@ public sealed partial class App : Application
             {
                 if (eventArgs.PropertyName is
                     nameof(OverlayBehaviorViewModel.ShouldSuppressForSuit)
+                    or nameof(OverlayBehaviorViewModel.ShouldSuppressForSession)
                     or nameof(OverlayBehaviorViewModel.HideInDominatorSuit)
                     or nameof(OverlayBehaviorViewModel.HideInMaverickSuit))
                 {

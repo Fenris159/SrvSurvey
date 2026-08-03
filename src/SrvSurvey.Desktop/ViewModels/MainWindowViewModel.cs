@@ -601,9 +601,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             aerialAltitudeProvider: () => new GuardianAerialAltitudes(
                 ScreenshotProcessing.AerialAltitudeAlpha,
                 ScreenshotProcessing.AerialAltitudeBeta,
-                ScreenshotProcessing.AerialAltitudeGamma));
-        ScreenshotProcessing.PropertyChanged += (_, _) =>
+                ScreenshotProcessing.AerialAltitudeGamma),
+            screenshotTargetFolderProvider: () =>
+                ScreenshotProcessing.TargetFolder);
+        ScreenshotProcessing.PropertyChanged += (_, eventArgs) =>
+        {
             Guardian.RefreshAerialGuidance();
+            if (eventArgs.PropertyName == nameof(
+                    ScreenshotProcessingViewModel.TargetFolder))
+            {
+                Guardian.RefreshScreenshotAvailability();
+            }
+        };
         exobiologyState = new ExobiologyState(sharedExobiologyCatalog);
         LegacyProfiles = LegacyProfileLocator.Discover(
                 AppDataPaths.LegacyProfileCandidates)
@@ -1697,6 +1706,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             journalState.Apply(journalEvent);
         }
 
+        Colonization.UpdateMusicTrack(journalState.MusicTrack);
+        StationInfo.UpdateMusicTrack(journalState.MusicTrack);
+        GroundTarget.UpdateMusicTrack(journalState.MusicTrack);
+
         var commanderChanged = !string.Equals(
                 previousFrontierId,
                 journalState.FrontierId,
@@ -1815,6 +1828,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         OverlayBehavior.UpdateContext(
             journalState.CurrentSuit,
             latestStatus?.OnFoot == true);
+        OverlayBehavior.UpdateSessionContext(
+            latestStatus is not null,
+            !string.IsNullOrWhiteSpace(journalState.CommanderName),
+            journalState.IsShutdown,
+            journalState.IsAtMainMenu,
+            journalState.IsAtCarrierManagement);
         JournalPostProcessor.SelectCommander(journalState.FrontierId);
 
         var commanderCodexResult =
@@ -1927,7 +1946,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             await BoxelSearch.UpdateRouteAsync(update.NavRoute);
         }
 
-        await Search.UpdateNavigationAsync(update.NavRoute, update.Status);
+        await Search.UpdateNavigationAsync(
+            update.NavRoute,
+            update.Status,
+            journalState.MusicTrack);
 
         if (!skipPersistedBootstrapEvents)
         {
@@ -1948,12 +1970,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 journalEvent.EventName == "FSSAllBodiesFound"),
             allowNotifications: !update.IsBootstrapRead);
 
-        await Guardian.ApplyJournalEventsAsync(
+        var guardianScreenshotContexts = await Guardian.ApplyJournalEventsAsync(
             update.JournalEvents,
             activeProfileCommanderName,
             allowLiveCommands: !update.IsBootstrapRead,
             status: latestStatus);
-        await RamTah.ApplyJournalEventsAsync(update.JournalEvents);
         if (!allowSharedCargo)
         {
             Guardian.ClearCargo();
@@ -1969,6 +1990,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 publishCurrentShipCargo: update.Cargo is not null);
         }
         await Colonization.UpdateMarketAsync(update.Market);
+        SystemSurvey.SetActiveBuildProjects(Colonization.HasProjects);
         Combat.SetActiveBuildProjects(Colonization.HasProjects);
         Guardian.SetActiveBuildProjects(Colonization.HasProjects);
         HumanSite.SetActiveBuildProjects(Colonization.HasProjects);
@@ -1983,15 +2005,23 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 update.Status,
                 allowGesture: !update.IsBootstrapRead);
             StationInfo.UpdateStatus(update.Status);
-            await Route.UpdateStatusAsync(update.Status);
-            await FleetCarrierRoute.UpdateStatusAsync(update.Status);
-            await BoxelSearch.UpdateStatusAsync(
-                update.Status,
-                allowAutoCopy: !Route.ShouldAutoCopyNextHop
-                    && !FleetCarrierRoute.ShouldAutoCopyNextHop);
         }
 
-        HumanSite.SetStationInfoVisible(StationInfo.ShouldShow);
+        if (latestStatus is not null)
+        {
+            await Route.UpdateStatusAsync(
+                latestStatus,
+                journalState.MusicTrack);
+            await FleetCarrierRoute.UpdateStatusAsync(
+                latestStatus,
+                journalState.MusicTrack);
+            await BoxelSearch.UpdateStatusAsync(
+                latestStatus,
+                allowAutoCopy: !Route.ShouldAutoCopyNextHop
+                    && !FleetCarrierRoute.ShouldAutoCopyNextHop,
+                nextMusicTrack: journalState.MusicTrack);
+        }
+
         await HumanSite.ApplyUpdateAsync(
             update.JournalEvents,
             update.Status,
@@ -2002,19 +2032,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         if (!update.IsBootstrapRead)
         {
-            var guardianScreenshotContext = Guardian.ActiveSite is { } site
-                && Guardian.Proximity is { } siteProximity
-                && Guardian.CurrentAltitude is double altitude
-                    ? new ScreenshotGuardianContext(
-                        site.SiteType,
-                        siteProximity.DistanceFromSite,
-                        altitude)
-                    : null;
             var screenshotResult =
                 await ScreenshotProcessing.ProcessJournalEventsAsync(
                 update.JournalEvents,
                 journalState.CommanderName,
-                guardianScreenshotContext);
+                guardianScreenshotContexts,
+                latestStatus is { } screenshotStatus
+                    ? new ScreenshotNavigationContext(
+                        DateTimeOffset.UtcNow,
+                        screenshotStatus.Latitude,
+                        screenshotStatus.Longitude,
+                        screenshotStatus.NormalizedHeading,
+                        screenshotStatus.HasLatitudeLongitude)
+                    : null);
             Notifications.ReportScreenshotResult(
                 screenshotResult,
                 ScreenshotProcessing.AddBanner);
@@ -2035,7 +2065,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.NavRoute,
             update.JournalEvents,
             update.Status,
-            update.IsBootstrapRead);
+            update.IsBootstrapRead,
+            journalState.MusicTrack);
         foreach (var journalEvent in update.JournalEvents)
         {
             if (!skipPersistedBootstrapEvents
@@ -3663,7 +3694,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         IReadOnlyList<QuestRuntimeSnapshot> quests,
         bool enabled)
     {
-        QuestIndicator.Update(quests, latestStatus, enabled);
+        QuestIndicator.Update(
+            quests,
+            latestStatus,
+            enabled,
+            journalState.MusicTrack);
         HumanSite.UpdateQuests(quests);
         var tags = enabled
             ? quests.SelectMany(quest => quest.Tags).ToArray()

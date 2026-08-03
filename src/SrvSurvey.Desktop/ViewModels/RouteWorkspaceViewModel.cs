@@ -60,7 +60,8 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private bool isActive;
     private bool autoCopy = true;
     private bool isBusy;
-    private GuiFocus lastGuiFocus;
+    private EliteStatus? status;
+    private string? musicTrack;
     private bool destinationMatchesNextHop;
     private string? lastCopiedHopName;
     private StatusDestination? lastDestination;
@@ -397,9 +398,13 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         && AutoCopy
         && NextHop is not null;
 
-    public bool ShouldShowGalaxyMapOverlay => lastGuiFocus == GuiFocus.GalaxyMap
+    public bool ShouldShowGalaxyMapOverlay => IsGalaxyMapOpen
         && IsActive
         && NextHop is not null;
+
+    private bool IsGalaxyMapOpen => OverlayGameModeResolver.Resolve(
+        status,
+        musicTrack: musicTrack) == OverlayGameMode.GalaxyMap;
 
     public string NextHopDistance
     {
@@ -848,16 +853,19 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
     }
 
-    public async Task UpdateStatusAsync(EliteStatus status)
+    public async Task UpdateStatusAsync(
+        EliteStatus nextStatus,
+        string? nextMusicTrack = null)
     {
-        ArgumentNullException.ThrowIfNull(status);
-        var enteredGalaxyMap = lastGuiFocus != GuiFocus.GalaxyMap
-            && status.GuiFocus == GuiFocus.GalaxyMap;
-        lastGuiFocus = status.GuiFocus;
-        lastDestination = status.Destination;
-        destinationMatchesNextHop = status.GuiFocus == GuiFocus.GalaxyMap
+        ArgumentNullException.ThrowIfNull(nextStatus);
+        var wasGalaxyMapOpen = IsGalaxyMapOpen;
+        status = nextStatus;
+        musicTrack = nextMusicTrack;
+        var enteredGalaxyMap = !wasGalaxyMapOpen && IsGalaxyMapOpen;
+        lastDestination = nextStatus.Destination;
+        destinationMatchesNextHop = IsGalaxyMapOpen
             && IsNextHop(lastDestination);
-        if (status.GuiFocus != GuiFocus.GalaxyMap)
+        if (!IsGalaxyMapOpen)
         {
             lastCopiedHopName = null;
         }
@@ -1741,7 +1749,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     private void RefreshPresentation()
     {
-        destinationMatchesNextHop = lastGuiFocus == GuiFocus.GalaxyMap
+        destinationMatchesNextHop = IsGalaxyMapOpen
             && IsNextHop(lastDestination);
         if (!string.Equals(
             lastCopiedHopName,

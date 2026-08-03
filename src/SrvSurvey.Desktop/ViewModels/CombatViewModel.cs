@@ -13,6 +13,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
     private readonly CommanderProfileStore profileStore;
     private readonly CombatState state;
     private EliteStatus? status;
+    private string? musicTrack;
     private string? frontierId;
     private string? commanderName;
     private bool isOdyssey = true;
@@ -171,8 +172,27 @@ public sealed class CombatViewModel : INotifyPropertyChanged
 
         var persistenceChanged = false;
         var stateChanged = false;
+        var modeChanged = false;
         foreach (var journalEvent in journalEvents)
         {
+            if (journalEvent.EventName is "Fileheader" or "LoadGame")
+            {
+                modeChanged |= musicTrack is not null;
+                musicTrack = null;
+            }
+            else if (journalEvent.EventName == "Music"
+                && journalEvent.Payload.TryGetProperty(
+                    "MusicTrack",
+                    out var track))
+            {
+                var nextMusicTrack = track.GetString();
+                modeChanged |= !string.Equals(
+                    musicTrack,
+                    nextMusicTrack,
+                    StringComparison.Ordinal);
+                musicTrack = nextMusicTrack;
+            }
+
             if (!ShouldApplyMissionEvent(journalEvent.EventName))
             {
                 continue;
@@ -192,7 +212,7 @@ public sealed class CombatViewModel : INotifyPropertyChanged
             await SaveCombatAsync();
         }
 
-        if (stateChanged || currentStatus is not null)
+        if (stateChanged || currentStatus is not null || modeChanged)
         {
             if (stateChanged)
             {
@@ -296,32 +316,30 @@ public sealed class CombatViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShouldShowMassacreMissions));
     }
 
-    private static bool IsFootCombatStatusEligible(EliteStatus? status)
+    private bool IsFootCombatStatusEligible(EliteStatus? status)
     {
+        var mode = OverlayGameModeResolver.Resolve(
+            status,
+            musicTrack: musicTrack);
         return status is not null
             && status.Altitude < 100
-            && (status.OnFoot || status.InSrv);
+            && mode is OverlayGameMode.OnFoot or OverlayGameMode.InSrv;
     }
 
-    private static bool IsMassacreStatusEligible(EliteStatus? status)
+    private bool IsMassacreStatusEligible(EliteStatus? status)
     {
         if (status is null)
         {
             return false;
         }
 
-        if (status.GuiFocus is GuiFocus.ExternalPanel
-            or GuiFocus.StationServices)
-        {
-            return true;
-        }
-
-        return status.GuiFocus == GuiFocus.NoFocus
-            && (status.Flags.HasFlag(StatusFlags.Supercruise)
-                || status.InMainShip
-                    && !status.Docked
-                    && !status.Landed
-                    && !status.GlideMode);
+        var mode = OverlayGameModeResolver.Resolve(
+            status,
+            musicTrack: musicTrack);
+        return mode is OverlayGameMode.ExternalPanel
+            or OverlayGameMode.StationServices
+            or OverlayGameMode.SuperCruising
+            or OverlayGameMode.Flying;
     }
 
     private bool SetField<T>(

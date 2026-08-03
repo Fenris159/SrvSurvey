@@ -133,6 +133,68 @@ public sealed class GuardianLiveSiteStateTests
     }
 
     [Fact]
+    public void ProximityUsesLegacyAltitudeGateInsteadOfHorizontalCutoff()
+    {
+        var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
+        state.Apply(Parse(
+            """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}"""));
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"SupercruiseExit","StarSystem":"Test","SystemAddress":42}""")));
+        Assert.NotNull(state.CurrentSite);
+
+        var near = SurfaceStatus(latitude: 0.01);
+        var far = SurfaceStatus(latitude: 0.5);
+        Assert.False(state.SynchronizeProximity(near, retainDuringGlide: false));
+        Assert.False(state.SynchronizeProximity(far, retainDuringGlide: false));
+        Assert.NotNull(state.CurrentSite);
+        Assert.True(state.SynchronizeProximity(
+            far with { Altitude = 4_001 },
+            retainDuringGlide: false));
+        Assert.Null(state.CurrentSite);
+        Assert.True(state.SynchronizeProximity(near, retainDuringGlide: false));
+        Assert.NotNull(state.CurrentSite);
+    }
+
+    [Fact]
+    public void StatusRestoresAndSwitchesNearestCatalogSiteWithoutApproachEvent()
+    {
+        var first = CreateReference(1, 0);
+        var second = CreateReference(2, 0.02);
+        var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
+        state.SetRecoveryReferences([first, second]);
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42,"Body":"Test A 1"}"""));
+
+        Assert.True(state.SynchronizeProximity(
+            SurfaceStatus(latitude: 0.001),
+            retainDuringGlide: false));
+        Assert.Equal(1, state.CurrentSite?.Index);
+        Assert.Equal("$Ancient:#index=1;", state.CurrentSite?.Name);
+
+        Assert.True(state.SynchronizeProximity(
+            SurfaceStatus(latitude: 0.019),
+            retainDuringGlide: false));
+        Assert.Equal(2, state.CurrentSite?.Index);
+    }
+
+    [Fact]
+    public void GlideRetainsSiteAndHumanSettlementClearsIt()
+    {
+        var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
+        state.Apply(Parse(
+            """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}"""));
+
+        Assert.False(state.SynchronizeProximity(
+            SurfaceStatus(latitude: 1),
+            retainDuringGlide: true));
+        Assert.NotNull(state.CurrentSite);
+        Assert.True(state.Apply(Parse(
+            """{"event":"ApproachSettlement","Name":"Human Settlement","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1"}""")));
+        Assert.Null(state.CurrentSite);
+    }
+
+    [Fact]
     public void SurveyUpdatePreservesCollectedDataAndRefreshesVisitFields()
     {
         var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
@@ -223,5 +285,40 @@ public sealed class GuardianLiveSiteStateTests
             out var error);
         Assert.True(success, error);
         return Assert.IsType<JournalEventEnvelope>(journalEvent);
+    }
+
+    private static EliteStatus SurfaceStatus(double latitude)
+    {
+        return new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
+            Latitude = latitude,
+            Longitude = 0,
+            PlanetRadius = 1_000_000,
+            BodyName = "Test A 1",
+        };
+    }
+
+    private static GuardianSiteReference CreateReference(int index, double latitude)
+    {
+        return new GuardianSiteReference(
+            index,
+            GuardianSiteKind.Ruins,
+            "Test",
+            42,
+            "A 1",
+            7,
+            "Alpha",
+            index,
+            0,
+            new SrvSurvey.Core.Search.GalacticCoordinate(0, 0, 0),
+            latitude,
+            0,
+            90,
+            0,
+            100,
+            null,
+            null,
+            null);
     }
 }

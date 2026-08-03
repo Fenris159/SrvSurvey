@@ -98,6 +98,83 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task GalaxyMapMusicRetainsLegacyModeWhenGuiFocusLags()
+    {
+        var client = new FakeSummaryClient();
+        using var viewModel = CreateViewModel(client);
+
+        viewModel.ApplyUpdate(
+            "Sol",
+            1,
+            CreateRoute(),
+            [],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip,
+                GuiFocus = GuiFocus.NoFocus,
+            },
+            nextMusicTrack: "GalaxyMap");
+        await viewModel.PendingLoad;
+
+        Assert.True(viewModel.IsGalaxyMapOpen);
+        Assert.True(viewModel.ShouldShow);
+        Assert.Equal("Beta", viewModel.PrimarySystem!.Name);
+    }
+
+    [Fact]
+    public async Task ExplicitSelectionOverridesRouteButRouteNextHopDoesNot()
+    {
+        var client = new FakeSummaryClient();
+        using var viewModel = CreateViewModel(client);
+        var galaxyMapStatus = new EliteStatus { GuiFocus = GuiFocus.GalaxyMap };
+
+        viewModel.ApplyUpdate(
+            "Sol",
+            1,
+            CreateRoute(),
+            [],
+            galaxyMapStatus);
+        await viewModel.PendingLoad;
+
+        viewModel.ApplyUpdate(
+            "Sol",
+            1,
+            null,
+            [Event("FSDTarget", "\"Name\":\"Alpha\",\"SystemAddress\":2")],
+            null);
+        await viewModel.PendingLoad;
+
+        Assert.Equal("DESTINATION", viewModel.PrimarySystem!.Label);
+        Assert.Equal("Beta", viewModel.PrimarySystem.Name);
+        Assert.True(viewModel.HasRouteFooter);
+
+        viewModel.ApplyUpdate(
+            "Sol",
+            1,
+            null,
+            [Event("FSDTarget", "\"Name\":\"Gamma\",\"SystemAddress\":4")],
+            null);
+        await viewModel.PendingLoad;
+
+        Assert.Equal("SELECTED", viewModel.PrimarySystem!.Label);
+        Assert.Equal("Gamma", viewModel.PrimarySystem.Name);
+        Assert.False(viewModel.HasSecondarySystem);
+        Assert.False(viewModel.HasRouteFooter);
+
+        viewModel.ApplyUpdate(
+            "Sol",
+            1,
+            CreateRoute(),
+            [],
+            null);
+        await viewModel.PendingLoad;
+
+        Assert.Equal("DESTINATION", viewModel.PrimarySystem!.Label);
+        Assert.Equal("Beta", viewModel.PrimarySystem.Name);
+        Assert.True(viewModel.HasRouteFooter);
+    }
+
+    [Fact]
     public async Task RouteClearMatchesLegacyNoRouteState()
     {
         var client = new FakeSummaryClient();

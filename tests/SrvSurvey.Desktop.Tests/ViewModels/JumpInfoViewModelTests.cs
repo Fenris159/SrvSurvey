@@ -107,6 +107,44 @@ public sealed class JumpInfoViewModelTests : IDisposable
         Assert.True(viewModel.HasRefuelGuidance);
         Assert.True(viewModel.HasRouteGuidanceBadges);
         Assert.True(viewModel.HasDiscoveryOrRouteGuidance);
+
+        var destination = new StatusDestination
+        {
+            Name = "Beta",
+            System = 3,
+            Body = 0,
+        };
+        viewModel.ApplyUpdate(
+            "Sol",
+            1,
+            new GalacticCoordinate(0, 0, 0),
+            null,
+            [],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+                GuiFocus = GuiFocus.ExternalPanel,
+                Destination = destination,
+            },
+            followedRoute);
+        Assert.False(viewModel.ShouldShow);
+
+        viewModel.ApplyUpdate(
+            "Sol",
+            1,
+            new GalacticCoordinate(0, 0, 0),
+            null,
+            [Event("Music", "\"MusicTrack\":\"GalaxyMap\"")],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+                GuiFocus = GuiFocus.NoFocus,
+                Destination = destination,
+            },
+            followedRoute);
+        Assert.False(viewModel.ShouldShow);
+        Assert.True(viewModel.ToggleForcedVisibility());
+        Assert.True(viewModel.ShouldShow);
     }
 
     [Fact]

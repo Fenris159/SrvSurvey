@@ -27,7 +27,7 @@
           BorderThickness="1"
           CornerRadius="12"
           Opacity="0.96">
-    <Grid RowDefinitions="Auto,*,Auto,Auto"
+    <Grid RowDefinitions="Auto,*,Auto"
           RowSpacing="12">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
         <StackPanel Spacing="3">
@@ -70,25 +70,6 @@
             ShadowBrush="{DynamicResource RavenWindowBrush}"
             Opacity="{Binding Guardian.AlignmentOpacity}"
             IsVisible="{Binding Guardian.IsAlignmentVisible}" />
-        <Border Margin="18"
-                Padding="16"
-                Classes="card raised"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                IsVisible="{Binding Guardian.IsGlideApproach}">
-          <StackPanel MaxWidth="440" Spacing="6">
-            <TextBlock Classes="eyebrow"
-                       Text="{Binding Guardian.GlideApproachTitle}" />
-            <TextBlock FontSize="16"
-                       FontWeight="SemiBold"
-                       TextWrapping="Wrap"
-                       Text="{Binding Guardian.GlideApproachText}" />
-            <TextBlock Classes="muted"
-                       FontSize="11"
-                       TextWrapping="Wrap"
-                       Text="{Binding Guardian.GlideApproachFooter}" />
-          </StackPanel>
-        </Border>
         <Border Margin="22"
                 Padding="18"
                 Classes="card raised"
@@ -98,9 +79,14 @@
           <StackPanel MaxWidth="420" Spacing="8">
             <TextBlock Classes="eyebrow"
                        Text="{Binding Guardian.LiveMapPromptTitle}" />
-            <TextBlock TextWrapping="Wrap"
-                       Text="{Binding Guardian.LiveMapPromptText}" />
-            <TextBlock Classes="monospace"
+              <TextBlock TextWrapping="Wrap"
+                         Text="{Binding Guardian.LiveMapPromptText}" />
+              <Image MaxWidth="420"
+                     MaxHeight="220"
+                     Stretch="Uniform"
+                     IsVisible="{Binding Guardian.HasHeadingGuide}"
+                     Source="{Binding Guardian.HeadingGuideAssetPath, Converter={StaticResource BundledAssetImageConverter}}" />
+              <TextBlock Classes="monospace"
                        FontSize="11"
                        IsVisible="{Binding Guardian.IsAlignmentVisible}"
                        Text="{Binding Guardian.AlignmentStatusText}" />
@@ -108,34 +94,7 @@
         </Border>
       </Grid>
 
-      <Border Grid.Row="2" Classes="card raised">
-        <Grid ColumnDefinitions="3*,2*" ColumnSpacing="14">
-          <StackPanel Spacing="5">
-            <TextBlock Classes="eyebrow" Text="CURRENT OBELISK" />
-            <TextBlock FontSize="17"
-                       FontWeight="SemiBold"
-                       Text="{Binding Guardian.CurrentObeliskTitle}" />
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="{Binding Guardian.CurrentObeliskLogText}" />
-            <TextBlock Classes="monospace"
-                       FontSize="11"
-                       Text="{Binding Guardian.NearbyPointText}" />
-          </StackPanel>
-          <StackPanel Grid.Column="1" Spacing="5">
-            <TextBlock Classes="eyebrow"
-                       Text="{Binding Guardian.CurrentObeliskScanStatus}" />
-            <TextBlock TextWrapping="Wrap"
-                       Text="{Binding Guardian.CurrentObeliskRequirementsText}" />
-            <TextBlock Classes="muted"
-                       FontSize="11"
-                       TextWrapping="Wrap"
-                       Text="{Binding Guardian.CurrentObeliskMissionStatus}" />
-          </StackPanel>
-        </Grid>
-      </Border>
-
-      <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+      <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
         <TextBlock Classes="muted"
                    FontSize="9"
                    TextTrimming="CharacterEllipsis"

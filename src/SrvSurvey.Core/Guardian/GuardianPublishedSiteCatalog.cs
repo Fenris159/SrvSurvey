@@ -11,6 +11,7 @@ public sealed class GuardianPublishedSiteCatalog
 
     private readonly GuardianPublishedSite[] allSites;
     private readonly Dictionary<string, GuardianPublishedSite> sites;
+    private readonly Dictionary<string, string[]> itemCodesByLog;
 
     public GuardianPublishedSiteCatalog(
         IEnumerable<GuardianPublishedSite> sites)
@@ -20,6 +21,18 @@ public sealed class GuardianPublishedSiteCatalog
         this.sites = allSites.ToDictionary(
             site => GetIdentity(site.Kind, site.FullBodyName, site.Index),
             StringComparer.OrdinalIgnoreCase);
+        itemCodesByLog = allSites
+            .SelectMany(site => site.ActiveObelisks)
+            .Where(obelisk => !string.IsNullOrWhiteSpace(obelisk.LogCode))
+            .GroupBy(obelisk => obelisk.LogCode, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group
+                    .Select(obelisk => obelisk.ItemCodes)
+                    .FirstOrDefault(itemCodes => itemCodes.Count > 0) is { } itemCodes
+                        ? itemCodes.ToArray()
+                        : [],
+                StringComparer.OrdinalIgnoreCase);
     }
 
     public int Count => allSites.Length;
@@ -51,6 +64,14 @@ public sealed class GuardianPublishedSiteCatalog
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fullBodyName);
         return sites.GetValueOrDefault(GetIdentity(kind, fullBodyName, index));
+    }
+
+    public IReadOnlyList<string> FindItemCodesByLog(string? logCode)
+    {
+        return !string.IsNullOrWhiteSpace(logCode)
+            && itemCodesByLog.TryGetValue(logCode, out var itemCodes)
+                ? itemCodes
+                : [];
     }
 
     public static GuardianPublishedSiteCatalog LoadEmbedded()

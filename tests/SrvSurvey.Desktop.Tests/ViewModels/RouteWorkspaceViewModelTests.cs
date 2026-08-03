@@ -386,6 +386,40 @@ public sealed class RouteWorkspaceViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task GalaxyMapMusicFallbackTriggersRouteOverlayAndAutoCopy()
+    {
+        await SaveRouteAsync(isActive: true, lastReachedIndex: 0);
+        var copied = new List<string>();
+        var viewModel = CreateViewModel();
+        viewModel.SetClipboardWriter(text =>
+        {
+            copied.Add(text);
+            return Task.CompletedTask;
+        });
+        await viewModel.UpdateContextAsync(
+            "F123",
+            "Sol",
+            1,
+            new GalacticCoordinate(0, 0, 0));
+
+        await viewModel.UpdateStatusAsync(
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip,
+                Destination = new StatusDestination
+                {
+                    System = 2,
+                    Name = "Second",
+                },
+            },
+            "GalaxyMap");
+
+        Assert.True(viewModel.ShouldShowGalaxyMapOverlay);
+        Assert.Equal(["Second"], copied);
+        Assert.Equal("SELECTED IN GALAXY MAP", viewModel.NextHopDestinationStatus);
+    }
+
+    [Fact]
     public async Task PausedOrManualRouteDoesNotAutoCopyInGalaxyMap()
     {
         await SaveRouteAsync(isActive: true, lastReachedIndex: 0);

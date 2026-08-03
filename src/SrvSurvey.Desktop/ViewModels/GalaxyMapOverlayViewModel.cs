@@ -22,6 +22,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     private string? currentSystemName;
     private long? currentSystemAddress;
     private EliteStatus? status;
+    private string? musicTrack;
     private GalaxyMapSystemViewModel? primarySystem;
     private GalaxyMapSystemViewModel? secondarySystem;
     private IReadOnlyList<GalaxyMapFactionViewModel> factions = [];
@@ -89,9 +90,12 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     }
 
     public bool ShouldShow => AutoShow
-        && status?.GuiFocus == GuiFocus.GalaxyMap;
+        && OverlayGameModeResolver.Resolve(status, musicTrack: musicTrack)
+            == OverlayGameMode.GalaxyMap;
 
-    public bool IsGalaxyMapOpen => status?.GuiFocus == GuiFocus.GalaxyMap;
+    public bool IsGalaxyMapOpen => OverlayGameModeResolver.Resolve(
+        status,
+        musicTrack: musicTrack) == OverlayGameMode.GalaxyMap;
 
     public string SettingsStatus
     {
@@ -210,7 +214,8 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         NavRouteSnapshot? nextNavRoute,
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         EliteStatus? nextStatus,
-        bool isBootstrapRead = false)
+        bool isBootstrapRead = false,
+        string? nextMusicTrack = null)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         ArgumentNullException.ThrowIfNull(journalEvents);
@@ -219,6 +224,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         if (nextNavRoute is not null)
         {
             navRoute = nextNavRoute;
+            selectedTarget = null;
             if (nextNavRoute.Route.Count > 0)
             {
                 routeWasCleared = false;
@@ -230,11 +236,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         {
             status = nextStatus;
         }
-
-        if (wasGalaxyMapOpen != IsGalaxyMapOpen)
-        {
-            OnPropertyChanged(nameof(IsGalaxyMapOpen));
-        }
+        musicTrack = nextMusicTrack;
 
         foreach (var journalEvent in journalEvents)
         {
@@ -246,7 +248,13 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             switch (journalEvent.EventName)
             {
                 case "FSDTarget":
-                    selectedTarget = ParseTarget(journalEvent.Payload);
+                    var target = ParseTarget(journalEvent.Payload);
+                    if (IsRouteNextHop(target))
+                    {
+                        break;
+                    }
+
+                    selectedTarget = target;
                     routeWasCleared = false;
                     break;
 
@@ -256,6 +264,11 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
                     routeWasCleared = true;
                     break;
             }
+        }
+
+        if (wasGalaxyMapOpen != IsGalaxyMapOpen)
+        {
+            OnPropertyChanged(nameof(IsGalaxyMapOpen));
         }
 
         OnPropertyChanged(nameof(ShouldShow));
@@ -310,6 +323,11 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     private (GalaxyMapTarget? Primary, GalaxyMapTarget? Secondary)
         ResolveTargets()
     {
+        if (selectedTarget is not null)
+        {
+            return (selectedTarget with { Label = "SELECTED" }, null);
+        }
+
         if (navRoute is { Route.Count: > 1 } route)
         {
             var final = route.Route[^1];
@@ -325,11 +343,6 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
                         next.SystemAddress,
                         "NEXT JUMP")
                     : null);
-        }
-
-        if (selectedTarget is not null)
-        {
-            return (selectedTarget with { Label = "SELECTED" }, null);
         }
 
         if (status?.Destination is { Body: 0, System: > 0 } destination
@@ -484,7 +497,8 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     private void SetRouteFooter()
     {
         var value = string.Empty;
-        if (navRoute is { Route.Count: > 1 } route)
+        if (selectedTarget is null
+            && navRoute is { Route.Count: > 1 } route)
         {
             var distance = 0d;
             for (var index = 1; index < route.Route.Count; index++)
@@ -509,6 +523,13 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         RouteFooter = value;
         OnPropertyChanged(nameof(RouteFooter));
         OnPropertyChanged(nameof(HasRouteFooter));
+    }
+
+    private bool IsRouteNextHop(GalaxyMapTarget? target)
+    {
+        return target is not null
+            && navRoute is { Route.Count: > 2 } route
+            && route.Route[1].SystemAddress == target.SystemAddress;
     }
 
     private static GalaxyMapTarget? ParseTarget(JsonElement payload)

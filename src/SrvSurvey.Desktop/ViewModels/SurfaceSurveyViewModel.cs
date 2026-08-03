@@ -594,6 +594,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         if (!survey.AutoShowSurfaceRadar
             || surface is null
             || survey.CurrentStatus is not { } status
+            || survey.ShouldSuppressForActiveBuildProjects
             || !status.HasLatitudeLongitude
             || status.PlanetRadius <= 0
             || status.Docked
@@ -605,29 +606,23 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             return false;
         }
 
-        if (status.GuiFocus != GuiFocus.NoFocus)
-        {
-            return status.GuiFocus is GuiFocus.CommsPanel or GuiFocus.RolePanel;
-        }
-
-        var allowedMode = status.Flags.HasFlag(StatusFlags.Supercruise)
-            || status.InMainShip
-            || status.Landed
-            || status.InSrv
-            || status.OnFootOnPlanet
-            || status.GlideMode
-            || status.InFighter;
+        var mode = survey.CurrentOverlayGameMode;
+        var allowedMode = mode is OverlayGameMode.SuperCruising
+            or OverlayGameMode.Flying
+            or OverlayGameMode.Landed
+            or OverlayGameMode.InSrv
+            or OverlayGameMode.OnFoot
+            or OverlayGameMode.GlideMode
+            or OverlayGameMode.InFighter
+            or OverlayGameMode.CommsPanel
+            or OverlayGameMode.RolePanel;
         if (!allowedMode)
         {
             return false;
         }
 
-        var flying = status.InMainShip
-            && !status.Flags.HasFlag(StatusFlags.Supercruise)
-            && !status.GlideMode
-            && !status.Landed;
         return !survey.AutoHideSurfaceRadarWithoutLandingGear
-            || !flying
+            || mode != OverlayGameMode.Flying
             || status.LandingGearDown;
     }
 
@@ -643,7 +638,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
 
     private bool HasTrackerTargets()
     {
-        return surface?.Bookmarks.Any(group => group.Value.Count > 0) == true;
+        return surface?.Bookmarks.Any(group =>
+            !group.Key.StartsWith('#') && group.Value.Count > 0) == true;
     }
 
     private bool IsMiniTrackStatusEligible()
@@ -655,24 +651,16 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             return false;
         }
 
-        if (status.GuiFocus != GuiFocus.NoFocus)
-        {
-            return status.GuiFocus is GuiFocus.CommsPanel or GuiFocus.RolePanel;
-        }
-
-        var flying = status.InMainShip
-            && !status.Docked
-            && !status.Landed
-            && !status.Flags.HasFlag(StatusFlags.Supercruise)
-            && !status.GlideMode;
-        return status.Flags.HasFlag(StatusFlags.Supercruise)
-            || flying
-            || status.Landed
-            || status.InSrv
-            || status.OnFoot
-            || status.GlideMode
-            || status.InFighter
-            || status.InTaxi;
+        var mode = survey.CurrentOverlayGameMode;
+        return mode is OverlayGameMode.SuperCruising
+            or OverlayGameMode.Flying
+            or OverlayGameMode.Landed
+            or OverlayGameMode.InSrv
+            or OverlayGameMode.OnFoot
+            or OverlayGameMode.GlideMode
+            or OverlayGameMode.InFighter
+            or OverlayGameMode.CommsPanel
+            or OverlayGameMode.RolePanel;
     }
 
     private string GetTrackerDisplayName(string name)
@@ -713,6 +701,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             or nameof(SystemSurveyViewModel.AutoShowMiniTrack)
             or nameof(SystemSurveyViewModel.SurfaceRadarSize)
             or nameof(SystemSurveyViewModel.AutoHideSurfaceRadarWithoutLandingGear)
+            or nameof(SystemSurveyViewModel.ShouldSuppressForActiveBuildProjects)
             or nameof(SystemSurveyViewModel.Snapshot)
             or nameof(SystemSurveyViewModel.CurrentStatus))
         {

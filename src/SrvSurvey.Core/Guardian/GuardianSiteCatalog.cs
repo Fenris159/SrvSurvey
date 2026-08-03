@@ -400,15 +400,16 @@ public sealed record GuardianSiteReference(
     int SurveyProgress,
     DateTimeOffset? LastUpdated,
     string? RelatedStructure,
-    double? RelatedStructureDistance)
+    double? RelatedStructureDistance,
+    bool IsCommanderOnly = false)
 {
     public bool IsSurveyComplete => SurveyProgress == 100;
 
     public string DisplayId => Kind switch
     {
-        GuardianSiteKind.Ruins => $"GR {SiteId}",
-        GuardianSiteKind.Structure => $"GS {SiteId}",
-        _ => "GB",
+        GuardianSiteKind.Ruins => IsCommanderOnly ? "GR LOCAL" : $"GR {SiteId}",
+        GuardianSiteKind.Structure => IsCommanderOnly ? "GS LOCAL" : $"GS {SiteId}",
+        _ => IsCommanderOnly ? "GB LOCAL" : "GB",
     };
 
     public string FullBodyName => $"{SystemName} {BodyName}";

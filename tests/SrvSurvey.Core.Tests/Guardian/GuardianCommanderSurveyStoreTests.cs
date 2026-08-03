@@ -127,6 +127,59 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveRemovesStaleKnownComponentsButPreservesFutureFormats()
+    {
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var source = CreateSurvey();
+        var path = store.GetSurveyPath(
+            "F123",
+            true,
+            source.BodyName,
+            source.Index,
+            isRuins: true);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "components":[
+                "c1,cell,conduit,tech",
+                "future-format",
+                "future,quantum"
+              ]
+            }
+            """);
+        var survey = source with
+        {
+            Survey = new GuardianSurveyData
+            {
+                SiteType = source.Survey.SiteType,
+                SiteHeading = source.Survey.SiteHeading,
+                RelicTowerHeading = source.Survey.RelicTowerHeading,
+                Location = source.Survey.Location,
+                PoiStatuses = source.Survey.PoiStatuses,
+                RelicHeadings = source.Survey.RelicHeadings,
+                ComponentMaterials = new Dictionary<
+                    string,
+                    GuardianComponentLoadout>(),
+                RawPointsOfInterest = source.Survey.RawPointsOfInterest,
+            },
+        };
+
+        await store.SaveAsync("F123", true, survey);
+
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Equal(
+            ["future-format", "future,quantum"],
+            root["components"]!.AsArray()
+                .Select(item => item!.GetValue<string>())
+                .ToArray());
+        var loaded = await new GuardianCommanderDataReader(temporaryDirectory)
+            .ReadAsync("F123", true);
+        Assert.Empty(Assert.Single(loaded.Surveys).Survey.ComponentMaterials);
+    }
+
+    [Fact]
     public async Task SaveRefusesMalformedExistingSurveyAndUnsafeNames()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);

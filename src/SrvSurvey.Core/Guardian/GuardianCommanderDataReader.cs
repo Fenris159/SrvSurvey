@@ -3,9 +3,19 @@ using System.Text.Json;
 
 namespace SrvSurvey.Core.Guardian;
 
-public sealed class GuardianCommanderDataReader(string dataDirectory)
+public sealed class GuardianCommanderDataReader
 {
-    private readonly string dataDirectory = GetFullPath(dataDirectory);
+    private readonly string dataDirectory;
+    private readonly GuardianPublishedSiteCatalog publishedSites;
+
+    public GuardianCommanderDataReader(
+        string dataDirectory,
+        GuardianPublishedSiteCatalog? publishedSites = null)
+    {
+        this.dataDirectory = GetFullPath(dataDirectory);
+        this.publishedSites = publishedSites
+            ?? GuardianPublishedSiteCatalog.LoadEmbedded();
+    }
 
     public async Task<GuardianCommanderDataReadResult> ReadAsync(
         string frontierId,
@@ -80,7 +90,7 @@ public sealed class GuardianCommanderDataReader(string dataDirectory)
             errors);
     }
 
-    private static async Task<GuardianCommanderSiteSurvey?> ReadSurveyAsync(
+    private async Task<GuardianCommanderSiteSurvey?> ReadSurveyAsync(
         string path,
         ICollection<string> errors,
         bool isLegacy,
@@ -399,7 +409,7 @@ public sealed class GuardianCommanderDataReader(string dataDirectory)
             .ToArray();
     }
 
-    private static IReadOnlyList<GuardianObelisk> ReadActiveObelisks(
+    private IReadOnlyList<GuardianObelisk> ReadActiveObelisks(
         JsonElement root)
     {
         if (!root.TryGetProperty("activeObelisks", out var value)
@@ -426,7 +436,8 @@ public sealed class GuardianCommanderDataReader(string dataDirectory)
                         property.Name,
                         GetString(old, "msg") ?? string.Empty,
                         GetBoolean(old, "scanned") ?? false,
-                        []);
+                        publishedSites.FindItemCodesByLog(
+                            GetString(old, "msg")));
                 })
                 .ToArray();
         }

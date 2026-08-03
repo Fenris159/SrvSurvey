@@ -61,11 +61,14 @@ public sealed record BiologyStatusViewModel(
         bool hideGeologicalSignals,
         BiologyCodexNotificationViewModel? codexNotification = null,
         bool showTemperatureRangeDebug = false,
-        BiologyPredictionEvaluator? predictionEvaluator = null)
+        BiologyPredictionEvaluator? predictionEvaluator = null,
+        bool allowRetainedCurrentBody = true)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
-        var body = ResolveCurrentBody(snapshot, status);
+        var body = allowRetainedCurrentBody
+            ? ResolveCurrentBody(snapshot, status)
+            : null;
         if (body is null || body.BiologicalSignalCount <= 0)
         {
             return null;

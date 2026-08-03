@@ -274,6 +274,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
             isOdyssey: true,
             initial with { Path = path },
             CreateTemplate());
+        editor.SelectedPoint = editor.Points.Single(point => point.IsRaw);
+        editor.SelectedPoint.RelicHeading = 123;
 
         await editor.SaveAsync();
 
@@ -281,8 +283,8 @@ public sealed class GuardianSurveyEditorViewModelTests : IDisposable
             (await new GuardianCommanderDataReader(temporaryDirectory)
                 .ReadAsync("F123", isOdyssey: true)).Surveys);
         Assert.Equal(GuardianPoiStatus.Absent, saved.Survey.PoiStatuses["x7"]);
-        Assert.Equal(55, saved.Survey.RelicHeadings["x7"]);
-        Assert.Equal(30, Assert.Single(saved.Survey.RawPointsOfInterest!).Rotation);
+        Assert.Equal(123, saved.Survey.RelicHeadings["x7"]);
+        Assert.Equal(123, Assert.Single(saved.Survey.RawPointsOfInterest!).Rotation);
     }
 
     public void Dispose()

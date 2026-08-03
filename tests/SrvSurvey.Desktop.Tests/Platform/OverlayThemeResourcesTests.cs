@@ -29,6 +29,7 @@ public sealed class OverlayThemeResourcesTests
             ["PlotGalMap"] = "GalaxyMap.AutoShow",
             ["PlotGrounded"] = "SystemSurvey.AutoShowSurfaceRadar",
             ["PlotGuardians"] = "Guardian.EnableGuardianSites",
+            ["PlotGuardianStatus"] = "Guardian.EnableGuardianSites",
             ["PlotGuardianSystem"] = "Guardian.AutoShowGuardianSummary",
             ["PlotHumanSite"] = "HumanSite.AutoShow",
             ["PlotJumpInfo"] = "JumpInfo.AutoShow",
@@ -239,7 +240,7 @@ public sealed class OverlayThemeResourcesTests
     [Fact]
     public void EveryRuntimeOverlayUsesItsEditorCatalogWidth()
     {
-        Assert.Equal(28, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(29, OverlayLayoutCatalog.Supported.Count);
         Assert.All(OverlayLayoutCatalog.Supported, definition =>
             Assert.Equal(
                 definition.PreviewSize.Width,

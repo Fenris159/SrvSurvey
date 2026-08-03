@@ -1,3 +1,5 @@
+using SrvSurvey.Core.Search;
+
 namespace SrvSurvey.Core.Guardian;
 
 public sealed class GuardianSiteVisitCatalog
@@ -26,8 +28,29 @@ public sealed class GuardianSiteVisitCatalog
         ArgumentNullException.ThrowIfNull(publishedSites);
         ArgumentNullException.ThrowIfNull(completionCalculator);
 
+        var mergedReferences = references.Sites.ToList();
+        foreach (var survey in commanderData.Surveys.Where(survey =>
+                     !mergedReferences.Any(reference =>
+                         reference.Kind != GuardianSiteKind.Beacon
+                         && IsSameSurvey(reference, survey))))
+        {
+            mergedReferences.Add(CreateCommanderReference(survey, references));
+        }
+
+        foreach (var beacon in commanderData.Beacons.Where(beacon =>
+                     !mergedReferences.Any(reference =>
+                         reference.Kind == GuardianSiteKind.Beacon
+                         && IsSameBody(
+                             reference,
+                             beacon.SystemAddress,
+                             beacon.BodyId,
+                             beacon.BodyName))))
+        {
+            mergedReferences.Add(CreateCommanderReference(beacon, references));
+        }
+
         return new GuardianSiteVisitCatalog(
-            references.Sites.Select(reference => Merge(
+            mergedReferences.Select(reference => Merge(
                 reference,
                 commanderData,
                 publishedSites,
@@ -138,6 +161,78 @@ public sealed class GuardianSiteVisitCatalog
                 survey.SiteType,
                 reference.SiteType,
                 StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static GuardianSiteReference CreateCommanderReference(
+        GuardianCommanderSiteSurvey survey,
+        GuardianSiteCatalog references)
+    {
+        var kind = survey.Name.StartsWith(
+            "$Ancient:#index=",
+            StringComparison.Ordinal)
+                ? GuardianSiteKind.Ruins
+                : GuardianSiteKind.Structure;
+        var position = GetKnownSystemPosition(references, survey.SystemAddress);
+        return new GuardianSiteReference(
+            0,
+            kind,
+            survey.SystemName,
+            survey.SystemAddress,
+            RemoveSystemPrefix(survey.BodyName, survey.SystemName),
+            survey.BodyId,
+            survey.SiteType,
+            survey.Index,
+            0,
+            position,
+            survey.Survey.Location?.Latitude,
+            survey.Survey.Location?.Longitude,
+            survey.Survey.SiteHeading,
+            survey.Survey.RelicTowerHeading,
+            0,
+            survey.LastVisited,
+            null,
+            null,
+            true);
+    }
+
+    private static GuardianSiteReference CreateCommanderReference(
+        GuardianCommanderBeaconVisit beacon,
+        GuardianSiteCatalog references)
+    {
+        var location = beacon.ScannedLocations
+            .OrderByDescending(pair => pair.Key)
+            .Select(pair => (GuardianSurfaceLocation?)pair.Value)
+            .FirstOrDefault();
+        return new GuardianSiteReference(
+            0,
+            GuardianSiteKind.Beacon,
+            beacon.SystemName,
+            beacon.SystemAddress,
+            RemoveSystemPrefix(beacon.BodyName, beacon.SystemName),
+            beacon.BodyId,
+            "Beacon",
+            0,
+            0,
+            GetKnownSystemPosition(references, beacon.SystemAddress),
+            location?.Latitude,
+            location?.Longitude,
+            -1,
+            -1,
+            0,
+            beacon.LastVisited,
+            null,
+            null,
+            true);
+    }
+
+    private static GalacticCoordinate GetKnownSystemPosition(
+        GuardianSiteCatalog references,
+        long systemAddress)
+    {
+        return references.FindBySystemAddress(systemAddress)
+            .Select(reference => (GalacticCoordinate?)reference.Position)
+            .FirstOrDefault()
+            ?? new GalacticCoordinate(0, 0, 0);
     }
 
     private static bool IsSameBody(

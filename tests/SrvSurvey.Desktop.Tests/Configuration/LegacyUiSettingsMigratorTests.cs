@@ -237,6 +237,7 @@ public sealed class LegacyUiSettingsMigratorTests : IDisposable
         Assert.Equal(4, survey.SurfaceRadarSize);
         Assert.False(survey.HighlightDssCandidates);
         Assert.Equal(7_654_321, survey.DssValueFloor);
+        Assert.True(survey.SuppressForActiveBuildProjects);
         Assert.Equal(
             new BiologyPredictionsPreferences(true, 3),
             new BiologyPredictionsSettingsStore(paths.UiSettingsPath).Load());

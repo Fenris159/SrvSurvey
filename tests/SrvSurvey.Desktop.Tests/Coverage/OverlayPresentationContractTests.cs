@@ -53,8 +53,10 @@ public sealed class OverlayPresentationContractTests
         Contract("PlotGuardians", ["src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml"], [
             "ActiveMapTitle", "ActiveMapSummary", "ActiveMapScaleText", "LiveMapPromptText", "BlinkGestureText",
         ]),
-        Contract("PlotGuardianStatus", ["src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml"], [
-            "CurrentObeliskTitle", "CurrentObeliskRequirementsText", "CurrentObeliskMissionStatus",
+        Contract("PlotGuardianStatus", ["src/SrvSurvey.Desktop/GuardianStatusOverlayWindow.axaml"], [
+            "GuardianStatusTitle", "GuardianStatusDetail", "GuardianOriginFooter", "GuardianOnFootFooter",
+            "GuardianStatusObeliskTitle", "GuardianStatusObeliskRequirementsText",
+            "GuardianStatusObeliskMissionStatus", "GuardianChoiceOneText",
             "AlignmentStatusText", "GlideApproachText", "NearbyPointText",
         ]),
         Contract("PlotGuardianSystem", ["src/SrvSurvey.Desktop/GuardianSystemOverlayWindow.axaml"], [

@@ -21,6 +21,25 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey Ram Tah overlay">
+  <Window.Styles>
+    <Style Selector="Border.ram-tah-row.current">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="Border.ram-tah-row.target">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Border.ram-tah-row.current TextBlock.log-name">
+      <Setter Property="Foreground" Value="{DynamicResource RavenAccentBrush}" />
+    </Style>
+    <Style Selector="Border.ram-tah-row.target TextBlock.log-name">
+      <Setter Property="Foreground" Value="{DynamicResource RavenBorderBrush}" />
+    </Style>
+    <Style Selector="TextBlock.log-name.missing">
+      <Setter Property="TextDecorations" Value="Strikethrough" />
+    </Style>
+  </Window.Styles>
   <Border Padding="14,12"
           Background="{DynamicResource RavenWindowBrush}"
           BorderBrush="{DynamicResource RavenBorderBrush}"
@@ -53,9 +72,14 @@
         <ItemsControl ItemsSource="{Binding Guardian.CurrentRamTahLogs}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:GuardianRamTahLogViewModel">
-              <Border Margin="0,0,0,6"
+              <Border Classes="ram-tah-row"
+                      Classes.current="{Binding IsCurrentObelisk}"
+                      Classes.target="{Binding IsRemoteTargetObelisk}"
+                      Margin="0,0,0,6"
                       Padding="10,8"
                       Background="{DynamicResource RavenSurfaceBrush}"
+                      BorderBrush="Transparent"
+                      BorderThickness="1"
                       CornerRadius="8">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                   <StackPanel Spacing="3">
@@ -65,6 +89,8 @@
                                  FontWeight="Bold"
                                  Text="{Binding LogCode}" />
                       <TextBlock Grid.Column="1"
+                                 Classes="log-name"
+                                 Classes.missing="{Binding IsMissingArtifacts}"
                                  FontWeight="SemiBold"
                                  Text="{Binding LogName}" />
                     </Grid>

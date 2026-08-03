@@ -241,11 +241,6 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         JsonObject root,
         IReadOnlyDictionary<string, GuardianComponentLoadout> components)
     {
-        if (components.Count == 0)
-        {
-            return;
-        }
-
         var pending = new Dictionary<string, GuardianComponentLoadout>(
             components,
             StringComparer.Ordinal);
@@ -263,13 +258,17 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
             {
                 if (node is JsonValue value
                     && value.TryGetValue<string>(out var encoded)
-                    && TryGetComponentName(encoded, out var name)
-                    && components.TryGetValue(name, out var replacement))
+                    && GuardianComponentLoadout.TryParseLegacy(
+                        encoded,
+                        out var existingComponent))
                 {
-                    if (written.Add(name))
+                    if (components.TryGetValue(
+                            existingComponent.Name,
+                            out var replacement)
+                        && written.Add(existingComponent.Name))
                     {
                         output.Add(replacement.ToLegacyString());
-                        pending.Remove(name);
+                        pending.Remove(existingComponent.Name);
                     }
                 }
                 else
@@ -288,27 +287,6 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
 
         root["components"] = output;
     }
-
-    private static bool TryGetComponentName(
-        string? encoded,
-        out string name)
-    {
-        name = string.Empty;
-        if (string.IsNullOrWhiteSpace(encoded))
-        {
-            return false;
-        }
-
-        var separator = encoded.IndexOf(',');
-        if (separator <= 0)
-        {
-            return false;
-        }
-
-        name = encoded[..separator].Trim();
-        return name.Length > 0;
-    }
-
     private static string GetLegacyPoiType(GuardianPoiType type)
     {
         return type switch

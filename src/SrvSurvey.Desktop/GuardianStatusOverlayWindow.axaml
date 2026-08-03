@@ -1,0 +1,198 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.GuardianStatusOverlayWindow"
+        x:DataType="vm:GuardianOverlayViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="500"
+        d:DesignHeight="150"
+        Width="500"
+        MinHeight="108"
+        MaxHeight="320"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey Guardian status overlay">
+  <Window.Styles>
+    <Style Selector="Border.guardian-choice">
+      <Setter Property="Padding" Value="8,6" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenBorderBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenPanelBrush}" />
+    </Style>
+    <Style Selector="Border.guardian-choice.selected">
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenAccentBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenRaisedBrush}" />
+    </Style>
+  </Window.Styles>
+  <Border Padding="14,12"
+          Background="{DynamicResource RavenWindowBrush}"
+          BorderBrush="{DynamicResource RavenBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="12"
+          Opacity="0.97">
+    <Grid>
+      <StackPanel Spacing="6"
+                  IsVisible="{Binding Guardian.IsGlideApproach}">
+        <TextBlock Classes="eyebrow"
+                   Text="{Binding Guardian.GlideApproachTitle}" />
+        <TextBlock FontSize="16"
+                   FontWeight="SemiBold"
+                   TextWrapping="Wrap"
+                   Text="{Binding Guardian.GlideApproachText}" />
+        <TextBlock Classes="muted"
+                   FontSize="11"
+                   TextWrapping="Wrap"
+                   Text="{Binding Guardian.GlideApproachFooter}" />
+      </StackPanel>
+
+      <Grid IsVisible="{Binding Guardian.IsLocalGuardianStatus}">
+        <StackPanel Spacing="7"
+                    IsVisible="{Binding Guardian.IsGuardianSiteTypeChoiceVisible}">
+          <TextBlock Classes="eyebrow" Text="{Binding Guardian.GuardianStatusTitle}" />
+          <TextBlock Classes="muted" TextWrapping="Wrap"
+                     Text="{Binding Guardian.GuardianStatusDetail}" />
+          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="7">
+            <Border Classes="guardian-choice"
+                    Classes.selected="{Binding Guardian.IsGuardianChoiceOneSelected}">
+              <StackPanel HorizontalAlignment="Center">
+                <TextBlock Classes="eyebrow" Text="A" />
+                <TextBlock FontWeight="SemiBold" Text="{Binding Guardian.GuardianChoiceOneText}" />
+              </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Classes="guardian-choice"
+                    Classes.selected="{Binding Guardian.IsGuardianChoiceTwoSelected}">
+              <StackPanel HorizontalAlignment="Center">
+                <TextBlock Classes="eyebrow" Text="B" />
+                <TextBlock FontWeight="SemiBold" Text="{Binding Guardian.GuardianChoiceTwoText}" />
+              </StackPanel>
+            </Border>
+            <Border Grid.Column="2" Classes="guardian-choice"
+                    Classes.selected="{Binding Guardian.IsGuardianChoiceThreeSelected}">
+              <StackPanel HorizontalAlignment="Center">
+                <TextBlock Classes="eyebrow" Text="C" />
+                <TextBlock FontWeight="SemiBold" Text="{Binding Guardian.GuardianChoiceThreeText}" />
+              </StackPanel>
+            </Border>
+          </Grid>
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="9" TextWrapping="Wrap"
+                     Text="{Binding Guardian.BlinkGestureText}" />
+        </StackPanel>
+
+        <StackPanel Spacing="6"
+                    IsVisible="{Binding Guardian.IsGuardianHeadingChoiceVisible}">
+          <TextBlock Classes="eyebrow" Text="{Binding Guardian.GuardianStatusTitle}" />
+          <TextBlock FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"
+                     Text="{Binding Guardian.GuardianStatusDetail}" />
+          <TextBlock Classes="monospace" FontSize="11"
+                     IsVisible="{Binding Guardian.IsAlignmentVisible}"
+                     Text="{Binding Guardian.AlignmentStatusText}" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="9" TextWrapping="Wrap"
+                     Text="{Binding Guardian.BlinkGestureText}" />
+        </StackPanel>
+
+        <StackPanel Spacing="6"
+                    IsVisible="{Binding Guardian.IsGuardianOriginVisible}">
+          <TextBlock Classes="eyebrow" Text="{Binding Guardian.GuardianStatusTitle}" />
+          <TextBlock FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"
+                     Text="{Binding Guardian.GuardianStatusDetail}" />
+          <TextBlock Classes="monospace" FontSize="11"
+                     Text="{Binding Guardian.AlignmentStatusText}" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="9" TextWrapping="Wrap"
+                     Text="{Binding Guardian.GuardianOriginFooter}" />
+        </StackPanel>
+
+        <StackPanel Spacing="6"
+                    IsVisible="{Binding Guardian.IsGuardianOnFootRelicVisible}">
+          <TextBlock Classes="eyebrow" Text="{Binding Guardian.GuardianStatusTitle}" />
+          <TextBlock FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"
+                     Text="{Binding Guardian.GuardianStatusDetail}" />
+          <TextBlock Classes="monospace" FontSize="11"
+                     Text="{Binding Guardian.NearbyPointText}" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="9" TextWrapping="Wrap"
+                     Text="{Binding Guardian.GuardianOnFootFooter}" />
+        </StackPanel>
+
+        <Grid ColumnDefinitions="3*,2*" ColumnSpacing="14"
+              IsVisible="{Binding Guardian.IsGuardianObeliskVisible}">
+          <StackPanel Spacing="5">
+            <TextBlock Classes="eyebrow" Text="CURRENT GUARDIAN POINT" />
+            <TextBlock FontSize="17" FontWeight="SemiBold"
+                       Text="{Binding Guardian.GuardianStatusObeliskTitle}" />
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="{Binding Guardian.GuardianStatusObeliskLogText}" />
+            <TextBlock Classes="monospace" FontSize="11"
+                       Text="{Binding Guardian.NearbyPointText}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="5">
+            <TextBlock Classes="eyebrow"
+                       Text="{Binding Guardian.GuardianStatusObeliskScanStatus}" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="{Binding Guardian.GuardianStatusObeliskRequirementsText}" />
+            <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap"
+                       Text="{Binding Guardian.GuardianStatusObeliskMissionStatus}" />
+            <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                       FontSize="9"
+                       FontWeight="Bold"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding Guardian.HasGuardianMaterialCapacityWarning}"
+                       Text="{Binding Guardian.GuardianMaterialCapacityWarning}" />
+            <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="9" TextWrapping="Wrap"
+                       Text="{Binding Guardian.GuardianStatusObeliskFooter}" />
+          </StackPanel>
+        </Grid>
+
+        <StackPanel Spacing="7"
+                    IsVisible="{Binding Guardian.IsGuardianPoiChoiceVisible}">
+          <TextBlock Classes="eyebrow" Text="{Binding Guardian.GuardianStatusTitle}" />
+          <TextBlock Classes="muted" TextWrapping="Wrap"
+                     Text="{Binding Guardian.GuardianStatusDetail}" />
+          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="7">
+            <Border Classes="guardian-choice"
+                    Classes.selected="{Binding Guardian.IsGuardianChoiceOneSelected}">
+              <TextBlock HorizontalAlignment="Center" FontWeight="SemiBold"
+                         Text="{Binding Guardian.GuardianChoiceOneText}" />
+            </Border>
+            <Border Grid.Column="1" Classes="guardian-choice"
+                    Classes.selected="{Binding Guardian.IsGuardianChoiceTwoSelected}">
+              <TextBlock HorizontalAlignment="Center" FontWeight="SemiBold"
+                         Text="{Binding Guardian.GuardianChoiceTwoText}" />
+            </Border>
+            <Border Grid.Column="2" Classes="guardian-choice"
+                    IsVisible="{Binding Guardian.IsGuardianChoiceThreeVisible}"
+                    Classes.selected="{Binding Guardian.IsGuardianChoiceThreeSelected}">
+              <TextBlock HorizontalAlignment="Center" FontWeight="SemiBold"
+                         Text="{Binding Guardian.GuardianChoiceThreeText}" />
+            </Border>
+          </Grid>
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="9" TextWrapping="Wrap"
+                     Text="{Binding Guardian.BlinkGestureText}" />
+        </StackPanel>
+
+        <StackPanel Spacing="5"
+                    IsVisible="{Binding Guardian.IsGuardianNoPointVisible}">
+          <TextBlock Classes="eyebrow" Text="{Binding Guardian.GuardianStatusTitle}" />
+          <TextBlock Classes="muted" TextWrapping="Wrap"
+                     Text="{Binding Guardian.GuardianStatusDetail}" />
+          <TextBlock Classes="monospace" FontSize="11"
+                     Text="{Binding Guardian.SiteDistanceText}" />
+        </StackPanel>
+      </Grid>
+    </Grid>
+  </Border>
+</Window>

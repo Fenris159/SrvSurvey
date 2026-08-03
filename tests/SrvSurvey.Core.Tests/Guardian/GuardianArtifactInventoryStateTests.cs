@@ -34,6 +34,37 @@ public sealed class GuardianArtifactInventoryStateTests
     }
 
     [Fact]
+    public void MissionTwoThargoidArtifactsMatchLegacyCargoNamesAndAliases()
+    {
+        var state = new GuardianArtifactInventoryState();
+        state.Reset(new CargoSnapshot(
+            DateTimeOffset.UtcNow,
+            "Cargo",
+            "SRV",
+            6,
+            [
+                new CargoItem("unknownartifact", null, 1, 0),
+                new CargoItem("unknownartifact2", null, 1, 0),
+                new CargoItem("unknownartifact3", null, 1, 0),
+                new CargoItem("thargoidtissuesampletype1", null, 1, 0),
+                new CargoItem("thargoidtissuesampletype2", null, 1, 0),
+                new CargoItem("thargoidtissuesampletype3", null, 1, 0),
+            ]));
+
+        Assert.Equal(1, state.GetCount("sensor"));
+        Assert.Equal(1, state.GetCount("pr"));
+        Assert.Equal(1, state.GetCount("Thargoid Link"));
+        Assert.Equal(1, state.GetCount("cyclops"));
+        Assert.Equal(1, state.GetCount("ba"));
+        Assert.Equal(1, state.GetCount("Medusa Tissue Sample"));
+        Assert.True(state.HasItems(["se", "cy"]));
+        Assert.True(state.HasItems(["se", "ba"]));
+        Assert.True(state.HasItems(["se", "li"]));
+        Assert.True(state.HasItems(["se", "pr"]));
+        Assert.True(state.HasItems(["se", "me"]));
+    }
+
+    [Fact]
     public void RequirementsPreserveDuplicateArtifactQuantities()
     {
         var state = new GuardianArtifactInventoryState();

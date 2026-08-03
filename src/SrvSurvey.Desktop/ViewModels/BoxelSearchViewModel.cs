@@ -64,7 +64,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     private string? commanderName;
     private bool isOdyssey = true;
     private NavRouteSnapshot? latestRoute;
-    private GuiFocus lastGuiFocus;
+    private EliteStatus? status;
+    private string? musicTrack;
     private StatusDestination? lastDestination;
     private string destinationStatus = "No Galaxy Map destination selected";
     private bool isDestinationValid;
@@ -256,8 +257,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             state.NextSystem);
     }
 
-    public bool ShouldShowGalaxyMapOverlay =>
-        lastGuiFocus == GuiFocus.GalaxyMap && state.IsActive;
+    public bool ShouldShowGalaxyMapOverlay => IsGalaxyMapOpen && state.IsActive;
+
+    private bool IsGalaxyMapOpen => OverlayGameModeResolver.Resolve(
+        status,
+        musicTrack: musicTrack) == OverlayGameMode.GalaxyMap;
 
     public string? NextSystemForInput => state.NextSystem;
 
@@ -588,15 +592,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     }
 
     public async Task UpdateStatusAsync(
-        EliteStatus status,
-        bool allowAutoCopy = true)
+        EliteStatus nextStatus,
+        bool allowAutoCopy = true,
+        string? nextMusicTrack = null)
     {
-        ArgumentNullException.ThrowIfNull(status);
-        var enteredGalaxyMap = lastGuiFocus != GuiFocus.GalaxyMap
-            && status.GuiFocus == GuiFocus.GalaxyMap;
-        lastGuiFocus = status.GuiFocus;
-        lastDestination = status.Destination;
-        if (lastGuiFocus != GuiFocus.GalaxyMap)
+        ArgumentNullException.ThrowIfNull(nextStatus);
+        var wasGalaxyMapOpen = IsGalaxyMapOpen;
+        status = nextStatus;
+        musicTrack = nextMusicTrack;
+        var enteredGalaxyMap = !wasGalaxyMapOpen && IsGalaxyMapOpen;
+        lastDestination = nextStatus.Destination;
+        if (!IsGalaxyMapOpen)
         {
             lastCopiedSystemName = null;
         }

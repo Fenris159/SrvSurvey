@@ -44,6 +44,33 @@ public sealed class OverlayBehaviorViewModelTests : IDisposable
         Assert.True(persisted.HideMultiGameCommanderOverlay);
     }
 
+    [Fact]
+    public void SessionSuppressionRequiresStatusCommanderAndActiveGameSession()
+    {
+        var viewModel = CreateViewModel();
+
+        Assert.True(viewModel.ShouldSuppressForSession);
+
+        viewModel.UpdateSessionContext(
+            hasCurrentStatus: true,
+            hasCurrentCommander: true,
+            shutdown: false,
+            atMainMenu: false);
+        Assert.False(viewModel.ShouldSuppressForSession);
+
+        viewModel.UpdateSessionContext(true, true, false, true);
+        Assert.True(viewModel.ShouldSuppressForSession);
+
+        viewModel.UpdateSessionContext(true, true, true, false);
+        Assert.True(viewModel.ShouldSuppressForSession);
+
+        viewModel.UpdateSessionContext(true, false, false, false);
+        Assert.True(viewModel.ShouldSuppressForSession);
+
+        viewModel.UpdateSessionContext(true, true, false, false, true);
+        Assert.True(viewModel.ShouldSuppressForSession);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

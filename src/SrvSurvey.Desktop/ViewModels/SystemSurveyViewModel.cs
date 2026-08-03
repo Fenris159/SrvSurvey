@@ -23,6 +23,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private readonly RegionalCodexCandidateCatalog regionalCodexCandidates;
     private readonly Func<DateTimeOffset> utcNow;
     private EliteStatus? status;
+    private string? musicTrack;
     private ExobiologySnapshot exobiology = ExobiologySnapshot.Empty;
     private BiologyDiscoveryContext biologyDiscoveryContext =
         BiologyDiscoveryContext.Unavailable;
@@ -31,6 +32,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private IReadOnlyList<SurveyBodyReferenceViewModel> dssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> biologicalBodies = [];
     private IReadOnlySet<int> canonnBiologyBodyIds = new HashSet<int>();
+    private bool hasCanonnSystemData;
     private BodyInformationViewModel? bodyInformation;
     private BiologySurveyViewModel? biologySurvey;
     private BiologyStatusViewModel? biologyStatus;
@@ -86,6 +88,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private bool skipGasGiantsForDss;
     private bool skipRingsForDss;
     private bool showNonBodySignals;
+    private bool suppressForActiveBuildProjects;
+    private bool hasActiveBuildProjects;
     private FssTuningDetectorSettings fssTuningDetector =
         FssTuningDetectorSettings.Default;
     private BiologyRewardThresholds biologyRewardThresholds;
@@ -186,6 +190,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         skipRingsForDss = preferences.SkipRingsForDss;
         showNonBodySignals = preferences.ShowNonBodySignals;
         fssTuningDetector = preferences.FssTuningDetector;
+        suppressForActiveBuildProjects =
+            preferences.SuppressForActiveBuildProjects;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -309,6 +315,27 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get => autoShowBioStatus;
         set => SetPreference(ref autoShowBioStatus, value);
+    }
+
+    public bool SuppressForActiveBuildProjects
+    {
+        get => suppressForActiveBuildProjects;
+        set => SetPreference(ref suppressForActiveBuildProjects, value);
+    }
+
+    public bool ShouldSuppressForActiveBuildProjects =>
+        SuppressForActiveBuildProjects && hasActiveBuildProjects;
+
+    public void SetActiveBuildProjects(bool value)
+    {
+        if (hasActiveBuildProjects == value)
+        {
+            return;
+        }
+
+        hasActiveBuildProjects = value;
+        OnPropertyChanged(nameof(ShouldSuppressForActiveBuildProjects));
+        RaiseVisibilityProperties();
     }
 
     public bool AutoHideBioPlotOnRepeat
@@ -747,6 +774,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public EliteStatus? CurrentStatus => status;
 
+    internal OverlayGameMode CurrentOverlayGameMode => ResolveGameMode();
+
     public ExobiologySnapshot CurrentExobiology => exobiology;
 
     public BiologyDiscoveryContext CurrentBiologyDiscoveryContext =>
@@ -1075,11 +1104,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var automatic = status?.GuiFocus == GuiFocus.Fss
+            var mode = ResolveGameMode();
+            var automatic = mode == OverlayGameMode.Fss
                 || ShowFssInfoInSystemMap
-                    && status?.GuiFocus == GuiFocus.SystemMap
+                    && mode == OverlayGameMode.SystemMap
                 || ShowFssInfoInNavigationPanel
-                    && status?.GuiFocus == GuiFocus.ExternalPanel;
+                    && mode == OverlayGameMode.ExternalPanel;
             var forced = forceShowFssInfo && !fsdJumping;
             return automatic || forced;
         }
@@ -1087,7 +1117,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public bool ShouldShowLastFssBody => AutoShowLastFssBody
         && snapshot.SystemAddress is not null
-        && status?.GuiFocus == GuiFocus.Fss;
+        && ResolveGameMode()
+            == OverlayGameMode.Fss;
 
     public bool ShouldShowBodyInfo
     {
@@ -1097,6 +1128,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 || BodyInformation is null
                 || manuallyHideBodyInfo
                 || fsdJumping
+                || ShouldSuppressForActiveBuildProjects
                 || HideBodyInfoInBubble && IsWithinBodyInfoBubble)
             {
                 return false;
@@ -1112,17 +1144,18 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var inSystemMap = status.GuiFocus is GuiFocus.SystemMap
-                or GuiFocus.Orrery;
+            var mode = ResolveGameMode();
+            var inSystemMap = mode is OverlayGameMode.SystemMap
+                or OverlayGameMode.Orrery;
             var inOrbit = status.HasLatitudeLongitude
-                && (status.Flags.HasFlag(StatusFlags.Supercruise)
-                    || status.GlideMode);
+                && mode is OverlayGameMode.SuperCruising
+                    or OverlayGameMode.GlideMode;
             var atSurface = status.HasLatitudeLongitude
-                && !status.Flags.HasFlag(StatusFlags.Supercruise)
-                && !status.GlideMode
                 && status.HudInAnalysisMode
-                && (status.InMainShip || status.Landed || status.InSrv);
-            return status.GuiFocus == GuiFocus.Saa
+                && mode is OverlayGameMode.Flying
+                    or OverlayGameMode.Landed
+                    or OverlayGameMode.InSrv;
+            return mode == OverlayGameMode.Saa
                 || inSystemMap
                     && ShowBodyInfoInSystemMap
                     && !ShowFssInfoInSystemMap
@@ -1139,17 +1172,18 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 || status is null
                 || status.InTaxi
                 || snapshot.SystemAddress is null
-                || !snapshot.HasDiscoveryScan)
+                || !snapshot.HasDiscoveryScan && !hasCanonnSystemData)
             {
                 return false;
             }
 
-            return status.Flags.HasFlag(StatusFlags.Supercruise)
-                || status.GuiFocus is GuiFocus.Saa
-                    or GuiFocus.Fss
-                    or GuiFocus.ExternalPanel
-                    or GuiFocus.Orrery
-                    or GuiFocus.SystemMap;
+            var mode = ResolveGameMode();
+            return mode is OverlayGameMode.SuperCruising
+                or OverlayGameMode.Saa
+                or OverlayGameMode.Fss
+                or OverlayGameMode.ExternalPanel
+                or OverlayGameMode.Orrery
+                or OverlayGameMode.SystemMap;
         }
     }
 
@@ -1157,22 +1191,22 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get
         {
-            var body = ResolveBodyInfoTarget(preferDestination: false)?.Body;
+            var body = ResolveRetainedLocalBody();
             if (!AutoShowFlightWarnings
                 || status is null
-                || status.GuiFocus != GuiFocus.NoFocus
                 || body?.IsLandable != true
                 || body.SurfaceGravity / 10d < HighGravityWarningLevel)
             {
                 return false;
             }
 
-            return status.Landed
-                || status.Flags.HasFlag(StatusFlags.Supercruise)
-                || status.GlideMode
-                || status.InSrv
-                || status.InFighter
-                || status.InMainShip && !status.Docked && !status.InTaxi;
+            var mode = ResolveGameMode();
+            return mode is OverlayGameMode.Landed
+                or OverlayGameMode.SuperCruising
+                or OverlayGameMode.GlideMode
+                or OverlayGameMode.Flying
+                or OverlayGameMode.InSrv
+                or OverlayGameMode.InFighter;
         }
     }
 
@@ -1180,7 +1214,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     {
         get
         {
-            var body = ResolveBodyInfoTarget(preferDestination: false)?.Body;
+            var body = ResolveRetainedLocalBody();
             return body is null
                 ? "HIGH-GRAVITY BODY"
                 : $"WARNING: SURFACE GRAVITY {body.SurfaceGravity / 10d:N2} g";
@@ -1193,6 +1227,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         {
             if (!AutoShowBioSystem
                 || AreBiologyOverlaysSuppressedForRepeatVisit
+                || ShouldSuppressForActiveBuildProjects
                 || BiologySurvey is null
                 || status is null
                 || status.InTaxi
@@ -1201,21 +1236,22 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var overviewMode = status.Flags.HasFlag(StatusFlags.Supercruise)
-                || status.GuiFocus is GuiFocus.Saa
-                    or GuiFocus.Fss
-                    or GuiFocus.ExternalPanel
-                    or GuiFocus.Orrery
-                    or GuiFocus.SystemMap;
+            var mode = ResolveGameMode();
+            var overviewMode = mode is OverlayGameMode.SuperCruising
+                or OverlayGameMode.Saa
+                or OverlayGameMode.Fss
+                or OverlayGameMode.ExternalPanel
+                or OverlayGameMode.Orrery
+                or OverlayGameMode.SystemMap;
             var localBodyMode = BiologySurvey.IsBodyDetail
-                && (status.GlideMode
-                    || status.InMainShip
-                    || status.Landed
-                    || status.InSrv
-                    || status.OnFoot
-                    || status.GuiFocus is GuiFocus.CommsPanel
-                        or GuiFocus.RolePanel
-                        or GuiFocus.Codex);
+                && mode is OverlayGameMode.GlideMode
+                    or OverlayGameMode.Flying
+                    or OverlayGameMode.Landed
+                    or OverlayGameMode.InSrv
+                    or OverlayGameMode.OnFoot
+                    or OverlayGameMode.CommsPanel
+                    or OverlayGameMode.RolePanel
+                    or OverlayGameMode.Codex;
             return overviewMode || localBodyMode;
         }
     }
@@ -1226,6 +1262,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         {
             if ((!AutoShowBioStatus && !IsWithinPostDssBiologyWindow)
                 || BiologyStatus is null
+                || ShouldSuppressForActiveBuildProjects
                 || status is null
                 || status.Docked
                 || status.InTaxi
@@ -1235,17 +1272,16 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var allowedFocus = status.GuiFocus is GuiFocus.NoFocus
-                or GuiFocus.CommsPanel
-                or GuiFocus.Saa
-                or GuiFocus.Codex;
-            var allowedMode = status.Flags.HasFlag(StatusFlags.Supercruise)
-                || status.InMainShip
-                || status.Landed
-                || status.InSrv
-                || status.OnFoot
-                || status.GlideMode;
-            return allowedFocus && allowedMode;
+            var mode = ResolveGameMode();
+            return mode is OverlayGameMode.SuperCruising
+                or OverlayGameMode.Flying
+                or OverlayGameMode.Landed
+                or OverlayGameMode.InSrv
+                or OverlayGameMode.OnFoot
+                or OverlayGameMode.GlideMode
+                or OverlayGameMode.CommsPanel
+                or OverlayGameMode.Saa
+                or OverlayGameMode.Codex;
         }
     }
 
@@ -1256,6 +1292,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             if (!UseExternalData
                 || !AutoShowPriorScans
                 || AreBiologyOverlaysSuppressedForRepeatVisit
+                || ShouldSuppressForActiveBuildProjects
                 || status is null
                 || !status.HasLatitudeLongitude
                 || status.PlanetRadius <= 0
@@ -1269,18 +1306,17 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 return false;
             }
 
-            var allowedFocus = status.GuiFocus is GuiFocus.NoFocus
-                or GuiFocus.CommsPanel
-                or GuiFocus.Saa
-                or GuiFocus.Codex;
-            var allowedMode = status.Flags.HasFlag(StatusFlags.Supercruise)
-                || status.InMainShip
-                || status.Landed
-                || status.InSrv
-                || status.OnFoot
-                || status.GlideMode
-                || status.InFighter;
-            return allowedFocus && allowedMode;
+            var mode = ResolveGameMode();
+            return mode is OverlayGameMode.SuperCruising
+                or OverlayGameMode.Flying
+                or OverlayGameMode.Landed
+                or OverlayGameMode.InSrv
+                or OverlayGameMode.OnFoot
+                or OverlayGameMode.GlideMode
+                or OverlayGameMode.InFighter
+                or OverlayGameMode.CommsPanel
+                or OverlayGameMode.Saa
+                or OverlayGameMode.Codex;
         }
     }
 
@@ -1313,6 +1349,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             state.Apply(journalEvent);
             switch (journalEvent.EventName)
             {
+                case "Fileheader":
+                case "LoadGame":
+                    musicTrack = null;
+                    break;
+
                 case "StartJump" when GetString(
                     journalEvent.Payload,
                     "JumpType") == "Hyperspace":
@@ -1326,11 +1367,18 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     fsdJumping = false;
                     break;
 
-                case "Music" when string.Equals(
-                    GetString(journalEvent.Payload, "MusicTrack"),
-                    "MainMenu",
-                    StringComparison.Ordinal):
-                    fsdJumping = false;
+                case "Music":
+                    musicTrack = GetString(
+                        journalEvent.Payload,
+                        "MusicTrack");
+                    if (string.Equals(
+                            musicTrack,
+                            "MainMenu",
+                            StringComparison.Ordinal))
+                    {
+                        fsdJumping = false;
+                    }
+
                     break;
 
                 case "SAAScanComplete":
@@ -1383,6 +1431,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             ClearTimedBiologySelection(refreshDisplay: false);
             biologyDiscoveryContext = BiologyDiscoveryContext.Unavailable;
             canonnBiologyBodyIds = new HashSet<int>();
+            hasCanonnSystemData = false;
             biologyCodexNotification = null;
             forceShowFssInfo = false;
             manuallyHideFssInfo = false;
@@ -1500,9 +1549,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 StringComparison.OrdinalIgnoreCase))
         {
             canonnBiologyBodyIds = new HashSet<int>();
+            hasCanonnSystemData = false;
         }
         else
         {
+            hasCanonnSystemData = true;
             canonnBiologyBodyIds = snapshot.Bodies
                 .Where(body => result.Signals.Any(signal =>
                     IsMatchingCanonnBody(body, signal.BodyName)))
@@ -1511,6 +1562,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
 
         RefreshDisplay();
+        RaiseVisibilityProperties();
     }
 
     public bool RefreshTransientState()
@@ -1521,6 +1573,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         {
             dssVisibilityWindowWasActive = false;
             OnPropertyChanged(nameof(IsWithinPostDssBiologyWindow));
+            RefreshDisplay();
             RaiseVisibilityProperties();
             changed = true;
         }
@@ -1615,7 +1668,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool ToggleBodyInfoVisibility()
     {
         if (!AutoShowBodyInfo
-            || ResolveBodyInfoTarget(preferDestination: true) is null)
+            || ResolveTargetBody() is null)
         {
             forceShowBodyInfo = false;
             manuallyHideBodyInfo = false;
@@ -1647,6 +1700,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private void RefreshDisplay()
     {
+        var allowRetainedBiologyBody = status?.HasLatitudeLongitude == true
+            || IsWithinPostDssBiologyWindow;
         var externalBiologyBodyIds = UseExternalData && AutoShowPriorScans
             ? canonnBiologyBodyIds
             : null;
@@ -1678,7 +1733,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     BiologyRewardThresholds,
                     biologyPredictionEvaluator,
                     biologyCatalog,
-                    externalBiologyBodyIds);
+                    externalBiologyBodyIds,
+                    allowRetainedBiologyBody,
+                    IsBiologyMapMode(status));
         BiologyStatus = BiologyStatusViewModel.Create(
             snapshot,
             status,
@@ -1686,10 +1743,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             HideGeoCountInBioSystem,
             biologyCodexNotification,
             ShowTemperatureRangeDebug,
-            biologyPredictionEvaluator);
-        BodyInformation = CreateBodyInformation(
-            ResolveBodyInfoTarget(forceShowBodyInfo
-                || status?.GuiFocus is GuiFocus.SystemMap or GuiFocus.Orrery));
+            biologyPredictionEvaluator,
+            allowRetainedBiologyBody);
+        BodyInformation = CreateBodyInformation(ResolveBodyInfoTarget());
         FssBodies = snapshot.Bodies
             .Where(IsInterestingFssBody)
             .OrderByDescending(body => body.ScanSequence)
@@ -1764,6 +1820,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         EliteStatus? previousStatus,
         EliteStatus? nextStatus)
     {
+        // Journal-only updates retain the last status snapshot. They must not
+        // cancel a temporary body preview that was started from a map target.
+        if (nextStatus is null)
+        {
+            return;
+        }
+
         if (!IsBiologyMapMode(nextStatus))
         {
             ClearTimedBiologySelection(refreshDisplay: false);
@@ -1834,11 +1897,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
     }
 
-    private static bool IsBiologyMapMode(EliteStatus? value)
+    private bool IsBiologyMapMode(EliteStatus? value)
     {
-        return value?.GuiFocus is GuiFocus.ExternalPanel
-            or GuiFocus.SystemMap
-            or GuiFocus.Orrery;
+        var mode = OverlayGameModeResolver.Resolve(
+            value,
+            fsdJumping,
+            musicTrack);
+        return mode is OverlayGameMode.ExternalPanel
+            or OverlayGameMode.SystemMap
+            or OverlayGameMode.Orrery;
     }
 
     private void ApplyBiologyCodexCue(JournalEventEnvelope journalEvent)
@@ -2018,55 +2085,92 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             false);
     }
 
-    private BodyInfoTarget? ResolveBodyInfoTarget(bool preferDestination)
+    private BodyInfoTarget? ResolveBodyInfoTarget()
     {
         if (snapshot.SystemAddress is null)
         {
             return null;
         }
 
-        if (preferDestination
-            && status?.Destination is { } destination
-            && destination.System == snapshot.SystemAddress)
+        var targetBody = ResolveTargetBody();
+        if (targetBody is null)
         {
-            var body = snapshot.Bodies.FirstOrDefault(candidate =>
-                candidate.BodyId == destination.Body);
-            var name = body?.Name
-                ?? destination.NameLocalised
-                ?? destination.Name;
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                return new BodyInfoTarget(destination.Body, name, body);
-            }
+            return null;
         }
 
-        var currentBody = !string.IsNullOrWhiteSpace(status?.BodyName)
-            ? snapshot.Bodies.FirstOrDefault(candidate =>
-                string.Equals(
-                    candidate.Name,
-                    status.BodyName,
-                    StringComparison.OrdinalIgnoreCase))
-            : null;
-        currentBody ??= snapshot.CurrentBodyId is { } currentBodyId
-            ? snapshot.Bodies.FirstOrDefault(candidate =>
-                candidate.BodyId == currentBodyId)
-            : null;
-        if (currentBody is not null)
+        var mode = ResolveGameMode();
+        if (forceShowBodyInfo
+            || mode is OverlayGameMode.SystemMap or OverlayGameMode.Orrery)
         {
             return new BodyInfoTarget(
+                targetBody.BodyId,
+                targetBody.Name,
+                targetBody);
+        }
+
+        var currentBody = status?.HasLatitudeLongitude == true
+            ? ResolveRetainedLocalBody()
+            : null;
+        return currentBody is null
+            ? null
+            : new BodyInfoTarget(
                 currentBody.BodyId,
                 currentBody.Name,
                 currentBody);
-        }
+    }
 
-        if (!string.IsNullOrWhiteSpace(status?.BodyName))
+    private SystemScanBodySnapshot? ResolveTargetBody()
+    {
+        if (snapshot.SystemAddress is null || status is null)
         {
-            return new BodyInfoTarget(-1, status.BodyName, null);
+            return null;
         }
 
-        return !preferDestination
-            ? ResolveBodyInfoTarget(preferDestination: true)
+        if (status.Destination is { } destination)
+        {
+            if (destination.System != snapshot.SystemAddress)
+            {
+                return null;
+            }
+
+            if (destination.Body >= 0)
+            {
+                var selected = snapshot.Bodies.FirstOrDefault(candidate =>
+                    candidate.BodyId == destination.Body);
+                if (selected is not null
+                    && string.Equals(
+                        selected.Name,
+                        destination.Name,
+                        StringComparison.Ordinal))
+                {
+                    return selected;
+                }
+            }
+        }
+
+        return status.HasLatitudeLongitude
+            ? ResolveRetainedLocalBody()
             : null;
+    }
+
+    private SystemScanBodySnapshot? ResolveRetainedLocalBody()
+    {
+        if (status?.HasLatitudeLongitude != true
+            && !IsWithinPostDssBiologyWindow)
+        {
+            return null;
+        }
+
+        var body = !string.IsNullOrWhiteSpace(status?.BodyName)
+            ? snapshot.Bodies.FirstOrDefault(candidate => string.Equals(
+                candidate.Name,
+                status.BodyName,
+                StringComparison.OrdinalIgnoreCase))
+            : null;
+        return body ?? (snapshot.CurrentBodyId is { } currentBodyId
+            ? snapshot.Bodies.FirstOrDefault(candidate =>
+                candidate.BodyId == currentBodyId)
+            : null);
     }
 
     private static string FormatAtmosphere(SystemScanBodySnapshot body)
@@ -2401,7 +2505,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 SkipGasGiantsForDss,
                 SkipRingsForDss,
                 ShowNonBodySignals,
-                FssTuningDetector));
+                FssTuningDetector,
+                SuppressForActiveBuildProjects));
             SettingsStatus = string.Empty;
         }
         catch (Exception exception) when (
@@ -2484,6 +2589,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(ShouldLoadPriorScans));
         OnPropertyChanged(nameof(ShouldShowSystemStatus));
         OnPropertyChanged(nameof(ShouldShowFlightWarning));
+    }
+
+    private OverlayGameMode ResolveGameMode()
+    {
+        return OverlayGameModeResolver.Resolve(
+            status,
+            fsdJumping,
+            musicTrack);
     }
 
     private static string FormatCredits(long value)

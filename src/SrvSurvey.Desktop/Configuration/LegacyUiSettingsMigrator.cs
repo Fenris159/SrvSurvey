@@ -139,6 +139,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("skipGasGiantDSS", "SkipGasGiantsForDss"),
                     ("skipRingsDSS", "SkipRingsForDss"),
                     ("showNonBodySignals", "ShowNonBodySignals"),
+                    ("buildProjectsSuppressOtherOverlays", "SuppressForActiveBuildProjects"),
                 ]);
                 mappedCount += MapFssTuningDetector(legacy, root);
                 mappedCount += MapFirstFootfallInference(legacy, root);

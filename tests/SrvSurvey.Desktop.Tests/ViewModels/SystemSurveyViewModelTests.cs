@@ -125,6 +125,11 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             [Parse("""{"event":"Died"}""")],
             null);
         Assert.True(viewModel.ShouldShowFssInfo);
+
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"Music","MusicTrack":"GalaxyMap"}""")],
+            new EliteStatus { Flags = StatusFlags.InMainShip });
+        Assert.True(viewModel.ShouldShowFssInfo);
     }
 
     [Fact]
@@ -139,6 +144,11 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             [Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}""")],
             supercruise);
         Assert.False(viewModel.ShouldShowSystemStatus);
+
+        viewModel.UpdateCanonnSystemPoi(new CanonnSystemPoiResult(
+            "Test",
+            []));
+        Assert.True(viewModel.ShouldShowSystemStatus);
 
         viewModel.ApplyUpdate(
             [Parse("""{"event":"FSSDiscoveryScan","SystemAddress":42,"BodyCount":3}""")],
@@ -161,7 +171,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             ],
             new EliteStatus
             {
-                Flags = StatusFlags.InMainShip,
+                Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
                 BodyName = "Test 1",
             });
 
@@ -175,6 +185,13 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.False(viewModel.ShouldShowFlightWarning);
 
         viewModel.HighGravityWarningLevel = 1;
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            BodyName = "Test 1",
+        });
+        Assert.False(viewModel.ShouldShowFlightWarning);
+
         viewModel.ApplyUpdate([], new EliteStatus
         {
             Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
@@ -424,7 +441,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
-    public void BodyInformationHonorsBubbleAndSupportsUnscannedTargets()
+    public void BodyInformationRequiresLegacyExactTargetMatch()
     {
         var viewModel = CreateViewModel();
         viewModel.ApplyUpdate(
@@ -440,15 +457,57 @@ public sealed class SystemSurveyViewModelTests : IDisposable
                 },
             });
 
-        var body = Assert.IsType<BodyInformationViewModel>(
-            viewModel.BodyInformation);
-        Assert.True(body.IsScanRequired);
-        Assert.Equal("Sol vicinity 9", body.Name);
+        Assert.Null(viewModel.BodyInformation);
         Assert.True(viewModel.IsWithinBodyInfoBubble);
         Assert.False(viewModel.ShouldShowBodyInfo);
 
         viewModel.HideBodyInfoInBubble = false;
+        Assert.False(viewModel.ShouldShowBodyInfo);
+    }
+
+    [Fact]
+    public void BodyInformationUsesNearbyBodyOutsideMapAndRejectsExternalTarget()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"StarPos":[500,0,0]}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"PlanetClass":"Rocky body","MassEM":0.01,"Landable":true}"""),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip
+                    | StatusFlags.Supercruise
+                    | StatusFlags.HasLatLong,
+                BodyName = "Test 1",
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 2,
+                    Name = "Test 2",
+                },
+            });
+
+        Assert.EndsWith("Test 1", viewModel.BodyInformation?.Name);
         Assert.True(viewModel.ShouldShowBodyInfo);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip
+                | StatusFlags.Supercruise
+                | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            Destination = new StatusDestination
+            {
+                System = 84,
+                Body = 2,
+                Name = "Elsewhere 2",
+            },
+        });
+
+        Assert.Null(viewModel.BodyInformation);
+        Assert.False(viewModel.ShouldShowBodyInfo);
     }
 
     [Fact]
@@ -545,6 +604,13 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         Assert.Equal("Test 2 biology", viewModel.BiologySurvey.Heading);
         Assert.Equal(100, viewModel.TimedBiologySelectionProgressPercent);
 
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"Scan","ScanType":"AutoScan","SystemAddress":42,"BodyName":"Test 2","BodyID":2,"PlanetClass":"Rocky body"}""")],
+            null);
+
+        Assert.True(viewModel.HasTimedBiologySelection);
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+
         now = now.AddSeconds(3);
         Assert.False(viewModel.RefreshTransientState());
         Assert.Equal(50, viewModel.TimedBiologySelectionProgressPercent);
@@ -602,6 +668,80 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         Assert.False(viewModel.HasTimedBiologySelection);
         Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+    }
+
+    [Fact]
+    public void BiologyBodyDetailRequiresNearBodyStatusOrPostDssGrace()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "body-transition-ui-settings.json")),
+            utcNow: () => now);
+        var nearBodyStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+        };
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+            ],
+            nearBodyStatus);
+
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.NotNull(viewModel.BiologyStatus);
+
+        viewModel.ApplyUpdate([], nearBodyStatus with
+        {
+            Flags = StatusFlags.InMainShip,
+        });
+
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.Null(viewModel.BiologyStatus);
+        Assert.False(viewModel.ShouldShowBioSystem);
+    }
+
+    [Fact]
+    public void BiologyBodyDetailSurvivesDepartureOnlyForPostDssGraceWindow()
+    {
+        var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);
+        var viewModel = new SystemSurveyViewModel(
+            new SystemSurveySettingsStore(Path.Combine(
+                temporaryDirectory,
+                "body-dss-transition-ui-settings.json")),
+            utcNow: () => now);
+        var nearBodyStatus = new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+        };
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+                Parse("""{"timestamp":"2026-07-25T12:00:00Z","event":"SAAScanComplete","SystemAddress":42,"BodyName":"Test 1","BodyID":1}"""),
+            ],
+            nearBodyStatus);
+
+        viewModel.ApplyUpdate([], nearBodyStatus with
+        {
+            Flags = StatusFlags.InMainShip,
+        });
+
+        Assert.True(viewModel.IsWithinPostDssBiologyWindow);
+        Assert.True(viewModel.BiologySurvey!.IsBodyDetail);
+        Assert.NotNull(viewModel.BiologyStatus);
+
+        now = now.AddSeconds(121);
+
+        Assert.True(viewModel.RefreshTransientState());
+        Assert.True(viewModel.BiologySurvey!.IsSystemOverview);
+        Assert.Null(viewModel.BiologyStatus);
     }
 
     [Fact]
@@ -1143,6 +1283,66 @@ public sealed class SystemSurveyViewModelTests : IDisposable
                 .Load()
                 .FssTuningDetector
                 .Enabled);
+    }
+
+    [Fact]
+    public void GuiFocusOverridesPhysicalModeForSurveyVisibility()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSDiscoveryScan","SystemAddress":42,"BodyCount":1,"NonBodyCount":0}"""),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+            ],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+                GuiFocus = GuiFocus.InternalPanel,
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 1,
+                    Name = "Test 1",
+                },
+            });
+
+        Assert.False(viewModel.ShouldShowBodyInfo);
+        Assert.False(viewModel.ShouldShowBioSystem);
+        Assert.False(viewModel.ShouldShowSystemStatus);
+    }
+
+    [Fact]
+    public void ActiveBuildProjectsSuppressLegacySurveyOverlayGroup()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+                Parse(BodyInformationScan),
+                Parse("""{"event":"FSSBodySignals","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}]}"""),
+            ],
+            new EliteStatus
+            {
+                GuiFocus = GuiFocus.SystemMap,
+                Destination = new StatusDestination
+                {
+                    System = 42,
+                    Body = 1,
+                    Name = "Test 1",
+                },
+            });
+        viewModel.SuppressForActiveBuildProjects = true;
+
+        Assert.True(viewModel.ShouldShowBodyInfo);
+        Assert.True(viewModel.ShouldShowBioSystem);
+
+        viewModel.SetActiveBuildProjects(true);
+
+        Assert.False(viewModel.ShouldShowBodyInfo);
+        Assert.False(viewModel.ShouldShowBioSystem);
+        Assert.True(viewModel.ShouldSuppressForActiveBuildProjects);
     }
 
     public void Dispose()

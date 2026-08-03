@@ -36,7 +36,8 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
     private string destinationResult = "No Galaxy Map destination selected";
     private bool isDestinationInside;
     private bool isDestinationUnknown;
-    private GuiFocus lastGuiFocus;
+    private EliteStatus? status;
+    private string? musicTrack;
     private long destinationSystemAddress;
     private GalacticCoordinate? resolvedDestinationPosition;
     private NavRouteSnapshot? latestNavRoute;
@@ -164,8 +165,11 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     public bool IsActive => state.IsActive;
 
-    public bool ShouldShowGalaxyMapOverlay =>
-        lastGuiFocus == GuiFocus.GalaxyMap && state.IsActive;
+    public bool ShouldShowGalaxyMapOverlay => IsGalaxyMapOpen && state.IsActive;
+
+    private bool IsGalaxyMapOpen => OverlayGameModeResolver.Resolve(
+        status,
+        musicTrack: musicTrack) == OverlayGameMode.GalaxyMap;
 
     public string DestinationSystemName
     {
@@ -293,18 +297,21 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
     public async Task UpdateNavigationAsync(
         NavRouteSnapshot? navRoute,
-        EliteStatus? status)
+        EliteStatus? nextStatus,
+        string? nextMusicTrack = null)
     {
         if (navRoute is not null)
         {
             latestNavRoute = navRoute;
         }
 
-        if (status is not null)
+        if (nextStatus is not null)
         {
-            lastGuiFocus = status.GuiFocus;
-            OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
+            status = nextStatus;
         }
+
+        musicTrack = nextMusicTrack;
+        OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
 
         var routeDestination = latestNavRoute?.Route.Count > 1
             ? latestNavRoute.Route[^1]

@@ -57,11 +57,17 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
     public void Update(
         IReadOnlyList<QuestRuntimeSnapshot> quests,
         EliteStatus? status,
-        bool enabled)
+        bool enabled,
+        string? musicTrack = null)
     {
         ArgumentNullException.ThrowIfNull(quests);
         var firstQuest = quests.FirstOrDefault();
-        ShouldShow = enabled && firstQuest is not null;
+        var mode = OverlayGameModeResolver.Resolve(
+            status,
+            musicTrack: musicTrack);
+        ShouldShow = enabled
+            && firstQuest is not null
+            && IsVisibleMode(mode);
         QuestTitle = firstQuest?.Title ?? string.Empty;
         var unread = quests.Sum(quest => quest.UnreadMessageCount);
         HasUnreadMessages = unread > 0;
@@ -84,6 +90,25 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
             .Where(location => location is not null)
             .Select(location => location!)
             .ToArray();
+    }
+
+    private static bool IsVisibleMode(OverlayGameMode mode)
+    {
+        return mode is OverlayGameMode.Flying
+            or OverlayGameMode.SuperCruising
+            or OverlayGameMode.GlideMode
+            or OverlayGameMode.InSrv
+            or OverlayGameMode.OnFoot
+            or OverlayGameMode.OnFootInStation
+            or OverlayGameMode.InTaxi
+            or OverlayGameMode.CommsPanel
+            or OverlayGameMode.InFighter
+            or OverlayGameMode.Docked
+            or OverlayGameMode.Landed
+            or OverlayGameMode.FsdJumping
+            or OverlayGameMode.StationServices
+            or OverlayGameMode.ExternalPanel
+            or OverlayGameMode.InternalPanel;
     }
 
     private static QuestIndicatorLocationViewModel? CreateLocation(

@@ -20,6 +20,7 @@ public sealed class OverlayCoverageInventoryTests
             ["PlotGalMap"] = "GalaxyMapOverlayWindow.axaml",
             ["PlotGrounded"] = "SurfaceSurveyOverlayWindow.axaml",
             ["PlotGuardians"] = "GuardianOverlayWindow.axaml",
+            ["PlotGuardianStatus"] = "GuardianStatusOverlayWindow.axaml",
             ["PlotGuardianSystem"] = "GuardianSystemOverlayWindow.axaml",
             ["PlotHumanSite"] = "HumanSiteOverlayWindow.axaml",
             ["PlotJumpInfo"] = "JumpInfoOverlayWindow.axaml",
@@ -92,7 +93,7 @@ public sealed class OverlayCoverageInventoryTests
             "tests/SrvSurvey.Desktop.Tests/ViewModels/GuardianOverlayViewModelTests.cs",
             "tests/SrvSurvey.Desktop.Tests/ViewModels/GuardianViewModelTests.cs",
         ]),
-        Map("PlotGuardianStatus", ["src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml"], [
+        Map("PlotGuardianStatus", ["src/SrvSurvey.Desktop/GuardianStatusOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/GuardianViewModelTests.cs",
         ]),
         Map("PlotGuardianSystem", ["src/SrvSurvey.Desktop/GuardianSystemOverlayWindow.axaml"], [

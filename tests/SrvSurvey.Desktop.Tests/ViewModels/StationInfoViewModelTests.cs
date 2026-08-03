@@ -51,7 +51,15 @@ public sealed class StationInfoViewModelTests
         Assert.True(viewModel.ToggleForcedVisibility());
         Assert.True(viewModel.IsForced);
         Assert.True(viewModel.ShouldShow);
+        viewModel.UpdateMusicTrack("GalaxyMap");
+        Assert.True(viewModel.ShouldShow);
         Assert.True(viewModel.ToggleForcedVisibility());
+        Assert.False(viewModel.ShouldShow);
+
+        Assert.True(viewModel.ToggleForcedVisibility());
+        Assert.True(viewModel.IsForced);
+        await viewModel.UpdateCurrentSystemAsync("Next", 43);
+        Assert.False(viewModel.IsForced);
         Assert.False(viewModel.ShouldShow);
     }
 
@@ -71,6 +79,20 @@ public sealed class StationInfoViewModelTests
             "Raven Port",
             GuiFocus.ExternalPanel,
             systemAddress: 99));
+        Assert.False(viewModel.ShouldShow);
+    }
+
+    [Fact]
+    public async Task DisabledAutomaticSettingAlsoDisablesForcedOverlay()
+    {
+        using var viewModel = new StationInfoViewModel(
+            new FakeSummaryClient(Summary()));
+        await viewModel.UpdateCurrentSystemAsync("Test", 42);
+        viewModel.UpdateStatus(Status("Raven Port", GuiFocus.NoFocus));
+        viewModel.AutoShow = false;
+
+        Assert.False(viewModel.ToggleForcedVisibility());
+        Assert.False(viewModel.IsForced);
         Assert.False(viewModel.ShouldShow);
     }
 

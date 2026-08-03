@@ -2,6 +2,7 @@ using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -20,6 +21,48 @@ public sealed class GuardianViewModelTests
         Assert.Contains(
             expected,
             GuardianViewModel.GetGuardianBlueprintText(siteType));
+    }
+
+    [Theory]
+    [InlineData("Alpha", "$Ancient:#index=1;", "alpha-heading-guide.png")]
+    [InlineData("Beta", "$Ancient:#index=1;", "beta-heading-guide.png")]
+    [InlineData("Gamma", "$Ancient:#index=1;", "gamma-heading-guide.png")]
+    [InlineData("Crossroads", "$Ancient:#index=1;", "crossroads-heading-guide.png")]
+    [InlineData("Fistbump", "$Ancient:#index=1;", "fistbump-heading-guide.png")]
+    [InlineData("Lacrosse", "$Ancient:#index=1;", "lacrosse-heading-guide.png")]
+    [InlineData("Unknown", "$Ancient_Medium:#index=1;", "data-port-heading-guide.png")]
+    [InlineData("Unknown", "$Ancient_Small:#index=1;", "data-port-heading-guide.png")]
+    public void HeadingGuidanceSelectsTheLegacySiteAsset(
+        string siteType,
+        string siteName,
+        string expected)
+    {
+        Assert.EndsWith(
+            expected,
+            GuardianViewModel.GetHeadingGuideAssetPath(siteType, siteName));
+    }
+
+    [Theory]
+    [InlineData("ancientbiologicaldata")]
+    [InlineData("ancientlanguagedata")]
+    [InlineData("ancientculturaldata")]
+    [InlineData("ancienttechnologicaldata")]
+    [InlineData("ancienthistoricaldata")]
+    public void GuardianEncodedMaterialCapacityMatchesLegacySet(string name)
+    {
+        Assert.True(GuardianViewModel.HasFullGuardianEncodedMaterial(Parse(
+            $$"""{"event":"Materials","Encoded":[{"Name":"{{name}}","Count":150}]}""")));
+        Assert.False(GuardianViewModel.HasFullGuardianEncodedMaterial(Parse(
+            $$"""{"event":"Materials","Encoded":[{"Name":"{{name}}","Count":149}]}""")));
+    }
+
+    [Theory]
+    [InlineData("B1", "Biology #1")]
+    [InlineData("C20", "Culture #20")]
+    [InlineData("#1", "#1")]
+    public void RamTahLogNamesMatchLegacyFormatting(string code, string expected)
+    {
+        Assert.Equal(expected, GuardianViewModel.GetLogDisplayName(code));
     }
 
     [Theory]
@@ -255,13 +298,13 @@ public sealed class GuardianViewModelTests
                 GuardianSiteKind.Ruins,
                 "Ruins",
                 1,
-                new GalacticCoordinate(0, 0, 0));
+                new GalacticCoordinate(0, 0, 0)) with { SiteType = "Beta" };
             var structure = CreateReference(
                 2,
                 GuardianSiteKind.Structure,
                 "Structure",
                 2,
-                new GalacticCoordinate(1, 0, 0));
+                new GalacticCoordinate(1, 0, 0)) with { SiteType = "Bowl" };
             var published = new GuardianPublishedSiteCatalog(
             [
                 CreatePublishedSite(
@@ -308,6 +351,15 @@ public sealed class GuardianViewModelTests
             Assert.Empty(
                 viewModel.Rows.Single(row => row.Reference == structure).RamTahLogCodes);
 
+            viewModel.UpdateCurrentSystem("Ruins", ruins.Position);
+            var systemRuins = Assert.Single(viewModel.CurrentSystemSites);
+            Assert.Equal(["B1"], systemRuins.RamTahLogCodes);
+            Assert.False(systemRuins.HasBlueprint);
+            viewModel.UpdateCurrentSystem("Structure", structure.Position);
+            var systemStructure = Assert.Single(viewModel.CurrentSystemSites);
+            Assert.True(systemStructure.HasBlueprint);
+            Assert.Contains("Weapon blueprint", systemStructure.BlueprintText);
+
             viewModel.FilterText = "Biology #1";
             Assert.Equal(ruins, Assert.Single(viewModel.Rows).Reference);
             Assert.True(viewModel.HasSelectedSurvey);
@@ -327,7 +379,7 @@ public sealed class GuardianViewModelTests
     }
 
     [Fact]
-    public void GuardianSystemSummaryUsesLegacyModesAndDestinationState()
+    public async Task GuardianSystemSummaryUsesLegacyModesAndDestinationState()
     {
         var root = CreateTemporaryDirectory();
         try
@@ -350,9 +402,17 @@ public sealed class GuardianViewModelTests
 
             Assert.True(viewModel.ShouldShowGuardianSystemSummary);
             Assert.NotEmpty(viewModel.CurrentSystemSites);
+            Assert.Same(
+                viewModel.CurrentSystemSites,
+                viewModel.CurrentSystemSites);
             Assert.Contains(
                 viewModel.CurrentSystemSites,
                 row => row.Reference == target.Reference && row.IsDestination);
+
+            viewModel.AutoShowGuardianSummary = false;
+            Assert.False(viewModel.ShouldShowGuardianSystemSummary);
+            viewModel.AutoShowGuardianSummary = true;
+            Assert.True(viewModel.ShouldShowGuardianSystemSummary);
 
             viewModel.SuppressForActiveBuildProjects = true;
             viewModel.SetActiveBuildProjects(true);
@@ -363,6 +423,17 @@ public sealed class GuardianViewModelTests
             Assert.False(viewModel.ShouldShowGuardianSystemSummary);
 
             viewModel.SetSystemSummaryObscured(false);
+            viewModel.UpdateStatus(new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip,
+            });
+            Assert.False(viewModel.ShouldShowGuardianSystemSummary);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"Music","MusicTrack":"SystemMap"}""")],
+                null);
+            Assert.True(viewModel.ShouldShowGuardianSystemSummary);
+
             viewModel.UpdateStatus(new EliteStatus
             {
                 Flags = StatusFlags.InMainShip,
@@ -422,6 +493,14 @@ public sealed class GuardianViewModelTests
 
             Assert.Equal("3515254557027", copied);
             Assert.Contains("Copied system address", viewModel.StatusMessage);
+
+            await viewModel.CopyBodyNameAsync();
+            Assert.Equal("Synuefe XR-H d11-102 1 b", copied);
+            Assert.Contains("Copied body name", viewModel.StatusMessage);
+
+            await viewModel.CopyNotesAsync();
+            Assert.Equal("commander note", copied);
+            Assert.Contains("Copied commander notes", viewModel.StatusMessage);
         }
         finally
         {
@@ -551,6 +630,174 @@ public sealed class GuardianViewModelTests
     }
 
     [Fact]
+    public void SiteBrowserRestoresLegacyImageIndicatorAndColumnSorting()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var screenshotRoot = Path.Combine(root, "screenshots");
+            var alpha = CreateReference(
+                1,
+                GuardianSiteKind.Structure,
+                "Alpha",
+                1,
+                new GalacticCoordinate(0, 0, 0));
+            var zulu = CreateReference(
+                2,
+                GuardianSiteKind.Structure,
+                "Zulu",
+                2,
+                new GalacticCoordinate(1, 0, 0));
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([alpha, zulu]),
+                new GuardianPublishedSiteCatalog([]),
+                new GuardianSiteTemplateCatalog([]),
+                screenshotTargetFolderProvider: () => screenshotRoot);
+
+            Assert.All(viewModel.Rows, row => Assert.False(row.HasImages));
+            var zuluFolder = Path.Combine(screenshotRoot, zulu.SystemName);
+            Directory.CreateDirectory(zuluFolder);
+            File.WriteAllText(
+                Path.Combine(
+                    zuluFolder,
+                    $"{zulu.FullBodyName} (2026-08-03 120000), {zulu.SiteType}.png"),
+                string.Empty);
+
+            viewModel.RefreshScreenshotAvailability();
+            Assert.True(viewModel.Rows.Single(row =>
+                row.Reference == zulu).HasImages);
+            Assert.False(viewModel.Rows.Single(row =>
+                row.Reference == alpha).HasImages);
+
+            viewModel.SortSitesCommand.Execute("Images");
+            Assert.False(viewModel.Rows[0].HasImages);
+            viewModel.SortSitesCommand.Execute("Images");
+            Assert.True(viewModel.Rows[0].HasImages);
+            Assert.Contains("images descending", viewModel.SortStatusText);
+
+            viewModel.SortSitesCommand.Execute("Id");
+            Assert.Equal(alpha, viewModel.Rows[0].Reference);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task PublishedSiteHydratesLiveSurveyAndCodexMarksNearbyRelic()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference();
+            var published = CreatePublishedSite(reference, []) with
+            {
+                SiteHeading = 90,
+                ObeliskGroups = "A",
+            };
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([reference]),
+                new GuardianPublishedSiteCatalog([published]),
+                new GuardianSiteTemplateCatalog(
+                [
+                    new GuardianSiteTemplate(
+                        "Test",
+                        "Test",
+                        string.Empty,
+                        new GuardianMapPoint(0, 0),
+                        1,
+                        [
+                            new GuardianPointOfInterest(
+                                "t1",
+                                GuardianPoiType.Relic,
+                                90,
+                                10,
+                                0),
+                        ],
+                        [],
+                        new Dictionary<string, GuardianMapPoint>()),
+                ]));
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}""")],
+                "Drew");
+
+            Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
+            Assert.Equal("Test", viewModel.ResolvedActiveSiteType);
+            var saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            Assert.Equal(90, Assert.Single(saved.Surveys).Survey.SiteHeading);
+            Assert.Contains('A', Assert.Single(saved.Surveys).ObeliskGroups);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(10));
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"CodexEntry","Name":"$Codex_Ent_Unknown_Name;"}""")],
+                "Drew");
+            saved = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            Assert.Equal(
+                GuardianPoiStatus.Present,
+                Assert.Single(saved.Surveys).Survey.PoiStatuses["t1"]);
+
+            viewModel.UpdateStatus(StatusNorthOfSite(10) with
+            {
+                Flags = StatusFlags.HasLatLong,
+                Flags2 = StatusFlags2.OnFoot
+                    | StatusFlags2.OnFootOnPlanet
+                    | StatusFlags2.OnFootExterior,
+                SelectedWeapon = "$humanoid_companalyser_name;",
+            });
+            Assert.True(viewModel.IsGuardianOnFootRelicVisible);
+            Assert.False(viewModel.IsGuardianPoiChoiceVisible);
+            Assert.Contains("RELIC TOWER", viewModel.GuardianStatusTitle);
+            Assert.Contains("shields", viewModel.GuardianOnFootFooter);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task GuardianBeaconCodexEntryCreatesCommanderBeaconVisit()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([]),
+                new GuardianPublishedSiteCatalog([]),
+                new GuardianSiteTemplateCatalog([]));
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"timestamp":"2026-08-03T12:00:00Z","event":"CodexEntry","Name":"$Codex_Ent_Guardian_Beacons_Name;","System":"Test System","SystemAddress":42,"BodyID":7,"BodyName":"Test System A 1","Latitude":1.25,"Longitude":-2.5}""")],
+                "Drew");
+
+            var data = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            var beacon = Assert.Single(data.Beacons);
+            Assert.Equal("Test System", beacon.SystemName);
+            Assert.Equal(
+                new GuardianSurfaceLocation(1.25, -2.5),
+                Assert.Single(beacon.ScannedLocations).Value);
+            Assert.Contains(viewModel.Rows, row =>
+                row.Reference.DisplayId == "GB LOCAL"
+                && row.Visit.HasCommanderData);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public async Task DoubleCockpitModeToggleSavesGuardianHeadingOnlyWhenLive()
     {
         var root = CreateTemporaryDirectory();
@@ -631,6 +878,101 @@ public sealed class GuardianViewModelTests
             saved = await new GuardianCommanderDataReader(root)
                 .ReadAsync("F123", isOdyssey: true);
             Assert.Equal(90, Assert.Single(saved.Surveys).Survey.SiteHeading);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"SendText","Message":".heading 0"}""")],
+                "Drew");
+            Assert.Equal(GuardianLiveMapMode.Heading, viewModel.LiveMapMode);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"SendText","Message":".map"}""")],
+                "Drew");
+            Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void ConfiguredGuardianGestureIsReflectedByOverlayGuidance()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var viewModel = new GuardianViewModel(
+                root,
+                gesturePreferences: new GuardianGesturePreferences(
+                    StatusFlags.LightsOn,
+                    1_500));
+
+            viewModel.UpdateStatus(new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip,
+            });
+            Assert.Contains("lights", viewModel.BlinkGestureText);
+
+            viewModel.UpdateStatus(new EliteStatus
+            {
+                Flags2 = StatusFlags2.OnFoot
+                    | StatusFlags2.OnFootExterior,
+            });
+            Assert.Contains("shields", viewModel.BlinkGestureText);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task StatusOverlayKeepsNearbyObeliskVisibleOutsideScanRange()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference();
+            var obelisk = new GuardianObelisk("A01", "H1", false, ["ca"]);
+            var published = CreatePublishedSite(reference, [obelisk]) with
+            {
+                SiteHeading = 90,
+            };
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([reference]),
+                new GuardianPublishedSiteCatalog([published]),
+                new GuardianSiteTemplateCatalog(
+                [
+                    new GuardianSiteTemplate(
+                        "Test",
+                        "Test",
+                        string.Empty,
+                        new GuardianMapPoint(0, 0),
+                        1,
+                        [
+                            new GuardianPointOfInterest(
+                                "A01",
+                                GuardianPoiType.Obelisk,
+                                180,
+                                10,
+                                0),
+                        ],
+                        [],
+                        new Dictionary<string, GuardianMapPoint>()),
+                ]));
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}""")],
+                "Drew");
+
+            viewModel.UpdateStatus(StatusEastOfSite(40));
+
+            Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
+            Assert.Null(viewModel.CurrentObelisk);
+            Assert.True(viewModel.IsGuardianObeliskVisible);
+            Assert.Contains("A01", viewModel.GuardianStatusObeliskTitle);
+            Assert.Contains("25 m", viewModel.GuardianStatusObeliskFooter);
         }
         finally
         {
@@ -726,6 +1068,15 @@ public sealed class GuardianViewModelTests
 
             Assert.Equal("A01", viewModel.CurrentObelisk?.Name);
             Assert.True(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.True(viewModel.ShouldShowGuardianStatusOverlay);
+            Assert.True(viewModel.IsLiveStatusVisible);
+            viewModel.SetLiveStatusObscured(true);
+            Assert.False(viewModel.IsLiveStatusVisible);
+            Assert.True(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.False(viewModel.ShouldShowGuardianStatusOverlay);
+            viewModel.SetLiveStatusObscured(false);
+            Assert.True(viewModel.IsLiveStatusVisible);
+            Assert.True(viewModel.ShouldShowGuardianStatusOverlay);
             Assert.Equal(3, viewModel.ActiveMapScale);
             Assert.True(viewModel.IsAutomaticMapZoom);
             Assert.Contains("0.0 m", viewModel.NearbyPointText);
@@ -734,12 +1085,63 @@ public sealed class GuardianViewModelTests
             Assert.True(viewModel.MapProjection?.Points.Single().IsActiveObelisk);
             Assert.True(viewModel.ActiveMapProjection?.Points.Single().IsActiveObelisk);
             Assert.True(viewModel.ShouldShowRamTahOverlay);
+            viewModel.AutoShowRamTah = false;
+            Assert.False(viewModel.ShouldShowRamTahOverlay);
+            viewModel.AutoShowRamTah = true;
+            Assert.True(viewModel.ShouldShowRamTahOverlay);
+            viewModel.EnableGuardianSites = false;
+            Assert.False(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.False(viewModel.ShouldShowGuardianStatusOverlay);
+            Assert.False(viewModel.ShouldShowRamTahOverlay);
+            viewModel.EnableGuardianSites = true;
+            Assert.True(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.True(viewModel.ShouldShowGuardianStatusOverlay);
+            Assert.True(viewModel.ShouldShowRamTahOverlay);
+            viewModel.UpdateStatus(StatusNorthOfSite(10) with
+            {
+                GuiFocus = GuiFocus.RolePanel,
+            });
+            Assert.True(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.True(viewModel.ShouldShowGuardianStatusOverlay);
+            Assert.False(viewModel.ShouldShowRamTahOverlay);
+            viewModel.UpdateStatus(StatusNorthOfSite(10) with
+            {
+                GuiFocus = GuiFocus.InternalPanel,
+            });
+            Assert.False(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.False(viewModel.ShouldShowGuardianStatusOverlay);
+            Assert.True(viewModel.ShouldShowRamTahOverlay);
+            viewModel.UpdateStatus(StatusNorthOfSite(10));
             Assert.True(viewModel.SurveyEditor.HasLiveMeasurement);
             Assert.Contains("10.0 m from origin", viewModel.SurveyEditor.LiveMeasurementText);
             var ramTahLog = Assert.Single(viewModel.CurrentRamTahLogs);
+            Assert.Same(
+                viewModel.CurrentRamTahLogs,
+                viewModel.CurrentRamTahLogs);
             Assert.Equal("H1", ramTahLog.LogCode);
             Assert.Equal("MISSING", ramTahLog.ArtifactStatus);
             Assert.Equal("A01", ramTahLog.ObeliskNamesText);
+            Assert.True(ramTahLog.IsCurrentObelisk);
+            Assert.False(ramTahLog.IsTargetObelisk);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"SendText","Message":".to A01"}""")],
+                "Drew");
+            Assert.True(Assert.Single(
+                viewModel.CurrentRamTahLogs).IsTargetObelisk);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"Materials","Encoded":[{"Name":"ancientbiologicaldata","Count":150}]}""")],
+                "Drew");
+            Assert.True(viewModel.AreGuardianEncodedMaterialsFull);
+            Assert.True(viewModel.HasGuardianMaterialCapacityWarning);
+            viewModel.UpdateOverlayAnimation(DateTimeOffset.UnixEpoch);
+            var firstCapacityWarning = viewModel.GuardianMaterialCapacityWarning;
+            viewModel.UpdateOverlayAnimation(
+                DateTimeOffset.UnixEpoch.AddMilliseconds(750));
+            Assert.NotEqual(
+                firstCapacityWarning,
+                viewModel.GuardianMaterialCapacityWarning);
 
             await viewModel.ApplyJournalEventsAsync(
                 [Parse("""{"event":"CollectCargo","Type":"ancientcasket"}""")],
@@ -809,9 +1211,23 @@ public sealed class GuardianViewModelTests
                 "READY",
                 Assert.Single(viewModel.CurrentRamTahLogs).ArtifactStatus);
             await viewModel.ToggleCurrentObeliskScannedAsync();
-            await viewModel.ToggleCurrentObeliskScannedAsync();
+            Assert.False(viewModel.CurrentObelisk?.Scanned);
+            ramTah.LoadProfile(
+                "F123",
+                "Drew",
+                true,
+                RamTahSnapshot.Empty);
+            await viewModel.ApplyJournalEventsAsync(
+            [
+                Parse(
+                    """{"event":"MissionAccepted","Name":"Mission_TheDead_name"}"""),
+                Parse(
+                    """{"event":"MaterialCollected","Name":"guardian_powercell","Count":1}"""),
+            ],
+            "Drew");
 
             Assert.True(viewModel.CurrentObelisk?.Scanned);
+            Assert.True(ramTah.IsAncientRuinsMissionActive);
             Assert.True(ramTah.IsLogCompleted(RamTahMission.AncientRuins, "H1"));
             Assert.Empty(viewModel.CurrentRamTahLogs);
             var saved = await new GuardianCommanderDataReader(root)
@@ -899,6 +1315,9 @@ public sealed class GuardianViewModelTests
                 [Parse("""{"event":"SendText","Message":".aerial"}""")],
                 "Drew");
             Assert.Equal(GuardianLiveMapMode.Origin, viewModel.LiveMapMode);
+            Assert.True(viewModel.IsGuardianOriginVisible);
+            Assert.False(viewModel.IsGuardianNoPointVisible);
+            Assert.Equal("ALIGN SITE ORIGIN", viewModel.GuardianStatusTitle);
             viewModel.UpdateStatus(StatusNorthOfSite(20) with
             {
                 Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip,
@@ -919,14 +1338,17 @@ public sealed class GuardianViewModelTests
             });
             Assert.Equal(0.1, viewModel.AlignmentOpacity, precision: 6);
             Assert.True(viewModel.IsGlideApproach);
-            Assert.True(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.False(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.True(viewModel.ShouldShowGuardianStatusOverlay);
             Assert.Contains("RUINS", viewModel.GlideApproachTitle);
             Assert.Contains("Alpha", viewModel.GlideApproachText);
             viewModel.SuppressForActiveBuildProjects = true;
             viewModel.SetActiveBuildProjects(true);
             Assert.False(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.False(viewModel.ShouldShowGuardianStatusOverlay);
             viewModel.SetActiveBuildProjects(false);
-            Assert.True(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.False(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.True(viewModel.ShouldShowGuardianStatusOverlay);
             viewModel.ShowAerialAlignmentGrid = false;
             Assert.False(viewModel.IsAlignmentVisible);
             viewModel.ShowAerialAlignmentGrid = true;
@@ -939,6 +1361,7 @@ public sealed class GuardianViewModelTests
                 Altitude = 1_000,
             });
             Assert.False(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.False(viewModel.ShouldShowGuardianStatusOverlay);
 
             viewModel.UpdateStatus(StatusNorthOfSite(20) with
             {
@@ -946,7 +1369,8 @@ public sealed class GuardianViewModelTests
                 Flags2 = StatusFlags2.GlideMode,
                 Altitude = 1_000,
             });
-            Assert.True(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.False(viewModel.ShouldShowLiveSiteOverlay);
+            Assert.True(viewModel.ShouldShowGuardianStatusOverlay);
 
             await viewModel.ApplyJournalEventsAsync(
             [
@@ -956,13 +1380,90 @@ public sealed class GuardianViewModelTests
             "Drew");
             Assert.Equal(GuardianLiveMapMode.Map, viewModel.LiveMapMode);
 
-            await viewModel.ApplyJournalEventsAsync(
-                [Parse("""{"timestamp":"2026-07-24T10:10:00Z","event":"SupercruiseEntry"}""")],
+            var screenshot = Parse(
+                """{"timestamp":"2026-07-24T10:09:59Z","event":"Screenshot","Filename":"Screenshot_0001.bmp","System":"Test","Body":"Test A 1","Latitude":0,"Longitude":0,"Altitude":1200}""");
+            var screenshotContexts = await viewModel.ApplyJournalEventsAsync(
+                [
+                    screenshot,
+                    Parse("""{"timestamp":"2026-07-24T10:10:00Z","event":"SupercruiseEntry"}"""),
+                ],
                 "Drew");
 
+            var screenshotContext = Assert.Single(screenshotContexts).Value;
+            Assert.Equal(GuardianSiteKind.Ruins, screenshotContext.SiteKind);
+            Assert.Equal(1, screenshotContext.SiteIndex);
+            Assert.Equal("Test", screenshotContext.SiteType);
+            Assert.Equal("Ancient Ruins (1)", screenshotContext.SiteName);
             Assert.Null(viewModel.CurrentObelisk);
             Assert.Null(viewModel.Proximity);
             Assert.Null(viewModel.TargetObeliskName);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task LegacyPointStatusCommandsPersistPresentAbsentAndEmpty()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference() with { SiteHeading = 90 };
+            var published = CreatePublishedSite(reference, []) with
+            {
+                SiteHeading = 90,
+            };
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([reference]),
+                new GuardianPublishedSiteCatalog([published]),
+                new GuardianSiteTemplateCatalog(
+                [
+                    new GuardianSiteTemplate(
+                        "Test",
+                        "Test",
+                        string.Empty,
+                        new GuardianMapPoint(0, 0),
+                        1,
+                        [
+                            new GuardianPointOfInterest(
+                                "p1",
+                                GuardianPoiType.Orb,
+                                0,
+                                0,
+                                0),
+                        ],
+                        [],
+                        new Dictionary<string, GuardianMapPoint>()),
+                ]));
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","Name_Localised":"Ancient Ruins (1)","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}""")],
+                "Drew");
+            viewModel.UpdateStatus(StatusNorthOfSite(0));
+            Assert.Equal("p1", viewModel.Proximity?.NearestPoint?.Point.Name);
+
+            foreach (var (command, expected) in new[]
+                     {
+                         (".p", GuardianPoiStatus.Present),
+                         (".m", GuardianPoiStatus.Absent),
+                         (".e", GuardianPoiStatus.Empty),
+                     })
+            {
+                await viewModel.ApplyJournalEventsAsync(
+                    [Parse($$"""{"event":"SendText","Message":"{{command}}"}""")],
+                    "Drew");
+                var saved = await new GuardianCommanderDataReader(
+                        root,
+                        new GuardianPublishedSiteCatalog([published]))
+                    .ReadAsync("F123", isOdyssey: true);
+                Assert.Equal(
+                    expected,
+                    Assert.Single(saved.Surveys).Survey.PoiStatuses["p1"]);
+            }
         }
         finally
         {
@@ -1058,6 +1559,18 @@ public sealed class GuardianViewModelTests
             Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
             Latitude = distance / radius * 180 / Math.PI,
             Longitude = 0,
+            PlanetRadius = (decimal)radius,
+        };
+    }
+
+    private static EliteStatus StatusEastOfSite(double distance)
+    {
+        const double radius = 1_000_000;
+        return new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong | StatusFlags.InSrv,
+            Latitude = 0,
+            Longitude = distance / radius * 180 / Math.PI,
             PlanetRadius = (decimal)radius,
         };
     }

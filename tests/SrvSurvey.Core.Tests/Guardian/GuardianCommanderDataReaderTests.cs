@@ -123,7 +123,7 @@ public sealed class GuardianCommanderDataReaderTests
                 {
                   "type":"Alpha","index":1,"systemAddress":1,"bodyId":2,
                   "poiStatus":{"p1":"present","p2":2},
-                  "activeObelisks":{"A01":{"msg":"H1","scanned":true}},
+                  "activeObelisks":{"A01":{"msg":"#1","scanned":true}},
                   "obeliskGroups":["A","B"]
                 }
                 """);
@@ -144,10 +144,58 @@ public sealed class GuardianCommanderDataReaderTests
             var first = result.Surveys.Single(survey => survey.SystemAddress == 1);
             Assert.Equal(GuardianPoiStatus.Present, first.Survey.PoiStatuses["p1"]);
             Assert.Equal(GuardianPoiStatus.Absent, first.Survey.PoiStatuses["p2"]);
-            Assert.True(Assert.Single(first.ActiveObelisks).Scanned);
+            var migratedObelisk = Assert.Single(first.ActiveObelisks);
+            Assert.True(migratedObelisk.Scanned);
+            Assert.Equal(["se", "cy"], migratedObelisk.ItemCodes);
             var second = result.Surveys.Single(survey => survey.SystemAddress == 2);
             Assert.Equal(GuardianPoiStatus.Present, second.Survey.PoiStatuses["p3"]);
             Assert.Equal(GuardianPoiStatus.Absent, second.Survey.PoiStatuses["p4"]);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task OldObeliskRequirementsUseTheInjectedPublishedCatalog()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var folder = Path.Combine(root, "guardian", "F123");
+            Directory.CreateDirectory(folder);
+            await File.WriteAllTextAsync(
+                Path.Combine(folder, "custom-ruins-1.json"),
+                """
+                {"type":"Alpha","index":1,"systemAddress":1,"bodyId":2,
+                 "activeObelisks":{"A01":{"msg":"CUSTOM","scanned":false}}}
+                """);
+            var published = new GuardianPublishedSiteCatalog(
+            [
+                new GuardianPublishedSite(
+                    99,
+                    GuardianSiteKind.Ruins,
+                    "Custom A 1",
+                    "Alpha",
+                    1,
+                    0,
+                    -1,
+                    null,
+                    new Dictionary<string, GuardianPoiStatus>(),
+                    new Dictionary<string, int>(),
+                    [new GuardianObelisk("A01", "CUSTOM", false, ["ca", "ca"])],
+                    string.Empty,
+                    "custom.json"),
+            ]);
+
+            var result = await new GuardianCommanderDataReader(root, published)
+                .ReadAsync("F123", isOdyssey: true);
+
+            Assert.Equal(
+                ["ca", "ca"],
+                Assert.Single(Assert.Single(result.Surveys).ActiveObelisks)
+                    .ItemCodes);
         }
         finally
         {
@@ -244,6 +292,66 @@ public sealed class GuardianCommanderDataReaderTests
         Assert.Equal(target.SurveyProgress, visit.SurveyProgress);
         Assert.False(visit.IsSurveyComplete);
         Assert.NotNull(visit.Completion);
+    }
+
+    [Fact]
+    public void MergeIncludesCommanderOnlySitesAndBeacons()
+    {
+        var visitedAt = DateTimeOffset.Parse("2026-08-03T12:00:00Z");
+        var survey = new GuardianCommanderSiteSurvey(
+            "local-ruins.json",
+            "$Ancient:#index=4;",
+            "Ancient Ruins (4)",
+            "Drew",
+            visitedAt,
+            visitedAt,
+            "Alpha",
+            4,
+            42,
+            "Test System",
+            7,
+            "Test System A 1",
+            string.Empty,
+            false,
+            new GuardianSurveyData
+            {
+                SiteType = "Alpha",
+                SiteHeading = 90,
+                Location = new GuardianSurfaceLocation(1, 2),
+            },
+            [],
+            new HashSet<char>());
+        var beacon = new GuardianCommanderBeaconVisit(
+            "local-beacon.json",
+            visitedAt,
+            visitedAt,
+            "Test System",
+            42,
+            "Test System B 1",
+            8,
+            string.Empty,
+            false,
+            new Dictionary<DateTimeOffset, GuardianSurfaceLocation>
+            {
+                [visitedAt] = new GuardianSurfaceLocation(3, 4),
+            });
+
+        var merged = GuardianSiteVisitCatalog.Merge(
+            new GuardianSiteCatalog([]),
+            new GuardianCommanderDataReadResult([survey], [beacon], []),
+            new GuardianPublishedSiteCatalog([]),
+            new GuardianSurveyCompletionCalculator(
+                GuardianSiteTemplateCatalog.LoadEmbedded()));
+
+        Assert.Equal(2, merged.Visits.Count);
+        Assert.Contains(merged.Visits, visit =>
+            visit.Reference.DisplayId == "GR LOCAL"
+            && visit.Reference.Index == 4
+            && visit.HasCommanderData);
+        Assert.Contains(merged.Visits, visit =>
+            visit.Reference.DisplayId == "GB LOCAL"
+            && visit.RecordedObeliskOrLocationCount == 1
+            && visit.HasCommanderData);
     }
 
     private static string CreateTemporaryDirectory()
