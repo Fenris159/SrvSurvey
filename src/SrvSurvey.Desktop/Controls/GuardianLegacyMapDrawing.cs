@@ -69,63 +69,29 @@ internal static class GuardianLegacyMapDrawing
         GuardianPoiStatus status,
         bool isActiveObelisk = false)
     {
-        if (type is GuardianPoiType.Obelisk
-            or GuardianPoiType.BrokenObelisk)
+        return type switch
         {
-            return new GuardianLegacyPointStyle(
+            GuardianPoiType.Obelisk or GuardianPoiType.BrokenObelisk => new(
                 Colors.Transparent,
                 isActiveObelisk ? Cyan : DarkCyan,
                 0.5,
-                GuardianLegacyStrokePattern.Solid);
-        }
-
-        if (type == GuardianPoiType.Pylon)
-        {
-            return StatusStrokeStyle(status, 2);
-        }
-
-        if (type == GuardianPoiType.Component)
-        {
-            var color = status switch
-            {
-                GuardianPoiStatus.Present => Colors.Lime,
-                GuardianPoiStatus.Absent => MissingStroke,
-                GuardianPoiStatus.Empty => Colors.Yellow,
-                _ => Cyan,
-            };
-            return new GuardianLegacyPointStyle(
-                Colors.Transparent,
-                color,
-                1,
-                status == GuardianPoiStatus.Empty
-                    ? GuardianLegacyStrokePattern.Solid
-                    : GuardianLegacyStrokePattern.Dash);
-        }
-
-        if (type == GuardianPoiType.Relic)
-        {
-            return status == GuardianPoiStatus.Present
-                ? new GuardianLegacyPointStyle(
-                    RelicBlue,
-                    Cyan,
-                    2,
-                    GuardianLegacyStrokePattern.Solid)
-                : new GuardianLegacyPointStyle(
-                    MissingFill,
-                    MissingStroke,
-                    1,
-                    GuardianLegacyStrokePattern.Solid);
-        }
-
-        if (type == GuardianPoiType.DestructiblePanel)
-        {
-            return new GuardianLegacyPointStyle(
+                GuardianLegacyStrokePattern.Solid),
+            GuardianPoiType.Pylon => StatusStrokeStyle(status, 2),
+            GuardianPoiType.Component => GetComponentStyle(status),
+            GuardianPoiType.Relic => GetRelicStyle(status),
+            GuardianPoiType.DestructiblePanel => new(
                 Colors.Transparent,
                 Cyan,
                 1,
-                GuardianLegacyStrokePattern.Solid);
-        }
+                GuardianLegacyStrokePattern.Solid),
+            _ => GetArtifactStyle(type, status),
+        };
+    }
 
+    private static GuardianLegacyPointStyle GetArtifactStyle(
+        GuardianPoiType type,
+        GuardianPoiStatus status)
+    {
         if (status == GuardianPoiStatus.Unknown)
         {
             return new GuardianLegacyPointStyle(
@@ -187,6 +153,41 @@ internal static class GuardianLegacyMapDrawing
                 3,
                 GuardianLegacyStrokePattern.Solid),
         };
+    }
+
+    private static GuardianLegacyPointStyle GetComponentStyle(
+        GuardianPoiStatus status)
+    {
+        var color = status switch
+        {
+            GuardianPoiStatus.Present => Colors.Lime,
+            GuardianPoiStatus.Absent => MissingStroke,
+            GuardianPoiStatus.Empty => Colors.Yellow,
+            _ => Cyan,
+        };
+        return new GuardianLegacyPointStyle(
+            Colors.Transparent,
+            color,
+            1,
+            status == GuardianPoiStatus.Empty
+                ? GuardianLegacyStrokePattern.Solid
+                : GuardianLegacyStrokePattern.Dash);
+    }
+
+    private static GuardianLegacyPointStyle GetRelicStyle(
+        GuardianPoiStatus status)
+    {
+        return status == GuardianPoiStatus.Present
+            ? new GuardianLegacyPointStyle(
+                RelicBlue,
+                Cyan,
+                2,
+                GuardianLegacyStrokePattern.Solid)
+            : new GuardianLegacyPointStyle(
+                MissingFill,
+                MissingStroke,
+                1,
+                GuardianLegacyStrokePattern.Solid);
     }
 
     internal static double GetGlyphRotation(
@@ -258,11 +259,14 @@ internal static class GuardianLegacyMapDrawing
     internal static Color GetActiveObeliskEffectColor(
         GuardianProjectedPoint point)
     {
-        return point.IsRamTahNeededObelisk
-            ? Cyan
-            : point.IsScannedObelisk
-                ? Color.FromRgb(255, 111, 0)
-                : Colors.LightGray;
+        if (point.IsRamTahNeededObelisk)
+        {
+            return Cyan;
+        }
+
+        return point.IsScannedObelisk
+            ? Color.FromRgb(255, 111, 0)
+            : Colors.LightGray;
     }
 
     internal static double GetPuddleRadius(

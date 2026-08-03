@@ -236,7 +236,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     public bool ShowAppImageManualInstall =>
         IsUpdateAvailable && installer?.IsAppImage == true;
 
-    public string AppImageManualInstallInstructions =>
+    public static string AppImageManualInstallInstructions =>
         "Download the AppImage from this release, make it executable, replace your existing AppImage file, and launch it again.";
 
     public bool CanInstall => IsUpdateAvailable

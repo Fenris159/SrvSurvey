@@ -95,7 +95,7 @@
                          Text="AppImage manual update" />
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
-                         Text="{Binding ReleaseUpdates.AppImageManualInstallInstructions}" />
+                         Text="{x:Static vm:ReleaseUpdateViewModel.AppImageManualInstallInstructions}" />
             </StackPanel>
           </Border>
           <ProgressBar IsVisible="{Binding ReleaseUpdates.IsInstalling}"

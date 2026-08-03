@@ -115,7 +115,9 @@ public sealed class ReleaseUpdateViewModelTests
             Assert.False(viewModel.InstallCommand.CanExecute(null));
             Assert.Contains("AppImage is mounted read-only", viewModel.StatusMessage);
             Assert.Contains("Open releases", viewModel.StatusMessage);
-            Assert.Contains("replace your existing AppImage", viewModel.AppImageManualInstallInstructions);
+            Assert.Contains(
+                "replace your existing AppImage",
+                ReleaseUpdateViewModel.AppImageManualInstallInstructions);
             Assert.Empty(calls);
         }
         finally

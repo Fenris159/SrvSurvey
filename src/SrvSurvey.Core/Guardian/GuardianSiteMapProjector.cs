@@ -19,11 +19,7 @@ public sealed class GuardianSiteMapProjector
             .Where(point => IsVisible(point, obeliskGroups))
             .Select(point => ProjectPoint(
                 point,
-                survey?.PoiStatuses,
-                survey?.RawPointsOfInterest,
-                survey?.ComponentMaterials,
-                survey?.RelicHeadings,
-                survey?.RelicTowerHeading ?? -1,
+                survey,
                 IsRuins(template.SiteType),
                 activeObelisks,
                 neededRamTahLogCodes))
@@ -54,11 +50,7 @@ public sealed class GuardianSiteMapProjector
 
     private static GuardianProjectedPoint ProjectPoint(
         GuardianPointOfInterest point,
-        IReadOnlyDictionary<string, GuardianPoiStatus>? statuses,
-        IReadOnlyList<GuardianPointOfInterest>? rawPoints,
-        IReadOnlyDictionary<string, GuardianComponentLoadout>? components,
-        IReadOnlyDictionary<string, int>? relicHeadings,
-        int relicTowerHeading,
+        GuardianSurveyData? survey,
         bool isRuins,
         IReadOnlyList<GuardianObelisk>? activeObelisks,
         IReadOnlySet<string>? neededRamTahLogCodes)
@@ -68,35 +60,10 @@ public sealed class GuardianSiteMapProjector
             point.Name,
             StringComparison.OrdinalIgnoreCase));
         GuardianComponentLoadout? componentLoadout = null;
-        components?.TryGetValue(point.Name, out componentLoadout);
-        var status = statuses?.TryGetValue(point.Name, out var explicitStatus)
-            == true
-                ? explicitStatus
-                : rawPoints?.Any(raw => ReferenceEquals(raw, point)
-                    || string.Equals(
-                        raw.Name,
-                        point.Name,
-                        StringComparison.Ordinal)) == true
-                    ? GuardianPoiStatus.Present
-                    : point.Type == GuardianPoiType.DestructiblePanel
-                        && componentLoadout is not null
-                        && componentLoadout.GetItem(0)
-                            != GuardianComponentMaterial.Unknown
-                            ? GuardianPoiStatus.Present
-                            : point.Type == GuardianPoiType.EmptyPuddle
-                                ? GuardianPoiStatus.Empty
-                                : GuardianPoiStatus.Unknown;
-        var relicHeading = -1;
-        var hasIndividualRelicHeading = point.Type == GuardianPoiType.Relic
-            && relicHeadings?.TryGetValue(point.Name, out relicHeading) == true
-            && NormalizeHeading(relicHeading) >= 0;
-        var projectedRelicHeading = hasIndividualRelicHeading
-            ? NormalizeHeading(relicHeading)
-            : point.Type == GuardianPoiType.Relic
-                && isRuins
-                && NormalizeHeading(relicTowerHeading) >= 0
-                    ? NormalizeHeading(relicTowerHeading)
-                    : -1;
+        survey?.ComponentMaterials.TryGetValue(point.Name, out componentLoadout);
+        var status = ResolveStatus(point, survey, componentLoadout);
+        var (projectedRelicHeading, hasIndividualRelicHeading) =
+            ResolveRelicHeading(point, survey, isRuins);
         var location = ProjectPolar(point.Angle, point.Distance);
         return new GuardianProjectedPoint(
             point.Name,
@@ -116,6 +83,64 @@ public sealed class GuardianSiteMapProjector
             active is not null
                 && !string.IsNullOrWhiteSpace(active.LogCode)
                 && neededRamTahLogCodes?.Contains(active.LogCode) == true);
+    }
+
+    private static GuardianPoiStatus ResolveStatus(
+        GuardianPointOfInterest point,
+        GuardianSurveyData? survey,
+        GuardianComponentLoadout? componentLoadout)
+    {
+        if (survey?.PoiStatuses.TryGetValue(point.Name, out var explicitStatus)
+            == true)
+        {
+            return explicitStatus;
+        }
+
+        if (survey?.RawPointsOfInterest?.Any(raw => ReferenceEquals(raw, point)
+            || string.Equals(
+                raw.Name,
+                point.Name,
+                StringComparison.Ordinal)) == true)
+        {
+            return GuardianPoiStatus.Present;
+        }
+
+        if (point.Type == GuardianPoiType.DestructiblePanel
+            && componentLoadout is not null
+            && componentLoadout.GetItem(0) != GuardianComponentMaterial.Unknown)
+        {
+            return GuardianPoiStatus.Present;
+        }
+
+        return point.Type == GuardianPoiType.EmptyPuddle
+            ? GuardianPoiStatus.Empty
+            : GuardianPoiStatus.Unknown;
+    }
+
+    private static (int Heading, bool IsIndividual) ResolveRelicHeading(
+        GuardianPointOfInterest point,
+        GuardianSurveyData? survey,
+        bool isRuins)
+    {
+        if (point.Type != GuardianPoiType.Relic)
+        {
+            return (-1, false);
+        }
+
+        if (survey?.RelicHeadings.TryGetValue(point.Name, out var relicHeading)
+            == true)
+        {
+            var normalizedRelicHeading = NormalizeHeading(relicHeading);
+            if (normalizedRelicHeading >= 0)
+            {
+                return (normalizedRelicHeading, true);
+            }
+        }
+
+        var towerHeading = NormalizeHeading(survey?.RelicTowerHeading ?? -1);
+        return isRuins && towerHeading >= 0
+            ? (towerHeading, false)
+            : (-1, false);
     }
 
     private static GuardianProjectedGroup ProjectGroup(

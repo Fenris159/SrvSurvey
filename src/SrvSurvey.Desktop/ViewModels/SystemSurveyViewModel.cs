@@ -1647,6 +1647,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private void RefreshDisplay()
     {
+        var externalBiologyBodyIds = UseExternalData && AutoShowPriorScans
+            ? canonnBiologyBodyIds
+            : null;
         BiologySurvey = timedBiologyBodyId is { } selectedBodyId
             && IsBiologyMapMode(status)
             && utcNow() < timedBiologyExpiresAt
@@ -1675,9 +1678,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     BiologyRewardThresholds,
                     biologyPredictionEvaluator,
                     biologyCatalog,
-                    UseExternalData && AutoShowPriorScans
-                        ? canonnBiologyBodyIds
-                        : null);
+                    externalBiologyBodyIds);
         BiologyStatus = BiologyStatusViewModel.Create(
             snapshot,
             status,

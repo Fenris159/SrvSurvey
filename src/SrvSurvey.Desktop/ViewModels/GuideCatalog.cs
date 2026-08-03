@@ -6,6 +6,8 @@ public static class GuideCatalog
 {
     private const string AvaloniaResourceScheme = "avares";
     private const string DesktopAssemblyName = "SrvSurvey.Desktop";
+    private const string GuardianSiteMap = "Guardian site map";
+    private const string GuardianSiteMapLegend = "Guardian site map legend";
 
     public static IReadOnlyList<GuideCategoryViewModel> Create()
     {
@@ -616,19 +618,19 @@ public static class GuideCatalog
             Icon(GuideIconKind.RadarBookmark, "", "Surface bookmark", "A dot and radius mark one of the eight reusable tracked surface locations. Inactive bookmarks are dimmed.", "Grounded surface radar and mini-track"),
             Icon(GuideIconKind.GroundTarget, "", "Ground-target guidance", "The inner arrow is the ship heading; the radial line points toward the target. The lower angled line shows approach or attack angle.", "Ground target overlay"),
             Icon(GuideIconKind.JumpRoute, "", "Jump-route progress", "Connected nodes show completed, current, and remaining route positions. The emphasized node is the active jump context.", "Next-jump information and route overlays"),
-            Icon(GuideIconKind.GuardianRelic, "", "Guardian relic tower", "The original blue-filled, cyan-edged triangle is a confirmed relic tower. It rotates to its recorded heading; a translucent blue line through the tower means that tower has an individual heading measurement.", "Guardian site map"),
-            Icon(GuideIconKind.GuardianArtifact, "", "Guardian artifact points", "Legacy POI colors identify present artifacts: orange Orb, green Casket, pale-blue Tablet, blue-violet Totem, and magenta Urn.", "Guardian site map", "orb casket tablet totem urn colors"),
-            Icon(GuideIconKind.GuardianEmptyPuddle, "", "Empty puddle", "A gold-filled, yellow-edged circle identifies a surveyed artifact puddle with no object present.", "Guardian site map"),
+            Icon(GuideIconKind.GuardianRelic, "", "Guardian relic tower", "The original blue-filled, cyan-edged triangle is a confirmed relic tower. It rotates to its recorded heading; a translucent blue line through the tower means that tower has an individual heading measurement.", GuardianSiteMap),
+            Icon(GuideIconKind.GuardianArtifact, "", "Guardian artifact points", "Legacy POI colors identify present artifacts: orange Orb, green Casket, pale-blue Tablet, blue-violet Totem, and magenta Urn.", GuardianSiteMap, "orb casket tablet totem urn colors"),
+            Icon(GuideIconKind.GuardianEmptyPuddle, "", "Empty puddle", "A gold-filled, yellow-edged circle identifies a surveyed artifact puddle with no object present.", GuardianSiteMap),
             Icon(GuideIconKind.GuardianObelisk, "", "Guardian obelisk", "The narrow dark-cyan, three-sided legacy glyph identifies an inactive obelisk and rotates with the template geometry. A dotted lime ring identifies the nearest or targeted point.", "Guardian site map and Ram Tah"),
             Icon(GuideIconKind.GuardianActiveObelisk, "", "Active Guardian obelisk", "A cyan obelisk with a 90-degree radial glow is active. The glow center is cyan when its log is needed for the active Ram Tah mission, orange when scanned, and light gray when active but neither needed nor scanned.", "Guardian site map and Ram Tah", "active scanned needed glow wedge"),
-            Icon(GuideIconKind.GuardianBrokenObelisk, "", "Broken obelisk", "The asymmetric narrow three-sided legacy outline identifies a broken obelisk; it is not a generic X.", "Guardian site map"),
-            Icon(GuideIconKind.GuardianPylon, "", "Guardian energy pylon", "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.", "Guardian site map"),
-            Icon(GuideIconKind.GuardianComponent, "", "Guardian component tower", "Nested triangular outlines identify a component tower. The three fixed screen-facing dots are lime Power Cell, cyan Power Conduit, and orange-red Technology Component; a small square uses the same materials for a destructible panel.", "Guardian site map"),
-            Icon(GuideIconKind.GuardianCommander, "", "Guardian-map Commander", "A ring with a center dot marks the Commander's live position on the Guardian site projection.", "Guardian site map"),
-            Icon(GuideIconKind.GuardianSiteHeading, "", "Guardian site heading", "A dashed dark-red line through site center is the recorded site alignment heading and rotates with the live Commander view.", "Guardian site map legend"),
-            Icon(GuideIconKind.GuardianTowerHeading, "", "Guardian tower heading", "A translucent blue line through site center is the general relic-tower heading. A wider, fainter line through one relic records that tower's individual heading.", "Guardian site map legend"),
-            Icon(GuideIconKind.GuardianSurveyNeeded, "", "Guardian survey needed", "A dotted ring marks a point or site state that still needs survey data.", "Guardian site map legend"),
-            Icon(GuideIconKind.GuardianPoiStates, "", "Guardian survey states", "Unknown points use the cyan dotted survey treatment, absent points use translucent gray, present points use their POI-specific legacy color, and empty puddles use gold with a yellow edge.", "Guardian site map legend", "unknown absent present empty colors"),
+            Icon(GuideIconKind.GuardianBrokenObelisk, "", "Broken obelisk", "The asymmetric narrow three-sided legacy outline identifies a broken obelisk; it is not a generic X.", GuardianSiteMap),
+            Icon(GuideIconKind.GuardianPylon, "", "Guardian energy pylon", "The rotated legacy diamond and its center-to-tip stem identify an energy pylon. Its outline color records unknown, present, absent, or empty survey state.", GuardianSiteMap),
+            Icon(GuideIconKind.GuardianComponent, "", "Guardian component tower", "Nested triangular outlines identify a component tower. The three fixed screen-facing dots are lime Power Cell, cyan Power Conduit, and orange-red Technology Component; a small square uses the same materials for a destructible panel.", GuardianSiteMap),
+            Icon(GuideIconKind.GuardianCommander, "", "Guardian-map Commander", "A ring with a center dot marks the Commander's live position on the Guardian site projection.", GuardianSiteMap),
+            Icon(GuideIconKind.GuardianSiteHeading, "", "Guardian site heading", "A dashed dark-red line through site center is the recorded site alignment heading and rotates with the live Commander view.", GuardianSiteMapLegend),
+            Icon(GuideIconKind.GuardianTowerHeading, "", "Guardian tower heading", "A translucent blue line through site center is the general relic-tower heading. A wider, fainter line through one relic records that tower's individual heading.", GuardianSiteMapLegend),
+            Icon(GuideIconKind.GuardianSurveyNeeded, "", "Guardian survey needed", "A dotted ring marks a point or site state that still needs survey data.", GuardianSiteMapLegend),
+            Icon(GuideIconKind.GuardianPoiStates, "", "Guardian survey states", "Unknown points use the cyan dotted survey treatment, absent points use translucent gray, present points use their POI-specific legacy color, and empty puddles use gold with a yellow edge.", GuardianSiteMapLegend, "unknown absent present empty colors"),
             Icon(GuideIconKind.Glyph, "A", "Atmospheric regulator", "A named atmospheric-control point in a human settlement.", "Human settlement map", "atmos"),
             Icon(GuideIconKind.Glyph, "!", "Settlement alarm", "An alarm-control point in a human settlement. Its color reflects access/security context.", "Human settlement map"),
             Icon(GuideIconKind.Glyph, "K", "Authorization point", "An authorization or security-clearance point in a human settlement.", "Human settlement map", "auth access"),

@@ -3124,7 +3124,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         };
     }
 
-    private IReadOnlySet<string> GetNeededRamTahLogCodes(
+    private HashSet<string> GetNeededRamTahLogCodes(
         GuardianSiteKind kind,
         IReadOnlyList<GuardianObelisk> activeObelisks)
     {

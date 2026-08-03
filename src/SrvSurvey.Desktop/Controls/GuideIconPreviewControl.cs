@@ -478,12 +478,12 @@ public sealed class GuideIconPreviewControl : Control
             return;
         }
 
-        var rotation = type is GuardianPoiType.Obelisk
-            or GuardianPoiType.BrokenObelisk
-                ? 167.5
-                : type == GuardianPoiType.Component
-                    ? -45
-                    : 0;
+        var rotation = type switch
+        {
+            GuardianPoiType.Obelisk or GuardianPoiType.BrokenObelisk => 167.5,
+            GuardianPoiType.Component => -45,
+            _ => 0,
+        };
         var points = GuardianLegacyMapDrawing.CreateGlyphPoints(
                 type,
                 new Point(),
@@ -640,10 +640,10 @@ public sealed class GuideIconPreviewControl : Control
 
     private static void DrawOpenPath(
         DrawingContext context,
-        IReadOnlyList<Point> points,
+        Point[] points,
         Pen pen)
     {
-        if (points.Count < 2)
+        if (points.Length < 2)
         {
             return;
         }
@@ -651,7 +651,7 @@ public sealed class GuideIconPreviewControl : Control
         var geometry = new StreamGeometry();
         using var geometryContext = geometry.Open();
         geometryContext.BeginFigure(points[0], isFilled: false);
-        for (var index = 1; index < points.Count; index++)
+        for (var index = 1; index < points.Length; index++)
         {
             geometryContext.LineTo(points[index]);
         }
@@ -799,22 +799,6 @@ public sealed class GuideIconPreviewControl : Control
             new Point(center.X + radius * 0.75, center.Y + radius),
             new Point(center.X, center.Y + radius * 0.55),
             new Point(center.X - radius * 0.75, center.Y + radius),
-        ]);
-        context.DrawGeometry(fill ? brush : null, new Pen(brush, 2), geometry);
-    }
-
-    private static void DrawSimpleTriangle(
-        DrawingContext context,
-        Point center,
-        double radius,
-        IBrush brush,
-        bool fill)
-    {
-        var geometry = CreatePolygon(
-        [
-            new Point(center.X, center.Y - radius),
-            new Point(center.X + radius, center.Y + radius),
-            new Point(center.X - radius, center.Y + radius),
         ]);
         context.DrawGeometry(fill ? brush : null, new Pen(brush, 2), geometry);
     }
