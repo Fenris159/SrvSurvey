@@ -11,9 +11,11 @@ cross-platform branch is promoted to a stable XP release.
   and opacity, and adds snap-to-center recovery for off-screen panels.
 - Completes the dedicated Guardian renderer parity pass with legacy site-map
   geometry, POI colors, rotated glyphs, relic headings, active-obelisk effects,
-  map-scaled survey markers, a single legacy-exact map legend, an interactive
-  pan-and-zoom survey viewer, Canonn biology indicators, and matching glossary
-  previews.
+  survey markers, a single legacy-exact map legend, Canonn biology indicators,
+  and matching glossary previews.
+- Keeps Guardian map markers proportional to the background at every scale and
+  adds a bottom 1x-10x zoom bar, contained mouse-wheel zoom, bounded click-drag
+  panning, and automatic fitted-center recovery when returned to 1x.
 - Keeps Galaxy Map overlays context-sensitive, preserves neutron and refuel
   badge colors, and closes all overlay windows when the main application exits.
 - Contains mouse-wheel input inside the hovered panel, prevents live Diagnostics
