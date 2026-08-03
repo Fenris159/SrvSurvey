@@ -499,18 +499,18 @@ public sealed class GuardianSiteMapControl : Control
     }
 
     protected override void OnPointerWheelChanged(
-        PointerWheelEventArgs eventArgs)
+        PointerWheelEventArgs e)
     {
-        base.OnPointerWheelChanged(eventArgs);
-        if (!CanInteractWithViewport || eventArgs.Delta.Y == 0)
+        base.OnPointerWheelChanged(e);
+        if (!CanInteractWithViewport || e.Delta.Y == 0)
         {
             return;
         }
 
         var currentZoom = NormalizeViewportZoom(ViewportZoom);
         var nextZoom = NormalizeViewportZoom(
-            currentZoom * (eventArgs.Delta.Y > 0 ? 1.1 : 0.9));
-        var pointer = eventArgs.GetPosition(this);
+            currentZoom * (e.Delta.Y > 0 ? 1.1 : 0.9));
+        var pointer = e.GetPosition(this);
         var center = new Rect(Bounds.Size).Center;
         var ratio = nextZoom / currentZoom;
         var relative = pointer - center - viewportOffset;
@@ -522,54 +522,54 @@ public sealed class GuardianSiteMapControl : Control
             Bounds.Size,
             nextZoom);
         SetCurrentValue(ViewportZoomProperty, nextZoom);
-        eventArgs.Handled = true;
+        e.Handled = true;
     }
 
-    protected override void OnPointerPressed(PointerPressedEventArgs eventArgs)
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        base.OnPointerPressed(eventArgs);
+        base.OnPointerPressed(e);
         if (!CanInteractWithViewport
             || NormalizeViewportZoom(ViewportZoom) <= MinimumViewportZoom
-            || !eventArgs.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             return;
         }
 
-        dragOrigin = eventArgs.GetPosition(this);
+        dragOrigin = e.GetPosition(this);
         dragStartOffset = viewportOffset;
-        capturedPointer = eventArgs.Pointer;
-        eventArgs.Pointer.Capture(this);
+        capturedPointer = e.Pointer;
+        e.Pointer.Capture(this);
         Cursor = new Cursor(StandardCursorType.SizeAll);
-        eventArgs.Handled = true;
+        e.Handled = true;
     }
 
-    protected override void OnPointerMoved(PointerEventArgs eventArgs)
+    protected override void OnPointerMoved(PointerEventArgs e)
     {
-        base.OnPointerMoved(eventArgs);
+        base.OnPointerMoved(e);
         if (dragOrigin is not { } origin)
         {
             return;
         }
 
         viewportOffset = ClampViewportOffset(
-            dragStartOffset + (eventArgs.GetPosition(this) - origin),
+            dragStartOffset + (e.GetPosition(this) - origin),
             Bounds.Size,
             ViewportZoom);
         InvalidateVisual();
-        eventArgs.Handled = true;
+        e.Handled = true;
     }
 
     protected override void OnPointerReleased(
-        PointerReleasedEventArgs eventArgs)
+        PointerReleasedEventArgs e)
     {
-        base.OnPointerReleased(eventArgs);
-        StopDragging(eventArgs.Pointer);
+        base.OnPointerReleased(e);
+        StopDragging(e.Pointer);
     }
 
     protected override void OnPointerCaptureLost(
-        PointerCaptureLostEventArgs eventArgs)
+        PointerCaptureLostEventArgs e)
     {
-        base.OnPointerCaptureLost(eventArgs);
+        base.OnPointerCaptureLost(e);
         StopDragging(null);
     }
 
