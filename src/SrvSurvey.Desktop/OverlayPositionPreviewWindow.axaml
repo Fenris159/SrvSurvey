@@ -176,7 +176,7 @@
                              IsVisible="{Binding HasProgress}"
                              Minimum="0"
                              Maximum="100"
-                             Value="{Binding Progress}" />
+                             Value="{Binding ProgressValue}" />
                 </Grid>
               </Grid>
             </DataTemplate>

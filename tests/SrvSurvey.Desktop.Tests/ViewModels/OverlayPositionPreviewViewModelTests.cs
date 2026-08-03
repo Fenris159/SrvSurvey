@@ -42,6 +42,20 @@ public sealed class OverlayPositionPreviewViewModelTests
     }
 
     [Fact]
+    public void RowsWithoutProgressExposeANumericBindingFallback()
+    {
+        var definition = OverlayLayoutCatalog.Supported.Single(item =>
+            item.Name == "PlotBioSystem");
+
+        var preview = OverlayPositionPreviewViewModel.Create(definition);
+
+        Assert.Contains(preview.Rows, row => row.Progress is null);
+        Assert.All(
+            preview.Rows.Where(row => row.Progress is null),
+            row => Assert.Equal(0d, row.ProgressValue));
+    }
+
+    [Fact]
     public void RouteBodyPreviewUsesCheckboxesAndBodyArtworkInsteadOfProgressBars()
     {
         var definition = OverlayLayoutCatalog.Supported.Single(item =>

@@ -209,9 +209,9 @@
                       <TextBlock Classes="eyebrow" Text="SELECTED SYSTEM" />
                       <TextBlock Classes="page-title"
                                  FontSize="23"
-                                 Text="{Binding SelectedSystem.Name}" />
+                                 Text="{Binding SelectedSystemName}" />
                       <TextBlock Classes="muted"
-                                 Text="{Binding SelectedSystem.Address, StringFormat='System address {0}'}" />
+                                 Text="{Binding SelectedSystemAddressText}" />
                     </StackPanel>
 
                     <Border Classes="card raised">

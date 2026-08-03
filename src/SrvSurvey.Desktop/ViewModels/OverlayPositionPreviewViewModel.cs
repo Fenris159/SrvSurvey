@@ -118,6 +118,8 @@ public sealed record OverlayPositionPreviewRowViewModel(
 {
     public bool HasProgress => Progress is not null && !HasRewardBands;
 
+    public double ProgressValue => Progress ?? 0d;
+
     public bool HasGlyph => !string.IsNullOrWhiteSpace(Glyph);
 
     public bool HasRewardBands => RewardBands is { Count: > 0 };

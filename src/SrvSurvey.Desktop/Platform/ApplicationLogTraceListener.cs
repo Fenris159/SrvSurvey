@@ -7,6 +7,9 @@ namespace SrvSurvey.Desktop.Platform;
 public sealed class ApplicationLogTraceListener(
     ApplicationLogService applicationLog) : TraceListener
 {
+    private const string ClosedPresentationSourceWarning =
+        "[Control] PlatformImpl is null, couldn't handle input. (PresentationSource #";
+
     private readonly object syncRoot = new();
     private readonly StringBuilder pending = new();
 
@@ -34,7 +37,7 @@ public sealed class ApplicationLogTraceListener(
 
         if (line is not null)
         {
-            applicationLog.Append(line.TrimEnd('\r'));
+            AppendLine(line.TrimEnd('\r'));
         }
     }
 
@@ -72,7 +75,19 @@ public sealed class ApplicationLogTraceListener(
 
         foreach (var line in completeLines)
         {
+            AppendLine(line);
+        }
+    }
+
+    private void AppendLine(string line)
+    {
+        if (!IsExpectedClosedPresentationSourceWarning(line))
+        {
             applicationLog.Append(line);
         }
     }
+
+    private static bool IsExpectedClosedPresentationSourceWarning(string line) =>
+        line.StartsWith(ClosedPresentationSourceWarning, StringComparison.Ordinal)
+        && line.EndsWith(')');
 }
