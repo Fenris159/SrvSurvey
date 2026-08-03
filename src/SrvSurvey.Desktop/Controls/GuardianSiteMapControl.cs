@@ -162,12 +162,16 @@ public sealed class GuardianSiteMapControl : Control
     {
         base.Render(context);
         var bounds = new Rect(Bounds.Size);
-        context.DrawRectangle(
-            MapBackground ?? Brushes.Transparent,
-            new Pen(GridBrush ?? Brushes.Gray, 1),
-            bounds,
-            8,
-            8);
+        if (!IsLegendOnly)
+        {
+            context.DrawRectangle(
+                MapBackground ?? Brushes.Transparent,
+                new Pen(GridBrush ?? Brushes.Gray, 1),
+                bounds,
+                8,
+                8);
+        }
+
         if (Projection is not { } projection
             || bounds.Width <= 0
             || bounds.Height <= 0)
@@ -603,7 +607,7 @@ public sealed class GuardianSiteMapControl : Control
     {
         var entries = new List<GuardianMapLegendEntry>
         {
-            new("Relic tower", GuardianPoiType.Relic),
+            new("Relic Tower", GuardianPoiType.Relic),
             new("Orb", GuardianPoiType.Orb),
             new("Casket", GuardianPoiType.Casket),
             new("Tablet", GuardianPoiType.Tablet),
@@ -612,17 +616,11 @@ public sealed class GuardianSiteMapControl : Control
             new("Empty puddle", GuardianPoiType.EmptyPuddle, GuardianPoiStatus.Empty),
             new("Obelisk", GuardianPoiType.Obelisk),
         };
-        if (projection.Points.Any(point => point.Type == GuardianPoiType.Pylon))
+        if (!projection.IsRuins)
         {
             entries.Add(new GuardianMapLegendEntry(
                 "Energy pylon",
                 GuardianPoiType.Pylon));
-        }
-
-        if (projection.Points.Any(point => point.Type
-                is GuardianPoiType.Component
-                    or GuardianPoiType.DestructiblePanel))
-        {
             entries.Add(new GuardianMapLegendEntry(
                 "Component tower",
                 GuardianPoiType.Component));

@@ -127,31 +127,55 @@ public sealed class GuardianSiteMapControlTests
     }
 
     [Fact]
-    public void LegendRetainsLegacyLabelsAndAddsStructureMarkersWhenPresent()
+    public void LegendMatchesLegacyRuinsAndStructureKeysExactly()
     {
-        var ruins = new GuardianSiteMapProjection("Alpha", [], [], 1);
+        var ruins = new GuardianSiteMapProjection(
+            "Alpha",
+            [],
+            [],
+            1,
+            IsRuins: true);
         var structure = new GuardianSiteMapProjection(
             "Lacrosse",
-            [
-                Point("P1", GuardianPoiType.Pylon),
-                Point("C1", GuardianPoiType.Component),
-            ],
+            [],
             [],
             1);
 
         var ruinsLabels = GuardianSiteMapControl.CreateLegendLabels(ruins);
         var structureLabels = GuardianSiteMapControl.CreateLegendLabels(structure);
 
-        Assert.Contains("Relic tower", ruinsLabels);
-        Assert.Contains("Empty puddle", ruinsLabels);
-        Assert.Contains("Obelisk", ruinsLabels);
-        Assert.Contains("Site heading", ruinsLabels);
-        Assert.Contains("Tower heading", ruinsLabels);
-        Assert.Contains("Survey needed", ruinsLabels);
-        Assert.DoesNotContain("Energy pylon", ruinsLabels);
-        Assert.DoesNotContain("Component tower", ruinsLabels);
-        Assert.Contains("Energy pylon", structureLabels);
-        Assert.Contains("Component tower", structureLabels);
+        Assert.Equal(
+            [
+                "Relic Tower",
+                "Orb",
+                "Casket",
+                "Tablet",
+                "Totem",
+                "Urn",
+                "Empty puddle",
+                "Obelisk",
+                "Site heading",
+                "Tower heading",
+                "Survey needed",
+            ],
+            ruinsLabels);
+        Assert.Equal(
+            [
+                "Relic Tower",
+                "Orb",
+                "Casket",
+                "Tablet",
+                "Totem",
+                "Urn",
+                "Empty puddle",
+                "Obelisk",
+                "Energy pylon",
+                "Component tower",
+                "Site heading",
+                "Tower heading",
+                "Survey needed",
+            ],
+            structureLabels);
     }
 
     [Theory]

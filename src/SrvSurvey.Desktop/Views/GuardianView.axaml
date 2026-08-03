@@ -439,38 +439,6 @@
                         PresentBrush="{DynamicResource RavenSuccessBrush}"
                         AbsentBrush="{DynamicResource RavenDangerBrush}"
                         EmptyBrush="{DynamicResource RavenWarningBrush}" />
-                    <Grid ColumnDefinitions="Auto,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                          ColumnSpacing="10"
-                          RowSpacing="9">
-                      <Ellipse Width="10" Height="10"
-                               Fill="{DynamicResource RavenMutedTextBrush}" />
-                      <TextBlock Grid.Column="1" Text="Unknown / unconfirmed" />
-                      <Ellipse Grid.Row="1" Width="10" Height="10"
-                               Fill="{DynamicResource RavenSuccessBrush}" />
-                      <TextBlock Grid.Row="1" Grid.Column="1" Text="Present / scanned" />
-                      <Ellipse Grid.Row="2" Width="10" Height="10"
-                               Fill="{DynamicResource RavenDangerBrush}" />
-                      <TextBlock Grid.Row="2" Grid.Column="1" Text="Absent" />
-                      <Ellipse Grid.Row="3" Width="10" Height="10"
-                               Fill="{DynamicResource RavenWarningBrush}" />
-                      <TextBlock Grid.Row="3" Grid.Column="1" Text="Empty puddle" />
-                      <Ellipse Grid.Row="4" Width="10" Height="10"
-                               Fill="{DynamicResource RavenAccentBrush}" />
-                      <TextBlock Grid.Row="4" Grid.Column="1" Text="Active obelisk" />
-                    </Grid>
-                    <StackPanel Spacing="7"
-                                IsVisible="{Binding Guardian.ShowComponentMaterials}">
-                      <TextBlock Classes="muted" Text="COMPONENT MATERIALS" />
-                      <WrapPanel>
-                        <Border Width="10" Height="10" Margin="0,4,6,0" Background="Lime" />
-                        <TextBlock Margin="0,0,16,0" Text="Power Cell" />
-                        <Border Width="10" Height="10" Margin="0,4,6,0" Background="Cyan" />
-                        <TextBlock Margin="0,0,16,0" Text="Power Conduit" />
-                        <Border Width="10" Height="10" Margin="0,4,6,0" Background="OrangeRed" />
-                        <TextBlock Text="Technology Component" />
-                      </WrapPanel>
-                    </StackPanel>
                   </StackPanel>
                 </Border>
 

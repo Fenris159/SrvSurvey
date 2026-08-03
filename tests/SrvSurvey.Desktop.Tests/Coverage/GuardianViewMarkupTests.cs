@@ -48,7 +48,7 @@ public sealed class GuardianViewMarkupTests
     }
 
     [Fact]
-    public void ExternalLegendContainsTheMapGlyphsAndStatusKey()
+    public void ExternalLegendUsesOneCardWithoutInventedStatusKeys()
     {
         var document = LoadGuardianView();
         var legend = FindNamedElement(document, "GuardianSurveyMapLegend");
@@ -57,14 +57,13 @@ public sealed class GuardianViewMarkupTests
         var labels = legend.Descendants()
             .Where(element => element.Name.LocalName == "TextBlock")
             .Select(element => element.Attribute("Text")?.Value)
-            .Where(text => text is not null)
+            .OfType<string>()
             .ToArray();
 
         Assert.Equal("True", mapLegend.Attribute("IsLegendOnly")?.Value);
-        Assert.Contains("Unknown / unconfirmed", labels);
-        Assert.Contains("Present / scanned", labels);
-        Assert.Contains("Absent", labels);
-        Assert.Contains("Active obelisk", labels);
+        Assert.Equal(["Map legend"], labels);
+        Assert.DoesNotContain(legend.Descendants(), element =>
+            element.Name.LocalName is "Border" or "Grid");
     }
 
     private static XDocument LoadGuardianView() => XDocument.Load(Path.Combine(

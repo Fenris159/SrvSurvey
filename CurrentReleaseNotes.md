@@ -11,7 +11,8 @@ cross-platform branch is promoted to a stable XP release.
   and opacity, and adds snap-to-center recovery for off-screen panels.
 - Completes the dedicated Guardian renderer parity pass with legacy site-map
   geometry, POI colors, rotated glyphs, relic headings, active-obelisk effects,
-  survey markers, Canonn biology indicators, and matching glossary previews.
+  survey markers, a single legacy-exact map legend, Canonn biology indicators,
+  and matching glossary previews.
 - Keeps Galaxy Map overlays context-sensitive, preserves neutron and refuel
   badge colors, and closes all overlay windows when the main application exits.
 - Contains mouse-wheel input inside the hovered panel, prevents live Diagnostics
