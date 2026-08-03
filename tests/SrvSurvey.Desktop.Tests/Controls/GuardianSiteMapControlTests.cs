@@ -218,16 +218,28 @@ public sealed class GuardianSiteMapControlTests
     }
 
     [Fact]
-    public void SurveyMarkerRetainsLegacyHaloSizingAndPalette()
+    public void SurveyMarkerRetainsLegacySiteSpecificSizingAndPalette()
     {
+        Assert.Equal(
+            (17.8d, 16.8d),
+            GuardianSiteMapControl.GetSurveyMarkerRadii(
+                GuardianPoiType.Relic,
+                isRuins: true));
         Assert.Equal(
             (13d, 12d),
             GuardianSiteMapControl.GetSurveyMarkerRadii(
-                GuardianPoiType.Relic));
+                GuardianPoiType.Totem,
+                isRuins: true));
+        Assert.Equal(
+            (13d, 12d),
+            GuardianSiteMapControl.GetSurveyMarkerRadii(
+                GuardianPoiType.Relic,
+                isRuins: false));
         Assert.Equal(
             (10d, 9d),
             GuardianSiteMapControl.GetSurveyMarkerRadii(
-                GuardianPoiType.Totem));
+                GuardianPoiType.Totem,
+                isRuins: false));
         Assert.Equal(
             Color.FromArgb(160, 72, 61, 139),
             GuardianSurveyMarkerDrawing.HaloColor);
@@ -403,6 +415,67 @@ public sealed class GuardianSiteMapControlTests
                 GuardianPoiType.Component,
                 new Point(),
                 0).Count);
+    }
+
+    [Fact]
+    public void GuardianMarkersScaleWithTheMapLikeLegacyRenderer()
+    {
+        var center = new Point(20, 30);
+        var full = GuardianLegacyMapDrawing.CreateGlyphPoints(
+            GuardianPoiType.Relic,
+            center,
+            rotation: 0,
+            scale: 1);
+        var half = GuardianLegacyMapDrawing.CreateGlyphPoints(
+            GuardianPoiType.Relic,
+            center,
+            rotation: 0,
+            scale: 0.5);
+        var ruins = new GuardianSiteMapProjection(
+            "Alpha",
+            [],
+            [],
+            1,
+            IsRuins: true);
+
+        Assert.Equal(center + new Vector(-8, -8), full[0]);
+        Assert.Equal(center + new Vector(-4, -4), half[0]);
+        Assert.Equal(
+            8,
+            GuardianLegacyMapDrawing.GetPuddleRadius(
+                ruins,
+                Point("P1", GuardianPoiType.Orb)));
+    }
+
+    [Theory]
+    [InlineData(double.NaN, 1)]
+    [InlineData(0.5, 1)]
+    [InlineData(4, 4)]
+    [InlineData(12, 10)]
+    public void InteractiveViewportZoomUsesBoundedLegacyRange(
+        double requested,
+        double expected)
+    {
+        Assert.Equal(
+            expected,
+            GuardianSiteMapControl.NormalizeViewportZoom(requested));
+    }
+
+    [Fact]
+    public void InteractiveViewportPanKeepsPartOfTheMapReachable()
+    {
+        Assert.Equal(
+            default,
+            GuardianSiteMapControl.ClampViewportOffset(
+                new Vector(100, -100),
+                new Size(720, 640),
+                zoom: 1));
+        Assert.Equal(
+            new Vector(360, -320),
+            GuardianSiteMapControl.ClampViewportOffset(
+                new Vector(900, -900),
+                new Size(720, 640),
+                zoom: 2));
     }
 
     [Fact]

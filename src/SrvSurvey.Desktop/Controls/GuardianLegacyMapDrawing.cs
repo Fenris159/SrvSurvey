@@ -58,10 +58,10 @@ internal static class GuardianLegacyMapDrawing
 
     private static readonly Point[] RelicPoints =
     [
-        new(-5, -3),
-        new(5, -3),
-        new(0, 6),
-        new(-5, -3),
+        new(-8, -8),
+        new(8, -8),
+        new(0, 8),
+        new(-8, -8),
     ];
 
     internal static GuardianLegacyPointStyle GetPointStyle(
@@ -220,7 +220,8 @@ internal static class GuardianLegacyMapDrawing
     internal static IReadOnlyList<Point> CreateGlyphPoints(
         GuardianPoiType type,
         Point center,
-        double rotation)
+        double rotation,
+        double scale = 1)
     {
         var source = type switch
         {
@@ -232,15 +233,20 @@ internal static class GuardianLegacyMapDrawing
             _ => [],
         };
         return source
-            .Select(point => center + RotateClockwise(point, rotation))
+            .Select(point => center + RotateClockwise(
+                new Point(point.X * scale, point.Y * scale),
+                rotation))
             .ToArray();
     }
 
     internal static IReadOnlyList<Point> CreateComponentMaterialCenters(
-        Point center)
+        Point center,
+        double scale = 1)
     {
         return new[] { -150d, 92d, -28d }
-            .Select(angle => center + RotateClockwise(new Point(0, 8), angle))
+            .Select(angle => center + RotateClockwise(
+                new Point(0, 8 * scale),
+                angle))
             .ToArray();
     }
 
@@ -280,7 +286,7 @@ internal static class GuardianLegacyMapDrawing
 
         if (projection.IsRuins)
         {
-            return 7.5;
+            return 8;
         }
 
         return point.Status == GuardianPoiStatus.Absent ? 4 : 5;

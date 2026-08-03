@@ -382,18 +382,40 @@
               <Border Classes="card"
                       Padding="12"
                       VerticalAlignment="Top">
-                <controls:GuardianSiteMapControl
-                    Height="640"
-                    ClipToBounds="True"
-                    Projection="{Binding Guardian.MapProjection}"
-                    ShowLegend="False"
-                    MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
-                    GridBrush="{DynamicResource RavenBorderBrush}"
-                    AccentBrush="{DynamicResource RavenAccentBrush}"
-                    MutedBrush="{DynamicResource RavenMutedTextBrush}"
-                    PresentBrush="{DynamicResource RavenSuccessBrush}"
-                    AbsentBrush="{DynamicResource RavenDangerBrush}"
-                    EmptyBrush="{DynamicResource RavenWarningBrush}" />
+                <Grid RowDefinitions="640,Auto" RowSpacing="10">
+                  <controls:GuardianSiteMapControl
+                      x:Name="GuardianSurveyMap"
+                      ClipToBounds="True"
+                      Cursor="Hand"
+                      AllowViewportInteraction="True"
+                      Projection="{Binding Guardian.MapProjection}"
+                      ShowLegend="False"
+                      MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
+                      GridBrush="{DynamicResource RavenBorderBrush}"
+                      AccentBrush="{DynamicResource RavenAccentBrush}"
+                      MutedBrush="{DynamicResource RavenMutedTextBrush}"
+                      PresentBrush="{DynamicResource RavenSuccessBrush}"
+                      AbsentBrush="{DynamicResource RavenDangerBrush}"
+                      EmptyBrush="{DynamicResource RavenWarningBrush}" />
+                  <Grid Grid.Row="1"
+                        ColumnDefinitions="Auto,*,Auto"
+                        ColumnSpacing="10">
+                    <TextBlock Classes="eyebrow"
+                               VerticalAlignment="Center"
+                               Text="ZOOM" />
+                    <Slider Grid.Column="1"
+                            Minimum="1"
+                            Maximum="10"
+                            TickFrequency="0.1"
+                            Value="{Binding ViewportZoom, ElementName=GuardianSurveyMap, Mode=TwoWay}"
+                            ToolTip.Tip="1x fits the full map. Zoom in, then drag the map to pan." />
+                    <TextBlock Grid.Column="2"
+                               MinWidth="52"
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Text="{Binding ViewportZoom, ElementName=GuardianSurveyMap, StringFormat='{}{0:N2}x'}" />
+                  </Grid>
+                </Grid>
               </Border>
 
               <StackPanel x:Name="GuardianSurveyMapSidebar"

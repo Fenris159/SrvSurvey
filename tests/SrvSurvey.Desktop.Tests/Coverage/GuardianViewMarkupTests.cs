@@ -21,6 +21,7 @@ public sealed class GuardianViewMarkupTests
         Assert.Equal("3*,2*", top.Attribute("ColumnDefinitions")?.Value);
         Assert.Equal("False", map.Attribute("ShowLegend")?.Value);
         Assert.Equal("True", map.Attribute("ClipToBounds")?.Value);
+        Assert.Equal("True", map.Attribute("AllowViewportInteraction")?.Value);
         Assert.Equal(
             [
                 "GuardianSelectedMap",
@@ -29,6 +30,25 @@ public sealed class GuardianViewMarkupTests
                 "GuardianSurveyMapNotes",
             ],
             cardNames);
+    }
+
+    [Fact]
+    public void SurveyMapProvidesBottomZoomBarForInteractiveViewport()
+    {
+        var document = LoadGuardianView();
+        var map = FindNamedElement(document, "GuardianSurveyMap");
+        var mapGrid = map.Parent
+            ?? throw new InvalidDataException("Survey map viewport grid is missing.");
+        var slider = mapGrid.Descendants().Single(element =>
+            element.Name.LocalName == "Slider");
+
+        Assert.Equal("640,Auto", mapGrid.Attribute("RowDefinitions")?.Value);
+        Assert.Equal("1", slider.Attribute("Minimum")?.Value);
+        Assert.Equal("10", slider.Attribute("Maximum")?.Value);
+        Assert.Contains(
+            "ElementName=GuardianSurveyMap",
+            slider.Attribute("Value")?.Value,
+            StringComparison.Ordinal);
     }
 
     [Fact]
