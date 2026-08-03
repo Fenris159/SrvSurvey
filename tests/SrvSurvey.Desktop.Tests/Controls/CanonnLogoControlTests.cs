@@ -1,8 +1,13 @@
 using System.Security.Cryptography;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
 using SrvSurvey.Desktop.Controls;
 
 namespace SrvSurvey.Desktop.Tests.Controls;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class CanonnLogoControlTests
 {
     [Fact]
@@ -23,6 +28,37 @@ public sealed class CanonnLogoControlTests
 
         Assert.Equal(16u, ReadBigEndianUInt32(bytes, 16));
         Assert.Equal(16u, ReadBigEndianUInt32(bytes, 20));
+    }
+
+    [AvaloniaFact]
+    public void ControlRendersTheOriginalArtworkAtMultipleSizes()
+    {
+        foreach (var size in new[] { 16, 32, 48 })
+        {
+            var control = new CanonnLogoControl();
+            var targetSize = new Size(size, size + 8);
+            var window = new Window
+            {
+                Width = targetSize.Width,
+                Height = targetSize.Height,
+                Content = control,
+            };
+
+            try
+            {
+                window.Show();
+                var frame = window.CaptureRenderedFrame();
+
+                Assert.NotNull(frame);
+                Assert.Equal(
+                    new PixelSize(size, size + 8),
+                    frame.PixelSize);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
     }
 
     private static uint ReadBigEndianUInt32(byte[] bytes, int offset) =>

@@ -1,10 +1,14 @@
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Desktop.Controls;
 
 namespace SrvSurvey.Desktop.Tests.Controls;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class GuardianSiteMapControlTests
 {
     [Fact]
@@ -442,6 +446,179 @@ public sealed class GuardianSiteMapControlTests
             wedge[^1].X - center.X) * 180 / Math.PI;
         Assert.Equal(-120, firstAngle, precision: 9);
         Assert.Equal(-30, lastAngle, precision: 9);
+    }
+
+    [AvaloniaFact]
+    public void CompleteGuardianSurveyProjectionRendersEveryLegacyMapLayer()
+    {
+        var points = new GuardianProjectedPoint[]
+        {
+            RenderPoint(
+                "T1",
+                GuardianPoiType.Relic,
+                -18,
+                -12,
+                GuardianPoiStatus.Unknown,
+                relicHeading: 210,
+                hasIndividualRelicHeading: true),
+            RenderPoint("ORB", GuardianPoiType.Orb, -9, -5, GuardianPoiStatus.Present),
+            RenderPoint("CASKET", GuardianPoiType.Casket, 4, -7, GuardianPoiStatus.Absent),
+            RenderPoint("TABLET", GuardianPoiType.Tablet, 13, -4, GuardianPoiStatus.Empty),
+            RenderPoint("TOTEM", GuardianPoiType.Totem, -15, 5, GuardianPoiStatus.Unknown),
+            RenderPoint("URN", GuardianPoiType.Urn, -4, 9, GuardianPoiStatus.Present),
+            RenderPoint("EMPTY", GuardianPoiType.EmptyPuddle, 8, 7, GuardianPoiStatus.Empty),
+            RenderPoint(
+                "COMP",
+                GuardianPoiType.Component,
+                17,
+                11,
+                GuardianPoiStatus.Present,
+                materials:
+                [
+                    GuardianComponentMaterial.Cell,
+                    GuardianComponentMaterial.Unknown,
+                    GuardianComponentMaterial.Tech,
+                ]),
+            RenderPoint("PYLON", GuardianPoiType.Pylon, 3, 18, GuardianPoiStatus.Present),
+            RenderPoint(
+                "A01",
+                GuardianPoiType.Obelisk,
+                -12,
+                17,
+                GuardianPoiStatus.Unknown,
+                isActiveObelisk: true,
+                isScannedObelisk: true,
+                isRamTahNeededObelisk: true),
+            RenderPoint("BROKEN", GuardianPoiType.BrokenObelisk, 12, 17, GuardianPoiStatus.Absent),
+            RenderPoint(
+                "PANEL",
+                GuardianPoiType.DestructiblePanel,
+                20,
+                -17,
+                GuardianPoiStatus.Present,
+                materials: [GuardianComponentMaterial.Conduit]),
+            RenderPoint(
+                "UNKNOWN-PANEL",
+                GuardianPoiType.DestructiblePanel,
+                -21,
+                -17,
+                GuardianPoiStatus.Unknown),
+            RenderPoint("UNKNOWN", GuardianPoiType.Unknown, 0, -20, GuardianPoiStatus.Unknown),
+        };
+        var projection = new GuardianSiteMapProjection(
+            "Alpha",
+            points,
+            [new GuardianProjectedGroup("A", 0, 14, 0, 14)],
+            30,
+            IsRuins: true,
+            SiteHeading: 120,
+            RelicTowerHeading: 210);
+        var nearestPoi = new GuardianPointOfInterest(
+            "PYLON",
+            GuardianPoiType.Pylon,
+            0,
+            18,
+            0);
+        var control = new GuardianSiteMapControl
+        {
+            Projection = projection,
+            Proximity = new GuardianSiteProximitySnapshot(
+                8,
+                1,
+                2,
+                1,
+                2,
+                new GuardianNearbyPoint(nearestPoi, 20, 3, 18, null),
+                null),
+            MapScale = 5,
+            CommanderHeading = 35,
+            TargetPointName = "T1",
+            MapBackground = Brushes.Black,
+            GridBrush = Brushes.DarkSlateGray,
+            AccentBrush = Brushes.Cyan,
+            MutedBrush = Brushes.Wheat,
+            PresentBrush = Brushes.LimeGreen,
+            AbsentBrush = Brushes.Red,
+            EmptyBrush = Brushes.Goldenrod,
+            ShowLegend = true,
+        };
+
+        Assert.True(Render(control));
+    }
+
+    [AvaloniaFact]
+    public void MapAlsoRendersFittedNorthUpWithoutCommanderOrLegend()
+    {
+        var control = new GuardianSiteMapControl
+        {
+            Projection = new GuardianSiteMapProjection(
+                "Lacrosse",
+                [RenderPoint("ORB", GuardianPoiType.Orb, 2, 3, GuardianPoiStatus.Present)],
+                [],
+                10,
+                SiteHeading: -1,
+                RelicTowerHeading: -1),
+            MapScale = double.NaN,
+            CommanderHeading = double.NaN,
+            ShowLegend = false,
+        };
+
+        Assert.True(Render(control));
+    }
+
+    private static bool Render(GuardianSiteMapControl control)
+    {
+        var size = new Size(720, 640);
+        var window = new Window
+        {
+            Width = size.Width,
+            Height = size.Height,
+            Content = control,
+        };
+
+        try
+        {
+            window.Show();
+            var frame = window.CaptureRenderedFrame();
+            return frame?.PixelSize == new PixelSize(720, 640);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static GuardianProjectedPoint RenderPoint(
+        string name,
+        GuardianPoiType type,
+        double x,
+        double y,
+        GuardianPoiStatus status,
+        bool isActiveObelisk = false,
+        bool isScannedObelisk = false,
+        int relicHeading = -1,
+        bool hasIndividualRelicHeading = false,
+        bool isRamTahNeededObelisk = false,
+        IReadOnlyList<GuardianComponentMaterial>? materials = null)
+    {
+        var distance = Math.Sqrt(x * x + y * y);
+        var angle = Math.Atan2(y, x) * 180 / Math.PI;
+        return new GuardianProjectedPoint(
+            name,
+            type,
+            x,
+            y,
+            angle,
+            distance,
+            25,
+            status,
+            isActiveObelisk,
+            isScannedObelisk,
+            string.Empty,
+            materials ?? [],
+            relicHeading,
+            hasIndividualRelicHeading,
+            isRamTahNeededObelisk);
     }
 
     private static GuardianProjectedPoint Point(
