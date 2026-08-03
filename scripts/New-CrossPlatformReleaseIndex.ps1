@@ -4,7 +4,7 @@ param(
     [string] $PackageDirectory,
 
     [Parameter(Mandatory)]
-    [ValidatePattern('^\d+\.\d+\.\d+(\.\d+)?$')]
+    [ValidatePattern('^\d+\.\d+\.\d+(\.\d+)?(-rc\.[1-9]\d*)?$')]
     [string] $Version,
 
     [Parameter(Mandatory)]
@@ -16,12 +16,12 @@ $packageRoot = (Resolve-Path -LiteralPath $PackageDirectory).Path
 $definitions = @(
     [ordered]@{
         runtimeIdentifier = 'win-x64'
-        archive = "SrvSurvey-Avalonia-$Version-win-x64.zip"
+        archive = "SrvSurvey-XP-$Version-win-x64.zip"
         archiveType = 'zip'
     },
     [ordered]@{
         runtimeIdentifier = 'linux-x64'
-        archive = "SrvSurvey-Avalonia-$Version-linux-x64.tar.gz"
+        archive = "SrvSurvey-XP-$Version-linux-x64.tar.gz"
         archiveType = 'tar.gz'
     }
 )
@@ -47,7 +47,7 @@ $packages = @(
 
 $index = [ordered]@{
     schemaVersion = 1
-    product = 'SrvSurvey.Avalonia'
+    product = 'SrvSurvey.XP'
     version = $Version
     packages = $packages
 }

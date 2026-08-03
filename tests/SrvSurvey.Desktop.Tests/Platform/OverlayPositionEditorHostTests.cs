@@ -7,6 +7,7 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayPositionEditorHostTests : IDisposable
 {
     private readonly string temporaryDirectory = Path.Combine(

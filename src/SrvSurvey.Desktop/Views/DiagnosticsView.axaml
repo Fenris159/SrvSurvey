@@ -40,8 +40,14 @@
             <TextBlock Classes="card-title" Text="Application updates" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Checks checksum-indexed Avalonia packages published from this cross-platform repository. The check never installs files or changes profile data." />
+                       Text="Checks checksum-indexed SrvSurvey-XP packages. The check never installs files or changes profile data." />
           </StackPanel>
+
+          <CheckBox IsChecked="{Binding ReleaseUpdates.UseDevelopmentReleases, Mode=TwoWay}"
+                    Content="Use SrvSurvey-XP development releases" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding ReleaseUpdates.ReleaseSourceDescription}" />
 
           <Grid ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
             <TextBlock Classes="muted" Text="Installed" />
@@ -63,7 +69,7 @@
                     Margin="0,0,0,8"
                     IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
                     Command="{Binding ReleaseUpdates.OpenReleaseCommand}"
-                    Content="Open releases" />
+                    Content="{Binding ReleaseUpdates.OpenReleaseButtonText}" />
             <Button Classes="primary"
                     Margin="8,0,0,8"
                     IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
@@ -76,9 +82,22 @@
                     IsChecked="{Binding ReleaseUpdates.InstallConfirmed, Mode=TwoWay}"
                     Content="I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails." />
           <TextBlock Classes="muted"
-                     IsVisible="{Binding ReleaseUpdates.ShowInstallUnavailable}"
+                     IsVisible="{Binding ReleaseUpdates.ShowGenericInstallUnavailable}"
                      TextWrapping="Wrap"
                      Text="Automatic replacement is disabled because this copy was not launched from a checksum-indexed release package. Open the releases page to install manually." />
+          <Border IsVisible="{Binding ReleaseUpdates.ShowAppImageManualInstall}"
+                  BorderBrush="{DynamicResource RavenAccentBrush}"
+                  BorderThickness="1"
+                  CornerRadius="6"
+                  Padding="12">
+            <StackPanel Spacing="5">
+              <TextBlock FontWeight="SemiBold"
+                         Text="AppImage manual update" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{Binding ReleaseUpdates.AppImageManualInstallInstructions}" />
+            </StackPanel>
+          </Border>
           <ProgressBar IsVisible="{Binding ReleaseUpdates.IsInstalling}"
                        Minimum="0"
                        Maximum="100"

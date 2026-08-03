@@ -21,7 +21,7 @@ public sealed class OverlayPresentationContractTests
             "ProgressText", "TrackedCompletionPercent", "ActiveSample", "Signals", "Warning", "Footer",
         ]),
         Contract("PlotBioSystem", ["src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml"], [
-            "Bodies", "RewardBands", "Organisms", "RewardSummary", "FirstFootfallRewardSummary",
+            "Bodies", "RewardBands", "HasCanonnSignals", "CanonnLogoControl", "Organisms", "RewardSummary", "FirstFootfallRewardSummary",
             "GeologicalSignals", "RadicoidaUnicaCountText",
         ]),
         Contract("PlotBodyInfo", ["src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml"], [

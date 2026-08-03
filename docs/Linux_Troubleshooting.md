@@ -11,7 +11,7 @@ This page collects common problems and fixes for the Linux AppImage / portable b
 ## Permission denied when launching the AppImage or binary
 
 ```bash
-chmod +x SrvSurvey-Avalonia-*-x86_64.AppImage
+chmod +x SrvSurvey-XP-*-x86_64.AppImage
 # or
 chmod +x SrvSurvey.Desktop
 ```
@@ -21,7 +21,7 @@ chmod +x SrvSurvey.Desktop
 Install the distribution’s FUSE 2 package, or use the extract-and-run fallback:
 
 ```bash
-./SrvSurvey-Avalonia-*-x86_64.AppImage --appimage-extract-and-run
+./SrvSurvey-XP-*-x86_64.AppImage --appimage-extract-and-run
 ```
 
 - Ubuntu 24.04+: `sudo apt install libfuse2t64`

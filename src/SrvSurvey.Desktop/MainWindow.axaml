@@ -95,5 +95,43 @@
       <views:SettingsView IsVisible="{Binding IsSettingsSelected}" />
       <views:GuidesView IsVisible="{Binding IsGuidesSelected}" />
     </Grid>
+
+    <Border Grid.ColumnSpan="2"
+            ZIndex="100"
+            IsVisible="{Binding ReleaseUpdates.ShouldShowUpdateNotification}"
+            VerticalAlignment="Bottom"
+            HorizontalAlignment="Center"
+            MaxWidth="760"
+            Margin="24"
+            Padding="16,13"
+            Background="{DynamicResource RavenWindowBrush}"
+            BorderBrush="{DynamicResource RavenAccentBrush}"
+            BorderThickness="1"
+            CornerRadius="12"
+            BoxShadow="0 8 24 0 #66000000">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+        <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="20"
+                   FontWeight="Bold"
+                   Text="&#x2191;" />
+        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+          <TextBlock FontWeight="SemiBold" Text="New release available" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding ReleaseUpdates.UpdateNotificationText}" />
+        </StackPanel>
+        <Button Grid.Column="2"
+                Classes="primary"
+                Command="{Binding ReleaseUpdates.OpenUpdateDiagnosticsCommand}"
+                Content="{Binding ReleaseUpdates.UpdateNotificationActionText}" />
+        <Button Grid.Column="3"
+                Classes="secondary"
+                MinWidth="36"
+                Padding="8,5"
+                Command="{Binding ReleaseUpdates.DismissNotificationCommand}"
+                ToolTip.Tip="Dismiss this release notification"
+                Content="&#x00D7;" />
+      </Grid>
+    </Border>
   </Grid>
 </Window>

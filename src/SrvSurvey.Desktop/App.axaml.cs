@@ -268,7 +268,8 @@ public sealed partial class App : Application
                     () => desktop.Shutdown()),
                 string.IsNullOrWhiteSpace(appImagePath)
                     ? null
-                    : "This AppImage is mounted read-only and cannot replace itself; use Open releases to download the new AppImage.");
+                    : "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually.",
+                isAppImage: !string.IsNullOrWhiteSpace(appImagePath));
 
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested +=

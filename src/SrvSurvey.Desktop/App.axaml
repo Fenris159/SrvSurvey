@@ -41,5 +41,8 @@
     <Style Selector="Window">
       <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
     </Style>
+    <Style Selector="ScrollViewer">
+      <Setter Property="IsScrollChainingEnabled" Value="False" />
+    </Style>
   </Application.Styles>
 </Application>

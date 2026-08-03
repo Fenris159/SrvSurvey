@@ -4,7 +4,7 @@ param(
     [string] $PublishDirectory,
 
     [Parameter(Mandatory)]
-    [ValidatePattern('^\d+\.\d+\.\d+(\.\d+)?$')]
+    [ValidatePattern('^\d+\.\d+\.\d+(\.\d+)?(-rc\.[1-9]\d*)?$')]
     [string] $Version,
 
     [Parameter(Mandatory)]
@@ -58,7 +58,7 @@ if ($files.path -notcontains $entryPoint) {
 
 $manifest = [ordered]@{
     schemaVersion = 1
-    product = 'SrvSurvey.Avalonia'
+    product = 'SrvSurvey.XP'
     version = $Version
     runtimeIdentifier = $RuntimeIdentifier
     entryPoint = $entryPoint

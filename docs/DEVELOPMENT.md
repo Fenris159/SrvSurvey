@@ -28,7 +28,7 @@ XWayland startup.
 
 ## Regression contract
 
-- Journal coverage is a checked-in 68-event inventory. Each event needs a
+- Journal coverage is a checked-in 74-event inventory. Each event needs a
   production consumer and event-specific assertions.
 - Network coverage inventories all runtime surfaces and every `HttpClient`
   owner, including bounded streaming requirements.
@@ -40,13 +40,16 @@ XWayland startup.
 
 ## Upstream parity baseline
 
-The latest source comparison was completed on 2026-07-30 against upstream
-commit `c8068866db8fc98061922a391922b74842b6cef3`. Its organic-scan recovery is
-covered by the Avalonia system reducer's body lookup/creation path. Its
-colonisation shopping-overlay correction is preserved by classifying an
-untracked Fleet Carrier from the journal's `StationType` value and the complete
-commander-linked Raven carrier inventory; station economy is not used as a
-Fleet Carrier proxy. Focused planner and presentation tests lock this behavior.
+The latest source comparison was completed on 2026-08-02 against upstream
+commit `b592d991daa035ddda6682be52f3e55791c6ab29`. The runtime changes from the
+prior `c8068866db8fc98061922a391922b74842b6cef3` baseline remain covered: its
+organic-scan recovery uses the Avalonia system reducer's body lookup/creation
+path, and its colonisation shopping-overlay correction classifies an untracked
+Fleet Carrier from the journal's `StationType` value plus the complete
+commander-linked Raven carrier inventory. Station economy is not used as a
+Fleet Carrier proxy. The only later upstream additions are two Eunostus
+documentation images, not application behavior. Focused planner and
+presentation tests lock the runtime behavior.
 
 Because this branch intentionally excludes the previous application source,
 future upstream commits must receive an explicit delta review rather than being

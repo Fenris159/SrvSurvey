@@ -15,7 +15,7 @@ output_path=$6
 repository_root=$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")
 packaging_root="$repository_root/packaging/linux"
 
-if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?(-rc\.[1-9][0-9]*)?$ ]]; then
     echo "Invalid AppImage version: '$version'." >&2
     exit 2
 fi

@@ -63,8 +63,14 @@ public sealed class OverlayCoverageInventoryTests
         Map("PlotBodyInfo", ["src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SystemSurveyViewModelTests.cs",
         ]),
+        Map("PlotBuildCommodities", ["src/SrvSurvey.Desktop/ColonizationCommodityOverlayWindow.axaml"], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/ColonizationCommodityOverlayViewModelTests.cs",
+        ]),
         Map("PlotFlightWarning", ["src/SrvSurvey.Desktop/FlightWarningOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SystemSurveyViewModelTests.cs",
+        ]),
+        Map("PlotFloatie", ["src/SrvSurvey.Desktop/NotificationOverlayWindow.axaml"], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/NotificationViewModelTests.cs",
         ]),
         Map("PlotFootCombat", ["src/SrvSurvey.Desktop/FootCombatOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/CombatViewModelTests.cs",
@@ -115,8 +121,20 @@ public sealed class OverlayCoverageInventoryTests
         Map("PlotMassacre", ["src/SrvSurvey.Desktop/MassacreMissionsOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/CombatViewModelTests.cs",
         ]),
+        Map("PlotMiniTrack", ["src/SrvSurvey.Desktop/MiniTrackOverlayWindow.axaml"], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/SurfaceSurveyViewModelTests.cs",
+        ]),
+        Map("PlotMultiGameCommander", ["src/SrvSurvey.Desktop/MultiGameCommanderOverlayWindow.axaml"], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/CommanderInstancesViewModelTests.cs",
+        ]),
         Map("PlotPriorScans", ["src/SrvSurvey.Desktop/PriorScansOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/PriorScansOverlayViewModelTests.cs",
+        ]),
+        Map("PlotPulse", ["src/SrvSurvey.Desktop/PulseOverlayWindow.axaml"], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/PulseOverlayViewModelTests.cs",
+        ]),
+        Map("PlotQuestMini", ["src/SrvSurvey.Desktop/QuestIndicatorOverlayWindow.axaml"], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/QuestIndicatorViewModelTests.cs",
         ]),
         Map("PlotRamTah", ["src/SrvSurvey.Desktop/RamTahOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/GuardianViewModelTests.cs",
@@ -124,6 +142,9 @@ public sealed class OverlayCoverageInventoryTests
         ]),
         Map("PlotSphericalSearch", ["src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SphericalSearchOverlayViewModelTests.cs",
+        ]),
+        Map("PlotStationInfo", ["src/SrvSurvey.Desktop/StationInfoOverlayWindow.axaml"], [
+            "tests/SrvSurvey.Desktop.Tests/ViewModels/StationInfoViewModelTests.cs",
         ]),
         Map("PlotSysStatus", ["src/SrvSurvey.Desktop/SystemStatusOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SystemSurveyViewModelTests.cs",
@@ -143,7 +164,7 @@ public sealed class OverlayCoverageInventoryTests
     [Fact]
     public void InventoryContainsEverySupportedOverlayExactlyOnce()
     {
-        Assert.Equal(24, Mappings.Length);
+        Assert.Equal(31, Mappings.Length);
         Assert.Equal(
             Mappings.Length,
             Mappings.Select(mapping => mapping.ContractName).Distinct().Count());

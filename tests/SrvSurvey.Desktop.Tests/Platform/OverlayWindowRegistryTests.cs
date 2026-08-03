@@ -4,6 +4,7 @@ using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
+[Collection(AvaloniaHeadlessTestCollection.Name)]
 public sealed class OverlayWindowRegistryTests
 {
     [AvaloniaFact]

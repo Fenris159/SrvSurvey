@@ -6,7 +6,7 @@ namespace SrvSurvey.Core.Updates;
 
 public sealed record ReleaseInstallationPreparation(
     Guid RequestId,
-    Version Version,
+    ReleaseVersion Version,
     string RuntimeIdentifier,
     string InstallationDirectory,
     string CandidateDirectory,
@@ -33,7 +33,7 @@ public sealed record ReleaseInstallationResult(
 public interface IReleaseInstallationPreparer
 {
     Task<ReleaseInstallationPreparation> PrepareAsync(
-        Version version,
+        ReleaseVersion version,
         string runtimeIdentifier,
         string readyDirectory,
         string manifestSha256,
@@ -62,7 +62,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
     }
 
     public async Task<ReleaseInstallationPreparation> PrepareAsync(
-        Version version,
+        ReleaseVersion version,
         string runtimeIdentifier,
         string readyDirectory,
         string manifestSha256,
@@ -70,7 +70,6 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
         IReadOnlyList<string> startupArguments,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(version);
         ArgumentException.ThrowIfNullOrWhiteSpace(runtimeIdentifier);
         ArgumentException.ThrowIfNullOrWhiteSpace(readyDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestSha256);

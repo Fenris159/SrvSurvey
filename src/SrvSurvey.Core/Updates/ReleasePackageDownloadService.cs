@@ -6,7 +6,7 @@ namespace SrvSurvey.Core.Updates;
 public interface IReleasePackageDownloadService
 {
     Task<ReleasePackageDownloadResult> DownloadAsync(
-        Version version,
+        ReleaseVersion version,
         CrossPlatformReleasePackage package,
         string dataDirectory,
         IProgress<ReleasePackageDownloadProgress>? progress = null,
@@ -36,7 +36,7 @@ public sealed class ReleasePackageDownloadService
     }
 
     public async Task<ReleasePackageDownloadResult> DownloadAsync(
-        Version version,
+        ReleaseVersion version,
         CrossPlatformReleasePackage package,
         string dataDirectory,
         IProgress<ReleasePackageDownloadProgress>? progress = null,
@@ -78,7 +78,7 @@ public sealed class ReleasePackageDownloadService
             {
                 NoCache = true,
             };
-            request.Headers.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
+            request.Headers.UserAgent.ParseAdd("SrvSurvey-XP/1.0");
             using var response = await client.SendAsync(
                     request,
                     HttpCompletionOption.ResponseHeadersRead,
@@ -204,7 +204,7 @@ public sealed class ReleasePackageDownloadService
 
     private static string ResolvePackageDirectory(
         string dataDirectory,
-        Version version,
+        ReleaseVersion version,
         string runtimeIdentifier)
     {
         var dataRoot = Path.GetFullPath(dataDirectory);
@@ -229,11 +229,10 @@ public sealed class ReleasePackageDownloadService
     }
 
     private static void Validate(
-        Version version,
+        ReleaseVersion version,
         CrossPlatformReleasePackage package,
         string dataDirectory)
     {
-        ArgumentNullException.ThrowIfNull(version);
         ArgumentNullException.ThrowIfNull(package);
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         if (version.Build < 0 || version.Major < 0 || version.Minor < 0)
@@ -249,7 +248,7 @@ public sealed class ReleasePackageDownloadService
                 $"The runtime '{package.RuntimeIdentifier}' has no update package."),
         };
         var suffix = expectedArchiveType == "zip" ? ".zip" : ".tar.gz";
-        var expectedName = $"SrvSurvey-Avalonia-{version}-{package.RuntimeIdentifier}{suffix}";
+        var expectedName = $"SrvSurvey-XP-{version}-{package.RuntimeIdentifier}{suffix}";
         if (!string.Equals(package.ArchiveType, expectedArchiveType, StringComparison.Ordinal)
             || !string.Equals(package.ArchiveName, expectedName, StringComparison.Ordinal)
             || !string.Equals(
@@ -288,7 +287,7 @@ public sealed class ReleasePackageDownloadService
         {
             Timeout = TimeSpan.FromMinutes(10),
         };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("SrvSurvey-XP/1.0");
         return client;
     }
 }

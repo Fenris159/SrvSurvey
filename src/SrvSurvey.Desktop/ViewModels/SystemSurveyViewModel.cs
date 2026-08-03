@@ -288,7 +288,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         {
             if (SetPreference(ref useExternalData, value))
             {
-                OnPropertyChanged(nameof(HasCanonnBiologyHint));
+                RefreshDisplay();
             }
         }
     }
@@ -364,7 +364,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         {
             if (SetPreference(ref autoShowPriorScans, value))
             {
-                OnPropertyChanged(nameof(HasCanonnBiologyHint));
+                RefreshDisplay();
             }
         }
     }
@@ -1510,8 +1510,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 .ToHashSet();
         }
 
-        OnPropertyChanged(nameof(HasCanonnBiologyHint));
-        OnPropertyChanged(nameof(CanonnBiologyHint));
+        RefreshDisplay();
     }
 
     public bool RefreshTransientState()
@@ -1675,7 +1674,10 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     biologyDiscoveryContext,
                     BiologyRewardThresholds,
                     biologyPredictionEvaluator,
-                    biologyCatalog);
+                    biologyCatalog,
+                    UseExternalData && AutoShowPriorScans
+                        ? canonnBiologyBodyIds
+                        : null);
         BiologyStatus = BiologyStatusViewModel.Create(
             snapshot,
             status,

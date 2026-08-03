@@ -33,7 +33,7 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
         Assert.Equal(package.Size, result.Size);
         Assert.Equal(package.DownloadUri, handler.RequestUri);
         Assert.True(handler.NoCache);
-        Assert.Contains("SrvSurvey-Avalonia/1.0", handler.UserAgent);
+        Assert.Contains("SrvSurvey-XP/1.0", handler.UserAgent);
         Assert.DoesNotContain(
             Directory.GetFiles(Path.GetDirectoryName(result.ArchivePath)!),
             path => path.EndsWith(".partial", StringComparison.Ordinal));
@@ -154,7 +154,7 @@ public sealed class ReleasePackageDownloadServiceTests : IDisposable
     {
         return new CrossPlatformReleasePackage(
             "win-x64",
-            "SrvSurvey-Avalonia-2.0.95.23-win-x64.zip",
+            "SrvSurvey-XP-2.0.95.23-win-x64.zip",
             "zip",
             bytes.LongLength,
             Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant(),

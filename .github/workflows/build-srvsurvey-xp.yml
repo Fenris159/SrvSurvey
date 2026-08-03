@@ -1,37 +1,36 @@
-name: Avalonia build and release
+name: Build and publish SrvSurvey-XP release
+
+run-name: SrvSurvey-XP ${{ inputs.version || github.ref_name }} from ${{ inputs.source_ref || github.ref_name }} (${{ inputs.release_channel || 'validation' }})
 
 on:
   push:
     branches:
       - SrvSurvey-Avalonia
-    tags:
-      - "[0-9]*.[0-9]*.[0-9]*"
-      - "v[0-9]*.[0-9]*.[0-9]*"
   pull_request:
   workflow_dispatch:
     inputs:
-      version:
-        description: Optional three- or four-part package version
-        required: false
+      source_ref:
+        description: Branch, tag, or commit to build
+        required: true
         type: string
-        default: ""
-      publish_release:
-        description: Publish packages to a GitHub Release
-        required: false
-        type: boolean
-        default: false
-  workflow_call:
-    inputs:
+        default: SrvSurvey-Avalonia
       version:
-        description: Optional package version override
-        required: false
+        description: Stable three- or four-part base version (for example, 2.1.4.0)
+        required: true
         type: string
-        default: ""
-      publish_release:
-        description: Publish packages to a GitHub Release
-        required: false
-        type: boolean
-        default: false
+      release_channel:
+        description: Stable publishes the base version; development appends -rc.N and creates a pre-release
+        required: true
+        type: choice
+        options:
+          - development
+          - stable
+        default: development
+      rc_number:
+        description: RC number used only for development releases
+        required: true
+        type: string
+        default: "1"
 
 permissions:
   contents: read
@@ -47,27 +46,30 @@ jobs:
     outputs:
       is_release: ${{ steps.metadata.outputs.is_release }}
       release_tag: ${{ steps.metadata.outputs.release_tag }}
-      version: ${{ steps.metadata.outputs.version }}
+      package_version: ${{ steps.metadata.outputs.package_version }}
+      file_version: ${{ steps.metadata.outputs.file_version }}
+      is_prerelease: ${{ steps.metadata.outputs.is_prerelease }}
+      source_sha: ${{ steps.metadata.outputs.source_sha }}
 
     steps:
       - name: Check out source
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref || github.sha }}
+          fetch-depth: 0
 
       - name: Resolve and validate version
         id: metadata
         shell: pwsh
         env:
-          REQUESTED_PUBLISH_RELEASE: ${{ inputs.publish_release }}
+          RELEASE_CHANNEL: ${{ inputs.release_channel }}
+          RC_NUMBER: ${{ inputs.rc_number }}
           REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           $project = [xml](Get-Content src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj)
           $versionText = [string]$project.Project.PropertyGroup.FileVersion
-          $isTagRelease = $env:GITHUB_REF_TYPE -eq "tag"
-          $isManualRelease = $env:REQUESTED_PUBLISH_RELEASE -eq "true"
-          $isRelease = $isTagRelease -or $isManualRelease
-          if ($isTagRelease) {
-            $versionText = $env:GITHUB_REF_NAME.TrimStart("v")
-          } elseif (-not [string]::IsNullOrWhiteSpace($env:REQUESTED_VERSION)) {
+          $isRelease = $env:GITHUB_EVENT_NAME -eq "workflow_dispatch"
+          if ($isRelease) {
             $versionText = $env:REQUESTED_VERSION.Trim()
           }
 
@@ -79,10 +81,29 @@ jobs:
             throw "'$versionText' is not a valid three- or four-part release version."
           }
 
-          $releaseTag = if ($isTagRelease) { $env:GITHUB_REF_NAME } else { "v$version" }
+          $channel = if ($isRelease) { $env:RELEASE_CHANNEL } else { "validation" }
+          $isPrerelease = $channel -eq "development"
+          if ($isRelease -and $channel -notin @("stable", "development")) {
+            throw "Release channel must be stable or development."
+          }
+
+          $packageVersion = $version.ToString()
+          if ($isPrerelease) {
+            $rc = 0
+            if (-not [int]::TryParse($env:RC_NUMBER, [ref]$rc) -or $rc -lt 1) {
+              throw "Development releases require an RC number of 1 or greater."
+            }
+            $packageVersion = "$packageVersion-rc.$rc"
+          }
+
+          $sourceSha = (git rev-parse HEAD).Trim()
+          $releaseTag = "xp-v$packageVersion"
           "is_release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           "release_tag=$releaseTag" >> $env:GITHUB_OUTPUT
-          "version=$version" >> $env:GITHUB_OUTPUT
+          "package_version=$packageVersion" >> $env:GITHUB_OUTPUT
+          "file_version=$version" >> $env:GITHUB_OUTPUT
+          "is_prerelease=$($isPrerelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "source_sha=$sourceSha" >> $env:GITHUB_OUTPUT
 
   build-test-publish:
     name: ${{ matrix.name }}
@@ -104,6 +125,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release-metadata.outputs.source_sha }}
 
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v6
@@ -129,8 +152,8 @@ jobs:
             --runtime "${{ matrix.rid }}" `
             --self-contained true `
             --output "artifacts/${{ matrix.rid }}" `
-            -p:Version="${{ needs.release-metadata.outputs.version }}" `
-            -p:FileVersion="${{ needs.release-metadata.outputs.version }}" `
+            -p:Version="${{ needs.release-metadata.outputs.package_version }}" `
+            -p:FileVersion="${{ needs.release-metadata.outputs.file_version }}" `
             -p:InaraApplicationApiKey="$env:INARA_APPLICATION_API_KEY" `
             -p:DebugType=None `
             -p:DebugSymbols=false
@@ -153,7 +176,7 @@ jobs:
         run: >-
           ./scripts/New-CrossPlatformPackageManifest.ps1
           -PublishDirectory "artifacts/${{ matrix.rid }}"
-          -Version "${{ needs.release-metadata.outputs.version }}"
+          -Version "${{ needs.release-metadata.outputs.package_version }}"
           -RuntimeIdentifier "${{ matrix.rid }}"
 
       - name: Prepare package output
@@ -165,7 +188,7 @@ jobs:
         with:
           path: artifacts/${{ matrix.rid }}
           format: spdx-json
-          output-file: packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-${{ matrix.rid }}.spdx.json
+          output-file: packages/SrvSurvey-XP-${{ needs.release-metadata.outputs.package_version }}-${{ matrix.rid }}.spdx.json
           syft-version: v1.49.0
           upload-artifact: false
           upload-release-assets: false
@@ -175,7 +198,7 @@ jobs:
         if: matrix.archive == 'zip'
         shell: pwsh
         run: |
-          $archive = "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-${{ matrix.rid }}.zip"
+          $archive = "packages/SrvSurvey-XP-${{ needs.release-metadata.outputs.package_version }}-${{ matrix.rid }}.zip"
           Compress-Archive -Path "artifacts/${{ matrix.rid }}/*" -DestinationPath $archive
 
       - name: Package Linux application
@@ -183,7 +206,7 @@ jobs:
         shell: bash
         run: |
           tar --create --gzip \
-            --file "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-${{ matrix.rid }}.tar.gz" \
+            --file "packages/SrvSurvey-XP-${{ needs.release-metadata.outputs.package_version }}-${{ matrix.rid }}.tar.gz" \
             --directory "artifacts/${{ matrix.rid }}" .
 
       - name: Install AppImage validation tools
@@ -238,17 +261,17 @@ jobs:
             "artifacts/appimage/srvsurvey.png"
           bash ./scripts/New-LinuxAppImage.sh \
             "artifacts/${{ matrix.rid }}" \
-            "${{ needs.release-metadata.outputs.version }}" \
+            "${{ needs.release-metadata.outputs.package_version }}" \
             "artifacts/appimage/srvsurvey.png" \
             "$linuxdeploy" \
             "$tool" \
-            "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-x86_64.AppImage"
+            "packages/SrvSurvey-XP-${{ needs.release-metadata.outputs.package_version }}-x86_64.AppImage"
 
       - name: Inspect Linux AppImage payload
         if: matrix.archive == 'tar.gz'
         shell: bash
         run: |
-          appimage=$(realpath "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-x86_64.AppImage")
+          appimage=$(realpath "packages/SrvSurvey-XP-${{ needs.release-metadata.outputs.package_version }}-x86_64.AppImage")
           inspect_root="$RUNNER_TEMP/srvsurvey-appimage-inspection"
           mkdir -p "$inspect_root"
           cd "$inspect_root"
@@ -266,7 +289,7 @@ jobs:
         shell: bash
         run: >-
           bash ./scripts/Test-LinuxAppImageRuntime.sh
-          "packages/SrvSurvey-Avalonia-${{ needs.release-metadata.outputs.version }}-x86_64.AppImage"
+          "packages/SrvSurvey-XP-${{ needs.release-metadata.outputs.package_version }}-x86_64.AppImage"
 
       - name: Upload package artifact
         uses: actions/upload-artifact@v7
@@ -289,6 +312,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release-metadata.outputs.source_sha }}
 
       - name: Download platform packages
         uses: actions/download-artifact@v8
@@ -302,7 +327,7 @@ jobs:
         run: >-
           ./scripts/New-CrossPlatformReleaseIndex.ps1
           -PackageDirectory packages
-          -Version "${{ needs.release-metadata.outputs.version }}"
+          -Version "${{ needs.release-metadata.outputs.package_version }}"
           -OutputPath packages/release-index.json
 
       - name: Create or repair release
@@ -310,19 +335,32 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.release-metadata.outputs.release_tag }}
+          RELEASE_VERSION: ${{ needs.release-metadata.outputs.package_version }}
+          IS_PRERELEASE: ${{ needs.release-metadata.outputs.is_prerelease }}
+          SOURCE_SHA: ${{ needs.release-metadata.outputs.source_sha }}
         run: |
+          release_args=(
+            --generate-notes
+            --notes "$(cat CurrentReleaseNotes.md)"
+            --title "SrvSurvey-XP $RELEASE_VERSION"
+            --latest=false
+          )
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            release_args+=(--prerelease)
+          fi
+
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" packages/* --clobber
+            gh release edit "$RELEASE_TAG" \
+              --title "SrvSurvey-XP $RELEASE_VERSION" \
+              --prerelease="$IS_PRERELEASE" \
+              --latest=false
           elif git ls-remote --exit-code --tags origin "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
             gh release create "$RELEASE_TAG" packages/* \
               --verify-tag \
-              --generate-notes \
-              --notes "$(cat CurrentReleaseNotes.md)" \
-              --title "SrvSurvey ${{ needs.release-metadata.outputs.version }}"
+              "${release_args[@]}"
           else
             gh release create "$RELEASE_TAG" packages/* \
-              --target "$GITHUB_SHA" \
-              --generate-notes \
-              --notes "$(cat CurrentReleaseNotes.md)" \
-              --title "SrvSurvey ${{ needs.release-metadata.outputs.version }}"
+              --target "$SOURCE_SHA" \
+              "${release_args[@]}"
           fi

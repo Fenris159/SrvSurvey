@@ -51,6 +51,50 @@ public sealed class GuidesViewModelTests
             icons.Length);
     }
 
+    [Fact]
+    public void GlossaryDocumentsCanonnSignalIndicatorBesideBiologyPips()
+    {
+        var icon = GuideCatalog.Create()
+            .SelectMany(category => category.Icons)
+            .Single(icon => icon.Kind == GuideIconKind.CanonnSignals);
+
+        Assert.Contains("Canonn", icon.Name, StringComparison.Ordinal);
+        Assert.Contains("beside", icon.Meaning, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("PIPs", icon.Meaning, StringComparison.Ordinal);
+        Assert.Equal("System biology overlay", icon.AppearsIn);
+    }
+
+    [Fact]
+    public void GlossaryDocumentsLegacyGuardianRendererStates()
+    {
+        var icons = GuideCatalog.Create()
+            .SelectMany(category => category.Icons)
+            .ToArray();
+        GuideIconViewModel Icon(GuideIconKind kind) =>
+            icons.Single(icon => icon.Kind == kind);
+
+        Assert.Contains(
+            "90-degree radial glow",
+            Icon(GuideIconKind.GuardianActiveObelisk).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "individual heading",
+            Icon(GuideIconKind.GuardianRelic).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "orange Orb",
+            Icon(GuideIconKind.GuardianArtifact).Meaning,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "translucent gray",
+            Icon(GuideIconKind.GuardianPoiStates).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(
+            "not a generic X",
+            Icon(GuideIconKind.GuardianBrokenObelisk).Meaning,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
     [Theory]
     [InlineData("journal folder", "First launch")]
     [InlineData("marketID repair", "Completed build-site repair")]

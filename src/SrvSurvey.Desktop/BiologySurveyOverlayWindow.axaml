@@ -73,41 +73,49 @@
                                Text="{Binding Name}"
                                TextDecorations="Strikethrough" />
                   </Grid>
-                  <ItemsControl Grid.Column="2"
-                                Margin="1,0,2,0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                ItemsSource="{Binding RewardBands}">
-                    <ItemsControl.ItemsPanel>
-                      <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" Spacing="2" />
-                      </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="vm:BiologySignalRewardBandViewModel">
-                        <controls:BiologyRewardBandControl Width="13"
-                                                           Height="28"
-                                                           MinimumReward="{Binding MinimumReward}"
-                                                           MaximumReward="{Binding MaximumReward}"
-                                                           BucketOneMillions="{Binding RewardBucketOneMillions}"
-                                                           BucketTwoMillions="{Binding RewardBucketTwoMillions}"
-                                                           BucketThreeMillions="{Binding RewardBucketThreeMillions}"
-                                                           IsPrediction="{Binding IsPrediction}"
-                                                           IsHighlighted="{Binding IsHighlighted}"
-                                                           IsDimmed="{Binding ShouldDim}"
-                                                           FilledBrush="{DynamicResource RavenPrimaryBrush}"
-                                                           PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                           DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                           PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
-                                                           PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
-                                                           HighlightBrush="{DynamicResource RavenBioGoldBrush}"
-                                                           DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
-                                                           UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
-                                                           HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                           PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
+                  <StackPanel Grid.Column="2"
+                              Margin="1,0,2,0"
+                              HorizontalAlignment="Left"
+                              VerticalAlignment="Center"
+                              Orientation="Horizontal"
+                              Spacing="4">
+                    <ItemsControl ItemsSource="{Binding RewardBands}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <StackPanel Orientation="Horizontal" Spacing="2" />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:BiologySignalRewardBandViewModel">
+                          <controls:BiologyRewardBandControl Width="13"
+                                                             Height="28"
+                                                             MinimumReward="{Binding MinimumReward}"
+                                                             MaximumReward="{Binding MaximumReward}"
+                                                             BucketOneMillions="{Binding RewardBucketOneMillions}"
+                                                             BucketTwoMillions="{Binding RewardBucketTwoMillions}"
+                                                             BucketThreeMillions="{Binding RewardBucketThreeMillions}"
+                                                             IsPrediction="{Binding IsPrediction}"
+                                                             IsHighlighted="{Binding IsHighlighted}"
+                                                             IsDimmed="{Binding ShouldDim}"
+                                                             FilledBrush="{DynamicResource RavenPrimaryBrush}"
+                                                             PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
+                                                             DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
+                                                             PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
+                                                             PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
+                                                             HighlightBrush="{DynamicResource RavenBioGoldBrush}"
+                                                             DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
+                                                             UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
+                                                             HatchBrush="{DynamicResource RavenBioHatchBrush}"
+                                                             PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <controls:CanonnLogoControl Width="16"
+                                                Height="16"
+                                                VerticalAlignment="Center"
+                                                IsVisible="{Binding HasCanonnSignals}"
+                                                ToolTip.Tip="Canonn has known biological signals for this body" />
+                  </StackPanel>
                   <TextBlock Grid.Column="3"
                              MaxWidth="76"
                              HorizontalAlignment="Right"
@@ -126,11 +134,18 @@
                      IsVisible="{Binding Survey.BiologySurveyDisplay.RequiresDss}"
                      Text="DSS scan required"
                      TextWrapping="Wrap" />
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="9"
-                     IsVisible="{Binding Survey.HasCanonnBiologyHint}"
-                     Text="{Binding Survey.CanonnBiologyHint}"
-                     TextWrapping="Wrap" />
+          <StackPanel IsVisible="{Binding Survey.HasCanonnBiologyHint}"
+                      Orientation="Horizontal"
+                      Spacing="4">
+            <controls:CanonnLogoControl Width="16"
+                                        Height="16"
+                                        VerticalAlignment="Center" />
+            <TextBlock VerticalAlignment="Center"
+                       Foreground="{DynamicResource RavenAccentBrush}"
+                       FontSize="9"
+                       Text="{Binding Survey.CanonnBiologyHint}"
+                       TextWrapping="Wrap" />
+          </StackPanel>
           <TextBlock Foreground="{DynamicResource RavenMutedTextBrush}"
                      FontSize="9"
                      IsVisible="{Binding Survey.BiologySurveyDisplay.HasPredictionStatus}"

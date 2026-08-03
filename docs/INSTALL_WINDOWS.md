@@ -1,23 +1,25 @@
 # Install SrvSurvey on Windows
 
-These instructions apply to the portable Avalonia package named
-`SrvSurvey-Avalonia-<version>-win-x64.zip`. It is self-contained and does not
+These instructions apply to the portable cross-platform package named
+`SrvSurvey-XP-<version>-win-x64.zip`. It is self-contained and does not
 use `setup.exe` or require a separate .NET installation.
 
 ## Download the package
 
-Download `SrvSurvey-Avalonia-<version>-win-x64.zip` from the repository's
-[latest GitHub release](https://github.com/Fenris159/SrvSurvey/releases/latest).
+Download `SrvSurvey-XP-<version>-win-x64.zip` from the relevant
+[SrvSurvey-XP release](https://github.com/Fenris159/SrvSurvey/releases).
 
 Repository maintainers can build and publish a new release as follows:
 
 1. Open the repository's
-   [Publish Windows and Linux release workflow](https://github.com/Fenris159/SrvSurvey/actions/workflows/manual-release-packages.yml).
-2. Select **Run workflow**, enter a three- or four-part release version, and
-   start the run.
-3. After all builds and tests pass, the workflow creates the corresponding
-   `v<version>` tag and GitHub Release and attaches the Windows ZIP, Linux
-   packages, checksums, release index, and software bills of materials.
+   [Build and publish SrvSurvey-XP release workflow](https://github.com/Fenris159/SrvSurvey/actions/workflows/build-srvsurvey-xp.yml).
+2. Select **Run workflow**, choose the source branch/tag/commit and release
+   channel, then enter a three- or four-part base version. Development builds
+   also require an RC number.
+3. After all builds and tests pass, the workflow creates an `xp-v<version>`
+   release. Development builds append `-rc.<number>` and are GitHub
+   pre-releases; stable builds use the base version and are explicitly not
+   assigned GitHub's **Latest** badge.
 
 ## Extract and run it
 
@@ -27,7 +29,7 @@ that contains `SrvSurvey.Desktop.exe`, its DLLs, and its runtime files; it does
 not mean Docker or Windows Sandbox.
 
 1. Create a dedicated folder, such as
-   `C:\Users\<you>\AppData\Local\Programs\SrvSurvey-Avalonia\<version>`.
+   `C:\Users\<you>\AppData\Local\Programs\SrvSurvey-XP\<version>`.
 2. Extract the complete package ZIP into that folder. Do not run the executable
    from inside the ZIP preview.
 3. Open that folder and run `SrvSurvey.Desktop.exe` from there.

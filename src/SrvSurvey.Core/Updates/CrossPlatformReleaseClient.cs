@@ -8,11 +8,12 @@ public interface ICrossPlatformReleaseClient
 {
     Task<CrossPlatformRelease?> GetLatestAsync(
         string runtimeIdentifier,
+        ReleaseChannel channel,
         CancellationToken cancellationToken = default);
 }
 
 public sealed record CrossPlatformRelease(
-    Version Version,
+    ReleaseVersion Version,
     Uri ReleaseUri,
     CrossPlatformReleasePackage Package);
 
@@ -26,53 +27,86 @@ public sealed record CrossPlatformReleasePackage(
 
 public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
 {
-    private const int MaximumReleaseCount = 20;
+    private const int ReleasesPerPage = 100;
+    private const int MaximumReleasePages = 5;
+    private const int MaximumReleaseCount = ReleasesPerPage * MaximumReleasePages;
     private const int MaximumAssetCount = 64;
     private const int MaximumReleaseApiBytes = 2 * 1024 * 1024;
     private const int MaximumReleaseIndexBytes = 64 * 1024;
     private const long MaximumPackageBytes = 512L * 1024 * 1024;
-    private const string ProductName = "SrvSurvey.Avalonia";
+    private const string ProductName = "SrvSurvey.XP";
+    private const string ProductTagPrefix = "xp-v";
+    private const string PackageNamePrefix = "SrvSurvey-XP";
     private const string ReleaseIndexName = "release-index.json";
-    private static readonly Uri DefaultReleasesApiUri = new(
-        "https://api.github.com/repos/Fenris159/SrvSurvey/releases?per_page=20");
+    private static readonly Uri DefaultDevelopmentReleasesApiUri = new(
+        "https://api.github.com/repos/Fenris159/SrvSurvey/releases?per_page=100");
+    private static readonly Uri DefaultStableReleasesApiUri = new(
+        "https://api.github.com/repos/njthomson/SrvSurvey/releases?per_page=100");
     private static readonly HttpClient SharedClient = CreateSharedClient();
     private readonly HttpClient client;
-    private readonly Uri releasesApiUri;
+    private readonly Uri developmentReleasesApiUri;
+    private readonly Uri stableReleasesApiUri;
 
     public CrossPlatformReleaseClient(
         HttpClient? client = null,
-        Uri? releasesApiUri = null)
+        Uri? developmentReleasesApiUri = null,
+        Uri? stableReleasesApiUri = null)
     {
         this.client = client ?? SharedClient;
-        this.releasesApiUri = releasesApiUri ?? DefaultReleasesApiUri;
+        this.developmentReleasesApiUri = developmentReleasesApiUri
+            ?? DefaultDevelopmentReleasesApiUri;
+        this.stableReleasesApiUri = stableReleasesApiUri
+            ?? DefaultStableReleasesApiUri;
     }
 
     public async Task<CrossPlatformRelease?> GetLatestAsync(
         string runtimeIdentifier,
+        ReleaseChannel channel,
         CancellationToken cancellationToken = default)
     {
         ValidateRuntimeIdentifier(runtimeIdentifier);
-        using var request = new HttpRequestMessage(HttpMethod.Get, releasesApiUri);
-        request.Headers.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
-        request.Headers.CacheControl = new CacheControlHeaderValue
+        var releasesApiUri = channel == ReleaseChannel.Development
+            ? developmentReleasesApiUri
+            : stableReleasesApiUri;
+        ReleaseCandidate? candidate = null;
+        var releaseCount = 0;
+        for (var page = 1; page <= MaximumReleasePages; page++)
         {
-            NoCache = true,
-        };
-        request.Headers.Accept.ParseAdd("application/vnd.github+json");
-        request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
-        using var response = await client.SendAsync(
-                request,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken)
-            .ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-        var bytes = await ReadBoundedAsync(
-                response.Content,
-                MaximumReleaseApiBytes,
-                releasesApiUri,
-                cancellationToken)
-            .ConfigureAwait(false);
-        var candidate = ParseLatestRelease(bytes);
+            var pageUri = ResolvePageUri(releasesApiUri, page);
+            using var request = CreateGitHubRequest(pageUri);
+            using var response = await client.SendAsync(
+                    request,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            var bytes = await ReadBoundedAsync(
+                    response.Content,
+                    MaximumReleaseApiBytes,
+                    pageUri,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            var parsed = ParseReleasePage(bytes, channel);
+            releaseCount += parsed.ReleaseCount;
+            if (releaseCount > MaximumReleaseCount)
+            {
+                throw new InvalidDataException(
+                    "The GitHub release feed contains too many releases.");
+            }
+
+            if (parsed.Latest is not null
+                && (candidate is null
+                    || parsed.Latest.Version > candidate.Version))
+            {
+                candidate = parsed.Latest;
+            }
+
+            if (parsed.ReleaseCount < ReleasesPerPage)
+            {
+                break;
+            }
+        }
+
         if (candidate is null)
         {
             return null;
@@ -86,7 +120,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         using var indexRequest = new HttpRequestMessage(
             HttpMethod.Get,
             indexAsset.DownloadUri);
-        indexRequest.Headers.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
+        indexRequest.Headers.UserAgent.ParseAdd("SrvSurvey-XP/1.0");
         using var indexResponse = await client.SendAsync(
                 indexRequest,
                 HttpCompletionOption.ResponseHeadersRead,
@@ -138,7 +172,9 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             "Automatic updates are available only on Windows and Linux.");
     }
 
-    private static ReleaseCandidate? ParseLatestRelease(byte[] bytes)
+    private static ReleasePage ParseReleasePage(
+        byte[] bytes,
+        ReleaseChannel channel)
     {
         try
         {
@@ -154,13 +190,13 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             foreach (var element in document.RootElement.EnumerateArray())
             {
                 count++;
-                if (count > MaximumReleaseCount)
+                if (count > ReleasesPerPage)
                 {
                     throw new InvalidDataException(
-                        "The GitHub releases response contains too many releases.");
+                        "A GitHub release page contains too many releases.");
                 }
 
-                var candidate = ParseReleaseCandidate(element);
+                var candidate = ParseReleaseCandidate(element, channel);
                 if (candidate is not null
                     && (latest is null || candidate.Version > latest.Version))
                 {
@@ -168,7 +204,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
                 }
             }
 
-            return latest;
+            return new ReleasePage(latest, count);
         }
         catch (JsonException exception)
         {
@@ -178,25 +214,28 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         }
     }
 
-    private static ReleaseCandidate? ParseReleaseCandidate(JsonElement element)
+    private static ReleaseCandidate? ParseReleaseCandidate(
+        JsonElement element,
+        ReleaseChannel channel)
     {
-        if (element.ValueKind != JsonValueKind.Object
-            || ReadBoolean(element, "draft")
-            || ReadBoolean(element, "prerelease"))
+        if (element.ValueKind != JsonValueKind.Object)
         {
             return null;
         }
 
+        var isDraft = ReadBoolean(element, "draft");
+        var isPrerelease = ReadBoolean(element, "prerelease");
         var tag = ReadRequiredString(element, "tag_name");
-        if (tag.StartsWith('v') || tag.StartsWith('V'))
+        if (isDraft
+            || (channel == ReleaseChannel.Stable && isPrerelease)
+            || !tag.StartsWith(ProductTagPrefix, StringComparison.OrdinalIgnoreCase))
         {
-            tag = tag[1..];
+            return null;
         }
 
-        if (!Version.TryParse(tag, out var version)
-            || version.Build < 0
-            || version.Major < 0
-            || version.Minor < 0)
+        var versionText = tag[ProductTagPrefix.Length..];
+        if (!ReleaseVersion.TryParse(versionText, out var version)
+            || version.IsPrerelease != isPrerelease)
         {
             return null;
         }
@@ -244,7 +283,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
 
     private static CrossPlatformReleasePackage ParseReleaseIndex(
         byte[] bytes,
-        Version expectedVersion,
+        ReleaseVersion expectedVersion,
         string runtimeIdentifier,
         IReadOnlyList<ReleaseAsset> assets)
     {
@@ -264,7 +303,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             }
 
             var versionText = ReadRequiredString(root, "version");
-            if (!Version.TryParse(versionText, out var indexVersion)
+            if (!ReleaseVersion.TryParse(versionText, out var indexVersion)
                 || indexVersion != expectedVersion)
             {
                 throw new InvalidDataException(
@@ -309,7 +348,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
 
     private static CrossPlatformReleasePackage ParseIndexedPackage(
         IReadOnlyList<JsonElement> packages,
-        Version version,
+        ReleaseVersion version,
         string runtimeIdentifier,
         string archiveType,
         IReadOnlyList<ReleaseAsset> assets)
@@ -319,7 +358,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             runtimeIdentifier,
             StringComparison.Ordinal)).ToArray();
         var suffix = archiveType == "zip" ? ".zip" : ".tar.gz";
-        var expectedName = $"SrvSurvey-Avalonia-{version}-{runtimeIdentifier}{suffix}";
+        var expectedName = $"{PackageNamePrefix}-{version}-{runtimeIdentifier}{suffix}";
         if (matching.Length != 1
             || !string.Equals(
                 ReadRequiredString(matching[0], "archive"),
@@ -408,6 +447,30 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         return output.ToArray();
     }
 
+    private static HttpRequestMessage CreateGitHubRequest(Uri uri)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        request.Headers.UserAgent.ParseAdd("SrvSurvey-XP/1.0");
+        request.Headers.CacheControl = new CacheControlHeaderValue
+        {
+            NoCache = true,
+        };
+        request.Headers.Accept.ParseAdd("application/vnd.github+json");
+        request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
+        return request;
+    }
+
+    private static Uri ResolvePageUri(Uri baseUri, int page)
+    {
+        if (page == 1)
+        {
+            return baseUri;
+        }
+
+        var separator = string.IsNullOrEmpty(baseUri.Query) ? "?" : "&";
+        return new Uri($"{baseUri.AbsoluteUri}{separator}page={page}");
+    }
+
     private static bool ReadBoolean(JsonElement element, string propertyName)
     {
         if (!element.TryGetProperty(propertyName, out var property)
@@ -490,12 +553,16 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
         {
             Timeout = TimeSpan.FromSeconds(30),
         };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("SrvSurvey-Avalonia/1.0");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("SrvSurvey-XP/1.0");
         return client;
     }
 
+    private sealed record ReleasePage(
+        ReleaseCandidate? Latest,
+        int ReleaseCount);
+
     private sealed record ReleaseCandidate(
-        Version Version,
+        ReleaseVersion Version,
         Uri ReleaseUri,
         IReadOnlyList<ReleaseAsset> Assets);
 

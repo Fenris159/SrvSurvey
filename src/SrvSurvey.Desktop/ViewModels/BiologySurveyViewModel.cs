@@ -82,7 +82,8 @@ public sealed record BiologySurveyViewModel(
         BiologyDiscoveryContext? discoveryContext = null,
         BiologyRewardThresholds? rewardThresholds = null,
         BiologyPredictionEvaluator? predictionEvaluator = null,
-        ExobiologyReferenceCatalog? referenceCatalog = null)
+        ExobiologyReferenceCatalog? referenceCatalog = null,
+        IReadOnlySet<int>? canonnBiologyBodyIds = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
@@ -111,7 +112,8 @@ public sealed record BiologySurveyViewModel(
                 exobiology.CountRadicoidaUnica,
                 rewardThresholds ?? BiologyRewardThresholds.Default,
                 predictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                referenceCatalog ?? DefaultBioReferenceCatalog.Value)
+                referenceCatalog ?? DefaultBioReferenceCatalog.Value,
+                canonnBiologyBodyIds)
             : CreateBody(
                 snapshot,
                 body,
@@ -154,7 +156,8 @@ public sealed record BiologySurveyViewModel(
                 radicoidaUnicaCount,
                 rewardThresholds ?? BiologyRewardThresholds.Default,
                 predictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                referenceCatalog ?? DefaultBioReferenceCatalog.Value);
+                referenceCatalog ?? DefaultBioReferenceCatalog.Value,
+                canonnBiologyBodyIds: null);
     }
 
     public static BiologySurveyViewModel? CreateBodyDetail(
@@ -229,7 +232,8 @@ public sealed record BiologySurveyViewModel(
         int radicoidaUnicaCount,
         BiologyRewardThresholds rewardThresholds,
         BiologyPredictionEvaluator predictionEvaluator,
-        ExobiologyReferenceCatalog referenceCatalog)
+        ExobiologyReferenceCatalog referenceCatalog,
+        IReadOnlySet<int>? canonnBiologyBodyIds)
     {
         var destinationBodyId = status?.Destination is { } destination
             && destination.System == snapshot.SystemAddress
@@ -264,6 +268,7 @@ public sealed record BiologySurveyViewModel(
                     estimate.HasUnknownReward,
                     body.BodyId == destinationBodyId,
                     body.BodyId == currentBodyId,
+                    canonnBiologyBodyIds?.Contains(body.BodyId) == true,
                     rewardBands,
                     rewardThresholds.BucketOneMillions,
                     rewardThresholds.BucketTwoMillions,
@@ -926,6 +931,7 @@ public sealed record BiologyBodyRowViewModel(
     bool HasUnknownReward,
     bool IsDestination,
     bool IsCurrentBody,
+    bool HasCanonnSignals,
     IReadOnlyList<BiologySignalRewardBandViewModel> RewardBands,
     double RewardBucketOneMillions = 3,
     double RewardBucketTwoMillions = 7,

@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Input;
 using SrvSurvey.Core.Updates;
+using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
@@ -10,15 +11,20 @@ namespace SrvSurvey.Desktop.ViewModels;
 public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
 {
     private readonly IReleaseUpdateService service;
-    private readonly Version currentVersion;
+    private readonly ReleaseVersion currentVersion;
+    private readonly ReleaseUpdateSettingsStore? settingsStore;
     private readonly AsyncCommand checkCommand;
     private readonly AsyncCommand openReleaseCommand;
     private readonly AsyncCommand installCommand;
+    private readonly AsyncCommand dismissNotificationCommand;
+    private readonly AsyncCommand openUpdateDiagnosticsCommand;
     private Func<Uri, Task<bool>>? uriLauncher;
+    private Action? diagnosticsNavigator;
     private InstallerContext? installer;
     private Uri? releaseUri;
     private CrossPlatformReleasePackage? releasePackage;
-    private Version? releaseVersion;
+    private ReleaseVersion? releaseVersion;
+    private ReleaseVersion? dismissedReleaseVersion;
     private string latestVersion = "Not checked";
     private string statusMessage = "Update status has not been checked.";
     private string installProgressText = string.Empty;
@@ -27,14 +33,20 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     private bool isUpdateAvailable;
     private bool isInstalling;
     private bool installConfirmed;
+    private bool useDevelopmentReleases;
+    private bool recheckRequested;
     private double installProgressPercent;
 
     public ReleaseUpdateViewModel(
         IReleaseUpdateService service,
-        Version currentVersion)
+        ReleaseVersion currentVersion,
+        ReleaseUpdateSettingsStore? settingsStore = null)
     {
-        this.service = service;
+        this.service = service ?? throw new ArgumentNullException(nameof(service));
         this.currentVersion = currentVersion;
+        this.settingsStore = settingsStore;
+        useDevelopmentReleases = settingsStore?.LoadUseDevelopmentReleases()
+            ?? true;
         checkCommand = new AsyncCommand(
             CheckAsync,
             () => !IsChecking && !IsInstalling);
@@ -47,9 +59,18 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         installCommand = new AsyncCommand(
             InstallAsync,
             () => CanInstall);
+        dismissNotificationCommand = new AsyncCommand(
+            DismissUpdateNotificationAsync,
+            () => ShouldShowUpdateNotification);
+        openUpdateDiagnosticsCommand = new AsyncCommand(
+            OpenUpdateDiagnosticsAsync,
+            () => ShouldShowUpdateNotification
+                && diagnosticsNavigator is not null);
         CheckCommand = checkCommand;
         OpenReleaseCommand = openReleaseCommand;
         InstallCommand = installCommand;
+        DismissNotificationCommand = dismissNotificationCommand;
+        OpenUpdateDiagnosticsCommand = openUpdateDiagnosticsCommand;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -60,7 +81,11 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
 
     public ICommand InstallCommand { get; }
 
-    public string CurrentVersion => FormatVersion(currentVersion);
+    public ICommand DismissNotificationCommand { get; }
+
+    public ICommand OpenUpdateDiagnosticsCommand { get; }
+
+    public string CurrentVersion => currentVersion.ToString();
 
     public string LatestVersion
     {
@@ -88,6 +113,57 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool UseDevelopmentReleases
+    {
+        get => useDevelopmentReleases;
+        set
+        {
+            if (!SetField(ref useDevelopmentReleases, value))
+            {
+                return;
+            }
+
+            dismissedReleaseVersion = null;
+            LatestVersion = "Not checked";
+            ClearAvailableRelease();
+            RaiseChannelPropertiesChanged();
+            try
+            {
+                settingsStore?.SaveUseDevelopmentReleases(value);
+                StatusMessage = $"Switched to the {SelectedChannelName} release channel; checking now.";
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or InvalidDataException)
+            {
+                StatusMessage = "The release channel changed for this session but could not be saved: "
+                    + exception.Message;
+            }
+
+            if (IsChecking)
+            {
+                recheckRequested = true;
+            }
+            else
+            {
+                _ = CheckAsync();
+            }
+        }
+    }
+
+    public string SelectedChannelName => UseDevelopmentReleases
+        ? "development"
+        : "stable";
+
+    public string ReleaseSourceDescription => UseDevelopmentReleases
+        ? "Development releases are read from Fenris159/SrvSurvey, including RC builds."
+        : "Stable SrvSurvey-XP releases are read from njthomson/SrvSurvey.";
+
+    public string OpenReleaseButtonText => UseDevelopmentReleases
+        ? "Open development release"
+        : "Open stable release";
+
     public bool IsUpdateAvailable
     {
         get => isUpdateAvailable;
@@ -97,6 +173,9 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             {
                 OnPropertyChanged(nameof(IsCurrent));
                 OnPropertyChanged(nameof(ShowInstallUnavailable));
+                OnPropertyChanged(nameof(ShowGenericInstallUnavailable));
+                OnPropertyChanged(nameof(ShowAppImageManualInstall));
+                RaiseNotificationPropertiesChanged();
                 openReleaseCommand.RaiseCanExecuteChanged();
                 installCommand.RaiseCanExecuteChanged();
             }
@@ -151,6 +230,15 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     public bool ShowInstallUnavailable =>
         IsUpdateAvailable && !CanInstallCurrentInstallation;
 
+    public bool ShowGenericInstallUnavailable =>
+        ShowInstallUnavailable && installer?.IsAppImage != true;
+
+    public bool ShowAppImageManualInstall =>
+        IsUpdateAvailable && installer?.IsAppImage == true;
+
+    public string AppImageManualInstallInstructions =>
+        "Download the AppImage from this release, make it executable, replace your existing AppImage file, and launch it again.";
+
     public bool CanInstall => IsUpdateAvailable
         && CanInstallCurrentInstallation
         && releasePackage is not null
@@ -160,6 +248,18 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         && !IsInstalling;
 
     public bool IsCurrent => !IsUpdateAvailable;
+
+    public bool ShouldShowUpdateNotification => IsUpdateAvailable
+        && releaseVersion is { } available
+        && dismissedReleaseVersion != available;
+
+    public string UpdateNotificationText => releaseVersion is { } available
+        ? $"SrvSurvey-XP {available} is available on the {SelectedChannelName} channel."
+        : string.Empty;
+
+    public string UpdateNotificationActionText => ShowAppImageManualInstall
+        ? "Review manual update"
+        : "Review update";
 
     public string CheckButtonText => IsChecking
         ? "Checking..."
@@ -175,6 +275,12 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         openReleaseCommand.RaiseCanExecuteChanged();
     }
 
+    public void SetDiagnosticsNavigator(Action? navigate)
+    {
+        diagnosticsNavigator = navigate;
+        openUpdateDiagnosticsCommand.RaiseCanExecuteChanged();
+    }
+
     public void ConfigureInstaller(
         IReleasePackageDownloadService downloadService,
         IReleasePackageStagingService stagingService,
@@ -184,7 +290,8 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         string installationDirectory,
         IReadOnlyList<string> startupArguments,
         Func<Task> shutdown,
-        string? automaticInstallationUnavailableReason = null)
+        string? automaticInstallationUnavailableReason = null,
+        bool isAppImage = false)
     {
         ArgumentNullException.ThrowIfNull(downloadService);
         ArgumentNullException.ThrowIfNull(stagingService);
@@ -209,9 +316,13 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
                 "release-package.json")),
             string.IsNullOrWhiteSpace(automaticInstallationUnavailableReason)
                 ? null
-                : automaticInstallationUnavailableReason.Trim());
+                : automaticInstallationUnavailableReason.Trim(),
+            isAppImage);
         OnPropertyChanged(nameof(CanInstallCurrentInstallation));
         OnPropertyChanged(nameof(ShowInstallUnavailable));
+        OnPropertyChanged(nameof(ShowGenericInstallUnavailable));
+        OnPropertyChanged(nameof(ShowAppImageManualInstall));
+        RaiseNotificationPropertiesChanged();
         installCommand.RaiseCanExecuteChanged();
     }
 
@@ -222,17 +333,17 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         previousInstallationOutcomeMessage = outcome.Status switch
         {
             ReleaseInstallationOutcomeStatus.RolledBack =>
-                $"Update {FormatVersion(outcome.Version)} was rolled back; the previous installation was restored."
+                $"Update {outcome.Version} was rolled back; the previous installation was restored."
                     + (string.IsNullOrWhiteSpace(outcome.Error)
                         ? string.Empty
                         : " " + outcome.Error),
             ReleaseInstallationOutcomeStatus.Aborted =>
-                $"Update {FormatVersion(outcome.Version)} was aborted before completion; the active installation was preserved."
+                $"Update {outcome.Version} was aborted before completion; the active installation was preserved."
                     + (string.IsNullOrWhiteSpace(outcome.Error)
                         ? string.Empty
                         : " " + outcome.Error),
             _ =>
-                $"Update {FormatVersion(outcome.Version)} installed successfully."
+                $"Update {outcome.Version} installed successfully."
                     + (string.IsNullOrWhiteSpace(outcome.BackupDirectory)
                         ? string.Empty
                         : " Rollback backup: " + outcome.BackupDirectory),
@@ -242,37 +353,47 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
 
     public async Task CheckAsync()
     {
-        if (IsChecking || IsInstalling)
+        if (IsInstalling)
         {
             return;
         }
 
+        if (IsChecking)
+        {
+            recheckRequested = true;
+            return;
+        }
+
         IsChecking = true;
+        var channel = UseDevelopmentReleases
+            ? ReleaseChannel.Development
+            : ReleaseChannel.Stable;
         try
         {
-            var result = await service.CheckAsync(currentVersion);
+            var result = await service.CheckAsync(currentVersion, channel);
+            if (channel != (UseDevelopmentReleases
+                    ? ReleaseChannel.Development
+                    : ReleaseChannel.Stable))
+            {
+                recheckRequested = true;
+                return;
+            }
+
             releaseUri = result.ReleaseUri;
             releasePackage = result.Package;
             releaseVersion = result.IsUpdateAvailable
                 ? result.LatestVersion
                 : null;
             InstallConfirmed = false;
-            LatestVersion = FormatVersion(result.LatestVersion);
+            LatestVersion = result.LatestVersion?.ToString() ?? "N/A";
             IsUpdateAvailable = result.IsUpdateAvailable;
-            StatusMessage = AppendPreviousOutcome(result.IsUpdateAvailable
-                ? CanInstallCurrentInstallation
-                    ? $"SrvSurvey {LatestVersion} is available. Confirm the guarded install when ready."
-                    : $"SrvSurvey {LatestVersion} is available. {GetInstallationUnavailableMessage()}"
-                : $"SrvSurvey {CurrentVersion} is current with the published release index.");
+            RaiseNotificationPropertiesChanged();
+            StatusMessage = AppendPreviousOutcome(GetReleaseStatus(result));
         }
         catch (Exception exception) when (IsExpectedFailure(exception))
         {
-            releaseUri = null;
-            releasePackage = null;
-            releaseVersion = null;
-            InstallConfirmed = false;
+            ClearAvailableRelease();
             LatestVersion = "Unavailable";
-            IsUpdateAvailable = false;
             StatusMessage = AppendPreviousOutcome(
                 "The update check was unavailable: "
                 + exception.Message
@@ -282,6 +403,11 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         {
             IsChecking = false;
             openReleaseCommand.RaiseCanExecuteChanged();
+            if (recheckRequested && !IsInstalling)
+            {
+                recheckRequested = false;
+                _ = CheckAsync();
+            }
         }
     }
 
@@ -299,6 +425,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         }
 
         IsInstalling = true;
+        var targetVersion = releaseVersion.Value;
         InstallProgressPercent = 0;
         InstallProgressText = "Starting verified package download...";
         StatusMessage =
@@ -315,7 +442,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         try
         {
             var download = await installer.DownloadService.DownloadAsync(
-                releaseVersion,
+                targetVersion,
                 releasePackage,
                 installer.DataDirectory,
                 progress);
@@ -325,7 +452,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             StatusMessage =
                 "The package hash is valid. Extracting to an isolated staging directory.";
             var staged = await installer.StagingService.StageAsync(
-                releaseVersion,
+                targetVersion,
                 releasePackage,
                 download.ArchivePath,
                 installer.DataDirectory);
@@ -334,7 +461,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             StatusMessage =
                 "The staged package is valid. Preparing a same-volume candidate without changing the running installation.";
             var preparation = await installer.InstallationPreparer.PrepareAsync(
-                releaseVersion,
+                targetVersion,
                 releasePackage.RuntimeIdentifier,
                 staged.ReadyDirectory,
                 staged.ManifestSha256,
@@ -383,6 +510,38 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         }
     }
 
+    private Task DismissUpdateNotificationAsync()
+    {
+        dismissedReleaseVersion = releaseVersion;
+        RaiseNotificationPropertiesChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OpenUpdateDiagnosticsAsync()
+    {
+        diagnosticsNavigator?.Invoke();
+        return DismissUpdateNotificationAsync();
+    }
+
+    private string GetReleaseStatus(ReleaseUpdateResult result)
+    {
+        if (result.LatestVersion is null)
+        {
+            return result.Channel == ReleaseChannel.Stable
+                ? "N/A: no stable SrvSurvey-XP release is published in njthomson/SrvSurvey yet."
+                : "N/A: no SrvSurvey-XP development release is published in Fenris159/SrvSurvey yet.";
+        }
+
+        if (result.IsUpdateAvailable)
+        {
+            return CanInstallCurrentInstallation
+                ? $"SrvSurvey-XP {LatestVersion} is available. Confirm the guarded install when ready."
+                : $"SrvSurvey-XP {LatestVersion} is available. {GetInstallationUnavailableMessage()}";
+        }
+
+        return $"SrvSurvey-XP {CurrentVersion} is current on the {SelectedChannelName} channel.";
+    }
+
     private static bool IsExpectedFailure(Exception exception)
     {
         return exception is HttpRequestException
@@ -394,13 +553,32 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
             or PlatformNotSupportedException;
     }
 
-    private static string FormatVersion(Version version)
+    private void ClearAvailableRelease()
     {
-        return version.Revision > 0
-            ? version.ToString(4)
-            : version.Build >= 0
-                ? version.ToString(3)
-                : version.ToString(2);
+        releaseUri = null;
+        releasePackage = null;
+        releaseVersion = null;
+        InstallConfirmed = false;
+        IsUpdateAvailable = false;
+        RaiseNotificationPropertiesChanged();
+        openReleaseCommand.RaiseCanExecuteChanged();
+    }
+
+    private void RaiseChannelPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(SelectedChannelName));
+        OnPropertyChanged(nameof(ReleaseSourceDescription));
+        OnPropertyChanged(nameof(OpenReleaseButtonText));
+        RaiseNotificationPropertiesChanged();
+    }
+
+    private void RaiseNotificationPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(ShouldShowUpdateNotification));
+        OnPropertyChanged(nameof(UpdateNotificationText));
+        OnPropertyChanged(nameof(UpdateNotificationActionText));
+        dismissNotificationCommand.RaiseCanExecuteChanged();
+        openUpdateDiagnosticsCommand.RaiseCanExecuteChanged();
     }
 
     private string AppendPreviousOutcome(string message)
@@ -449,7 +627,8 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         IReadOnlyList<string> StartupArguments,
         Func<Task> Shutdown,
         bool IsPackaged,
-        string? AutomaticInstallationUnavailableReason);
+        string? AutomaticInstallationUnavailableReason,
+        bool IsAppImage);
 
     private sealed class GuardedProgress<T> : IProgress<T>
     {
