@@ -2984,12 +2984,18 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
         var activeObelisks = GetMergedActiveObelisks(reference, survey);
         var obeliskGroups = GetObeliskGroups(published, survey);
+        var rendererSurvey = MergeRendererSurvey(
+            siteType,
+            survey?.Survey,
+            published,
+            reference);
         activeMapProjection = mapProjector.Project(
             template,
-            survey?.Survey,
+            rendererSurvey,
             activeObelisks,
             obeliskGroups,
-            ShowComponentMaterials);
+            ShowComponentMaterials,
+            GetNeededRamTahLogCodes(site.Kind, activeObelisks));
         if (currentStatus is null || location is null)
         {
             NotifyCurrentObeliskChanged();
@@ -3004,7 +3010,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             location.Value,
             siteHeading,
             template,
-            survey?.Survey,
+            rendererSurvey,
             activeObelisks,
             obeliskGroups,
             ShowComponentMaterials);
@@ -3053,15 +3059,111 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         var template = FindTemplate(siteType)
             ?? FindTemplate(row.Reference.SiteType);
         var published = publishedSites.Find(row.Reference);
+        var activeObelisks = GetMergedActiveObelisks(row.Reference, survey);
+        var rendererSurvey = MergeRendererSurvey(
+            siteType,
+            survey?.Survey,
+            published,
+            row.Reference);
         MapProjection = template is null
             ? null
             : mapProjector.Project(
                 template,
-                survey?.Survey,
-                GetMergedActiveObelisks(row.Reference, survey),
+                rendererSurvey,
+                activeObelisks,
                 GetObeliskGroups(published, survey),
-                ShowComponentMaterials);
+                ShowComponentMaterials,
+                GetNeededRamTahLogCodes(
+                    row.Reference.Kind,
+                    activeObelisks));
         NotifyMapTextChanged();
+    }
+
+    internal static GuardianSurveyData MergeRendererSurvey(
+        string siteType,
+        GuardianSurveyData? commander,
+        GuardianPublishedSite? published,
+        GuardianSiteReference? reference)
+    {
+        var statuses = new Dictionary<string, GuardianPoiStatus>(
+            published?.PoiStatuses
+                ?? new Dictionary<string, GuardianPoiStatus>(),
+            StringComparer.Ordinal);
+        foreach (var pair in commander?.PoiStatuses
+                     ?? new Dictionary<string, GuardianPoiStatus>())
+        {
+            statuses[pair.Key] = pair.Value;
+        }
+
+        var relicHeadings = new Dictionary<string, int>(
+            published?.RelicHeadings ?? new Dictionary<string, int>(),
+            StringComparer.Ordinal);
+        foreach (var pair in commander?.RelicHeadings
+                     ?? new Dictionary<string, int>())
+        {
+            relicHeadings[pair.Key] = pair.Value;
+        }
+
+        return new GuardianSurveyData
+        {
+            SiteType = siteType,
+            SiteHeading = FirstValidHeading(
+                commander?.SiteHeading,
+                published?.SiteHeading,
+                reference?.SiteHeading),
+            RelicTowerHeading = FirstValidHeading(
+                commander?.RelicTowerHeading,
+                published?.RelicTowerHeading,
+                reference?.RelicTowerHeading),
+            Location = commander?.Location ?? published?.Location,
+            PoiStatuses = statuses,
+            RelicHeadings = relicHeadings,
+            ComponentMaterials = commander?.ComponentMaterials
+                ?? new Dictionary<string, GuardianComponentLoadout>(),
+            RawPointsOfInterest = commander?.RawPointsOfInterest,
+        };
+    }
+
+    private HashSet<string> GetNeededRamTahLogCodes(
+        GuardianSiteKind kind,
+        IReadOnlyList<GuardianObelisk> activeObelisks)
+    {
+        if (ramTah is null || !IsRamTahMissionActive(kind))
+        {
+            return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var mission = GetMission(kind);
+        return activeObelisks
+            .Where(obelisk => !string.IsNullOrWhiteSpace(obelisk.LogCode)
+                && !ramTah.IsLogCompleted(mission, obelisk.LogCode))
+            .Select(obelisk => obelisk.LogCode)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private bool IsRamTahMissionActive(GuardianSiteKind kind)
+    {
+        return kind switch
+        {
+            GuardianSiteKind.Ruins =>
+                ramTah?.IsAncientRuinsMissionActive == true,
+            GuardianSiteKind.Structure =>
+                ramTah?.IsGuardianLogsMissionActive == true,
+            _ => false,
+        };
+    }
+
+    private static RamTahMission GetMission(GuardianSiteKind kind)
+    {
+        return kind == GuardianSiteKind.Ruins
+            ? RamTahMission.AncientRuins
+            : RamTahMission.GuardianLogs;
+    }
+
+    private static int FirstValidHeading(params int?[] headings)
+    {
+        return headings.FirstOrDefault(
+            heading => heading is >= 0 and <= 359) ?? -1;
     }
 
     private IReadOnlyList<GuardianObelisk> GetMergedActiveObelisks(

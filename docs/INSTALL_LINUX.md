@@ -1,24 +1,27 @@
 # Install SrvSurvey on Linux
 
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.1**.
+
 The Linux review build targets 64-bit x86 Linux. The AppImage is the simplest
 package for most desktops; the `.tar.gz` archive is a portable fallback. Both
 are self-contained and do not require a separate .NET installation.
 
 ## Download the package
 
-Download the AppImage or portable archive from the repository's
-[latest GitHub release](https://github.com/Fenris159/SrvSurvey/releases/latest).
+Download the AppImage or portable archive from the relevant
+[SrvSurvey-XP release](https://github.com/Fenris159/SrvSurvey/releases).
 
 Repository maintainers can build and publish a new release as follows:
 
 1. Open the repository's
-   [Publish Windows and Linux release workflow](https://github.com/Fenris159/SrvSurvey/actions/workflows/manual-release-packages.yml).
-2. Select **Run workflow**, enter a three- or four-part release version, and
-   start the run.
-3. After all builds and tests pass, the workflow creates the corresponding
-   `v<version>` tag and GitHub Release and attaches the AppImage, portable
-   archive, Windows ZIP, checksums, release index, and software bills of
-   materials.
+   [Build and publish SrvSurvey-XP release workflow](https://github.com/Fenris159/SrvSurvey/actions/workflows/build-srvsurvey-xp.yml).
+2. Select **Run workflow**, choose the source branch/tag/commit and release
+   channel, then enter a three- or four-part base version. Development builds
+   also require an RC number.
+3. After all builds and tests pass, the workflow creates an `xp-v<version>`
+   release. Development builds append `-rc.<number>` and are GitHub
+   pre-releases; stable builds use the base version and are explicitly not
+   assigned GitHub's **Latest** badge.
 
 ## Run the AppImage
 
@@ -29,14 +32,14 @@ directory:
 
 ```bash
 mkdir -p "$HOME/Applications/SrvSurvey"
-mv "$HOME/Downloads/SrvSurvey-Avalonia-1.2.3-x86_64.AppImage" \
+mv "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.1-x86_64.AppImage" \
     "$HOME/Applications/SrvSurvey/"
 cd "$HOME/Applications/SrvSurvey"
-chmod +x SrvSurvey-Avalonia-1.2.3-x86_64.AppImage
-./SrvSurvey-Avalonia-1.2.3-x86_64.AppImage
+chmod +x SrvSurvey-XP-2.1.3.0-rc.1-x86_64.AppImage
+./SrvSurvey-XP-2.1.3.0-rc.1-x86_64.AppImage
 ```
 
-Replace `1.2.3` with the downloaded version. Keep the AppImage in this folder;
+Replace `2.1.3.0-rc.1` with the downloaded version. Keep the AppImage in this folder;
 create a launcher or shortcut that points to it instead of moving internal
 files out of the AppImage.
 
@@ -45,7 +48,7 @@ the same folder:
 
 ```bash
 cd "$HOME/Applications/SrvSurvey"
-./SrvSurvey-Avalonia-1.2.3-x86_64.AppImage --appimage-extract-and-run
+./SrvSurvey-XP-2.1.3.0-rc.1-x86_64.AppImage --appimage-extract-and-run
 ```
 
 ## Run the portable archive
@@ -54,10 +57,10 @@ The extracted archive directory is the application's container folder. Keep
 all files together and run `SrvSurvey.Desktop` from that directory:
 
 ```bash
-mkdir -p "$HOME/Applications/SrvSurvey/1.2.3"
-tar -xzf "$HOME/Downloads/SrvSurvey-Avalonia-1.2.3-linux-x64.tar.gz" \
-    -C "$HOME/Applications/SrvSurvey/1.2.3"
-cd "$HOME/Applications/SrvSurvey/1.2.3"
+mkdir -p "$HOME/Applications/SrvSurvey/2.1.3.0-rc.1"
+tar -xzf "$HOME/Downloads/SrvSurvey-XP-2.1.3.0-rc.1-linux-x64.tar.gz" \
+    -C "$HOME/Applications/SrvSurvey/2.1.3.0-rc.1"
+cd "$HOME/Applications/SrvSurvey/2.1.3.0-rc.1"
 chmod +x SrvSurvey.Desktop
 ./SrvSurvey.Desktop
 ```

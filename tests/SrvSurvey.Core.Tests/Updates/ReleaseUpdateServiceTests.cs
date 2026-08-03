@@ -13,10 +13,12 @@ public sealed class ReleaseUpdateServiceTests
             "win-x64",
             new Uri("https://example.test/releases"));
 
-        var result = await service.CheckAsync(new Version(2, 0, 95, 0));
+        var result = await service.CheckAsync(
+            new Version(2, 0, 95, 0),
+            ReleaseChannel.Development);
 
         Assert.True(result.IsUpdateAvailable);
-        Assert.Equal(new Version(2, 0, 95, 23), result.LatestVersion);
+        Assert.Equal(ReleaseVersion.Parse("2.0.95.23"), result.LatestVersion);
         Assert.Equal(release.Package, result.Package);
         Assert.Equal(
             "https://example.test/releases/2.0.95.23",
@@ -32,7 +34,9 @@ public sealed class ReleaseUpdateServiceTests
             new StubReleaseClient(CreateRelease(new Version(2, 0, 95, revision))),
             "win-x64");
 
-        var result = await service.CheckAsync(new Version(2, 0, 95, 22));
+        var result = await service.CheckAsync(
+            new Version(2, 0, 95, 22),
+            ReleaseChannel.Development);
 
         Assert.False(result.IsUpdateAvailable);
         Assert.Null(result.Package);
@@ -47,10 +51,10 @@ public sealed class ReleaseUpdateServiceTests
             new Uri("https://example.test/releases"));
         var current = new Version(2, 0, 95, 0);
 
-        var result = await service.CheckAsync(current);
+        var result = await service.CheckAsync(current, ReleaseChannel.Development);
 
         Assert.False(result.IsUpdateAvailable);
-        Assert.Equal(current, result.LatestVersion);
+        Assert.Null(result.LatestVersion);
         Assert.Equal(
             "https://example.test/releases",
             result.ReleaseUri.AbsoluteUri);
@@ -63,7 +67,7 @@ public sealed class ReleaseUpdateServiceTests
             new Uri($"https://example.test/releases/{version}"),
             new CrossPlatformReleasePackage(
                 "win-x64",
-                $"SrvSurvey-Avalonia-{version}-win-x64.zip",
+                $"SrvSurvey-XP-{version}-win-x64.zip",
                 "zip",
                 1_024,
                 new string('a', 64),
@@ -75,6 +79,7 @@ public sealed class ReleaseUpdateServiceTests
     {
         public Task<CrossPlatformRelease?> GetLatestAsync(
             string runtimeIdentifier,
+            ReleaseChannel channel,
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult(release);

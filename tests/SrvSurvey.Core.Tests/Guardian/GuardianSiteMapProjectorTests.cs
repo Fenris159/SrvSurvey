@@ -25,6 +25,31 @@ public sealed class GuardianSiteMapProjectorTests
     }
 
     [Fact]
+    public void ProjectionCarriesLegacyMapArtworkPlacementMetadata()
+    {
+        var template = new GuardianSiteTemplate(
+            "Beta",
+            "Beta",
+            "beta-background.png",
+            new GuardianMapPoint(487, 556),
+            1.88,
+            [new GuardianPointOfInterest(
+                "p1",
+                GuardianPoiType.Orb,
+                0,
+                10,
+                0)],
+            [],
+            new Dictionary<string, GuardianMapPoint>());
+
+        var projection = new GuardianSiteMapProjector().Project(template);
+
+        Assert.Equal("beta-background.png", projection.BackgroundImage);
+        Assert.Equal(new GuardianMapPoint(487, 556), projection.ImageOffset);
+        Assert.Equal(1.88, projection.ImageScaleFactor);
+    }
+
+    [Fact]
     public void CombinesSurveyStateRawPointsAndActiveObelisks()
     {
         var template = CreateTemplate(
@@ -182,6 +207,109 @@ public sealed class GuardianSiteMapProjectorTests
         Assert.Equal(
             GuardianComponentMaterial.Tech,
             Assert.Single(panel.ComponentMaterials));
+    }
+
+    [Fact]
+    public void ProjectsLegacyHeadingAndRamTahRenderingState()
+    {
+        var template = new GuardianSiteTemplate(
+            "Alpha",
+            "Alpha",
+            string.Empty,
+            new GuardianMapPoint(0, 0),
+            1,
+            [
+                new GuardianPointOfInterest(
+                    "t1",
+                    GuardianPoiType.Relic,
+                    0,
+                    10,
+                    0),
+                new GuardianPointOfInterest(
+                    "t2",
+                    GuardianPoiType.Relic,
+                    90,
+                    20,
+                    0),
+                new GuardianPointOfInterest(
+                    "A01",
+                    GuardianPoiType.Obelisk,
+                    180,
+                    30,
+                    25),
+                new GuardianPointOfInterest(
+                    "e1",
+                    GuardianPoiType.EmptyPuddle,
+                    270,
+                    40,
+                    0),
+            ],
+            [],
+            new Dictionary<string, GuardianMapPoint>());
+        var survey = new GuardianSurveyData
+        {
+            SiteHeading = 120,
+            RelicTowerHeading = 35,
+            RelicHeadings = new Dictionary<string, int>
+            {
+                ["t1"] = 220,
+            },
+        };
+
+        var projection = new GuardianSiteMapProjector().Project(
+            template,
+            survey,
+            [new GuardianObelisk("A01", "H1", false, [])],
+            neededRamTahLogCodes: new HashSet<string>(
+                ["H1"],
+                StringComparer.OrdinalIgnoreCase));
+
+        Assert.True(projection.IsRuins);
+        Assert.Equal(120, projection.SiteHeading);
+        Assert.Equal(35, projection.RelicTowerHeading);
+        var individual = projection.Points.Single(point => point.Name == "t1");
+        Assert.Equal(220, individual.RelicHeading);
+        Assert.True(individual.HasIndividualRelicHeading);
+        var general = projection.Points.Single(point => point.Name == "t2");
+        Assert.Equal(35, general.RelicHeading);
+        Assert.False(general.HasIndividualRelicHeading);
+        Assert.True(projection.Points.Single(point => point.Name == "A01")
+            .IsRamTahNeededObelisk);
+        Assert.Equal(
+            GuardianPoiStatus.Empty,
+            projection.Points.Single(point => point.Name == "e1").Status);
+    }
+
+    [Fact]
+    public void StructuresDoNotApplyGeneralRelicHeadingFallback()
+    {
+        var template = new GuardianSiteTemplate(
+            "Lacrosse",
+            "Lacrosse",
+            string.Empty,
+            new GuardianMapPoint(0, 0),
+            1,
+            [
+                new GuardianPointOfInterest(
+                    "t1",
+                    GuardianPoiType.Relic,
+                    0,
+                    10,
+                    0),
+            ],
+            [],
+            new Dictionary<string, GuardianMapPoint>());
+
+        var projection = new GuardianSiteMapProjector().Project(
+            template,
+            new GuardianSurveyData
+            {
+                SiteHeading = 10,
+                RelicTowerHeading = 90,
+            });
+
+        Assert.False(projection.IsRuins);
+        Assert.Equal(-1, Assert.Single(projection.Points).RelicHeading);
     }
 
     [Fact]

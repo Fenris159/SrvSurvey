@@ -288,7 +288,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         {
             if (SetPreference(ref useExternalData, value))
             {
-                OnPropertyChanged(nameof(HasCanonnBiologyHint));
+                RefreshDisplay();
             }
         }
     }
@@ -364,7 +364,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         {
             if (SetPreference(ref autoShowPriorScans, value))
             {
-                OnPropertyChanged(nameof(HasCanonnBiologyHint));
+                RefreshDisplay();
             }
         }
     }
@@ -774,11 +774,15 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             if (SetField(ref biologySurvey, value))
             {
                 OnPropertyChanged(nameof(HasBiologySurvey));
+                OnPropertyChanged(nameof(BiologySurveyDisplay));
             }
         }
     }
 
     public bool HasBiologySurvey => BiologySurvey is not null;
+
+    public BiologySurveyViewModel BiologySurveyDisplay =>
+        BiologySurvey ?? BiologySurveyViewModel.Empty;
 
     public bool HasCanonnBiologyHint
     {
@@ -1506,8 +1510,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 .ToHashSet();
         }
 
-        OnPropertyChanged(nameof(HasCanonnBiologyHint));
-        OnPropertyChanged(nameof(CanonnBiologyHint));
+        RefreshDisplay();
     }
 
     public bool RefreshTransientState()
@@ -1644,6 +1647,9 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     private void RefreshDisplay()
     {
+        var externalBiologyBodyIds = UseExternalData && AutoShowPriorScans
+            ? canonnBiologyBodyIds
+            : null;
         BiologySurvey = timedBiologyBodyId is { } selectedBodyId
             && IsBiologyMapMode(status)
             && utcNow() < timedBiologyExpiresAt
@@ -1671,7 +1677,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     biologyDiscoveryContext,
                     BiologyRewardThresholds,
                     biologyPredictionEvaluator,
-                    biologyCatalog);
+                    biologyCatalog,
+                    externalBiologyBodyIds);
         BiologyStatus = BiologyStatusViewModel.Create(
             snapshot,
             status,

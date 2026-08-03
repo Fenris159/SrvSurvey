@@ -226,7 +226,7 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
             archivePath,
             "win-x64",
             "zip",
-            "SrvSurvey-Avalonia-2.0.95.23-win-x64.zip");
+            "SrvSurvey-XP-2.0.95.23-win-x64.zip");
     }
 
     private async Task<PackageBundle> CreateTarAsync(
@@ -289,7 +289,7 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
             archivePath,
             "linux-x64",
             "tar.gz",
-            "SrvSurvey-Avalonia-2.0.95.23-linux-x64.tar.gz");
+            "SrvSurvey-XP-2.0.95.23-linux-x64.tar.gz");
     }
 
     private static byte[] CreateManifest(
@@ -301,7 +301,7 @@ public sealed class ReleasePackageStagingServiceTests : IDisposable
         return JsonSerializer.SerializeToUtf8Bytes(new
         {
             schemaVersion = 1,
-            product = "SrvSurvey.Avalonia",
+            product = "SrvSurvey.XP",
             version = Version.ToString(),
             runtimeIdentifier,
             entryPoint,

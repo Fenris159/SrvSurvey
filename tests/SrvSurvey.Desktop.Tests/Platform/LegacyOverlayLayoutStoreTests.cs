@@ -300,6 +300,80 @@ public sealed class LegacyOverlayLayoutStoreTests : IDisposable
         Assert.Equal(20, active.ScaleIndex);
     }
 
+    [Fact]
+    public void CustomOpacityVerificationAcceptsTheSerializedSliderPrecision()
+    {
+        var store = new LegacyOverlayLayoutStore(temporaryDirectory);
+        var opacity = Math.BitIncrement(0.43d);
+
+        store.Save(new Dictionary<string, LegacyOverlayPlacement>
+        {
+            ["PlotBioSystem"] = new(
+                LegacyHorizontalAnchor.Left,
+                8,
+                LegacyVerticalAnchor.Bottom,
+                144,
+                opacity),
+        });
+
+        Assert.Equal(
+            0.43d,
+            store.Load().Placements["PlotBioSystem"].Opacity);
+    }
+
+    [Fact]
+    public void EveryRuntimeLayoutMutationPublishesASettingsChange()
+    {
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>(),
+            null,
+            null);
+        var changes = 0;
+        layout.Changed += (_, _) => changes++;
+
+        layout.SetScaleIndex(18);
+        layout.SetPlacement(
+            "PlotBioSystem",
+            new LegacyOverlayPlacement(
+                LegacyHorizontalAnchor.Left,
+                8,
+                LegacyVerticalAnchor.Bottom,
+                144,
+                0.45,
+                17));
+        layout.ReplaceWith(new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>(),
+            0.7,
+            null));
+
+        Assert.Equal(3, changes);
+    }
+
+    [Fact]
+    public void UnchangedRuntimePlacementDoesNotPublishAnotherSettingsChange()
+    {
+        var placement = new LegacyOverlayPlacement(
+            LegacyHorizontalAnchor.Left,
+            8,
+            LegacyVerticalAnchor.Bottom,
+            144,
+            0.45,
+            17);
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>
+            {
+                ["PlotBioSystem"] = placement,
+            },
+            null,
+            null);
+        var changes = 0;
+        layout.Changed += (_, _) => changes++;
+
+        Assert.False(layout.SetPlacement("PlotBioSystem", placement));
+
+        Assert.Equal(0, changes);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

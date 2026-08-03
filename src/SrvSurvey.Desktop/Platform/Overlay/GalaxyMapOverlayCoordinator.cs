@@ -12,6 +12,7 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
     private readonly IOverlayPlatformService platform;
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly LegacyOverlayLayout overlayLayout;
+    private readonly OverlayWindowRegistry registry;
     private readonly OverlayDispatcherTimer timer;
     private GameWindowSnapshot gameWindow = GameWindowSnapshot.Unavailable;
     private GalaxyMapOverlayWindow? window;
@@ -31,7 +32,9 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         this.gameWindowTracker = gameWindowTracker
             ?? throw new ArgumentNullException(nameof(gameWindowTracker));
         this.overlayLayout = overlayLayout ?? LegacyOverlayLayout.Empty;
+        registry = OverlayWindowRegistry.Shared;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        registry.SetGalaxyMapContextActive(viewModel.IsGalaxyMapOpen);
         timer = new OverlayDispatcherTimer
         {
             Interval = TimeSpan.FromMilliseconds(250),
@@ -67,6 +70,7 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         timer.Stop();
         timer.Tick -= OnTimerTick;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        registry.SetGalaxyMapContextActive(false);
         CloseWindow();
         gameWindowTracker.Dispose();
         platform.Dispose();
@@ -81,7 +85,14 @@ public sealed class GalaxyMapOverlayCoordinator : IDisposable
         object? sender,
         PropertyChangedEventArgs eventArgs)
     {
+        if (eventArgs.PropertyName is nameof(
+                GalaxyMapOverlayViewModel.IsGalaxyMapOpen))
+        {
+            registry.SetGalaxyMapContextActive(viewModel.IsGalaxyMapOpen);
+        }
+
         if (eventArgs.PropertyName is nameof(GalaxyMapOverlayViewModel.ShouldShow)
+            or nameof(GalaxyMapOverlayViewModel.IsGalaxyMapOpen)
             or nameof(GalaxyMapOverlayViewModel.PrimarySystem)
             or nameof(GalaxyMapOverlayViewModel.SecondarySystem)
             or nameof(GalaxyMapOverlayViewModel.Factions))

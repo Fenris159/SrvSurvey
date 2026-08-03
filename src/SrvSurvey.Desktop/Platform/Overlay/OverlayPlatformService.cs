@@ -25,6 +25,7 @@ public interface IOverlayPlatformService : IDisposable
         ArgumentNullException.ThrowIfNull(eventArgs);
         window.BeginMoveDrag(eventArgs);
     }
+
 }
 
 internal interface ICombinedOverlayNativeService

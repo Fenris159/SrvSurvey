@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
+using Avalonia.Input;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
@@ -10,13 +9,6 @@ namespace SrvSurvey.Desktop;
 
 public sealed partial class OverlayPositionPreviewWindow : Window
 {
-    private static readonly OverlayScaleOption[]
-        IndividualScaleOptions = OverlayScaleCatalog.Options
-            .Where(option => option.AbsoluteScale is not null)
-            .OrderBy(option => option.AbsoluteScale)
-            .ToArray();
-    private bool updatingOpacityControls;
-    private bool updatingScaleControls;
     private double globalOpacity = 1d;
     private double? opacityOverride;
     private int globalScaleIndex;
@@ -47,11 +39,8 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
     public OverlayPositionPreviewViewModel Preview { get; }
 
-    public event EventHandler<OverlayPreviewOpacityChangedEventArgs>?
-        OpacityOverrideChanged;
-
-    public event EventHandler<OverlayPreviewScaleChangedEventArgs>?
-        ScaleOverrideChanged;
+    public event EventHandler<OverlayPreviewSettingsRequestedEventArgs>?
+        SettingsRequested;
 
     public PixelSize GetExpectedPixelSize(double scaling)
     {
@@ -73,13 +62,6 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             : GetExpectedPixelSize(safeScaling);
     }
 
-    private void ApplyContentSize()
-    {
-        Width = Preview.PreferredWidth;
-        MinWidth = Width;
-        MaxWidth = Width;
-    }
-
     public void ConfigureScale(
         int globalIndex,
         int? overlayOverride,
@@ -91,19 +73,32 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             throw new ArgumentOutOfRangeException(nameof(overlayOverride));
         }
 
-        updatingScaleControls = true;
         globalScaleIndex = OverlayScaleCatalog.NormalizeIndex(globalIndex);
         scaleOverride = overlayOverride;
         scaleRenderScaling = double.IsFinite(renderScaling) && renderScaling > 0
             ? renderScaling
             : 1d;
-        UseGlobalScaleCheckBox.IsChecked = scaleOverride is null;
-        ScaleOverrideSlider.IsEnabled = scaleOverride is not null;
-        ScaleOverrideSlider.Value = GetScaleOptionOrdinal(
-            scaleOverride ?? GetIndividualFallback(globalScaleIndex).Index);
         ApplyConfiguredScale();
-        UpdateScaleDisplay();
-        updatingScaleControls = false;
+    }
+
+    public void ConfigureOpacity(double global, double? overlayOverride)
+    {
+        ValidateOpacity(global, nameof(global));
+        if (overlayOverride is not null)
+        {
+            ValidateOpacity(overlayOverride.Value, nameof(overlayOverride));
+        }
+
+        globalOpacity = global;
+        opacityOverride = overlayOverride;
+        PreviewSurface.Opacity = opacityOverride ?? globalOpacity;
+    }
+
+    private void ApplyContentSize()
+    {
+        Width = Preview.PreferredWidth;
+        MinWidth = Width;
+        MaxWidth = Width;
     }
 
     private void ApplyConfiguredScale()
@@ -118,162 +113,19 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             scaleRenderScaling);
     }
 
-    public void ConfigureOpacity(double global, double? overlayOverride)
-    {
-        ValidateOpacity(global, nameof(global));
-        if (overlayOverride is not null)
-        {
-            ValidateOpacity(overlayOverride.Value, nameof(overlayOverride));
-        }
-
-        updatingOpacityControls = true;
-        globalOpacity = global;
-        opacityOverride = overlayOverride;
-        UseGlobalOpacityCheckBox.IsChecked = overlayOverride is null;
-        OpacityOverrideSlider.IsEnabled = overlayOverride is not null;
-        OpacityOverrideSlider.Value = (overlayOverride ?? global) * 100d;
-        UpdateOpacityDisplay();
-        updatingOpacityControls = false;
-    }
-
-    private void OnUseGlobalOpacityChanged(
+    private void OnPreviewSurfacePointerPressed(
         object? sender,
-        RoutedEventArgs eventArgs)
+        PointerPressedEventArgs eventArgs)
     {
-        if (updatingOpacityControls)
+        if (!eventArgs.GetCurrentPoint(this).Properties.IsRightButtonPressed)
         {
             return;
         }
 
-        opacityOverride = UseGlobalOpacityCheckBox.IsChecked == true
-            ? null
-            : OpacityOverrideSlider.Value / 100d;
-        OpacityOverrideSlider.IsEnabled = opacityOverride is not null;
-        UpdateOpacityDisplay();
-        OpacityOverrideChanged?.Invoke(
+        SettingsRequested?.Invoke(
             this,
-            new OverlayPreviewOpacityChangedEventArgs(
-                Definition.Name,
-                opacityOverride));
-    }
-
-    private void OnOpacityOverrideValueChanged(
-        object? sender,
-        RangeBaseValueChangedEventArgs eventArgs)
-    {
-        if (updatingOpacityControls || opacityOverride is null)
-        {
-            return;
-        }
-
-        opacityOverride = eventArgs.NewValue / 100d;
-        UpdateOpacityDisplay();
-        OpacityOverrideChanged?.Invoke(
-            this,
-            new OverlayPreviewOpacityChangedEventArgs(
-                Definition.Name,
-                opacityOverride));
-    }
-
-    private void OnUseGlobalScaleChanged(
-        object? sender,
-        RoutedEventArgs eventArgs)
-    {
-        if (updatingScaleControls)
-        {
-            return;
-        }
-
-        scaleOverride = UseGlobalScaleCheckBox.IsChecked == true
-            ? null
-            : GetScaleOption(
-                (int)Math.Round(ScaleOverrideSlider.Value)).Index;
-        ScaleOverrideSlider.IsEnabled = scaleOverride is not null;
-        ApplyConfiguredScale();
-        UpdateScaleDisplay();
-        ScaleOverrideChanged?.Invoke(
-            this,
-            new OverlayPreviewScaleChangedEventArgs(
-                Definition.Name,
-                scaleOverride));
-    }
-
-    private void OnScaleOverrideValueChanged(
-        object? sender,
-        RangeBaseValueChangedEventArgs eventArgs)
-    {
-        if (updatingScaleControls || scaleOverride is null)
-        {
-            return;
-        }
-
-        var option = GetScaleOption((int)Math.Round(eventArgs.NewValue));
-        if (scaleOverride == option.Index)
-        {
-            return;
-        }
-
-        scaleOverride = option.Index;
-        ApplyConfiguredScale();
-        UpdateScaleDisplay();
-        ScaleOverrideChanged?.Invoke(
-            this,
-            new OverlayPreviewScaleChangedEventArgs(
-                Definition.Name,
-                scaleOverride));
-    }
-
-    private void UpdateOpacityDisplay()
-    {
-        var effectiveOpacity = opacityOverride ?? globalOpacity;
-        PreviewSurface.Opacity = effectiveOpacity;
-        OpacityOverrideValueText.Text = $"{effectiveOpacity * 100d:N0}%";
-    }
-
-    private void UpdateScaleDisplay()
-    {
-        var option = OverlayScaleCatalog.Options.Single(candidate =>
-            candidate.Index == (scaleOverride ?? globalScaleIndex));
-        ScaleOverrideValueText.Text = option.AbsoluteScale is { } scale
-            ? scale.ToString("0%")
-            : "OS";
-    }
-
-    private static OverlayScaleOption GetScaleOption(int ordinal)
-    {
-        return IndividualScaleOptions[Math.Clamp(
-            ordinal,
-            0,
-            IndividualScaleOptions.Length - 1)];
-    }
-
-    private static int GetScaleOptionOrdinal(int scaleIndex)
-    {
-        for (var index = 0; index < IndividualScaleOptions.Length; index++)
-        {
-            if (IndividualScaleOptions[index].Index == scaleIndex)
-            {
-                return index;
-            }
-        }
-
-        var scale = OverlayScaleCatalog.Options
-            .FirstOrDefault(option => option.Index == scaleIndex)
-            ?.AbsoluteScale
-            ?? 1d;
-        return IndividualScaleOptions
-            .Select((option, index) => new
-            {
-                index,
-                distance = Math.Abs(option.AbsoluteScale!.Value - scale),
-            })
-            .MinBy(entry => entry.distance)!
-            .index;
-    }
-
-    private static OverlayScaleOption GetIndividualFallback(int scaleIndex)
-    {
-        return GetScaleOption(GetScaleOptionOrdinal(scaleIndex));
+            new OverlayPreviewSettingsRequestedEventArgs(Definition.Name));
+        eventArgs.Handled = true;
     }
 
     private static void ValidateOpacity(double opacity, string parameterName)

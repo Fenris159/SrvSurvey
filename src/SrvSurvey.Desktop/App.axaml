@@ -12,6 +12,7 @@
     <SolidColorBrush x:Key="RavenAccentBrush" Color="#3F87D4" />
     <SolidColorBrush x:Key="RavenAccentHoverBrush" Color="#5092D8" />
     <SolidColorBrush x:Key="RavenAccentMutedBrush" Color="#13293F" />
+    <SolidColorBrush x:Key="RavenRouteGuidanceBadgeBrush" Color="#13293F" />
     <SolidColorBrush x:Key="RavenAccentForegroundBrush" Color="#000012" />
     <SolidColorBrush x:Key="RavenTextBrush" Color="#E5E5E5" />
     <SolidColorBrush x:Key="RavenMutedTextBrush" Color="#C8C8C8" />
@@ -36,9 +37,16 @@
     </Style>
     <Style Selector="TextBox">
       <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
+      <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
+    </Style>
+    <Style Selector="ListBox">
+      <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
     </Style>
     <Style Selector="Window">
       <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
+    </Style>
+    <Style Selector="ScrollViewer">
+      <Setter Property="IsScrollChainingEnabled" Value="False" />
     </Style>
   </Application.Styles>
 </Application>

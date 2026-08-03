@@ -27,6 +27,33 @@ public sealed class ApplicationLogTraceListenerTests : IDisposable
             line => Assert.EndsWith(": second", line));
     }
 
+    [Fact]
+    public void ListenerOmitsLateInputForAnAlreadyClosedAvaloniaWindow()
+    {
+        var log = new ApplicationLogService(temporaryDirectory);
+        var listener = new ApplicationLogTraceListener(log);
+
+        listener.WriteLine(
+            "[Control] PlatformImpl is null, couldn't handle input. "
+            + "(PresentationSource #12345)");
+        listener.Write(
+            "[Control] PlatformImpl is null, couldn't handle input. "
+            + "(PresentationSource #67890)");
+        listener.Flush();
+        listener.WriteLine("[Control] A different warning");
+
+        Assert.DoesNotContain(
+            log.Entries,
+            line => line.Contains(
+                "PlatformImpl is null",
+                StringComparison.Ordinal));
+        Assert.Contains(
+            log.Entries,
+            line => line.EndsWith(
+                ": [Control] A different warning",
+                StringComparison.Ordinal));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

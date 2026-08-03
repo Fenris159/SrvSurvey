@@ -107,7 +107,7 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
         Assert.Contains("\"counter\": 1", viewModel.EditorJson);
     }
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         Directory.CreateDirectory(temporaryDirectory);
         coordinator = new QuestRuntimeCoordinator(
@@ -125,7 +125,7 @@ public sealed class QuestDeveloperViewModelTests : IAsyncLifetime
             isBootstrap: true);
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (coordinator is not null)
         {

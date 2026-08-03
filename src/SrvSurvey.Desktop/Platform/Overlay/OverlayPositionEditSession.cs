@@ -6,7 +6,7 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public sealed class OverlayPositionEditSession
 {
-    private readonly IReadOnlyDictionary<string, LegacyOverlayPlacement> original;
+    private readonly Dictionary<string, LegacyOverlayPlacement> original;
     private readonly double? originalDefaultOpacity;
     private readonly LegacyOverlayLayout workingLayout;
     private double? workingDefaultOpacity;
@@ -53,6 +53,16 @@ public sealed class OverlayPositionEditSession
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
         return workingLayout.Placements.TryGetValue(plotterName, out var placement)
+            ? placement
+            : throw new ArgumentOutOfRangeException(
+                nameof(plotterName),
+                $"Overlay '{plotterName}' is not supported by the position editor.");
+    }
+
+    public LegacyOverlayPlacement GetOriginalPlacement(string plotterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        return original.TryGetValue(plotterName, out var placement)
             ? placement
             : throw new ArgumentOutOfRangeException(
                 nameof(plotterName),
@@ -111,6 +121,40 @@ public sealed class OverlayPositionEditSession
             placement with { ScaleIndex = scaleIndex });
     }
 
+    public bool SetPlacement(
+        string plotterName,
+        LegacyOverlayPlacement placement)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        ArgumentNullException.ThrowIfNull(placement);
+        _ = GetPlacement(plotterName);
+        return workingLayout.SetPlacement(plotterName, placement);
+    }
+
+    public bool MoveWithDefaultAnchors(
+        string plotterName,
+        PixelPoint position,
+        PixelSize previewSize,
+        PixelRect hostBounds)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        var placement = GetPlacement(plotterName);
+        var defaults = OverlayLayoutCatalog
+            .GetRequired(plotterName)
+            .DefaultPlacement;
+        var reanchored = placement with
+        {
+            Horizontal = defaults.Horizontal,
+            Vertical = defaults.Vertical,
+        };
+        var centered = OverlayInteractionViewModel.CreatePlacement(
+            reanchored,
+            position,
+            previewSize,
+            hostBounds);
+        return workingLayout.SetPlacement(plotterName, centered);
+    }
+
     public void SetScaleIndex(int index)
     {
         workingLayout.SetScaleIndex(index);
@@ -132,12 +176,11 @@ public sealed class OverlayPositionEditSession
         PixelSize previewSize,
         PixelRect hostBounds)
     {
-        var placement = OverlayInteractionViewModel.CreatePlacement(
-            GetPlacement(plotterName),
+        return MoveWithDefaultAnchors(
+            plotterName,
             position,
             previewSize,
             hostBounds);
-        return workingLayout.SetPlacement(plotterName, placement);
     }
 
     private static void ValidateOpacity(double opacity, string parameterName)

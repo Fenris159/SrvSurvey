@@ -14,6 +14,17 @@ public sealed class SystemSurveyViewModelTests : IDisposable
         "SrvSurvey-SystemSurveyViewModel-" + Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public void EmptyBiologyStateProvidesAStableNonNullBindingTarget()
+    {
+        var viewModel = CreateViewModel();
+
+        Assert.False(viewModel.HasBiologySurvey);
+        Assert.Same(
+            BiologySurveyViewModel.Empty,
+            viewModel.BiologySurveyDisplay);
+    }
+
+    [Fact]
     public void IdenticalEmptyUpdateRetainsPresentationAndDoesNotNotify()
     {
         var viewModel = CreateViewModel();
@@ -911,6 +922,29 @@ public sealed class SystemSurveyViewModelTests : IDisposable
 
         Assert.Equal(2, viewModel.BiologySurvey!.SelectedBodyId);
         Assert.True(viewModel.HasCanonnBiologyHint);
+
+        viewModel.ApplyUpdate([], new EliteStatus
+        {
+            Flags = StatusFlags.Supercruise,
+        });
+
+        var rows = viewModel.BiologySurvey!.Bodies;
+        Assert.False(rows.Single(row => row.BodyId == 1).HasCanonnSignals);
+        Assert.True(rows.Single(row => row.BodyId == 2).HasCanonnSignals);
+
+        viewModel.UseExternalData = false;
+        Assert.All(viewModel.BiologySurvey!.Bodies, row =>
+            Assert.False(row.HasCanonnSignals));
+        viewModel.UseExternalData = true;
+        Assert.True(viewModel.BiologySurvey!.Bodies.Single(row =>
+            row.BodyId == 2).HasCanonnSignals);
+
+        viewModel.AutoShowPriorScans = false;
+        Assert.All(viewModel.BiologySurvey!.Bodies, row =>
+            Assert.False(row.HasCanonnSignals));
+        viewModel.AutoShowPriorScans = true;
+        Assert.True(viewModel.BiologySurvey!.Bodies.Single(row =>
+            row.BodyId == 2).HasCanonnSignals);
 
         viewModel.ApplyUpdate([], new EliteStatus
         {

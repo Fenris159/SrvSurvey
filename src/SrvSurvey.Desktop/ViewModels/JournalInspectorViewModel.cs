@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -19,7 +20,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
     private readonly Func<JournalEventEnvelope, Task<QuestRuntimeUpdateResult>>?
         replayEvent;
     private Func<string, Task>? clipboardWriter;
-    private IReadOnlyList<JournalInspectorEventViewModel> events = [];
+    private readonly ObservableCollection<JournalInspectorEventViewModel> events = [];
     private IReadOnlyList<JournalInspectorPropertyViewModel> properties = [];
     private JournalInspectorEventViewModel? selectedEvent;
     private EliteStatus? status;
@@ -50,11 +51,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
 
     public ICommand ReplayCommand { get; }
 
-    public IReadOnlyList<JournalInspectorEventViewModel> Events
-    {
-        get => events;
-        private set => SetField(ref events, value);
-    }
+    public IReadOnlyList<JournalInspectorEventViewModel> Events => events;
 
     public JournalInspectorEventViewModel? SelectedEvent
     {
@@ -135,17 +132,26 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (journalEvents.Count > 0)
         {
-            var retained = journalEvents
-                .Reverse()
-                .Select(journalEvent =>
-                    new JournalInspectorEventViewModel(journalEvent))
-                .Concat(Events)
-                .Take(MaximumEventCount)
-                .ToArray();
-            Events = retained;
-            if (SelectedEvent is null || !retained.Contains(SelectedEvent))
+            var firstRetainedIndex = Math.Max(
+                0,
+                journalEvents.Count - MaximumEventCount);
+            for (var index = firstRetainedIndex;
+                 index < journalEvents.Count;
+                 index++)
             {
-                SelectedEvent = retained.FirstOrDefault();
+                events.Insert(
+                    0,
+                    new JournalInspectorEventViewModel(journalEvents[index]));
+            }
+
+            while (events.Count > MaximumEventCount)
+            {
+                events.RemoveAt(events.Count - 1);
+            }
+
+            if (SelectedEvent is null || !events.Contains(SelectedEvent))
+            {
+                SelectedEvent = events.FirstOrDefault();
             }
         }
 

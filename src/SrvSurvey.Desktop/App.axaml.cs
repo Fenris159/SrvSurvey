@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -217,6 +218,7 @@ public sealed partial class App : Application
             }
 
             var mainWindow = new MainWindow(viewModel);
+            desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
             desktop.MainWindow = mainWindow;
             void HandleFrontierAuthorizationCallback(
                 object? sender,
@@ -266,7 +268,8 @@ public sealed partial class App : Application
                     () => desktop.Shutdown()),
                 string.IsNullOrWhiteSpace(appImagePath)
                     ? null
-                    : "This AppImage is mounted read-only and cannot replace itself; use Open releases to download the new AppImage.");
+                    : "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually.",
+                isAppImage: !string.IsNullOrWhiteSpace(appImagePath));
 
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested +=

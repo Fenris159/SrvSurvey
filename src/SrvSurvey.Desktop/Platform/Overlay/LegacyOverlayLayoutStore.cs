@@ -234,8 +234,9 @@ public sealed class LegacyOverlayLayoutStore
             {
                 if (verified[entry.Key] is not JsonValue value
                     || !value.TryGetValue<string>(out var text)
-                    || ParsePlacement(entry.Key, text)
-                        != entry.Value with { ScaleIndex = null })
+                    || !HasSameDesktopPlacement(
+                        ParsePlacement(entry.Key, text),
+                        entry.Value))
                 {
                     throw new InvalidDataException(
                         $"Overlay position '{entry.Key}' could not be verified before saving.");
@@ -492,6 +493,28 @@ public sealed class LegacyOverlayLayoutStore
             + $"{vertical}:{placement.VerticalOffset}{opacity}";
     }
 
+    private static bool HasSameDesktopPlacement(
+        LegacyOverlayPlacement actual,
+        LegacyOverlayPlacement expected)
+    {
+        return actual.Horizontal == expected.Horizontal
+            && actual.HorizontalOffset == expected.HorizontalOffset
+            && actual.Vertical == expected.Vertical
+            && actual.VerticalOffset == expected.VerticalOffset
+            && NullableOpacityEquals(actual.Opacity, expected.Opacity);
+    }
+
+    private static bool NullableOpacityEquals(double? left, double? right)
+    {
+        if (left.HasValue != right.HasValue)
+        {
+            return false;
+        }
+
+        return !left.HasValue
+            || Math.Abs(left.Value - right!.Value) <= 0.0000001d;
+    }
+
     private static void ValidatePlacement(
         string name,
         LegacyOverlayPlacement placement)
@@ -739,6 +762,8 @@ public sealed class LegacyOverlayLayout
 
     public event EventHandler? ScaleIndexChanged;
 
+    public event EventHandler? Changed;
+
     public IReadOnlyDictionary<string, LegacyOverlayPlacement> Placements =>
         Volatile.Read(ref state).Placements;
 
@@ -764,6 +789,7 @@ public sealed class LegacyOverlayLayout
 
         Volatile.Write(ref scaleIndex, index);
         ScaleIndexChanged?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public void ReplaceWith(LegacyOverlayLayout updated)
@@ -784,6 +810,7 @@ public sealed class LegacyOverlayLayout
                     StringComparer.Ordinal),
                 updatedState.DefaultOpacity,
                 updatedState.Error));
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public bool SetPlacement(
@@ -821,6 +848,7 @@ public sealed class LegacyOverlayLayout
                     Interlocked.CompareExchange(ref state, updated, current),
                     current))
             {
+                Changed?.Invoke(this, EventArgs.Empty);
                 return true;
             }
         }

@@ -22,20 +22,21 @@ public sealed class JournalCoverageInventoryTests
         new(
             "system-body-exploration",
             [
-                "FSSDiscoveryScan", "FSSAllBodiesFound", "Scan",
-                "SAAScanComplete", "SAASignalsFound", "FSSBodySignals",
-                "Touchdown", "Liftoff",
+                "FSSDiscoveryScan", "FSSAllBodiesFound", "FSSSignalDiscovered",
+                "NavBeaconScan", "Scan", "ScanBaryCentre", "SAAScanComplete",
+                "SAASignalsFound", "FSSBodySignals", "Touchdown", "Liftoff",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Exploration/SystemScanStateTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exploration/ExplorationStateTests.cs",
                 "tests/SrvSurvey.Core.Tests/Exobiology/SurfaceSurveyJournalTrackerTests.cs",
+                "tests/SrvSurvey.Core.Tests/Colonization/ColonizationSystemSiteJournalTrackerTests.cs",
             ]),
         new(
             "exobiology",
             [
                 "CodexEntry", "ScanOrganic", "SellOrganicData", "Disembark",
-                "Embark",
+                "Embark", "SendText",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Exobiology/ExobiologyStateTests.cs",
@@ -60,6 +61,7 @@ public sealed class JournalCoverageInventoryTests
             [
                 "Missions", "MissionAccepted", "MissionFailed",
                 "MissionAbandoned", "MissionCompleted", "Bounty",
+                "FactionKillBond",
             ],
             [
                 "tests/SrvSurvey.Core.Tests/Combat/CombatStateTests.cs",
@@ -98,6 +100,15 @@ public sealed class JournalCoverageInventoryTests
                 "tests/SrvSurvey.Desktop.Tests/ViewModels/JumpInfoViewModelTests.cs",
                 "tests/SrvSurvey.Desktop.Tests/ViewModels/GalaxyMapOverlayViewModelTests.cs",
             ]),
+        new(
+            "screenshots-journeys",
+            [
+                "Screenshot",
+            ],
+            [
+                "tests/SrvSurvey.Core.Tests/Journeys/JourneyJournalProcessorTests.cs",
+                "tests/SrvSurvey.Desktop.Tests/Platform/ScreenshotProcessingServiceTests.cs",
+            ]),
     ];
 
     [Fact]
@@ -108,7 +119,7 @@ public sealed class JournalCoverageInventoryTests
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(68, auditedEvents.Length);
+        Assert.Equal(74, auditedEvents.Length);
         Assert.Equal(auditedEvents.Length, auditedEvents.Distinct().Count());
     }
 

@@ -111,6 +111,7 @@ public sealed class RavenThemeService
         SetBrush("RavenAccentBrush", theme.AccentColor);
         SetBrush("RavenAccentHoverBrush", theme.AccentHoverColor);
         SetBrush("RavenAccentMutedBrush", theme.AccentMutedColor);
+        SetBrush("RavenRouteGuidanceBadgeBrush", theme.AccentMutedColor);
         SetBrush("RavenAccentForegroundBrush", theme.AccentForegroundColor);
         SetBrush("RavenTextBrush", theme.TextColor);
         SetBrush("RavenMutedTextBrush", theme.MutedTextColor);

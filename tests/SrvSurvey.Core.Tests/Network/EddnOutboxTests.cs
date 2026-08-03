@@ -321,6 +321,71 @@ public sealed class EddnOutboxTests
     }
 
     [Fact]
+    public void EnabledRestartClearsAnAbandonedSharedOptOutMarker()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var transport = EddnTransportTests.createTransport(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+        using (var previousProcess = outbox(path, transport, () => now))
+        {
+            previousProcess.setEnabled(
+                false,
+                discardPendingWhenDisabled: true);
+        }
+
+        using var restarted = outbox(path, transport, () => now);
+        restarted.setEnabled(true, discardPendingWhenDisabled: false);
+
+        Assert.True(restarted.enqueue(queued(now)));
+        Assert.Equal(1, restarted.pendingCount);
+    }
+
+    [Fact]
+    public void EnabledInstanceCannotOverrideAnActiveSharedOptOutLease()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var transport = EddnTransportTests.createTransport(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+        using var disabledInstance = outbox(path, transport, () => now);
+        using var enabledInstance = outbox(path, transport, () => now);
+        disabledInstance.setEnabled(
+            false,
+            discardPendingWhenDisabled: true);
+
+        enabledInstance.setEnabled(true, discardPendingWhenDisabled: false);
+
+        Assert.False(enabledInstance.enqueue(queued(now)));
+        Assert.Equal(0, enabledInstance.pendingCount);
+    }
+
+    [Fact]
+    public void ExistingEnabledInstancePreservesACompletedSharedOptOut()
+    {
+        using var folder = new TemporaryFolder();
+        var path = Path.Combine(folder.path, "eddn-outbox-v1.json");
+        var now = DateTimeOffset.Parse("2026-07-28T12:00:00Z");
+        var transport = EddnTransportTests.createTransport(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)));
+        using var enabledInstance = outbox(path, transport, () => now);
+        enabledInstance.setEnabled(true, discardPendingWhenDisabled: false);
+        using (var disabledInstance = outbox(path, transport, () => now))
+        {
+            disabledInstance.setEnabled(
+                false,
+                discardPendingWhenDisabled: true);
+        }
+
+        enabledInstance.setEnabled(true, discardPendingWhenDisabled: false);
+
+        Assert.False(enabledInstance.enqueue(queued(now)));
+        Assert.Equal(0, enabledInstance.pendingCount);
+    }
+
+    [Fact]
     public void NullSchemaInPersistedQueueIsQuarantinedWithoutCrashing()
     {
         using var folder = new TemporaryFolder();

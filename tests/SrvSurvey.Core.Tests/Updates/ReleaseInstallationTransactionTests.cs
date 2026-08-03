@@ -212,7 +212,7 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
         var manifest = JsonSerializer.SerializeToUtf8Bytes(new
         {
             schemaVersion = 1,
-            product = "SrvSurvey.Avalonia",
+            product = "SrvSurvey.XP",
             version = Version.ToString(),
             runtimeIdentifier = "win-x64",
             entryPoint = "SrvSurvey.Desktop.exe",

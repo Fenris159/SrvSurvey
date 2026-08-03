@@ -1,4 +1,44 @@
-# SrvSurvey Avalonia testing preview
+# SrvSurvey-XP 2.1.3.0-rc.1
+
+This is the first release candidate using the isolated SrvSurvey-XP release
+identity. It is intended for active testing against Elite Dangerous before the
+cross-platform branch is promoted to a stable XP release.
+
+## Highlights in this release candidate
+
+- Restores compact, borderless legacy presentation across the live overlays,
+  keeps editor and live-drag positions synchronized, persists per-panel scale
+  and opacity, and adds snap-to-center recovery for off-screen panels.
+- Completes the dedicated Guardian renderer parity pass with legacy site-map
+  geometry, POI colors, rotated glyphs, relic headings, active-obelisk effects,
+  survey markers, a single legacy-exact map legend, Canonn biology indicators,
+  and matching glossary previews.
+- Keeps Guardian map markers proportional to the background at every scale and
+  adds a bottom 1x-10x zoom bar, contained mouse-wheel zoom, bounded click-drag
+  panning, and automatic fitted-center recovery when returned to 1x.
+- Keeps Galaxy Map overlays context-sensitive, preserves neutron and refuel
+  badge colors, and closes all overlay windows when the main application exits.
+- Contains mouse-wheel input inside the hovered panel, prevents live Diagnostics
+  logging from changing the page position, and removes repeated nullable
+  binding failures seen in runtime logs.
+- Adds SrvSurvey-XP development and stable update channels. Development is
+  enabled by default from `Fenris159/SrvSurvey`; opting out selects future
+  stable XP releases from `njthomson/SrvSurvey` and reports N/A until one exists.
+- Adds bottom-edge update notifications, checksum-verified portable Windows
+  replacement, rollback protection, and direct manual AppImage instructions.
+
+## Packaging
+
+- Version: `2.1.3.0-rc.1`
+- Tag: `xp-v2.1.3.0-rc.1`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.1-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.1-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.1-x86_64.AppImage`
+
+The Windows and Linux packages are self-contained. AppImages must be updated
+manually; the application links directly to the selected XP release.
+
+## Testing notice
 
 > [!IMPORTANT]
 > This is a work-in-progress preview for testing. It is not yet presented as a

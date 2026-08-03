@@ -299,8 +299,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         DiagnosticsLog = new DiagnosticsLogViewModel(applicationLogService);
         ReleaseUpdates = releaseUpdates ?? new ReleaseUpdateViewModel(
             new ReleaseUpdateService(),
-            typeof(MainWindowViewModel).Assembly.GetName().Version
-                ?? new Version(0, 0));
+            ReleaseVersion.FromAssembly(typeof(MainWindowViewModel).Assembly),
+            new ReleaseUpdateSettingsStore(AppDataPaths.UiSettingsPath));
         JournalInspector = new JournalInspectorViewModel(
             ReplayQuestJournalEventAsync);
         JournalSettings = new JournalSettingsViewModel(

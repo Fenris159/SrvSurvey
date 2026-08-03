@@ -209,6 +209,16 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
     public bool HasDetailLines => DetailLines.Count > 0;
 
+    public bool HasRefuelGuidance => DetailLines.Any(line => line.Refuel);
+
+    public bool HasNeutronGuidance => DetailLines.Any(line => line.Neutron);
+
+    public bool HasRouteGuidanceBadges =>
+        HasRefuelGuidance || HasNeutronGuidance;
+
+    public bool HasDiscoveryOrRouteGuidance =>
+        HasDiscoveryText || HasRouteGuidanceBadges;
+
     public string DataStatus
     {
         get => dataStatus;
@@ -550,6 +560,10 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
         DetailLines = lines;
         OnPropertyChanged(nameof(HasDetailLines));
+        OnPropertyChanged(nameof(HasRefuelGuidance));
+        OnPropertyChanged(nameof(HasNeutronGuidance));
+        OnPropertyChanged(nameof(HasRouteGuidanceBadges));
+        OnPropertyChanged(nameof(HasDiscoveryOrRouteGuidance));
     }
 
     private bool IsSelectedFollowedRouteHop()

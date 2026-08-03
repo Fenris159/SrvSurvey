@@ -2,6 +2,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using SrvSurvey.Core.Guardian;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Controls;
@@ -159,6 +160,15 @@ public sealed class GuideIconPreviewControl : Control
             case GuideIconKind.BiologyRewardUnknown:
                 DrawUnknownPip(context, center, muted);
                 break;
+            case GuideIconKind.CanonnSignals:
+                CanonnLogoControl.Draw(
+                    context,
+                    new Rect(
+                        center.X - CanonnLogoControl.NativeSize / 2,
+                        center.Y - CanonnLogoControl.NativeSize / 2,
+                        CanonnLogoControl.NativeSize,
+                        CanonnLogoControl.NativeSize));
+                break;
             case GuideIconKind.RadarCommander:
                 DrawRadarCommander(context, center, secondary);
                 break;
@@ -192,43 +202,86 @@ public sealed class GuideIconPreviewControl : Control
                 DrawJumpRoute(context, center, primary, secondary, muted);
                 break;
             case GuideIconKind.GuardianRelic:
-                DrawSimpleTriangle(context, center, 15, success, fill: true);
+                DrawGuardianLegacyIcon(
+                    context,
+                    center,
+                    GuardianPoiType.Relic,
+                    GuardianPoiStatus.Present);
                 break;
             case GuideIconKind.GuardianArtifact:
-                context.DrawEllipse(success, new Pen(success, 1.5), center, 9, 9);
+                DrawGuardianArtifactPalette(context, center);
                 break;
             case GuideIconKind.GuardianEmptyPuddle:
-                context.DrawEllipse(gold, new Pen(gold, 1.5), center, 9, 9);
+                DrawGuardianLegacyIcon(
+                    context,
+                    center,
+                    GuardianPoiType.EmptyPuddle,
+                    GuardianPoiStatus.Empty);
                 break;
             case GuideIconKind.GuardianObelisk:
-                DrawObelisk(context, center, secondary);
+                DrawGuardianLegacyIcon(
+                    context,
+                    center,
+                    GuardianPoiType.Obelisk,
+                    GuardianPoiStatus.Unknown);
+                break;
+            case GuideIconKind.GuardianActiveObelisk:
+                DrawGuardianActiveObelisk(context, center);
                 break;
             case GuideIconKind.GuardianBrokenObelisk:
-                DrawCross(context, center, danger);
+                DrawGuardianLegacyIcon(
+                    context,
+                    center,
+                    GuardianPoiType.BrokenObelisk,
+                    GuardianPoiStatus.Unknown);
                 break;
             case GuideIconKind.GuardianPylon:
-                DrawDiamond(context, center, 16, warning);
+                DrawGuardianLegacyIcon(
+                    context,
+                    center,
+                    GuardianPoiType.Pylon,
+                    GuardianPoiStatus.Present);
                 break;
             case GuideIconKind.GuardianComponent:
-                DrawComponent(context, center, success, secondary);
+                DrawGuardianLegacyIcon(
+                    context,
+                    center,
+                    GuardianPoiType.Component,
+                    GuardianPoiStatus.Present);
                 break;
             case GuideIconKind.GuardianCommander:
                 context.DrawEllipse(background, new Pen(success, 2), center, 12, 12);
                 context.DrawEllipse(success, null, center, 4, 4);
                 break;
             case GuideIconKind.GuardianSiteHeading:
-                DrawHeading(context, center, secondary);
+                context.DrawLine(
+                    new Pen(
+                        new SolidColorBrush(
+                            GuardianLegacyMapDrawing.SiteHeading),
+                        4,
+                        dashStyle: DashStyle.Dash),
+                    new Point(center.X, center.Y - 24),
+                    new Point(center.X, center.Y + 24));
                 break;
             case GuideIconKind.GuardianTowerHeading:
-                DrawHeading(context, center, gold);
+                context.DrawLine(
+                    new Pen(
+                        new SolidColorBrush(
+                            GuardianLegacyMapDrawing.TowerHeading),
+                        4),
+                    new Point(center.X - 20, center.Y + 20),
+                    new Point(center.X + 20, center.Y - 20));
                 break;
             case GuideIconKind.GuardianSurveyNeeded:
-                context.DrawEllipse(
-                    null,
-                    new Pen(secondary, 2, dashStyle: DashStyle.Dot),
+                GuardianSurveyMarkerDrawing.Draw(
+                    context,
                     center,
-                    18,
-                    18);
+                    haloRadius: 20,
+                    ringRadius: 18,
+                    dotRadius: 1);
+                break;
+            case GuideIconKind.GuardianPoiStates:
+                DrawGuardianPoiStates(context, center);
                 break;
             case GuideIconKind.HumanLandingPad:
                 DrawLandingPad(context, center, secondary);
@@ -397,64 +450,214 @@ public sealed class GuideIconPreviewControl : Control
         context.DrawLine(new Pen(warning, 2), origin, new Point(origin.X + 34, origin.Y - 18));
     }
 
-    private static void DrawObelisk(
+    private static void DrawGuardianLegacyIcon(
         DrawingContext context,
         Point center,
-        IBrush brush)
+        GuardianPoiType type,
+        GuardianPoiStatus status,
+        bool isActiveObelisk = false)
     {
-        DrawSimpleTriangle(context, center, 14, brush, fill: false);
-        context.DrawLine(
-            new Pen(brush, 2),
-            new Point(center.X, center.Y - 12),
-            new Point(center.X, center.Y + 14));
-        context.DrawEllipse(null, new Pen(brush, 2), center, 21, 21);
+        var style = GuardianLegacyMapDrawing.GetPointStyle(
+            type,
+            status,
+            isActiveObelisk);
+        var stroke = new SolidColorBrush(style.Stroke);
+        var fill = style.HasFill ? new SolidColorBrush(style.Fill) : null;
+        var pen = new Pen(
+            stroke,
+            Math.Max(1.5, style.StrokeWidth),
+            dashStyle: style.Pattern switch
+            {
+                GuardianLegacyStrokePattern.Dash => DashStyle.Dash,
+                GuardianLegacyStrokePattern.Dot => DashStyle.Dot,
+                _ => null,
+            });
+        if (type == GuardianPoiType.EmptyPuddle)
+        {
+            context.DrawEllipse(fill, pen, center, 12, 12);
+            return;
+        }
+
+        var rotation = type switch
+        {
+            GuardianPoiType.Obelisk or GuardianPoiType.BrokenObelisk => 167.5,
+            GuardianPoiType.Component => -45,
+            _ => 0,
+        };
+        var points = GuardianLegacyMapDrawing.CreateGlyphPoints(
+                type,
+                new Point(),
+                rotation)
+            .Select(point => new Point(
+                center.X + point.X * 3,
+                center.Y + point.Y * 3))
+            .ToArray();
+        if (type == GuardianPoiType.Relic)
+        {
+            context.DrawGeometry(fill, pen, CreatePolygon(points));
+        }
+        else
+        {
+            DrawOpenPath(context, points, pen);
+        }
+
+        if (type == GuardianPoiType.Obelisk)
+        {
+            context.DrawLine(
+                pen,
+                center + GuardianLegacyMapDrawing.RotateClockwise(
+                    new Point(0.6, 0),
+                    rotation),
+                center + GuardianLegacyMapDrawing.RotateClockwise(
+                    new Point(-1.5, -3.6),
+                    rotation));
+            context.DrawLine(
+                pen,
+                center + GuardianLegacyMapDrawing.RotateClockwise(
+                    new Point(0.6, 0),
+                    rotation),
+                center + GuardianLegacyMapDrawing.RotateClockwise(
+                    new Point(4.5, -2.4),
+                    rotation));
+        }
+        else if (type == GuardianPoiType.Pylon)
+        {
+            context.DrawLine(
+                pen,
+                center,
+                new Point(center.X, center.Y + 9));
+        }
+        else if (type == GuardianPoiType.Component)
+        {
+            var materialCenters =
+                GuardianLegacyMapDrawing.CreateComponentMaterialCenters(center);
+            var materials = new[]
+            {
+                GuardianComponentMaterial.Cell,
+                GuardianComponentMaterial.Conduit,
+                GuardianComponentMaterial.Tech,
+            };
+            for (var index = 0; index < materialCenters.Count; index++)
+            {
+                var raw = materialCenters[index] - center;
+                var dot = center + new Point(raw.X * 2.4, raw.Y * 2.4);
+                var color = GuardianLegacyMapDrawing.GetComponentMaterialColor(
+                    materials[index]);
+                context.DrawEllipse(
+                    new SolidColorBrush(color!.Value),
+                    new Pen(Brushes.Black, 1),
+                    dot,
+                    3,
+                    3);
+            }
+        }
     }
 
-    private static void DrawCross(
+    private static void DrawGuardianActiveObelisk(
         DrawingContext context,
-        Point center,
-        IBrush brush)
+        Point center)
     {
-        var pen = new Pen(brush, 3);
-        context.DrawLine(
-            pen,
-            new Point(center.X - 15, center.Y - 15),
-            new Point(center.X + 15, center.Y + 15));
-        context.DrawLine(
-            pen,
-            new Point(center.X + 15, center.Y - 15),
-            new Point(center.X - 15, center.Y + 15));
+        for (var step = 0; step < 6; step++)
+        {
+            var color = GuardianLegacyMapDrawing.Cyan;
+            context.DrawGeometry(
+                new SolidColorBrush(Color.FromArgb(
+                    (byte)(18 + step * 22),
+                    color.R,
+                    color.G,
+                    color.B)),
+                null,
+                CreatePolygon(GuardianLegacyMapDrawing.CreateWedge(
+                    center,
+                    26 - step * 3.5,
+                    167.5)));
+        }
+
+        DrawGuardianLegacyIcon(
+            context,
+            center,
+            GuardianPoiType.Obelisk,
+            GuardianPoiStatus.Unknown,
+            isActiveObelisk: true);
     }
 
-    private static void DrawDiamond(
+    private static void DrawGuardianArtifactPalette(
         DrawingContext context,
-        Point center,
-        double radius,
-        IBrush brush)
+        Point center)
     {
-        var geometry = CreatePolygon(
-        [
-            new Point(center.X, center.Y - radius),
-            new Point(center.X + radius, center.Y),
-            new Point(center.X, center.Y + radius),
-            new Point(center.X - radius, center.Y),
-        ]);
-        context.DrawGeometry(null, new Pen(brush, 2), geometry);
+        var types = new[]
+        {
+            GuardianPoiType.Orb,
+            GuardianPoiType.Casket,
+            GuardianPoiType.Tablet,
+            GuardianPoiType.Totem,
+            GuardianPoiType.Urn,
+        };
+        for (var index = 0; index < types.Length; index++)
+        {
+            var style = GuardianLegacyMapDrawing.GetPointStyle(
+                types[index],
+                GuardianPoiStatus.Present);
+            context.DrawEllipse(
+                new SolidColorBrush(style.Fill),
+                new Pen(new SolidColorBrush(style.Stroke), 2),
+                new Point(center.X - 24 + index * 12, center.Y),
+                5,
+                8);
+        }
     }
 
-    private static void DrawComponent(
+    private static void DrawGuardianPoiStates(
         DrawingContext context,
-        Point center,
-        IBrush brush,
-        IBrush secondary)
+        Point center)
     {
-        context.DrawRectangle(
-            null,
-            new Pen(brush, 2),
-            new Rect(center.X - 11, center.Y - 11, 22, 22));
-        context.DrawEllipse(Brushes.Lime, new Pen(Brushes.Black, 1), new Point(center.X, center.Y - 18), 4, 4);
-        context.DrawEllipse(secondary, new Pen(Brushes.Black, 1), new Point(center.X - 15, center.Y + 14), 4, 4);
-        context.DrawEllipse(Brushes.OrangeRed, new Pen(Brushes.Black, 1), new Point(center.X + 15, center.Y + 14), 4, 4);
+        var unknown = new Point(center.X - 22, center.Y);
+        GuardianSurveyMarkerDrawing.Draw(
+            context,
+            unknown,
+            haloRadius: 9,
+            ringRadius: 8,
+            dotRadius: 0.7);
+        var states = new[]
+        {
+            (GuardianPoiStatus.Absent, center.X - 7),
+            (GuardianPoiStatus.Present, center.X + 8),
+            (GuardianPoiStatus.Empty, center.X + 23),
+        };
+        foreach (var (status, x) in states)
+        {
+            var style = GuardianLegacyMapDrawing.GetPointStyle(
+                GuardianPoiType.Orb,
+                status);
+            context.DrawEllipse(
+                style.HasFill ? new SolidColorBrush(style.Fill) : null,
+                new Pen(new SolidColorBrush(style.Stroke), 2),
+                new Point(x, center.Y),
+                6,
+                6);
+        }
+    }
+
+    private static void DrawOpenPath(
+        DrawingContext context,
+        Point[] points,
+        Pen pen)
+    {
+        if (points.Length < 2)
+        {
+            return;
+        }
+
+        var geometry = new StreamGeometry();
+        using var geometryContext = geometry.Open();
+        geometryContext.BeginFigure(points[0], isFilled: false);
+        for (var index = 1; index < points.Length; index++)
+        {
+            geometryContext.LineTo(points[index]);
+        }
+
+        geometryContext.EndFigure(isClosed: false);
+        context.DrawGeometry(null, pen, geometry);
     }
 
     private static void DrawTerminal(
@@ -514,17 +717,6 @@ public sealed class GuideIconPreviewControl : Control
         context.DrawEllipse(muted, null, left, 4, 4);
         context.DrawEllipse(primary, new Pen(secondary, 2), middle, 7, 7);
         context.DrawEllipse(null, new Pen(secondary, 2), right, 5, 5);
-    }
-
-    private static void DrawHeading(
-        DrawingContext context,
-        Point center,
-        IBrush brush)
-    {
-        context.DrawLine(
-            new Pen(brush, 3),
-            new Point(center.X - 17, center.Y + 17),
-            new Point(center.X + 17, center.Y - 17));
     }
 
     private static void DrawLandingPad(
@@ -607,22 +799,6 @@ public sealed class GuideIconPreviewControl : Control
             new Point(center.X + radius * 0.75, center.Y + radius),
             new Point(center.X, center.Y + radius * 0.55),
             new Point(center.X - radius * 0.75, center.Y + radius),
-        ]);
-        context.DrawGeometry(fill ? brush : null, new Pen(brush, 2), geometry);
-    }
-
-    private static void DrawSimpleTriangle(
-        DrawingContext context,
-        Point center,
-        double radius,
-        IBrush brush,
-        bool fill)
-    {
-        var geometry = CreatePolygon(
-        [
-            new Point(center.X, center.Y - radius),
-            new Point(center.X + radius, center.Y + radius),
-            new Point(center.X - radius, center.Y + radius),
         ]);
         context.DrawGeometry(fill ? brush : null, new Pen(brush, 2), geometry);
     }

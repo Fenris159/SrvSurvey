@@ -113,6 +113,43 @@ public sealed class JourneyWorkspaceViewModelTests : IDisposable
     }
 
     [Fact]
+    public void SelectedSystemDisplayValuesRemainSafeWithoutASelection()
+    {
+        var viewModel = CreateViewModel();
+
+        Assert.Empty(viewModel.SelectedSystemName);
+        Assert.Empty(viewModel.SelectedSystemAddressText);
+
+        var changed = new List<string?>();
+        viewModel.PropertyChanged += (_, eventArgs) =>
+            changed.Add(eventArgs.PropertyName);
+        viewModel.SelectedSystem = new JourneySystemItemViewModel(
+            new JourneySystemVisit(
+                new JourneySystemReference(
+                    "Sol",
+                    42,
+                    new GalacticCoordinate(0, 0, 0)),
+                DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+                null,
+                JourneyCounts.Empty,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null),
+            string.Empty,
+            "Today",
+            "Current");
+
+        Assert.Equal("Sol", viewModel.SelectedSystemName);
+        Assert.Equal("System address 42", viewModel.SelectedSystemAddressText);
+        Assert.Contains(nameof(viewModel.SelectedSystemName), changed);
+        Assert.Contains(nameof(viewModel.SelectedSystemAddressText), changed);
+    }
+
+    [Fact]
     public async Task PreferencesPersistAndReformatGalacticTime()
     {
         await WriteJournalAsync(

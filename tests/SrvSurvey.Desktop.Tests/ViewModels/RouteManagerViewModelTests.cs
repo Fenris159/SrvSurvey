@@ -156,6 +156,8 @@ public sealed class RouteManagerViewModelTests : IDisposable
         beta.RenameCommand.Execute(null);
         Assert.True(manager.IsRenameVisible);
         Assert.Equal("Beta", manager.RenameDraft);
+        Assert.Equal("Beta", manager.EditingRouteName);
+        Assert.Equal("Beta.json", manager.EditingRouteFileName);
         manager.RenameDraft = "Gamma Route";
         await manager.SaveRenameAsync();
 
@@ -168,6 +170,8 @@ public sealed class RouteManagerViewModelTests : IDisposable
         Assert.Equal("Gamma Route", workspace.RouteName);
         Assert.Equal(renamed.FilePath, workspace.LoadedSavedRoutePath);
         Assert.False(manager.IsDialogVisible);
+        Assert.Equal(string.Empty, manager.EditingRouteName);
+        Assert.Equal(string.Empty, manager.EditingRouteFileName);
     }
 
     private async Task<(

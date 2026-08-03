@@ -6,7 +6,8 @@
              x:Class="SrvSurvey.Desktop.Views.DiagnosticsView"
              x:DataType="vm:MainWindowViewModel"
              mc:Ignorable="d">
-  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+  <ScrollViewer x:Name="DiagnosticsPageScroller"
+                HorizontalScrollBarVisibility="Disabled">
     <StackPanel Margin="32" Spacing="24" MaxWidth="1000">
       <StackPanel Spacing="5">
         <TextBlock Classes="eyebrow" Text="DIAGNOSTICS" />
@@ -39,8 +40,14 @@
             <TextBlock Classes="card-title" Text="Application updates" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Checks checksum-indexed Avalonia packages published from this cross-platform repository. The check never installs files or changes profile data." />
+                       Text="Checks checksum-indexed SrvSurvey-XP packages. The check never installs files or changes profile data." />
           </StackPanel>
+
+          <CheckBox IsChecked="{Binding ReleaseUpdates.UseDevelopmentReleases, Mode=TwoWay}"
+                    Content="Use SrvSurvey-XP development releases" />
+          <TextBlock Classes="muted"
+                     TextWrapping="Wrap"
+                     Text="{Binding ReleaseUpdates.ReleaseSourceDescription}" />
 
           <Grid ColumnDefinitions="Auto,*,Auto,*" ColumnSpacing="10">
             <TextBlock Classes="muted" Text="Installed" />
@@ -62,7 +69,7 @@
                     Margin="0,0,0,8"
                     IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
                     Command="{Binding ReleaseUpdates.OpenReleaseCommand}"
-                    Content="Open releases" />
+                    Content="{Binding ReleaseUpdates.OpenReleaseButtonText}" />
             <Button Classes="primary"
                     Margin="8,0,0,8"
                     IsVisible="{Binding ReleaseUpdates.IsUpdateAvailable}"
@@ -75,9 +82,22 @@
                     IsChecked="{Binding ReleaseUpdates.InstallConfirmed, Mode=TwoWay}"
                     Content="I understand SrvSurvey will close, verify the replacement, and automatically roll back if startup fails." />
           <TextBlock Classes="muted"
-                     IsVisible="{Binding ReleaseUpdates.ShowInstallUnavailable}"
+                     IsVisible="{Binding ReleaseUpdates.ShowGenericInstallUnavailable}"
                      TextWrapping="Wrap"
                      Text="Automatic replacement is disabled because this copy was not launched from a checksum-indexed release package. Open the releases page to install manually." />
+          <Border IsVisible="{Binding ReleaseUpdates.ShowAppImageManualInstall}"
+                  BorderBrush="{DynamicResource RavenAccentBrush}"
+                  BorderThickness="1"
+                  CornerRadius="6"
+                  Padding="12">
+            <StackPanel Spacing="5">
+              <TextBlock FontWeight="SemiBold"
+                         Text="AppImage manual update" />
+              <TextBlock Classes="muted"
+                         TextWrapping="Wrap"
+                         Text="{x:Static vm:ReleaseUpdateViewModel.AppImageManualInstallInstructions}" />
+            </StackPanel>
+          </Border>
           <ProgressBar IsVisible="{Binding ReleaseUpdates.IsInstalling}"
                        Minimum="0"
                        Maximum="100"
@@ -314,6 +334,7 @@
                      FontFamily="Consolas, Menlo, monospace"
                      FontSize="11"
                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.IsScrollChainingEnabled="False"
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                      Text="{Binding JournalInspector.StatusText}" />
             <Button Grid.Column="1"
@@ -324,10 +345,17 @@
           </Grid>
 
           <Grid ColumnDefinitions="300,*" ColumnSpacing="14">
-            <ListBox MinHeight="280"
+            <ListBox x:Name="JournalInspectorEventList"
+                     MinHeight="280"
                      MaxHeight="400"
                      ItemsSource="{Binding JournalInspector.Events}"
+                     ScrollViewer.IsScrollChainingEnabled="False"
                      SelectedItem="{Binding JournalInspector.SelectedEvent, Mode=TwoWay}">
+              <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel />
+                </ItemsPanelTemplate>
+              </ListBox.ItemsPanel>
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:JournalInspectorEventViewModel">
                   <StackPanel Margin="4" Spacing="2">
@@ -344,6 +372,7 @@
               <ScrollViewer MinHeight="280"
                             MaxHeight="400"
                             HorizontalScrollBarVisibility="Auto"
+                            IsScrollChainingEnabled="False"
                             VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding JournalInspector.Properties}">
                   <ItemsControl.ItemTemplate>
@@ -376,6 +405,7 @@
                        FontFamily="Consolas, Menlo, monospace"
                        FontSize="11"
                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.IsScrollChainingEnabled="False"
                        ScrollViewer.VerticalScrollBarVisibility="Auto"
                        Text="{Binding JournalInspector.RawJson}" />
             </Grid>
@@ -403,6 +433,7 @@
                      FontFamily="Consolas, Menlo, monospace"
                      FontSize="11"
                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                     ScrollViewer.IsScrollChainingEnabled="False"
                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                      Text="{Binding JournalInspector.CodeText}" />
             <Button Grid.Column="1"
@@ -578,16 +609,22 @@
                        Text="{Binding DiagnosticsLog.SessionDescription}" />
           </StackPanel>
 
-          <TextBox MinHeight="260"
-                   MaxHeight="420"
-                   AcceptsReturn="True"
-                   IsReadOnly="True"
-                   TextWrapping="NoWrap"
-                   FontFamily="Consolas, Menlo, monospace"
-                   FontSize="12"
-                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                   Text="{Binding DiagnosticsLog.LogText, Mode=OneWay}" />
+          <Border Background="{DynamicResource RavenSurfaceBrush}"
+                  BorderBrush="{DynamicResource RavenBorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="8">
+            <ScrollViewer x:Name="ApplicationLogScroller"
+                          MinHeight="260"
+                          MaxHeight="420"
+                          Padding="10"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
+              <TextBlock FontFamily="Consolas, Menlo, monospace"
+                         FontSize="12"
+                         TextWrapping="NoWrap"
+                         Text="{Binding DiagnosticsLog.LogText, Mode=OneWay}" />
+            </ScrollViewer>
+          </Border>
 
           <WrapPanel Orientation="Horizontal">
             <Button Classes="primary"

@@ -175,6 +175,36 @@ public sealed class RouteWindowMarkupTests
     }
 
     [Fact]
+    public void RouteGuidanceBadgesKeepTheWorkspacePaletteInTheOverlay()
+    {
+        foreach (var fileName in new[]
+                 {
+                     "RouteWindow.axaml",
+                     "JumpInfoOverlayWindow.axaml",
+                 })
+        {
+            var document = XDocument.Load(Path.Combine(
+                FindRepositoryRoot(),
+                "src",
+                "SrvSurvey.Desktop",
+                fileName));
+            var guidanceBadges = document.Descendants()
+                .Where(element => element.Name.LocalName == "Border"
+                    && element.Attribute("Classes")?.Value == "badge"
+                    && element.Descendants().Any(descendant =>
+                        descendant.Name.LocalName == "TextBlock"
+                        && descendant.Attribute("Text")?.Value
+                            is "REFUEL" or "NEUTRON"))
+                .ToArray();
+
+            Assert.Equal(2, guidanceBadges.Length);
+            Assert.All(guidanceBadges, badge => Assert.Equal(
+                "{DynamicResource RavenRouteGuidanceBadgeBrush}",
+                badge.Attribute("Background")?.Value));
+        }
+    }
+
+    [Fact]
     public void RouteBodiesWrapBelowTheCompactHopSummary()
     {
         var document = LoadRouteWindow();

@@ -21,6 +21,7 @@ namespace SrvSurvey.Core.Network
         private readonly string filepath;
         private readonly string ownershipPath;
         private readonly string sharedDisablePath;
+        private readonly string sharedDisableLeasePath;
         private readonly EddnTransport transport;
         private readonly Action<string> log;
         private readonly Func<DateTimeOffset> utcNow;
@@ -34,6 +35,7 @@ namespace SrvSurvey.Core.Network
         private CancellationTokenSource activityCancellation = new();
         private List<EddnQueuedMessage> pending;
         private FileStream? ownershipLease;
+        private FileStream? sharedDisableLease;
         private bool? requestedEnabled;
         private bool enabled;
         private bool suspended;
@@ -52,6 +54,7 @@ namespace SrvSurvey.Core.Network
             this.filepath = filepath;
             ownershipPath = getOwnershipPath(filepath);
             sharedDisablePath = ownershipPath + ".sharing-disabled";
+            sharedDisableLeasePath = sharedDisablePath + ".lease";
             this.transport = transport;
             this.log = log ?? (_ => { });
             this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
@@ -94,27 +97,34 @@ namespace SrvSurvey.Core.Network
         {
             lock (sharedConsentSync)
             {
-                bool publishDisable;
-                bool publishEnable;
+                bool requestedStateChanged;
                 lock (sync)
                 {
                     if (disposed) return;
-                    publishDisable = !value && requestedEnabled != false;
-                    publishEnable = value && requestedEnabled == false;
+                    requestedStateChanged = requestedEnabled != value;
                     requestedEnabled = value;
                 }
 
-                string? markerLog = null;
-                if (publishDisable)
+                List<string> markerLogs = [];
+                if (!value)
                 {
-                    markerLog = writeSharedDisableMarker();
+                    addLog(markerLogs, acquireSharedDisableLease());
+                    if (requestedStateChanged
+                        || !isSharedConsentDisabled())
+                    {
+                        addLog(markerLogs, writeSharedDisableMarker());
+                    }
                 }
-                else if (publishEnable)
+                else
                 {
-                    markerLog = clearSharedDisableMarker();
+                    releaseSharedDisableLease();
+                    if (requestedStateChanged)
+                    {
+                        addLog(markerLogs, tryClearSharedDisableMarker());
+                    }
                 }
 
-                writeLog(markerLog);
+                writeLogs(markerLogs);
                 var sharedDisabled = isSharedConsentDisabled();
                 applyEnabledState(
                     value && !sharedDisabled,
@@ -432,6 +442,11 @@ namespace SrvSurvey.Core.Network
             timer.Dispose();
             sharedConsentWatcher?.Dispose();
 
+            lock (sharedConsentSync)
+            {
+                releaseSharedDisableLease();
+            }
+
             if (processing.Wait(0))
             {
                 try
@@ -611,6 +626,13 @@ namespace SrvSurvey.Core.Network
             }
         }
 
+        private static void addLog(
+            List<string> messages,
+            string? message)
+        {
+            if (!string.IsNullOrWhiteSpace(message)) messages.Add(message);
+        }
+
         private bool tryAcquireOwnershipLocked(List<string> messages)
         {
             if (ownershipLease is not null) return true;
@@ -785,22 +807,87 @@ namespace SrvSurvey.Core.Network
             }
         }
 
-        private string? clearSharedDisableMarker()
+        private string? acquireSharedDisableLease()
         {
+            if (sharedDisableLease is not null) return null;
             try
             {
-                if (File.Exists(sharedDisablePath))
+                var folder = Path.GetDirectoryName(sharedDisableLeasePath);
+                if (!string.IsNullOrWhiteSpace(folder))
                 {
-                    File.Delete(sharedDisablePath);
+                    Directory.CreateDirectory(folder);
                 }
 
+                sharedDisableLease = new FileStream(
+                    sharedDisableLeasePath,
+                    FileMode.OpenOrCreate,
+                    FileAccess.Read,
+                    FileShare.Read);
                 return null;
             }
             catch (Exception exception) when (
                 exception is IOException or UnauthorizedAccessException)
             {
-                return "EDDN could not clear the shared opt-out state: "
+                return "EDDN could not acquire the shared opt-out lease: "
                     + exception.Message;
+            }
+        }
+
+        private void releaseSharedDisableLease()
+        {
+            sharedDisableLease?.Dispose();
+            sharedDisableLease = null;
+        }
+
+        private string? tryClearSharedDisableMarker()
+        {
+            if (!File.Exists(sharedDisablePath)) return null;
+            FileStream activeOptOutProbe;
+            try
+            {
+                var folder = Path.GetDirectoryName(sharedDisableLeasePath);
+                if (!string.IsNullOrWhiteSpace(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+
+                // Opted-out processes share read handles with one another.
+                // FileShare.None is incompatible with every live reader, so
+                // this probe succeeds only after all opt-out leases close.
+                activeOptOutProbe = new FileStream(
+                    sharedDisableLeasePath,
+                    FileMode.OpenOrCreate,
+                    FileAccess.Read,
+                    FileShare.None);
+            }
+            catch (IOException)
+            {
+                // Another process still holds an active opt-out lease.
+                return null;
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                return "EDDN could not inspect the shared opt-out state: "
+                    + exception.Message;
+            }
+
+            using (activeOptOutProbe)
+            {
+                try
+                {
+                    if (File.Exists(sharedDisablePath))
+                    {
+                        File.Delete(sharedDisablePath);
+                    }
+
+                    return null;
+                }
+                catch (Exception exception) when (
+                    exception is IOException or UnauthorizedAccessException)
+                {
+                    return "EDDN could not clear the shared opt-out state: "
+                        + exception.Message;
+                }
             }
         }
 

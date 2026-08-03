@@ -260,10 +260,19 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             {
                 _ = LoadSelectedSystemAsync(value);
             }
+
+            OnPropertyChanged(nameof(SelectedSystemName));
+            OnPropertyChanged(nameof(SelectedSystemAddressText));
         }
     }
 
     public bool HasSelectedSystem => SelectedSystem is not null;
+
+    public string SelectedSystemName => SelectedSystem?.Name ?? string.Empty;
+
+    public string SelectedSystemAddressText => SelectedSystem is null
+        ? string.Empty
+        : $"System address {SelectedSystem.Address}";
 
     public string SelectedSystemNotes
     {

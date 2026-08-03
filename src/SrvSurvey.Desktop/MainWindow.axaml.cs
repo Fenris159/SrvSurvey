@@ -27,6 +27,7 @@ public sealed partial class MainWindow : Window
         InputContext = new ApplicationInputContext();
         InitializeComponent();
         DataContext = viewModel;
+        viewModel.ReleaseUpdates.SetDiagnosticsNavigator(viewModel.ShowDiagnostics);
         Opened += OnOpened;
         viewModel.ProfileImportPreparing += StopMonitorForProfileImportAsync;
         Activated += (_, _) => InputContext.SetActive(true);
@@ -119,6 +120,7 @@ public sealed partial class MainWindow : Window
         InputContext.SetActive(false);
         InputContext.SetTextInputActive(false);
         viewModel.ProfileImportPreparing -= StopMonitorForProfileImportAsync;
+        viewModel.ReleaseUpdates.SetDiagnosticsNavigator(null);
         trayIcon?.Dispose();
         trayIcon = null;
         base.OnClosed(eventArgs);

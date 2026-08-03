@@ -20,6 +20,21 @@ public sealed record BiologySurveyViewModel(
     int GeologicalSignalCount,
     IReadOnlyList<string> GeologicalSignals)
 {
+    public static BiologySurveyViewModel Empty { get; } = new(
+        BiologySurveyMode.System,
+        null,
+        string.Empty,
+        string.Empty,
+        [],
+        [],
+        string.Empty,
+        string.Empty,
+        0,
+        false,
+        string.Empty,
+        0,
+        []);
+
     public bool IsBodyDetail => Mode == BiologySurveyMode.Body;
 
     public bool IsSystemOverview => Mode == BiologySurveyMode.System;
@@ -67,7 +82,8 @@ public sealed record BiologySurveyViewModel(
         BiologyDiscoveryContext? discoveryContext = null,
         BiologyRewardThresholds? rewardThresholds = null,
         BiologyPredictionEvaluator? predictionEvaluator = null,
-        ExobiologyReferenceCatalog? referenceCatalog = null)
+        ExobiologyReferenceCatalog? referenceCatalog = null,
+        IReadOnlySet<int>? canonnBiologyBodyIds = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
@@ -96,7 +112,8 @@ public sealed record BiologySurveyViewModel(
                 exobiology.CountRadicoidaUnica,
                 rewardThresholds ?? BiologyRewardThresholds.Default,
                 predictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                referenceCatalog ?? DefaultBioReferenceCatalog.Value)
+                referenceCatalog ?? DefaultBioReferenceCatalog.Value,
+                canonnBiologyBodyIds)
             : CreateBody(
                 snapshot,
                 body,
@@ -139,7 +156,8 @@ public sealed record BiologySurveyViewModel(
                 radicoidaUnicaCount,
                 rewardThresholds ?? BiologyRewardThresholds.Default,
                 predictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                referenceCatalog ?? DefaultBioReferenceCatalog.Value);
+                referenceCatalog ?? DefaultBioReferenceCatalog.Value,
+                canonnBiologyBodyIds: null);
     }
 
     public static BiologySurveyViewModel? CreateBodyDetail(
@@ -214,7 +232,8 @@ public sealed record BiologySurveyViewModel(
         int radicoidaUnicaCount,
         BiologyRewardThresholds rewardThresholds,
         BiologyPredictionEvaluator predictionEvaluator,
-        ExobiologyReferenceCatalog referenceCatalog)
+        ExobiologyReferenceCatalog referenceCatalog,
+        IReadOnlySet<int>? canonnBiologyBodyIds)
     {
         var destinationBodyId = status?.Destination is { } destination
             && destination.System == snapshot.SystemAddress
@@ -249,6 +268,7 @@ public sealed record BiologySurveyViewModel(
                     estimate.HasUnknownReward,
                     body.BodyId == destinationBodyId,
                     body.BodyId == currentBodyId,
+                    canonnBiologyBodyIds?.Contains(body.BodyId) == true,
                     rewardBands,
                     rewardThresholds.BucketOneMillions,
                     rewardThresholds.BucketTwoMillions,
@@ -520,7 +540,7 @@ public sealed record BiologySurveyViewModel(
     {
         if (disablePredictions)
         {
-            return BiologyPredictionSet.Empty;
+            return BiologyPredictionSet.NoPredictions;
         }
 
         var inputs = BiologyPredictionContextBuilder.Build(
@@ -863,7 +883,7 @@ public sealed record BiologySurveyViewModel(
         string Status,
         bool IsComplete)
     {
-        public static BiologyPredictionSet Empty { get; } = new(
+        public static BiologyPredictionSet NoPredictions { get; } = new(
             [],
             string.Empty,
             false);
@@ -911,6 +931,7 @@ public sealed record BiologyBodyRowViewModel(
     bool HasUnknownReward,
     bool IsDestination,
     bool IsCurrentBody,
+    bool HasCanonnSignals,
     IReadOnlyList<BiologySignalRewardBandViewModel> RewardBands,
     double RewardBucketOneMillions = 3,
     double RewardBucketTwoMillions = 7,

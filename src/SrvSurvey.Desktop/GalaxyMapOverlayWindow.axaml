@@ -51,10 +51,10 @@
               CornerRadius="8">
         <StackPanel Spacing="5">
           <TextBlock Classes="eyebrow"
-                     Text="{Binding PrimarySystem.Label}" />
+                     Text="{Binding PrimarySystemDisplay.Label}" />
           <StackPanel Orientation="Horizontal" Spacing="7">
             <Border Classes="badge"
-                    IsVisible="{Binding PrimarySystem.IsQuestTagged}">
+                    IsVisible="{Binding PrimarySystemDisplay.IsQuestTagged}">
               <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                          FontSize="9"
                          FontWeight="Bold"
@@ -63,25 +63,25 @@
             <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                        FontSize="23"
                        FontWeight="SemiBold"
-                       Text="{Binding PrimarySystem.Name}"
+                       Text="{Binding PrimarySystemDisplay.Name}"
                        TextTrimming="CharacterEllipsis" />
           </StackPanel>
-          <TextBlock Text="{Binding PrimarySystem.DiscoveryText}"
+          <TextBlock Text="{Binding PrimarySystemDisplay.DiscoveryText}"
                      TextWrapping="Wrap" />
-          <TextBlock IsVisible="{Binding PrimarySystem.HasDiscoveredBy}"
+          <TextBlock IsVisible="{Binding PrimarySystemDisplay.HasDiscoveredBy}"
                      Classes="muted"
                      FontSize="11"
-                     Text="{Binding PrimarySystem.DiscoveredByText}"
+                     Text="{Binding PrimarySystemDisplay.DiscoveredByText}"
                      TextWrapping="Wrap" />
-          <TextBlock IsVisible="{Binding PrimarySystem.HasUpdated}"
+          <TextBlock IsVisible="{Binding PrimarySystemDisplay.HasUpdated}"
                      Classes="muted"
                      FontSize="11"
-                     Text="{Binding PrimarySystem.UpdatedText}"
+                     Text="{Binding PrimarySystemDisplay.UpdatedText}"
                      TextWrapping="Wrap" />
-          <TextBlock IsVisible="{Binding PrimarySystem.HasDetails}"
+          <TextBlock IsVisible="{Binding PrimarySystemDisplay.HasDetails}"
                      Foreground="{DynamicResource RavenSuccessBrush}"
                      FontWeight="SemiBold"
-                     Text="{Binding PrimarySystem.DetailsText}" />
+                     Text="{Binding PrimarySystemDisplay.DetailsText}" />
         </StackPanel>
       </Border>
 
@@ -93,10 +93,10 @@
               CornerRadius="8">
         <StackPanel Spacing="4">
           <TextBlock Classes="eyebrow"
-                     Text="{Binding SecondarySystem.Label}" />
+                     Text="{Binding SecondarySystemDisplay.Label}" />
           <StackPanel Orientation="Horizontal" Spacing="7">
             <Border Classes="badge"
-                    IsVisible="{Binding SecondarySystem.IsQuestTagged}">
+                    IsVisible="{Binding SecondarySystemDisplay.IsQuestTagged}">
               <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                          FontSize="9"
                          FontWeight="Bold"
@@ -105,24 +105,24 @@
             <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                        FontSize="18"
                        FontWeight="SemiBold"
-                       Text="{Binding SecondarySystem.Name}" />
+                       Text="{Binding SecondarySystemDisplay.Name}" />
           </StackPanel>
-          <TextBlock Text="{Binding SecondarySystem.DiscoveryText}"
+          <TextBlock Text="{Binding SecondarySystemDisplay.DiscoveryText}"
                      TextWrapping="Wrap" />
-          <TextBlock IsVisible="{Binding SecondarySystem.HasDiscoveredBy}"
+          <TextBlock IsVisible="{Binding SecondarySystemDisplay.HasDiscoveredBy}"
                      Classes="muted"
                      FontSize="11"
-                     Text="{Binding SecondarySystem.DiscoveredByText}"
+                     Text="{Binding SecondarySystemDisplay.DiscoveredByText}"
                      TextWrapping="Wrap" />
-          <TextBlock IsVisible="{Binding SecondarySystem.HasUpdated}"
+          <TextBlock IsVisible="{Binding SecondarySystemDisplay.HasUpdated}"
                      Classes="muted"
                      FontSize="11"
-                     Text="{Binding SecondarySystem.UpdatedText}"
+                     Text="{Binding SecondarySystemDisplay.UpdatedText}"
                      TextWrapping="Wrap" />
-          <TextBlock IsVisible="{Binding SecondarySystem.HasDetails}"
+          <TextBlock IsVisible="{Binding SecondarySystemDisplay.HasDetails}"
                      Foreground="{DynamicResource RavenSuccessBrush}"
                      FontSize="11"
-                     Text="{Binding SecondarySystem.DetailsText}" />
+                     Text="{Binding SecondarySystemDisplay.DetailsText}" />
         </StackPanel>
       </Border>
 

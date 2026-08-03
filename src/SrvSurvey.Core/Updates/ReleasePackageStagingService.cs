@@ -8,14 +8,14 @@ namespace SrvSurvey.Core.Updates;
 public interface IReleasePackageStagingService
 {
     Task<ReleasePackageStagingResult> StageAsync(
-        Version version,
+        ReleaseVersion version,
         CrossPlatformReleasePackage package,
         string archivePath,
         string dataDirectory,
         CancellationToken cancellationToken = default);
 
     Task<ReleasePackageStagingResult> VerifyReadyAsync(
-        Version version,
+        ReleaseVersion version,
         string runtimeIdentifier,
         string readyDirectory,
         string manifestSha256,
@@ -39,12 +39,12 @@ public sealed class ReleasePackageStagingService
     private const long MaximumExpandedBytes = 1024L * 1024 * 1024;
     private const long MaximumSingleFileBytes = 512L * 1024 * 1024;
     private const string ManifestName = "release-package.json";
-    private const string ProductName = "SrvSurvey.Avalonia";
+    private const string ProductName = "SrvSurvey.XP";
     private static readonly char[] InvalidPortableNameCharacters =
         ['<', '>', ':', '"', '|', '?', '*'];
 
     public async Task<ReleasePackageStagingResult> StageAsync(
-        Version version,
+        ReleaseVersion version,
         CrossPlatformReleasePackage package,
         string archivePath,
         string dataDirectory,
@@ -117,13 +117,12 @@ public sealed class ReleasePackageStagingService
     }
 
     public async Task<ReleasePackageStagingResult> VerifyReadyAsync(
-        Version version,
+        ReleaseVersion version,
         string runtimeIdentifier,
         string readyDirectory,
         string manifestSha256,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(version);
         ArgumentException.ThrowIfNullOrWhiteSpace(runtimeIdentifier);
         ArgumentException.ThrowIfNullOrWhiteSpace(readyDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestSha256);
@@ -159,7 +158,7 @@ public sealed class ReleasePackageStagingService
         var suffix = archiveType == "zip" ? ".zip" : ".tar.gz";
         var package = new CrossPlatformReleasePackage(
             runtimeIdentifier,
-            $"SrvSurvey-Avalonia-{version}-{runtimeIdentifier}{suffix}",
+            $"SrvSurvey-XP-{version}-{runtimeIdentifier}{suffix}",
             archiveType,
             1,
             new string('0', 64),
@@ -184,7 +183,7 @@ public sealed class ReleasePackageStagingService
     }
 
     private static async Task<InspectedArchive> InspectArchiveAsync(
-        Version version,
+        ReleaseVersion version,
         CrossPlatformReleasePackage package,
         string archivePath,
         CancellationToken cancellationToken)
@@ -209,7 +208,7 @@ public sealed class ReleasePackageStagingService
     }
 
     private static async Task<InspectedArchive> InspectZipAsync(
-        Version version,
+        ReleaseVersion version,
         CrossPlatformReleasePackage package,
         string archivePath,
         CancellationToken cancellationToken)
@@ -260,7 +259,7 @@ public sealed class ReleasePackageStagingService
     }
 
     private static async Task<InspectedArchive> InspectTarAsync(
-        Version version,
+        ReleaseVersion version,
         CrossPlatformReleasePackage package,
         string archivePath,
         CancellationToken cancellationToken)
@@ -332,7 +331,7 @@ public sealed class ReleasePackageStagingService
 
     private static ReleasePackageManifest ParseManifest(
         byte[]? bytes,
-        Version version,
+        ReleaseVersion version,
         CrossPlatformReleasePackage package)
     {
         if (bytes is null or { Length: 0 })
@@ -357,7 +356,7 @@ public sealed class ReleasePackageStagingService
             }
 
             var versionText = ReadString(root, "version");
-            if (!Version.TryParse(versionText, out var manifestVersion)
+            if (!ReleaseVersion.TryParse(versionText, out var manifestVersion)
                 || manifestVersion != version)
             {
                 throw new InvalidDataException(
@@ -919,7 +918,7 @@ public sealed class ReleasePackageStagingService
 
     private static string ResolveStageRoot(
         string dataDirectory,
-        Version version,
+        ReleaseVersion version,
         string runtimeIdentifier)
     {
         var dataRoot = Path.GetFullPath(dataDirectory);
@@ -1096,12 +1095,11 @@ public sealed class ReleasePackageStagingService
     }
 
     private static void ValidateArguments(
-        Version version,
+        ReleaseVersion version,
         CrossPlatformReleasePackage package,
         string archivePath,
         string dataDirectory)
     {
-        ArgumentNullException.ThrowIfNull(version);
         ArgumentNullException.ThrowIfNull(package);
         ArgumentException.ThrowIfNullOrWhiteSpace(archivePath);
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
@@ -1113,7 +1111,7 @@ public sealed class ReleasePackageStagingService
         };
         var suffix = archiveType == "zip" ? ".zip" : ".tar.gz";
         var expectedArchiveName =
-            $"SrvSurvey-Avalonia-{version}-{package.RuntimeIdentifier}{suffix}";
+            $"SrvSurvey-XP-{version}-{package.RuntimeIdentifier}{suffix}";
         if (version.Build < 0
             || string.IsNullOrEmpty(archiveType)
             || !string.Equals(package.ArchiveType, archiveType, StringComparison.Ordinal)
@@ -1154,7 +1152,7 @@ public sealed class ReleasePackageStagingService
     private sealed record ArchiveEntryInfo(long Size);
 
     private sealed record ReleasePackageManifest(
-        Version Version,
+        ReleaseVersion Version,
         string RuntimeIdentifier,
         string EntryPoint,
         IReadOnlyDictionary<string, ReleasePackageManifestFile> Files,

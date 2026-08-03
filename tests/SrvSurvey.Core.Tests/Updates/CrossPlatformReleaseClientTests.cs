@@ -25,18 +25,21 @@ public sealed class CrossPlatformReleaseClientTests
             });
         var client = new CrossPlatformReleaseClient(
             new HttpClient(handler),
+            ReleasesUri,
             ReleasesUri);
 
-        var result = await client.GetLatestAsync("win-x64");
+        var result = await client.GetLatestAsync(
+            "win-x64",
+            ReleaseChannel.Development);
 
         Assert.NotNull(result);
-        Assert.Equal(new Version(2, 0, 95, 23), result.Version);
+        Assert.Equal(ReleaseVersion.Parse("2.0.95.23"), result.Version);
         Assert.Equal(
             "https://example.test/releases/2.0.95.23",
             result.ReleaseUri.AbsoluteUri);
         Assert.Equal("win-x64", result.Package.RuntimeIdentifier);
         Assert.Equal(
-            "SrvSurvey-Avalonia-2.0.95.23-win-x64.zip",
+            "SrvSurvey-XP-2.0.95.23-win-x64.zip",
             result.Package.ArchiveName);
         Assert.Equal("zip", result.Package.ArchiveType);
         Assert.Equal(12_345, result.Package.Size);
@@ -46,7 +49,7 @@ public sealed class CrossPlatformReleaseClientTests
             result.Package.DownloadUri.AbsoluteUri);
         Assert.Equal([ReleasesUri, IndexUri], handler.RequestUris);
         Assert.All(handler.UserAgents, value =>
-            Assert.Contains("SrvSurvey-Avalonia/1.0", value));
+            Assert.Contains("SrvSurvey-XP/1.0", value));
         Assert.True(handler.FirstRequestDisabledCache);
     }
 
@@ -69,7 +72,9 @@ public sealed class CrossPlatformReleaseClientTests
             ReleasesUri);
 
         await Assert.ThrowsAsync<InvalidDataException>(
-            () => client.GetLatestAsync("linux-x64"));
+            () => client.GetLatestAsync(
+                "linux-x64",
+                ReleaseChannel.Development));
     }
 
     [Fact]
@@ -109,9 +114,12 @@ public sealed class CrossPlatformReleaseClientTests
         });
         var client = new CrossPlatformReleaseClient(
             new HttpClient(handler),
+            ReleasesUri,
             ReleasesUri);
 
-        var result = await client.GetLatestAsync("win-x64");
+        var result = await client.GetLatestAsync(
+            "win-x64",
+            ReleaseChannel.Stable);
 
         Assert.Null(result);
         Assert.Equal([ReleasesUri], handler.RequestUris);
@@ -126,24 +134,100 @@ public sealed class CrossPlatformReleaseClientTests
             ReleasesUri);
 
         await Assert.ThrowsAsync<PlatformNotSupportedException>(
-            () => client.GetLatestAsync("osx-arm64"));
+            () => client.GetLatestAsync(
+                "osx-arm64",
+                ReleaseChannel.Development));
 
         Assert.Empty(handler.RequestUris);
     }
 
-    private static ReleasePayload CreatePayload(string? mutation = null)
+    [Fact]
+    public async Task DevelopmentChannelSelectsXpReleaseCandidate()
+    {
+        const string version = "2.1.4.0-rc.3";
+        var payload = CreatePayload(version: version, prerelease: true);
+        var handler = new StubHandler(new Dictionary<Uri, string>
+        {
+            [ReleasesUri] = payload.Releases,
+            [IndexUri] = payload.Index,
+        });
+        var client = new CrossPlatformReleaseClient(
+            new HttpClient(handler),
+            ReleasesUri,
+            ReleasesUri);
+
+        var development = await client.GetLatestAsync(
+            "linux-x64",
+            ReleaseChannel.Development);
+
+        Assert.NotNull(development);
+        Assert.Equal(ReleaseVersion.Parse(version), development.Version);
+        Assert.Equal(
+            $"SrvSurvey-XP-{version}-linux-x64.tar.gz",
+            development.Package.ArchiveName);
+    }
+
+    [Fact]
+    public async Task StableChannelDoesNotSelectXpReleaseCandidate()
+    {
+        var payload = CreatePayload(
+            version: "2.1.4.0-rc.3",
+            prerelease: true);
+        var handler = new StubHandler(new Dictionary<Uri, string>
+        {
+            [ReleasesUri] = payload.Releases,
+        });
+        var client = new CrossPlatformReleaseClient(
+            new HttpClient(handler),
+            ReleasesUri,
+            ReleasesUri);
+
+        var stable = await client.GetLatestAsync(
+            "win-x64",
+            ReleaseChannel.Stable);
+
+        Assert.Null(stable);
+        Assert.Equal([ReleasesUri], handler.RequestUris);
+    }
+
+    [Fact]
+    public async Task StableChannelUsesItsConfiguredRepositoryFeed()
+    {
+        var stableReleasesUri = new Uri(
+            "https://api.example.test/upstream/releases");
+        var handler = new StubHandler(new Dictionary<Uri, string>
+        {
+            [stableReleasesUri] = "[]",
+        });
+        var client = new CrossPlatformReleaseClient(
+            new HttpClient(handler),
+            ReleasesUri,
+            stableReleasesUri);
+
+        var stable = await client.GetLatestAsync(
+            "win-x64",
+            ReleaseChannel.Stable);
+
+        Assert.Null(stable);
+        Assert.Equal([stableReleasesUri], handler.RequestUris);
+    }
+
+    private static ReleasePayload CreatePayload(
+        string? mutation = null,
+        string version = "2.0.95.23",
+        bool prerelease = false)
     {
         var indexNode = JsonSerializer.SerializeToNode(new
         {
             schemaVersion = 1,
-            product = "SrvSurvey.Avalonia",
-            version = "2.0.95.23",
+            product = "SrvSurvey.XP",
+            version,
             packages = new object[]
             {
                 new
                 {
                     runtimeIdentifier = "win-x64",
-                    archive = "SrvSurvey-Avalonia-2.0.95.23-win-x64.zip",
+                    archive = $"SrvSurvey-XP-{version}-win-x64.zip",
                     archiveType = "zip",
                     size = 12_345L,
                     sha256 = new string('a', 64),
@@ -151,7 +235,7 @@ public sealed class CrossPlatformReleaseClientTests
                 new
                 {
                     runtimeIdentifier = "linux-x64",
-                    archive = "SrvSurvey-Avalonia-2.0.95.23-linux-x64.tar.gz",
+                    archive = $"SrvSurvey-XP-{version}-linux-x64.tar.gz",
                     archiveType = "tar.gz",
                     size = 23_456L,
                     sha256 = new string('b', 64),
@@ -180,10 +264,10 @@ public sealed class CrossPlatformReleaseClientTests
         {
             new
             {
-                tag_name = "2.0.95.23",
+                tag_name = $"xp-v{version}",
                 draft = false,
-                prerelease = false,
-                html_url = "https://example.test/releases/2.0.95.23",
+                prerelease,
+                html_url = $"https://example.test/releases/{version}",
                 assets = new[]
                 {
                     new
@@ -194,14 +278,14 @@ public sealed class CrossPlatformReleaseClientTests
                     },
                     new
                     {
-                        name = "SrvSurvey-Avalonia-2.0.95.23-win-x64.zip",
+                        name = $"SrvSurvey-XP-{version}-win-x64.zip",
                         size = 12_345L,
                         browser_download_url =
                             "https://downloads.example.test/windows.zip",
                     },
                     new
                     {
-                        name = "SrvSurvey-Avalonia-2.0.95.23-linux-x64.tar.gz",
+                        name = $"SrvSurvey-XP-{version}-linux-x64.tar.gz",
                         size = 23_456L,
                         browser_download_url =
                             "https://downloads.example.test/linux.tar.gz",

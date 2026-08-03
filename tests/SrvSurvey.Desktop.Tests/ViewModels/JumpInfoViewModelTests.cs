@@ -103,6 +103,10 @@ public sealed class JumpInfoViewModelTests : IDisposable
         Assert.True(followedRouteLine.Neutron);
         Assert.True(followedRouteLine.Refuel);
         Assert.True(followedRouteLine.HasRouteBadges);
+        Assert.True(viewModel.HasNeutronGuidance);
+        Assert.True(viewModel.HasRefuelGuidance);
+        Assert.True(viewModel.HasRouteGuidanceBadges);
+        Assert.True(viewModel.HasDiscoveryOrRouteGuidance);
     }
 
     [Fact]

@@ -22,7 +22,7 @@ public enum ReleaseInstallationOutcomeStatus
 public sealed record ReleaseInstallationOutcome(
     ReleaseInstallationOutcomeStatus Status,
     Guid RequestId,
-    Version Version,
+    ReleaseVersion Version,
     DateTimeOffset CompletedAtUtc,
     string? BackupDirectory,
     string? FailedDirectory,
@@ -185,7 +185,7 @@ public sealed class ReleaseInstallationPlanStore
             }
 
             var versionText = ReadString(preparationElement, "version");
-            if (!Version.TryParse(versionText, out var version)
+            if (!ReleaseVersion.TryParse(versionText, out var version)
                 || version.Build < 0)
             {
                 throw new InvalidDataException(
@@ -349,7 +349,7 @@ public sealed class ReleaseInstallationPlanStore
 
             var requestId = ReadGuid(root, "RequestId");
             var versionText = ReadString(root, "version");
-            if (!Version.TryParse(versionText, out var version)
+            if (!ReleaseVersion.TryParse(versionText, out var version)
                 || requestId != plan.Preparation.RequestId
                 || version != plan.Preparation.Version)
             {

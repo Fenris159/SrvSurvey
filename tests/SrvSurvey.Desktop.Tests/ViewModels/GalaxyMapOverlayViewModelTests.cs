@@ -13,6 +13,21 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
         $"SrvSurvey-galaxy-map-view-model-tests-{Guid.NewGuid():N}");
 
     [Fact]
+    public void EmptyStateProvidesStableNonNullBindingTargets()
+    {
+        using var viewModel = CreateViewModel(new FakeSummaryClient());
+
+        Assert.False(viewModel.HasPrimarySystem);
+        Assert.False(viewModel.HasSecondarySystem);
+        Assert.Same(
+            GalaxyMapSystemViewModel.Empty,
+            viewModel.PrimarySystemDisplay);
+        Assert.Same(
+            GalaxyMapSystemViewModel.Empty,
+            viewModel.SecondarySystemDisplay);
+    }
+
+    [Fact]
     public async Task GalaxyMapRouteShowsDestinationNextHopAndFactionInfluence()
     {
         var client = new FakeSummaryClient();
@@ -58,6 +73,7 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.NoFocus });
 
         Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.IsGalaxyMapOpen);
         Assert.Empty(client.Requests);
 
         viewModel.ApplyUpdate(
@@ -68,7 +84,17 @@ public sealed class GalaxyMapOverlayViewModelTests : IDisposable
             new EliteStatus { GuiFocus = GuiFocus.GalaxyMap });
         await viewModel.PendingLoad;
 
+        Assert.True(viewModel.IsGalaxyMapOpen);
         Assert.Equal(2, client.Requests.Count);
+
+        viewModel.ApplyUpdate(
+            "Sol",
+            1,
+            null,
+            [],
+            new EliteStatus { GuiFocus = GuiFocus.NoFocus });
+
+        Assert.False(viewModel.IsGalaxyMapOpen);
     }
 
     [Fact]

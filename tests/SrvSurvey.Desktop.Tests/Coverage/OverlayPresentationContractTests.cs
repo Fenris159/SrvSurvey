@@ -21,7 +21,7 @@ public sealed class OverlayPresentationContractTests
             "ProgressText", "TrackedCompletionPercent", "ActiveSample", "Signals", "Warning", "Footer",
         ]),
         Contract("PlotBioSystem", ["src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml"], [
-            "Bodies", "RewardBands", "Organisms", "RewardSummary", "FirstFootfallRewardSummary",
+            "Bodies", "RewardBands", "HasCanonnSignals", "CanonnLogoControl", "Organisms", "RewardSummary", "FirstFootfallRewardSummary",
             "GeologicalSignals", "RadicoidaUnicaCountText",
         ]),
         Contract("PlotBodyInfo", ["src/SrvSurvey.Desktop/BodyInformationOverlayWindow.axaml"], [
@@ -43,8 +43,9 @@ public sealed class OverlayPresentationContractTests
             "BiologicalSignalsText", "GeologicalSignalsText", "TextDecorations=\"Strikethrough\"",
         ]),
         Contract("PlotGalMap", ["src/SrvSurvey.Desktop/GalaxyMapOverlayWindow.axaml"], [
-            "PrimarySystem.DiscoveryText", "PrimarySystem.DiscoveredByText", "SecondarySystem.DiscoveryText",
-            "SecondarySystem.DiscoveredByText", "RouteFooter", "Factions", "IsQuestTagged",
+            "PrimarySystemDisplay.DiscoveryText", "PrimarySystemDisplay.DiscoveredByText",
+            "SecondarySystemDisplay.DiscoveryText", "SecondarySystemDisplay.DiscoveredByText",
+            "RouteFooter", "Factions", "IsQuestTagged",
         ]),
         Contract("PlotGrounded", ["src/SrvSurvey.Desktop/SurfaceSurveyOverlayWindow.axaml"], [
             "BodyName", "HistoryText", "HeadingText", "RadarScaleText", "NavigationMarkers", "TrackerGroups",
@@ -66,7 +67,8 @@ public sealed class OverlayPresentationContractTests
         Contract("PlotJumpInfo", ["src/SrvSurvey.Desktop/JumpInfoOverlayWindow.axaml"], [
             "TargetName", "StarClass", "JumpProgress", "RouteLegs", "TotalDistance", "DiscoveryText",
             "TrafficText", "PointsOfInterestText", "DetailLines", "IsQuestTagged",
-            "HasRouteBadges", "Refuel", "Neutron", "Assets/Routes/refuel-star.png",
+            "HasRouteGuidanceBadges", "HasRefuelGuidance", "HasNeutronGuidance",
+            "Assets/Routes/refuel-star.png",
             "Assets/Routes/neutron-star.png",
         ]),
         Contract("PlotFleetCarrierRoute", ["src/SrvSurvey.Desktop/FleetCarrierRouteOverlayWindow.axaml"], [

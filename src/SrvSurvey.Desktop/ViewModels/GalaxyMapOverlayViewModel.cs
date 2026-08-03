@@ -91,6 +91,8 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     public bool ShouldShow => AutoShow
         && status?.GuiFocus == GuiFocus.GalaxyMap;
 
+    public bool IsGalaxyMapOpen => status?.GuiFocus == GuiFocus.GalaxyMap;
+
     public string SettingsStatus
     {
         get => settingsStatus;
@@ -113,11 +115,15 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             if (SetField(ref primarySystem, value))
             {
                 OnPropertyChanged(nameof(HasPrimarySystem));
+                OnPropertyChanged(nameof(PrimarySystemDisplay));
             }
         }
     }
 
     public bool HasPrimarySystem => PrimarySystem is not null;
+
+    public GalaxyMapSystemViewModel PrimarySystemDisplay =>
+        PrimarySystem ?? GalaxyMapSystemViewModel.Empty;
 
     public GalaxyMapSystemViewModel? SecondarySystem
     {
@@ -127,11 +133,15 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             if (SetField(ref secondarySystem, value))
             {
                 OnPropertyChanged(nameof(HasSecondarySystem));
+                OnPropertyChanged(nameof(SecondarySystemDisplay));
             }
         }
     }
 
     public bool HasSecondarySystem => SecondarySystem is not null;
+
+    public GalaxyMapSystemViewModel SecondarySystemDisplay =>
+        SecondarySystem ?? GalaxyMapSystemViewModel.Empty;
 
     public IReadOnlyList<GalaxyMapFactionViewModel> Factions
     {
@@ -215,9 +225,15 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             }
         }
 
+        var wasGalaxyMapOpen = IsGalaxyMapOpen;
         if (nextStatus is not null)
         {
             status = nextStatus;
+        }
+
+        if (wasGalaxyMapOpen != IsGalaxyMapOpen)
+        {
+            OnPropertyChanged(nameof(IsGalaxyMapOpen));
         }
 
         foreach (var journalEvent in journalEvents)
@@ -591,6 +607,13 @@ public sealed record GalaxyMapSystemViewModel(
     string UpdatedText = "",
     bool IsQuestTagged = false)
 {
+    public static GalaxyMapSystemViewModel Empty { get; } = new(
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty,
+        string.Empty);
+
     public bool HasDiscoveredBy => !string.IsNullOrWhiteSpace(DiscoveredByText);
 
     public bool HasDetails => !string.IsNullOrWhiteSpace(DetailsText);
