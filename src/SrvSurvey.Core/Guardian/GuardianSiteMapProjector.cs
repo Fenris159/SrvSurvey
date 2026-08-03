@@ -45,7 +45,10 @@ public sealed class GuardianSiteMapProjector
             maximumDistance,
             IsRuins(template.SiteType),
             NormalizeHeading(survey?.SiteHeading ?? -1),
-            NormalizeHeading(survey?.RelicTowerHeading ?? -1));
+            NormalizeHeading(survey?.RelicTowerHeading ?? -1),
+            template.BackgroundImage,
+            template.ImageOffset,
+            template.ScaleFactor);
     }
 
     private static GuardianProjectedPoint ProjectPoint(
@@ -199,7 +202,10 @@ public sealed record GuardianSiteMapProjection(
     double MaximumDistance,
     bool IsRuins = false,
     int SiteHeading = -1,
-    int RelicTowerHeading = -1)
+    int RelicTowerHeading = -1,
+    string BackgroundImage = "",
+    GuardianMapPoint ImageOffset = default,
+    double ImageScaleFactor = 1)
 {
     public int SurveyablePointCount => Points.Count(point =>
         point.Type is not GuardianPoiType.Obelisk

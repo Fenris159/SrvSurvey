@@ -25,6 +25,31 @@ public sealed class GuardianSiteMapProjectorTests
     }
 
     [Fact]
+    public void ProjectionCarriesLegacyMapArtworkPlacementMetadata()
+    {
+        var template = new GuardianSiteTemplate(
+            "Beta",
+            "Beta",
+            "beta-background.png",
+            new GuardianMapPoint(487, 556),
+            1.88,
+            [new GuardianPointOfInterest(
+                "p1",
+                GuardianPoiType.Orb,
+                0,
+                10,
+                0)],
+            [],
+            new Dictionary<string, GuardianMapPoint>());
+
+        var projection = new GuardianSiteMapProjector().Project(template);
+
+        Assert.Equal("beta-background.png", projection.BackgroundImage);
+        Assert.Equal(new GuardianMapPoint(487, 556), projection.ImageOffset);
+        Assert.Equal(1.88, projection.ImageScaleFactor);
+    }
+
+    [Fact]
     public void CombinesSurveyStateRawPointsAndActiveObelisks()
     {
         var template = CreateTemplate(

@@ -51,6 +51,9 @@ public sealed class GuardianSiteMapControl : Control
         AvaloniaProperty.Register<GuardianSiteMapControl, bool>(
             nameof(ShowLegend),
             true);
+    public static readonly StyledProperty<bool> IsLegendOnlyProperty =
+        AvaloniaProperty.Register<GuardianSiteMapControl, bool>(
+            nameof(IsLegendOnly));
 
     static GuardianSiteMapControl()
     {
@@ -67,7 +70,8 @@ public sealed class GuardianSiteMapControl : Control
             PresentBrushProperty,
             AbsentBrushProperty,
             EmptyBrushProperty,
-            ShowLegendProperty);
+            ShowLegendProperty,
+            IsLegendOnlyProperty);
     }
 
     public GuardianSiteMapProjection? Projection
@@ -148,6 +152,12 @@ public sealed class GuardianSiteMapControl : Control
         set => SetValue(ShowLegendProperty, value);
     }
 
+    public bool IsLegendOnly
+    {
+        get => GetValue(IsLegendOnlyProperty);
+        set => SetValue(IsLegendOnlyProperty, value);
+    }
+
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -165,16 +175,33 @@ public sealed class GuardianSiteMapControl : Control
             return;
         }
 
+        if (IsLegendOnly)
+        {
+            DrawLegendRows(context, projection, 0, 8, 20);
+            return;
+        }
+
         var grid = GridBrush ?? Brushes.Gray;
         var accent = AccentBrush ?? Brushes.Cyan;
         var viewportCenter = bounds.Center;
-        var radius = Math.Max(
-            1,
-            Math.Min(bounds.Width, bounds.Height) / 2 - 30);
-        var fittedScale = radius / projection.MaximumDistance;
+        var mapImage = GuardianMapImageCatalog.Find(projection);
+        var fittedScale = CalculateFittedScale(
+            bounds,
+            projection,
+            mapImage);
         var scale = double.IsFinite(MapScale) && MapScale > 0
             ? Math.Clamp(MapScale, 0.1, 20)
             : fittedScale;
+        if (mapImage is not null)
+        {
+            DrawMapImage(
+                context,
+                projection,
+                mapImage,
+                viewportCenter,
+                scale);
+        }
+
         var mapOrigin = TransformMapPoint(
             0,
             0,
@@ -183,51 +210,55 @@ public sealed class GuardianSiteMapControl : Control
             viewportCenter,
             scale);
         var gridExtent = Math.Max(bounds.Width, bounds.Height) / scale * 2;
-        var gridPen = new Pen(grid, 1, dashStyle: DashStyle.Dash);
-        context.DrawLine(
-            gridPen,
-            TransformMapPoint(
-                0,
-                -gridExtent,
-                Proximity,
-                CommanderHeading,
-                viewportCenter,
-                scale),
-            TransformMapPoint(
-                0,
-                gridExtent,
-                Proximity,
-                CommanderHeading,
-                viewportCenter,
-                scale));
-        context.DrawLine(
-            gridPen,
-            TransformMapPoint(
-                -gridExtent,
-                0,
-                Proximity,
-                CommanderHeading,
-                viewportCenter,
-                scale),
-            TransformMapPoint(
-                gridExtent,
-                0,
-                Proximity,
-                CommanderHeading,
-                viewportCenter,
-                scale));
-        for (var ring = 1; ring <= 4; ring++)
+        if (mapImage is null)
         {
-            var ringRadius = projection.MaximumDistance * scale * ring / 4;
-            context.DrawEllipse(
-                null,
+            var gridPen = new Pen(grid, 1, dashStyle: DashStyle.Dash);
+            context.DrawLine(
                 gridPen,
-                mapOrigin,
-                ringRadius,
-                ringRadius);
+                TransformMapPoint(
+                    0,
+                    -gridExtent,
+                    Proximity,
+                    CommanderHeading,
+                    viewportCenter,
+                    scale),
+                TransformMapPoint(
+                    0,
+                    gridExtent,
+                    Proximity,
+                    CommanderHeading,
+                    viewportCenter,
+                    scale));
+            context.DrawLine(
+                gridPen,
+                TransformMapPoint(
+                    -gridExtent,
+                    0,
+                    Proximity,
+                    CommanderHeading,
+                    viewportCenter,
+                    scale),
+                TransformMapPoint(
+                    gridExtent,
+                    0,
+                    Proximity,
+                    CommanderHeading,
+                    viewportCenter,
+                    scale));
+            for (var ring = 1; ring <= 4; ring++)
+            {
+                var ringRadius = projection.MaximumDistance * scale * ring / 4;
+                context.DrawEllipse(
+                    null,
+                    gridPen,
+                    mapOrigin,
+                    ringRadius,
+                    ringRadius);
+            }
+
+            context.DrawEllipse(accent, null, mapOrigin, 3, 3);
         }
 
-        context.DrawEllipse(accent, null, mapOrigin, 3, 3);
         DrawHeadingLines(
             context,
             projection,
@@ -273,6 +304,78 @@ public sealed class GuardianSiteMapControl : Control
         {
             DrawLegend(context, projection);
         }
+
+        if (mapImage is null)
+        {
+            DrawMissingMapNotice(context, bounds, projection.SiteType);
+        }
+    }
+
+    public static double CalculateFittedScale(
+        Rect bounds,
+        GuardianSiteMapProjection projection,
+        IImage? mapImage)
+    {
+        ArgumentNullException.ThrowIfNull(projection);
+        var horizontalRoom = Math.Max(1, bounds.Width / 2 - 30);
+        var verticalRoom = Math.Max(1, bounds.Height / 2 - 30);
+        var maximumX = projection.MaximumDistance;
+        var maximumY = projection.MaximumDistance;
+        if (mapImage is not null
+            && double.IsFinite(projection.ImageScaleFactor)
+            && projection.ImageScaleFactor > 0)
+        {
+            var imageLeft = -projection.ImageOffset.X
+                * projection.ImageScaleFactor;
+            var imageTop = -projection.ImageOffset.Y
+                * projection.ImageScaleFactor;
+            var imageRight = imageLeft
+                + mapImage.Size.Width * projection.ImageScaleFactor;
+            var imageBottom = imageTop
+                + mapImage.Size.Height * projection.ImageScaleFactor;
+            maximumX = Math.Max(
+                maximumX,
+                Math.Max(Math.Abs(imageLeft), Math.Abs(imageRight)));
+            maximumY = Math.Max(
+                maximumY,
+                Math.Max(Math.Abs(imageTop), Math.Abs(imageBottom)));
+        }
+
+        return Math.Min(
+            horizontalRoom / Math.Max(1, maximumX),
+            verticalRoom / Math.Max(1, maximumY));
+    }
+
+    public static Matrix CreateMapTransform(
+        GuardianSiteProximitySnapshot? proximity,
+        double commanderHeading,
+        Point viewportCenter,
+        double scale)
+    {
+        if (!double.IsFinite(scale) || scale <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(scale));
+        }
+
+        var heading = double.IsFinite(commanderHeading)
+            ? commanderHeading
+            : 0;
+        var radians = heading * Math.PI / 180;
+        var cosine = Math.Cos(radians);
+        var sine = Math.Sin(radians);
+        var mapX = proximity?.MapX ?? 0;
+        var mapY = proximity?.MapY ?? 0;
+        var scaleX = scale * cosine;
+        var skewY = -scale * sine;
+        var skewX = scale * sine;
+        var scaleY = scale * cosine;
+        return new Matrix(
+            scaleX,
+            skewY,
+            skewX,
+            scaleY,
+            viewportCenter.X - (mapX * scaleX) - (mapY * skewX),
+            viewportCenter.Y - (mapX * skewY) - (mapY * scaleY));
     }
 
     public static IReadOnlyList<string> CreateLegendLabels(
@@ -340,15 +443,84 @@ public sealed class GuardianSiteMapControl : Control
         context.DrawText(
             CreateLegendText("Legend", FontWeight.Bold),
             new Point(22, 18));
+        DrawLegendRows(context, projection, 16, 38, rowHeight);
+    }
+
+    private void DrawLegendRows(
+        DrawingContext context,
+        GuardianSiteMapProjection projection,
+        double left,
+        double top,
+        double rowHeight)
+    {
+        var entries = CreateLegendEntries(projection);
         for (var index = 0; index < entries.Count; index++)
         {
             var entry = entries[index];
-            var center = new Point(28, 45 + index * rowHeight);
+            var center = new Point(
+                left + 12,
+                top + (rowHeight / 2) + index * rowHeight);
             DrawLegendSymbol(context, center, entry);
             context.DrawText(
                 CreateLegendText(entry.Label, FontWeight.Normal),
-                new Point(42, center.Y - 7));
+                new Point(left + 28, center.Y - 7));
         }
+    }
+
+    private void DrawMapImage(
+        DrawingContext context,
+        GuardianSiteMapProjection projection,
+        IImage mapImage,
+        Point viewportCenter,
+        double scale)
+    {
+        if (!double.IsFinite(projection.ImageScaleFactor)
+            || projection.ImageScaleFactor <= 0)
+        {
+            return;
+        }
+
+        var destination = new Rect(
+            -projection.ImageOffset.X * projection.ImageScaleFactor,
+            -projection.ImageOffset.Y * projection.ImageScaleFactor,
+            mapImage.Size.Width * projection.ImageScaleFactor,
+            mapImage.Size.Height * projection.ImageScaleFactor);
+        using (context.PushTransform(CreateMapTransform(
+            Proximity,
+            CommanderHeading,
+            viewportCenter,
+            scale)))
+        {
+            context.DrawImage(
+                mapImage,
+                new Rect(mapImage.Size),
+                destination);
+        }
+    }
+
+    private void DrawMissingMapNotice(
+        DrawingContext context,
+        Rect bounds,
+        string siteType)
+    {
+        var message = LocalizationCatalog.Translate(
+            $"Map artwork is not available for {siteType}.");
+        var text = CreateLegendText(message, FontWeight.SemiBold);
+        var padding = 8d;
+        var surface = new Rect(
+            Math.Max(8, bounds.Center.X - (text.Width / 2) - padding),
+            Math.Max(8, bounds.Bottom - text.Height - (padding * 3)),
+            Math.Min(bounds.Width - 16, text.Width + (padding * 2)),
+            text.Height + (padding * 2));
+        context.DrawRectangle(
+            MapBackground ?? Brushes.Black,
+            new Pen(AbsentBrush ?? Brushes.Red, 1),
+            surface,
+            4,
+            4);
+        context.DrawText(
+            text,
+            new Point(surface.X + padding, surface.Y + padding));
     }
 
     private void DrawLegendSymbol(

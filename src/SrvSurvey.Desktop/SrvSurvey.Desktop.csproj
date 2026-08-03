@@ -59,6 +59,7 @@
     <AvaloniaResource Include="Assets\Frontier\**\*.png" />
     <AvaloniaResource Include="Assets\Routes\**\*.png" />
     <AvaloniaResource Include="Assets\Bodies\**\*.png" />
+    <AvaloniaResource Include="Assets\GuardianMaps\*-background.png" />
   </ItemGroup>
 
 </Project>

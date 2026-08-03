@@ -70,6 +70,41 @@ public sealed class GuardianSiteMapControlTests
     }
 
     [Fact]
+    public void BackgroundTransformMatchesMarkerTransform()
+    {
+        var proximity = new GuardianSiteProximitySnapshot(
+            12,
+            5,
+            -8,
+            5,
+            -8,
+            null,
+            null);
+        var center = new Point(320, 240);
+        const double heading = 73;
+        const double scale = 1.7;
+        var matrix = GuardianSiteMapControl.CreateMapTransform(
+            proximity,
+            heading,
+            center,
+            scale);
+        var mapPoint = new Point(41, -22);
+        var transformedBackgroundPoint = new Point(
+            (mapPoint.X * matrix.M11) + (mapPoint.Y * matrix.M21) + matrix.M31,
+            (mapPoint.X * matrix.M12) + (mapPoint.Y * matrix.M22) + matrix.M32);
+        var transformedMarkerPoint = GuardianSiteMapControl.TransformMapPoint(
+            mapPoint.X,
+            mapPoint.Y,
+            proximity,
+            heading,
+            center,
+            scale);
+
+        Assert.Equal(transformedMarkerPoint.X, transformedBackgroundPoint.X, 9);
+        Assert.Equal(transformedMarkerPoint.Y, transformedBackgroundPoint.Y, 9);
+    }
+
+    [Fact]
     public void RejectsInvalidManualScale()
     {
         var proximity = new GuardianSiteProximitySnapshot(
@@ -541,6 +576,87 @@ public sealed class GuardianSiteMapControlTests
             AbsentBrush = Brushes.Red,
             EmptyBrush = Brushes.Goldenrod,
             ShowLegend = true,
+        };
+
+        Assert.True(Render(control));
+    }
+
+    [AvaloniaFact]
+    public void PackagedLegacyMapArtworkIsAvailableForMappedSiteTypes()
+    {
+        string[] mappedSiteTypes =
+        [
+            "Alpha",
+            "Beta",
+            "Gamma",
+            "Bear",
+            "Fistbump",
+            "Robolobster",
+            "Lacrosse",
+            "Turtle",
+            "Crossroads",
+            "Hammerbot",
+            "Bowl",
+        ];
+        var templates = GuardianSiteTemplateCatalog.LoadEmbedded();
+        var projector = new GuardianSiteMapProjector();
+        foreach (var siteType in mappedSiteTypes)
+        {
+            var projection = projector.Project(
+                templates.Find(siteType)
+                ?? throw new InvalidOperationException(
+                    $"{siteType} template is missing."));
+
+            Assert.NotNull(GuardianMapImageCatalog.Find(projection));
+        }
+
+        foreach (var siteType in new[] { "Squid", "Stickyhand" })
+        {
+            var projection = projector.Project(
+                templates.Find(siteType)
+                ?? throw new InvalidOperationException(
+                    $"{siteType} template is missing."));
+
+            Assert.Null(GuardianMapImageCatalog.Find(projection));
+        }
+
+        var beta = projector.Project(
+            templates.Find("Beta")
+            ?? throw new InvalidOperationException("Beta template is missing."));
+        Assert.Equal(
+            "beta-background.png",
+            GuardianMapImageCatalog.ResolveFileName(beta));
+        Assert.Equal(
+            new Size(1024, 1024),
+            GuardianMapImageCatalog.Find(beta)?.Size);
+    }
+
+    [AvaloniaFact]
+    public void ExternalLegendRendersWithoutDrawingTheMapSurface()
+    {
+        var control = new GuardianSiteMapControl
+        {
+            Projection = new GuardianSiteMapProjection(
+                "Lacrosse",
+                [
+                    RenderPoint(
+                        "P1",
+                        GuardianPoiType.Pylon,
+                        0,
+                        0,
+                        GuardianPoiStatus.Present),
+                    RenderPoint(
+                        "C1",
+                        GuardianPoiType.Component,
+                        1,
+                        1,
+                        GuardianPoiStatus.Present),
+                ],
+                [],
+                1),
+            IsLegendOnly = true,
+            ShowLegend = false,
+            MutedBrush = Brushes.Wheat,
         };
 
         Assert.True(Render(control));

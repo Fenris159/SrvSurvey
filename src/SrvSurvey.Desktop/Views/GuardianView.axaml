@@ -375,63 +375,134 @@
         </TabItem>
 
         <TabItem Header="Survey map">
-          <Grid Margin="0,16,0,0"
-                ColumnDefinitions="3*,2*"
-                ColumnSpacing="18">
-            <Border Classes="card"
-                    Padding="12"
-                    VerticalAlignment="Top">
-              <controls:GuardianSiteMapControl
-                  Height="640"
-                  Projection="{Binding Guardian.MapProjection}"
-                  ShowLegend="{Binding Guardian.ShowMapLegend}"
-                  MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
-                  GridBrush="{DynamicResource RavenBorderBrush}"
-                  AccentBrush="{DynamicResource RavenAccentBrush}"
-                  MutedBrush="{DynamicResource RavenMutedTextBrush}"
-                  PresentBrush="{DynamicResource RavenSuccessBrush}"
-                  AbsentBrush="{DynamicResource RavenDangerBrush}"
-                  EmptyBrush="{DynamicResource RavenWarningBrush}" />
-            </Border>
-
-            <StackPanel Grid.Column="1" Spacing="18">
-              <Border Classes="card raised">
-                <StackPanel Spacing="8">
-                  <TextBlock Classes="eyebrow" Text="SELECTED MAP" />
-                  <TextBlock Classes="card-title"
-                             TextWrapping="Wrap"
-                             Text="{Binding Guardian.MapTitle}" />
-                  <TextBlock Classes="muted"
-                             TextWrapping="Wrap"
-                             Text="{Binding Guardian.MapSummary}" />
-                  <TextBlock Classes="muted"
-                             TextWrapping="Wrap"
-                             Text="{Binding Guardian.MapStatus}" />
-                  <WrapPanel Orientation="Horizontal">
-                    <CheckBox Margin="0,0,14,0"
-                              IsChecked="{Binding Guardian.ShowMapLegend, Mode=TwoWay}"
-                              Content="Show legend" />
-                    <CheckBox IsChecked="{Binding Guardian.ShowMapNotes, Mode=TwoWay}"
-                              Content="Show notes" />
-                  </WrapPanel>
-                </StackPanel>
-              </Border>
-
+          <StackPanel Margin="0,16,0,0" Spacing="18">
+            <Grid x:Name="GuardianSurveyMapTop"
+                  ColumnDefinitions="3*,2*"
+                  ColumnSpacing="18">
               <Border Classes="card"
-                      IsVisible="{Binding Guardian.ShouldShowMapNotes}">
-                <StackPanel Spacing="5">
-                  <TextBlock Classes="eyebrow" Text="COMMANDER NOTES" />
-                  <ContentControl Content="{Binding Guardian.SelectedSite}">
-                    <ContentControl.ContentTemplate>
-                      <DataTemplate x:DataType="vm:GuardianSiteRowViewModel">
-                        <TextBlock Text="{Binding Notes}" TextWrapping="Wrap" />
-                      </DataTemplate>
-                    </ContentControl.ContentTemplate>
-                  </ContentControl>
-                </StackPanel>
+                      Padding="12"
+                      VerticalAlignment="Top">
+                <controls:GuardianSiteMapControl
+                    Height="640"
+                    ClipToBounds="True"
+                    Projection="{Binding Guardian.MapProjection}"
+                    ShowLegend="False"
+                    MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
+                    GridBrush="{DynamicResource RavenBorderBrush}"
+                    AccentBrush="{DynamicResource RavenAccentBrush}"
+                    MutedBrush="{DynamicResource RavenMutedTextBrush}"
+                    PresentBrush="{DynamicResource RavenSuccessBrush}"
+                    AbsentBrush="{DynamicResource RavenDangerBrush}"
+                    EmptyBrush="{DynamicResource RavenWarningBrush}" />
               </Border>
 
-              <Expander Header="Master template developer tools">
+              <StackPanel x:Name="GuardianSurveyMapSidebar"
+                          Grid.Column="1"
+                          Spacing="18">
+                <Border x:Name="GuardianSelectedMap"
+                        Classes="card raised">
+                  <StackPanel Spacing="8">
+                    <TextBlock Classes="eyebrow" Text="SELECTED MAP" />
+                    <TextBlock Classes="card-title"
+                               TextWrapping="Wrap"
+                               Text="{Binding Guardian.MapTitle}" />
+                    <TextBlock Classes="muted"
+                               TextWrapping="Wrap"
+                               Text="{Binding Guardian.MapSummary}" />
+                    <TextBlock Classes="muted"
+                               TextWrapping="Wrap"
+                               Text="{Binding Guardian.MapStatus}" />
+                    <WrapPanel Orientation="Horizontal">
+                      <CheckBox Margin="0,0,14,0"
+                                IsChecked="{Binding Guardian.ShowMapLegend, Mode=TwoWay}"
+                                Content="Show legend" />
+                      <CheckBox IsChecked="{Binding Guardian.ShowMapNotes, Mode=TwoWay}"
+                                Content="Show notes" />
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+
+                <Border x:Name="GuardianSurveyMapLegend"
+                        Classes="card"
+                        IsVisible="{Binding Guardian.ShowMapLegend}">
+                  <StackPanel Spacing="12">
+                    <TextBlock Classes="card-title" Text="Map legend" />
+                    <controls:GuardianSiteMapControl
+                        Height="280"
+                        IsLegendOnly="True"
+                        Projection="{Binding Guardian.MapProjection}"
+                        ShowLegend="False"
+                        MapBackground="{DynamicResource RavenSurfaceBrush}"
+                        GridBrush="{DynamicResource RavenBorderBrush}"
+                        AccentBrush="{DynamicResource RavenAccentBrush}"
+                        MutedBrush="{DynamicResource RavenTextBrush}"
+                        PresentBrush="{DynamicResource RavenSuccessBrush}"
+                        AbsentBrush="{DynamicResource RavenDangerBrush}"
+                        EmptyBrush="{DynamicResource RavenWarningBrush}" />
+                    <Grid ColumnDefinitions="Auto,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="9">
+                      <Ellipse Width="10" Height="10"
+                               Fill="{DynamicResource RavenMutedTextBrush}" />
+                      <TextBlock Grid.Column="1" Text="Unknown / unconfirmed" />
+                      <Ellipse Grid.Row="1" Width="10" Height="10"
+                               Fill="{DynamicResource RavenSuccessBrush}" />
+                      <TextBlock Grid.Row="1" Grid.Column="1" Text="Present / scanned" />
+                      <Ellipse Grid.Row="2" Width="10" Height="10"
+                               Fill="{DynamicResource RavenDangerBrush}" />
+                      <TextBlock Grid.Row="2" Grid.Column="1" Text="Absent" />
+                      <Ellipse Grid.Row="3" Width="10" Height="10"
+                               Fill="{DynamicResource RavenWarningBrush}" />
+                      <TextBlock Grid.Row="3" Grid.Column="1" Text="Empty puddle" />
+                      <Ellipse Grid.Row="4" Width="10" Height="10"
+                               Fill="{DynamicResource RavenAccentBrush}" />
+                      <TextBlock Grid.Row="4" Grid.Column="1" Text="Active obelisk" />
+                    </Grid>
+                    <StackPanel Spacing="7"
+                                IsVisible="{Binding Guardian.ShowComponentMaterials}">
+                      <TextBlock Classes="muted" Text="COMPONENT MATERIALS" />
+                      <WrapPanel>
+                        <Border Width="10" Height="10" Margin="0,4,6,0" Background="Lime" />
+                        <TextBlock Margin="0,0,16,0" Text="Power Cell" />
+                        <Border Width="10" Height="10" Margin="0,4,6,0" Background="Cyan" />
+                        <TextBlock Margin="0,0,16,0" Text="Power Conduit" />
+                        <Border Width="10" Height="10" Margin="0,4,6,0" Background="OrangeRed" />
+                        <TextBlock Text="Technology Component" />
+                      </WrapPanel>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+
+                <Border x:Name="GuardianSurveyMapOrientation"
+                        Classes="card">
+                  <StackPanel Spacing="5">
+                    <TextBlock Classes="card-title" Text="Orientation" />
+                    <TextBlock Classes="muted"
+                               TextWrapping="Wrap"
+                               Text="The legacy aerial image is fixed to the Guardian site template's surveyed origin and scale. Site, tower, marker, and commander geometry uses that same alignment." />
+                  </StackPanel>
+                </Border>
+
+                <Border x:Name="GuardianSurveyMapNotes"
+                        Classes="card"
+                        IsVisible="{Binding Guardian.ShouldShowMapNotes}">
+                  <StackPanel Spacing="5">
+                    <TextBlock Classes="eyebrow" Text="COMMANDER NOTES" />
+                    <ContentControl Content="{Binding Guardian.SelectedSite}">
+                      <ContentControl.ContentTemplate>
+                        <DataTemplate x:DataType="vm:GuardianSiteRowViewModel">
+                          <TextBlock Text="{Binding Notes}" TextWrapping="Wrap" />
+                        </DataTemplate>
+                      </ContentControl.ContentTemplate>
+                    </ContentControl>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </Grid>
+
+              <Expander x:Name="GuardianTemplateDeveloperTools"
+                        Header="Master template developer tools">
                 <Border Classes="card">
                   <StackPanel Spacing="14">
                     <TextBlock Classes="card-title"
@@ -651,7 +722,8 @@
                 </Border>
               </Expander>
 
-              <Border Classes="card">
+              <Border x:Name="GuardianSurveyEditor"
+                      Classes="card">
                 <StackPanel Spacing="14">
                   <TextBlock Classes="card-title" Text="Survey editor" />
                   <TextBlock Classes="muted"
@@ -829,54 +901,7 @@
                 </StackPanel>
               </Border>
 
-              <Border Classes="card">
-                <StackPanel Spacing="12">
-                  <TextBlock Classes="card-title" Text="Map legend" />
-                  <Grid ColumnDefinitions="Auto,*"
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                        ColumnSpacing="10"
-                        RowSpacing="9">
-                    <Ellipse Width="10" Height="10"
-                             Fill="{DynamicResource RavenMutedTextBrush}" />
-                    <TextBlock Grid.Column="1" Text="Unknown / unconfirmed" />
-                    <Ellipse Grid.Row="1" Width="10" Height="10"
-                             Fill="{DynamicResource RavenSuccessBrush}" />
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="Present / scanned" />
-                    <Ellipse Grid.Row="2" Width="10" Height="10"
-                             Fill="{DynamicResource RavenDangerBrush}" />
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="Absent" />
-                    <Ellipse Grid.Row="3" Width="10" Height="10"
-                             Fill="{DynamicResource RavenWarningBrush}" />
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="Empty puddle" />
-                    <Ellipse Grid.Row="4" Width="10" Height="10"
-                             Fill="{DynamicResource RavenAccentBrush}" />
-                    <TextBlock Grid.Row="4" Grid.Column="1" Text="Active obelisk" />
-                  </Grid>
-                  <StackPanel Spacing="7"
-                              IsVisible="{Binding Guardian.ShowComponentMaterials}">
-                    <TextBlock Classes="muted" Text="COMPONENT MATERIALS" />
-                    <WrapPanel>
-                      <Border Width="10" Height="10" Margin="0,4,6,0" Background="Lime" />
-                      <TextBlock Margin="0,0,16,0" Text="Power Cell" />
-                      <Border Width="10" Height="10" Margin="0,4,6,0" Background="Cyan" />
-                      <TextBlock Margin="0,0,16,0" Text="Power Conduit" />
-                      <Border Width="10" Height="10" Margin="0,4,6,0" Background="OrangeRed" />
-                      <TextBlock Text="Technology Component" />
-                    </WrapPanel>
-                  </StackPanel>
-                </StackPanel>
-              </Border>
-
-              <Border Classes="card">
-                <StackPanel Spacing="5">
-                  <TextBlock Classes="card-title" Text="Orientation" />
-                  <TextBlock Classes="muted"
-                             TextWrapping="Wrap"
-                             Text="The map is fixed to the Guardian site template. The center dot is the surveyed settlement origin; rings scale to the outermost mapped object." />
-                </StackPanel>
-              </Border>
-            </StackPanel>
-          </Grid>
+          </StackPanel>
         </TabItem>
 
         <TabItem Header="Share data">
