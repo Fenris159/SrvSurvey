@@ -21,6 +21,7 @@ public sealed class OverlayWindowRegistry
     {
         ArgumentNullException.ThrowIfNull(window);
         ArgumentException.ThrowIfNullOrWhiteSpace(plotterName);
+        _ = OverlayLayoutCatalog.GetRequired(plotterName);
         if (registrations.TryGetValue(window, out var existing))
         {
             if (!string.Equals(

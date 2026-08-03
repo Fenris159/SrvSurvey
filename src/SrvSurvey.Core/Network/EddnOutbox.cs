@@ -821,8 +821,8 @@ namespace SrvSurvey.Core.Network
                 sharedDisableLease = new FileStream(
                     sharedDisableLeasePath,
                     FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
-                    FileShare.ReadWrite);
+                    FileAccess.Read,
+                    FileShare.Read);
                 return null;
             }
             catch (Exception exception) when (
@@ -851,10 +851,13 @@ namespace SrvSurvey.Core.Network
                     Directory.CreateDirectory(folder);
                 }
 
+                // Opted-out processes share read handles with one another.
+                // FileShare.None is incompatible with every live reader, so
+                // this probe succeeds only after all opt-out leases close.
                 activeOptOutProbe = new FileStream(
                     sharedDisableLeasePath,
                     FileMode.OpenOrCreate,
-                    FileAccess.ReadWrite,
+                    FileAccess.Read,
                     FileShare.None);
             }
             catch (IOException)

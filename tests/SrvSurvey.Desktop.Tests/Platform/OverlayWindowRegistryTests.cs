@@ -67,6 +67,8 @@ public sealed class OverlayWindowRegistryTests
         var exception = Assert.Throws<InvalidOperationException>(() =>
             registry.Register(registered, "PlotBioSystem"));
         Assert.Contains("PlotJumpInfo", exception.Message);
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            registry.Register(unknown, "PlotUnknown"));
         Assert.False(registry.TryGetPlotterName(unknown, out var plotterName));
         Assert.Empty(plotterName);
 
