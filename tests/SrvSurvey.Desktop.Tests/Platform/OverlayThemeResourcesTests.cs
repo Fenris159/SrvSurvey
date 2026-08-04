@@ -359,11 +359,13 @@ public sealed class OverlayThemeResourcesTests
 
             Assert.Equal(
                 testCase.PresentationType,
-                Assert.IsAssignableFrom<Control>(liveSurface.Child).GetType());
+                Assert.IsType<Control>(liveSurface.Child, exactMatch: false)
+                    .GetType());
             Assert.Equal(
                 testCase.PresentationType,
-                Assert.IsAssignableFrom<Control>(
-                    preview.RuntimePresentation).GetType());
+                Assert.IsType<Control>(
+                    preview.RuntimePresentation,
+                    exactMatch: false).GetType());
             Assert.IsType<GuardianOverlayViewModel>(
                 preview.RuntimePresentation?.DataContext);
         }

@@ -277,6 +277,61 @@ public sealed class GuardianLiveSiteStateTests
             () => state.CreateOrUpdateSurvey("Drew", false, existing));
     }
 
+    [Fact]
+    public void CreateOrUpdateSurveyRequiresActiveSite()
+    {
+        var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
+        Assert.Throws<InvalidOperationException>(
+            () => state.CreateOrUpdateSurvey("Drew", legacy: false));
+    }
+
+    [Fact]
+    public void HighAltitudeClearsRecoveredSiteDuringProximitySync()
+    {
+        var state = new GuardianLiveSiteState(
+            new GuardianSiteCatalog([CreateReference(1, latitude: 0)]));
+        state.Apply(Parse(
+            """{"event":"Location","StarSystem":"Test","SystemAddress":42}"""));
+        state.Apply(Parse(
+            """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}"""));
+        Assert.NotNull(state.CurrentSite);
+
+        Assert.True(state.SynchronizeProximity(
+            new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong | StatusFlags.InMainShip,
+                BodyName = "Test A 1",
+                Latitude = 0,
+                Longitude = 0,
+                PlanetRadius = 1_000_000,
+                Altitude = 4_500,
+            },
+            retainDuringGlide: false));
+        Assert.Null(state.CurrentSite);
+    }
+
+    [Fact]
+    public void SupercruiseExitUpdatesSystemWithoutClearingSite()
+    {
+        var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
+        state.Apply(Parse(
+            """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}"""));
+        Assert.True(state.Apply(Parse(
+            """{"event":"SupercruiseExit","StarSystem":"Test","SystemAddress":42,"Body":"Test A 1","BodyID":7}""")));
+        Assert.NotNull(state.CurrentSite);
+    }
+
+    [Fact]
+    public void CarrierJumpClearsCurrentSite()
+    {
+        var state = new GuardianLiveSiteState(new GuardianSiteCatalog([]));
+        state.Apply(Parse(
+            """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}"""));
+        Assert.True(state.Apply(Parse(
+            """{"event":"CarrierJump","StarSystem":"Other","SystemAddress":99}""")));
+        Assert.Null(state.CurrentSite);
+    }
+
     private static JournalEventEnvelope Parse(string json)
     {
         var success = JournalEventEnvelope.TryParse(

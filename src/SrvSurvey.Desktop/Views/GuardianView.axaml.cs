@@ -9,6 +9,11 @@ namespace SrvSurvey.Desktop.Views;
 
 public sealed partial class GuardianView : UserControl
 {
+    private static readonly Uri GuardianSurveyDiscordChannelUri = new(
+        "discord://-/channels/1055035389791969352/1200547428303122522");
+    private static readonly Uri GuardianSurveyDiscordInviteUri = new(
+        "https://discord.gg/9PhBwwDAbV");
+
     public GuardianView()
     {
         InitializeComponent();
@@ -320,8 +325,8 @@ public sealed partial class GuardianView : UserControl
             bool launched;
             try
             {
-                launched = await launcher.LaunchUriAsync(new Uri(
-                    "discord://-/channels/1055035389791969352/1200547428303122522"));
+                launched = await launcher.LaunchUriAsync(
+                    GuardianSurveyDiscordChannelUri);
             }
             catch (NotSupportedException)
             {
@@ -331,7 +336,7 @@ public sealed partial class GuardianView : UserControl
             if (!launched)
             {
                 launched = await launcher.LaunchUriAsync(
-                    new Uri("https://discord.gg/9PhBwwDAbV"));
+                    GuardianSurveyDiscordInviteUri);
             }
             viewModel.Guardian.ReportShareLaunch(launched
                 ? "Opened the Guardian survey Discord channel."

@@ -86,4 +86,63 @@ public sealed class OverlayGameModeTests
                 status with { GuiFocus = GuiFocus.InternalPanel },
                 musicTrack: "GalaxyMap"));
     }
+
+    [Theory]
+    [InlineData(StatusFlags.InFighter, (int)OverlayGameMode.InFighter)]
+    [InlineData(StatusFlags.InSrv, (int)OverlayGameMode.InSrv)]
+    [InlineData(StatusFlags.Landed, (int)OverlayGameMode.Landed)]
+    [InlineData(StatusFlags.Docked, (int)OverlayGameMode.Docked)]
+    [InlineData(StatusFlags.InMainShip, (int)OverlayGameMode.Flying)]
+    public void PhysicalVehicleAndShipStatesResolve(
+        StatusFlags flags,
+        int expected)
+    {
+        var status = new EliteStatus { Flags = flags };
+        Assert.Equal(
+            (OverlayGameMode)expected,
+            OverlayGameModeResolver.Resolve(status));
+    }
+
+    [Fact]
+    public void OnFootTaxiAndGlideModesResolveFromFlags2()
+    {
+        Assert.Equal(
+            OverlayGameMode.InTaxi,
+            OverlayGameModeResolver.Resolve(new EliteStatus
+            {
+                Flags2 = StatusFlags2.InTaxi,
+            }));
+        Assert.Equal(
+            OverlayGameMode.OnFootInStation,
+            OverlayGameModeResolver.Resolve(new EliteStatus
+            {
+                Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootInStation,
+            }));
+        Assert.Equal(
+            OverlayGameMode.OnFoot,
+            OverlayGameModeResolver.Resolve(new EliteStatus
+            {
+                Flags2 = StatusFlags2.OnFoot
+                    | StatusFlags2.OnFootOnPlanet
+                    | StatusFlags2.OnFootExterior,
+            }));
+        Assert.Equal(
+            OverlayGameMode.GlideMode,
+            OverlayGameModeResolver.Resolve(new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip,
+                Flags2 = StatusFlags2.GlideMode,
+            }));
+    }
+
+    [Fact]
+    public void NullStatusIsOfflineAndEmptyFlagsRemainOffline()
+    {
+        Assert.Equal(
+            OverlayGameMode.Offline,
+            OverlayGameModeResolver.Resolve(null));
+        Assert.Equal(
+            OverlayGameMode.Offline,
+            OverlayGameModeResolver.Resolve(new EliteStatus()));
+    }
 }

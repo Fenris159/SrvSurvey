@@ -1740,11 +1740,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             snapshot,
             status,
             exobiology,
-            HideGeoCountInBioSystem,
-            biologyCodexNotification,
-            ShowTemperatureRangeDebug,
-            biologyPredictionEvaluator,
-            allowRetainedBiologyBody);
+            new BiologyStatusCreateOptions(
+                HideGeoCountInBioSystem,
+                biologyCodexNotification,
+                ShowTemperatureRangeDebug,
+                biologyPredictionEvaluator,
+                allowRetainedBiologyBody));
         BodyInformation = CreateBodyInformation(ResolveBodyInfoTarget());
         FssBodies = snapshot.Bodies
             .Where(IsInterestingFssBody)
@@ -1836,13 +1837,13 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         if (previousStatus is null
             || string.Equals(
                 previousStatus.Destination?.Name,
-                nextStatus?.Destination?.Name,
+                nextStatus.Destination?.Name,
                 StringComparison.Ordinal))
         {
             return;
         }
 
-        var destination = nextStatus?.Destination;
+        var destination = nextStatus.Destination;
         var body = destination is not null
             && destination.System == snapshot.SystemAddress
                 ? snapshot.Bodies.FirstOrDefault(candidate =>

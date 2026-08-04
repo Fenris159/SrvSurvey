@@ -42,23 +42,9 @@ internal static class OverlayGameModeResolver
             return OverlayGameMode.Offline;
         }
 
-        if (status.GuiFocus != GuiFocus.NoFocus)
+        if (TryResolveGuiFocus(status.GuiFocus, out var guiMode))
         {
-            return status.GuiFocus switch
-            {
-                GuiFocus.InternalPanel => OverlayGameMode.InternalPanel,
-                GuiFocus.ExternalPanel => OverlayGameMode.ExternalPanel,
-                GuiFocus.CommsPanel => OverlayGameMode.CommsPanel,
-                GuiFocus.RolePanel => OverlayGameMode.RolePanel,
-                GuiFocus.StationServices => OverlayGameMode.StationServices,
-                GuiFocus.GalaxyMap => OverlayGameMode.GalaxyMap,
-                GuiFocus.SystemMap => OverlayGameMode.SystemMap,
-                GuiFocus.Orrery => OverlayGameMode.Orrery,
-                GuiFocus.Fss => OverlayGameMode.Fss,
-                GuiFocus.Saa => OverlayGameMode.Saa,
-                GuiFocus.Codex => OverlayGameMode.Codex,
-                _ => OverlayGameMode.Unknown,
-            };
+            return guiMode;
         }
 
         if (isFsdJumping || status.Flags.HasFlag(StatusFlags.FsdJump))
@@ -66,16 +52,59 @@ internal static class OverlayGameModeResolver
             return OverlayGameMode.FsdJumping;
         }
 
+        if (TryResolveMusicTrack(musicTrack, out var musicMode))
+        {
+            return musicMode;
+        }
+
+        return ResolvePhysicalMode(status);
+    }
+
+    private static bool TryResolveGuiFocus(
+        GuiFocus focus,
+        out OverlayGameMode mode)
+    {
+        mode = focus switch
+        {
+            GuiFocus.NoFocus => OverlayGameMode.Unknown,
+            GuiFocus.InternalPanel => OverlayGameMode.InternalPanel,
+            GuiFocus.ExternalPanel => OverlayGameMode.ExternalPanel,
+            GuiFocus.CommsPanel => OverlayGameMode.CommsPanel,
+            GuiFocus.RolePanel => OverlayGameMode.RolePanel,
+            GuiFocus.StationServices => OverlayGameMode.StationServices,
+            GuiFocus.GalaxyMap => OverlayGameMode.GalaxyMap,
+            GuiFocus.SystemMap => OverlayGameMode.SystemMap,
+            GuiFocus.Orrery => OverlayGameMode.Orrery,
+            GuiFocus.Fss => OverlayGameMode.Fss,
+            GuiFocus.Saa => OverlayGameMode.Saa,
+            GuiFocus.Codex => OverlayGameMode.Codex,
+            _ => OverlayGameMode.Unknown,
+        };
+        return focus != GuiFocus.NoFocus;
+    }
+
+    private static bool TryResolveMusicTrack(
+        string? musicTrack,
+        out OverlayGameMode mode)
+    {
         if (string.Equals(musicTrack, "GalaxyMap", StringComparison.Ordinal))
         {
-            return OverlayGameMode.GalaxyMap;
+            mode = OverlayGameMode.GalaxyMap;
+            return true;
         }
 
         if (string.Equals(musicTrack, "SystemMap", StringComparison.Ordinal))
         {
-            return OverlayGameMode.SystemMap;
+            mode = OverlayGameMode.SystemMap;
+            return true;
         }
 
+        mode = OverlayGameMode.Unknown;
+        return false;
+    }
+
+    private static OverlayGameMode ResolvePhysicalMode(EliteStatus status)
+    {
         var vehicle = ResolveVehicle(status);
         if (vehicle == OverlayVehicle.Fighter)
         {

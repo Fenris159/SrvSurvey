@@ -78,6 +78,30 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
                 .Any());
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData("bad/name")]
+    [InlineData("bad:name")]
+    public void InvalidFileNamesAreRejected(string value)
+    {
+        using var store = new GuardianCommanderBeaconStore(temporaryDirectory);
+        Assert.Throws<ArgumentException>(
+            () => store.GetBeaconPath(value, true, "System"));
+        Assert.Throws<ArgumentException>(
+            () => store.GetBeaconPath("F123", true, value));
+    }
+
+    [Fact]
+    public void DisposeIsIdempotentAndBlocksFurtherUse()
+    {
+        var store = new GuardianCommanderBeaconStore(temporaryDirectory);
+        store.Dispose();
+        store.Dispose();
+        Assert.Throws<ObjectDisposedException>(
+            () => store.GetBeaconPath("F123", true, "System"));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

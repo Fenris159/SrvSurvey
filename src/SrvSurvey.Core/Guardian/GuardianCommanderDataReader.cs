@@ -409,7 +409,7 @@ public sealed class GuardianCommanderDataReader
             .ToArray();
     }
 
-    private IReadOnlyList<GuardianObelisk> ReadActiveObelisks(
+    private GuardianObelisk[] ReadActiveObelisks(
         JsonElement root)
     {
         if (!root.TryGetProperty("activeObelisks", out var value)

@@ -106,11 +106,8 @@ internal sealed class GuardianOverlayPreviewState
 
     public static GuardianOverlayPreviewState Instance { get; } = new();
 
-    public event PropertyChangedEventHandler? PropertyChanged
-    {
-        add { }
-        remove { }
-    }
+    // Never raises: preview state is immutable after construction.
+    public event PropertyChangedEventHandler? PropertyChanged = delegate { };
 
     public int PreferredOverlayWidth => 300;
 

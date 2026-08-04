@@ -1,8 +1,9 @@
+using System.Text.RegularExpressions;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
-public sealed class OverlayCoverageInventoryTests
+public sealed partial class OverlayCoverageInventoryTests
 {
     private static readonly IReadOnlyDictionary<string, string>
         PreviewProductionWindows = new Dictionary<string, string>(
@@ -235,9 +236,7 @@ public sealed class OverlayCoverageInventoryTests
                 "src",
                 "SrvSurvey.Desktop",
                 pair.Value));
-            var match = System.Text.RegularExpressions.Regex.Match(
-                markup,
-                "<Window[\\s\\S]*?\\bWidth=\"(?<width>\\d+)\"");
+            var match = WindowWidthRegex().Match(markup);
             if (!match.Success)
             {
                 continue;
@@ -252,6 +251,11 @@ public sealed class OverlayCoverageInventoryTests
                     System.Globalization.CultureInfo.InvariantCulture));
         }
     }
+
+    [GeneratedRegex("""
+        <Window[\s\S]*?\bWidth="(?<width>\d+)"
+        """)]
+    private static partial Regex WindowWidthRegex();
 
     [Fact]
     public void CommodityOverlayUsesLegacyContentDrivenHeight()

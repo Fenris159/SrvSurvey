@@ -51,7 +51,6 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
     private readonly AsyncCommand clearOriginCommand;
     private readonly AsyncCommand openSelectedSurveyCommand;
     private readonly AsyncCommand openShareWorkspaceCommand;
-    private readonly ParameterCommand sortSitesCommand;
     private GuardianLiveSiteState liveSiteState;
     private GuardianCommanderDataReadResult commanderData =
         GuardianCommanderDataReadResult.Empty;
@@ -241,7 +240,6 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
         openShareWorkspaceCommand = new AsyncCommand(
             OpenShareWorkspaceAsync,
             () => true);
-        sortSitesCommand = new ParameterCommand(SortSites);
         RefreshCommand = refreshCommand;
         ToggleCurrentObeliskScannedCommand = toggleCurrentObeliskScannedCommand;
         PrepareShareBundleCommand = prepareShareBundleCommand;
@@ -249,7 +247,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
         ClearOriginCommand = clearOriginCommand;
         OpenSelectedSurveyCommand = openSelectedSurveyCommand;
         OpenShareWorkspaceCommand = openShareWorkspaceCommand;
-        SortSitesCommand = sortSitesCommand;
+        SortSitesCommand = new ParameterCommand(SortSites);
         ApplyFilters();
     }
 
@@ -1820,123 +1818,25 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
         var isInSrv = (status ?? currentStatus)?.InSrv == true;
         foreach (var journalEvent in journalEvents)
         {
-            if (ramTah is not null)
+            var outcome = await ApplySingleJournalEventAsync(
+                journalEvent,
+                commanderName,
+                allowLiveCommands,
+                screenshotStatus,
+                isInSrv,
+                cancellationToken);
+            modeChanged |= outcome.ModeChanged;
+            inventoryChanged |= outcome.InventoryChanged;
+            activeSiteChanged |= outcome.ActiveSiteChanged;
+            surveyChanged |= outcome.SurveyChanged;
+            if (outcome.SaveStatus is not null)
             {
-                await ramTah.ApplyJournalEventsAsync([journalEvent]);
+                saveStatus = outcome.SaveStatus;
             }
 
-            if (journalEvent.EventName is "Fileheader" or "LoadGame")
-            {
-                modeChanged |= musicTrack is not null;
-                musicTrack = null;
-            }
-            else if (journalEvent.EventName == "Music"
-                && journalEvent.Payload.TryGetProperty(
-                    "MusicTrack",
-                    out var track))
-            {
-                var nextMusicTrack = track.GetString();
-                modeChanged |= !string.Equals(
-                    musicTrack,
-                    nextMusicTrack,
-                    StringComparison.Ordinal);
-                musicTrack = nextMusicTrack;
-            }
-
-            if (!guardianEncodedMaterialsFull
-                && HasFullGuardianEncodedMaterial(journalEvent))
-            {
-                guardianEncodedMaterialsFull = true;
-                OnPropertyChanged(nameof(AreGuardianEncodedMaterialsFull));
-                OnPropertyChanged(nameof(HasGuardianMaterialCapacityWarning));
-                OnPropertyChanged(nameof(GuardianMaterialCapacityWarning));
-            }
-
-            inventoryChanged |= artifactInventory.Apply(journalEvent, isInSrv);
-            var previous = liveSiteState.CurrentSite;
-            var recognized = liveSiteState.Apply(journalEvent);
-            if (liveSiteState.CurrentSite != previous)
-            {
-                activeSiteChanged = true;
-                NotifyActiveSiteChanged();
-                UpdateProximity();
-            }
-
-            if (journalEvent.EventName == "Screenshot"
-                && CreateScreenshotContext(
-                    journalEvent,
-                    screenshotStatus) is { } screenshotContext)
+            if (outcome.ScreenshotContext is { } screenshotContext)
             {
                 screenshotContexts[journalEvent] = screenshotContext;
-            }
-
-            if (journalEvent.EventName == "CodexEntry")
-            {
-                if (await PersistGuardianBeaconScanAsync(
-                        journalEvent,
-                        cancellationToken))
-                {
-                    surveyChanged = true;
-                }
-                else if (await MarkNearestRelicPresentAsync(
-                             cancellationToken))
-                {
-                    surveyChanged = true;
-                }
-            }
-
-            if (journalEvent.EventName == "MaterialCollected"
-                && CurrentObelisk is not null
-                && await SetCurrentObeliskScannedAsync(
-                    scanned: true,
-                    cancellationToken))
-            {
-                surveyChanged = true;
-            }
-
-            if (allowLiveCommands
-                && TryGetSendText(journalEvent) is { } command)
-            {
-                await HandleLiveCommandAsync(command, cancellationToken);
-            }
-
-            if (!recognized
-                || journalEvent.EventName != "ApproachSettlement"
-                || liveSiteState.CurrentSite is null
-                || activeFrontierId is null)
-            {
-                continue;
-            }
-
-            try
-            {
-                var existing = FindSurvey(liveSiteState.CurrentSite);
-                var survey = liveSiteState.CreateOrUpdateSurvey(
-                    commanderName ?? string.Empty,
-                    legacy: !activeIsOdyssey,
-                    existing);
-                survey = HydrateSurveyFromPublished(
-                    liveSiteState.CurrentSite,
-                    survey);
-                var path = await commanderSurveyStore.SaveAsync(
-                    activeFrontierId,
-                    activeIsOdyssey,
-                    survey,
-                    cancellationToken);
-                ReplaceSurvey(survey with { Path = path }, existing);
-                surveyChanged = true;
-                UpdateProximity();
-                saveStatus = $"Recorded the live Guardian site in "
-                    + $"{Path.GetFileName(path)}.";
-            }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or InvalidDataException)
-            {
-                saveStatus = "The live Guardian site was detected but its survey "
-                    + "could not be saved: "
-                    + exception.Message;
             }
         }
 
@@ -1976,6 +1876,181 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
 
         return screenshotContexts;
     }
+
+    private async Task<JournalEventApplyOutcome> ApplySingleJournalEventAsync(
+        JournalEventEnvelope journalEvent,
+        string? commanderName,
+        bool allowLiveCommands,
+        EliteStatus? screenshotStatus,
+        bool isInSrv,
+        CancellationToken cancellationToken)
+    {
+        if (ramTah is not null)
+        {
+            await ramTah.ApplyJournalEventsAsync([journalEvent]);
+        }
+
+        var modeChanged = ApplyMusicOrHeaderTrack(journalEvent);
+        ApplyEncodedMaterialCapacityWarning(journalEvent);
+        var inventoryChanged = artifactInventory.Apply(journalEvent, isInSrv);
+        var previous = liveSiteState.CurrentSite;
+        var recognized = liveSiteState.Apply(journalEvent);
+        var activeSiteChanged = liveSiteState.CurrentSite != previous;
+        if (activeSiteChanged)
+        {
+            NotifyActiveSiteChanged();
+            UpdateProximity();
+        }
+
+        ScreenshotGuardianContext? screenshotContext = null;
+        if (journalEvent.EventName == "Screenshot"
+            && CreateScreenshotContext(
+                journalEvent,
+                screenshotStatus) is { } createdContext)
+        {
+            screenshotContext = createdContext;
+        }
+
+        var surveyChanged = await ApplyCodexOrMaterialJournalAsync(
+            journalEvent,
+            cancellationToken);
+        if (allowLiveCommands
+            && TryGetSendText(journalEvent) is { } command)
+        {
+            await HandleLiveCommandAsync(command, cancellationToken);
+        }
+
+        var saveStatus = await TryPersistApproachSettlementAsync(
+            journalEvent,
+            commanderName,
+            recognized,
+            cancellationToken);
+        if (saveStatus is not null)
+        {
+            surveyChanged = true;
+        }
+
+        return new JournalEventApplyOutcome(
+            modeChanged,
+            inventoryChanged,
+            activeSiteChanged,
+            surveyChanged,
+            saveStatus,
+            screenshotContext);
+    }
+
+    private bool ApplyMusicOrHeaderTrack(JournalEventEnvelope journalEvent)
+    {
+        if (journalEvent.EventName is "Fileheader" or "LoadGame")
+        {
+            var changed = musicTrack is not null;
+            musicTrack = null;
+            return changed;
+        }
+
+        if (journalEvent.EventName != "Music"
+            || !journalEvent.Payload.TryGetProperty(
+                "MusicTrack",
+                out var track))
+        {
+            return false;
+        }
+
+        var nextMusicTrack = track.GetString();
+        var modeChanged = !string.Equals(
+            musicTrack,
+            nextMusicTrack,
+            StringComparison.Ordinal);
+        musicTrack = nextMusicTrack;
+        return modeChanged;
+    }
+
+    private void ApplyEncodedMaterialCapacityWarning(
+        JournalEventEnvelope journalEvent)
+    {
+        if (guardianEncodedMaterialsFull
+            || !HasFullGuardianEncodedMaterial(journalEvent))
+        {
+            return;
+        }
+
+        guardianEncodedMaterialsFull = true;
+        OnPropertyChanged(nameof(AreGuardianEncodedMaterialsFull));
+        OnPropertyChanged(nameof(HasGuardianMaterialCapacityWarning));
+        OnPropertyChanged(nameof(GuardianMaterialCapacityWarning));
+    }
+
+    private async Task<bool> ApplyCodexOrMaterialJournalAsync(
+        JournalEventEnvelope journalEvent,
+        CancellationToken cancellationToken)
+    {
+        if (journalEvent.EventName == "CodexEntry")
+        {
+            return await PersistGuardianBeaconScanAsync(
+                       journalEvent,
+                       cancellationToken)
+                || await MarkNearestRelicPresentAsync(cancellationToken);
+        }
+
+        return journalEvent.EventName == "MaterialCollected"
+            && CurrentObelisk is not null
+            && await SetCurrentObeliskScannedAsync(
+                scanned: true,
+                cancellationToken);
+    }
+
+    private async Task<string?> TryPersistApproachSettlementAsync(
+        JournalEventEnvelope journalEvent,
+        string? commanderName,
+        bool recognized,
+        CancellationToken cancellationToken)
+    {
+        if (!recognized
+            || journalEvent.EventName != "ApproachSettlement"
+            || liveSiteState.CurrentSite is null
+            || activeFrontierId is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var existing = FindSurvey(liveSiteState.CurrentSite);
+            var survey = liveSiteState.CreateOrUpdateSurvey(
+                commanderName ?? string.Empty,
+                legacy: !activeIsOdyssey,
+                existing);
+            survey = HydrateSurveyFromPublished(
+                liveSiteState.CurrentSite,
+                survey);
+            var path = await commanderSurveyStore.SaveAsync(
+                activeFrontierId,
+                activeIsOdyssey,
+                survey,
+                cancellationToken);
+            ReplaceSurvey(survey with { Path = path }, existing);
+            UpdateProximity();
+            return $"Recorded the live Guardian site in "
+                + $"{Path.GetFileName(path)}.";
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            return "The live Guardian site was detected but its survey "
+                + "could not be saved: "
+                + exception.Message;
+        }
+    }
+
+    private readonly record struct JournalEventApplyOutcome(
+        bool ModeChanged,
+        bool InventoryChanged,
+        bool ActiveSiteChanged,
+        bool SurveyChanged,
+        string? SaveStatus,
+        ScreenshotGuardianContext? ScreenshotContext);
 
     public void SetProfileError(string error)
     {
@@ -2036,13 +2111,42 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
             return false;
         }
 
+        if (!TryBuildBeaconVisitFromJournal(
+                journalEvent,
+                out var existing,
+                out var beacon,
+                out var incompleteMessage))
+        {
+            StatusMessage = incompleteMessage
+                ?? "A Guardian beacon scan could not be recorded.";
+            return true;
+        }
+
+        await SaveGuardianBeaconVisitAsync(
+            existing,
+            beacon,
+            cancellationToken);
+        return true;
+    }
+
+    private bool TryBuildBeaconVisitFromJournal(
+        JournalEventEnvelope journalEvent,
+        out GuardianCommanderBeaconVisit? existing,
+        out GuardianCommanderBeaconVisit beacon,
+        out string? incompleteMessage)
+    {
+        existing = null;
+        beacon = default!;
+        incompleteMessage = null;
+
         var systemAddress = GetJsonInt64(
             journalEvent.Payload,
             "SystemAddress");
         if (systemAddress is null)
         {
-            StatusMessage = "A Guardian beacon scan was detected without a system address.";
-            return true;
+            incompleteMessage =
+                "A Guardian beacon scan was detected without a system address.";
+            return false;
         }
 
         var bodyId = GetJsonInt32(journalEvent.Payload, "BodyID") ?? -1;
@@ -2055,8 +2159,9 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
             ?? currentSystemName;
         if (string.IsNullOrWhiteSpace(systemName))
         {
-            StatusMessage = "A Guardian beacon scan was detected without a system name.";
-            return true;
+            incompleteMessage =
+                "A Guardian beacon scan was detected without a system name.";
+            return false;
         }
 
         var bodyName = GetJsonString(journalEvent.Payload, "BodyName")
@@ -2069,38 +2174,25 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
         }
 
         var timestamp = journalEvent.Timestamp ?? DateTimeOffset.UtcNow;
-        var existing = commanderData.Beacons.FirstOrDefault(beacon =>
-            beacon.SystemAddress == systemAddress
-            && (bodyId >= 0 && beacon.BodyId >= 0
-                ? beacon.BodyId == bodyId
-                : string.Equals(
-                    beacon.BodyName,
-                    bodyName,
-                    StringComparison.OrdinalIgnoreCase)));
-        var scannedLocations = new Dictionary<
-            DateTimeOffset,
-            GuardianSurfaceLocation>(existing?.ScannedLocations
-                ?? new Dictionary<DateTimeOffset, GuardianSurfaceLocation>());
-        var location = GetJournalLocation(journalEvent.Payload)
-            ?? (currentStatus?.HasLatitudeLongitude == true
-                ? new GuardianSurfaceLocation(
-                    currentStatus.Latitude,
-                    currentStatus.Longitude)
-                : null);
-        if (location is { } scannedLocation)
-        {
-            scannedLocations[timestamp] = scannedLocation;
-        }
-
-        var beacon = new GuardianCommanderBeaconVisit(
+        existing = FindExistingBeaconVisit(
+            systemAddress.Value,
+            bodyId,
+            bodyName);
+        var scannedLocations = BuildBeaconScannedLocations(
+            existing,
+            journalEvent,
+            timestamp);
+        var firstVisited = existing?.FirstVisited is { } first
+            && first != DateTimeOffset.MinValue
+                ? first
+                : timestamp;
+        var lastVisited = existing?.LastVisited > timestamp
+            ? existing.LastVisited
+            : timestamp;
+        beacon = new GuardianCommanderBeaconVisit(
             existing?.Path ?? string.Empty,
-            existing?.FirstVisited is { } first
-                && first != DateTimeOffset.MinValue
-                    ? first
-                    : timestamp,
-            existing?.LastVisited > timestamp
-                ? existing.LastVisited
-                : timestamp,
+            firstVisited,
+            lastVisited,
             systemName,
             systemAddress.Value,
             bodyName,
@@ -2108,6 +2200,61 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
             existing?.Notes ?? string.Empty,
             !activeIsOdyssey,
             scannedLocations);
+        return true;
+    }
+
+    private GuardianCommanderBeaconVisit? FindExistingBeaconVisit(
+        long systemAddress,
+        int bodyId,
+        string bodyName)
+    {
+        return commanderData.Beacons.FirstOrDefault(beacon =>
+            beacon.SystemAddress == systemAddress
+            && (bodyId >= 0 && beacon.BodyId >= 0
+                ? beacon.BodyId == bodyId
+                : string.Equals(
+                    beacon.BodyName,
+                    bodyName,
+                    StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private Dictionary<DateTimeOffset, GuardianSurfaceLocation>
+        BuildBeaconScannedLocations(
+            GuardianCommanderBeaconVisit? existing,
+            JournalEventEnvelope journalEvent,
+            DateTimeOffset timestamp)
+    {
+        var scannedLocations = new Dictionary<
+            DateTimeOffset,
+            GuardianSurfaceLocation>(existing?.ScannedLocations
+                ?? new Dictionary<DateTimeOffset, GuardianSurfaceLocation>());
+        var location = GetJournalLocation(journalEvent.Payload);
+        if (location is null
+            && currentStatus?.HasLatitudeLongitude == true)
+        {
+            location = new GuardianSurfaceLocation(
+                currentStatus.Latitude,
+                currentStatus.Longitude);
+        }
+
+        if (location is { } scannedLocation)
+        {
+            scannedLocations[timestamp] = scannedLocation;
+        }
+
+        return scannedLocations;
+    }
+
+    private async Task SaveGuardianBeaconVisitAsync(
+        GuardianCommanderBeaconVisit? existing,
+        GuardianCommanderBeaconVisit beacon,
+        CancellationToken cancellationToken)
+    {
+        if (activeFrontierId is null)
+        {
+            return;
+        }
+
         try
         {
             var path = await commanderBeaconStore.SaveAsync(
@@ -2136,8 +2283,6 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
             StatusMessage = "The Guardian beacon scan could not be saved: "
                 + exception.Message;
         }
-
-        return true;
     }
 
     private Task<bool> MarkNearestRelicPresentAsync(
@@ -2232,11 +2377,15 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
             ?? referenceLocation
             ?? site.Location;
         var screenshotLocation = GetJournalLocation(screenshot.Payload);
-        var statusWithRadius = statusAtBatchStart?.PlanetRadius > 0
-            ? statusAtBatchStart
-            : currentStatus?.PlanetRadius > 0
-                ? currentStatus
-                : null;
+        EliteStatus? statusWithRadius = null;
+        if (statusAtBatchStart?.PlanetRadius > 0)
+        {
+            statusWithRadius = statusAtBatchStart;
+        }
+        else if (currentStatus?.PlanetRadius > 0)
+        {
+            statusWithRadius = currentStatus;
+        }
         double? distance = null;
         if (origin is not null
             && screenshotLocation is not null
@@ -3769,12 +3918,19 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
             survey?.Survey.SiteHeading,
             published?.SiteHeading,
             site?.Reference?.SiteHeading);
-        LiveMapMode = !hasType
-            ? GuardianLiveMapMode.SiteType
-            : heading is < 0 or > 359
-                || heading == 0 && !forceMap
-                ? GuardianLiveMapMode.Heading
-                : GuardianLiveMapMode.Map;
+        if (!hasType)
+        {
+            LiveMapMode = GuardianLiveMapMode.SiteType;
+        }
+        else if (heading is < 0 or > 359
+            || heading == 0 && !forceMap)
+        {
+            LiveMapMode = GuardianLiveMapMode.Heading;
+        }
+        else
+        {
+            LiveMapMode = GuardianLiveMapMode.Map;
+        }
         StatusMessage = LiveMapMode switch
         {
             GuardianLiveMapMode.SiteType =>
@@ -4206,11 +4362,19 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
     {
         var merged = new Dictionary<string, GuardianObelisk>(
             StringComparer.OrdinalIgnoreCase);
-        var published = reference is null && ActiveSite is { } site
-            ? GetPublishedSite(site)
-            : reference is null
-                ? null
-                : publishedSites.Find(reference);
+        GuardianPublishedSite? published;
+        if (reference is null && ActiveSite is { } site)
+        {
+            published = GetPublishedSite(site);
+        }
+        else if (reference is null)
+        {
+            published = null;
+        }
+        else
+        {
+            published = publishedSites.Find(reference);
+        }
         foreach (var obelisk in published?.ActiveObelisks ?? [])
         {
             merged[obelisk.Name] = obelisk;
@@ -4564,7 +4728,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
 
     private static bool HasGuardianSiteImages(
         GuardianSiteReference reference,
-        IReadOnlyDictionary<string, IReadOnlyList<string>> screenshots)
+        Dictionary<string, IReadOnlyList<string>> screenshots)
     {
         if (reference.Kind == GuardianSiteKind.Beacon)
         {
@@ -4707,11 +4871,8 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
 
     private sealed class ParameterCommand(Action<object?> execute) : ICommand
     {
-        public event EventHandler? CanExecuteChanged
-        {
-            add { }
-            remove { }
-        }
+        // Never raises: CanExecute is always true for sort commands.
+        public event EventHandler? CanExecuteChanged = delegate { };
 
         public bool CanExecute(object? parameter) => true;
 
@@ -4879,9 +5040,21 @@ public sealed class GuardianSiteRowViewModel(
 
     public bool HasLegacySurveyLine => !Visit.IsSurveyComplete;
 
-    public string LegacySurveyLine => HasLegacySurveyLine
-        ? $"\u25ba Survey: {(Visit.SurveyProgress > 0 ? "Incomplete" : "Not started")}"
-        : string.Empty;
+    public string LegacySurveyLine
+    {
+        get
+        {
+            if (!HasLegacySurveyLine)
+            {
+                return string.Empty;
+            }
+
+            var progress = Visit.SurveyProgress > 0
+                ? "Incomplete"
+                : "Not started";
+            return $"\u25ba Survey: {progress}";
+        }
+    }
 
     public string LegacyExtraLine => HasRamTahLogs
         ? $"\u25ba Ram Tah: {string.Join(" ", RamTahLogCodes)}"

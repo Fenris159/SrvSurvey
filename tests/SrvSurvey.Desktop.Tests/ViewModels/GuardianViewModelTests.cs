@@ -1575,6 +1575,259 @@ public sealed class GuardianViewModelTests
         };
     }
 
+    [Fact]
+    public async Task MusicAndFileheaderTracksChangeGuardianModeState()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([]),
+                new GuardianPublishedSiteCatalog([]),
+                new GuardianSiteTemplateCatalog([]));
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"Music","MusicTrack":"GalaxyMap"}""")],
+                "Drew");
+            Assert.Equal(
+                OverlayGameMode.GalaxyMap,
+                OverlayGameModeResolver.Resolve(
+                    new EliteStatus { Flags = StatusFlags.InMainShip },
+                    musicTrack: "GalaxyMap"));
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"Fileheader","part":1,"language":"English/UK","gameversion":"4.0","build":"r300000"}""")],
+                "Drew");
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"LoadGame","Commander":"Drew"}""")],
+                "Drew");
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"Music","MusicTrack":"SystemMap"}""")],
+                "Drew");
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse("""{"event":"Music","MusicTrack":"SystemMap"}""")],
+                "Drew");
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task GuardianBeaconScanReportsMissingSystemAddressAndName()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([]),
+                new GuardianPublishedSiteCatalog([]),
+                new GuardianSiteTemplateCatalog([]));
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"CodexEntry","Name":"$Codex_Ent_Guardian_Beacons_Name;","BodyID":7,"BodyName":"Test A 1"}""")],
+                "Drew");
+            Assert.Contains("system address", viewModel.StatusMessage);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"CodexEntry","Name":"$Codex_Ent_Guardian_Beacons_Name;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1"}""")],
+                "Drew");
+            Assert.Contains("system name", viewModel.StatusMessage);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task GuardianBeaconScanMergesExistingVisitLocations()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var store = new GuardianCommanderBeaconStore(root);
+            var firstScan = DateTimeOffset.Parse("2026-08-01T10:00:00Z");
+            await store.SaveAsync(
+                "F123",
+                true,
+                new GuardianCommanderBeaconVisit(
+                    string.Empty,
+                    firstScan,
+                    firstScan,
+                    "Test System",
+                    42,
+                    "Test System A 1",
+                    7,
+                    "kept notes",
+                    false,
+                    new Dictionary<DateTimeOffset, GuardianSurfaceLocation>
+                    {
+                        [firstScan] = new GuardianSurfaceLocation(1, 2),
+                    }));
+
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([]),
+                new GuardianPublishedSiteCatalog([]),
+                new GuardianSiteTemplateCatalog([]));
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+            viewModel.UpdateStatus(new EliteStatus
+            {
+                Flags = StatusFlags.HasLatLong,
+                Latitude = 9.5,
+                Longitude = -8.25,
+                PlanetRadius = 1_000_000,
+            });
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"timestamp":"2026-08-03T12:00:00Z","event":"CodexEntry","Name":"$Codex_Ent_Guardian_Beacons_Name;","System":"Test System","SystemAddress":42,"BodyID":7,"BodyName":"Test System A 1"}""")],
+                "Drew");
+
+            var data = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            var beacon = Assert.Single(data.Beacons);
+            Assert.Equal("kept notes", beacon.Notes);
+            Assert.Equal(firstScan, beacon.FirstVisited);
+            Assert.Equal(2, beacon.ScannedLocations.Count);
+            Assert.Contains(
+                new GuardianSurfaceLocation(9.5, -8.25),
+                beacon.ScannedLocations.Values);
+            Assert.Contains("Recorded Guardian beacon scan", viewModel.StatusMessage);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task NonBeaconCodexDoesNotCreateBeaconVisit()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([]),
+                new GuardianPublishedSiteCatalog([]),
+                new GuardianSiteTemplateCatalog([]));
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"CodexEntry","Name":"$Codex_Ent_Something_Else;","System":"Test","SystemAddress":42}""")],
+                "Drew");
+
+            var data = await new GuardianCommanderDataReader(root)
+                .ReadAsync("F123", isOdyssey: true);
+            Assert.Empty(data.Beacons);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task LiveApproachSettlementSaveFailureReportsStatusMessage()
+    {
+        var root = CreateTemporaryDirectory();
+        try
+        {
+            var reference = CreateProximityReference();
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianSiteCatalog([reference]),
+                new GuardianPublishedSiteCatalog(
+                    [CreatePublishedSite(reference, [])]),
+                new GuardianSiteTemplateCatalog(
+                [
+                    new GuardianSiteTemplate(
+                        "Test",
+                        "Test",
+                        string.Empty,
+                        new GuardianMapPoint(0, 0),
+                        1,
+                        [],
+                        [],
+                        new Dictionary<string, GuardianMapPoint>()),
+                ]));
+            await viewModel.LoadProfileAsync("F123", isOdyssey: true);
+
+            // Replace the writable survey path with a file so SaveAsync fails.
+            var surveyFolder = Path.Combine(root, "guardian", "F123");
+            Directory.CreateDirectory(Path.GetDirectoryName(surveyFolder)!);
+            await File.WriteAllTextAsync(surveyFolder, "not-a-directory");
+
+            await viewModel.ApplyJournalEventsAsync(
+                [Parse(
+                    """{"event":"ApproachSettlement","Name":"$Ancient:#index=1;","SystemAddress":42,"BodyID":7,"BodyName":"Test A 1","Latitude":0,"Longitude":0}""")],
+                "Drew");
+
+            Assert.Contains("could not be saved", viewModel.StatusMessage);
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void LegacySurveyLineFormatsProgressStates()
+    {
+        var incomplete = CreateProximityReference();
+        var incompleteVisit = new GuardianSiteVisit(
+            incomplete,
+            FirstVisited: DateTimeOffset.UtcNow,
+            LastVisited: DateTimeOffset.UtcNow,
+            Notes: string.Empty,
+            SurveyProgress: 40,
+            IsSurveyComplete: false,
+            CommanderFilePath: null,
+            HasCommanderData: true,
+            Completion: null,
+            RecordedObeliskOrLocationCount: 1);
+        var incompleteRow = new GuardianSiteRowViewModel(
+            incompleteVisit,
+            distance: null,
+            ramTahLogCodes: [],
+            hasImages: false);
+        Assert.Equal("\u25ba Survey: Incomplete", incompleteRow.LegacySurveyLine);
+
+        var notStartedVisit = incompleteVisit with
+        {
+            SurveyProgress = 0,
+            RecordedObeliskOrLocationCount = 0,
+        };
+        var notStartedRow = new GuardianSiteRowViewModel(
+            notStartedVisit,
+            distance: null,
+            ramTahLogCodes: [],
+            hasImages: false);
+        Assert.Equal("\u25ba Survey: Not started", notStartedRow.LegacySurveyLine);
+
+        var completeVisit = incompleteVisit with
+        {
+            SurveyProgress = 100,
+            IsSurveyComplete = true,
+        };
+        var completeRow = new GuardianSiteRowViewModel(
+            completeVisit,
+            distance: null,
+            ramTahLogCodes: [],
+            hasImages: false);
+        Assert.Equal(string.Empty, completeRow.LegacySurveyLine);
+    }
+
     private static JournalEventEnvelope Parse(string json)
     {
         var success = JournalEventEnvelope.TryParse(

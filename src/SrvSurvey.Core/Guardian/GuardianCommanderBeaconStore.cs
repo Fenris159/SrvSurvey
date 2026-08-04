@@ -1,25 +1,36 @@
+using System.Buffers;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Core.Guardian;
 
-public sealed class GuardianCommanderBeaconStore(string dataDirectory)
+public sealed class GuardianCommanderBeaconStore(string dataDirectory) : IDisposable
 {
     private static readonly char[] CrossPlatformInvalidFileNameCharacters =
         ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '\0'];
+    private static readonly SearchValues<char> PathSeparators =
+        SearchValues.Create(
+        [
+            Path.DirectorySeparatorChar,
+            Path.AltDirectorySeparatorChar,
+        ]);
+    private static readonly SearchValues<char> InvalidFileNameCharacters =
+        SearchValues.Create(CrossPlatformInvalidFileNameCharacters);
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         WriteIndented = true,
     };
     private readonly SemaphoreSlim saveLock = new(1, 1);
     private readonly string dataDirectory = Path.GetFullPath(dataDirectory);
+    private bool disposed;
 
     public string GetBeaconPath(
         string frontierId,
         bool isOdyssey,
         string systemName)
     {
+        ObjectDisposedException.ThrowIf(disposed, this);
         ValidateFileName(frontierId, "Frontier ID");
         ValidateFileName(systemName, "system name");
         var folder = Path.Combine(dataDirectory, "guardian", frontierId);
@@ -37,6 +48,7 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory)
         GuardianCommanderBeaconVisit beacon,
         CancellationToken cancellationToken = default)
     {
+        ObjectDisposedException.ThrowIf(disposed, this);
         ArgumentNullException.ThrowIfNull(beacon);
         var path = GetBeaconPath(frontierId, isOdyssey, beacon.SystemName);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -78,6 +90,17 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory)
         {
             saveLock.Release();
         }
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        saveLock.Dispose();
     }
 
     private static JsonObject WriteLocations(
@@ -197,9 +220,8 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory)
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         if (value is "." or ".."
             || !string.Equals(Path.GetFileName(value), value, StringComparison.Ordinal)
-            || value.IndexOfAny(
-                [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0
-            || value.IndexOfAny(CrossPlatformInvalidFileNameCharacters) >= 0)
+            || value.AsSpan().ContainsAny(PathSeparators)
+            || value.AsSpan().ContainsAny(InvalidFileNameCharacters))
         {
             throw new ArgumentException(
                 $"The {label} must be a valid folder or file name.",
