@@ -1412,7 +1412,6 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             }
 
             status = nextStatus;
-            OnPropertyChanged(nameof(CurrentStatus));
             if (previousStatus?.GuiFocus == GuiFocus.Fss
                 && nextStatus.GuiFocus != GuiFocus.Fss)
             {
@@ -1423,7 +1422,6 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         if (nextExobiology is not null)
         {
             exobiology = nextExobiology;
-            OnPropertyChanged(nameof(CurrentExobiology));
         }
 
         snapshot = state.CreateSnapshot();
@@ -1453,6 +1451,19 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
 
         RefreshDisplay();
+
+        // Raise status/exobiology after Snapshot and RefreshDisplay so
+        // listeners that also read Snapshot observe a consistent state.
+        if (nextStatus is not null)
+        {
+            OnPropertyChanged(nameof(CurrentStatus));
+        }
+
+        if (nextExobiology is not null)
+        {
+            OnPropertyChanged(nameof(CurrentExobiology));
+        }
+
         RaiseVisibilityProperties();
     }
 

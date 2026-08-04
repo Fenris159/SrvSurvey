@@ -159,10 +159,10 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
             return trimmed[..^genusDisplayName.Length].Trim(' ', '-');
         }
 
-        var separator = trimmed.IndexOf(' ');
-        return separator > 0
-            ? trimmed[..separator]
-            : trimmed;
+        // Do not invent a color from the first word. Legacy catalog names that
+        // equal the genus (e.g. "Bark Mounds") or cannot strip a genus suffix
+        // have no color token.
+        return null;
     }
 
     private static PriorScanTarget CreateTarget(

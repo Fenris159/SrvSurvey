@@ -2524,6 +2524,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         activeProfileIsOdyssey = isOdyssey;
         resetExplorationCommand.RaiseCanExecuteChanged();
         resetExobiologyCommand.RaiseCanExecuteChanged();
+        clearSurfaceTrackersCommand.RaiseCanExecuteChanged();
 
         if (result.Data is null)
         {
@@ -3038,10 +3039,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public async Task ClearSurfaceTrackersAsync()
     {
-        await SurfaceSurvey.ClearAllTrackersAsync(
-            firstFootfallInferenceCancellation.Token);
-        ExobiologyStatusMessage = SurfaceSurvey.StatusText;
-        clearSurfaceTrackersCommand.RaiseCanExecuteChanged();
+        try
+        {
+            await SurfaceSurvey.ClearAllTrackersAsync(
+                firstFootfallInferenceCancellation.Token);
+            ExobiologyStatusMessage = SurfaceSurvey.StatusText;
+        }
+        catch (OperationCanceledException)
+        {
+            // Disposal/cancellation must not fault the async-void command.
+        }
+        finally
+        {
+            clearSurfaceTrackersCommand.RaiseCanExecuteChanged();
+        }
     }
 
     public async Task<bool> ToggleCurrentBodyFirstFootfallAsync()
@@ -3781,9 +3792,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         public async void Execute(object? parameter)
         {
-            if (CanExecute(parameter))
+            if (!CanExecute(parameter))
+            {
+                return;
+            }
+
+            try
             {
                 await execute();
+            }
+            catch (OperationCanceledException)
+            {
+                // Command disposal/cancellation is not a user-facing failure.
             }
         }
 

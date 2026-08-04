@@ -115,6 +115,28 @@ public sealed class PriorScanPlannerTests
                 HudCategory: "Biology",
                 Platform: "legacy")));
         Assert.Equal(
+            "Bark Mounds",
+            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
+                2100301,
+                "$Codex_Ent_Cone_Name;",
+                "$Codex_Ent_Cone_Name;",
+                "Bark Mounds",
+                1_000_000,
+                HudCategory: "Biology",
+                SubClass: "Bark Mounds",
+                Platform: "legacy")));
+        Assert.Equal(
+            "Amphora Plant",
+            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
+                2101400,
+                "$Codex_Ent_Vents_Name;",
+                "$Codex_Ent_Vents_Name;",
+                "Amphora Plant",
+                1_000_000,
+                HudCategory: "Biology",
+                SubClass: "Amphora Plant",
+                Platform: "legacy")));
+        Assert.Equal(
             "Radicoida - Unica",
             PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
                 2460101,

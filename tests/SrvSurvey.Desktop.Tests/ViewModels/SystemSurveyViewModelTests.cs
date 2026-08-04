@@ -57,6 +57,59 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void ApplyUpdateRaisesStatusAfterSnapshotIsConsistent()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42}"""),
+            ],
+            new EliteStatus
+            {
+                BodyName = "Test 1",
+                Flags = StatusFlags.HasLatLong,
+            },
+            ExobiologySnapshot.Empty);
+
+        long? statusSeenAddress = null;
+        long? exoSeenAddress = null;
+        viewModel.PropertyChanged += (_, eventArgs) =>
+        {
+            if (eventArgs.PropertyName
+                == nameof(SystemSurveyViewModel.CurrentStatus))
+            {
+                statusSeenAddress = viewModel.Snapshot.SystemAddress;
+            }
+
+            if (eventArgs.PropertyName
+                == nameof(SystemSurveyViewModel.CurrentExobiology))
+            {
+                exoSeenAddress = viewModel.Snapshot.SystemAddress;
+            }
+        };
+
+        viewModel.ApplyUpdate(
+            [
+                Parse("""{"event":"FSDJump","StarSystem":"Next","SystemAddress":99}"""),
+            ],
+            new EliteStatus
+            {
+                BodyName = "Next 1",
+                Flags = StatusFlags.HasLatLong,
+            },
+            ExobiologySnapshot.Empty with
+            {
+                ScannedBioEntryIds = ["entry-1"],
+            });
+
+        Assert.Equal(99, statusSeenAddress);
+        Assert.Equal(99, exoSeenAddress);
+        Assert.Equal(99, viewModel.Snapshot.SystemAddress);
+        Assert.Equal("Next 1", viewModel.CurrentStatus?.BodyName);
+        Assert.Equal(["entry-1"], viewModel.CurrentExobiology.ScannedBioEntryIds);
+    }
+
+    [Fact]
     public void PriorScanEligibilityUsesLegacySurfaceModesAndPreferences()
     {
         var viewModel = CreateViewModel();
