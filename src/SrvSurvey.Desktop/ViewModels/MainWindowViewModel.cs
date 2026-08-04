@@ -3619,6 +3619,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         firstFootfallInferenceCancellation.Dispose();
         Colonization.Dispose();
         GalaxyMap.Dispose();
+        Guardian.Dispose();
         QuestWorkspace.Dispose();
         Inara.UploadDisabled -= OnInaraUploadDisabled;
         inaraPublisher.Dispose();

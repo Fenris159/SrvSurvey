@@ -12,7 +12,9 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class GuardianViewModel : IGuardianOverlayPresentationState
+public sealed class GuardianViewModel
+    : IGuardianOverlayPresentationState,
+        IDisposable
 {
     private const string AllKinds = "All sites";
     private const string AllVisits = "All visits";
@@ -116,6 +118,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
     private long guardianMaterialWarningFrame = -1;
     private GuardianSiteBrowserSort siteBrowserSort = GuardianSiteBrowserSort.Distance;
     private bool siteBrowserSortDescending;
+    private bool disposed;
 
     public GuardianViewModel(
         string dataDirectory,
@@ -249,6 +252,17 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
         OpenShareWorkspaceCommand = openShareWorkspaceCommand;
         SortSitesCommand = new ParameterCommand(SortSites);
         ApplyFilters();
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        commanderBeaconStore.Dispose();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

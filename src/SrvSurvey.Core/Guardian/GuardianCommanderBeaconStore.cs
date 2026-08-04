@@ -11,10 +11,8 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory) : IDispos
         ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '\0'];
     private static readonly SearchValues<char> PathSeparators =
         SearchValues.Create(
-        [
             Path.DirectorySeparatorChar,
-            Path.AltDirectorySeparatorChar,
-        ]);
+            Path.AltDirectorySeparatorChar);
     private static readonly SearchValues<char> InvalidFileNameCharacters =
         SearchValues.Create(CrossPlatformInvalidFileNameCharacters);
     private static readonly JsonSerializerOptions SerializerOptions = new()
