@@ -1974,7 +1974,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.JournalEvents,
             activeProfileCommanderName,
             allowLiveCommands: !update.IsBootstrapRead,
-            status: latestStatus);
+            status: latestStatus,
+            cancellationToken: firstFootfallInferenceCancellation.Token);
         if (!allowSharedCargo)
         {
             Guardian.ClearCargo();
