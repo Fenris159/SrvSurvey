@@ -244,7 +244,6 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         var pending = new Dictionary<string, GuardianComponentLoadout>(
             components,
             StringComparer.Ordinal);
-        var written = new HashSet<string>(StringComparer.Ordinal);
         var output = new JsonArray();
         if (root["components"] is { } existingNode)
         {
@@ -264,8 +263,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
                 {
                     if (components.TryGetValue(
                         existingComponent.Name,
-                        out var replacement)
-                        && written.Add(existingComponent.Name))
+                        out var replacement))
                     {
                         output.Add(replacement.ToLegacyString());
                         pending.Remove(existingComponent.Name);

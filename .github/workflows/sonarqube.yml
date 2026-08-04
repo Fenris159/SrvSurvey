@@ -75,7 +75,7 @@ jobs:
           /k:"Fenris159_SrvSurvey"
           /o:"fenris159"
           /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
-          /d:sonar.coverage.exclusions="src/SrvSurvey.Desktop/**/*.axaml.cs,src/SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs"
+          /d:sonar.coverage.exclusions="SrvSurvey.Desktop/**/*.axaml,src/SrvSurvey.Desktop/**/*.axaml,SrvSurvey.Desktop/**/*.axaml.cs,src/SrvSurvey.Desktop/**/*.axaml.cs,SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs,src/SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs"
           /d:sonar.token="$env:SONAR_TOKEN"
 
       - name: Restore

@@ -90,6 +90,63 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task SavePreservesExistingComponentEntriesWhenDuplicateNamesAppear()
+    {
+        var store = new GuardianCommanderSurveyStore(temporaryDirectory);
+        var source = CreateSurvey();
+        var path = store.GetSurveyPath(
+            "F123",
+            true,
+            source.BodyName,
+            source.Index,
+            isRuins: true);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        await File.WriteAllTextAsync(
+            path,
+            """
+            {
+              "components":[
+                "c1,cell,conduit,tech",
+                "c1,cell,conduit,tech",
+                "future-format"
+              ]
+            }
+            """);
+        var survey = source with
+        {
+            Survey = new GuardianSurveyData
+            {
+                SiteType = source.Survey.SiteType,
+                SiteHeading = source.Survey.SiteHeading,
+                RelicTowerHeading = source.Survey.RelicTowerHeading,
+                Location = source.Survey.Location,
+                PoiStatuses = source.Survey.PoiStatuses,
+                RelicHeadings = source.Survey.RelicHeadings,
+                ComponentMaterials = new Dictionary<
+                    string,
+                    GuardianComponentLoadout>
+                {
+                    ["c1"] = new GuardianComponentLoadout(
+                        "c1",
+                        [GuardianComponentMaterial.Tech]),
+                },
+                RawPointsOfInterest = source.Survey.RawPointsOfInterest,
+            },
+        };
+
+        await store.SaveAsync("F123", true, survey);
+
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        var components = root["components"]!.AsArray()
+            .Select(item => item!.GetValue<string>())
+            .ToArray();
+        Assert.Equal(3, components.Length);
+        Assert.All(components.Take(2), component =>
+            Assert.StartsWith("c1,", component, StringComparison.Ordinal));
+        Assert.Equal("future-format", components[2]);
+    }
+
+    [Fact]
     public async Task SaveUsesLegacyFolderAndStructureFilename()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
