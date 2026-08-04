@@ -47,7 +47,7 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveRefusesToOverwriteMalformedBeacon()
+    public async Task SaveRecoversFromMalformedExistingBeaconFile()
     {
         var store = new GuardianCommanderBeaconStore(temporaryDirectory);
         var path = store.GetBeaconPath("F123", true, "Test System");
@@ -65,9 +65,17 @@ public sealed class GuardianCommanderBeaconStoreTests : IDisposable
             false,
             new Dictionary<DateTimeOffset, GuardianSurfaceLocation>());
 
-        await Assert.ThrowsAsync<InvalidDataException>(
-            () => store.SaveAsync("F123", true, beacon));
-        Assert.Equal("{bad-json", await File.ReadAllTextAsync(path));
+        Assert.Equal(path, await store.SaveAsync("F123", true, beacon));
+        Assert.NotEqual("{bad-json", await File.ReadAllTextAsync(path));
+        var loaded = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        Assert.Equal(
+            beacon.SystemName,
+            loaded["systemName"]!.GetValue<string>());
+        Assert.True(
+            Directory.EnumerateFiles(
+                    Path.GetDirectoryName(path)!,
+                    "Test System-beacon.json.*.corrupt.json")
+                .Any());
     }
 
     public void Dispose()

@@ -42,10 +42,25 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory)
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var root = File.Exists(path)
-                ? await ReadExistingAsync(path, cancellationToken)
-                    .ConfigureAwait(false)
-                : new JsonObject();
+            JsonObject root;
+            if (File.Exists(path))
+            {
+                try
+                {
+                    root = await ReadExistingAsync(path, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                catch (InvalidDataException)
+                {
+                    TryArchiveCorruptFile(path);
+                    root = new JsonObject();
+                }
+            }
+            else
+            {
+                root = new JsonObject();
+            }
+
             root["firstVisited"] = beacon.FirstVisited;
             root["lastVisited"] = beacon.LastVisited;
             root["systemName"] = beacon.SystemName;
@@ -151,6 +166,29 @@ public sealed class GuardianCommanderBeaconStore(string dataDirectory)
             {
                 File.Delete(temporaryPath);
             }
+        }
+    }
+
+    private static void TryArchiveCorruptFile(
+        string path)
+    {
+        var folder = Path.GetDirectoryName(path)
+            ?? throw new InvalidOperationException(
+                "The Guardian beacon path has no parent folder.");
+        var corruptPath = Path.Combine(
+            folder,
+            $"{Path.GetFileName(path)}.{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}.corrupt.json");
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Move(path, corruptPath, true);
+            }
+        }
+        catch (Exception)
+        {
+            // If archival fails, continue with a fresh object and attempt to overwrite.
+            // The malformed payload will be replaced with a fresh object during write.
         }
     }
 

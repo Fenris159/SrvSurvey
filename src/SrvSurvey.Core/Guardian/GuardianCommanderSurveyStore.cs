@@ -263,12 +263,16 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
                         out var existingComponent))
                 {
                     if (components.TryGetValue(
-                            existingComponent.Name,
-                            out var replacement)
+                        existingComponent.Name,
+                        out var replacement)
                         && written.Add(existingComponent.Name))
                     {
                         output.Add(replacement.ToLegacyString());
                         pending.Remove(existingComponent.Name);
+                    }
+                    else
+                    {
+                        output.Add(value.DeepClone());
                     }
                 }
                 else

@@ -127,7 +127,7 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveRemovesStaleKnownComponentsButPreservesFutureFormats()
+    public async Task SavePreservesStaleComponentsIfMissingFromMemory()
     {
         var store = new GuardianCommanderSurveyStore(temporaryDirectory);
         var source = CreateSurvey();
@@ -170,13 +170,14 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
 
         var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
         Assert.Equal(
-            ["future-format", "future,quantum"],
+            ["c1,cell,conduit,tech", "future-format", "future,quantum"],
             root["components"]!.AsArray()
                 .Select(item => item!.GetValue<string>())
                 .ToArray());
         var loaded = await new GuardianCommanderDataReader(temporaryDirectory)
             .ReadAsync("F123", true);
-        Assert.Empty(Assert.Single(loaded.Surveys).Survey.ComponentMaterials);
+        var loadedSurvey = Assert.Single(loaded.Surveys);
+        Assert.Empty(loadedSurvey.Survey.ComponentMaterials);
     }
 
     [Fact]
