@@ -12,7 +12,7 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed class GuardianViewModel : INotifyPropertyChanged
+public sealed class GuardianViewModel : IGuardianOverlayPresentationState
 {
     private const string AllKinds = "All sites";
     private const string AllVisits = "All visits";
@@ -770,23 +770,16 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
 
     public bool HasCurrentSystemSites => CurrentSystemSites.Count > 0;
 
-    public string CurrentSystemGuardianTitle => CurrentSystemSites.Count switch
-    {
-        1 => "1 Guardian site in this system",
-        var count => $"{count:N0} Guardian sites in this system",
-    };
+    public string CurrentSystemGuardianTitle =>
+        $"Guardian sites: {CurrentSystemSites.Count:N0}";
 
     public IReadOnlyList<GuardianRamTahLogViewModel> CurrentRamTahLogs =>
         currentRamTahLogs;
 
     public bool HasCurrentRamTahLogs => CurrentRamTahLogs.Count > 0;
 
-    public string CurrentRamTahTitle => CurrentRamTahLogs.Count switch
-    {
-        0 => "No new Ram Tah logs at this site",
-        1 => "1 Ram Tah log needed at this site",
-        var count => $"{count:N0} Ram Tah logs needed at this site",
-    };
+    public string CurrentRamTahTitle =>
+        $"Unscanned Ram Tah logs: {CurrentRamTahLogs.Count:N0}";
 
     public bool ShouldShowGuardianSystemSummary => EnableGuardianSites
         && AutoShowGuardianSummary
@@ -1089,7 +1082,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             if (IsGuardianOnFootRelicVisible)
             {
                 return Proximity?.NearestPoint?.Point is
-                    { Type: GuardianPoiType.Relic } relic
+                { Type: GuardianPoiType.Relic } relic
                         ? $"RELIC TOWER {relic.Name}"
                         : "RELIC TOWER SURVEY";
             }
@@ -1151,6 +1144,12 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                     $"{requirement.DisplayName} {requirement.Available}/{requirement.Required}"))
             : "No artifact requirement is recorded."
         : "Artifact requirements are unavailable for an inactive obelisk.";
+
+    public IReadOnlyList<GuardianArtifactRequirementViewModel>
+        GuardianStatusObeliskArtifacts => GuardianStatusObelisk is { } obelisk
+            ? CreateArtifactRequirementRows(
+                artifactInventory.GetRequirements(obelisk.ItemCodes))
+            : [];
 
     public string GuardianStatusObeliskMissionStatus => GuardianStatusObelisk is not { } obelisk
         ? "No Ram Tah log is available for this obelisk."
@@ -1254,7 +1253,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
     {
         if (!HasGeneticSamplerEquipped
             || Proximity?.NearestPoint?.Point is not
-                { Type: GuardianPoiType.Relic } relic)
+            { Type: GuardianPoiType.Relic } relic)
         {
             return HasGeneticSamplerEquipped
                 ? "Approach a relic tower to begin its heading survey."
@@ -2114,7 +2113,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         var survey = FindSurvey(site);
         var published = GetPublishedSite(site);
         var referenceLocation = site.Reference is
-            { Latitude: double latitude, Longitude: double longitude }
+        { Latitude: double latitude, Longitude: double longitude }
                 ? new GuardianSurfaceLocation(latitude, longitude)
                 : (GuardianSurfaceLocation?)null;
         var origin = survey?.Survey.Location
@@ -3187,7 +3186,8 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
                     requirements.All(requirement => requirement.IsMet),
                     string.Join(", ", obelisks.Select(obelisk => obelisk.Name)),
                     isCurrent,
-                    isTarget);
+                    isTarget,
+                    CreateArtifactRequirementRows(requirements));
             })
             .OrderBy(log => log.LogCode, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -3249,6 +3249,24 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
             or OverlayGameMode.InFighter
             or OverlayGameMode.Flying;
     }
+
+    private static string GetShortArtifactName(string displayName) =>
+        displayName.StartsWith("Guardian ", StringComparison.OrdinalIgnoreCase)
+            ? displayName["Guardian ".Length..]
+            : displayName;
+
+    private static IReadOnlyList<GuardianArtifactRequirementViewModel>
+        CreateArtifactRequirementRows(
+            IReadOnlyList<GuardianArtifactRequirement> requirements) =>
+        requirements.Select((requirement, index) =>
+                new GuardianArtifactRequirementViewModel(
+                    requirement.ShortCode,
+                    GetShortArtifactName(requirement.DisplayName),
+                    requirement.IsMet,
+                    index == requirements.Count - 1
+                        ? string.Empty
+                        : "+"))
+            .ToArray();
 
     private bool IsGuardianStatusEligible(EliteStatus? status)
     {
@@ -3398,6 +3416,7 @@ public sealed class GuardianViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(GuardianStatusObeliskTitle));
         OnPropertyChanged(nameof(GuardianStatusObeliskLogText));
         OnPropertyChanged(nameof(GuardianStatusObeliskRequirementsText));
+        OnPropertyChanged(nameof(GuardianStatusObeliskArtifacts));
         OnPropertyChanged(nameof(GuardianStatusObeliskMissionStatus));
         OnPropertyChanged(nameof(GuardianStatusObeliskScanStatus));
         OnPropertyChanged(nameof(GuardianStatusObeliskFooter));
@@ -4728,6 +4747,36 @@ public sealed class GuardianSiteRowViewModel(
             : $"Related structure: {Reference.RelatedStructure}"
         : Visit.Notes;
 
+    public string LegacyDisplayText
+    {
+        get
+        {
+            var body = Reference.BodyName.StartsWith(
+                    Reference.SystemName,
+                    StringComparison.OrdinalIgnoreCase)
+                ? Reference.BodyName[Reference.SystemName.Length..].Trim()
+                : Reference.BodyName;
+            var site = Reference.Kind == GuardianSiteKind.Ruins
+                ? $"Ruins #{Reference.Index} - {Reference.SiteType}"
+                : Reference.SiteType;
+            return $"{body}: {site}";
+        }
+    }
+
+    public string LegacyBlueprintLine => HasBlueprint
+        ? $"\u25ba Blueprint: {BlueprintText}"
+        : string.Empty;
+
+    public bool HasLegacySurveyLine => !Visit.IsSurveyComplete;
+
+    public string LegacySurveyLine => HasLegacySurveyLine
+        ? $"\u25ba Survey: {(Visit.SurveyProgress > 0 ? "Incomplete" : "Not started")}"
+        : string.Empty;
+
+    public string LegacyExtraLine => HasRamTahLogs
+        ? $"\u25ba Ram Tah: {string.Join(" ", RamTahLogCodes)}"
+        : string.Empty;
+
 }
 
 public sealed record GuardianRamTahLogViewModel(
@@ -4737,11 +4786,23 @@ public sealed record GuardianRamTahLogViewModel(
     bool HasArtifacts,
     string ObeliskNamesText,
     bool IsCurrentObelisk,
-    bool IsTargetObelisk)
+    bool IsTargetObelisk,
+    IReadOnlyList<GuardianArtifactRequirementViewModel>? RequirementItems = null)
 {
     public string ArtifactStatus => HasArtifacts ? "READY" : "MISSING";
 
     public bool IsMissingArtifacts => !HasArtifacts;
 
     public bool IsRemoteTargetObelisk => IsTargetObelisk && !IsCurrentObelisk;
+
+    public bool IsCurrentOrTargetObelisk => IsCurrentObelisk || IsTargetObelisk;
+
+    public IReadOnlyList<GuardianArtifactRequirementViewModel> Artifacts =>
+        RequirementItems ?? [];
 }
+
+public sealed record GuardianArtifactRequirementViewModel(
+    string Code,
+    string DisplayName,
+    bool IsMet,
+    string SeparatorText);

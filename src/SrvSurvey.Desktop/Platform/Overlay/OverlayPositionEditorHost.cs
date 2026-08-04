@@ -140,6 +140,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         {
             var preview = new OverlayPositionPreviewWindow(definition);
             OverlayThemeResources.Apply(preview);
+            preview.ApplyRuntimePresentationTheme();
             preview.ConfigureScale(
                 session.ScaleIndex,
                 session.GetPlacement(definition.Name).ScaleIndex,

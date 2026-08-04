@@ -2,14 +2,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.GuardianSystemOverlayWindow"
         x:DataType="vm:GuardianOverlayViewModel"
         mc:Ignorable="d"
-        d:DesignWidth="390"
-        d:DesignHeight="420"
-        Width="390"
-        MinHeight="112"
+        d:DesignWidth="220"
+        d:DesignHeight="96"
+        Width="220"
+        MinHeight="60"
         MaxHeight="720"
         SizeToContent="Height"
         CanResize="False"
@@ -21,89 +22,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey Guardian system overlay">
-  <Border Padding="14,12"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenBorderBrush}"
-          BorderThickness="1"
-          CornerRadius="12"
-          Opacity="0.97">
-    <StackPanel Spacing="10">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-        <StackPanel Spacing="2">
-          <TextBlock Classes="eyebrow" Text="GUARDIAN SYSTEM" />
-          <TextBlock FontSize="16"
-                     FontWeight="SemiBold"
-                     Text="{Binding Guardian.CurrentSystemGuardianTitle}" />
-        </StackPanel>
-        <Border Grid.Column="1" Classes="badge">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="8"
-                     FontWeight="Bold"
-                     Text="{Binding InputMode}" />
-        </Border>
-      </Grid>
-
-      <ScrollViewer MaxHeight="610"
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding Guardian.CurrentSystemSites}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:GuardianSiteRowViewModel">
-              <Border Margin="0,0,0,6"
-                      Padding="10,8"
-                      Background="{DynamicResource RavenSurfaceBrush}"
-                      CornerRadius="8">
-                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="9">
-                  <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                             FontWeight="Bold"
-                             Text="›"
-                             IsVisible="{Binding IsDestination}" />
-                  <StackPanel Grid.Column="1" Spacing="2">
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                      <TextBlock Classes="monospace"
-                                 Foreground="{DynamicResource RavenAccentBrush}"
-                                 FontWeight="Bold"
-                                 Text="{Binding DisplayId}" />
-                      <TextBlock Grid.Column="1"
-                                 FontWeight="SemiBold"
-                                 Text="{Binding SiteDescription}"
-                                 TextTrimming="CharacterEllipsis" />
-                    </Grid>
-                    <TextBlock Classes="muted"
-                               FontSize="10"
-                               Text="{Binding Reference.BodyName}"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                               FontSize="9"
-                               IsVisible="{Binding HasBlueprint}"
-                               Text="{Binding BlueprintText}"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                               FontSize="9"
-                               IsVisible="{Binding HasRamTahLogs}"
-                               Text="{Binding RamTahLogsText, StringFormat='Ram Tah needed: {0}'}"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Classes="muted"
-                               FontSize="9"
-                               Text="{Binding Notes}"
-                               TextTrimming="CharacterEllipsis" />
-                  </StackPanel>
-                  <Border Grid.Column="2"
-                          Padding="7,4"
-                          Background="{DynamicResource RavenAccentMutedBrush}"
-                          CornerRadius="6">
-                    <TextBlock Classes="monospace"
-                               Foreground="{DynamicResource RavenWarningBrush}"
-                               FontSize="10"
-                               FontWeight="Bold"
-                               Text="{Binding SurveyText}" />
-                  </Border>
-                </Grid>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </ScrollViewer>
-    </StackPanel>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:GuardianSystemOverlayPresentation />
   </Border>
 </Window>

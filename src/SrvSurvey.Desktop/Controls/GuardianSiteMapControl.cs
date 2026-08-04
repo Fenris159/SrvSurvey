@@ -197,10 +197,8 @@ public sealed class GuardianSiteMapControl : Control
         {
             context.DrawRectangle(
                 MapBackground ?? Brushes.Transparent,
-                new Pen(GridBrush ?? Brushes.Gray, 1),
-                bounds,
-                8,
-                8);
+                null,
+                bounds);
         }
 
         if (Projection is not { } projection
@@ -789,8 +787,11 @@ public sealed class GuardianSiteMapControl : Control
             LocalizationCatalog.Translate(text),
             CultureInfo.InvariantCulture,
             FlowDirection.LeftToRight,
-            new Typeface("Inter", FontStyle.Normal, weight),
-            11,
+            new Typeface(
+                "Century Gothic, Segoe UI, sans-serif",
+                FontStyle.Normal,
+                weight),
+            10,
             MutedBrush ?? Brushes.Wheat);
     }
 

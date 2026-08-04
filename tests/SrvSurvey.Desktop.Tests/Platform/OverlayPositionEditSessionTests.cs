@@ -8,7 +8,7 @@ public sealed class OverlayPositionEditSessionTests
     [Fact]
     public void CatalogGroupsEveryPositionableOverlayExactlyOnce()
     {
-        Assert.Equal(5, OverlayLayoutCatalog.Categories.Count);
+        Assert.Equal(6, OverlayLayoutCatalog.Categories.Count);
         Assert.Equal(29, OverlayLayoutCatalog.Supported.Count);
         Assert.Equal(
             OverlayLayoutCatalog.Supported.Count,
@@ -28,6 +28,27 @@ public sealed class OverlayPositionEditSessionTests
                 Assert.True(definition.PreviewSize.Height > 0);
             });
         }
+    }
+
+    [Fact]
+    public void GuardianOverlaysHaveTheirOwnEditorCategory()
+    {
+        Assert.Equal(
+            [
+                "PlotGuardians",
+                "PlotGuardianStatus",
+                "PlotGuardianSystem",
+                "PlotRamTah",
+            ],
+            OverlayLayoutCatalog.ForCategory(OverlayLayoutCategory.Guardian)
+                .Select(definition => definition.Name));
+        Assert.DoesNotContain(
+            OverlayLayoutCatalog.ForCategory(
+                OverlayLayoutCategory.SitesAndQuests),
+            definition => definition.Name.StartsWith(
+                "PlotGuardian",
+                StringComparison.Ordinal)
+                || definition.Name == "PlotRamTah");
     }
 
     [Fact]

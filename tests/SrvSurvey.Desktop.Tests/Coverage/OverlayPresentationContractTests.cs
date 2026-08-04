@@ -50,17 +50,19 @@ public sealed class OverlayPresentationContractTests
         Contract("PlotGrounded", ["src/SrvSurvey.Desktop/SurfaceSurveyOverlayWindow.axaml"], [
             "BodyName", "HistoryText", "HeadingText", "RadarScaleText", "NavigationMarkers", "TrackerGroups",
         ]),
-        Contract("PlotGuardians", ["src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml"], [
-            "ActiveMapTitle", "ActiveMapSummary", "ActiveMapScaleText", "LiveMapPromptText", "BlinkGestureText",
+        Contract("PlotGuardians", ["src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianSiteOverlayPresentation.axaml"], [
+            "ActiveMapSummary", "ActiveMapScaleText", "LiveMapPromptText", "TargetObeliskText",
+            "LegacyOverlayBackgroundControl", "ShowLegend=\"False\"",
         ]),
-        Contract("PlotGuardianStatus", ["src/SrvSurvey.Desktop/GuardianStatusOverlayWindow.axaml"], [
+        Contract("PlotGuardianStatus", ["src/SrvSurvey.Desktop/GuardianStatusOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianStatusOverlayPresentation.axaml"], [
             "GuardianStatusTitle", "GuardianStatusDetail", "GuardianOriginFooter", "GuardianOnFootFooter",
-            "GuardianStatusObeliskTitle", "GuardianStatusObeliskRequirementsText",
+            "GuardianStatusObeliskTitle", "GuardianStatusObeliskArtifacts",
             "GuardianStatusObeliskMissionStatus", "GuardianChoiceOneText",
-            "AlignmentStatusText", "GlideApproachText", "NearbyPointText",
+            "GlideApproachText", "LegacyOverlayBackgroundControl",
         ]),
-        Contract("PlotGuardianSystem", ["src/SrvSurvey.Desktop/GuardianSystemOverlayWindow.axaml"], [
-            "CurrentSystemGuardianTitle", "CurrentSystemSites", "SiteDescription", "SurveyText", "Notes",
+        Contract("PlotGuardianSystem", ["src/SrvSurvey.Desktop/GuardianSystemOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianSystemOverlayPresentation.axaml"], [
+            "CurrentSystemGuardianTitle", "CurrentSystemSites", "LegacyDisplayText", "LegacySurveyLine",
+            "LegacyBlueprintLine", "LegacyExtraLine", "LegacyOverlayBackgroundControl",
         ]),
         Contract("PlotHumanSite", ["src/SrvSurvey.Desktop/HumanSiteOverlayWindow.axaml"], [
             "SiteName", "TemplateText", "FactionText", "DockingStatusText", "ApproachDistanceText",
@@ -96,8 +98,10 @@ public sealed class OverlayPresentationContractTests
         Contract("PlotPriorScans", ["src/SrvSurvey.Desktop/PriorScansOverlayWindow.axaml"], [
             "DisplayName", "RewardText", "BearingText", "DistanceText", "ApproachText", "Targets", "ShowRadar",
         ]),
-        Contract("PlotRamTah", ["src/SrvSurvey.Desktop/RamTahOverlayWindow.axaml"], [
-            "CurrentRamTahTitle", "CurrentRamTahLogs", "LogName", "RequirementsText", "ArtifactStatus", "ObeliskNamesText",
+        Contract("PlotRamTah", ["src/SrvSurvey.Desktop/RamTahOverlayWindow.axaml", "src/SrvSurvey.Desktop/RamTahOverlayPresentation.axaml"], [
+            "CurrentRamTahTitle", "CurrentRamTahLogs", "LogName", "Artifacts", "GuardianArtifactGlyphControl",
+            "ObeliskNamesText", "Target obelisk A01: type .to A01 in chat",
+            "LegacyOverlayBackgroundControl",
         ]),
         Contract("PlotSphericalSearch", ["src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"], [
             "SphereCenterSystemName", "SphereDestinationSystemName", "DestinationDistance", "DestinationResult",
@@ -131,6 +135,53 @@ public sealed class OverlayPresentationContractTests
                 Assert.Contains(token, production, StringComparison.Ordinal);
             }
         }
+    }
+
+    [Fact]
+    public void GuardianPresentationsUseDedicatedLegacyVisualGrammar()
+    {
+        var root = FindRepositoryRoot();
+        var presentations = new[]
+        {
+            "GuardianSiteOverlayPresentation.axaml",
+            "GuardianStatusOverlayPresentation.axaml",
+            "GuardianSystemOverlayPresentation.axaml",
+            "RamTahOverlayPresentation.axaml",
+        };
+
+        foreach (var presentation in presentations)
+        {
+            var markup = File.ReadAllText(Path.Combine(
+                root,
+                "src",
+                "SrvSurvey.Desktop",
+                presentation));
+            Assert.Contains("LegacyOverlayBackgroundControl", markup);
+            Assert.Contains("guardian-legacy-", markup);
+            Assert.Contains("TextWrapping=\"Wrap\"", markup);
+            Assert.DoesNotContain("TextTrimming=", markup);
+            Assert.DoesNotContain("Classes=\"card", markup);
+            Assert.DoesNotContain("Classes=\"badge", markup);
+            Assert.DoesNotContain("CornerRadius=\"", markup);
+        }
+
+        var styles = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Styles",
+            "GuardianLegacyOverlayStyles.axaml"));
+        Assert.Contains("Assets/Fonts/Oxanium#Oxanium", styles);
+        Assert.Contains("Assets/Fonts/Rajdhani#Rajdhani", styles);
+        Assert.Contains("RavenPrimaryBrush", styles);
+        Assert.Contains("RavenSecondaryBrush", styles);
+
+        var ramTah = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "RamTahOverlayPresentation.axaml"));
+        Assert.DoesNotContain("&lt;A01&gt;", ramTah);
     }
 
     private static PresentationContract Contract(

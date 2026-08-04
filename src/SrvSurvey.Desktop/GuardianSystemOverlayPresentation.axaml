@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.GuardianSystemOverlayPresentation"
+             x:DataType="vm:GuardianOverlayViewModel"
+             ClipToBounds="True">
+  <UserControl.Styles>
+    <Style Selector="TextBlock.guardian-system-line.destination">
+      <Setter Property="Foreground" Value="{DynamicResource RavenSecondaryBrush}" />
+    </Style>
+  </UserControl.Styles>
+  <Grid MinHeight="60">
+    <controls:LegacyOverlayBackgroundControl
+        IsHitTestVisible="False"
+        BackgroundBrush="{DynamicResource RavenWindowBrush}"
+        StripeBrush="#0C0C0C"
+        EdgeBrush="{DynamicResource RavenPrimaryBrush}"
+        EdgeDimBrush="{DynamicResource RavenPrimaryDimBrush}" />
+
+    <StackPanel Margin="6,8,10,10" Spacing="2">
+      <TextBlock Classes="guardian-legacy-small"
+                 Text="{Binding Guardian.CurrentSystemGuardianTitle}" />
+      <ItemsControl ItemsSource="{Binding Guardian.CurrentSystemSites}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:GuardianSiteRowViewModel">
+            <StackPanel Margin="0,2,0,2" Spacing="2">
+              <TextBlock Classes="guardian-legacy-middle guardian-system-line"
+                         Classes.destination="{Binding IsDestination}"
+                         Margin="8,0,0,0"
+                         Text="{Binding LegacyDisplayText}"
+                         TextWrapping="Wrap" />
+              <TextBlock Classes="guardian-legacy-small guardian-system-line"
+                         Classes.destination="{Binding IsDestination}"
+                         Margin="20,0,0,0"
+                         IsVisible="{Binding HasBlueprint}"
+                         Text="{Binding LegacyBlueprintLine}"
+                         TextWrapping="Wrap" />
+              <TextBlock Classes="guardian-legacy-small guardian-system-line"
+                         Classes.destination="{Binding IsDestination}"
+                         Margin="20,0,0,0"
+                         IsVisible="{Binding HasLegacySurveyLine}"
+                         Text="{Binding LegacySurveyLine}"
+                         TextWrapping="Wrap" />
+              <TextBlock Classes="guardian-legacy-small guardian-system-line"
+                         Classes.destination="{Binding IsDestination}"
+                         Margin="20,0,0,0"
+                         IsVisible="{Binding HasRamTahLogs}"
+                         Text="{Binding LegacyExtraLine}"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </Grid>
+</UserControl>

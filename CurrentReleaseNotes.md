@@ -8,11 +8,24 @@ cross-platform branch is promoted to a stable XP release.
 
 - Restores compact, borderless legacy presentation across the live overlays,
   keeps editor and live-drag positions synchronized, persists per-panel scale
-  and opacity, and adds snap-to-center recovery for off-screen panels.
+  and opacity, and adds snap-to-center recovery for off-screen panels. A full
+  non-Guardian form-factor audit now keeps fixed runtime widths identical to
+  their editor previews, preserves the legacy content-grown widths for dense
+  biology, commodity, mission, quest, and station rows, sizes the commodity
+  panel to its contents, and measures every preview before positioning so
+  opening or saving the editor cannot use a stale estimated rectangle.
 - Completes the dedicated Guardian renderer parity pass with legacy site-map
   geometry, POI colors, rotated glyphs, relic headings, active-obelisk effects,
   survey markers, a single legacy-exact map legend, Canonn biology indicators,
-  and matching glossary previews.
+  and matching glossary previews. The Guardian map, status, system-summary,
+  and Ram Tah plotters now use the same controls in the position editor and at
+  runtime, with the original striped black field, edge bands, compact
+  Century Gothic/Lucida Console typography, unboxed rows, artifact glyphs,
+  legacy orange/cyan/red state affiliations, content-driven form factors, and
+  wrapped variable text instead of clipped or widely padded rows. Every live
+  overlay and matching editor preview now uses bundled Oxanium primary text
+  with Rajdhani for compact labels while retaining the legacy layout and color
+  affiliations.
 - Restores the legacy Guardian survey workflow around that renderer: the live
   status panel exposes fire-group site and POI choices, interaction is limited
   to nearby points, published site metadata hydrates new surveys, Codex and

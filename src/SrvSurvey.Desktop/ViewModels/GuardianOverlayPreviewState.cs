@@ -1,0 +1,285 @@
+using System.ComponentModel;
+using SrvSurvey.Core.Guardian;
+using SrvSurvey.Core.Search;
+
+namespace SrvSurvey.Desktop.ViewModels;
+
+internal sealed class GuardianOverlayPreviewState
+    : IGuardianOverlayPresentationState
+{
+    private static readonly GuardianObelisk SampleObelisk = new(
+        "A01",
+        "H12",
+        Scanned: false,
+        ["Casket", "Totem"]);
+
+    private GuardianOverlayPreviewState()
+    {
+        var template = GuardianSiteTemplateCatalog.LoadEmbedded().Find("Beta")
+            ?? throw new InvalidOperationException(
+                "The embedded Beta Guardian site template is missing.");
+        ActiveMapProjection = new GuardianSiteMapProjector().Project(
+            template,
+            activeObelisks: [SampleObelisk],
+            obeliskGroups: new HashSet<char> { 'A', 'B' },
+            neededRamTahLogCodes: new HashSet<string>(
+                ["H12"],
+                StringComparer.OrdinalIgnoreCase));
+        var nearest = template.PointsOfInterest.First(point =>
+            string.Equals(point.Name, "A01", StringComparison.Ordinal));
+        Proximity = new GuardianSiteProximitySnapshot(
+            DistanceFromSite: 42.6,
+            CommanderX: 12,
+            CommanderY: -18,
+            MapX: 12,
+            MapY: -18,
+            new GuardianNearbyPoint(
+                nearest,
+                Distance: 18.4,
+                X: 12,
+                Y: -18,
+                SampleObelisk),
+            SampleObelisk);
+        CurrentSystemSites =
+        [
+            CreateSiteRow(
+                siteId: 504,
+                siteType: "Beta",
+                index: 1,
+                progress: 64,
+                isDestination: true,
+                ramTahLogs: ["H12", "H16"]),
+            CreateSiteRow(
+                siteId: 505,
+                siteType: "Alpha",
+                index: 2,
+                progress: 100,
+                isDestination: false,
+                ramTahLogs: []),
+        ];
+        CurrentRamTahLogs =
+        [
+            new GuardianRamTahLogViewModel(
+                "H12",
+                "History #12",
+                "Casket + Totem",
+                HasArtifacts: true,
+                "A01, A03",
+                IsCurrentObelisk: true,
+                IsTargetObelisk: true,
+                [
+                    new("ca", "Casket", true, "+"),
+                    new("to", "Totem", true, string.Empty),
+                ]),
+            new GuardianRamTahLogViewModel(
+                "H16",
+                "History #16",
+                "Orb + Urn",
+                HasArtifacts: false,
+                "B04",
+                IsCurrentObelisk: false,
+                IsTargetObelisk: true,
+                [
+                    new("or", "Orb", false, "+"),
+                    new("ur", "Urn", true, string.Empty),
+                ]),
+            new GuardianRamTahLogViewModel(
+                "T07",
+                "Technology #7",
+                "Tablet + Totem",
+                HasArtifacts: true,
+                "C02",
+                IsCurrentObelisk: false,
+                IsTargetObelisk: false,
+                [
+                    new("ta", "Tablet", true, "+"),
+                    new("to", "Totem", true, string.Empty),
+                ]),
+        ];
+    }
+
+    public static GuardianOverlayPreviewState Instance { get; } = new();
+
+    public event PropertyChangedEventHandler? PropertyChanged
+    {
+        add { }
+        remove { }
+    }
+
+    public int PreferredOverlayWidth => 300;
+
+    public int PreferredOverlayHeight => 400;
+
+    public GuardianSiteMapProjection? ActiveMapProjection { get; }
+
+    public GuardianSiteProximitySnapshot? Proximity { get; }
+
+    public double ActiveMapScale => double.NaN;
+
+    public double ActiveMapRelativeHeading => 17;
+
+    public string? TargetObeliskName => "A01";
+
+    public GuardianAlignmentMode? AlignmentMode => null;
+
+    public double AlignmentOpacity => 0;
+
+    public bool IsAlignmentVisible => false;
+
+    public string ActiveMapTitle => "GR 504 - Beta ruins #1";
+
+    public string ActiveMapSummary =>
+        "209 mapped objects - 32 of 50 survey points confirmed";
+
+    public bool HasLiveMapPrompt => false;
+
+    public string LiveMapPromptTitle => string.Empty;
+
+    public string LiveMapPromptText => string.Empty;
+
+    public bool HasHeadingGuide => false;
+
+    public string? HeadingGuideAssetPath => null;
+
+    public string AlignmentStatusText => string.Empty;
+
+    public string BlinkGestureText => "Blink to cycle Guardian targets";
+
+    public string ActiveMapScaleText => "AUTO 1.0x";
+
+    public string TargetObeliskText => "TARGET A01";
+
+    public bool IsGlideApproach => false;
+
+    public string GlideApproachTitle => "APPROACHING GUARDIAN RUINS";
+
+    public string GlideApproachText => "Beta ruins #1";
+
+    public string GlideApproachFooter => "Maintain glide toward the site.";
+
+    public bool IsLocalGuardianStatus => true;
+
+    public bool IsGuardianSiteTypeChoiceVisible => false;
+
+    public bool IsGuardianHeadingChoiceVisible => false;
+
+    public bool IsGuardianOriginVisible => false;
+
+    public bool IsGuardianOnFootRelicVisible => false;
+
+    public bool IsGuardianObeliskVisible => true;
+
+    public bool IsGuardianPoiChoiceVisible => false;
+
+    public bool IsGuardianNoPointVisible => false;
+
+    public string GuardianStatusTitle => "GUARDIAN SITE STATUS";
+
+    public string GuardianStatusDetail => "Surveying Beta ruins #1";
+
+    public string GuardianOriginFooter => string.Empty;
+
+    public string GuardianOnFootFooter => string.Empty;
+
+    public string GuardianStatusObeliskTitle => "A01 - History #12";
+
+    public string GuardianStatusObeliskLogText => "Ram Tah log H12";
+
+    public string GuardianStatusObeliskRequirementsText => "Casket + Totem";
+
+    public IReadOnlyList<GuardianArtifactRequirementViewModel>
+        GuardianStatusObeliskArtifacts
+    { get; } =
+        [
+            new("ca", "Casket", true, "+"),
+            new("to", "Totem", true, string.Empty),
+        ];
+
+    public string GuardianStatusObeliskMissionStatus =>
+        "Decode this obelisk for the active mission.";
+
+    public string GuardianStatusObeliskScanStatus => "READY TO SCAN";
+
+    public string GuardianStatusObeliskFooter =>
+        "Target A01 and scan with the required artifacts aboard.";
+
+    public bool HasGuardianMaterialCapacityWarning => false;
+
+    public string GuardianMaterialCapacityWarning => string.Empty;
+
+    public string GuardianChoiceOneText => "Alpha";
+
+    public string GuardianChoiceTwoText => "Beta";
+
+    public string GuardianChoiceThreeText => "Gamma";
+
+    public bool IsGuardianChoiceThreeVisible => true;
+
+    public bool IsGuardianChoiceOneSelected => false;
+
+    public bool IsGuardianChoiceTwoSelected => true;
+
+    public bool IsGuardianChoiceThreeSelected => false;
+
+    public string SiteDistanceText => "42.6 m from site origin";
+
+    public string NearbyPointText => "A01 - 18.4 m";
+
+    public IReadOnlyList<GuardianSiteRowViewModel> CurrentSystemSites { get; }
+
+    public string CurrentSystemGuardianTitle => "Guardian sites: 2";
+
+    public IReadOnlyList<GuardianRamTahLogViewModel> CurrentRamTahLogs { get; }
+
+    public bool HasCurrentRamTahLogs => true;
+
+    public string CurrentRamTahTitle => "Unscanned Ram Tah logs: 3";
+
+    public string ActiveSiteTitle => "GR 504 - Beta ruins #1";
+
+    private static GuardianSiteRowViewModel CreateSiteRow(
+        int siteId,
+        string siteType,
+        int index,
+        int progress,
+        bool isDestination,
+        IReadOnlyList<string> ramTahLogs)
+    {
+        var reference = new GuardianSiteReference(
+            siteId,
+            GuardianSiteKind.Ruins,
+            "Synuefe EU-Q c21-10",
+            7_265_829_950_870_112_000,
+            "A 3",
+            BodyId: 3,
+            siteType,
+            index,
+            DistanceToArrival: 1_122,
+            new GalacticCoordinate(120.1, -85.2, 42.8),
+            Latitude: -31.734,
+            Longitude: 107.231,
+            SiteHeading: 142,
+            RelicTowerHeading: 37,
+            SurveyProgress: progress,
+            LastUpdated: DateTimeOffset.Parse("2026-08-03T00:00:00Z"),
+            RelatedStructure: null,
+            RelatedStructureDistance: null);
+        var visit = new GuardianSiteVisit(
+            reference,
+            FirstVisited: DateTimeOffset.Parse("2026-08-01T00:00:00Z"),
+            LastVisited: DateTimeOffset.Parse("2026-08-03T00:00:00Z"),
+            Notes: isDestination ? "Current survey destination" : string.Empty,
+            SurveyProgress: progress,
+            IsSurveyComplete: progress == 100,
+            CommanderFilePath: null,
+            HasCommanderData: progress > 0,
+            Completion: null,
+            RecordedObeliskOrLocationCount: progress > 0 ? 4 : 0);
+        return new GuardianSiteRowViewModel(
+            visit,
+            distance: 0,
+            isDestination,
+            ramTahLogs,
+            hasImages: false);
+    }
+}

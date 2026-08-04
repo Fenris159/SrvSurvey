@@ -1,0 +1,38 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="TextBlock.guardian-legacy-middle">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenPrimaryBrush}" />
+  </Style>
+  <Style Selector="TextBlock.guardian-legacy-middle-bold">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenPrimaryBrush}" />
+  </Style>
+  <Style Selector="TextBlock.guardian-legacy-small">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
+    <Setter Property="FontSize" Value="8" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenPrimaryBrush}" />
+  </Style>
+  <Style Selector="TextBlock.guardian-legacy-small-bold">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
+    <Setter Property="FontSize" Value="8" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenPrimaryBrush}" />
+  </Style>
+  <Style Selector="TextBlock.guardian-legacy-cyan">
+    <Setter Property="Foreground" Value="{DynamicResource RavenSecondaryBrush}" />
+  </Style>
+  <Style Selector="TextBlock.guardian-legacy-dark-cyan">
+    <Setter Property="Foreground" Value="{DynamicResource RavenSecondaryDimBrush}" />
+  </Style>
+  <Style Selector="TextBlock.guardian-legacy-red">
+    <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+  </Style>
+</Styles>

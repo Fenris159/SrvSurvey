@@ -99,7 +99,7 @@ public sealed record OverlayPositionPreviewViewModel(
             ? rows.Take(RouteBioTargetList.MaxVisibleItemCount)
                 .Sum(row => row.EstimatedHeight)
             : rows.Sum(row => row.EstimatedHeight);
-        return 92 + rowsHeight;
+        return (isRouteBio ? 108 : 92) + rowsHeight;
     }
 }
 

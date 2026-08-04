@@ -20,6 +20,43 @@
     <SolidColorBrush x:Key="RavenSuccessBrush" Color="#6CCB72" />
     <SolidColorBrush x:Key="RavenWarningBrush" Color="#F7C948" />
     <SolidColorBrush x:Key="RavenDangerBrush" Color="#FF7B72" />
+    <!-- Stable legacy-overlay fallbacks. RavenThemeService replaces these
+         from theme.json before normal runtime overlays are opened. -->
+    <SolidColorBrush x:Key="RavenOverlayWindowBrush" Color="#000000" />
+    <SolidColorBrush x:Key="RavenOverlaySurfaceBrush" Color="#000000" />
+    <SolidColorBrush x:Key="RavenOverlayRaisedSurfaceBrush" Color="#000000" />
+    <SolidColorBrush x:Key="RavenOverlayAccentBrush" Color="#FF6F00" />
+    <SolidColorBrush x:Key="RavenOverlayAccentMutedBrush" Color="#5F3003" />
+    <SolidColorBrush x:Key="RavenOverlayTextBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="RavenOverlayMutedTextBrush" Color="#646464" />
+    <SolidColorBrush x:Key="RavenOverlayBorderBrush" Color="#008B8B" />
+    <SolidColorBrush x:Key="RavenOverlayInformationBrush" Color="#54DFED" />
+    <SolidColorBrush x:Key="RavenOverlaySuccessBrush" Color="#00FF00" />
+    <SolidColorBrush x:Key="RavenOverlayWarningBrush" Color="#FFFF00" />
+    <SolidColorBrush x:Key="RavenOverlayDangerBrush" Color="#FF0000" />
+    <SolidColorBrush x:Key="RavenOverlayPrimaryBrush" Color="#FF6F00" />
+    <SolidColorBrush x:Key="RavenOverlayPrimaryDimBrush" Color="#5F3003" />
+    <SolidColorBrush x:Key="RavenOverlaySecondaryBrush" Color="#54DFED" />
+    <SolidColorBrush x:Key="RavenOverlaySecondaryDimBrush" Color="#008B8B" />
+    <SolidColorBrush x:Key="RavenOverlayDangerDimBrush" Color="#8B0000" />
+    <SolidColorBrush x:Key="RavenOverlaySuccessDimBrush" Color="#008B00" />
+    <SolidColorBrush x:Key="RavenOverlayMenuGoldBrush" Color="#EBEB9100" />
+    <SolidColorBrush x:Key="RavenOverlayBioGoldBrush" Color="#FFD700" />
+    <SolidColorBrush x:Key="RavenOverlayBioGoldDimBrush" Color="#785F00" />
+    <SolidColorBrush x:Key="RavenOverlayBioUnknownBrush" Color="#696969" />
+    <SolidColorBrush x:Key="RavenOverlayBioHatchBrush" Color="#F2404040" />
+    <SolidColorBrush x:Key="RavenOverlayBioWhiteBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="RavenOverlayBioPredictionBrush" Color="#2F4F4F" />
+    <SolidColorBrush x:Key="RavenOverlayColoniseSurplusBrush" Color="#00FF00" />
+    <SolidColorBrush x:Key="RavenOverlayColoniseSurplusDimBrush" Color="#008B00" />
+    <SolidColorBrush x:Key="RavenOverlayColoniseDeficitBrush" Color="#FF0000" />
+    <SolidColorBrush x:Key="RavenOverlayColoniseDeficitDimBrush" Color="#8B0000" />
+    <SolidColorBrush x:Key="RavenOverlayColoniseHighlightBrush" Color="#FFFF00" />
+    <SolidColorBrush x:Key="RavenOverlayColoniseItemBrush" Color="#FF6F00" />
+    <SolidColorBrush x:Key="RavenOverlayColoniseItemDimBrush" Color="#5F3003" />
+    <SolidColorBrush x:Key="RavenOverlayFczCheckpointBrush" Color="#FFFF00" />
+    <SolidColorBrush x:Key="RavenOverlayFczCheckpointLocalBrush" Color="#00FF00" />
+    <SolidColorBrush x:Key="RavenOverlayFczPowerPostBrush" Color="#DAA520" />
     <presentation:FrontierAssetImageConverter
         x:Key="FrontierAssetImageConverter" />
     <presentation:BundledAssetImageConverter
@@ -29,6 +66,8 @@
     <FluentTheme />
     <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
     <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/RavenStyles.axaml" />
+    <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/GuardianLegacyOverlayStyles.axaml" />
+    <StyleInclude Source="avares://SrvSurvey.Desktop/Styles/OverlayTypographyStyles.axaml" />
     <Style Selector="TextBlock">
       <Setter Property="localization:LocalizationBehavior.Enabled" Value="True" />
     </Style>

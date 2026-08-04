@@ -12,6 +12,8 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 
 public static class OverlayThemeResources
 {
+    internal const string OverlayTypographyClass = "srv-overlay";
+
     private static readonly object ThemeWindowsLock = new();
     private static readonly List<WeakReference<Window>> ThemeWindows = [];
     private static readonly ConditionalWeakTable<Window, ScaleRegistration>
@@ -91,6 +93,11 @@ public static class OverlayThemeResources
     {
         // Overlay controls keep a stable native style and never inherit a
         // light/dark switch from the application shell.
+        if (!window.Classes.Contains(OverlayTypographyClass))
+        {
+            window.Classes.Add(OverlayTypographyClass);
+        }
+
         window.RequestedThemeVariant = ThemeVariant.Dark;
         var application = Application.Current;
         if (application is not null)
@@ -207,7 +214,7 @@ public static class OverlayThemeResources
             new LayoutSettingsRegistration(window, layout, plotterName));
     }
 
-    private static void ApplyLegacyPresentation(
+    internal static void ApplyLegacyPresentation(
         Window window,
         string plotterName)
     {
@@ -223,7 +230,36 @@ public static class OverlayThemeResources
             candidate => new LegacyPresentationRegistration(
                 candidate,
                 definition));
+        if (GuardianOverlayPresentationFactory.IsSupported(plotterName))
+        {
+            ApplyDedicatedPresentationChrome(window);
+        }
+
         registration.ApplyPresentation();
+    }
+
+    private static void ApplyDedicatedPresentationChrome(Window window)
+    {
+        var surface = window.Content switch
+        {
+            Border border => border,
+            LayoutTransformControl { Child: Border border } => border,
+            _ => null,
+        };
+        if (surface is null)
+        {
+            return;
+        }
+
+        var isEditorPreview = window is OverlayPositionPreviewWindow;
+        _ = window.TryFindResource("RavenWarningBrush", out var warningBrush);
+        surface.Margin = new Thickness(isEditorPreview ? 1 : 0);
+        surface.Padding = new Thickness(0);
+        surface.Background = Brushes.Transparent;
+        surface.BorderBrush = isEditorPreview ? warningBrush as IBrush : null;
+        surface.BorderThickness = new Thickness(isEditorPreview ? 2 : 0);
+        surface.CornerRadius = new CornerRadius(0);
+        surface.Opacity = 1d;
     }
 
     internal static void NormalizeLegacyOverlayControl(
@@ -511,6 +547,12 @@ public static class OverlayThemeResources
         {
             rootSurface ??= ResolveRootSurface(window);
             if (rootSurface is null)
+            {
+                return;
+            }
+
+            if (GuardianOverlayPresentationFactory.IsSupported(
+                    definition.Name))
             {
                 return;
             }
