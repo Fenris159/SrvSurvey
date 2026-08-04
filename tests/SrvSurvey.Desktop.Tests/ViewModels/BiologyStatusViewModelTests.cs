@@ -354,6 +354,76 @@ public sealed class BiologyStatusViewModelTests : IDisposable
     }
 
     [Fact]
+    public void LiveStatusUpdatesRefreshSampleDistanceAndHideOnTaxiOrJump()
+    {
+        var viewModel = CreateViewModel();
+        var scanOne = new BioSampleSnapshot(
+            new SurfaceLocation(0, 0),
+            150,
+            "$Codex_Ent_Aleoids_Genus_Name;",
+            "$Codex_Ent_Aleoids_01_Name;",
+            "Active",
+            2310101,
+            "Test 1");
+        var surface = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            Latitude = 0,
+            Longitude = 0.001,
+            PlanetRadius = 6_000_000,
+        };
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+            Parse(BodyScan),
+            Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+        ],
+        surface,
+        new ExobiologySnapshot(null, scanOne, null, 0, [], 0));
+
+        Assert.True(viewModel.ShouldShowBioStatus);
+        var firstDistance = viewModel.BiologyStatus!.ActiveSample!
+            .NearestDistanceMeters;
+        Assert.NotNull(firstDistance);
+
+        viewModel.ApplyUpdate(
+            [],
+            surface with { Longitude = 0.002 });
+        var secondDistance = viewModel.BiologyStatus!.ActiveSample!
+            .NearestDistanceMeters;
+        Assert.NotNull(secondDistance);
+        Assert.True(secondDistance > firstDistance);
+
+        var visibilityChanges = 0;
+        viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(SystemSurveyViewModel.ShouldShowBioStatus))
+            {
+                visibilityChanges++;
+            }
+        };
+
+        viewModel.ApplyUpdate(
+            [],
+            surface with { Flags2 = StatusFlags2.InTaxi });
+        Assert.False(viewModel.ShouldShowBioStatus);
+        Assert.True(visibilityChanges > 0);
+
+        viewModel.ApplyUpdate(
+            [],
+            surface with
+            {
+                Flags = StatusFlags.InMainShip | StatusFlags.FsdJump | StatusFlags.HasLatLong,
+            });
+        Assert.False(viewModel.ShouldShowBioStatus);
+
+        viewModel.ApplyUpdate([], surface);
+        Assert.True(viewModel.ShouldShowBioStatus);
+        Assert.NotNull(viewModel.BiologyStatus?.ActiveSample);
+    }
+
+    [Fact]
     public void DssCompletionTemporarilyOverridesDisabledAutomaticStatus()
     {
         var now = new DateTimeOffset(2026, 7, 25, 12, 0, 0, TimeSpan.Zero);

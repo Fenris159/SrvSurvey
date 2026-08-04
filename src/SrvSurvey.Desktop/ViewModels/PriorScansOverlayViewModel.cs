@@ -241,12 +241,16 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.Snapshot)
+            or nameof(SystemSurveyViewModel.CurrentStatus)
+            or nameof(SystemSurveyViewModel.CurrentExobiology)
             or nameof(SystemSurveyViewModel.ShouldLoadPriorScans)
             or nameof(SystemSurveyViewModel.SkipPriorScansLowValue)
             or nameof(SystemSurveyViewModel.PriorScanMinimumValue)
             or nameof(SystemSurveyViewModel.HideOwnCanonnSignals)
             or nameof(SystemSurveyViewModel.ShowCanonnSignalsOnRadar)
-            or nameof(SystemSurveyViewModel.UseSmallCanonnRadarCircles))
+            or nameof(SystemSurveyViewModel.UseSmallCanonnRadarCircles)
+            or nameof(SystemSurveyViewModel.ShouldSuppressForActiveBuildProjects)
+            or nameof(SystemSurveyViewModel.AreBiologyOverlaysSuppressedForRepeatVisit))
         {
             Recalculate();
         }

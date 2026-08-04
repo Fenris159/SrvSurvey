@@ -1412,6 +1412,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             }
 
             status = nextStatus;
+            OnPropertyChanged(nameof(CurrentStatus));
             if (previousStatus?.GuiFocus == GuiFocus.Fss
                 && nextStatus.GuiFocus != GuiFocus.Fss)
             {
@@ -1422,6 +1423,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         if (nextExobiology is not null)
         {
             exobiology = nextExobiology;
+            OnPropertyChanged(nameof(CurrentExobiology));
         }
 
         snapshot = state.CreateSnapshot();

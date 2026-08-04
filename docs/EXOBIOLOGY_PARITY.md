@@ -47,6 +47,19 @@ Journal/Status
   → Avalonia overlays (Oxanium/Rajdhani)
 ```
 
+## Overlay refresh and visibility contract
+
+| Overlay | Content refresh | Show/hide |
+|---------|-----------------|-----------|
+| Bio status | `SystemSurvey.ApplyUpdate` rebuilds `BiologyStatus` on every journal/status/exo change; bindings re-read the new record | `ShouldShowBioStatus` (+ coordinator obscuring, game focus, 250 ms timer) |
+| Bio system | same via `BiologySurvey` | `ShouldShowBioSystem` (+ map modes / body detail, repeat-visit suppress) |
+| Prior scans | 250 ms timer + `RefreshAsync`; recalculates on `Snapshot` / `CurrentStatus` / exo / filters | `ShouldLoadPriorScans && HasSpecies` |
+| Surface radar / trackers | MainWindow `SurfaceSurvey.ApplyUpdateAsync` on journal/status; also reacts to `CurrentStatus` / Snapshot INPC | `ShouldShow` / mini-track gates |
+
+Hard hide conditions exercised in tests: docked, taxi, FSD jump, System Map
+(for bio status), AutoShow off, DSS temporary window expiry, guardian/human
+obscuring (coordinator), build-project suppress.
+
 ## Remaining runtime proof (not source gaps)
 
 Live Elite Dangerous validation of overlay placement, Canonn POI freshness,

@@ -745,7 +745,8 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             or nameof(SystemSurveyViewModel.AutoHideSurfaceRadarWithoutLandingGear)
             or nameof(SystemSurveyViewModel.ShouldSuppressForActiveBuildProjects)
             or nameof(SystemSurveyViewModel.Snapshot)
-            or nameof(SystemSurveyViewModel.CurrentStatus))
+            or nameof(SystemSurveyViewModel.CurrentStatus)
+            or nameof(SystemSurveyViewModel.CurrentExobiology))
         {
             Recalculate();
         }
