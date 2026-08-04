@@ -2363,7 +2363,7 @@ public sealed class MainWindowViewModelTests
             Assert.True(quest.IsDevelopment);
             Assert.Equal("Desktop Integration Quest", quest.Title);
             Assert.Single(viewModel.QuestWorkspace.ActiveQuests);
-            Assert.True(viewModel.QuestIndicator.ShouldShow);
+            Assert.False(viewModel.QuestIndicator.ShouldShow);
             viewModel.ShowQuests();
             Assert.True(viewModel.IsQuestsSelected);
             Assert.DoesNotContain(
@@ -2975,7 +2975,9 @@ public sealed class MainWindowViewModelTests
             ScreenshotProcessingPreferences preferences,
             string? commanderName,
             CancellationToken cancellationToken = default,
-            ScreenshotGuardianContext? guardianContext = null)
+            IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
+                guardianContexts = null,
+            ScreenshotNavigationContext? navigationContext = null)
         {
             CallCount++;
             Events = journalEvents;

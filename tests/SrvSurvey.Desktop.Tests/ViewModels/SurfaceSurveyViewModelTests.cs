@@ -192,8 +192,8 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
 
         Assert.Single(viewModel.TrackerGroups);
         Assert.False(viewModel.ShouldShowRadar);
-        Assert.True(viewModel.ShouldShow);
-        Assert.True(viewModel.IsTrackerOnly);
+        Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.IsTrackerOnly);
     }
 
     [Fact]
@@ -235,6 +235,10 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             [],
             survey.CurrentStatus,
             ExobiologySnapshot.Empty);
+        Assert.True(viewModel.ShouldShowMiniTrack);
+
+        survey.SuppressForActiveBuildProjects = true;
+        survey.SetActiveBuildProjects(true);
         Assert.True(viewModel.ShouldShowMiniTrack);
     }
 
@@ -279,8 +283,10 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             Assert.Single(viewModel.CurrentSurface!.Bookmarks["#1"]));
         Assert.Contains("added", viewModel.StatusText);
         Assert.False(viewModel.ShouldShowRadar);
-        Assert.True(viewModel.ShouldShow);
-        Assert.True(viewModel.IsTrackerOnly);
+        Assert.False(viewModel.ShouldShow);
+        Assert.False(viewModel.IsTrackerOnly);
+        survey.AutoShowMiniTrack = true;
+        Assert.True(viewModel.ShouldShowMiniTrack);
 
         Assert.True(await viewModel.ToggleQuickTrackerAsync(1));
         Assert.Empty(viewModel.CurrentSurface!.Bookmarks);

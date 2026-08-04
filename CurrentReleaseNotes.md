@@ -8,16 +8,75 @@ cross-platform branch is promoted to a stable XP release.
 
 - Restores compact, borderless legacy presentation across the live overlays,
   keeps editor and live-drag positions synchronized, persists per-panel scale
-  and opacity, and adds snap-to-center recovery for off-screen panels.
+  and opacity, and adds snap-to-center recovery for off-screen panels. A full
+  non-Guardian form-factor audit now keeps fixed runtime widths identical to
+  their editor previews, preserves the legacy content-grown widths for dense
+  biology, commodity, mission, quest, and station rows, sizes the commodity
+  panel to its contents, and measures every preview before positioning so
+  opening or saving the editor cannot use a stale estimated rectangle.
 - Completes the dedicated Guardian renderer parity pass with legacy site-map
   geometry, POI colors, rotated glyphs, relic headings, active-obelisk effects,
   survey markers, a single legacy-exact map legend, Canonn biology indicators,
-  and matching glossary previews.
+  and matching glossary previews. The Guardian map, status, system-summary,
+  and Ram Tah plotters now use the same controls in the position editor and at
+  runtime, with the original striped black field, edge bands, compact
+  Century Gothic/Lucida Console typography, unboxed rows, artifact glyphs,
+  legacy orange/cyan/red state affiliations, content-driven form factors, and
+  wrapped variable text instead of clipped or widely padded rows. Every live
+  overlay and matching editor preview now uses bundled Oxanium primary text
+  with Rajdhani for compact labels while retaining the legacy layout and color
+  affiliations.
+- Restores the legacy Guardian survey workflow around that renderer: the live
+  status panel exposes fire-group site and POI choices, interaction is limited
+  to nearby points, published site metadata hydrates new surveys, Codex and
+  material events record relics, obelisks, and beacons automatically, local-only
+  discoveries remain reopenable, and surface proximity controls site lifetime.
+  Aerial-origin alignment, on-foot relic-heading guidance, active-obelisk
+  actions, and configured confirmation gestures now remain in sync with that
+  dedicated status panel and their Guardian settings. Mission 2 now recognizes
+  the legacy Guardian/Thargoid cargo pairs for all five log groups, upgrades
+  old active-obelisk records with their published requirements, and removes
+  stale known component rows when their material count reaches zero.
+- Restores Guardian sharing conveniences with a clipboard-ready ZIP attachment
+  and direct Discord channel launch with an invite fallback, while aerial
+  screenshots use the commander-resolved Guardian layout. Batched screenshots
+  retain the site active at each individual journal event and restore the
+  legacy ruins/structure identity in filenames and banners. The Guardian site
+  browser can also copy body names and commander notes or open that system's
+  converted-image folder directly.
+- Completes the Guardian parity audit with the original seven heading-guide
+  images and structure-specific alignment geometry, encoded-material capacity
+  warnings, blueprint and needed Ram Tah details in the system overlay, and
+  current/target/missing-artifact styling in the Ram Tah overlay. Raw relic
+  heading edits now persist, mission events are processed in journal order,
+  and the site browser restores all twelve sortable legacy columns plus its
+  converted-image indicator. Screenshot naming also restores the `(HighRes)`
+  suffix and recent live-status fallback used by legacy data banners.
+- Recovers the active Guardian site from the nearest published or commander
+  record while within the legacy 4,000 m altitude gate, even when Elite does
+  not repeat `ApproachSettlement`, and switches cleanly between sites on the
+  same body. Legacy `.p`, `.m`, and `.e` point-state commands are restored, and
+  an explicit `.map` command can open a valid map whose recorded heading is 0°.
 - Keeps Guardian map markers proportional to the background at every scale and
   adds a bottom 1x-10x zoom bar, contained mouse-wheel zoom, bounded click-drag
   panning, and automatic fitted-center recovery when returned to 1x.
 - Keeps Galaxy Map overlays context-sensitive, preserves neutron and refuel
   badge colors, and closes all overlay windows when the main application exits.
+- Restores legacy overlay appearance rules across ship, SRV, on-foot, and menu
+  modes. Galaxy Map uses the journal-music fallback, lets explicit system
+  selections replace route details, keeps notifications and legacy forced
+  panels eligible, and returns automatic next-hop guidance to supercruise;
+  unrelated overlays temporarily hide. Main-menu,
+  shutdown, missing-session, suit, and optional active-build-project gates are
+  applied consistently.
+- Restores the legacy overlay transition state machine across biology, body,
+  FSS, route, search, station, surface, settlement, combat, quest, and Guardian
+  panels. System biology now changes to body detail only while actually near a
+  biological body (including the post-DSS grace interval), temporary map-body
+  previews survive journal refreshes for their original timed duration, and
+  stale or foreign body targets are rejected. The Guardian site map and
+  Guardian status/glide guidance are again independent panels with their own
+  saved positions, and jump guidance suppresses only the status panel.
 - Contains mouse-wheel input inside the hovered panel, prevents live Diagnostics
   logging from changing the page position, and removes repeated nullable
   binding failures seen in runtime logs.

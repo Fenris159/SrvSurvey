@@ -30,6 +30,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     private CancellationTokenSource? loadCancellation;
     private SystemSummary? summary;
     private EliteStatus? status;
+    private string? musicTrack;
     private string? systemName;
     private long systemAddress;
     private bool autoShow;
@@ -124,10 +125,13 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
 
     public bool IsForced => forceShow;
 
-    public bool ShouldShow => HasSelectedStation
+    public bool ShouldShow => AutoShow
+        && HasSelectedStation
         && (forceShow
-            || AutoShow
-                && status?.GuiFocus == GuiFocus.ExternalPanel
+            || OverlayGameModeResolver.Resolve(
+                    status,
+                    musicTrack: musicTrack)
+                    == OverlayGameMode.ExternalPanel
                 && !manuallyHidden);
 
     public string StationName => SelectedStation?.Name ?? "No station selected";
@@ -187,6 +191,8 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
 
         systemName = currentSystemName;
         systemAddress = currentSystemAddress;
+        forceShow = false;
+        manuallyHidden = false;
         summary = null;
         loadCancellation?.Cancel();
         loadCancellation?.Dispose();
@@ -231,7 +237,11 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         }
 
         status = currentStatus;
-        if (!forceShow && currentStatus?.GuiFocus != GuiFocus.ExternalPanel)
+        if (!forceShow
+            && OverlayGameModeResolver.Resolve(
+                currentStatus,
+                musicTrack: musicTrack)
+                != OverlayGameMode.ExternalPanel)
         {
             manuallyHidden = false;
         }
@@ -239,9 +249,23 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         NotifyStationState();
     }
 
+    public void UpdateMusicTrack(string? currentMusicTrack)
+    {
+        if (disposed || string.Equals(
+                musicTrack,
+                currentMusicTrack,
+                StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        musicTrack = currentMusicTrack;
+        NotifyStationState();
+    }
+
     public bool ToggleForcedVisibility()
     {
-        if (disposed)
+        if (disposed || !AutoShow)
         {
             return false;
         }
@@ -251,7 +275,10 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
             forceShow = false;
         }
         else if (AutoShow
-            && status?.GuiFocus == GuiFocus.ExternalPanel
+            && OverlayGameModeResolver.Resolve(
+                status,
+                musicTrack: musicTrack)
+                == OverlayGameMode.ExternalPanel
             && HasSelectedStation)
         {
             manuallyHidden = !manuallyHidden;

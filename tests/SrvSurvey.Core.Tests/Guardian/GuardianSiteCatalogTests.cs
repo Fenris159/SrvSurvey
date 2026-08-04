@@ -30,6 +30,9 @@ public sealed class GuardianSiteCatalogTests
         Assert.Equal(100, ruin.SurveyProgress);
         Assert.True(ruin.IsSurveyComplete);
         Assert.Equal(new GalacticCoordinate(357.34375, -49.34375, -74.75), ruin.Position);
+        Assert.All(
+            catalog.Sites.Where(site => site.Kind == GuardianSiteKind.Beacon),
+            beacon => Assert.Equal("GB", beacon.DisplayId));
     }
 
     [Fact]

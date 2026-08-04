@@ -1,4 +1,5 @@
 using SkiaSharp;
+using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform;
@@ -10,6 +11,77 @@ public sealed class ScreenshotProcessingServiceTests : IDisposable
     private readonly string temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"SrvSurvey-screenshot-service-tests-{Guid.NewGuid():N}");
+
+    [Fact]
+    public void SystemFolderPathMatchesScreenshotConversionNaming()
+    {
+        Assert.Equal(
+            Path.Combine(temporaryDirectory, "Test_System"),
+            ScreenshotProcessingService.GetSystemFolderPath(
+                temporaryDirectory,
+                "Test/System"));
+    }
+
+    [Fact]
+    public void BannerLocationUsesRecentLiveStatusFallbackOnly()
+    {
+        var screenshot = Parse(
+            """
+            {"timestamp":"2026-08-03T12:00:00Z","event":"Screenshot","Altitude":850}
+            """);
+        var recent = new ScreenshotNavigationContext(
+            DateTimeOffset.Parse("2026-08-03T12:00:05Z"),
+            12.5,
+            -42.25,
+            180,
+            true);
+
+        var location = ScreenshotProcessingService.CreateLocationLine(
+            screenshot,
+            recent);
+
+        Assert.Equal(
+            "Lat: 12.500000°  Long: -42.250000°  Heading: 180°  Altitude: 850m",
+            location);
+        Assert.Null(ScreenshotProcessingService.CreateLocationLine(
+            screenshot,
+            recent with
+            {
+                ObservedAt = DateTimeOffset.Parse("2026-08-03T12:00:10Z"),
+            }));
+        Assert.Null(ScreenshotProcessingService.CreateLocationLine(
+            screenshot,
+            recent with { HasLatitudeLongitude = false }));
+    }
+
+    [Fact]
+    public async Task HighResolutionScreenshotRetainsLegacyFilenameSuffix()
+    {
+        var sourceDirectory = Path.Combine(temporaryDirectory, "source");
+        var targetDirectory = Path.Combine(temporaryDirectory, "target");
+        Directory.CreateDirectory(sourceDirectory);
+        var sourcePath = Path.Combine(sourceDirectory, "Screenshot_HighRes.bmp");
+        CreateBitmap(sourcePath, SKColors.Cyan);
+
+        var result = await new ScreenshotProcessingService(() => 1920)
+            .ProcessAsync(
+            [
+                Parse(
+                    """
+                    {"timestamp":"2026-08-03T12:00:00Z","event":"Screenshot","Filename":"Screenshot_HighRes.bmp","Width":3840,"System":"Sol","Body":"Earth"}
+                    """),
+            ],
+            Preferences(sourceDirectory, targetDirectory) with
+            {
+                AddBanner = false,
+            },
+            null);
+
+        Assert.EndsWith(
+            "Earth (2026-08-03 120000) (HighRes).png",
+            Assert.Single(result.Conversions).OutputPath,
+            StringComparison.Ordinal);
+    }
 
     [Fact]
     public async Task BitmapIsBanneredEncodedVerifiedAndKeptByDefault()
@@ -149,12 +221,20 @@ public sealed class ScreenshotProcessingServiceTests : IDisposable
         Directory.CreateDirectory(sourceDirectory);
         var sourcePath = Path.Combine(sourceDirectory, "Screenshot_0004.bmp");
         CreateBitmap(sourcePath, SKColors.Purple);
+        var screenshot = Parse(
+            """
+            {"timestamp":"2026-07-25T01:02:03Z","event":"Screenshot","Filename":"\\ED_Pictures\\Screenshot_0004.bmp","System":"Synuefe","Body":"Synuefe 1"}
+            """);
+        var guardianContext = new ScreenshotGuardianContext(
+            "Alpha",
+            12.5,
+            1200,
+            GuardianSiteKind.Ruins,
+            4,
+            "Ancient Ruins (4)");
 
         var result = await new ScreenshotProcessingService().ProcessAsync(
-            [Parse(
-                """
-                {"timestamp":"2026-07-25T01:02:03Z","event":"Screenshot","Filename":"\\ED_Pictures\\Screenshot_0004.bmp","System":"Synuefe","Body":"Synuefe 1"}
-                """)],
+            [screenshot],
             Preferences(sourceDirectory, targetDirectory) with
             {
                 AddBanner = false,
@@ -163,16 +243,22 @@ public sealed class ScreenshotProcessingServiceTests : IDisposable
                 RotateAlphaAerial = true,
             },
             "Commander Test",
-            guardianContext: new ScreenshotGuardianContext(
-                "Alpha",
-                12.5,
-                1200));
+            guardianContexts: new Dictionary<
+                JournalEventEnvelope,
+                ScreenshotGuardianContext>
+            {
+                [screenshot] = guardianContext,
+            });
 
         var conversion = Assert.Single(result.Conversions);
         Assert.Empty(result.Warnings);
         Assert.True(conversion.SourceDeleted);
         Assert.NotNull(conversion.AerialOutputPath);
         Assert.Contains("Aerial Alpha", conversion.AerialOutputPath);
+        Assert.EndsWith(
+            "Synuefe 1 (2026-07-25 010203), Ruins4 Alpha.png",
+            conversion.OutputPath,
+            StringComparison.Ordinal);
         Assert.True(File.Exists(conversion.OutputPath));
         Assert.True(File.Exists(conversion.AerialOutputPath));
         using var aerial = SKBitmap.Decode(conversion.AerialOutputPath);

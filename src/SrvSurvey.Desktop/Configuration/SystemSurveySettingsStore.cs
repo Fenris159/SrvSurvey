@@ -218,7 +218,11 @@ public sealed class SystemSurveySettingsStore
                 defaults.ShowNonBodySignals),
             GetFssTuningDetectorSettings(
                 settings?["FssTuningDetector"] as JsonObject,
-                defaults.FssTuningDetector));
+                defaults.FssTuningDetector),
+            GetBoolean(
+                settings,
+                "SuppressForActiveBuildProjects",
+                defaults.SuppressForActiveBuildProjects));
     }
 
     public void Save(SystemSurveyPreferences preferences)
@@ -313,6 +317,8 @@ public sealed class SystemSurveySettingsStore
             settings["SkipGasGiantsForDss"] = preferences.SkipGasGiantsForDss;
             settings["SkipRingsForDss"] = preferences.SkipRingsForDss;
             settings["ShowNonBodySignals"] = preferences.ShowNonBodySignals;
+            settings["SuppressForActiveBuildProjects"] =
+                preferences.SuppressForActiveBuildProjects;
             WriteFssTuningDetectorSettings(
                 settings,
                 preferences.FssTuningDetector);
@@ -489,7 +495,8 @@ public sealed record SystemSurveyPreferences(
     bool SkipGasGiantsForDss,
     bool SkipRingsForDss,
     bool ShowNonBodySignals,
-    FssTuningDetectorSettings FssTuningDetector)
+    FssTuningDetectorSettings FssTuningDetector,
+    bool SuppressForActiveBuildProjects = false)
 {
     public static SystemSurveyPreferences Default { get; } = new(
         AutoShowBodyInfo: true,
@@ -542,7 +549,8 @@ public sealed record SystemSurveyPreferences(
         SkipGasGiantsForDss: true,
         SkipRingsForDss: true,
         ShowNonBodySignals: false,
-        FssTuningDetector: FssTuningDetectorSettings.Default);
+        FssTuningDetector: FssTuningDetectorSettings.Default,
+        SuppressForActiveBuildProjects: false);
 }
 
 public sealed record FssTuningDetectorSettings(

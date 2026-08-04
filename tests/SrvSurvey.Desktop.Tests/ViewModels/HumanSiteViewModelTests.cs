@@ -29,18 +29,17 @@ public sealed class HumanSiteViewModelTests
         await viewModel.ApplyUpdateAsync([], null, "foot");
         Assert.Empty(notifications);
 
-        viewModel.SetStationInfoVisible(true);
-        Assert.False(viewModel.ShouldShow);
-        viewModel.SetStationInfoVisible(false);
         viewModel.SetActiveBuildProjects(true);
         Assert.False(viewModel.ShouldShow);
         viewModel.SuppressForActiveBuildProjects = false;
         Assert.True(viewModel.ShouldShow);
 
         viewModel.UpdateStatus(status with { GuiFocus = GuiFocus.Fss });
-        Assert.False(viewModel.ShouldShow);
+        Assert.True(viewModel.ShouldShow);
         viewModel.UpdateStatus(status with { GuiFocus = GuiFocus.RolePanel });
         Assert.True(viewModel.ShouldShow);
+        viewModel.UpdateStatus(status with { GuiFocus = GuiFocus.GalaxyMap });
+        Assert.False(viewModel.ShouldShow);
     }
 
     [Fact]

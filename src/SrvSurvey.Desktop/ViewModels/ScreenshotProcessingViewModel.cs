@@ -135,7 +135,9 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
     public async Task<ScreenshotProcessingResult> ProcessJournalEventsAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         string? commanderName,
-        ScreenshotGuardianContext? guardianContext = null,
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
+            guardianContexts = null,
+        ScreenshotNavigationContext? navigationContext = null,
         CancellationToken cancellationToken = default)
     {
         var result = await processingService.ProcessAsync(
@@ -143,7 +145,8 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
             preferences,
             commanderName,
             cancellationToken,
-            guardianContext);
+            guardianContexts,
+            navigationContext);
         if (result.Conversions.Count == 0 && result.Warnings.Count == 0)
         {
             return result;
@@ -163,7 +166,9 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         return result;
     }
 
-    private void Update(ScreenshotProcessingPreferences updated)
+    private void Update(
+        ScreenshotProcessingPreferences updated,
+        [CallerMemberName] string? propertyName = null)
     {
         if (preferences == updated)
         {
@@ -171,7 +176,7 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
         }
 
         preferences = updated;
-        OnPropertyChanged(string.Empty);
+        OnPropertyChanged(propertyName);
         try
         {
             settingsStore.Save(preferences);

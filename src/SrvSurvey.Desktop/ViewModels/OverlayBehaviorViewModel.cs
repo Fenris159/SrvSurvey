@@ -11,6 +11,11 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
     private OverlayBehaviorPreferences preferences;
     private OdysseySuitType currentSuit;
     private bool isOnFoot;
+    private bool hasStatus;
+    private bool hasCommander;
+    private bool isShutdown;
+    private bool isAtMainMenu;
+    private bool isAtCarrierManagement;
     private string settingsStatus = string.Empty;
 
     public OverlayBehaviorViewModel(OverlayBehaviorSettingsStore settingsStore)
@@ -53,6 +58,12 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
         && (currentSuit == OdysseySuitType.Dominator && HideInDominatorSuit
             || currentSuit == OdysseySuitType.Maverick && HideInMaverickSuit);
 
+    public bool ShouldSuppressForSession => !hasStatus
+        || !hasCommander
+        || isShutdown
+        || isAtMainMenu
+        || isAtCarrierManagement;
+
     public string CurrentSuitText => currentSuit switch
     {
         OdysseySuitType.Flight => "Flight suit",
@@ -91,6 +102,30 @@ public sealed class OverlayBehaviorViewModel : INotifyPropertyChanged
         isOnFoot = onFoot;
         OnPropertyChanged(nameof(CurrentSuitText));
         OnPropertyChanged(nameof(ShouldSuppressForSuit));
+    }
+
+    public void UpdateSessionContext(
+        bool hasCurrentStatus,
+        bool hasCurrentCommander,
+        bool shutdown,
+        bool atMainMenu,
+        bool atCarrierManagement = false)
+    {
+        if (hasStatus == hasCurrentStatus
+            && hasCommander == hasCurrentCommander
+            && isShutdown == shutdown
+            && isAtMainMenu == atMainMenu
+            && isAtCarrierManagement == atCarrierManagement)
+        {
+            return;
+        }
+
+        hasStatus = hasCurrentStatus;
+        hasCommander = hasCurrentCommander;
+        isShutdown = shutdown;
+        isAtMainMenu = atMainMenu;
+        isAtCarrierManagement = atCarrierManagement;
+        OnPropertyChanged(nameof(ShouldSuppressForSession));
     }
 
     private void Update(OverlayBehaviorPreferences next)

@@ -150,12 +150,14 @@ public sealed class BoxelSearchViewModelTests : IDisposable
 
         await viewModel.UpdateStatusAsync(new EliteStatus
         {
-            GuiFocus = GuiFocus.GalaxyMap,
-        });
+            Flags = StatusFlags.InMainShip,
+            GuiFocus = GuiFocus.NoFocus,
+        }, nextMusicTrack: "GalaxyMap");
 
         Assert.Equal("Praea Euq IL-P c5-0", viewModel.NextSystem);
         Assert.Equal(["Praea Euq IL-P c5-0"], copied);
         Assert.True(viewModel.Systems[1].IsComplete);
+        Assert.True(viewModel.ShouldShowGalaxyMapOverlay);
     }
 
     [Fact]

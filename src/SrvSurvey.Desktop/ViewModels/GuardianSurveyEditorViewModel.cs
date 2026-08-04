@@ -387,6 +387,17 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
                 if (point.IsRaw)
                 {
+                    if (point.SupportsRelicHeading
+                        && TryGetHeading(point.RelicHeading, out var rawHeading)
+                        && rawHeading >= 0)
+                    {
+                        relicHeadings[point.Name] = rawHeading;
+                    }
+                    else if (point.SupportsRelicHeading)
+                    {
+                        relicHeadings.Remove(point.Name);
+                    }
+
                     continue;
                 }
 
@@ -413,7 +424,10 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
             var rawPoints = Points
                 .Where(point => point.IsRaw)
-                .Select(point => point.Point)
+                .Select(point => point.SupportsRelicHeading
+                    && TryGetHeading(point.RelicHeading, out var heading)
+                        ? point.Point with { Rotation = heading }
+                        : point.Point)
                 .ToArray();
             var updated = originalSurvey with
             {

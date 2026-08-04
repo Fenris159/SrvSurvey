@@ -178,6 +178,16 @@ public sealed class SphereLimitViewModelTests : IDisposable
             route,
             new EliteStatus { GuiFocus = GuiFocus.NoFocus });
         Assert.False(viewModel.ShouldShowGalaxyMapOverlay);
+
+        await viewModel.UpdateNavigationAsync(
+            route,
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip,
+                GuiFocus = GuiFocus.NoFocus,
+            },
+            "GalaxyMap");
+        Assert.True(viewModel.ShouldShowGalaxyMapOverlay);
     }
 
     [Fact]

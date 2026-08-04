@@ -46,6 +46,17 @@ public sealed class CombatViewModelTests : IDisposable
             new EliteStatus
             {
                 Flags = StatusFlags.InSrv,
+                GuiFocus = GuiFocus.InternalPanel,
+                Altitude = 50,
+            },
+            processHistoricalProgress: true);
+        Assert.False(viewModel.ShouldShowFootCombat);
+
+        await viewModel.ApplyUpdateAsync(
+            [],
+            new EliteStatus
+            {
+                Flags = StatusFlags.InSrv,
                 Altitude = 100,
             },
             processHistoricalProgress: true);
@@ -61,6 +72,18 @@ public sealed class CombatViewModelTests : IDisposable
             processHistoricalProgress: true);
         Assert.True(viewModel.ShouldShowFootCombat);
         Assert.Equal(0, viewModel.FootCombatKills);
+
+        await viewModel.ApplyUpdateAsync(
+            [Parse("""{"event":"Music","MusicTrack":"SystemMap"}""")],
+            null,
+            processHistoricalProgress: true);
+        Assert.False(viewModel.ShouldShowFootCombat);
+
+        await viewModel.ApplyUpdateAsync(
+            [Parse("""{"event":"Music","MusicTrack":"Exploration"}""")],
+            null,
+            processHistoricalProgress: true);
+        Assert.True(viewModel.ShouldShowFootCombat);
     }
 
     [Fact]

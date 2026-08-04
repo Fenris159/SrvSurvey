@@ -1238,6 +1238,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         UpdateCommodityPlan();
     }
 
+    public void UpdateMusicTrack(string? musicTrack)
+    {
+        CommodityOverlay.UpdateMusicTrack(musicTrack);
+    }
+
     public void UpdateSystemContext(
         string? systemName,
         GalacticCoordinate? position,

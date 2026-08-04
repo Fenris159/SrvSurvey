@@ -49,9 +49,25 @@ public sealed class PulseOverlayViewModelTests : IDisposable
 
         viewModel.ApplyUpdate(
             [],
-            new EliteStatus { GuiFocus = GuiFocus.NoFocus },
+            new EliteStatus
+            {
+                Flags = StatusFlags.InMainShip,
+                GuiFocus = GuiFocus.NoFocus,
+            },
             false);
 
+        Assert.True(viewModel.ShouldShow);
+
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"Music","MusicTrack":"SystemMap"}""")],
+            null,
+            false);
+        Assert.False(viewModel.ShouldShow);
+
+        viewModel.ApplyUpdate(
+            [Parse("""{"event":"Music","MusicTrack":"Exploration"}""")],
+            null,
+            false);
         Assert.True(viewModel.ShouldShow);
     }
 

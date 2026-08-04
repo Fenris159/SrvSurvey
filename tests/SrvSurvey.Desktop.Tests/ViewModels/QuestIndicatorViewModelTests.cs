@@ -14,6 +14,7 @@ public sealed class QuestIndicatorViewModelTests
         var status = new EliteStatus
         {
             Flags = StatusFlags.HasLatLong,
+            Flags2 = StatusFlags2.OnFoot | StatusFlags2.OnFootOnPlanet,
             Latitude = 0,
             Longitude = 0,
             Heading = 0,
@@ -35,6 +36,34 @@ public sealed class QuestIndicatorViewModelTests
         Assert.Equal("90° relative", location.Bearing);
         Assert.True(location.IsWithinTarget);
         Assert.Equal("✓", location.StateGlyph);
+    }
+
+    [Fact]
+    public void GuiFocusedMenusUseLegacyQuestVisibilityModes()
+    {
+        var viewModel = new QuestIndicatorViewModel();
+        var snapshot = CreateSnapshot();
+        var status = new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            GuiFocus = GuiFocus.GalaxyMap,
+        };
+
+        viewModel.Update([snapshot], status, enabled: true);
+        Assert.False(viewModel.ShouldShow);
+
+        viewModel.Update(
+            [snapshot],
+            status with { GuiFocus = GuiFocus.ExternalPanel },
+            enabled: true);
+        Assert.True(viewModel.ShouldShow);
+
+        viewModel.Update(
+            [snapshot],
+            status with { GuiFocus = GuiFocus.NoFocus },
+            enabled: true,
+            musicTrack: "SystemMap");
+        Assert.False(viewModel.ShouldShow);
     }
 
     [Fact]

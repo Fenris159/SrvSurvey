@@ -29,6 +29,8 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
     private double relativeBearingDegrees;
     private double attackAngleDegrees;
     private bool isStatusEligible;
+    private EliteStatus? status;
+    private string? musicTrack;
     private GroundTargetApproach? approach;
 
     public GroundTargetViewModel(GroundTargetSettingsStore settingsStore)
@@ -166,10 +168,24 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
 
     public void UpdateStatus(EliteStatus status)
     {
+        this.status = status;
         state.UpdateStatus(status);
-        isStatusEligible = IsOverlayStatusEligible(status);
+        isStatusEligible = IsOverlayStatusEligible(status, musicTrack);
         useCurrentLocationCommand.RaiseCanExecuteChanged();
         UpdateDisplay();
+    }
+
+    public void UpdateMusicTrack(string? value)
+    {
+        if (string.Equals(musicTrack, value, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        musicTrack = value;
+        isStatusEligible = status is not null
+            && IsOverlayStatusEligible(status, musicTrack);
+        OnPropertyChanged(nameof(ShouldShow));
     }
 
     public async Task SetTargetAsync()
@@ -367,7 +383,9 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasTooSteepApproach));
     }
 
-    private static bool IsOverlayStatusEligible(EliteStatus status)
+    private static bool IsOverlayStatusEligible(
+        EliteStatus status,
+        string? musicTrack)
     {
         if (!status.HasLatitudeLongitude
             || status.PlanetRadius <= 0
@@ -376,18 +394,17 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
             return false;
         }
 
-        if (status.GuiFocus != GuiFocus.NoFocus)
-        {
-            return status.GuiFocus == GuiFocus.CommsPanel;
-        }
-
-        return status.Flags.HasFlag(StatusFlags.Supercruise)
-            || status.InMainShip
-            || status.Landed
-            || status.InSrv
-            || status.OnFootOnPlanet
-            || status.GlideMode
-            || status.InFighter;
+        var mode = OverlayGameModeResolver.Resolve(
+            status,
+            musicTrack: musicTrack);
+        return mode is OverlayGameMode.CommsPanel
+            or OverlayGameMode.SuperCruising
+            or OverlayGameMode.Flying
+            or OverlayGameMode.Landed
+            or OverlayGameMode.InSrv
+            or OverlayGameMode.OnFoot
+            or OverlayGameMode.GlideMode
+            or OverlayGameMode.InFighter;
     }
 
     private static string FormatDistance(double distance)

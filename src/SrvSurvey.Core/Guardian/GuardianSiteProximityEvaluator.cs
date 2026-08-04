@@ -6,6 +6,7 @@ namespace SrvSurvey.Core.Guardian;
 public sealed class GuardianSiteProximityEvaluator
 {
     public const double CurrentObeliskDistance = 25;
+    public const double NearbyPointDistance = 75;
     private const string GeneticSamplerWeapon = "$humanoid_companalyser_name;";
 
     public GuardianSiteProximitySnapshot? Evaluate(
@@ -86,6 +87,11 @@ public sealed class GuardianSiteProximityEvaluator
                 pointX,
                 pointY,
                 activeObelisk);
+        }
+
+        if (nearest?.Distance > NearbyPointDistance)
+        {
+            nearest = null;
         }
 
         var currentObelisk = nearest is

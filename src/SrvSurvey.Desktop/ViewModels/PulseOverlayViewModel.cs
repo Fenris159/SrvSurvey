@@ -16,7 +16,8 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
     private DateTimeOffset? pulseExpiresAtUtc;
     private DateTimeOffset? scoStoppedAtUtc;
     private bool supercruiseOverdrive;
-    private GuiFocus guiFocus;
+    private EliteStatus? status;
+    private string? musicTrack;
     private string settingsStatus = string.Empty;
 
     public PulseOverlayViewModel(
@@ -48,9 +49,18 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool ShouldShow => Enabled
-        && guiFocus is not GuiFocus.GalaxyMap
-        && guiFocus is not GuiFocus.SystemMap;
+    public bool ShouldShow
+    {
+        get
+        {
+            var mode = OverlayGameModeResolver.Resolve(
+                status,
+                musicTrack: musicTrack);
+            return Enabled
+                && mode is not OverlayGameMode.GalaxyMap
+                    and not OverlayGameMode.SystemMap;
+        }
+    }
 
     public double PulseHeight
     {
@@ -132,7 +142,22 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
             }
 
             supercruiseOverdrive = nextOverdrive;
-            guiFocus = status.GuiFocus;
+            this.status = status;
+        }
+
+        foreach (var journalEvent in journalEvents)
+        {
+            if (journalEvent.EventName is "Fileheader" or "LoadGame")
+            {
+                musicTrack = null;
+            }
+            else if (journalEvent.EventName == "Music"
+                && journalEvent.Payload.TryGetProperty(
+                    "MusicTrack",
+                    out var track))
+            {
+                musicTrack = track.GetString();
+            }
         }
 
         RaiseRuntimeProperties();

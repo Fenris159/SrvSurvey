@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:SrvSurvey.Desktop.Controls"
+             xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+             x:Class="SrvSurvey.Desktop.RamTahOverlayPresentation"
+             x:DataType="vm:GuardianOverlayViewModel"
+             ClipToBounds="True">
+  <UserControl.Styles>
+    <Style Selector="TextBlock.ram-tah-affiliation.current">
+      <Setter Property="Foreground" Value="{DynamicResource RavenSecondaryBrush}" />
+    </Style>
+    <Style Selector="TextBlock.ram-tah-affiliation.remote">
+      <Setter Property="Foreground" Value="{DynamicResource RavenSecondaryDimBrush}" />
+    </Style>
+    <Style Selector="TextBlock.ram-tah-log.missing">
+      <Setter Property="TextDecorations" Value="Strikethrough" />
+    </Style>
+    <Style Selector="TextBlock.guardian-artifact.missing">
+      <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+    </Style>
+  </UserControl.Styles>
+  <Grid MinHeight="60">
+    <controls:LegacyOverlayBackgroundControl
+        IsHitTestVisible="False"
+        BackgroundBrush="{DynamicResource RavenWindowBrush}"
+        StripeBrush="#0C0C0C"
+        EdgeBrush="{DynamicResource RavenPrimaryBrush}"
+        EdgeDimBrush="{DynamicResource RavenPrimaryDimBrush}" />
+
+    <StackPanel Margin="6,8,10,10" Spacing="4">
+      <TextBlock Classes="guardian-legacy-small"
+                 Text="{Binding Guardian.CurrentRamTahTitle}" />
+      <ItemsControl ItemsSource="{Binding Guardian.CurrentRamTahLogs}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:GuardianRamTahLogViewModel">
+            <StackPanel Margin="0,4,0,6" Spacing="2">
+              <TextBlock Classes="guardian-legacy-middle ram-tah-affiliation ram-tah-log"
+                         Classes.current="{Binding IsCurrentOrTargetObelisk}"
+                         Classes.remote="{Binding IsRemoteTargetObelisk}"
+                         Classes.missing="{Binding IsMissingArtifacts}"
+                         Margin="14,0,0,0"
+                         Text="{Binding LogName, StringFormat='{}{0}:'}"
+                         TextWrapping="Wrap" />
+              <ItemsControl Margin="24,0,0,0"
+                            ItemsSource="{Binding Artifacts}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:GuardianArtifactRequirementViewModel">
+                    <StackPanel Margin="0,0,4,0"
+                                Orientation="Horizontal"
+                                Spacing="2">
+                      <controls:GuardianArtifactGlyphControl
+                          Width="16"
+                          Height="14"
+                          ArtifactCode="{Binding Code}" />
+                      <TextBlock Classes="guardian-legacy-small guardian-artifact"
+                                 Classes.missing="{Binding !IsMet}"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding DisplayName}" />
+                      <TextBlock Classes="guardian-legacy-small"
+                                 VerticalAlignment="Center"
+                                 Text="{Binding SeparatorText}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Classes="guardian-legacy-small ram-tah-affiliation"
+                         Classes.current="{Binding IsCurrentOrTargetObelisk}"
+                         Classes.remote="{Binding IsRemoteTargetObelisk}"
+                         Margin="24,0,0,0"
+                         Text="{Binding ObeliskNamesText}"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <TextBlock Classes="guardian-legacy-middle"
+                 Margin="24,6,0,0"
+                 IsVisible="{Binding !Guardian.HasCurrentRamTahLogs}"
+                 Text="No new logs available"
+                 TextWrapping="Wrap" />
+      <TextBlock Classes="guardian-legacy-small"
+                 Margin="8,6,8,0"
+                 HorizontalAlignment="Stretch"
+                 IsVisible="{Binding Guardian.HasCurrentRamTahLogs}"
+                 Text="Target obelisk A01: type .to A01 in chat"
+                 TextAlignment="Center"
+                 TextWrapping="Wrap" />
+    </StackPanel>
+  </Grid>
+</UserControl>

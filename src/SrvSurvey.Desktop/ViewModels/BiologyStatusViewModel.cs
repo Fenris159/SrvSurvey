@@ -58,14 +58,13 @@ public sealed record BiologyStatusViewModel(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
         ExobiologySnapshot exobiology,
-        bool hideGeologicalSignals,
-        BiologyCodexNotificationViewModel? codexNotification = null,
-        bool showTemperatureRangeDebug = false,
-        BiologyPredictionEvaluator? predictionEvaluator = null)
+        BiologyStatusCreateOptions options)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
-        var body = ResolveCurrentBody(snapshot, status);
+        var body = options.AllowRetainedCurrentBody
+            ? ResolveCurrentBody(snapshot, status)
+            : null;
         if (body is null || body.BiologicalSignalCount <= 0)
         {
             return null;
@@ -92,7 +91,7 @@ public sealed record BiologyStatusViewModel(
         var signals = CreateSignals(
             body,
             activeOrganism,
-            hideGeologicalSignals);
+            options.HideGeologicalSignals);
         var activeSample = activeScanIsLocal && activeScan is not null
             ? CreateActiveSample(
                 body,
@@ -109,9 +108,10 @@ public sealed record BiologyStatusViewModel(
             : string.Empty;
         var allAnalyzed = body.AnalyzedBiologicalSignalCount
             >= body.BiologicalSignalCount;
-        var currentNotification = codexNotification?.BodyId == body.BodyId
-            ? codexNotification
-            : null;
+        var currentNotification =
+            options.CodexNotification?.BodyId == body.BodyId
+                ? options.CodexNotification
+                : null;
         var footer = activeSample is not null || !string.IsNullOrEmpty(warning)
             ? string.Empty
             : allAnalyzed && body.IsFirstFootfall
@@ -137,13 +137,14 @@ public sealed record BiologyStatusViewModel(
             body.Organisms.Count == 0,
             warning,
             footer,
-            showTemperatureRangeDebug
+            options.ShowTemperatureRangeDebug
                 ? CreateTemperatureRange(
                     snapshot,
                     body,
                     activeOrganism,
                     status,
-                    predictionEvaluator ?? DefaultPredictionEvaluator.Value)
+                    options.PredictionEvaluator
+                        ?? DefaultPredictionEvaluator.Value)
                 : null);
     }
 
@@ -322,6 +323,13 @@ public sealed record BiologyStatusViewModel(
             : normalized;
     }
 }
+
+public readonly record struct BiologyStatusCreateOptions(
+    bool HideGeologicalSignals,
+    BiologyCodexNotificationViewModel? CodexNotification = null,
+    bool ShowTemperatureRangeDebug = false,
+    BiologyPredictionEvaluator? PredictionEvaluator = null,
+    bool AllowRetainedCurrentBody = true);
 
 public sealed record BiologyCodexNotificationViewModel(
     long EntryId,

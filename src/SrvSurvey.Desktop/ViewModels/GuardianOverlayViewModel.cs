@@ -10,7 +10,7 @@ public sealed class GuardianOverlayViewModel : INotifyPropertyChanged
     private bool isClickThrough;
 
     public GuardianOverlayViewModel(
-        GuardianViewModel guardian,
+        IGuardianOverlayPresentationState guardian,
         OverlayPlatformCapabilities capabilities)
     {
         Guardian = guardian ?? throw new ArgumentNullException(nameof(guardian));
@@ -20,7 +20,19 @@ public sealed class GuardianOverlayViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public GuardianViewModel Guardian { get; }
+    public IGuardianOverlayPresentationState Guardian { get; }
+
+    internal static GuardianOverlayViewModel CreateEditorPreview()
+    {
+        var viewModel = new GuardianOverlayViewModel(
+            GuardianOverlayPreviewState.Instance,
+            OverlayPlatformCapabilities.ForHost(OverlayHostKind.Windows));
+        viewModel.ApplyPreparation(new OverlayPreparationResult(
+            IsPrepared: true,
+            IsClickThrough: true,
+            "EDITOR PREVIEW - REPRESENTATIVE GUARDIAN STATE"));
+        return viewModel;
+    }
 
     public string PlatformStatus
     {

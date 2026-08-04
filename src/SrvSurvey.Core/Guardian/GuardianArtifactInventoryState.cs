@@ -92,7 +92,7 @@ public sealed class GuardianArtifactInventoryState
             .Where(code => !string.IsNullOrWhiteSpace(code))
             .Select(code => TryResolve(code, out var definition)
                 ? definition
-                : new ArtifactDefinition(code, code, code))
+                : new ArtifactDefinition(code, code, code, []))
             .GroupBy(
                 definition => definition.CommodityName,
                 StringComparer.OrdinalIgnoreCase)
@@ -253,12 +253,66 @@ public sealed class GuardianArtifactInventoryState
     {
         var definitions = new[]
         {
-            new ArtifactDefinition("ca", "ancientcasket", "Guardian Casket"),
-            new ArtifactDefinition("or", "ancientorb", "Guardian Orb"),
-            new ArtifactDefinition("re", "ancientrelic", "Guardian Relic"),
-            new ArtifactDefinition("ta", "ancienttablet", "Guardian Tablet"),
-            new ArtifactDefinition("to", "ancienttotem", "Guardian Totem"),
-            new ArtifactDefinition("ur", "ancienturn", "Guardian Urn"),
+            new ArtifactDefinition(
+                "ca",
+                "ancientcasket",
+                "Guardian Casket",
+                ["casket"]),
+            new ArtifactDefinition(
+                "or",
+                "ancientorb",
+                "Guardian Orb",
+                ["orb"]),
+            new ArtifactDefinition(
+                "re",
+                "ancientrelic",
+                "Guardian Relic",
+                ["relic"]),
+            new ArtifactDefinition(
+                "ta",
+                "ancienttablet",
+                "Guardian Tablet",
+                ["tablet"]),
+            new ArtifactDefinition(
+                "to",
+                "ancienttotem",
+                "Guardian Totem",
+                ["totem"]),
+            new ArtifactDefinition(
+                "ur",
+                "ancienturn",
+                "Guardian Urn",
+                ["urn"]),
+            new ArtifactDefinition(
+                "se",
+                "unknownartifact",
+                "Thargoid Sensor",
+                ["sensor"]),
+            new ArtifactDefinition(
+                "pr",
+                "unknownartifact2",
+                "Thargoid Probe",
+                ["probe"]),
+            new ArtifactDefinition(
+                "li",
+                "unknownartifact3",
+                "Thargoid Link",
+                ["link"]),
+            new ArtifactDefinition(
+                "cy",
+                "thargoidtissuesampletype1",
+                "Cyclops Tissue Sample",
+                ["cyclops"]),
+            new ArtifactDefinition(
+                "ba",
+                "thargoidtissuesampletype2",
+                "Basilisk Tissue Sample",
+                ["basilisk"]),
+            new ArtifactDefinition(
+                "me",
+                "thargoidtissuesampletype3",
+                "Medusa Tissue Sample",
+                ["medusa"]),
         };
         var result = new Dictionary<string, ArtifactDefinition>(
             StringComparer.OrdinalIgnoreCase);
@@ -267,7 +321,10 @@ public sealed class GuardianArtifactInventoryState
             result[definition.ShortCode] = definition;
             result[definition.CommodityName] = definition;
             result[definition.DisplayName] = definition;
-            result[definition.DisplayName[9..]] = definition;
+            foreach (var alias in definition.Aliases)
+            {
+                result[alias] = definition;
+            }
         }
 
         return result;
@@ -276,7 +333,8 @@ public sealed class GuardianArtifactInventoryState
     private sealed record ArtifactDefinition(
         string ShortCode,
         string CommodityName,
-        string DisplayName);
+        string DisplayName,
+        IReadOnlyList<string> Aliases);
 }
 
 public sealed record GuardianArtifactRequirement(

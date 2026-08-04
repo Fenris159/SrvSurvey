@@ -168,61 +168,80 @@
       </Border>
 
       <Border Classes="card" Padding="0">
-        <Grid RowDefinitions="Auto,Auto,*">
-          <Grid Margin="18,15,18,10"
-                ColumnDefinitions="72,3*,110,90,100,96"
-                ColumnSpacing="10">
-            <TextBlock Classes="muted" Text="ID" />
-            <TextBlock Grid.Column="1" Classes="muted" Text="SYSTEM / BODY" />
-            <TextBlock Grid.Column="2" Classes="muted" Text="TYPE" />
-            <TextBlock Grid.Column="3" Classes="muted" Text="DISTANCE" />
-            <TextBlock Grid.Column="4" Classes="muted" Text="VISITED" />
-            <TextBlock Grid.Column="5" Classes="muted" Text="SURVEY" />
-          </Grid>
-          <Separator Grid.Row="1" />
-          <ListBox Grid.Row="2"
-                   Height="370"
-                   BorderThickness="0"
-                   Background="Transparent"
-                   ItemsSource="{Binding Guardian.Rows}"
-                   SelectedItem="{Binding Guardian.SelectedSite, Mode=TwoWay}">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:GuardianSiteRowViewModel">
-                <Grid Margin="10,5"
-                      ColumnDefinitions="72,3*,110,90,100,96"
-                      ColumnSpacing="10">
-                  <TextBlock Classes="monospace"
-                             VerticalAlignment="Center"
-                             Text="{Binding DisplayId}" />
-                  <StackPanel Grid.Column="1" Spacing="2">
-                    <TextBlock FontWeight="SemiBold"
-                               TextTrimming="CharacterEllipsis"
-                               Text="{Binding Reference.SystemName}" />
-                    <TextBlock Classes="muted"
-                               FontSize="11"
-                               TextTrimming="CharacterEllipsis"
-                               Text="{Binding Reference.BodyName}" />
-                  </StackPanel>
-                  <TextBlock Grid.Column="2"
-                             VerticalAlignment="Center"
-                             TextTrimming="CharacterEllipsis"
-                             Text="{Binding SiteDescription}" />
-                  <TextBlock Grid.Column="3"
-                             VerticalAlignment="Center"
-                             Text="{Binding DistanceText}" />
-                  <TextBlock Grid.Column="4"
-                             VerticalAlignment="Center"
-                             Text="{Binding VisitText}" />
-                  <TextBlock Grid.Column="5"
-                             VerticalAlignment="Center"
-                             Foreground="{DynamicResource RavenAccentBrush}"
-                             FontWeight="SemiBold"
-                             Text="{Binding SurveyText}" />
-                </Grid>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
-        </Grid>
+        <StackPanel>
+          <TextBlock Margin="18,10,18,0"
+                     Classes="muted"
+                     FontSize="10"
+                     Text="{Binding Guardian.SortStatusText}" />
+          <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                        VerticalScrollBarVisibility="Disabled">
+            <Grid Width="1480" RowDefinitions="Auto,Auto,*">
+              <Grid Margin="10,8"
+                    ColumnDefinitions="72,200,100,90,90,105,110,55,65,80,170,250"
+                    ColumnSpacing="8">
+                <Button Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Id" Content="ID" />
+                <Button Grid.Column="1" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="System" Content="SYSTEM" />
+                <Button Grid.Column="2" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Body" Content="BODY" />
+                <Button Grid.Column="3" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Distance" Content="DISTANCE" />
+                <Button Grid.Column="4" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Arrival" Content="ARRIVAL" />
+                <Button Grid.Column="5" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Visited" Content="VISITED" />
+                <Button Grid.Column="6" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Type" Content="TYPE" />
+                <Button Grid.Column="7" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Index" Content="INDEX" />
+                <Button Grid.Column="8" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Images" Content="IMAGES" />
+                <Button Grid.Column="9" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Survey" Content="SURVEY" />
+                <Button Grid.Column="10" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="RamTah" Content="RAM TAH" />
+                <Button Grid.Column="11" Classes="sort-header" Padding="0" HorizontalContentAlignment="Left"
+                        Command="{Binding Guardian.SortSitesCommand}" CommandParameter="Notes" Content="NOTES" />
+              </Grid>
+              <Separator Grid.Row="1" />
+              <ListBox Grid.Row="2"
+                       Height="370"
+                       BorderThickness="0"
+                       Background="Transparent"
+                       ItemsSource="{Binding Guardian.Rows}"
+                       SelectedItem="{Binding Guardian.SelectedSite, Mode=TwoWay}">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:GuardianSiteRowViewModel">
+                    <Grid Margin="10,5"
+                          ColumnDefinitions="72,200,100,90,90,105,110,55,65,80,170,250"
+                          ColumnSpacing="8">
+                      <TextBlock Classes="monospace" VerticalAlignment="Center" Text="{Binding DisplayId}" />
+                      <TextBlock Grid.Column="1" FontWeight="SemiBold" VerticalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis" Text="{Binding Reference.SystemName}" />
+                      <TextBlock Grid.Column="2" Classes="muted" VerticalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis" Text="{Binding Reference.BodyName}" />
+                      <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{Binding DistanceText}" />
+                      <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="{Binding ArrivalText}" />
+                      <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{Binding VisitText}" />
+                      <TextBlock Grid.Column="6" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                 Text="{Binding Reference.SiteType}" />
+                      <TextBlock Grid.Column="7" VerticalAlignment="Center" Text="{Binding Reference.Index}" />
+                      <TextBlock Grid.Column="8" VerticalAlignment="Center" Text="{Binding ImagesText}" />
+                      <TextBlock Grid.Column="9" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource RavenAccentBrush}" FontWeight="SemiBold"
+                                 Text="{Binding SurveyText}" />
+                      <TextBlock Grid.Column="10" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                 Text="{Binding RamTahLogsText}" />
+                      <TextBlock Grid.Column="11" Classes="muted" VerticalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis" Text="{Binding Notes}" />
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </Grid>
+          </ScrollViewer>
+        </StackPanel>
       </Border>
 
       <Grid ColumnDefinitions="3*,2*" ColumnSpacing="18">
@@ -284,6 +303,11 @@
               <Button Classes="secondary"
                       Margin="0,0,8,8"
                       IsEnabled="{Binding Guardian.HasSelectedSite}"
+                      Click="CopyBody_Click"
+                      Content="Copy body" />
+              <Button Classes="secondary"
+                      Margin="0,0,8,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSite}"
                       Click="CopyAddress_Click"
                       Content="Copy address" />
               <Button Classes="secondary"
@@ -296,6 +320,11 @@
                       IsEnabled="{Binding Guardian.HasSelectedSite}"
                       Click="CopySurface_Click"
                       Content="Copy lat/long" />
+              <Button Classes="secondary"
+                      Margin="0,0,8,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSite}"
+                      Click="CopyNotes_Click"
+                      Content="Copy notes" />
             </WrapPanel>
             <WrapPanel>
               <Button Classes="secondary"
@@ -309,10 +338,15 @@
                       Click="OpenSpansh_Click"
                       Content="Spansh" />
               <Button Classes="secondary"
-                      Margin="0,0,0,8"
+                      Margin="0,0,8,8"
                       IsEnabled="{Binding Guardian.HasSelectedSite}"
                       Click="OpenEdsm_Click"
                       Content="EDSM" />
+              <Button Classes="secondary"
+                      Margin="0,0,0,8"
+                      IsEnabled="{Binding Guardian.HasSelectedSite}"
+                      Click="OpenImages_Click"
+                      Content="Open images folder" />
             </WrapPanel>
           </StackPanel>
         </Border>
@@ -938,6 +972,10 @@
                           Margin="0,0,8,8"
                           Click="CopyShareBundle_Click"
                           Content="Copy bundle path" />
+                  <Button Classes="secondary"
+                          Margin="0,0,8,8"
+                          Click="CopyShareBundleFile_Click"
+                          Content="Copy bundle file" />
                   <Button Classes="primary"
                           Margin="0,0,0,8"
                           Click="OpenShareDiscord_Click"

@@ -104,6 +104,19 @@ public sealed class JournalSessionStateTests
         Assert.Equal("Sol", state.SystemName);
         Assert.Null(state.BodyName);
         Assert.Null(state.ActiveSrvType);
+        Assert.True(state.IsAtMainMenu);
+        Assert.Equal("MainMenu", state.MusicTrack);
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"Music","MusicTrack":"Exploration"}""")));
+        Assert.False(state.IsAtMainMenu);
+        Assert.Equal("Exploration", state.MusicTrack);
+
+        Assert.True(state.Apply(Parse(
+            """{"event":"Music","MusicTrack":"FleetCarrier_Managment"}""")));
+        Assert.True(state.IsAtCarrierManagement);
+        Assert.False(state.IsAtMainMenu);
+        Assert.Equal("FleetCarrier_Managment", state.MusicTrack);
     }
 
     [Fact]

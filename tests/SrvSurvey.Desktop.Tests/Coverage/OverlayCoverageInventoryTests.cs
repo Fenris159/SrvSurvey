@@ -1,8 +1,9 @@
+using System.Text.RegularExpressions;
 using SrvSurvey.Desktop.Platform.Overlay;
 
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
-public sealed class OverlayCoverageInventoryTests
+public sealed partial class OverlayCoverageInventoryTests
 {
     private static readonly IReadOnlyDictionary<string, string>
         PreviewProductionWindows = new Dictionary<string, string>(
@@ -20,6 +21,7 @@ public sealed class OverlayCoverageInventoryTests
             ["PlotGalMap"] = "GalaxyMapOverlayWindow.axaml",
             ["PlotGrounded"] = "SurfaceSurveyOverlayWindow.axaml",
             ["PlotGuardians"] = "GuardianOverlayWindow.axaml",
+            ["PlotGuardianStatus"] = "GuardianStatusOverlayWindow.axaml",
             ["PlotGuardianSystem"] = "GuardianSystemOverlayWindow.axaml",
             ["PlotHumanSite"] = "HumanSiteOverlayWindow.axaml",
             ["PlotJumpInfo"] = "JumpInfoOverlayWindow.axaml",
@@ -88,14 +90,14 @@ public sealed class OverlayCoverageInventoryTests
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SurfaceSurveyOverlayViewModelTests.cs",
             "tests/SrvSurvey.Desktop.Tests/ViewModels/SurfaceSurveyViewModelTests.cs",
         ]),
-        Map("PlotGuardians", ["src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml"], [
+        Map("PlotGuardians", ["src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianSiteOverlayPresentation.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/GuardianOverlayViewModelTests.cs",
             "tests/SrvSurvey.Desktop.Tests/ViewModels/GuardianViewModelTests.cs",
         ]),
-        Map("PlotGuardianStatus", ["src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml"], [
+        Map("PlotGuardianStatus", ["src/SrvSurvey.Desktop/GuardianStatusOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianStatusOverlayPresentation.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/GuardianViewModelTests.cs",
         ]),
-        Map("PlotGuardianSystem", ["src/SrvSurvey.Desktop/GuardianSystemOverlayWindow.axaml"], [
+        Map("PlotGuardianSystem", ["src/SrvSurvey.Desktop/GuardianSystemOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianSystemOverlayPresentation.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/GuardianViewModelTests.cs",
         ]),
         Map("PlotHumanSite", ["src/SrvSurvey.Desktop/HumanSiteOverlayWindow.axaml"], [
@@ -136,7 +138,7 @@ public sealed class OverlayCoverageInventoryTests
         Map("PlotQuestMini", ["src/SrvSurvey.Desktop/QuestIndicatorOverlayWindow.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/QuestIndicatorViewModelTests.cs",
         ]),
-        Map("PlotRamTah", ["src/SrvSurvey.Desktop/RamTahOverlayWindow.axaml"], [
+        Map("PlotRamTah", ["src/SrvSurvey.Desktop/RamTahOverlayWindow.axaml", "src/SrvSurvey.Desktop/RamTahOverlayPresentation.axaml"], [
             "tests/SrvSurvey.Desktop.Tests/ViewModels/GuardianViewModelTests.cs",
             "tests/SrvSurvey.Desktop.Tests/ViewModels/RamTahViewModelTests.cs",
         ]),
@@ -215,6 +217,59 @@ public sealed class OverlayCoverageInventoryTests
                     productionWindow)),
                 $"Missing production overlay for preview: {productionWindow}");
         }
+    }
+
+    [Fact]
+    public void FixedRuntimeWidthsMatchTheirEditorPresentationWidths()
+    {
+        var root = FindRepositoryRoot();
+        foreach (var pair in PreviewProductionWindows)
+        {
+            // Human-site dimensions are commander settings in the legacy app.
+            if (pair.Key == "PlotHumanSite")
+            {
+                continue;
+            }
+
+            var markup = File.ReadAllText(Path.Combine(
+                root,
+                "src",
+                "SrvSurvey.Desktop",
+                pair.Value));
+            var match = WindowWidthRegex().Match(markup);
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            var expected = OverlayLayoutCatalog.GetRequired(
+                pair.Key).PreviewSize.Width;
+            Assert.Equal(
+                expected,
+                int.Parse(
+                    match.Groups["width"].Value,
+                    System.Globalization.CultureInfo.InvariantCulture));
+        }
+    }
+
+    [GeneratedRegex("""
+        <Window[\s\S]*?\bWidth="(?<width>\d+)"
+        """)]
+    private static partial Regex WindowWidthRegex();
+
+    [Fact]
+    public void CommodityOverlayUsesLegacyContentDrivenHeight()
+    {
+        var root = FindRepositoryRoot();
+        var markup = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            PreviewProductionWindows["PlotBuildCommodities"]));
+
+        Assert.Contains("Height=\"1\"", markup);
+        Assert.Contains("MaxHeight=\"700\"", markup);
+        Assert.Contains("SizeToContent=\"Height\"", markup);
     }
 
     [Fact]
@@ -437,7 +492,7 @@ public sealed class OverlayCoverageInventoryTests
         var biologyOverlay = File.ReadAllText(Path.Combine(
             root,
             Native("src/SrvSurvey.Desktop/BiologySurveyOverlayWindow.axaml")));
-        Assert.Contains("Width=\"200\"", biologyOverlay);
+        Assert.Contains("Width=\"240\"", biologyOverlay);
         Assert.Contains("Text=\"System biology\"", biologyOverlay);
         Assert.Contains("Padding=\"5\"", biologyOverlay);
         Assert.Contains("BorderThickness=\"0\"", biologyOverlay);

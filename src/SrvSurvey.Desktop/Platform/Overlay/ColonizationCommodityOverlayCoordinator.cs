@@ -118,7 +118,8 @@ public sealed class ColonizationCommodityOverlayCoordinator : IDisposable
         }
 
         gameWindow = gameWindowTracker.GetSnapshot();
-        var wantsWindow = manualShow || viewModel.ShouldAutoShow;
+        var wantsWindow = manualShow && viewModel.CanShowManually
+            || viewModel.ShouldAutoShow;
         if (isSuppressed
             || !wantsWindow
             || !platform.Capabilities.SupportsPassiveOverlay

@@ -15,6 +15,8 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     private int? scaleOverride;
     private double scaleRenderScaling = 1d;
     private double scaleFactor = 1d;
+    private readonly bool usesRuntimePresentation;
+    private Control? runtimePresentation;
 
     public OverlayPositionPreviewWindow()
     {
@@ -22,6 +24,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         Definition = OverlayLayoutCatalog.Supported[0];
         Preview = OverlayPositionPreviewViewModel.Create(Definition);
         DataContext = Preview;
+        usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
     }
 
@@ -31,6 +34,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         InitializeComponent();
         Preview = OverlayPositionPreviewViewModel.Create(definition);
         DataContext = Preview;
+        usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
         Title = $"{definition.DisplayName} position preview";
     }
@@ -38,6 +42,8 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     public OverlayLayoutDefinition Definition { get; }
 
     public OverlayPositionPreviewViewModel Preview { get; }
+
+    internal Control? RuntimePresentation => runtimePresentation;
 
     public event EventHandler<OverlayPreviewSettingsRequestedEventArgs>?
         SettingsRequested;
@@ -47,7 +53,42 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         var safeScaling = double.IsFinite(scaling) && scaling > 0
             ? scaling
             : 1;
-        return Preview.GetEstimatedPixelSize(safeScaling * scaleFactor);
+        if (!usesRuntimePresentation)
+        {
+            double unscaledHeight;
+            if (Preview.IsCompact)
+            {
+                unscaledHeight = Definition.PreviewSize.Height;
+            }
+            else if (Preview.IsRouteBio)
+            {
+                unscaledHeight = Preview.EstimatedHeight;
+            }
+            else
+            {
+                unscaledHeight = MeasurePreviewContentHeight();
+            }
+            var genericScale = safeScaling * scaleFactor;
+            return new PixelSize(
+                Math.Max(
+                    1,
+                    (int)Math.Ceiling(
+                        Preview.PreferredWidth * genericScale)),
+                Math.Max(
+                    1,
+                    (int)Math.Ceiling(unscaledHeight * genericScale)));
+        }
+
+        var effectiveScale = safeScaling * scaleFactor;
+        return new PixelSize(
+            Math.Max(
+                1,
+                (int)Math.Ceiling(
+                    Definition.PreviewSize.Width * effectiveScale)),
+            Math.Max(
+                1,
+                (int)Math.Ceiling(
+                    Definition.PreviewSize.Height * effectiveScale)));
     }
 
     public PixelSize GetCurrentPixelSize(double scaling)
@@ -96,9 +137,52 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
     private void ApplyContentSize()
     {
-        Width = Preview.PreferredWidth;
+        Width = usesRuntimePresentation
+            ? Definition.PreviewSize.Width
+            : Preview.PreferredWidth;
         MinWidth = Width;
         MaxWidth = Width;
+        if (usesRuntimePresentation || Preview.IsCompact)
+        {
+            Height = Definition.PreviewSize.Height;
+            MinHeight = Height;
+            MaxHeight = Height;
+            SizeToContent = SizeToContent.Manual;
+        }
+    }
+
+    private double MeasurePreviewContentHeight()
+    {
+        PreviewSurface.Measure(new Size(
+            Preview.PreferredWidth,
+            double.PositiveInfinity));
+        return Math.Max(1d, PreviewSurface.DesiredSize.Height);
+    }
+
+    internal void ApplyRuntimePresentationTheme()
+    {
+        if (usesRuntimePresentation)
+        {
+            OverlayThemeResources.ApplyLegacyPresentation(
+                this,
+                Definition.Name);
+        }
+    }
+
+    private bool TryUseRuntimePresentation()
+    {
+        if (!GuardianOverlayPresentationFactory.TryCreate(
+                Definition.Name,
+                out var presentation)
+            || presentation is null)
+        {
+            return false;
+        }
+
+        presentation.DataContext = GuardianOverlayViewModel.CreateEditorPreview();
+        runtimePresentation = presentation;
+        PreviewSurface.Child = presentation;
+        return true;
     }
 
     private void ApplyConfiguredScale()

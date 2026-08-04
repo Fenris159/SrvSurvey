@@ -2,13 +2,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:controls="using:SrvSurvey.Desktop.Controls"
+        xmlns:local="using:SrvSurvey.Desktop"
         xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
         x:Class="SrvSurvey.Desktop.GuardianOverlayWindow"
         x:DataType="vm:GuardianOverlayViewModel"
         mc:Ignorable="d"
-        d:DesignWidth="620"
-        d:DesignHeight="760"
+        d:DesignWidth="300"
+        d:DesignHeight="400"
         Width="{Binding Guardian.PreferredOverlayWidth}"
         Height="{Binding Guardian.PreferredOverlayHeight}"
         CanResize="False"
@@ -20,141 +20,8 @@
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
         Title="SrvSurvey Guardian overlay">
-  <Border Margin="8"
-          Padding="14"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenBorderBrush}"
-          BorderThickness="1"
-          CornerRadius="12"
-          Opacity="0.96">
-    <Grid RowDefinitions="Auto,*,Auto,Auto"
-          RowSpacing="12">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-        <StackPanel Spacing="3">
-          <TextBlock Classes="eyebrow" Text="GUARDIAN LIVE MAP" />
-          <TextBlock Classes="card-title"
-                     TextTrimming="CharacterEllipsis"
-                     Text="{Binding Guardian.ActiveMapTitle}" />
-          <TextBlock Classes="muted"
-                     FontSize="11"
-                     Text="{Binding Guardian.ActiveMapSummary}" />
-        </StackPanel>
-        <Border Grid.Column="1"
-                Classes="badge"
-                VerticalAlignment="Top">
-          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="10"
-                     FontWeight="SemiBold"
-                     Text="{Binding InputMode}" />
-        </Border>
-      </Grid>
-
-      <Grid Grid.Row="1">
-        <controls:GuardianSiteMapControl
-            Projection="{Binding Guardian.ActiveMapProjection}"
-            Proximity="{Binding Guardian.Proximity}"
-            MapScale="{Binding Guardian.ActiveMapScale}"
-            CommanderHeading="{Binding Guardian.ActiveMapRelativeHeading}"
-            TargetPointName="{Binding Guardian.TargetObeliskName}"
-            MapBackground="{DynamicResource RavenRaisedSurfaceBrush}"
-            GridBrush="{DynamicResource RavenBorderBrush}"
-            AccentBrush="{DynamicResource RavenAccentBrush}"
-            MutedBrush="{DynamicResource RavenMutedTextBrush}"
-            PresentBrush="{DynamicResource RavenSuccessBrush}"
-            AbsentBrush="{DynamicResource RavenDangerBrush}"
-            EmptyBrush="{DynamicResource RavenWarningBrush}" />
-        <controls:GuardianAlignmentControl
-            Margin="10"
-            Mode="{Binding Guardian.AlignmentMode}"
-            GuideBrush="{DynamicResource RavenWarningBrush}"
-            ShadowBrush="{DynamicResource RavenWindowBrush}"
-            Opacity="{Binding Guardian.AlignmentOpacity}"
-            IsVisible="{Binding Guardian.IsAlignmentVisible}" />
-        <Border Margin="18"
-                Padding="16"
-                Classes="card raised"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                IsVisible="{Binding Guardian.IsGlideApproach}">
-          <StackPanel MaxWidth="440" Spacing="6">
-            <TextBlock Classes="eyebrow"
-                       Text="{Binding Guardian.GlideApproachTitle}" />
-            <TextBlock FontSize="16"
-                       FontWeight="SemiBold"
-                       TextWrapping="Wrap"
-                       Text="{Binding Guardian.GlideApproachText}" />
-            <TextBlock Classes="muted"
-                       FontSize="11"
-                       TextWrapping="Wrap"
-                       Text="{Binding Guardian.GlideApproachFooter}" />
-          </StackPanel>
-        </Border>
-        <Border Margin="22"
-                Padding="18"
-                Classes="card raised"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                IsVisible="{Binding Guardian.HasLiveMapPrompt}">
-          <StackPanel MaxWidth="420" Spacing="8">
-            <TextBlock Classes="eyebrow"
-                       Text="{Binding Guardian.LiveMapPromptTitle}" />
-            <TextBlock TextWrapping="Wrap"
-                       Text="{Binding Guardian.LiveMapPromptText}" />
-            <TextBlock Classes="monospace"
-                       FontSize="11"
-                       IsVisible="{Binding Guardian.IsAlignmentVisible}"
-                       Text="{Binding Guardian.AlignmentStatusText}" />
-          </StackPanel>
-        </Border>
-      </Grid>
-
-      <Border Grid.Row="2" Classes="card raised">
-        <Grid ColumnDefinitions="3*,2*" ColumnSpacing="14">
-          <StackPanel Spacing="5">
-            <TextBlock Classes="eyebrow" Text="CURRENT OBELISK" />
-            <TextBlock FontSize="17"
-                       FontWeight="SemiBold"
-                       Text="{Binding Guardian.CurrentObeliskTitle}" />
-            <TextBlock Classes="muted"
-                       TextWrapping="Wrap"
-                       Text="{Binding Guardian.CurrentObeliskLogText}" />
-            <TextBlock Classes="monospace"
-                       FontSize="11"
-                       Text="{Binding Guardian.NearbyPointText}" />
-          </StackPanel>
-          <StackPanel Grid.Column="1" Spacing="5">
-            <TextBlock Classes="eyebrow"
-                       Text="{Binding Guardian.CurrentObeliskScanStatus}" />
-            <TextBlock TextWrapping="Wrap"
-                       Text="{Binding Guardian.CurrentObeliskRequirementsText}" />
-            <TextBlock Classes="muted"
-                       FontSize="11"
-                       TextWrapping="Wrap"
-                       Text="{Binding Guardian.CurrentObeliskMissionStatus}" />
-          </StackPanel>
-        </Grid>
-      </Border>
-
-      <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
-        <TextBlock Classes="muted"
-                   FontSize="9"
-                   TextTrimming="CharacterEllipsis"
-                   Text="{Binding PlatformStatus}" />
-        <TextBlock Grid.Column="1"
-                   Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="9"
-                   TextAlignment="Center"
-                   TextTrimming="CharacterEllipsis"
-                   Text="{Binding Guardian.BlinkGestureText}" />
-        <TextBlock Grid.Column="2"
-                   Classes="monospace"
-                   FontSize="10"
-                   Text="{Binding Guardian.ActiveMapScaleText}" />
-        <TextBlock Grid.Column="3"
-                   Classes="monospace"
-                   FontSize="10"
-                   Text="{Binding Guardian.TargetObeliskText}" />
-      </Grid>
-    </Grid>
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:GuardianSiteOverlayPresentation />
   </Border>
 </Window>

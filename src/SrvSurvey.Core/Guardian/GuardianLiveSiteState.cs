@@ -1,23 +1,38 @@
 using System.Globalization;
 using System.Text.Json;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Navigation;
 
 namespace SrvSurvey.Core.Guardian;
 
-public sealed class GuardianLiveSiteState(
-    GuardianSiteCatalog catalog,
-    TimeProvider? timeProvider = null)
+public sealed class GuardianLiveSiteState
 {
     private const string RuinsPrefix = "$Ancient:#index=";
     private const string StructurePrefix = "$Ancient_";
     private const string IndexMarker = ":#index=";
-    private readonly GuardianSiteCatalog catalog = catalog
-        ?? throw new ArgumentNullException(nameof(catalog));
-    private readonly TimeProvider timeProvider = timeProvider ?? TimeProvider.System;
+    private readonly TimeProvider timeProvider;
+    private GuardianSiteReference[] recoveryReferences;
     private string? systemName;
     private long? systemAddress;
+    private GuardianLiveSiteSnapshot? approachedSite;
+
+    public GuardianLiveSiteState(
+        GuardianSiteCatalog catalog,
+        TimeProvider? timeProvider = null)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        this.timeProvider = timeProvider ?? TimeProvider.System;
+        recoveryReferences = GetSurfaceSites(catalog.Sites);
+    }
 
     public GuardianLiveSiteSnapshot? CurrentSite { get; private set; }
+
+    public void SetRecoveryReferences(
+        IEnumerable<GuardianSiteReference> references)
+    {
+        ArgumentNullException.ThrowIfNull(references);
+        recoveryReferences = GetSurfaceSites(references);
+    }
 
     public bool Apply(JournalEventEnvelope journalEvent)
     {
@@ -32,8 +47,11 @@ public sealed class GuardianLiveSiteState(
 
             case "FSDJump":
             case "CarrierJump":
-            case "SupercruiseExit":
                 ApplyLocation(root, clearCurrentSite: true);
+                return true;
+
+            case "SupercruiseExit":
+                ApplyLocation(root, clearCurrentSite: false);
                 return true;
 
             case "ApproachSettlement":
@@ -44,19 +62,89 @@ public sealed class GuardianLiveSiteState(
             case "Died":
             case "Resurrect":
             case "Shutdown":
-                CurrentSite = null;
+                ClearSite();
                 return true;
 
             case "Music" when string.Equals(
                 GetString(root, "MusicTrack"),
                 "MainMenu",
                 StringComparison.Ordinal):
-                CurrentSite = null;
+                ClearSite();
                 return true;
 
             default:
                 return false;
         }
+    }
+
+    public bool SynchronizeProximity(EliteStatus status, bool retainDuringGlide)
+    {
+        ArgumentNullException.ThrowIfNull(status);
+        var previous = CurrentSite;
+        if (retainDuringGlide && approachedSite is not null)
+        {
+            CurrentSite = approachedSite;
+            return !Equals(previous, CurrentSite);
+        }
+
+        var radius = (double)status.PlanetRadius;
+        if (!status.HasLatitudeLongitude
+            || !double.IsFinite(radius)
+            || radius <= 0
+            || status.Altitude > 4_000)
+        {
+            CurrentSite = status.Altitude > 4_000 ? null : CurrentSite;
+            return !Equals(previous, CurrentSite);
+        }
+
+        var system = approachedSite?.SystemAddress ?? systemAddress;
+        var bodyName = status.BodyName ?? approachedSite?.BodyName;
+        if (system is null || string.IsNullOrWhiteSpace(bodyName))
+        {
+            return false;
+        }
+
+        var here = new SurfaceCoordinate(status.Latitude, status.Longitude);
+        var candidates = recoveryReferences
+            .Where(reference => reference.SystemAddress == system
+                && MatchesBody(reference, bodyName)
+                && reference.Latitude is not null
+                && reference.Longitude is not null)
+            .Select(CreateRecoveredSnapshot)
+            .ToList();
+        if (approachedSite is { Location: not null } approached
+            && approached.SystemAddress == system
+            && MatchesBody(approached, bodyName))
+        {
+            var recoveredIndex = candidates.FindIndex(candidate =>
+                IsSameSite(candidate, approached));
+            if (recoveredIndex >= 0)
+            {
+                candidates[recoveredIndex] = approached;
+            }
+            else
+            {
+                candidates.Add(approached);
+            }
+        }
+
+        var nearest = candidates
+            .Select(candidate => new
+            {
+                Site = candidate,
+                Distance = GetDistance(candidate, here, radius),
+            })
+            .Where(candidate => candidate.Distance is not null)
+            .OrderBy(candidate => candidate.Distance)
+            .Select(candidate => candidate.Site)
+            .FirstOrDefault();
+        if (nearest is not null)
+        {
+            approachedSite = nearest;
+        }
+
+        CurrentSite = nearest;
+        return !Equals(previous, CurrentSite);
     }
 
     public GuardianCommanderSiteSurvey CreateOrUpdateSurvey(
@@ -131,11 +219,11 @@ public sealed class GuardianLiveSiteState(
     {
         var nextAddress = GetInt64(root, "SystemAddress");
         if (clearCurrentSite
-            || (CurrentSite is not null
+            || (approachedSite is not null
                 && nextAddress is not null
-                && nextAddress != CurrentSite.SystemAddress))
+                && nextAddress != approachedSite.SystemAddress))
         {
-            CurrentSite = null;
+            ClearSite();
         }
 
         systemName = GetString(root, "StarSystem") ?? systemName;
@@ -148,7 +236,9 @@ public sealed class GuardianLiveSiteState(
         var name = GetString(root, "Name");
         if (!TryParseSiteIdentity(name, out var kind, out var index))
         {
-            return false;
+            var hadSite = approachedSite is not null;
+            ClearSite();
+            return hadSite;
         }
 
         var address = GetInt64(root, "SystemAddress");
@@ -183,7 +273,7 @@ public sealed class GuardianLiveSiteState(
             timestamp,
             reference);
 
-        if (CurrentSite is { } current && IsSameSite(current, next))
+        if (approachedSite is { } current && IsSameSite(current, next))
         {
             next = next with
             {
@@ -198,12 +288,19 @@ public sealed class GuardianLiveSiteState(
             };
         }
 
+        approachedSite = next;
         CurrentSite = next;
         systemAddress = address;
         systemName = string.IsNullOrWhiteSpace(next.SystemName)
             ? systemName
             : next.SystemName;
         return true;
+    }
+
+    private void ClearSite()
+    {
+        approachedSite = null;
+        CurrentSite = null;
     }
 
     private GuardianSiteReference? FindReference(
@@ -213,7 +310,8 @@ public sealed class GuardianLiveSiteState(
         GuardianSiteKind kind,
         int index)
     {
-        var candidates = catalog.FindBySystemAddress(address)
+        var candidates = recoveryReferences
+            .Where(reference => reference.SystemAddress == address)
             .Where(reference => reference.Kind == kind && reference.Index == index)
             .ToArray();
         return candidates.FirstOrDefault(reference => reference.BodyId == bodyId)
@@ -319,6 +417,105 @@ public sealed class GuardianLiveSiteState(
             && site.BodyId == survey.BodyId
             && site.Kind == kind
             && site.Index == survey.Index;
+    }
+
+    private GuardianLiveSiteSnapshot CreateRecoveredSnapshot(
+        GuardianSiteReference reference)
+    {
+        var observedAt = timeProvider.GetUtcNow();
+        return new GuardianLiveSiteSnapshot(
+            GetSettlementName(reference),
+            reference.Kind == GuardianSiteKind.Ruins
+                ? $"Ancient Ruins ({reference.Index})"
+                : $"Guardian Structure ({reference.Index})",
+            reference.Kind,
+            reference.Index,
+            reference.SiteType,
+            reference.SystemAddress,
+            reference.SystemName,
+            reference.BodyId,
+            reference.FullBodyName,
+            reference.Latitude is double latitude
+                && reference.Longitude is double longitude
+                    ? new GuardianSurfaceLocation(latitude, longitude)
+                    : null,
+            observedAt,
+            observedAt,
+            reference);
+    }
+
+    private static string GetSettlementName(GuardianSiteReference reference)
+    {
+        if (reference.Kind == GuardianSiteKind.Ruins)
+        {
+            return $"$Ancient:#index={reference.Index};";
+        }
+
+        var settlement = reference.SiteType.ToLowerInvariant() switch
+        {
+            "lacrosse" => "$Ancient_Tiny_001",
+            "crossroads" => "$Ancient_Tiny_002",
+            "fistbump" => "$Ancient_Tiny_003",
+            "hammerbot" => "$Ancient_Small_001",
+            "bear" => "$Ancient_Small_002",
+            "bowl" => "$Ancient_Small_003",
+            "turtle" => "$Ancient_Small_005",
+            "robolobster" => "$Ancient_Medium_001",
+            "squid" => "$Ancient_Medium_002",
+            "stickyhand" => "$Ancient_Medium_003",
+            _ => "$Ancient_Unknown",
+        };
+        return $"{settlement}:#index={reference.Index};";
+    }
+
+    private static double? GetDistance(
+        GuardianLiveSiteSnapshot site,
+        SurfaceCoordinate here,
+        double radius)
+    {
+        return site.Location is { } location
+            ? SurfaceNavigation.GetDistance(
+                here,
+                new SurfaceCoordinate(location.Latitude, location.Longitude),
+                radius)
+            : null;
+    }
+
+    private static bool MatchesBody(
+        GuardianSiteReference reference,
+        string bodyName)
+    {
+        return string.Equals(
+                reference.FullBodyName,
+                bodyName,
+                StringComparison.OrdinalIgnoreCase)
+            || string.Equals(
+                reference.BodyName,
+                RemoveSystemPrefix(bodyName, reference.SystemName),
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool MatchesBody(
+        GuardianLiveSiteSnapshot site,
+        string bodyName)
+    {
+        return string.Equals(
+                site.BodyName,
+                bodyName,
+                StringComparison.OrdinalIgnoreCase)
+            || string.Equals(
+                RemoveSystemPrefix(site.BodyName, site.SystemName),
+                RemoveSystemPrefix(bodyName, site.SystemName),
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static GuardianSiteReference[] GetSurfaceSites(
+        IEnumerable<GuardianSiteReference> references)
+    {
+        return references
+            .Where(reference => reference.Kind is GuardianSiteKind.Ruins
+                or GuardianSiteKind.Structure)
+            .ToArray();
     }
 
     private static bool IsUnknown(string? value)

@@ -24,6 +24,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private NavRouteSnapshot? navRoute;
     private FollowRouteDocument? followedRoute;
     private EliteStatus? status;
+    private string? musicTrack;
     private JumpTarget? fsdTarget;
     private JumpInfoRoutePlan? routePlan;
     private SystemSummary? summary;
@@ -140,15 +141,19 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                 return false;
             }
 
-            var flying = status is not null
-                && status.InMainShip
-                && !status.Docked
-                && !status.Landed;
-            var automatic = status?.FsdChargingJump == true && flying
+            var mode = OverlayGameModeResolver.Resolve(
+                status,
+                fsdJumping,
+                musicTrack);
+            var chargingForJump = status?.FsdChargingJump == true
+                && (mode == OverlayGameMode.Flying
+                    || mode == OverlayGameMode.SuperCruising);
+            var automatic = chargingForJump
                 || fsdJumping
                 || jumpVisibleUntil > DateTimeOffset.UtcNow
+                    && mode != OverlayGameMode.GalaxyMap
                 || ShowWhenNextHopSelected && IsSelectedFollowedRouteHop();
-            var forced = forceShow && status?.GuiFocus != GuiFocus.Fss;
+            var forced = forceShow && mode != OverlayGameMode.Fss;
             return automatic || forced;
         }
     }
@@ -326,6 +331,15 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     {
         foreach (var journalEvent in journalEvents)
         {
+            if (journalEvent.EventName == "Music")
+            {
+                musicTrack = GetString(journalEvent.Payload, "MusicTrack");
+            }
+            else if (journalEvent.EventName is "Fileheader" or "LoadGame")
+            {
+                musicTrack = null;
+            }
+
             if (journalEvent.EventName == "Loadout")
             {
                 maximumJumpRange = GetDouble(
@@ -569,20 +583,25 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private bool IsSelectedFollowedRouteHop()
     {
         if (status is null
-            || !status.Flags.HasFlag(StatusFlags.Supercruise)
             || followedRoute?.NextHop is not { } nextHop
             || status.Destination is not { } destination)
         {
             return false;
         }
 
-        return destination.System > 0
+        var mode = OverlayGameModeResolver.Resolve(
+            status,
+            fsdJumping,
+            musicTrack);
+        var isVisibleMode = mode == OverlayGameMode.SuperCruising;
+        var destinationMatches = destination.System > 0
                 && destination.System == nextHop.SystemAddress
             || !string.IsNullOrWhiteSpace(destination.Name)
                 && string.Equals(
                     destination.Name,
                     nextHop.Name,
                     StringComparison.OrdinalIgnoreCase);
+        return isVisibleMode && destinationMatches;
     }
 
     private void SavePreferences()

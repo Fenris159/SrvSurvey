@@ -159,7 +159,16 @@ public sealed class OverlayWindowRegistryTests
     public void CatalogExplicitlyLimitsGalaxyMapPanels()
     {
         Assert.Equal(
-            ["PlotGalMap", "PlotJumpInfo", "PlotSphericalSearch"],
+            [
+                "PlotBodyInfo",
+                "PlotBuildCommodities",
+                "PlotFSSInfo",
+                "PlotFloatie",
+                "PlotGalMap",
+                "PlotJumpInfo",
+                "PlotSphericalSearch",
+                "PlotStationInfo",
+            ],
             OverlayLayoutCatalog.Supported
                 .Where(definition => definition.ShowInGalaxyMap)
                 .Select(definition => definition.Name)

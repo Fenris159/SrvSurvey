@@ -60,6 +60,10 @@
     <AvaloniaResource Include="Assets\Routes\**\*.png" />
     <AvaloniaResource Include="Assets\Bodies\**\*.png" />
     <AvaloniaResource Include="Assets\GuardianMaps\*-background.png" />
+    <AvaloniaResource Include="Assets\GuardianGuidance\*.png" />
+    <AvaloniaResource Include="Assets\Fonts\**\*.ttf" />
+    <Content Include="Assets\Fonts\**\OFL.txt"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

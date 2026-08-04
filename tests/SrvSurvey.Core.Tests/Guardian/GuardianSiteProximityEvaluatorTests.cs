@@ -90,7 +90,7 @@ public sealed class GuardianSiteProximityEvaluatorTests
             0,
             template,
             activeObelisks: [obelisk]);
-        var tooFar = new GuardianSiteProximityEvaluator().Evaluate(
+        var outsideObeliskRange = new GuardianSiteProximityEvaluator().Evaluate(
             StatusAt(Bearing.South, 10, inSrv: true),
             SiteLocation,
             0,
@@ -104,8 +104,27 @@ public sealed class GuardianSiteProximityEvaluatorTests
 
         Assert.Equal("p1", nearArtifact?.NearestPoint?.Point.Name);
         Assert.Null(nearArtifact?.CurrentObelisk);
-        Assert.True(tooFar?.NearestPoint?.Distance > 25);
-        Assert.Null(tooFar?.CurrentObelisk);
+        Assert.True(outsideObeliskRange?.NearestPoint?.Distance > 25);
+        Assert.Null(outsideObeliskRange?.CurrentObelisk);
+    }
+
+    [Fact]
+    public void DoesNotExposeMappedPointsBeyondLegacySeventyFiveMeterRange()
+    {
+        var result = new GuardianSiteProximityEvaluator().Evaluate(
+            StatusAt(Bearing.South, 100, inSrv: true),
+            SiteLocation,
+            0,
+            Template(new GuardianPointOfInterest(
+                "p1",
+                GuardianPoiType.Orb,
+                180,
+                10,
+                0)));
+
+        Assert.NotNull(result);
+        Assert.Null(result.NearestPoint);
+        Assert.Null(result.CurrentObelisk);
     }
 
     [Fact]

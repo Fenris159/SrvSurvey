@@ -81,7 +81,8 @@ public sealed class SystemSurveySettingsStoreTests : IDisposable
                 5,
                 new FssPixelColor(6, 7, 8, 9),
                 new FssPixelColor(10, 11, 12, 13),
-                new FssPixelColor(14, 15, 16, 17)));
+                new FssPixelColor(14, 15, 16, 17)),
+            SuppressForActiveBuildProjects: true);
 
         store.Save(expected);
 

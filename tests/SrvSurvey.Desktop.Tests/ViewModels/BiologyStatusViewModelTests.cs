@@ -118,7 +118,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         ],
         new EliteStatus
         {
-            Flags = StatusFlags.InMainShip,
+            Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
             BodyName = "Test 2",
         },
         new ExobiologySnapshot(null, staleScan, null, 0, [], 0));
@@ -236,7 +236,7 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         ],
         new EliteStatus
         {
-            Flags = StatusFlags.InMainShip,
+            Flags = StatusFlags.InMainShip | StatusFlags.HasLatLong,
             BodyName = "Test 1",
         });
 

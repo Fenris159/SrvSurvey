@@ -44,7 +44,6 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private string? loadedCanonnSiteKey;
     private string? loadedMaterialSiteKey;
     private bool activeBuildProjects;
-    private bool stationInfoVisible;
     private bool autoZoom = true;
     private bool isHuge;
     private double zoom;
@@ -296,7 +295,6 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         && ActiveSite is not null
         && status?.HasLatitudeLongitude == true
         && IsStatusEligible(status)
-        && !stationInfoVisible
         && !(SuppressForActiveBuildProjects && activeBuildProjects);
 
     public bool AutoShow
@@ -632,15 +630,6 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         if (activeBuildProjects != value)
         {
             activeBuildProjects = value;
-            OnPropertyChanged(nameof(ShouldShow));
-        }
-    }
-
-    public void SetStationInfoVisible(bool value)
-    {
-        if (stationInfoVisible != value)
-        {
-            stationInfoVisible = value;
             OnPropertyChanged(nameof(ShouldShow));
         }
     }
@@ -1422,28 +1411,12 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     private static bool IsStatusEligible(EliteStatus currentStatus)
     {
-        if (currentStatus.GuiFocus is GuiFocus.ExternalPanel or GuiFocus.RolePanel)
-        {
-            return true;
-        }
-
-        if (currentStatus.GuiFocus != GuiFocus.NoFocus)
-        {
-            return false;
-        }
-
-        var flying = currentStatus.InMainShip
-            && !currentStatus.Docked
-            && !currentStatus.Landed
-            && !currentStatus.Flags.HasFlag(StatusFlags.Supercruise)
-            && !currentStatus.GlideMode;
-        return currentStatus.OnFoot
-            || currentStatus.InSrv
-            || currentStatus.InTaxi
-            || currentStatus.Docked
-            || currentStatus.Landed
-            || currentStatus.GlideMode
-            || flying;
+        var mode = OverlayGameModeResolver.Resolve(currentStatus);
+        // Legacy deliberately kept a recognized settlement alive across panel
+        // and scanner transitions. Galaxy Map remains the port-wide exception:
+        // unrelated overlays are hidden there by design.
+        return mode is not OverlayGameMode.Offline
+            and not OverlayGameMode.GalaxyMap;
     }
 
     private void SetZoomPreference(

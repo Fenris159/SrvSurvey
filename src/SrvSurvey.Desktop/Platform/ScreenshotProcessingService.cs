@@ -1,6 +1,9 @@
 using System.Globalization;
 using System.Text;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using SkiaSharp;
+using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Desktop.Configuration;
 
@@ -13,19 +16,42 @@ public interface IScreenshotProcessingService
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
         CancellationToken cancellationToken = default,
-        ScreenshotGuardianContext? guardianContext = null);
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
+            guardianContexts = null,
+        ScreenshotNavigationContext? navigationContext = null);
 }
 
 public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 {
     private readonly SemaphoreSlim processingLock = new(1, 1);
+    private readonly Func<int?> primaryWorkingAreaWidthProvider;
+
+    public ScreenshotProcessingService(
+        Func<int?>? primaryWorkingAreaWidthProvider = null)
+    {
+        this.primaryWorkingAreaWidthProvider = primaryWorkingAreaWidthProvider
+            ?? GetPrimaryWorkingAreaWidth;
+    }
+
+    public static string GetSystemFolderPath(
+        string targetFolder,
+        string systemName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(targetFolder);
+        ArgumentException.ThrowIfNullOrWhiteSpace(systemName);
+        return Path.Combine(
+            Path.GetFullPath(targetFolder),
+            SafeFileName(systemName));
+    }
 
     public async Task<ScreenshotProcessingResult> ProcessAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
         CancellationToken cancellationToken = default,
-        ScreenshotGuardianContext? guardianContext = null)
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
+            guardianContexts = null,
+        ScreenshotNavigationContext? navigationContext = null)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         ArgumentNullException.ThrowIfNull(preferences);
@@ -49,7 +75,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                 screenshots,
                 preferences,
                 commanderName,
-                guardianContext,
+                guardianContexts,
+                navigationContext,
                 cancellationToken).ConfigureAwait(false);
         }
         finally
@@ -58,11 +85,13 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         }
     }
 
-    private static async Task<ScreenshotProcessingResult> ProcessCoreAsync(
+    private async Task<ScreenshotProcessingResult> ProcessCoreAsync(
         IReadOnlyList<JournalEventEnvelope> screenshots,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        ScreenshotGuardianContext? guardianContext,
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
+            guardianContexts,
+        ScreenshotNavigationContext? navigationContext,
         CancellationToken cancellationToken)
     {
         var conversions = new List<ScreenshotConversion>();
@@ -97,13 +126,17 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
+                var guardianContext = guardianContexts?.GetValueOrDefault(entry);
                 var conversion = await ConvertAsync(
-                    entry,
-                    preferences,
-                    commanderName,
-                    guardianContext,
-                    sourceDirectory,
-                    targetDirectory,
+                    new ScreenshotConversionRequest(
+                        entry,
+                        preferences,
+                        commanderName,
+                        guardianContext,
+                        navigationContext,
+                        primaryWorkingAreaWidthProvider(),
+                        sourceDirectory,
+                        targetDirectory),
                     cancellationToken).ConfigureAwait(false);
                 conversions.Add(conversion);
                 if (conversion.Warning is not null)
@@ -127,16 +160,24 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         return new ScreenshotProcessingResult(conversions, warnings);
     }
 
+    private readonly record struct ScreenshotConversionRequest(
+        JournalEventEnvelope Entry,
+        ScreenshotProcessingPreferences Preferences,
+        string? CommanderName,
+        ScreenshotGuardianContext? GuardianContext,
+        ScreenshotNavigationContext? NavigationContext,
+        int? PrimaryWorkingAreaWidth,
+        string SourceDirectory,
+        string TargetDirectory);
+
     private static async Task<ScreenshotConversion> ConvertAsync(
-        JournalEventEnvelope entry,
-        ScreenshotProcessingPreferences preferences,
-        string? commanderName,
-        ScreenshotGuardianContext? guardianContext,
-        string sourceDirectory,
-        string targetDirectory,
+        ScreenshotConversionRequest request,
         CancellationToken cancellationToken)
     {
-        var sourcePath = ResolveSourcePath(entry, sourceDirectory);
+        var entry = request.Entry;
+        var preferences = request.Preferences;
+        var guardianContext = request.GuardianContext;
+        var sourcePath = ResolveSourcePath(entry, request.SourceDirectory);
         await WaitForCompletedFileAsync(sourcePath, cancellationToken)
             .ConfigureAwait(false);
 
@@ -148,16 +189,24 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                 $"'{sourcePath}' could not be copied for conversion.");
         if (preferences.AddBanner)
         {
-            DrawBanner(output, entry, preferences, commanderName);
+            DrawBanner(
+                output,
+                entry,
+                preferences,
+                request.CommanderName,
+                guardianContext,
+                request.NavigationContext);
         }
 
         var systemName = GetString(entry, "System") ?? "unknown";
         var bodyName = GetString(entry, "Body") ?? "unknown";
         var timestamp = entry.Timestamp ?? DateTimeOffset.UtcNow;
-        var folder = Path.Combine(targetDirectory, SafeFileName(systemName));
+        var folder = GetSystemFolderPath(request.TargetDirectory, systemName);
         Directory.CreateDirectory(folder);
         var baseName = SafeFileName(
-            $"{bodyName} ({timestamp.UtcDateTime:yyyy-MM-dd HHmmss})");
+            $"{bodyName} ({timestamp.UtcDateTime:yyyy-MM-dd HHmmss})"
+            + GetGuardianFileSuffix(guardianContext)
+            + GetHighResolutionSuffix(entry, request.PrimaryWorkingAreaWidth));
         var outputPath = GetAvailablePath(folder, baseName, ".png");
         WritePngAtomically(output, outputPath);
 
@@ -171,9 +220,15 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                     source,
                     guardianContext!.SiteType,
                     preferences.RotateAlphaAerial);
-                DrawBanner(aerial, entry, preferences, commanderName);
+                DrawBanner(
+                    aerial,
+                    entry,
+                    preferences,
+                    request.CommanderName,
+                    guardianContext,
+                    request.NavigationContext);
                 var aerialFolder = Path.Combine(
-                    targetDirectory,
+                    request.TargetDirectory,
                     SafeFileName("Aerial " + guardianContext.SiteType));
                 Directory.CreateDirectory(aerialFolder);
                 aerialOutputPath = GetAvailablePath(
@@ -266,6 +321,31 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             && !string.IsNullOrWhiteSpace(context.SiteType)
             && context.DistanceFromOrigin is >= 0 and < 50
             && context.Altitude is > 500 and < 2000;
+    }
+
+    private static string GetGuardianFileSuffix(
+        ScreenshotGuardianContext? context)
+    {
+        if (context is null || string.IsNullOrWhiteSpace(context.SiteType))
+        {
+            return string.Empty;
+        }
+
+        return context.SiteKind == GuardianSiteKind.Ruins
+            ? $", Ruins{context.SiteIndex} {context.SiteType}"
+            : $", {context.SiteType}";
+    }
+
+    private static string GetHighResolutionSuffix(
+        JournalEventEnvelope entry,
+        int? primaryWorkingAreaWidth)
+    {
+        return primaryWorkingAreaWidth is > 0
+            && entry.Payload.TryGetProperty("Width", out var width)
+            && width.TryGetInt32(out var screenshotWidth)
+            && screenshotWidth > primaryWorkingAreaWidth
+                ? " (HighRes)"
+                : string.Empty;
     }
 
     private static SKBitmap CreateAerialBitmap(
@@ -372,11 +452,26 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             lastError);
     }
 
+    private static string ResolveGuardianBannerSiteName(
+        ScreenshotGuardianContext guardianContext)
+    {
+        if (!string.IsNullOrWhiteSpace(guardianContext.SiteName))
+        {
+            return guardianContext.SiteName;
+        }
+
+        return guardianContext.SiteKind == GuardianSiteKind.Ruins
+            ? $"Ancient Ruins ({guardianContext.SiteIndex})"
+            : $"Guardian Structure ({guardianContext.SiteIndex})";
+    }
+
     private static void DrawBanner(
         SKBitmap bitmap,
         JournalEventEnvelope entry,
         ScreenshotProcessingPreferences preferences,
-        string? commanderName)
+        string? commanderName,
+        ScreenshotGuardianContext? guardianContext,
+        ScreenshotNavigationContext? navigationContext)
     {
         using var canvas = new SKCanvas(bitmap);
         using var typeface = SKTypeface.Default;
@@ -404,7 +499,12 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             $"System: {system}",
             $"Cmdr: {commanderName ?? "unknown"} - {displayedTime}",
         };
-        var location = CreateLocationLine(entry);
+        if (guardianContext is not null)
+        {
+            var siteName = ResolveGuardianBannerSiteName(guardianContext);
+            details.Add($"{siteName} - {guardianContext.SiteType}");
+        }
+        var location = CreateLocationLine(entry, navigationContext);
         if (location is not null)
         {
             details.Add(location);
@@ -438,12 +538,26 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         }
     }
 
-    private static string? CreateLocationLine(JournalEventEnvelope entry)
+    internal static string? CreateLocationLine(
+        JournalEventEnvelope entry,
+        ScreenshotNavigationContext? navigationContext)
     {
+        if (entry.Timestamp is not { } timestamp
+            || navigationContext is not { HasLatitudeLongitude: true } status)
+        {
+            return null;
+        }
+
+        var age = status.ObservedAt - timestamp;
+        if (age < TimeSpan.Zero || age >= TimeSpan.FromSeconds(10))
+        {
+            return null;
+        }
+
         var values = new List<string>();
-        AddNumber(values, entry, "Latitude", "Lat", "°", 6);
-        AddNumber(values, entry, "Longitude", "Long", "°", 6);
-        AddNumber(values, entry, "Heading", "Heading", "°", 0);
+        AddNumber(values, entry, "Latitude", "Lat", "°", 6, status.Latitude);
+        AddNumber(values, entry, "Longitude", "Long", "°", 6, status.Longitude);
+        AddNumber(values, entry, "Heading", "Heading", "°", 0, status.Heading);
         AddNumber(values, entry, "Altitude", "Altitude", "m", 0);
         return values.Count == 0 ? null : string.Join("  ", values);
     }
@@ -454,18 +568,32 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         string propertyName,
         string label,
         string suffix,
-        int decimals)
+        int decimals,
+        double? fallback = null)
     {
-        if (!entry.Payload.TryGetProperty(propertyName, out var property)
-            || property.ValueKind != System.Text.Json.JsonValueKind.Number
-            || !property.TryGetDouble(out var number)
-            || !double.IsFinite(number))
+        var number = fallback;
+        if (entry.Payload.TryGetProperty(propertyName, out var property)
+            && property.ValueKind == System.Text.Json.JsonValueKind.Number
+            && property.TryGetDouble(out var eventNumber)
+            && double.IsFinite(eventNumber))
+        {
+            number = eventNumber;
+        }
+        if (number is not { } value || !double.IsFinite(value))
         {
             return;
         }
 
         values.Add(
-            $"{label}: {number.ToString($"F{decimals}", CultureInfo.InvariantCulture)}{suffix}");
+            $"{label}: {value.ToString($"F{decimals}", CultureInfo.InvariantCulture)}{suffix}");
+    }
+
+    private static int? GetPrimaryWorkingAreaWidth()
+    {
+        return Application.Current?.ApplicationLifetime
+                is IClassicDesktopStyleApplicationLifetime { MainWindow: { } window }
+            ? window.Screens.Primary?.WorkingArea.Width
+            : null;
     }
 
     private static SKColor ParseColor(string value)
@@ -537,5 +665,15 @@ public sealed record ScreenshotConversion(
 
 public sealed record ScreenshotGuardianContext(
     string SiteType,
-    double DistanceFromOrigin,
-    double Altitude);
+    double? DistanceFromOrigin,
+    double? Altitude,
+    GuardianSiteKind SiteKind = GuardianSiteKind.Structure,
+    int SiteIndex = 1,
+    string? SiteName = null);
+
+public sealed record ScreenshotNavigationContext(
+    DateTimeOffset ObservedAt,
+    double Latitude,
+    double Longitude,
+    int Heading,
+    bool HasLatitudeLongitude);

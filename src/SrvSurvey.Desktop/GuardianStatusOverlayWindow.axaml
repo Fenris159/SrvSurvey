@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:SrvSurvey.Desktop"
+        xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
+        x:Class="SrvSurvey.Desktop.GuardianStatusOverlayWindow"
+        x:DataType="vm:GuardianOverlayViewModel"
+        mc:Ignorable="d"
+        d:DesignWidth="380"
+        d:DesignHeight="150"
+        Width="380"
+        MinHeight="108"
+        MaxHeight="320"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowActivated="False"
+        ShowInTaskbar="False"
+        WindowDecorations="None"
+        Topmost="True"
+        Background="Transparent"
+        TransparencyBackgroundFallback="Transparent"
+        TransparencyLevelHint="Transparent"
+        Title="SrvSurvey Guardian status overlay">
+  <Border Background="Transparent"
+          BorderThickness="0">
+    <local:GuardianStatusOverlayPresentation />
+  </Border>
+</Window>

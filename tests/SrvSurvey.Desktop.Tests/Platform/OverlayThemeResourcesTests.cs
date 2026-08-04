@@ -6,6 +6,7 @@ using Avalonia.Media;
 using Avalonia.Styling;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Platform.Overlay;
+using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.Platform;
 
@@ -29,6 +30,7 @@ public sealed class OverlayThemeResourcesTests
             ["PlotGalMap"] = "GalaxyMap.AutoShow",
             ["PlotGrounded"] = "SystemSurvey.AutoShowSurfaceRadar",
             ["PlotGuardians"] = "Guardian.EnableGuardianSites",
+            ["PlotGuardianStatus"] = "Guardian.EnableGuardianSites",
             ["PlotGuardianSystem"] = "Guardian.AutoShowGuardianSummary",
             ["PlotHumanSite"] = "HumanSite.AutoShow",
             ["PlotJumpInfo"] = "JumpInfo.AutoShow",
@@ -94,11 +96,110 @@ public sealed class OverlayThemeResourcesTests
         OverlayThemeResources.RefreshAll();
 
         Assert.Equal(ThemeVariant.Dark, window.RequestedThemeVariant);
+        Assert.Contains(
+            OverlayThemeResources.OverlayTypographyClass,
+            window.Classes);
         Assert.Equal(new Thickness(0), surface.Margin);
         Assert.Equal(new Thickness(5), surface.Padding);
         Assert.Null(surface.BorderBrush);
         Assert.Equal(new Thickness(0), surface.BorderThickness);
         Assert.Equal(1d, surface.Opacity);
+    }
+
+    [AvaloniaFact]
+    public void EveryOverlayUsesBundledPrimaryAndCompactTypography()
+    {
+        var primary = new TextBlock { Text = "Primary" };
+        var eyebrow = new TextBlock { Text = "Eyebrow", Classes = { "eyebrow" } };
+        var muted = new TextBlock { Text = "Muted", Classes = { "muted" } };
+        var compact = new TextBlock { Text = "Compact", Classes = { "monospace" } };
+        var compactBySize = new TextBlock { Text = "Compact by size", FontSize = 9 };
+        var guardianPrimary = new TextBlock
+        {
+            Text = "Guardian primary",
+            Classes = { "guardian-legacy-middle" },
+        };
+        var guardianCompact = new TextBlock
+        {
+            Text = "Guardian compact",
+            Classes = { "guardian-legacy-small" },
+        };
+        var window = new Window
+        {
+            Content = new StackPanel
+            {
+                Children =
+                {
+                    primary,
+                    eyebrow,
+                    muted,
+                    compact,
+                    compactBySize,
+                    guardianPrimary,
+                    guardianCompact,
+                },
+            },
+        };
+
+        OverlayThemeResources.Apply(window);
+        window.Show();
+
+        Assert.Contains("Oxanium", window.FontFamily.Name);
+        Assert.Contains("Oxanium", primary.FontFamily.Name);
+        Assert.Contains("Oxanium", guardianPrimary.FontFamily.Name);
+        Assert.Contains("Rajdhani", eyebrow.FontFamily.Name);
+        Assert.Contains("Rajdhani", muted.FontFamily.Name);
+        Assert.Contains("Rajdhani", compact.FontFamily.Name);
+        Assert.Contains("Rajdhani", compactBySize.FontFamily.Name);
+        Assert.Contains("Rajdhani", guardianCompact.FontFamily.Name);
+
+        window.Close();
+    }
+
+    [Fact]
+    public void OverlayFontFilesAndLicensesArePackaged()
+    {
+        var root = FindRepositoryRoot();
+        var project = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "SrvSurvey.Desktop.csproj"));
+
+        Assert.Contains("Assets\\Fonts\\**\\*.ttf", project);
+        Assert.Contains("Assets\\Fonts\\**\\OFL.txt", project);
+        Assert.True(new FileInfo(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Assets",
+            "Fonts",
+            "Oxanium",
+            "Oxanium-Variable.ttf")).Length > 0);
+        Assert.True(new FileInfo(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Assets",
+            "Fonts",
+            "Rajdhani",
+            "Rajdhani-Regular.ttf")).Length > 0);
+        Assert.True(File.Exists(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Assets",
+            "Fonts",
+            "Oxanium",
+            "OFL.txt")));
+        Assert.True(File.Exists(Path.Combine(
+            root,
+            "src",
+            "SrvSurvey.Desktop",
+            "Assets",
+            "Fonts",
+            "Rajdhani",
+            "OFL.txt")));
     }
 
     [AvaloniaFact]
@@ -224,6 +325,104 @@ public sealed class OverlayThemeResourcesTests
         Assert.Equal(0.42, surface.Opacity);
     }
 
+    [AvaloniaFact]
+    public void GuardianEditorPreviewsUseTheLivePresentationControls()
+    {
+        var viewModel = GuardianOverlayViewModel.CreateEditorPreview();
+        (string PlotterName, Type PresentationType, Window LiveWindow)[] cases =
+        [
+            (
+                "PlotGuardians",
+                typeof(GuardianSiteOverlayPresentation),
+                new GuardianOverlayWindow(viewModel)),
+            (
+                "PlotGuardianStatus",
+                typeof(GuardianStatusOverlayPresentation),
+                new GuardianStatusOverlayWindow(viewModel)),
+            (
+                "PlotGuardianSystem",
+                typeof(GuardianSystemOverlayPresentation),
+                new GuardianSystemOverlayWindow(viewModel)),
+            (
+                "PlotRamTah",
+                typeof(RamTahOverlayPresentation),
+                new RamTahOverlayWindow(viewModel)),
+        ];
+
+        foreach (var testCase in cases)
+        {
+            var definition = OverlayLayoutCatalog.GetRequired(
+                testCase.PlotterName);
+            var preview = new OverlayPositionPreviewWindow(definition);
+            var liveSurface = Assert.IsType<Border>(
+                testCase.LiveWindow.Content);
+
+            Assert.Equal(
+                testCase.PresentationType,
+                Assert.IsType<Control>(liveSurface.Child, exactMatch: false)
+                    .GetType());
+            Assert.Equal(
+                testCase.PresentationType,
+                Assert.IsType<Control>(
+                    preview.RuntimePresentation,
+                    exactMatch: false).GetType());
+            Assert.IsType<GuardianOverlayViewModel>(
+                preview.RuntimePresentation?.DataContext);
+        }
+    }
+
+    [Fact]
+    public void GuardianEditorPreviewsUseCompactContentDrivenFormFactors()
+    {
+        var expected = new Dictionary<string, PixelSize>(StringComparer.Ordinal)
+        {
+            ["PlotGuardians"] = new PixelSize(300, 400),
+            ["PlotGuardianStatus"] = new PixelSize(380, 108),
+            ["PlotGuardianSystem"] = new PixelSize(220, 96),
+            ["PlotRamTah"] = new PixelSize(240, 224),
+        };
+
+        Assert.All(expected, pair => Assert.Equal(
+            pair.Value,
+            OverlayLayoutCatalog.GetRequired(pair.Key).PreviewSize));
+    }
+
+    [AvaloniaFact]
+    public void DedicatedGuardianPresentationBypassesGenericHeaderAndCardNormalization()
+    {
+        var definition = OverlayLayoutCatalog.GetRequired("PlotGuardianSystem");
+        var presentation = new GuardianSystemOverlayPresentation
+        {
+            DataContext = GuardianOverlayViewModel.CreateEditorPreview(),
+        };
+        var surface = new Border
+        {
+            Padding = new Thickness(14),
+            CornerRadius = new CornerRadius(12),
+            Child = presentation,
+        };
+        var window = new Window
+        {
+            Width = definition.PreviewSize.Width,
+            Content = surface,
+        };
+        var layout = new LegacyOverlayLayout(
+            new Dictionary<string, LegacyOverlayPlacement>(
+                StringComparer.Ordinal),
+            defaultOpacity: null,
+            error: null);
+
+        OverlayThemeResources.Apply(window, layout, definition.Name);
+
+        var scaled = Assert.IsType<LayoutTransformControl>(window.Content);
+        Assert.Same(surface, scaled.Child);
+        Assert.Same(presentation, surface.Child);
+        Assert.Equal(new Thickness(0), surface.Padding);
+        Assert.Equal(new CornerRadius(0), surface.CornerRadius);
+        Assert.Null(surface.BorderBrush);
+        Assert.Equal(new Thickness(0), surface.BorderThickness);
+    }
+
     [Fact]
     public void RuntimeWindowUsesTheSameLegacyWidthAsItsEditorPreview()
     {
@@ -239,12 +438,29 @@ public sealed class OverlayThemeResourcesTests
     [Fact]
     public void EveryRuntimeOverlayUsesItsEditorCatalogWidth()
     {
-        Assert.Equal(28, OverlayLayoutCatalog.Supported.Count);
+        Assert.Equal(29, OverlayLayoutCatalog.Supported.Count);
         Assert.All(OverlayLayoutCatalog.Supported, definition =>
             Assert.Equal(
                 definition.PreviewSize.Width,
                 OverlayThemeResources.GetLegacyFormFactorWidth(
-                    definition.Name)));
+                definition.Name)));
+    }
+
+    [Fact]
+    public void ContentDrivenLegacyPanelsRetainTheirWidestSampleRows()
+    {
+        var expected = new Dictionary<string, double>(StringComparer.Ordinal)
+        {
+            ["PlotBioSystem"] = 240,
+            ["PlotBuildCommodities"] = 440,
+            ["PlotMassacre"] = 240,
+            ["PlotQuestMini"] = 240,
+            ["PlotStationInfo"] = 240,
+        };
+
+        Assert.All(expected, pair => Assert.Equal(
+            pair.Value,
+            OverlayThemeResources.GetLegacyFormFactorWidth(pair.Key)));
     }
 
     [Fact]
@@ -355,5 +571,22 @@ public sealed class OverlayThemeResourcesTests
             emptyReplacement);
         Assert.Same(emptyReplacement, emptySurface.Child);
         Assert.Empty(emptyReplacement.Children);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "SrvSurvey.slnx")))
+            {
+                return current.FullName;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException(
+            "Could not locate the repository root.");
     }
 }

@@ -83,7 +83,9 @@ public sealed record BiologySurveyViewModel(
         BiologyRewardThresholds? rewardThresholds = null,
         BiologyPredictionEvaluator? predictionEvaluator = null,
         ExobiologyReferenceCatalog? referenceCatalog = null,
-        IReadOnlySet<int>? canonnBiologyBodyIds = null)
+        IReadOnlySet<int>? canonnBiologyBodyIds = null,
+        bool allowRetainedCurrentBody = true,
+        bool forceSystemOverview = false)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
@@ -100,7 +102,9 @@ public sealed record BiologySurveyViewModel(
             snapshot,
             status,
             biologicalBodies,
-            drawBodyBiosOnlyWhenNear);
+            drawBodyBiosOnlyWhenNear,
+            allowRetainedCurrentBody,
+            forceSystemOverview);
         return body is null
             ? CreateSystem(
                 snapshot,
@@ -719,9 +723,12 @@ public sealed record BiologySurveyViewModel(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
         IReadOnlyList<SystemScanBodySnapshot> biologicalBodies,
-        bool drawBodyBiosOnlyWhenNear)
+        bool drawBodyBiosOnlyWhenNear,
+        bool allowRetainedCurrentBody,
+        bool forceSystemOverview)
     {
-        if (status?.GuiFocus is GuiFocus.ExternalPanel
+        if (forceSystemOverview
+            || status?.GuiFocus is GuiFocus.ExternalPanel
             or GuiFocus.SystemMap
             or GuiFocus.Orrery)
         {
@@ -736,7 +743,9 @@ public sealed record BiologySurveyViewModel(
                 : null;
         }
 
-        var current = ResolveCurrentBody(snapshot, status);
+        var current = allowRetainedCurrentBody
+            ? ResolveCurrentBody(snapshot, status)
+            : null;
         var destination = status?.Destination is { } target
             && target.System == snapshot.SystemAddress
                 ? biologicalBodies.FirstOrDefault(body =>

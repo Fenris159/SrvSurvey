@@ -145,8 +145,15 @@ internal static class OverlayPreviewSimulationProjector
                 "Guardian ruins live map",
                 "OBELISK B04 | RELIC + CASKET REQUIRED",
                 Row("Survey", "18 / 27 points", 67),
-                Row("Nearest", "Pylon P3 | 84 m", glyph: "►", glyphTone: OverlayPreviewGlyphTone.Information),
+                Row("Nearest", "Pylon P3 | 64 m", glyph: "►", glyphTone: OverlayPreviewGlyphTone.Information),
                 Row("Obelisk", "B04 | Technology 06", glyph: "◆", glyphTone: OverlayPreviewGlyphTone.Gold),
+                Row("Artifacts", "Relic 2 | Casket 1 | Orb 0"),
+                Row("Mission", "12 / 28 logs", 43)),
+            "PlotGuardianStatus" => Content(
+                "Guardian point B04",
+                "Technology 06 | active obelisk",
+                "RELIC + CASKET REQUIRED",
+                Row("Nearest", "B04 | 18 m"),
                 Row("Artifacts", "Relic 2 | Casket 1 | Orb 0"),
                 Row("Mission", "12 / 28 logs", 43)),
             "PlotGuardianSystem" => Content(
