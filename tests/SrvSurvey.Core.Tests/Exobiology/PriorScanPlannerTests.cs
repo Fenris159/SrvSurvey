@@ -82,6 +82,39 @@ public sealed class PriorScanPlannerTests
                 SubClass: "Brain Tree",
                 Platform: "legacy")));
         Assert.Equal(
+            "Anemone - Luteolum",
+            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
+                2100401,
+                "$Codex_Ent_Sphere_Name;",
+                "$Codex_Ent_Sphere_Name;",
+                "Luteolum Anemone",
+                1_000_000,
+                HudCategory: "Biology",
+                SubClass: "Anemone",
+                Platform: "horizons")));
+        Assert.Equal(
+            "Brain Tree",
+            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
+                2100299,
+                "$Codex_Ent_Seed_Name;",
+                "$Codex_Ent_Seed_Name;",
+                null,
+                1_000_000,
+                HudCategory: "Biology",
+                SubClass: "Brain Tree",
+                Platform: "legacy"),
+                signalDisplayName: null));
+        Assert.Equal(
+            "Aleoida",
+            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
+                2100300,
+                "$Codex_Ent_Aleoids_Name;",
+                "$Codex_Ent_Aleoids_Name;",
+                "Aleoida",
+                1_000_000,
+                HudCategory: "Biology",
+                Platform: "legacy")));
+        Assert.Equal(
             "Radicoida - Unica",
             PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
                 2460101,
@@ -101,6 +134,43 @@ public sealed class PriorScanPlannerTests
                 7_252_500,
                 HudCategory: "Biology",
                 Platform: "odyssey")));
+        Assert.Equal(
+            "$Codex_Ent_Aleoids_01_Name;",
+            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
+                2310199,
+                "$Codex_Ent_Aleoids_01_B_Name;",
+                "$Codex_Ent_Aleoids_01_Name;",
+                null,
+                1,
+                HudCategory: "Biology",
+                Platform: "odyssey")));
+    }
+
+    [Fact]
+    public void CreatePlanUsesFormattedDisplayNamesForSpeciesRows()
+    {
+        var legacyPlanner = new PriorScanPlanner(new ExobiologyReferenceCatalog(
+        [
+            new ExobiologyReference(
+                2100201,
+                "$Codex_Ent_Seed_Name;",
+                "$Codex_Ent_Seed_Name;",
+                "Roseum Brain Tree",
+                1_593_700,
+                HudCategory: "Biology",
+                SubClass: "Brain Tree",
+                Platform: "legacy"),
+        ]));
+        var plan = legacyPlanner.CreatePlan(Request(
+        [
+            new CanonnSurfaceBiologySignal(
+                "A 1",
+                "Roseum Brain Tree",
+                2100201,
+                new SurfaceCoordinate(0, 0.01),
+                false),
+        ]));
+        Assert.Equal("Brain Tree - Roseum", Assert.Single(plan.Species).DisplayName);
     }
 
     [Fact]

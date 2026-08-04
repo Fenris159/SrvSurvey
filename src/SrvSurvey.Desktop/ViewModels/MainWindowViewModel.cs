@@ -3038,10 +3038,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     public async Task ClearSurfaceTrackersAsync()
     {
-        var cleared = await SurfaceSurvey.ClearAllTrackersAsync();
-        ExobiologyStatusMessage = cleared
-            ? SurfaceSurvey.StatusText
-            : SurfaceSurvey.StatusText;
+        await SurfaceSurvey.ClearAllTrackersAsync(
+            firstFootfallInferenceCancellation.Token);
+        ExobiologyStatusMessage = SurfaceSurvey.StatusText;
         clearSurfaceTrackersCommand.RaiseCanExecuteChanged();
     }
 

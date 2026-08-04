@@ -145,6 +145,14 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
         }
 
         var trimmed = displayName.Trim();
+        if (string.Equals(
+                trimmed,
+                genusDisplayName,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
         if (trimmed.EndsWith(genusDisplayName, StringComparison.OrdinalIgnoreCase)
             && trimmed.Length > genusDisplayName.Length)
         {

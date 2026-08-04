@@ -145,6 +145,37 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.Equal(12, BiologyStatusViewModel.GetSampleScaleBarWidth(10), 3);
         Assert.Equal(37.5, BiologyStatusViewModel.GetSampleScaleBarWidth(150), 3);
         Assert.Equal(220, BiologyStatusViewModel.GetSampleScaleBarWidth(5_000), 3);
+        Assert.Equal(0, BiologyStatusViewModel.GetSampleScaleBarWidth(0));
+        Assert.Equal(0, BiologyStatusViewModel.GetSampleScaleBarWidth(double.NaN));
+    }
+
+    [Fact]
+    public void CodexImageIndicatorTracksNotificationImageAvailability()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+            Parse(BodyScan),
+            Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
+        ],
+        new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            Latitude = 0,
+            Longitude = 0,
+            PlanetRadius = 6_000_000,
+        },
+        ExobiologySnapshot.Empty);
+
+        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        Assert.NotNull(status.CodexNotification);
+        Assert.True(status.ShowCodexImageIndicator);
+        Assert.Equal(status.CodexNotification!.HasImage, status.HasCodexImage);
+        Assert.False(status.IsStaleActiveSample);
+        Assert.False(status.HasActiveSample);
     }
 
     [Fact]

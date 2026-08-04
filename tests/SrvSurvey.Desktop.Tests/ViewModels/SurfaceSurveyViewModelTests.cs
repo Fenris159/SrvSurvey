@@ -40,6 +40,18 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         var reloaded = await store.LoadBodyAsync(BodyContext());
         Assert.NotNull(reloaded.Snapshot);
         Assert.Empty(reloaded.Snapshot.Bookmarks);
+
+        // Second clear on empty bookmarks remains successful and idempotent.
+        Assert.True(await viewModel.ClearAllTrackersAsync());
+        Assert.Empty(viewModel.TrackerGroups);
+    }
+
+    [Fact]
+    public async Task ClearAllTrackersRequiresBodyContext()
+    {
+        var (viewModel, _, _) = CreateViewModel();
+        Assert.False(await viewModel.ClearAllTrackersAsync());
+        Assert.Contains("required", viewModel.StatusText, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
