@@ -75,6 +75,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly AsyncCommand resetExobiologyCommand;
     private readonly AsyncCommand cancelResetExobiologyCommand;
     private readonly AsyncCommand clearSurfaceTrackersCommand;
+    private readonly AsyncCommand toggleFirstFootfallCommand;
     private bool isBusy;
     private bool isImportingProfile;
     private string statusMessage;
@@ -103,6 +104,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private string activeOrganicSpecies = Unavailable;
     private string organicSampleRange = Unavailable;
     private string bioFirstFootfall = "Unknown";
+    private bool isCurrentBodyFirstFootfall;
+    private bool canToggleCurrentBodyFirstFootfall;
+    private bool isOrganicSample1Complete;
+    private bool isOrganicSample2Complete;
     private string exobiologyStatusMessage = "Waiting for commander profile.";
     private string commanderCodexStatusMessage =
         "Waiting for Commander Codex journal entries.";
@@ -708,6 +713,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             ClearSurfaceTrackersAsync,
             () => activeProfileFrontierId is not null);
         ClearSurfaceTrackersCommand = clearSurfaceTrackersCommand;
+        toggleFirstFootfallCommand = new AsyncCommand(
+            async () =>
+            {
+                await ToggleCurrentBodyFirstFootfallAsync();
+            },
+            () => CanToggleCurrentBodyFirstFootfall);
+        ToggleFirstFootfallCommand = toggleFirstFootfallCommand;
 
         NavigationItems =
         [
@@ -1339,6 +1351,42 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         private set => SetField(ref bioFirstFootfall, value);
     }
 
+    /// <summary>
+    /// Current-body first-footfall state for the Exobiology workspace checkbox
+    /// (legacy Main <c>checkFirstFootFall</c>).
+    /// </summary>
+    public bool IsCurrentBodyFirstFootfall
+    {
+        get => isCurrentBodyFirstFootfall;
+        private set => SetField(ref isCurrentBodyFirstFootfall, value);
+    }
+
+    public bool CanToggleCurrentBodyFirstFootfall
+    {
+        get => canToggleCurrentBodyFirstFootfall;
+        private set
+        {
+            if (SetField(ref canToggleCurrentBodyFirstFootfall, value))
+            {
+                toggleFirstFootfallCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsOrganicSample1Complete
+    {
+        get => isOrganicSample1Complete;
+        private set => SetField(ref isOrganicSample1Complete, value);
+    }
+
+    public bool IsOrganicSample2Complete
+    {
+        get => isOrganicSample2Complete;
+        private set => SetField(ref isOrganicSample2Complete, value);
+    }
+
+    public bool HasActiveOrganicSample => IsOrganicSample1Complete;
+
     public string ExobiologyStatusMessage
     {
         get => exobiologyStatusMessage;
@@ -1356,6 +1404,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public ICommand CancelResetExobiologyCommand { get; }
 
     public ICommand ClearSurfaceTrackersCommand { get; }
+
+    public ICommand ToggleFirstFootfallCommand { get; }
 
     public bool IsResetExobiologyPending
     {
@@ -2707,6 +2757,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             false => "Not first footfall",
             null => "Unknown for current body",
         };
+        IsCurrentBodyFirstFootfall =
+            exobiologyState.CurrentBodyFirstFootfall == true;
+        CanToggleCurrentBodyFirstFootfall =
+            exobiologyState.CurrentBodySystemAddress is not null
+            && exobiologyState.CurrentBodyId is not null
+            && SystemSurvey.Snapshot.SystemAddress
+                == exobiologyState.CurrentBodySystemAddress;
+        IsOrganicSample1Complete = snapshot.ScanOne is not null;
+        IsOrganicSample2Complete = snapshot.ScanTwo is not null;
+        OnPropertyChanged(nameof(HasActiveOrganicSample));
     }
 
     private static bool IsExobiologyContextEvent(string eventName)

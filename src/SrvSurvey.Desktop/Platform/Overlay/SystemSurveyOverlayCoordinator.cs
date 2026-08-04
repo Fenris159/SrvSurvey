@@ -535,6 +535,16 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         {
             SynchronizeWindows();
         }
+
+        // Mirror legacy PlotGrounded.drawPriorScans: Canonn rings on surface radar.
+        if (eventArgs.PropertyName is nameof(
+                PriorScansOverlayViewModel.SurfaceMarkers)
+            or nameof(PriorScansOverlayViewModel.RadarTargets)
+            or nameof(PriorScansOverlayViewModel.Species))
+        {
+            surfaceSurvey.SetPriorScanSurfaceMarkers(
+                priorScansViewModel.SurfaceMarkers);
+        }
     }
 
     private void OnSurfaceSurveyPropertyChanged(

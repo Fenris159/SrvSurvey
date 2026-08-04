@@ -47,6 +47,10 @@
               <TextBlock Classes="muted"
                          TextWrapping="Wrap"
                          Text="{Binding BioFirstFootfall}" />
+              <CheckBox IsEnabled="{Binding CanToggleCurrentBodyFirstFootfall}"
+                        IsChecked="{Binding IsCurrentBodyFirstFootfall, Mode=OneWay}"
+                        Command="{Binding ToggleFirstFootfallCommand}"
+                        Content="First footfall on this body (×5 rewards)" />
             </StackPanel>
           </Grid>
         </Grid>
@@ -85,6 +89,17 @@
                              HorizontalAlignment="Center"
                              FontSize="11"
                              Text="SAMPLE" />
+                  <TextBlock HorizontalAlignment="Center"
+                             FontSize="10"
+                             FontWeight="SemiBold"
+                             IsVisible="{Binding IsOrganicSample1Complete}"
+                             Foreground="{DynamicResource RavenSuccessBrush}"
+                             Text="DONE" />
+                  <TextBlock Classes="muted"
+                             HorizontalAlignment="Center"
+                             FontSize="10"
+                             IsVisible="{Binding !IsOrganicSample1Complete}"
+                             Text="NEXT" />
                 </StackPanel>
               </Border>
               <Border Grid.Column="1" Classes="card" Padding="12">
@@ -97,6 +112,17 @@
                              HorizontalAlignment="Center"
                              FontSize="11"
                              Text="SAMPLE" />
+                  <TextBlock HorizontalAlignment="Center"
+                             FontSize="10"
+                             FontWeight="SemiBold"
+                             IsVisible="{Binding IsOrganicSample2Complete}"
+                             Foreground="{DynamicResource RavenSuccessBrush}"
+                             Text="DONE" />
+                  <TextBlock Classes="muted"
+                             HorizontalAlignment="Center"
+                             FontSize="10"
+                             IsVisible="{Binding !IsOrganicSample2Complete}"
+                             Text="—" />
                 </StackPanel>
               </Border>
               <Border Grid.Column="2" Classes="card" Padding="12">
@@ -109,6 +135,17 @@
                              HorizontalAlignment="Center"
                              FontSize="11"
                              Text="ANALYSE" />
+                  <TextBlock HorizontalAlignment="Center"
+                             FontSize="10"
+                             FontWeight="SemiBold"
+                             IsVisible="{Binding IsOrganicSample2Complete}"
+                             Foreground="{DynamicResource RavenWarningBrush}"
+                             Text="READY" />
+                  <TextBlock Classes="muted"
+                             HorizontalAlignment="Center"
+                             FontSize="10"
+                             IsVisible="{Binding !IsOrganicSample2Complete}"
+                             Text="—" />
                 </StackPanel>
               </Border>
             </Grid>
@@ -175,7 +212,7 @@
           <TextBlock Classes="card-title" Text="Compatibility" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="Rewards, first-footfall multipliers, sale removal, death rollback, active samples, exact predictions, the biology browser, and Codex Bingo use the WinForms contracts. Prior-scan tools remain a separate reviewable surface." />
+                     Text="Rewards, first-footfall multipliers, sale removal, death rollback, active samples, exact predictions, the biology browser, Codex Bingo, prior-scan guidance, and surface radar trackers use the WinForms contracts. Canonn prior rings draw on the surface radar when that setting is enabled." />
         </StackPanel>
       </Border>
     </StackPanel>

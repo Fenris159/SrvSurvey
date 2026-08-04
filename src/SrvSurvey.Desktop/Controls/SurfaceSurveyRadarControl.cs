@@ -242,6 +242,15 @@ public sealed class SurfaceSurveyRadarControl : Control
                     : accent,
             SurfaceRadarMarkerKind.ActiveSample =>
                 marker.IsInsideRadius ? warning : success,
+            // Legacy PlotGrounded prior-scan rings: active cyan, close green.
+            SurfaceRadarMarkerKind.CanonnPrior => !marker.IsActive
+                ? muted
+                : string.Equals(
+                    marker.Status,
+                    "Close",
+                    StringComparison.OrdinalIgnoreCase)
+                    ? success
+                    : accent,
             _ => accent,
         };
     }
@@ -253,6 +262,7 @@ public sealed class SurfaceSurveyRadarControl : Control
             SurfaceRadarMarkerKind.Ship => WarningBrush ?? Brushes.Gold,
             SurfaceRadarMarkerKind.FormerShip => MutedBrush ?? Brushes.Gray,
             SurfaceRadarMarkerKind.Srv => SuccessBrush ?? Brushes.LimeGreen,
+            SurfaceRadarMarkerKind.CanonnPrior => GetCircleBrush(marker),
             _ => GetCircleBrush(marker),
         };
     }

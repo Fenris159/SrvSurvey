@@ -21,6 +21,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     private IReadOnlyList<SurfaceRadarMarkerViewModel> navigationMarkers = [];
     private IReadOnlyList<SurfaceTrackerGroupViewModel> trackerGroups = [];
     private IReadOnlyList<SurfaceTrackerGroupViewModel> quickTrackerGroups = [];
+    private IReadOnlyList<PriorScanSurfaceMarkerViewModel> priorScanSurfaceMarkers = [];
     private string statusText = "Waiting for surface survey context.";
     private double? customRadarScale;
     private bool disposed;
@@ -168,6 +169,19 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(RadarScale));
         OnPropertyChanged(nameof(RadarScaleText));
         return true;
+    }
+
+    /// <summary>
+    /// Applies Canonn prior-scan coordinates for PlotGrounded radar rings
+    /// (legacy <c>drawPriorScans</c> when showCanonnSignalsOnRadar is enabled).
+    /// </summary>
+    public void SetPriorScanSurfaceMarkers(
+        IReadOnlyList<PriorScanSurfaceMarkerViewModel>? markers)
+    {
+        priorScanSurfaceMarkers = markers is { Count: > 0 }
+            ? markers.ToArray()
+            : [];
+        Recalculate();
     }
 
     public async Task<bool> ClearAllTrackersAsync(
@@ -549,6 +563,25 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                 status));
         }
 
+        if (survey.ShowCanonnSignalsOnRadar
+            && survey.UseExternalData
+            && survey.AutoShowPriorScans
+            && priorScanSurfaceMarkers.Count > 0)
+        {
+            foreach (var prior in priorScanSurfaceMarkers)
+            {
+                markers.Add(CreateMarker(
+                    prior.DisplayName,
+                    prior.Location,
+                    prior.SampleRadiusMeters,
+                    SurfaceRadarMarkerKind.CanonnPrior,
+                    prior.IsClose ? "Close" : "Prior",
+                    current,
+                    status,
+                    prior.IsActive));
+            }
+        }
+
         RadarMarkers = markers
             .OrderBy(marker => marker.Kind)
             .ThenBy(marker => marker.DistanceMeters)
@@ -744,6 +777,10 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             or nameof(SystemSurveyViewModel.SurfaceRadarSize)
             or nameof(SystemSurveyViewModel.AutoHideSurfaceRadarWithoutLandingGear)
             or nameof(SystemSurveyViewModel.ShouldSuppressForActiveBuildProjects)
+            or nameof(SystemSurveyViewModel.ShowCanonnSignalsOnRadar)
+            or nameof(SystemSurveyViewModel.UseExternalData)
+            or nameof(SystemSurveyViewModel.AutoShowPriorScans)
+            or nameof(SystemSurveyViewModel.UseSmallCanonnRadarCircles)
             or nameof(SystemSurveyViewModel.Snapshot)
             or nameof(SystemSurveyViewModel.CurrentStatus)
             or nameof(SystemSurveyViewModel.CurrentExobiology))
@@ -866,6 +903,8 @@ public sealed record SurfaceRadarMarkerViewModel(
 
     public bool IsActiveSample => Kind == SurfaceRadarMarkerKind.ActiveSample;
 
+    public bool IsCanonnPrior => Kind == SurfaceRadarMarkerKind.CanonnPrior;
+
     public bool IsVehicle => Kind is SurfaceRadarMarkerKind.Ship
         or SurfaceRadarMarkerKind.FormerShip
         or SurfaceRadarMarkerKind.Srv;
@@ -884,6 +923,7 @@ public enum SurfaceRadarMarkerKind
     HistoricalScan,
     Bookmark,
     ActiveSample,
+    CanonnPrior,
     Ship,
     FormerShip,
     Srv,

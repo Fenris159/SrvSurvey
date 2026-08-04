@@ -307,6 +307,52 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task PriorScanMarkersDrawOnSurfaceRadarWhenEnabled()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        await store.AppendBioScansAsync(
+            BodyContext(),
+            [new SurfaceBioScan(
+                new SurfaceCoordinate(0, 1),
+                150,
+                Genus,
+                "$Codex_Ent_Aleoids_01_Name;",
+                "Complete",
+                2310101,
+                "Test System 1")]);
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        survey.UseExternalData = true;
+        survey.AutoShowPriorScans = true;
+        survey.ShowCanonnSignalsOnRadar = true;
+        viewModel.SetPriorScanSurfaceMarkers(
+        [
+            new PriorScanSurfaceMarkerViewModel(
+                "Aleoida Arcus - Green",
+                new SurfaceCoordinate(0, 4),
+                150,
+                IsActive: true,
+                IsClose: true),
+        ]);
+
+        Assert.Contains(
+            viewModel.RadarMarkers,
+            marker => marker.IsCanonnPrior
+                && marker.Name == "Aleoida Arcus - Green"
+                && marker.Status == "Close");
+
+        survey.ShowCanonnSignalsOnRadar = false;
+        Assert.DoesNotContain(
+            viewModel.RadarMarkers,
+            marker => marker.IsCanonnPrior);
+    }
+
+    [Fact]
     public async Task QuickTrackerChordTogglesCurrentSurfaceLocation()
     {
         var (viewModel, survey, _) = CreateViewModel();
