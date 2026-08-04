@@ -68,6 +68,42 @@ public sealed class PriorScanPlannerTests
     }
 
     [Fact]
+    public void FormatDisplayNameMatchesLegacyHorizonsRadicoidaAndOdysseyRules()
+    {
+        Assert.Equal(
+            "Brain Tree - Roseum",
+            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
+                2100201,
+                "$Codex_Ent_Seed_Name;",
+                "$Codex_Ent_Seed_Name;",
+                "Roseum Brain Tree",
+                1_593_700,
+                HudCategory: "Biology",
+                SubClass: "Brain Tree",
+                Platform: "legacy")));
+        Assert.Equal(
+            "Radicoida - Unica",
+            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
+                2460101,
+                "$Codex_Ent_Ingensradices_Unicus_Name;",
+                "$Codex_Ent_Ingensradices_Unicus_Name;",
+                "Radicoida Unica",
+                19_000_000,
+                HudCategory: "Biology",
+                Platform: "odyssey")));
+        Assert.Equal(
+            "Aleoida Arcus - Green",
+            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
+                2310102,
+                "$Codex_Ent_Aleoids_01_B_Name;",
+                "$Codex_Ent_Aleoids_01_Name;",
+                "Aleoida Arcus - Green",
+                7_252_500,
+                HudCategory: "Biology",
+                Platform: "odyssey")));
+    }
+
+    [Fact]
     public void CreatePlanAppliesValueAnalyzedAndPersonalSampleFilters()
     {
         var signals = new[]

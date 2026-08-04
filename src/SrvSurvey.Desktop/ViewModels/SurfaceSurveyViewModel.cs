@@ -170,6 +170,48 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         return true;
     }
 
+    public async Task<bool> ClearAllTrackersAsync(
+        CancellationToken cancellationToken = default)
+    {
+        await updateLock.WaitAsync(cancellationToken).ConfigureAwait(true);
+        try
+        {
+            if (disposed || context is null)
+            {
+                StatusText = "A scanned body is required before trackers can be cleared.";
+                return false;
+            }
+
+            try
+            {
+                await store.ClearBookmarksAsync(context, cancellationToken)
+                    .ConfigureAwait(true);
+                var loadResult = await store.LoadBodyAsync(
+                        context,
+                        cancellationToken)
+                    .ConfigureAwait(true);
+                surface = loadResult.Snapshot;
+                StatusText = "All surface trackers for the current body were cleared.";
+                Recalculate();
+                return true;
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or InvalidDataException
+                    or InvalidOperationException)
+            {
+                StatusText = "Surface trackers could not be cleared: "
+                    + exception.Message;
+                return false;
+            }
+        }
+        finally
+        {
+            updateLock.Release();
+        }
+    }
+
     public async Task<bool> ToggleQuickTrackerAsync(
         int number,
         CancellationToken cancellationToken = default)

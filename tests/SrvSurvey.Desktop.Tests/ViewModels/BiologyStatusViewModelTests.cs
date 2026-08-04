@@ -96,6 +96,55 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.Equal(45.28, active.RemainingDistanceMeters!.Value, 2);
         Assert.Equal("36.26 M CR · FF bonus", active.RewardText);
         Assert.False(active.IsSeparationReady);
+        Assert.Equal(37.5, active.SampleScaleBarWidth, 1);
+        Assert.Equal("150 m", active.SampleScaleLabel);
+        Assert.Equal("0%", status.CompletionPercentText);
+    }
+
+    [Fact]
+    public void StaleActiveSampleWarnsAndKeepsGenusSummary()
+    {
+        var viewModel = CreateViewModel();
+        var scanOne = new BioSampleSnapshot(
+            new SurfaceLocation(0, 0),
+            150,
+            "$Codex_Ent_Aleoids_Genus_Name;",
+            "$Codex_Ent_Aleoids_01_Name;",
+            "Active",
+            2310101,
+            "Other Body");
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+            Parse(BodyScan),
+            Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+        ],
+        new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            Latitude = 0,
+            Longitude = 0,
+            PlanetRadius = 6_000_000,
+        },
+        new ExobiologySnapshot(null, scanOne, null, 0, [], 0));
+
+        var status = Assert.IsType<BiologyStatusViewModel>(
+            viewModel.BiologyStatus);
+        Assert.True(status.IsStaleActiveSample);
+        Assert.Null(status.ActiveSample);
+        Assert.True(status.HasWarning);
+        Assert.Contains("incomplete", status.Warning, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Other Body", status.Warning, StringComparison.Ordinal);
+        Assert.Contains(status.Signals, signal => signal.Name == "Aleoida");
+    }
+
+    [Fact]
+    public void SampleScaleBarMatchesLegacyQuarterRangeClamp()
+    {
+        Assert.Equal(12, BiologyStatusViewModel.GetSampleScaleBarWidth(10), 3);
+        Assert.Equal(37.5, BiologyStatusViewModel.GetSampleScaleBarWidth(150), 3);
+        Assert.Equal(220, BiologyStatusViewModel.GetSampleScaleBarWidth(5_000), 3);
     }
 
     [Fact]

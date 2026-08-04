@@ -74,6 +74,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly AsyncCommand cancelResetExplorationCommand;
     private readonly AsyncCommand resetExobiologyCommand;
     private readonly AsyncCommand cancelResetExobiologyCommand;
+    private readonly AsyncCommand clearSurfaceTrackersCommand;
     private bool isBusy;
     private bool isImportingProfile;
     private string statusMessage;
@@ -703,6 +704,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             CancelResetExobiologyAsync,
             () => IsResetExobiologyPending);
         CancelResetExobiologyCommand = cancelResetExobiologyCommand;
+        clearSurfaceTrackersCommand = new AsyncCommand(
+            ClearSurfaceTrackersAsync,
+            () => activeProfileFrontierId is not null);
+        ClearSurfaceTrackersCommand = clearSurfaceTrackersCommand;
 
         NavigationItems =
         [
@@ -1349,6 +1354,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public ICommand ResetExobiologyCommand { get; }
 
     public ICommand CancelResetExobiologyCommand { get; }
+
+    public ICommand ClearSurfaceTrackersCommand { get; }
 
     public bool IsResetExobiologyPending
     {
@@ -3027,6 +3034,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         UpdateExobiologyDisplay(snapshot);
         IsResetExobiologyPending = false;
         await SaveExobiologyAsync(snapshot);
+    }
+
+    public async Task ClearSurfaceTrackersAsync()
+    {
+        var cleared = await SurfaceSurvey.ClearAllTrackersAsync();
+        ExobiologyStatusMessage = cleared
+            ? SurfaceSurvey.StatusText
+            : SurfaceSurvey.StatusText;
+        clearSurfaceTrackersCommand.RaiseCanExecuteChanged();
     }
 
     public async Task<bool> ToggleCurrentBodyFirstFootfallAsync()

@@ -15,6 +15,34 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         $"SrvSurvey-surface-survey-vm-tests-{Guid.NewGuid():N}");
 
     [Fact]
+    public async Task ClearAllTrackersRemovesBodyBookmarks()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            Genus,
+            new SurfaceCoordinate(0, 2));
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            "#1",
+            new SurfaceCoordinate(0, 3));
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+        Assert.Equal(2, viewModel.TrackerGroups.Count);
+
+        Assert.True(await viewModel.ClearAllTrackersAsync());
+        Assert.Empty(viewModel.TrackerGroups);
+        Assert.Contains("cleared", viewModel.StatusText, StringComparison.OrdinalIgnoreCase);
+        var reloaded = await store.LoadBodyAsync(BodyContext());
+        Assert.NotNull(reloaded.Snapshot);
+        Assert.Empty(reloaded.Snapshot.Bookmarks);
+    }
+
+    [Fact]
     public async Task LoadsHistoryTrackersActiveSamplesAndShipMarker()
     {
         var (viewModel, survey, store) = CreateViewModel();

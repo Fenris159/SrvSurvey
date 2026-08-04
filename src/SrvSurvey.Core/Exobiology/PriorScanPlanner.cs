@@ -76,9 +76,9 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
             targets,
             request.BodyRadiusMeters,
             request.HighlightDistanceMeters);
-        var displayName = reference.DisplayName
-            ?? first.Signal.DisplayName
-            ?? reference.SpeciesName;
+        var displayName = FormatDisplayName(
+            reference,
+            first.Signal.DisplayName);
         var active = string.IsNullOrWhiteSpace(request.ActiveSpeciesName)
             || string.Equals(
                 request.ActiveSpeciesName,
@@ -92,6 +92,69 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
             analyzed,
             active,
             targets);
+    }
+
+    /// <summary>
+    /// Matches legacy PlotPriorScans naming: Horizons rows use
+    /// "Genus - Color", Radicoida Unica uses "Radicoida - Unica", and
+    /// Odyssey biology keeps the catalog display name.
+    /// </summary>
+    public static string FormatDisplayName(
+        ExobiologyReference reference,
+        string? signalDisplayName = null)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        if (reference.EntryId == 2460101)
+        {
+            return "Radicoida - Unica";
+        }
+
+        var displayName = reference.DisplayName
+            ?? signalDisplayName;
+        var isLegacyPlatform = string.Equals(
+                reference.Platform,
+                "legacy",
+                StringComparison.OrdinalIgnoreCase)
+            || string.Equals(
+                reference.Platform,
+                "horizons",
+                StringComparison.OrdinalIgnoreCase);
+        if (isLegacyPlatform)
+        {
+            var genus = !string.IsNullOrWhiteSpace(reference.SubClass)
+                ? reference.SubClass.Trim()
+                : ExobiologyReferenceCatalog.GetGenusDisplayName(
+                    ExobiologyReferenceCatalog.GetGenusName(
+                        reference.SpeciesName));
+            var color = ExtractHorizonsColorName(displayName, genus);
+            return string.IsNullOrWhiteSpace(color)
+                ? genus
+                : $"{genus} - {color}";
+        }
+
+        return displayName ?? reference.SpeciesName;
+    }
+
+    private static string? ExtractHorizonsColorName(
+        string? displayName,
+        string genusDisplayName)
+    {
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            return null;
+        }
+
+        var trimmed = displayName.Trim();
+        if (trimmed.EndsWith(genusDisplayName, StringComparison.OrdinalIgnoreCase)
+            && trimmed.Length > genusDisplayName.Length)
+        {
+            return trimmed[..^genusDisplayName.Length].Trim(' ', '-');
+        }
+
+        var separator = trimmed.IndexOf(' ');
+        return separator > 0
+            ? trimmed[..separator]
+            : trimmed;
     }
 
     private static PriorScanTarget CreateTarget(

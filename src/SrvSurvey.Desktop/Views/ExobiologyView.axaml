@@ -130,6 +130,10 @@
                     IsVisible="{Binding IsResetExobiologyPending}"
                     Command="{Binding CancelResetExobiologyCommand}"
                     Content="Cancel" />
+            <Button Classes="secondary"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding ClearSurfaceTrackersCommand}"
+                    Content="Clear surface trackers" />
           </StackPanel>
         </Border>
       </Grid>

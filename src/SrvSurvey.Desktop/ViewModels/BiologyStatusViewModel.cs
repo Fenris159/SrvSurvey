@@ -16,7 +16,10 @@ public sealed record BiologyStatusViewModel(
     bool RequiresDss,
     string Warning,
     string Footer,
-    BiologyTemperatureRangeViewModel? TemperatureRange)
+    BiologyTemperatureRangeViewModel? TemperatureRange,
+    bool HasCodexImageIndicator = false,
+    bool HasCodexImage = false,
+    bool IsStaleActiveSample = false)
 {
     private static readonly Lazy<BiologyPredictionEvaluator>
         DefaultPredictionEvaluator = new(() => new BiologyPredictionEvaluator(
@@ -36,8 +39,14 @@ public sealed record BiologyStatusViewModel(
 
     public bool HasTemperatureRange => TemperatureRange is not null;
 
+    public bool ShowCodexImageIndicator => HasCodexImageIndicator
+        && !HasTemperatureRange
+        && ActiveSample is null;
+
     public string ProgressText =>
         $"{AnalyzedSignalCount:N0} of {SignalCount:N0} analyzed";
+
+    public string CompletionPercentText => $"{CompletionPercent:N0}%";
 
     public double CompletionPercent => SignalCount <= 0
         ? 0
@@ -99,9 +108,10 @@ public sealed record BiologyStatusViewModel(
                 exobiology,
                 status)
             : null;
-        var warning = !activeScanIsLocal && activeScan is not null
+        var isStaleActiveSample = !activeScanIsLocal && activeScan is not null;
+        var warning = isStaleActiveSample
             ? "Incomplete "
-                + FormatJournalName(activeScan.Genus)
+                + FormatJournalName(activeScan!.Genus)
                 + " samples remain on "
                 + (activeScan.Body ?? "another body")
                 + "."
@@ -112,7 +122,7 @@ public sealed record BiologyStatusViewModel(
             options.CodexNotification?.BodyId == body.BodyId
                 ? options.CodexNotification
                 : null;
-        var footer = activeSample is not null || !string.IsNullOrEmpty(warning)
+        var footer = activeSample is not null || isStaleActiveSample
             ? string.Empty
             : allAnalyzed && body.IsFirstFootfall
                 ? "All signals analyzed with the first-footfall bonus applied."
@@ -145,7 +155,10 @@ public sealed record BiologyStatusViewModel(
                     status,
                     options.PredictionEvaluator
                         ?? DefaultPredictionEvaluator.Value)
-                : null);
+                : null,
+            HasCodexImageIndicator: currentNotification is not null,
+            HasCodexImage: currentNotification?.HasImage == true,
+            IsStaleActiveSample: isStaleActiveSample);
     }
 
     private static BiologyTemperatureRangeViewModel CreateTemperatureRange(
@@ -256,6 +269,18 @@ public sealed record BiologyStatusViewModel(
             remainingDistance,
             reward,
             body.IsFirstFootfall);
+    }
+
+    // Legacy PlotBioStatus draws the sample-range bar at 0.25 of the
+    // organism range, clamped for the 480px overlay width.
+    public static double GetSampleScaleBarWidth(double requiredDistanceMeters)
+    {
+        if (!double.IsFinite(requiredDistanceMeters) || requiredDistanceMeters <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Clamp(requiredDistanceMeters * 0.25d, 12, 220);
     }
 
     private static double? CalculateNearestDistance(
@@ -393,7 +418,12 @@ public sealed record BiologyActiveSampleViewModel(
         : string.Empty;
 
     public string RequiredDistanceText =>
-        $"{RequiredDistanceMeters:N0} m sample separation";
+        $"{RequiredDistanceMeters:N0} m";
+
+    public string SampleScaleLabel => RequiredDistanceText;
+
+    public double SampleScaleBarWidth =>
+        BiologyStatusViewModel.GetSampleScaleBarWidth(RequiredDistanceMeters);
 
     public double SeparationPercent => NearestDistanceMeters is null
         || RequiredDistanceMeters <= 0
