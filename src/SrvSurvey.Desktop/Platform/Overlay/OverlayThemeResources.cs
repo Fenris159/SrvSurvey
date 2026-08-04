@@ -13,6 +13,7 @@ namespace SrvSurvey.Desktop.Platform.Overlay;
 public static class OverlayThemeResources
 {
     internal const string OverlayTypographyClass = "srv-overlay";
+    private const string RavenWarningBrushResource = "RavenWarningBrush";
 
     private static readonly object ThemeWindowsLock = new();
     private static readonly List<WeakReference<Window>> ThemeWindows = [];
@@ -34,7 +35,7 @@ public static class OverlayThemeResources
             ["RavenMutedTextBrush"] = "RavenOverlayMutedTextBrush",
             ["RavenBorderBrush"] = "RavenOverlayBorderBrush",
             ["RavenSuccessBrush"] = "RavenOverlaySuccessBrush",
-            ["RavenWarningBrush"] = "RavenOverlayWarningBrush",
+            [RavenWarningBrushResource] = "RavenOverlayWarningBrush",
             ["RavenDangerBrush"] = "RavenOverlayDangerBrush",
             ["RavenPrimaryBrush"] = "RavenOverlayPrimaryBrush",
             ["RavenPrimaryDimBrush"] = "RavenOverlayPrimaryDimBrush",
@@ -131,7 +132,7 @@ public static class OverlayThemeResources
         }
 
         _ = window.TryFindResource("RavenWindowBrush", out var windowBrush);
-        _ = window.TryFindResource("RavenWarningBrush", out var warningBrush);
+        _ = window.TryFindResource(RavenWarningBrushResource, out var warningBrush);
         ApplySurfaceChrome(
             surface,
             window is OverlayPositionPreviewWindow,
@@ -252,7 +253,9 @@ public static class OverlayThemeResources
         }
 
         var isEditorPreview = window is OverlayPositionPreviewWindow;
-        _ = window.TryFindResource("RavenWarningBrush", out var warningBrush);
+        _ = window.TryFindResource(
+            RavenWarningBrushResource,
+            out var warningBrush);
         surface.Margin = new Thickness(isEditorPreview ? 1 : 0);
         surface.Padding = new Thickness(0);
         surface.Background = Brushes.Transparent;
@@ -578,7 +581,9 @@ public static class OverlayThemeResources
 
             var stack = new StackPanel { Spacing = 3d };
             stack.Classes.Add("legacy-runtime-surface");
-            _ = window.TryFindResource("RavenWarningBrush", out var warning);
+            _ = window.TryFindResource(
+                RavenWarningBrushResource,
+                out var warning);
             stack.Children.Add(new TextBlock
             {
                 Text = definition.DisplayName,

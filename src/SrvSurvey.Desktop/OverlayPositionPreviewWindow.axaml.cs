@@ -55,11 +55,19 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             : 1;
         if (!usesRuntimePresentation)
         {
-            var unscaledHeight = Preview.IsCompact
-                ? Definition.PreviewSize.Height
-                : Preview.IsRouteBio
-                    ? Preview.EstimatedHeight
-                : MeasurePreviewContentHeight();
+            double unscaledHeight;
+            if (Preview.IsCompact)
+            {
+                unscaledHeight = Definition.PreviewSize.Height;
+            }
+            else if (Preview.IsRouteBio)
+            {
+                unscaledHeight = Preview.EstimatedHeight;
+            }
+            else
+            {
+                unscaledHeight = MeasurePreviewContentHeight();
+            }
             var genericScale = safeScaling * scaleFactor;
             return new PixelSize(
                 Math.Max(

@@ -404,6 +404,21 @@ public sealed class GuardianLiveSiteState
             && left.Index == right.Index;
     }
 
+    private static bool IsSameSite(
+        GuardianLiveSiteSnapshot site,
+        GuardianCommanderSiteSurvey survey)
+    {
+        var kind = survey.Name.StartsWith(
+            RuinsPrefix,
+            StringComparison.Ordinal)
+                ? GuardianSiteKind.Ruins
+                : GuardianSiteKind.Structure;
+        return site.SystemAddress == survey.SystemAddress
+            && site.BodyId == survey.BodyId
+            && site.Kind == kind
+            && site.Index == survey.Index;
+    }
+
     private GuardianLiveSiteSnapshot CreateRecoveredSnapshot(
         GuardianSiteReference reference)
     {
@@ -501,21 +516,6 @@ public sealed class GuardianLiveSiteState
             .Where(reference => reference.Kind is GuardianSiteKind.Ruins
                 or GuardianSiteKind.Structure)
             .ToArray();
-    }
-
-    private static bool IsSameSite(
-        GuardianLiveSiteSnapshot site,
-        GuardianCommanderSiteSurvey survey)
-    {
-        var kind = survey.Name.StartsWith(
-            RuinsPrefix,
-            StringComparison.Ordinal)
-                ? GuardianSiteKind.Ruins
-                : GuardianSiteKind.Structure;
-        return site.SystemAddress == survey.SystemAddress
-            && site.BodyId == survey.BodyId
-            && site.Kind == kind
-            && site.Index == survey.Index;
     }
 
     private static bool IsUnknown(string? value)

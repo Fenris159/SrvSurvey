@@ -7,6 +7,11 @@ namespace SrvSurvey.Desktop.Configuration;
 
 public sealed class LegacyUiSettingsMigrator
 {
+    private const string BuildProjectsSuppressOtherOverlaysKey =
+        "buildProjectsSuppressOtherOverlays";
+    private const string SuppressForActiveBuildProjectsProperty =
+        "SuppressForActiveBuildProjects";
+
     public const string BackupFileName = "previous-cross-platform-ui.json";
 
     public LegacyUiSettingsMigrationResult MigrateIfNeeded(AppDataPaths paths)
@@ -139,7 +144,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("skipGasGiantDSS", "SkipGasGiantsForDss"),
                     ("skipRingsDSS", "SkipRingsForDss"),
                     ("showNonBodySignals", "ShowNonBodySignals"),
-                    ("buildProjectsSuppressOtherOverlays", "SuppressForActiveBuildProjects"),
+                    (BuildProjectsSuppressOtherOverlaysKey, SuppressForActiveBuildProjectsProperty),
                 ]);
                 mappedCount += MapFssTuningDetector(legacy, root);
                 mappedCount += MapFirstFootfallInference(legacy, root);
@@ -158,14 +163,14 @@ public sealed class LegacyUiSettingsMigrator
                 [
                     ("autoShowFootCombat_TEST", "AutoShowFootCombat"),
                     ("autoShowPlotMassacre_TEST", "AutoShowMassacreMissions"),
-                    ("buildProjectsSuppressOtherOverlays", "SuppressForActiveBuildProjects"),
+                    (BuildProjectsSuppressOtherOverlaysKey, SuppressForActiveBuildProjectsProperty),
                 ]);
                 mappedCount += MapSection(legacy, root, "GuardianOverlays",
                 [
                     ("enableGuardianSites", "EnableGuardianSites"),
                     ("autoShowGuardianSummary", "AutoShowGuardianSummary"),
                     ("autoShowRamTah", "AutoShowRamTah"),
-                    ("buildProjectsSuppressOtherOverlays", "SuppressForActiveBuildProjects"),
+                    (BuildProjectsSuppressOtherOverlaysKey, SuppressForActiveBuildProjectsProperty),
                     ("autoZoomGuardianNearObelisks", "AutoZoomNearObelisks"),
                     ("autoZoomGuardianInTurret", "AutoZoomInSrvTurret"),
                     ("guardianComponentMaterials_TEST", "ShowComponentMaterials"),
@@ -197,7 +202,7 @@ public sealed class LegacyUiSettingsMigrator
                     ("humanSiteShow_DataTerminal", "ShowDataTerminals"),
                     ("humanSiteDotsOnCollection", "ShowCollectedMaterials"),
                     ("collectMatsCollectionStatsTest", "TrackMaterialCollection"),
-                    ("buildProjectsSuppressOtherOverlays", "SuppressForActiveBuildProjects"),
+                    (BuildProjectsSuppressOtherOverlaysKey, SuppressForActiveBuildProjectsProperty),
                 ]);
                 mappedCount += MapSection(legacy, root, "StationInfo",
                 [

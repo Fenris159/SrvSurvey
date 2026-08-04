@@ -212,7 +212,7 @@ public sealed class JournalSessionState
                 break;
 
             case "Music":
-                var musicTrack = GetString(root, "MusicTrack");
+                var musicTrack = GetString(root, nameof(MusicTrack));
                 MusicTrack = musicTrack;
                 IsAtMainMenu = string.Equals(
                     musicTrack,

@@ -743,7 +743,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
     public IReadOnlyList<GuardianSiteRowViewModel> CurrentSystemSites =>
         currentSystemSites;
 
-    private IReadOnlyList<GuardianSiteRowViewModel> BuildCurrentSystemSites() => visits
+    private GuardianSiteRowViewModel[] BuildCurrentSystemSites() => visits
         .Visits
         .Where(visit => visit.Reference.Kind != GuardianSiteKind.Beacon
             && string.Equals(
@@ -989,45 +989,90 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
         ? $"Log: {GetLogDisplayName(obelisk.LogCode)}"
         : "Move within 25 m of an active obelisk in an SRV or on foot.";
 
-    public string CurrentObeliskRequirementsText => CurrentObelisk is { } obelisk
-        ? artifactInventory.GetRequirements(obelisk.ItemCodes) is { Count: > 0 }
-            requirements
+    public string CurrentObeliskRequirementsText
+    {
+        get
+        {
+            if (CurrentObelisk is not { } obelisk)
+            {
+                return "Artifact requirements will appear here.";
+            }
+
+            var requirements = artifactInventory.GetRequirements(obelisk.ItemCodes);
+            return requirements is { Count: > 0 }
                 ? string.Join(
                     " + ",
                     requirements.Select(requirement =>
                         $"{requirement.DisplayName} "
                         + $"{requirement.Available}/{requirement.Required}"))
-                : "No artifact requirement is recorded."
-        : "Artifact requirements will appear here.";
+                : "No artifact requirement is recorded.";
+        }
+    }
 
     public bool HasCurrentObeliskArtifacts => CurrentObelisk is { } obelisk
         && artifactInventory.HasItems(obelisk.ItemCodes);
 
-    public string CurrentObeliskArtifactStatus => CurrentObelisk is null
-        ? "INACTIVE"
-        : HasCurrentObeliskArtifacts
-            ? "ARTIFACTS READY"
-            : "ARTIFACTS MISSING";
+    public string CurrentObeliskArtifactStatus
+    {
+        get
+        {
+            if (CurrentObelisk is null)
+            {
+                return "INACTIVE";
+            }
 
-    public string CurrentObeliskMissionStatus => CurrentObelisk is not { } obelisk
-        ? "No current obelisk is available for mission tracking."
-        : ramTah is null
-            ? "Ram Tah tracking is unavailable."
-            : !ramTah.IsAnyMissionActive
-                ? "No Ram Tah mission is active."
-                : ramTah.IsLogCompleted(GetMission(), obelisk.LogCode)
-                    ? "Ram Tah log already acquired."
-                    : "Needed for the active Ram Tah mission.";
+            return HasCurrentObeliskArtifacts
+                ? "ARTIFACTS READY"
+                : "ARTIFACTS MISSING";
+        }
+    }
+
+    public string CurrentObeliskMissionStatus
+    {
+        get
+        {
+            if (CurrentObelisk is not { } obelisk)
+            {
+                return "No current obelisk is available for mission tracking.";
+            }
+
+            if (ramTah is null)
+            {
+                return "Ram Tah tracking is unavailable.";
+            }
+
+            if (!ramTah.IsAnyMissionActive)
+            {
+                return "No Ram Tah mission is active.";
+            }
+
+            if (ramTah.IsLogCompleted(GetMission(), obelisk.LogCode))
+            {
+                return "Ram Tah log already acquired.";
+            }
+
+            return "Needed for the active Ram Tah mission.";
+        }
+    }
 
     public string ToggleCurrentObeliskScannedText => CurrentObelisk?.Scanned == true
         ? "Mark not scanned"
         : "Mark scanned";
 
-    public string CurrentObeliskScanStatus => CurrentObelisk is { } obelisk
-        ? obelisk.Scanned
-            ? "SCANNED"
-            : "NOT SCANNED"
-        : "NO OBELISK";
+    public string CurrentObeliskScanStatus
+    {
+        get
+        {
+            if (CurrentObelisk is not { } obelisk)
+            {
+                return "NO OBELISK";
+            }
+
+            return obelisk.Scanned
+                ? "SCANNED"
+                : "NOT SCANNED";
+        }
+    }
 
     public bool IsGuardianSiteTypeChoiceVisible => IsLocalGuardianStatus
         && LiveMapMode == GuardianLiveMapMode.SiteType;
@@ -1103,27 +1148,56 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
         }
     }
 
-    public string GuardianStatusDetail => IsGuardianSiteTypeChoiceVisible
-        ? "Select the ruins layout with the active fire group, then confirm with the Guardian gesture."
-        : IsGuardianHeadingChoiceVisible
-            ? "Face the mapped alignment feature, then confirm the current heading with the Guardian gesture."
-            : IsGuardianOriginVisible
-                ? $"Align with the survey origin and rise to {AlignmentTargetAltitude:N0} m."
-                : IsGuardianOnFootRelicVisible
-                    ? GetOnFootRelicGuidance()
-                    : Proximity?.NearestPoint is { } nearby
-                        ? $"{nearby.Distance:N1} m away · choose the point state with the active fire group."
-                        : $"Move within {GuardianSiteProximityEvaluator.NearbyPointDistance:N0} m of a mapped point.";
+    public string GuardianStatusDetail
+    {
+        get
+        {
+            if (IsGuardianSiteTypeChoiceVisible)
+            {
+                return
+                    "Select the ruins layout with the active fire group, then confirm with the Guardian gesture.";
+            }
+
+            if (IsGuardianHeadingChoiceVisible)
+            {
+                return
+                    "Face the mapped alignment feature, then confirm the current heading with the Guardian gesture.";
+            }
+
+            if (IsGuardianOriginVisible)
+            {
+                return $"Align with the survey origin and rise to {AlignmentTargetAltitude:N0} m.";
+            }
+
+            if (IsGuardianOnFootRelicVisible)
+            {
+                return GetOnFootRelicGuidance();
+            }
+
+            return Proximity?.NearestPoint is { } nearby
+                ? $"{nearby.Distance:N1} m away · choose the point state with the active fire group."
+                : $"Move within {GuardianSiteProximityEvaluator.NearbyPointDistance:N0} m of a mapped point.";
+        }
+    }
 
     public string GuardianOriginFooter =>
         "Use the aerial guide to center and orient the site. Type .map to return to the survey map.";
 
-    public string GuardianOnFootFooter => HasGeneticSamplerEquipped
-        && Proximity?.NearestPoint?.Point.Type == GuardianPoiType.Relic
-            ? BlinkGestureText
-            : HasGeneticSamplerEquipped
+    public string GuardianOnFootFooter
+    {
+        get
+        {
+            if (HasGeneticSamplerEquipped
+                && Proximity?.NearestPoint?.Point.Type == GuardianPoiType.Relic)
+            {
+                return BlinkGestureText;
+            }
+
+            return HasGeneticSamplerEquipped
                 ? "Approach a relic tower to record its heading."
                 : "Equip the genetic sampler and approach a relic tower to record its heading.";
+        }
+    }
 
     private GuardianObelisk? GuardianStatusObelisk =>
         Proximity?.NearestPoint?.ActiveObelisk;
@@ -1136,14 +1210,24 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
         ? $"Log: {GetLogDisplayName(obelisk.LogCode)}"
         : "This mapped obelisk is not active at the current site.";
 
-    public string GuardianStatusObeliskRequirementsText => GuardianStatusObelisk is { } obelisk
-        ? artifactInventory.GetRequirements(obelisk.ItemCodes) is { Count: > 0 } requirements
-            ? string.Join(
-                " + ",
-                requirements.Select(requirement =>
-                    $"{requirement.DisplayName} {requirement.Available}/{requirement.Required}"))
-            : "No artifact requirement is recorded."
-        : "Artifact requirements are unavailable for an inactive obelisk.";
+    public string GuardianStatusObeliskRequirementsText
+    {
+        get
+        {
+            if (GuardianStatusObelisk is not { } obelisk)
+            {
+                return "Artifact requirements are unavailable for an inactive obelisk.";
+            }
+
+            var requirements = artifactInventory.GetRequirements(obelisk.ItemCodes);
+            return requirements is { Count: > 0 }
+                ? string.Join(
+                    " + ",
+                    requirements.Select(requirement =>
+                        $"{requirement.DisplayName} {requirement.Available}/{requirement.Required}"))
+                : "No artifact requirement is recorded.";
+        }
+    }
 
     public IReadOnlyList<GuardianArtifactRequirementViewModel>
         GuardianStatusObeliskArtifacts => GuardianStatusObelisk is { } obelisk
@@ -1151,21 +1235,48 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
                 artifactInventory.GetRequirements(obelisk.ItemCodes))
             : [];
 
-    public string GuardianStatusObeliskMissionStatus => GuardianStatusObelisk is not { } obelisk
-        ? "No Ram Tah log is available for this obelisk."
-        : ramTah is null
-            ? "Ram Tah tracking is unavailable."
-            : !ramTah.IsAnyMissionActive
-                ? "No Ram Tah mission is active."
-                : ramTah.IsLogCompleted(GetMission(), obelisk.LogCode)
-                    ? "Ram Tah log already acquired."
-                    : "Needed for the active Ram Tah mission.";
+    public string GuardianStatusObeliskMissionStatus
+    {
+        get
+        {
+            if (GuardianStatusObelisk is not { } obelisk)
+            {
+                return "No Ram Tah log is available for this obelisk.";
+            }
 
-    public string GuardianStatusObeliskScanStatus => GuardianStatusObelisk is { } obelisk
-        ? obelisk.Scanned
-            ? "SCANNED"
-            : "NOT SCANNED"
-        : "INACTIVE";
+            if (ramTah is null)
+            {
+                return "Ram Tah tracking is unavailable.";
+            }
+
+            if (!ramTah.IsAnyMissionActive)
+            {
+                return "No Ram Tah mission is active.";
+            }
+
+            if (ramTah.IsLogCompleted(GetMission(), obelisk.LogCode))
+            {
+                return "Ram Tah log already acquired.";
+            }
+
+            return "Needed for the active Ram Tah mission.";
+        }
+    }
+
+    public string GuardianStatusObeliskScanStatus
+    {
+        get
+        {
+            if (GuardianStatusObelisk is not { } obelisk)
+            {
+                return "INACTIVE";
+            }
+
+            return obelisk.Scanned
+                ? "SCANNED"
+                : "NOT SCANNED";
+        }
+    }
 
     public string GuardianStatusObeliskFooter => CurrentObelisk is null
         ? $"Move within {GuardianSiteProximityEvaluator.CurrentObeliskDistance:N0} m to update this obelisk."
@@ -3255,9 +3366,8 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
             ? displayName["Guardian ".Length..]
             : displayName;
 
-    private static IReadOnlyList<GuardianArtifactRequirementViewModel>
-        CreateArtifactRequirementRows(
-            IReadOnlyList<GuardianArtifactRequirement> requirements) =>
+    private static GuardianArtifactRequirementViewModel[] CreateArtifactRequirementRows(
+        IReadOnlyList<GuardianArtifactRequirement> requirements) =>
         requirements.Select((requirement, index) =>
                 new GuardianArtifactRequirementViewModel(
                     requirement.ShortCode,
@@ -4413,7 +4523,7 @@ public sealed class GuardianViewModel : IGuardianOverlayPresentationState
             .ThenBy(row => row.Reference.Index);
     }
 
-    private IReadOnlyDictionary<string, IReadOnlyList<string>>
+    private Dictionary<string, IReadOnlyList<string>>
         LoadGuardianScreenshotNames(IEnumerable<GuardianSiteVisit> source)
     {
         var root = screenshotTargetFolderProvider();

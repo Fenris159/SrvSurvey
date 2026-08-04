@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using SrvSurvey.Core.Guardian;
 using SrvSurvey.Core.Search;
 
@@ -7,11 +8,16 @@ namespace SrvSurvey.Desktop.ViewModels;
 internal sealed class GuardianOverlayPreviewState
     : IGuardianOverlayPresentationState
 {
+    private const string SampleObeliskName = "A01";
+    private const string SampleLogCode = "H12";
+    private const string TotemArtifact = "Totem";
+    private const string TotemRequirementText = "Casket + Totem";
+
     private static readonly GuardianObelisk SampleObelisk = new(
-        "A01",
-        "H12",
+        SampleObeliskName,
+        SampleLogCode,
         Scanned: false,
-        ["Casket", "Totem"]);
+        ["Casket", TotemArtifact]);
 
     private GuardianOverlayPreviewState()
     {
@@ -26,7 +32,7 @@ internal sealed class GuardianOverlayPreviewState
                 ["H12"],
                 StringComparer.OrdinalIgnoreCase));
         var nearest = template.PointsOfInterest.First(point =>
-            string.Equals(point.Name, "A01", StringComparison.Ordinal));
+            string.Equals(point.Name, SampleObeliskName, StringComparison.Ordinal));
         Proximity = new GuardianSiteProximitySnapshot(
             DistanceFromSite: 42.6,
             CommanderX: 12,
@@ -62,14 +68,14 @@ internal sealed class GuardianOverlayPreviewState
             new GuardianRamTahLogViewModel(
                 "H12",
                 "History #12",
-                "Casket + Totem",
+                TotemRequirementText,
                 HasArtifacts: true,
                 "A01, A03",
                 IsCurrentObelisk: true,
                 IsTargetObelisk: true,
                 [
                     new("ca", "Casket", true, "+"),
-                    new("to", "Totem", true, string.Empty),
+                    new("to", TotemArtifact, true, string.Empty),
                 ]),
             new GuardianRamTahLogViewModel(
                 "H16",
@@ -86,14 +92,14 @@ internal sealed class GuardianOverlayPreviewState
             new GuardianRamTahLogViewModel(
                 "T07",
                 "Technology #7",
-                "Tablet + Totem",
+                $"Tablet + {TotemArtifact}",
                 HasArtifacts: true,
                 "C02",
                 IsCurrentObelisk: false,
                 IsTargetObelisk: false,
                 [
                     new("ta", "Tablet", true, "+"),
-                    new("to", "Totem", true, string.Empty),
+                    new("to", TotemArtifact, true, string.Empty),
                 ]),
         ];
     }
@@ -185,14 +191,14 @@ internal sealed class GuardianOverlayPreviewState
 
     public string GuardianStatusObeliskLogText => "Ram Tah log H12";
 
-    public string GuardianStatusObeliskRequirementsText => "Casket + Totem";
+    public string GuardianStatusObeliskRequirementsText => $"Casket + {TotemArtifact}";
 
     public IReadOnlyList<GuardianArtifactRequirementViewModel>
         GuardianStatusObeliskArtifacts
     { get; } =
         [
             new("ca", "Casket", true, "+"),
-            new("to", "Totem", true, string.Empty),
+            new("to", TotemArtifact, true, string.Empty),
         ];
 
     public string GuardianStatusObeliskMissionStatus =>
@@ -261,13 +267,13 @@ internal sealed class GuardianOverlayPreviewState
             SiteHeading: 142,
             RelicTowerHeading: 37,
             SurveyProgress: progress,
-            LastUpdated: DateTimeOffset.Parse("2026-08-03T00:00:00Z"),
+            LastUpdated: ParseDateTimeOffset("2026-08-03T00:00:00Z"),
             RelatedStructure: null,
             RelatedStructureDistance: null);
         var visit = new GuardianSiteVisit(
             reference,
-            FirstVisited: DateTimeOffset.Parse("2026-08-01T00:00:00Z"),
-            LastVisited: DateTimeOffset.Parse("2026-08-03T00:00:00Z"),
+            FirstVisited: ParseDateTimeOffset("2026-08-01T00:00:00Z"),
+            LastVisited: ParseDateTimeOffset("2026-08-03T00:00:00Z"),
             Notes: isDestination ? "Current survey destination" : string.Empty,
             SurveyProgress: progress,
             IsSurveyComplete: progress == 100,
@@ -282,4 +288,7 @@ internal sealed class GuardianOverlayPreviewState
             ramTahLogs,
             hasImages: false);
     }
+
+    private static DateTimeOffset ParseDateTimeOffset(string value) =>
+        DateTimeOffset.Parse(value, CultureInfo.InvariantCulture);
 }
