@@ -21,7 +21,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     private IReadOnlyList<SurfaceRadarMarkerViewModel> navigationMarkers = [];
     private IReadOnlyList<SurfaceTrackerGroupViewModel> trackerGroups = [];
     private IReadOnlyList<SurfaceTrackerGroupViewModel> quickTrackerGroups = [];
-    private IReadOnlyList<PriorScanSurfaceMarkerViewModel> priorScanSurfaceMarkers = [];
+    private PriorScanSurfaceMarkerViewModel[] priorScanSurfaceMarkers = [];
     private string statusText = "Waiting for surface survey context.";
     private double? customRadarScale;
     private bool disposed;
@@ -566,7 +566,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         if (survey.ShowCanonnSignalsOnRadar
             && survey.UseExternalData
             && survey.AutoShowPriorScans
-            && priorScanSurfaceMarkers.Count > 0)
+            && priorScanSurfaceMarkers.Length > 0)
         {
             foreach (var prior in priorScanSurfaceMarkers)
             {

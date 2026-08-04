@@ -235,24 +235,48 @@ public sealed class SurfaceSurveyRadarControl : Control
         {
             SurfaceRadarMarkerKind.HistoricalScan =>
                 marker.IsInsideRadius ? danger : muted,
-            SurfaceRadarMarkerKind.Bookmark => !marker.IsActive
-                ? muted
-                : marker.IsInsideRadius
-                    ? success
-                    : accent,
+            SurfaceRadarMarkerKind.Bookmark =>
+                GetBookmarkCircleBrush(marker, muted, success, accent),
             SurfaceRadarMarkerKind.ActiveSample =>
                 marker.IsInsideRadius ? warning : success,
             // Legacy PlotGrounded prior-scan rings: active cyan, close green.
-            SurfaceRadarMarkerKind.CanonnPrior => !marker.IsActive
-                ? muted
-                : string.Equals(
-                    marker.Status,
-                    "Close",
-                    StringComparison.OrdinalIgnoreCase)
-                    ? success
-                    : accent,
+            SurfaceRadarMarkerKind.CanonnPrior =>
+                GetCanonnPriorCircleBrush(marker, muted, success, accent),
             _ => accent,
         };
+    }
+
+    private static IBrush GetBookmarkCircleBrush(
+        SurfaceRadarMarkerViewModel marker,
+        IBrush muted,
+        IBrush success,
+        IBrush accent)
+    {
+        if (!marker.IsActive)
+        {
+            return muted;
+        }
+
+        return marker.IsInsideRadius ? success : accent;
+    }
+
+    private static IBrush GetCanonnPriorCircleBrush(
+        SurfaceRadarMarkerViewModel marker,
+        IBrush muted,
+        IBrush success,
+        IBrush accent)
+    {
+        if (!marker.IsActive)
+        {
+            return muted;
+        }
+
+        return string.Equals(
+            marker.Status,
+            "Close",
+            StringComparison.OrdinalIgnoreCase)
+            ? success
+            : accent;
     }
 
     private IBrush GetMarkerBrush(SurfaceRadarMarkerViewModel marker)
@@ -262,7 +286,6 @@ public sealed class SurfaceSurveyRadarControl : Control
             SurfaceRadarMarkerKind.Ship => WarningBrush ?? Brushes.Gold,
             SurfaceRadarMarkerKind.FormerShip => MutedBrush ?? Brushes.Gray,
             SurfaceRadarMarkerKind.Srv => SuccessBrush ?? Brushes.LimeGreen,
-            SurfaceRadarMarkerKind.CanonnPrior => GetCircleBrush(marker),
             _ => GetCircleBrush(marker),
         };
     }
