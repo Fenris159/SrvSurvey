@@ -177,7 +177,17 @@ public sealed class GuardianCommanderSurveyStoreTests : IDisposable
         var loaded = await new GuardianCommanderDataReader(temporaryDirectory)
             .ReadAsync("F123", true);
         var loadedSurvey = Assert.Single(loaded.Surveys);
-        Assert.Empty(loadedSurvey.Survey.ComponentMaterials);
+        var saved = Assert.Single(loadedSurvey.Survey.ComponentMaterials);
+        Assert.Equal("c1", saved.Key);
+        Assert.Equal(
+            GuardianComponentMaterial.Cell,
+            saved.Value.GetItem(0));
+        Assert.Equal(
+            GuardianComponentMaterial.Conduit,
+            saved.Value.GetItem(1));
+        Assert.Equal(
+            GuardianComponentMaterial.Tech,
+            saved.Value.GetItem(2));
     }
 
     [Fact]
