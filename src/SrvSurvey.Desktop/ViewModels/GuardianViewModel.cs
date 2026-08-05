@@ -4070,13 +4070,16 @@ public sealed class GuardianViewModel
     private static string GetNextRawPointName(IEnumerable<string> names)
     {
         var used = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        for (var index = 1; ; index++)
+        var index = 1;
+        while (true)
         {
             var candidate = $"x{index}";
             if (!used.Contains(candidate))
             {
                 return candidate;
             }
+
+            index++;
         }
     }
 

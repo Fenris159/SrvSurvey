@@ -1747,11 +1747,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        if (update.IsBootstrapRead)
-        {
-            latestStatus = update.Status;
-        }
-        else if (update.Status is not null)
+        if (update.IsBootstrapRead || update.Status is not null)
         {
             latestStatus = update.Status;
         }
@@ -2231,11 +2227,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(body =>
                     body.BodyId == bodyId)
                 : null;
-            surfaceBody ??= latestStatus?.BodyName is { Length: > 0 } bodyName
+            surfaceBody ??= latestStatus?.BodyName is { Length: > 0 } statusBodyName
                 ? SystemSurvey.Snapshot.Bodies.FirstOrDefault(body =>
                     string.Equals(
                         body.Name,
-                        bodyName,
+                        statusBodyName,
                         StringComparison.OrdinalIgnoreCase))
                 : null;
             surfaceSession = new SurfaceSurveySessionContext(
@@ -2419,14 +2415,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private async Task RefreshSystemSurveyCommanderCodexAsync(
         bool forceRefresh)
     {
-        var frontierId = activeProfileFrontierId ?? journalState.FrontierId;
-        var commanderName = activeProfileCommanderName
+        var resolvedFrontierId = activeProfileFrontierId ?? journalState.FrontierId;
+        var resolvedCommanderName = activeProfileCommanderName
             ?? journalState.CommanderName;
         var systemAddress = journalState.SystemAddress;
         var regionId = journalState.StarPosition is { } position
             ? GalacticRegionMap.Find(position)?.Id
             : null;
-        if (string.IsNullOrWhiteSpace(frontierId)
+        if (string.IsNullOrWhiteSpace(resolvedFrontierId)
             || systemAddress is null)
         {
             surveyCodexFrontierId = null;
@@ -2439,7 +2435,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         if (!forceRefresh
             && string.Equals(
                 surveyCodexFrontierId,
-                frontierId,
+                resolvedFrontierId,
                 StringComparison.OrdinalIgnoreCase)
             && surveyCodexRegionId == regionId
             && surveyCodexSystemAddress == systemAddress)
@@ -2448,17 +2444,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         var global = await commanderCodexStore.LoadAsync(
-            frontierId,
-            commanderName,
+            resolvedFrontierId,
+            resolvedCommanderName,
             cancellationToken: CancellationToken.None);
         var regional = regionId is > 0
             ? await commanderCodexStore.LoadAsync(
-                frontierId,
-                commanderName,
+                resolvedFrontierId,
+                resolvedCommanderName,
                 regionId.Value,
                 CancellationToken.None)
             : null;
-        surveyCodexFrontierId = frontierId;
+        surveyCodexFrontierId = resolvedFrontierId;
         surveyCodexRegionId = regionId;
         surveyCodexSystemAddress = systemAddress;
         SystemSurvey.UpdateCommanderCodexContext(
@@ -3208,7 +3204,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 continue;
             }
 
-            var bodyName = message.Split(' ', 2) is { Length: 2 } parts
+            var requestedBodyName = message.Split(' ', 2) is { Length: 2 } parts
                 ? parts[1].Trim()
                 : null;
             var system = SystemSurvey.Snapshot;
@@ -3219,10 +3215,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 continue;
             }
 
-            var body = string.IsNullOrWhiteSpace(bodyName)
+            var body = string.IsNullOrWhiteSpace(requestedBodyName)
                 ? null
                 : system.Bodies.FirstOrDefault(candidate =>
-                    BodyNameMatchesCommand(candidate, system.SystemName, bodyName));
+                    BodyNameMatchesCommand(
+                        candidate,
+                        system.SystemName,
+                        requestedBodyName));
             body ??= system.CurrentBodyId is { } currentBodyId
                 ? system.Bodies.FirstOrDefault(candidate =>
                     candidate.BodyId == currentBodyId)

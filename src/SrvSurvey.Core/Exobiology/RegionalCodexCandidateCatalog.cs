@@ -411,7 +411,8 @@ public sealed class RegionalCodexCandidateCatalog
             row.Clear();
         }
 
-        for (var index = 0; index < text.Length; index++)
+        var index = 0;
+        while (index < text.Length)
         {
             var character = text[index];
             if (inQuotes)
@@ -474,6 +475,8 @@ public sealed class RegionalCodexCandidateCatalog
                 throw new InvalidDataException(
                     "The published regional Codex candidate CSV contains an oversized field.");
             }
+
+            index++;
         }
 
         if (inQuotes)

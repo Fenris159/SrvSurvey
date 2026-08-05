@@ -169,7 +169,7 @@ public sealed class SurfaceSurveyJournalTracker
         }
 
         if (status is null
-            || !TryCreateBodyContext(session, status, out var context))
+            || !TryCreateBodyContext(session, out var context))
         {
             return 0;
         }
@@ -263,7 +263,6 @@ public sealed class SurfaceSurveyJournalTracker
 
     private static bool TryCreateBodyContext(
         SurfaceSurveySessionContext session,
-        EliteStatus currentStatus,
         out SystemSurfaceContext context)
     {
         context = null!;

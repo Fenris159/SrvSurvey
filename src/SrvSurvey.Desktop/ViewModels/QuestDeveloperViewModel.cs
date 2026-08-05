@@ -407,7 +407,8 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
                     SelectedView.ChapterId,
                     StringComparison.Ordinal))
                 .Variables,
-            _ => throw new ArgumentOutOfRangeException(),
+            _ => throw new InvalidOperationException(
+                $"Quest development view '{SelectedView.Kind}' is not supported."),
         };
         EditorJson = JsonSerializer.Serialize(value, EditorJsonOptions);
     }
@@ -444,7 +445,8 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
                         CancellationToken.None);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException(
+                        $"Quest development view '{SelectedView.Kind}' is not supported.");
             }
 
             await LoadStateCoreAsync();

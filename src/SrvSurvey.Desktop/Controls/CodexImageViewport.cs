@@ -83,61 +83,61 @@ public sealed class CodexImageViewport : Control
             destination);
     }
 
-    protected override void OnPointerWheelChanged(PointerWheelEventArgs eventArgs)
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
-        base.OnPointerWheelChanged(eventArgs);
-        if (Source is null || eventArgs.Delta.Y == 0)
+        base.OnPointerWheelChanged(e);
+        if (Source is null || e.Delta.Y == 0)
         {
             return;
         }
 
         zoom = Math.Clamp(
-            zoom * (eventArgs.Delta.Y > 0 ? 1.1 : 0.9),
+            zoom * (e.Delta.Y > 0 ? 1.1 : 0.9),
             0.1,
             10);
         InvalidateVisual();
-        eventArgs.Handled = true;
+        e.Handled = true;
     }
 
-    protected override void OnPointerPressed(PointerPressedEventArgs eventArgs)
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        base.OnPointerPressed(eventArgs);
+        base.OnPointerPressed(e);
         if (Source is null
-            || !eventArgs.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             return;
         }
 
-        dragOrigin = eventArgs.GetPosition(this);
+        dragOrigin = e.GetPosition(this);
         dragStartOffset = offset;
-        eventArgs.Pointer.Capture(this);
+        e.Pointer.Capture(this);
         Cursor = new Cursor(StandardCursorType.SizeAll);
-        eventArgs.Handled = true;
+        e.Handled = true;
     }
 
-    protected override void OnPointerMoved(PointerEventArgs eventArgs)
+    protected override void OnPointerMoved(PointerEventArgs e)
     {
-        base.OnPointerMoved(eventArgs);
+        base.OnPointerMoved(e);
         if (dragOrigin is not { } origin)
         {
             return;
         }
 
-        var position = eventArgs.GetPosition(this);
+        var position = e.GetPosition(this);
         offset = dragStartOffset + (position - origin);
         InvalidateVisual();
-        eventArgs.Handled = true;
+        e.Handled = true;
     }
 
-    protected override void OnPointerReleased(PointerReleasedEventArgs eventArgs)
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
-        base.OnPointerReleased(eventArgs);
-        StopDragging(eventArgs.Pointer);
+        base.OnPointerReleased(e);
+        StopDragging(e.Pointer);
     }
 
-    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs eventArgs)
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
-        base.OnPointerCaptureLost(eventArgs);
+        base.OnPointerCaptureLost(e);
         StopDragging(null);
     }
 

@@ -25,7 +25,7 @@ public sealed record LegacyReferenceCatalogLoadResult(
 {
     public int LocalCatalogCount => Sources.Count(source => source.IsLocal);
 
-    public IReadOnlyList<string> Warnings => Sources
+    public IReadOnlyList<string> Warnings { get; } = Sources
         .Where(source => source.Warning is not null)
         .Select(source => source.Warning!)
         .ToArray();

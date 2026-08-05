@@ -23,10 +23,10 @@ public sealed partial class BiologyPredictionsWindow : Window
         viewModel.SetUriLauncher(LaunchUriAsync);
     }
 
-    protected override void OnClosed(EventArgs eventArgs)
+    protected override void OnClosed(EventArgs e)
     {
         viewModel.SetUriLauncher(null);
-        base.OnClosed(eventArgs);
+        base.OnClosed(e);
     }
 
     private void Close_Click(object? sender, RoutedEventArgs eventArgs)

@@ -141,7 +141,7 @@ public static class CodexBingoCatalog
             leafName = leafName[..^suffix.Length];
         }
 
-        leafParent.AddEntry(entry, leafName);
+        leafParent.AddChildEntry(entry, leafName);
         if (subClass.Genus is null && entry.IsBiology)
         {
             subClass.Genus = GetFirstWord(displayName);
@@ -184,7 +184,7 @@ public static class CodexBingoCatalog
             genus,
             speciesName,
             entry.Reward);
-        species.AddEntry(entry, variantLabel, genus, speciesName);
+        species.AddChildEntry(entry, variantLabel, genus, speciesName);
     }
 
     private static string ValueOrOther(string? value)
@@ -270,7 +270,7 @@ public static class CodexBingoCatalog
             return child;
         }
 
-        public void AddEntry(
+        public void AddChildEntry(
             ExobiologyReference entry,
             string name,
             string? genus = null,

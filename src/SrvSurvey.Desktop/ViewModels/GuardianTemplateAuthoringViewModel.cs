@@ -642,7 +642,8 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             .Concat(session?.Template.DestructiblePanels ?? [])
             .Select(point => point.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        for (var index = 1; ; index++)
+        var index = 1;
+        while (true)
         {
             var candidate = prefix == "A"
                 ? $"A{index:00}"
@@ -651,6 +652,8 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             {
                 return candidate;
             }
+
+            index++;
         }
     }
 

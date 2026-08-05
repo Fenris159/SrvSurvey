@@ -100,13 +100,8 @@ public static class ColonizationFleetCarrierCargoSynchronizer
 
             var stock = Math.Max(0, item.Stock);
             var tracked = currentCargo.GetValueOrDefault(commodity);
-            if (item.Producer && tracked != stock)
-            {
-                replacement[commodity] = stock;
-            }
-            else if (!item.Producer
-                && !item.Consumer
-                && tracked > 0)
+            if ((item.Producer && tracked != stock)
+                || (!item.Producer && !item.Consumer && tracked > 0))
             {
                 replacement[commodity] = stock;
             }

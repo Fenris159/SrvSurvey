@@ -423,7 +423,7 @@ public sealed record BiologyPredictionResult(
     IReadOnlyList<string> MissingProperties,
     IReadOnlyList<BiologyCriteriaClause> TargetClauses)
 {
-    public IReadOnlyList<string> Predictions => PredictionDetails
+    public IReadOnlyList<string> Predictions { get; } = PredictionDetails
         .Select(prediction => prediction.Name)
         .ToArray();
 

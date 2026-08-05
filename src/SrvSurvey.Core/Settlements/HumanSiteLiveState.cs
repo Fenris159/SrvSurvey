@@ -109,9 +109,9 @@ public sealed class HumanSiteLiveState(
             "DockingRequested" => ApplyDockingRequested(journalEvent.Payload),
             "DockingGranted" => ApplyDockingGranted(journalEvent.Payload),
             "DockingDenied" => ApplyDockingDenied(journalEvent.Payload),
-            "DockingCancelled" => ApplyDockingCancelled(journalEvent.Payload),
+            "DockingCancelled" => ApplyDockingReset(journalEvent.Payload),
             "Docked" => ApplyDocked(journalEvent.Payload),
-            "Undocked" => ApplyUndocked(journalEvent.Payload),
+            "Undocked" => ApplyDockingReset(journalEvent.Payload),
             "Touchdown" => ApplyTouchdown(journalEvent.Payload),
             "StartJump" or "SupercruiseEntry" or "FSDJump"
                 or "CarrierJump" or "Died" or "Resurrect" or "Shutdown" =>
@@ -240,7 +240,7 @@ public sealed class HumanSiteLiveState(
         return true;
     }
 
-    private bool ApplyDockingCancelled(JsonElement root)
+    private bool ApplyDockingReset(JsonElement root)
     {
         if (!IsCurrentStation(root))
         {
@@ -283,22 +283,6 @@ public sealed class HumanSiteLiveState(
             Docking = HumanSiteDockingStatus.Docked,
             DockingDeniedReason = null,
             HasLanded = true,
-        };
-        return true;
-    }
-
-    private bool ApplyUndocked(JsonElement root)
-    {
-        if (!IsCurrentStation(root))
-        {
-            return false;
-        }
-
-        CurrentSite = CurrentSite! with
-        {
-            Docking = HumanSiteDockingStatus.None,
-            GrantedPad = 0,
-            DockingDeniedReason = null,
         };
         return true;
     }

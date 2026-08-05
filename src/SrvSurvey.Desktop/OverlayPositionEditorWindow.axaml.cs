@@ -17,16 +17,16 @@ public sealed partial class OverlayPositionEditorWindow : Window
         DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
     }
 
-    protected override void OnKeyDown(KeyEventArgs eventArgs)
+    protected override void OnKeyDown(KeyEventArgs e)
     {
-        if (eventArgs.Key == Key.Escape
+        if (e.Key == Key.Escape
             && DataContext is OverlayInteractionViewModel viewModel)
         {
             viewModel.Cancel();
-            eventArgs.Handled = true;
+            e.Handled = true;
             return;
         }
 
-        base.OnKeyDown(eventArgs);
+        base.OnKeyDown(e);
     }
 }

@@ -100,7 +100,8 @@ public sealed class HumanSiteMapProjector
         HumanSiteBuildingPath path)
     {
         var segments = new List<HumanSitePathSegment>();
-        for (var index = 0; index < path.Points.Count; index++)
+        var index = 0;
+        while (index < path.Points.Count)
         {
             var type = path.PointTypes[index];
             var baseType = (byte)(type & PathTypeMask);
@@ -152,6 +153,8 @@ public sealed class HumanSiteMapProjector
                     default,
                     default));
             }
+
+            index++;
         }
 
         return new HumanSiteProjectedPath(

@@ -1306,7 +1306,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        var knownSystems = state.Systems.ToDictionary(
+        var systemsByNumber = state.Systems.ToDictionary(
             system => system.Boxel.N2);
         var rowCount = Math.Max(
             state.CurrentCount,
@@ -1314,7 +1314,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         var rowNumbers = Enumerable.Range(
                 0,
                 Math.Min(Math.Max(1, rowCount), MaximumVisibleSystemRows))
-            .Concat(knownSystems.Keys)
+            .Concat(systemsByNumber.Keys)
             .Distinct()
             .Order()
             .ToArray();
@@ -1325,7 +1325,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         Systems = rowNumbers
             .Select(number =>
             {
-                knownSystems.TryGetValue(number, out var system);
+                systemsByNumber.TryGetValue(number, out var system);
                 var boxel = system?.Boxel ?? state.Current.WithSystemNumber(number);
                 var distance = system?.Position is { } position
                     && currentPosition is { } from

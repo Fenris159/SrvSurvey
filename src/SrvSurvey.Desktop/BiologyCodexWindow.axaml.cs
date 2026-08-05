@@ -38,7 +38,7 @@ public sealed partial class BiologyCodexWindow : Window
         _ = LoadSelectedImageAsync(forceRefresh: false);
     }
 
-    protected override void OnClosed(EventArgs eventArgs)
+    protected override void OnClosed(EventArgs e)
     {
         imageLoadCancellation?.Cancel();
         imageLoadCancellation?.Dispose();
@@ -46,7 +46,7 @@ public sealed partial class BiologyCodexWindow : Window
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         viewModel.SetUriLauncher(null);
         ReplaceImage(null);
-        base.OnClosed(eventArgs);
+        base.OnClosed(e);
     }
 
     private void OnViewModelPropertyChanged(

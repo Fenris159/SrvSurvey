@@ -92,7 +92,6 @@ public sealed class VisitedStarsCacheService(
                 activated = true;
                 await VerifyHashAsync(target, download.Sha256, cancellationToken)
                     .ConfigureAwait(false);
-                activated = false;
                 TryDeleteIfExists(rollback);
             }
             catch
@@ -195,7 +194,6 @@ public sealed class VisitedStarsCacheService(
                 activated = true;
                 await VerifyHashAsync(target, backupHash, cancellationToken)
                     .ConfigureAwait(false);
-                activated = false;
                 TryDeleteIfExists(rollback);
             }
             catch

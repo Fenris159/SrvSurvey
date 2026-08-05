@@ -1107,7 +1107,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private async Task<IReadOnlyList<ColonizationSystemSite>>
         GetSystemSitesForRepairAsync(long systemAddress)
     {
-        for (var attempt = 0; ; attempt++)
+        var attempt = 0;
+        while (true)
         {
             try
             {
@@ -1122,6 +1123,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 await delayAsync(
                     TimeSpan.FromSeconds(1.5 * (attempt + 1)),
                     CancellationToken.None);
+                attempt++;
             }
         }
     }

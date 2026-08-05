@@ -423,13 +423,16 @@ public sealed class HumanSiteMaterialStore
             return path;
         }
 
-        for (var suffix = 1; ; suffix++)
+        var suffix = 1;
+        while (true)
         {
             path = Path.Combine(folder, $"{stem}_{suffix}.json");
             if (!File.Exists(path))
             {
                 return path;
             }
+
+            suffix++;
         }
     }
 
