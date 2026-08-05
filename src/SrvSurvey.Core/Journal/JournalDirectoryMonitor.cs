@@ -2,6 +2,10 @@ using System.Text;
 
 namespace SrvSurvey.Core.Journal;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The monitor is process-scoped and its poll gate may have in-flight waiters.")]
 public sealed class JournalDirectoryMonitor
 {
     private readonly string journalDirectory;

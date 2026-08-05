@@ -478,9 +478,10 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
 
     private static long CalculateConfirmedReward(SystemScanSnapshot snapshot)
     {
-        return snapshot.Bodies.Sum(body => body.Organisms
-            .Where(organism => organism.IsAnalyzed)
-            .Sum(organism => (organism.Reward ?? 0)
+        return snapshot.Bodies.Sum((SystemScanBodySnapshot body) =>
+            body.Organisms
+            .Where((SystemOrganismSnapshot organism) => organism.IsAnalyzed)
+            .Sum((SystemOrganismSnapshot organism) => (organism.Reward ?? 0)
                 * (body.IsFirstFootfall ? 5 : 1)));
     }
 

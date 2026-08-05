@@ -7,6 +7,10 @@ using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The view model is application-scoped and its gate may have in-flight waiters.")]
 public sealed class RamTahViewModel : INotifyPropertyChanged
 {
     private readonly CommanderProfileStore profileStore;

@@ -81,6 +81,10 @@ internal sealed class SharedGameWindowTrackerLease(
     CachedGameWindowTracker tracker,
     Action release) : IGameWindowTracker
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "The shared pool owns the tracker; this lease releases only its reference count.")]
     private CachedGameWindowTracker? tracker = tracker;
     private Action? release = release;
 

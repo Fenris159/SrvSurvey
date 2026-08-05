@@ -508,7 +508,7 @@ public sealed class HistoricalSystemRebuildService
             {
                 throw new AggregateException(
                     $"Historical system activation failed and rollback was incomplete. Verified backup: {finalBackup}",
-                    [activationException, .. rollbackErrors]);
+                    rollbackErrors.Prepend(activationException));
             }
 
             throw new InvalidOperationException(

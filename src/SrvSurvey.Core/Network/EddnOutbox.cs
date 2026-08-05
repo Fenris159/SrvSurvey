@@ -28,6 +28,10 @@ namespace SrvSurvey.Core.Network
         private readonly bool automaticProcessing;
         private readonly object sync = new();
         private readonly object sharedConsentSync = new();
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Usage",
+            "CA2213:Disposable fields should be disposed",
+            Justification = "The durable queue worker may release this gate after Dispose returns.")]
         private readonly SemaphoreSlim processing = new(1, 1);
         private readonly System.Threading.Timer timer;
         private readonly CancellationTokenSource shutdown = new();

@@ -362,7 +362,7 @@ namespace SrvSurvey.Core.Network
             var message = new JObject
             {
                 ["event"] = "FSSSignalDiscovered",
-                ["timestamp"] = signals[0]!["timestamp"]!.DeepClone(),
+                ["timestamp"] = signals[0]["timestamp"]!.DeepClone(),
                 ["SystemAddress"] = location.systemAddress,
                 ["StarSystem"] = location.systemName,
                 ["StarPos"] = position(location),

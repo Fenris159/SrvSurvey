@@ -52,7 +52,6 @@ public sealed class GuardianViewModel
     private readonly AsyncCommand lookupOriginCommand;
     private readonly AsyncCommand clearOriginCommand;
     private readonly AsyncCommand openSelectedSurveyCommand;
-    private readonly AsyncCommand openShareWorkspaceCommand;
     private GuardianLiveSiteState liveSiteState;
     private GuardianCommanderDataReadResult commanderData =
         GuardianCommanderDataReadResult.Empty;
@@ -240,7 +239,7 @@ public sealed class GuardianViewModel
             OpenSelectedSurveyAsync,
             () => SelectedSite?.Reference.Kind is GuardianSiteKind.Ruins
                 or GuardianSiteKind.Structure);
-        openShareWorkspaceCommand = new AsyncCommand(
+        var openShareWorkspaceCommand = new AsyncCommand(
             OpenShareWorkspaceAsync,
             () => true);
         RefreshCommand = refreshCommand;

@@ -345,7 +345,10 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
     {
         try
         {
-            await clipboardWriter!(text);
+            var writer = clipboardWriter
+                ?? throw new InvalidOperationException(
+                    "The clipboard is unavailable.");
+            await writer(text);
             StatusMessage = successMessage;
         }
         catch (Exception exception) when (

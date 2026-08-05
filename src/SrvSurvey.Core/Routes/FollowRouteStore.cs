@@ -4,6 +4,10 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Routes;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The store is process-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class FollowRouteStore
 {
     private const string WorkspaceFileName = ".workspace.json";
@@ -1699,7 +1703,13 @@ public sealed class FollowRouteStore
 
     private static void ValidateFileName(string value, string parameterName)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException(
+                "The file name cannot be empty.",
+                parameterName);
+        }
+
         if (value is "." or ".."
             || !string.Equals(
                 Path.GetFileName(value),

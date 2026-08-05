@@ -21,6 +21,10 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private readonly LegacyOverlayLayout overlayLayout;
     private readonly ICanonnSystemPoiClient canonnSystemPoiClient;
     private readonly Func<string?> commanderNameProvider;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "An in-flight Canonn refresh may release this gate after disposal begins.")]
     private readonly SemaphoreSlim canonnRefreshLock = new(1, 1);
     private readonly SemaphoreSlim fssCaptureLock = new(1, 1);
     private readonly CancellationTokenSource disposalCancellation = new();

@@ -15,6 +15,10 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     private readonly ICanonnSystemPoiClient client;
     private readonly PriorScanPlanner planner;
     private readonly Func<string?> commanderNameProvider;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "An in-flight refresh may release this gate after disposal cancellation.")]
     private readonly SemaphoreSlim refreshLock = new(1, 1);
     private readonly CancellationTokenSource disposalCancellation = new();
     private CanonnSystemPoiResult? cachedResult;

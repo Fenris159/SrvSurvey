@@ -32,6 +32,10 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
     private readonly AsyncCommand reloadSavedCommand;
     private readonly AsyncCommand removeCommand;
     private readonly object watcherSync = new();
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "An in-flight import may release this gate after the view model is disposed.")]
     private readonly SemaphoreSlim importLock = new(1, 1);
     private RavenQuestReference? reference;
     private QuestDevelopmentStateSnapshot? state;

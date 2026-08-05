@@ -21,6 +21,10 @@ using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "Avalonia owns the App lifetime; OnExit disposes all application services.")]
 public sealed partial class App : Application
 {
     private GuardianOverlayCoordinator? guardianOverlayCoordinator;

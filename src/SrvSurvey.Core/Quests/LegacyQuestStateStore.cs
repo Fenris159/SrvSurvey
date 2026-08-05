@@ -7,6 +7,10 @@ using System.Text.Json.Serialization;
 
 namespace SrvSurvey.Core.Quests;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The store is coordinator-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class LegacyQuestStateStore
 {
     private static readonly JsonSerializerOptions PortableJsonOptions = new()

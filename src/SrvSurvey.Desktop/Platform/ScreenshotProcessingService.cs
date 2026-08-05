@@ -21,6 +21,10 @@ public interface IScreenshotProcessingService
         CancellationToken cancellationToken = default);
 }
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The service is application-scoped and its gate may have in-flight waiters.")]
 public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 {
     private readonly SemaphoreSlim processingLock = new(1, 1);

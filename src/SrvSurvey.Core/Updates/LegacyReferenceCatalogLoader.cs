@@ -25,6 +25,10 @@ public sealed record LegacyReferenceCatalogLoadResult(
 {
     public int LocalCatalogCount => Sources.Count(source => source.IsLocal);
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Performance",
+        "S2365:Properties should not make collection copies",
+        Justification = "This get-only property caches one immutable snapshot during construction.")]
     public IReadOnlyList<string> Warnings { get; } = Sources
         .Where(source => source.Warning is not null)
         .Select(source => source.Warning!)

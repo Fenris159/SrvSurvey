@@ -1121,6 +1121,10 @@ public sealed class FrontierAccountServiceTests
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Design",
+        "CA1001:Types that own disposable fields should be disposable",
+        Justification = "The test double and its gate live for the duration of each test.")]
     private sealed class MemoryCredentialStore : IFrontierCredentialStore
     {
         private readonly SemaphoreSlim gate = new(1, 1);

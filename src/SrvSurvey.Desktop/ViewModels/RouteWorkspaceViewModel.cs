@@ -10,6 +10,10 @@ using SrvSurvey.Desktop.Presentation;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The view model is window-scoped and its gate may have in-flight waiters.")]
 public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 {
     private const string Unavailable = "\u2014";

@@ -4,6 +4,10 @@ using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Core.Journeys;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The service is application-scoped and its gate may have in-flight waiters.")]
 public sealed class JourneyService
 {
     private readonly JourneyStore journeyStore;

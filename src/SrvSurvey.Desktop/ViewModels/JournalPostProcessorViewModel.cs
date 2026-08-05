@@ -9,6 +9,10 @@ using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The operation owns and disposes each cancellation source when it completes.")]
 public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
 {
     private readonly CommanderProfileCatalog commanderCatalog;

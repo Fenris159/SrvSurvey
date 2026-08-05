@@ -8,6 +8,10 @@ using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The view model is application-scoped; its background workers own their cancellation sources.")]
 public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 {
     private const string Unavailable = "\u2014";

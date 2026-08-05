@@ -97,6 +97,10 @@ namespace SrvSurvey.Core.Inara
             return events;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Maintainability",
+            "S1479:Switch statements should not have too many case clauses",
+            Justification = "This dispatcher mirrors the external Elite journal event protocol in one auditable table.")]
         private void mapEvent(string name, string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
         {
             switch (name)

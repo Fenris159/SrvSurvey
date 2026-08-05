@@ -10,6 +10,10 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
     private readonly QuestDevelopmentFolderLoader developmentFolderLoader;
     private readonly Action<string>? log;
     private readonly QuestCommanderContextTracker contextTracker = new();
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "The gate keeps DisposeAsync idempotent and may be released by in-flight work.")]
     private readonly SemaphoreSlim coordinatorLock = new(1, 1);
     private readonly Dictionary<QuestIdentity, RuntimeRegistration> runtimes = [];
     private QuestRuntimeConfiguration? configuration;

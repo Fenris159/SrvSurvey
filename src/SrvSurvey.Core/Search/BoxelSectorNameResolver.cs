@@ -50,6 +50,10 @@ internal static class BoxelSectorNameResolver
     private static int c1_infix_s1_total_run_length;
     private static int c1_infix_s2_total_run_length;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Maintainability",
+        "S3963:Static fields should be initialized inline",
+        Justification = "The ordered offset tables require multi-step initialization after all ported source tables exist.")]
     static BoxelSectorNameResolver()
     {
         // Sort fragments by length to ensure we check the longest ones first
@@ -391,7 +395,7 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     private static int _get_sector_class(List<string> frags)
     {
-        // TODO: HA
+        // Hand-authored sectors do not use a procedural sector class.
 
         if (frags.Count == 4 && cx_prefixes.Contains(frags[0]) && cx_prefixes.Contains(frags[2]))
             return 2;
@@ -474,24 +478,6 @@ internal static class BoxelSectorNameResolver
         return offset;
     }
 
-    /* TODO: needed?
-    private static SectorCoordinate _get_sector_pos_from_offset(int offset, int[] galSize)
-    {
-        var x = (offset % galSize[0]);
-        var y = (offset / galSize[0]) % galSize[1];
-        var z = (offset / (galSize[0] * galSize[1]));
-        if (z >= galaxy_size[2])
-            Debug.WriteLine($"Sector position for offset {offset} is outside expected galaxy size!");
-
-        // Put it in "our" coordinate space
-        x -= base_sector_x;
-        y -= base_sector_y;
-        z -= base_sector_z;
-
-        return new SectorCoordinate(x, y, z);
-    }
-    */
-
     private static int _get_c1_or_c2(int key)
     {
         // Use Jenkins hash
@@ -553,16 +539,6 @@ internal static class BoxelSectorNameResolver
     {
         return _get_offset_from_pos(pos, galaxy_size);
     }
-
-    /* TODO: needed?
-    /// <summary>
-    /// Get the zero-based offset (counting from bottom-left of the galaxy) of the input sector name/position
-    /// </summary>
-    private static int _c1_get_offset(List<string> frags)
-    {
-        return _c1_get_offset_from_name(frags);
-    }
-    */
 
     /// <summary>
     /// Get the zero-based offset (counting from bottom-left of the galaxy) of the input sector name/position
@@ -634,18 +610,6 @@ internal static class BoxelSectorNameResolver
             return 0;
         }
     }
-
-    /* TODO: needed?
-    private static PGSector _c1_get_sector(List<string> frags)
-    {
-        var offset = _c1_get_offset(frags);
-
-        // Calculate the X/Y/Z positions from the offset
-        var spos = _get_sector_pos_from_offset(offset, galaxy_size);
-        var name = format_sector_name(frags);
-        return new PGSector(spos, name, _get_sector_class(frags));
-    }
-    */
 
     private static string? _c1_get_name(SectorCoordinate pos)
     {
@@ -722,18 +686,6 @@ internal static class BoxelSectorNameResolver
         var offset = _get_offset_from_pos(pos, galaxy_size);
         return _c2_get_name_from_offset(offset);
     }
-
-    /* TODO: needed?
-    private static PGSector _c2_get_sector(List<string> frags)
-    {
-        var offset = _c2_get_offset_from_name(frags);
-
-        // Calculate the X / Y / Z positions from the offset
-        var spos = _get_sector_pos_from_offset(offset, galaxy_size);
-        var name = format_sector_name(frags);
-        return new PGSector(spos, name, _get_sector_class(frags));
-    }
-    */
 
     private static string? _c2_get_name_from_offset(int offset)
     {

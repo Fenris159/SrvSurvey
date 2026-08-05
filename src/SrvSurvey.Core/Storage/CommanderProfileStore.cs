@@ -9,6 +9,10 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Storage;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The store is profile-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class CommanderProfileStore(string profileDirectory)
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()

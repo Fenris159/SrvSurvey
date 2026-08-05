@@ -54,6 +54,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         firstFootfallInferenceService;
     private readonly CancellationTokenSource firstFootfallInferenceCancellation =
         new();
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "The system-body worker disposes the captured source in its finally block.")]
     private CancellationTokenSource? systemBodyDataCancellation;
     private readonly RouteAutoCopyCoordinator routeAutoCopyCoordinator;
     private readonly GreenGasGiantPublicationCoordinator

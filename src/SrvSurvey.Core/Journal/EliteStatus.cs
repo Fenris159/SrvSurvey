@@ -151,6 +151,10 @@ public sealed record StatusDestination
 }
 
 [Flags]
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Naming",
+    "S2344:Enumeration type names should not have Flags suffixes",
+    Justification = "The name mirrors Elite's Status.json Flags field and is part of the public model.")]
 public enum StatusFlags : uint
 {
     None = 0,
@@ -189,6 +193,10 @@ public enum StatusFlags : uint
 }
 
 [Flags]
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Naming",
+    "S2342:Enumeration types should comply with a naming convention",
+    Justification = "The name mirrors Elite's Status.json Flags2 field and is part of the public model.")]
 public enum StatusFlags2 : uint
 {
     None = 0,

@@ -41,6 +41,10 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
     private readonly ICodexDiscoveryLocationClient locationClient;
     private readonly CodexBingoNode rootDefinition;
     private readonly CodexBingoTreeNodeViewModel rootNode;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "An in-flight refresh may release this gate after disposal cancellation.")]
     private readonly SemaphoreSlim refreshLock = new(1, 1);
     private readonly AsyncCommand openWindowCommand;
     private readonly AsyncCommand refreshCommand;
