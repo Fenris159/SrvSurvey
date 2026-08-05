@@ -1242,6 +1242,162 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task AdjustsLinkedSquadronCarrierFromShipCargoDiffNotTransferJournal()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "SQD-001",
+            Cargo = new Dictionary<string, int>
+            {
+                ["steel"] = 75,
+                ["water"] = 10,
+            },
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [],
+                [],
+                null,
+                [carrier]),
+            FleetCarrierResponse = carrier,
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"SQD-001","StationType":"FleetCarrier",
+                "StationServices":["commodities","squadronBank"]
+                """),
+        ]);
+        viewModel.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip,
+        });
+
+        var cargo = new CargoInventoryState();
+        cargo.Reset(new CargoSnapshot(
+            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+            "Cargo",
+            "Ship",
+            50,
+            [new CargoItem("steel", "Steel", 50, 0)]));
+
+        // Freeze before-state, then apply transfer mutation (as MainWindow does).
+        viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
+        Assert.True(cargo.HasPreservedSnapshot);
+        Assert.True(cargo.Apply(Event(
+            "CargoTransfer",
+            """
+            "Transfers":[
+              {"Type":"Steel","Count":10,"Direction":"tocarrier"},
+              {"Type":"Water","Count":3,"Direction":"toship"}]
+            """)));
+        // Ship after: steel 40, water 3
+        Assert.Equal(40, cargo.CreateSnapshot()!.GetCount("steel"));
+        Assert.Equal(3, cargo.CreateSnapshot()!.GetCount("water"));
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[
+                      {"Type":"Steel","Count":10,"Direction":"tocarrier"},
+                      {"Type":"Water","Count":3,"Direction":"toship"}]
+                    """),
+            ],
+            allowPublishing: true,
+            cargoInventory: cargo,
+            cargoActivity: true);
+
+        // Journal transfer path must not fire for squadron; only inverted ship diff.
+        var adjustment = Assert.Single(client.FleetCarrierAdjustments);
+        Assert.Equal(10, adjustment.Changes["steel"]);
+        Assert.Equal(-3, adjustment.Changes["water"]);
+        Assert.Contains("squadron", viewModel.StatusMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.False(cargo.HasPreservedSnapshot);
+    }
+
+    [Fact]
+    public async Task SkipsSquadronCargoDiffAfterMarketBuyAlreadyAdjustedCarrier()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "SQD-001",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [],
+                [],
+                null,
+                [carrier]),
+            FleetCarrierResponse = carrier,
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"SQD-001","StationType":"FleetCarrier",
+                "StationServices":["commodities","squadronBank"]
+                """),
+        ]);
+        viewModel.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip,
+        });
+
+        var cargo = new CargoInventoryState();
+        cargo.Reset(new CargoSnapshot(
+            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+            "Cargo",
+            "Ship",
+            0,
+            []));
+        cargo.Apply(Event(
+            "MarketBuy",
+            "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"));
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [
+                Event(
+                    "MarketBuy",
+                    "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"),
+            ],
+            allowPublishing: true,
+            cargoInventory: cargo,
+            cargoActivity: true);
+
+        // Market buy adjusts once; skipNext prevents a second cargo-diff adjustment.
+        var adjustment = Assert.Single(client.FleetCarrierAdjustments);
+        Assert.Equal(-5, adjustment.Changes["steel"]);
+    }
+
+    [Fact]
     public async Task PublishesCurrentCarrierAndThenReconcilesFreshMarket()
     {
         var carrier = new ColonizationFleetCarrier

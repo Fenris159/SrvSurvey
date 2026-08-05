@@ -1757,6 +1757,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             foreach (var journalEvent in update.JournalEvents)
             {
+                // Squadron linked FCs freeze the true before-state before CargoTransfer mutates
+                // live inventory so the later GetDiff cannot collapse to a zero delta.
+                if (string.Equals(
+                        journalEvent.EventName,
+                        "CargoTransfer",
+                        StringComparison.Ordinal))
+                {
+                    Colonization.PrepareSquadronCargoTransferSnapshot(
+                        cargoInventoryState);
+                }
+
                 cargoChanged |= cargoInventoryState.Apply(
                     journalEvent,
                     latestStatus?.InSrv == true);
@@ -1897,9 +1908,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
         await ApplyQuestUpdateAsync(update, allowSharedCargo);
         await Colonization.SetCommanderAsync(journalState.CommanderName);
+        var cargoActivity = allowSharedCargo
+            && (cargoChanged
+                || update.Cargo is not null
+                || update.JournalEvents.Any(journalEvent =>
+                    journalEvent.EventName is "Cargo"
+                        or "CargoTransfer"
+                        or "MarketBuy"
+                        or "MarketSell"));
         await Colonization.SynchronizeLiveProjectsAsync(
             update.JournalEvents,
-            allowPublishing: !update.IsBootstrapRead);
+            allowPublishing: !update.IsBootstrapRead,
+            cargoInventory: allowSharedCargo ? cargoInventoryState : null,
+            cargoActivity: cargoActivity);
         var initializedJourney = await Journey.UpdateContextAsync(
             journalState.FrontierId,
             journalState.CommanderName,

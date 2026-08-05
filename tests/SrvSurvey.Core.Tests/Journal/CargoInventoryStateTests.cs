@@ -117,6 +117,51 @@ public sealed class CargoInventoryStateTests
         Assert.False(state.Reset(null));
     }
 
+    [Fact]
+    public void CaptureBeforeSnapshotFreezesBeforeCargoTransferMutation()
+    {
+        var state = new CargoInventoryState();
+        state.Reset(Snapshot(
+            "Ship",
+            new CargoItem("steel", "Steel", 50, 0)));
+
+        // Without freeze, mutating inventory then replacing from an after-file would
+        // collapse the squadron getDiff to zero (the legacy WinForms race).
+        state.CaptureBeforeSnapshot();
+        Assert.True(state.HasPreservedSnapshot);
+
+        Assert.True(state.Apply(Event(
+            "CargoTransfer",
+            "\"Transfers\":[{\"Type\":\"steel\",\"Count\":10,\"Direction\":\"tocarrier\"}]")));
+        Assert.Equal(40, state.CreateSnapshot()!.GetCount("steel"));
+
+        // Companion-file reload after transfer must not overwrite the frozen before-state.
+        state.Reset(Snapshot(
+            "Ship",
+            new CargoItem("steel", "Steel", 40, 0)));
+        Assert.True(state.HasPreservedSnapshot);
+        Assert.Equal(40, state.CreateSnapshot()!.GetCount("steel"));
+
+        var shipDiff = state.GetDiff();
+        Assert.False(state.HasPreservedSnapshot);
+        Assert.Equal(-10, shipDiff["steel"]);
+        Assert.Single(shipDiff);
+    }
+
+    [Fact]
+    public void ClearPreservedSnapshotDropsHeldBeforeStateWithoutDiff()
+    {
+        var state = new CargoInventoryState();
+        state.Reset(Snapshot(
+            "Ship",
+            new CargoItem("water", "Water", 3, 0)));
+        state.CaptureBeforeSnapshot();
+        Assert.True(state.HasPreservedSnapshot);
+
+        state.ClearPreservedSnapshot();
+        Assert.False(state.HasPreservedSnapshot);
+    }
+
     private static CargoSnapshot Snapshot(
         string vessel,
         params CargoItem[] items)

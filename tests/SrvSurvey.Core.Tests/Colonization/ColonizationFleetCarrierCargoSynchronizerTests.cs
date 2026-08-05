@@ -97,12 +97,19 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
     }
 
     [Fact]
-    public void RefusesSrvAndMalformedTransfersAndSkipsSquadronDeposits()
+    public void RefusesSrvAndMalformedTransfersAndSkipsAllSquadronTransfers()
     {
         var transfer = Event(
             "CargoTransfer",
             """
             "Transfers":[{"Type":"Steel","Count":4,"Direction":"tocarrier"}]
+            """);
+        var withdraw = Event(
+            "CargoTransfer",
+            """
+            "Transfers":[
+              {"Type":"Steel","Count":4,"Direction":"tocarrier"},
+              {"Type":"Water","Count":3,"Direction":"toship"}]
             """);
 
         Assert.Empty(
@@ -110,9 +117,15 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
                 transfer,
                 Dock(),
                 isInMainShip: false));
+        // Squadron carriers use ship cargo GetDiff, not journal transfer deltas.
         Assert.Empty(
             ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
                 transfer,
+                Dock("squadronBank"),
+                isInMainShip: true));
+        Assert.Empty(
+            ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
+                withdraw,
                 Dock("squadronBank"),
                 isInMainShip: true));
         Assert.Throws<InvalidDataException>(() =>
@@ -122,6 +135,28 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
                     "\"Transfers\":[{\"Type\":\"Steel\",\"Direction\":\"tocarrier\"}]"),
                 Dock(),
                 isInMainShip: true));
+    }
+
+    [Fact]
+    public void DetectsSquadronFleetCarriersAndInvertsShipDiffForCarrierSupply()
+    {
+        Assert.True(
+            ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(
+                Dock("squadronBank")));
+        Assert.False(
+            ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(
+                Dock()));
+
+        var shipDiff = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["steel"] = -10,
+            ["water"] = 3,
+        };
+        var fcDiff = ColonizationFleetCarrierCargoSynchronizer
+            .CreateSquadronCargoDiffAdjustment(shipDiff);
+
+        Assert.Equal(10, fcDiff["steel"]);
+        Assert.Equal(-3, fcDiff["water"]);
     }
 
     private static MarketSnapshot Market(

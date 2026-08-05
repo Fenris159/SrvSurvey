@@ -67,6 +67,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private string? profileFrontierId;
     private bool profileIsOdyssey = true;
     private (long MarketId, DateTimeOffset Timestamp)? lastSyncedMarket;
+    /// <summary>
+    /// When true, the next squadron cargo GetDiff is skipped because MarketBuy/Sell
+    /// already sent AdjustFleetCarrierCargo for this linked squadron FC (legacy parity).
+    /// </summary>
+    private bool skipNextCargoEvent;
     private string ravenCredentialStatus =
         "Load a commander profile to configure a Raven API key.";
     private string fleetCarrierSyncStatus =
@@ -610,14 +615,22 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     public async Task SynchronizeLiveProjectsAsync(
         IReadOnlyList<JournalEventEnvelope> journalEvents,
-        bool allowPublishing)
+        bool allowPublishing,
+        CargoInventoryState? cargoInventory = null,
+        bool cargoActivity = false)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (!allowPublishing
             || !IsEnabled
-            || CommanderName is null
-            || journalEvents.Count == 0)
+            || CommanderName is null)
         {
+            // Still drop a held squadron snapshot when publishing is disabled so
+            // lastInventory cannot stay frozen across later cargo updates.
+            if (cargoInventory?.HasPreservedSnapshot == true)
+            {
+                cargoInventory.ClearPreservedSnapshot();
+            }
+
             return;
         }
 
@@ -660,6 +673,31 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             {
                 messages.Add(
                     $"Raven project sync skipped {journalEvent.EventName}: "
+                        + exception.Message);
+            }
+        }
+
+        if (cargoInventory is not null)
+        {
+            try
+            {
+                var squadronMessage =
+                    await SynchronizeSquadronFleetCarrierCargoDiffAsync(
+                        cargoInventory,
+                        cargoActivity);
+                if (!string.IsNullOrWhiteSpace(squadronMessage))
+                {
+                    messages.Add(squadronMessage);
+                }
+            }
+            catch (Exception exception) when (
+                exception is HttpRequestException
+                    or InvalidDataException
+                    or TaskCanceledException
+                    or ArgumentException)
+            {
+                messages.Add(
+                    "Raven project sync skipped squadron cargo diff: "
                         + exception.Message);
             }
         }
@@ -735,6 +773,108 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         return $"Registered {CommanderName} as the Raven architect for {currentSystemName}.";
     }
 
+    /// <summary>
+    /// Freeze ship cargo before CargoTransfer mutates the live projection when docked on a
+    /// linked squadron fleet carrier. Squadron carriers do not use journal transfer deltas;
+    /// they rely on <see cref="SynchronizeSquadronFleetCarrierCargoDiffAsync"/>.
+    /// </summary>
+    public void PrepareSquadronCargoTransferSnapshot(CargoInventoryState cargo)
+    {
+        ArgumentNullException.ThrowIfNull(cargo);
+        if (!FleetCarrierCargoSyncEnabled
+            || storedRavenApiKey is null
+            || constructionState.CurrentDock is not { } dock
+            || !IsLinkedSquadronFleetCarrier(dock))
+        {
+            return;
+        }
+
+        cargo.CaptureBeforeSnapshot();
+    }
+
+    /// <summary>
+    /// After ship cargo is updated, compute the squadron FC cargo delta from the frozen
+    /// before-snapshot (or the last pre-replace inventory) and send it to Raven Colonial.
+    /// </summary>
+    public async Task<string?> SynchronizeSquadronFleetCarrierCargoDiffAsync(
+        CargoInventoryState cargo,
+        bool cargoActivity)
+    {
+        ArgumentNullException.ThrowIfNull(cargo);
+        if (!FleetCarrierCargoSyncEnabled
+            || storedRavenApiKey is null
+            || constructionState.CurrentDock is not { } dock)
+        {
+            if (cargo.HasPreservedSnapshot)
+            {
+                cargo.ClearPreservedSnapshot();
+            }
+
+            return null;
+        }
+
+        if (skipNextCargoEvent)
+        {
+            skipNextCargoEvent = false;
+            // Do not leave a held snapshot that would freeze lastInventory forever.
+            cargo.ClearPreservedSnapshot();
+            return null;
+        }
+
+        if (!IsLinkedSquadronFleetCarrier(dock))
+        {
+            if (cargo.HasPreservedSnapshot)
+            {
+                cargo.ClearPreservedSnapshot();
+            }
+
+            return null;
+        }
+
+        // Match legacy: only run after Cargo activity / preserved transfer snapshot.
+        if (!cargoActivity && !cargo.HasPreservedSnapshot)
+        {
+            return null;
+        }
+
+        // Compute diff while inventory is stable; network I/O stays outside GetDiff's lock.
+        var shipDiff = cargo.GetDiff();
+        if (shipDiff.Count == 0)
+        {
+            return null;
+        }
+
+        var adjustments = ColonizationFleetCarrierCargoSynchronizer
+            .CreateSquadronCargoDiffAdjustment(shipDiff);
+        if (adjustments.Count == 0)
+        {
+            return null;
+        }
+
+        CommodityOverlay.ApplyPendingFleetCarrierCargo(adjustments.Keys);
+        try
+        {
+            var updatedCargo = await client.AdjustFleetCarrierCargoAsync(
+                dock.MarketId,
+                adjustments,
+                storedRavenApiKey);
+            var localCarrier = fleetCarriers.First(carrier =>
+                carrier.MarketId == dock.MarketId);
+            ReplaceLocalFleetCarrier(localCarrier with
+            {
+                Cargo = updatedCargo.ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value,
+                    StringComparer.OrdinalIgnoreCase),
+            });
+            return $"Updated {adjustments.Count:N0} linked squadron Fleet Carrier cargo entry(s) from ship cargo diff.";
+        }
+        finally
+        {
+            CommodityOverlay.ApplyPendingFleetCarrierCargo(null);
+        }
+    }
+
     private async Task<string?> SynchronizeFleetCarrierCargoAdjustmentAsync(
         JournalEventEnvelope journalEvent)
     {
@@ -772,12 +912,31 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                     pair => pair.Value,
                     StringComparer.OrdinalIgnoreCase),
             });
+
+            // Market buy/sell already adjusted the FC; skip the following Cargo GetDiff so
+            // squadron carriers are not double-counted (legacy skipNextCargoEvent).
+            if (journalEvent.EventName is "MarketBuy" or "MarketSell"
+                && ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(dock))
+            {
+                skipNextCargoEvent = true;
+            }
+
             return $"Updated {adjustments.Count:N0} linked Fleet Carrier cargo entry(s) from {journalEvent.EventName}.";
         }
         finally
         {
             CommodityOverlay.ApplyPendingFleetCarrierCargo(null);
         }
+    }
+
+    private bool IsLinkedSquadronFleetCarrier(ColonizationDockingSnapshot dock)
+    {
+        return string.Equals(
+                dock.StationType,
+                "FleetCarrier",
+                StringComparison.OrdinalIgnoreCase)
+            && ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(dock)
+            && fleetCarriers.Any(carrier => carrier.MarketId == dock.MarketId);
     }
 
     private async Task<string?> SynchronizeDockedProjectAsync(
