@@ -2,6 +2,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Controls;
@@ -73,8 +74,10 @@ public sealed class BiologyRewardBandControl : Control
         AvaloniaProperty.Register<BiologyRewardBandControl, bool>(
             nameof(IsDimmed));
 
+    // Immutable brush is free-threaded; a static SolidColorBrush would pin to the
+    // first UI thread that touches it and break parallel Avalonia rendering tests.
     private static readonly IBrush DefaultEmptyBrush =
-        new SolidColorBrush(Color.FromArgb(40, 255, 255, 255));
+        new ImmutableSolidColorBrush(Color.FromArgb(40, 255, 255, 255));
 
     static BiologyRewardBandControl()
     {
