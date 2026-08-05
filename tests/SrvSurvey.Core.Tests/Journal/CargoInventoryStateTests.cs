@@ -117,6 +117,88 @@ public sealed class CargoInventoryStateTests
         Assert.False(state.Reset(null));
     }
 
+    [Fact]
+    public void CaptureBeforeSnapshotFreezesBeforeCargoTransferMutation()
+    {
+        var state = new CargoInventoryState();
+        state.Reset(Snapshot(
+            "Ship",
+            new CargoItem("steel", "Steel", 50, 0)));
+
+        // Without freeze, mutating inventory then replacing from an after-file would
+        // collapse the squadron getDiff to zero (the legacy WinForms race).
+        state.CaptureBeforeSnapshot();
+        Assert.True(state.HasPreservedSnapshot);
+
+        Assert.True(state.Apply(Event(
+            "CargoTransfer",
+            "\"Transfers\":[{\"Type\":\"steel\",\"Count\":10,\"Direction\":\"tocarrier\"}]")));
+        Assert.Equal(40, state.CreateSnapshot()!.GetCount("steel"));
+
+        // Companion-file reload after transfer must not overwrite the frozen before-state.
+        state.Reset(Snapshot(
+            "Ship",
+            new CargoItem("steel", "Steel", 40, 0)));
+        Assert.True(state.HasPreservedSnapshot);
+        Assert.Equal(40, state.CreateSnapshot()!.GetCount("steel"));
+
+        var shipDiff = state.GetDiff();
+        Assert.False(state.HasPreservedSnapshot);
+        Assert.Equal(-10, shipDiff["steel"]);
+        Assert.Single(shipDiff);
+    }
+
+    [Fact]
+    public void ClearPreservedSnapshotDropsHeldBeforeStateWithoutDiff()
+    {
+        var state = new CargoInventoryState();
+        state.Reset(Snapshot(
+            "Ship",
+            new CargoItem("water", "Water", 3, 0)));
+        state.CaptureBeforeSnapshot();
+        Assert.True(state.HasPreservedSnapshot);
+
+        state.ClearPreservedSnapshot();
+        Assert.False(state.HasPreservedSnapshot);
+
+        // Clear only drops the preserve flag; lastInventory still holds the captured baseline
+        // until GetDiff consumes and rebases it. With no mutation, first GetDiff is empty.
+        Assert.Empty(state.GetDiff());
+
+        Assert.True(state.Apply(Event(
+            "CargoTransfer",
+            "\"Transfers\":[{\"Type\":\"water\",\"Count\":1,\"Direction\":\"tocarrier\"}]")));
+        var first = state.GetDiff();
+        Assert.Equal(-1, first["water"]);
+        Assert.Single(first);
+        // Second call rebased after the first; no further change.
+        Assert.Empty(state.GetDiff());
+    }
+
+    [Fact]
+    public void CaptureBeforeSnapshotKeepsFirstBaselineAcrossMultipleTransfers()
+    {
+        var state = new CargoInventoryState();
+        state.Reset(Snapshot(
+            "Ship",
+            new CargoItem("steel", "Steel", 50, 0)));
+
+        state.CaptureBeforeSnapshot();
+        Assert.True(state.Apply(Event(
+            "CargoTransfer",
+            "\"Transfers\":[{\"Type\":\"steel\",\"Count\":10,\"Direction\":\"tocarrier\"}]")));
+        // A second capture must not overwrite the first before-state while preserve is held.
+        // Callers gate on HasPreservedSnapshot; re-capturing here would be wrong.
+        Assert.True(state.HasPreservedSnapshot);
+        Assert.True(state.Apply(Event(
+            "CargoTransfer",
+            "\"Transfers\":[{\"Type\":\"steel\",\"Count\":5,\"Direction\":\"tocarrier\"}]")));
+
+        var shipDiff = state.GetDiff();
+        Assert.Equal(-15, shipDiff["steel"]);
+        Assert.Empty(state.GetDiff());
+    }
+
     private static CargoSnapshot Snapshot(
         string vessel,
         params CargoItem[] items)
