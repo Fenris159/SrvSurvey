@@ -2,6 +2,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Controls;
@@ -66,9 +67,17 @@ public sealed class BiologyRewardBandControl : Control
     public static readonly StyledProperty<IBrush?> HatchBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(HatchBrush));
+    public static readonly StyledProperty<IBrush?> EmptyBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(EmptyBrush));
     public static readonly StyledProperty<bool> IsDimmedProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, bool>(
             nameof(IsDimmed));
+
+    // Immutable brush is free-threaded; a static SolidColorBrush would pin to the
+    // first UI thread that touches it and break parallel Avalonia rendering tests.
+    private static readonly IBrush DefaultEmptyBrush =
+        new ImmutableSolidColorBrush(Color.FromArgb(40, 255, 255, 255));
 
     static BiologyRewardBandControl()
     {
@@ -91,6 +100,7 @@ public sealed class BiologyRewardBandControl : Control
             PredictionBrushProperty,
             UnknownBrushProperty,
             HatchBrushProperty,
+            EmptyBrushProperty,
             IsDimmedProperty);
     }
 
@@ -202,6 +212,12 @@ public sealed class BiologyRewardBandControl : Control
         set => SetValue(HatchBrushProperty, value);
     }
 
+    public IBrush? EmptyBrush
+    {
+        get => GetValue(EmptyBrushProperty);
+        set => SetValue(EmptyBrushProperty, value);
+    }
+
     public bool IsDimmed
     {
         get => GetValue(IsDimmedProperty);
@@ -276,6 +292,17 @@ public sealed class BiologyRewardBandControl : Control
             else if (segment == BiologyRewardBandSegment.Potential)
             {
                 context.DrawRectangle(potential, null, rect, 1, 1);
+            }
+            else
+            {
+                // Leave empty slots visible as recessed gaps so 1/2/3-bar
+                // illustrations still show the full four-slot structure.
+                context.DrawRectangle(
+                    EmptyBrush ?? DefaultEmptyBrush,
+                    null,
+                    rect,
+                    1,
+                    1);
             }
         }
 

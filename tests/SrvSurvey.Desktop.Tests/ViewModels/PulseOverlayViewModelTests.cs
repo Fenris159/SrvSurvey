@@ -115,6 +115,28 @@ public sealed class PulseOverlayViewModelTests : IDisposable
             .Load().Enabled);
     }
 
+    [Fact]
+    public void HideJournalWriteTimerInvertsEnabledAndPersists()
+    {
+        var viewModel = CreateViewModel(new MutableTimeProvider(DateTimeOffset.UtcNow));
+        Assert.True(viewModel.Enabled);
+        Assert.False(viewModel.HideJournalWriteTimer);
+
+        viewModel.HideJournalWriteTimer = true;
+
+        Assert.True(viewModel.HideJournalWriteTimer);
+        Assert.False(viewModel.Enabled);
+        Assert.False(viewModel.ShouldShow);
+        Assert.False(new PulseOverlaySettingsStore(
+            Path.Combine(temporaryDirectory, "ui-settings.json"))
+            .Load().Enabled);
+
+        viewModel.HideJournalWriteTimer = false;
+
+        Assert.False(viewModel.HideJournalWriteTimer);
+        Assert.True(viewModel.Enabled);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

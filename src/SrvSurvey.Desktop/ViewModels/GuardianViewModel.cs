@@ -422,10 +422,20 @@ public sealed class GuardianViewModel
         {
             if (SetField(ref showRuinsMeasurementGrid, value))
             {
+                OnPropertyChanged(nameof(DisableRuinsMeasurementGrid));
                 SaveOverlayPreferences();
                 NotifyGuardianGuidanceChanged();
             }
         }
+    }
+
+    /// <summary>
+    /// Upstream FormSettings polarity: checked means the heading grid is off.
+    /// </summary>
+    public bool DisableRuinsMeasurementGrid
+    {
+        get => !ShowRuinsMeasurementGrid;
+        set => ShowRuinsMeasurementGrid = !value;
     }
 
     public bool ShowComponentMaterials
@@ -450,10 +460,20 @@ public sealed class GuardianViewModel
         {
             if (SetField(ref showAerialAlignmentGrid, value))
             {
+                OnPropertyChanged(nameof(DisableAerialAlignmentGrid));
                 SaveOverlayPreferences();
                 NotifyGuardianGuidanceChanged();
             }
         }
+    }
+
+    /// <summary>
+    /// Upstream FormSettings polarity: checked means the aerial grid is off.
+    /// </summary>
+    public bool DisableAerialAlignmentGrid
+    {
+        get => !ShowAerialAlignmentGrid;
+        set => ShowAerialAlignmentGrid = !value;
     }
 
     public bool ShowMapNotes

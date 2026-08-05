@@ -23,6 +23,53 @@ public sealed class GuardianViewModelTests
             GuardianViewModel.GetGuardianBlueprintText(siteType));
     }
 
+    [Fact]
+    public void DisableAlignmentGridPreferencesInvertShowFlagsAndPersist()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-GuardianDisableGrids-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var settingsPath = Path.Combine(root, "ui-settings.json");
+            var store = new GuardianOverlaySettingsStore(settingsPath);
+            var viewModel = new GuardianViewModel(root, overlaySettingsStore: store);
+
+            Assert.True(viewModel.ShowRuinsMeasurementGrid);
+            Assert.False(viewModel.DisableRuinsMeasurementGrid);
+            Assert.True(viewModel.ShowAerialAlignmentGrid);
+            Assert.False(viewModel.DisableAerialAlignmentGrid);
+
+            viewModel.DisableRuinsMeasurementGrid = true;
+            viewModel.DisableAerialAlignmentGrid = true;
+
+            Assert.True(viewModel.DisableRuinsMeasurementGrid);
+            Assert.False(viewModel.ShowRuinsMeasurementGrid);
+            Assert.True(viewModel.DisableAerialAlignmentGrid);
+            Assert.False(viewModel.ShowAerialAlignmentGrid);
+
+            var saved = store.Load();
+            Assert.True(saved.DisableRuinsMeasurementGrid);
+            Assert.True(saved.DisableAerialAlignmentGrid);
+
+            viewModel.DisableRuinsMeasurementGrid = false;
+            viewModel.DisableAerialAlignmentGrid = false;
+
+            Assert.False(viewModel.DisableRuinsMeasurementGrid);
+            Assert.True(viewModel.ShowRuinsMeasurementGrid);
+            Assert.False(viewModel.DisableAerialAlignmentGrid);
+            Assert.True(viewModel.ShowAerialAlignmentGrid);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     [Theory]
     [InlineData("Alpha", "$Ancient:#index=1;", "alpha-heading-guide.png")]
     [InlineData("Beta", "$Ancient:#index=1;", "beta-heading-guide.png")]

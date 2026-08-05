@@ -423,7 +423,28 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool UseSmallCanonnRadarCircles
     {
         get => useSmallCanonnRadarCircles;
-        set => SetPreference(ref useSmallCanonnRadarCircles, value);
+        set
+        {
+            if (SetPreference(ref useSmallCanonnRadarCircles, value))
+            {
+                OnPropertyChanged(nameof(UseBioSignalRadius));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Upstream radio option opposite of useSmallCirclesWithCanonn.
+    /// </summary>
+    public bool UseBioSignalRadius
+    {
+        get => !UseSmallCanonnRadarCircles;
+        set
+        {
+            if (value)
+            {
+                UseSmallCanonnRadarCircles = false;
+            }
+        }
     }
 
     public bool AutoShowSurfaceRadar
