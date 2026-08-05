@@ -1403,7 +1403,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         var systemName = value?.Trim();
         var normalized = systemName;
-        if (normalized?.EndsWith("-", StringComparison.Ordinal) == true)
+        if (normalized?.EndsWith('-') == true)
         {
             normalized += "0";
         }

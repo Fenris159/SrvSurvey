@@ -250,7 +250,7 @@ public sealed class ColonizationConstructionState
 
     private bool ApplyMusic(JsonElement root)
     {
-        var updated = GetString(root, "MusicTrack");
+        var updated = GetString(root, nameof(MusicTrack));
         var changed = !string.Equals(
             updated,
             musicTrack,

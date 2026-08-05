@@ -195,7 +195,7 @@ internal static class BoxelSectorNameResolver
 
     private static string[][] c1_infixes = new string[][]
     {
-                new string[0],
+                Array.Empty<string>(),
                 c1_infixes_s1,
                 c1_infixes_s2,
     };
@@ -242,14 +242,14 @@ internal static class BoxelSectorNameResolver
 
     private static string[][] c1_suffixes = new string[][]
     {
-                new string[0],
+                Array.Empty<string>(),
                 cx_suffixes_s1,
                 c1_suffixes_s2,
     };
 
     private static string[][] c2_suffixes = new string[][]
     {
-                new string[0],
+                Array.Empty<string>(),
                 cx_suffixes_s1,
                 c2_suffixes_s2,
     };
@@ -595,7 +595,7 @@ internal static class BoxelSectorNameResolver
         else if (c1_infixes[2].Contains(frags[^1]))
             return c1_infixes[1];
         else
-            return new string[0];
+            return Array.Empty<string>();
     }
 
     /// <summary>

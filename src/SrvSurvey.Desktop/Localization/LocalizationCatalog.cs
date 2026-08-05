@@ -222,7 +222,7 @@ public static class LocalizationCatalog
         }
 
         var value = translated.TrimEnd();
-        return value.EndsWith("…", StringComparison.Ordinal)
+        return value.EndsWith('…')
             ? value[..^1].TrimEnd()
             : value.EndsWith("...", StringComparison.Ordinal)
                 ? value[..^3].TrimEnd()

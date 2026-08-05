@@ -297,11 +297,11 @@ namespace SrvSurvey.LocalizationTool
                 || FileOrUri.IsMatch(text)
                 || CodeFragment.IsMatch(text)
                 || text[0] is '$' or '#'
-                || text.StartsWith(".", StringComparison.Ordinal)
+                || text.StartsWith('.')
                 || text.StartsWith("--", StringComparison.Ordinal)
                 || text.StartsWith('&')
                 || text.StartsWith("*.", StringComparison.Ordinal)
-                || text.StartsWith("\"", StringComparison.Ordinal)
+                || text.StartsWith('"')
                 || text.StartsWith(", \"", StringComparison.Ordinal)
                 || Regex.IsMatch(
                     text,

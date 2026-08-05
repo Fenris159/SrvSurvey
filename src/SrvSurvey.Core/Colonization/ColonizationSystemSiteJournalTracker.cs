@@ -357,7 +357,7 @@ public sealed class ColonizationSystemSiteJournalTracker
 
     private bool MatchesSystem(JsonElement root)
     {
-        return GetInt64(root, "SystemAddress") == SystemAddress;
+        return GetInt64(root, nameof(SystemAddress)) == SystemAddress;
     }
 
     private bool IsKnownBody(int bodyNumber)

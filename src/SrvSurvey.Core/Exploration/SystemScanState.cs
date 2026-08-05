@@ -258,9 +258,9 @@ public sealed class SystemScanState
 
     private void ApplySystemLocation(JsonElement root)
     {
-        var address = GetInt64(root, "SystemAddress");
+        var address = GetInt64(root, nameof(SystemAddress));
         var name = GetString(root, "StarSystem")
-            ?? GetString(root, "SystemName");
+            ?? GetString(root, nameof(SystemName));
         if (address is not null)
         {
             SetSystem(address.Value, name);
@@ -270,7 +270,7 @@ public sealed class SystemScanState
             SystemName = name;
         }
 
-        Population = GetInt64(root, "Population") ?? Population;
+        Population = GetInt64(root, nameof(Population)) ?? Population;
         StarPosition = GetGalacticCoordinate(root, "StarPos")
             ?? StarPosition;
         var bodyId = GetInt32(root, "BodyID");
@@ -595,7 +595,7 @@ public sealed class SystemScanState
 
     private bool EnsureSystem(JsonElement root)
     {
-        var address = GetInt64(root, "SystemAddress");
+        var address = GetInt64(root, nameof(SystemAddress));
         if (address is null)
         {
             return SystemAddress is not null;
@@ -605,7 +605,7 @@ public sealed class SystemScanState
         {
             SetSystem(
                 address.Value,
-                GetString(root, "SystemName")
+                GetString(root, nameof(SystemName))
                     ?? GetString(root, "StarSystem"));
         }
 

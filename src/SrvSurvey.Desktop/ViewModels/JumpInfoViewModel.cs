@@ -709,7 +709,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             : new JumpTarget(
                 name,
                 address,
-                GetString(root, "StarClass"));
+                GetString(root, nameof(StarClass)));
     }
 
     private static bool MatchesTarget(FollowRouteHop hop, JumpTarget target)

@@ -227,7 +227,7 @@ public sealed class ReleasePackageStagingService
         {
             cancellationToken.ThrowIfCancellationRequested();
             RejectZipLink(entry);
-            var isDirectory = entry.FullName.EndsWith("/", StringComparison.Ordinal);
+            var isDirectory = entry.FullName.EndsWith('/');
             var path = NormalizeArchivePath(entry.FullName, isDirectory);
             if (isDirectory)
             {
@@ -536,7 +536,7 @@ public sealed class ReleasePackageStagingService
         await using var input = OpenRead(archivePath);
         using var zip = new ZipArchive(input, ZipArchiveMode.Read, leaveOpen: false);
         var entries = zip.Entries
-            .Where(entry => !entry.FullName.EndsWith("/", StringComparison.Ordinal))
+            .Where(entry => !entry.FullName.EndsWith('/'))
             .ToDictionary(
                 entry => NormalizeArchivePath(entry.FullName, isDirectory: false),
                 StringComparer.Ordinal);
@@ -865,7 +865,7 @@ public sealed class ReleasePackageStagingService
     {
         if (string.IsNullOrWhiteSpace(value)
             || value.Contains('\\', StringComparison.Ordinal)
-            || value.StartsWith("/", StringComparison.Ordinal))
+            || value.StartsWith('/'))
         {
             throw new InvalidDataException(
                 $"The update archive contains invalid path '{value}'.");

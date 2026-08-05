@@ -49,10 +49,7 @@ public sealed class CanonnHumanSiteClient
         long systemAddress,
         CancellationToken cancellationToken = default)
     {
-        if (systemAddress <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(systemAddress));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(systemAddress);
 
         var uri = new Uri(
             baseUri,
@@ -148,10 +145,7 @@ public sealed class CanonnHumanSiteClient
         byte[] bytes,
         long expectedSystemAddress)
     {
-        if (expectedSystemAddress <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(expectedSystemAddress));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(expectedSystemAddress);
 
         try
         {

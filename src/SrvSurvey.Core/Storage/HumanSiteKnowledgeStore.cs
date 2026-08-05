@@ -19,10 +19,7 @@ public sealed class HumanSiteKnowledgeStore
         CancellationToken cancellationToken = default)
     {
         ValidateContext(context);
-        if (marketId <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(marketId));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(marketId);
 
         var result = await fileStore.LoadAsync(
                 ToFileContext(context),

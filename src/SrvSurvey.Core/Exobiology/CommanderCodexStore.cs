@@ -390,10 +390,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
                 nameof(frontierId));
         }
 
-        if (regionId < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(regionId));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(regionId);
 
         var fileName = regionId == 0
             ? $"{frontierId}-codex.json"
