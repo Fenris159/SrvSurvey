@@ -10,7 +10,7 @@ namespace SrvSurvey.Core.Journal;
 public sealed class CargoInventoryState
 {
     /// <summary>Lock for all Inventory / lastInventory readers and writers.</summary>
-    private readonly object syncRoot = new();
+    private readonly Lock syncRoot = new();
 
     private readonly Dictionary<string, CargoItemState> inventory = new(
         StringComparer.OrdinalIgnoreCase);

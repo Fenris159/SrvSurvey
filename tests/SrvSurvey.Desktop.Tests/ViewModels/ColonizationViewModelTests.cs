@@ -1397,7 +1397,9 @@ public sealed class ColonizationViewModelTests : IDisposable
         Assert.Equal(-5, adjustment.Changes["steel"]);
 
         // skipNext is consumed only once: a later real transfer still adjusts.
-        cargo.CaptureBeforeSnapshot();
+        // Use the production capture gate (sync enabled, API key, linked squadron FC).
+        viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
+        Assert.True(cargo.HasPreservedSnapshot);
         Assert.True(cargo.Apply(Event(
             "CargoTransfer",
             """
