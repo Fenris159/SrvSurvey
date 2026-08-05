@@ -54,6 +54,35 @@ public sealed class PriorScansOverlayViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task StatusOnlyUpdatesRecalculateHeadingWithoutReloadingCanonn()
+    {
+        var survey = CreateSurvey();
+        var client = new StubClient(new CanonnSystemPoiResult(
+            "Test",
+            [Signal("1", 0, 0.01)]));
+        using var viewModel = CreateViewModel(survey, client);
+        await viewModel.RefreshAsync();
+        Assert.Equal(1, client.CallCount);
+        Assert.Equal(
+            0,
+            Assert.Single(Assert.Single(viewModel.Species).Targets)
+                .RelativeBearingDegrees,
+            6);
+
+        survey.ApplyUpdate([], SurfaceStatus(heading: 180));
+        await viewModel.RefreshAsync();
+
+        Assert.Equal(1, client.CallCount);
+        // Target lies east (bearing 90°); heading 180° → relative bearing 270°.
+        Assert.Equal(
+            270,
+            Assert.Single(Assert.Single(viewModel.Species).Targets)
+                .RelativeBearingDegrees,
+            6);
+        Assert.Equal("HEADING 180°", viewModel.HeadingText);
+    }
+
+    [Fact]
     public async Task PreferencesFilterRowsAndControlRadarPresentation()
     {
         var survey = CreateSurvey();

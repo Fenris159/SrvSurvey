@@ -1682,6 +1682,59 @@ public sealed class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task ClearSurfaceTrackersCommandUpdatesExobiologyStatus()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            $"SrvSurvey-clear-surface-trackers-{Guid.NewGuid():N}");
+        try
+        {
+            var journals = Path.Combine(root, "journals");
+            var profile = Path.Combine(root, "profile");
+            Directory.CreateDirectory(journals);
+            Directory.CreateDirectory(profile);
+            await File.WriteAllTextAsync(
+                Path.Combine(journals, "Journal.2026-07-24T100000.01.log"),
+                "{\"timestamp\":\"2026-07-24T10:00:00Z\",\"event\":\"Fileheader\",\"Odyssey\":true}\n"
+                    + "{\"timestamp\":\"2026-07-24T10:00:01Z\",\"event\":\"Commander\",\"Name\":\"Drew\",\"FID\":\"F123\"}\n");
+            var paths = new AppDataPaths(
+                Path.Combine(root, "config"),
+                profile,
+                Path.Combine(root, "cache"),
+                []);
+            using var viewModel = new MainWindowViewModel(
+                journals,
+                appDataPaths: paths);
+            Assert.NotNull(viewModel.ClearSurfaceTrackersCommand);
+            Assert.False(
+                viewModel.ClearSurfaceTrackersCommand.CanExecute(null),
+                "Command should stay disabled until a commander profile is loaded.");
+
+            await viewModel.RefreshAsync();
+
+            Assert.True(
+                viewModel.ClearSurfaceTrackersCommand.CanExecute(null),
+                "Command must raise CanExecuteChanged after profile load.");
+
+            await viewModel.ClearSurfaceTrackersAsync();
+
+            Assert.Contains(
+                "required",
+                viewModel.ExobiologyStatusMessage,
+                StringComparison.OrdinalIgnoreCase);
+            Assert.False(
+                string.IsNullOrWhiteSpace(viewModel.ExobiologyStatusMessage));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
+    [Fact]
     public async Task FirstFootfallGlobalActionUpdatesAndPersistsOrganicRewards()
     {
         var root = Path.Combine(

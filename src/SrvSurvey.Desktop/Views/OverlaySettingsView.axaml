@@ -1046,6 +1046,13 @@
                       Content="Add a tracker from Composition Scanner discoveries" />
             <CheckBox IsChecked="{Binding SystemSurvey.SkipAnalyzedCompositionScans, Mode=TwoWay}"
                       Content="Skip Composition Scanner trackers already analyzed" />
+            <Button Classes="secondary"
+                    HorizontalAlignment="Left"
+                    Command="{Binding ClearSurfaceTrackersCommand}"
+                    Content="Clear all trackers on current body" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control." />
             <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
               <TextBlock VerticalAlignment="Center"
                          Text="Radar size" />
@@ -1057,12 +1064,12 @@
                              Value="{Binding SystemSurvey.SurfaceRadarSize, Mode=TwoWay}" />
             </Grid>
             <CheckBox IsChecked="{Binding SystemSurvey.ShowCanonnSignalsOnRadar, Mode=TwoWay}"
-                      Content="Show Canonn biology signals on the radar" />
+                      Content="Show Canonn biology signals on the surface radar" />
             <CheckBox IsChecked="{Binding SystemSurvey.UseSmallCanonnRadarCircles, Mode=TwoWay}"
-                      Content="Use compact signal circles" />
+                      Content="Use compact signal circles on the surface radar" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
-                       Text="Prior-scan guidance uses Canonn coordinates for the current body. Disabling external data prevents these requests." />
+                       Text="Prior-scan guidance uses Canonn coordinates for the current body (PlotPriorScans list). When surface radar is visible, the same coordinates are drawn as rings on PlotGrounded, matching legacy drawPriorScans. Disabling external data prevents Canonn POI requests. Use External Bio Data controls whether Spansh/Canonn body biology is merged into the system scan; prior-scan coordinates still require External Data only." />
           </StackPanel>
         </Grid>
 

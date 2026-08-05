@@ -23,6 +23,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     private DateTimeOffset retryAfter;
     private IReadOnlyList<PriorScanSpeciesViewModel> species = [];
     private IReadOnlyList<PriorScanRadarTargetViewModel> radarTargets = [];
+    private IReadOnlyList<PriorScanSurfaceMarkerViewModel> surfaceMarkers = [];
     private string statusText = "Waiting for surface navigation context.";
     private string inputMode;
     private bool isLoading;
@@ -75,6 +76,16 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
                 OnPropertyChanged(nameof(HasRadarTargets));
             }
         }
+    }
+
+    /// <summary>
+    /// Absolute-coordinate markers for PlotGrounded surface radar
+    /// (legacy <c>drawPriorScans</c>), separate from the Prior Scans overlay radar.
+    /// </summary>
+    public IReadOnlyList<PriorScanSurfaceMarkerViewModel> SurfaceMarkers
+    {
+        get => surfaceMarkers;
+        private set => SetField(ref surfaceMarkers, value);
     }
 
     public bool HasSpecies => Species.Count > 0;
@@ -202,6 +213,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
                 retryAfter = DateTimeOffset.UtcNow.AddSeconds(30);
                 Species = [];
                 RadarTargets = [];
+                SurfaceMarkers = [];
                 StatusText = "Canonn prior scans are unavailable: "
                     + exception.Message;
             }
@@ -241,12 +253,16 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         PropertyChangedEventArgs eventArgs)
     {
         if (eventArgs.PropertyName is nameof(SystemSurveyViewModel.Snapshot)
+            or nameof(SystemSurveyViewModel.CurrentStatus)
+            or nameof(SystemSurveyViewModel.CurrentExobiology)
             or nameof(SystemSurveyViewModel.ShouldLoadPriorScans)
             or nameof(SystemSurveyViewModel.SkipPriorScansLowValue)
             or nameof(SystemSurveyViewModel.PriorScanMinimumValue)
             or nameof(SystemSurveyViewModel.HideOwnCanonnSignals)
             or nameof(SystemSurveyViewModel.ShowCanonnSignalsOnRadar)
-            or nameof(SystemSurveyViewModel.UseSmallCanonnRadarCircles))
+            or nameof(SystemSurveyViewModel.UseSmallCanonnRadarCircles)
+            or nameof(SystemSurveyViewModel.ShouldSuppressForActiveBuildProjects)
+            or nameof(SystemSurveyViewModel.AreBiologyOverlaysSuppressedForRepeatVisit))
         {
             Recalculate();
         }
@@ -258,6 +274,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         {
             Species = [];
             RadarTargets = [];
+            SurfaceMarkers = [];
             StatusText = "Waiting for surface navigation context.";
             RaiseContextProperties();
             return;
@@ -268,6 +285,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         {
             Species = [];
             RadarTargets = [];
+            SurfaceMarkers = [];
             RaiseContextProperties();
             return;
         }
@@ -308,6 +326,26 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
                     item.SampleRadiusMeters,
                     item.IsActive,
                     target.IsClose)))
+            .ToArray();
+        // Absolute lat/long for PlotGrounded-style surface radar rings.
+        SurfaceMarkers = plan.Species
+            .Where(item => !item.IsAnalyzed)
+            .SelectMany(item =>
+            {
+                var genus = ExobiologyReferenceCatalog.GetGenusName(
+                    item.SpeciesName);
+                var radius = ExobiologyReferenceCatalog.GetSampleDistanceMeters(
+                    genus);
+                return item.Targets.Select(target =>
+                    new PriorScanSurfaceMarkerViewModel(
+                        item.DisplayName,
+                        target.Location,
+                        survey.UseSmallCanonnRadarCircles
+                            ? Math.Min(radius, 40)
+                            : radius,
+                        item.IsActive,
+                        target.State == PriorScanTargetState.Close));
+            })
             .ToArray();
         StatusText = Species.Count == 0
             ? "No unfiltered Canonn biology coordinates remain for this body."
@@ -565,6 +603,16 @@ public sealed record PriorScanTargetViewModel(
 public sealed record PriorScanRadarTargetViewModel(
     double DistanceMeters,
     double RelativeBearingDegrees,
+    int SampleRadiusMeters,
+    bool IsActive,
+    bool IsClose);
+
+/// <summary>
+/// Absolute surface position for a Canonn prior-scan ring on PlotGrounded.
+/// </summary>
+public sealed record PriorScanSurfaceMarkerViewModel(
+    string DisplayName,
+    SurfaceCoordinate Location,
     int SampleRadiusMeters,
     bool IsActive,
     bool IsClose);

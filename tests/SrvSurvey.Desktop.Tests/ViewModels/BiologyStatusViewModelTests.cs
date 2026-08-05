@@ -96,6 +96,86 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         Assert.Equal(45.28, active.RemainingDistanceMeters!.Value, 2);
         Assert.Equal("36.26 M CR · FF bonus", active.RewardText);
         Assert.False(active.IsSeparationReady);
+        Assert.Equal(37.5, active.SampleScaleBarWidth, 1);
+        Assert.Equal("150 m", active.SampleScaleLabel);
+        Assert.Equal("0%", status.CompletionPercentText);
+    }
+
+    [Fact]
+    public void StaleActiveSampleWarnsAndKeepsGenusSummary()
+    {
+        var viewModel = CreateViewModel();
+        var scanOne = new BioSampleSnapshot(
+            new SurfaceLocation(0, 0),
+            150,
+            "$Codex_Ent_Aleoids_Genus_Name;",
+            "$Codex_Ent_Aleoids_01_Name;",
+            "Active",
+            2310101,
+            "Other Body");
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+            Parse(BodyScan),
+            Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+        ],
+        new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            Latitude = 0,
+            Longitude = 0,
+            PlanetRadius = 6_000_000,
+        },
+        new ExobiologySnapshot(null, scanOne, null, 0, [], 0));
+
+        var status = Assert.IsType<BiologyStatusViewModel>(
+            viewModel.BiologyStatus);
+        Assert.True(status.IsStaleActiveSample);
+        Assert.Null(status.ActiveSample);
+        Assert.True(status.HasWarning);
+        Assert.Contains("incomplete", status.Warning, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Other Body", status.Warning, StringComparison.Ordinal);
+        Assert.Contains(status.Signals, signal => signal.Name == "Aleoida");
+    }
+
+    [Fact]
+    public void SampleScaleBarMatchesLegacyQuarterRangeClamp()
+    {
+        Assert.Equal(12, BiologyStatusViewModel.GetSampleScaleBarWidth(10), 3);
+        Assert.Equal(37.5, BiologyStatusViewModel.GetSampleScaleBarWidth(150), 3);
+        Assert.Equal(220, BiologyStatusViewModel.GetSampleScaleBarWidth(5_000), 3);
+        Assert.Equal(0, BiologyStatusViewModel.GetSampleScaleBarWidth(0));
+        Assert.Equal(0, BiologyStatusViewModel.GetSampleScaleBarWidth(double.NaN));
+    }
+
+    [Fact]
+    public void CodexImageIndicatorTracksNotificationImageAvailability()
+    {
+        var viewModel = CreateViewModel();
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+            Parse(BodyScan),
+            Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+            Parse("""{"event":"CodexEntry","SystemAddress":42,"BodyID":1,"EntryID":2310101,"Name_Localised":"Aleoida Arcus - Green","SubCategory":"$Codex_SubCategory_Organic_Structures;"}"""),
+        ],
+        new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            Latitude = 0,
+            Longitude = 0,
+            PlanetRadius = 6_000_000,
+        },
+        ExobiologySnapshot.Empty);
+
+        var status = Assert.IsType<BiologyStatusViewModel>(viewModel.BiologyStatus);
+        Assert.NotNull(status.CodexNotification);
+        Assert.True(status.ShowCodexImageIndicator);
+        Assert.Equal(status.CodexNotification!.HasImage, status.HasCodexImage);
+        Assert.False(status.IsStaleActiveSample);
+        Assert.False(status.HasActiveSample);
     }
 
     [Fact]
@@ -271,6 +351,76 @@ public sealed class BiologyStatusViewModelTests : IDisposable
         });
         viewModel.AutoShowBioStatus = false;
         Assert.False(viewModel.ShouldShowBioStatus);
+    }
+
+    [Fact]
+    public void LiveStatusUpdatesRefreshSampleDistanceAndHideOnTaxiOrJump()
+    {
+        var viewModel = CreateViewModel();
+        var scanOne = new BioSampleSnapshot(
+            new SurfaceLocation(0, 0),
+            150,
+            "$Codex_Ent_Aleoids_Genus_Name;",
+            "$Codex_Ent_Aleoids_01_Name;",
+            "Active",
+            2310101,
+            "Test 1");
+        var surface = new EliteStatus
+        {
+            Flags = StatusFlags.InSrv | StatusFlags.HasLatLong,
+            BodyName = "Test 1",
+            Latitude = 0,
+            Longitude = 0.001,
+            PlanetRadius = 6_000_000,
+        };
+        viewModel.ApplyUpdate(
+        [
+            Parse("""{"event":"Location","StarSystem":"Test","SystemAddress":42,"Population":0}"""),
+            Parse(BodyScan),
+            Parse("""{"event":"SAASignalsFound","SystemAddress":42,"BodyName":"Test 1","BodyID":1,"Signals":[{"Type":"$SAA_SignalType_Biological;","Count":1}],"Genuses":[{"Genus":"$Codex_Ent_Aleoids_Genus_Name;","Genus_Localised":"Aleoida"}]}"""),
+        ],
+        surface,
+        new ExobiologySnapshot(null, scanOne, null, 0, [], 0));
+
+        Assert.True(viewModel.ShouldShowBioStatus);
+        var firstDistance = viewModel.BiologyStatus!.ActiveSample!
+            .NearestDistanceMeters;
+        Assert.NotNull(firstDistance);
+
+        viewModel.ApplyUpdate(
+            [],
+            surface with { Longitude = 0.002 });
+        var secondDistance = viewModel.BiologyStatus!.ActiveSample!
+            .NearestDistanceMeters;
+        Assert.NotNull(secondDistance);
+        Assert.True(secondDistance > firstDistance);
+
+        var visibilityChanges = 0;
+        viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(SystemSurveyViewModel.ShouldShowBioStatus))
+            {
+                visibilityChanges++;
+            }
+        };
+
+        viewModel.ApplyUpdate(
+            [],
+            surface with { Flags2 = StatusFlags2.InTaxi });
+        Assert.False(viewModel.ShouldShowBioStatus);
+        Assert.True(visibilityChanges > 0);
+
+        viewModel.ApplyUpdate(
+            [],
+            surface with
+            {
+                Flags = StatusFlags.InMainShip | StatusFlags.FsdJump | StatusFlags.HasLatLong,
+            });
+        Assert.False(viewModel.ShouldShowBioStatus);
+
+        viewModel.ApplyUpdate([], surface);
+        Assert.True(viewModel.ShouldShowBioStatus);
+        Assert.NotNull(viewModel.BiologyStatus?.ActiveSample);
     }
 
     [Fact]
