@@ -377,11 +377,10 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
                 Directory.Delete(path, recursive: true);
             }
         }
-        catch (IOException)
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
         {
-        }
-        catch (UnauthorizedAccessException)
-        {
+            // Cleanup is best effort; retained files support recovery diagnostics.
         }
     }
 

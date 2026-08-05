@@ -408,6 +408,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         catch (OperationCanceledException)
             when (disposalCancellation.IsCancellationRequested)
         {
+            // Disposal intentionally cancels pending capture work.
         }
         catch (Exception exception) when (
             exception is Win32Exception

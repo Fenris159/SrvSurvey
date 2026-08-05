@@ -853,7 +853,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
     }
 
-    public string CanonnBiologyHint =>
+    public string CanonnBiologyHint { get; } =
         "Canonn has known biological signals for this body.";
 
     public bool HasTimedBiologySelection => timedBiologyBodyId is not null;
@@ -946,7 +946,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public bool HasFssBodies => FssBodies.Count > 0;
 
-    public string FssEmptyText => "Scan a body in the FSS to populate this list.";
+    public string FssEmptyText { get; } =
+        "Scan a body in the FSS to populate this list.";
 
     public SystemScanBodySnapshot? LastFssBody => snapshot.LastDetailedBodyId is { } id
         ? snapshot.Bodies.FirstOrDefault(body => body.BodyId == id)

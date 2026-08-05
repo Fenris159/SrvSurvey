@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -22,6 +23,10 @@ public sealed class QuestDevelopmentFolderLoader
         },
     };
 
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "The loader is exposed as an injectable service instance.")]
     public async Task<QuestDevelopmentFolderLoadResult> LoadAsync(
         string sourceDirectory,
         CancellationToken cancellationToken = default)

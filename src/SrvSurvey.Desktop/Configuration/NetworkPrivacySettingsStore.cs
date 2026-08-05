@@ -68,7 +68,7 @@ public sealed class NetworkPrivacySettingsStore
         return legacyEnvironment is null
             ? fallback
             : !string.Equals(
-                legacyEnvironment?.Trim(),
+                legacyEnvironment.Trim(),
                 "live",
                 StringComparison.OrdinalIgnoreCase);
     }

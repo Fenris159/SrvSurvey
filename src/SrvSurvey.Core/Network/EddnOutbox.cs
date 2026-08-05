@@ -495,7 +495,7 @@ namespace SrvSurvey.Core.Network
             {
                 timer.Change(delay, Timeout.InfiniteTimeSpan);
             }
-            catch (ObjectDisposedException) when (disposed)
+            catch (ObjectDisposedException)
             {
                 // Dispose won the race after the check above.
             }

@@ -387,7 +387,7 @@ public sealed class HumanSiteMaterialStore
         return Path.Combine(dataDirectory, "footMatStats", context.FrontierId);
     }
 
-    private string? FindLatestPath(
+    private static string? FindLatestPath(
         string folder,
         HumanSiteMaterialContext context)
     {

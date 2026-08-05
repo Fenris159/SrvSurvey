@@ -189,7 +189,7 @@ public sealed class BiologyPredictionEvaluator
             };
         }
 
-        private bool MatchesAny(
+        private static bool MatchesAny(
             BiologyCriteriaClause clause,
             object bodyValue)
         {

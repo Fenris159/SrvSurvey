@@ -101,12 +101,7 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     public static SectorCoordinate? getSectorCoords(string sectorName, char mcode)
     {
-        /* Not yet working ...
-        // is this a hand-authored sector?
-        var ha = ha_regions.Find(r => r.name.like(sectorName));
-        if (ha != null)
-            return ha.get_origin(mcode);
-        // */
+        // Hand-authored sectors are not currently resolved by this port.
 
         var offset = get_offset_from_name(sectorName);
         if (offset == -1) return null;
@@ -324,9 +319,6 @@ internal static class BoxelSectorNameResolver
         if (allow_ha)
         {
             throw new NotImplementedException();
-            //string ha_name = _ha_get_name(pos);
-            //if (ha_name != null)
-            //    return ha_name;
         }
 
         int offset = _c1_get_offset(pos);
@@ -508,76 +500,6 @@ internal static class BoxelSectorNameResolver
         // Return 1 for a class 1 sector, 2 for a class 2
         return (hash % 2) + 1;
     }
-
-    /* TODO: needed?
-    private static PGSector? _get_sector_from_name(string sector_name, bool allow_ha = true)
-    {
-        //sector_name = get_canonical_name(sector_name, sector_only: true);
-        //if (sector_name == null)                    return null;
-
-        if (false && allow_ha && ha_regions.ContainsKey(sector_name.ToLower()))
-        {
-            return null; //  ha_regions[sector_name.ToLower()];
-        }
-        else
-        {
-            var frags = util.IsString(sector_name) ? get_sector_fragments(sector_name) : (List<string>)sector_name;
-            if (frags != null)
-            {
-                int sc = _get_sector_class(frags);
-                if (sc == 2)
-                {
-                    // Class 2
-                    return _c2_get_sector(frags);
-                }
-                else if (sc == 1)
-                {
-                    // Class 1
-                    return _c1_get_sector(frags);
-                }
-                else
-                {
-                    return null!;
-                }
-            }
-            else
-            {
-                return null!;
-            }
-        }
-    }
-    */
-
-    /* TODO: needed?
-    public static SectorCoordinate? _get_coords_from_name(string raw_system_name, bool allow_ha = true)
-    {
-        var bx = Boxel.parse(raw_system_name)!;
-        var sector_name = bx.sector;
-        var sect = _get_sector_from_name(sector_name, allow_ha);
-        if (sect == null)
-            return null;
-
-        // Get the absolute position of the sector
-        var abs_pos = sect.get_origin(get_mcode_cube_width(bx.massCode));
-
-        // Get the relative position of the star within the sector
-        // Also get the +/- error bounds
-        var rel_pos = bx.getRelativeCoords();// _get_relpos_from_sysid(m["L1"], m["L2"], m["L3"], m["MCode"], m["N1"], m["N2"]);
-
-        //// Check if the relpos is invalid
-        //var leeway = (sect.sector_class == "ha") ? rel_pos_error : 0;
-        //if (rel_pos.Any(s => s > (sector_size + leeway)))
-        //{
-        //    Debug.WriteLine($"RelPos for input {bx.name} was invalid: {rel_pos}, uncertainty {rel_pos_error}");
-        //    return (null, null);
-        //}
-
-        if (abs_pos != null && rel_pos != null)
-            return abs_pos + rel_pos;
-        else
-            return null;
-    }
-    */
 
     /// <summary>
     /// # Get the full list of infixes for a given set of fragments missing an infix
@@ -893,7 +815,6 @@ internal static class BoxelSectorNameResolver
 
     private static int Interleave(int val1, int val2, int maxbits)
     {
-        //Debug.WriteLine($"interleave:\r\n\t{toBin(val1)}\r\n\t{toBin(val2)}");
         int output = 0;
 
         for (int i = 0; i <= maxbits / 2; i++)
@@ -902,15 +823,11 @@ internal static class BoxelSectorNameResolver
         for (int i = 0; i <= maxbits / 2; i++)
             output |= ((val2 >> i) & 1) << (i * 2 + 1);
 
-        //var rslt = output & ((1 << maxbits) - 1);
-
-        //Debug.WriteLine($"interleave:\r\n\t{toBin(output)}");
         return output;
     }
 
     private static (int, int) Deinterleave(int val, int maxbits)
     {
-        //Debug.WriteLine($"deinterleave:\r\n\t{toBin(val)}");
         int out1 = 0;
         int out2 = 0;
 
@@ -920,8 +837,6 @@ internal static class BoxelSectorNameResolver
         for (int i = 1; i < maxbits; i += 2)
             out2 |= ((val >> i) & 1) << (i / 2);
 
-
-        //Debug.WriteLine($"deinterleave:\r\n\t{toBin(out1)}\r\n\t{toBin(out2)}");
         return (out1, out2);
     }
 

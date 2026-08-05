@@ -51,19 +51,15 @@ public sealed class HumanSiteTemplateCatalog
     public HumanSiteTemplateCatalog WithTemplate(HumanSiteTemplate template)
     {
         ArgumentNullException.ThrowIfNull(template);
-        var replaced = false;
-        var updated = templates.Select(candidate =>
+        var updated = templates.ToList();
+        var existingIndex = updated.FindIndex(candidate =>
+            candidate.Economy == template.Economy
+            && candidate.SubType == template.SubType);
+        if (existingIndex >= 0)
         {
-            if (candidate.Economy != template.Economy
-                || candidate.SubType != template.SubType)
-            {
-                return candidate;
-            }
-
-            replaced = true;
-            return template;
-        }).ToList();
-        if (!replaced)
+            updated[existingIndex] = template;
+        }
+        else
         {
             updated.Add(template);
         }

@@ -1144,11 +1144,10 @@ public sealed class ReleasePackageStagingService
                 Directory.Delete(path, recursive: true);
             }
         }
-        catch (IOException)
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
         {
-        }
-        catch (UnauthorizedAccessException)
-        {
+            // Cleanup is best effort; the next staging run retries removal.
         }
     }
 

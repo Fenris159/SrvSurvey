@@ -912,8 +912,7 @@ public sealed class LegacyOrganicProfileMigrator
 
         var systemAddress = GetInt64(bodySource, "systemAddress");
         var bodyId = GetInt32(bodySource, "bodyId");
-        if (reference is null
-            && systemAddress is not null
+        if (systemAddress is not null
             && bodyId is not null)
         {
             var speciesReference = catalog.FindBySpecies(species);

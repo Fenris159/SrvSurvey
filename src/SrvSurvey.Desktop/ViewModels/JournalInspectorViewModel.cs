@@ -296,7 +296,9 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
         }
 
         await CopyAsync(
-            FormattableString.Invariant($"{status.Latitude}, {status.Longitude}"),
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"{status.Latitude}, {status.Longitude}"),
             "The current latitude and longitude were copied.");
     }
 
@@ -489,7 +491,7 @@ public sealed class JournalInspectorViewModel : INotifyPropertyChanged
 
         if (value.HasLatitudeLongitude)
         {
-            lines.Add(FormattableString.Invariant(
+            lines.Add(string.Create(CultureInfo.InvariantCulture,
                 $"Lat/Long: {value.Latitude}, {value.Longitude}, Heading: {value.NormalizedHeading} deg, Altitude: {value.Altitude}, Temp: {value.Temperature}"));
         }
 

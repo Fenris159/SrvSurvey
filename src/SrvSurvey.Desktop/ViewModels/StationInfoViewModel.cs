@@ -333,6 +333,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
+            // A newer station request superseded this one.
         }
         catch (Exception exception) when (
             exception is HttpRequestException

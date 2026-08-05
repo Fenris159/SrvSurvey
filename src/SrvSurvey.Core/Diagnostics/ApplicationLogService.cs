@@ -141,7 +141,7 @@ public sealed class ApplicationLogService
             }
         }
 
-        lastWriteError = lastException?.Message;
+        lastWriteError = lastException!.Message;
     }
 
     private void PruneOldFiles()

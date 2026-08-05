@@ -66,7 +66,7 @@ public sealed class RavenThemeService
 
     public LegacyOverlayTheme CurrentOverlayTheme => overlayTheme;
 
-    public IReadOnlyList<RavenThemeDefinition> AvailableThemes =>
+    public IReadOnlyList<RavenThemeDefinition> AvailableThemes { get; } =
         RavenThemeCatalog.All;
 
     public event EventHandler? ThemeChanged;

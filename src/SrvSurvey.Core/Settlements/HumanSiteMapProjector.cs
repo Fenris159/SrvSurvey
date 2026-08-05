@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace SrvSurvey.Core.Settlements;
 
 public sealed class HumanSiteMapProjector
@@ -8,6 +10,14 @@ public sealed class HumanSiteMapProjector
     private const byte BezierPoint = 3;
     private const byte CloseSubpath = 0x80;
 
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "The projector is consumed through an instance service contract.")]
+    [SuppressMessage(
+        "Maintainability",
+        "S2325:Make methods and properties static",
+        Justification = "The projector is consumed through an instance service contract.")]
     public HumanSiteMapProjection Project(
         HumanSiteTemplate template,
         HumanSiteMapDisplayOptions? options = null)

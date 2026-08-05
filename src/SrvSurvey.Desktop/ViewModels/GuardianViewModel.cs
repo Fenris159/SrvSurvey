@@ -273,7 +273,7 @@ public sealed class GuardianViewModel
 
     public IReadOnlyList<string> SiteTypeFilters { get; }
 
-    public IReadOnlyList<GuardianOverlaySizeOption> OverlaySizeOptions =>
+    public IReadOnlyList<GuardianOverlaySizeOption> OverlaySizeOptions { get; } =
         OverlaySizes;
 
     public ICommand RefreshCommand { get; }
@@ -956,7 +956,7 @@ public sealed class GuardianViewModel
         : "WAITING";
 
     public string ActiveSiteLocation => ActiveSite?.Location is { } location
-        ? FormattableString.Invariant(
+        ? string.Create(CultureInfo.InvariantCulture,
             $"{location.Latitude:F6}, {location.Longitude:F6}")
         : "Surface location unavailable";
 
@@ -2128,7 +2128,9 @@ public sealed class GuardianViewModel
         var reference = SelectedSite?.Reference;
         var text = reference?.Latitude is double latitude
             && reference.Longitude is double longitude
-                ? FormattableString.Invariant($"{latitude:F6}, {longitude:F6}")
+                ? string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{latitude:F6}, {longitude:F6}")
                 : null;
         return CopyAsync(text, "surface location");
     }
@@ -3223,11 +3225,6 @@ public sealed class GuardianViewModel
             cancellationToken);
     }
 
-    private async Task RefreshAsync()
-    {
-        await RefreshAsync(CancellationToken.None);
-    }
-
     public async Task PrepareShareBundleAsync()
     {
         if (activeFrontierId is null)
@@ -3272,6 +3269,11 @@ public sealed class GuardianViewModel
             prepareShareBundleCommand.RaiseCanExecuteChanged();
             OnPropertyChanged(nameof(ShareButtonText));
         }
+    }
+
+    private async Task RefreshAsync()
+    {
+        await RefreshAsync(CancellationToken.None);
     }
 
     private async Task RefreshAsync(CancellationToken cancellationToken)
@@ -3343,6 +3345,21 @@ public sealed class GuardianViewModel
             && survey.Index == site.Index
             && IsSameBody(site, survey)
             && IsRuins(survey) == (site.Kind == GuardianSiteKind.Ruins));
+    }
+
+    private GuardianCommanderSiteSurvey? FindSurvey(
+        GuardianSiteReference reference)
+    {
+        return commanderData.Surveys.FirstOrDefault(survey =>
+            survey.SystemAddress == reference.SystemAddress
+            && survey.Index == reference.Index
+            && (reference.BodyId >= 0 && survey.BodyId >= 0
+                ? reference.BodyId == survey.BodyId
+                : string.Equals(
+                    survey.BodyName,
+                    reference.FullBodyName,
+                    StringComparison.OrdinalIgnoreCase))
+            && IsRuins(survey) == (reference.Kind == GuardianSiteKind.Ruins));
     }
 
     private void ReplaceSurvey(
@@ -4542,21 +4559,6 @@ public sealed class GuardianViewModel
         return Task.CompletedTask;
     }
 
-    private GuardianCommanderSiteSurvey? FindSurvey(
-        GuardianSiteReference reference)
-    {
-        return commanderData.Surveys.FirstOrDefault(survey =>
-            survey.SystemAddress == reference.SystemAddress
-            && survey.Index == reference.Index
-            && (reference.BodyId >= 0 && survey.BodyId >= 0
-                ? reference.BodyId == survey.BodyId
-                : string.Equals(
-                    survey.BodyName,
-                    reference.FullBodyName,
-                    StringComparison.OrdinalIgnoreCase))
-            && IsRuins(survey) == (reference.Kind == GuardianSiteKind.Ruins));
-    }
-
     private void NotifyMapTextChanged()
     {
         OnPropertyChanged(nameof(MapTitle));
@@ -5048,7 +5050,9 @@ public sealed class GuardianSiteRowViewModel(
 
     public string SurfaceLocation => Reference.Latitude is double latitude
         && Reference.Longitude is double longitude
-            ? FormattableString.Invariant($"{latitude:F6}, {longitude:F6}")
+            ? string.Create(
+                CultureInfo.InvariantCulture,
+                $"{latitude:F6}, {longitude:F6}")
             : "Not recorded";
 
     public string Notes => string.IsNullOrWhiteSpace(Visit.Notes)

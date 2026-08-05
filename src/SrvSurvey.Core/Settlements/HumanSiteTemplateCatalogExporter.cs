@@ -324,11 +324,10 @@ public sealed class HumanSiteTemplateCatalogExporter
                 File.Delete(path);
             }
         }
-        catch (IOException)
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
         {
-        }
-        catch (UnauthorizedAccessException)
-        {
+            // Cleanup is best effort; a retained temporary file is harmless.
         }
     }
 

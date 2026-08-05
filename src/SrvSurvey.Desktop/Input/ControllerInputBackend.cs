@@ -115,6 +115,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
         catch (OperationCanceledException)
             when (cancellationToken.IsCancellationRequested)
         {
+            // Stopping controller monitoring is an expected cancellation path.
         }
         catch (Exception exception) when (
             exception is DllNotFoundException

@@ -523,5 +523,5 @@ public sealed record ColonizationFleetCarrierRegistration
     // this separate from ColonizationFleetCarrier prevents an empty local
     // collection from erasing an existing carrier inventory during linking.
     [JsonPropertyName("cargo")]
-    public Dictionary<string, int>? Cargo => null;
+    public Dictionary<string, int>? Cargo { get; }
 }

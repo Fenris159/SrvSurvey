@@ -210,7 +210,7 @@ public sealed class JourneyStore(string dataDirectory)
         return true;
     }
 
-    private async Task<JourneyLoadResult> LoadPathAsync(
+    private static async Task<JourneyLoadResult> LoadPathAsync(
         string frontierId,
         string path,
         CancellationToken cancellationToken)

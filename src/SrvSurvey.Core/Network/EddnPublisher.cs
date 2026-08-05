@@ -672,7 +672,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             return;
         }
 
-        var item = transport.prepare(
+        var item = EddnTransport.prepare(
             candidate.Prepared.message,
             candidate.Prepared.schemaRef,
             candidate.Header,
@@ -782,7 +782,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                 return;
             }
 
-            var item = transport.prepare(
+            var item = EddnTransport.prepare(
                 prepared!.message,
                 prepared.schemaRef,
                 candidate.Header,

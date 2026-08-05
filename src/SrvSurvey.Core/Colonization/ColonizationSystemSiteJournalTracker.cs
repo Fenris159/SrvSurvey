@@ -227,7 +227,7 @@ public sealed class ColonizationSystemSiteJournalTracker
         return true;
     }
 
-    private bool ApplyDocked(
+    private static bool ApplyDocked(
         IList<ColonizationSystemSite> sites,
         JsonElement root)
     {

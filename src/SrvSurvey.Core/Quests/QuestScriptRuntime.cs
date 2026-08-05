@@ -923,7 +923,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             return loaded;
         }
 
-        var chapter = RequireChapterState(chapterId);
+        _ = RequireChapterState(chapterId);
         string? source = null;
         if (Definition.Chapters.TryGetValue(chapterId, out var embedded)
             && !string.IsNullOrWhiteSpace(embedded))

@@ -381,6 +381,7 @@ internal static class ApplicationUpdateBootstrap
                         or UnauthorizedAccessException
                         or InvalidDataException)
                 {
+                    // The primary update failure remains the actionable result.
                 }
 
                 var originalEntryPoint = Path.Combine(
@@ -403,6 +404,7 @@ internal static class ApplicationUpdateBootstrap
                             or UnauthorizedAccessException
                             or InvalidOperationException)
                     {
+                        // The original failure is returned when recovery cannot launch.
                     }
                 }
             }
@@ -498,6 +500,7 @@ internal static class ApplicationUpdateBootstrap
         }
         catch (ArgumentException)
         {
+            // The parent process already exited before it could be inspected.
         }
         finally
         {
@@ -542,6 +545,7 @@ internal static class ApplicationUpdateBootstrap
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
+            // Health confirmation timed out; rollback follows below.
         }
 
         await StopReplacementAsync(replacement).ConfigureAwait(false);

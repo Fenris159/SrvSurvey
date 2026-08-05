@@ -404,9 +404,9 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             cancellationToken.ThrowIfCancellationRequested();
 
             PrimarySystem = Project(primary.Label, primaryResult.Summary);
-            SecondarySystem = secondaryResult is null || secondary is null
+            SecondarySystem = secondaryResult is null
                 ? null
-                : Project(secondary.Label, secondaryResult.Summary);
+                : Project(secondary!.Label, secondaryResult.Summary);
             Factions = primaryResult.Summary.Factions
                 .Select(faction => new GalaxyMapFactionViewModel(
                     faction.Name,

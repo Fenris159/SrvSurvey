@@ -713,6 +713,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         }
         catch (OperationCanceledException)
         {
+            // A newer file-system notification superseded this reload.
         }
     }
 

@@ -926,36 +926,6 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             .ConfigureAwait(false);
     }
 
-    private async Task<TResult> InvokeDevelopmentRuntimeAsync<TResult>(
-        RavenQuestReference reference,
-        Func<QuestScriptRuntime, CancellationToken, Task<TResult>> action,
-        CancellationToken cancellationToken)
-    {
-        return await InvokeRuntimeAsync(
-                reference,
-                action,
-                developmentOnly: true,
-                cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    private async Task InvokeDevelopmentRuntimeAsync(
-        RavenQuestReference reference,
-        Func<QuestScriptRuntime, CancellationToken, Task> action,
-        CancellationToken cancellationToken)
-    {
-        await InvokeRuntimeAsync<object?>(
-                reference,
-                async (runtime, token) =>
-                {
-                    await action(runtime, token).ConfigureAwait(false);
-                    return null;
-                },
-                developmentOnly: true,
-                cancellationToken)
-            .ConfigureAwait(false);
-    }
-
     private async Task<TResult> InvokeRuntimeAsync<TResult>(
         RavenQuestReference reference,
         Func<QuestScriptRuntime, CancellationToken, Task<TResult>> action,
@@ -997,6 +967,36 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
 
         Changed?.Invoke(this, EventArgs.Empty);
         return result;
+    }
+
+    private async Task<TResult> InvokeDevelopmentRuntimeAsync<TResult>(
+        RavenQuestReference reference,
+        Func<QuestScriptRuntime, CancellationToken, Task<TResult>> action,
+        CancellationToken cancellationToken)
+    {
+        return await InvokeRuntimeAsync(
+                reference,
+                action,
+                developmentOnly: true,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task InvokeDevelopmentRuntimeAsync(
+        RavenQuestReference reference,
+        Func<QuestScriptRuntime, CancellationToken, Task> action,
+        CancellationToken cancellationToken)
+    {
+        await InvokeRuntimeAsync<object?>(
+                reference,
+                async (runtime, token) =>
+                {
+                    await action(runtime, token).ConfigureAwait(false);
+                    return null;
+                },
+                developmentOnly: true,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task RemoveOrPauseQuestAsync(

@@ -487,7 +487,7 @@ public sealed class RegionalCodexCandidateCatalog
                 "The published regional Codex candidate CSV ends inside a quoted field.");
         }
 
-        if (field.Length > 0 || row.Count > 0 || closedQuote)
+        if (field.Length > 0 || row.Count > 0)
         {
             AddRow();
         }

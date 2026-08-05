@@ -660,10 +660,10 @@ namespace SrvSurvey.Core.Network
             }
 
             if (eventName is "Outfitting" or "Shipyard"
-                && message[required.Last()] is JArray array
+                && message[required[^1]] is JArray array
                 && array.Count == 0)
             {
-                reason = $"{required.Last()} was empty";
+                reason = $"{required[^1]} was empty";
                 return false;
             }
 

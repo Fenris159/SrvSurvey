@@ -1525,8 +1525,8 @@ public sealed class BoxelSystemRowViewModel
     {
         public event EventHandler? CanExecuteChanged
         {
-            add { }
-            remove { }
+            add { /* Availability is evaluated when the command is queried. */ }
+            remove { /* Availability is evaluated when the command is queried. */ }
         }
 
         public bool CanExecute(object? parameter)
@@ -1562,8 +1562,8 @@ public sealed class BoxelNavigationOptionViewModel
     {
         public event EventHandler? CanExecuteChanged
         {
-            add { }
-            remove { }
+            add { /* This command is always executable. */ }
+            remove { /* This command is always executable. */ }
         }
 
         public bool CanExecute(object? parameter)

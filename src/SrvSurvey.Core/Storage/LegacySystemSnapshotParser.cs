@@ -312,7 +312,7 @@ internal static class LegacySystemSnapshotParser
                     "A legacy system body parent is invalid.");
             }
 
-            var pair = parent.First();
+            var pair = parent.GetAt(0);
             if (!Enum.TryParse<SystemBodyParentKind>(
                     pair.Key,
                     ignoreCase: true,

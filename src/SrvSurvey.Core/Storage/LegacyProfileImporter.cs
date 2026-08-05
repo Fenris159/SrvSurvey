@@ -323,13 +323,11 @@ public sealed class LegacyProfileImporter
                 cancellationToken)
             .ConfigureAwait(false);
         var actualEntries = actual.Entries
-            .Where(entry => hasImportManifest
-                && string.Equals(
+            .Where(entry => !hasImportManifest
+                || !string.Equals(
                     entry.RelativePath,
                     ManifestFileName,
-                    PathComparison)
-                    ? false
-                    : true)
+                    PathComparison))
             .ToArray();
         var expectedDirectories = sourceInventory.RelativeDirectories
             .Concat(previousInventory.RelativeDirectories)

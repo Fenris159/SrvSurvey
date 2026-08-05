@@ -675,7 +675,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         var manualFootAlignment = status?.OnFootExterior == true
             && allowManualFootAlignment;
         var automaticDockAlignment = status?.Docked == true
-            && status.OnFoot == false;
+            && !status.OnFoot;
         if (state.CurrentSite is not { } site
             || status is not { HasLatitudeLongitude: true } currentStatus
             || currentStatus.PlanetRadius <= 0

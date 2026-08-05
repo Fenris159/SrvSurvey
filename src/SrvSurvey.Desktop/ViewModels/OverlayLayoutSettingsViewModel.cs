@@ -238,10 +238,10 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
     public static IReadOnlyList<LegacyVerticalAnchor> VerticalAnchors { get; } =
         Enum.GetValues<LegacyVerticalAnchor>();
 
-    public IReadOnlyList<LegacyHorizontalAnchor> HorizontalAnchorOptions =>
+    public IReadOnlyList<LegacyHorizontalAnchor> HorizontalAnchorOptions { get; } =
         HorizontalAnchors;
 
-    public IReadOnlyList<LegacyVerticalAnchor> VerticalAnchorOptions =>
+    public IReadOnlyList<LegacyVerticalAnchor> VerticalAnchorOptions { get; } =
         VerticalAnchors;
 
     public string Name => definition.Name;

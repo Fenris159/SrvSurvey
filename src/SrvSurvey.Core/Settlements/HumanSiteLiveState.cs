@@ -308,7 +308,7 @@ public sealed class HumanSiteLiveState(
         return true;
     }
 
-    private bool TryReadCompatibleSite(
+    private static bool TryReadCompatibleSite(
         JsonElement root,
         out HumanSiteLiveSnapshot site)
     {
