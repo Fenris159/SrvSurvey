@@ -235,18 +235,17 @@ public sealed class SurfaceSurveyRadarControl : Control
         {
             SurfaceRadarMarkerKind.HistoricalScan =>
                 marker.IsInsideRadius ? danger : muted,
-            SurfaceRadarMarkerKind.Bookmark =>
-                GetBookmarkCircleBrush(marker, muted, success, accent),
+            // Bookmarks and Canonn prior rings: muted when inactive, green when
+            // inside the drawn radius (genus sample distance for priors), else cyan.
+            SurfaceRadarMarkerKind.Bookmark or SurfaceRadarMarkerKind.CanonnPrior =>
+                GetActiveInsideRadiusCircleBrush(marker, muted, success, accent),
             SurfaceRadarMarkerKind.ActiveSample =>
                 marker.IsInsideRadius ? warning : success,
-            // Legacy PlotGrounded prior-scan rings: active cyan, inside-radius green.
-            SurfaceRadarMarkerKind.CanonnPrior =>
-                GetCanonnPriorCircleBrush(marker, muted, success, accent),
             _ => accent,
         };
     }
 
-    private static IBrush GetBookmarkCircleBrush(
+    private static IBrush GetActiveInsideRadiusCircleBrush(
         SurfaceRadarMarkerViewModel marker,
         IBrush muted,
         IBrush success,
@@ -257,22 +256,6 @@ public sealed class SurfaceSurveyRadarControl : Control
             return muted;
         }
 
-        return marker.IsInsideRadius ? success : accent;
-    }
-
-    private static IBrush GetCanonnPriorCircleBrush(
-        SurfaceRadarMarkerViewModel marker,
-        IBrush muted,
-        IBrush success,
-        IBrush accent)
-    {
-        if (!marker.IsActive)
-        {
-            return muted;
-        }
-
-        // Color follows the drawn genus sample radius, not the fixed 150m
-        // "Close" highlight distance used for prior-scan list status text.
         return marker.IsInsideRadius ? success : accent;
     }
 
