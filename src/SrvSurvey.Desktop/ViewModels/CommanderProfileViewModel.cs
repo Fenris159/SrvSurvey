@@ -161,7 +161,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 return;
             }
 
-            _ = SelectCommanderAsync(value);
+            _ = SelectCommanderAsync(value, CancellationToken.None);
         }
     }
 
@@ -1411,14 +1411,17 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     {
         var contextVersion = Interlocked.Read(ref commanderContextVersion);
         connectionCancellation?.Dispose();
-        connectionCancellation = new CancellationTokenSource();
+        var cancellation = new CancellationTokenSource();
+        connectionCancellation = cancellation;
+        var cancellationToken = cancellation.Token;
         try
         {
             IsBusy = true;
             IsConnecting = true;
             StatusMessage =
                 "Complete authorization in your browser. SrvSurvey will update this page when Frontier returns.";
-            var connected = await accountService.ConnectAsync(connectionCancellation.Token);
+            var connected = await accountService.ConnectAsync(
+                cancellationToken);
             if (contextVersion != Interlocked.Read(ref commanderContextVersion))
             {
                 return;
@@ -1428,7 +1431,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             IsLinked = true;
             initialized = true;
             StatusMessage = "Frontier account connected.";
-            await TryRefreshCommanderSelectionOptionsAsync();
+            await TryRefreshCommanderSelectionOptionsAsync(
+                cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -1451,8 +1455,12 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             {
                 IsConnecting = false;
                 IsBusy = false;
-                connectionCancellation?.Dispose();
-                connectionCancellation = null;
+                if (ReferenceEquals(connectionCancellation, cancellation))
+                {
+                    connectionCancellation = null;
+                }
+
+                cancellation.Dispose();
             }
         }
     }
@@ -1460,7 +1468,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private async Task CancelConnectionAsync()
     {
         connectionCancellation?.Cancel();
-        await accountService.CancelConnectionAsync();
+        await accountService.CancelConnectionAsync(CancellationToken.None);
         StatusMessage = "Frontier authorization was cancelled.";
     }
 
@@ -1471,7 +1479,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         {
             IsBusy = true;
             StatusMessage = "Refreshing commander data from Frontier...";
-            var refreshed = await accountService.RefreshAsync();
+            var refreshed = await accountService.RefreshAsync(
+                CancellationToken.None);
             if (contextVersion != Interlocked.Read(ref commanderContextVersion))
             {
                 return;
@@ -1479,7 +1488,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
             Snapshot = refreshed;
             StatusMessage = "Commander data refreshed.";
-            await TryRefreshCommanderSelectionOptionsAsync();
+            await TryRefreshCommanderSelectionOptionsAsync(
+                CancellationToken.None);
         }
         catch (Exception exception) when (IsExpected(exception))
         {
@@ -1505,7 +1515,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         try
         {
             IsBusy = true;
-            await accountService.UnlinkAsync();
+            await accountService.UnlinkAsync(CancellationToken.None);
             if (contextVersion != Interlocked.Read(ref commanderContextVersion))
             {
                 return;
@@ -1515,14 +1525,16 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             IsLinked = false;
             initialized = true;
             StatusMessage = string.Empty;
-            await TryRefreshCommanderSelectionOptionsAsync();
+            await TryRefreshCommanderSelectionOptionsAsync(
+                CancellationToken.None);
             if (wasManuallySelected && manuallySelectedFrontierId is null)
             {
                 IsBusy = false;
                 await ActivateFrontierCommanderAsync(
                     detectedFrontierId,
                     detectedCommanderName,
-                    refreshIfOpen: true);
+                    refreshIfOpen: true,
+                    CancellationToken.None);
             }
         }
         catch (Exception exception) when (IsExpected(exception))
@@ -2774,7 +2786,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     {
         try
         {
-            var state = await accountService.GetStateAsync();
+            var state = await accountService.GetStateAsync(
+                CancellationToken.None);
             IsLinked = state.IsLinked;
             Snapshot = state.Snapshot;
         }

@@ -276,12 +276,14 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
     public async Task ImportFolderAsync(string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        await importLock.WaitAsync();
+        await importLock.WaitAsync(CancellationToken.None);
         try
         {
             IsBusy = true;
             StatusMessage = "Validating and importing development quest...";
-            var result = await coordinator.ImportDevelopmentQuestAsync(path);
+            var result = await coordinator.ImportDevelopmentQuestAsync(
+                path,
+                CancellationToken.None);
             reference = result.Reference;
             var restartWatcher = WatchSource
                 && !string.Equals(
@@ -358,7 +360,9 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
             ?? throw new InvalidOperationException(
                 "No development quest is active.");
         var selected = SelectedView;
-        state = await coordinator.GetDevelopmentStateAsync(currentReference);
+        state = await coordinator.GetDevelopmentStateAsync(
+            currentReference,
+            CancellationToken.None);
         Views =
         [
             new QuestDevelopmentViewOption(
@@ -423,18 +427,21 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
                 case QuestDevelopmentViewKind.Objectives:
                     await coordinator.UpdateDevelopmentObjectivesAsync(
                         reference,
-                        Deserialize<Dictionary<string, string>>(EditorJson));
+                        Deserialize<Dictionary<string, string>>(EditorJson),
+                        CancellationToken.None);
                     break;
                 case QuestDevelopmentViewKind.Chapter:
                     await coordinator.UpdateDevelopmentChapterVariablesAsync(
                         reference,
                         SelectedView.ChapterId!,
-                        Deserialize<Dictionary<string, JsonElement>>(EditorJson));
+                        Deserialize<Dictionary<string, JsonElement>>(EditorJson),
+                        CancellationToken.None);
                     break;
                 case QuestDevelopmentViewKind.Messages:
                     await coordinator.UpdateDevelopmentMessagesAsync(
                         reference,
-                        Deserialize<List<RavenQuestMessage>>(EditorJson));
+                        Deserialize<List<RavenQuestMessage>>(EditorJson),
+                        CancellationToken.None);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -466,7 +473,8 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
             () => coordinator.SetDevelopmentChapterActiveAsync(
                 reference,
                 chapterId,
-                active),
+                active,
+                CancellationToken.None),
             active ? "Chapter started." : "Chapter stopped.");
     }
 
@@ -483,7 +491,8 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
             var result = await coordinator.RunDevelopmentDebugAsync(
                 reference,
                 chapterId,
-                DebugCode);
+                DebugCode,
+                CancellationToken.None);
             DebugResult = JsonSerializer.Serialize(result, EditorJsonOptions);
             await LoadStateCoreAsync();
             StatusMessage = "Debug code completed.";
@@ -512,7 +521,8 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
             IsBusy = true;
             var status = await coordinator.PublishDevelopmentQuestAsync(
                 reference,
-                PublishConfirmed);
+                PublishConfirmed,
+                CancellationToken.None);
             StatusMessage = "Published development quest: " + status;
         }
         catch (Exception exception) when (IsRecoverable(exception))
@@ -532,7 +542,8 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         try
         {
             IsBusy = true;
-            var result = await coordinator.RefreshAsync();
+            var result = await coordinator.RefreshAsync(
+                CancellationToken.None);
             ApplyRuntimeSnapshots(result.Quests);
             if (reference is not null)
             {
@@ -576,7 +587,9 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
         try
         {
             IsBusy = true;
-            await coordinator.RemoveQuestAsync(removing);
+            await coordinator.RemoveQuestAsync(
+                removing,
+                CancellationToken.None);
             ClearQuest();
             StatusMessage = "Development quest removed.";
             RuntimeChanged?.Invoke(this, EventArgs.Empty);

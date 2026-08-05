@@ -586,7 +586,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
         if (IsEnabled)
         {
-            await RefreshAsync();
+            await RefreshAsync(CancellationToken.None);
         }
     }
 
@@ -793,7 +793,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             {
                 Architect = CommanderName,
             },
-            storedRavenApiKey);
+            storedRavenApiKey,
+            CancellationToken.None);
         return $"Registered {CommanderName} as the Raven architect for {currentSystemName}.";
     }
 
@@ -1014,7 +1015,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             {
                 BuildId = project.BuildId,
                 FactionName = dock.FactionName,
-            });
+            },
+            CancellationToken.None);
         UpsertProject(updated);
         return $"Updated Raven project faction for {updated.BuildName}.";
     }
@@ -1086,7 +1088,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 systemAddress.Value.ToString(CultureInfo.InvariantCulture),
                 plan.Site.Id,
                 plan.CreatePatch(),
-                storedRavenApiKey);
+                storedRavenApiKey,
+                CancellationToken.None);
             RememberBuildSiteRepairVisit(visit);
             return plan.Field == ColonizationBuildSiteRepairField.MarketId
                 ? $"Repaired Raven Market Info for {plan.NormalizedStationName}."
@@ -1109,7 +1112,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             try
             {
                 return await client.GetSystemSitesAsync(
-                    systemAddress.ToString(CultureInfo.InvariantCulture));
+                    systemAddress.ToString(CultureInfo.InvariantCulture),
+                    CancellationToken.None);
             }
             catch (Exception exception) when (
                 attempt < 2
@@ -1178,7 +1182,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         await client.ContributeToProjectAsync(
             project.BuildId,
             CommanderName!,
-            contributions);
+            contributions,
+            CancellationToken.None);
         return $"Published {contributions.Values.Sum(value => (long)value):N0} contributed cargo units to {project.BuildName}.";
     }
 
@@ -1229,13 +1234,16 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                     ConstructionDepot =
                         ColonizationConstructionDepotPayload.FromSnapshot(
                             depot),
-                });
+                },
+                CancellationToken.None);
             UpsertProject(updated);
         }
 
         if (depot.IsComplete && !updated.IsComplete)
         {
-            await client.MarkProjectCompleteAsync(updated.BuildId);
+            await client.MarkProjectCompleteAsync(
+                updated.BuildId,
+                CancellationToken.None);
             updated = updated with
             {
                 IsComplete = true,
@@ -1267,7 +1275,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return project;
         }
 
-        project = await client.GetProjectAsync(systemAddress.Value, marketId);
+        project = await client.GetProjectAsync(
+            systemAddress.Value,
+            marketId,
+            CancellationToken.None);
         if (project is not null)
         {
             localUntrackedProject = project;
@@ -1390,7 +1401,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                     MaximumCargo = constructionState.ShipCargoCapacity,
                     Cargo = cargoCounts,
                 },
-                storedRavenApiKey!);
+                storedRavenApiKey!,
+                CancellationToken.None);
             ShipCargoPublishingStatus =
                 $"Published {cargoCounts.Count:N0} ship cargo entries to Raven Colonial.";
         }
@@ -1520,7 +1532,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 RavenCredentialStatus =
                     "Validating the Raven API key without saving it...";
                 validatedCommander =
-                    await client.GetCommanderByApiKeyAsync(normalized);
+                    await client.GetCommanderByApiKeyAsync(
+                        normalized,
+                        CancellationToken.None);
                 if (validatedCommander is null)
                 {
                     RavenCredentialStatus =
@@ -1544,7 +1558,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 profileFrontierId,
                 CommanderName,
                 profileIsOdyssey,
-                normalized);
+                normalized,
+                CancellationToken.None);
             storedRavenApiKey = normalized;
             RavenApiKey = normalized ?? string.Empty;
             RavenCredentialStatus = normalized is null
@@ -1607,7 +1622,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                     DisplayName = fleetCarrierIdentityTracker
                         .ResolveDisplayName(dock.StationName),
                 },
-                storedRavenApiKey);
+                storedRavenApiKey,
+                CancellationToken.None);
             published = true;
             registered = registered with
             {
@@ -1641,7 +1657,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             var updatedCargo = await client.ReplaceFleetCarrierCargoAsync(
                 dock.MarketId,
                 replacements,
-                storedRavenApiKey);
+                storedRavenApiKey,
+                CancellationToken.None);
             ReplaceLocalFleetCarrier(registered with
             {
                 Cargo = updatedCargo.ToDictionary(
@@ -1903,7 +1920,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var result = await legacyProfileStore.LoadAsync(profileFrontierId);
+        var result = await legacyProfileStore.LoadAsync(
+            profileFrontierId,
+            CancellationToken.None);
         if (result.Error is not null)
         {
             StatusMessage = "The imported colonisation cache could not be read: "
@@ -1950,7 +1969,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         {
             var saved = await client.SaveHiddenProjectIdsAsync(
                 CommanderName,
-                hiddenProjectIds);
+                hiddenProjectIds,
+                CancellationToken.None);
             hiddenProjectIds = saved.ToHashSet(
                 StringComparer.OrdinalIgnoreCase);
             foreach (var row in Projects)
@@ -2016,7 +2036,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         {
             await client.SetPrimaryProjectAsync(
                 CommanderName,
-                nextPrimaryId);
+                nextPrimaryId,
+                CancellationToken.None);
             primaryProjectId = nextPrimaryId;
             Projects = Projects
                 .Select(project => project.Project)

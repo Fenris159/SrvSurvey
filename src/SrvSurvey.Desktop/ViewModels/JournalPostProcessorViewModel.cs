@@ -268,7 +268,8 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             var currentId = SelectedCommander?.FrontierId;
-            var result = await commanderCatalog.LoadAsync();
+            var result = await commanderCatalog.LoadAsync(
+                CancellationToken.None);
             Commanders = result.Profiles
                 .Select(profile => new JournalPostProcessorCommanderViewModel(
                     profile.FrontierId,

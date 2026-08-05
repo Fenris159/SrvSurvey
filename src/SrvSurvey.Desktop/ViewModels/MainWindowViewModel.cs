@@ -1070,7 +1070,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             RaiseNavigationSelectionChanged();
         }
 
-        await FrontierProfile.OpenAsync();
+        await FrontierProfile.OpenAsync(CancellationToken.None);
     }
 
     private void RaiseNavigationSelectionChanged()
@@ -1449,7 +1449,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             IsBusy = true;
             StatusMessage = "Reading journal and status updates…";
 
-            var update = await journalMonitor.PollAsync();
+            var update = await journalMonitor.PollAsync(
+                CancellationToken.None);
             await ApplyMonitorUpdateAsync(update, isManualRefresh: true);
         }
         catch (Exception exception) when (
@@ -1523,12 +1524,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             var result = await profileImporter.ImportAsync(
                 LegacyProfileSourcePath,
                 AppDataPaths.DataDirectory,
-                ProfileBackupDirectory);
+                ProfileBackupDirectory,
+                CancellationToken.None);
             var settingsMigration = new LegacyUiSettingsMigrator()
                 .MigrateIfNeeded(AppDataPaths);
             var organicMigration = await new LegacyOrganicProfileMigrator(
                     AppDataPaths.DataDirectory)
-                .MigrateAsync();
+                .MigrateAsync(CancellationToken.None);
             foreach (var error in organicMigration.Errors)
             {
                 applicationLogService?.Append(
@@ -1789,7 +1791,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             await FrontierProfile.SetCommanderContextAsync(
                 journalState.FrontierId,
                 journalState.CommanderName,
-                refreshIfOpen: IsProfileSelected);
+                refreshIfOpen: IsProfileSelected,
+                CancellationToken.None);
         }
 
         var allowSharedCargo = !IsSharedCargoSuppressed;
@@ -1876,7 +1879,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             await greenGasGiantPublicationCoordinator.ApplyAsync(
                 update.JournalEvents,
                 NetworkPrivacy.UploadGreenGasGiantCandidates,
-                allowPublishing: !update.IsBootstrapRead);
+                allowPublishing: !update.IsBootstrapRead,
+                CancellationToken.None);
         NetworkPrivacy.ReportPublicationResult(greenGasGiantResult);
         if (!update.IsBootstrapRead)
         {
@@ -1905,7 +1909,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         JournalPostProcessor.SelectCommander(journalState.FrontierId);
 
         var commanderCodexResult =
-            await commanderCodexJournalTracker.ApplyAsync(update.JournalEvents);
+            await commanderCodexJournalTracker.ApplyAsync(
+                update.JournalEvents,
+                CancellationToken.None);
         if (commanderCodexResult.Warnings.Count > 0)
         {
             CommanderCodexStatusMessage = string.Join(
@@ -2082,7 +2088,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             await Guardian.UpdateStatusAsync(
                 update.Status,
-                allowGesture: !update.IsBootstrapRead);
+                allowGesture: !update.IsBootstrapRead,
+                cancellationToken: CancellationToken.None);
             StationInfo.UpdateStatus(update.Status);
         }
 
@@ -2123,7 +2130,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                         screenshotStatus.Longitude,
                         screenshotStatus.NormalizedHeading,
                         screenshotStatus.HasLatitudeLongitude)
-                    : null);
+                    : null,
+                CancellationToken.None);
             Notifications.ReportScreenshotResult(
                 screenshotResult,
                 ScreenshotProcessing.AddBanner);
@@ -2254,7 +2262,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 update.Status,
                 exobiologyAfter,
                 processJournalMutations: !skipPersistedBootstrapEvents,
-                scansLostToDeath: scansLostToDeath.ToArray());
+                scansLostToDeath: scansLostToDeath.ToArray(),
+                cancellationToken: CancellationToken.None);
         }
 
         if (exobiologyChanged)
@@ -2347,7 +2356,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                     && !hasMultipleGameWindows,
                 journalDirectory: folderResolution.SelectedPath,
                 journalPath: update.JournalPath,
-                allowSharedData: !hasMultipleGameWindows);
+                allowSharedData: !hasMultipleGameWindows,
+                cancellationToken: CancellationToken.None);
             NetworkPrivacy.ReportPublicationResult(eddnResult);
             foreach (var warning in eddnResult.Warnings)
             {
@@ -2388,7 +2398,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                         activeProfileFrontierId
                             ?? journalState.FrontierId,
                         journalState.GameVersion,
-                        journalState.IsOdyssey ?? true)));
+                        journalState.IsOdyssey ?? true)),
+                CancellationToken.None);
             Inara.ReportPublicationResult(inaraResult);
             foreach (var warning in inaraResult.Warnings)
             {
@@ -2438,12 +2449,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         var global = await commanderCodexStore.LoadAsync(
             frontierId,
-            commanderName);
+            commanderName,
+            cancellationToken: CancellationToken.None);
         var regional = regionId is > 0
             ? await commanderCodexStore.LoadAsync(
                 frontierId,
                 commanderName,
-                regionId.Value)
+                regionId.Value,
+                CancellationToken.None)
             : null;
         surveyCodexFrontierId = frontierId;
         surveyCodexRegionId = regionId;
@@ -2490,7 +2503,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 folderResolution.SelectedPath,
                 update.JournalEvents,
                 update.IsBootstrapRead,
-                allowCargoFile: allowCargoFile);
+                allowCargoFile: allowCargoFile,
+                cancellationToken: CancellationToken.None);
             QuestWorkspace.ApplyRuntimeResult(result, enabled);
             if (ReferenceEquals(previousQuestSnapshot, result.Quests))
             {
@@ -2549,7 +2563,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var result = await questRuntimeCoordinator.ReplayEventAsync(
             folderResolution.SelectedPath,
             journalEvent,
-            allowCargoFile: !IsSharedCargoSuppressed);
+            allowCargoFile: !IsSharedCargoSuppressed,
+            cancellationToken: CancellationToken.None);
         QuestWorkspace.ApplyRuntimeResult(result, enabled);
         UpdateQuestOverlayPresentation(result.Quests, enabled);
         OnPropertyChanged(nameof(Quests));
@@ -2585,7 +2600,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         var result = await commanderProfileStore.LoadAsync(
             journalState.FrontierId,
-            isOdyssey);
+            isOdyssey,
+            CancellationToken.None);
         loadedSystemHistoryKey = null;
         loadedSystemBodyDataKey = null;
         CancelSystemBodyDataRequest();
@@ -2654,7 +2670,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             result.Data.BoxelSearch);
         await Guardian.LoadProfileAsync(
             result.Data.FrontierId,
-            result.Data.IsOdyssey);
+            result.Data.IsOdyssey,
+            CancellationToken.None);
         RamTah.LoadProfile(
             result.Data.FrontierId,
             activeProfileCommanderName,
@@ -2690,7 +2707,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 activeProfileFrontierId,
                 activeProfileCommanderName,
                 activeProfileIsOdyssey,
-                snapshot);
+                snapshot,
+                CancellationToken.None);
             ExplorationStatusMessage = $"Totals saved to "
                 + Path.GetFileName(commanderProfileStore.GetProfilePath(
                     activeProfileFrontierId,
@@ -2730,7 +2748,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 activeProfileFrontierId,
                 activeProfileCommanderName,
                 activeProfileIsOdyssey,
-                snapshot);
+                snapshot,
+                CancellationToken.None);
             ExobiologyStatusMessage = $"Organic scan state saved to "
                 + Path.GetFileName(commanderProfileStore.GetProfilePath(
                     activeProfileFrontierId,
@@ -2826,7 +2845,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             activeProfileCommanderName ?? journalState.CommanderName,
             current.SystemName,
             systemAddress,
-            current.StarPosition);
+            current.StarPosition,
+            CancellationToken.None);
         if (result.Error is not null)
         {
             var message = "Imported system history was preserved but could not "
@@ -3011,10 +3031,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                         context,
                         snapshot,
                         correction.BodyId,
-                        correction.Value)
+                        correction.Value,
+                        CancellationToken.None)
                 : await systemScanPersistenceStore.SaveAsync(
                     context,
-                    snapshot);
+                    snapshot,
+                    CancellationToken.None);
             SystemSurvey.SetRepeatVisitBiologySuppression(
                 result.ShouldSuppressBiologyOverlays);
         }

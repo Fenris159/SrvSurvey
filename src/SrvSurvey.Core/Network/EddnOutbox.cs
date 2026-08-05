@@ -460,7 +460,7 @@ namespace SrvSurvey.Core.Network
             idleCancellation.Dispose();
             shutdown.Dispose();
 
-            if (processing.Wait(0))
+            if (processing.Wait(0, CancellationToken.None))
             {
                 try
                 {
@@ -480,7 +480,7 @@ namespace SrvSurvey.Core.Network
         private void triggerProcessing()
         {
             if (disposed) return;
-            processDue().ContinueWith(
+            processDue(shutdown.Token).ContinueWith(
                 task => writeLog($"EDDN queue processing failed: {singleLine(task.Exception?.GetBaseException().Message)}"),
                 CancellationToken.None,
                 TaskContinuationOptions.OnlyOnFaulted,
@@ -906,7 +906,7 @@ namespace SrvSurvey.Core.Network
 
         private void releaseOwnershipIfIdle()
         {
-            if (!processing.Wait(0)) return;
+            if (!processing.Wait(0, CancellationToken.None)) return;
             try
             {
                 releaseOwnership();

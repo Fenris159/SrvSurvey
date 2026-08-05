@@ -483,7 +483,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             try
             {
                 state.ApplyEmptyBoxels(
-                    await emptyBoxelStore.LoadGroupAsync(state.TopBoxel));
+                    await emptyBoxelStore.LoadGroupAsync(
+                        state.TopBoxel,
+                        CancellationToken.None));
             }
             catch (InvalidDataException exception)
             {
@@ -543,7 +545,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        await operationLock.WaitAsync();
+        await operationLock.WaitAsync(CancellationToken.None);
         try
         {
             var changed = state.MergeRoute(route.Route
@@ -570,7 +572,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        await operationLock.WaitAsync();
+        await operationLock.WaitAsync(CancellationToken.None);
         try
         {
             var changed = false;
@@ -651,7 +653,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         try
         {
             state.ApplyEmptyBoxels(
-                await emptyBoxelStore.LoadGroupAsync(topBoxel!));
+                await emptyBoxelStore.LoadGroupAsync(
+                    topBoxel!,
+                    CancellationToken.None));
             UpdateDisplay();
             await SaveAsync();
             await RefreshCurrentAsync();
@@ -677,7 +681,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        await operationLock.WaitAsync();
+        await operationLock.WaitAsync(CancellationToken.None);
         try
         {
             IsBusy = true;
@@ -686,7 +690,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             try
             {
                 state.ApplyEmptyBoxels(
-                    await emptyBoxelStore.LoadGroupAsync(state.Current));
+                    await emptyBoxelStore.LoadGroupAsync(
+                        state.Current,
+                        CancellationToken.None));
             }
             catch (InvalidDataException exception)
             {
@@ -697,7 +703,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             {
                 var local = await localSystemReader.ReadAsync(
                     frontierId!,
-                    state.Current);
+                    state.Current,
+                    CancellationToken.None);
                 state.MergeLocalSystems(local.Systems);
                 warnings.AddRange(local.Errors);
                 if (latestRoute is not null)
@@ -710,7 +717,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 try
                 {
                     state.MergeSpanshSystems(
-                        await systemResolver.SearchAsync(state.Current));
+                        await systemResolver.SearchAsync(
+                            state.Current,
+                            CancellationToken.None));
                 }
                 catch (Exception exception) when (
                     exception is HttpRequestException
@@ -806,7 +815,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 cancellation.Token);
             AuditProcessed = result.Processed;
             AuditTotal = Math.Max(1, result.Total);
-            await operationLock.WaitAsync();
+            await operationLock.WaitAsync(cancellation.Token);
             try
             {
                 if (!string.Equals(frontierId, auditFrontierId, StringComparison.Ordinal)
@@ -893,13 +902,16 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        await operationLock.WaitAsync();
+        await operationLock.WaitAsync(CancellationToken.None);
         try
         {
             IsBusy = true;
             var original = state.Current;
             var markEmpty = !state.CurrentIsEmpty;
-            await emptyBoxelStore.SetEmptyAsync(original, markEmpty);
+            await emptyBoxelStore.SetEmptyAsync(
+                original,
+                markEmpty,
+                CancellationToken.None);
             state.SetCurrentEmpty(markEmpty);
             var moved = false;
             if (markEmpty
@@ -1038,7 +1050,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        var local = await localSystemReader.ReadAsync(frontierId!, state.Current);
+        var local = await localSystemReader.ReadAsync(
+            frontierId!,
+            state.Current,
+            CancellationToken.None);
         state.MergeLocalSystems(local.Systems);
         if (latestRoute is not null)
         {
@@ -1049,7 +1064,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
         try
         {
-            state.MergeSpanshSystems(await systemResolver.SearchAsync(state.Current));
+            state.MergeSpanshSystems(await systemResolver.SearchAsync(
+                state.Current,
+                CancellationToken.None));
         }
         catch (Exception exception) when (
             exception is HttpRequestException
@@ -1169,7 +1186,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 frontierId,
                 commanderName,
                 isOdyssey,
-                state.CreateSnapshot());
+                state.CreateSnapshot(),
+                CancellationToken.None);
             if (successMessage is not null)
             {
                 StatusMessage = successMessage;

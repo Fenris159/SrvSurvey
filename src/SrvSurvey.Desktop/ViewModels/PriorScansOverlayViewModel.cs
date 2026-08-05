@@ -158,7 +158,9 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        if (!await refreshLock.WaitAsync(0).ConfigureAwait(true))
+        if (!await refreshLock.WaitAsync(
+            0,
+            CancellationToken.None).ConfigureAwait(true))
         {
             return;
         }

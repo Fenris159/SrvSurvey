@@ -494,13 +494,14 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        await refreshLock.WaitAsync();
+        await refreshLock.WaitAsync(CancellationToken.None);
         try
         {
             IsBusy = true;
             StatusMessage = "Loading Commander Codex ledgers…";
             var previousFrontierId = SelectedCommander?.FrontierId;
-            var catalog = await store.DiscoverCommandersAsync();
+            var catalog = await store.DiscoverCommandersAsync(
+                CancellationToken.None);
             var options = catalog.Commanders
                 .Select(data => new CommanderCodexOptionViewModel(
                     data.FrontierId,
@@ -564,7 +565,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        await refreshLock.WaitAsync();
+        await refreshLock.WaitAsync(CancellationToken.None);
         try
         {
             IsBusy = true;
@@ -590,7 +591,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             StatusMessage = $"Importing Canonn Challenge data for {commander.CommanderName}…";
             var result = await canonnImporter.ImportAsync(
                 commander.FrontierId,
-                commander.CommanderName);
+                commander.CommanderName,
+                CancellationToken.None);
             StatusMessage = result.IsSuccess
                 ? $"Canonn matched {result.MatchedEntryCount:N0} entries and added "
                     + $"{result.AddedEntryCount:N0}; {result.UnmatchedEntryCount:N0} "
@@ -624,7 +626,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             });
             var result = await journalImporter.ImportAsync(
                 commander.FrontierId,
-                progress);
+                progress,
+                CancellationToken.None);
             StatusMessage = $"Scanned {result.JournalFileCount:N0} journals and "
                 + $"{result.DiscoveryEventCount:N0} Codex events; added "
                 + $"{result.ChangedEntryCount:N0} global/regional firsts."
@@ -665,7 +668,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
                 commander.FrontierId,
                 commander.CommanderName,
                 entry.EntryId,
-                shouldDiscover);
+                shouldDiscover,
+                cancellationToken: CancellationToken.None);
             StatusMessage = !result.IsSuccess
                 ? "Manual discovery update failed: " + result.Error
                 : result.Changed
@@ -712,7 +716,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         var result = await store.LoadAsync(
             commander.FrontierId,
             commander.CommanderName,
-            region.RegionId);
+            region.RegionId,
+            CancellationToken.None);
         if (!string.Equals(
                 SelectedCommander?.FrontierId,
                 commander.FrontierId,
