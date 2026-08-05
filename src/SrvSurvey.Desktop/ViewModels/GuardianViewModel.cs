@@ -1621,7 +1621,7 @@ public sealed class GuardianViewModel
                     candidate.Name,
                     query,
                     StringComparison.OrdinalIgnoreCase))
-                ?? matches.FirstOrDefault();
+                ?? (matches.Count > 0 ? matches[0] : null);
             if (match is null)
             {
                 OriginLookupStatus = $"No star system matched '{query}'.";
@@ -4617,10 +4617,11 @@ public sealed class GuardianViewModel
                     screenshots)));
         projected = SortSiteRows(projected, origin is not null);
         Rows = projected.ToArray();
+        var firstRow = Rows.Count > 0 ? Rows[0] : null;
         SelectedSite = previousReference is null
-            ? Rows.FirstOrDefault()
+            ? firstRow
             : Rows.FirstOrDefault(row => row.Reference == previousReference)
-                ?? Rows.FirstOrDefault();
+                ?? firstRow;
         var visited = Rows.Count(row => row.Visit.IsVisited);
         var surveyed = Rows.Count(row => row.Visit.IsSurveyComplete);
         Summary = $"{Rows.Count:N0} of {visits.Visits.Count:N0} sites"

@@ -96,8 +96,8 @@ internal static class LegacySystemSnapshotParser
                 ReadOptionalBoolean(body, "wasMapped") ?? false,
                 ReadOptionalBoolean(body, "wasFootfalled"),
                 ReadOptionalBoolean(body, "firstFootFall") ?? false,
-                parents.FirstOrDefault()?.Kind
-                    == SystemBodyParentKind.Ring,
+                parents.Count > 0
+                    && parents[0].Kind == SystemBodyParentKind.Ring,
                 ReadOptionalBoolean(body, "tidalLock"),
                 ReadOptionalDouble(body, "mass") ?? 0,
                 ReadOptionalDouble(body, "distanceFromArrivalLS") ?? 0,

@@ -498,7 +498,9 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
             ? value?.Organisms.FirstOrDefault(candidate =>
                 candidate.EntryId == entryId)
             : null;
-        organism ??= value?.Organisms.FirstOrDefault();
+        organism ??= value?.Organisms is { Count: > 0 } organisms
+            ? organisms[0]
+            : null;
         SelectedOrganism = organism;
         if (bodyChanged)
         {

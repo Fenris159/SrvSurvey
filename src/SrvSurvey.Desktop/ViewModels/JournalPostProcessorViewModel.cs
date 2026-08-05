@@ -280,7 +280,7 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                         commander.FrontierId,
                         currentId,
                         StringComparison.OrdinalIgnoreCase))
-                ?? Commanders.FirstOrDefault();
+                ?? (Commanders.Count > 0 ? Commanders[0] : null);
             StatusMessage = result.Warnings.Count > 0
                 ? $"Found {Commanders.Count:N0} commander profile(s). "
                     + string.Join(" ", result.Warnings)

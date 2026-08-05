@@ -435,7 +435,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
                         system.Name,
                         Query.Trim(),
                         StringComparison.OrdinalIgnoreCase))
-                ?? results.FirstOrDefault();
+                ?? (results.Count > 0 ? results[0] : null);
             StatusMessage = results.Count switch
             {
                 0 => "No matching system was returned by Spansh.",

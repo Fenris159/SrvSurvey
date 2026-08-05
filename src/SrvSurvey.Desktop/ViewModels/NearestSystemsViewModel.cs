@@ -339,7 +339,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             Results = searchResult.Rows
                 .Select(row => new NearestSystemRowViewModel(row))
                 .ToArray();
-            SelectedResult = Results.FirstOrDefault();
+            SelectedResult = Results.Count > 0 ? Results[0] : null;
             SpanshSearchReference = searchResult.SpanshSearchReference;
             StatusMessage = Results.Count == 0
                 ? "No nearby systems matched this search."

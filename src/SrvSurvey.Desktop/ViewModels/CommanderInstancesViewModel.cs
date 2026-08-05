@@ -239,7 +239,7 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
                 option.FrontierId,
                 selectedFrontierId,
                 StringComparison.OrdinalIgnoreCase))
-            ?? Commanders.FirstOrDefault();
+            ?? (Commanders.Count > 0 ? Commanders[0] : null);
     }
 
     private bool SetField<T>(

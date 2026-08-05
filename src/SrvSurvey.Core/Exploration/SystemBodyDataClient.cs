@@ -292,7 +292,8 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             false,
             null,
             false,
-            parents.FirstOrDefault()?.Kind == SystemBodyParentKind.Ring,
+            parents.Count > 0
+                && parents[0].Kind == SystemBodyParentKind.Ring,
             ReadTidalLock(body, provider),
             mass,
             GetDouble(body, "distanceToArrival") ?? 0,

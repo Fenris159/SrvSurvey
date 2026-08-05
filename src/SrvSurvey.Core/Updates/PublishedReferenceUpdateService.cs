@@ -586,8 +586,9 @@ public sealed class PublishedReferenceUpdateService
                 if (!regional.HasData || regional.Warnings.Count > 0)
                 {
                     throw new InvalidDataException(
-                        regional.Warnings.FirstOrDefault()
-                            ?? "The staged regional Codex candidate catalog is empty.");
+                        regional.Warnings.Count > 0
+                            ? regional.Warnings[0]
+                            : "The staged regional Codex candidate catalog is empty.");
                 }
 
                 continue;
@@ -599,8 +600,9 @@ public sealed class PublishedReferenceUpdateService
                 if (nicknames.RavenCount == 0 || nicknames.Warnings.Count > 0)
                 {
                     throw new InvalidDataException(
-                        nicknames.Warnings.FirstOrDefault()
-                            ?? "The staged Raven nickname catalog is empty.");
+                        nicknames.Warnings.Count > 0
+                            ? nicknames.Warnings[0]
+                            : "The staged Raven nickname catalog is empty.");
                 }
 
                 continue;
@@ -612,8 +614,9 @@ public sealed class PublishedReferenceUpdateService
                 if (!knownSystems.HasData || knownSystems.Warnings.Count > 0)
                 {
                     throw new InvalidDataException(
-                        knownSystems.Warnings.FirstOrDefault()
-                            ?? "The staged known-system address catalog is empty.");
+                        knownSystems.Warnings.Count > 0
+                            ? knownSystems.Warnings[0]
+                            : "The staged known-system address catalog is empty.");
                 }
 
                 continue;

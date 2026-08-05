@@ -84,7 +84,7 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
                 inheritedOpacity,
                 OnEditorChanged))
             .ToArray();
-        SelectedOverlay = Overlays.FirstOrDefault();
+        SelectedOverlay = Overlays.Count > 0 ? Overlays[0] : null;
         StatusMessage = layout.Error
             ?? "Opacity overrides are ready. Changes apply to visible overlays after Save.";
         OnPropertyChanged(nameof(Overlays));

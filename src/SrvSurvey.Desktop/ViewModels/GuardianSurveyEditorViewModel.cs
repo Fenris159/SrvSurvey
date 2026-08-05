@@ -239,7 +239,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 group,
                 survey.ObeliskGroups.Contains(group)))
             .ToArray();
-        SelectedPoint = Points.FirstOrDefault();
+        SelectedPoint = Points.Count > 0 ? Points[0] : null;
         StatusMessage = $"Loaded {Points.Count:N0} surveyable point(s) from "
             + $"{Path.GetFileName(survey.Path)}.";
     }
@@ -309,7 +309,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         }
 
         Points = Points.Where(point => !ReferenceEquals(point, selected)).ToArray();
-        SelectedPoint = Points.FirstOrDefault();
+        SelectedPoint = Points.Count > 0 ? Points[0] : null;
         StatusMessage = $"Removed local raw point {selected.Name}. Save the survey to persist the removal.";
         return Task.CompletedTask;
     }

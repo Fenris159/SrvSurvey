@@ -707,7 +707,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
                     preferredFileName,
                     StringComparison.Ordinal))
                 ?? Journeys.FirstOrDefault(item => item.Document.IsActive)
-                ?? Journeys.FirstOrDefault();
+                ?? (Journeys.Count > 0 ? Journeys[0] : null);
             if (result.Errors.Count > 0)
             {
                 StatusMessage = string.Join(Environment.NewLine, result.Errors);
@@ -769,7 +769,9 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
                         system.Name,
                         StartSystemQuery.Trim(),
                         StringComparison.OrdinalIgnoreCase))
-                ?? StartSystemResults.FirstOrDefault();
+                ?? (StartSystemResults.Count > 0
+                    ? StartSystemResults[0]
+                    : null);
             StartStatus = StartSystemResults.Count == 0
                 ? "No matching systems were found."
                 : $"Found {StartSystemResults.Count:N0} matching systems.";
@@ -1100,12 +1102,15 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             suppressSystemLoad = preserveEdits;
             try
             {
+                var firstVisitedSystem = VisitedSystems.Count > 0
+                    ? VisitedSystems[0]
+                    : null;
                 SelectedSystem = preferredSystem is { } identity
                     ? VisitedSystems.FirstOrDefault(item =>
                         item.Visit.StarSystem.SystemAddress == identity.Address
                         && item.Visit.Arrived == identity.Arrived)
-                        ?? VisitedSystems.FirstOrDefault()
-                    : VisitedSystems.FirstOrDefault();
+                        ?? firstVisitedSystem
+                    : firstVisitedSystem;
             }
             finally
             {

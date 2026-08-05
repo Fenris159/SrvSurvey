@@ -615,7 +615,9 @@ public sealed record CommanderCodexLoadResult(
 {
     public bool IsSuccess => Data is not null;
 
-    public string? Error => IsSuccess ? null : Warnings.FirstOrDefault();
+    public string? Error => IsSuccess || Warnings.Count == 0
+        ? null
+        : Warnings[0];
 
     public static CommanderCodexLoadResult Failed(string path, string error)
     {

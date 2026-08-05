@@ -541,7 +541,8 @@ public sealed record PriorScanSpeciesViewModel(
         var genus = ExobiologyReferenceCatalog.GetGenusName(
             species.SpeciesName);
         var approachAngle = altitudeMeters > 500
-            && species.Targets.FirstOrDefault() is { DistanceMeters: > 0 } target
+            && species.Targets.Count > 0
+            && species.Targets[0] is { DistanceMeters: > 0 } target
                 ? Math.Atan(altitudeMeters / target.DistanceMeters)
                     * 180d / Math.PI
                 : 0;

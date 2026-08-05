@@ -533,7 +533,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
                         previousFrontierId,
                         StringComparison.OrdinalIgnoreCase))
                 ?? Commanders.FirstOrDefault(option => option.IsActive)
-                ?? Commanders.FirstOrDefault();
+                ?? (Commanders.Count > 0 ? Commanders[0] : null);
             OnPropertyChanged(nameof(SelectedCommander));
             OnPropertyChanged(nameof(CommanderSummary));
 

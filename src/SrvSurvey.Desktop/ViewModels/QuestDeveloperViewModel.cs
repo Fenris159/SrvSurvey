@@ -378,14 +378,15 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
                 "Messages",
                 null),
         ];
+        var firstView = Views.Count > 0 ? Views[0] : null;
         SelectedView = selected is null
-            ? Views.FirstOrDefault()
+            ? firstView
             : Views.FirstOrDefault(view => view.Kind == selected.Kind
                 && string.Equals(
                     view.ChapterId,
                     selected.ChapterId,
                     StringComparison.Ordinal))
-                ?? Views.FirstOrDefault();
+                ?? firstView;
         RenderEditor();
     }
 

@@ -222,7 +222,7 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
                     option.FrontierId,
                     currentFrontierId,
                     StringComparison.OrdinalIgnoreCase))
-                ?? Commanders.FirstOrDefault();
+                ?? (Commanders.Count > 0 ? Commanders[0] : null);
             StatusMessage = result.Warnings.Count > 0
                 ? string.Join(" ", result.Warnings)
                 : Commanders.Count == 0

@@ -2001,7 +2001,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private ColonizationProjectRowViewModel CreateRow(
         ColonizationProject project)
     {
-        var build = buildCatalog.FindByLayout(project.BuildType).FirstOrDefault()
+        var matchingBuilds = buildCatalog.FindByLayout(project.BuildType);
+        var build = (matchingBuilds.Count > 0 ? matchingBuilds[0] : null)
             ?? buildCatalog.FindByBuildType(project.BuildType);
         var type = project.IsFleetCarrierLoading
             ? "Fleet Carrier loading"

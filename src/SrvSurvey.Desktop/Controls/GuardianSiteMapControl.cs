@@ -988,7 +988,9 @@ public sealed class GuardianSiteMapControl : Control
             case GuardianPoiType.DestructiblePanel:
                 var materialColor = GuardianLegacyMapDrawing
                     .GetComponentMaterialColor(
-                    point.ComponentMaterials.FirstOrDefault());
+                    point.ComponentMaterials.Count > 0
+                        ? point.ComponentMaterials[0]
+                        : default);
                 context.DrawRectangle(
                     materialColor is { } known
                         ? new SolidColorBrush(known)

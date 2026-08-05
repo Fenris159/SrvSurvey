@@ -29,7 +29,7 @@ public sealed partial class QuestView : UserControl
                 Title = "Select folder containing quest definition files",
                 AllowMultiple = false,
             });
-        var folder = folders.FirstOrDefault();
+        var folder = folders.Count > 0 ? folders[0] : null;
         if (folder is not null)
         {
             await viewModel.QuestWorkspace.Developer.ImportFolderAsync(

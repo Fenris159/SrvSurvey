@@ -363,8 +363,8 @@ public sealed class SystemScanState
         if (parents is not null)
         {
             body.Parents = parents;
-            body.HasRingParent = parents.FirstOrDefault()?.Kind
-                == SystemBodyParentKind.Ring;
+            body.HasRingParent = parents.Count > 0
+                && parents[0].Kind == SystemBodyParentKind.Ring;
         }
 
         body.AtmosphereComposition = ReadComposition(root, "AtmosphereComposition");
@@ -727,8 +727,8 @@ public sealed class SystemScanState
         if (target.Parents.Count == 0 && source.Parents.Count > 0)
         {
             target.Parents = source.Parents.ToArray();
-            target.HasRingParent = source.Parents.FirstOrDefault()?.Kind
-                == SystemBodyParentKind.Ring;
+            target.HasRingParent = source.Parents.Count > 0
+                && source.Parents[0].Kind == SystemBodyParentKind.Ring;
             changed = true;
         }
 

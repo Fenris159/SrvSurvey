@@ -95,7 +95,7 @@ public sealed partial class DiagnosticsView : UserControl
                     },
                 ],
             });
-        var file = files.FirstOrDefault();
+        var file = files.Count > 0 ? files[0] : null;
         if (file is not null)
         {
             viewModel.VisitedStarsCache.TargetPath = file.Path.LocalPath;

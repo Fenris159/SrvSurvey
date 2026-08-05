@@ -61,7 +61,7 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
         string? musicTrack = null)
     {
         ArgumentNullException.ThrowIfNull(quests);
-        var firstQuest = quests.FirstOrDefault();
+        var firstQuest = quests.Count > 0 ? quests[0] : null;
         var mode = OverlayGameModeResolver.Resolve(
             status,
             musicTrack: musicTrack);

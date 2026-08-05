@@ -436,7 +436,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             new JourneyStore(AppDataPaths.DataDirectory),
             new JourneyJournalHistoryReader(
                 folderResolution.SelectedPath
-                    ?? folderResolution.CandidatePaths.FirstOrDefault()
+                    ?? (folderResolution.CandidatePaths.Count > 0
+                        ? folderResolution.CandidatePaths[0]
+                        : null)
                     ?? Path.Combine(AppDataPaths.DataDirectory, "journals")),
             commanderProfileStore,
             sharedExobiologyCatalog);
@@ -560,7 +562,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             legacyReferences.BiologyCriteria,
             () => activeProfileCommanderName ?? journalState.CommanderName);
         var journalImportDirectory = folderResolution.SelectedPath
-            ?? folderResolution.CandidatePaths.FirstOrDefault()
+            ?? (folderResolution.CandidatePaths.Count > 0
+                ? folderResolution.CandidatePaths[0]
+                : null)
             ?? Path.Combine(AppDataPaths.DataDirectory, "journals");
         ProfileBackupDirectory = Path.Combine(
             Path.GetDirectoryName(AppDataPaths.DataDirectory)
@@ -624,7 +628,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 AppDataPaths.LegacyProfileCandidates)
             .Select(discovery => new LegacyProfileOptionViewModel(discovery))
             .ToArray();
-        selectedLegacyProfile = LegacyProfiles.FirstOrDefault();
+        selectedLegacyProfile = LegacyProfiles.Count > 0
+            ? LegacyProfiles[0]
+            : null;
         legacyProfileSourcePath = selectedLegacyProfile?.Path ?? string.Empty;
         profileStatusMessage = GetInitialProfileStatus();
         importLegacyProfileCommand = new AsyncCommand(
@@ -632,7 +638,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             CanImportLegacyProfile);
         ImportLegacyProfileCommand = importLegacyProfileCommand;
         JournalFolderPath = folderResolution.SelectedPath
-            ?? folderResolution.CandidatePaths.FirstOrDefault()
+            ?? (folderResolution.CandidatePaths.Count > 0
+                ? folderResolution.CandidatePaths[0]
+                : null)
             ?? "No journal location is configured.";
         CandidatePaths = folderResolution.CandidatePaths.Count == 0
             ? "No default locations are available for this platform."
