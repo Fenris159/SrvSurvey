@@ -229,12 +229,12 @@
           <TextBlock Classes="card-title" Text="Journal activity and SCO status" />
           <TextBlock Classes="muted"
                      TextWrapping="Wrap"
-                     Text="Controls the legacy PlotPulse overlay: a 10-second journal/status pulse bar and the Supercruise Overdrive cooldown indicator." />
+                     Text="Controls the complete PlotPulse overlay: the ~10-second journal/status pulse bar and the Supercruise Overdrive cooldown indicator. There is a single enable preference for both." />
         </StackPanel>
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
           <CheckBox VerticalAlignment="Center"
                     IsChecked="{Binding PulseOverlay.HideJournalWriteTimer, Mode=TwoWay}"
-                    Content="Hide 5 second journal file write timer →→→" />
+                    Content="Hide PlotPulse (journal activity and SCO status) →→→" />
           <Border Grid.Column="1"
                   Width="56"
                   Height="40"
@@ -261,7 +261,7 @@
         <TextBlock Classes="muted"
                    FontSize="11"
                    TextWrapping="Wrap"
-                   Text="When unchecked, PlotPulse remains available outside Galaxy Map and System Map for ~10 seconds after journal activity and SCO use." />
+                   Text="When checked, the entire PlotPulse overlay is hidden (journal pulse and SCO indicator). When unchecked, PlotPulse can appear outside Galaxy Map and System Map for ~10 seconds after journal activity and SCO use. Matches the original hideJournalWriteTimer setting polarity." />
         <TextBlock IsVisible="{Binding PulseOverlay.HasSettingsStatus}"
                    Foreground="{DynamicResource RavenWarningBrush}"
                    Text="{Binding PulseOverlay.SettingsStatus}"
@@ -494,7 +494,7 @@
           <StackPanel Spacing="10">
             <TextBlock Classes="eyebrow" Text="MAP ZOOM" />
             <CheckBox IsChecked="{Binding Guardian.AutoZoomNearObelisks, Mode=TwoWay}"
-                      Content="Auto zoom map if within 30m of obelisks" />
+                      Content="Auto zoom map if within 30 m of obelisks" />
             <CheckBox IsChecked="{Binding Guardian.AutoZoomInSrvTurret, Mode=TwoWay}"
                       Content="Auto zoom map when using SRV turret" />
             <CheckBox IsChecked="{Binding Guardian.ShowComponentMaterials, Mode=TwoWay}"
