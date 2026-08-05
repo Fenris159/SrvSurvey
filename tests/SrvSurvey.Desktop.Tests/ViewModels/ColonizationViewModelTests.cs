@@ -1420,6 +1420,87 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task SendsSquadronTransferDiffWhenMarketBuyAndTransferShareAPoll()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "SQD-001",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [],
+                [],
+                null,
+                [carrier]),
+            FleetCarrierResponse = carrier,
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"SQD-001","StationType":"FleetCarrier",
+                "StationServices":["commodities","squadronBank"]
+                """),
+        ]);
+        viewModel.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip,
+        });
+
+        // Market buy mutates ship cargo first; transfer capture baselines after market.
+        var cargo = new CargoInventoryState();
+        cargo.Reset(new CargoSnapshot(
+            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+            "Cargo",
+            "Ship",
+            50,
+            [new CargoItem("steel", "Steel", 50, 0)]));
+        Assert.True(cargo.Apply(Event(
+            "MarketBuy",
+            "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5")));
+        viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
+        Assert.True(cargo.Apply(Event(
+            "CargoTransfer",
+            """
+            "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
+            """)));
+        Assert.Equal(45, cargo.CreateSnapshot()!.GetCount("steel"));
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [
+                Event(
+                    "MarketBuy",
+                    "\"MarketID\":42,\"Type\":\"Steel\",\"Count\":5"),
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
+                    """),
+            ],
+            allowPublishing: true,
+            cargoInventory: cargo,
+            cargoActivity: true);
+
+        // Market adjustment + transfer GetDiff (not suppressed by skipNext).
+        Assert.Equal(2, client.FleetCarrierAdjustments.Count);
+        Assert.Equal(-5, client.FleetCarrierAdjustments[0].Changes["steel"]);
+        Assert.Equal(10, client.FleetCarrierAdjustments[1].Changes["steel"]);
+    }
+
+    [Fact]
     public async Task CapturesFirstSquadronBaselineAcrossMultipleTransfersInOnePoll()
     {
         var carrier = new ColonizationFleetCarrier

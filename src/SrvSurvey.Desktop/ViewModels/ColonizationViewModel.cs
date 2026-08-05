@@ -624,14 +624,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             || !IsEnabled
             || CommanderName is null)
         {
-            // Still drop held squadron state when publishing is disabled so
-            // lastInventory / skipNext cannot survive across later cargo updates.
-            skipNextCargoEvent = false;
-            if (cargoInventory?.HasPreservedSnapshot == true)
-            {
-                cargoInventory.ClearPreservedSnapshot();
-            }
-
+            ClearSquadronCargoSyncState(cargoInventory);
             return;
         }
 
@@ -641,75 +634,101 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         var messages = new List<string>();
         foreach (var journalEvent in journalEvents)
         {
-            try
+            var message = await TrySynchronizeLiveJournalEventAsync(
+                journalEvent,
+                preferShipCargoDiffForSquadron);
+            if (!string.IsNullOrWhiteSpace(message))
             {
-                var message = journalEvent.EventName switch
-                {
-                    "Docked" => CombineMessages(
-                        await SynchronizeDockedProjectAsync(journalEvent),
-                        await SynchronizeBuildSiteRepairAsync(journalEvent)),
-                    "Location" when GetJournalBoolean(
-                        journalEvent.Payload,
-                        "Docked") == true =>
-                        await SynchronizeBuildSiteRepairAsync(journalEvent),
-                    "ColonisationContribution" =>
-                        await SynchronizeContributionAsync(journalEvent),
-                    "ColonisationConstructionDepot" =>
-                        await SynchronizeDepotAsync(journalEvent),
-                    "ColonisationBeaconDeployed" =>
-                        await SynchronizeBeaconDeploymentAsync(),
-                    "DockingGranted" => ScheduleDockingRefresh(journalEvent),
-                    "MarketBuy" or "MarketSell" or "CargoTransfer" =>
-                        await SynchronizeFleetCarrierCargoAdjustmentAsync(
-                            journalEvent,
-                            preferShipCargoDiffForSquadron),
-                    _ => null,
-                };
-                if (!string.IsNullOrWhiteSpace(message))
-                {
-                    messages.Add(message);
-                }
-            }
-            catch (Exception exception) when (
-                exception is HttpRequestException
-                    or InvalidDataException
-                    or TaskCanceledException
-                    or ArgumentException)
-            {
-                messages.Add(
-                    $"Raven project sync skipped {journalEvent.EventName}: "
-                        + exception.Message);
+                messages.Add(message);
             }
         }
 
         if (cargoInventory is not null)
         {
-            try
+            var squadronMessage = await TrySynchronizeSquadronCargoDiffAsync(
+                cargoInventory,
+                cargoActivity);
+            if (!string.IsNullOrWhiteSpace(squadronMessage))
             {
-                var squadronMessage =
-                    await SynchronizeSquadronFleetCarrierCargoDiffAsync(
-                        cargoInventory,
-                        cargoActivity);
-                if (!string.IsNullOrWhiteSpace(squadronMessage))
-                {
-                    messages.Add(squadronMessage);
-                }
-            }
-            catch (Exception exception) when (
-                exception is HttpRequestException
-                    or InvalidDataException
-                    or TaskCanceledException
-                    or ArgumentException)
-            {
-                messages.Add(
-                    "Raven project sync skipped squadron cargo diff: "
-                        + exception.Message);
+                messages.Add(squadronMessage);
             }
         }
 
         if (messages.Count > 0)
         {
             StatusMessage = string.Join(Environment.NewLine, messages);
+        }
+    }
+
+    private void ClearSquadronCargoSyncState(CargoInventoryState? cargoInventory)
+    {
+        // Drop held squadron state when publishing is disabled so lastInventory /
+        // skipNext cannot survive across later cargo updates.
+        skipNextCargoEvent = false;
+        if (cargoInventory?.HasPreservedSnapshot == true)
+        {
+            cargoInventory.ClearPreservedSnapshot();
+        }
+    }
+
+    private async Task<string?> TrySynchronizeLiveJournalEventAsync(
+        JournalEventEnvelope journalEvent,
+        bool preferShipCargoDiffForSquadron)
+    {
+        try
+        {
+            return journalEvent.EventName switch
+            {
+                "Docked" => CombineMessages(
+                    await SynchronizeDockedProjectAsync(journalEvent),
+                    await SynchronizeBuildSiteRepairAsync(journalEvent)),
+                "Location" when GetJournalBoolean(
+                    journalEvent.Payload,
+                    "Docked") == true =>
+                    await SynchronizeBuildSiteRepairAsync(journalEvent),
+                "ColonisationContribution" =>
+                    await SynchronizeContributionAsync(journalEvent),
+                "ColonisationConstructionDepot" =>
+                    await SynchronizeDepotAsync(journalEvent),
+                "ColonisationBeaconDeployed" =>
+                    await SynchronizeBeaconDeploymentAsync(),
+                "DockingGranted" => ScheduleDockingRefresh(journalEvent),
+                "MarketBuy" or "MarketSell" or "CargoTransfer" =>
+                    await SynchronizeFleetCarrierCargoAdjustmentAsync(
+                        journalEvent,
+                        preferShipCargoDiffForSquadron),
+                _ => null,
+            };
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or InvalidDataException
+                or TaskCanceledException
+                or ArgumentException)
+        {
+            return $"Raven project sync skipped {journalEvent.EventName}: "
+                + exception.Message;
+        }
+    }
+
+    private async Task<string?> TrySynchronizeSquadronCargoDiffAsync(
+        CargoInventoryState cargoInventory,
+        bool cargoActivity)
+    {
+        try
+        {
+            return await SynchronizeSquadronFleetCarrierCargoDiffAsync(
+                cargoInventory,
+                cargoActivity);
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or InvalidDataException
+                or TaskCanceledException
+                or ArgumentException)
+        {
+            return "Raven project sync skipped squadron cargo diff: "
+                + exception.Message;
         }
     }
 
@@ -823,12 +842,16 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return null;
         }
 
+        // MarketBuy/Sell already adjusted the FC. Suppress GetDiff only when there is
+        // no preserved transfer snapshot — transfer capture baselines after market
+        // events, so its GetDiff must still be sent (same-poll Market+Transfer).
         if (skipNextCargoEvent)
         {
             skipNextCargoEvent = false;
-            // Do not leave a held snapshot that would freeze lastInventory forever.
-            cargo.ClearPreservedSnapshot();
-            return null;
+            if (!cargo.HasPreservedSnapshot)
+            {
+                return null;
+            }
         }
 
         if (!IsLinkedSquadronFleetCarrier(dock))
@@ -863,7 +886,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             var updatedCargo = await client.AdjustFleetCarrierCargoAsync(
                 dock.MarketId,
                 adjustments,
-                storedRavenApiKey);
+                storedRavenApiKey,
+                CancellationToken.None);
             var localCarrier = fleetCarriers.FirstOrDefault(carrier =>
                 carrier.MarketId == dock.MarketId);
             if (localCarrier is not null)
@@ -914,7 +938,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             var updatedCargo = await client.AdjustFleetCarrierCargoAsync(
                 dock.MarketId,
                 adjustments,
-                storedRavenApiKey);
+                storedRavenApiKey,
+                CancellationToken.None);
             var localCarrier = fleetCarriers.FirstOrDefault(carrier =>
                 carrier.MarketId == dock.MarketId);
             if (localCarrier is not null)
@@ -928,9 +953,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 });
             }
 
-            // Market buy/sell already adjusted the FC; skip the following Cargo GetDiff so
-            // squadron carriers are not double-counted (legacy skipNextCargoEvent).
-            // Only meaningful when ship-cargo diff path is active for squadron.
+            // Market buy/sell already adjusted the FC; suppress market-only GetDiff so
+            // squadron carriers are not double-counted. Transfer snapshots still send.
             if (preferShipCargoDiffForSquadron
                 && journalEvent.EventName is "MarketBuy" or "MarketSell"
                 && ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(dock))
@@ -1647,33 +1671,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     public async Task SyncFleetCarrierCargoAsync(bool force = true)
     {
-        if (!CanSyncFleetCarrierCargo()
-            || currentMarket is null
-            || storedRavenApiKey is null)
+        if (!TryBeginFleetCarrierCargoSync(
+                force,
+                out var market,
+                out var apiKey,
+                out var identity,
+                out var localCarrier))
         {
-            if (force)
-            {
-                FleetCarrierSyncStatus = GetFleetCarrierSyncBlockReason();
-            }
-
-            return;
-        }
-
-        var identity = (currentMarket.MarketId, currentMarket.Timestamp);
-        if (!force && lastSyncedMarket == identity)
-        {
-            return;
-        }
-
-        var localCarrier = fleetCarriers.FirstOrDefault(carrier =>
-            carrier.MarketId == currentMarket.MarketId);
-        if (localCarrier is null)
-        {
-            if (force)
-            {
-                FleetCarrierSyncStatus = GetFleetCarrierSyncBlockReason();
-            }
-
             return;
         }
 
@@ -1682,63 +1686,10 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             $"Checking {GetCarrierName(localCarrier)} market cargo...";
         try
         {
-            var serverCarrier = await client.GetFleetCarrierAsync(
-                currentMarket.MarketId);
-            if (serverCarrier is null)
-            {
-                FleetCarrierSyncStatus =
-                    "Raven Colonial does not have this Fleet Carrier.";
-                return;
-            }
-
-            // Re-resolve after await: the local list may have changed while waiting.
-            localCarrier = fleetCarriers.FirstOrDefault(carrier =>
-                carrier.MarketId == currentMarket.MarketId);
-
-            var replacements =
-                ColonizationFleetCarrierCargoSynchronizer
-                    .CreateMarketReplacement(currentMarket, serverCarrier);
-            if (replacements.Count == 0)
-            {
-                if (localCarrier is not null)
-                {
-                    ReplaceLocalFleetCarrier(serverCarrier);
-                }
-
-                lastSyncedMarket = identity;
-                FleetCarrierSyncStatus =
-                    $"{GetCarrierName(serverCarrier)} cargo is already current.";
-                return;
-            }
-
-            CommodityOverlay.ApplyPendingFleetCarrierCargo(
-                replacements.Keys);
-            FleetCarrierSyncStatus =
-                $"Updating {replacements.Count:N0} cargo entries for "
-                + GetCarrierName(serverCarrier)
-                + "...";
-            var updatedCargo = await client.ReplaceFleetCarrierCargoAsync(
-                currentMarket.MarketId,
-                replacements,
-                storedRavenApiKey);
-            localCarrier = fleetCarriers.FirstOrDefault(carrier =>
-                carrier.MarketId == currentMarket.MarketId);
-            if (localCarrier is not null)
-            {
-                ReplaceLocalFleetCarrier(serverCarrier with
-                {
-                    Cargo = updatedCargo.ToDictionary(
-                        pair => pair.Key,
-                        pair => pair.Value,
-                        StringComparer.OrdinalIgnoreCase),
-                });
-            }
-
-            lastSyncedMarket = identity;
-            FleetCarrierSyncStatus =
-                $"Updated {replacements.Count:N0} cargo entries for "
-                + GetCarrierName(serverCarrier)
-                + ".";
+            await ApplyFleetCarrierMarketCargoSyncAsync(
+                market,
+                apiKey,
+                identity);
         }
         catch (Exception exception) when (
             exception is HttpRequestException
@@ -1754,6 +1705,118 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             CommodityOverlay.ApplyPendingFleetCarrierCargo(null);
             IsFleetCarrierSyncBusy = false;
         }
+    }
+
+    private bool TryBeginFleetCarrierCargoSync(
+        bool force,
+        out MarketSnapshot market,
+        out string apiKey,
+        out (long MarketId, DateTimeOffset Timestamp) identity,
+        out ColonizationFleetCarrier localCarrier)
+    {
+        market = null!;
+        apiKey = null!;
+        identity = default;
+        localCarrier = null!;
+        if (!CanSyncFleetCarrierCargo()
+            || currentMarket is null
+            || storedRavenApiKey is null)
+        {
+            if (force)
+            {
+                FleetCarrierSyncStatus = GetFleetCarrierSyncBlockReason();
+            }
+
+            return false;
+        }
+
+        identity = (currentMarket.MarketId, currentMarket.Timestamp);
+        if (!force && lastSyncedMarket == identity)
+        {
+            return false;
+        }
+
+        var carrier = fleetCarriers.FirstOrDefault(candidate =>
+            candidate.MarketId == currentMarket.MarketId);
+        if (carrier is null)
+        {
+            if (force)
+            {
+                FleetCarrierSyncStatus = GetFleetCarrierSyncBlockReason();
+            }
+
+            return false;
+        }
+
+        market = currentMarket;
+        apiKey = storedRavenApiKey;
+        localCarrier = carrier;
+        return true;
+    }
+
+    private async Task ApplyFleetCarrierMarketCargoSyncAsync(
+        MarketSnapshot market,
+        string apiKey,
+        (long MarketId, DateTimeOffset Timestamp) identity)
+    {
+        var serverCarrier = await client.GetFleetCarrierAsync(
+            market.MarketId,
+            CancellationToken.None);
+        if (serverCarrier is null)
+        {
+            FleetCarrierSyncStatus =
+                "Raven Colonial does not have this Fleet Carrier.";
+            return;
+        }
+
+        // Re-resolve after await: the local list may have changed while waiting.
+        var localCarrier = fleetCarriers.FirstOrDefault(carrier =>
+            carrier.MarketId == market.MarketId);
+
+        var replacements =
+            ColonizationFleetCarrierCargoSynchronizer
+                .CreateMarketReplacement(market, serverCarrier);
+        if (replacements.Count == 0)
+        {
+            if (localCarrier is not null)
+            {
+                ReplaceLocalFleetCarrier(serverCarrier);
+            }
+
+            lastSyncedMarket = identity;
+            FleetCarrierSyncStatus =
+                $"{GetCarrierName(serverCarrier)} cargo is already current.";
+            return;
+        }
+
+        CommodityOverlay.ApplyPendingFleetCarrierCargo(replacements.Keys);
+        FleetCarrierSyncStatus =
+            $"Updating {replacements.Count:N0} cargo entries for "
+            + GetCarrierName(serverCarrier)
+            + "...";
+        var updatedCargo = await client.ReplaceFleetCarrierCargoAsync(
+            market.MarketId,
+            replacements,
+            apiKey,
+            CancellationToken.None);
+        localCarrier = fleetCarriers.FirstOrDefault(carrier =>
+            carrier.MarketId == market.MarketId);
+        if (localCarrier is not null)
+        {
+            ReplaceLocalFleetCarrier(serverCarrier with
+            {
+                Cargo = updatedCargo.ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value,
+                    StringComparer.OrdinalIgnoreCase),
+            });
+        }
+
+        lastSyncedMarket = identity;
+        FleetCarrierSyncStatus =
+            $"Updated {replacements.Count:N0} cargo entries for "
+            + GetCarrierName(serverCarrier)
+            + ".";
     }
 
     public Task RefreshAsync()

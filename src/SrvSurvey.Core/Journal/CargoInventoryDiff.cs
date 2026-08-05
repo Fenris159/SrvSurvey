@@ -54,7 +54,7 @@ public static class CargoInventoryDiff
     /// <summary>
     /// Ship cargo delta: <paramref name="after"/> − <paramref name="before"/> (non-zero entries only).
     /// Missing commodities in <paramref name="after"/> contribute a negative delta equal to their before count.
-    /// Names are compared case-insensitively.
+    /// Names are compared case-insensitively even when the input maps use case-sensitive comparers.
     /// </summary>
     public static Dictionary<string, int> Compute(
         IReadOnlyDictionary<string, int> before,
@@ -63,20 +63,26 @@ public static class CargoInventoryDiff
         ArgumentNullException.ThrowIfNull(before);
         ArgumentNullException.ThrowIfNull(after);
 
+        // Normalize into NameComparer maps so case-sensitive caller dictionaries still match.
+        var beforeMap = CreateCountMap();
+        CopyFromCounts(beforeMap, before);
+        var afterMap = CreateCountMap();
+        CopyFromCounts(afterMap, after);
+
         var diffs = CreateCountMap();
         // O(after) name set so removed-commodity detection is O(before), not O(before×after).
-        var afterNames = new HashSet<string>(after.Count, NameComparer);
-        foreach (var entry in after)
+        var afterNames = new HashSet<string>(afterMap.Count, NameComparer);
+        foreach (var entry in afterMap)
         {
             afterNames.Add(entry.Key);
-            var delta = entry.Value - before.GetValueOrDefault(entry.Key);
+            var delta = entry.Value - beforeMap.GetValueOrDefault(entry.Key);
             if (delta != 0)
             {
                 diffs[entry.Key] = delta;
             }
         }
 
-        foreach (var entry in before.Where(item => !afterNames.Contains(item.Key)))
+        foreach (var entry in beforeMap.Where(item => !afterNames.Contains(item.Key)))
         {
             diffs[entry.Key] = -entry.Value;
         }

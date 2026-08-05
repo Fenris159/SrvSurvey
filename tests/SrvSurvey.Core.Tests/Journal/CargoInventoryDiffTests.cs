@@ -71,6 +71,19 @@ public sealed class CargoInventoryDiffTests
     }
 
     [Fact]
+    public void Compute_casefolds_case_sensitive_caller_dictionaries()
+    {
+        // Documented case-insensitive matching must not depend on the caller's comparer.
+        var before = new Dictionary<string, int> { ["Iron"] = 2 };
+        var after = new Dictionary<string, int> { ["iron"] = 5 };
+
+        var diff = CargoInventoryDiff.Compute(before, after);
+
+        Assert.Equal(3, diff["iron"]);
+        Assert.Single(diff);
+    }
+
+    [Fact]
     public void Compute_returns_negative_delta_when_ship_loses_cargo()
     {
         var before = CargoInventoryDiff.CreateCountMap();
