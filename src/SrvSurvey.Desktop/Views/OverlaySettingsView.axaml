@@ -1198,122 +1198,111 @@
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="Choose the reward level per group by millions of credits:" />
-            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                  ColumnSpacing="8"
-                  RowDefinitions="Auto,Auto"
-                  RowSpacing="6">
-              <Border Width="40" Height="40"
-                      Background="#101010"
+            <!-- Match upstream FormSettings groupRingBuckets:
+                 [1 bar] < n1 < [2 bars] < n2 < [3 bars] < n3 > [4 bars] -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Border Width="48" Height="48"
+                      Background="#000000"
                       BorderBrush="{DynamicResource RavenBorderBrush}"
                       BorderThickness="1"
-                      CornerRadius="4"
-                      Padding="10,6">
-                <controls:BiologyRewardBandControl Width="14"
-                                                  Height="28"
-                                                  MinimumReward="0"
-                                                  MaximumReward="0"
+                      CornerRadius="2"
+                      Padding="14,8"
+                      VerticalAlignment="Center">
+                <controls:BiologyRewardBandControl Width="16"
+                                                  Height="32"
+                                                  MinimumReward="{Binding BiologyRewards.PreviewOneBarReward}"
+                                                  MaximumReward="{Binding BiologyRewards.PreviewOneBarReward}"
                                                   BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
                                                   BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                  FilledBrush="{DynamicResource RavenAccentBrush}"
-                                                  PotentialBrush="{DynamicResource RavenAccentMutedBrush}"
-                                                  HighlightBrush="{DynamicResource RavenWarningBrush}"
-                                                  EdgeBrush="{DynamicResource RavenBorderBrush}"
-                                                  PredictionBrush="{DynamicResource RavenMutedTextBrush}" />
+                                                  FilledBrush="#E67E22"
+                                                  PotentialBrush="#A85A14"
+                                                  EdgeBrush="#E67E22" />
               </Border>
-              <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="&lt;" />
-              <NumericUpDown Grid.Column="2"
-                             Width="72"
+              <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
+              <NumericUpDown Width="72"
                              Minimum="0"
                              Maximum="20"
                              Increment="0.5"
                              FormatString="0.##"
+                             VerticalAlignment="Center"
                              Value="{Binding BiologyRewards.BucketOneMillions, Mode=TwoWay}" />
-              <Border Grid.Column="3"
-                      Width="40" Height="40"
-                      Background="#101010"
+              <Border Width="48" Height="48"
+                      Background="#000000"
                       BorderBrush="{DynamicResource RavenBorderBrush}"
                       BorderThickness="1"
-                      CornerRadius="4"
-                      Padding="10,6">
-                <controls:BiologyRewardBandControl Width="14"
-                                                  Height="28"
-                                                  MinimumReward="{Binding BiologyRewards.BucketOneSampleReward}"
-                                                  MaximumReward="{Binding BiologyRewards.BucketOneSampleReward}"
+                      CornerRadius="2"
+                      Padding="14,8"
+                      VerticalAlignment="Center">
+                <controls:BiologyRewardBandControl Width="16"
+                                                  Height="32"
+                                                  MinimumReward="{Binding BiologyRewards.PreviewTwoBarReward}"
+                                                  MaximumReward="{Binding BiologyRewards.PreviewTwoBarReward}"
                                                   BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
                                                   BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                  FilledBrush="{DynamicResource RavenAccentBrush}"
-                                                  PotentialBrush="{DynamicResource RavenAccentMutedBrush}"
-                                                  HighlightBrush="{DynamicResource RavenWarningBrush}"
-                                                  EdgeBrush="{DynamicResource RavenBorderBrush}"
-                                                  PredictionBrush="{DynamicResource RavenMutedTextBrush}" />
+                                                  FilledBrush="#E67E22"
+                                                  PotentialBrush="#A85A14"
+                                                  EdgeBrush="#E67E22" />
               </Border>
-              <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="&lt;" />
-              <NumericUpDown Grid.Column="5"
-                             Width="72"
+              <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
+              <NumericUpDown Width="72"
                              Minimum="0"
                              Maximum="20"
                              Increment="0.5"
                              FormatString="0.##"
+                             VerticalAlignment="Center"
                              Value="{Binding BiologyRewards.BucketTwoMillions, Mode=TwoWay}" />
-              <Border Grid.Column="6"
-                      Width="40" Height="40"
-                      Background="#101010"
+              <Border Width="48" Height="48"
+                      Background="#000000"
                       BorderBrush="{DynamicResource RavenBorderBrush}"
                       BorderThickness="1"
-                      CornerRadius="4"
-                      Padding="10,6">
-                <controls:BiologyRewardBandControl Width="14"
-                                                  Height="28"
-                                                  MinimumReward="{Binding BiologyRewards.BucketTwoSampleReward}"
-                                                  MaximumReward="{Binding BiologyRewards.BucketTwoSampleReward}"
+                      CornerRadius="2"
+                      Padding="14,8"
+                      VerticalAlignment="Center">
+                <controls:BiologyRewardBandControl Width="16"
+                                                  Height="32"
+                                                  MinimumReward="{Binding BiologyRewards.PreviewThreeBarReward}"
+                                                  MaximumReward="{Binding BiologyRewards.PreviewThreeBarReward}"
                                                   BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
                                                   BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                  FilledBrush="{DynamicResource RavenAccentBrush}"
-                                                  PotentialBrush="{DynamicResource RavenAccentMutedBrush}"
-                                                  HighlightBrush="{DynamicResource RavenWarningBrush}"
-                                                  EdgeBrush="{DynamicResource RavenBorderBrush}"
-                                                  PredictionBrush="{DynamicResource RavenMutedTextBrush}" />
+                                                  FilledBrush="#E67E22"
+                                                  PotentialBrush="#A85A14"
+                                                  EdgeBrush="#E67E22" />
               </Border>
-            </Grid>
-            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto"
-                  ColumnSpacing="8">
-              <TextBlock VerticalAlignment="Center" Text="&lt;" />
-              <NumericUpDown Grid.Column="1"
-                             Width="72"
+              <TextBlock VerticalAlignment="Center" FontSize="16" Text="&lt;" />
+              <NumericUpDown Width="72"
                              Minimum="0"
                              Maximum="20"
                              Increment="0.5"
                              FormatString="0.##"
+                             VerticalAlignment="Center"
                              Value="{Binding BiologyRewards.BucketThreeMillions, Mode=TwoWay}" />
-              <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="&gt;" />
-              <Border Grid.Column="3"
-                      Width="40" Height="40"
-                      Background="#101010"
+              <TextBlock VerticalAlignment="Center" FontSize="16" Text="&gt;" />
+              <Border Width="48" Height="48"
+                      Background="#000000"
                       BorderBrush="{DynamicResource RavenBorderBrush}"
                       BorderThickness="1"
-                      CornerRadius="4"
-                      Padding="10,6">
-                <controls:BiologyRewardBandControl Width="14"
-                                                  Height="28"
-                                                  MinimumReward="{Binding BiologyRewards.BucketThreeSampleReward}"
-                                                  MaximumReward="{Binding BiologyRewards.BucketThreeSampleReward}"
+                      CornerRadius="2"
+                      Padding="14,8"
+                      VerticalAlignment="Center">
+                <controls:BiologyRewardBandControl Width="16"
+                                                  Height="32"
+                                                  MinimumReward="{Binding BiologyRewards.PreviewFourBarReward}"
+                                                  MaximumReward="{Binding BiologyRewards.PreviewFourBarReward}"
                                                   BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
                                                   BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"
-                                                  FilledBrush="{DynamicResource RavenAccentBrush}"
-                                                  PotentialBrush="{DynamicResource RavenAccentMutedBrush}"
-                                                  HighlightBrush="{DynamicResource RavenWarningBrush}"
-                                                  EdgeBrush="{DynamicResource RavenBorderBrush}"
-                                                  PredictionBrush="{DynamicResource RavenMutedTextBrush}" />
+                                                  FilledBrush="#E67E22"
+                                                  PotentialBrush="#A85A14"
+                                                  EdgeBrush="#E67E22" />
               </Border>
-            </Grid>
+            </StackPanel>
             <TextBlock Classes="muted"
                        FontSize="11"
                        TextWrapping="Wrap"
-                       Text="Bands fill for rewards above 0 CR and each configured million-credit threshold (defaults 3 / 7 / 12 M)." />
+                       Text="Illustrations show 1, 2, 3, then 4 filled bands for rewards above 0 CR and each threshold (defaults 3 / 7 / 12 M)." />
             <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
                        IsVisible="{Binding BiologyRewards.HasStatusMessage}"
                        Text="{Binding BiologyRewards.StatusMessage}"

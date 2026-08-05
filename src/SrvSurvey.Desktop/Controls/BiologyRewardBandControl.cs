@@ -277,6 +277,17 @@ public sealed class BiologyRewardBandControl : Control
             {
                 context.DrawRectangle(potential, null, rect, 1, 1);
             }
+            else
+            {
+                // Leave empty slots visible as recessed gaps so 1/2/3-bar
+                // illustrations still show the full four-slot structure.
+                context.DrawRectangle(
+                    new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
+                    null,
+                    rect,
+                    1,
+                    1);
+            }
         }
 
         if (IsPrediction)
