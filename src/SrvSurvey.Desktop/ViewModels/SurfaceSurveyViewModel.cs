@@ -708,7 +708,11 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                 || surface.Bookmarks.Any(group =>
                     !group.Key.StartsWith('#') && group.Value.Count > 0)
                 || exobiology.ScanOne is { } sample
-                    && BodyNamesMatch(sample.Body, surface.BodyName));
+                    && BodyNamesMatch(sample.Body, surface.BodyName)
+                || (survey.ShowCanonnSignalsOnRadar
+                    && survey.UseExternalData
+                    && survey.AutoShowPriorScans
+                    && priorScanSurfaceMarkers.Length > 0));
     }
 
     private bool HasTrackerTargets()

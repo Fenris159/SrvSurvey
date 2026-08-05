@@ -166,6 +166,29 @@ public sealed class PriorScanPlannerTests
                 1,
                 HudCategory: "Biology",
                 Platform: "odyssey")));
+        Assert.Equal(
+            "Signal fallback",
+            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
+                2310198,
+                "$Codex_Ent_Aleoids_01_B_Name;",
+                "$Codex_Ent_Aleoids_01_Name;",
+                "   ",
+                1,
+                HudCategory: "Biology",
+                Platform: "odyssey"),
+                signalDisplayName: "Signal fallback"));
+        Assert.Equal(
+            "Brain Tree - Roseum",
+            PriorScanPlanner.FormatDisplayName(new ExobiologyReference(
+                2100202,
+                "$Codex_Ent_Seed_Name;",
+                "$Codex_Ent_Seed_Name;",
+                string.Empty,
+                1_593_700,
+                HudCategory: "Biology",
+                SubClass: "Brain Tree",
+                Platform: "legacy"),
+                signalDisplayName: "Roseum Brain Tree"));
     }
 
     [Fact]

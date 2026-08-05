@@ -44,7 +44,7 @@ Status legend: `done` · `n/a` (already equivalent) · `open`
 
 ## Surface integration map
 
-```
+```text
 Journal/Status
   → ExobiologyState / SystemScanState / SurfaceSurveyJournalTracker
   → SystemSurveyViewModel.ApplyUpdate

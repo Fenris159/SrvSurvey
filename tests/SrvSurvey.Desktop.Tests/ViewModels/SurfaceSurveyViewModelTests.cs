@@ -353,6 +353,39 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task VisibleCanonnPriorMarkersCountAsRadarContent()
+    {
+        var (viewModel, survey, _) = CreateViewModel();
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        Assert.False(viewModel.ShouldShowRadar);
+
+        survey.UseExternalData = true;
+        survey.AutoShowPriorScans = true;
+        survey.ShowCanonnSignalsOnRadar = true;
+        viewModel.SetPriorScanSurfaceMarkers(
+        [
+            new PriorScanSurfaceMarkerViewModel(
+                "Aleoida Arcus - Green",
+                new SurfaceCoordinate(0, 4),
+                150,
+                IsActive: true,
+                IsClose: false),
+        ]);
+
+        Assert.True(viewModel.ShouldShowRadar);
+        Assert.Contains(viewModel.RadarMarkers, marker => marker.IsCanonnPrior);
+
+        survey.ShowCanonnSignalsOnRadar = false;
+        Assert.False(viewModel.ShouldShowRadar);
+    }
+
+    [Fact]
     public async Task QuickTrackerChordTogglesCurrentSurfaceLocation()
     {
         var (viewModel, survey, _) = CreateViewModel();

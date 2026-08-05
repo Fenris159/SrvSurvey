@@ -109,8 +109,9 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
             return "Radicoida - Unica";
         }
 
-        var displayName = reference.DisplayName
-            ?? signalDisplayName;
+        var displayName = FirstPresentDisplayName(
+            reference.DisplayName,
+            signalDisplayName);
         var isLegacyPlatform = string.Equals(
                 reference.Platform,
                 "legacy",
@@ -132,7 +133,21 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
                 : $"{genus} - {color}";
         }
 
-        return displayName ?? reference.SpeciesName;
+        return FirstPresentDisplayName(displayName, reference.SpeciesName)
+            ?? reference.SpeciesName;
+    }
+
+    private static string? FirstPresentDisplayName(params string?[] values)
+    {
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return null;
     }
 
     private static string? ExtractHorizonsColorName(
