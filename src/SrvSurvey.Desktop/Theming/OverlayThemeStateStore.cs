@@ -290,11 +290,12 @@ public sealed class OverlayThemeStateStore
         IReadOnlyDictionary<string, Color> colors)
     {
         var defaults = LegacyOverlayThemeStore.CreateDefault().Colors;
-        foreach (var required in defaults.Keys.Where(required =>
-            !colors.ContainsKey(required)))
+        var missingColor = defaults.Keys.FirstOrDefault(required =>
+            !colors.ContainsKey(required));
+        if (missingColor is not null)
         {
             throw new InvalidDataException(
-                $"Overlay theme state '{name}' does not define '{required}'.");
+                $"Overlay theme state '{name}' does not define '{missingColor}'.");
         }
     }
 

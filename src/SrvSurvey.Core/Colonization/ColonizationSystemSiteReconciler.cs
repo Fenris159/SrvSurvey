@@ -255,8 +255,9 @@ public static class ColonizationSystemSiteReconciler
         IReadOnlyList<ColonizationSystemSite> sites,
         string source)
     {
-        foreach (var site in sites.Where(site =>
-            string.IsNullOrWhiteSpace(site.Name)))
+        var unnamedSite = sites.FirstOrDefault(site =>
+            string.IsNullOrWhiteSpace(site.Name));
+        if (unnamedSite is not null)
         {
             throw new InvalidDataException(
                 $"A {source} colonisation site has no name.");

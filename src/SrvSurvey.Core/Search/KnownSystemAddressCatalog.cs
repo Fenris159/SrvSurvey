@@ -168,7 +168,10 @@ public sealed partial class KnownSystemAddressCatalog
                     "The known-system address catalog contains an invalid entry.");
             }
 
-            result.TryAdd(name, address);
+            if (!result.ContainsKey(name))
+            {
+                result.Add(name, address);
+            }
             if (result.Count > MaximumEntries)
             {
                 throw new InvalidDataException(

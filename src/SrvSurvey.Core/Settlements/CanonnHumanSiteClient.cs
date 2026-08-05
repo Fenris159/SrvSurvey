@@ -359,13 +359,16 @@ public sealed class CanonnHumanSiteClient
     {
         if (root.ValueKind == JsonValueKind.Object)
         {
-            foreach (var property in root.EnumerateObject().Where(property =>
-                string.Equals(
+            var matchedValue = root.EnumerateObject()
+                .Where(property => string.Equals(
                     property.Name,
                     propertyName,
-                    StringComparison.OrdinalIgnoreCase)))
+                    StringComparison.OrdinalIgnoreCase))
+                .Select(property => (JsonElement?)property.Value)
+                .FirstOrDefault();
+            if (matchedValue is { } found)
             {
-                value = property.Value;
+                value = found;
                 return true;
             }
         }

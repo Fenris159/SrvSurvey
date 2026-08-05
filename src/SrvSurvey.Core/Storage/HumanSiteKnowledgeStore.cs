@@ -262,16 +262,11 @@ public sealed class HumanSiteKnowledgeStore
         JsonObject root,
         string propertyName)
     {
-        foreach (var property in root.Where(property =>
+        return root.FirstOrDefault(property =>
             string.Equals(
                 property.Key,
                 propertyName,
-                StringComparison.OrdinalIgnoreCase)))
-        {
-            return property.Value;
-        }
-
-        return null;
+                StringComparison.OrdinalIgnoreCase)).Value;
     }
 
     private static string? ReadString(

@@ -534,8 +534,11 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
             .OrderByDescending(message => message.Received)
             .Select(message => new QuestMessageRowViewModel(message))
             .ToArray();
+        var firstActiveQuest = ActiveQuests.Count > 0
+            ? ActiveQuests[0]
+            : null;
         SelectedQuest = selectedReference is null
-            ? ActiveQuests.Count > 0 ? ActiveQuests[0] : null
+            ? firstActiveQuest
             : ActiveQuests.FirstOrDefault(quest =>
                 SameQuest(quest.Reference, selectedReference));
         if (selectedMessageIdentity is { } identity)

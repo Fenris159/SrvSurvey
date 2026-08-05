@@ -263,12 +263,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             : [];
         var atmosphereType = NormalizeAtmosphereType(
             GetString(body, "atmosphereType"));
-        var radius = GetDouble(body, "radius") is > 0 and var radiusValue
-            ? radiusValue * 1_000d
-            : provider == BodyProvider.Spansh
-                && GetDouble(body, "solarRadius") is > 0 and var solarRadius
-                    ? solarRadius * SolarRadiusMeters
-                    : 0;
+        var radius = ReadRadius(body, provider);
         var mass = GetDouble(body, "earthMasses") is > 0 and var earthMasses
             ? earthMasses
             : GetDouble(body, "solarMasses") ?? 0;
@@ -329,6 +324,19 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             parents,
             organisms,
             []);
+    }
+
+    private static double ReadRadius(JsonElement body, BodyProvider provider)
+    {
+        if (GetDouble(body, "radius") is > 0 and var radius)
+        {
+            return radius * 1_000d;
+        }
+
+        return provider == BodyProvider.Spansh
+            && GetDouble(body, "solarRadius") is > 0 and var solarRadius
+                ? solarRadius * SolarRadiusMeters
+                : 0;
     }
 
     private static IReadOnlyList<SystemOrganismSnapshot> ReadOrganisms(

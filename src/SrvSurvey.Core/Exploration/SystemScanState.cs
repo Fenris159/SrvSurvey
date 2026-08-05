@@ -982,13 +982,11 @@ public sealed class SystemScanState
             return 0;
         }
 
-        foreach (var signal in signalsElement.EnumerateArray().Where(signal =>
-            GetString(signal, "Type") == type))
-        {
-            return GetInt32(signal, "Count") ?? 0;
-        }
-
-        return 0;
+        var signal = signalsElement.EnumerateArray().FirstOrDefault(signal =>
+            GetString(signal, "Type") == type);
+        return signal.ValueKind == JsonValueKind.Undefined
+            ? 0
+            : GetInt32(signal, "Count") ?? 0;
     }
 
     private static IReadOnlyDictionary<string, double> ReadComposition(

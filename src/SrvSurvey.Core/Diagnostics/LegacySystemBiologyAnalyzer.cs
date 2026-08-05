@@ -180,13 +180,16 @@ public sealed class LegacySystemBiologyAnalyzer
             return true;
         }
 
-        foreach (var property in root.EnumerateObject().Where(property =>
-            string.Equals(
+        var matchedValue = root.EnumerateObject()
+            .Where(property => string.Equals(
                 property.Name,
                 name,
-                StringComparison.OrdinalIgnoreCase)))
+                StringComparison.OrdinalIgnoreCase))
+            .Select(property => (JsonElement?)property.Value)
+            .FirstOrDefault();
+        if (matchedValue is { } found)
         {
-            value = property.Value;
+            value = found;
             return true;
         }
 

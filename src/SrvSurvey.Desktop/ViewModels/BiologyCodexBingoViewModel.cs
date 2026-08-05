@@ -1011,12 +1011,13 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             return new Uri(EdAstroRootUrl);
         }
 
-        foreach (var pair in EdAstroLinks.Where(pair =>
+        var match = EdAstroLinks.FirstOrDefault(pair =>
             node.Name.Contains(
                 pair.Key,
-                StringComparison.OrdinalIgnoreCase)))
+                StringComparison.OrdinalIgnoreCase));
+        if (match.Value is not null)
         {
-            return new Uri(pair.Value);
+            return new Uri(match.Value);
         }
 
         if (string.IsNullOrWhiteSpace(node.Genus))

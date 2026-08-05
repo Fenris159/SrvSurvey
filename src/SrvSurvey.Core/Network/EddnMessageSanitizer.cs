@@ -31,6 +31,13 @@ namespace SrvSurvey.Core.Network
         private const string schemaRoot = "https://eddn.edcd.io/schemas/";
         private const string horizonsSku = "ELITE_HORIZONS_V_PLANETARY_LANDINGS";
         private static readonly TimeSpan regexTimeout = TimeSpan.FromSeconds(1);
+        private static readonly string[] RequiredCommodityFields =
+        [
+            "name", "meanPrice", "buyPrice", "stock", "stockBracket",
+            "sellPrice", "demand", "demandBracket",
+        ];
+        private static readonly string[] CommodityStatusFlags =
+            ["Producer", "Consumer", "Rare"];
 
         private static readonly HashSet<string> genericEvents = new(StringComparer.Ordinal)
         {
@@ -459,16 +466,13 @@ namespace SrvSurvey.Core.Network
                     ["demand"] = commodity.Value<int?>("Demand"),
                     ["demandBracket"] = commodity["DemandBracket"]?.DeepClone(),
                 };
-                if (new[]
-                    {
-                        "name", "meanPrice", "buyPrice", "stock", "stockBracket",
-                        "sellPrice", "demand", "demandBracket",
-                    }.Any(field => !hasValue(output, field)))
+                if (RequiredCommodityFields.Any(field =>
+                    !hasValue(output, field)))
                 {
                     continue;
                 }
                 var statusFlags = new JArray();
-                foreach (var flag in new[] { "Producer", "Consumer", "Rare" }
+                foreach (var flag in CommodityStatusFlags
                     .Where(flag => commodity.Value<bool?>(flag) == true))
                 {
                     statusFlags.Add(flag);

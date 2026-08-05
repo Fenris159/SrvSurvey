@@ -484,9 +484,9 @@ internal static class BoxelSectorNameResolver
             Debug.WriteLine($"Sector position for offset {offset} is outside expected galaxy size!");
 
         // Put it in "our" coordinate space
-        x -= base_sector_index[0];
-        y -= base_sector_index[1];
-        z -= base_sector_index[2];
+        x -= base_sector_x;
+        y -= base_sector_y;
+        z -= base_sector_z;
 
         return new SectorCoordinate(x, y, z);
     }
@@ -767,7 +767,9 @@ internal static class BoxelSectorNameResolver
 
     private const int sector_size = 1280;
     private static readonly int[] galaxy_size = [128, 128, 128];
-    private static readonly int[] base_sector_index = [39, 32, 18];
+    private const int base_sector_x = 39;
+    private const int base_sector_y = 32;
+    private const int base_sector_z = 18;
 
     public static int get_mcode_cube_width(char mcode)
     {
