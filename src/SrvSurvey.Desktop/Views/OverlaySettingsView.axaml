@@ -1246,8 +1246,8 @@
                       VerticalAlignment="Center">
                 <controls:BiologyRewardBandControl Width="16"
                                                   Height="32"
-                                                  MinimumReward="{Binding BiologyRewards.PreviewOneBarReward}"
-                                                  MaximumReward="{Binding BiologyRewards.PreviewOneBarReward}"
+                                                  MinimumReward="1"
+                                                  MaximumReward="1"
                                                   BucketOneMillions="{Binding BiologyRewards.BucketOneMillions}"
                                                   BucketTwoMillions="{Binding BiologyRewards.BucketTwoMillions}"
                                                   BucketThreeMillions="{Binding BiologyRewards.BucketThreeMillions}"

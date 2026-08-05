@@ -49,10 +49,9 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
     public BiologyRewardThresholds Thresholds => thresholds;
 
     /// <summary>
-    /// Species-group illustration rewards matching upstream FormSettings picBucket paint:
-    /// 1 bar, 2 bars, 3 bars, then all 4 bars.
+    /// Species-group illustration reward for a single filled band (upstream picBucket1 uses 1 CR).
     /// </summary>
-    public long PreviewOneBarReward => 1;
+    public static long PreviewOneBarReward => 1;
 
     /// <summary>Just above bucket one so only the bottom two segments fill.</summary>
     public long PreviewTwoBarReward =>

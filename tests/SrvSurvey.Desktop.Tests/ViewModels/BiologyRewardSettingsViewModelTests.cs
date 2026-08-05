@@ -41,8 +41,8 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
                 BiologyRewardBandSegment.Empty,
             ],
             BiologyRewardBandScale.Calculate(
-                viewModel.PreviewOneBarReward,
-                viewModel.PreviewOneBarReward,
+                BiologyRewardSettingsViewModel.PreviewOneBarReward,
+                BiologyRewardSettingsViewModel.PreviewOneBarReward,
                 thresholds).Segments);
         Assert.Equal(
             [
