@@ -843,9 +843,7 @@ internal static class BoxelSectorNameResolver
 
     private const int sector_size = 1280;
     private static readonly int[] galaxy_size = [128, 128, 128];
-    private static readonly SectorCoordinate internal_origin_offset = new(-49985, -40985, -24105);
     private static readonly int[] base_sector_index = [39, 32, 18];
-    private static readonly SectorCoordinate base_coords = internal_origin_offset + (new SectorCoordinate(base_sector_index) * sector_size);
 
     public static int get_mcode_cube_width(char mcode)
     {

@@ -2662,26 +2662,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return false;
         }
 
-        foreach (var parent in parents.EnumerateArray())
-        {
-            if (parent.ValueKind != System.Text.Json.JsonValueKind.Object)
-            {
-                continue;
-            }
-
-            foreach (var property in parent.EnumerateObject())
-            {
-                if (string.Equals(
-                    property.Name,
-                    "Ring",
-                    StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return parents.EnumerateArray()
+            .Where(parent =>
+                parent.ValueKind == System.Text.Json.JsonValueKind.Object)
+            .SelectMany(parent => parent.EnumerateObject())
+            .Any(property => string.Equals(
+                property.Name,
+                "Ring",
+                StringComparison.OrdinalIgnoreCase));
     }
 
     private static long? GetInt64(

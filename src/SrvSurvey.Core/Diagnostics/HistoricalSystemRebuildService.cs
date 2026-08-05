@@ -762,7 +762,9 @@ public sealed class HistoricalSystemRebuildService
         var systemsDirectory = Path.GetFullPath(Path.Combine(
             dataDirectory,
             "systems"));
-        if (PathsOverlap(systemsDirectory, backupDirectory))
+        var normalizedBackupDirectory = Path.GetFullPath(
+            candidateBackupDirectory);
+        if (PathsOverlap(systemsDirectory, normalizedBackupDirectory))
         {
             throw new ArgumentException(
                 "Historical rebuild backups must be outside the active systems directory.",
