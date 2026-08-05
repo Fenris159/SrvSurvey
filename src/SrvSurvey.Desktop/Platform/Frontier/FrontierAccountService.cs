@@ -748,7 +748,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 StringComparison.OrdinalIgnoreCase);
     }
 
-    private static IReadOnlyList<FrontierReputationSnapshot> MergeReputation(
+    private static FrontierReputationSnapshot[] MergeReputation(
         params IReadOnlyList<FrontierReputationSnapshot>?[] sources)
     {
         return sources

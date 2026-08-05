@@ -188,7 +188,7 @@ public sealed class GuardianPublishedSiteCatalog
             : null;
     }
 
-    private static IReadOnlyDictionary<string, GuardianPoiStatus> ReadStatuses(
+    private static Dictionary<string, GuardianPoiStatus> ReadStatuses(
         JsonElement root)
     {
         var statuses = new Dictionary<string, GuardianPoiStatus>(
@@ -219,7 +219,7 @@ public sealed class GuardianPublishedSiteCatalog
         }
     }
 
-    private static IReadOnlyDictionary<string, int> ReadRelicHeadings(
+    private static Dictionary<string, int> ReadRelicHeadings(
         JsonElement root)
     {
         var headings = new Dictionary<string, int>(
@@ -254,7 +254,7 @@ public sealed class GuardianPublishedSiteCatalog
         return headings;
     }
 
-    private static IReadOnlyList<GuardianObelisk> ReadObelisks(JsonElement root)
+    private static GuardianObelisk[] ReadObelisks(JsonElement root)
     {
         if (!root.TryGetProperty("ao", out var value)
             || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)

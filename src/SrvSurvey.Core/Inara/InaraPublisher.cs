@@ -808,7 +808,7 @@ public sealed class InaraPublisher : IInaraPublisher
         InaraCredentials credentials,
         List<InaraQueuedEvent> batch,
         bool developerTestMode,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         while (true)
         {
@@ -851,7 +851,7 @@ public sealed class InaraPublisher : IInaraPublisher
 
     private void Requeue(
         IReadOnlyCollection<InaraQueuedEvent> batch,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         var dropped = queue.Requeue(batch);
         if (dropped > 0)

@@ -38,7 +38,7 @@ internal static class LegacySystemSnapshotParser
             bodies);
     }
 
-    private static IReadOnlyList<SystemScanBodySnapshot> ReadBodies(
+    private static List<SystemScanBodySnapshot> ReadBodies(
         JsonObject root,
         string systemName)
     {
@@ -80,7 +80,7 @@ internal static class LegacySystemSnapshotParser
                 organisms.Count);
             var geologicalSignalCount = Math.Max(
                 ReadOptionalInt32(body, "geoSignalCount") ?? 0,
-                geologicalSignals.Count);
+                geologicalSignals.Length);
             bodies.Add(new SystemScanBodySnapshot(
                 bodyId,
                 name,
@@ -115,7 +115,7 @@ internal static class LegacySystemSnapshotParser
                     biologicalSignalCount,
                     organisms.Count(organism => organism.IsAnalyzed)),
                 geologicalSignalCount,
-                Math.Min(geologicalSignalCount, geologicalSignals.Count),
+                Math.Min(geologicalSignalCount, geologicalSignals.Length),
                 ReadOptionalInt32(body, "reward") ?? 0,
                 ReadOptionalInt32(body, "reward") ?? 0,
                 ReadOptionalInt32(body, "reward") ?? 0,
@@ -131,7 +131,7 @@ internal static class LegacySystemSnapshotParser
         return bodies;
     }
 
-    private static IReadOnlyList<SystemOrganismSnapshot> ReadOrganisms(
+    private static List<SystemOrganismSnapshot> ReadOrganisms(
         JsonObject body)
     {
         if (body["organisms"] is null)
@@ -172,7 +172,7 @@ internal static class LegacySystemSnapshotParser
         return organisms;
     }
 
-    private static IReadOnlyList<string> ReadAnalyzedGeologicalSignals(
+    private static string[] ReadAnalyzedGeologicalSignals(
         JsonObject body)
     {
         if (body["geoSignals"] is null)
@@ -206,7 +206,7 @@ internal static class LegacySystemSnapshotParser
         return names.Order(StringComparer.Ordinal).ToArray();
     }
 
-    private static IReadOnlyDictionary<string, double> ReadComposition(
+    private static Dictionary<string, double> ReadComposition(
         JsonObject owner,
         string propertyName)
     {
@@ -240,7 +240,7 @@ internal static class LegacySystemSnapshotParser
         return result;
     }
 
-    private static IReadOnlyList<SystemRingSnapshot> ReadRings(JsonObject body)
+    private static List<SystemRingSnapshot> ReadRings(JsonObject body)
     {
         if (body["rings"] is null)
         {
@@ -277,7 +277,7 @@ internal static class LegacySystemSnapshotParser
         return rings;
     }
 
-    private static IReadOnlyList<SystemBodyParentSnapshot> ReadParents(
+    private static List<SystemBodyParentSnapshot> ReadParents(
         JsonObject body)
     {
         if (body["parents"] is null)

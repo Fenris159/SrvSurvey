@@ -97,7 +97,7 @@ public sealed class LegacySystemDataReader(string dataDirectory)
 
     private static async Task<LegacySystemData?> ReadSystemAsync(
         string path,
-        ICollection<string> errors,
+        List<string> errors,
         CancellationToken cancellationToken)
     {
         try

@@ -245,7 +245,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             : hops;
     }
 
-    private static IReadOnlyList<FollowRouteHop> ParseTradeRoute(
+    private static List<FollowRouteHop> ParseTradeRoute(
         JsonArray? legs)
     {
         if (legs is null)
@@ -386,7 +386,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
     }
 
     private static IReadOnlyList<FollowRouteHop> AggregateBodyRouteHops(
-        IReadOnlyList<FollowRouteHop> hops)
+        List<FollowRouteHop> hops)
     {
         if (hops.Count < 2)
         {
@@ -418,7 +418,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         return result;
     }
 
-    private static IReadOnlyList<FollowRouteBioTarget> MergeBioTargets(
+    private static List<FollowRouteBioTarget> MergeBioTargets(
         IReadOnlyList<FollowRouteBioTarget> existing,
         IReadOnlyList<FollowRouteBioTarget> incoming)
     {
@@ -539,7 +539,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         return null;
     }
 
-    private static IReadOnlyList<FollowRouteBioTarget>? ParseBodyTargets(
+    private static List<FollowRouteBioTarget>? ParseBodyTargets(
         string systemName,
         JsonNode? node,
         bool isBiologicalRoute)

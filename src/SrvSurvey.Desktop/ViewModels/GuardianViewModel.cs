@@ -3446,7 +3446,7 @@ public sealed class GuardianViewModel
         return $"{category} {number}".Trim();
     }
 
-    private IReadOnlyList<GuardianRamTahLogViewModel> BuildCurrentRamTahLogs()
+    private GuardianRamTahLogViewModel[] BuildCurrentRamTahLogs()
     {
         var site = ActiveSite;
         var reference = site?.Reference;
@@ -4410,7 +4410,7 @@ public sealed class GuardianViewModel
             heading => heading is >= 0 and <= 359) ?? -1;
     }
 
-    private IReadOnlyList<GuardianObelisk> GetMergedActiveObelisks(
+    private GuardianObelisk[] GetMergedActiveObelisks(
         GuardianSiteReference? reference,
         GuardianCommanderSiteSurvey? survey)
     {
@@ -4832,7 +4832,7 @@ public sealed class GuardianViewModel
                     StringComparison.OrdinalIgnoreCase));
     }
 
-    private IReadOnlyList<string> GetRamTahLogCodes(
+    private string[] GetRamTahLogCodes(
         GuardianSiteReference reference)
     {
         if (!IncludeRamTahLogs || reference.Kind == GuardianSiteKind.Beacon)

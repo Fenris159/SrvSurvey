@@ -57,10 +57,10 @@ public sealed class SystemNicknameCatalog
             ?? systemName;
     }
 
-    private static IReadOnlyDictionary<string, string> LoadMap(
+    private static Dictionary<string, string> LoadMap(
         string path,
         string? nestedProperty,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         var result = new Dictionary<string, string>(
             StringComparer.OrdinalIgnoreCase);

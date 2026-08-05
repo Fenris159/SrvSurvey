@@ -597,7 +597,7 @@ public sealed class LegacyQuestStateStore
 
     private LegacyQuestDefinition? LoadDefinition(
         LegacyQuestReference reference,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (ContainsPathSeparator(reference.Id))
         {
@@ -668,7 +668,7 @@ public sealed class LegacyQuestStateStore
     private static RavenQuestDefinition? ParsePortableDefinition(
         JsonNode? node,
         LegacyQuestReference reference,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is null)
         {
@@ -723,7 +723,7 @@ public sealed class LegacyQuestStateStore
         LegacyQuestReference reference,
         LegacyQuestDefinition? definition,
         JsonObject root,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         var objectives = new Dictionary<string, LegacyQuestObjective>(
             StringComparer.Ordinal);
@@ -765,10 +765,10 @@ public sealed class LegacyQuestStateStore
             GetJsonMap(root["keptLasts"]));
     }
 
-    private static IReadOnlyList<LegacyQuestMessage> ParseDeliveredMessages(
+    private static List<LegacyQuestMessage> ParseDeliveredMessages(
         JsonNode? node,
         LegacyQuestDefinition? definition,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is not JsonArray array)
         {
@@ -802,7 +802,7 @@ public sealed class LegacyQuestStateStore
         return messages;
     }
 
-    private static IReadOnlyList<LegacyQuestMessageDefinition> ParseMessageDefinitions(
+    private static List<LegacyQuestMessageDefinition> ParseMessageDefinitions(
         JsonNode? node,
         ICollection<string> warnings)
     {
@@ -836,7 +836,7 @@ public sealed class LegacyQuestStateStore
         return messages;
     }
 
-    private static IReadOnlyList<LegacyQuestChapter> ParseChapters(
+    private static List<LegacyQuestChapter> ParseChapters(
         JsonNode? node,
         ICollection<string> warnings)
     {
@@ -865,7 +865,7 @@ public sealed class LegacyQuestStateStore
         return chapters;
     }
 
-    private static IReadOnlyDictionary<string, LegacyQuestBodyLocation>
+    private static Dictionary<string, LegacyQuestBodyLocation>
         ParseBodyLocations(JsonNode? node, ICollection<string> warnings)
     {
         var locations = new Dictionary<string, LegacyQuestBodyLocation>(
@@ -908,7 +908,7 @@ public sealed class LegacyQuestStateStore
         return locations;
     }
 
-    private static IReadOnlyList<LegacyQuestRoute> ParseRoutes(
+    private static List<LegacyQuestRoute> ParseRoutes(
         JsonNode? node,
         ICollection<string> warnings)
     {
@@ -1061,7 +1061,7 @@ public sealed class LegacyQuestStateStore
         return true;
     }
 
-    private static IReadOnlyDictionary<string, string> GetStringMap(JsonNode? node)
+    private static Dictionary<string, string> GetStringMap(JsonNode? node)
     {
         var result = new Dictionary<string, string>(StringComparer.Ordinal);
         if (node is not JsonObject root)
@@ -1081,7 +1081,7 @@ public sealed class LegacyQuestStateStore
         return result;
     }
 
-    private static IReadOnlySet<string> GetStringSet(JsonNode? node)
+    private static HashSet<string> GetStringSet(JsonNode? node)
     {
         return node is JsonArray array
             ? array
@@ -1095,7 +1095,7 @@ public sealed class LegacyQuestStateStore
             : new HashSet<string>(StringComparer.Ordinal);
     }
 
-    private static IReadOnlyList<string> GetStringArray(JsonNode? node)
+    private static List<string> GetStringArray(JsonNode? node)
     {
         if (node is not JsonArray array)
         {
@@ -1116,7 +1116,7 @@ public sealed class LegacyQuestStateStore
         return result;
     }
 
-    private static IReadOnlyDictionary<string, JsonElement> GetJsonMap(
+    private static Dictionary<string, JsonElement> GetJsonMap(
         JsonNode? node)
     {
         var result = new Dictionary<string, JsonElement>(StringComparer.Ordinal);

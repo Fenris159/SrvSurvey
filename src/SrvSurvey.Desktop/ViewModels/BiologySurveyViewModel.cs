@@ -630,7 +630,7 @@ public sealed record BiologySurveyViewModel(
             !predictionSet.IsComplete || predictedCount < remainingSignals);
     }
 
-    private static IReadOnlyList<BiologySignalRewardBandViewModel>
+    private static BiologySignalRewardBandViewModel[]
         CreateSystemRewardBands(
             SystemScanBodySnapshot body,
             BiologyPredictionSet predictionSet,

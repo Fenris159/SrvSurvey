@@ -192,7 +192,7 @@ public sealed record BiologyStatusViewModel(
             temperatureClause?.Maximum);
     }
 
-    private static IReadOnlyList<BiologyStatusSignalViewModel> CreateSignals(
+    private static List<BiologyStatusSignalViewModel> CreateSignals(
         SystemScanBodySnapshot body,
         SystemOrganismSnapshot? activeOrganism,
         bool hideGeologicalSignals)

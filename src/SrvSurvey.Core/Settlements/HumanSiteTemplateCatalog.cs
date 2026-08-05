@@ -184,9 +184,9 @@ public sealed class HumanSiteTemplateCatalog
             : new HumanSiteMapPoint(row.X, row.Y);
     }
 
-    private static void Validate(IReadOnlyList<HumanSiteTemplate> templates)
+    private static void Validate(HumanSiteTemplate[] templates)
     {
-        if (templates.Count == 0)
+        if (templates.Length == 0)
         {
             throw new InvalidDataException(
                 "The human settlement template catalog has no entries.");

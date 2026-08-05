@@ -485,7 +485,7 @@ public sealed class ReleaseInstallationPlanStore
             Path.Combine(planDirectory, "outcome.json"));
     }
 
-    private static IReadOnlyList<string> ReadArguments(JsonElement preparation)
+    private static List<string> ReadArguments(JsonElement preparation)
     {
         if (!preparation.TryGetProperty("startupArguments", out var arguments)
             || arguments.ValueKind != JsonValueKind.Array)

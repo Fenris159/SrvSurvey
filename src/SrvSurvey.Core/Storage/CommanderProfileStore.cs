@@ -623,7 +623,7 @@ public sealed class CommanderProfileStore(string profileDirectory)
             GetString(sample, "body"));
     }
 
-    private static IReadOnlyList<string> ReadStringArray(
+    private static string[] ReadStringArray(
         JsonObject root,
         string propertyName)
     {

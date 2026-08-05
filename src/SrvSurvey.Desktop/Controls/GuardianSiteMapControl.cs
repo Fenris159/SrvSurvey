@@ -795,7 +795,7 @@ public sealed class GuardianSiteMapControl : Control
             MutedBrush ?? Brushes.Wheat);
     }
 
-    private static IReadOnlyList<GuardianMapLegendEntry> CreateLegendEntries(
+    private static List<GuardianMapLegendEntry> CreateLegendEntries(
         GuardianSiteMapProjection projection)
     {
         var entries = new List<GuardianMapLegendEntry>

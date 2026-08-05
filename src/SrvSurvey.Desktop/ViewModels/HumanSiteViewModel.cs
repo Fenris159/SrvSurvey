@@ -872,11 +872,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     }
 
     private static bool TryParseQuestWaypoint(
-        IReadOnlyList<double> values,
+        double[] values,
         out SurfaceCoordinate coordinate)
     {
         coordinate = default;
-        if (values.Count < 2
+        if (values.Length < 2
             || !double.IsFinite(values[0])
             || !double.IsFinite(values[1]))
         {
@@ -1197,7 +1197,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     }
 
     private async Task SaveMaterialActivityAsync(
-        IReadOnlyList<HumanSiteCollectedMaterial> materials)
+        List<HumanSiteCollectedMaterial> materials)
     {
         if (materialStore is null
             || !TrackMaterialCollection

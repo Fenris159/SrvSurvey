@@ -19,7 +19,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly IGameScreenCapture gameScreenCapture;
     private readonly LegacyOverlayLayout overlayLayout;
-    private readonly ICanonnSystemPoiClient canonnSystemPoiClient;
+    private readonly CachingCanonnSystemPoiClient canonnSystemPoiClient;
     private readonly Func<string?> commanderNameProvider;
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Usage",

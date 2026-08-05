@@ -98,7 +98,7 @@ public sealed class SdlControllerDeviceProvider : IControllerDeviceProvider
             instanceId);
     }
 
-    private static IReadOnlyList<ControllerDeviceInfo>
+    private static ControllerDeviceInfo[]
         MakeDuplicateNamesDistinct(IReadOnlyList<ControllerDeviceInfo> devices)
     {
         var totals = devices

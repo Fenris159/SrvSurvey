@@ -762,7 +762,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         return ExobiologyReferenceCatalog.GetGenusDisplayName(name);
     }
 
-    private IReadOnlySet<string> GetAnalyzedSpecies()
+    private HashSet<string> GetAnalyzedSpecies()
     {
         return survey.Snapshot.Bodies
             .SelectMany(body => body.Organisms)

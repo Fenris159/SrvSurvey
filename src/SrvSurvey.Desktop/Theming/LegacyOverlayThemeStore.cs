@@ -164,7 +164,7 @@ public sealed class LegacyOverlayThemeStore
     private static Color ParseColor(
         string name,
         JsonNode? value,
-        IReadOnlyDictionary<string, Color> parsedColors)
+        Dictionary<string, Color> parsedColors)
     {
         if (value is null)
         {

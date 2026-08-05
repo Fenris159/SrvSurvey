@@ -567,7 +567,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     }
 
     private static void AddNumber(
-        ICollection<string> values,
+        List<string> values,
         JournalEventEnvelope entry,
         string propertyName,
         string label,

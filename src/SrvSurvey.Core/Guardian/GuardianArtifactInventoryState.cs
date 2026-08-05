@@ -248,7 +248,7 @@ public sealed class GuardianArtifactInventoryState
                 : null;
     }
 
-    private static IReadOnlyDictionary<string, ArtifactDefinition>
+    private static Dictionary<string, ArtifactDefinition>
         BuildDefinitions()
     {
         var definitions = new[]

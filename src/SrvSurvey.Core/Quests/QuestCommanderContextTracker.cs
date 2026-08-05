@@ -118,7 +118,7 @@ public sealed class QuestCommanderContextTracker
         }
     }
 
-    private static IReadOnlyList<string>? ReadStates(
+    private static string[]? ReadStates(
         JsonElement faction,
         string propertyName)
     {

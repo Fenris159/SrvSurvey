@@ -120,7 +120,7 @@ public sealed class GuardianSiteProximityEvaluator
     private static bool IsSelectable(
         GuardianPointOfInterest point,
         EliteStatus status,
-        IReadOnlyDictionary<string, GuardianObelisk> activeByName,
+        Dictionary<string, GuardianObelisk> activeByName,
         IReadOnlySet<char>? obeliskGroups)
     {
         var isObelisk = point.Type is GuardianPoiType.Obelisk

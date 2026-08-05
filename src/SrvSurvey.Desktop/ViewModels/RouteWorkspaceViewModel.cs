@@ -58,7 +58,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private bool isDeleteConfirmationVisible;
     private bool isSaveAsVisible;
     private bool isNotesVisible;
-    private IReadOnlyList<FollowRouteHop> draftHops = [];
+    private FollowRouteHop[] draftHops = [];
     private IReadOnlyList<RouteHopItemViewModel> hops = [];
     private int lastReachedIndex = -1;
     private bool isActive;
@@ -161,7 +161,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public bool HasProfile => !string.IsNullOrWhiteSpace(frontierId);
 
-    public bool HasRoute => draftHops.Count > 0;
+    public bool HasRoute => draftHops.Length > 0;
 
     public bool HasSavedRoute
     {
@@ -314,10 +314,10 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     }
 
     public bool CanActivate => HasRoute
-        && lastReachedIndex < draftHops.Count - 1;
+        && lastReachedIndex < draftHops.Length - 1;
 
     public bool IsComplete => HasRoute
-        && lastReachedIndex >= draftHops.Count - 1;
+        && lastReachedIndex >= draftHops.Length - 1;
 
     public bool HasDefinitionChanges => loadedRoute is not null
         && !loadedRoute.Hops.SequenceEqual(draftHops);
@@ -345,12 +345,12 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         && !IsBusy
         && !IsDialogVisible;
 
-    public int RouteCount => draftHops.Count;
+    public int RouteCount => draftHops.Length;
 
     public int ReachedCount => Math.Clamp(
         lastReachedIndex + 1,
         0,
-        draftHops.Count);
+        draftHops.Length);
 
     public FollowRouteHop? NextHop
     {
@@ -359,7 +359,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             var nextIndex = lastReachedIndex + 1;
             return IsActive
                 && nextIndex >= 0
-                && nextIndex < draftHops.Count
+                && nextIndex < draftHops.Length
                     ? draftHops[nextIndex]
                     : null;
         }
@@ -983,13 +983,13 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public void SetProgressThrough(int index, bool reached)
     {
-        if (index < 0 || index >= draftHops.Count)
+        if (index < 0 || index >= draftHops.Length)
         {
             return;
         }
 
         lastReachedIndex = reached ? index : index - 1;
-        if (lastReachedIndex >= draftHops.Count - 1)
+        if (lastReachedIndex >= draftHops.Length - 1)
         {
             isActive = false;
         }
@@ -1006,7 +1006,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         try
         {
             if (target.HopIndex < 0
-                || target.HopIndex >= draftHops.Count
+                || target.HopIndex >= draftHops.Length
                 || target.TargetIndex < 0
                 || target.TargetIndex
                     >= draftHops[target.HopIndex].BioTargets.Count)
@@ -1148,7 +1148,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
 
         lastReachedIndex = -1;
-        isActive = draftHops.Count > 0;
+        isActive = draftHops.Length > 0;
         RefreshPresentation();
         StatusMessage = "Route progress reset in the draft. Save Changes to keep it.";
         return Task.CompletedTask;
@@ -1739,12 +1739,12 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         bool nextAutoCopy)
     {
         draftHops = nextHops.ToArray();
-        lastReachedIndex = draftHops.Count == 0
+        lastReachedIndex = draftHops.Length == 0
             ? -1
-            : Math.Clamp(nextLastReachedIndex, -1, draftHops.Count - 1);
+            : Math.Clamp(nextLastReachedIndex, -1, draftHops.Length - 1);
         isActive = nextIsActive
-            && draftHops.Count > 0
-            && lastReachedIndex < draftHops.Count - 1;
+            && draftHops.Length > 0
+            && lastReachedIndex < draftHops.Length - 1;
         autoCopy = nextAutoCopy;
         OnPropertyChanged(nameof(IsActive));
         OnPropertyChanged(nameof(AutoCopy));
@@ -1763,10 +1763,10 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             lastCopiedHopName = null;
         }
 
-        var canReuseRows = hops.Count == draftHops.Count;
+        var canReuseRows = hops.Count == draftHops.Length;
         if (canReuseRows)
         {
-            for (var index = 0; index < draftHops.Count; index++)
+            for (var index = 0; index < draftHops.Length; index++)
             {
                 if (hops[index].Index != index
                     || !hops[index].MatchesIdentity(draftHops[index]))
@@ -1779,8 +1779,8 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
         List<RouteHopItemViewModel>? rows = canReuseRows
             ? null
-            : new List<RouteHopItemViewModel>(draftHops.Count);
-        for (var index = 0; index < draftHops.Count; index++)
+            : new List<RouteHopItemViewModel>(draftHops.Length);
+        for (var index = 0; index < draftHops.Length; index++)
         {
             var hop = draftHops[index];
             GalacticCoordinate? from = index == 0
@@ -1801,7 +1801,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     hop,
                     distanceText,
                     notes,
-                    draftHops.Count - index - 1,
+                    draftHops.Length - index - 1,
                     index <= lastReachedIndex,
                     isCurrent,
                     isNext);
@@ -1814,7 +1814,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     hop,
                     distanceText,
                     notes,
-                    draftHops.Count - index - 1,
+                    draftHops.Length - index - 1,
                     IsFleetCarrierWorkspace,
                     index <= lastReachedIndex,
                     isCurrent,
@@ -2373,7 +2373,7 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
         }
     }
 
-    private IReadOnlyList<RouteBioTargetItemViewModel> CreateBioTargets(
+    private RouteBioTargetItemViewModel[] CreateBioTargets(
         FollowRouteHop source)
     {
         return source.BioTargets

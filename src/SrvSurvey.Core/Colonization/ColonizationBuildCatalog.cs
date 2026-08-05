@@ -117,9 +117,9 @@ public sealed class ColonizationBuildCatalog
     }
 
     private static void Validate(
-        IReadOnlyList<ColonizationBuildCost> candidateBuilds)
+        ColonizationBuildCost[] candidateBuilds)
     {
-        if (candidateBuilds.Count == 0)
+        if (candidateBuilds.Length == 0)
         {
             throw new InvalidDataException(
                 "The colonisation build catalog has no entries.");

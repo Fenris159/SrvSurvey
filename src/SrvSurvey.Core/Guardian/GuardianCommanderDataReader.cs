@@ -92,7 +92,7 @@ public sealed class GuardianCommanderDataReader
 
     private async Task<GuardianCommanderSiteSurvey?> ReadSurveyAsync(
         string path,
-        ICollection<string> errors,
+        List<string> errors,
         bool isLegacy,
         CancellationToken cancellationToken)
     {
@@ -161,7 +161,7 @@ public sealed class GuardianCommanderDataReader
 
     private static async Task<GuardianCommanderBeaconVisit?> ReadBeaconAsync(
         string path,
-        ICollection<string> errors,
+        List<string> errors,
         bool isLegacy,
         CancellationToken cancellationToken)
     {
@@ -237,7 +237,7 @@ public sealed class GuardianCommanderDataReader
         }
     }
 
-    private static IReadOnlyDictionary<string, GuardianPoiStatus>
+    private static Dictionary<string, GuardianPoiStatus>
         ReadPoiStatuses(JsonElement root)
     {
         var statuses = new Dictionary<string, GuardianPoiStatus>(
@@ -328,7 +328,7 @@ public sealed class GuardianCommanderDataReader
         }
     }
 
-    private static IReadOnlyDictionary<string, int> ReadRelicHeadings(
+    private static Dictionary<string, int> ReadRelicHeadings(
         JsonElement root)
     {
         var headings = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -358,7 +358,7 @@ public sealed class GuardianCommanderDataReader
         return headings;
     }
 
-    private static IReadOnlyDictionary<string, GuardianComponentLoadout>
+    private static Dictionary<string, GuardianComponentLoadout>
         ReadComponentMaterials(JsonElement root)
     {
         var components = new Dictionary<string, GuardianComponentLoadout>(
@@ -388,7 +388,7 @@ public sealed class GuardianCommanderDataReader
         return components;
     }
 
-    private static IReadOnlyList<GuardianPointOfInterest>? ReadRawPoints(
+    private static GuardianPointOfInterest[]? ReadRawPoints(
         JsonElement root)
     {
         if (!root.TryGetProperty("rawPoi", out var value)
@@ -444,7 +444,7 @@ public sealed class GuardianCommanderDataReader
             "Guardian active obelisks are neither an array nor an object.");
     }
 
-    private static IReadOnlySet<char> ReadObeliskGroups(JsonElement root)
+    private static HashSet<char> ReadObeliskGroups(JsonElement root)
     {
         if (!root.TryGetProperty("obeliskGroups", out var value))
         {
@@ -471,7 +471,7 @@ public sealed class GuardianCommanderDataReader
             "Guardian obelisk groups are neither a string nor an array.");
     }
 
-    private static IReadOnlyDictionary<DateTimeOffset, GuardianSurfaceLocation>
+    private static Dictionary<DateTimeOffset, GuardianSurfaceLocation>
         ReadScannedLocations(JsonElement root)
     {
         var locations = new Dictionary<DateTimeOffset, GuardianSurfaceLocation>();

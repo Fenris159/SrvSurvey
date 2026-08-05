@@ -46,7 +46,7 @@ public static class InaraCommunityGoalEnricher
         FrontierCommunityGoalSnapshot frontier,
         IReadOnlyList<FrontierCommunityGoalSnapshot> frontierGoals,
         IReadOnlyList<InaraCommunityGoalSnapshot> inaraGoals,
-        IReadOnlySet<int> alreadyMatched)
+        HashSet<int> alreadyMatched)
     {
         var title = Normalize(frontier.Title);
         var candidates = inaraGoals
@@ -186,7 +186,7 @@ public static class InaraCommunityGoalEnricher
             HasContributorData: inara.Contributors is not null);
     }
 
-    private static IReadOnlyList<FrontierDataPointSnapshot> AddInaraData(
+    private static FrontierDataPointSnapshot[] AddInaraData(
         IReadOnlyList<FrontierDataPointSnapshot>? existing,
         InaraCommunityGoalSnapshot inara,
         DateTimeOffset fetchedAt)

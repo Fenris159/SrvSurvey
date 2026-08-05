@@ -279,7 +279,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
     }
 
     private static void AddHat(
-        ISet<string> pressed,
+        HashSet<string> pressed,
         bool up,
         bool right,
         bool down,
@@ -304,7 +304,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
     }
 
     private static void AddHat(
-        ISet<string> pressed,
+        HashSet<string> pressed,
         SDL.JoystickHat direction)
     {
         var token = direction switch

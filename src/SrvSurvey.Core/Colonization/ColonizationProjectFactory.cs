@@ -61,7 +61,7 @@ public sealed class ColonizationProjectFactory
             []);
     }
 
-    private IReadOnlyList<string> Validate(
+    private List<string> Validate(
         ColonizationProjectDraft draft,
         ColonizationDockingSnapshot? dock,
         ColonizationConstructionDepotSnapshot? depot)

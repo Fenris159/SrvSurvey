@@ -1311,7 +1311,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         UpdateProjectSummary();
     }
 
-    private static IReadOnlyDictionary<string, int> ReadJournalContributions(
+    private static Dictionary<string, int> ReadJournalContributions(
         JsonElement root)
     {
         if (!root.TryGetProperty("Contributions", out var rows)
@@ -1343,8 +1343,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     }
 
     private static bool DictionariesEqual(
-        IReadOnlyDictionary<string, int> left,
-        IReadOnlyDictionary<string, int> right)
+        Dictionary<string, int> left,
+        Dictionary<string, int> right)
     {
         return left.Count == right.Count
             && left.All(pair =>

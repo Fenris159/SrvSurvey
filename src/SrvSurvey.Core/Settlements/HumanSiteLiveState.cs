@@ -330,7 +330,7 @@ public sealed class HumanSiteLiveState(
             || latitude is not >= -90 or > 90
             || longitude is not >= -180 or > 180
             || economy == HumanSiteEconomy.Unknown
-            || services.Count == 0
+            || services.Length == 0
             || services.Contains("socialspace", StringComparer.OrdinalIgnoreCase)
             || IsConstructionSite(name, services)
             || string.Equals(
@@ -446,7 +446,7 @@ public sealed class HumanSiteLiveState(
             Math.Max(0, GetInt32(pads, "Large") ?? 0));
     }
 
-    private static IReadOnlyList<string> GetStringArray(
+    private static string[] GetStringArray(
         JsonElement root,
         string propertyName)
     {

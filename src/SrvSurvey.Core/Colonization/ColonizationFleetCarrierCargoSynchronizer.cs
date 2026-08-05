@@ -110,7 +110,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         return replacement;
     }
 
-    private static IReadOnlyDictionary<string, int> CreateMarketAdjustment(
+    private static Dictionary<string, int> CreateMarketAdjustment(
         System.Text.Json.JsonElement root,
         ColonizationDockingSnapshot dock,
         int sign)
@@ -136,7 +136,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         };
     }
 
-    private static IReadOnlyDictionary<string, int> CreateTransferAdjustment(
+    private static Dictionary<string, int> CreateTransferAdjustment(
         System.Text.Json.JsonElement root)
     {
         if (!root.TryGetProperty("Transfers", out var transfers)
@@ -187,7 +187,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
     }
 
     private static void AddDelta(
-        IDictionary<string, int> result,
+        Dictionary<string, int> result,
         string commodity,
         int delta)
     {

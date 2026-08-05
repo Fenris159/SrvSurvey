@@ -35,7 +35,7 @@ public sealed class RegionalCodexCandidateCatalog
         "Name",
         "Varient",
     ];
-    private readonly IReadOnlyDictionary<int, IReadOnlySet<long>> entryIdsByRegion;
+    private readonly Dictionary<int, IReadOnlySet<long>> entryIdsByRegion;
 
     private RegionalCodexCandidateCatalog(
         IReadOnlyList<RegionalCodexCandidate> entries,
@@ -376,7 +376,7 @@ public sealed class RegionalCodexCandidateCatalog
         return new RegionalCodexCandidateCatalog(distinct, sourcePath, []);
     }
 
-    private static IReadOnlyList<IReadOnlyList<string>> ParseCsvRows(string text)
+    private static List<IReadOnlyList<string>> ParseCsvRows(string text)
     {
         var rows = new List<IReadOnlyList<string>>();
         var row = new List<string>();

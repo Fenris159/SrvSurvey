@@ -1322,7 +1322,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         return string.Join(Environment.NewLine, lines);
     }
 
-    private static IReadOnlyList<JourneyStatisticViewModel> CreateStatistics(
+    private static List<JourneyStatisticViewModel> CreateStatistics(
         JourneyQuickStatistics statistics)
     {
         var values = new List<JourneyStatisticViewModel>
@@ -1375,7 +1375,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         return flags;
     }
 
-    private static IReadOnlyList<string> GetScreenshotFiles(string? directory)
+    private static string[] GetScreenshotFiles(string? directory)
     {
         if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
         {

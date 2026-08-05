@@ -2,7 +2,7 @@ namespace SrvSurvey.Desktop.Input;
 
 public sealed class GlobalInputBindingRouter
 {
-    private IReadOnlyDictionary<string, GlobalInputAction> actionsByChord =
+    private Dictionary<string, GlobalInputAction> actionsByChord =
         new Dictionary<string, GlobalInputAction>(
             StringComparer.OrdinalIgnoreCase);
 

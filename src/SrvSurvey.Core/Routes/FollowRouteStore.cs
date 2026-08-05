@@ -1302,7 +1302,7 @@ public sealed class FollowRouteStore
             GetDouble(carrier, "restockAmountTonnes"));
     }
 
-    private static IReadOnlyList<FollowRouteBioTarget>? ParseBioTargets(
+    private static List<FollowRouteBioTarget>? ParseBioTargets(
         string path,
         int hopIndex,
         JsonNode? node)

@@ -29,7 +29,7 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     private JumpInfoRoutePlan? routePlan;
     private SystemSummary? summary;
     private IReadOnlyList<JumpInfoDetailLineViewModel> detailLines = [];
-    private IReadOnlySet<string> questTags = new HashSet<string>(
+    private HashSet<string> questTags = new HashSet<string>(
         StringComparer.OrdinalIgnoreCase);
     private double? maximumJumpRange;
     private DateTimeOffset? jumpVisibleUntil;

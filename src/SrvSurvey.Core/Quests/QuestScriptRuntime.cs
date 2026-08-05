@@ -1243,7 +1243,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         return true;
     }
 
-    private static IReadOnlyList<string> ReadStringValues(LuaValue value)
+    private static string[] ReadStringValues(LuaValue value)
     {
         return value.Type == LuaValueType.Table
             ? value.Read<LuaTable>()

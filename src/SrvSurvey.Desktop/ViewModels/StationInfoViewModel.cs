@@ -37,7 +37,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     private bool forceShow;
     private bool manuallyHidden;
     private bool isBusy;
-    private IReadOnlySet<string> questTags = new HashSet<string>(
+    private HashSet<string> questTags = new HashSet<string>(
         StringComparer.OrdinalIgnoreCase);
     private SystemStationSummary? projectedStation;
     private IReadOnlyList<StationInfoLineViewModel> economyLines = [];

@@ -8,7 +8,7 @@ public sealed class NebulaCatalog
     private const string EmbeddedResourceName =
         "SrvSurvey.Core.Resources.nebulae.json";
 
-    private readonly IReadOnlyList<GalacticCoordinate> coordinates;
+    private readonly GalacticCoordinate[] coordinates;
 
     public NebulaCatalog(IEnumerable<GalacticCoordinate> coordinates)
     {
@@ -16,11 +16,11 @@ public sealed class NebulaCatalog
         this.coordinates = coordinates.ToArray();
     }
 
-    public int Count => coordinates.Count;
+    public int Count => coordinates.Length;
 
     public double FindDistanceToClosest(GalacticCoordinate position)
     {
-        if (coordinates.Count == 0)
+        if (coordinates.Length == 0)
         {
             return double.MaxValue;
         }

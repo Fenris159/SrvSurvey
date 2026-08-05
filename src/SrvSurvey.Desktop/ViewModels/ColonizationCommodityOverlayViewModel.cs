@@ -17,7 +17,7 @@ public sealed class ColonizationCommodityOverlayViewModel
         ColonizationOverlayPreferences.Default;
     private IReadOnlyList<string> projectNames = [];
     private IReadOnlyList<ColonizationCommodityGroupViewModel> groups = [];
-    private IReadOnlySet<string> pendingCommodities =
+    private HashSet<string> pendingCommodities =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private bool hasMarketSinceDocking;
     private bool isSquadronBankOpen;

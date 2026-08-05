@@ -1041,7 +1041,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
                 + "-regions.jpg");
     }
 
-    private static IReadOnlyList<CodexBingoRegionOptionViewModel> CreateRegions(
+    private static CodexBingoRegionOptionViewModel[] CreateRegions(
         int? currentRegionId)
     {
         return new[]

@@ -698,7 +698,7 @@ public sealed class JourneyStore(string dataDirectory)
                 : null;
     }
 
-    private static IReadOnlyDictionary<string, int>? ReadStringIntDictionary(
+    private static Dictionary<string, int>? ReadStringIntDictionary(
         JsonObject root,
         string propertyName)
     {
@@ -720,7 +720,7 @@ public sealed class JourneyStore(string dataDirectory)
         return result;
     }
 
-    private static IReadOnlySet<long>? ReadInt64Set(
+    private static HashSet<long>? ReadInt64Set(
         JsonObject root,
         string propertyName)
     {
@@ -739,7 +739,7 @@ public sealed class JourneyStore(string dataDirectory)
             .ToHashSet();
     }
 
-    private static IReadOnlySet<int>? ReadInt32Set(
+    private static HashSet<int>? ReadInt32Set(
         JsonObject root,
         string propertyName)
     {
@@ -758,7 +758,7 @@ public sealed class JourneyStore(string dataDirectory)
             .ToHashSet();
     }
 
-    private static IReadOnlySet<string>? ReadStringSet(
+    private static HashSet<string>? ReadStringSet(
         JsonObject root,
         string propertyName)
     {

@@ -114,7 +114,7 @@ public static class LegacyReferenceCatalogLoader
         Func<T> loadEmbedded,
         Func<string, T> loadCandidate,
         Func<T, int> getCoverage,
-        ICollection<ReferenceCatalogSource> sources,
+        List<ReferenceCatalogSource> sources,
         Func<string, bool>? exists = null)
     {
         var embedded = loadEmbedded();

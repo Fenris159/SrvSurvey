@@ -989,7 +989,7 @@ public sealed class SystemScanState
             : GetInt32(signal, "Count") ?? 0;
     }
 
-    private static IReadOnlyDictionary<string, double> ReadComposition(
+    private static Dictionary<string, double> ReadComposition(
         JsonElement root,
         string propertyName)
     {
@@ -1013,7 +1013,7 @@ public sealed class SystemScanState
         return result;
     }
 
-    private static IReadOnlyList<SystemRingSnapshot> ReadRings(JsonElement root)
+    private static SystemRingSnapshot[] ReadRings(JsonElement root)
     {
         if (!root.TryGetProperty("Rings", out var rings)
             || rings.ValueKind != JsonValueKind.Array)
@@ -1030,7 +1030,7 @@ public sealed class SystemScanState
             .ToArray();
     }
 
-    private static IReadOnlyList<SystemBodyParentSnapshot>? ReadParents(
+    private static List<SystemBodyParentSnapshot>? ReadParents(
         JsonElement root)
     {
         if (!root.TryGetProperty("Parents", out var parents)

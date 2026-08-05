@@ -26,7 +26,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     private GalaxyMapSystemViewModel? primarySystem;
     private GalaxyMapSystemViewModel? secondarySystem;
     private IReadOnlyList<GalaxyMapFactionViewModel> factions = [];
-    private IReadOnlySet<string> questTags = new HashSet<string>(
+    private HashSet<string> questTags = new HashSet<string>(
         StringComparer.OrdinalIgnoreCase);
     private bool routeWasCleared;
     private bool isLoading;

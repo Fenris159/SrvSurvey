@@ -405,7 +405,7 @@ public sealed class SystemSurfaceStore
 
     private static int MarkSystemBioScansDied(
         JsonObject root,
-        IReadOnlyDictionary<int, HashSet<long>> claimsByBody)
+        Dictionary<int, HashSet<long>> claimsByBody)
     {
         if (root["bodies"] is not JsonArray bodies)
         {
@@ -508,7 +508,7 @@ public sealed class SystemSurfaceStore
             scans);
     }
 
-    private static IReadOnlyDictionary<string, IReadOnlyList<SurfaceCoordinate>>
+    private static Dictionary<string, IReadOnlyList<SurfaceCoordinate>>
         ReadBookmarks(JsonObject body, List<string> warnings)
     {
         if (body["bookmarks"] is null)
@@ -597,7 +597,7 @@ public sealed class SystemSurfaceStore
         }
     }
 
-    private static IReadOnlyList<SurfaceBioScan> ReadBioScans(
+    private static List<SurfaceBioScan> ReadBioScans(
         JsonObject body,
         List<string> warnings)
     {

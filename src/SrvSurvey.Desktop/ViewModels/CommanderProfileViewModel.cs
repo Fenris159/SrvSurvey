@@ -58,7 +58,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private IReadOnlyList<FrontierShipForSaleRowViewModel>? shipyardShipRows;
     private IReadOnlyList<FrontierOutfittingModuleRowViewModel>? shipyardModuleRows;
     private IReadOnlyList<FrontierCommunityGoalCardViewModel>? communityGoalRows;
-    private IReadOnlyList<FrontierReputationSnapshot> journalReputation = [];
+    private FrontierReputationSnapshot[] journalReputation = [];
     private string? journalReputationCommanderName;
     private DateTimeOffset? journalReputationUpdatedAt;
     private IReadOnlyList<FrontierCommunityGoalSnapshot> journalCommunityGoals = [];
@@ -2265,7 +2265,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }).ToArray();
     }
 
-    private static IReadOnlyList<FrontierCommunityGoalSnapshot>
+    private static FrontierCommunityGoalSnapshot[]
         MergeJournalCommunityGoalHistory(
             IReadOnlyList<FrontierCommunityGoalSnapshot> existing,
             IReadOnlyList<FrontierCommunityGoalSnapshot> incoming)
@@ -2323,7 +2323,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private static int? FindCommunityGoalMatch(
         FrontierCommunityGoalSnapshot goal,
         IReadOnlyList<FrontierCommunityGoalSnapshot> candidates,
-        IReadOnlySet<int> alreadyMatched)
+        HashSet<int> alreadyMatched)
     {
         if (goal.Id is { } id)
         {
@@ -2449,7 +2449,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         var capiReputation = Snapshot?.CommanderReputation is { Count: > 0 } account
             ? account
             : Carrier?.Reputation ?? [];
-        if (journalReputation.Count == 0
+        if (journalReputation.Length == 0
             || Snapshot is null
             || manuallySelectedFrontierId is not null
                 && !string.Equals(

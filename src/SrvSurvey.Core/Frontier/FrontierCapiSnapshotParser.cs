@@ -7,7 +7,7 @@ namespace SrvSurvey.Core.Frontier;
 
 public static partial class FrontierCapiSnapshotParser
 {
-    private static readonly IReadOnlyDictionary<string, string[]> RankNames =
+    private static readonly Dictionary<string, string[]> RankNames =
         new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
         {
             ["combat"] =
@@ -78,7 +78,7 @@ public static partial class FrontierCapiSnapshotParser
             ["power"] = "Powerplay",
         };
 
-    private static readonly IReadOnlyDictionary<string, string> ShipNames =
+    private static readonly Dictionary<string, string> ShipNames =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["sidewinder"] = "Sidewinder",
@@ -200,7 +200,7 @@ public static partial class FrontierCapiSnapshotParser
             ProfileData: Flatten(root, "profile"),
             CarrierFetchedAt: carrierJson is null ? null : fetchedAt,
             CommanderReputation: commanderReputation,
-            CommanderReputationFetchedAt: commanderReputation.Count > 0
+            CommanderReputationFetchedAt: commanderReputation.Length > 0
                 ? fetchedAt
                 : null,
             CarrierEndpointData: carrierEndpoint?.DataPoints);
@@ -352,7 +352,7 @@ public static partial class FrontierCapiSnapshotParser
             services);
     }
 
-    private static IReadOnlyList<FrontierShipModuleSnapshot> ParseShipModules(
+    private static FrontierShipModuleSnapshot[] ParseShipModules(
         JsonElement? modules)
     {
         if (modules is not { ValueKind: JsonValueKind.Object } moduleObject)
@@ -400,7 +400,7 @@ public static partial class FrontierCapiSnapshotParser
             .ToArray();
     }
 
-    private static IReadOnlyList<FrontierLaunchBaySnapshot> ParseLaunchBays(
+    private static FrontierLaunchBaySnapshot[] ParseLaunchBays(
         JsonElement? launchBays)
     {
         if (launchBays is not { ValueKind: JsonValueKind.Object } bayObject)
@@ -423,7 +423,7 @@ public static partial class FrontierCapiSnapshotParser
             .ToArray();
     }
 
-    private static IReadOnlyList<FrontierRankSnapshot> ParseRanks(
+    private static List<FrontierRankSnapshot> ParseRanks(
         JsonElement? ranks)
     {
         if (ranks is not { ValueKind: JsonValueKind.Object } rankObject)
@@ -454,7 +454,7 @@ public static partial class FrontierCapiSnapshotParser
         return result;
     }
 
-    private static IReadOnlyList<string> ParseCapabilities(JsonElement? capabilities)
+    private static string[] ParseCapabilities(JsonElement? capabilities)
     {
         if (capabilities is not { ValueKind: JsonValueKind.Object } values)
         {
@@ -637,7 +637,7 @@ public static partial class FrontierCapiSnapshotParser
             GetInt64(finances, "balanceAllocForPurchaseOrders") ?? 0);
     }
 
-    private static IReadOnlyList<FrontierCarrierCrewSnapshot> ParseCarrierCrew(
+    private static FrontierCarrierCrewSnapshot[] ParseCarrierCrew(
         JsonElement? services)
     {
         if (services is not { ValueKind: JsonValueKind.Object } serviceObject)
@@ -670,7 +670,7 @@ public static partial class FrontierCapiSnapshotParser
             .ToArray();
     }
 
-    private static IReadOnlyList<FrontierCarrierJumpSnapshot> ParseCarrierItinerary(
+    private static FrontierCarrierJumpSnapshot[] ParseCarrierItinerary(
         JsonElement? completed)
     {
         return completed is null
@@ -686,7 +686,7 @@ public static partial class FrontierCapiSnapshotParser
                 .ToArray();
     }
 
-    private static IReadOnlyList<FrontierReputationSnapshot> ParseReputation(
+    private static FrontierReputationSnapshot[] ParseReputation(
         JsonElement? reputation)
     {
         if (reputation is null)
@@ -737,7 +737,7 @@ public static partial class FrontierCapiSnapshotParser
             .ToArray();
     }
 
-    private static IReadOnlyList<FrontierReputationSnapshot> MergeReputation(
+    private static FrontierReputationSnapshot[] MergeReputation(
         IReadOnlyList<FrontierReputationSnapshot> first,
         IReadOnlyList<FrontierReputationSnapshot> second)
     {
@@ -844,7 +844,7 @@ public static partial class FrontierCapiSnapshotParser
             Flatten(root, source));
     }
 
-    private static IReadOnlyList<JsonElement> FindCommunityGoalObjects(
+    private static List<JsonElement> FindCommunityGoalObjects(
         JsonElement root)
     {
         var result = new List<JsonElement>();
@@ -1011,7 +1011,7 @@ public static partial class FrontierCapiSnapshotParser
         return normalized.Trim();
     }
 
-    private static IReadOnlyList<FrontierInventorySnapshot> ParseLocker(
+    private static FrontierInventorySnapshot[] ParseLocker(
         JsonElement? locker)
     {
         if (locker is not { ValueKind: JsonValueKind.Object } lockerObject)
@@ -1071,7 +1071,7 @@ public static partial class FrontierCapiSnapshotParser
         }
     }
 
-    private static IReadOnlyList<FrontierNamedValueSnapshot> ParseNamedValues(
+    private static FrontierNamedValueSnapshot[] ParseNamedValues(
         JsonElement? value)
     {
         if (value is null)
@@ -1099,7 +1099,7 @@ public static partial class FrontierCapiSnapshotParser
             .ToArray();
     }
 
-    private static IReadOnlyList<string> ParseStringList(JsonElement? value)
+    private static string[] ParseStringList(JsonElement? value)
     {
         if (value is null)
         {
@@ -1128,7 +1128,7 @@ public static partial class FrontierCapiSnapshotParser
             .ToArray();
     }
 
-    private static IReadOnlyList<FrontierEconomySnapshot> ParseEconomies(
+    private static FrontierEconomySnapshot[] ParseEconomies(
         JsonElement? value)
     {
         if (value is null)
@@ -1158,7 +1158,7 @@ public static partial class FrontierCapiSnapshotParser
             .ToArray();
     }
 
-    private static IReadOnlyList<string> EnumerateScalarValues(JsonElement? value)
+    private static string[] EnumerateScalarValues(JsonElement? value)
     {
         if (value is null)
         {
@@ -1194,7 +1194,7 @@ public static partial class FrontierCapiSnapshotParser
         };
     }
 
-    private static IReadOnlyList<FrontierDataPointSnapshot> Flatten(
+    private static List<FrontierDataPointSnapshot> Flatten(
         JsonElement root,
         string source)
     {
@@ -1341,7 +1341,7 @@ public static partial class FrontierCapiSnapshotParser
         return value;
     }
 
-    private static IEnumerable<JsonElement> EnumerateObjects(
+    private static JsonElement[] EnumerateObjects(
         JsonElement owner,
         string propertyName)
     {
@@ -1349,7 +1349,7 @@ public static partial class FrontierCapiSnapshotParser
         return value is null ? [] : EnumerateObjects(value.Value);
     }
 
-    private static IEnumerable<JsonElement> EnumerateObjects(JsonElement value)
+    private static JsonElement[] EnumerateObjects(JsonElement value)
     {
         return value.ValueKind switch
         {

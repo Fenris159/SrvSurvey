@@ -156,7 +156,7 @@ public sealed class HumanSiteKnowledgeStore
     private static HumanSiteKnowledge? ReadKnowledge(
         JsonObject station,
         HumanSiteKnowledgeContext context,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         var marketId = ReadInt64(station, "marketId") ?? 0;
         var systemAddress = ReadInt64(station, "systemAddress")

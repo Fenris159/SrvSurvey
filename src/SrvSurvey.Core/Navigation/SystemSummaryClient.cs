@@ -288,7 +288,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
 
         return new EdsmBodiesFragment(
             GetInt64(root, "id64") ?? 0,
-            bodies.Count,
+            bodies.Length,
             GetInt32(root, "bodyCount") ?? 0,
             starClass,
             discoveredBy,
@@ -693,7 +693,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         }
     }
 
-    private static IReadOnlyList<JsonElement> GetArray(
+    private static JsonElement[] GetArray(
         JsonElement element,
         string propertyName)
     {

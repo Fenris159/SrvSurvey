@@ -208,7 +208,7 @@ public static class ColonizationSystemSiteReconciler
         T remote,
         T local,
         IEqualityComparer<T> comparer,
-        ICollection<string> conflicts,
+        List<string> conflicts,
         ref bool changed)
     {
         var localChanged = !comparer.Equals(original, local);
@@ -311,8 +311,8 @@ public static class ColonizationSystemSiteReconciler
     }
 
     private static bool JsonMapsEqual(
-        IReadOnlyDictionary<string, JsonElement> left,
-        IReadOnlyDictionary<string, JsonElement> right)
+        Dictionary<string, JsonElement> left,
+        Dictionary<string, JsonElement> right)
     {
         if (left.Count != right.Count)
         {

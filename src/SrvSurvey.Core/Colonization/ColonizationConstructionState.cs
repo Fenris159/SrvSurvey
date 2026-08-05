@@ -261,7 +261,7 @@ public sealed class ColonizationConstructionState
             : changed;
     }
 
-    private static IReadOnlyList<ColonizationResourceRequirement>
+    private static List<ColonizationResourceRequirement>
         ReadResources(JsonElement root)
     {
         if (!root.TryGetProperty("ResourcesRequired", out var resources)
@@ -348,7 +348,7 @@ public sealed class ColonizationConstructionState
                 && value == pair.Value);
     }
 
-    private static IReadOnlyDictionary<string, int> ReadContributions(
+    private static Dictionary<string, int> ReadContributions(
         JsonElement root)
     {
         if (!root.TryGetProperty("Contributions", out var contributions)
@@ -374,7 +374,7 @@ public sealed class ColonizationConstructionState
         return result;
     }
 
-    private static IReadOnlyList<string> GetStrings(
+    private static string[] GetStrings(
         JsonElement root,
         string propertyName)
     {

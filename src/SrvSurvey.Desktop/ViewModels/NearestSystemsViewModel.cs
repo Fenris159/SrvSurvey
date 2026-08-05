@@ -478,10 +478,10 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             ? !string.IsNullOrWhiteSpace(BiologicalSignal)
             : !string.IsNullOrWhiteSpace(Genus)
                 && !string.IsNullOrWhiteSpace(Species)
-                && ParseVariantColors().Count > 0;
+                && ParseVariantColors().Length > 0;
     }
 
-    private IReadOnlyList<string> ParseVariantColors()
+    private string[] ParseVariantColors()
     {
         return VariantColors.Split(
                 [',', ';', '\r', '\n'],

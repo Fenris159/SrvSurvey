@@ -264,7 +264,7 @@ public sealed class TravelViewMarkupTests
         "Styles",
         "RavenStyles.axaml"));
 
-    private static IReadOnlyDictionary<string, string> ReadSetters(
+    private static Dictionary<string, string> ReadSetters(
         XElement style) => style.Elements()
         .Where(element => element.Name.LocalName == "Setter")
         .ToDictionary(

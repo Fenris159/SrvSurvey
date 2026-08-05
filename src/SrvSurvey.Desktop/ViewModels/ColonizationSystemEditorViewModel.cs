@@ -999,8 +999,8 @@ public sealed class ColonizationSystemEditorViewModel
     }
 
     private static bool SiteListsEqual(
-        IReadOnlyList<ColonizationSystemSite> left,
-        IReadOnlyList<ColonizationSystemSite> right)
+        List<ColonizationSystemSite> left,
+        List<ColonizationSystemSite> right)
     {
         if (left.Count != right.Count)
         {

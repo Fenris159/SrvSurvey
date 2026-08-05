@@ -130,7 +130,7 @@ public static class BiologyPredictionContextBuilder
         };
     }
 
-    private static IReadOnlyList<SystemScanBodySnapshot> GetParentStars(
+    private static SystemScanBodySnapshot[] GetParentStars(
         IReadOnlyList<SystemScanBodySnapshot> bodies,
         SystemScanBodySnapshot body)
     {
@@ -234,7 +234,7 @@ public static class BiologyPredictionContextBuilder
         return distance;
     }
 
-    private static IReadOnlyList<SystemScanBodySnapshot> GetParentBodies(
+    private static SystemScanBodySnapshot[] GetParentBodies(
         IReadOnlyList<SystemScanBodySnapshot> bodies,
         SystemScanBodySnapshot body)
     {

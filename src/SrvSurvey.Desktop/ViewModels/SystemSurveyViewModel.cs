@@ -31,7 +31,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private IReadOnlyList<FssBodyRowViewModel> fssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> dssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> biologicalBodies = [];
-    private IReadOnlySet<int> canonnBiologyBodyIds = new HashSet<int>();
+    private HashSet<int> canonnBiologyBodyIds = new HashSet<int>();
     private bool hasCanonnSystemData;
     private BodyInformationViewModel? bodyInformation;
     private BiologySurveyViewModel? biologySurvey;

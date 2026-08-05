@@ -1075,7 +1075,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    private Task SaveDevelopmentAsync(
+    private Task<LegacyQuestStateSaveResult> SaveDevelopmentAsync(
         QuestRuntimeConfiguration current,
         RavenCommanderQuest progress,
         CancellationToken cancellationToken)
@@ -1120,7 +1120,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         }
     }
 
-    private IReadOnlyList<QuestRuntimeSnapshot> CreateSnapshot()
+    private QuestRuntimeSnapshot[] CreateSnapshot()
     {
         return runtimes.Values
             .Select(registration =>

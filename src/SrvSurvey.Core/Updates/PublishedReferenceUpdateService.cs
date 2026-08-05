@@ -748,7 +748,7 @@ public sealed class PublishedReferenceUpdateService
         return output.ToArray();
     }
 
-    private static IReadOnlyList<ArchiveEntryPayload> ValidateArchive(
+    private static List<ArchiveEntryPayload> ValidateArchive(
         byte[] bytes,
         params string[] allowedExtensions)
     {

@@ -211,7 +211,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         long systemAddress,
         GalacticCoordinate? position,
         int expectedBodyCount,
-        IReadOnlyList<SystemScanBodySnapshot> bodies)
+        SystemScanBodySnapshot[] bodies)
     {
         return new SystemScanSnapshot(
             systemName,
@@ -339,7 +339,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
                 : 0;
     }
 
-    private static IReadOnlyList<SystemOrganismSnapshot> ReadOrganisms(
+    private static SystemOrganismSnapshot[] ReadOrganisms(
         JsonElement body)
     {
         if (!TryGetObject(body, "signals", out var signals)
@@ -404,7 +404,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         return provider == BodyProvider.Edsm && value != true ? null : value;
     }
 
-    private static IReadOnlyList<SystemBodyParentSnapshot> ReadParents(
+    private static List<SystemBodyParentSnapshot> ReadParents(
         JsonElement body,
         BodyProvider provider)
     {
@@ -462,7 +462,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         return result;
     }
 
-    private static IReadOnlyList<SystemRingSnapshot> ReadRings(
+    private static SystemRingSnapshot[] ReadRings(
         JsonElement body,
         BodyProvider provider)
     {
@@ -493,7 +493,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             .ToArray();
     }
 
-    private static IReadOnlyDictionary<string, double> ReadDictionary(
+    private static Dictionary<string, double> ReadDictionary(
         JsonElement owner,
         string propertyName,
         bool normalizeCompositionKeys,
@@ -658,7 +658,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         }
     }
 
-    private static IReadOnlyList<JsonElement> ReadBodyArray(
+    private static JsonElement[] ReadBodyArray(
         JsonElement owner,
         string source)
     {

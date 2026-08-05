@@ -494,7 +494,7 @@ public sealed class LegacyProfileImporter
                 StringComparison.Ordinal));
     }
 
-    private static IReadOnlyList<ProfileImportConflict> FindConflicts(
+    private static ProfileImportConflict[] FindConflicts(
         ProfileInventory source,
         ProfileInventory destination)
     {
