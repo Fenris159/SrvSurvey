@@ -328,7 +328,8 @@ public sealed class ColonizationConstructionState
         return right is not null
             && left.Timestamp == right.Timestamp
             && left.MarketId == right.MarketId
-            && left.ReportedProgress.Equals(right.ReportedProgress)
+            && Math.Abs(left.ReportedProgress - right.ReportedProgress)
+                <= 0.0000001d
             && left.IsComplete == right.IsComplete
             && left.IsFailed == right.IsFailed
             && left.Resources.SequenceEqual(right.Resources);

@@ -169,7 +169,9 @@ public sealed partial class KnownSystemAddressCatalog
             }
         }
 
-        if (!foundStart || !foundMissingStart || !foundEnd || result.Count == 0)
+        // Reaching the closing bracket proves both section markers were seen;
+        // entries cannot be collected before the first marker.
+        if (!foundEnd || result.Count == 0)
         {
             throw new InvalidDataException(
                 "The known-system address catalog is incomplete.");

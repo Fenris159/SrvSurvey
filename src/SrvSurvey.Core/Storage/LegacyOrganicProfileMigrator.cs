@@ -1038,8 +1038,10 @@ public sealed class LegacyOrganicProfileMigrator
             && firstLongitude is not null
             && secondLatitude is not null
             && secondLongitude is not null
-                ? firstLatitude == secondLatitude
-                    && firstLongitude == secondLongitude
+                ? Math.Abs(firstLatitude.Value - secondLatitude.Value)
+                        <= 0.0000001d
+                    && Math.Abs(firstLongitude.Value - secondLongitude.Value)
+                        <= 0.0000001d
                 : JsonNode.DeepEquals(first, second);
     }
 

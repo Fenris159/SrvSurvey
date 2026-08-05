@@ -253,10 +253,10 @@ namespace SrvSurvey.Core.Inara
             else if (name is "JoinACrew" or "ChangeCrewRole")
                 InMulticrew = true;
             else if (entry["Multicrew"] is JValue
-                     {
-                         Type: JTokenType.Boolean,
-                         Value: true,
-                     })
+            {
+                Type: JTokenType.Boolean,
+                Value: true,
+            })
                 InMulticrew = true;
             else if (name == "LoadGame")
                 InMulticrew = false;
@@ -439,13 +439,14 @@ namespace SrvSurvey.Core.Inara
 
         private static void mapMajorFactionReputation(string timestamp, JObject entry, List<InaraEvent> events)
         {
-            var data = new JArray(entry.Properties()
+            var reputation = entry.Properties()
                 .Where(property => property.Name is not "timestamp" and not "event" && property.Value.Type is JTokenType.Integer or JTokenType.Float)
                 .Select(property => obj(
                     ("majorfactionName", property.Name.ToLowerInvariant()),
-                    ("majorfactionReputation", property.Value.Value<double>() / 100d))));
-            if (data.Count > 0)
-                events.Add(new("setCommanderReputationMajorFaction", timestamp, data, "reputation:major"));
+                    ("majorfactionReputation", property.Value.Value<double>() / 100d)))
+                .ToArray();
+            if (reputation.Length > 0)
+                events.Add(new("setCommanderReputationMajorFaction", timestamp, new JArray(reputation), "reputation:major"));
         }
 
         private static void mapDocked(string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
@@ -522,12 +523,14 @@ namespace SrvSurvey.Core.Inara
         private static void mapMinorFactionReputation(string timestamp, JObject entry, List<InaraEvent> events)
         {
             if (entry["Factions"] is not JArray factions) return;
-            var data = new JArray(factions.OfType<JObject>()
+            var reputation = factions.OfType<JObject>()
                 .Where(f => f["Name"] != null && f["MyReputation"] != null)
                 .Select(f => obj(
                     ("minorfactionName", f["Name"]),
-                    ("minorfactionReputation", f.Value<double>("MyReputation") / 100d))));
-            if (data.Count > 0) events.Add(new("setCommanderReputationMinorFaction", timestamp, data, "reputation:minor"));
+                    ("minorfactionReputation", f.Value<double>("MyReputation") / 100d)))
+                .ToArray();
+            if (reputation.Length > 0)
+                events.Add(new("setCommanderReputationMinorFaction", timestamp, new JArray(reputation), "reputation:minor"));
         }
 
         private static void mapStatistics(string timestamp, JObject entry, List<InaraEvent> events)

@@ -178,7 +178,10 @@ public sealed class InaraPublisher : IInaraPublisher
             && update.JournalEvents.Any(item => item.EventName == "Shutdown");
         if (forceFlush || IsSendDue())
         {
-            _ = StartBackgroundSend(options, force: forceFlush);
+            _ = TryStartBackgroundSend(
+                options,
+                force: forceFlush,
+                out _);
         }
 
         return new InaraPublicationResult(
@@ -213,12 +216,15 @@ public sealed class InaraPublisher : IInaraPublisher
 
         if (active is null)
         {
-            active = StartBackgroundSend(options, force: true);
-        }
+            if (!TryStartBackgroundSend(
+                options,
+                force: true,
+                out var started))
+            {
+                return completed;
+            }
 
-        if (active is null)
-        {
-            return completed;
+            active = started;
         }
 
         var sent = await active.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -496,27 +502,29 @@ public sealed class InaraPublisher : IInaraPublisher
         }
     }
 
-    private Task<InaraPublicationResult>? StartBackgroundSend(
+    private bool TryStartBackgroundSend(
         InaraPublicationOptions options,
-        bool force = false)
+        bool force,
+        out Task<InaraPublicationResult> sendTask)
     {
         lock (sendStateSync)
         {
+            sendTask = activeSendTask!;
             if (disposed || activeSendTask is not null)
             {
-                return activeSendTask;
+                return sendTask is not null;
             }
 
             if (!force
                 && (nextSendAt is null
                     || timeProvider.GetUtcNow() < nextSendAt.Value))
             {
-                return null;
+                return false;
             }
 
             if (authorizedOptions is null)
             {
-                return null;
+                return false;
             }
 
             var generation = authorizationGeneration;
@@ -530,7 +538,8 @@ public sealed class InaraPublisher : IInaraPublisher
                     generation,
                     sendCancellation.Token),
                 CancellationToken.None);
-            return activeSendTask;
+            sendTask = activeSendTask;
+            return true;
         }
     }
 

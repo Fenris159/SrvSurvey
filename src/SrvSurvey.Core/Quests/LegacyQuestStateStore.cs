@@ -622,7 +622,7 @@ public sealed class LegacyQuestStateStore
                     reference.Publisher,
                     StringComparison.Ordinal)
                 || !string.Equals(id, reference.Id, StringComparison.Ordinal)
-                || version != reference.Version)
+                || version.CompareTo(reference.Version) != 0)
             {
                 warnings.Add(
                     $"Development quest definition identity '{publisher}|{id}|{version.ToString(CultureInfo.InvariantCulture)}' "
@@ -697,7 +697,7 @@ public sealed class LegacyQuestStateStore
                     definition.Id,
                     reference.Id,
                     StringComparison.Ordinal)
-                || definition.Version != reference.Version)
+                || definition.Version.CompareTo(reference.Version) != 0)
             {
                 warnings.Add(
                     $"Embedded development quest definition identity '{definition.Reference}' does not match '{reference}'.");

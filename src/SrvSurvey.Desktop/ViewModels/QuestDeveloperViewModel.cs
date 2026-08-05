@@ -254,7 +254,7 @@ public sealed class QuestDeveloperViewModel : INotifyPropertyChanged, IDisposabl
 
         var changed = reference is null
             || !SameQuest(reference, development.Reference)
-            || reference.Version != development.Reference.Version;
+            || reference.Version.CompareTo(development.Reference.Version) != 0;
         reference = development.Reference;
         Title = development.Title;
         VersionLabel = development.Reference.Version.ToString(

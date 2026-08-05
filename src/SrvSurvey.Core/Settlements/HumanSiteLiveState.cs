@@ -33,7 +33,7 @@ public sealed class HumanSiteLiveState(
 
         var heading = SurfaceNavigation.NormalizeDegrees(geometry.Heading);
         if (CurrentSite.SubType == geometry.SubType
-            && CurrentSite.Heading == heading)
+            && EquivalentHeading(CurrentSite.Heading, heading))
         {
             return false;
         }
@@ -83,7 +83,7 @@ public sealed class HumanSiteLiveState(
         var subType = template?.SubType ?? CurrentSite.SubType;
         if (CurrentSite.SubType == subType
             && CurrentSite.Template == template
-            && CurrentSite.Heading == heading
+            && EquivalentHeading(CurrentSite.Heading, heading)
             && CurrentSite.AvailablePads == pads)
         {
             return false;
@@ -519,6 +519,17 @@ public sealed class HumanSiteLiveState(
             && double.IsFinite(result)
                 ? result
                 : null;
+    }
+
+    private static bool EquivalentHeading(double? left, double? right)
+    {
+        if (left.HasValue != right.HasValue)
+        {
+            return false;
+        }
+
+        return !left.HasValue
+            || Math.Abs(left.Value - right!.Value) <= 0.0001d;
     }
 }
 

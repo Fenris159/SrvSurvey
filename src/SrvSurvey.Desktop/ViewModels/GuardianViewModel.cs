@@ -741,7 +741,8 @@ public sealed class GuardianViewModel
             return false;
         }
 
-        automaticMapZoom = next == GetAutomaticMapScale();
+        automaticMapZoom = Math.Abs(next - GetAutomaticMapScale())
+            <= 0.0001d;
         activeMapScale = next;
         OnPropertyChanged(nameof(IsAutomaticMapZoom));
         OnPropertyChanged(nameof(ActiveMapScale));

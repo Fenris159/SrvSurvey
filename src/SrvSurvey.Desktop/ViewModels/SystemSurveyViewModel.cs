@@ -2666,18 +2666,19 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         {
             if (parent.ValueKind != System.Text.Json.JsonValueKind.Object)
             {
-                return false;
+                continue;
             }
 
             foreach (var property in parent.EnumerateObject())
             {
-                return string.Equals(
+                if (string.Equals(
                     property.Name,
                     "Ring",
-                    StringComparison.OrdinalIgnoreCase);
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
             }
-
-            return false;
         }
 
         return false;

@@ -2583,8 +2583,9 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
             target.Subtype,
             next.Subtype,
             StringComparison.Ordinal);
-        var distanceChanged = target.DistanceToArrivalLs
-            != next.DistanceToArrivalLs;
+        var distanceChanged = !EquivalentDistance(
+            target.DistanceToArrivalLs,
+            next.DistanceToArrivalLs);
         var scanValueChanged = target.EstimatedScanValue
             != next.EstimatedScanValue;
         var mappingValueChanged = target.EstimatedMappingValue
@@ -2701,6 +2702,17 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
     private static string FormatCredits(long? value)
     {
         return value is null ? string.Empty : $"{value.Value:N0} CR";
+    }
+
+    private static bool EquivalentDistance(double? left, double? right)
+    {
+        if (left.HasValue != right.HasValue)
+        {
+            return false;
+        }
+
+        return !left.HasValue
+            || Math.Abs(left.Value - right!.Value) <= 0.0000001d;
     }
 
     private static string FormatCompactCredits(long? value)

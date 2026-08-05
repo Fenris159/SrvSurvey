@@ -57,7 +57,7 @@ public sealed class OverlayScaleSettingsStore
 
         if (value.TryGetValue<double>(out var number)
             && double.IsFinite(number)
-            && number == Math.Truncate(number)
+            && double.IsInteger(number)
             && number is >= int.MinValue and <= int.MaxValue)
         {
             return Convert.ToInt32(number, CultureInfo.InvariantCulture);

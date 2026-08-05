@@ -1456,9 +1456,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             : null;
         var samePosition = position is GalacticCoordinate coordinate
             ? currentStarPosition.Count == 3
-                && currentStarPosition[0] == coordinate.X
-                && currentStarPosition[1] == coordinate.Y
-                && currentStarPosition[2] == coordinate.Z
+                && Math.Abs(currentStarPosition[0] - coordinate.X)
+                    <= 0.0000001d
+                && Math.Abs(currentStarPosition[1] - coordinate.Y)
+                    <= 0.0000001d
+                && Math.Abs(currentStarPosition[2] - coordinate.Z)
+                    <= 0.0000001d
             : currentStarPosition.Count == 0;
         if (string.Equals(
                 currentSystemName,

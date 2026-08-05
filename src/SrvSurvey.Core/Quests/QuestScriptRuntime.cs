@@ -45,7 +45,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
                 Definition.Publisher,
                 StringComparison.Ordinal)
             || !string.Equals(progress.Id, Definition.Id, StringComparison.Ordinal)
-            || progress.Version != Definition.Version)
+            || progress.Version.CompareTo(Definition.Version) != 0)
         {
             throw new ArgumentException(
                 "Quest progress and definition identities do not match.",

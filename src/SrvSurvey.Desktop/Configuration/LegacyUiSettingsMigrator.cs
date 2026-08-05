@@ -412,7 +412,7 @@ public sealed class LegacyUiSettingsMigrator
 
         if (!value.TryGetValue<double>(out var numeric)
             || !double.IsFinite(numeric)
-            || numeric != Math.Truncate(numeric)
+            || !double.IsInteger(numeric)
             || numeric is < int.MinValue or > int.MaxValue)
         {
             return false;
