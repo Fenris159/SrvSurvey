@@ -104,7 +104,7 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
             """
             "Transfers":[{"Type":"Steel","Count":4,"Direction":"tocarrier"}]
             """);
-        var withdraw = Event(
+        var mixedTransfer = Event(
             "CargoTransfer",
             """
             "Transfers":[
@@ -117,7 +117,7 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
                 transfer,
                 Dock(),
                 isInMainShip: false));
-        // Squadron carriers use ship cargo GetDiff, not journal transfer deltas.
+        // Squadron carriers prefer ship cargo GetDiff when available.
         Assert.Empty(
             ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
                 transfer,
@@ -125,9 +125,19 @@ public sealed class ColonizationFleetCarrierCargoSynchronizerTests
                 isInMainShip: true));
         Assert.Empty(
             ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
-                withdraw,
+                mixedTransfer,
                 Dock("squadronBank"),
-                isInMainShip: true));
+                isInMainShip: true,
+                preferShipCargoDiffForSquadron: true));
+        // When ship-cargo diff is unavailable (shared cargo suppressed), journal fallback.
+        var squadronFallback =
+            ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
+                mixedTransfer,
+                Dock("squadronBank"),
+                isInMainShip: true,
+                preferShipCargoDiffForSquadron: false);
+        Assert.Equal(4, squadronFallback["steel"]);
+        Assert.Equal(-3, squadronFallback["water"]);
         Assert.Throws<InvalidDataException>(() =>
             ColonizationFleetCarrierCargoSynchronizer.CreateJournalAdjustment(
                 Event(

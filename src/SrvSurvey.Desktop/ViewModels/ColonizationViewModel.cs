@@ -624,8 +624,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             || !IsEnabled
             || CommanderName is null)
         {
-            // Still drop a held squadron snapshot when publishing is disabled so
-            // lastInventory cannot stay frozen across later cargo updates.
+            // Still drop held squadron state when publishing is disabled so
+            // lastInventory / skipNext cannot survive across later cargo updates.
+            skipNextCargoEvent = false;
             if (cargoInventory?.HasPreservedSnapshot == true)
             {
                 cargoInventory.ClearPreservedSnapshot();
@@ -634,6 +635,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
+        // When ship cargo is available, squadron carriers use GetDiff. Otherwise
+        // (shared-cargo suppression) fall back to journal transfer adjustments.
+        var preferShipCargoDiffForSquadron = cargoInventory is not null;
         var messages = new List<string>();
         foreach (var journalEvent in journalEvents)
         {
@@ -657,7 +661,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                     "DockingGranted" => ScheduleDockingRefresh(journalEvent),
                     "MarketBuy" or "MarketSell" or "CargoTransfer" =>
                         await SynchronizeFleetCarrierCargoAdjustmentAsync(
-                            journalEvent),
+                            journalEvent,
+                            preferShipCargoDiffForSquadron),
                     _ => null,
                 };
                 if (!string.IsNullOrWhiteSpace(message))
@@ -789,7 +794,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        cargo.CaptureBeforeSnapshot();
+        // Preserve the first before-state across multiple CargoTransfer events in one poll.
+        if (!cargo.HasPreservedSnapshot)
+        {
+            cargo.CaptureBeforeSnapshot();
+        }
     }
 
     /// <summary>
@@ -805,6 +814,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             || storedRavenApiKey is null
             || constructionState.CurrentDock is not { } dock)
         {
+            skipNextCargoEvent = false;
             if (cargo.HasPreservedSnapshot)
             {
                 cargo.ClearPreservedSnapshot();
@@ -846,10 +856,6 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
         var adjustments = ColonizationFleetCarrierCargoSynchronizer
             .CreateSquadronCargoDiffAdjustment(shipDiff);
-        if (adjustments.Count == 0)
-        {
-            return null;
-        }
 
         CommodityOverlay.ApplyPendingFleetCarrierCargo(adjustments.Keys);
         try
@@ -858,15 +864,19 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 dock.MarketId,
                 adjustments,
                 storedRavenApiKey);
-            var localCarrier = fleetCarriers.First(carrier =>
+            var localCarrier = fleetCarriers.FirstOrDefault(carrier =>
                 carrier.MarketId == dock.MarketId);
-            ReplaceLocalFleetCarrier(localCarrier with
+            if (localCarrier is not null)
             {
-                Cargo = updatedCargo.ToDictionary(
-                    pair => pair.Key,
-                    pair => pair.Value,
-                    StringComparer.OrdinalIgnoreCase),
-            });
+                ReplaceLocalFleetCarrier(localCarrier with
+                {
+                    Cargo = updatedCargo.ToDictionary(
+                        pair => pair.Key,
+                        pair => pair.Value,
+                        StringComparer.OrdinalIgnoreCase),
+                });
+            }
+
             return $"Updated {adjustments.Count:N0} linked squadron Fleet Carrier cargo entry(s) from ship cargo diff.";
         }
         finally
@@ -876,7 +886,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     }
 
     private async Task<string?> SynchronizeFleetCarrierCargoAdjustmentAsync(
-        JournalEventEnvelope journalEvent)
+        JournalEventEnvelope journalEvent,
+        bool preferShipCargoDiffForSquadron)
     {
         if (!FleetCarrierCargoSyncEnabled
             || storedRavenApiKey is null
@@ -890,7 +901,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             .CreateJournalAdjustment(
                 journalEvent,
                 dock,
-                latestStatus?.InMainShip == true);
+                latestStatus?.InMainShip == true,
+                preferShipCargoDiffForSquadron);
         if (adjustments.Count == 0)
         {
             return null;
@@ -903,19 +915,24 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 dock.MarketId,
                 adjustments,
                 storedRavenApiKey);
-            var localCarrier = fleetCarriers.First(carrier =>
+            var localCarrier = fleetCarriers.FirstOrDefault(carrier =>
                 carrier.MarketId == dock.MarketId);
-            ReplaceLocalFleetCarrier(localCarrier with
+            if (localCarrier is not null)
             {
-                Cargo = updatedCargo.ToDictionary(
-                    pair => pair.Key,
-                    pair => pair.Value,
-                    StringComparer.OrdinalIgnoreCase),
-            });
+                ReplaceLocalFleetCarrier(localCarrier with
+                {
+                    Cargo = updatedCargo.ToDictionary(
+                        pair => pair.Key,
+                        pair => pair.Value,
+                        StringComparer.OrdinalIgnoreCase),
+                });
+            }
 
             // Market buy/sell already adjusted the FC; skip the following Cargo GetDiff so
             // squadron carriers are not double-counted (legacy skipNextCargoEvent).
-            if (journalEvent.EventName is "MarketBuy" or "MarketSell"
+            // Only meaningful when ship-cargo diff path is active for squadron.
+            if (preferShipCargoDiffForSquadron
+                && journalEvent.EventName is "MarketBuy" or "MarketSell"
                 && ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(dock))
             {
                 skipNextCargoEvent = true;
@@ -1648,8 +1665,18 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        var localCarrier = fleetCarriers.First(carrier =>
+        var localCarrier = fleetCarriers.FirstOrDefault(carrier =>
             carrier.MarketId == currentMarket.MarketId);
+        if (localCarrier is null)
+        {
+            if (force)
+            {
+                FleetCarrierSyncStatus = GetFleetCarrierSyncBlockReason();
+            }
+
+            return;
+        }
+
         IsFleetCarrierSyncBusy = true;
         FleetCarrierSyncStatus =
             $"Checking {GetCarrierName(localCarrier)} market cargo...";
@@ -1664,12 +1691,20 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 return;
             }
 
+            // Re-resolve after await: the local list may have changed while waiting.
+            localCarrier = fleetCarriers.FirstOrDefault(carrier =>
+                carrier.MarketId == currentMarket.MarketId);
+
             var replacements =
                 ColonizationFleetCarrierCargoSynchronizer
                     .CreateMarketReplacement(currentMarket, serverCarrier);
             if (replacements.Count == 0)
             {
-                ReplaceLocalFleetCarrier(serverCarrier);
+                if (localCarrier is not null)
+                {
+                    ReplaceLocalFleetCarrier(serverCarrier);
+                }
+
                 lastSyncedMarket = identity;
                 FleetCarrierSyncStatus =
                     $"{GetCarrierName(serverCarrier)} cargo is already current.";
@@ -1686,13 +1721,19 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 currentMarket.MarketId,
                 replacements,
                 storedRavenApiKey);
-            ReplaceLocalFleetCarrier(serverCarrier with
+            localCarrier = fleetCarriers.FirstOrDefault(carrier =>
+                carrier.MarketId == currentMarket.MarketId);
+            if (localCarrier is not null)
             {
-                Cargo = updatedCargo.ToDictionary(
-                    pair => pair.Key,
-                    pair => pair.Value,
-                    StringComparer.OrdinalIgnoreCase),
-            });
+                ReplaceLocalFleetCarrier(serverCarrier with
+                {
+                    Cargo = updatedCargo.ToDictionary(
+                        pair => pair.Key,
+                        pair => pair.Value,
+                        StringComparer.OrdinalIgnoreCase),
+                });
+            }
+
             lastSyncedMarket = identity;
             FleetCarrierSyncStatus =
                 $"Updated {replacements.Count:N0} cargo entries for "

@@ -4,13 +4,13 @@ namespace SrvSurvey.Core.Journal;
 
 /// <summary>
 /// Live ship cargo projection from journal deltas and Cargo.json snapshots.
-/// Inventory / lastInventory updates are serialized with <see cref="SyncRoot"/> so squadron-FC
+/// Inventory / lastInventory updates are serialized so squadron-FC
 /// diff tracking cannot race with CargoTransfer mutations or companion-file reloads.
 /// </summary>
 public sealed class CargoInventoryState
 {
-    /// <summary>Shared lock for all Inventory / lastInventory readers and writers.</summary>
-    public object SyncRoot { get; } = new();
+    /// <summary>Lock for all Inventory / lastInventory readers and writers.</summary>
+    private readonly object syncRoot = new();
 
     private readonly Dictionary<string, CargoItemState> inventory = new(
         StringComparer.OrdinalIgnoreCase);
@@ -34,7 +34,7 @@ public sealed class CargoInventoryState
     {
         get
         {
-            lock (SyncRoot)
+            lock (syncRoot)
             {
                 return preserveLastInventory;
             }
@@ -48,7 +48,7 @@ public sealed class CargoInventoryState
     /// </summary>
     public void CaptureBeforeSnapshot()
     {
-        lock (SyncRoot)
+        lock (syncRoot)
         {
             CopyCurrentToLastInventoryUnlocked();
             preserveLastInventory = true;
@@ -61,7 +61,7 @@ public sealed class CargoInventoryState
     /// </summary>
     public void ClearPreservedSnapshot()
     {
-        lock (SyncRoot)
+        lock (syncRoot)
         {
             preserveLastInventory = false;
         }
@@ -69,15 +69,18 @@ public sealed class CargoInventoryState
 
     /// <summary>
     /// Ship cargo delta: current inventory − lastInventory (non-zero entries only).
-    /// Clears any preserved snapshot. Call while the new inventory is already applied;
-    /// release <see cref="SyncRoot"/> before network I/O or logging.
+    /// Rebases lastInventory to the current counts and clears any preserved snapshot so the
+    /// computed diff is consumed once. Call while the new inventory is already applied;
+    /// release the lock before network I/O or logging.
     /// </summary>
     public Dictionary<string, int> GetDiff()
     {
-        lock (SyncRoot)
+        lock (syncRoot)
         {
             var after = CreateCountMapUnlocked();
             var diffs = CargoInventoryDiff.Compute(lastInventory, after);
+            // Consume once: subsequent GetDiff calls baseline from this after-state.
+            CargoInventoryDiff.CopyFromCounts(lastInventory, after);
             preserveLastInventory = false;
             return diffs;
         }
@@ -85,7 +88,7 @@ public sealed class CargoInventoryState
 
     public bool Reset(CargoSnapshot? snapshot)
     {
-        lock (SyncRoot)
+        lock (syncRoot)
         {
             if (snapshot is null)
             {
@@ -135,7 +138,7 @@ public sealed class CargoInventoryState
         bool isInSrv = false)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        lock (SyncRoot)
+        lock (syncRoot)
         {
             var root = journalEvent.Payload;
             var changed = journalEvent.EventName switch
@@ -175,7 +178,7 @@ public sealed class CargoInventoryState
 
     public CargoSnapshot? CreateSnapshot()
     {
-        lock (SyncRoot)
+        lock (syncRoot)
         {
             if (!hasState)
             {

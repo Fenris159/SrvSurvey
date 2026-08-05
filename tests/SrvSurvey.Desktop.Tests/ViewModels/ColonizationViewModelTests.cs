@@ -1395,6 +1395,174 @@ public sealed class ColonizationViewModelTests : IDisposable
         // Market buy adjusts once; skipNext prevents a second cargo-diff adjustment.
         var adjustment = Assert.Single(client.FleetCarrierAdjustments);
         Assert.Equal(-5, adjustment.Changes["steel"]);
+
+        // skipNext is consumed only once: a later real transfer still adjusts.
+        cargo.CaptureBeforeSnapshot();
+        Assert.True(cargo.Apply(Event(
+            "CargoTransfer",
+            """
+            "Transfers":[{"Type":"Steel","Count":4,"Direction":"tocarrier"}]
+            """)));
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[{"Type":"Steel","Count":4,"Direction":"tocarrier"}]
+                    """),
+            ],
+            allowPublishing: true,
+            cargoInventory: cargo,
+            cargoActivity: true);
+
+        Assert.Equal(2, client.FleetCarrierAdjustments.Count);
+        Assert.Equal(4, client.FleetCarrierAdjustments[1].Changes["steel"]);
+    }
+
+    [Fact]
+    public async Task CapturesFirstSquadronBaselineAcrossMultipleTransfersInOnePoll()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "SQD-001",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [],
+                [],
+                null,
+                [carrier]),
+            FleetCarrierResponse = carrier,
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"SQD-001","StationType":"FleetCarrier",
+                "StationServices":["commodities","squadronBank"]
+                """),
+        ]);
+        viewModel.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip,
+        });
+
+        var cargo = new CargoInventoryState();
+        cargo.Reset(new CargoSnapshot(
+            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+            "Cargo",
+            "Ship",
+            50,
+            [new CargoItem("steel", "Steel", 50, 0)]));
+
+        // Two sequential Prepare/Apply pairs must keep the first before-state.
+        viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
+        Assert.True(cargo.Apply(Event(
+            "CargoTransfer",
+            """
+            "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
+            """)));
+        viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
+        Assert.True(cargo.Apply(Event(
+            "CargoTransfer",
+            """
+            "Transfers":[{"Type":"Steel","Count":5,"Direction":"tocarrier"}]
+            """)));
+        Assert.Equal(35, cargo.CreateSnapshot()!.GetCount("steel"));
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
+                    """),
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[{"Type":"Steel","Count":5,"Direction":"tocarrier"}]
+                    """),
+            ],
+            allowPublishing: true,
+            cargoInventory: cargo,
+            cargoActivity: true);
+
+        var adjustment = Assert.Single(client.FleetCarrierAdjustments);
+        Assert.Equal(15, adjustment.Changes["steel"]);
+    }
+
+    [Fact]
+    public async Task FallsBackToJournalTransfersForSquadronWhenShipCargoDiffUnavailable()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "SQD-001",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [],
+                [],
+                null,
+                [carrier]),
+            FleetCarrierResponse = carrier,
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"SQD-001","StationType":"FleetCarrier",
+                "StationServices":["commodities","squadronBank"]
+                """),
+        ]);
+        viewModel.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip,
+        });
+
+        // No cargoInventory => journal fallback for squadron transfers.
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[
+                      {"Type":"Steel","Count":4,"Direction":"tocarrier"},
+                      {"Type":"Water","Count":3,"Direction":"toship"}]
+                    """),
+            ],
+            allowPublishing: true,
+            cargoInventory: null,
+            cargoActivity: false);
+
+        var adjustment = Assert.Single(client.FleetCarrierAdjustments);
+        Assert.Equal(4, adjustment.Changes["steel"]);
+        Assert.Equal(-3, adjustment.Changes["water"]);
     }
 
     [Fact]

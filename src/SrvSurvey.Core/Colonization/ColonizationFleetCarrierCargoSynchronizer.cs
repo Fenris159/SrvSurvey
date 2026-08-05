@@ -10,7 +10,8 @@ public static class ColonizationFleetCarrierCargoSynchronizer
     public static IReadOnlyDictionary<string, int> CreateJournalAdjustment(
         JournalEventEnvelope journalEvent,
         ColonizationDockingSnapshot dock,
-        bool isInMainShip)
+        bool isInMainShip,
+        bool preferShipCargoDiffForSquadron = true)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
         ArgumentNullException.ThrowIfNull(dock);
@@ -32,9 +33,11 @@ public static class ColonizationFleetCarrierCargoSynchronizer
                 journalEvent.Payload,
                 dock,
                 sign: 1),
-            // Personal/linked FC tracking only. Squadron carriers use ship cargo
-            // GetDiff after CargoTransfer (see CaptureBeforeSnapshot / GetDiff).
-            "CargoTransfer" when isInMainShip && !IsSquadronFleetCarrier(dock) =>
+            // Personal linked FCs always use journal transfer deltas.
+            // Squadron carriers prefer ship-cargo GetDiff when available; fall back
+            // to journal transfers when shared cargo is suppressed / no inventory.
+            "CargoTransfer" when isInMainShip
+                && !(IsSquadronFleetCarrier(dock) && preferShipCargoDiffForSquadron) =>
                 CreateTransferAdjustment(journalEvent.Payload),
             _ => new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
         };
