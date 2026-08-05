@@ -22,7 +22,10 @@ public sealed partial class MiniTrackOverlayWindow : Window
 
     private static SurfaceSurveyOverlayViewModel CreateDesignViewModel()
     {
-        var root = Path.GetTempPath();
+        var root = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "SrvSurvey",
+            "DesignTime");
         var survey = new SystemSurveyViewModel(
             new SystemSurveySettingsStore(Path.Combine(root, "ui-settings.json")));
         var store = new SystemSurfaceStore(root);

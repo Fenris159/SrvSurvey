@@ -228,6 +228,13 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath
 {
     private const string UnavailableMessage =
         "Secure Frontier token storage is unavailable. Install the 'secret-tool' utility and unlock a Secret Service compatible keyring, then try again.";
+    private static readonly string[] SecretToolPaths =
+    [
+        "/usr/bin/secret-tool",
+        "/bin/secret-tool",
+        "/usr/local/bin/secret-tool",
+        "/run/current-system/sw/bin/secret-tool",
+    ];
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     public async Task<FrontierCredentialDocument?> LoadAsync(
@@ -316,7 +323,7 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath
     {
         var startInfo = new ProcessStartInfo
         {
-            FileName = "secret-tool",
+            FileName = ResolveSecretToolPath(),
             RedirectStandardInput = standardInput is not null,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -351,6 +358,12 @@ internal sealed class LinuxSecretServiceFrontierCredentialStore(string leasePath
         {
             throw new InvalidOperationException(UnavailableMessage, exception);
         }
+    }
+
+    private static string ResolveSecretToolPath()
+    {
+        return SecretToolPaths.FirstOrDefault(File.Exists)
+            ?? SecretToolPaths[0];
     }
 
     private sealed record ProcessResult(int ExitCode, string Output, string Error);

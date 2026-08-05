@@ -291,7 +291,7 @@ namespace SrvSurvey.Core.Network
                     }
 
                     EddnQueuedMessage? next;
-                    CancellationToken activityToken;
+                    CancellationTokenSource combinedCancellation;
                     lock (sync)
                     {
                         if (!enabled
@@ -316,18 +316,25 @@ namespace SrvSurvey.Core.Network
                             return;
                         }
 
-                        activityToken = activityCancellation.Token;
+                        // Create the linked source while holding the same lock used
+                        // by Dispose. Once the worker leaves this block, shutdown can
+                        // dispose its source without racing a late token registration.
+                        combinedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                            shutdown.Token,
+                            activityCancellation.Token,
+                            cancellationToken);
                     }
 
                     EddnUploadResult? result = null;
                     Exception? failure = null;
                     try
                     {
-                        using var combined = CancellationTokenSource.CreateLinkedTokenSource(
-                            shutdown.Token,
-                            activityToken,
-                            cancellationToken);
-                        result = await transport.upload(next, combined.Token).ConfigureAwait(false);
+                        using (combinedCancellation)
+                        {
+                            result = await transport.upload(
+                                next,
+                                combinedCancellation.Token).ConfigureAwait(false);
+                        }
                     }
                     catch (OperationCanceledException) when (
                         cancellationToken.IsCancellationRequested)
@@ -428,7 +435,8 @@ namespace SrvSurvey.Core.Network
 
         public void Dispose()
         {
-            CancellationTokenSource? cancellation;
+            CancellationTokenSource cancellation;
+            CancellationTokenSource idleCancellation;
             lock (sync)
             {
                 if (disposed) return;
@@ -436,6 +444,7 @@ namespace SrvSurvey.Core.Network
                 enabled = false;
                 suspended = true;
                 cancellation = replaceActivityCancellationLocked();
+                idleCancellation = activityCancellation;
             }
             cancellation.Cancel();
             shutdown.Cancel();
@@ -446,6 +455,10 @@ namespace SrvSurvey.Core.Network
             {
                 releaseSharedDisableLease();
             }
+
+            cancellation.Dispose();
+            idleCancellation.Dispose();
+            shutdown.Dispose();
 
             if (processing.Wait(0))
             {
