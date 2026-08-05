@@ -48,6 +48,18 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
 
     public BiologyRewardThresholds Thresholds => thresholds;
 
+    /// <summary>Sample reward just above bucket one for the species-group preview bar.</summary>
+    public long BucketOneSampleReward =>
+        ToSampleReward(thresholds.BucketOneMillions);
+
+    /// <summary>Sample reward just above bucket two for the species-group preview bar.</summary>
+    public long BucketTwoSampleReward =>
+        ToSampleReward(thresholds.BucketTwoMillions);
+
+    /// <summary>Sample reward just above bucket three for the species-group preview bar.</summary>
+    public long BucketThreeSampleReward =>
+        ToSampleReward(thresholds.BucketThreeMillions);
+
     public string StatusMessage
     {
         get => statusMessage;
@@ -92,8 +104,14 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(BucketOneMillions));
         OnPropertyChanged(nameof(BucketTwoMillions));
         OnPropertyChanged(nameof(BucketThreeMillions));
+        OnPropertyChanged(nameof(BucketOneSampleReward));
+        OnPropertyChanged(nameof(BucketTwoSampleReward));
+        OnPropertyChanged(nameof(BucketThreeSampleReward));
         OnPropertyChanged(nameof(Thresholds));
     }
+
+    private static long ToSampleReward(double millions) =>
+        Math.Max(1, (long)(millions * 1_000_000d) + 1);
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {

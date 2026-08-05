@@ -43,7 +43,7 @@
             <CheckBox Grid.Column="1"
                       VerticalAlignment="Center"
                       IsChecked="{Binding Colonization.IsEnabled, Mode=TwoWay}"
-                      Content="Enable Raven Colonial" />
+                      Content="Enable colonisation features" />
           </Grid>
         </Grid>
       </Border>
@@ -105,7 +105,7 @@
                        Text="{Binding Colonization.FleetCarrierSyncStatus}" />
             <CheckBox IsChecked="{Binding Colonization.ShipCargoPublishingEnabled, Mode=TwoWay}"
                       IsEnabled="{Binding Colonization.HasStoredRavenApiKey}"
-                      Content="Publish current ship cargo automatically" />
+                      Content="Track and publish cargo on ship (Needs API Key)" />
             <TextBlock Classes="muted"
                        TextWrapping="Wrap"
                        Text="This publishes the ship name, type, capacity, and Cargo.json counts only while visible colonisation projects are active." />
@@ -130,24 +130,24 @@
           <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
             <StackPanel Spacing="10">
               <CheckBox IsChecked="{Binding Colonization.AutoShowCommodityOverlay, Mode=TwoWay}"
-                        Content="Auto-show shopping overlay" />
+                        Content="Auto show colonisation overlay" />
               <CheckBox IsChecked="{Binding Colonization.ShowCommodityOverlayOnRightPanel, Mode=TwoWay}"
-                        Content="Show while the right panel is open" />
+                        Content="Show when looking at right-hand panel" />
               <CheckBox IsChecked="{Binding Colonization.CollapseCoveredCommodityGroups, Mode=TwoWay}"
-                        Content="Collapse groups covered by linked FCs" />
+                        Content="Collapse cargo groups when enough on FCs" />
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="10">
               <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierCargo, Mode=TwoWay}"
-                        Content="Show linked Fleet Carrier cargo" />
+                        Content="Show Fleet Carrier aggregate counts" />
               <CheckBox IsChecked="{Binding Colonization.ShowFleetCarrierDelta, Mode=TwoWay}"
                         IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
-                        Content="Show FC surplus or deficit" />
+                        Content="Show delta vs sum" />
               <CheckBox IsChecked="{Binding Colonization.InlineFleetCarrierCargo, Mode=TwoWay}"
                         IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
-                        Content="Combine FC and ship counts" />
+                        Content="Share column with ship cargo counts" />
               <CheckBox IsChecked="{Binding Colonization.HighlightAlmostCoveredFleetCarrierLoads, Mode=TwoWay}"
                         IsEnabled="{Binding Colonization.ShowFleetCarrierCargo}"
-                        Content="Highlight one-trip FC restocks" />
+                        Content="Highlight if ship can load enough on FCs" />
             </StackPanel>
           </Grid>
         </Border>

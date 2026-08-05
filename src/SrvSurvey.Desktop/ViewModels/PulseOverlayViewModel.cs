@@ -45,8 +45,18 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
             preferences = preferences with { Enabled = value };
             SavePreferences();
             OnPropertyChanged();
+            OnPropertyChanged(nameof(HideJournalWriteTimer));
             OnPropertyChanged(nameof(ShouldShow));
         }
+    }
+
+    /// <summary>
+    /// Upstream FormSettings polarity for hideJournalWriteTimer: checked hides PlotPulse.
+    /// </summary>
+    public bool HideJournalWriteTimer
+    {
+        get => !Enabled;
+        set => Enabled = !value;
     }
 
     public bool ShouldShow
