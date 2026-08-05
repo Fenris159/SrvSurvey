@@ -148,9 +148,11 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         {
             var normalized = value < JournalHistoryAnalyzer.EliteReleaseDate
                 ? JournalHistoryAnalyzer.EliteReleaseDate
-                : value > DateTimeOffset.Now
-                    ? DateTimeOffset.Now
-                    : value;
+                : (value > DateTimeOffset.Now) switch
+                {
+                    true => DateTimeOffset.Now,
+                    false => value
+                };
             if (SetField(ref startDate, normalized))
             {
                 CodexRebuildConfirmed = false;
@@ -288,9 +290,11 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
             StatusMessage = result.Warnings.Count > 0
                 ? $"Found {Commanders.Count:N0} commander profile(s). "
                     + string.Join(" ", result.Warnings)
-                : Commanders.Count == 0
-                    ? "No commander profiles were found. Import the original profile first."
-                    : $"Choose one of {Commanders.Count:N0} commander profile(s) and a start date.";
+                : (Commanders.Count == 0) switch
+                {
+                    true => "No commander profiles were found. Import the original profile first.",
+                    false => $"Choose one of {Commanders.Count:N0} commander profile(s) and a start date."
+                };
         }
         catch (Exception exception) when (
             exception is IOException or UnauthorizedAccessException)

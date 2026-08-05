@@ -72,9 +72,11 @@ public sealed class HumanSiteLiveState(
         var heading = mergeMode == HumanSiteKnowledgeMergeMode.FillMissing
                 && CurrentSite.Heading is not null
             ? CurrentSite.Heading
-            : knowledge.Heading is { } savedHeading
-                ? SurfaceNavigation.NormalizeDegrees(savedHeading)
-                : CurrentSite.Heading;
+            : knowledge.Heading switch
+            {
+                double savedHeading => SurfaceNavigation.NormalizeDegrees(savedHeading),
+                null => CurrentSite.Heading
+            };
         var pads = knowledge.AvailablePads.Total > 0
                 && (mergeMode != HumanSiteKnowledgeMergeMode.FillMissing
                     || CurrentSite.AvailablePads.Total == 0)

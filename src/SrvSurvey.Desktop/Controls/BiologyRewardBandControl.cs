@@ -234,19 +234,27 @@ public sealed class BiologyRewardBandControl : Control
 
         var unknown = UnknownBrush ?? Brushes.Gray;
         var filled = IsHighlighted
-            ? IsDimmed
-                ? DimmedHighlightBrush ?? Brushes.DarkGoldenrod
-                : HighlightBrush ?? Brushes.Gold
-            : IsPrediction
-                ? PredictionFilledBrush ?? Brushes.Cyan
-                : IsDimmed
-                    ? DimmedFilledBrush ?? Brushes.DarkOrange
-                    : FilledBrush ?? Brushes.Orange;
+            ? (IsDimmed) switch
+            {
+                true => DimmedHighlightBrush ?? Brushes.DarkGoldenrod,
+                false => HighlightBrush ?? Brushes.Gold
+            }
+            : (IsPrediction) switch
+            {
+                true => PredictionFilledBrush ?? Brushes.Cyan,
+                false => (IsDimmed) switch
+                {
+                    true => DimmedFilledBrush ?? Brushes.DarkOrange,
+                    false => FilledBrush ?? Brushes.Orange
+                }
+            };
         var potential = IsHighlighted
             ? DimmedHighlightBrush ?? Brushes.DarkGoldenrod
-            : IsPrediction
-                ? PredictionPotentialBrush ?? Brushes.DarkCyan
-                : PotentialBrush ?? Brushes.DarkOrange;
+            : (IsPrediction) switch
+            {
+                true => PredictionPotentialBrush ?? Brushes.DarkCyan,
+                false => PotentialBrush ?? Brushes.DarkOrange
+            };
         var prediction = PredictionBrush ?? Brushes.LightGray;
         var hatch = HatchBrush ?? prediction;
         var state = BiologyRewardBandScale.Calculate(
@@ -342,9 +350,11 @@ public static class BiologyRewardBandScale
         };
         var segments = buckets.Select(bucket => minimumReward > bucket
                 ? BiologyRewardBandSegment.Filled
-                : maximumReward > bucket
-                    ? BiologyRewardBandSegment.Potential
-                    : BiologyRewardBandSegment.Empty)
+                : (maximumReward > bucket) switch
+                {
+                    true => BiologyRewardBandSegment.Potential,
+                    false => BiologyRewardBandSegment.Empty
+                })
             .ToArray();
         return new BiologyRewardBandState(false, segments);
     }

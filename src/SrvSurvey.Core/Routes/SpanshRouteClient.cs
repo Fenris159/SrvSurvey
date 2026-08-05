@@ -468,9 +468,11 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
     {
         return first is null
             ? second
-            : second is null
-                ? first
-                : Math.Max(first.Value, second.Value);
+            : (second is null) switch
+            {
+                true => first,
+                false => Math.Max(first.Value, second.Value)
+            };
     }
 
     private static long? MergeBiologyValues(
@@ -733,7 +735,11 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
     {
         var node = FindValue(root, propertyNames);
         return node is not null && node.TryGetValue<string>(out var result)
-            ? string.IsNullOrWhiteSpace(result) ? null : result.Trim()
+            ? (string.IsNullOrWhiteSpace(result)) switch
+            {
+                true => null,
+                false => result.Trim()
+            }
             : null;
     }
 

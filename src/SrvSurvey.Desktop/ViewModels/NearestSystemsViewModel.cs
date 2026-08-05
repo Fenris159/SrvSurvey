@@ -202,9 +202,11 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
 
     public string SearchButtonText => IsSearching
         ? "Searching\u2026"
-        : IsCanonnMode
-            ? "Find nearest"
-            : "Find variants";
+        : (IsCanonnMode) switch
+        {
+            true => "Find nearest",
+            false => "Find variants"
+        };
 
     public bool IsSearching
     {

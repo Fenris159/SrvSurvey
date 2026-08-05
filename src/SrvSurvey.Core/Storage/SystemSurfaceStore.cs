@@ -817,9 +817,11 @@ public sealed class SystemSurfaceStore
     {
         return radiusMeters > 0
             ? SurfaceNavigation.GetDistance(first, second, radiusMeters)
-            : first == second
-                ? 0
-                : double.PositiveInfinity;
+            : (first == second) switch
+            {
+                true => 0,
+                false => double.PositiveInfinity
+            };
     }
 
     private static string? GetString(JsonNode? node)

@@ -115,10 +115,12 @@ public sealed class GuardianPublishedSiteCatalog
         var identifier = GetRequiredString(root, "sid");
         var kind = identifier.StartsWith("GR", StringComparison.OrdinalIgnoreCase)
             ? GuardianSiteKind.Ruins
-            : identifier.StartsWith("GS", StringComparison.OrdinalIgnoreCase)
-                ? GuardianSiteKind.Structure
-                : throw new InvalidDataException(
-                    $"Guardian survey {sourceName} has unknown ID {identifier}.");
+            : (identifier.StartsWith("GS", StringComparison.OrdinalIgnoreCase)) switch
+            {
+                true => GuardianSiteKind.Structure,
+                false => throw new InvalidDataException(
+                                                                      $"Guardian survey {sourceName} has unknown ID {identifier}.")
+            };
         if (!int.TryParse(
             identifier.AsSpan(2),
             NumberStyles.Integer,

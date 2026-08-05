@@ -177,9 +177,11 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             : "STAR CLASS " + (routePlan?.Target.StarClass ?? summary?.StarClass);
 
     public string JumpProgress => routePlan is { Legs.Count: > 0 } plan
-        ? plan.JumpNumber > 0
-            ? $"JUMP {plan.JumpNumber:N0} OF {plan.Legs.Count:N0}"
-            : $"{plan.Legs.Count:N0} ROUTE JUMPS"
+        ? (plan.JumpNumber > 0) switch
+        {
+            true => $"JUMP {plan.JumpNumber:N0} OF {plan.Legs.Count:N0}",
+            false => $"{plan.Legs.Count:N0} ROUTE JUMPS"
+        }
         : "DIRECT TARGET";
 
     public string TotalDistance => routePlan is { Legs.Count: > 0 } plan
@@ -657,14 +659,18 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
 
         var scanStatus = value.TotalBodyCount == 0
             ? "Unscanned system"
-            : value.ScannedBodyCount >= value.TotalBodyCount
-                ? $"All {value.TotalBodyCount:N0} bodies reported"
-                : $"{value.ScannedBodyCount:N0} of {value.TotalBodyCount:N0} bodies reported";
+            : (value.ScannedBodyCount >= value.TotalBodyCount) switch
+            {
+                true => $"All {value.TotalBodyCount:N0} bodies reported",
+                false => $"{value.ScannedBodyCount:N0} of {value.TotalBodyCount:N0} bodies reported"
+            };
         var discovered = value.DiscoveredAt is { } discoveredAt
             ? "Discovered"
-                + (string.IsNullOrWhiteSpace(value.DiscoveredBy)
-                    ? string.Empty
-                    : " by " + value.DiscoveredBy)
+                + ((string.IsNullOrWhiteSpace(value.DiscoveredBy)) switch
+                {
+                    true => string.Empty,
+                    false => " by " + value.DiscoveredBy
+                })
                 + $" on {discoveredAt.ToLocalTime():g}"
             : scanStatus;
         return value.LastUpdatedAt is { } updated

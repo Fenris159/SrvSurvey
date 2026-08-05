@@ -262,9 +262,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 fleetCarrierCargoSyncEnabled = value;
                 OnPropertyChanged();
                 FleetCarrierSyncStatus = value
-                    ? HasStoredRavenApiKey
-                        ? "Fleet Carrier cargo will sync from matching Market.json updates."
-                        : "Save a Raven API key before Fleet Carrier cargo can sync."
+                    ? (HasStoredRavenApiKey) switch
+                    {
+                        true => "Fleet Carrier cargo will sync from matching Market.json updates.",
+                        false => "Save a Raven API key before Fleet Carrier cargo can sync."
+                    }
                     : "Automatic Fleet Carrier cargo sync is off.";
                 syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
             }
@@ -544,13 +546,17 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         lastSyncedMarket = null;
         RavenCredentialStatus = profileFrontierId is null
             ? "Load a commander profile to configure a Raven API key."
-            : storedRavenApiKey is null
-                ? "No Raven API key is saved for this commander."
-                : "A Raven API key is saved for this commander.";
+            : (storedRavenApiKey is null) switch
+            {
+                true => "No Raven API key is saved for this commander.",
+                false => "A Raven API key is saved for this commander."
+            };
         FleetCarrierSyncStatus = FleetCarrierCargoSyncEnabled
-            ? storedRavenApiKey is null
-                ? "Save a Raven API key before Fleet Carrier cargo can sync."
-                : "Fleet Carrier cargo will sync from matching Market.json updates."
+            ? (storedRavenApiKey is null) switch
+            {
+                true => "Save a Raven API key before Fleet Carrier cargo can sync.",
+                false => "Fleet Carrier cargo will sync from matching Market.json updates."
+            }
             : "Automatic Fleet Carrier cargo sync is off.";
         ShipCargoPublishingStatus = GetShipCargoReadyStatus();
         OnPropertyChanged(nameof(HasCommanderProfile));
@@ -2006,9 +2012,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             ?? buildCatalog.FindByBuildType(project.BuildType);
         var type = project.IsFleetCarrierLoading
             ? "Fleet Carrier loading"
-            : build is null
-                ? project.BuildType
-                : $"{build.DisplayName} ({project.BuildType})";
+            : (build is null) switch
+            {
+                true => project.BuildType,
+                false => $"{build.DisplayName} ({project.BuildType})"
+            };
         return new ColonizationProjectRowViewModel(
             project,
             type,
@@ -2163,10 +2171,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         var depot = snapshot.CurrentDepot;
         ConstructionStatus = depot.IsComplete
             ? "Construction complete."
-            : depot.IsFailed
-                ? "Construction failed."
-                : $"{depot.ReportedProgress:P1} complete | "
-                    + $"{depot.TotalRemaining:N0} cargo remaining";
+            : (depot.IsFailed) switch
+            {
+                true => "Construction failed.",
+                false => $"{depot.ReportedProgress:P1} complete | "
+                                                                  + $"{depot.TotalRemaining:N0} cargo remaining"
+            };
         ConstructionResources = depot.Resources
             .OrderByDescending(resource => resource.RemainingAmount)
             .ThenBy(resource => resource.LocalizedName)
@@ -2612,11 +2622,13 @@ public sealed class ColonizationProjectRowViewModel
 
     public string ProgressText => Project.IsFleetCarrierLoading
         ? $"? of {Project.MaximumRequired:N0}"
-        : Project.Progress is double progress
-            ? (progress * 100).ToString("0", CultureInfo.InvariantCulture)
+        : Project.Progress switch
+        {
+            double progress => (progress * 100).ToString("0", CultureInfo.InvariantCulture)
                 + "% of "
-                + Project.MaximumRequired.ToString("N0", CultureInfo.CurrentCulture)
-            : "Progress unavailable";
+                + Project.MaximumRequired.ToString("N0", CultureInfo.CurrentCulture),
+            null => "Progress unavailable"
+        };
 
     public bool IsShown
     {

@@ -241,9 +241,11 @@ public static class InaraCommunityGoalEnricher
     {
         return reached is null
             ? string.Empty
-            : maximum is > 0
-                ? $"Tier {reached:N0} / {maximum:N0}"
-                : $"Tier {reached:N0}";
+            : (maximum is > 0) switch
+            {
+                true => $"Tier {reached:N0} / {maximum:N0}",
+                false => $"Tier {reached:N0}"
+            };
     }
 
     private static string FirstNonEmpty(string first, string second) =>

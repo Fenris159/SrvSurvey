@@ -427,13 +427,15 @@ public sealed record BiologySurveyViewModel(
                     rewardEstimate.KnownReward,
                     rewardEstimate.HasUnknownReward),
             body.IsFirstFootfall && rewardEstimate.MaximumReward > 0
-                ? rewardEstimate.HasPredictedReward
-                    ? "First-footfall estimate: " + FormatRewardRange(
+                ? (rewardEstimate.HasPredictedReward) switch
+                {
+                    true => "First-footfall estimate: " + FormatRewardRange(
                         rewardEstimate.MinimumReward * 5,
                         rewardEstimate.MaximumReward * 5,
-                        rewardEstimate.HasUnknownReward)
-                    : "First-footfall value: "
-                        + FormatCredits(rewardEstimate.KnownReward * 5)
+                        rewardEstimate.HasUnknownReward),
+                    false => "First-footfall value: "
+                                                                                + FormatCredits(rewardEstimate.KnownReward * 5)
+                }
                 : string.Empty,
             exobiology.CountRadicoidaUnica,
             body.Organisms.Count == 0 && !body.IsDssComplete,
@@ -952,14 +954,20 @@ public sealed record BiologyBodyRowViewModel(
         && AnalyzedSignalCount >= SignalCount;
 
     public string RewardText => HasPredictedReward
-        ? MinimumReward == MaximumReward
-            ? $"~{MinimumReward / 1_000_000d:N2} M CR"
-            : $"{MinimumReward / 1_000_000d:N2}–{MaximumReward / 1_000_000d:N2} M CR"
-        : KnownReward <= 0
-        ? ""
-        : HasUnknownReward
-            ? $"{KnownReward / 1_000_000d:N2} M+ CR"
-            : $"{KnownReward / 1_000_000d:N2} M CR";
+        ? (MinimumReward == MaximumReward) switch
+        {
+            true => $"~{MinimumReward / 1_000_000d:N2} M CR",
+            false => $"{MinimumReward / 1_000_000d:N2}–{MaximumReward / 1_000_000d:N2} M CR"
+        }
+        : (KnownReward <= 0) switch
+        {
+            true => "",
+            false => (HasUnknownReward) switch
+            {
+                true => $"{KnownReward / 1_000_000d:N2} M+ CR",
+                false => $"{KnownReward / 1_000_000d:N2} M CR"
+            }
+        };
 
     public bool HasReward => KnownReward > 0 || HasPredictedReward;
 
@@ -1053,12 +1061,16 @@ public sealed record BiologyOrganismRowViewModel(
         : string.Empty;
 
     public string RewardText => HasReward
-        ? Reward >= 1_000_000
-            ? $"{Reward / 1_000_000d:N2} M CR"
-            : $"{Reward:N0} CR"
-        : IsPrediction
-            ? "Prediction pending"
-            : "Unidentified";
+        ? (Reward >= 1_000_000) switch
+        {
+            true => $"{Reward / 1_000_000d:N2} M CR",
+            false => $"{Reward:N0} CR"
+        }
+        : (IsPrediction) switch
+        {
+            true => "Prediction pending",
+            false => "Unidentified"
+        };
 
     public static BiologyOrganismRowViewModel Unknown(
         int index,

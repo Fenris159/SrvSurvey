@@ -169,24 +169,30 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public string DetectedCommanderDescription => detectedFrontierId is null
         ? "Waiting for active journal commander"
-        : string.IsNullOrWhiteSpace(detectedCommanderName)
-            ? detectedFrontierId
-            : $"{detectedCommanderName} ({detectedFrontierId})";
+        : (string.IsNullOrWhiteSpace(detectedCommanderName)) switch
+        {
+            true => detectedFrontierId,
+            false => $"{detectedCommanderName} ({detectedFrontierId})"
+        };
 
     public string ActiveCommanderDescription => activeFrontierId is null
         ? "No Frontier commander selected"
-        : string.IsNullOrWhiteSpace(activeCommanderName)
-            ? activeFrontierId
-            : $"{activeCommanderName} ({activeFrontierId})";
+        : (string.IsNullOrWhiteSpace(activeCommanderName)) switch
+        {
+            true => activeFrontierId,
+            false => $"{activeCommanderName} ({activeFrontierId})"
+        };
 
     public string CommanderSelectionDescription => IsAutomaticCommanderSelection
         ? $"Automatic · Journal: {DetectedCommanderDescription}"
-        : string.Equals(
+        : (string.Equals(
             activeFrontierId,
             detectedFrontierId,
-            StringComparison.OrdinalIgnoreCase)
-                ? "Manual selection · Matches the active journal commander"
-                : $"Manual selection · Journal remains {DetectedCommanderDescription}";
+            StringComparison.OrdinalIgnoreCase)) switch
+        {
+            true => "Manual selection · Matches the active journal commander",
+            false => $"Manual selection · Journal remains {DetectedCommanderDescription}"
+        };
 
     public bool IsBusy
     {
@@ -321,8 +327,12 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public string CommanderState => Snapshot is null
         ? "Unavailable"
-        : $"{(Snapshot.IsDocked ? "Docked" : "In flight")} · "
-            + (Snapshot.IsAlive ? "Active" : "Destroyed");
+        : $"{((Snapshot.IsDocked) switch { true => "Docked", false => "In flight" })} · "
+            + ((Snapshot.IsAlive) switch
+            {
+                true => "Active",
+                false => "Destroyed"
+            });
 
     public string LocationAllegiance => FirstNonEmpty(
         Snapshot?.LastSystemDetails?.Allegiance,
@@ -644,13 +654,19 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public string CarrierTitle => Carrier is null
         ? "No Fleet Carrier is associated with this account."
-        : string.Equals(Carrier.Name, Carrier.Callsign, StringComparison.OrdinalIgnoreCase)
-            ? Carrier.Callsign
-            : $"{Carrier.Name} · {Carrier.Callsign}";
+        : (string.Equals(Carrier.Name, Carrier.Callsign, StringComparison.OrdinalIgnoreCase)) switch
+        {
+            true => Carrier.Callsign,
+            false => $"{Carrier.Name} · {Carrier.Callsign}"
+        };
 
     public string CarrierLocation => Carrier is null
         ? "—"
-        : string.IsNullOrWhiteSpace(Carrier.System) ? "Unknown system" : Carrier.System;
+        : (string.IsNullOrWhiteSpace(Carrier.System)) switch
+        {
+            true => "Unknown system",
+            false => Carrier.System
+        };
 
     public string CarrierBalance => FormatCredits(Carrier?.BankBalance ?? 0);
 
@@ -959,9 +975,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             "targetTotal");
         var target = item.TargetTotal is > 0
             ? item.TargetTotal
-            : cachedTarget is > 0
-                ? cachedTarget
-                : null;
+            : (cachedTarget is > 0) switch
+            {
+                true => cachedTarget,
+                false => null
+            };
         var hasPlayerContributionData = item.HasPlayerContributionData
             || HasCommunityGoalData(
                 dataPoints,
@@ -1028,20 +1046,30 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             : 0;
         var status = item.IsComplete
             ? "COMPLETED"
-            : item.ExpiresAt is { } expiry && expiry <= currentTime
-                ? "ENDED"
-                : "ACTIVE";
+            : (item.ExpiresAt is { } expiry && expiry <= currentTime) switch
+            {
+                true => "ENDED",
+                false => "ACTIVE"
+            };
         var standing = item.PlayerPercentile is { } percentile
-            ? item.Bonus > 0
-                ? $"Top {percentile:N0}% · {FormatCredits(item.Bonus)} reward"
-                : $"Top {percentile:N0}%"
-            : item.PlayerInTopRank
-                ? item.TopRankSize is { } topRankSize
-                    ? $"Top {topRankSize:N0} commander"
-                    : "Top contributor"
-                : item.Bonus > 0
-                    ? $"Reward: {FormatCredits(item.Bonus)}"
-                    : string.Empty;
+            ? (item.Bonus > 0) switch
+            {
+                true => $"Top {percentile:N0}% · {FormatCredits(item.Bonus)} reward",
+                false => $"Top {percentile:N0}%"
+            }
+            : (item.PlayerInTopRank) switch
+            {
+                true => item.TopRankSize switch
+                {
+                    int topRankSize => $"Top {topRankSize:N0} commander",
+                    null => "Top contributor"
+                },
+                false => (item.Bonus > 0) switch
+                {
+                    true => $"Reward: {FormatCredits(item.Bonus)}",
+                    false => string.Empty
+                }
+            };
         return new FrontierCommunityGoalCardViewModel(
             item.Title,
             briefing,
@@ -1069,9 +1097,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 ? $"{Math.Max(0, maximum - currentTotal):N0} remaining"
                 : string.Empty,
             hasPlayerContributionData
-                ? playerContribution > 0
-                    ? $"{playerContribution:N0} contributed"
-                    : "Signed up · no contribution recorded"
+                ? (playerContribution > 0) switch
+                {
+                    true => $"{playerContribution:N0} contributed",
+                    false => "Signed up · no contribution recorded"
+                }
                 : "Personal progress not supplied by Frontier or local journals",
             standing,
             hasContributorData
@@ -1573,9 +1603,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             FormatCredits(item.Value),
             FormatPercent(item.Health),
             item.IsPowered
-                ? item.Priority is { } priority
-                    ? $"Powered · priority {priority}"
-                    : "Powered"
+                ? item.Priority switch
+                {
+                    int priority => $"Powered · priority {priority}",
+                    null => "Powered"
+                }
                 : "Powered off",
             blueprint,
             item.BlueprintLevel is { } level ? $"Grade {level}" : string.Empty,
@@ -2651,13 +2683,15 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             CultureInfo.InvariantCulture,
             out var parsed)
                 ? parsed
-                : long.TryParse(
+                : (long.TryParse(
                     value,
                     NumberStyles.Integer | NumberStyles.AllowThousands,
                     CultureInfo.CurrentCulture,
-                    out parsed)
-                        ? parsed
-                        : null;
+                    out parsed)) switch
+                {
+                    true => parsed,
+                    false => null
+                };
     }
 
     private static DateTimeOffset? CommunityGoalDataDateTimeOffset(
@@ -2895,9 +2929,11 @@ public sealed record FrontierCommanderSelectionOption(
             : commanderName.Trim();
         var detail = string.IsNullOrWhiteSpace(commander)
             ? "waiting for journal"
-            : string.IsNullOrWhiteSpace(frontierId)
-                ? commander
-                : $"{commander} ({frontierId})";
+            : (string.IsNullOrWhiteSpace(frontierId)) switch
+            {
+                true => commander,
+                false => $"{commander} ({frontierId})"
+            };
         return new FrontierCommanderSelectionOption(
             frontierId ?? string.Empty,
             commander ?? string.Empty,

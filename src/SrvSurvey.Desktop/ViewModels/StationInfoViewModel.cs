@@ -151,9 +151,11 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
 
     public string FactionText => SelectedStation is { } station
         && !string.IsNullOrWhiteSpace(station.ControllingFaction)
-            ? string.IsNullOrWhiteSpace(station.Government)
-                ? station.ControllingFaction
-                : $"{station.ControllingFaction} · {station.Government}"
+            ? (string.IsNullOrWhiteSpace(station.Government)) switch
+            {
+                true => station.ControllingFaction,
+                false => $"{station.ControllingFaction} · {station.Government}"
+            }
             : "Controlling faction unavailable";
 
     public IReadOnlyList<StationInfoLineViewModel> EconomyLines => economyLines;

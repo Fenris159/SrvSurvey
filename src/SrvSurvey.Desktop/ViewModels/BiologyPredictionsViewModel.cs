@@ -366,10 +366,16 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
             overview.Bodies);
         StatusMessage = survey.DisableBioPredictions
             ? "Exact predictions are disabled in system-survey settings."
-            : bodyRows.Any(body => body.HasPredictionStatus)
-                ? "Some bodies still need complete planet or parent-star scans."
-                : $"Exact criteria evaluated for {bodyRows.Length:N0} biological "
-                    + (bodyRows.Length == 1 ? "body." : "bodies.");
+            : (bodyRows.Any(body => body.HasPredictionStatus)) switch
+            {
+                true => "Some bodies still need complete planet or parent-star scans.",
+                false => $"Exact criteria evaluated for {bodyRows.Length:N0} biological "
+                                                                                                          + ((bodyRows.Length == 1) switch
+                                                                                                          {
+                                                                                                              true => "body.",
+                                                                                                              false => "bodies."
+                                                                                                          })
+            };
         Bodies = bodyRows;
         if (CurrentBodyOnly)
         {

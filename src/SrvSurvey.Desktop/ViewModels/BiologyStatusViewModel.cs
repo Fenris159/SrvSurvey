@@ -58,7 +58,11 @@ public sealed record BiologyStatusViewModel(
     public double TrackedCompletionPercent => SignalCount <= 0
         ? 0
         : Math.Clamp(
-            (AnalyzedSignalCount + (HasActiveSample ? 1 : 0))
+            (AnalyzedSignalCount + ((HasActiveSample) switch
+            {
+                true => 1,
+                false => 0
+            }))
                 * 100d / SignalCount,
             0,
             100);
@@ -124,17 +128,27 @@ public sealed record BiologyStatusViewModel(
                 : null;
         var footer = activeSample is not null || isStaleActiveSample
             ? string.Empty
-            : allAnalyzed && body.IsFirstFootfall
-                ? "All signals analyzed with the first-footfall bonus applied."
-                : allAnalyzed
-                    ? "All biological signals analyzed."
-                    : currentNotification is not null
-                        ? currentNotification.SummaryText
-                    : body.Organisms.Count == 0
-                        ? string.Empty
-                        : body.IsFirstFootfall
-                            ? "First-footfall rewards apply to analyzed organisms."
-                            : "Use the Composition Scanner to identify organisms.";
+            : (allAnalyzed && body.IsFirstFootfall) switch
+            {
+                true => "All signals analyzed with the first-footfall bonus applied.",
+                false => (allAnalyzed) switch
+                {
+                    true => "All biological signals analyzed.",
+                    false => (currentNotification is not null) switch
+                    {
+                        true => currentNotification.SummaryText,
+                        false => (body.Organisms.Count == 0) switch
+                        {
+                            true => string.Empty,
+                            false => (body.IsFirstFootfall) switch
+                            {
+                                true => "First-footfall rewards apply to analyzed organisms.",
+                                false => "Use the Composition Scanner to identify organisms."
+                            }
+                        }
+                    }
+                }
+            };
 
         return new BiologyStatusViewModel(
             body.BodyId,
@@ -204,11 +218,13 @@ public sealed record BiologyStatusViewModel(
                     ?? FormatJournalName(organism.Genus);
                 var distance = organism.IsAnalyzed
                     ? string.Empty
-                    : ExobiologyReferenceCatalog.GetSampleDistanceMeters(
+                    : (ExobiologyReferenceCatalog.GetSampleDistanceMeters(
                         organism.GenusLocalized ?? organism.Genus) is var meters
-                        && meters > 0
-                            ? $"{meters:N0} m"
-                            : string.Empty;
+                        && meters > 0) switch
+                    {
+                        true => $"{meters:N0} m",
+                        false => string.Empty
+                    };
                 return new BiologyStatusSignalViewModel(
                     name,
                     distance,
@@ -414,7 +430,11 @@ public sealed record BiologyActiveSampleViewModel(
     public bool HasReward => Reward > 0;
 
     public string RewardText => HasReward
-        ? FormatCredits(Reward) + (IsFirstFootfall ? " · FF bonus" : string.Empty)
+        ? FormatCredits(Reward) + ((IsFirstFootfall) switch
+        {
+            true => " · FF bonus",
+            false => string.Empty
+        })
         : string.Empty;
 
     public string RequiredDistanceText =>
@@ -437,10 +457,12 @@ public sealed record BiologyActiveSampleViewModel(
 
     public string DistanceText => NearestDistanceMeters is null
         ? $"Move {RequiredDistanceMeters:N0} m from a prior sample."
-        : IsSeparationReady
-            ? $"{NearestDistanceMeters:N0} m from the nearest sample · separation reached"
-            : $"{NearestDistanceMeters:N0} m from the nearest sample · "
-                + $"{RemainingDistanceMeters:N0} m remaining";
+        : (IsSeparationReady) switch
+        {
+            true => $"{NearestDistanceMeters:N0} m from the nearest sample · separation reached",
+            false => $"{NearestDistanceMeters:N0} m from the nearest sample · "
+                                                                                                                + $"{RemainingDistanceMeters:N0} m remaining"
+        };
 
     private static string FormatCredits(long value)
     {

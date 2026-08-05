@@ -225,9 +225,11 @@ public sealed class VisitedStarsCacheViewModel : INotifyPropertyChanged
                 ?? (Commanders.Count > 0 ? Commanders[0] : null);
             StatusMessage = result.Warnings.Count > 0
                 ? string.Join(" ", result.Warnings)
-                : Commanders.Count == 0
-                    ? "No commander profile is available. Import the original profile or start Elite once."
-                    : "Choose a commander, reference system, and VisitedStarsCache.dat file.";
+                : (Commanders.Count == 0) switch
+                {
+                    true => "No commander profile is available. Import the original profile or start Elite once.",
+                    false => "Choose a commander, reference system, and VisitedStarsCache.dat file."
+                };
         }
         catch (Exception exception) when (
             exception is IOException or UnauthorizedAccessException)

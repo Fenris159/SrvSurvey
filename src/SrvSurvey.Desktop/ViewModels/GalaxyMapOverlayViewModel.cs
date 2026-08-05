@@ -468,9 +468,11 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         };
         var discovered = !string.IsNullOrWhiteSpace(summary.DiscoveredBy)
             ? "Discovered by " + summary.DiscoveredBy
-                + (summary.DiscoveredAt is { } discoveredAt
-                    ? " · " + discoveredAt.ToLocalTime().ToString("g")
-                    : string.Empty)
+                + (summary.DiscoveredAt switch
+                {
+                    DateTimeOffset discoveredAt => " · " + discoveredAt.ToLocalTime().ToString("g"),
+                    null => string.Empty
+                })
             : string.Empty;
         var updated = summary.LastUpdatedAt is { } updatedAt
             && (summary.DiscoveredAt is null

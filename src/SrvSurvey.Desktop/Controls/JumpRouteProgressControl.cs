@@ -123,9 +123,11 @@ public sealed class JumpRouteProgressControl : Control
                 : x + width * (leg.DistanceLy / totalDistance);
             var brush = index == TargetLegIndex
                 ? target
-                : index < TargetLegIndex
-                    ? behind
-                    : ahead;
+                : (index < TargetLegIndex) switch
+                {
+                    true => behind,
+                    false => ahead
+                };
             if (leg.RequiresBoost)
             {
                 context.DrawLine(

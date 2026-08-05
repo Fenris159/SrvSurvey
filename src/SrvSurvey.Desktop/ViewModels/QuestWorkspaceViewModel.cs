@@ -256,11 +256,15 @@ public sealed class QuestWorkspaceViewModel : INotifyPropertyChanged, IDisposabl
         }
         StatusMessage = result.Warnings.Count > 0
             ? string.Join(Environment.NewLine, result.Warnings)
-            : !enabled
-                ? "Quests are disabled."
-                : ActiveQuests.Count == 0
-                    ? "No active quests."
-                    : ActiveQuestSummary;
+            : (!enabled) switch
+            {
+                true => "Quests are disabled.",
+                false => (ActiveQuests.Count == 0) switch
+                {
+                    true => "No active quests.",
+                    false => ActiveQuestSummary
+                }
+            };
     }
 
     public async Task RefreshAsync()

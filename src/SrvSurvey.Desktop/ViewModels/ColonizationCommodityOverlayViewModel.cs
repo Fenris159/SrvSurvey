@@ -68,12 +68,16 @@ public sealed class ColonizationCommodityOverlayViewModel
 
     public string WarningText => IsConstructionFailed
         ? "Construction failed"
-        : Plan.IsLocalProjectUntracked
-            ? "This construction site is not in the active project list."
-            : Plan.IsDockedAtUntrackedFleetCarrier
-                ? "The current Fleet Carrier is not linked to this "
-                    + "commander in Raven Colonial."
-                : string.Empty;
+        : (Plan.IsLocalProjectUntracked) switch
+        {
+            true => "This construction site is not in the active project list.",
+            false => (Plan.IsDockedAtUntrackedFleetCarrier) switch
+            {
+                true => "The current Fleet Carrier is not linked to this "
+                                                                                                   + "commander in Raven Colonial.",
+                false => string.Empty
+            }
+        };
 
     public string RemainingSummary
     {
@@ -171,9 +175,11 @@ public sealed class ColonizationCommodityOverlayViewModel
     public string FleetCarrierColumnHeader =>
         preferences.InlineFleetCarrierCargo
             ? "HAVE"
-            : preferences.ShowFleetCarrierDelta
-                ? "FC Δ"
-                : "FC";
+            : (preferences.ShowFleetCarrierDelta) switch
+            {
+                true => "FC Δ",
+                false => "FC"
+            };
 
     public string ShipColumnHeader => preferences.InlineFleetCarrierCargo
         ? string.Empty
@@ -413,9 +419,11 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
     public bool HasMarketBadge => IsAvailableAtCurrentMarket;
 
     public string MarketBadgeText => IsFleetCarrierLoadHighlighted
-        ? InShip >= FleetCarrierDeficit
-            ? "FC READY"
-            : "FC LOAD"
+        ? (InShip >= FleetCarrierDeficit) switch
+        {
+            true => "FC READY",
+            false => "FC LOAD"
+        }
         : "MARKET";
 
     public double RowOpacity => IsUnavailableAtCurrentMarket ? 0.48 : 1;
@@ -474,9 +482,11 @@ public sealed record ColonizationCommodityOverlayRowViewModel(
 
     public string AssignmentText => IsAssignedToCommander
         ? "PIN"
-        : IsAssignedToOther
-            ? "OTHER"
-            : string.Empty;
+        : (IsAssignedToOther) switch
+        {
+            true => "OTHER",
+            false => string.Empty
+        };
 
     public bool HasAssignment => IsAssignedToCommander || IsAssignedToOther;
 }

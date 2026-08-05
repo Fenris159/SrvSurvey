@@ -262,11 +262,15 @@ public sealed class ColonizationSystemEditorViewModel
 
     public string ScanSummary => journalTracker is null
         ? "Journal scan context is not loaded."
-        : IsBodyScanComplete
-            ? $"Body scan complete ({ScannedBodyCount:N0} scanned)."
-            : ExpectedBodyCount is { } expected
-                ? $"Body scans: {ScannedBodyCount:N0} of {expected:N0}."
-                : $"Body scans recorded: {ScannedBodyCount:N0}.";
+        : (IsBodyScanComplete) switch
+        {
+            true => $"Body scan complete ({ScannedBodyCount:N0} scanned).",
+            false => ExpectedBodyCount switch
+            {
+                int expected => $"Body scans: {ScannedBodyCount:N0} of {expected:N0}.",
+                null => $"Body scans recorded: {ScannedBodyCount:N0}."
+            }
+        };
 
     public string StatusMessage
     {
@@ -320,9 +324,11 @@ public sealed class ColonizationSystemEditorViewModel
         }
 
         StatusMessage = CanLoad
-            ? IsLoaded
-                ? StatusMessage
-                : "The live system is ready to load from Raven Colonial."
+            ? (IsLoaded) switch
+            {
+                true => StatusMessage,
+                false => "The live system is ready to load from Raven Colonial."
+            }
             : GetUnavailableReason(context);
         OnPropertyChanged(nameof(CanLoad));
         OnPropertyChanged(nameof(SystemTitle));
@@ -401,9 +407,11 @@ public sealed class ColonizationSystemEditorViewModel
             var loaded = await client.GetSystemAsync(GetSystemIdentifier());
             ApplyLoadedSystem(loaded);
             StatusMessage = CanEdit
-                ? NeedsBodyImport
-                    ? "Sites loaded read-only from Raven. Confirm a body import before using body-aware editing."
-                    : $"Loaded {Sites.Count:N0} sites. Changes remain local until reviewed and confirmed."
+                ? (NeedsBodyImport) switch
+                {
+                    true => "Sites loaded read-only from Raven. Confirm a body import before using body-aware editing.",
+                    false => $"Loaded {Sites.Count:N0} sites. Changes remain local until reviewed and confirmed."
+                }
                 : "This secured system can only be edited by its architect.";
         }
         catch (Exception exception) when (IsExpectedFailure(exception))

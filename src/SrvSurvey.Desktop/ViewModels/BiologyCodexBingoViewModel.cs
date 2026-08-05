@@ -300,22 +300,30 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     public string SelectedState => !HasSelectedEntry
         ? "Aggregate completion"
-        : SelectedIsJournalVerified
-            ? "Journal verified"
-            : SelectedIsManual
-                ? "Manual / Canonn import"
-                : "Undiscovered";
+        : (SelectedIsJournalVerified) switch
+        {
+            true => "Journal verified",
+            false => (SelectedIsManual) switch
+            {
+                true => "Manual / Canonn import",
+                false => "Undiscovered"
+            }
+        };
 
     public string ManualActionText => SelectedIsManual
         ? "Remove manual scan"
-        : SelectedIsJournalVerified
-            ? "Journal verified"
-            : "I have scanned this";
+        : (SelectedIsJournalVerified) switch
+        {
+            true => "Journal verified",
+            false => "I have scanned this"
+        };
 
     public string ManualConfirmationText => SelectedNode?.Definition.Entry is { } entry
-        ? (SelectedIsManual
-            ? "Remove the locationless manual/imported discovery for "
-            : "Confirm that you previously scanned ")
+        ? ((SelectedIsManual) switch
+        {
+            true => "Remove the locationless manual/imported discovery for ",
+            false => "Confirm that you previously scanned "
+        })
             + $"{SelectedTitle} (#{entry.EntryId})?"
         : string.Empty;
 
@@ -676,11 +684,15 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
                 cancellationToken: CancellationToken.None);
             StatusMessage = !result.IsSuccess
                 ? "Manual discovery update failed: " + result.Error
-                : result.Changed
-                    ? shouldDiscover
-                        ? $"Marked {SelectedTitle} as previously scanned."
-                        : $"Removed the manual discovery for {SelectedTitle}."
-                    : "The journal-backed discovery was left unchanged.";
+                : (result.Changed) switch
+                {
+                    true => (shouldDiscover) switch
+                    {
+                        true => $"Marked {SelectedTitle} as previously scanned.",
+                        false => $"Removed the manual discovery for {SelectedTitle}."
+                    },
+                    false => "The journal-backed discovery was left unchanged."
+                };
             IsManualConfirmationPending = false;
             await LoadLedgerCoreAsync(preserveStatus: true);
         }
@@ -1284,7 +1296,11 @@ public sealed class CodexBingoTreeNodeViewModel : INotifyPropertyChanged
     public bool IsIncomplete => TotalCount > 0 && !IsComplete;
 
     public string CompletionText => IsEntry
-        ? IsComplete ? "Discovered" : "Missing"
+        ? (IsComplete) switch
+        {
+            true => "Discovered",
+            false => "Missing"
+        }
         : $"{DiscoveredCount:N0}/{TotalCount:N0} · {Completion:P1}";
 
     public bool IsExpanded
@@ -1364,7 +1380,11 @@ public sealed record CodexBingoRegionOptionViewModel(
 {
     public string DisplayName => RegionId == 0
         ? Name
-        : $"#{RegionId} {Name}" + (IsCurrent ? " · current" : string.Empty);
+        : $"#{RegionId} {Name}" + ((IsCurrent) switch
+        {
+            true => " · current",
+            false => string.Empty
+        });
 }
 
 public enum CodexBingoNearestMode

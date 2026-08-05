@@ -311,7 +311,7 @@ public sealed class LegacyUiSettingsMigrator
 
         var black = TryGetBoolean(legacy, "themeMainBlack", out var blackValue)
             && blackValue;
-        target["Theme"] = black ? "orange-dark" : dark ? "blue-dark" : "blue-light";
+        target["Theme"] = black ? "orange-dark" : (dark) switch { true => "blue-dark", false => "blue-light" };
         return 1;
     }
 

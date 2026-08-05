@@ -61,9 +61,11 @@ public static class JumpInfoRoutePlanner
             : CreateFollowedRoutePoints(followedRoute);
         var source = navPoints.Count >= 3
             ? JumpInfoRouteSource.NavRoute
-            : routePoints.Count > 0
-                ? JumpInfoRouteSource.FollowedRoute
-                : JumpInfoRouteSource.Direct;
+            : (routePoints.Count > 0) switch
+            {
+                true => JumpInfoRouteSource.FollowedRoute,
+                false => JumpInfoRouteSource.Direct
+            };
 
         var targetPoint = FindTarget(routePoints, target);
         if (targetPoint is not null && string.IsNullOrWhiteSpace(target.StarClass))

@@ -257,9 +257,11 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
         StatusMessage = state.IsActive
             ? "Loaded the active legacy spherical limit."
-            : state.Center is not null
-                ? "Loaded the saved spherical limit; it is currently disabled."
-                : "No spherical limit is configured for this commander.";
+            : (state.Center is not null) switch
+            {
+                true => "Loaded the saved spherical limit; it is currently disabled.",
+                false => "No spherical limit is configured for this commander."
+            };
         enableCommand.RaiseCanExecuteChanged();
         disableCommand.RaiseCanExecuteChanged();
         UpdateDisplay();
@@ -409,9 +411,11 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
             : $"{evaluation.Distance:N2} ly";
         DestinationResult = evaluation is null
             ? "The spherical limit is disabled"
-            : evaluation.IsInside
-                ? $"Within the {state.Radius:N2} ly limit"
-                : $"Exceeds the {state.Radius:N2} ly limit";
+            : (evaluation.IsInside) switch
+            {
+                true => $"Within the {state.Radius:N2} ly limit",
+                false => $"Exceeds the {state.Radius:N2} ly limit"
+            };
         IsDestinationInside = evaluation?.IsInside == true;
         IsDestinationUnknown = false;
     }
@@ -552,21 +556,27 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
             ? Unavailable
             : $"{distance:N2} ly";
         LimitSummary = state.CenterSystemName is null
-            ? selectedCenterSystem is null
-                ? "No spherical limit configured"
-                : $"Candidate center: {selectedCenterSystem.Name}"
+            ? (selectedCenterSystem is null) switch
+            {
+                true => "No spherical limit configured",
+                false => $"Candidate center: {selectedCenterSystem.Name}"
+            }
             : $"{state.Radius:N0} ly around {state.CenterSystemName}";
 
         var evaluation = currentPosition is { } position
             ? state.Evaluate(CurrentSystemName, position)
             : null;
         CurrentSystemResult = evaluation is null
-            ? state.IsActive
-                ? "Waiting for current system coordinates"
-                : "Enable the limit to evaluate the current system"
-            : evaluation.IsInside
-                ? "Current system is inside the limit"
-                : "Current system is outside the limit";
+            ? (state.IsActive) switch
+            {
+                true => "Waiting for current system coordinates",
+                false => "Enable the limit to evaluate the current system"
+            }
+            : (evaluation.IsInside) switch
+            {
+                true => "Current system is inside the limit",
+                false => "Current system is outside the limit"
+            };
     }
 
     private static bool TryParseRadius(string value, out double result)

@@ -817,7 +817,11 @@ namespace SrvSurvey.Core.Inara
         {
             var status = entry.Value<string>("Status");
             var eventName = status is "Added" or "Online" ? "addCommanderFriend"
-                : status is "Declined" or "Lost" ? "delCommanderFriend" : null;
+                : (status is "Declined" or "Lost") switch
+                {
+                    true => "delCommanderFriend",
+                    false => null
+                };
             if (eventName != null)
                 addRequired(events, eventName, timestamp, obj(
                     ("commanderName", entry["Name"]), ("gamePlatform", "pc")), $"friend:{entry["Name"]}");

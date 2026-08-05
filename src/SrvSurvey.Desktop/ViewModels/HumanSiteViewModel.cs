@@ -156,9 +156,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         StringComparer.OrdinalIgnoreCase));
 
     public string TemplateText => ActiveSite is { } site
-        ? site.Template is { } template
-            ? $"{site.Economy} #{site.SubType} · {template.Name}"
-            : $"{site.Economy} · type not identified"
+        ? site.Template switch
+        {
+            { } template => $"{site.Economy} #{site.SubType} · {template.Name}",
+            null => $"{site.Economy} · type not identified"
+        }
         : "Settlement type unavailable";
 
     public string GeometryStatus => ActiveSite switch
@@ -172,9 +174,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     public string FactionText => ActiveSite is { } site
         && !string.IsNullOrWhiteSpace(site.FactionName)
-            ? string.IsNullOrWhiteSpace(site.FactionState)
-                ? site.FactionName
-                : $"{site.FactionName} · {site.FactionState}"
+            ? (string.IsNullOrWhiteSpace(site.FactionState)) switch
+            {
+                true => site.FactionName,
+                false => $"{site.FactionName} · {site.FactionState}"
+            }
             : "Controlling faction unavailable";
 
     public string GovernmentText => ActiveSite is { } site
@@ -686,14 +690,18 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
         var activeVehicle = currentStatus.InTaxi
             ? "taxi"
-            : currentStatus.OnFoot
-                ? "foot"
-                : vehicle;
+            : (currentStatus.OnFoot) switch
+            {
+                true => "foot",
+                false => vehicle
+            };
         var source = currentStatus.InTaxi
             ? HumanSiteGeometrySource.TaxiDock
-            : manualFootAlignment
-                ? HumanSiteGeometrySource.ManualFoot
-                : HumanSiteGeometrySource.AutoDock;
+            : (manualFootAlignment) switch
+            {
+                true => HumanSiteGeometrySource.ManualFoot,
+                false => HumanSiteGeometrySource.AutoDock
+            };
         var geometry = navigation.InferGeometry(
             site,
             new SurfaceCoordinate(
@@ -1099,9 +1107,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
         var activeVehicle = currentStatus.InTaxi
             ? "taxi"
-            : currentStatus.OnFoot
-                ? "foot"
-                : vehicle;
+            : (currentStatus.OnFoot) switch
+            {
+                true => "foot",
+                false => vehicle
+            };
         if (string.IsNullOrWhiteSpace(activeVehicle))
         {
             const string warning =
@@ -1346,9 +1356,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                     systemName,
                     systemAddress,
                     starPosition,
-                    status?.PlanetRadius is > 0
-                        ? (double)status.PlanetRadius
-                        : 0)
+                    (status?.PlanetRadius is > 0) switch
+                    {
+                        true => (double)status.PlanetRadius,
+                        false => 0
+                    })
                 : null;
     }
 
@@ -1392,9 +1404,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         {
             return DistanceToOriginMeters < 2_500
                 ? ShipZoom
-                : DistanceToOriginMeters < 4_000
-                    ? 0.2
-                    : 0.1;
+                : (DistanceToOriginMeters < 4_000) switch
+                {
+                    true => 0.2,
+                    false => 0.1
+                };
         }
 
         return null;

@@ -129,9 +129,11 @@ public sealed class FollowRouteStore
 
             result.Add(new FollowRouteCatalogEntry(
                 string.IsNullOrWhiteSpace(route.Name)
-                    ? candidate.IsLegacy
-                        ? $"Commander route ({frontierId})"
-                        : Path.GetFileNameWithoutExtension(candidate.Path)
+                    ? (candidate.IsLegacy) switch
+                    {
+                        true => $"Commander route ({frontierId})",
+                        false => Path.GetFileNameWithoutExtension(candidate.Path)
+                    }
                     : route.Name.Trim(),
                 Path.GetFileName(candidate.Path),
                 candidate.Path,
@@ -1594,9 +1596,11 @@ public sealed class FollowRouteStore
         var bodyName = GetString(root, "body");
         return bodyId is not null
             ? $"bodyId:{bodyId}"
-            : string.IsNullOrWhiteSpace(bodyName)
-                ? null
-                : $"body:{bodyName}";
+            : (string.IsNullOrWhiteSpace(bodyName)) switch
+            {
+                true => null,
+                false => $"body:{bodyName}"
+            };
     }
 
     private static string GetIdentity(FollowRouteHop hop)
@@ -1612,9 +1616,11 @@ public sealed class FollowRouteStore
         var name = GetString(root, "name");
         return address is not null
             ? $"address:{address}"
-            : string.IsNullOrWhiteSpace(name)
-                ? null
-                : $"name:{name}";
+            : (string.IsNullOrWhiteSpace(name)) switch
+            {
+                true => null,
+                false => $"name:{name}"
+            };
     }
 
     private static void WriteOptional<T>(

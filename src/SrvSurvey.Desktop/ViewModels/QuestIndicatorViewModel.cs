@@ -72,7 +72,7 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
         var unread = quests.Sum(quest => quest.UnreadMessageCount);
         HasUnreadMessages = unread > 0;
         UnreadMessageText = unread > 0
-            ? $"{unread:N0} unread message{(unread == 1 ? string.Empty : "s")}"
+            ? $"{unread:N0} unread message{((unread == 1) switch { true => string.Empty, false => "s" })}"
             : string.Empty;
         Objectives = firstQuest?.Objectives
             .Where(pair => pair.Value.StartsWith(
@@ -178,9 +178,11 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
     {
         return meters >= 10_000
             ? $"{meters / 1_000:N1} km"
-            : meters >= 1_000
-                ? $"{meters / 1_000:N2} km"
-                : $"{meters:N0} m";
+            : (meters >= 1_000) switch
+            {
+                true => $"{meters / 1_000:N2} km",
+                false => $"{meters:N0} m"
+            };
     }
 
     private bool SetField<T>(

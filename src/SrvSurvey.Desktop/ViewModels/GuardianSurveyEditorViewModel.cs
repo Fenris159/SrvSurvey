@@ -664,11 +664,13 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
 
     public string ComponentMaterialSummary => !SupportsComponentMaterials
         ? string.Empty
-        : SupportsMultipleComponentMaterials
-            ? $"Top {GetMaterialName(TopComponentMaterial)} / "
+        : (SupportsMultipleComponentMaterials) switch
+        {
+            true => $"Top {GetMaterialName(TopComponentMaterial)} / "
                 + $"middle {GetMaterialName(MiddleComponentMaterial)} / "
-                + $"bottom {GetMaterialName(BottomComponentMaterial)}"
-            : GetMaterialName(TopComponentMaterial);
+                + $"bottom {GetMaterialName(BottomComponentMaterial)}",
+            false => GetMaterialName(TopComponentMaterial)
+        };
 
     public bool SupportsEmptyStatus => Type is GuardianPoiType.Unknown
         or GuardianPoiType.Orb

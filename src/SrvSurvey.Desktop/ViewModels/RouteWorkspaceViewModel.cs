@@ -382,17 +382,23 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     public string NextHopName => NextHop?.Name
         ?? (IsComplete
             ? "Route complete"
-            : HasRoute
-                ? "Route paused"
-                : "No route loaded");
+            : (HasRoute) switch
+            {
+                true => "Route paused",
+                false => "No route loaded"
+            });
 
     public string ProgressSummary => !HasRoute
         ? "Import a route to begin."
-        : IsComplete
-            ? $"All {RouteCount:N0} systems reached."
-            : lastReachedIndex < 0
-                ? $"Not started \u2022 {RouteCount:N0} systems"
-                : $"Reached {ReachedCount:N0} of {RouteCount:N0} systems";
+        : (IsComplete) switch
+        {
+            true => $"All {RouteCount:N0} systems reached.",
+            false => (lastReachedIndex < 0) switch
+            {
+                true => $"Not started \u2022 {RouteCount:N0} systems",
+                false => $"Reached {ReachedCount:N0} of {RouteCount:N0} systems"
+            }
+        };
 
     public string AutoCopySummary => AutoCopy
         ? "Next-hop clipboard guidance is enabled."
@@ -440,9 +446,11 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         NextHop?.Name,
         StringComparison.Ordinal)
             ? "NEXT SYSTEM COPIED"
-            : AutoCopy
-                ? "AUTO-COPY READY"
-                : "MANUAL COPY";
+            : (AutoCopy) switch
+            {
+                true => "AUTO-COPY READY",
+                false => "MANUAL COPY"
+            };
 
     public string CurrentSystem => string.IsNullOrWhiteSpace(currentSystemName)
         ? Unavailable
@@ -450,16 +458,20 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public string RouteFileName => loadedRoute is null
         ? Unavailable
-        : HasSavedRoute
-            ? Path.GetFileName(loadedRoute.FilePath)
-            : "Not saved";
+        : (HasSavedRoute) switch
+        {
+            true => Path.GetFileName(loadedRoute.FilePath),
+            false => "Not saved"
+        };
 
     public string RouteName => loadedRoute?.Name
         ?? (HasSavedRoute
             ? Path.GetFileNameWithoutExtension(RouteFileName)
-            : HasRoute
-                ? "New route"
-                : "No active route");
+            : (HasRoute) switch
+            {
+                true => "New route",
+                false => "No active route"
+            });
 
     public string RouteNotesPreview => string.IsNullOrWhiteSpace(draftNotes)
         ? "No route notes."
@@ -759,9 +771,11 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 StatusMessage = loadedRoute.IsComplete
                     ? $"Route complete after arriving at {reachedName}."
                     : $"Arrived at hop #{reachedIndex + 1:N0}: {reachedName}."
-                        + (hadUnsavedChanges
-                            ? " Unsaved route edits were kept."
-                            : string.Empty);
+                        + ((hadUnsavedChanges) switch
+                        {
+                            true => " Unsaved route edits were kept.",
+                            false => string.Empty
+                        });
             }
 
             await ApplyBioArrivalEventsAsync(journalEvents);
@@ -1089,9 +1103,11 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             ApplyDocument(saved);
             StatusMessage = saved.IsComplete
                 ? "Route progress saved as complete."
-                : saved.IsActive
-                    ? $"Changes saved. Next system: {saved.NextHop?.Name ?? Unavailable}."
-                    : "Route progress saved in a paused state.";
+                : (saved.IsActive) switch
+                {
+                    true => $"Changes saved. Next system: {saved.NextHop?.Name ?? Unavailable}.",
+                    false => "Route progress saved in a paused state."
+                };
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
@@ -1784,9 +1800,11 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         {
             var hop = draftHops[index];
             GalacticCoordinate? from = index == 0
-                ? lastReachedIndex < 0
-                    ? currentPosition
-                    : hop.Position
+                ? (lastReachedIndex < 0) switch
+                {
+                    true => currentPosition,
+                    false => hop.Position
+                }
                 : draftHops[index - 1].Position;
             var distance = from is { } start && hop.Position is { } end
                 ? start.DistanceTo(end)
@@ -2260,11 +2278,15 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
 
     public string State => IsCurrent
         ? "CURRENT"
-        : IsNext
-            ? "NEXT"
-            : IsReached
-                ? "VISITED"
-                : string.Empty;
+        : (IsNext) switch
+        {
+            true => "NEXT",
+            false => (IsReached) switch
+            {
+                true => "VISITED",
+                false => string.Empty
+            }
+        };
 
     public bool HasState => State.Length > 0;
 
@@ -2483,9 +2505,11 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
     public string BodyIconAccessibleName => bodyVisual.AccessibleName;
 
     public string DistanceToArrival => target.DistanceToArrivalLs is { } distance
-        ? distance < 100
-            ? $"{distance:N2} LS"
-            : $"{distance:N0} LS"
+        ? (distance < 100) switch
+        {
+            true => $"{distance:N2} LS",
+            false => $"{distance:N0} LS"
+        }
         : string.Empty;
 
     public bool HasDistanceToArrival => target.DistanceToArrivalLs is not null;

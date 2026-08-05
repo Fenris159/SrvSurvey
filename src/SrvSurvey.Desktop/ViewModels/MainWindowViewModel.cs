@@ -693,9 +693,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             VisitedStarsCache = visitedStarsCache;
         }
         statusMessage = folderResolution.IsFound
-            ? TargetFrontierId is null
-                ? "Ready to read the newest Journal.*.log file."
-                : $"Ready to read journals for {TargetFrontierId}."
+            ? (TargetFrontierId is null) switch
+            {
+                true => "Ready to read the newest Journal.*.log file.",
+                false => $"Ready to read journals for {TargetFrontierId}."
+            }
             : $"Journal folder not found. Set {JournalFolderLocator.EnvironmentVariableName} "
                 + "or start with --journal-directory <path>.";
         journalMonitor = folderResolution.SelectedPath is null
@@ -949,9 +951,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             {
                 ProfileStatusMessage = string.IsNullOrWhiteSpace(normalized)
                     ? "Choose the original SrvSurvey profile folder to import."
-                    : Directory.Exists(normalized)
-                        ? "The selected legacy profile is ready for verified import."
-                        : "The selected legacy profile folder does not exist or is unavailable.";
+                    : (Directory.Exists(normalized)) switch
+                    {
+                        true => "The selected legacy profile is ready for verified import.",
+                        false => "The selected legacy profile folder does not exist or is unavailable."
+                    };
             }
 
             importLegacyProfileCommand.RaiseCanExecuteChanged();
@@ -979,16 +983,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         SettingsLinkStatusMessage = launched
             ? $"Opened {description} in the default browser."
             : $"Could not open {description}: "
-                + (string.IsNullOrWhiteSpace(error)
-                    ? "the desktop launcher declined the request."
-                    : error);
+                + ((string.IsNullOrWhiteSpace(error)) switch
+                {
+                    true => "the desktop launcher declined the request.",
+                    false => error
+                });
     }
 
     public string ImportProfileButtonText => IsImportingProfile
         ? "Importing profile..."
-        : HasCompletedLegacyImport
-            ? "Legacy profile imported"
-            : "Back up, verify, and import";
+        : (HasCompletedLegacyImport) switch
+        {
+            true => "Legacy profile imported",
+            false => "Back up, verify, and import"
+        };
 
     public bool HasCompletedLegacyImport => File.Exists(
         Path.Combine(
@@ -2579,11 +2587,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(QuestUnreadMessageCount));
         QuestStatusMessage = result.Warnings.Count > 0
             ? string.Join(Environment.NewLine, result.Warnings)
-            : result.Quests.Count == 0
-                ? "No active quests received the replayed event."
-                : $"Replayed {journalEvent.EventName}; "
-                    + $"{result.Quests.Count:N0} active quest(s), "
-                    + $"{QuestUnreadMessageCount:N0} unread message(s).";
+            : (result.Quests.Count == 0) switch
+            {
+                true => "No active quests received the replayed event.",
+                false => $"Replayed {journalEvent.EventName}; "
+                                                                                           + $"{result.Quests.Count:N0} active quest(s), "
+                                                                                           + $"{QuestUnreadMessageCount:N0} unread message(s)."
+            };
         return result;
     }
 
@@ -2788,17 +2798,23 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 ?? activeSample.Species;
         OrganicSampleRange = activeSample is null
             ? Unavailable
-            : exobiologyState.NearestActiveSampleDistance is double distance
-                ? exobiologyState.RemainingSampleDistance is > 0
-                    ? $"{distance:N0} m from nearest sample · "
-                        + $"{exobiologyState.RemainingSampleDistance:N0} m remaining"
-                    : $"{distance:N0} m from nearest sample · clear to sample"
-                : $"{activeSample.Radius:N0} m minimum separation";
+            : exobiologyState.NearestActiveSampleDistance switch
+            {
+                double distance => (exobiologyState.RemainingSampleDistance is > 0) switch
+                {
+                    true => $"{distance:N0} m from nearest sample · "
+                        + $"{exobiologyState.RemainingSampleDistance:N0} m remaining",
+                    false => $"{distance:N0} m from nearest sample · clear to sample"
+                },
+                null => $"{activeSample.Radius:N0} m minimum separation"
+            };
         OrganicScanProgress = snapshot.ScanOne is null
             ? "Ready for sample 1 of 3"
-            : snapshot.ScanTwo is null
-                ? "Sample 1 of 3 recorded"
-                : "Samples 1 and 2 of 3 recorded";
+            : (snapshot.ScanTwo is null) switch
+            {
+                true => "Sample 1 of 3 recorded",
+                false => "Samples 1 and 2 of 3 recorded"
+            };
         BioFirstFootfall = exobiologyState.CurrentBodyFirstFootfall switch
         {
             true => "Confirmed; 5x reward applies",
@@ -3714,15 +3730,23 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     {
         VehicleState = status.OnFoot
             ? "On foot"
-            : status.InSrv
-                ? "SRV"
-                : status.InFighter
-                    ? "Fighter"
-                    : status.InMainShip
-                        ? "Main ship"
-                        : status.InTaxi
-                            ? "Taxi / shuttle"
-                            : "Unknown";
+            : (status.InSrv) switch
+            {
+                true => "SRV",
+                false => (status.InFighter) switch
+                {
+                    true => "Fighter",
+                    false => (status.InMainShip) switch
+                    {
+                        true => "Main ship",
+                        false => (status.InTaxi) switch
+                        {
+                            true => "Taxi / shuttle",
+                            false => "Unknown"
+                        }
+                    }
+                }
+            };
         SurfacePosition = status.HasLatitudeLongitude
             ? $"{status.Latitude:F6}, {status.Longitude:F6}"
             : Unavailable;

@@ -486,9 +486,11 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     {
         return value >= 1_000_000
             ? $"{value / 1_000_000d:N1} M CR"
-            : value >= 1_000
-                ? $"{value / 1_000d:N0} K CR"
-                : $"{value:N0} CR";
+            : (value >= 1_000) switch
+            {
+                true => $"{value / 1_000d:N0} K CR",
+                false => $"{value:N0} CR"
+            };
     }
 
     private bool SetField<T>(
@@ -570,9 +572,11 @@ public sealed record PriorScanSpeciesViewModel(
     {
         return value >= 1_000_000
             ? $"{value / 1_000_000d:N2} M CR"
-            : value >= 1_000
-                ? $"{value / 1_000d:N1} K CR"
-                : $"{value:N0} CR";
+            : (value >= 1_000) switch
+            {
+                true => $"{value / 1_000d:N1} K CR",
+                false => $"{value:N0} CR"
+            };
     }
 }
 
@@ -601,9 +605,11 @@ public sealed record PriorScanTargetViewModel(
     {
         return meters >= 1_000_000
             ? $"{meters / 1_000_000d:N1} Mm"
-            : meters >= 1_000
-                ? $"{meters / 1_000d:N1} km"
-                : $"{meters:N0} m";
+            : (meters >= 1_000) switch
+            {
+                true => $"{meters / 1_000d:N1} km",
+                false => $"{meters:N0} m"
+            };
     }
 }
 

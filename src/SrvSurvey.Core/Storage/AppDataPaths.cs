@@ -19,9 +19,11 @@ public sealed record AppDataPaths(
     {
         var platform = OperatingSystem.IsWindows()
             ? DesktopPlatform.Windows
-            : OperatingSystem.IsLinux()
-                ? DesktopPlatform.Linux
-                : DesktopPlatform.Other;
+            : (OperatingSystem.IsLinux()) switch
+            {
+                true => DesktopPlatform.Linux,
+                false => DesktopPlatform.Other
+            };
 
         return Resolve(
             platform,

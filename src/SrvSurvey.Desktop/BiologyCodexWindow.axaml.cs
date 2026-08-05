@@ -141,7 +141,11 @@ public sealed partial class BiologyCodexWindow : Window
             ImageStatusText.Text = result.IsLocal
                 ? "Local flora reference image"
                 : organism.ImageCreditText
-                    + (result.IsFromCache ? " · cached" : " · downloaded");
+                    + ((result.IsFromCache) switch
+                    {
+                        true => " · cached",
+                        false => " · downloaded"
+                    });
         }
         catch (Exception exception) when (
             exception is IOException

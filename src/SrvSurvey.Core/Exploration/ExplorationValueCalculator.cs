@@ -29,11 +29,15 @@ public static class ExplorationValueCalculator
 
         var bodyBaseValue = GetPlanetBaseValue(bodyClass, isTerraformable);
         var mappingMultiplier = isMapped
-            ? isFirstDiscoverer && isFirstMapped
-                ? 3.699622554
-                : isFirstMapped
-                    ? 8.0956
-                    : 3.3333333333
+            ? (isFirstDiscoverer && isFirstMapped) switch
+            {
+                true => 3.699622554,
+                false => (isFirstMapped) switch
+                {
+                    true => 8.0956,
+                    false => 3.3333333333
+                }
+            }
             : 1;
         var value = (bodyBaseValue
             + bodyBaseValue * PlanetValueExponent * Math.Pow(mass, 0.2))

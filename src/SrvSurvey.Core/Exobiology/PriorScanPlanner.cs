@@ -188,11 +188,15 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
             location);
         var state = analyzed
             ? PriorScanTargetState.Analyzed
-            : distance < request.HighlightDistanceMeters
-                ? PriorScanTargetState.Close
-                : distance > request.FarDistanceMeters
-                    ? PriorScanTargetState.Far
-                    : PriorScanTargetState.Standard;
+            : (distance < request.HighlightDistanceMeters) switch
+            {
+                true => PriorScanTargetState.Close,
+                false => (distance > request.FarDistanceMeters) switch
+                {
+                    true => PriorScanTargetState.Far,
+                    false => PriorScanTargetState.Standard
+                }
+            };
         return new PriorScanTarget(
             location,
             distance,

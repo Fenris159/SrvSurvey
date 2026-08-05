@@ -956,7 +956,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool HasLastFssBody => LastFssBody is not null;
 
     public string LastFssBodyName => LastFssBody is { } body
-        ? (body.WasDiscovered ? string.Empty : "⚑ ") + body.Name
+        ? ((body.WasDiscovered) switch
+        {
+            true => string.Empty,
+            false => "⚑ "
+        }) + body.Name
         : "Waiting for a detailed body scan";
 
     public string LastFssBodyClass => LastFssBody is { } body
@@ -1003,9 +1007,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public string LastFssSignalsText => LastFssBody is
     { BiologicalSignalCount: > 0 } body
-            ? body.BiologicalSignalCount == 1
-                ? "1 biological signal"
-                : $"{body.BiologicalSignalCount:N0} biological signals"
+            ? (body.BiologicalSignalCount == 1) switch
+            {
+                true => "1 biological signal",
+                false => $"{body.BiologicalSignalCount:N0} biological signals"
+            }
             : string.Empty;
 
     public bool HasLastFssSignals => !string.IsNullOrWhiteSpace(
@@ -2101,9 +2107,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             HighlightDssCandidates
                 && (body.IsDssComplete
                     ? body.CurrentScanValue
-                    : planetish
-                        ? body.EstimatedMappedValue
-                        : body.ScanValue) > DssValueFloor,
+                    : (planetish) switch
+                    {
+                        true => body.EstimatedMappedValue,
+                        false => body.ScanValue
+                    }) > DssValueFloor,
             body.SurfacePressure <= 0
                 ? "None"
                 : $"{body.SurfacePressure / 100_000d:N4} bar",

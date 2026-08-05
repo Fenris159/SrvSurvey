@@ -40,11 +40,15 @@ public sealed record StationLandingPadSummary(
 {
     public string? Largest => Large > 0
         ? "Large"
-        : Medium > 0
-            ? "Medium"
-            : Small > 0
-                ? "Small"
-                : null;
+        : (Medium > 0) switch
+        {
+            true => "Medium",
+            false => (Small > 0) switch
+            {
+                true => "Small",
+                false => null
+            }
+        };
 }
 
 public sealed record SystemStationSummary(
@@ -181,9 +185,11 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             || traffic.Value?.SystemAddress > 0
             || spansh.Value is not null
                 ? true
-                : warnings.Length == attemptedProviders
-                    ? null
-                    : false;
+                : (warnings.Length == attemptedProviders) switch
+                {
+                    true => null,
+                    false => false
+                };
         var points = spansh.Value?.PointsOfInterest
             ?? new SystemPoiSummary(totalBodyCount, 0, 0, 0, 0, 0, 0);
         points = points with { Bodies = totalBodyCount };

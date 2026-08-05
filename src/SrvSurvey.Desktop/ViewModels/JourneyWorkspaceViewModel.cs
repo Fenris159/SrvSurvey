@@ -230,9 +230,11 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         ? Unavailable
         : $"CMDR {selectedDocument.CommanderName} \u2022 "
             + $"set out {FormatTime(selectedDocument.StartTime)}"
-            + (selectedDocument.EndTime is { } end
-                ? $" \u2022 concluded {FormatTime(end)}"
-                : " \u2022 active");
+            + (selectedDocument.EndTime switch
+            {
+                DateTimeOffset end => $" \u2022 concluded {FormatTime(end)}",
+                null => " \u2022 active"
+            });
 
     public IReadOnlyList<JourneyStatisticViewModel> QuickStatistics
     {
@@ -579,11 +581,15 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             await RefreshCatalogAsync(active.Journey?.FileName);
             StatusMessage = active.Errors.Count > 0
                 ? string.Join(Environment.NewLine, active.Errors)
-                : active.Journey is null
-                    ? "No active journey. Browse history or begin a new expedition."
-                    : active.ProcessedEventCount > 0
-                        ? $"Caught up {active.ProcessedEventCount:N0} Journey journal events."
-                        : $"Active journey: {active.Journey.Name}.";
+                : (active.Journey is null) switch
+                {
+                    true => "No active journey. Browse history or begin a new expedition.",
+                    false => (active.ProcessedEventCount > 0) switch
+                    {
+                        true => $"Caught up {active.ProcessedEventCount:N0} Journey journal events.",
+                        false => $"Active journey: {active.Journey.Name}."
+                    }
+                };
             RaiseActiveState();
             return true;
         }
@@ -716,9 +722,11 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             {
                 StatusMessage = SelectedJourney is null
                     ? "No Journey history has been recorded for this commander."
-                    : SelectedJourney.Document.IsActive
-                        ? $"Active journey: {SelectedJourney.Document.Name}."
-                        : $"Loaded journey: {SelectedJourney.Document.Name}.";
+                    : (SelectedJourney.Document.IsActive) switch
+                    {
+                        true => $"Active journey: {SelectedJourney.Document.Name}.",
+                        false => $"Loaded journey: {SelectedJourney.Document.Name}."
+                    };
             }
         }
         catch (Exception exception) when (IsExpectedException(exception))
@@ -1361,15 +1369,19 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         var flags = string.Empty;
         flags += visit.Counts.Screenshots > 0
             ? "P"
-            : sameNameVisits.Any(candidate => candidate.Counts.Screenshots > 0)
-                ? "p"
-                : string.Empty;
+            : (sameNameVisits.Any(candidate => candidate.Counts.Screenshots > 0)) switch
+            {
+                true => "p",
+                false => string.Empty
+            };
         flags += visit.Counts.Organisms > 0 ? "B" : string.Empty;
         flags += visit.Counts.Notes > 0
             ? "N"
-            : sameNameVisits.Any(candidate => candidate.Counts.Notes > 0)
-                ? "n"
-                : string.Empty;
+            : (sameNameVisits.Any(candidate => candidate.Counts.Notes > 0)) switch
+            {
+                true => "n",
+                false => string.Empty
+            };
         flags += visit.Counts.NewCodexEntries > 0 ? "C" : string.Empty;
         flags += visit.Counts.Touchdowns > 0 ? "T" : string.Empty;
         return flags;

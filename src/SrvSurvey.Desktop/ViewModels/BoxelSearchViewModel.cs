@@ -291,9 +291,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         state.NextSystem,
         StringComparison.Ordinal)
             ? "NEXT SEARCH COPIED"
-            : state.AutoCopy
-                ? "AUTO-COPY READY"
-                : "MANUAL COPY";
+            : (state.AutoCopy) switch
+            {
+                true => "AUTO-COPY READY",
+                false => "MANUAL COPY"
+            };
 
     public bool IsCurrentEmpty => state.CurrentIsEmpty;
 
@@ -936,11 +938,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             UpdateDisplay();
             await SaveAsync();
             StatusMessage = markEmpty
-                ? moved
-                    ? $"Marked {original.Prefix} empty and advanced to "
+                ? (moved) switch
+                {
+                    true => $"Marked {original.Prefix} empty and advanced to "
                         + state.Current?.Prefix
-                        + "."
-                    : $"Marked {original.Prefix} empty."
+                        + ".",
+                    false => $"Marked {original.Prefix} empty."
+                }
                 : $"Removed the empty marker from {original.Prefix}.";
             if (moved)
             {
@@ -1177,7 +1181,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         return result.Errors.Count == 0
             ? outcome
             : outcome + $" {result.Errors.Count:N0} warning"
-                + (result.Errors.Count == 1 ? string.Empty : "s")
+                + ((result.Errors.Count == 1) switch
+                {
+                    true => string.Empty,
+                    false => "s"
+                })
                 + $" occurred. First: {result.Errors[0]}";
     }
 
@@ -1499,7 +1507,7 @@ public sealed class BoxelSystemRowViewModel
         Distance = distance;
         VisitedAt = visitedAt;
         SpanshUpdatedAt = spanshUpdatedAt;
-        Status = isComplete ? "COMPLETE" : isKnown ? "KNOWN" : "UNKNOWN";
+        Status = isComplete ? "COMPLETE" : (isKnown) switch { true => "KNOWN", false => "UNKNOWN" };
         ToggleCommand = new RowCommand(toggle, () => isKnown);
     }
 
