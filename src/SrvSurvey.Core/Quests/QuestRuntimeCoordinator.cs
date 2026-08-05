@@ -77,8 +77,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         string journalDirectory,
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         bool isBootstrap,
-        CancellationToken cancellationToken = default,
-        bool allowCargoFile = true)
+        bool allowCargoFile = true,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(nextConfiguration);
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
@@ -139,8 +139,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                     var resolved = await QuestJournalPayloadResolver.ResolveAsync(
                             journalDirectory,
                             journalEvent,
-                            cancellationToken,
-                            allowCargoFile)
+                            allowCargoFile,
+                            cancellationToken)
                         .ConfigureAwait(false);
                     AddWarning(warnings, resolved.Warning);
                     await ProcessEventAsync(
@@ -211,8 +211,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
     public async Task<QuestRuntimeUpdateResult> ReplayEventAsync(
         string journalDirectory,
         JournalEventEnvelope journalEvent,
-        CancellationToken cancellationToken = default,
-        bool allowCargoFile = true)
+        bool allowCargoFile = true,
+        CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         ArgumentNullException.ThrowIfNull(journalEvent);
@@ -233,8 +233,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             var resolved = await QuestJournalPayloadResolver.ResolveAsync(
                     journalDirectory,
                     journalEvent,
-                    cancellationToken,
-                    allowCargoFile)
+                    allowCargoFile,
+                    cancellationToken)
                 .ConfigureAwait(false);
             AddWarning(warnings, resolved.Warning);
             await ProcessEventAsync(

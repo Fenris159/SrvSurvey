@@ -144,9 +144,9 @@ public sealed class ScreenshotProcessingViewModel : INotifyPropertyChanged
             journalEvents,
             preferences,
             commanderName,
-            cancellationToken,
             guardianContexts,
-            navigationContext);
+            navigationContext,
+            cancellationToken);
         if (result.Conversions.Count == 0 && result.Warnings.Count == 0)
         {
             return result;

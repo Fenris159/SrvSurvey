@@ -704,7 +704,10 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
                     "The external body response exceeds the 16 MiB safety limit.");
             }
 
-            buffer.Write(block, 0, count);
+            await buffer.WriteAsync(
+                    block.AsMemory(0, count),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 

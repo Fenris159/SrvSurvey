@@ -66,6 +66,10 @@ public sealed class PublishedReferenceUpdateService
     private const int MaximumArchiveEntries = 2_048;
 
     private static readonly HttpClient SharedClient = CreateSharedClient();
+    private static readonly JsonSerializerOptions IndentedJson = new()
+    {
+        WriteIndented = true,
+    };
 
     private readonly IPublishedDataIndexClient indexClient;
     private readonly PublishedReferenceVersionStore versionStore;
@@ -335,10 +339,7 @@ public sealed class PublishedReferenceUpdateService
                         Path.Combine(stagePublished, "nicknames.json"),
                         JsonSerializer.Serialize(
                             nicknameMap,
-                            new JsonSerializerOptions
-                            {
-                                WriteIndented = true,
-                            }),
+                            IndentedJson),
                         cancellationToken)
                     .ConfigureAwait(false);
                 updated.Add("Raven system nicknames");

@@ -15,10 +15,10 @@ public interface IScreenshotProcessingService
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        CancellationToken cancellationToken = default,
         IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
             guardianContexts = null,
-        ScreenshotNavigationContext? navigationContext = null);
+        ScreenshotNavigationContext? navigationContext = null,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed class ScreenshotProcessingService : IScreenshotProcessingService
@@ -48,10 +48,10 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        CancellationToken cancellationToken = default,
         IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
             guardianContexts = null,
-        ScreenshotNavigationContext? navigationContext = null)
+        ScreenshotNavigationContext? navigationContext = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         ArgumentNullException.ThrowIfNull(preferences);

@@ -393,10 +393,10 @@ public sealed class CommanderProfileStore(string profileDirectory)
             return BoxelSearchSnapshot.Empty;
         }
 
-        BoxelAddress.TryParse(
+        _ = BoxelAddress.TryParse(
             GetString(boxelSearch, "boxel"),
             out var topBoxel);
-        BoxelAddress.TryParse(
+        _ = BoxelAddress.TryParse(
             GetString(boxelSearch, "current"),
             out var current);
         var lowMassCodeText = GetString(boxelSearch, "lowMassCode");

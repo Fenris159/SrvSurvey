@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -7,6 +8,8 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
 {
     private static readonly char[] CrossPlatformInvalidFileNameCharacters =
         ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '\0'];
+    private static readonly SearchValues<char> InvalidFileNameSearch =
+        SearchValues.Create(CrossPlatformInvalidFileNameCharacters);
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         WriteIndented = true,
@@ -376,7 +379,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(bodyName);
         if (!IsSingleFileName(bodyName)
-            || bodyName.IndexOfAny(CrossPlatformInvalidFileNameCharacters) >= 0)
+            || bodyName.AsSpan().IndexOfAny(InvalidFileNameSearch) >= 0)
         {
             throw new ArgumentException(
                 "The body name cannot be represented by a cross-platform survey filename.",

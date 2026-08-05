@@ -194,9 +194,8 @@ public sealed class SystemSurfaceStore
                     if (body["bookmarks"] is JsonObject existing)
                     {
                         NormalizeLegacyBookmarkKeys(existing);
-                        if (existing.ContainsKey(name))
+                        if (existing.Remove(name))
                         {
-                            existing.Remove(name);
                             if (existing.Count == 0)
                             {
                                 body.Remove("bookmarks");

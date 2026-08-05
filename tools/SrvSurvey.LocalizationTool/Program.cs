@@ -16,7 +16,7 @@ if (args.Length == 3
 
 if (args.Length != 2)
 {
-    Console.Error.WriteLine(
+    await Console.Error.WriteLineAsync(
         "Usage: SrvSurvey.LocalizationTool <repository-root> <output-json>\n" +
         "   or: SrvSurvey.LocalizationTool normalize-catalog <input-json> <output-json>");
     return 2;

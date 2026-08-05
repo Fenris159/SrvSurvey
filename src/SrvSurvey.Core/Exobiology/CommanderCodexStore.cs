@@ -6,6 +6,11 @@ namespace SrvSurvey.Core.Exobiology;
 
 public sealed class CommanderCodexStore(string dataDirectory)
 {
+    private static readonly JsonSerializerOptions IndentedJson = new()
+    {
+        WriteIndented = true,
+    };
+
     private readonly string dataDirectory = Path.GetFullPath(
         string.IsNullOrWhiteSpace(dataDirectory)
             ? throw new ArgumentException(
@@ -438,7 +443,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
                 await JsonSerializer.SerializeAsync(
                         stream,
                         root,
-                        new JsonSerializerOptions { WriteIndented = true },
+                        IndentedJson,
                         cancellationToken)
                     .ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);

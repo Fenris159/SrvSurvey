@@ -202,7 +202,8 @@ public sealed class GuardianSurveyShareService
                         FileShare.ReadWrite | FileShare.Delete,
                         16 * 1024,
                         FileOptions.Asynchronous | FileOptions.SequentialScan);
-                    await using var entryStream = entry.Open();
+                    await using var entryStream = await entry.OpenAsync(
+                        cancellationToken);
                     await input.CopyToAsync(entryStream, cancellationToken)
                         .ConfigureAwait(false);
                 }

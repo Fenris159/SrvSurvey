@@ -458,7 +458,9 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     private static int _get_prefix_run_length(string prefix)
     {
-        var len = cx_prefix_length_overrides.ContainsKey(prefix) ? cx_prefix_length_overrides[prefix] : cx_prefix_length_default;
+        var len = cx_prefix_length_overrides.TryGetValue(prefix, out var value)
+            ? value
+            : cx_prefix_length_default;
         return len;
     }
 

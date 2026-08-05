@@ -22,8 +22,8 @@ namespace SrvSurvey.Core.Network
         internal static async Task<EddnCompanionReadResult> read(
             string journalFolder,
             JObject journalEvent,
-            CancellationToken cancellationToken = default,
-            IReadOnlyList<TimeSpan>? retrySchedule = null)
+            IReadOnlyList<TimeSpan>? retrySchedule = null,
+            CancellationToken cancellationToken = default)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(journalFolder);
             ArgumentNullException.ThrowIfNull(journalEvent);

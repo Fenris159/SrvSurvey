@@ -13,6 +13,11 @@ public sealed record RegionalCodexCandidate(
 
 public sealed class RegionalCodexCandidateCatalog
 {
+    private static readonly JsonSerializerOptions IndentedJson = new()
+    {
+        WriteIndented = true,
+    };
+
     public const string LegacyFileName = "codexNotFound.json";
 
     private const long MaximumFileBytes = 16L * 1024 * 1024;
@@ -194,10 +199,7 @@ public sealed class RegionalCodexCandidateCatalog
                         + entry.Variant)
                     .ToArray(),
                 StringComparer.Ordinal);
-        return JsonSerializer.Serialize(payload, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-        });
+        return JsonSerializer.Serialize(payload, IndentedJson);
     }
 
     internal static RegionalCodexCandidateCatalog ParsePublishedCsv(

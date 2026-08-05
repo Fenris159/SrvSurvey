@@ -450,7 +450,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(profileFrontierId);
         ArgumentNullException.ThrowIfNull(snapshot);
-        auditCancellation?.Cancel();
+        if (auditCancellation is not null)
+        {
+            await auditCancellation.CancelAsync();
+        }
+
         frontierId = profileFrontierId;
         commanderName = profileCommanderName;
         isOdyssey = profileIsOdyssey;

@@ -6,6 +6,11 @@ namespace SrvSurvey.Core.Settlements;
 
 public sealed class HumanSiteTemplateCatalog
 {
+    private static readonly JsonSerializerOptions CaseInsensitiveJson = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
+
     private const string ResourceName =
         "SrvSurvey.Core.Resources.humanSiteTemplates.json";
 
@@ -82,10 +87,7 @@ public sealed class HumanSiteTemplateCatalog
         {
             var rows = JsonSerializer.Deserialize<TemplateRow[]>(
                     stream,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true,
-                    })
+                    CaseInsensitiveJson)
                 ?? throw new InvalidDataException(
                     "The human settlement template catalog is empty.");
             return new HumanSiteTemplateCatalog(rows.Select(ToTemplate));

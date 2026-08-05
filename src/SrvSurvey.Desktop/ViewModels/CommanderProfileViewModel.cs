@@ -1213,8 +1213,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         Interlocked.Increment(ref commanderContextVersion);
         var previousConnection = connectionCancellation;
         connectionCancellation = null;
-        previousConnection?.Cancel();
-        previousConnection?.Dispose();
+        if (previousConnection is not null)
+        {
+            await previousConnection.CancelAsync();
+            previousConnection.Dispose();
+        }
         IsBusy = false;
         IsConnecting = false;
         Snapshot = null;
@@ -1467,7 +1470,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private async Task CancelConnectionAsync()
     {
-        connectionCancellation?.Cancel();
+        if (connectionCancellation is not null)
+        {
+            await connectionCancellation.CancelAsync();
+        }
+
         await accountService.CancelConnectionAsync(CancellationToken.None);
         StatusMessage = "Frontier authorization was cancelled.";
     }

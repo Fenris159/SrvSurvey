@@ -61,8 +61,13 @@ public sealed partial class BiologyCodexWindow : Window
 
     private async Task LoadSelectedImageAsync(bool forceRefresh)
     {
-        imageLoadCancellation?.Cancel();
-        imageLoadCancellation?.Dispose();
+        var previousCancellation = imageLoadCancellation;
+        if (previousCancellation is not null)
+        {
+            await previousCancellation.CancelAsync();
+            previousCancellation.Dispose();
+        }
+
         var loadCancellation = new CancellationTokenSource();
         imageLoadCancellation = loadCancellation;
         var cancellationToken = loadCancellation.Token;
@@ -99,7 +104,7 @@ public sealed partial class BiologyCodexWindow : Window
         }
         catch (TimeoutException)
         {
-            loadCancellation.Cancel();
+            await loadCancellation.CancelAsync();
             ObserveFault(imageLoadTask);
             if (viewModel.SelectedOrganism?.EntryId == organism.EntryId)
             {

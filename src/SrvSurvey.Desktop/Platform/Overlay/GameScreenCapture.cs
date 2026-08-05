@@ -366,10 +366,9 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
 
     public CapturedPixelBuffer Capture(PixelRect bounds)
     {
-        if (display == nint.Zero)
-        {
-            throw new ObjectDisposedException(nameof(X11GameScreenCapture));
-        }
+        ObjectDisposedException.ThrowIf(
+            display == nint.Zero,
+            this);
 
         ValidateBounds(bounds);
         var image = X11Native.XGetImage(

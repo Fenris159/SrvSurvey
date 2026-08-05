@@ -1095,7 +1095,10 @@ public sealed class InaraPublisher : IInaraPublisher
                     $"Inara response exceeded {MaximumResponseBytes:N0} bytes.");
             }
 
-            output.Write(buffer, 0, read);
+            await output.WriteAsync(
+                    buffer.AsMemory(0, read),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         return Encoding.UTF8.GetString(output.ToArray());

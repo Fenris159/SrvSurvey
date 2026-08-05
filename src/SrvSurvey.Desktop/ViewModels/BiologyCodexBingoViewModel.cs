@@ -797,8 +797,13 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     private async Task ResolveSelectedLocationAsync()
     {
-        locationCancellation?.Cancel();
-        locationCancellation?.Dispose();
+        var previousCancellation = locationCancellation;
+        if (previousCancellation is not null)
+        {
+            await previousCancellation.CancelAsync();
+            previousCancellation.Dispose();
+        }
+
         locationCancellation = new CancellationTokenSource();
         var cancellationToken = locationCancellation.Token;
         if (SelectedNode?.Definition.Entry is not { } entry

@@ -856,7 +856,10 @@ public sealed class RavenColonialClient : IRavenColonialClient
                     $"Raven Colonial returned more than {maximumBytes:N0} bytes.");
             }
 
-            destination.Write(buffer, 0, read);
+            await destination.WriteAsync(
+                    buffer.AsMemory(0, read),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         return destination.ToArray();

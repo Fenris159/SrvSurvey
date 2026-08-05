@@ -441,7 +441,10 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
                     $"The update response exceeded {maximumBytes:N0} bytes: {uri}");
             }
 
-            output.Write(buffer, 0, read);
+            await output.WriteAsync(
+                    buffer.AsMemory(0, read),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         return output.ToArray();
