@@ -849,13 +849,11 @@ public sealed class LegacyOrganicProfileMigrator
         EnsureOptionalInt64(target, "entryId");
         EnsureOptionalInt64(target, "reward");
         EnsureOptionalBoolean(target, "analyzed");
-        foreach (var property in source)
+        foreach (var property in source.Where(property =>
+            target[property.Key] is null && property.Value is not null))
         {
-            if (target[property.Key] is null && property.Value is not null)
-            {
-                target[property.Key] = property.Value.DeepClone();
-                changed = true;
-            }
+            target[property.Key] = property.Value!.DeepClone();
+            changed = true;
         }
 
         if (reference is not null)

@@ -99,13 +99,11 @@ public sealed class LegacyOverlayThemeStore
     public LegacyOverlayThemeSaveResult Save(LegacyOverlayTheme theme)
     {
         ArgumentNullException.ThrowIfNull(theme);
-        foreach (var required in DefaultColors.Keys)
+        foreach (var required in DefaultColors.Keys.Where(required =>
+            !theme.Colors.ContainsKey(required)))
         {
-            if (!theme.Colors.ContainsKey(required))
-            {
-                throw new InvalidDataException(
-                    $"The overlay theme does not define required colour '{required}'.");
-            }
+            throw new InvalidDataException(
+                $"The overlay theme does not define required colour '{required}'.");
         }
 
         var directory = Path.GetDirectoryName(path)

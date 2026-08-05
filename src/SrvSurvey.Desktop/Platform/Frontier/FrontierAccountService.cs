@@ -1421,9 +1421,10 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 .ConfigureAwait(false) ?? new FrontierCredentialDocument();
             var accounts = CopyAccounts(document);
             var target = GetAccount(document, commander.FrontierId);
-            foreach (var candidate in candidates)
+            foreach (var candidateFrontierId in candidates.Select(
+                candidate => candidate.FrontierId))
             {
-                if (!accounts.TryGetValue(candidate.FrontierId, out var source)
+                if (!accounts.TryGetValue(candidateFrontierId, out var source)
                     || !source.IsLinked)
                 {
                     continue;
@@ -1435,8 +1436,8 @@ public sealed class FrontierAccountService : IFrontierAccountService
                     accounts[commander.FrontierId] = source;
                 }
 
-                accounts.Remove(candidate.FrontierId);
-                migratedAliases.Add(candidate.FrontierId);
+                accounts.Remove(candidateFrontierId);
+                migratedAliases.Add(candidateFrontierId);
             }
 
             if (migratedAliases.Count == 0)

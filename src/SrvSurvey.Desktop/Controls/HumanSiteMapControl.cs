@@ -663,15 +663,12 @@ public sealed class HumanSiteMapControl : Control
         }
 
         var brush = TextBrush ?? Brushes.White;
-        foreach (var material in CollectedMaterials)
+        foreach (var offset in CollectedMaterials
+            .Where(material => material.Offset.IsFinite)
+            .Select(material => material.Offset))
         {
-            if (!material.Offset.IsFinite)
-            {
-                continue;
-            }
-
             var location = Transform(
-                material.Offset,
+                offset,
                 center,
                 commander,
                 scale);

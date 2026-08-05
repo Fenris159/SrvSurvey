@@ -459,31 +459,31 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
             DetachRuntimeWindow(stale);
         }
 
-        foreach (var registered in snapshot)
+        foreach (var window in snapshot.Select(registered => registered.Window))
         {
-            if (runtimeWindows.ContainsKey(registered.Window))
+            if (runtimeWindows.ContainsKey(window))
             {
-                if (registered.Window.IsVisible)
+                if (window.IsVisible)
                 {
-                    SuppressRuntimeWindow(registered.Window);
+                    SuppressRuntimeWindow(window);
                 }
 
                 continue;
             }
 
             EventHandler opened = (_, _) => Dispatcher.UIThread.Post(() =>
-                SuppressRuntimeWindow(registered.Window));
-            EventHandler closed = (_, _) => DetachRuntimeWindow(registered.Window);
+                SuppressRuntimeWindow(window));
+            EventHandler closed = (_, _) => DetachRuntimeWindow(window);
             var state = new RuntimeWindowState(
                 opened,
                 closed,
-                RestoreAfterEditing: registered.Window.IsVisible);
-            runtimeWindows.Add(registered.Window, state);
-            registered.Window.Opened += opened;
-            registered.Window.Closed += closed;
-            if (registered.Window.IsVisible && !keepRuntimeOverlaysVisible)
+                RestoreAfterEditing: window.IsVisible);
+            runtimeWindows.Add(window, state);
+            window.Opened += opened;
+            window.Closed += closed;
+            if (window.IsVisible && !keepRuntimeOverlaysVisible)
             {
-                registered.Window.Hide();
+                window.Hide();
             }
         }
     }

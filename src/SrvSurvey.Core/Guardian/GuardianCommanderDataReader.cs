@@ -274,15 +274,13 @@ public sealed class GuardianCommanderDataReader
             && root.TryGetProperty("confirmedPOI", out var confirmed)
             && confirmed.ValueKind == JsonValueKind.Object)
         {
-            foreach (var property in confirmed.EnumerateObject())
+            foreach (var property in confirmed.EnumerateObject().Where(property =>
+                property.Value.ValueKind is JsonValueKind.True
+                    or JsonValueKind.False))
             {
-                if (property.Value.ValueKind is JsonValueKind.True
-                    or JsonValueKind.False)
-                {
-                    statuses[property.Name] = property.Value.GetBoolean()
-                        ? GuardianPoiStatus.Present
-                        : GuardianPoiStatus.Absent;
-                }
+                statuses[property.Name] = property.Value.GetBoolean()
+                    ? GuardianPoiStatus.Present
+                    : GuardianPoiStatus.Absent;
             }
         }
 

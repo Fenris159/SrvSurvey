@@ -92,30 +92,26 @@ public sealed class GuidesViewModel : INotifyPropertyChanged
         var results = new List<GuideSearchResultViewModel>();
         foreach (var category in Categories)
         {
-            foreach (var section in category.Sections)
+            foreach (var section in category.Sections.Where(section =>
+                MatchesAllTerms(section.SearchableText, terms)
+                || MatchesAllTerms(category.SearchableText, terms)))
             {
-                if (MatchesAllTerms(section.SearchableText, terms)
-                    || MatchesAllTerms(category.SearchableText, terms))
-                {
-                    results.Add(new GuideSearchResultViewModel(
-                        category.Title,
-                        section.Title,
-                        section.Summary,
-                        "Guide"));
-                }
+                results.Add(new GuideSearchResultViewModel(
+                    category.Title,
+                    section.Title,
+                    section.Summary,
+                    "Guide"));
             }
 
-            foreach (var icon in category.Icons)
+            foreach (var icon in category.Icons.Where(icon =>
+                MatchesAllTerms(icon.SearchableText, terms)
+                || MatchesAllTerms(category.SearchableText, terms)))
             {
-                if (MatchesAllTerms(icon.SearchableText, terms)
-                    || MatchesAllTerms(category.SearchableText, terms))
-                {
-                    results.Add(new GuideSearchResultViewModel(
-                        category.Title,
-                        icon.Name,
-                        icon.Meaning,
-                        "Icon glossary"));
-                }
+                results.Add(new GuideSearchResultViewModel(
+                    category.Title,
+                    icon.Name,
+                    icon.Meaning,
+                    "Icon glossary"));
             }
         }
 

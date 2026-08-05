@@ -16,16 +16,17 @@ public sealed class GlobalInputBindingRouter
         ArgumentNullException.ThrowIfNull(settings);
         var routes = new Dictionary<string, GlobalInputAction>(
             StringComparer.OrdinalIgnoreCase);
-        foreach (var definition in GlobalInputActionCatalog.All)
+        foreach (var action in GlobalInputActionCatalog.All.Select(
+            definition => definition.Action))
         {
             var configured = settings.Bindings.GetValueOrDefault(
-                definition.Action);
+                action);
             if (!InputChord.TryNormalize(configured, out var chord))
             {
                 continue;
             }
 
-            routes.TryAdd(chord, definition.Action);
+            routes.TryAdd(chord, action);
         }
 
         actionsByChord = routes;

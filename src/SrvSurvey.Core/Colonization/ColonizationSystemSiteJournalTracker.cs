@@ -63,16 +63,8 @@ public sealed class ColonizationSystemSiteJournalTracker
     {
         ArgumentNullException.ThrowIfNull(sites);
         ArgumentNullException.ThrowIfNull(journalEvents);
-        var changed = 0;
-        foreach (var journalEvent in journalEvents)
-        {
-            if (ApplyJournalEvent(sites, journalEvent))
-            {
-                changed++;
-            }
-        }
-
-        return changed;
+        return journalEvents.Count(journalEvent =>
+            ApplyJournalEvent(sites, journalEvent));
     }
 
     public bool ApplyJournalEvent(

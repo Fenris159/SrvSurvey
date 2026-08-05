@@ -205,14 +205,8 @@ public sealed class JourneyService
                 return JourneyServiceResult.Empty;
             }
 
-            var processed = 0;
-            foreach (var journalEvent in journalEvents)
-            {
-                if (activeProcessor.Apply(journalEvent))
-                {
-                    processed++;
-                }
-            }
+            var processed = journalEvents.Count(journalEvent =>
+                activeProcessor.Apply(journalEvent));
 
             if (processed > 0)
             {

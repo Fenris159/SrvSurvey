@@ -809,13 +809,11 @@ public sealed class SystemScanState
             target,
             StringComparer.OrdinalIgnoreCase);
         var changed = false;
-        foreach (var pair in source)
+        foreach (var pair in source.Where(pair =>
+            !merged.ContainsKey(pair.Key)))
         {
-            if (!merged.ContainsKey(pair.Key))
-            {
-                merged[pair.Key] = pair.Value;
-                changed = true;
-            }
+            merged[pair.Key] = pair.Value;
+            changed = true;
         }
 
         if (changed)
@@ -984,12 +982,10 @@ public sealed class SystemScanState
             return 0;
         }
 
-        foreach (var signal in signalsElement.EnumerateArray())
+        foreach (var signal in signalsElement.EnumerateArray().Where(signal =>
+            GetString(signal, "Type") == type))
         {
-            if (GetString(signal, "Type") == type)
-            {
-                return GetInt32(signal, "Count") ?? 0;
-            }
+            return GetInt32(signal, "Count") ?? 0;
         }
 
         return 0;

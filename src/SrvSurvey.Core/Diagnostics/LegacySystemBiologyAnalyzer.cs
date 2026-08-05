@@ -180,16 +180,14 @@ public sealed class LegacySystemBiologyAnalyzer
             return true;
         }
 
-        foreach (var property in root.EnumerateObject())
+        foreach (var property in root.EnumerateObject().Where(property =>
+            string.Equals(
+                property.Name,
+                name,
+                StringComparison.OrdinalIgnoreCase)))
         {
-            if (string.Equals(
-                    property.Name,
-                    name,
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                value = property.Value;
-                return true;
-            }
+            value = property.Value;
+            return true;
         }
 
         value = default;

@@ -2213,15 +2213,13 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 journalUpdatedAt));
         }
 
-        foreach (var currentGoal in journalCommunityGoals)
+        foreach (var currentGoal in journalCommunityGoals.Where(currentGoal =>
+            FindCommunityGoalMatch(
+                currentGoal,
+                result,
+                new HashSet<int>()) is null))
         {
-            if (FindCommunityGoalMatch(
-                    currentGoal,
-                    result,
-                    new HashSet<int>()) is null)
-            {
-                result.Add(currentGoal);
-            }
+            result.Add(currentGoal);
         }
 
         return FrontierCommunityGoalOrdering.Order(result);
@@ -2372,12 +2370,10 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             data[point.Path] = point.Value;
         }
 
-        foreach (var point in journal.DataPoints ?? [])
+        foreach (var point in (journal.DataPoints ?? []).Where(point =>
+            journalIsCurrent || !data.ContainsKey(point.Path)))
         {
-            if (journalIsCurrent || !data.ContainsKey(point.Path))
-            {
-                data[point.Path] = point.Value;
-            }
+            data[point.Path] = point.Value;
         }
 
         if (journalUpdatedAt is { } timestamp)

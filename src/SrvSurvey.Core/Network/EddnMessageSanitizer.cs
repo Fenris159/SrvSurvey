@@ -468,8 +468,11 @@ namespace SrvSurvey.Core.Network
                     continue;
                 }
                 var statusFlags = new JArray();
-                foreach (var flag in new[] { "Producer", "Consumer", "Rare" })
-                    if (commodity.Value<bool?>(flag) == true) statusFlags.Add(flag);
+                foreach (var flag in new[] { "Producer", "Consumer", "Rare" }
+                    .Where(flag => commodity.Value<bool?>(flag) == true))
+                {
+                    statusFlags.Add(flag);
+                }
                 if (statusFlags.Count > 0) output["statusFlags"] = statusFlags;
                 commodities.Add(output);
             }

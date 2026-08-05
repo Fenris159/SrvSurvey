@@ -92,9 +92,10 @@ public sealed class CanonnCodexChallengeClient : ICanonnCodexChallengeClient
             }
 
             var groups = new List<CanonnCodexChallengeGroup>();
-            foreach (var property in document.RootElement.EnumerateObject())
+            foreach (var value in document.RootElement
+                .EnumerateObject()
+                .Select(property => property.Value))
             {
-                var value = property.Value;
                 if (value.ValueKind != JsonValueKind.Object
                     || !value.TryGetProperty("types_found", out var found)
                     || found.ValueKind != JsonValueKind.Array)

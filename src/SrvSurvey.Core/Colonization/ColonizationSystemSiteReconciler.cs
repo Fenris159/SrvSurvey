@@ -255,13 +255,11 @@ public static class ColonizationSystemSiteReconciler
         IReadOnlyList<ColonizationSystemSite> sites,
         string source)
     {
-        foreach (var site in sites)
+        foreach (var site in sites.Where(site =>
+            string.IsNullOrWhiteSpace(site.Name)))
         {
-            if (string.IsNullOrWhiteSpace(site.Name))
-            {
-                throw new InvalidDataException(
-                    $"A {source} colonisation site has no name.");
-            }
+            throw new InvalidDataException(
+                $"A {source} colonisation site has no name.");
         }
 
         var duplicateId = sites

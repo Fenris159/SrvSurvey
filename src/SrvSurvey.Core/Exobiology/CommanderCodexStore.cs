@@ -114,10 +114,10 @@ public sealed class CommanderCodexStore(string dataDirectory)
         var commanders = new List<CommanderCodexData>();
         var warnings = new List<string>();
         const string suffix = "-codex.json";
-        foreach (var file in files)
+        foreach (var fileName in files.Select(file => file.Name))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var frontierId = file.Name[..^suffix.Length];
+            var frontierId = fileName[..^suffix.Length];
             var loaded = await LoadAsync(
                     frontierId,
                     null,
@@ -129,7 +129,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
             }
 
             warnings.AddRange(loaded.Warnings.Select(warning =>
-                $"{file.Name}: {warning}"));
+                $"{fileName}: {warning}"));
         }
 
         return new CommanderCodexCommanderCatalogResult(

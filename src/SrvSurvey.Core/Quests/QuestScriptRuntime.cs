@@ -663,12 +663,10 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
     internal void AddTags(LuaValue value)
     {
-        foreach (var tag in ReadStringValues(value))
+        foreach (var tag in ReadStringValues(value).Where(tag =>
+            !string.IsNullOrWhiteSpace(tag)))
         {
-            if (!string.IsNullOrWhiteSpace(tag))
-            {
-                dirty |= Progress.Tags.Add(tag);
-            }
+            dirty |= Progress.Tags.Add(tag);
         }
     }
 
@@ -1091,13 +1089,11 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             ids.Add(Definition.FirstChapter);
         }
 
-        foreach (var id in ids)
+        foreach (var id in ids.Where(id =>
+            Progress.Chapters.All(chapter =>
+                !string.Equals(chapter.Id, id, StringComparison.Ordinal))))
         {
-            if (Progress.Chapters.All(chapter =>
-                !string.Equals(chapter.Id, id, StringComparison.Ordinal)))
-            {
-                Progress.Chapters.Add(new RavenQuestChapterState { Id = id });
-            }
+            Progress.Chapters.Add(new RavenQuestChapterState { Id = id });
         }
     }
 
