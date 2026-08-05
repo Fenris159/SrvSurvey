@@ -139,15 +139,9 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
 
     private static string? FirstPresentDisplayName(params string?[] values)
     {
-        foreach (var value in values)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                return value.Trim();
-            }
-        }
-
-        return null;
+        return values
+            .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))
+            ?.Trim();
     }
 
     private static string? ExtractHorizonsColorName(
