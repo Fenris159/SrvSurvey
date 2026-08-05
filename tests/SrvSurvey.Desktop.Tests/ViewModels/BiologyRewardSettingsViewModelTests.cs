@@ -116,8 +116,14 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
             viewModel.PreviewTwoBarReward,
             viewModel.Thresholds);
 
-        Assert.Equal(BiologyRewardBandSegment.Filled, state.Segments[0]);
-        Assert.Equal(BiologyRewardBandSegment.Filled, state.Segments[1]);
+        Assert.Equal(
+            [
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Empty,
+                BiologyRewardBandSegment.Empty,
+            ],
+            state.Segments);
         Assert.True(viewModel.PreviewTwoBarReward > 3_000_000);
         Assert.True(viewModel.PreviewThreeBarReward > 7_000_000);
         Assert.True(viewModel.PreviewFourBarReward > 12_000_000);
