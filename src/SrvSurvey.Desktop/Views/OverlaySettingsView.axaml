@@ -1110,6 +1110,13 @@
                       Content="Auto add tracker location when Composition scanning organisms." />
             <CheckBox IsChecked="{Binding SystemSurvey.SkipAnalyzedCompositionScans, Mode=TwoWay}"
                       Content="But not if that organism has already been analyzed." />
+            <Button Classes="secondary"
+                    HorizontalAlignment="Left"
+                    Command="{Binding ClearSurfaceTrackersCommand}"
+                    Content="Clear all trackers on current body" />
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Clears commander surface bookmarks for the body under the ship or suit, matching the legacy Bio Scanning settings control." />
             <Grid ColumnDefinitions="*,150" ColumnSpacing="12">
               <TextBlock VerticalAlignment="Center"
                          Text="Radar size (0–4)" />
@@ -1161,6 +1168,9 @@
                 </StackPanel>
               </Grid>
             </StackPanel>
+            <TextBlock Classes="muted"
+                       TextWrapping="Wrap"
+                       Text="Prior-scan guidance uses Canonn coordinates for the current body (PlotPriorScans list). When surface radar is visible, the same coordinates are drawn as rings on PlotGrounded, matching legacy drawPriorScans. Disabling external data prevents Canonn POI requests. Use External Bio Data controls whether Spansh/Canonn body biology is merged into the system scan; prior-scan coordinates still require External Data only." />
           </StackPanel>
         </Grid>
 

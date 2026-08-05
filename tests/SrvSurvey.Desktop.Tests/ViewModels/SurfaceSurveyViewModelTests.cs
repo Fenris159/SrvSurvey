@@ -15,6 +15,46 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
         $"SrvSurvey-surface-survey-vm-tests-{Guid.NewGuid():N}");
 
     [Fact]
+    public async Task ClearAllTrackersRemovesBodyBookmarks()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            Genus,
+            new SurfaceCoordinate(0, 2));
+        await store.AddBookmarkAsync(
+            BodyContext(),
+            "#1",
+            new SurfaceCoordinate(0, 3));
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+        Assert.Equal(2, viewModel.TrackerGroups.Count);
+
+        Assert.True(await viewModel.ClearAllTrackersAsync());
+        Assert.Empty(viewModel.TrackerGroups);
+        Assert.Contains("cleared", viewModel.StatusText, StringComparison.OrdinalIgnoreCase);
+        var reloaded = await store.LoadBodyAsync(BodyContext());
+        Assert.NotNull(reloaded.Snapshot);
+        Assert.Empty(reloaded.Snapshot.Bookmarks);
+
+        // Second clear on empty bookmarks remains successful and idempotent.
+        Assert.True(await viewModel.ClearAllTrackersAsync());
+        Assert.Empty(viewModel.TrackerGroups);
+    }
+
+    [Fact]
+    public async Task ClearAllTrackersRequiresBodyContext()
+    {
+        var (viewModel, _, _) = CreateViewModel();
+        Assert.False(await viewModel.ClearAllTrackersAsync());
+        Assert.Contains("required", viewModel.StatusText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task LoadsHistoryTrackersActiveSamplesAndShipMarker()
     {
         var (viewModel, survey, store) = CreateViewModel();
@@ -264,6 +304,85 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
 
         Assert.InRange(viewModel.RadarScale, 0.25, 10);
         Assert.False(viewModel.AdjustRadarScale(zoomIn: true));
+    }
+
+    [Fact]
+    public async Task PriorScanMarkersDrawOnSurfaceRadarWhenEnabled()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        await store.AppendBioScansAsync(
+            BodyContext(),
+            [new SurfaceBioScan(
+                new SurfaceCoordinate(0, 1),
+                150,
+                Genus,
+                "$Codex_Ent_Aleoids_01_Name;",
+                "Complete",
+                2310101,
+                "Test System 1")]);
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        survey.UseExternalData = true;
+        survey.AutoShowPriorScans = true;
+        survey.ShowCanonnSignalsOnRadar = true;
+        viewModel.SetPriorScanSurfaceMarkers(
+        [
+            new PriorScanSurfaceMarkerViewModel(
+                "Aleoida Arcus - Green",
+                new SurfaceCoordinate(0, 4),
+                150,
+                IsActive: true,
+                IsClose: true),
+        ]);
+
+        Assert.Contains(
+            viewModel.RadarMarkers,
+            marker => marker.IsCanonnPrior
+                && marker.Name == "Aleoida Arcus - Green"
+                && marker.Status == "Close");
+
+        survey.ShowCanonnSignalsOnRadar = false;
+        Assert.DoesNotContain(
+            viewModel.RadarMarkers,
+            marker => marker.IsCanonnPrior);
+    }
+
+    [Fact]
+    public async Task VisibleCanonnPriorMarkersCountAsRadarContent()
+    {
+        var (viewModel, survey, _) = CreateViewModel();
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty);
+
+        Assert.False(viewModel.ShouldShowRadar);
+
+        survey.UseExternalData = true;
+        survey.AutoShowPriorScans = true;
+        survey.ShowCanonnSignalsOnRadar = true;
+        viewModel.SetPriorScanSurfaceMarkers(
+        [
+            new PriorScanSurfaceMarkerViewModel(
+                "Aleoida Arcus - Green",
+                new SurfaceCoordinate(0, 4),
+                150,
+                IsActive: true,
+                IsClose: false),
+        ]);
+
+        Assert.True(viewModel.ShouldShowRadar);
+        Assert.Contains(viewModel.RadarMarkers, marker => marker.IsCanonnPrior);
+
+        survey.ShowCanonnSignalsOnRadar = false;
+        Assert.False(viewModel.ShouldShowRadar);
     }
 
     [Fact]

@@ -235,15 +235,28 @@ public sealed class SurfaceSurveyRadarControl : Control
         {
             SurfaceRadarMarkerKind.HistoricalScan =>
                 marker.IsInsideRadius ? danger : muted,
-            SurfaceRadarMarkerKind.Bookmark => !marker.IsActive
-                ? muted
-                : marker.IsInsideRadius
-                    ? success
-                    : accent,
+            // Bookmarks and Canonn prior rings: muted when inactive, green when
+            // inside the drawn radius (genus sample distance for priors), else cyan.
+            SurfaceRadarMarkerKind.Bookmark or SurfaceRadarMarkerKind.CanonnPrior =>
+                GetActiveInsideRadiusCircleBrush(marker, muted, success, accent),
             SurfaceRadarMarkerKind.ActiveSample =>
                 marker.IsInsideRadius ? warning : success,
             _ => accent,
         };
+    }
+
+    private static IBrush GetActiveInsideRadiusCircleBrush(
+        SurfaceRadarMarkerViewModel marker,
+        IBrush muted,
+        IBrush success,
+        IBrush accent)
+    {
+        if (!marker.IsActive)
+        {
+            return muted;
+        }
+
+        return marker.IsInsideRadius ? success : accent;
     }
 
     private IBrush GetMarkerBrush(SurfaceRadarMarkerViewModel marker)

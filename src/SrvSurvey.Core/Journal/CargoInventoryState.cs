@@ -2,49 +2,135 @@ using System.Text.Json;
 
 namespace SrvSurvey.Core.Journal;
 
+/// <summary>
+/// Live ship cargo projection from journal deltas and Cargo.json snapshots.
+/// Inventory / lastInventory updates are serialized so squadron-FC
+/// diff tracking cannot race with CargoTransfer mutations or companion-file reloads.
+/// </summary>
 public sealed class CargoInventoryState
 {
+    /// <summary>Lock for all Inventory / lastInventory readers and writers.</summary>
+    private readonly Lock syncRoot = new();
+
     private readonly Dictionary<string, CargoItemState> inventory = new(
         StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, int> lastInventory =
+        CargoInventoryDiff.CreateCountMap();
     private DateTimeOffset timestamp;
     private string eventName = "Cargo";
     private string vessel = string.Empty;
     private bool hasState;
 
+    /// <summary>
+    /// When true, <see cref="Reset"/> / cargo-event replaces will not overwrite
+    /// <see cref="lastInventory"/>. Set by <see cref="CaptureBeforeSnapshot"/> so CargoTransfer
+    /// can freeze the true before-state before it mutates live inventory; cleared by
+    /// <see cref="GetDiff"/>.
+    /// </summary>
+    private bool preserveLastInventory;
+
+    /// <summary>True when a transfer path has frozen lastInventory until GetDiff consumes it.</summary>
+    public bool HasPreservedSnapshot
+    {
+        get
+        {
+            lock (syncRoot)
+            {
+                return preserveLastInventory;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Capture the current inventory as the "before" snapshot for a later GetDiff, and hold it
+    /// across subsequent Reset/file reloads. Call this before any mutation that would otherwise
+    /// corrupt the before-state (e.g. CargoTransfer on a squadron FC).
+    /// </summary>
+    public void CaptureBeforeSnapshot()
+    {
+        lock (syncRoot)
+        {
+            CopyCurrentToLastInventoryUnlocked();
+            preserveLastInventory = true;
+        }
+    }
+
+    /// <summary>
+    /// Drop a held before-snapshot without computing a diff (e.g. when skipNextCargoEvent
+    /// intentionally suppresses squadron supplyFC processing).
+    /// </summary>
+    public void ClearPreservedSnapshot()
+    {
+        lock (syncRoot)
+        {
+            preserveLastInventory = false;
+        }
+    }
+
+    /// <summary>
+    /// Ship cargo delta: current inventory − lastInventory (non-zero entries only).
+    /// Rebases lastInventory to the current counts and clears any preserved snapshot so the
+    /// computed diff is consumed once. Call while the new inventory is already applied;
+    /// release the lock before network I/O or logging.
+    /// </summary>
+    public Dictionary<string, int> GetDiff()
+    {
+        lock (syncRoot)
+        {
+            var after = CreateCountMapUnlocked();
+            var diffs = CargoInventoryDiff.Compute(lastInventory, after);
+            // Consume once: subsequent GetDiff calls baseline from this after-state.
+            CargoInventoryDiff.CopyFromCounts(lastInventory, after);
+            preserveLastInventory = false;
+            return diffs;
+        }
+    }
+
     public bool Reset(CargoSnapshot? snapshot)
     {
-        if (snapshot is null)
+        lock (syncRoot)
         {
-            if (!hasState && inventory.Count == 0)
+            if (snapshot is null)
             {
-                return false;
+                if (!hasState && inventory.Count == 0)
+                {
+                    return false;
+                }
+
+                inventory.Clear();
+                timestamp = default;
+                eventName = "Cargo";
+                vessel = string.Empty;
+                hasState = false;
+                // Commander/context clears must not leave a frozen before-snapshot forever.
+                preserveLastInventory = false;
+                lastInventory.Clear();
+                return true;
             }
 
+            if (!preserveLastInventory)
+            {
+                CopyCurrentToLastInventoryUnlocked();
+            }
+
+            var replacement = CreateInventory(snapshot.Inventory);
+            var changed = !hasState
+                || timestamp != snapshot.Timestamp
+                || !string.Equals(eventName, snapshot.EventName, StringComparison.Ordinal)
+                || !string.Equals(vessel, snapshot.Vessel, StringComparison.Ordinal)
+                || !InventoryEquals(inventory, replacement);
             inventory.Clear();
-            timestamp = default;
-            eventName = "Cargo";
-            vessel = string.Empty;
-            hasState = false;
-            return true;
-        }
+            foreach (var item in replacement)
+            {
+                inventory[item.Key] = item.Value;
+            }
 
-        var replacement = CreateInventory(snapshot.Inventory);
-        var changed = !hasState
-            || timestamp != snapshot.Timestamp
-            || !string.Equals(eventName, snapshot.EventName, StringComparison.Ordinal)
-            || !string.Equals(vessel, snapshot.Vessel, StringComparison.Ordinal)
-            || !InventoryEquals(inventory, replacement);
-        inventory.Clear();
-        foreach (var item in replacement)
-        {
-            inventory[item.Key] = item.Value;
+            timestamp = snapshot.Timestamp;
+            eventName = snapshot.EventName;
+            vessel = snapshot.Vessel;
+            hasState = true;
+            return changed;
         }
-
-        timestamp = snapshot.Timestamp;
-        eventName = snapshot.EventName;
-        vessel = snapshot.Vessel;
-        hasState = true;
-        return changed;
     }
 
     public bool Apply(
@@ -52,65 +138,71 @@ public sealed class CargoInventoryState
         bool isInSrv = false)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
-        var root = journalEvent.Payload;
-        var changed = journalEvent.EventName switch
+        lock (syncRoot)
         {
-            "CollectCargo" => ApplyDelta(
-                GetString(root, "Type"),
-                GetString(root, "Type_Localised"),
-                1),
-            "EjectCargo" => ApplyDelta(
-                GetString(root, "Type"),
-                GetString(root, "Type_Localised"),
-                -Math.Max(0, GetInt32(root, "Count") ?? 0)),
-            "MarketBuy" => ApplyDelta(
-                GetString(root, "Type"),
-                GetString(root, "Type_Localised"),
-                Math.Max(0, GetInt32(root, "Count") ?? 0)),
-            "MarketSell" => ApplyDelta(
-                GetString(root, "Type"),
-                GetString(root, "Type_Localised"),
-                -Math.Max(0, GetInt32(root, "Count") ?? 0)),
-            "CargoTransfer" => ApplyTransfers(root, isInSrv),
-            "ColonisationContribution" => ApplyContributions(root),
-            "Cargo" => ApplyCargoEvent(root),
-            _ => false,
-        };
-        if (!changed)
-        {
-            return false;
-        }
+            var root = journalEvent.Payload;
+            var changed = journalEvent.EventName switch
+            {
+                "CollectCargo" => ApplyDelta(
+                    GetString(root, "Type"),
+                    GetString(root, "Type_Localised"),
+                    1),
+                "EjectCargo" => ApplyDelta(
+                    GetString(root, "Type"),
+                    GetString(root, "Type_Localised"),
+                    -Math.Max(0, GetInt32(root, "Count") ?? 0)),
+                "MarketBuy" => ApplyDelta(
+                    GetString(root, "Type"),
+                    GetString(root, "Type_Localised"),
+                    Math.Max(0, GetInt32(root, "Count") ?? 0)),
+                "MarketSell" => ApplyDelta(
+                    GetString(root, "Type"),
+                    GetString(root, "Type_Localised"),
+                    -Math.Max(0, GetInt32(root, "Count") ?? 0)),
+                "CargoTransfer" => ApplyTransfers(root, isInSrv),
+                "ColonisationContribution" => ApplyContributions(root),
+                "Cargo" => ApplyCargoEvent(root),
+                _ => false,
+            };
+            if (!changed)
+            {
+                return false;
+            }
 
-        timestamp = journalEvent.Timestamp ?? timestamp;
-        eventName = journalEvent.EventName;
-        hasState = true;
-        return true;
+            timestamp = journalEvent.Timestamp ?? timestamp;
+            eventName = journalEvent.EventName;
+            hasState = true;
+            return true;
+        }
     }
 
     public CargoSnapshot? CreateSnapshot()
     {
-        if (!hasState)
+        lock (syncRoot)
         {
-            return null;
-        }
+            if (!hasState)
+            {
+                return null;
+            }
 
-        var items = inventory.Values
-            .OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
-            .Select(item => new CargoItem(
-                item.Name,
-                item.LocalizedName,
-                item.Count,
-                item.Stolen))
-            .ToArray();
-        var total = (int)Math.Min(
-            int.MaxValue,
-            items.Sum(item => (long)item.Count));
-        return new CargoSnapshot(
-            timestamp,
-            eventName,
-            vessel,
-            total,
-            items);
+            var items = inventory.Values
+                .OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(item => new CargoItem(
+                    item.Name,
+                    item.LocalizedName,
+                    item.Count,
+                    item.Stolen))
+                .ToArray();
+            var total = (int)Math.Min(
+                int.MaxValue,
+                items.Sum(item => (long)item.Count));
+            return new CargoSnapshot(
+                timestamp,
+                eventName,
+                vessel,
+                total,
+                items);
+        }
     }
 
     private bool ApplyCargoEvent(JsonElement root)
@@ -119,6 +211,11 @@ public sealed class CargoInventoryState
             || items.ValueKind != JsonValueKind.Array)
         {
             return false;
+        }
+
+        if (!preserveLastInventory)
+        {
+            CopyCurrentToLastInventoryUnlocked();
         }
 
         var replacement = CreateInventory(items);
@@ -236,6 +333,26 @@ public sealed class CargoInventoryState
             nextCount,
             Math.Min(previous?.Stolen ?? 0, nextCount));
         return true;
+    }
+
+    private void CopyCurrentToLastInventoryUnlocked()
+    {
+        lastInventory.Clear();
+        foreach (var item in inventory)
+        {
+            lastInventory[item.Key] = item.Value.Count;
+        }
+    }
+
+    private Dictionary<string, int> CreateCountMapUnlocked()
+    {
+        var map = CargoInventoryDiff.CreateCountMap();
+        foreach (var item in inventory)
+        {
+            map[item.Key] = item.Value.Count;
+        }
+
+        return map;
     }
 
     private static Dictionary<string, CargoItemState> CreateInventory(

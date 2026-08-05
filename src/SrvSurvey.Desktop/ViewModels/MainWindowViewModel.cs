@@ -74,6 +74,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private readonly AsyncCommand cancelResetExplorationCommand;
     private readonly AsyncCommand resetExobiologyCommand;
     private readonly AsyncCommand cancelResetExobiologyCommand;
+    private readonly AsyncCommand clearSurfaceTrackersCommand;
+    private readonly AsyncCommand toggleFirstFootfallCommand;
     private bool isBusy;
     private bool isImportingProfile;
     private string statusMessage;
@@ -102,6 +104,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     private string activeOrganicSpecies = Unavailable;
     private string organicSampleRange = Unavailable;
     private string bioFirstFootfall = "Unknown";
+    private bool isCurrentBodyFirstFootfall;
+    private bool canToggleCurrentBodyFirstFootfall;
+    private bool isOrganicSample1Complete;
+    private bool isOrganicSample2Complete;
     private string exobiologyStatusMessage = "Waiting for commander profile.";
     private string commanderCodexStatusMessage =
         "Waiting for Commander Codex journal entries.";
@@ -703,6 +709,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             CancelResetExobiologyAsync,
             () => IsResetExobiologyPending);
         CancelResetExobiologyCommand = cancelResetExobiologyCommand;
+        clearSurfaceTrackersCommand = new AsyncCommand(
+            ClearSurfaceTrackersAsync,
+            () => activeProfileFrontierId is not null);
+        ClearSurfaceTrackersCommand = clearSurfaceTrackersCommand;
+        toggleFirstFootfallCommand = new AsyncCommand(
+            async () =>
+            {
+                await ToggleCurrentBodyFirstFootfallAsync();
+            },
+            () => CanToggleCurrentBodyFirstFootfall);
+        ToggleFirstFootfallCommand = toggleFirstFootfallCommand;
 
         NavigationItems =
         [
@@ -1334,6 +1351,42 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         private set => SetField(ref bioFirstFootfall, value);
     }
 
+    /// <summary>
+    /// Current-body first-footfall state for the Exobiology workspace checkbox
+    /// (legacy Main <c>checkFirstFootFall</c>).
+    /// </summary>
+    public bool IsCurrentBodyFirstFootfall
+    {
+        get => isCurrentBodyFirstFootfall;
+        private set => SetField(ref isCurrentBodyFirstFootfall, value);
+    }
+
+    public bool CanToggleCurrentBodyFirstFootfall
+    {
+        get => canToggleCurrentBodyFirstFootfall;
+        private set
+        {
+            if (SetField(ref canToggleCurrentBodyFirstFootfall, value))
+            {
+                toggleFirstFootfallCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsOrganicSample1Complete
+    {
+        get => isOrganicSample1Complete;
+        private set => SetField(ref isOrganicSample1Complete, value);
+    }
+
+    public bool IsOrganicSample2Complete
+    {
+        get => isOrganicSample2Complete;
+        private set => SetField(ref isOrganicSample2Complete, value);
+    }
+
+    public bool HasActiveOrganicSample => IsOrganicSample1Complete;
+
     public string ExobiologyStatusMessage
     {
         get => exobiologyStatusMessage;
@@ -1349,6 +1402,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
     public ICommand ResetExobiologyCommand { get; }
 
     public ICommand CancelResetExobiologyCommand { get; }
+
+    public ICommand ClearSurfaceTrackersCommand { get; }
+
+    public ICommand ToggleFirstFootfallCommand { get; }
 
     public bool IsResetExobiologyPending
     {
@@ -1757,6 +1814,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             foreach (var journalEvent in update.JournalEvents)
             {
+                // Squadron linked FCs freeze the true before-state before CargoTransfer mutates
+                // live inventory so the later GetDiff cannot collapse to a zero delta.
+                if (string.Equals(
+                        journalEvent.EventName,
+                        "CargoTransfer",
+                        StringComparison.Ordinal))
+                {
+                    Colonization.PrepareSquadronCargoTransferSnapshot(
+                        cargoInventoryState);
+                }
+
                 cargoChanged |= cargoInventoryState.Apply(
                     journalEvent,
                     latestStatus?.InSrv == true);
@@ -1897,9 +1965,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var loadedExistingProfile = await EnsureCommanderProfileAsync();
         await ApplyQuestUpdateAsync(update, allowSharedCargo);
         await Colonization.SetCommanderAsync(journalState.CommanderName);
+        var cargoActivity = allowSharedCargo
+            && (cargoChanged
+                || update.Cargo is not null
+                || update.JournalEvents.Any(journalEvent =>
+                    journalEvent.EventName is "Cargo"
+                        or "CargoTransfer"
+                        or "MarketBuy"
+                        or "MarketSell"));
         await Colonization.SynchronizeLiveProjectsAsync(
             update.JournalEvents,
-            allowPublishing: !update.IsBootstrapRead);
+            allowPublishing: !update.IsBootstrapRead,
+            cargoInventory: allowSharedCargo ? cargoInventoryState : null,
+            cargoActivity: cargoActivity);
         var initializedJourney = await Journey.UpdateContextAsync(
             journalState.FrontierId,
             journalState.CommanderName,
@@ -2517,6 +2595,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         activeProfileIsOdyssey = isOdyssey;
         resetExplorationCommand.RaiseCanExecuteChanged();
         resetExobiologyCommand.RaiseCanExecuteChanged();
+        clearSurfaceTrackersCommand.RaiseCanExecuteChanged();
 
         if (result.Data is null)
         {
@@ -2699,6 +2778,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             false => "Not first footfall",
             null => "Unknown for current body",
         };
+        IsCurrentBodyFirstFootfall =
+            exobiologyState.CurrentBodyFirstFootfall == true;
+        CanToggleCurrentBodyFirstFootfall =
+            exobiologyState.CurrentBodySystemAddress is not null
+            && exobiologyState.CurrentBodyId is not null
+            && SystemSurvey.Snapshot.SystemAddress
+                == exobiologyState.CurrentBodySystemAddress;
+        IsOrganicSample1Complete = snapshot.ScanOne is not null;
+        IsOrganicSample2Complete = snapshot.ScanTwo is not null;
+        OnPropertyChanged(nameof(HasActiveOrganicSample));
     }
 
     private static bool IsExobiologyContextEvent(string eventName)
@@ -3027,6 +3116,24 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         UpdateExobiologyDisplay(snapshot);
         IsResetExobiologyPending = false;
         await SaveExobiologyAsync(snapshot);
+    }
+
+    public async Task ClearSurfaceTrackersAsync()
+    {
+        try
+        {
+            await SurfaceSurvey.ClearAllTrackersAsync(
+                firstFootfallInferenceCancellation.Token);
+            ExobiologyStatusMessage = SurfaceSurvey.StatusText;
+        }
+        catch (OperationCanceledException)
+        {
+            // Disposal/cancellation must not fault the async-void command.
+        }
+        finally
+        {
+            clearSurfaceTrackersCommand.RaiseCanExecuteChanged();
+        }
     }
 
     public async Task<bool> ToggleCurrentBodyFirstFootfallAsync()
@@ -3766,9 +3873,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
         public async void Execute(object? parameter)
         {
-            if (CanExecute(parameter))
+            if (!CanExecute(parameter))
+            {
+                return;
+            }
+
+            try
             {
                 await execute();
+            }
+            catch (OperationCanceledException)
+            {
+                // Command disposal/cancellation is not a user-facing failure.
             }
         }
 

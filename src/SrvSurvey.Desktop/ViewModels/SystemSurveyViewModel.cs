@@ -1472,6 +1472,19 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
 
         RefreshDisplay();
+
+        // Raise status/exobiology after Snapshot and RefreshDisplay so
+        // listeners that also read Snapshot observe a consistent state.
+        if (nextStatus is not null)
+        {
+            OnPropertyChanged(nameof(CurrentStatus));
+        }
+
+        if (nextExobiology is not null)
+        {
+            OnPropertyChanged(nameof(CurrentExobiology));
+        }
+
         RaiseVisibilityProperties();
     }
 
