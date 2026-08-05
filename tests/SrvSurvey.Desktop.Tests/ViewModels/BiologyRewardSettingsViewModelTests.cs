@@ -80,6 +80,26 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
     }
 
     [Fact]
+    public void LegacySampleRewardAliasesMatchProgressivePreviewRewards()
+    {
+        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        var viewModel = new BiologyRewardSettingsViewModel(
+            new BiologyRewardSettingsStore(path));
+
+        Assert.Equal(viewModel.PreviewTwoBarReward, viewModel.BucketOneSampleReward);
+        Assert.Equal(viewModel.PreviewThreeBarReward, viewModel.BucketTwoSampleReward);
+        Assert.Equal(viewModel.PreviewFourBarReward, viewModel.BucketThreeSampleReward);
+
+        viewModel.BucketOneMillions = 4;
+        viewModel.BucketTwoMillions = 8;
+        viewModel.BucketThreeMillions = 13;
+
+        Assert.Equal(viewModel.PreviewTwoBarReward, viewModel.BucketOneSampleReward);
+        Assert.Equal(viewModel.PreviewThreeBarReward, viewModel.BucketTwoSampleReward);
+        Assert.Equal(viewModel.PreviewFourBarReward, viewModel.BucketThreeSampleReward);
+    }
+
+    [Fact]
     public void PreviewRewardsStayStrictlyAboveNearIntegerMillionThresholds()
     {
         var path = Path.Combine(temporaryDirectory, "ui-settings.json");
