@@ -79,6 +79,30 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
                 thresholds).Segments);
     }
 
+    [Fact]
+    public void PreviewRewardsStayStrictlyAboveNearIntegerMillionThresholds()
+    {
+        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        var viewModel = new BiologyRewardSettingsViewModel(
+            new BiologyRewardSettingsStore(path));
+
+        // Just below the displayed 3 M boundary; truncation alone would under-fill.
+        viewModel.BucketOneMillions = 2.999999999d;
+        viewModel.BucketTwoMillions = 6.999999999d;
+        viewModel.BucketThreeMillions = 11.999999999d;
+
+        var state = BiologyRewardBandScale.Calculate(
+            viewModel.PreviewTwoBarReward,
+            viewModel.PreviewTwoBarReward,
+            viewModel.Thresholds);
+
+        Assert.Equal(BiologyRewardBandSegment.Filled, state.Segments[0]);
+        Assert.Equal(BiologyRewardBandSegment.Filled, state.Segments[1]);
+        Assert.True(viewModel.PreviewTwoBarReward > 3_000_000);
+        Assert.True(viewModel.PreviewThreeBarReward > 7_000_000);
+        Assert.True(viewModel.PreviewFourBarReward > 12_000_000);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(temporaryDirectory))

@@ -1103,7 +1103,7 @@
             <CheckBox IsChecked="{Binding SystemSurvey.AutoHideSurfaceRadarWithoutLandingGear, Mode=TwoWay}"
                       Content="Hide if landing gear is not deployed when flying." />
             <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnSampling, Mode=TwoWay}"
-                      Content="Auto remove tracker location when sampling an organism within 250m." />
+                      Content="Auto remove tracker location when sampling an organism within 250 m." />
             <CheckBox IsChecked="{Binding SystemSurvey.AutoRemoveTrackerOnFinalSample, Mode=TwoWay}"
                       Content="Auto remove tracker locations upon final scan" />
             <CheckBox IsChecked="{Binding SystemSurvey.AutoTrackCompositionScans, Mode=TwoWay}"

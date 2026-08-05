@@ -66,9 +66,15 @@ public sealed class BiologyRewardBandControl : Control
     public static readonly StyledProperty<IBrush?> HatchBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(HatchBrush));
+    public static readonly StyledProperty<IBrush?> EmptyBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(EmptyBrush));
     public static readonly StyledProperty<bool> IsDimmedProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, bool>(
             nameof(IsDimmed));
+
+    private static readonly IBrush DefaultEmptyBrush =
+        new SolidColorBrush(Color.FromArgb(40, 255, 255, 255));
 
     static BiologyRewardBandControl()
     {
@@ -91,6 +97,7 @@ public sealed class BiologyRewardBandControl : Control
             PredictionBrushProperty,
             UnknownBrushProperty,
             HatchBrushProperty,
+            EmptyBrushProperty,
             IsDimmedProperty);
     }
 
@@ -202,6 +209,12 @@ public sealed class BiologyRewardBandControl : Control
         set => SetValue(HatchBrushProperty, value);
     }
 
+    public IBrush? EmptyBrush
+    {
+        get => GetValue(EmptyBrushProperty);
+        set => SetValue(EmptyBrushProperty, value);
+    }
+
     public bool IsDimmed
     {
         get => GetValue(IsDimmedProperty);
@@ -282,7 +295,7 @@ public sealed class BiologyRewardBandControl : Control
                 // Leave empty slots visible as recessed gaps so 1/2/3-bar
                 // illustrations still show the full four-slot structure.
                 context.DrawRectangle(
-                    new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
+                    EmptyBrush ?? DefaultEmptyBrush,
                     null,
                     rect,
                     1,

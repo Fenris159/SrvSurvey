@@ -56,15 +56,15 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
 
     /// <summary>Just above bucket one so only the bottom two segments fill.</summary>
     public long PreviewTwoBarReward =>
-        ToCredits(thresholds.BucketOneMillions) + 1;
+        ToPreviewRewardAbove(thresholds.BucketOneMillions);
 
     /// <summary>Just above bucket two so three segments fill.</summary>
     public long PreviewThreeBarReward =>
-        ToCredits(thresholds.BucketTwoMillions) + 1;
+        ToPreviewRewardAbove(thresholds.BucketTwoMillions);
 
     /// <summary>Just above bucket three so all four segments fill.</summary>
     public long PreviewFourBarReward =>
-        ToCredits(thresholds.BucketThreeMillions) + 1;
+        ToPreviewRewardAbove(thresholds.BucketThreeMillions);
 
     /// <summary>Legacy alias used by earlier preview bindings.</summary>
     public long BucketOneSampleReward => PreviewTwoBarReward;
@@ -128,8 +128,16 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(Thresholds));
     }
 
-    private static long ToCredits(double millions) =>
-        Math.Max(0, (long)(millions * 1_000_000d));
+    /// <summary>
+    /// Credit sample strictly above a millions-of-CR threshold for settings previews.
+    /// Ceiling avoids floating-point values just below an integer million truncating
+    /// into the lower band and leaving the preview under-filled.
+    /// </summary>
+    private static long ToPreviewRewardAbove(double millions)
+    {
+        var credits = checked((long)Math.Ceiling(Math.Max(0d, millions) * 1_000_000d));
+        return Math.Max(1, credits + 1);
+    }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
