@@ -11,27 +11,43 @@ public sealed class HumanSiteTemplateCatalogTests
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
 
         Assert.Equal(28, catalog.Count);
-        Assert.Equal(48, catalog.Templates.Sum(
-            (HumanSiteTemplate template) => template.LandingPads.Count));
-        Assert.Equal(398, catalog.Templates.Sum(
-            (HumanSiteTemplate template) => template.SecureDoors.Count));
-        Assert.Equal(594, catalog.Templates.Sum(
-            (HumanSiteTemplate template) => template.NamedPoints.Count));
-        Assert.Equal(144, catalog.Templates.Sum(
-            (HumanSiteTemplate template) => template.DataTerminals.Count));
-        Assert.Equal(160, catalog.Templates.Sum(
-            (HumanSiteTemplate template) => template.ConflictZonePoints.Count));
-        Assert.Equal(128, catalog.Templates.Sum(
-            (HumanSiteTemplate template) => template.Buildings.Count));
-        Assert.Equal(191, catalog.Templates.Sum(
-            (HumanSiteTemplate template) => template.Buildings.Sum(
-                (HumanSiteBuilding building) => building.Paths.Count)));
-        Assert.Equal(2_711, catalog.Templates.Sum(
-            (HumanSiteTemplate template) =>
-                template.Buildings.Sum(
-                    (HumanSiteBuilding building) =>
-                        building.Paths.Sum((HumanSiteBuildingPath path) =>
-                            path.Points.Count))));
+        var totalLandingPads = 0;
+        var totalSecureDoors = 0;
+        var totalNamedPoints = 0;
+        var totalDataTerminals = 0;
+        var totalConflictZonePoints = 0;
+        var totalBuildings = 0;
+        var totalBuildingPaths = 0;
+        var totalPathPoints = 0;
+
+        foreach (var template in catalog.Templates)
+        {
+            totalLandingPads += template.LandingPads.Count;
+            totalSecureDoors += template.SecureDoors.Count;
+            totalNamedPoints += template.NamedPoints.Count;
+            totalDataTerminals += template.DataTerminals.Count;
+            totalConflictZonePoints += template.ConflictZonePoints.Count;
+            totalBuildings += template.Buildings.Count;
+
+            foreach (var building in template.Buildings)
+            {
+                totalBuildingPaths += building.Paths.Count;
+
+                foreach (var path in building.Paths)
+                {
+                    totalPathPoints += path.Points.Count;
+                }
+            }
+        }
+
+        Assert.Equal(48, totalLandingPads);
+        Assert.Equal(398, totalSecureDoors);
+        Assert.Equal(594, totalNamedPoints);
+        Assert.Equal(144, totalDataTerminals);
+        Assert.Equal(160, totalConflictZonePoints);
+        Assert.Equal(128, totalBuildings);
+        Assert.Equal(191, totalBuildingPaths);
+        Assert.Equal(2_711, totalPathPoints);
     }
 
     [Fact]
@@ -44,7 +60,7 @@ public sealed class HumanSiteTemplateCatalogTests
 
         Assert.Equal(5, agriculture.Count);
         Assert.Equal([1, 2, 3, 4, 5],
-            agriculture.Select(template => template.SubType));
+            agriculture.Select((HumanSiteTemplate template) => template.SubType));
         Assert.NotNull(picumnus);
         Assert.Equal("Picumnus", picumnus.Name);
         Assert.Equal(HumanSiteLandingPadSize.Small,
@@ -52,19 +68,19 @@ public sealed class HumanSiteTemplateCatalogTests
         Assert.Equal(new HumanSiteMapPoint(149.1648, -122.47405),
             picumnus.LandingPads[0].Offset);
         Assert.Contains(picumnus.NamedPoints,
-            point => point.Name == "Alarm" && point.SecurityLevel == 1);
+            (HumanSiteNamedPointOfInterest point) => point.Name == "Alarm" && point.SecurityLevel == 1);
     }
 
     [Fact]
     public void RetainsButIdentifiesImplausibleLegacyPoiOffsets()
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var allPoints = catalog.Templates.SelectMany(template =>
-            template.NamedPoints.Select(point => point.Offset));
+        var allPoints = catalog.Templates.SelectMany((HumanSiteTemplate template) =>
+            template.NamedPoints.Select((HumanSiteNamedPointOfInterest point) => point.Offset));
 
-        Assert.All(allPoints, point => Assert.True(point.IsFinite));
+        Assert.All(allPoints, (HumanSiteMapPoint point) => Assert.True(point.IsFinite));
         Assert.Contains(allPoints,
-            point => !point.IsPlausibleMapOffset());
+            (HumanSiteMapPoint point) => !point.IsPlausibleMapOffset());
     }
 
     [Fact]
