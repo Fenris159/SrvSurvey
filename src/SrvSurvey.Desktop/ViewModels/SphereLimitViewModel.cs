@@ -467,31 +467,30 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         var routeDestination = latestNavRoute?.Route.Count > 1
             ? latestNavRoute.Route[^1]
             : null;
-        var destinationName = routeDestination?.StarSystem
-            ?? status?.Destination?.Name;
-        if (string.IsNullOrWhiteSpace(destinationName))
+        if (routeDestination is not null)
+        {
+            if (string.IsNullOrWhiteSpace(routeDestination.StarSystem))
+            {
+                return null;
+            }
+
+            return (
+                routeDestination.StarSystem,
+                routeDestination.SystemAddress,
+                routeDestination.Position);
+        }
+
+        var statusDestination = status?.Destination;
+        if (statusDestination is null
+            || string.IsNullOrWhiteSpace(statusDestination.Name))
         {
             return null;
         }
 
-        long address;
-        if (routeDestination is not null)
-        {
-            address = routeDestination.SystemAddress;
-        }
-        else if (status?.Destination is { } destination)
-        {
-            address = destination.System;
-        }
-        else
-        {
-            address = 0;
-        }
-
         return (
-            destinationName,
-            address,
-            routeDestination?.Position);
+            statusDestination.Name,
+            statusDestination.System,
+            null);
     }
 
     private void ClearDestinationDisplay()

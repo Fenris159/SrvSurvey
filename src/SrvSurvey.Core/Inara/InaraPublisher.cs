@@ -1002,7 +1002,7 @@ public sealed class InaraPublisher : IInaraPublisher
 
     private InaraPublicationResult HandleUnsuccessfulHeader(
         int headerStatus,
-        IReadOnlyList<InaraQueuedEvent> batch,
+        List<InaraQueuedEvent> batch,
         List<string> warnings)
     {
         if (IsTransient(headerStatus))
@@ -1024,7 +1024,7 @@ public sealed class InaraPublisher : IInaraPublisher
 
     private InaraPublicationResult ApplyEventStatuses(
         JArray responseEvents,
-        IReadOnlyList<InaraQueuedEvent> batch,
+        List<InaraQueuedEvent> batch,
         List<string> warnings)
     {
         var statuses = responseEvents
