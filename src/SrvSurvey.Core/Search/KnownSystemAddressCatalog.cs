@@ -174,7 +174,7 @@ public sealed partial class KnownSystemAddressCatalog
             "The known-system address catalog is incomplete.");
     }
 
-    private static void ThrowIfNoEntries(IDictionary<string, long> result)
+    private static void ThrowIfNoEntries(Dictionary<string, long> result)
     {
         if (result.Count is 0)
         {
