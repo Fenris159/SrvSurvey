@@ -2965,59 +2965,90 @@ public sealed class GuardianViewModel
             return;
         }
 
-        if (LiveMapMode == GuardianLiveMapMode.SiteType
-            && ActiveSite.Kind == GuardianSiteKind.Ruins)
+        if (await TryHandleVehicleSiteTypeBlinkAsync(status, cancellationToken))
         {
-            var type = PositiveModulo(status.FireGroup, 3) switch
+            return;
+        }
+
+        if (await TryHandleVehicleHeadingBlinkAsync(status, cancellationToken))
+        {
+            return;
+        }
+
+        await HandleVehicleMapBlinkAsync(status, cancellationToken);
+    }
+
+    private async Task<bool> TryHandleVehicleSiteTypeBlinkAsync(
+        EliteStatus status,
+        CancellationToken cancellationToken)
+    {
+        if (LiveMapMode != GuardianLiveMapMode.SiteType
+            || ActiveSite is not { Kind: GuardianSiteKind.Ruins })
+        {
+            return false;
+        }
+
+        var type = PositiveModulo(status.FireGroup, 3) switch
+        {
+            0 => "Alpha",
+            1 => "Beta",
+            _ => "Gamma",
+        };
+        if (await SaveActiveSurveyMutationAsync(
+            survey => survey with
             {
-                0 => "Alpha",
-                1 => "Beta",
-                _ => "Gamma",
-            };
-            if (await SaveActiveSurveyMutationAsync(
-                survey => survey with
-                {
-                    SiteType = type,
-                    Survey = CopySurveyData(
-            new GuardianSurveyCopyOptions
-            {
-                Source = survey.Survey,
                 SiteType = type,
-            }),
-                },
-                $"Guardian blink gesture set the site type to {type}.",
-                cancellationToken))
-            {
-                SetLiveMapModeFromSurvey();
-            }
-
-            return;
-        }
-
-        if (LiveMapMode == GuardianLiveMapMode.Heading)
+                Survey = CopySurveyData(
+        new GuardianSurveyCopyOptions
         {
-            var heading = status.NormalizedHeading;
-            if (await SaveActiveSurveyMutationAsync(
-                survey => survey with
-                {
-                    Survey = CopySurveyData(
-            new GuardianSurveyCopyOptions
-            {
-                Source = survey.Survey,
-                SiteHeading = heading,
-            }),
-                },
-                $"Guardian blink gesture set the site heading to {heading}°.",
-                cancellationToken))
-            {
-                LiveMapMode = heading == 0
-                    ? GuardianLiveMapMode.Heading
-                    : GuardianLiveMapMode.Map;
-            }
-
-            return;
+            Source = survey.Survey,
+            SiteType = type,
+        }),
+            },
+            $"Guardian blink gesture set the site type to {type}.",
+            cancellationToken))
+        {
+            SetLiveMapModeFromSurvey();
         }
 
+        return true;
+    }
+
+    private async Task<bool> TryHandleVehicleHeadingBlinkAsync(
+        EliteStatus status,
+        CancellationToken cancellationToken)
+    {
+        if (LiveMapMode != GuardianLiveMapMode.Heading)
+        {
+            return false;
+        }
+
+        var heading = status.NormalizedHeading;
+        if (await SaveActiveSurveyMutationAsync(
+            survey => survey with
+            {
+                Survey = CopySurveyData(
+        new GuardianSurveyCopyOptions
+        {
+            Source = survey.Survey,
+            SiteHeading = heading,
+        }),
+            },
+            $"Guardian blink gesture set the site heading to {heading}°.",
+            cancellationToken))
+        {
+            LiveMapMode = heading == 0
+                ? GuardianLiveMapMode.Heading
+                : GuardianLiveMapMode.Map;
+        }
+
+        return true;
+    }
+
+    private async Task HandleVehicleMapBlinkAsync(
+        EliteStatus status,
+        CancellationToken cancellationToken)
+    {
         if (LiveMapMode != GuardianLiveMapMode.Map)
         {
             return;

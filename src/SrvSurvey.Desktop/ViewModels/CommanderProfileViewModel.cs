@@ -2603,6 +2603,24 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         bool journalIsCurrent,
         DateTimeOffset? journalUpdatedAt)
     {
+        var data = MergeCommunityGoalDataPoints(
+            account,
+            journal,
+            journalIsCurrent,
+            journalUpdatedAt);
+        return BuildMergedCommunityGoalSnapshot(
+            account,
+            journal,
+            journalIsCurrent,
+            data);
+    }
+
+    private static Dictionary<string, string> MergeCommunityGoalDataPoints(
+        FrontierCommunityGoalSnapshot account,
+        FrontierCommunityGoalSnapshot journal,
+        bool journalIsCurrent,
+        DateTimeOffset? journalUpdatedAt)
+    {
         var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var point in account.DataPoints ?? [])
         {
@@ -2622,6 +2640,15 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 CultureInfo.InvariantCulture);
         }
 
+        return data;
+    }
+
+    private static FrontierCommunityGoalSnapshot BuildMergedCommunityGoalSnapshot(
+        FrontierCommunityGoalSnapshot account,
+        FrontierCommunityGoalSnapshot journal,
+        bool journalIsCurrent,
+        Dictionary<string, string> data)
+    {
         return account with
         {
             Id = account.Id ?? journal.Id,
@@ -2631,40 +2658,56 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             System = FirstNonEmpty(account.System, journal.System),
             Market = FirstNonEmpty(account.Market, journal.Market),
             ExpiresAt = account.ExpiresAt ?? journal.ExpiresAt,
-            IsComplete = account.IsComplete || journalIsCurrent && journal.IsComplete,
-            CurrentTotal = journalIsCurrent || account.CurrentTotal == 0
-                ? journal.CurrentTotal
-                : account.CurrentTotal,
-            TargetTotal = journalIsCurrent || account.TargetTotal is null
-                ? journal.TargetTotal ?? account.TargetTotal
-                : account.TargetTotal,
-            PlayerContribution = journal.HasPlayerContributionData
-                && (journalIsCurrent || !account.HasPlayerContributionData)
-                    ? journal.PlayerContribution
-                    : account.PlayerContribution,
-            Contributors = journal.HasContributorData
-                && (journalIsCurrent || !account.HasContributorData)
-                    ? journal.Contributors
-                    : account.Contributors,
-            TierReached = journalIsCurrent && !string.IsNullOrWhiteSpace(journal.TierReached)
-                ? journal.TierReached
-                : FirstNonEmpty(account.TierReached, journal.TierReached),
-            PlayerPercentile = journal.HasPlayerContributionData
-                && (journalIsCurrent || !account.HasPlayerContributionData)
-                    ? journal.PlayerPercentile
-                    : account.PlayerPercentile,
-            Bonus = journal.HasPlayerContributionData
-                && (journalIsCurrent || !account.HasPlayerContributionData)
-                    ? journal.Bonus
-                    : account.Bonus,
-            TopRankSize = journal.HasPlayerContributionData
-                && (journalIsCurrent || !account.HasPlayerContributionData)
-                    ? journal.TopRankSize
-                    : account.TopRankSize,
-            PlayerInTopRank = journal.HasPlayerContributionData
-                && (journalIsCurrent || !account.HasPlayerContributionData)
-                    ? journal.PlayerInTopRank
-                    : account.PlayerInTopRank,
+            IsComplete = account.IsComplete
+                || journalIsCurrent && journal.IsComplete,
+            CurrentTotal = PreferJournalOrAccount(
+                journalIsCurrent || account.CurrentTotal == 0,
+                journal.CurrentTotal,
+                account.CurrentTotal),
+            TargetTotal = PreferJournalOrAccount(
+                journalIsCurrent || account.TargetTotal is null,
+                journal.TargetTotal ?? account.TargetTotal,
+                account.TargetTotal),
+            PlayerContribution = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasPlayerContributionData,
+                account.HasPlayerContributionData,
+                journal.PlayerContribution,
+                account.PlayerContribution),
+            Contributors = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasContributorData,
+                account.HasContributorData,
+                journal.Contributors,
+                account.Contributors),
+            TierReached = PreferJournalTierReached(
+                journalIsCurrent,
+                journal.TierReached,
+                account.TierReached),
+            PlayerPercentile = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasPlayerContributionData,
+                account.HasPlayerContributionData,
+                journal.PlayerPercentile,
+                account.PlayerPercentile),
+            Bonus = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasPlayerContributionData,
+                account.HasPlayerContributionData,
+                journal.Bonus,
+                account.Bonus),
+            TopRankSize = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasPlayerContributionData,
+                account.HasPlayerContributionData,
+                journal.TopRankSize,
+                account.TopRankSize),
+            PlayerInTopRank = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasPlayerContributionData,
+                account.HasPlayerContributionData,
+                journal.PlayerInTopRank,
+                account.PlayerInTopRank),
             ActivityType = FirstNonEmpty(account.ActivityType, journal.ActivityType),
             HasPlayerContributionData = account.HasPlayerContributionData
                 || journal.HasPlayerContributionData,
@@ -2675,6 +2718,30 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 .ToArray(),
         };
     }
+
+    private static T PreferJournalOrAccount<T>(
+        bool preferJournal,
+        T journal,
+        T account) =>
+        preferJournal ? journal : account;
+
+    private static T PreferJournalPlayerContributionField<T>(
+        bool journalIsCurrent,
+        bool journalHasData,
+        bool accountHasData,
+        T journalValue,
+        T accountValue) =>
+        journalHasData && (journalIsCurrent || !accountHasData)
+            ? journalValue
+            : accountValue;
+
+    private static string PreferJournalTierReached(
+        bool journalIsCurrent,
+        string journalTierReached,
+        string accountTierReached) =>
+        journalIsCurrent && !string.IsNullOrWhiteSpace(journalTierReached)
+            ? journalTierReached
+            : FirstNonEmpty(accountTierReached, journalTierReached);
 
     private IReadOnlyList<FrontierReputationSnapshot> EffectiveCommanderReputation()
     {
