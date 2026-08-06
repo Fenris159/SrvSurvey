@@ -113,11 +113,51 @@ public sealed class VrOverlayCoordinator : IDisposable
 
         var registrations = registry.Snapshot();
         viewModel.SetCurrentRuntimeMode(modeProvider());
+        if (!TryEnsureVrRuntimeReady())
+        {
+            return;
+        }
+
+        var (active, lastError) = PublishRegistrations(registrations);
+        RemoveStaleOverlays(active);
+        published.Clear();
+        published.UnionWith(active);
+        viewModel.SetRuntimeStatus(lastError
+            ?? $"OpenVR is active with {active.Count:N0} live overlays.");
+    }
+
+    private (HashSet<string> Active, string? LastError) PublishRegistrations(
+        IReadOnlyList<RegisteredOverlayWindow> registrations)
+    {
+        var active = new HashSet<string>(StringComparer.Ordinal);
+        string? lastError = null;
+        foreach (var registration in registrations)
+        {
+            if (TryPublishRegistration(registration, active, out var error)
+                && error is not null)
+            {
+                lastError = error;
+            }
+        }
+
+        return (active, lastError);
+    }
+
+    private void RemoveStaleOverlays(HashSet<string> active)
+    {
+        foreach (var removed in published.Except(active).ToArray())
+        {
+            runtime.RemoveOverlay(removed);
+        }
+    }
+
+    private bool TryEnsureVrRuntimeReady()
+    {
         if (!viewModel.Enabled)
         {
             published.Clear();
             runtime.Shutdown();
-            return;
+            return false;
         }
 
         if (!processDetector(viewModel.RuntimeProcessName))
@@ -126,7 +166,7 @@ public sealed class VrOverlayCoordinator : IDisposable
             runtime.Shutdown();
             viewModel.SetRuntimeStatus(
                 $"Waiting for VR process '{viewModel.RuntimeProcessName}'.");
-            return;
+            return false;
         }
 
         if (!runtime.IsInitialized)
@@ -135,68 +175,63 @@ public sealed class VrOverlayCoordinator : IDisposable
             if (!initialization.Succeeded)
             {
                 viewModel.SetRuntimeStatus(initialization.Message);
-                return;
+                return false;
             }
         }
 
-        var active = new HashSet<string>(StringComparer.Ordinal);
-        string? lastError = null;
-        foreach (var registration in registrations)
-        {
-            if (!registration.IsVisible)
-            {
-                continue;
-            }
+        return true;
+    }
 
-            var calibration = viewModel.GetCalibration(
+    private bool TryPublishRegistration(
+        RegisteredOverlayWindow registration,
+        HashSet<string> active,
+        out string? error)
+    {
+        error = null;
+        if (!registration.IsVisible)
+        {
+            return false;
+        }
+
+        var calibration = viewModel.GetCalibration(
+            registration.PlotterName,
+            modeProvider());
+        if (calibration is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            var renderSource = registration.RenderSource;
+            var frame = VrOverlayFrameRenderer.Render(
+                renderSource,
+                renderSource.Bounds.Size,
+                registration.Window.RenderScaling);
+            var result = runtime.PublishOverlay(
                 registration.PlotterName,
-                modeProvider());
-            if (calibration is null)
+                frame,
+                calibration,
+                (float)registration.Window.Opacity);
+            if (result.Succeeded)
             {
-                continue;
+                active.Add(registration.PlotterName);
+                return false;
             }
 
-            try
-            {
-                var renderSource = registration.RenderSource;
-                var frame = VrOverlayFrameRenderer.Render(
-                    renderSource,
-                    renderSource.Bounds.Size,
-                    registration.Window.RenderScaling);
-                var result = runtime.PublishOverlay(
-                    registration.PlotterName,
-                    frame,
-                    calibration,
-                    (float)registration.Window.Opacity);
-                if (result.Succeeded)
-                {
-                    active.Add(registration.PlotterName);
-                }
-                else
-                {
-                    lastError = result.Message;
-                }
-            }
-            catch (Exception exception) when (
-                exception is IOException
-                    or InvalidDataException
-                    or InvalidOperationException
-                    or OverflowException)
-            {
-                lastError = $"Could not render {registration.PlotterName} for VR: "
-                    + exception.Message;
-            }
+            error = result.Message;
+            return true;
         }
-
-        foreach (var removed in published.Except(active).ToArray())
+        catch (Exception exception) when (
+            exception is IOException
+                or InvalidDataException
+                or InvalidOperationException
+                or OverflowException)
         {
-            runtime.RemoveOverlay(removed);
+            error = $"Could not render {registration.PlotterName} for VR: "
+                + exception.Message;
+            return true;
         }
-
-        published.Clear();
-        published.UnionWith(active);
-        viewModel.SetRuntimeStatus(lastError
-            ?? $"OpenVR is active with {active.Count:N0} live overlays.");
     }
 
     private static bool IsProcessRunning(string processName)

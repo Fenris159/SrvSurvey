@@ -45,76 +45,21 @@ public sealed class JournalHistoryAnalyzer
         }
 
         var warnings = new List<string>();
-        var files = new DirectoryInfo(journalDirectory)
-            .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
-            .Select(file => new JournalFileCandidate(
-                file,
-                TryGetJournalTimestamp(file.Name, out var timestamp)
-                    ? timestamp
-                    : null))
-            .Where(candidate =>
-            {
-                if (candidate.OpenedAt is null)
-                {
-                    warnings.Add(
-                        $"Ignored {candidate.File.Name} because its journal timestamp is invalid.");
-                    return false;
-                }
-
-                return candidate.OpenedAt > startTime
-                    && candidate.File.LastWriteTimeUtc >= startTime.UtcDateTime;
-            })
-            .OrderBy(candidate => candidate.OpenedAt)
-            .ThenBy(candidate => candidate.File.Name, StringComparer.Ordinal)
-            .ToArray();
+        var files = EnumerateJournalCandidates(startTime, warnings);
         var totals = new MutableTotals(greenGasGiantCriteria);
-        var processedFiles = 0;
-        var skippedCommanderFiles = 0;
-        var skippedRecentActiveFiles = 0;
-        var malformedLines = 0;
-        var parsedEvents = 0;
+        var counters = new AnalysisCounters();
         for (var index = 0; index < files.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var candidate = files[index];
-            try
-            {
-                var read = await ReadFileAsync(
-                        candidate.File,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                malformedLines += read.MalformedLineCount;
-                if (!string.Equals(
-                        read.FrontierId,
-                        frontierId,
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    skippedCommanderFiles++;
-                    Report(progress, index, files, candidate, totals);
-                    continue;
-                }
-
-                var recentCutoff = currentTime().AddDays(-2);
-                if (!read.IsShutdown && candidate.OpenedAt > recentCutoff)
-                {
-                    skippedRecentActiveFiles++;
-                    Report(progress, index, files, candidate, totals);
-                    continue;
-                }
-
-                processedFiles++;
-                parsedEvents += read.Events.Count;
-                foreach (var journalEvent in read.Events)
-                {
-                    totals.Apply(journalEvent);
-                }
-            }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
-            {
-                warnings.Add($"{candidate.File.Name}: {exception.Message}");
-            }
-
+            await ProcessCandidateAsync(
+                    candidate,
+                    frontierId,
+                    totals,
+                    counters,
+                    warnings,
+                    cancellationToken)
+                .ConfigureAwait(false);
             Report(progress, index, files, candidate, totals);
         }
 
@@ -126,15 +71,65 @@ public sealed class JournalHistoryAnalyzer
 
         return new JournalHistoryAnalysisResult(
             files.Length,
-            processedFiles,
-            skippedCommanderFiles,
-            skippedRecentActiveFiles,
-            parsedEvents,
-            malformedLines,
+            counters.ProcessedFiles,
+            counters.SkippedCommanderFiles,
+            counters.SkippedRecentActiveFiles,
+            counters.ParsedEvents,
+            counters.MalformedLines,
             totals.CreateStatistics(),
             totals.CreateTrailblazersComparison(),
             totals.GreenGasGiantMatches.ToArray(),
             warnings);
+    }
+
+    private async Task ProcessCandidateAsync(
+        JournalFileCandidate candidate,
+        string frontierId,
+        MutableTotals totals,
+        AnalysisCounters counters,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var read = await ReadFileAsync(candidate.File, cancellationToken)
+                .ConfigureAwait(false);
+            counters.MalformedLines += read.MalformedLineCount;
+            if (!string.Equals(
+                    read.FrontierId,
+                    frontierId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                counters.SkippedCommanderFiles++;
+                return;
+            }
+
+            if (ShouldSkipRecentActiveFile(candidate, read))
+            {
+                counters.SkippedRecentActiveFiles++;
+                return;
+            }
+
+            counters.ProcessedFiles++;
+            counters.ParsedEvents += read.Events.Count;
+            foreach (var journalEvent in read.Events)
+            {
+                totals.Apply(journalEvent);
+            }
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add($"{candidate.File.Name}: {exception.Message}");
+        }
+    }
+
+    private bool ShouldSkipRecentActiveFile(
+        JournalFileCandidate candidate,
+        JournalHistoryFileRead read)
+    {
+        var recentCutoff = currentTime().AddDays(-2);
+        return !read.IsShutdown && candidate.OpenedAt > recentCutoff;
     }
 
     public static bool TryGetJournalTimestamp(
@@ -158,6 +153,34 @@ public sealed class JournalHistoryAnalyzer
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
             out timestamp);
+    }
+
+    private JournalFileCandidate[] EnumerateJournalCandidates(
+        DateTimeOffset startTime,
+        List<string> warnings)
+    {
+        return new DirectoryInfo(journalDirectory)
+            .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
+            .Select(file => new JournalFileCandidate(
+                file,
+                TryGetJournalTimestamp(file.Name, out var timestamp)
+                    ? timestamp
+                    : null))
+            .Where(candidate =>
+            {
+                if (candidate.OpenedAt is null)
+                {
+                    warnings.Add(
+                        $"Ignored {candidate.File.Name} because its journal timestamp is invalid.");
+                    return false;
+                }
+
+                return candidate.OpenedAt > startTime
+                    && candidate.File.LastWriteTimeUtc >= startTime.UtcDateTime;
+            })
+            .OrderBy(candidate => candidate.OpenedAt)
+            .ThenBy(candidate => candidate.File.Name, StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static async Task<JournalHistoryFileRead> ReadFileAsync(
@@ -248,6 +271,19 @@ public sealed class JournalHistoryAnalyzer
         bool IsShutdown,
         IReadOnlyList<JournalEventEnvelope> Events,
         int MalformedLineCount);
+
+    private sealed class AnalysisCounters
+    {
+        public int ProcessedFiles { get; set; }
+
+        public int SkippedCommanderFiles { get; set; }
+
+        public int SkippedRecentActiveFiles { get; set; }
+
+        public int MalformedLines { get; set; }
+
+        public int ParsedEvents { get; set; }
+    }
 
     private sealed class MutableTotals(
         GreenGasGiantCriteriaCatalog greenGasGiantCriteria)

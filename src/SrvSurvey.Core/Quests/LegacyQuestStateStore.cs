@@ -13,6 +13,12 @@ namespace SrvSurvey.Core.Quests;
     Justification = "The store is coordinator-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class LegacyQuestStateStore
 {
+    private const string JsonExtension = ".json";
+    private const string DevQuestProperty = "devQuest";
+    private const string StartTimeProperty = "startTime";
+    private const string EndTimeProperty = "endTime";
+    private const string ChaptersProperty = "chapters";
+    private const string ActionsProperty = "actions";
     private static readonly JsonSerializerOptions PortableJsonOptions = new()
     {
         AllowTrailingCommas = true,
@@ -47,11 +53,11 @@ public sealed class LegacyQuestStateStore
                 nameof(frontierId));
         }
 
-        var statePath = Path.Combine(questDirectory, frontierId + ".json");
+        var statePath = Path.Combine(questDirectory, frontierId + JsonExtension);
 
         try
         {
-            statePath = FindFile(frontierId + ".json") ?? statePath;
+            statePath = FindFile(frontierId + JsonExtension) ?? statePath;
             if (!File.Exists(statePath))
             {
                 return new LegacyQuestStateLoadResult(
@@ -79,7 +85,7 @@ public sealed class LegacyQuestStateStore
 
             var reference = ParseReference(root["devRef"], warnings);
             LegacyQuestProgress? devQuest = null;
-            if (root["devQuest"] is JsonObject progress)
+            if (root[DevQuestProperty] is JsonObject progress)
             {
                 if (reference is null)
                 {
@@ -186,8 +192,8 @@ public sealed class LegacyQuestStateStore
         try
         {
             Directory.CreateDirectory(questDirectory);
-            var path = FindFile(frontierId + ".json")
-                ?? Path.Combine(questDirectory, frontierId + ".json");
+            var path = FindFile(frontierId + JsonExtension)
+                ?? Path.Combine(questDirectory, frontierId + JsonExtension);
             JsonObject root;
             if (File.Exists(path))
             {
@@ -216,21 +222,21 @@ public sealed class LegacyQuestStateStore
             if (progress is null)
             {
                 root.Remove("devRef");
-                root.Remove("devQuest");
+                root.Remove(DevQuestProperty);
             }
             else
             {
                 root["devRef"] = progress.Reference.ToString();
                 var questRoot = replaceExistingProgress
                     ? new JsonObject()
-                    : root["devQuest"] switch
+                    : root[DevQuestProperty] switch
                     {
                         null => new JsonObject(),
                         JsonObject existing => existing,
                         _ => throw new InvalidDataException(
                             "The legacy development quest state is not a JSON object and was not overwritten."),
                     };
-                root["devQuest"] = questRoot;
+                root[DevQuestProperty] = questRoot;
                 MergeProgress(questRoot, progress);
             }
 
@@ -268,8 +274,8 @@ public sealed class LegacyQuestStateStore
         }
 
         root["objectives"] = ToStringObject(progress.Objectives);
-        SetOrRemove(root, "startTime", progress.StartTime);
-        SetOrRemove(root, "endTime", progress.EndTime);
+        SetOrRemove(root, StartTimeProperty, progress.StartTime);
+        SetOrRemove(root, EndTimeProperty, progress.EndTime);
         if (progress.Paused)
         {
             root["paused"] = true;
@@ -284,8 +290,8 @@ public sealed class LegacyQuestStateStore
                 .Select(value => (JsonNode?)JsonValue.Create(value))
                 .ToArray());
         root["bodyLocations"] = ToStringObject(progress.BodyLocations);
-        root["chapters"] = MergeById(
-            root["chapters"],
+        root[ChaptersProperty] = MergeById(
+            root[ChaptersProperty],
             progress.Chapters,
             chapter => chapter.Id,
             MergeChapter);
@@ -309,8 +315,8 @@ public sealed class LegacyQuestStateStore
     {
         MergeExtensionData(root, chapter.ExtensionData);
         root["id"] = chapter.Id;
-        SetOrRemove(root, "startTime", chapter.StartTime);
-        SetOrRemove(root, "endTime", chapter.EndTime);
+        SetOrRemove(root, StartTimeProperty, chapter.StartTime);
+        SetOrRemove(root, EndTimeProperty, chapter.EndTime);
         root["vars"] = ToJsonObject(chapter.Variables);
     }
 
@@ -332,11 +338,11 @@ public sealed class LegacyQuestStateStore
         SetOrRemove(root, "chapter", message.Chapter);
         if (message.Actions is null)
         {
-            root.Remove("actions");
+            root.Remove(ActionsProperty);
         }
         else
         {
-            root["actions"] = new JsonArray(
+            root[ActionsProperty] = new JsonArray(
                 message.Actions
                     .Select(value => (JsonNode?)JsonValue.Create(value))
                     .ToArray());
@@ -649,7 +655,7 @@ public sealed class LegacyQuestStateStore
                 GetStringMap(root["strings"]),
                 ParseMessageDefinitions(root["msgs"], warnings),
                 GetRequiredString(root, "firstChapter", path),
-                GetStringMap(root["chapters"]),
+                GetStringMap(root[ChaptersProperty]),
                 path);
         }
         catch (Exception exception) when (
@@ -748,12 +754,12 @@ public sealed class LegacyQuestStateStore
             root["msgs"],
             definition,
             warnings);
-        var chapters = ParseChapters(root["chapters"], warnings);
+        var chapters = ParseChapters(root[ChaptersProperty], warnings);
         return new LegacyQuestProgress(
             reference,
             definition,
-            GetDateTimeOffset(root, "startTime"),
-            GetDateTimeOffset(root, "endTime"),
+            GetDateTimeOffset(root, StartTimeProperty),
+            GetDateTimeOffset(root, EndTimeProperty),
             GetBoolean(root, "paused") ?? false,
             objectives,
             GetStringSet(root["tags"]),
@@ -794,7 +800,7 @@ public sealed class LegacyQuestStateStore
                 GetString(root, "subject") ?? declared?.Subject,
                 GetString(root, "body") ?? declared?.Body,
                 GetString(root, "chapter"),
-                GetStringArray(root["actions"]),
+                GetStringArray(root[ActionsProperty]),
                 GetBoolean(root, "read") ?? false,
                 GetString(root, "replied")));
         }
@@ -829,7 +835,7 @@ public sealed class LegacyQuestStateStore
                 from,
                 GetString(root, "subject"),
                 body,
-                GetStringMap(root["actions"]),
+                GetStringMap(root[ActionsProperty]),
                 GetStringSet(root["tags"])));
         }
 
@@ -857,8 +863,8 @@ public sealed class LegacyQuestStateStore
 
             chapters.Add(new LegacyQuestChapter(
                 id,
-                GetDateTimeOffset(root, "startTime"),
-                GetDateTimeOffset(root, "endTime"),
+                GetDateTimeOffset(root, StartTimeProperty),
+                GetDateTimeOffset(root, EndTimeProperty),
                 GetJsonMap(root["vars"])));
         }
 

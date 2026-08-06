@@ -1,14 +1,18 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Exploration;
 using SrvSurvey.Core.Journal;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDisposable
 {
+    private const string PredictionUnavailable = "Prediction unavailable";
+
     private readonly SystemSurveyViewModel survey;
     private readonly BiologyPredictionsSettingsStore settingsStore;
     private readonly AsyncCommand openWindowCommand;
@@ -26,8 +30,8 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
     private long? systemAddress;
     private string scanProgress = "Waiting for a biological system scan.";
     private string confirmedReward = "0 CR";
-    private string estimatedReward = "Prediction unavailable";
-    private string firstFootfallEstimate = "Prediction unavailable";
+    private string estimatedReward = PredictionUnavailable;
+    private string firstFootfallEstimate = PredictionUnavailable;
     private string statusMessage = "Scan a system with biological signals to begin.";
     private string launchStatus = string.Empty;
     private bool disposed;
@@ -229,7 +233,7 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
     {
         return LaunchUriAsync(
             new Uri(
-                "https://canonn-science.github.io/canonn-signals/?system="
+                WellKnownUris.CanonnSignalsSystemPrefix
                     + Uri.EscapeDataString(SystemName)),
             "Canonn Signals");
     }
@@ -237,7 +241,9 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
     public Task<bool> OpenSpanshAsync()
     {
         return LaunchUriAsync(
-            new Uri($"https://spansh.co.uk/system/{SystemAddress}"),
+            new Uri(
+                WellKnownUris.SpanshSystemPrefix
+                    + SystemAddress?.ToString(CultureInfo.InvariantCulture)),
             "Spansh");
     }
 
@@ -245,8 +251,8 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
     {
         return LaunchUriAsync(
             new Uri(
-                "https://www.edsm.net/en/system?systemID64="
-                    + SystemAddress),
+                WellKnownUris.EdsmSystemById64Prefix
+                    + SystemAddress?.ToString(CultureInfo.InvariantCulture)),
             "EDSM");
     }
 
@@ -285,20 +291,22 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         var overview = BiologySurveyViewModel.CreateSystemOverview(
             snapshot,
             survey.CurrentStatus,
-            survey.DisableBioPredictions,
-            survey.BiologyRewardThresholds,
-            survey.BiologyPredictionEvaluator,
-            survey.BiologyReferenceCatalog,
-            highlightRegionalFirsts: survey.HighlightRegionalFirsts,
-            discoveryContext: survey.CurrentBiologyDiscoveryContext);
+            new BiologySurveySystemOverviewOptions(survey.DisableBioPredictions)
+            {
+                RewardThresholds = survey.BiologyRewardThresholds,
+                PredictionEvaluator = survey.BiologyPredictionEvaluator,
+                ReferenceCatalog = survey.BiologyReferenceCatalog,
+                HighlightRegionalFirsts = survey.HighlightRegionalFirsts,
+                DiscoveryContext = survey.CurrentBiologyDiscoveryContext,
+            });
         if (overview is null)
         {
             SystemName = snapshot.SystemName ?? "No biological signals";
             SystemAddress = snapshot.SystemAddress;
             ScanProgress = "Waiting for a biological system scan.";
             ConfirmedReward = "0 CR";
-            EstimatedReward = "Prediction unavailable";
-            FirstFootfallEstimate = "Prediction unavailable";
+            EstimatedReward = PredictionUnavailable;
+            FirstFootfallEstimate = PredictionUnavailable;
             StatusMessage = "Scan a system with biological signals to begin.";
             Bodies = [];
             return;
@@ -324,34 +332,40 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
                 snapshot,
                 body.BodyId,
                 survey.CurrentExobiology,
-                survey.HighlightRegionalFirsts,
-                survey.DimAnalyzedOrganisms,
-                survey.HideGeoCountInBioSystem,
-                survey.DisableBioPredictions,
-                survey.CurrentBiologyDiscoveryContext,
-                survey.BiologyRewardThresholds,
-                survey.BiologyPredictionEvaluator,
-                survey.BiologyReferenceCatalog)!;
+                new BiologySurveyBodyDetailOptions(
+                    survey.HighlightRegionalFirsts,
+                    survey.DimAnalyzedOrganisms,
+                    survey.HideGeoCountInBioSystem,
+                    survey.DisableBioPredictions)
+                {
+                    DiscoveryContext = survey.CurrentBiologyDiscoveryContext,
+                    RewardThresholds = survey.BiologyRewardThresholds,
+                    PredictionEvaluator = survey.BiologyPredictionEvaluator,
+                    ReferenceCatalog = survey.BiologyReferenceCatalog,
+                })!;
             var isExpanded = expandedState.GetValueOrDefault(
                 body.BodyId,
                 !CurrentBodyOnly || row.IsCurrentBody);
             return new BiologyPredictionBodyViewModel(
-                body.BodyId,
-                body.Name,
-                FormatDistance(body.DistanceFromArrivalLs),
-                row.ProgressText,
-                detail.RewardSummary,
-                body.IsFirstFootfall,
-                row.IsCurrentBody,
-                row.IsDestination,
-                detail.RequiresDss,
-                detail.PredictionStatus,
-                detail.Organisms.Select(organism =>
-                    BiologyPredictionOrganismViewModel.Create(
-                        organism,
-                        rowFontSize,
-                        rowVerticalPadding)).ToArray(),
-                isExpanded);
+                new BiologyPredictionBodyOptions
+                {
+                    BodyId = body.BodyId,
+                    Name = body.Name,
+                    DistanceText = FormatDistance(body.DistanceFromArrivalLs),
+                    ProgressText = row.ProgressText,
+                    RewardText = detail.RewardSummary,
+                    IsFirstFootfall = body.IsFirstFootfall,
+                    IsCurrent = row.IsCurrentBody,
+                    IsDestination = row.IsDestination,
+                    RequiresDss = detail.RequiresDss,
+                    PredictionStatus = detail.PredictionStatus,
+                    Organisms = detail.Organisms.Select(organism =>
+                        BiologyPredictionOrganismViewModel.Create(
+                            organism,
+                            rowFontSize,
+                            rowVerticalPadding)).ToArray(),
+                    IsExpanded = isExpanded,
+                });
         }).ToArray();
 
         SystemName = overview.Heading;
@@ -359,7 +373,7 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         ScanProgress = overview.ProgressText;
         ConfirmedReward = FormatCredits(CalculateConfirmedReward(snapshot));
         EstimatedReward = string.IsNullOrWhiteSpace(overview.RewardSummary)
-            ? "Prediction unavailable"
+            ? PredictionUnavailable
             : overview.RewardSummary;
         FirstFootfallEstimate = CalculateFirstFootfallEstimate(
             snapshot,
@@ -634,36 +648,56 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
 
 public sealed record BiologyPredictionRowSizeOption(int Value, string Label);
 
+public sealed class BiologyPredictionBodyOptions
+{
+    public required int BodyId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required string DistanceText { get; init; }
+
+    public required string ProgressText { get; init; }
+
+    public required string RewardText { get; init; }
+
+    public required bool IsFirstFootfall { get; init; }
+
+    public required bool IsCurrent { get; init; }
+
+    public required bool IsDestination { get; init; }
+
+    public required bool RequiresDss { get; init; }
+
+    public required string PredictionStatus { get; init; }
+
+    public required IReadOnlyList<BiologyPredictionOrganismViewModel> Organisms
+    {
+        get;
+        init;
+    }
+
+    public required bool IsExpanded { get; init; }
+}
+
 public sealed class BiologyPredictionBodyViewModel : INotifyPropertyChanged
 {
     private bool isExpanded;
 
-    public BiologyPredictionBodyViewModel(
-        int bodyId,
-        string name,
-        string distanceText,
-        string progressText,
-        string rewardText,
-        bool isFirstFootfall,
-        bool isCurrent,
-        bool isDestination,
-        bool requiresDss,
-        string predictionStatus,
-        IReadOnlyList<BiologyPredictionOrganismViewModel> organisms,
-        bool isExpanded)
+    public BiologyPredictionBodyViewModel(BiologyPredictionBodyOptions options)
     {
-        BodyId = bodyId;
-        Name = name;
-        DistanceText = distanceText;
-        ProgressText = progressText;
-        RewardText = rewardText;
-        IsFirstFootfall = isFirstFootfall;
-        IsCurrent = isCurrent;
-        IsDestination = isDestination;
-        RequiresDss = requiresDss;
-        PredictionStatus = predictionStatus;
-        Organisms = organisms;
-        this.isExpanded = isExpanded;
+        ArgumentNullException.ThrowIfNull(options);
+        BodyId = options.BodyId;
+        Name = options.Name;
+        DistanceText = options.DistanceText;
+        ProgressText = options.ProgressText;
+        RewardText = options.RewardText;
+        IsFirstFootfall = options.IsFirstFootfall;
+        IsCurrent = options.IsCurrent;
+        IsDestination = options.IsDestination;
+        RequiresDss = options.RequiresDss;
+        PredictionStatus = options.PredictionStatus;
+        Organisms = options.Organisms;
+        isExpanded = options.IsExpanded;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -713,28 +747,48 @@ public sealed class BiologyPredictionBodyViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed record BiologyPredictionOrganismViewModel(
-    string DisplayName,
-    string GenusName,
-    string SampleDistanceText,
-    string RewardText,
-    bool IsAnalyzed,
-    bool IsCommanderFirst,
-    bool IsRegionalFirst,
-    bool IsGlobalRegionalFirst,
-    bool IsHighlightedFirst,
-    bool IsCurrentSample,
-    bool IsPrediction,
-    bool IsGenusIdentified,
-    bool IsUnknown,
-    double RowOpacity,
-    double RowFontSize,
-    double RowVerticalPadding,
-    long Reward,
-    double RewardBucketOneMillions,
-    double RewardBucketTwoMillions,
-    double RewardBucketThreeMillions)
+public sealed class BiologyPredictionOrganismViewModel
 {
+    public string DisplayName { get; init; } = string.Empty;
+
+    public string GenusName { get; init; } = string.Empty;
+
+    public string SampleDistanceText { get; init; } = string.Empty;
+
+    public string RewardText { get; init; } = string.Empty;
+
+    public bool IsAnalyzed { get; init; }
+
+    public bool IsCommanderFirst { get; init; }
+
+    public bool IsRegionalFirst { get; init; }
+
+    public bool IsGlobalRegionalFirst { get; init; }
+
+    public bool IsHighlightedFirst { get; init; }
+
+    public bool IsCurrentSample { get; init; }
+
+    public bool IsPrediction { get; init; }
+
+    public bool IsGenusIdentified { get; init; }
+
+    public bool IsUnknown { get; init; }
+
+    public double RowOpacity { get; init; }
+
+    public double RowFontSize { get; init; }
+
+    public double RowVerticalPadding { get; init; }
+
+    public long Reward { get; init; }
+
+    public double RewardBucketOneMillions { get; init; }
+
+    public double RewardBucketTwoMillions { get; init; }
+
+    public double RewardBucketThreeMillions { get; init; }
+
     public bool HasSampleDistance => !string.IsNullOrWhiteSpace(
         SampleDistanceText);
 
@@ -744,26 +798,28 @@ public sealed record BiologyPredictionOrganismViewModel(
         double rowVerticalPadding)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return new BiologyPredictionOrganismViewModel(
-            source.DisplayName,
-            source.GenusName,
-            source.SampleDistanceText,
-            source.RewardText,
-            source.IsAnalyzed,
-            source.IsCommanderFirst,
-            source.IsRegionalFirst,
-            source.IsGlobalRegionalFirst,
-            source.IsHighlightedFirst,
-            source.IsCurrentSample,
-            source.IsPrediction,
-            source.IsGenusIdentified,
-            source.IsUnknown,
-            source.RowOpacity,
-            rowFontSize,
-            rowVerticalPadding,
-            source.Reward,
-            source.RewardBucketOneMillions,
-            source.RewardBucketTwoMillions,
-            source.RewardBucketThreeMillions);
+        return new BiologyPredictionOrganismViewModel
+        {
+            DisplayName = source.DisplayName,
+            GenusName = source.GenusName,
+            SampleDistanceText = source.SampleDistanceText,
+            RewardText = source.RewardText,
+            IsAnalyzed = source.IsAnalyzed,
+            IsCommanderFirst = source.IsCommanderFirst,
+            IsRegionalFirst = source.IsRegionalFirst,
+            IsGlobalRegionalFirst = source.IsGlobalRegionalFirst,
+            IsHighlightedFirst = source.IsHighlightedFirst,
+            IsCurrentSample = source.IsCurrentSample,
+            IsPrediction = source.IsPrediction,
+            IsGenusIdentified = source.IsGenusIdentified,
+            IsUnknown = source.IsUnknown,
+            RowOpacity = source.RowOpacity,
+            RowFontSize = rowFontSize,
+            RowVerticalPadding = rowVerticalPadding,
+            Reward = source.Reward,
+            RewardBucketOneMillions = source.RewardBucketOneMillions,
+            RewardBucketTwoMillions = source.RewardBucketTwoMillions,
+            RewardBucketThreeMillions = source.RewardBucketThreeMillions,
+        };
     }
 }

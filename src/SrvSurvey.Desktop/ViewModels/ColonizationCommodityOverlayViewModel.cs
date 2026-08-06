@@ -308,20 +308,22 @@ public sealed class ColonizationCommodityOverlayViewModel
 
     private static ColonizationCommodityPlan EmptyPlan()
     {
-        return new ColonizationCommodityPlan(
-            "0 projects",
-            [],
-            [],
-            [],
-            0,
-            null,
-            0,
-            null,
-            false,
-            false,
-            false,
-            false,
-            false);
+        return new ColonizationCommodityPlan
+    {
+        Title = "0 projects",
+        ProjectNames = [],
+        Rows = [],
+        FleetCarriers = [],
+        TotalRemaining = 0,
+        TripsInCurrentShip = null,
+        FleetCarrierDeficit = 0,
+        FleetCarrierDeficitTrips = null,
+        IsAtConstructionSite = false,
+        IsLocalProjectUntracked = false,
+        IsDockedAtUntrackedFleetCarrier = false,
+        IsConstructionComplete = false,
+        IsConstructionFailed = false
+    };
     }
 
     private bool SetField<T>(

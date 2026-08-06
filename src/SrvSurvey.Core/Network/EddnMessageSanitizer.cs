@@ -216,156 +216,74 @@ namespace SrvSurvey.Core.Network
             }
 
             if (genericEvents.Contains(eventName))
-                return tryBuildGenericJournal(raw, context, out prepared, out reason);
-
-            JObject? message;
-            string schema;
-            switch (eventName)
             {
-                case CodexEntryEvent:
-                    schema = "codexentry/1";
-                    if (!hasMatchingLocation(raw, context, SystemProperty))
-                        return fail(
-                            TheEventDidNotMatchTrackedSystemMessage,
-                            out prepared,
-                            out reason);
-                    message = select(raw,
-                        TimestampKey, EventKey, SystemProperty, SystemAddressProperty, EntryIdProperty, NameProperty,
-                        RegionProperty, CategoryProperty, LatitudeProperty, LongitudeProperty, SubCategoryProperty,
-                        NearestDestinationProperty, VoucherAmountProperty, TraitsProperty, BodyIdProperty, BodyNameProperty);
-                    message[StarPosProperty] = position(context.location!);
-                    addFlags(message, context);
-
-                    var bodyNamesAgree = !string.IsNullOrWhiteSpace(context.statusBodyName)
-                        && string.Equals(
-                            context.statusBodyName,
-                            context.trackedBodyName,
-                            StringComparison.Ordinal);
-                    if (!message.ContainsKey(BodyNameProperty)
-                        && bodyNamesAgree
-                        && (!message.ContainsKey(BodyIdProperty)
-                            || message.Value<int?>(BodyIdProperty) == context.trackedBodyId))
-                    {
-                        message[BodyNameProperty] = context.statusBodyName;
-                    }
-                    if (!message.ContainsKey(BodyIdProperty)
-                        && context.trackedBodyId.HasValue
-                        && bodyNamesAgree
-                        && (!message.ContainsKey(BodyNameProperty)
-                            || string.Equals(
-                                message.Value<string>(BodyNameProperty),
-                                context.statusBodyName,
-                                StringComparison.Ordinal)))
-                    {
-                        message[BodyIdProperty] = context.trackedBodyId.Value;
-                    }
-                    break;
-
-                case ApproachSettlementEvent:
-                    schema = "approachsettlement/1";
-                    if (!hasMatchingLocation(raw, context))
-                        return fail(
-                            TheEventDidNotMatchTrackedSystemMessage,
-                            out prepared,
-                            out reason);
-                    message = select(raw,
-                        TimestampKey, EventKey, SystemAddressProperty, NameProperty, MarketIdProperty, BodyIdProperty,
-                        BodyNameProperty, LatitudeProperty, LongitudeProperty, "StationGovernment",
-                        "StationAllegiance", "StationEconomies", "StationFaction",
-                        "StationServices", "StationEconomy");
-                    message[StarSystemProperty] = context.location!.systemName;
-                    message[StarPosProperty] = position(context.location);
-                    addFlags(message, context);
-                    break;
-
-                case DockingDeniedEvent:
-                    schema = "dockingdenied/1";
-                    message = select(raw,
-                        TimestampKey, EventKey, MarketIdProperty, StationNameProperty, StationTypeProperty, ReasonProperty);
-                    addFlags(message, context);
-                    break;
-
-                case DockingGrantedEvent:
-                    schema = "dockinggranted/1";
-                    message = select(raw,
-                        TimestampKey, EventKey, MarketIdProperty, StationNameProperty, StationTypeProperty, LandingPadProperty);
-                    addFlags(message, context);
-                    break;
-
-                case FssAllBodiesFoundEvent:
-                    schema = "fssallbodiesfound/1";
-                    if (!hasMatchingLocation(raw, context, SystemNameProperty))
-                        return fail(
-                            TheEventDidNotMatchTrackedSystemMessage,
-                            out prepared,
-                            out reason);
-                    message = select(raw,
-                        TimestampKey, EventKey, SystemNameProperty, SystemAddressProperty, CountProperty);
-                    message[StarPosProperty] = position(context.location!);
-                    addFlags(message, context);
-                    break;
-
-                case FssBodySignalsEvent:
-                    schema = "fssbodysignals/1";
-                    if (!hasMatchingLocation(raw, context))
-                        return fail(
-                            TheEventDidNotMatchTrackedSystemMessage,
-                            out prepared,
-                            out reason);
-                    message = select(raw,
-                        TimestampKey, EventKey, SystemAddressProperty, BodyIdProperty, BodyNameProperty, SignalsProperty);
-                    message[StarSystemProperty] = context.location!.systemName;
-                    message[StarPosProperty] = position(context.location);
-                    addFlags(message, context);
-                    break;
-
-                case FssDiscoveryScanEvent:
-                    schema = "fssdiscoveryscan/1";
-                    if (!hasMatchingLocation(raw, context, SystemNameProperty))
-                        return fail(
-                            TheEventDidNotMatchTrackedSystemMessage,
-                            out prepared,
-                            out reason);
-                    message = select(raw,
-                        TimestampKey, EventKey, SystemNameProperty, SystemAddressProperty, BodyCountProperty, NonBodyCountProperty);
-                    message[StarPosProperty] = position(context.location!);
-                    addFlags(message, context);
-                    break;
-
-                case NavBeaconScanEvent:
-                    schema = "navbeaconscan/1";
-                    if (!hasMatchingLocation(raw, context))
-                        return fail(
-                            TheEventDidNotMatchTrackedSystemMessage,
-                            out prepared,
-                            out reason);
-                    message = select(raw,
-                        TimestampKey, EventKey, SystemAddressProperty, NumBodiesProperty);
-                    message[StarSystemProperty] = context.location!.systemName;
-                    message[StarPosProperty] = position(context.location);
-                    addFlags(message, context);
-                    break;
-
-                case ScanBaryCentreEvent:
-                    schema = "scanbarycentre/1";
-                    if (!hasMatchingLocation(raw, context, StarSystemProperty))
-                        return fail(
-                            TheEventDidNotMatchTrackedSystemMessage,
-                            out prepared,
-                            out reason);
-                    message = select(raw,
-                        TimestampKey, EventKey, StarSystemProperty, SystemAddressProperty, BodyIdProperty,
-                        "SemiMajorAxis", "Eccentricity", "OrbitalInclination", "Periapsis",
-                        "OrbitalPeriod", "AscendingNode", "MeanAnomaly");
-                    message[StarPosProperty] = position(context.location!);
-                    addFlags(message, context);
-                    break;
-
-                default:
-                    reason = "the event has no EDDN schema supported by SrvSurvey";
-                    return false;
+                return tryBuildGenericJournal(raw, context, out prepared, out reason);
             }
 
+            if (!tryBuildSpecificJournalMessage(
+                    eventName,
+                    raw,
+                    context,
+                    out var message,
+                    out var schema,
+                    out reason))
+            {
+                return false;
+            }
+
+            return finalizeJournalMessage(
+                eventName,
+                schema,
+                message!,
+                out prepared,
+                out reason);
+        }
+
+        private static bool tryBuildSpecificJournalMessage(
+            string eventName,
+            JObject raw,
+            EddnMessageContext context,
+            out JObject? message,
+            out string schema,
+            out string reason)
+        {
+            message = null;
+            schema = string.Empty;
+            reason = string.Empty;
+            return eventName switch
+            {
+                CodexEntryEvent => tryBuildCodexEntry(raw, context, out message, out schema, out reason),
+                ApproachSettlementEvent => tryBuildApproachSettlement(raw, context, out message, out schema, out reason),
+                DockingDeniedEvent => tryBuildDockingDenied(raw, context, out message, out schema, out reason),
+                DockingGrantedEvent => tryBuildDockingGranted(raw, context, out message, out schema, out reason),
+                FssAllBodiesFoundEvent => tryBuildFssAllBodiesFound(raw, context, out message, out schema, out reason),
+                FssBodySignalsEvent => tryBuildFssBodySignals(raw, context, out message, out schema, out reason),
+                FssDiscoveryScanEvent => tryBuildFssDiscoveryScan(raw, context, out message, out schema, out reason),
+                NavBeaconScanEvent => tryBuildNavBeaconScan(raw, context, out message, out schema, out reason),
+                ScanBaryCentreEvent => tryBuildScanBaryCentre(raw, context, out message, out schema, out reason),
+                _ => failUnsupportedEvent(out message, out schema, out reason),
+            };
+        }
+
+        private static bool failUnsupportedEvent(
+            out JObject? message,
+            out string schema,
+            out string reason)
+        {
+            message = null;
+            schema = string.Empty;
+            reason = "the event has no EDDN schema supported by SrvSurvey";
+            return false;
+        }
+
+        private static bool finalizeJournalMessage(
+            string eventName,
+            string schema,
+            JObject message,
+            out EddnPreparedMessage? prepared,
+            out string reason)
+        {
+            prepared = null;
             removeLocalised(message);
             removeNulls(message);
             if (eventName == CodexEntryEvent
@@ -373,10 +291,267 @@ namespace SrvSurvey.Core.Network
             {
                 return false;
             }
+
             if (!hasRequiredFields(message, eventName, out reason))
+            {
                 return false;
+            }
 
             prepared = new EddnPreparedMessage(eventName, schemaRoot + schema, message);
+            reason = string.Empty;
+            return true;
+        }
+
+        private static bool tryBuildCodexEntry(
+            JObject raw,
+            EddnMessageContext context,
+            out JObject? message,
+            out string schema,
+            out string reason)
+        {
+            schema = "codexentry/1";
+            message = null;
+            if (!hasMatchingLocation(raw, context, SystemProperty))
+            {
+                reason = TheEventDidNotMatchTrackedSystemMessage;
+                return false;
+            }
+
+            message = select(raw,
+                TimestampKey, EventKey, SystemProperty, SystemAddressProperty, EntryIdProperty, NameProperty,
+                RegionProperty, CategoryProperty, LatitudeProperty, LongitudeProperty, SubCategoryProperty,
+                NearestDestinationProperty, VoucherAmountProperty, TraitsProperty, BodyIdProperty, BodyNameProperty);
+            message[StarPosProperty] = position(context.location!);
+            addFlags(message, context);
+            FillCodexBodyContext(message, context);
+            reason = string.Empty;
+            return true;
+        }
+
+        private static void FillCodexBodyContext(JObject message, EddnMessageContext context)
+        {
+            var bodyNamesAgree = BodyNamesAgree(context);
+            TryFillCodexBodyName(message, context, bodyNamesAgree);
+            TryFillCodexBodyId(message, context, bodyNamesAgree);
+        }
+
+        private static bool BodyNamesAgree(EddnMessageContext context)
+        {
+            return !string.IsNullOrWhiteSpace(context.statusBodyName)
+                && string.Equals(
+                    context.statusBodyName,
+                    context.trackedBodyName,
+                    StringComparison.Ordinal);
+        }
+
+        private static void TryFillCodexBodyName(
+            JObject message,
+            EddnMessageContext context,
+            bool bodyNamesAgree)
+        {
+            if (message.ContainsKey(BodyNameProperty)
+                || !bodyNamesAgree
+                || (message.ContainsKey(BodyIdProperty)
+                    && message.Value<int?>(BodyIdProperty) != context.trackedBodyId))
+            {
+                return;
+            }
+
+            message[BodyNameProperty] = context.statusBodyName;
+        }
+
+        private static void TryFillCodexBodyId(
+            JObject message,
+            EddnMessageContext context,
+            bool bodyNamesAgree)
+        {
+            if (message.ContainsKey(BodyIdProperty)
+                || !context.trackedBodyId.HasValue
+                || !bodyNamesAgree
+                || (message.ContainsKey(BodyNameProperty)
+                    && !string.Equals(
+                        message.Value<string>(BodyNameProperty),
+                        context.statusBodyName,
+                        StringComparison.Ordinal)))
+            {
+                return;
+            }
+
+            message[BodyIdProperty] = context.trackedBodyId.Value;
+        }
+
+        private static bool tryBuildApproachSettlement(
+            JObject raw,
+            EddnMessageContext context,
+            out JObject? message,
+            out string schema,
+            out string reason)
+        {
+            schema = "approachsettlement/1";
+            message = null;
+            if (!hasMatchingLocation(raw, context))
+            {
+                reason = TheEventDidNotMatchTrackedSystemMessage;
+                return false;
+            }
+
+            message = select(raw,
+                TimestampKey, EventKey, SystemAddressProperty, NameProperty, MarketIdProperty, BodyIdProperty,
+                BodyNameProperty, LatitudeProperty, LongitudeProperty, "StationGovernment",
+                "StationAllegiance", "StationEconomies", "StationFaction",
+                "StationServices", "StationEconomy");
+            message[StarSystemProperty] = context.location!.systemName;
+            message[StarPosProperty] = position(context.location);
+            addFlags(message, context);
+            reason = string.Empty;
+            return true;
+        }
+
+        private static bool tryBuildDockingDenied(
+            JObject raw,
+            EddnMessageContext context,
+            out JObject? message,
+            out string schema,
+            out string reason)
+        {
+            schema = "dockingdenied/1";
+            message = select(raw,
+                TimestampKey, EventKey, MarketIdProperty, StationNameProperty, StationTypeProperty, ReasonProperty);
+            addFlags(message, context);
+            reason = string.Empty;
+            return true;
+        }
+
+        private static bool tryBuildDockingGranted(
+            JObject raw,
+            EddnMessageContext context,
+            out JObject? message,
+            out string schema,
+            out string reason)
+        {
+            schema = "dockinggranted/1";
+            message = select(raw,
+                TimestampKey, EventKey, MarketIdProperty, StationNameProperty, StationTypeProperty, LandingPadProperty);
+            addFlags(message, context);
+            reason = string.Empty;
+            return true;
+        }
+
+        private static bool tryBuildFssAllBodiesFound(
+            JObject raw,
+            EddnMessageContext context,
+            out JObject? message,
+            out string schema,
+            out string reason)
+        {
+            schema = "fssallbodiesfound/1";
+            message = null;
+            if (!hasMatchingLocation(raw, context, SystemNameProperty))
+            {
+                reason = TheEventDidNotMatchTrackedSystemMessage;
+                return false;
+            }
+
+            message = select(raw,
+                TimestampKey, EventKey, SystemNameProperty, SystemAddressProperty, CountProperty);
+            message[StarPosProperty] = position(context.location!);
+            addFlags(message, context);
+            reason = string.Empty;
+            return true;
+        }
+
+        private static bool tryBuildFssBodySignals(
+            JObject raw,
+            EddnMessageContext context,
+            out JObject? message,
+            out string schema,
+            out string reason)
+        {
+            schema = "fssbodysignals/1";
+            message = null;
+            if (!hasMatchingLocation(raw, context))
+            {
+                reason = TheEventDidNotMatchTrackedSystemMessage;
+                return false;
+            }
+
+            message = select(raw,
+                TimestampKey, EventKey, SystemAddressProperty, BodyIdProperty, BodyNameProperty, SignalsProperty);
+            message[StarSystemProperty] = context.location!.systemName;
+            message[StarPosProperty] = position(context.location);
+            addFlags(message, context);
+            reason = string.Empty;
+            return true;
+        }
+
+        private static bool tryBuildFssDiscoveryScan(
+            JObject raw,
+            EddnMessageContext context,
+            out JObject? message,
+            out string schema,
+            out string reason)
+        {
+            schema = "fssdiscoveryscan/1";
+            message = null;
+            if (!hasMatchingLocation(raw, context, SystemNameProperty))
+            {
+                reason = TheEventDidNotMatchTrackedSystemMessage;
+                return false;
+            }
+
+            message = select(raw,
+                TimestampKey, EventKey, SystemNameProperty, SystemAddressProperty, BodyCountProperty, NonBodyCountProperty);
+            message[StarPosProperty] = position(context.location!);
+            addFlags(message, context);
+            reason = string.Empty;
+            return true;
+        }
+
+        private static bool tryBuildNavBeaconScan(
+            JObject raw,
+            EddnMessageContext context,
+            out JObject? message,
+            out string schema,
+            out string reason)
+        {
+            schema = "navbeaconscan/1";
+            message = null;
+            if (!hasMatchingLocation(raw, context))
+            {
+                reason = TheEventDidNotMatchTrackedSystemMessage;
+                return false;
+            }
+
+            message = select(raw,
+                TimestampKey, EventKey, SystemAddressProperty, NumBodiesProperty);
+            message[StarSystemProperty] = context.location!.systemName;
+            message[StarPosProperty] = position(context.location);
+            addFlags(message, context);
+            reason = string.Empty;
+            return true;
+        }
+
+        private static bool tryBuildScanBaryCentre(
+            JObject raw,
+            EddnMessageContext context,
+            out JObject? message,
+            out string schema,
+            out string reason)
+        {
+            schema = "scanbarycentre/1";
+            message = null;
+            if (!hasMatchingLocation(raw, context, StarSystemProperty))
+            {
+                reason = TheEventDidNotMatchTrackedSystemMessage;
+                return false;
+            }
+
+            message = select(raw,
+                TimestampKey, EventKey, StarSystemProperty, SystemAddressProperty, BodyIdProperty,
+                "SemiMajorAxis", "Eccentricity", "OrbitalInclination", "Periapsis",
+                "OrbitalPeriod", "AscendingNode", "MeanAnomaly");
+            message[StarPosProperty] = position(context.location!);
+            addFlags(message, context);
             reason = string.Empty;
             return true;
         }
@@ -929,15 +1104,6 @@ namespace SrvSurvey.Core.Network
             }
         }
 
-        private static bool fail(
-            string failure,
-            out EddnPreparedMessage? prepared,
-            out string reason)
-        {
-            prepared = null;
-            reason = failure;
-            return false;
-        }
     }
 }
 

@@ -89,6 +89,28 @@ public sealed class InaraPublisher : IInaraPublisher
         var warnings = new List<string>();
         var options = update.Options;
         ResetForJournalChange(update.JournalPath);
+        var publicationAuthorized = PreparePublicationAuthorization(options);
+        var queuedNames = await CollectAllJournalEventsAsync(
+                update,
+                options,
+                publicationAuthorized,
+                warnings,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        var completed = TakeCompletedSendResult();
+        warnings.AddRange(completed.Warnings);
+        MaybeStartBackgroundSend(update, options);
+        return new InaraPublicationResult(
+            queuedNames.Count,
+            completed.AcceptedEventCount,
+            GetPendingCount(),
+            queuedNames.Distinct(StringComparer.Ordinal).ToArray(),
+            warnings);
+    }
+
+    private bool PreparePublicationAuthorization(InaraPublicationOptions options)
+    {
         var publicationAuthorized = UpdatePublicationAuthorization(
             options,
             out var authorizationChanged);
@@ -101,79 +123,38 @@ public sealed class InaraPublisher : IInaraPublisher
             }
         }
 
+        return publicationAuthorized;
+    }
+
+    private async Task<List<string>> CollectAllJournalEventsAsync(
+        InaraPublicationUpdate update,
+        InaraPublicationOptions options,
+        bool publicationAuthorized,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
         var queuedNames = new List<string>();
         foreach (var journalEvent in update.JournalEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                if (journalEvent.EventName is "Fileheader" or "LoadGame")
-                {
-                    ResetPublicationSession(update.JournalPath);
-                }
-
-                var entry = JObject.Parse(journalEvent.RawJson);
-                if (publicationAuthorized)
-                {
-                    entry = await AddSidecarDataAsync(
-                            entry,
-                            journalEvent,
-                            update.Cargo,
-                            update.JournalPath,
-                            update.AllowSharedData,
-                            warnings,
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                }
-
-                ApplyPublicationState(journalEvent, entry);
-                var context = CreateContext(update);
-                var identityMatches = CommanderMatchesOptions(
-                    context,
-                    options);
-                var canCollect = update.AllowPublishing
-                    && identityMatches
-                    && CanUpload(
-                        options.Enabled,
-                        options.ApiKey,
-                        options.GameVersion,
-                        options.IsOdyssey,
-                        mapper.InMulticrew);
-                var mapped = mapper.Process(entry, context, canCollect);
-                var credentials = identityMatches
-                    ? GetCredentials(context, options)
-                    : null;
-                if (credentials is not null && mapped.Count > 0)
-                {
-                    var dropped = queue.Enqueue(credentials, mapped);
-                    if (dropped > 0)
-                    {
-                        warnings.Add(
-                            $"Inara discarded {dropped} oldest queued event(s) to keep its local backlog bounded.");
-                    }
-                    queuedNames.AddRange(mapped.Select(item => item.Name));
-                    lock (sendStateSync)
-                    {
-                        nextSendAt ??= timeProvider.GetUtcNow() + SendInterval;
-                    }
-                }
-            }
-            catch (JsonException exception)
-            {
-                warnings.Add(
-                    $"Inara ignored {journalEvent.EventName}: {exception.Message}");
-            }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
-            {
-                warnings.Add(
-                    $"Inara could not prepare {journalEvent.EventName}: {exception.Message}");
-            }
+            await CollectJournalEventAsync(
+                    update,
+                    options,
+                    journalEvent,
+                    publicationAuthorized,
+                    queuedNames,
+                    warnings,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        var completed = TakeCompletedSendResult();
-        warnings.AddRange(completed.Warnings);
+        return queuedNames;
+    }
 
+    private void MaybeStartBackgroundSend(
+        InaraPublicationUpdate update,
+        InaraPublicationOptions options)
+    {
         var forceFlush = update.AllowPublishing
             && update.JournalEvents.Any(item => item.EventName == "Shutdown");
         if (forceFlush || IsSendDue())
@@ -183,13 +164,97 @@ public sealed class InaraPublisher : IInaraPublisher
                 force: forceFlush,
                 out _);
         }
+    }
 
-        return new InaraPublicationResult(
-            queuedNames.Count,
-            completed.AcceptedEventCount,
-            GetPendingCount(),
-            queuedNames.Distinct(StringComparer.Ordinal).ToArray(),
-            warnings);
+    private async Task CollectJournalEventAsync(
+        InaraPublicationUpdate update,
+        InaraPublicationOptions options,
+        JournalEventEnvelope journalEvent,
+        bool publicationAuthorized,
+        List<string> queuedNames,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (journalEvent.EventName is "Fileheader" or "LoadGame")
+            {
+                ResetPublicationSession(update.JournalPath);
+            }
+
+            var entry = JObject.Parse(journalEvent.RawJson);
+            if (publicationAuthorized)
+            {
+                entry = await AddSidecarDataAsync(
+                        entry,
+                        journalEvent,
+                        update.Cargo,
+                        update.JournalPath,
+                        update.AllowSharedData,
+                        warnings,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            ApplyPublicationState(journalEvent, entry);
+            QueueMappedEvents(
+                update,
+                options,
+                entry,
+                queuedNames,
+                warnings);
+        }
+        catch (JsonException exception)
+        {
+            warnings.Add(
+                $"Inara ignored {journalEvent.EventName}: {exception.Message}");
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add(
+                $"Inara could not prepare {journalEvent.EventName}: {exception.Message}");
+        }
+    }
+
+    private void QueueMappedEvents(
+        InaraPublicationUpdate update,
+        InaraPublicationOptions options,
+        JObject entry,
+        List<string> queuedNames,
+        List<string> warnings)
+    {
+        var context = CreateContext(update);
+        var identityMatches = CommanderMatchesOptions(context, options);
+        var canCollect = update.AllowPublishing
+            && identityMatches
+            && CanUpload(
+                options.Enabled,
+                options.ApiKey,
+                options.GameVersion,
+                options.IsOdyssey,
+                mapper.InMulticrew);
+        var mapped = mapper.Process(entry, context, canCollect);
+        var credentials = identityMatches
+            ? GetCredentials(context, options)
+            : null;
+        if (credentials is null || mapped.Count == 0)
+        {
+            return;
+        }
+
+        var dropped = queue.Enqueue(credentials, mapped);
+        if (dropped > 0)
+        {
+            warnings.Add(
+                $"Inara discarded {dropped} oldest queued event(s) to keep its local backlog bounded.");
+        }
+
+        queuedNames.AddRange(mapped.Select(item => item.Name));
+        lock (sendStateSync)
+        {
+            nextSendAt ??= timeProvider.GetUtcNow() + SendInterval;
+        }
     }
 
     public async Task<InaraPublicationResult> FlushAsync(
@@ -606,194 +671,22 @@ public sealed class InaraPublisher : IInaraPublisher
         var warnings = new List<string>();
         try
         {
-            if (!IsPublicationAuthorized(generation))
-            {
-                warnings.Add(
-                    $"Inara discarded {batch.Count} event(s) after publication authorization changed.");
-                return CreateSendResult(0, warnings);
-            }
-
-            if (!CanPrepareUpload(
-                    options.Enabled,
-                    options.ApiKey,
-                    options.GameVersion,
-                    options.IsOdyssey))
-            {
-                return InaraPublicationResult.Empty;
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-            var credentials = batch[0].Credentials;
-            if (string.Equals(
-                    options.CommanderName,
-                    credentials.Commander,
-                    StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(
-                    options.ApiKey?.Trim(),
-                    credentials.ApiKey,
-                    StringComparison.Ordinal))
-            {
-                warnings.Add(
-                    $"Inara discarded {batch.Count} queued event(s) after the commander API key changed.");
-                ScheduleNextAttempt(transientFailure: false);
-                return CreateSendResult(0, warnings);
-            }
-
-            var payloadBytes = BuildBoundedPayload(
-                credentials,
-                batch,
-                options.DeveloperTestMode,
-                warnings);
-            if (payloadBytes is null)
-            {
-                ScheduleNextAttempt(transientFailure: false);
-                return CreateSendResult(0, warnings);
-            }
-
-            using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint)
-            {
-                Content = new ByteArrayContent(payloadBytes),
-            };
-            request.Content.Headers.ContentType =
-                new MediaTypeHeaderValue("application/json")
-                {
-                    CharSet = "utf-8",
-                };
-            if (!IsPublicationAuthorized(generation))
-            {
-                warnings.Add(
-                    $"Inara discarded {batch.Count} event(s) after publication authorization changed.");
-                return CreateSendResult(0, warnings);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-            using var response = await httpClient.SendAsync(
-                    request,
-                    HttpCompletionOption.ResponseHeadersRead,
+            return await SendBatchAsync(
+                    options,
+                    generation,
+                    batch,
+                    warnings,
                     cancellationToken)
                 .ConfigureAwait(false);
-
-            if (IsTransient(response.StatusCode))
-            {
-                Requeue(batch, warnings);
-                ScheduleNextAttempt(
-                    transientFailure: true,
-                    GetRetryAfter(response.Headers.RetryAfter));
-                warnings.Add(
-                    $"Inara upload was deferred after HTTP {(int)response.StatusCode}; {batch.Count} event(s) were retained.");
-                return CreateSendResult(0, warnings);
-            }
-
-            if (!IsSuccess((int)response.StatusCode))
-            {
-                warnings.Add(
-                    $"Inara rejected {batch.Count} event(s) with HTTP {(int)response.StatusCode}.");
-                ScheduleNextAttempt(transientFailure: false);
-                return CreateSendResult(0, warnings);
-            }
-
-            var body = await ReadBoundedTextAsync(
-                    response.Content,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(body))
-            {
-                throw new InvalidDataException("Inara returned an empty response.");
-            }
-
-            var result = JObject.Parse(body);
-            var headerStatus = result
-                .SelectToken("header.eventStatus")
-                ?.Value<int?>();
-            var responseEvents = result["events"] as JArray;
-            var responseIsComplete = headerStatus is not null
-                && responseEvents?.Count == batch.Count
-                && responseEvents.OfType<JObject>().All(
-                    eventResult => eventResult["eventStatus"] is not null);
-            if (!responseIsComplete)
-            {
-                throw new InvalidDataException(
-                    "Inara returned an incomplete response.");
-            }
-
-            if (!IsSuccess(headerStatus!.Value))
-            {
-                if (IsTransient(headerStatus.Value))
-                {
-                    Requeue(batch, warnings);
-                    ScheduleNextAttempt(transientFailure: true);
-                    warnings.Add(
-                        $"Inara deferred {batch.Count} event(s) with API status {headerStatus}.");
-                }
-                else
-                {
-                    warnings.Add(
-                        $"Inara rejected a batch of {batch.Count} event(s) with API status {headerStatus}.");
-                    ScheduleNextAttempt(transientFailure: false);
-                }
-
-                return CreateSendResult(0, warnings);
-            }
-
-            var statuses = responseEvents!
-                .OfType<JObject>()
-                .Select((eventResult, index) => new
-                {
-                    Index = index,
-                    Status = eventResult.Value<int>("eventStatus"),
-                })
-                .ToArray();
-            var transient = statuses
-                .Where(item => IsTransient(item.Status))
-                .Select(item => batch[item.Index])
-                .ToArray();
-            var rejected = statuses
-                .Where(item => !IsSuccess(item.Status)
-                    && !IsTransient(item.Status))
-                .ToArray();
-            if (transient.Length > 0)
-            {
-                Requeue(transient, warnings);
-                ScheduleNextAttempt(transientFailure: true);
-                warnings.Add(
-                    $"Inara deferred {transient.Length} event(s); they were retained for retry.");
-            }
-            else
-            {
-                ScheduleNextAttempt(transientFailure: false);
-            }
-
-            if (rejected.Length > 0)
-            {
-                var names = rejected
-                    .Select(item => batch[item.Index].Event.Name)
-                    .Distinct(StringComparer.Ordinal);
-                warnings.Add(
-                    $"Inara rejected {rejected.Length} event(s): {string.Join(", ", names)}.");
-            }
-
-            var accepted = statuses.Count(item => IsSuccess(item.Status));
-            return CreateSendResult(accepted, warnings);
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException exception) when (
+            cancellationToken.IsCancellationRequested)
         {
-            if (!IsPublicationAuthorized(generation))
-            {
-                warnings.Add(
-                    $"Inara cancelled {batch.Count} event(s) after publication was disabled or its authorization changed.");
-                return CreateSendResult(0, warnings);
-            }
-
-            Requeue(batch, warnings);
-            throw;
+            return HandleSendCancellation(generation, batch, warnings, exception);
         }
         catch (Exception exception)
         {
-            Requeue(batch, warnings);
-            ScheduleNextAttempt(transientFailure: true);
-            warnings.Add(
-                $"Inara upload was deferred ({exception.GetType().Name}); {batch.Count} event(s) were retained.");
-            return CreateSendResult(0, warnings);
+            return HandleSendException(batch, warnings, exception);
         }
         finally
         {
@@ -802,6 +695,167 @@ public sealed class InaraPublisher : IInaraPublisher
                 activeBatchCount = 0;
             }
         }
+    }
+
+    private async Task<InaraPublicationResult> SendBatchAsync(
+        InaraPublicationOptions options,
+        long generation,
+        List<InaraQueuedEvent> batch,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
+        if (!IsPublicationAuthorized(generation))
+        {
+            return DiscardUnauthorizedBatch(batch, warnings);
+        }
+
+        if (!CanPrepareUpload(
+                options.Enabled,
+                options.ApiKey,
+                options.GameVersion,
+                options.IsOdyssey))
+        {
+            return InaraPublicationResult.Empty;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        if (ApiKeyChangedForCommander(options, batch[0].Credentials))
+        {
+            warnings.Add(
+                $"Inara discarded {batch.Count} queued event(s) after the commander API key changed.");
+            ScheduleNextAttempt(transientFailure: false);
+            return CreateSendResult(0, warnings);
+        }
+
+        var payloadBytes = BuildBoundedPayload(
+            batch[0].Credentials,
+            batch,
+            options.DeveloperTestMode,
+            warnings);
+        if (payloadBytes is null)
+        {
+            ScheduleNextAttempt(transientFailure: false);
+            return CreateSendResult(0, warnings);
+        }
+
+        return await SendPayloadAsync(
+                generation,
+                batch,
+                payloadBytes,
+                warnings,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static bool ApiKeyChangedForCommander(
+        InaraPublicationOptions options,
+        InaraCredentials credentials)
+    {
+        return string.Equals(
+                options.CommanderName,
+                credentials.Commander,
+                StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(
+                options.ApiKey?.Trim(),
+                credentials.ApiKey,
+                StringComparison.Ordinal);
+    }
+
+    private async Task<InaraPublicationResult> SendPayloadAsync(
+        long generation,
+        List<InaraQueuedEvent> batch,
+        byte[] payloadBytes,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, Endpoint)
+        {
+            Content = new ByteArrayContent(payloadBytes),
+        };
+        request.Content.Headers.ContentType =
+            new MediaTypeHeaderValue("application/json")
+            {
+                CharSet = "utf-8",
+            };
+        if (!IsPublicationAuthorized(generation))
+        {
+            return DiscardUnauthorizedBatch(batch, warnings);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        using var response = await httpClient.SendAsync(
+                request,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken)
+            .ConfigureAwait(false);
+        return await InterpretSendResponseAsync(response, batch, warnings, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<InaraPublicationResult> InterpretSendResponseAsync(
+        HttpResponseMessage response,
+        List<InaraQueuedEvent> batch,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
+        if (IsTransient(response.StatusCode))
+        {
+            return DeferBatch(
+                batch,
+                warnings,
+                $"Inara upload was deferred after HTTP {(int)response.StatusCode}; {batch.Count} event(s) were retained.",
+                GetRetryAfter(response.Headers.RetryAfter));
+        }
+
+        if (!IsSuccess((int)response.StatusCode))
+        {
+            warnings.Add(
+                $"Inara rejected {batch.Count} event(s) with HTTP {(int)response.StatusCode}.");
+            ScheduleNextAttempt(transientFailure: false);
+            return CreateSendResult(0, warnings);
+        }
+
+        var body = await ReadBoundedTextAsync(response.Content, cancellationToken)
+            .ConfigureAwait(false);
+        return ProcessInaraResponseBody(body, batch, warnings);
+    }
+
+    private InaraPublicationResult DiscardUnauthorizedBatch(
+        List<InaraQueuedEvent> batch,
+        List<string> warnings)
+    {
+        warnings.Add(
+            $"Inara discarded {batch.Count} event(s) after publication authorization changed.");
+        return CreateSendResult(0, warnings);
+    }
+
+    private InaraPublicationResult HandleSendCancellation(
+        long generation,
+        List<InaraQueuedEvent> batch,
+        List<string> warnings,
+        OperationCanceledException exception)
+    {
+        if (!IsPublicationAuthorized(generation))
+        {
+            warnings.Add(
+                $"Inara cancelled {batch.Count} event(s) after publication was disabled or its authorization changed.");
+            return CreateSendResult(0, warnings);
+        }
+
+        Requeue(batch, warnings);
+        throw exception;
+    }
+
+    private InaraPublicationResult HandleSendException(
+        List<InaraQueuedEvent> batch,
+        List<string> warnings,
+        Exception exception)
+    {
+        Requeue(batch, warnings);
+        ScheduleNextAttempt(transientFailure: true);
+        warnings.Add(
+            $"Inara upload was deferred ({exception.GetType().Name}); {batch.Count} event(s) were retained.");
+        return CreateSendResult(0, warnings);
     }
 
     private byte[]? BuildBoundedPayload(
@@ -899,6 +953,119 @@ public sealed class InaraPublisher : IInaraPublisher
                 nextSendAt = candidate;
             }
         }
+    }
+
+    private InaraPublicationResult DeferBatch(
+        IReadOnlyList<InaraQueuedEvent> batch,
+        List<string> warnings,
+        string warning,
+        TimeSpan? retryAfter = null)
+    {
+        Requeue(batch, warnings);
+        ScheduleNextAttempt(transientFailure: true, retryAfter);
+        warnings.Add(warning);
+        return CreateSendResult(0, warnings);
+    }
+
+    private InaraPublicationResult ProcessInaraResponseBody(
+        string? body,
+        List<InaraQueuedEvent> batch,
+        List<string> warnings)
+    {
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            throw new InvalidDataException("Inara returned an empty response.");
+        }
+
+        var result = JObject.Parse(body);
+        var headerStatus = result
+            .SelectToken("header.eventStatus")
+            ?.Value<int?>();
+        var responseEvents = result["events"] as JArray;
+        var responseIsComplete = headerStatus is not null
+            && responseEvents?.Count == batch.Count
+            && responseEvents.OfType<JObject>().All(
+                eventResult => eventResult["eventStatus"] is not null);
+        if (!responseIsComplete)
+        {
+            throw new InvalidDataException(
+                "Inara returned an incomplete response.");
+        }
+
+        if (!IsSuccess(headerStatus!.Value))
+        {
+            return HandleUnsuccessfulHeader(headerStatus.Value, batch, warnings);
+        }
+
+        return ApplyEventStatuses(responseEvents!, batch, warnings);
+    }
+
+    private InaraPublicationResult HandleUnsuccessfulHeader(
+        int headerStatus,
+        List<InaraQueuedEvent> batch,
+        List<string> warnings)
+    {
+        if (IsTransient(headerStatus))
+        {
+            Requeue(batch, warnings);
+            ScheduleNextAttempt(transientFailure: true);
+            warnings.Add(
+                $"Inara deferred {batch.Count} event(s) with API status {headerStatus}.");
+        }
+        else
+        {
+            warnings.Add(
+                $"Inara rejected a batch of {batch.Count} event(s) with API status {headerStatus}.");
+            ScheduleNextAttempt(transientFailure: false);
+        }
+
+        return CreateSendResult(0, warnings);
+    }
+
+    private InaraPublicationResult ApplyEventStatuses(
+        JArray responseEvents,
+        List<InaraQueuedEvent> batch,
+        List<string> warnings)
+    {
+        var statuses = responseEvents
+            .OfType<JObject>()
+            .Select((eventResult, index) => new
+            {
+                Index = index,
+                Status = eventResult.Value<int>("eventStatus"),
+            })
+            .ToArray();
+        var transient = statuses
+            .Where(item => IsTransient(item.Status))
+            .Select(item => batch[item.Index])
+            .ToArray();
+        var rejected = statuses
+            .Where(item => !IsSuccess(item.Status)
+                && !IsTransient(item.Status))
+            .ToArray();
+        if (transient.Length > 0)
+        {
+            Requeue(transient, warnings);
+            ScheduleNextAttempt(transientFailure: true);
+            warnings.Add(
+                $"Inara deferred {transient.Length} event(s); they were retained for retry.");
+        }
+        else
+        {
+            ScheduleNextAttempt(transientFailure: false);
+        }
+
+        if (rejected.Length > 0)
+        {
+            var names = rejected
+                .Select(item => batch[item.Index].Event.Name)
+                .Distinct(StringComparer.Ordinal);
+            warnings.Add(
+                $"Inara rejected {rejected.Length} event(s): {string.Join(", ", names)}.");
+        }
+
+        var accepted = statuses.Count(item => IsSuccess(item.Status));
+        return CreateSendResult(accepted, warnings);
     }
 
     private InaraPublicationResult CreateSendResult(

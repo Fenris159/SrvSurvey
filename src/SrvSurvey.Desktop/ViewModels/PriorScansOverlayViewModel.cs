@@ -143,21 +143,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
     public async Task RefreshAsync()
     {
-        if (disposed || !TryCreateContext(out var context))
-        {
-            Recalculate();
-            return;
-        }
-
-        if (cachedResult is not null
-            && string.Equals(cachedKey, context.CacheKey, StringComparison.Ordinal))
-        {
-            Recalculate(context);
-            return;
-        }
-
-        if (string.Equals(failedKey, context.CacheKey, StringComparison.Ordinal)
-            && DateTimeOffset.UtcNow < retryAfter)
+        if (!TryBeginRefresh(out var context))
         {
             return;
         }
@@ -171,38 +157,12 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
         try
         {
-            if (disposed || !TryCreateContext(out context))
-            {
-                Recalculate();
-                return;
-            }
-
-            if (cachedResult is not null
-                && string.Equals(
-                    cachedKey,
-                    context.CacheKey,
-                    StringComparison.Ordinal))
-            {
-                Recalculate(context);
-                return;
-            }
-
-            IsLoading = true;
-            StatusText = $"Loading Canonn signals for {context.SystemName}…";
-            var result = await client.GetAsync(
-                context.SystemName,
-                context.CommanderName,
-                disposalCancellation.Token).ConfigureAwait(true);
-            if (disposed)
+            if (!TryBeginRefresh(out context))
             {
                 return;
             }
 
-            cachedResult = result;
-            cachedKey = context.CacheKey;
-            failedKey = null;
-            retryAfter = default;
-            Recalculate(context);
+            await LoadPriorScansAsync(context).ConfigureAwait(true);
         }
         catch (Exception exception) when (
             exception is HttpRequestException
@@ -211,18 +171,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
                 or IOException
                 or InvalidOperationException)
         {
-            if (!disposed)
-            {
-                cachedResult = null;
-                cachedKey = null;
-                failedKey = context.CacheKey;
-                retryAfter = DateTimeOffset.UtcNow.AddSeconds(30);
-                Species = [];
-                RadarTargets = [];
-                SurfaceMarkers = [];
-                StatusText = "Canonn prior scans are unavailable: "
-                    + exception.Message;
-            }
+            ApplyRefreshFailure(context, exception);
         }
         finally
         {
@@ -233,6 +182,70 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
             refreshLock.Release();
         }
+    }
+
+    private bool TryBeginRefresh(out PriorScanContext context)
+    {
+        if (disposed || !TryCreateContext(out context!))
+        {
+            context = default!;
+            Recalculate();
+            return false;
+        }
+
+        if (cachedResult is not null
+            && string.Equals(cachedKey, context.CacheKey, StringComparison.Ordinal))
+        {
+            Recalculate(context);
+            return false;
+        }
+
+        if (string.Equals(failedKey, context.CacheKey, StringComparison.Ordinal)
+            && DateTimeOffset.UtcNow < retryAfter)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task LoadPriorScansAsync(PriorScanContext context)
+    {
+        IsLoading = true;
+        StatusText = $"Loading Canonn signals for {context.SystemName}…";
+        var result = await client.GetAsync(
+            context.SystemName,
+            context.CommanderName,
+            disposalCancellation.Token).ConfigureAwait(true);
+        if (disposed)
+        {
+            return;
+        }
+
+        cachedResult = result;
+        cachedKey = context.CacheKey;
+        failedKey = null;
+        retryAfter = default;
+        Recalculate(context);
+    }
+
+    private void ApplyRefreshFailure(
+        PriorScanContext context,
+        Exception exception)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        cachedResult = null;
+        cachedKey = null;
+        failedKey = context.CacheKey;
+        retryAfter = DateTimeOffset.UtcNow.AddSeconds(30);
+        Species = [];
+        RadarTargets = [];
+        SurfaceMarkers = [];
+        StatusText = "Canonn prior scans are unavailable: " + exception.Message;
     }
 
     public void ApplyPreparation(OverlayPreparationResult result)

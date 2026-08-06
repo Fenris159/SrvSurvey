@@ -33,6 +33,7 @@ internal sealed record OverlayPreviewSimulationState(
 internal static class OverlayPreviewSimulationProjector
 {
     private const string StratumTectonicas = "Stratum Tectonicas";
+    private const string BacteriumAcies = "Bacterium Acies";
 
     public static OverlayPreviewSimulationContent Project(
         OverlayLayoutDefinition definition,
@@ -47,7 +48,7 @@ internal static class OverlayPreviewSimulationProjector
                 state.CurrentBody,
                 "Bacterium sample active",
                 "BIO SAMPLE 2 / 3",
-                Row("Bacterium Acies", "SAMPLE 2 OF 3", 67),
+                Row(BacteriumAcies, "SAMPLE 2 OF 3", 67),
                 Row("Separation", "320 / 500 m", 64),
                 Row("Temperature", "178-195 K"),
                 Row("Signals", "6 biological")),
@@ -135,7 +136,7 @@ internal static class OverlayPreviewSimulationProjector
                 state.CurrentBody,
                 "Surface survey - heading 074 degrees",
                 "3 TARGETS | RADAR 1.0 KM",
-                Row("Bacterium Acies", "146 m | 068 degrees", 29, "►", OverlayPreviewGlyphTone.Information),
+                Row(BacteriumAcies, "146 m | 068 degrees", 29, "►", OverlayPreviewGlyphTone.Information),
                 Row("Tussock Capillum", "412 m | 091 degrees", 82, "⚐", OverlayPreviewGlyphTone.Gold),
                 Row(StratumTectonicas, "1.24 km | 312 degrees"),
                 Row("Ship", "860 m | 184 degrees"),
@@ -203,7 +204,7 @@ internal static class OverlayPreviewSimulationProjector
                 RouteBodyRow(new FollowRouteBioTarget(
                     "A 5",
                     5,
-                    ["Bacterium Acies", StratumTectonicas],
+                    [BacteriumAcies, StratumTectonicas],
                     Subtype: "Earth-like world",
                     DistanceToArrivalLs: 2934,
                     EstimatedMappingValue: 625000,
@@ -247,7 +248,7 @@ internal static class OverlayPreviewSimulationProjector
                 state.CurrentBody,
                 "Nearest surface targets",
                 "HEADING 074 DEGREES",
-                Row("Bacterium Acies", "146 m"),
+                Row(BacteriumAcies, "146 m"),
                 Row("Tussock Capillum", "412 m"),
                 Row(StratumTectonicas, "1.24 km")),
             "PlotMultiGameCommander" => Content(
@@ -261,7 +262,7 @@ internal static class OverlayPreviewSimulationProjector
                 state.CurrentBody,
                 "Canonn prior scans - 3 species",
                 "LAST SYNC 2 M AGO | RADAR 1.0 KM",
-                Row("Bacterium Acies", "7.62 M cr | active", 67),
+                Row(BacteriumAcies, "7.62 M cr | active", 67),
                 Row("Tussock Capillum", "19.01 M cr | analyzed", 100),
                 Row(StratumTectonicas, "95.19 M cr | 1.24 km", 33),
                 Row("Historical samples", "9 locations")),
@@ -315,7 +316,7 @@ internal static class OverlayPreviewSimulationProjector
                 "Ground target",
                 "Biological sample location",
                 "146 M | 068 DEGREES",
-                Row("Bacterium Acies", "146 m | 068 degrees", 29, "►", OverlayPreviewGlyphTone.Information),
+                Row(BacteriumAcies, "146 m | 068 degrees", 29, "►", OverlayPreviewGlyphTone.Information),
                 Row("Latitude", "-18.4216"),
                 Row("Longitude", "74.0921")),
             _ => throw new InvalidOperationException(

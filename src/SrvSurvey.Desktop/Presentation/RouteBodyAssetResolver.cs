@@ -54,83 +54,42 @@ public static class RouteBodyAssetResolver
             GetAccessibleName(kind));
     }
 
+    private static readonly (string Token, RouteBodyVisualKind Kind)[]
+        ExactTokenKinds =
+        [
+            ("black hole", RouteBodyVisualKind.BlackHole),
+            ("neutron", RouteBodyVisualKind.NeutronStar),
+            ("white dwarf", RouteBodyVisualKind.WhiteDwarf),
+            ("earth like", RouteBodyVisualKind.EarthLikeWorld),
+            ("ammonia world", RouteBodyVisualKind.AmmoniaWorld),
+            ("water giant", RouteBodyVisualKind.WaterGiant),
+            ("water world", RouteBodyVisualKind.WaterWorld),
+            ("high metal content", RouteBodyVisualKind.HighMetalContentWorld),
+            ("metal rich", RouteBodyVisualKind.MetalRichBody),
+            ("rocky ice", RouteBodyVisualKind.RockyIceBody),
+            ("icy", RouteBodyVisualKind.IcyBody),
+            ("rocky", RouteBodyVisualKind.RockyBody),
+            ("gas giant", RouteBodyVisualKind.GasGiant),
+        ];
+
     private static RouteBodyVisualKind ResolveKind(string normalized)
     {
-        if (normalized.Contains("black hole", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.BlackHole;
-        }
-
-        if (normalized.Contains("neutron", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.NeutronStar;
-        }
-
-        if (normalized.Contains("white dwarf", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.WhiteDwarf;
-        }
-
-        if (normalized.Contains("barycentre", StringComparison.Ordinal)
-            || normalized.Contains("barycenter", StringComparison.Ordinal))
+        if (ContainsAny(normalized, "barycentre", "barycenter"))
         {
             return RouteBodyVisualKind.Barycentre;
         }
 
-        if (normalized.Contains("asteroid", StringComparison.Ordinal)
-            || normalized.Contains("belt cluster", StringComparison.Ordinal))
+        if (ContainsAny(normalized, "asteroid", "belt cluster"))
         {
             return RouteBodyVisualKind.AsteroidCluster;
         }
 
-        if (normalized.Contains("earth like", StringComparison.Ordinal))
+        foreach (var (token, kind) in ExactTokenKinds)
         {
-            return RouteBodyVisualKind.EarthLikeWorld;
-        }
-
-        if (normalized.Contains("ammonia world", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.AmmoniaWorld;
-        }
-
-        if (normalized.Contains("water giant", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.WaterGiant;
-        }
-
-        if (normalized.Contains("water world", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.WaterWorld;
-        }
-
-        if (normalized.Contains("high metal content", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.HighMetalContentWorld;
-        }
-
-        if (normalized.Contains("metal rich", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.MetalRichBody;
-        }
-
-        if (normalized.Contains("rocky ice", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.RockyIceBody;
-        }
-
-        if (normalized.Contains("icy", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.IcyBody;
-        }
-
-        if (normalized.Contains("rocky", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.RockyBody;
-        }
-
-        if (normalized.Contains("gas giant", StringComparison.Ordinal))
-        {
-            return RouteBodyVisualKind.GasGiant;
+            if (normalized.Contains(token, StringComparison.Ordinal))
+            {
+                return kind;
+            }
         }
 
         if (normalized.EndsWith("star", StringComparison.Ordinal)
@@ -141,6 +100,9 @@ public static class RouteBodyAssetResolver
 
         return RouteBodyVisualKind.Unknown;
     }
+
+    private static bool ContainsAny(string value, params string[] tokens) =>
+        tokens.Any(token => value.Contains(token, StringComparison.Ordinal));
 
     private static string Normalize(string? value)
     {

@@ -8,6 +8,8 @@ namespace SrvSurvey.Core.Storage;
 
 public sealed class HumanSiteMaterialStore
 {
+    private const string CompletedPropertyName = "completed";
+
     private static readonly ConcurrentDictionary<string, SemaphoreSlim>
         FileLocks = new(StringComparer.OrdinalIgnoreCase);
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -118,7 +120,7 @@ public sealed class HumanSiteMaterialStore
                     throw new InvalidDataException(read.Error);
                 }
 
-                if (ReadBoolean(read.Root, "completed") == true)
+                if (ReadBoolean(read.Root, CompletedPropertyName) == true)
                 {
                     path = GetNewPath(folder, context, avoidExisting: true);
                 }
@@ -152,7 +154,7 @@ public sealed class HumanSiteMaterialStore
             }
 
             root["totalMatCount"] = total;
-            root["completed"] = false;
+            root[CompletedPropertyName] = false;
             await WriteAsync(path, root, cancellationToken)
                 .ConfigureAwait(false);
             var warnings = new List<string>();
@@ -196,7 +198,7 @@ public sealed class HumanSiteMaterialStore
                 throw new InvalidDataException(read.Error);
             }
 
-            read.Root["completed"] = true;
+            read.Root[CompletedPropertyName] = true;
             await WriteAsync(path, read.Root, cancellationToken)
                 .ConfigureAwait(false);
             var warnings = new List<string>();
@@ -238,7 +240,7 @@ public sealed class HumanSiteMaterialStore
                     throw new InvalidDataException(read.Error);
                 }
 
-                if (ReadBoolean(read.Root, "completed") == true)
+                if (ReadBoolean(read.Root, CompletedPropertyName) == true)
                 {
                     path = GetNewPath(folder, context, avoidExisting: true);
                 }
@@ -250,7 +252,7 @@ public sealed class HumanSiteMaterialStore
 
             ApplyContext(root, context);
             root["threatLevel"] = threatLevel;
-            root["completed"] = false;
+            root[CompletedPropertyName] = false;
             await WriteAsync(path, root, cancellationToken)
                 .ConfigureAwait(false);
             var warnings = new List<string>();
@@ -289,7 +291,7 @@ public sealed class HumanSiteMaterialStore
         }
 
         return new HumanSiteMaterialSurvey(
-            ReadBoolean(root, "completed") ?? false,
+            ReadBoolean(root, CompletedPropertyName) ?? false,
             ReadInt32(root, "threatLevel") ?? -1,
             Math.Max(0, ReadInt32(root, "totalMatCount") ?? 0),
             ReadCounts(root["countMats"]),

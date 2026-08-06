@@ -13,65 +13,106 @@ $script:TechnicalTokenPattern = [regex]::new(
     [Text.RegularExpressions.RegexOptions]::CultureInvariant)
 
 function Invoke-Generation {
-$sourcePath = Join-Path $RepositoryRoot `
-    "src/SrvSurvey.Desktop/Resources/avalonia-localization-source.json"
-$outputPath = Join-Path $RepositoryRoot `
-    "src/SrvSurvey.Desktop/Resources/avalonia-localization.json"
-$toolProject = Join-Path $RepositoryRoot `
-    "tools/SrvSurvey.LocalizationTool/SrvSurvey.LocalizationTool.csproj"
-$temporarySource = [IO.Path]::GetTempFileName()
-$temporaryCatalog = [IO.Path]::GetTempFileName()
+    $paths = Get-LocalizationPaths
+    $temporarySource = [IO.Path]::GetTempFileName()
+    $temporaryCatalog = [IO.Path]::GetTempFileName()
 
-try {
-    dotnet run --project $toolProject --configuration Release -- `
-        $RepositoryRoot $temporarySource
+    try {
+        $freshSource = Invoke-SourceExtraction -Paths $paths -TemporarySource $temporarySource
+        Save-OrVerifySource -Paths $paths -FreshSource $freshSource
+
+        $sources = $freshSource | ConvertFrom-Json
+        $existing = Get-ExistingCatalog -Paths $paths -TemporaryCatalog $temporaryCatalog
+        $languages = Get-LocalizationLanguageMap
+        $result = Build-LocalizationResult `
+            -Sources $sources `
+            -Existing $existing `
+            -Languages $languages
+
+        Save-OrVerifyCatalog -Paths $paths -Result $result
+        Write-Output "Verified $($sources.Count) Avalonia localization sources across $($languages.Count) languages."
+    }
+    finally {
+        Remove-Item -LiteralPath $temporarySource -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $temporaryCatalog -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Get-LocalizationPaths {
+    return [pscustomobject]@{
+        SourcePath = Join-Path $RepositoryRoot `
+            "src/SrvSurvey.Desktop/Resources/avalonia-localization-source.json"
+        OutputPath = Join-Path $RepositoryRoot `
+            "src/SrvSurvey.Desktop/Resources/avalonia-localization.json"
+        ToolProject = Join-Path $RepositoryRoot `
+            "tools/SrvSurvey.LocalizationTool/SrvSurvey.LocalizationTool.csproj"
+    }
+}
+
+function Invoke-SourceExtraction {
+    param($Paths, [string]$TemporarySource)
+
+    dotnet run --project $Paths.ToolProject --configuration Release -- `
+        $RepositoryRoot $TemporarySource
     if ($LASTEXITCODE -ne 0) {
         throw "The localization source extractor failed."
     }
 
-    $freshSource = [IO.File]::ReadAllText(
-        $temporarySource,
-        [Text.Encoding]::UTF8)
+    return [IO.File]::ReadAllText($TemporarySource, [Text.Encoding]::UTF8)
+}
+
+function Save-OrVerifySource {
+    param($Paths, [string]$FreshSource)
+
     if ($Verify) {
-        if (-not (Test-Path -LiteralPath $sourcePath) -or
-            $freshSource -cne [IO.File]::ReadAllText(
-                $sourcePath,
+        if (-not (Test-Path -LiteralPath $Paths.SourcePath) -or
+            $FreshSource -cne [IO.File]::ReadAllText(
+                $Paths.SourcePath,
                 [Text.Encoding]::UTF8)) {
             throw "Avalonia localization sources are stale. Run tools/Generate-AvaloniaLocalization.ps1."
         }
-    }
-    else {
-        [IO.File]::WriteAllText(
-            $sourcePath,
-            $freshSource,
-            [Text.UTF8Encoding]::new($false))
+        return
     }
 
-    $sources = $freshSource | ConvertFrom-Json
+    [IO.File]::WriteAllText(
+        $Paths.SourcePath,
+        $FreshSource,
+        [Text.UTF8Encoding]::new($false))
+}
+
+function Get-ExistingCatalog {
+    param($Paths, [string]$TemporaryCatalog)
+
     $existing = @{}
-    if (Test-Path -LiteralPath $outputPath) {
-        dotnet run --project $toolProject --configuration Release -- `
-            normalize-catalog $outputPath $temporaryCatalog
-        if ($LASTEXITCODE -ne 0) {
-            throw "The localization catalog normalizer failed."
-        }
-
-        $existingDocument = [IO.File]::ReadAllText(
-            $temporaryCatalog,
-            [Text.Encoding]::UTF8) | ConvertFrom-Json
-        foreach ($languageProperty in $existingDocument.PSObject.Properties) {
-            $languageMap = [Collections.Generic.Dictionary[string,string]]::new(
-                [StringComparer]::Ordinal)
-            foreach ($translation in $languageProperty.Value) {
-                $languageMap[[string]$translation.source] = `
-                    [string]$translation.translation
-            }
-
-            $existing[$languageProperty.Name] = $languageMap
-        }
+    if (-not (Test-Path -LiteralPath $Paths.OutputPath)) {
+        return $existing
     }
 
-    $languages = [ordered]@{
+    dotnet run --project $Paths.ToolProject --configuration Release -- `
+        normalize-catalog $Paths.OutputPath $TemporaryCatalog
+    if ($LASTEXITCODE -ne 0) {
+        throw "The localization catalog normalizer failed."
+    }
+
+    $existingDocument = [IO.File]::ReadAllText(
+        $TemporaryCatalog,
+        [Text.Encoding]::UTF8) | ConvertFrom-Json
+    foreach ($languageProperty in $existingDocument.PSObject.Properties) {
+        $languageMap = [Collections.Generic.Dictionary[string,string]]::new(
+            [StringComparer]::Ordinal)
+        foreach ($translation in $languageProperty.Value) {
+            $languageMap[[string]$translation.source] = `
+                [string]$translation.translation
+        }
+
+        $existing[$languageProperty.Name] = $languageMap
+    }
+
+    return $existing
+}
+
+function Get-LocalizationLanguageMap {
+    return [ordered]@{
         "de" = "de"
         "es" = "es"
         "fr" = "fr"
@@ -80,88 +121,145 @@ try {
         "zh-Hans" = "zh-CN"
         "ps" = "ps"
     }
+}
+
+function Build-LocalizationResult {
+    param($Sources, $Existing, $Languages)
+
     $result = [ordered]@{}
-    foreach ($language in $languages.Keys) {
-        $translations = [Collections.Specialized.OrderedDictionary]::new(
-            [StringComparer]::Ordinal)
-        $prior = if ($existing.ContainsKey($language)) {
-            $existing[$language]
-        }
-        else {
-            @{}
-        }
-
-        foreach ($source in $sources) {
-            if (-not $RegenerateAll -and $language -ne "ps" -and
-                $prior.ContainsKey($source.Text) -and
-                (Test-ProtectedTokens `
-                    $source.Text `
-                    ([string]$prior[$source.Text]))) {
-                $translations[$source.Text] = [string]$prior[$source.Text]
-            }
-        }
-
-        $missing = @($sources | Where-Object {
-            -not $translations.Contains($_.Text)
-        })
-        if ($language -eq "ps") {
-            foreach ($source in $missing) {
-                $translations[$source.Text] = `
-                    "* $($source.Text.ToUpperInvariant()) >>>!"
-            }
-        }
-        elseif ($missing.Count -gt 0 -and $TranslateMissing) {
-            $target = $languages[$language]
-            Write-Output "Translating $($missing.Count) missing $language strings..."
-            $translated = Invoke-GoogleTranslationBatch `
-                -Sources $missing.Text `
-                -TargetLanguage $target
-            foreach ($source in $missing) {
-                $translations[$source.Text] = $translated[$source.Text]
-            }
-        }
-        elseif ($missing.Count -gt 0) {
-            throw "$language is missing $($missing.Count) translation(s). Run with -TranslateMissing."
-        }
-
-        foreach ($source in $sources) {
-            $translation = [string]$translations[$source.Text]
-            if (-not (Test-Placeholders $source.Text $translation)) {
-                throw "$language did not preserve placeholders for: $($source.Text)"
-            }
-
-            if (-not (Test-ProtectedTokens $source.Text $translation)) {
-                throw "$language did not preserve a protected token for: $($source.Text)"
-            }
-
-            if ($translation.IndexOf([char]0xfffd) -ge 0) {
-                throw "$language contains a Unicode replacement character for: $($source.Text)"
-            }
-        }
-
-        $keys = [string[]]@($translations.Keys)
-        [Array]::Sort($keys, [StringComparer]::Ordinal)
-        $languageResult = [Collections.Generic.List[object]]::new()
-        foreach ($key in $keys) {
-            $languageResult.Add([ordered]@{
-                source = $key
-                translation = $translations[$key]
-            })
-        }
-
-        $result[$language] = $languageResult.ToArray()
+    foreach ($language in $Languages.Keys) {
+        $result[$language] = Build-LanguageTranslations `
+            -Language $language `
+            -TargetLanguage $Languages[$language] `
+            -Sources $Sources `
+            -Prior $(if ($Existing.ContainsKey($language)) { $Existing[$language] } else { @{} })
     }
 
-    $json = $result | ConvertTo-Json -Depth 5
+    return $result
+}
+
+function Build-LanguageTranslations {
+    param(
+        [string]$Language,
+        [string]$TargetLanguage,
+        $Sources,
+        $Prior
+    )
+
+    $translations = [Collections.Specialized.OrderedDictionary]::new(
+        [StringComparer]::Ordinal)
+    foreach ($source in $Sources) {
+        if (-not $RegenerateAll -and $Language -ne "ps" -and
+            $Prior.ContainsKey($source.Text) -and
+            (Test-ProtectedTokens `
+                $source.Text `
+                ([string]$Prior[$source.Text]))) {
+            $translations[$source.Text] = [string]$Prior[$source.Text]
+        }
+    }
+
+    Fill-MissingTranslations `
+        -Language $Language `
+        -TargetLanguage $TargetLanguage `
+        -Sources $Sources `
+        -Translations $translations
+
+    Assert-LanguageTranslationsValid `
+        -Language $Language `
+        -Sources $Sources `
+        -Translations $translations
+
+    return Convert-TranslationsToSortedArray -Translations $translations
+}
+
+function Fill-MissingTranslations {
+    param(
+        [string]$Language,
+        [string]$TargetLanguage,
+        $Sources,
+        $Translations
+    )
+
+    $missing = @($Sources | Where-Object {
+        -not $Translations.Contains($_.Text)
+    })
+    if ($Language -eq "ps") {
+        foreach ($source in $missing) {
+            $Translations[$source.Text] = `
+                "* $($source.Text.ToUpperInvariant()) >>>!"
+        }
+        return
+    }
+
+    if ($missing.Count -eq 0) {
+        return
+    }
+
+    if (-not $TranslateMissing) {
+        throw "$Language is missing $($missing.Count) translation(s). Run with -TranslateMissing."
+    }
+
+    Write-Output "Translating $($missing.Count) missing $Language strings..."
+    $translated = Invoke-GoogleTranslationBatch `
+        -Sources $missing.Text `
+        -TargetLanguage $TargetLanguage
+    foreach ($source in $missing) {
+        $Translations[$source.Text] = $translated[$source.Text]
+    }
+}
+
+function Assert-LanguageTranslationsValid {
+    param(
+        [string]$Language,
+        $Sources,
+        $Translations
+    )
+
+    foreach ($source in $Sources) {
+        $translation = [string]$Translations[$source.Text]
+        if (-not (Test-Placeholders $source.Text $translation)) {
+            throw "$Language did not preserve placeholders for: $($source.Text)"
+        }
+
+        if (-not (Test-ProtectedTokens $source.Text $translation)) {
+            throw "$Language did not preserve a protected token for: $($source.Text)"
+        }
+
+        if ($translation.IndexOf([char]0xfffd) -ge 0) {
+            throw "$Language contains a Unicode replacement character for: $($source.Text)"
+        }
+    }
+}
+
+function Convert-TranslationsToSortedArray {
+    param($Translations)
+
+    $keys = [string[]]@($Translations.Keys)
+    [Array]::Sort($keys, [StringComparer]::Ordinal)
+    $languageResult = [Collections.Generic.List[object]]::new()
+    foreach ($key in $keys) {
+        $languageResult.Add([ordered]@{
+            source = $key
+            translation = $Translations[$key]
+        })
+    }
+
+    return $languageResult.ToArray()
+}
+
+function Save-OrVerifyCatalog {
+    param($Paths, $Result)
+
+    $json = $Result | ConvertTo-Json -Depth 5
     if ($Verify) {
         $expectedJson = $json + [Environment]::NewLine
-        $currentJson = if (Test-Path -LiteralPath $outputPath) {
-            [IO.File]::ReadAllText($outputPath)
+        $currentJson = if (Test-Path -LiteralPath $Paths.OutputPath) {
+            [IO.File]::ReadAllText($Paths.OutputPath)
         }
         else {
             ""
         }
-        if (-not (Test-Path -LiteralPath $outputPath) -or
+        if (-not (Test-Path -LiteralPath $Paths.OutputPath) -or
             $expectedJson -cne $currentJson) {
             $expectedPath = Join-Path ([IO.Path]::GetTempPath()) `
                 "srv-survey-expected-localization.json"
@@ -171,22 +269,14 @@ try {
                 [Text.UTF8Encoding]::new($false))
             throw "Avalonia translations are stale. Run tools/Generate-AvaloniaLocalization.ps1."
         }
-    }
-    else {
-        [IO.File]::WriteAllText(
-            $outputPath,
-            $json + [Environment]::NewLine,
-            [Text.UTF8Encoding]::new($false))
+        return
     }
 
-    Write-Output "Verified $($sources.Count) Avalonia localization sources across $($languages.Count) languages."
+    [IO.File]::WriteAllText(
+        $Paths.OutputPath,
+        $json + [Environment]::NewLine,
+        [Text.UTF8Encoding]::new($false))
 }
-finally {
-    Remove-Item -LiteralPath $temporarySource -Force -ErrorAction SilentlyContinue
-    Remove-Item -LiteralPath $temporaryCatalog -Force -ErrorAction SilentlyContinue
-}
-}
-
 function Invoke-GoogleTranslationBatch {
     param(
         [Parameter(Mandatory)]

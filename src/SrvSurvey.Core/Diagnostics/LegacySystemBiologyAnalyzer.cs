@@ -41,58 +41,20 @@ public sealed class LegacySystemBiologyAnalyzer
         {
             cancellationToken.ThrowIfCancellationRequested();
             var file = files[index];
-            try
+            var analyzed = await TryAnalyzeFileAsync(
+                    file,
+                    summaries,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (analyzed.Warning is not null)
             {
-                await using var stream = new FileStream(
-                    file.FullName,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.ReadWrite | FileShare.Delete,
-                    16 * 1024,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan);
-                using var document = await JsonDocument.ParseAsync(
-                        stream,
-                        cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-                if (document.RootElement.ValueKind != JsonValueKind.Object)
-                {
-                    warnings.Add($"{file.Name}: the root value is not an object.");
-                    Report(
-                        progress,
-                        index,
-                        files,
-                        file,
-                        bodyCount,
-                        organismCount);
-                    continue;
-                }
-
-                processedFiles++;
-                if (TryGetProperty(
-                        document.RootElement,
-                        "bodies",
-                        out var bodies)
-                    && bodies.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var body in bodies.EnumerateArray())
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        if (body.ValueKind != JsonValueKind.Object)
-                        {
-                            continue;
-                        }
-
-                        bodyCount++;
-                        AnalyzeBody(body, summaries, ref organismCount);
-                    }
-                }
+                warnings.Add(analyzed.Warning);
             }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or JsonException)
+            else
             {
-                warnings.Add($"{file.Name}: {exception.Message}");
+                processedFiles++;
+                bodyCount += analyzed.BodyCount;
+                organismCount += analyzed.OrganismCount;
             }
 
             Report(
@@ -114,6 +76,84 @@ public sealed class LegacySystemBiologyAnalyzer
                 .Select(summary => summary.Create())
                 .ToArray(),
             warnings);
+    }
+
+    private static async Task<FileAnalysisCounts> TryAnalyzeFileAsync(
+        FileInfo file,
+        IDictionary<string, MutableSpeciesSummary> summaries,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var stream = new FileStream(
+                file.FullName,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete,
+                16 * 1024,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+            using var document = await JsonDocument.ParseAsync(
+                    stream,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                return FileAnalysisCounts.Failed(
+                    $"{file.Name}: the root value is not an object.");
+            }
+
+            var bodyCount = 0;
+            var organismCount = 0;
+            AnalyzeBodies(
+                document.RootElement,
+                summaries,
+                ref bodyCount,
+                ref organismCount,
+                cancellationToken);
+            return new FileAnalysisCounts(bodyCount, organismCount, null);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or JsonException)
+        {
+            return FileAnalysisCounts.Failed($"{file.Name}: {exception.Message}");
+        }
+    }
+
+    private readonly record struct FileAnalysisCounts(
+        int BodyCount,
+        int OrganismCount,
+        string? Warning)
+    {
+        public static FileAnalysisCounts Failed(string warning) =>
+            new(0, 0, warning);
+    }
+
+    private static void AnalyzeBodies(
+        JsonElement root,
+        IDictionary<string, MutableSpeciesSummary> summaries,
+        ref int bodyCount,
+        ref int organismCount,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetProperty(root, "bodies", out var bodies)
+            || bodies.ValueKind != JsonValueKind.Array)
+        {
+            return;
+        }
+
+        foreach (var body in bodies.EnumerateArray())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (body.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            bodyCount++;
+            AnalyzeBody(body, summaries, ref organismCount);
+        }
     }
 
     private static void AnalyzeBody(

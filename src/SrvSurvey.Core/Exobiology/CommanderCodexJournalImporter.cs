@@ -30,80 +30,144 @@ public sealed class CommanderCodexJournalImporter(
                 $"The journal folder does not exist: {journalDirectory}");
         }
 
-        FileInfo[] files;
-        try
+        var filesResult = TryEnumerateJournalFiles();
+        if (filesResult.Error is not null)
         {
-            files = new DirectoryInfo(journalDirectory)
-                .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
-                .OrderBy(file => file.Name, StringComparer.Ordinal)
-                .ToArray();
-        }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
-        {
-            return CommanderCodexJournalImportResult.Failed(exception.Message);
+            return CommanderCodexJournalImportResult.Failed(filesResult.Error);
         }
 
+        var files = filesResult.Files!;
         var warnings = new List<string>();
-        var parsedEvents = 0;
-        var malformedLines = 0;
-        var discoveryEvents = 0;
-        var changedEntries = 0;
+        var totals = new ImportTotals();
         for (var index = 0; index < files.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var file = files[index];
-            var tracker = new CommanderCodexJournalTracker(
-                store,
-                frontierIdFilter: frontierId);
-            var batch = new List<JournalEventEnvelope>(BatchSize);
-            try
+            await ImportFileSafelyAsync(
+                    file,
+                    frontierId,
+                    warnings,
+                    totals,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            progress?.Report(new CommanderCodexJournalImportProgress(
+                index + 1,
+                files.Length,
+                file.Name,
+                totals.DiscoveryEvents,
+                totals.ChangedEntries));
+        }
+
+        return new CommanderCodexJournalImportResult(
+            files.Length,
+            totals.ParsedEvents,
+            totals.MalformedLines,
+            totals.DiscoveryEvents,
+            totals.ChangedEntries,
+            warnings);
+    }
+
+    private (FileInfo[]? Files, string? Error) TryEnumerateJournalFiles()
+    {
+        try
+        {
+            var files = new DirectoryInfo(journalDirectory)
+                .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
+                .OrderBy(file => file.Name, StringComparer.Ordinal)
+                .ToArray();
+            return (files, null);
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            return (null, exception.Message);
+        }
+    }
+
+    private async Task ImportFileSafelyAsync(
+        FileInfo file,
+        string frontierId,
+        List<string> warnings,
+        ImportTotals totals,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var fileResult = await ImportFileAsync(
+                    file,
+                    frontierId,
+                    warnings,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            totals.ParsedEvents += fileResult.ParsedEvents;
+            totals.MalformedLines += fileResult.MalformedLines;
+            totals.DiscoveryEvents += fileResult.DiscoveryEvents;
+            totals.ChangedEntries += fileResult.ChangedEntries;
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add($"{file.Name}: {exception.Message}");
+        }
+    }
+
+    private sealed class ImportTotals
+    {
+        public int ParsedEvents { get; set; }
+
+        public int MalformedLines { get; set; }
+
+        public int DiscoveryEvents { get; set; }
+
+        public int ChangedEntries { get; set; }
+    }
+
+    private async Task<FileImportCounts> ImportFileAsync(
+        FileInfo file,
+        string frontierId,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
+        var tracker = new CommanderCodexJournalTracker(
+            store,
+            frontierIdFilter: frontierId);
+        var batch = new List<JournalEventEnvelope>(BatchSize);
+        var parsedEvents = 0;
+        var malformedLines = 0;
+        var discoveryEvents = 0;
+        var changedEntries = 0;
+        await using var stream = new FileStream(
+            file.FullName,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            16 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        using var reader = new StreamReader(
+            stream,
+            Encoding.UTF8,
+            detectEncodingFromByteOrderMarks: true);
+        while (await reader.ReadLineAsync(cancellationToken) is { } line)
+        {
+            if (string.IsNullOrWhiteSpace(line))
             {
-                await using var stream = new FileStream(
-                    file.FullName,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.ReadWrite | FileShare.Delete,
-                    16 * 1024,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan);
-                using var reader = new StreamReader(
-                    stream,
-                    Encoding.UTF8,
-                    detectEncodingFromByteOrderMarks: true);
-                while (await reader.ReadLineAsync(cancellationToken) is { } line)
-                {
-                    if (string.IsNullOrWhiteSpace(line))
-                    {
-                        continue;
-                    }
+                continue;
+            }
 
-                    if (!JournalEventEnvelope.TryParse(
-                            line,
-                            out var journalEvent,
-                            out _)
-                        || journalEvent is null)
-                    {
-                        malformedLines++;
-                        continue;
-                    }
+            if (!JournalEventEnvelope.TryParse(
+                    line,
+                    out var journalEvent,
+                    out _)
+                || journalEvent is null)
+            {
+                malformedLines++;
+                continue;
+            }
 
-                    parsedEvents++;
-                    batch.Add(journalEvent);
-                    if (batch.Count >= BatchSize)
-                    {
-                        await ApplyBatchAsync(
-                            tracker,
-                            batch,
-                            warnings,
-                            result =>
-                            {
-                                discoveryEvents += result.DiscoveryEventCount;
-                                changedEntries += result.ChangedEntryCount;
-                            },
-                            cancellationToken).ConfigureAwait(false);
-                    }
-                }
-
+            parsedEvents++;
+            batch.Add(journalEvent);
+            if (batch.Count >= BatchSize)
+            {
                 await ApplyBatchAsync(
                     tracker,
                     batch,
@@ -115,28 +179,30 @@ public sealed class CommanderCodexJournalImporter(
                     },
                     cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
-            {
-                warnings.Add($"{file.Name}: {exception.Message}");
-            }
-
-            progress?.Report(new CommanderCodexJournalImportProgress(
-                index + 1,
-                files.Length,
-                file.Name,
-                discoveryEvents,
-                changedEntries));
         }
 
-        return new CommanderCodexJournalImportResult(
-            files.Length,
+        await ApplyBatchAsync(
+            tracker,
+            batch,
+            warnings,
+            result =>
+            {
+                discoveryEvents += result.DiscoveryEventCount;
+                changedEntries += result.ChangedEntryCount;
+            },
+            cancellationToken).ConfigureAwait(false);
+        return new FileImportCounts(
             parsedEvents,
             malformedLines,
             discoveryEvents,
-            changedEntries,
-            warnings);
+            changedEntries);
     }
+
+    private readonly record struct FileImportCounts(
+        int ParsedEvents,
+        int MalformedLines,
+        int DiscoveryEvents,
+        int ChangedEntries);
 
     private static async Task ApplyBatchAsync(
         CommanderCodexJournalTracker tracker,

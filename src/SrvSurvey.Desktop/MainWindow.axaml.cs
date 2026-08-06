@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -159,7 +160,7 @@ public sealed partial class MainWindow : Window
             var icon = new TrayIcon
             {
                 Icon = new WindowIcon(AssetLoader.Open(
-                    new Uri("avares://SrvSurvey.Desktop/Assets/logo.ico"))),
+                    WellKnownUris.DesktopLogoAsset)),
                 ToolTipText = "SrvSurvey - click to show",
                 Menu = menu,
                 IsVisible = true,

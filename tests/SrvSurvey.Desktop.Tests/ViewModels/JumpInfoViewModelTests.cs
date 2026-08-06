@@ -25,13 +25,14 @@ public sealed class JumpInfoViewModelTests : IDisposable
         };
 
         viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
             "Sol",
             1,
             new GalacticCoordinate(0, 0, 0),
             CreateNavRoute(),
             [Event("Loadout", "\"MaxJumpRange\":25"), FsdTarget("Beta", 3, "N")],
             status,
-            null);
+            null));
         await viewModel.PendingSummaryLoad;
 
         Assert.True(viewModel.ShouldShow);
@@ -72,6 +73,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
             ]);
 
         viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
             "Sol",
             1,
             new GalacticCoordinate(0, 0, 0),
@@ -79,15 +81,15 @@ public sealed class JumpInfoViewModelTests : IDisposable
             [],
             new EliteStatus
             {
-                Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
-                Destination = new StatusDestination
-                {
-                    Name = "Beta",
-                    System = 3,
-                    Body = 0,
-                },
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            Destination = new StatusDestination
+            {
+            Name = "Beta",
+            System = 3,
+            Body = 0,
             },
-            followedRoute);
+            },
+            followedRoute));
         await viewModel.PendingSummaryLoad;
 
         Assert.True(viewModel.ShouldShow);
@@ -115,6 +117,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
             Body = 0,
         };
         viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
             "Sol",
             1,
             new GalacticCoordinate(0, 0, 0),
@@ -122,14 +125,15 @@ public sealed class JumpInfoViewModelTests : IDisposable
             [],
             new EliteStatus
             {
-                Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
-                GuiFocus = GuiFocus.ExternalPanel,
-                Destination = destination,
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            GuiFocus = GuiFocus.ExternalPanel,
+            Destination = destination,
             },
-            followedRoute);
+            followedRoute));
         Assert.False(viewModel.ShouldShow);
 
         viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
             "Sol",
             1,
             new GalacticCoordinate(0, 0, 0),
@@ -137,11 +141,11 @@ public sealed class JumpInfoViewModelTests : IDisposable
             [Event("Music", "\"MusicTrack\":\"GalaxyMap\"")],
             new EliteStatus
             {
-                Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
-                GuiFocus = GuiFocus.NoFocus,
-                Destination = destination,
+            Flags = StatusFlags.InMainShip | StatusFlags.Supercruise,
+            GuiFocus = GuiFocus.NoFocus,
+            Destination = destination,
             },
-            followedRoute);
+            followedRoute));
         Assert.False(viewModel.ShouldShow);
         Assert.True(viewModel.ToggleForcedVisibility());
         Assert.True(viewModel.ShouldShow);
@@ -153,19 +157,21 @@ public sealed class JumpInfoViewModelTests : IDisposable
         using var viewModel = CreateViewModel(
             new FakeSummaryClient(CreateSummary()));
         viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
             "Sol",
             1,
             new GalacticCoordinate(0, 0, 0),
             CreateNavRoute(),
             [FsdTarget("Beta", 3, "N")],
             new EliteStatus { Flags = StatusFlags.InMainShip },
-            null);
+            null));
         await viewModel.PendingSummaryLoad;
 
         Assert.False(viewModel.ShouldShow);
         Assert.True(viewModel.ToggleForcedVisibility());
         Assert.True(viewModel.ShouldShow);
         viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
             "Sol",
             1,
             new GalacticCoordinate(0, 0, 0),
@@ -173,10 +179,10 @@ public sealed class JumpInfoViewModelTests : IDisposable
             [],
             new EliteStatus
             {
-                Flags = StatusFlags.InMainShip,
-                GuiFocus = GuiFocus.Fss,
+            Flags = StatusFlags.InMainShip,
+            GuiFocus = GuiFocus.Fss,
             },
-            null);
+            null));
 
         Assert.False(viewModel.ShouldShow);
     }
@@ -188,6 +194,7 @@ public sealed class JumpInfoViewModelTests : IDisposable
         using var viewModel = CreateViewModel(client);
 
         viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
             "Sol",
             1,
             new GalacticCoordinate(0, 0, 0),
@@ -195,15 +202,15 @@ public sealed class JumpInfoViewModelTests : IDisposable
             [FsdTarget("Historical", 99, "A")],
             new EliteStatus
             {
-                Destination = new StatusDestination
-                {
-                    Name = "Beta",
-                    System = 3,
-                    Body = 0,
-                },
+            Destination = new StatusDestination
+            {
+            Name = "Beta",
+            System = 3,
+            Body = 0,
+            },
             },
             null,
-            isBootstrapRead: true);
+            IsBootstrapRead: true));
         await viewModel.PendingSummaryLoad;
 
         Assert.Equal("Beta", viewModel.TargetName);
@@ -222,13 +229,14 @@ public sealed class JumpInfoViewModelTests : IDisposable
         using var viewModel = CreateViewModel(new FakeSummaryClient(colonia));
 
         viewModel.ApplyUpdate(
+            new JumpInfoApplyUpdateRequest(
             "Sol",
             10_477_373_803,
             new GalacticCoordinate(0, 0, 0),
             null,
             [FsdTarget("Colonia", 32_382_960_970_595, "K")],
             new EliteStatus { Flags = StatusFlags.InMainShip },
-            null);
+            null));
         await viewModel.PendingSummaryLoad;
 
         Assert.Contains(

@@ -227,48 +227,79 @@ public sealed class SystemScanPersistenceStore
         var remaining = 0;
         foreach (var bodyNode in bodies)
         {
-            if (bodyNode is not JsonObject body)
+            var bodyRemaining = ReadBodyBiologicalSignalsRemaining(bodyNode);
+            if (bodyRemaining is null)
             {
                 return null;
             }
 
-            var signalCount = ReadInt32(body["bioSignalCount"]);
-            if (signalCount is null)
-            {
-                if (body["bioSignalCount"] is not null)
-                {
-                    return null;
-                }
-
-                continue;
-            }
-
-            var analyzedCount = 0;
-            if (body["organisms"] is not null)
-            {
-                if (body["organisms"] is not JsonArray organisms)
-                {
-                    return null;
-                }
-
-                foreach (var organismNode in organisms)
-                {
-                    if (organismNode is not JsonObject organism)
-                    {
-                        return null;
-                    }
-
-                    if (ReadBoolean(organism["analyzed"]) == true)
-                    {
-                        analyzedCount++;
-                    }
-                }
-            }
-
-            remaining += Math.Max(0, signalCount.Value - analyzedCount);
+            remaining += bodyRemaining.Value;
         }
 
         return remaining;
+    }
+
+    private static int? ReadBodyBiologicalSignalsRemaining(JsonNode? bodyNode)
+    {
+        if (bodyNode is not JsonObject body)
+        {
+            return null;
+        }
+
+        var signalCount = ReadInt32(body["bioSignalCount"]);
+        if (signalCount is null)
+        {
+            return body["bioSignalCount"] is not null ? null : 0;
+        }
+
+        var analyzedCount = CountAnalyzedOrganisms(body);
+        if (analyzedCount is null)
+        {
+            return null;
+        }
+
+        return Math.Max(0, signalCount.Value - analyzedCount.Value);
+    }
+
+    private static int? CountAnalyzedOrganisms(JsonObject body)
+    {
+        if (body["organisms"] is null)
+        {
+            return 0;
+        }
+
+        if (body["organisms"] is not JsonArray organisms)
+        {
+            return null;
+        }
+
+        var analyzedCount = 0;
+        foreach (var organismNode in organisms)
+        {
+            if (!TryCountAnalyzedOrganism(organismNode, ref analyzedCount))
+            {
+                return null;
+            }
+        }
+
+        return analyzedCount;
+    }
+
+    private static bool TryCountAnalyzedOrganism(
+        JsonNode? organismNode,
+        ref int analyzedCount)
+    {
+        if (organismNode is not JsonObject organism)
+        {
+            return false;
+        }
+
+        if (ReadBoolean(organism["analyzed"]) == true)
+        {
+            analyzedCount++;
+        }
+
+        return true;
     }
 
     private static int? ReadInt32(JsonNode? node)

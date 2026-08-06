@@ -3,6 +3,25 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Colonization;
 
+public sealed class ColonizationCommodityPlanRequest
+{
+    public required IEnumerable<ColonizationProject> Projects { get; init; }
+
+    public IEnumerable<string>? HiddenBuildIds { get; init; }
+
+    public string? PrimaryBuildId { get; init; }
+
+    public string? CommanderName { get; init; }
+
+    public IReadOnlyList<ColonizationFleetCarrier>? FleetCarriers { get; init; }
+
+    public CargoSnapshot? ShipCargo { get; init; }
+
+    public required ColonizationConstructionSnapshot Construction { get; init; }
+
+    public MarketSnapshot? Market { get; init; }
+}
+
 public static class ColonizationCommodityPlanner
 {
     private static readonly IReadOnlyDictionary<string, string> Categories =
@@ -12,22 +31,18 @@ public static class ColonizationCommodityPlanner
         CreateDisplayNames();
 
     public static ColonizationCommodityPlan Create(
-        IEnumerable<ColonizationProject> projects,
-        IEnumerable<string>? hiddenBuildIds,
-        string? primaryBuildId,
-        string? commanderName,
-        IReadOnlyList<ColonizationFleetCarrier>? fleetCarriers,
-        CargoSnapshot? shipCargo,
-        ColonizationConstructionSnapshot construction,
-        MarketSnapshot? market = null)
+        ColonizationCommodityPlanRequest request)
     {
-        ArgumentNullException.ThrowIfNull(projects);
-        ArgumentNullException.ThrowIfNull(construction);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.Projects);
+        ArgumentNullException.ThrowIfNull(request.Construction);
+        var projects = request.Projects;
+        var construction = request.Construction;
         var allProjects = projects.Where(project => !project.IsComplete)
             .ToArray();
-        var hidden = hiddenBuildIds?.ToHashSet(
+        var hidden = request.HiddenBuildIds?.ToHashSet(
             StringComparer.OrdinalIgnoreCase) ?? [];
-        var carriers = fleetCarriers ?? [];
+        var carriers = request.FleetCarriers ?? [];
         var dock = construction.CurrentDock;
         var depot = construction.CurrentDepot;
         var atConstructionSite = dock is { IsConstructionSite: true };
@@ -42,7 +57,7 @@ public static class ColonizationCommodityPlanner
         var relevantProjects = SelectProjects(
             allProjects,
             hidden,
-            primaryBuildId,
+            request.PrimaryBuildId,
             atConstructionSite,
             localProject);
         var relevantCarriers = SelectCarriers(
@@ -52,7 +67,7 @@ public static class ColonizationCommodityPlanner
         var requirements = hasCurrentDepot
             ? CreateDepotRequirements(depot!)
             : CreateProjectRequirements(relevantProjects);
-        var cargoGroups = shipCargo?.Inventory
+        var cargoGroups = request.ShipCargo?.Inventory
             .GroupBy(item => Normalize(item.Name))
             .ToArray() ?? [];
         var cargoNames = cargoGroups.ToDictionary(
@@ -65,7 +80,7 @@ public static class ColonizationCommodityPlanner
             group => group.Sum(item => Math.Max(0, item.Count)),
             StringComparer.OrdinalIgnoreCase);
         var carrierCounts = SumCarrierCargo(relevantCarriers);
-        var localMarket = GetLocalMarketContext(market, dock);
+        var localMarket = GetLocalMarketContext(request.Market, dock);
         var dockedAtLinkedCarrier = dock is not null
             && relevantCarriers.Any(carrier =>
                 carrier.MarketId == dock.MarketId);
@@ -75,19 +90,23 @@ public static class ColonizationCommodityPlanner
                 "FleetCarrier",
                 StringComparison.OrdinalIgnoreCase)
             && !carriers.Any(carrier => carrier.MarketId == dock.MarketId);
+        var rowContext = new CommodityRowContext
+    {
+        Projects = relevantProjects,
+        CommanderName = request.CommanderName,
+        CargoNames = cargoNames,
+        ShipCounts = shipCounts,
+        CarrierCounts = carrierCounts,
+        LocalMarket = localMarket,
+        Capacity = Math.Max(0, construction.ShipCargoCapacity),
+        DockedAtLinkedCarrier = dockedAtLinkedCarrier
+    };
         var rows = requirements
             .Where(requirement => requirement.Value.Remaining > 0)
             .Select(requirement => CreateRow(
                 requirement.Key,
                 requirement.Value,
-                relevantProjects,
-                commanderName,
-                cargoNames,
-                shipCounts,
-                carrierCounts,
-                localMarket,
-                capacity: Math.Max(0, construction.ShipCargoCapacity),
-                dockedAtLinkedCarrier))
+                rowContext))
             .OrderBy(row => row.Category, StringComparer.OrdinalIgnoreCase)
             .ThenBy(row => row.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -96,31 +115,33 @@ public static class ColonizationCommodityPlanner
             Math.Min((long)row.Needed, row.OnFleetCarriers));
         var carrierDeficit = Math.Max(0, totalRemaining - carrierCovered);
         var capacity = Math.Max(0, construction.ShipCargoCapacity);
-        return new ColonizationCommodityPlan(
-            CreateTitle(
+        return new ColonizationCommodityPlan
+        {
+            Title = CreateTitle(
                 relevantProjects,
                 dock,
                 localProject,
                 atConstructionSite),
-            relevantProjects.Select(project =>
+            ProjectNames = relevantProjects.Select(project =>
                     $"{project.BuildName} ({project.BuildType})")
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
-            rows,
-            relevantCarriers,
-            totalRemaining,
-            capacity > 0
+            Rows = rows,
+            FleetCarriers = relevantCarriers,
+            TotalRemaining = totalRemaining,
+            TripsInCurrentShip = capacity > 0
                 ? (long?)Math.Ceiling(totalRemaining / (double)capacity)
                 : null,
-            carrierDeficit,
-            capacity > 0
+            FleetCarrierDeficit = carrierDeficit,
+            FleetCarrierDeficitTrips = capacity > 0
                 ? (long?)Math.Ceiling(carrierDeficit / (double)capacity)
                 : null,
-            atConstructionSite,
-            atConstructionSite && localProject is null,
-            isDockedAtUntrackedFleetCarrier,
-            hasCurrentDepot && depot?.IsComplete == true,
-            hasCurrentDepot && depot?.IsFailed == true);
+            IsAtConstructionSite = atConstructionSite,
+            IsLocalProjectUntracked = atConstructionSite && localProject is null,
+            IsDockedAtUntrackedFleetCarrier = isDockedAtUntrackedFleetCarrier,
+            IsConstructionComplete = hasCurrentDepot && depot?.IsComplete == true,
+            IsConstructionFailed = hasCurrentDepot && depot?.IsFailed == true,
+        };
     }
 
     private static ColonizationProject[] SelectProjects(
@@ -195,16 +216,9 @@ public static class ColonizationCommodityPlanner
     private static ColonizationCommodityPlanRow CreateRow(
         string commodity,
         Requirement requirement,
-        IReadOnlyList<ColonizationProject> projects,
-        string? commanderName,
-        IReadOnlyDictionary<string, string?> cargoNames,
-        IReadOnlyDictionary<string, int> shipCounts,
-        IReadOnlyDictionary<string, int> carrierCounts,
-        LocalMarketContext localMarket,
-        int capacity,
-        bool dockedAtLinkedCarrier)
+        CommodityRowContext context)
     {
-        var assigners = projects
+        var assigners = context.Projects
             .SelectMany(project => project.Commanders)
             .Where(pair => pair.Value.Any(assigned => string.Equals(
                 Normalize(assigned),
@@ -213,38 +227,59 @@ public static class ColonizationCommodityPlanner
             .Select(pair => pair.Key)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var assignedToCommander = !string.IsNullOrWhiteSpace(commanderName)
+        var assignedToCommander = !string.IsNullOrWhiteSpace(context.CommanderName)
             && assigners.Contains(
-                commanderName,
+                context.CommanderName,
                 StringComparer.OrdinalIgnoreCase);
         var localizedName = requirement.LocalizedName
-            ?? cargoNames.GetValueOrDefault(commodity)
-            ?? localMarket.LocalizedNames.GetValueOrDefault(commodity);
-        var inShip = Math.Max(0, shipCounts.GetValueOrDefault(commodity));
+            ?? context.CargoNames.GetValueOrDefault(commodity)
+            ?? context.LocalMarket.LocalizedNames.GetValueOrDefault(commodity);
+        var inShip = Math.Max(0, context.ShipCounts.GetValueOrDefault(commodity));
         var onCarriers = Math.Max(
             0,
-            carrierCounts.GetValueOrDefault(commodity));
-        var isAvailable = localMarket.AvailableCommodities.Contains(commodity);
+            context.CarrierCounts.GetValueOrDefault(commodity));
+        var isAvailable = context.LocalMarket.AvailableCommodities.Contains(commodity);
         var carrierDeficit = Math.Max(0, requirement.Remaining - onCarriers);
-        return new ColonizationCommodityPlanRow(
-            commodity,
-            string.IsNullOrWhiteSpace(localizedName)
+        return new ColonizationCommodityPlanRow
+    {
+        Commodity = commodity,
+        DisplayName = string.IsNullOrWhiteSpace(localizedName)
                 ? DisplayNames.GetValueOrDefault(
                     commodity,
                     commodity)
                 : localizedName,
-            Categories.GetValueOrDefault(commodity, "Other"),
-            requirement.Remaining,
-            inShip,
-            onCarriers,
-            assignedToCommander,
-            !assignedToCommander && assigners.Length > 0,
-            isAvailable,
-            localMarket.HasAvailableCommodities && !isAvailable,
-            isAvailable
-                && !dockedAtLinkedCarrier
+        Category = Categories.GetValueOrDefault(commodity, "Other"),
+        Needed = requirement.Remaining,
+        InShip = inShip,
+        OnFleetCarriers = onCarriers,
+        IsAssignedToCommander = assignedToCommander,
+        IsAssignedToOther = !assignedToCommander && assigners.Length > 0,
+        IsAvailableAtCurrentMarket = isAvailable,
+        IsUnavailableAtCurrentMarket = context.LocalMarket.HasAvailableCommodities && !isAvailable,
+        CanCompleteFleetCarrierLoad = isAvailable
+                && !context.DockedAtLinkedCarrier
                 && carrierDeficit > 0
-                && capacity > carrierDeficit);
+                && context.Capacity > carrierDeficit
+    };
+    }
+
+    private sealed class CommodityRowContext
+    {
+        public required IReadOnlyList<ColonizationProject> Projects { get; init; }
+
+        public string? CommanderName { get; init; }
+
+        public required IReadOnlyDictionary<string, string?> CargoNames { get; init; }
+
+        public required IReadOnlyDictionary<string, int> ShipCounts { get; init; }
+
+        public required IReadOnlyDictionary<string, int> CarrierCounts { get; init; }
+
+        public required LocalMarketContext LocalMarket { get; init; }
+
+        public int Capacity { get; init; }
+
+        public bool DockedAtLinkedCarrier { get; init; }
     }
 
     private static LocalMarketContext GetLocalMarketContext(
@@ -450,21 +485,34 @@ public static class ColonizationCommodityPlanner
     }
 }
 
-public sealed record ColonizationCommodityPlan(
-    string Title,
-    IReadOnlyList<string> ProjectNames,
-    IReadOnlyList<ColonizationCommodityPlanRow> Rows,
-    IReadOnlyList<ColonizationFleetCarrier> FleetCarriers,
-    long TotalRemaining,
-    long? TripsInCurrentShip,
-    long FleetCarrierDeficit,
-    long? FleetCarrierDeficitTrips,
-    bool IsAtConstructionSite,
-    bool IsLocalProjectUntracked,
-    bool IsDockedAtUntrackedFleetCarrier,
-    bool IsConstructionComplete,
-    bool IsConstructionFailed)
+public sealed record ColonizationCommodityPlan
 {
+    public required string Title { get; init; }
+
+    public required IReadOnlyList<string> ProjectNames { get; init; }
+
+    public required IReadOnlyList<ColonizationCommodityPlanRow> Rows { get; init; }
+
+    public required IReadOnlyList<ColonizationFleetCarrier> FleetCarriers { get; init; }
+
+    public long TotalRemaining { get; init; }
+
+    public long? TripsInCurrentShip { get; init; }
+
+    public long FleetCarrierDeficit { get; init; }
+
+    public long? FleetCarrierDeficitTrips { get; init; }
+
+    public bool IsAtConstructionSite { get; init; }
+
+    public bool IsLocalProjectUntracked { get; init; }
+
+    public bool IsDockedAtUntrackedFleetCarrier { get; init; }
+
+    public bool IsConstructionComplete { get; init; }
+
+    public bool IsConstructionFailed { get; init; }
+
     public bool HasContent => Rows.Count > 0
         || IsAtConstructionSite
         || IsDockedAtUntrackedFleetCarrier
@@ -472,19 +520,30 @@ public sealed record ColonizationCommodityPlan(
         || IsConstructionFailed;
 }
 
-public sealed record ColonizationCommodityPlanRow(
-    string Commodity,
-    string DisplayName,
-    string Category,
-    int Needed,
-    int InShip,
-    int OnFleetCarriers,
-    bool IsAssignedToCommander,
-    bool IsAssignedToOther,
-    bool IsAvailableAtCurrentMarket = false,
-    bool IsUnavailableAtCurrentMarket = false,
-    bool CanCompleteFleetCarrierLoad = false)
+public sealed record ColonizationCommodityPlanRow
 {
+    public required string Commodity { get; init; }
+
+    public required string DisplayName { get; init; }
+
+    public required string Category { get; init; }
+
+    public int Needed { get; init; }
+
+    public int InShip { get; init; }
+
+    public int OnFleetCarriers { get; init; }
+
+    public bool IsAssignedToCommander { get; init; }
+
+    public bool IsAssignedToOther { get; init; }
+
+    public bool IsAvailableAtCurrentMarket { get; init; }
+
+    public bool IsUnavailableAtCurrentMarket { get; init; }
+
+    public bool CanCompleteFleetCarrierLoad { get; init; }
+
     public bool ShipHasEnough => InShip >= Needed;
 
     public bool FleetCarriersHaveEnough => OnFleetCarriers >= Needed;

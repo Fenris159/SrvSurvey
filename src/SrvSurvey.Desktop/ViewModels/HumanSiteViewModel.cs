@@ -71,28 +71,29 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private string statusMessage = "Waiting to approach a human settlement.";
     private string settingsStatus = string.Empty;
 
-    public HumanSiteViewModel(
-        HumanSiteSettingsStore? settingsStore = null,
-        HumanSiteKnowledgeStore? knowledgeStore = null,
-        HumanSiteMaterialStore? materialStore = null,
-        HumanSiteTemplateCatalog? templateCatalog = null,
-        ICanonnHumanSiteClient? canonnClient = null,
-        Func<bool>? useExternalData = null,
-        ICanonnHumanSitePublisher? canonnPublisher = null,
-        Func<bool>? publishCanonnGeometry = null,
-        Action<CanonnHumanSitePublicationResult>?
-            reportCanonnPublication = null,
-        Version? clientVersion = null)
+    public HumanSiteViewModel(HumanSiteViewModelOptions? options = null)
     {
-        this.settingsStore = settingsStore;
-        this.knowledgeStore = knowledgeStore;
-        this.materialStore = materialStore;
-        this.canonnClient = canonnClient;
-        this.canonnPublisher = canonnPublisher;
-        this.useExternalData = useExternalData ?? (() => true);
-        this.publishCanonnGeometry = publishCanonnGeometry ?? (() => false);
-        this.reportCanonnPublication = reportCanonnPublication;
-        this.clientVersion = clientVersion
+        options ??= new HumanSiteViewModelOptions();
+        var resolvedSettingsStore = options.SettingsStore;
+        var resolvedKnowledgeStore = options.KnowledgeStore;
+        var resolvedMaterialStore = options.MaterialStore;
+        var templateCatalog = options.TemplateCatalog;
+        var resolvedCanonnClient = options.CanonnClient;
+        var resolvedUseExternalData = options.UseExternalData;
+        var resolvedCanonnPublisher = options.CanonnPublisher;
+        var resolvedPublishCanonnGeometry = options.PublishCanonnGeometry;
+        var resolvedReportCanonnPublication = options.ReportCanonnPublication;
+        var resolvedClientVersion = options.ClientVersion;
+
+        this.settingsStore = resolvedSettingsStore;
+        this.knowledgeStore = resolvedKnowledgeStore;
+        this.materialStore = resolvedMaterialStore;
+        this.canonnClient = resolvedCanonnClient;
+        this.canonnPublisher = resolvedCanonnPublisher;
+        this.useExternalData = resolvedUseExternalData ?? (() => true);
+        this.publishCanonnGeometry = resolvedPublishCanonnGeometry ?? (() => false);
+        this.reportCanonnPublication = resolvedReportCanonnPublication;
+        this.clientVersion = resolvedClientVersion
             ?? typeof(HumanSiteViewModel).Assembly.GetName().Version
             ?? new Version(0, 0);
         var templates = templateCatalog
@@ -103,7 +104,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         state = new HumanSiteLiveState(templates);
         mapProjector = new HumanSiteMapProjector();
         navigation = new HumanSiteNavigation(templates);
-        var preferences = settingsStore?.Load()
+        var preferences = resolvedSettingsStore?.Load()
             ?? HumanSitePreferences.Default;
         autoShow = preferences.AutoShow;
         preferredWidth = preferences.Width;
@@ -1408,21 +1409,28 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             return SrvZoom;
         }
 
-        if (currentStatus.Landed
-            || currentStatus.Docked
-            || currentStatus.InMainShip
-                && !currentStatus.Flags.HasFlag(StatusFlags.Supercruise))
+        if (IsShipZoomContext(currentStatus))
         {
-            return DistanceToOriginMeters < 2_500
-                ? ShipZoom
-                : (DistanceToOriginMeters < 4_000) switch
-                {
-                    true => 0.2,
-                    false => 0.1
-                };
+            return ResolveShipAutomaticZoom();
         }
 
         return null;
+    }
+
+    private static bool IsShipZoomContext(EliteStatus currentStatus) =>
+        currentStatus.Landed
+        || currentStatus.Docked
+        || currentStatus.InMainShip
+            && !currentStatus.Flags.HasFlag(StatusFlags.Supercruise);
+
+    private double ResolveShipAutomaticZoom()
+    {
+        if (DistanceToOriginMeters < 2_500)
+        {
+            return ShipZoom;
+        }
+
+        return DistanceToOriginMeters < 4_000 ? 0.2 : 0.1;
     }
 
     private void ApplyAutomaticZoom()

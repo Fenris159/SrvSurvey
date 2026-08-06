@@ -208,6 +208,20 @@ public sealed class RegionalCodexCandidateCatalog
     {
         ArgumentNullException.ThrowIfNull(bytes);
         ArgumentNullException.ThrowIfNull(references);
+        var rows = ReadPublishedCsvRows(bytes);
+        ValidatePublishedCsvHeader(rows[0]);
+        var candidates = ParsePublishedCsvCandidates(rows, references);
+        if (candidates.Count == 0)
+        {
+            throw new InvalidDataException(
+                "The published regional Codex candidate CSV contains no candidates.");
+        }
+
+        return Create(candidates, null);
+    }
+
+    private static List<IReadOnlyList<string>> ReadPublishedCsvRows(byte[] bytes)
+    {
         if (bytes.Length == 0)
         {
             throw new InvalidDataException(
@@ -235,7 +249,11 @@ public sealed class RegionalCodexCandidateCatalog
                 "The published regional Codex candidate CSV contains no data rows.");
         }
 
-        var header = rows[0];
+        return rows;
+    }
+
+    private static void ValidatePublishedCsvHeader(IReadOnlyList<string> header)
+    {
         if (header.Count < PublishedCsvColumns.Length
             || !PublishedCsvColumns.Select((column, index) => string.Equals(
                     header[index].TrimStart('\uFEFF'),
@@ -246,82 +264,27 @@ public sealed class RegionalCodexCandidateCatalog
             throw new InvalidDataException(
                 "The published regional Codex candidate CSV header is incompatible.");
         }
+    }
 
-        var regionsById = GalacticRegionMap.Regions.ToDictionary(
-            region => region.Id);
+    private static List<RegionalCodexCandidate> ParsePublishedCsvCandidates(
+        List<IReadOnlyList<string>> rows,
+        ExobiologyReferenceCatalog references)
+    {
+        var regionsById = GalacticRegionMap.Regions.ToDictionary(region => region.Id);
         var candidates = new List<RegionalCodexCandidate>();
         for (var rowIndex = 1; rowIndex < rows.Count; rowIndex++)
         {
-            var row = rows[rowIndex];
-            if (row.Count < PublishedCsvColumns.Length)
-            {
-                throw new InvalidDataException(
-                    $"Published regional Codex row {rowIndex + 1:N0} has too few columns.");
-            }
-
-            if (!int.TryParse(
-                    row[0],
-                    NumberStyles.Integer,
-                    CultureInfo.InvariantCulture,
-                    out var regionId)
-                || !regionsById.TryGetValue(regionId, out var region))
-            {
-                throw new InvalidDataException(
-                    $"Published regional Codex row {rowIndex + 1:N0} has an unknown region.");
-            }
-
-            var found = ParseCsvBoolean(row[3], rowIndex, "Found");
-            var notExpected = ParseCsvBoolean(
-                row[4],
+            var candidate = TryParsePublishedCsvRow(
+                rows[rowIndex],
                 rowIndex,
-                "NotExpectedToBeFound");
-            ExobiologyReference? reference = null;
-            long entryId;
-            if (string.IsNullOrWhiteSpace(row[5]))
-            {
-                reference = references.FindByDisplayName(row[2].Trim());
-                if (reference is null)
-                {
-                    continue;
-                }
-
-                entryId = reference.EntryId;
-            }
-            else if (!long.TryParse(
-                         row[5],
-                         NumberStyles.Integer,
-                         CultureInfo.InvariantCulture,
-                         out entryId)
-                     || entryId <= 0)
-            {
-                throw new InvalidDataException(
-                    $"Published regional Codex row {rowIndex + 1:N0} has an invalid entry ID.");
-            }
-
-            if (found || notExpected)
+                regionsById,
+                references);
+            if (candidate is null)
             {
                 continue;
             }
 
-            reference ??= references.FindByEntryId(entryId);
-            var variant = row[7].Trim();
-            if (variant.Length == 0)
-            {
-                variant = reference?.VariantName
-                    ?? row[6].Trim();
-            }
-
-            if (variant.Length == 0)
-            {
-                throw new InvalidDataException(
-                    $"Published regional Codex row {rowIndex + 1:N0} has no variant.");
-            }
-
-            candidates.Add(new RegionalCodexCandidate(
-                region.Id,
-                region.Name,
-                entryId,
-                variant));
+            candidates.Add(candidate);
             if (candidates.Count > MaximumEntries)
             {
                 throw new InvalidDataException(
@@ -329,13 +292,119 @@ public sealed class RegionalCodexCandidateCatalog
             }
         }
 
-        if (candidates.Count == 0)
+        return candidates;
+    }
+
+    private static RegionalCodexCandidate? TryParsePublishedCsvRow(
+        IReadOnlyList<string> row,
+        int rowIndex,
+        IReadOnlyDictionary<int, GalacticRegion> regionsById,
+        ExobiologyReferenceCatalog references)
+    {
+        if (row.Count < PublishedCsvColumns.Length)
         {
             throw new InvalidDataException(
-                "The published regional Codex candidate CSV contains no candidates.");
+                $"Published regional Codex row {rowIndex + 1:N0} has too few columns.");
         }
 
-        return Create(candidates, null);
+        var region = ResolvePublishedCsvRegion(row, rowIndex, regionsById);
+        if (ParseCsvBoolean(row[3], rowIndex, "Found")
+            || ParseCsvBoolean(row[4], rowIndex, "NotExpectedToBeFound"))
+        {
+            return null;
+        }
+
+        if (!TryResolvePublishedCsvEntry(
+                row,
+                rowIndex,
+                references,
+                out var entryId,
+                out var reference))
+        {
+            return null;
+        }
+
+        var variant = ResolvePublishedCsvVariant(row, rowIndex, reference);
+        return new RegionalCodexCandidate(
+            region.Id,
+            region.Name,
+            entryId,
+            variant);
+    }
+
+    private static GalacticRegion ResolvePublishedCsvRegion(
+        IReadOnlyList<string> row,
+        int rowIndex,
+        IReadOnlyDictionary<int, GalacticRegion> regionsById)
+    {
+        if (!int.TryParse(
+                row[0],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var regionId)
+            || !regionsById.TryGetValue(regionId, out var region))
+        {
+            throw new InvalidDataException(
+                $"Published regional Codex row {rowIndex + 1:N0} has an unknown region.");
+        }
+
+        return region;
+    }
+
+    private static bool TryResolvePublishedCsvEntry(
+        IReadOnlyList<string> row,
+        int rowIndex,
+        ExobiologyReferenceCatalog references,
+        out long entryId,
+        out ExobiologyReference? reference)
+    {
+        reference = null;
+        if (string.IsNullOrWhiteSpace(row[5]))
+        {
+            reference = references.FindByDisplayName(row[2].Trim());
+            if (reference is null)
+            {
+                entryId = 0;
+                return false;
+            }
+
+            entryId = reference.EntryId;
+            return true;
+        }
+
+        if (!long.TryParse(
+                row[5],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out entryId)
+            || entryId <= 0)
+        {
+            throw new InvalidDataException(
+                $"Published regional Codex row {rowIndex + 1:N0} has an invalid entry ID.");
+        }
+
+        reference = references.FindByEntryId(entryId);
+        return true;
+    }
+
+    private static string ResolvePublishedCsvVariant(
+        IReadOnlyList<string> row,
+        int rowIndex,
+        ExobiologyReference? reference)
+    {
+        var variant = row[7].Trim();
+        if (variant.Length == 0)
+        {
+            variant = reference?.VariantName ?? row[6].Trim();
+        }
+
+        if (variant.Length == 0)
+        {
+            throw new InvalidDataException(
+                $"Published regional Codex row {rowIndex + 1:N0} has no variant.");
+        }
+
+        return variant;
     }
 
     private static RegionalCodexCandidateCatalog Create(

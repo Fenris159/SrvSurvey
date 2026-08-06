@@ -6,6 +6,8 @@ namespace SrvSurvey.Core.Storage;
 
 internal static class LegacySystemSnapshotParser
 {
+    private const string RewardProperty = "reward";
+
     public static SystemScanSnapshot Parse(JsonObject root)
     {
         ArgumentNullException.ThrowIfNull(root);
@@ -116,9 +118,9 @@ internal static class LegacySystemSnapshotParser
                     organisms.Count(organism => organism.IsAnalyzed)),
                 geologicalSignalCount,
                 Math.Min(geologicalSignalCount, geologicalSignals.Length),
-                ReadOptionalInt32(body, "reward") ?? 0,
-                ReadOptionalInt32(body, "reward") ?? 0,
-                ReadOptionalInt32(body, "reward") ?? 0,
+                ReadOptionalInt32(body, RewardProperty) ?? 0,
+                ReadOptionalInt32(body, RewardProperty) ?? 0,
+                ReadOptionalInt32(body, RewardProperty) ?? 0,
                 0,
                 ReadComposition(body, "atmosphereComposition"),
                 ReadComposition(body, "materials"),
@@ -163,7 +165,7 @@ internal static class LegacySystemSnapshotParser
                 ReadOptionalString(organism, "variant"),
                 ReadOptionalString(organism, "variantLocalized"),
                 ReadOptionalInt64(organism, "entryId"),
-                ReadOptionalInt64(organism, "reward"),
+                ReadOptionalInt64(organism, RewardProperty),
                 ReadOptionalBoolean(organism, "scanned") ?? false,
                 ReadOptionalBoolean(organism, "analyzed") ?? false,
                 ReadOptionalBoolean(organism, "isNewEntry") ?? false));

@@ -161,8 +161,9 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                 "Spansh system dump",
                 new Uri(
                     spanshBaseUri,
-                    "dump/" + systemAddress.ToString(
-                        CultureInfo.InvariantCulture) + "/"),
+                    UriPath.CombineWithTrailingSeparator(
+                        "dump",
+                        systemAddress.ToString(CultureInfo.InvariantCulture))),
                 ParseSpanshDump,
                 cancellationToken)
             : Task.FromResult(FetchResult<SpanshFragment>.Empty);
@@ -350,104 +351,13 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                 "The Spansh system dump has no system object.");
         }
 
-        GalacticCoordinate? position = null;
-        if (TryGetObject(system, "coords", out var coords)
-            && GetDouble(coords, "x") is { } x
-            && GetDouble(coords, "y") is { } y
-            && GetDouble(coords, "z") is { } z)
-        {
-            position = new GalacticCoordinate(x, y, z);
-        }
-
+        var position = ReadSpanshPosition(system);
         var bodies = GetArray(system, "bodies");
-        var scannedBodies = 0;
-        var genus = 0;
-        string? starClass = null;
-        foreach (var body in bodies)
-        {
-            if (body.ValueKind != JsonValueKind.Object)
-            {
-                continue;
-            }
-
-            if (!string.Equals(
-                GetString(body, "type"),
-                "Barycentre",
-                StringComparison.OrdinalIgnoreCase))
-            {
-                scannedBodies++;
-            }
-
-            if (starClass is null
-                && GetBoolean(body, "mainStar") == true
-                && GetString(body, "spectralClass") is { Length: > 0 } spectral)
-            {
-                starClass = spectral[..1];
-            }
-
-            if (TryGetObject(body, "signals", out var signals)
-                && TryGetObject(signals, "signals", out var signalCounts))
-            {
-                genus += GetInt32(
-                    signalCounts,
-                    "$SAA_SignalType_Biological;") ?? 0;
-            }
-        }
-
-        var specials = new Dictionary<string, List<string>>(
-            StringComparer.OrdinalIgnoreCase);
-        var starports = 0;
-        var outposts = 0;
-        var settlements = 0;
-        var fleetCarriers = 0;
+        var (scannedBodies, genus, starClass) = SummarizeSpanshBodies(bodies);
         var stationElements = EnumerateStations(system, bodies).ToArray();
-        foreach (var station in stationElements)
-        {
-            var type = GetString(station, "type") ?? string.Empty;
-            if (string.Equals(
-                type,
-                "Drake-Class Carrier",
-                StringComparison.OrdinalIgnoreCase))
-            {
-                fleetCarriers++;
-            }
-
-            if (string.Equals(type, "Settlement", StringComparison.OrdinalIgnoreCase))
-            {
-                settlements++;
-            }
-
-            if (string.Equals(type, "Outpost", StringComparison.OrdinalIgnoreCase))
-            {
-                outposts++;
-            }
-
-            if (StarportTypes.Contains(type)
-                || string.Equals(type, "Mega ship", StringComparison.OrdinalIgnoreCase)
-                    && station.TryGetProperty("landingPads", out var landingPads)
-                    && landingPads.ValueKind is not JsonValueKind.Null
-                        and not JsonValueKind.Undefined)
-            {
-                starports++;
-            }
-
-            AddStationSpecials(station, specials);
-        }
-
-        var factionElements = GetArray(system, "factions");
-        var warPresences = factionElements
-            .Count(faction => faction.ValueKind == JsonValueKind.Object
-                && GetString(faction, "state") is "War" or "Civil War");
-        var factions = factionElements
-            .Where(faction => faction.ValueKind == JsonValueKind.Object)
-            .Select(faction => new SystemFactionSummary(
-                GetString(faction, "name") ?? string.Empty,
-                GetDouble(faction, "influence") ?? 0,
-                GetString(faction, "state")))
-            .Where(faction => !string.IsNullOrWhiteSpace(faction.Name))
-            .OrderByDescending(faction => faction.Influence)
-            .ThenBy(faction => faction.Name, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        var (specials, starports, outposts, settlements, fleetCarriers) =
+            SummarizeSpanshStations(stationElements);
+        var factions = ParseSpanshFactions(system, out var warPresences);
         var totalBodies = GetInt32(system, "bodyCount") ?? 0;
         return new SpanshFragment(
             position,
@@ -472,6 +382,161 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                 .OrderBy(station => station.Name)
                 .ToArray(),
             factions);
+    }
+
+    private static GalacticCoordinate? ReadSpanshPosition(JsonElement system)
+    {
+        if (TryGetObject(system, "coords", out var coords)
+            && GetDouble(coords, "x") is { } x
+            && GetDouble(coords, "y") is { } y
+            && GetDouble(coords, "z") is { } z)
+        {
+            return new GalacticCoordinate(x, y, z);
+        }
+
+        return null;
+    }
+
+    private static (int ScannedBodies, int Genus, string? StarClass)
+        SummarizeSpanshBodies(IReadOnlyList<JsonElement> bodies)
+    {
+        var scannedBodies = 0;
+        var genus = 0;
+        string? starClass = null;
+        foreach (var body in bodies)
+        {
+            if (body.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            AccumulateSpanshBody(body, ref scannedBodies, ref genus, ref starClass);
+        }
+
+        return (scannedBodies, genus, starClass);
+    }
+
+    private static void AccumulateSpanshBody(
+        JsonElement body,
+        ref int scannedBodies,
+        ref int genus,
+        ref string? starClass)
+    {
+        if (!string.Equals(
+            GetString(body, "type"),
+            "Barycentre",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            scannedBodies++;
+        }
+
+        if (starClass is null
+            && GetBoolean(body, "mainStar") == true
+            && GetString(body, "spectralClass") is { Length: > 0 } spectral)
+        {
+            starClass = spectral[..1];
+        }
+
+        if (TryGetObject(body, "signals", out var signals)
+            && TryGetObject(signals, "signals", out var signalCounts))
+        {
+            genus += GetInt32(
+                signalCounts,
+                "$SAA_SignalType_Biological;") ?? 0;
+        }
+    }
+
+    private static (
+        Dictionary<string, List<string>> Specials,
+        int Starports,
+        int Outposts,
+        int Settlements,
+        int FleetCarriers)
+        SummarizeSpanshStations(IReadOnlyList<JsonElement> stationElements)
+    {
+        var specials = new Dictionary<string, List<string>>(
+            StringComparer.OrdinalIgnoreCase);
+        var starports = 0;
+        var outposts = 0;
+        var settlements = 0;
+        var fleetCarriers = 0;
+        foreach (var station in stationElements)
+        {
+            CountStationType(
+                station,
+                ref starports,
+                ref outposts,
+                ref settlements,
+                ref fleetCarriers);
+            AddStationSpecials(station, specials);
+        }
+
+        return (specials, starports, outposts, settlements, fleetCarriers);
+    }
+
+    private static void CountStationType(
+        JsonElement station,
+        ref int starports,
+        ref int outposts,
+        ref int settlements,
+        ref int fleetCarriers)
+    {
+        var type = GetString(station, "type") ?? string.Empty;
+        if (string.Equals(
+            type,
+            "Drake-Class Carrier",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            fleetCarriers++;
+        }
+
+        if (string.Equals(type, "Settlement", StringComparison.OrdinalIgnoreCase))
+        {
+            settlements++;
+        }
+
+        if (string.Equals(type, "Outpost", StringComparison.OrdinalIgnoreCase))
+        {
+            outposts++;
+        }
+
+        if (IsStarportStation(station, type))
+        {
+            starports++;
+        }
+    }
+
+    private static bool IsStarportStation(JsonElement station, string type)
+    {
+        if (StarportTypes.Contains(type))
+        {
+            return true;
+        }
+
+        return string.Equals(type, "Mega ship", StringComparison.OrdinalIgnoreCase)
+            && station.TryGetProperty("landingPads", out var landingPads)
+            && landingPads.ValueKind is not JsonValueKind.Null
+                and not JsonValueKind.Undefined;
+    }
+
+    private static SystemFactionSummary[] ParseSpanshFactions(
+        JsonElement system,
+        out int warPresences)
+    {
+        var factionElements = GetArray(system, "factions");
+        warPresences = factionElements
+            .Count(faction => faction.ValueKind == JsonValueKind.Object
+                && GetString(faction, "state") is "War" or "Civil War");
+        return factionElements
+            .Where(faction => faction.ValueKind == JsonValueKind.Object)
+            .Select(faction => new SystemFactionSummary(
+                GetString(faction, "name") ?? string.Empty,
+                GetDouble(faction, "influence") ?? 0,
+                GetString(faction, "state")))
+            .Where(faction => !string.IsNullOrWhiteSpace(faction.Name))
+            .OrderByDescending(faction => faction.Influence)
+            .ThenBy(faction => faction.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static SystemStationSummary ParseStation(JsonElement station)

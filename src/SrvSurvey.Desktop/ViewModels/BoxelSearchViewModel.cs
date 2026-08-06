@@ -645,15 +645,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             ? '\0'
             : char.ToLowerInvariant(LowMassCode[0]);
         if (!state.TryActivate(
-                topBoxel,
-                selectedMassCode,
-                StartedOn,
-                SkipAlreadyVisited,
-                SkipKnownToSpansh,
-                CompleteOnFssAllBodies
-                    ? BoxelCompletionMode.FssAllBodies
-                    : BoxelCompletionMode.EnterSystem,
-                AutoCopy,
+                new BoxelSearchActivationRequest
+    {
+        TopBoxel = topBoxel,
+        LowMassCode = selectedMassCode,
+        StartedOn = StartedOn,
+        SkipAlreadyVisited = SkipAlreadyVisited,
+        SkipKnownToSpansh = SkipKnownToSpansh,
+        CompletionMode = CompleteOnFssAllBodies
+                        ? BoxelCompletionMode.FssAllBodies
+                        : BoxelCompletionMode.EnterSystem,
+        AutoCopy = AutoCopy
+    },
                 out var error))
         {
             StatusMessage = error ?? "The boxel search configuration is invalid.";
@@ -769,12 +772,49 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             || frontierId is null
             || state.TopBoxel is null)
         {
-            StatusMessage = ShowLargeAuditConfirmation && !ConfirmLargeAudit
-                ? "Confirm the large network audit before starting it."
-                : "Activate a boxel search before auditing its full area.";
+            StatusMessage = GetAuditUnavailableStatus();
             return;
         }
 
+        BeginAuditProgress();
+        var cancellation = auditCancellation!;
+        var auditFrontierId = frontierId;
+        var auditTopPrefix = state.TopBoxel.Prefix;
+        var request = CreateCompletionAuditRequest(auditFrontierId);
+        var progress = CreateAuditProgressReporter(cancellation);
+
+        try
+        {
+            var result = await completionAuditor.AuditAsync(
+                request,
+                progress,
+                cancellation.Token);
+            await ApplyAuditResultAsync(result, auditFrontierId, auditTopPrefix, cancellation);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            AuditProgress = $"Audit stopped after {AuditProcessed:N0} boxels.";
+            StatusMessage = "The full-area audit could not be completed: "
+                + exception.Message;
+        }
+        finally
+        {
+            CompleteAudit(cancellation);
+        }
+    }
+
+    private string GetAuditUnavailableStatus()
+    {
+        return ShowLargeAuditConfirmation && !ConfirmLargeAudit
+            ? "Confirm the large network audit before starting it."
+            : "Activate a boxel search before auditing its full area.";
+    }
+
+    private void BeginAuditProgress()
+    {
         IsBusy = true;
         IsAuditing = true;
         AuditProcessed = 0;
@@ -782,15 +822,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         AuditProgress = $"Preparing to audit {state.TotalBoxelCount:N0} boxels\u2026";
         StatusMessage = "The full-area audit is running in the background.";
         auditCancellation = new CancellationTokenSource();
-        var cancellation = auditCancellation;
-        var auditFrontierId = frontierId;
-        var auditTopPrefix = state.TopBoxel.Prefix;
+    }
+
+    private BoxelCompletionAuditRequest CreateCompletionAuditRequest(
+        string auditFrontierId)
+    {
         var snapshot = state.CreateSnapshot();
         var routeSystems = latestRoute?.Route
             .Select(entry => entry.ToBoxelObservation())
             .OfType<BoxelSystemObservation>()
             .ToArray() ?? [];
-        var request = new BoxelCompletionAuditRequest(
+        return new BoxelCompletionAuditRequest(
             auditFrontierId,
             state.Boxels,
             state.EmptyBoxelPrefixes,
@@ -800,7 +842,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             snapshot.SkipKnownToSpansh,
             snapshot.CompletionMode,
             routeSystems);
-        var progress = new Progress<BoxelCompletionAuditProgress>(update =>
+    }
+
+    private Progress<BoxelCompletionAuditProgress> CreateAuditProgressReporter(
+        CancellationTokenSource cancellation)
+    {
+        return new Progress<BoxelCompletionAuditProgress>(update =>
         {
             if (!IsAuditing || !ReferenceEquals(auditCancellation, cancellation))
             {
@@ -816,62 +863,59 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             AuditProgress = $"Audited {update.Processed:N0} of {update.Total:N0}: "
                 + update.Prefix;
         });
+    }
 
+    private async Task ApplyAuditResultAsync(
+        BoxelCompletionAuditResult result,
+        string auditFrontierId,
+        string auditTopPrefix,
+        CancellationTokenSource cancellation)
+    {
+        AuditProcessed = result.Processed;
+        AuditTotal = Math.Max(1, result.Total);
+        await operationLock.WaitAsync(cancellation.Token);
         try
         {
-            var result = await completionAuditor.AuditAsync(
-                request,
-                progress,
-                cancellation.Token);
-            AuditProcessed = result.Processed;
-            AuditTotal = Math.Max(1, result.Total);
-            await operationLock.WaitAsync(cancellation.Token);
-            try
+            if (!IsAuditStillCurrent(auditFrontierId, auditTopPrefix))
             {
-                if (!string.Equals(frontierId, auditFrontierId, StringComparison.Ordinal)
-                    || !string.Equals(
-                        state.TopBoxel?.Prefix,
-                        auditTopPrefix,
-                        StringComparison.Ordinal))
-                {
-                    StatusMessage = "The audit finished for a profile that is no longer active; its results were not applied.";
-                    return;
-                }
-
-                state.ApplyCompletionAudit(result.Entries);
-                UpdateDisplay();
-                await SaveAsync();
-            }
-            finally
-            {
-                operationLock.Release();
+                StatusMessage = "The audit finished for a profile that is no longer active; its results were not applied.";
+                return;
             }
 
-            AuditProgress = result.WasCancelled
-                ? $"Cancelled after {result.Processed:N0} of {result.Total:N0} boxels."
-                : $"Audited all {result.Total:N0} boxels.";
-            StatusMessage = BuildAuditStatus(result);
-        }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
-        {
-            AuditProgress = $"Audit stopped after {AuditProcessed:N0} boxels.";
-            StatusMessage = "The full-area audit could not be completed: "
-                + exception.Message;
+            state.ApplyCompletionAudit(result.Entries);
+            UpdateDisplay();
+            await SaveAsync();
         }
         finally
         {
-            cancellation.Dispose();
-            if (ReferenceEquals(auditCancellation, cancellation))
-            {
-                auditCancellation = null;
-            }
-
-            IsAuditing = false;
-            IsBusy = false;
+            operationLock.Release();
         }
+
+        AuditProgress = result.WasCancelled
+            ? $"Cancelled after {result.Processed:N0} of {result.Total:N0} boxels."
+            : $"Audited all {result.Total:N0} boxels.";
+        StatusMessage = BuildAuditStatus(result);
+    }
+
+    private bool IsAuditStillCurrent(string auditFrontierId, string auditTopPrefix)
+    {
+        return string.Equals(frontierId, auditFrontierId, StringComparison.Ordinal)
+            && string.Equals(
+                state.TopBoxel?.Prefix,
+                auditTopPrefix,
+                StringComparison.Ordinal);
+    }
+
+    private void CompleteAudit(CancellationTokenSource cancellation)
+    {
+        cancellation.Dispose();
+        if (ReferenceEquals(auditCancellation, cancellation))
+        {
+            auditCancellation = null;
+        }
+
+        IsAuditing = false;
+        IsBusy = false;
     }
 
     public Task CancelAuditAsync()
@@ -1355,14 +1399,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                         boxel.Name,
                         StringComparison.Ordinal);
                 return new BoxelSystemRowViewModel(
-                    boxel.Name,
-                    system?.IsComplete == true,
-                    system is not null,
-                    isCurrent,
-                    distance,
-                    FormatDate(system?.VisitedAt),
-                    FormatDate(system?.SpanshUpdatedAt),
-                    () => ToggleSystemAsync(boxel.Name));
+                    new BoxelSystemRowOptions
+                    {
+                        Name = boxel.Name,
+                        IsComplete = system?.IsComplete == true,
+                        IsKnown = system is not null,
+                        IsCurrent = isCurrent,
+                        Distance = distance,
+                        VisitedAt = FormatDate(system?.VisitedAt),
+                        SpanshUpdatedAt = FormatDate(system?.SpanshUpdatedAt),
+                        Toggle = () => ToggleSystemAsync(boxel.Name),
+                    });
             })
             .ToArray();
     }
@@ -1490,25 +1537,29 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
 public sealed class BoxelSystemRowViewModel
 {
-    public BoxelSystemRowViewModel(
-        string name,
-        bool isComplete,
-        bool isKnown,
-        bool isCurrent,
-        string distance,
-        string visitedAt,
-        string spanshUpdatedAt,
-        Func<Task> toggle)
+    public BoxelSystemRowViewModel(BoxelSystemRowOptions options)
     {
-        Name = name;
-        IsComplete = isComplete;
-        IsKnown = isKnown;
-        IsCurrent = isCurrent;
-        Distance = distance;
-        VisitedAt = visitedAt;
-        SpanshUpdatedAt = spanshUpdatedAt;
-        Status = isComplete ? "COMPLETE" : (isKnown) switch { true => "KNOWN", false => "UNKNOWN" };
-        ToggleCommand = new RowCommand(toggle, () => isKnown);
+        ArgumentNullException.ThrowIfNull(options);
+        Name = options.Name;
+        IsComplete = options.IsComplete;
+        IsKnown = options.IsKnown;
+        IsCurrent = options.IsCurrent;
+        Distance = options.Distance;
+        VisitedAt = options.VisitedAt;
+        SpanshUpdatedAt = options.SpanshUpdatedAt;
+        if (options.IsComplete)
+        {
+            Status = "COMPLETE";
+        }
+        else if (options.IsKnown)
+        {
+            Status = "KNOWN";
+        }
+        else
+        {
+            Status = "UNKNOWN";
+        }
+        ToggleCommand = new RowCommand(options.Toggle, () => options.IsKnown);
     }
 
     public string Name { get; }

@@ -141,15 +141,21 @@ public sealed class GuideIconPreviewControl : Control
             case GuideIconKind.Asset:
                 break;
             case GuideIconKind.Glyph:
-                DrawGlyph(context, center, GetGlyphBrush(
-                    Symbol,
-                    primary,
-                    secondary,
-                    muted,
-                    success,
-                    warning,
-                    danger,
-                    gold));
+                DrawGlyph(
+                    context,
+                    center,
+                    GetGlyphBrush(
+                        Symbol,
+                        new GlyphBrushPalette
+                        {
+                            Primary = primary,
+                            Secondary = secondary,
+                            Muted = muted,
+                            Success = success,
+                            Warning = warning,
+                            Danger = danger,
+                            Gold = gold,
+                        }));
                 break;
             case GuideIconKind.BiologyRewardKnown:
                 DrawRewardPips(context, center, primary, muted, isPrediction: false);
@@ -339,27 +345,37 @@ public sealed class GuideIconPreviewControl : Control
             new Point(center.X - text.Width / 2, center.Y - text.Height / 2));
     }
 
-    private static IBrush GetGlyphBrush(
-        string symbol,
-        IBrush primary,
-        IBrush secondary,
-        IBrush muted,
-        IBrush success,
-        IBrush warning,
-        IBrush danger,
-        IBrush gold)
+    private sealed class GlyphBrushPalette
     {
+        public required IBrush Primary { get; init; }
+
+        public required IBrush Secondary { get; init; }
+
+        public required IBrush Muted { get; init; }
+
+        public required IBrush Success { get; init; }
+
+        public required IBrush Warning { get; init; }
+
+        public required IBrush Danger { get; init; }
+
+        public required IBrush Gold { get; init; }
+    }
+
+    private static IBrush GetGlyphBrush(string symbol, GlyphBrushPalette palette)
+    {
+        ArgumentNullException.ThrowIfNull(palette);
         return symbol switch
         {
-            "✓" => success,
-            "⚠" => danger,
-            "?" => muted,
-            "⚑" or "⚐" or "☀" or "◆" => gold,
-            "◇" => warning,
-            "▲" or "+" => secondary,
-            "!" => danger,
-            "■" or "►" => primary,
-            _ => secondary,
+            "✓" => palette.Success,
+            "⚠" => palette.Danger,
+            "?" => palette.Muted,
+            "⚑" or "⚐" or "☀" or "◆" => palette.Gold,
+            "◇" => palette.Warning,
+            "▲" or "+" => palette.Secondary,
+            "!" => palette.Danger,
+            "■" or "►" => palette.Primary,
+            _ => palette.Secondary,
         };
     }
 

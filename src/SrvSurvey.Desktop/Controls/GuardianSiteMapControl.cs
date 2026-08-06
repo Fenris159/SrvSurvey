@@ -852,62 +852,16 @@ public sealed class GuardianSiteMapControl : Control
             point,
             projection,
             CommanderHeading);
-        if (RequiresSurveyMarker(point))
-        {
-            var (haloRadius, ringRadius) = GetSurveyMarkerRadii(
-                point.Type,
-                projection.IsRuins);
-            GuardianSurveyMarkerDrawing.Draw(
-                context,
-                location,
-                haloRadius * markerScale,
-                ringRadius * markerScale,
-                dotRadius: 0.75 * markerScale);
-        }
-
-        if (point.Type == GuardianPoiType.Relic
-            && point.HasIndividualRelicHeading
-            && headingLength > 0)
-        {
-            var (start, end) = GuardianLegacyMapDrawing.CreateHeadingLine(
-                location,
-                headingLength,
-                rotation);
-            context.DrawLine(
-                new Pen(
-                    new SolidColorBrush(
-                        GuardianLegacyMapDrawing.IndividualTowerHeading),
-                    10 * markerScale),
-                start,
-                end);
-        }
-
-        var isTarget = string.Equals(
-            point.Name,
-            TargetPointName,
-            StringComparison.OrdinalIgnoreCase);
-        var isNearest = Proximity?.NearestPoint is
-        { Distance: <= 75 } nearest
-            && string.Equals(
-                nearest.Point.Name,
-                point.Name,
-                StringComparison.OrdinalIgnoreCase);
-        if (isTarget || isNearest)
-        {
-            var highlightRadius = 14 * markerScale;
-            context.DrawEllipse(
-                null,
-                new Pen(
-                    new SolidColorBrush(GuardianLegacyMapDrawing.Target),
-                    4 * markerScale,
-                    dashStyle: DashStyle.Dot),
-                location,
-                highlightRadius,
-                highlightRadius);
-        }
-
-        if (point.Type == GuardianPoiType.Obelisk
-            && point.IsActiveObelisk)
+        DrawSurveyMarkerIfNeeded(context, point, location, projection, markerScale);
+        DrawRelicHeadingIfNeeded(
+            context,
+            point,
+            location,
+            headingLength,
+            rotation,
+            markerScale);
+        DrawTargetOrNearestHighlight(context, point, location, markerScale);
+        if (point.Type == GuardianPoiType.Obelisk && point.IsActiveObelisk)
         {
             DrawActiveObeliskEffect(
                 context,
@@ -917,118 +871,278 @@ public sealed class GuardianSiteMapControl : Control
                 markerScale);
         }
 
-        switch (point.Type)
+        DrawPointGlyph(new PointGlyphDraw
+        {
+            Context = context,
+            Point = point,
+            Location = location,
+            Projection = projection,
+            Pen = pen,
+            Fill = fill,
+            Rotation = rotation,
+            MarkerScale = markerScale,
+        });
+    }
+
+    private static void DrawSurveyMarkerIfNeeded(
+        DrawingContext context,
+        GuardianProjectedPoint point,
+        Point location,
+        GuardianSiteMapProjection projection,
+        double markerScale)
+    {
+        if (!RequiresSurveyMarker(point))
+        {
+            return;
+        }
+
+        var (haloRadius, ringRadius) = GetSurveyMarkerRadii(
+            point.Type,
+            projection.IsRuins);
+        GuardianSurveyMarkerDrawing.Draw(
+            context,
+            location,
+            haloRadius * markerScale,
+            ringRadius * markerScale,
+            dotRadius: 0.75 * markerScale);
+    }
+
+    private static void DrawRelicHeadingIfNeeded(
+        DrawingContext context,
+        GuardianProjectedPoint point,
+        Point location,
+        double headingLength,
+        double rotation,
+        double markerScale)
+    {
+        if (point.Type != GuardianPoiType.Relic
+            || !point.HasIndividualRelicHeading
+            || headingLength <= 0)
+        {
+            return;
+        }
+
+        var (start, end) = GuardianLegacyMapDrawing.CreateHeadingLine(
+            location,
+            headingLength,
+            rotation);
+        context.DrawLine(
+            new Pen(
+                new SolidColorBrush(
+                    GuardianLegacyMapDrawing.IndividualTowerHeading),
+                10 * markerScale),
+            start,
+            end);
+    }
+
+    private void DrawTargetOrNearestHighlight(
+        DrawingContext context,
+        GuardianProjectedPoint point,
+        Point location,
+        double markerScale)
+    {
+        var isTarget = string.Equals(
+            point.Name,
+            TargetPointName,
+            StringComparison.OrdinalIgnoreCase);
+        var isNearest = Proximity?.NearestPoint is
+            { Distance: <= 75 } nearest
+            && string.Equals(
+                nearest.Point.Name,
+                point.Name,
+                StringComparison.OrdinalIgnoreCase);
+        if (!isTarget && !isNearest)
+        {
+            return;
+        }
+
+        var highlightRadius = 14 * markerScale;
+        context.DrawEllipse(
+            null,
+            new Pen(
+                new SolidColorBrush(GuardianLegacyMapDrawing.Target),
+                4 * markerScale,
+                dashStyle: DashStyle.Dot),
+            location,
+            highlightRadius,
+            highlightRadius);
+    }
+
+    private sealed class PointGlyphDraw
+    {
+        public required DrawingContext Context { get; init; }
+        public required GuardianProjectedPoint Point { get; init; }
+        public required Point Location { get; init; }
+        public required GuardianSiteMapProjection Projection { get; init; }
+        public required Pen Pen { get; init; }
+        public IBrush? Fill { get; init; }
+        public double Rotation { get; init; }
+        public double MarkerScale { get; init; }
+    }
+
+    private static void DrawPointGlyph(PointGlyphDraw draw)
+    {
+        switch (draw.Point.Type)
         {
             case GuardianPoiType.Obelisk:
             case GuardianPoiType.BrokenObelisk:
-                DrawPolyline(
-                    context,
-                    GuardianLegacyMapDrawing.CreateGlyphPoints(
-                        point.Type,
-                        location,
-                        rotation,
-                        markerScale),
-                    pen);
-                if (point.Type == GuardianPoiType.BrokenObelisk)
-                {
-                    break;
-                }
-
-                context.DrawLine(
-                    pen,
-                    location + GuardianLegacyMapDrawing.RotateClockwise(
-                        new Point(0.2 * markerScale, 0),
-                        rotation),
-                    location + GuardianLegacyMapDrawing.RotateClockwise(
-                        new Point(-0.5 * markerScale, -1.2 * markerScale),
-                        rotation));
-                context.DrawLine(
-                    pen,
-                    location + GuardianLegacyMapDrawing.RotateClockwise(
-                        new Point(0.2 * markerScale, 0),
-                        rotation),
-                    location + GuardianLegacyMapDrawing.RotateClockwise(
-                        new Point(1.5 * markerScale, -0.8 * markerScale),
-                        rotation));
+                DrawObeliskGlyph(
+                    draw.Context,
+                    draw.Point,
+                    draw.Location,
+                    draw.Pen,
+                    draw.Rotation,
+                    draw.MarkerScale);
                 break;
 
             case GuardianPoiType.Pylon:
-                DrawPolyline(
-                    context,
-                    GuardianLegacyMapDrawing.CreateGlyphPoints(
-                        point.Type,
-                        location,
-                        rotation,
-                        markerScale),
-                    pen);
-                context.DrawLine(
-                    pen,
-                    location,
-                    location + GuardianLegacyMapDrawing.RotateClockwise(
-                        new Point(0, 3 * markerScale),
-                        rotation));
+                DrawPylonGlyph(
+                    draw.Context,
+                    draw.Point,
+                    draw.Location,
+                    draw.Pen,
+                    draw.Rotation,
+                    draw.MarkerScale);
                 break;
 
             case GuardianPoiType.Component:
                 DrawPolyline(
-                    context,
+                    draw.Context,
                     GuardianLegacyMapDrawing.CreateGlyphPoints(
-                        point.Type,
-                        location,
-                        rotation,
-                        markerScale),
-                    pen);
+                        draw.Point.Type,
+                        draw.Location,
+                        draw.Rotation,
+                        draw.MarkerScale),
+                    draw.Pen);
                 DrawComponentMaterials(
-                    context,
-                    location,
-                    point.ComponentMaterials,
-                    markerScale);
+                    draw.Context,
+                    draw.Location,
+                    draw.Point.ComponentMaterials,
+                    draw.MarkerScale);
                 break;
 
             case GuardianPoiType.DestructiblePanel:
-                var materialColor = GuardianLegacyMapDrawing
-                    .GetComponentMaterialColor(
-                    point.ComponentMaterials.Count > 0
-                        ? point.ComponentMaterials[0]
-                        : default);
-                context.DrawRectangle(
-                    materialColor is { } known
-                        ? new SolidColorBrush(known)
-                        : null,
-                    materialColor is not null
-                        ? new Pen(Brushes.Black, markerScale)
-                        : pen,
-                    new Rect(
-                        location.X - 2 * markerScale,
-                        location.Y - 2 * markerScale,
-                        4 * markerScale,
-                        4 * markerScale));
+                DrawDestructiblePanel(
+                    draw.Context,
+                    draw.Point,
+                    draw.Location,
+                    draw.Pen,
+                    draw.MarkerScale);
                 break;
 
             case GuardianPoiType.Relic:
-                context.DrawGeometry(
-                    fill,
-                    pen,
+                draw.Context.DrawGeometry(
+                    draw.Fill,
+                    draw.Pen,
                     CreatePolygon(
                         GuardianLegacyMapDrawing.CreateGlyphPoints(
-                            point.Type,
-                            location,
-                            rotation,
-                            markerScale)));
+                            draw.Point.Type,
+                            draw.Location,
+                            draw.Rotation,
+                            draw.MarkerScale)));
                 break;
 
             default:
                 var radius = GuardianLegacyMapDrawing.GetPuddleRadius(
-                    projection,
-                    point) * markerScale;
-                context.DrawEllipse(
-                    fill,
-                    pen,
-                    location,
+                    draw.Projection,
+                    draw.Point) * draw.MarkerScale;
+                draw.Context.DrawEllipse(
+                    draw.Fill,
+                    draw.Pen,
+                    draw.Location,
                     radius,
                     radius);
                 break;
         }
+    }
+
+    private static void DrawObeliskGlyph(
+        DrawingContext context,
+        GuardianProjectedPoint point,
+        Point location,
+        Pen pen,
+        double rotation,
+        double markerScale)
+    {
+        DrawPolyline(
+            context,
+            GuardianLegacyMapDrawing.CreateGlyphPoints(
+                point.Type,
+                location,
+                rotation,
+                markerScale),
+            pen);
+        if (point.Type == GuardianPoiType.BrokenObelisk)
+        {
+            return;
+        }
+
+        context.DrawLine(
+            pen,
+            location + GuardianLegacyMapDrawing.RotateClockwise(
+                new Point(0.2 * markerScale, 0),
+                rotation),
+            location + GuardianLegacyMapDrawing.RotateClockwise(
+                new Point(-0.5 * markerScale, -1.2 * markerScale),
+                rotation));
+        context.DrawLine(
+            pen,
+            location + GuardianLegacyMapDrawing.RotateClockwise(
+                new Point(0.2 * markerScale, 0),
+                rotation),
+            location + GuardianLegacyMapDrawing.RotateClockwise(
+                new Point(1.5 * markerScale, -0.8 * markerScale),
+                rotation));
+    }
+
+    private static void DrawPylonGlyph(
+        DrawingContext context,
+        GuardianProjectedPoint point,
+        Point location,
+        Pen pen,
+        double rotation,
+        double markerScale)
+    {
+        DrawPolyline(
+            context,
+            GuardianLegacyMapDrawing.CreateGlyphPoints(
+                point.Type,
+                location,
+                rotation,
+                markerScale),
+            pen);
+        context.DrawLine(
+            pen,
+            location,
+            location + GuardianLegacyMapDrawing.RotateClockwise(
+                new Point(0, 3 * markerScale),
+                rotation));
+    }
+
+    private static void DrawDestructiblePanel(
+        DrawingContext context,
+        GuardianProjectedPoint point,
+        Point location,
+        Pen pen,
+        double markerScale)
+    {
+        var materialColor = GuardianLegacyMapDrawing
+            .GetComponentMaterialColor(
+            point.ComponentMaterials.Count > 0
+                ? point.ComponentMaterials[0]
+                : default);
+        context.DrawRectangle(
+            materialColor is { } known
+                ? new SolidColorBrush(known)
+                : null,
+            materialColor is not null
+                ? new Pen(Brushes.Black, markerScale)
+                : pen,
+            new Rect(
+                location.X - 2 * markerScale,
+                location.Y - 2 * markerScale,
+                4 * markerScale,
+                4 * markerScale));
     }
 
     private static void DrawHeadingLines(

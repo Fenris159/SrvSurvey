@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Exploration;
@@ -26,6 +27,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private const int MaximumResponseBytes = 16 * 1024 * 1024;
     private const double LightSecondMeters = 299_792_458d;
     private const double SolarRadiusMeters = 695_700_000d;
+    private const string EdsmBodiesResponseLabel = "EDSM bodies response";
     private static readonly DateTimeOffset BiologicalSignalCutoff =
         new(2022, 11, 29, 0, 0, 0, TimeSpan.Zero);
     private static readonly Uri DefaultEdsmBaseUri = new(
@@ -77,9 +79,9 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             "Spansh",
             new Uri(
                 spanshBaseUri,
-                "dump/"
-                    + systemAddress.ToString(CultureInfo.InvariantCulture)
-                    + "/"),
+                UriPath.CombineWithTrailingSeparator(
+                    "dump",
+                    systemAddress.ToString(CultureInfo.InvariantCulture))),
             root => ParseSpansh(root, normalizedName, systemAddress),
             cancellationToken);
         await Task.WhenAll(edsmTask, spanshTask).ConfigureAwait(false);
@@ -156,13 +158,13 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         string expectedName,
         long expectedAddress)
     {
-        RequireObject(root, "EDSM bodies response");
-        ValidateAddress(root, expectedAddress, "EDSM bodies response");
+        RequireObject(root, EdsmBodiesResponseLabel);
+        ValidateAddress(root, expectedAddress, EdsmBodiesResponseLabel);
         var systemName = GetString(root, "name") ?? expectedName;
-        var bodies = ReadBodyArray(root, "EDSM bodies response")
+        var bodies = ReadBodyArray(root, EdsmBodiesResponseLabel)
             .Select(body => ParseBody(body, systemName, BodyProvider.Edsm))
             .ToArray();
-        ValidateUniqueBodyIds(bodies, "EDSM bodies response");
+        ValidateUniqueBodyIds(bodies, EdsmBodiesResponseLabel);
         return CreateSnapshot(
             systemName,
             expectedAddress,
