@@ -251,42 +251,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         var pending = new Dictionary<string, GuardianComponentLoadout>(
             components,
             StringComparer.Ordinal);
-        var output = new JsonArray();
-        if (root["components"] is { } existingNode)
-        {
-            if (existingNode is not JsonArray existing)
-            {
-                throw new InvalidDataException(
-                    "The Guardian component-material data uses an unsupported JSON shape and was not overwritten.");
-            }
-
-            foreach (var node in existing)
-            {
-                if (node is JsonValue value
-                    && value.TryGetValue<string>(out var encoded)
-                    && GuardianComponentLoadout.TryParseLegacy(
-                        encoded,
-                        out var existingComponent))
-                {
-                    if (components.TryGetValue(
-                        existingComponent.Name,
-                        out var replacement))
-                    {
-                        output.Add(replacement.ToLegacyString());
-                        pending.Remove(existingComponent.Name);
-                    }
-                    else
-                    {
-                        output.Add(value.DeepClone());
-                    }
-                }
-                else
-                {
-                    output.Add(node?.DeepClone());
-                }
-            }
-        }
-
+        var output = MergeExistingComponentMaterials(root, components, pending);
         foreach (var component in pending.Values.OrderBy(
                      item => item.Name,
                      StringComparer.Ordinal))
@@ -295,6 +260,52 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         }
 
         root["components"] = output;
+    }
+
+    private static JsonArray MergeExistingComponentMaterials(
+        JsonObject root,
+        IReadOnlyDictionary<string, GuardianComponentLoadout> components,
+        Dictionary<string, GuardianComponentLoadout> pending)
+    {
+        var output = new JsonArray();
+        if (root["components"] is not { } existingNode)
+        {
+            return output;
+        }
+
+        if (existingNode is not JsonArray existing)
+        {
+            throw new InvalidDataException(
+                "The Guardian component-material data uses an unsupported JSON shape and was not overwritten.");
+        }
+
+        foreach (var node in existing)
+        {
+            if (node is JsonValue value
+                && value.TryGetValue<string>(out var encoded)
+                && GuardianComponentLoadout.TryParseLegacy(
+                    encoded,
+                    out var existingComponent))
+            {
+                if (components.TryGetValue(
+                    existingComponent.Name,
+                    out var replacement))
+                {
+                    output.Add(replacement.ToLegacyString());
+                    pending.Remove(existingComponent.Name);
+                }
+                else
+                {
+                    output.Add(value.DeepClone());
+                }
+            }
+            else
+            {
+                output.Add(node?.DeepClone());
+            }
+        }
+
+        return output;
     }
     private static string GetLegacyPoiType(GuardianPoiType type)
     {

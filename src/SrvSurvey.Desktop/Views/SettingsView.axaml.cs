@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Core.Colonization;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
@@ -135,7 +136,7 @@ public sealed partial class SettingsView : UserControl
         RoutedEventArgs eventArgs)
     {
         await OpenSettingsUriAsync(
-            new Uri("https://inara.cz/elite/cmdr-settings-api/"),
+            WellKnownUris.InaraCommanderApiSettings,
             "the Inara API key page");
     }
 

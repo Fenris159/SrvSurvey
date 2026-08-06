@@ -194,24 +194,27 @@ public sealed partial class App : Application
             var canonnHumanSiteClient = new CanonnHumanSiteClient();
             var viewModel = new MainWindowViewModel(
                 configuredJournalDirectory,
-                themeService,
-                appDataPaths,
-                inputSettings: inputSettings,
-                applicationLogService: applicationLog,
-                overlayLayoutStore: overlayLayoutStore,
-                overlayLayout: overlayLayout,
-                overlayInteraction: overlayInteraction,
-                targetFrontierId: targetFrontierId,
-                commanderPreferenceSettingsStore: commanderPreferenceStore,
-                commanderPreferenceCommandLineOverride:
-                    commanderPreferenceResolution.IsCommandLineOverride,
-                commanderPreferenceInitialStatus:
-                    commanderPreferenceResolution.StatusMessage,
-                firstFootfallInferenceService:
-                    firstFootfallInferenceService,
-                systemBodyDataClient: new SystemBodyDataClient(),
-                canonnHumanSiteClient: canonnHumanSiteClient,
-                canonnHumanSitePublisher: canonnHumanSiteClient);
+                new MainWindowViewModelOptions
+                {
+                    ThemeService = themeService,
+                    AppDataPaths = appDataPaths,
+                    InputSettings = inputSettings,
+                    ApplicationLogService = applicationLog,
+                    OverlayLayoutStore = overlayLayoutStore,
+                    OverlayLayout = overlayLayout,
+                    OverlayInteraction = overlayInteraction,
+                    TargetFrontierId = targetFrontierId,
+                    CommanderPreferenceSettingsStore = commanderPreferenceStore,
+                    CommanderPreferenceCommandLineOverride =
+                        commanderPreferenceResolution.IsCommandLineOverride,
+                    CommanderPreferenceInitialStatus =
+                        commanderPreferenceResolution.StatusMessage,
+                    FirstFootfallInferenceService =
+                        firstFootfallInferenceService,
+                    SystemBodyDataClient = new SystemBodyDataClient(),
+                    CanonnHumanSiteClient = canonnHumanSiteClient,
+                    CanonnHumanSitePublisher = canonnHumanSiteClient,
+                });
             IGameWindowTracker CreateOverlayGameWindowTracker()
             {
                 return new OverlayGameWindowTracker(
@@ -417,12 +420,16 @@ public sealed partial class App : Application
                 viewModel.SurfaceSurvey,
                 overlayPresentation.CreatePlatformService(),
                 CreateOverlayGameWindowTracker(),
-                () => viewModel.CommanderName,
-                exobiologyCatalog: viewModel.SystemSurvey.BiologyReferenceCatalog,
-                overlayLayout: overlayLayout,
-                fssDiagnosticDirectory: Path.Combine(
-                    appDataPaths.CacheDirectory,
-                    "fss-diagnostics"));
+                new SystemSurveyOverlayCoordinatorOptions
+                {
+                    CommanderNameProvider = () => viewModel.CommanderName,
+                    ExobiologyCatalog =
+                        viewModel.SystemSurvey.BiologyReferenceCatalog,
+                    OverlayLayout = overlayLayout,
+                    FssDiagnosticDirectory = Path.Combine(
+                        appDataPaths.CacheDirectory,
+                        "fss-diagnostics"),
+                });
             questIndicatorOverlayCoordinator = new QuestIndicatorOverlayCoordinator(
                 viewModel.QuestIndicator,
                 overlayPresentation.CreatePlatformService(),

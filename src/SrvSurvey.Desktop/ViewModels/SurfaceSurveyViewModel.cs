@@ -470,15 +470,18 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                      || BodyNamesMatch(scan.BodyName, surface.BodyName)))
         {
             markers.Add(CreateMarker(
-                scan.Species,
-                scan.Location,
-                string.Equals(scan.Status, "Died", StringComparison.OrdinalIgnoreCase)
+                new SurfaceRadarMarkerOptions
+                {
+                    Name = scan.Species,
+                    Location = scan.Location,
+                    RadiusMeters = string.Equals(scan.Status, "Died", StringComparison.OrdinalIgnoreCase)
                     ? 40
                     : scan.RadiusMeters,
-                SurfaceRadarMarkerKind.HistoricalScan,
-                scan.Status,
-                current,
-                status));
+                    Kind = SurfaceRadarMarkerKind.HistoricalScan,
+                    StatusText = scan.Status,
+                    Current = current,
+                    Status = status,
+                }));
         }
 
         var activeGenus = exobiology.ScanOne is { } active
@@ -497,14 +500,17 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                     StringComparison.Ordinal);
             var targets = group.Value
                 .Select(location => CreateMarker(
-                    group.Key,
-                    location,
-                    ExobiologyReferenceCatalog.GetSampleDistanceMeters(group.Key),
-                    SurfaceRadarMarkerKind.Bookmark,
-                    "Tracker",
-                    current,
-                    status,
-                    isActive))
+                new SurfaceRadarMarkerOptions
+                {
+                    Name = group.Key,
+                    Location = location,
+                    RadiusMeters = ExobiologyReferenceCatalog.GetSampleDistanceMeters(group.Key),
+                    Kind = SurfaceRadarMarkerKind.Bookmark,
+                    StatusText = "Tracker",
+                    Current = current,
+                    Status = status,
+                    IsActive = isActive,
+                }))
                 .OrderBy(marker => marker.DistanceMeters)
                 .ToArray();
             markers.AddRange(targets);
@@ -525,15 +531,18 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             }
 
             markers.Add(CreateMarker(
-                $"Sample {index + 1}",
-                new SurfaceCoordinate(
+                new SurfaceRadarMarkerOptions
+                {
+                    Name = $"Sample {index + 1}",
+                    Location = new SurfaceCoordinate(
                     sample.Location.Latitude,
                     sample.Location.Longitude),
-                sample.Radius,
-                SurfaceRadarMarkerKind.ActiveSample,
-                "Active",
-                current,
-                status));
+                    RadiusMeters = sample.Radius,
+                    Kind = SurfaceRadarMarkerKind.ActiveSample,
+                    StatusText = "Active",
+                    Current = current,
+                    Status = status,
+                }));
         }
 
         var shipLocation = journalTracker.ShipLocation
@@ -542,27 +551,33 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         {
             var shipDeparted = journalTracker.HasShipDeparted;
             markers.Add(CreateMarker(
-                shipDeparted ? "Former ship location" : "Ship",
-                ship,
-                0,
-                shipDeparted
+                new SurfaceRadarMarkerOptions
+                {
+                    Name = shipDeparted ? "Former ship location" : "Ship",
+                    Location = ship,
+                    RadiusMeters = 0,
+                    Kind = shipDeparted
                     ? SurfaceRadarMarkerKind.FormerShip
                     : SurfaceRadarMarkerKind.Ship,
-                shipDeparted ? "Departed" : "Ship",
-                current,
-                status));
+                    StatusText = shipDeparted ? "Departed" : "Ship",
+                    Current = current,
+                    Status = status,
+                }));
         }
 
         if (journalTracker.SrvLocation is { } srv)
         {
             markers.Add(CreateMarker(
-                "SRV",
-                srv,
-                0,
-                SurfaceRadarMarkerKind.Srv,
-                "SRV",
-                current,
-                status));
+                new SurfaceRadarMarkerOptions
+                {
+                    Name = "SRV",
+                    Location = srv,
+                    RadiusMeters = 0,
+                    Kind = SurfaceRadarMarkerKind.Srv,
+                    StatusText = "SRV",
+                    Current = current,
+                    Status = status,
+                }));
         }
 
         if (survey.ShowCanonnSignalsOnRadar
@@ -573,14 +588,17 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
             foreach (var prior in priorScanSurfaceMarkers)
             {
                 markers.Add(CreateMarker(
-                    prior.DisplayName,
-                    prior.Location,
-                    prior.SampleRadiusMeters,
-                    SurfaceRadarMarkerKind.CanonnPrior,
-                    prior.IsClose ? "Close" : "Prior",
-                    current,
-                    status,
-                    prior.IsActive));
+                new SurfaceRadarMarkerOptions
+                {
+                    Name = prior.DisplayName,
+                    Location = prior.Location,
+                    RadiusMeters = prior.SampleRadiusMeters,
+                    Kind = SurfaceRadarMarkerKind.CanonnPrior,
+                    StatusText = prior.IsClose ? "Close" : "Prior",
+                    Current = current,
+                    Status = status,
+                    IsActive = prior.IsActive,
+                }));
             }
         }
 
@@ -593,32 +611,28 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     }
 
     private SurfaceRadarMarkerViewModel CreateMarker(
-        string name,
-        SurfaceCoordinate location,
-        double radiusMeters,
-        SurfaceRadarMarkerKind kind,
-        string statusText,
-        SurfaceCoordinate current,
-        EliteStatus status,
-        bool isActive = true)
+        SurfaceRadarMarkerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
         var distance = SurfaceNavigation.GetDistance(
-            current,
-            location,
+            options.Current,
+            options.Location,
             surface!.RadiusMeters);
-        var bearing = SurfaceNavigation.GetBearing(current, location);
+        var bearing = SurfaceNavigation.GetBearing(
+            options.Current,
+            options.Location);
         return new SurfaceRadarMarkerViewModel(
-            name,
-            kind,
-            statusText,
+            options.Name,
+            options.Kind,
+            options.StatusText,
             distance,
             bearing,
             SurfaceNavigation.NormalizeDegrees(
-                bearing - status.NormalizedHeading),
-            Math.Max(0, radiusMeters),
-            distance < radiusMeters,
-            location,
-            isActive);
+                bearing - options.Status.NormalizedHeading),
+            Math.Max(0, options.RadiusMeters),
+            distance < options.RadiusMeters,
+            options.Location,
+            options.IsActive);
     }
 
     private static bool HasSameExobiology(

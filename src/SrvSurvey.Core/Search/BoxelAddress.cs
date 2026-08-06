@@ -212,9 +212,10 @@ public sealed partial record BoxelAddress(
             relativeY,
             relativeZ,
             massCode,
-            (int)remaining,
-            systemAddress,
-            normalizedPublicName?.Trim());
+            new BoxelAddressIdentity(
+                (int)remaining,
+                systemAddress,
+                normalizedPublicName?.Trim()));
         return true;
     }
 
@@ -242,38 +243,25 @@ public sealed partial record BoxelAddress(
     public bool TryEncodeSystemAddress(out long systemAddress)
     {
         systemAddress = 0;
-        if (!IsValidMassCode(MassCode)
-            || N1 < 0
-            || N2 < 0
-            || string.IsNullOrEmpty(Letters)
-            || Letters.Length != 4
-            || Letters[2] != '-'
-            || Letters[0] is < 'A' or > 'Z'
-            || Letters[1] is < 'A' or > 'Z'
-            || Letters[3] is < 'A' or > 'Z'
-            || !BoxelSectorNameResolver.IsValidSectorName(Sector))
+        if (!CanEncodeSystemAddress())
         {
             return false;
         }
 
-        var sector = BoxelSectorNameResolver.GetSectorCoordinates(
+        var sectorCoordinates = BoxelSectorNameResolver.GetSectorCoordinates(
             Sector,
             MassCode);
-        if (sector is null
-            || sector.Value.x is < 0 or >= 128
-            || sector.Value.y is < 0 or >= 64
-            || sector.Value.z is < 0 or >= 128)
+        if (!IsValidSectorCoordinate(sectorCoordinates))
         {
             return false;
         }
 
+        var sector = sectorCoordinates!.Value;
         var relative = GetRelativeCoordinates();
         var massCodeValue = MassCode - MinimumMassCode;
         var relativeBitCount = MaximumMassCode - MassCode;
         var relativeLimit = 1 << relativeBitCount;
-        if (relative.X is < 0 || relative.X >= relativeLimit
-            || relative.Y is < 0 || relative.Y >= relativeLimit
-            || relative.Z is < 0 || relative.Z >= relativeLimit)
+        if (!IsValidRelativeCoordinate(relative, relativeLimit))
         {
             return false;
         }
@@ -293,7 +281,7 @@ public sealed partial record BoxelAddress(
             systemNumberBits);
         address = BoxelSectorNameResolver.pack_and_shift(
             address,
-            sector.Value.x,
+            sector.x,
             7);
         address = BoxelSectorNameResolver.pack_and_shift(
             address,
@@ -301,7 +289,7 @@ public sealed partial record BoxelAddress(
             relativeBitCount);
         address = BoxelSectorNameResolver.pack_and_shift(
             address,
-            sector.Value.y,
+            sector.y,
             6);
         address = BoxelSectorNameResolver.pack_and_shift(
             address,
@@ -309,7 +297,7 @@ public sealed partial record BoxelAddress(
             relativeBitCount);
         address = BoxelSectorNameResolver.pack_and_shift(
             address,
-            sector.Value.z,
+            sector.z,
             7);
         address = BoxelSectorNameResolver.pack_and_shift(
             address,
@@ -439,9 +427,7 @@ public sealed partial record BoxelAddress(
         int y,
         int z,
         char massCode,
-        int systemNumber = 0,
-        long systemAddress = 0,
-        string? publicName = null)
+        BoxelAddressIdentity identity = default)
     {
         var value = x + (y * 128) + (z * 16384);
         var first = value % 26;
@@ -455,9 +441,48 @@ public sealed partial record BoxelAddress(
             $"{(char)(first + 'A')}{(char)(second + 'A')}-{(char)(third + 'A')}",
             massCode,
             value,
-            systemNumber,
-            systemAddress,
-            publicName);
+            identity.SystemNumber,
+            identity.SystemAddress,
+            identity.PublicName);
+    }
+
+    private readonly record struct BoxelAddressIdentity(
+        int SystemNumber = 0,
+        long SystemAddress = 0,
+        string? PublicName = null);
+
+    private bool CanEncodeSystemAddress()
+    {
+        return IsValidMassCode(MassCode)
+            && N1 >= 0
+            && N2 >= 0
+            && !string.IsNullOrEmpty(Letters)
+            && Letters.Length == 4
+            && Letters[2] == '-'
+            && Letters[0] is >= 'A' and <= 'Z'
+            && Letters[1] is >= 'A' and <= 'Z'
+            && Letters[3] is >= 'A' and <= 'Z'
+            && BoxelSectorNameResolver.IsValidSectorName(Sector);
+    }
+
+    private static bool IsValidSectorCoordinate(SectorCoordinate? sector)
+    {
+        return sector is not null
+            && sector.Value.x is >= 0 and < 128
+            && sector.Value.y is >= 0 and < 64
+            && sector.Value.z is >= 0 and < 128;
+    }
+
+    private static bool IsValidRelativeCoordinate(
+        BoxelCoordinate relative,
+        int relativeLimit)
+    {
+        return relative.X is >= 0
+            && relative.X < relativeLimit
+            && relative.Y is >= 0
+            && relative.Y < relativeLimit
+            && relative.Z is >= 0
+            && relative.Z < relativeLimit;
     }
 
     private static int TakeBits(ref ulong value, int count)
