@@ -5,8 +5,8 @@ namespace SrvSurvey.Core.Guardian;
 
 public sealed class GuardianArtifactInventoryState
 {
-    private static readonly IReadOnlyDictionary<string, ArtifactDefinition>
-        Definitions = BuildDefinitions();
+    private static readonly Dictionary<string, ArtifactDefinition> Definitions =
+        BuildDefinitions();
     private readonly Dictionary<string, int> counts = new(
         StringComparer.OrdinalIgnoreCase);
 
@@ -248,7 +248,7 @@ public sealed class GuardianArtifactInventoryState
                 : null;
     }
 
-    private static IReadOnlyDictionary<string, ArtifactDefinition>
+    private static Dictionary<string, ArtifactDefinition>
         BuildDefinitions()
     {
         var definitions = new[]

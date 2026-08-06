@@ -63,16 +63,8 @@ public sealed class ColonizationSystemSiteJournalTracker
     {
         ArgumentNullException.ThrowIfNull(sites);
         ArgumentNullException.ThrowIfNull(journalEvents);
-        var changed = 0;
-        foreach (var journalEvent in journalEvents)
-        {
-            if (ApplyJournalEvent(sites, journalEvent))
-            {
-                changed++;
-            }
-        }
-
-        return changed;
+        return journalEvents.Count(journalEvent =>
+            ApplyJournalEvent(sites, journalEvent));
     }
 
     public bool ApplyJournalEvent(
@@ -235,7 +227,7 @@ public sealed class ColonizationSystemSiteJournalTracker
         return true;
     }
 
-    private bool ApplyDocked(
+    private static bool ApplyDocked(
         IList<ColonizationSystemSite> sites,
         JsonElement root)
     {
@@ -357,7 +349,7 @@ public sealed class ColonizationSystemSiteJournalTracker
 
     private bool MatchesSystem(JsonElement root)
     {
-        return GetInt64(root, "SystemAddress") == SystemAddress;
+        return GetInt64(root, nameof(SystemAddress)) == SystemAddress;
     }
 
     private bool IsKnownBody(int bodyNumber)

@@ -19,8 +19,12 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private readonly IGameWindowTracker gameWindowTracker;
     private readonly IGameScreenCapture gameScreenCapture;
     private readonly LegacyOverlayLayout overlayLayout;
-    private readonly ICanonnSystemPoiClient canonnSystemPoiClient;
+    private readonly CachingCanonnSystemPoiClient canonnSystemPoiClient;
     private readonly Func<string?> commanderNameProvider;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "An in-flight Canonn refresh may release this gate after disposal begins.")]
     private readonly SemaphoreSlim canonnRefreshLock = new(1, 1);
     private readonly SemaphoreSlim fssCaptureLock = new(1, 1);
     private readonly CancellationTokenSource disposalCancellation = new();
@@ -271,7 +275,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private void DisposeFssCapture()
     {
-        if (!fssCaptureLock.Wait(0))
+        if (!fssCaptureLock.Wait(0, CancellationToken.None))
         {
             _ = DisposeFssCaptureWhenIdleAsync();
             return;
@@ -291,7 +295,8 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
     private async Task DisposeFssCaptureWhenIdleAsync()
     {
-        await fssCaptureLock.WaitAsync().ConfigureAwait(false);
+        await fssCaptureLock.WaitAsync(CancellationToken.None)
+            .ConfigureAwait(false);
         try
         {
             gameScreenCapture.Dispose();
@@ -332,7 +337,9 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
             return;
         }
 
-        if (!await fssCaptureLock.WaitAsync(0).ConfigureAwait(true))
+        if (!await fssCaptureLock.WaitAsync(
+            0,
+            CancellationToken.None).ConfigureAwait(true))
         {
             return;
         }
@@ -405,6 +412,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         catch (OperationCanceledException)
             when (disposalCancellation.IsCancellationRequested)
         {
+            // Disposal intentionally cancels pending capture work.
         }
         catch (Exception exception) when (
             exception is Win32Exception
@@ -453,7 +461,9 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         if (string.Equals(canonnLoadedKey, key, StringComparison.OrdinalIgnoreCase)
             || string.Equals(canonnFailedKey, key, StringComparison.OrdinalIgnoreCase)
                 && DateTimeOffset.UtcNow < canonnRetryAfter
-            || !await canonnRefreshLock.WaitAsync(0).ConfigureAwait(true))
+            || !await canonnRefreshLock.WaitAsync(
+                0,
+                CancellationToken.None).ConfigureAwait(true))
         {
             return;
         }

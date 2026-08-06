@@ -35,7 +35,7 @@ public sealed class OverlayPositionEditSession
     public bool HasChanges => Changes.Count > 0 || HasDefaultOpacityChange;
 
     public bool HasDefaultOpacityChange =>
-        workingDefaultOpacity != originalDefaultOpacity;
+        !EquivalentOpacity(workingDefaultOpacity, originalDefaultOpacity);
 
     public double DefaultOpacity => workingDefaultOpacity ?? 1d;
 
@@ -82,7 +82,7 @@ public sealed class OverlayPositionEditSession
             && Math.Abs(opacity - 1d) < 0.0001d
                 ? null
                 : opacity;
-        if (workingDefaultOpacity == normalized)
+        if (EquivalentOpacity(workingDefaultOpacity, normalized))
         {
             return false;
         }
@@ -191,5 +191,16 @@ public sealed class OverlayPositionEditSession
                 parameterName,
                 "Overlay opacity must be from 0 to 1.");
         }
+    }
+
+    private static bool EquivalentOpacity(double? left, double? right)
+    {
+        if (left.HasValue != right.HasValue)
+        {
+            return false;
+        }
+
+        return !left.HasValue
+            || Math.Abs(left.Value - right!.Value) <= 0.0001d;
     }
 }

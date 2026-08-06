@@ -208,7 +208,7 @@ public static class ColonizationSystemSiteReconciler
         T remote,
         T local,
         IEqualityComparer<T> comparer,
-        ICollection<string> conflicts,
+        List<string> conflicts,
         ref bool changed)
     {
         var localChanged = !comparer.Equals(original, local);
@@ -255,13 +255,12 @@ public static class ColonizationSystemSiteReconciler
         IReadOnlyList<ColonizationSystemSite> sites,
         string source)
     {
-        foreach (var site in sites)
+        var unnamedSite = sites.FirstOrDefault(site =>
+            string.IsNullOrWhiteSpace(site.Name));
+        if (unnamedSite is not null)
         {
-            if (string.IsNullOrWhiteSpace(site.Name))
-            {
-                throw new InvalidDataException(
-                    $"A {source} colonisation site has no name.");
-            }
+            throw new InvalidDataException(
+                $"A {source} colonisation site has no name.");
         }
 
         var duplicateId = sites
@@ -312,8 +311,8 @@ public static class ColonizationSystemSiteReconciler
     }
 
     private static bool JsonMapsEqual(
-        IReadOnlyDictionary<string, JsonElement> left,
-        IReadOnlyDictionary<string, JsonElement> right)
+        Dictionary<string, JsonElement> left,
+        Dictionary<string, JsonElement> right)
     {
         if (left.Count != right.Count)
         {

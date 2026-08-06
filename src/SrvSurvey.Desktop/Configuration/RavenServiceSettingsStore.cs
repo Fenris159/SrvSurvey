@@ -36,7 +36,7 @@ public sealed class RavenServiceSettingsStore
             Query = string.Empty,
             Fragment = string.Empty,
         };
-        if (!builder.Path.EndsWith("/", StringComparison.Ordinal))
+        if (!builder.Path.EndsWith('/'))
         {
             builder.Path += "/";
         }

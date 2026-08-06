@@ -52,7 +52,6 @@ public sealed class GuardianViewModel
     private readonly AsyncCommand lookupOriginCommand;
     private readonly AsyncCommand clearOriginCommand;
     private readonly AsyncCommand openSelectedSurveyCommand;
-    private readonly AsyncCommand openShareWorkspaceCommand;
     private GuardianLiveSiteState liveSiteState;
     private GuardianCommanderDataReadResult commanderData =
         GuardianCommanderDataReadResult.Empty;
@@ -240,7 +239,7 @@ public sealed class GuardianViewModel
             OpenSelectedSurveyAsync,
             () => SelectedSite?.Reference.Kind is GuardianSiteKind.Ruins
                 or GuardianSiteKind.Structure);
-        openShareWorkspaceCommand = new AsyncCommand(
+        var openShareWorkspaceCommand = new AsyncCommand(
             OpenShareWorkspaceAsync,
             () => true);
         RefreshCommand = refreshCommand;
@@ -273,7 +272,7 @@ public sealed class GuardianViewModel
 
     public IReadOnlyList<string> SiteTypeFilters { get; }
 
-    public IReadOnlyList<GuardianOverlaySizeOption> OverlaySizeOptions =>
+    public IReadOnlyList<GuardianOverlaySizeOption> OverlaySizeOptions { get; } =
         OverlaySizes;
 
     public ICommand RefreshCommand { get; }
@@ -632,9 +631,11 @@ public sealed class GuardianViewModel
             var delta = Math.Abs(altitude - AlignmentTargetAltitude);
             return delta > 220
                 ? 0
-                : delta < 20
-                    ? 0.8
-                    : (220 - delta) / 200;
+                : (delta < 20) switch
+                {
+                    true => 0.8,
+                    false => (220 - delta) / 200
+                };
         }
     }
 
@@ -702,9 +703,11 @@ public sealed class GuardianViewModel
 
     public string GlideApproachText => ActiveSite is not { } site
         ? string.Empty
-        : site.Kind == GuardianSiteKind.Ruins
-            ? $"Ruins #{site.Index} - {GetActiveSiteType() ?? "unknown layout"}"
-            : GetGuardianBlueprintText(GetActiveSiteType());
+        : (site.Kind == GuardianSiteKind.Ruins) switch
+        {
+            true => $"Ruins #{site.Index} - {GetActiveSiteType() ?? "unknown layout"}",
+            false => GetGuardianBlueprintText(GetActiveSiteType())
+        };
 
     public string GlideApproachFooter =>
         "Remain in glide; the live survey map will continue after approach.";
@@ -741,7 +744,8 @@ public sealed class GuardianViewModel
             return false;
         }
 
-        automaticMapZoom = next == GetAutomaticMapScale();
+        automaticMapZoom = Math.Abs(next - GetAutomaticMapScale())
+            <= 0.0001d;
         activeMapScale = next;
         OnPropertyChanged(nameof(IsAutomaticMapZoom));
         OnPropertyChanged(nameof(ActiveMapScale));
@@ -914,9 +918,11 @@ public sealed class GuardianViewModel
         : "No compatible map template is available.";
 
     public string MapStatus => SelectedSite is { } row
-        ? row.Visit.HasCommanderData
-            ? "Commander survey states and raw POIs are overlaid on the reference map."
-            : "Reference map only. Visit this site to begin a commander survey."
+        ? (row.Visit.HasCommanderData) switch
+        {
+            true => "Commander survey states and raw POIs are overlaid on the reference map.",
+            false => "Reference map only. Visit this site to begin a commander survey."
+        }
         : "Choose a site on the Sites & surveys tab.";
 
     public GuardianLiveSiteSnapshot? ActiveSite => liveSiteState.CurrentSite;
@@ -937,11 +943,15 @@ public sealed class GuardianViewModel
     public bool IsLiveStatusVisible => !isLiveStatusObscured;
 
     public string ActiveSiteTitle => ActiveSite is { } site
-        ? string.IsNullOrWhiteSpace(site.LocalizedName)
-            ? site.Kind == GuardianSiteKind.Ruins
-                ? $"Ancient Ruins ({site.Index})"
-                : "Guardian Structure"
-            : site.LocalizedName
+        ? (string.IsNullOrWhiteSpace(site.LocalizedName)) switch
+        {
+            true => (site.Kind == GuardianSiteKind.Ruins) switch
+            {
+                true => $"Ancient Ruins ({site.Index})",
+                false => "Guardian Structure"
+            },
+            false => site.LocalizedName
+        }
         : "No live Guardian site detected";
 
     public string ActiveSiteDescription => ActiveSite is { } site
@@ -955,7 +965,7 @@ public sealed class GuardianViewModel
         : "WAITING";
 
     public string ActiveSiteLocation => ActiveSite?.Location is { } location
-        ? FormattableString.Invariant(
+        ? string.Create(CultureInfo.InvariantCulture,
             $"{location.Latitude:F6}, {location.Longitude:F6}")
         : "Surface location unavailable";
 
@@ -973,15 +983,19 @@ public sealed class GuardianViewModel
 
     public string SiteDistanceText => Proximity is { } value
         ? $"{value.DistanceFromSite:N1} m from survey origin"
-        : HasActiveSite
-            ? "Waiting for surface position, body radius, and site heading."
-            : "No live Guardian site detected.";
+        : (HasActiveSite) switch
+        {
+            true => "Waiting for surface position, body radius, and site heading.",
+            false => "No live Guardian site detected."
+        };
 
     public string NearbyPointText => Proximity?.NearestPoint is { } nearby
         ? GetNearbyPointText(nearby)
-        : HasActiveSite
-            ? "No selectable mapped object is available."
-            : "Approach a Guardian site to begin proximity tracking.";
+        : (HasActiveSite) switch
+        {
+            true => "No selectable mapped object is available.",
+            false => "Approach a Guardian site to begin proximity tracking."
+        };
 
     private string GetNearbyPointText(GuardianNearbyPoint nearby)
     {
@@ -1620,7 +1634,7 @@ public sealed class GuardianViewModel
                     candidate.Name,
                     query,
                     StringComparison.OrdinalIgnoreCase))
-                ?? matches.FirstOrDefault();
+                ?? (matches.Count > 0 ? matches[0] : null);
             if (match is null)
             {
                 OriginLookupStatus = $"No star system matched '{query}'.";
@@ -2127,7 +2141,9 @@ public sealed class GuardianViewModel
         var reference = SelectedSite?.Reference;
         var text = reference?.Latitude is double latitude
             && reference.Longitude is double longitude
-                ? FormattableString.Invariant($"{latitude:F6}, {longitude:F6}")
+                ? string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{latitude:F6}, {longitude:F6}")
                 : null;
         return CopyAsync(text, "surface location");
     }
@@ -3222,11 +3238,6 @@ public sealed class GuardianViewModel
             cancellationToken);
     }
 
-    private async Task RefreshAsync()
-    {
-        await RefreshAsync(CancellationToken.None);
-    }
-
     public async Task PrepareShareBundleAsync()
     {
         if (activeFrontierId is null)
@@ -3252,7 +3263,11 @@ public sealed class GuardianViewModel
             ShareStatusMessage = bundle.Sites.Count == 0
                 ? "No unpublished Guardian survey data was found. An empty bundle was prepared for parity with the legacy workflow."
                 : $"Prepared {bundle.Sites.Count:N0} Guardian survey "
-                    + (bundle.Sites.Count == 1 ? "file." : "files.");
+                    + ((bundle.Sites.Count == 1) switch
+                    {
+                        true => "file.",
+                        false => "files."
+                    });
         }
         catch (Exception exception) when (
             exception is IOException
@@ -3271,6 +3286,11 @@ public sealed class GuardianViewModel
             prepareShareBundleCommand.RaiseCanExecuteChanged();
             OnPropertyChanged(nameof(ShareButtonText));
         }
+    }
+
+    private async Task RefreshAsync()
+    {
+        await RefreshAsync(CancellationToken.None);
     }
 
     private async Task RefreshAsync(CancellationToken cancellationToken)
@@ -3342,6 +3362,21 @@ public sealed class GuardianViewModel
             && survey.Index == site.Index
             && IsSameBody(site, survey)
             && IsRuins(survey) == (site.Kind == GuardianSiteKind.Ruins));
+    }
+
+    private GuardianCommanderSiteSurvey? FindSurvey(
+        GuardianSiteReference reference)
+    {
+        return commanderData.Surveys.FirstOrDefault(survey =>
+            survey.SystemAddress == reference.SystemAddress
+            && survey.Index == reference.Index
+            && (reference.BodyId >= 0 && survey.BodyId >= 0
+                ? reference.BodyId == survey.BodyId
+                : string.Equals(
+                    survey.BodyName,
+                    reference.FullBodyName,
+                    StringComparison.OrdinalIgnoreCase))
+            && IsRuins(survey) == (reference.Kind == GuardianSiteKind.Ruins));
     }
 
     private void ReplaceSurvey(
@@ -3429,7 +3464,7 @@ public sealed class GuardianViewModel
         return $"{category} {number}".Trim();
     }
 
-    private IReadOnlyList<GuardianRamTahLogViewModel> BuildCurrentRamTahLogs()
+    private GuardianRamTahLogViewModel[] BuildCurrentRamTahLogs()
     {
         var site = ActiveSite;
         var reference = site?.Reference;
@@ -3776,17 +3811,37 @@ public sealed class GuardianViewModel
             return 2;
         }
 
-        return siteKind == GuardianSiteKind.Ruins
-            ? distanceFromSite > 1_000
-                ? 0.2
-                : distanceFromSite > 800
-                    ? 0.5
-                    : 0.65
-            : distanceFromSite > 800
-                ? 0.2
-                : distanceFromSite > 500
-                    ? 0.5
-                    : 1.5;
+        if (siteKind == GuardianSiteKind.Ruins)
+        {
+            if (distanceFromSite is not { } ruinsDistance)
+            {
+                return 0.65;
+            }
+
+            if (ruinsDistance > 1_000)
+            {
+                return 0.2;
+            }
+
+            return ruinsDistance > 800 ? 0.5 : 0.65;
+        }
+
+        if (distanceFromSite is not { } distance)
+        {
+            return 1.5;
+        }
+
+        if (distance > 800)
+        {
+            return 0.2;
+        }
+
+        if (distance > 500)
+        {
+            return 0.5;
+        }
+
+        return 1.5;
     }
 
     private double GetNearestObeliskDistance()
@@ -4069,13 +4124,16 @@ public sealed class GuardianViewModel
     private static string GetNextRawPointName(IEnumerable<string> names)
     {
         var used = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        for (var index = 1; ; index++)
+        var index = 1;
+        while (true)
         {
             var candidate = $"x{index}";
             if (!used.Contains(candidate))
             {
                 return candidate;
             }
+
+            index++;
         }
     }
 
@@ -4197,9 +4255,11 @@ public sealed class GuardianViewModel
             ?? site.Location;
         var siteHeading = survey?.Survey.SiteHeading is >= 0 and <= 359
             ? survey.Survey.SiteHeading
-            : published?.SiteHeading is >= 0 and <= 359
-                ? published.SiteHeading
-                : reference?.SiteHeading ?? -1;
+            : (published?.SiteHeading is >= 0 and <= 359) switch
+            {
+                true => published.SiteHeading,
+                false => reference?.SiteHeading ?? -1
+            };
         if (template is null)
         {
             NotifyCurrentObeliskChanged();
@@ -4390,7 +4450,7 @@ public sealed class GuardianViewModel
             heading => heading is >= 0 and <= 359) ?? -1;
     }
 
-    private IReadOnlyList<GuardianObelisk> GetMergedActiveObelisks(
+    private GuardianObelisk[] GetMergedActiveObelisks(
         GuardianSiteReference? reference,
         GuardianCommanderSiteSurvey? survey)
     {
@@ -4538,21 +4598,6 @@ public sealed class GuardianViewModel
         return Task.CompletedTask;
     }
 
-    private GuardianCommanderSiteSurvey? FindSurvey(
-        GuardianSiteReference reference)
-    {
-        return commanderData.Surveys.FirstOrDefault(survey =>
-            survey.SystemAddress == reference.SystemAddress
-            && survey.Index == reference.Index
-            && (reference.BodyId >= 0 && survey.BodyId >= 0
-                ? reference.BodyId == survey.BodyId
-                : string.Equals(
-                    survey.BodyName,
-                    reference.FullBodyName,
-                    StringComparison.OrdinalIgnoreCase))
-            && IsRuins(survey) == (reference.Kind == GuardianSiteKind.Ruins));
-    }
-
     private void NotifyMapTextChanged()
     {
         OnPropertyChanged(nameof(MapTitle));
@@ -4613,10 +4658,11 @@ public sealed class GuardianViewModel
                     screenshots)));
         projected = SortSiteRows(projected, origin is not null);
         Rows = projected.ToArray();
+        var firstRow = Rows.Count > 0 ? Rows[0] : null;
         SelectedSite = previousReference is null
-            ? Rows.FirstOrDefault()
+            ? firstRow
             : Rows.FirstOrDefault(row => row.Reference == previousReference)
-                ?? Rows.FirstOrDefault();
+                ?? firstRow;
         var visited = Rows.Count(row => row.Visit.IsVisited);
         var surveyed = Rows.Count(row => row.Visit.IsSurveyComplete);
         Summary = $"{Rows.Count:N0} of {visits.Visits.Count:N0} sites"
@@ -4826,7 +4872,7 @@ public sealed class GuardianViewModel
                     StringComparison.OrdinalIgnoreCase));
     }
 
-    private IReadOnlyList<string> GetRamTahLogCodes(
+    private string[] GetRamTahLogCodes(
         GuardianSiteReference reference)
     {
         if (!IncludeRamTahLogs || reference.Kind == GuardianSiteKind.Beacon)
@@ -5032,18 +5078,24 @@ public sealed class GuardianSiteRowViewModel(
         : "Not visited";
 
     public string SurveyText => Reference.Kind == GuardianSiteKind.Beacon
-        ? Visit.RecordedObeliskOrLocationCount > 0
-            ? $"{Visit.RecordedObeliskOrLocationCount} scan(s)"
-            : "Beacon"
-        : Visit.SurveyProgress > 0
-            ? $"{Visit.SurveyProgress}%"
-            : "Not started";
+        ? (Visit.RecordedObeliskOrLocationCount > 0) switch
+        {
+            true => $"{Visit.RecordedObeliskOrLocationCount} scan(s)",
+            false => "Beacon"
+        }
+        : (Visit.SurveyProgress > 0) switch
+        {
+            true => $"{Visit.SurveyProgress}%",
+            false => "Not started"
+        };
 
     public string GalacticPosition => Reference.Position.ToString();
 
     public string SurfaceLocation => Reference.Latitude is double latitude
         && Reference.Longitude is double longitude
-            ? FormattableString.Invariant($"{latitude:F6}, {longitude:F6}")
+            ? string.Create(
+                CultureInfo.InvariantCulture,
+                $"{latitude:F6}, {longitude:F6}")
             : "Not recorded";
 
     public string Notes => string.IsNullOrWhiteSpace(Visit.Notes)

@@ -10,6 +10,10 @@ using SrvSurvey.Desktop.Presentation;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The view model is window-scoped and its gate may have in-flight waiters.")]
 public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 {
     private const string Unavailable = "\u2014";
@@ -54,7 +58,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     private bool isDeleteConfirmationVisible;
     private bool isSaveAsVisible;
     private bool isNotesVisible;
-    private IReadOnlyList<FollowRouteHop> draftHops = [];
+    private FollowRouteHop[] draftHops = [];
     private IReadOnlyList<RouteHopItemViewModel> hops = [];
     private int lastReachedIndex = -1;
     private bool isActive;
@@ -157,7 +161,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public bool HasProfile => !string.IsNullOrWhiteSpace(frontierId);
 
-    public bool HasRoute => draftHops.Count > 0;
+    public bool HasRoute => draftHops.Length > 0;
 
     public bool HasSavedRoute
     {
@@ -310,10 +314,10 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     }
 
     public bool CanActivate => HasRoute
-        && lastReachedIndex < draftHops.Count - 1;
+        && lastReachedIndex < draftHops.Length - 1;
 
     public bool IsComplete => HasRoute
-        && lastReachedIndex >= draftHops.Count - 1;
+        && lastReachedIndex >= draftHops.Length - 1;
 
     public bool HasDefinitionChanges => loadedRoute is not null
         && !loadedRoute.Hops.SequenceEqual(draftHops);
@@ -341,12 +345,12 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         && !IsBusy
         && !IsDialogVisible;
 
-    public int RouteCount => draftHops.Count;
+    public int RouteCount => draftHops.Length;
 
     public int ReachedCount => Math.Clamp(
         lastReachedIndex + 1,
         0,
-        draftHops.Count);
+        draftHops.Length);
 
     public FollowRouteHop? NextHop
     {
@@ -355,7 +359,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             var nextIndex = lastReachedIndex + 1;
             return IsActive
                 && nextIndex >= 0
-                && nextIndex < draftHops.Count
+                && nextIndex < draftHops.Length
                     ? draftHops[nextIndex]
                     : null;
         }
@@ -378,9 +382,11 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
     public string NextHopName => NextHop?.Name
         ?? (IsComplete
             ? "Route complete"
-            : HasRoute
-                ? "Route paused"
-                : "No route loaded");
+            : (HasRoute) switch
+            {
+                true => "Route paused",
+                false => "No route loaded"
+            });
 
     public string ProgressSummary => !HasRoute
         ? "Import a route to begin."
@@ -436,9 +442,11 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         NextHop?.Name,
         StringComparison.Ordinal)
             ? "NEXT SYSTEM COPIED"
-            : AutoCopy
-                ? "AUTO-COPY READY"
-                : "MANUAL COPY";
+            : (AutoCopy) switch
+            {
+                true => "AUTO-COPY READY",
+                false => "MANUAL COPY"
+            };
 
     public string CurrentSystem => string.IsNullOrWhiteSpace(currentSystemName)
         ? Unavailable
@@ -446,16 +454,20 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public string RouteFileName => loadedRoute is null
         ? Unavailable
-        : HasSavedRoute
-            ? Path.GetFileName(loadedRoute.FilePath)
-            : "Not saved";
+        : (HasSavedRoute) switch
+        {
+            true => Path.GetFileName(loadedRoute.FilePath),
+            false => "Not saved"
+        };
 
     public string RouteName => loadedRoute?.Name
         ?? (HasSavedRoute
             ? Path.GetFileNameWithoutExtension(RouteFileName)
-            : HasRoute
-                ? "New route"
-                : "No active route");
+            : (HasRoute) switch
+            {
+                true => "New route",
+                false => "No active route"
+            });
 
     public string RouteNotesPreview => string.IsNullOrWhiteSpace(draftNotes)
         ? "No route notes."
@@ -979,13 +991,13 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public void SetProgressThrough(int index, bool reached)
     {
-        if (index < 0 || index >= draftHops.Count)
+        if (index < 0 || index >= draftHops.Length)
         {
             return;
         }
 
         lastReachedIndex = reached ? index : index - 1;
-        if (lastReachedIndex >= draftHops.Count - 1)
+        if (lastReachedIndex >= draftHops.Length - 1)
         {
             isActive = false;
         }
@@ -1002,7 +1014,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         try
         {
             if (target.HopIndex < 0
-                || target.HopIndex >= draftHops.Count
+                || target.HopIndex >= draftHops.Length
                 || target.TargetIndex < 0
                 || target.TargetIndex
                     >= draftHops[target.HopIndex].BioTargets.Count)
@@ -1085,9 +1097,11 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             ApplyDocument(saved);
             StatusMessage = saved.IsComplete
                 ? "Route progress saved as complete."
-                : saved.IsActive
-                    ? $"Changes saved. Next system: {saved.NextHop?.Name ?? Unavailable}."
-                    : "Route progress saved in a paused state.";
+                : (saved.IsActive) switch
+                {
+                    true => $"Changes saved. Next system: {saved.NextHop?.Name ?? Unavailable}.",
+                    false => "Route progress saved in a paused state."
+                };
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {
@@ -1144,7 +1158,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         }
 
         lastReachedIndex = -1;
-        isActive = draftHops.Count > 0;
+        isActive = draftHops.Length > 0;
         RefreshPresentation();
         StatusMessage = "Route progress reset in the draft. Save Changes to keep it.";
         return Task.CompletedTask;
@@ -1735,12 +1749,12 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         bool nextAutoCopy)
     {
         draftHops = nextHops.ToArray();
-        lastReachedIndex = draftHops.Count == 0
+        lastReachedIndex = draftHops.Length == 0
             ? -1
-            : Math.Clamp(nextLastReachedIndex, -1, draftHops.Count - 1);
+            : Math.Clamp(nextLastReachedIndex, -1, draftHops.Length - 1);
         isActive = nextIsActive
-            && draftHops.Count > 0
-            && lastReachedIndex < draftHops.Count - 1;
+            && draftHops.Length > 0
+            && lastReachedIndex < draftHops.Length - 1;
         autoCopy = nextAutoCopy;
         OnPropertyChanged(nameof(IsActive));
         OnPropertyChanged(nameof(AutoCopy));
@@ -1759,10 +1773,10 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
             lastCopiedHopName = null;
         }
 
-        var canReuseRows = hops.Count == draftHops.Count;
+        var canReuseRows = hops.Count == draftHops.Length;
         if (canReuseRows)
         {
-            for (var index = 0; index < draftHops.Count; index++)
+            for (var index = 0; index < draftHops.Length; index++)
             {
                 if (hops[index].Index != index
                     || !hops[index].MatchesIdentity(draftHops[index]))
@@ -1775,14 +1789,16 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
         List<RouteHopItemViewModel>? rows = canReuseRows
             ? null
-            : new List<RouteHopItemViewModel>(draftHops.Count);
-        for (var index = 0; index < draftHops.Count; index++)
+            : new List<RouteHopItemViewModel>(draftHops.Length);
+        for (var index = 0; index < draftHops.Length; index++)
         {
             var hop = draftHops[index];
             GalacticCoordinate? from = index == 0
-                ? lastReachedIndex < 0
-                    ? currentPosition
-                    : hop.Position
+                ? (lastReachedIndex < 0) switch
+                {
+                    true => currentPosition,
+                    false => hop.Position
+                }
                 : draftHops[index - 1].Position;
             var distance = from is { } start && hop.Position is { } end
                 ? start.DistanceTo(end)
@@ -1797,7 +1813,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     hop,
                     distanceText,
                     notes,
-                    draftHops.Count - index - 1,
+                    draftHops.Length - index - 1,
                     index <= lastReachedIndex,
                     isCurrent,
                     isNext);
@@ -1810,7 +1826,7 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     hop,
                     distanceText,
                     notes,
-                    draftHops.Count - index - 1,
+                    draftHops.Length - index - 1,
                     IsFleetCarrierWorkspace,
                     index <= lastReachedIndex,
                     isCurrent,
@@ -2256,11 +2272,15 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
 
     public string State => IsCurrent
         ? "CURRENT"
-        : IsNext
-            ? "NEXT"
-            : IsReached
-                ? "VISITED"
-                : string.Empty;
+        : (IsNext) switch
+        {
+            true => "NEXT",
+            false => (IsReached) switch
+            {
+                true => "VISITED",
+                false => string.Empty
+            }
+        };
 
     public bool HasState => State.Length > 0;
 
@@ -2369,7 +2389,7 @@ public sealed class RouteHopItemViewModel : INotifyPropertyChanged
         }
     }
 
-    private IReadOnlyList<RouteBioTargetItemViewModel> CreateBioTargets(
+    private RouteBioTargetItemViewModel[] CreateBioTargets(
         FollowRouteHop source)
     {
         return source.BioTargets
@@ -2479,9 +2499,11 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
     public string BodyIconAccessibleName => bodyVisual.AccessibleName;
 
     public string DistanceToArrival => target.DistanceToArrivalLs is { } distance
-        ? distance < 100
-            ? $"{distance:N2} LS"
-            : $"{distance:N0} LS"
+        ? (distance < 100) switch
+        {
+            true => $"{distance:N2} LS",
+            false => $"{distance:N0} LS"
+        }
         : string.Empty;
 
     public bool HasDistanceToArrival => target.DistanceToArrivalLs is not null;
@@ -2583,8 +2605,9 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
             target.Subtype,
             next.Subtype,
             StringComparison.Ordinal);
-        var distanceChanged = target.DistanceToArrivalLs
-            != next.DistanceToArrivalLs;
+        var distanceChanged = !EquivalentDistance(
+            target.DistanceToArrivalLs,
+            next.DistanceToArrivalLs);
         var scanValueChanged = target.EstimatedScanValue
             != next.EstimatedScanValue;
         var mappingValueChanged = target.EstimatedMappingValue
@@ -2701,6 +2724,17 @@ public sealed class RouteBioTargetItemViewModel : INotifyPropertyChanged
     private static string FormatCredits(long? value)
     {
         return value is null ? string.Empty : $"{value.Value:N0} CR";
+    }
+
+    private static bool EquivalentDistance(double? left, double? right)
+    {
+        if (left.HasValue != right.HasValue)
+        {
+            return false;
+        }
+
+        return !left.HasValue
+            || Math.Abs(left.Value - right!.Value) <= 0.0000001d;
     }
 
     private static string FormatCompactCredits(long? value)

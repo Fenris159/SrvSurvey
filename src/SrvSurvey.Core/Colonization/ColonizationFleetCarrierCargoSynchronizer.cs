@@ -100,13 +100,8 @@ public static class ColonizationFleetCarrierCargoSynchronizer
 
             var stock = Math.Max(0, item.Stock);
             var tracked = currentCargo.GetValueOrDefault(commodity);
-            if (item.Producer && tracked != stock)
-            {
-                replacement[commodity] = stock;
-            }
-            else if (!item.Producer
-                && !item.Consumer
-                && tracked > 0)
+            if ((item.Producer && tracked != stock)
+                || (!item.Producer && !item.Consumer && tracked > 0))
             {
                 replacement[commodity] = stock;
             }
@@ -115,7 +110,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         return replacement;
     }
 
-    private static IReadOnlyDictionary<string, int> CreateMarketAdjustment(
+    private static Dictionary<string, int> CreateMarketAdjustment(
         System.Text.Json.JsonElement root,
         ColonizationDockingSnapshot dock,
         int sign)
@@ -141,7 +136,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         };
     }
 
-    private static IReadOnlyDictionary<string, int> CreateTransferAdjustment(
+    private static Dictionary<string, int> CreateTransferAdjustment(
         System.Text.Json.JsonElement root)
     {
         if (!root.TryGetProperty("Transfers", out var transfers)
@@ -192,7 +187,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
     }
 
     private static void AddDelta(
-        IDictionary<string, int> result,
+        Dictionary<string, int> result,
         string commodity,
         int delta)
     {

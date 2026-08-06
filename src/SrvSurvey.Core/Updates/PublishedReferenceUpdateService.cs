@@ -66,6 +66,10 @@ public sealed class PublishedReferenceUpdateService
     private const int MaximumArchiveEntries = 2_048;
 
     private static readonly HttpClient SharedClient = CreateSharedClient();
+    private static readonly JsonSerializerOptions IndentedJson = new()
+    {
+        WriteIndented = true,
+    };
 
     private readonly IPublishedDataIndexClient indexClient;
     private readonly PublishedReferenceVersionStore versionStore;
@@ -335,10 +339,7 @@ public sealed class PublishedReferenceUpdateService
                         Path.Combine(stagePublished, "nicknames.json"),
                         JsonSerializer.Serialize(
                             nicknameMap,
-                            new JsonSerializerOptions
-                            {
-                                WriteIndented = true,
-                            }),
+                            IndentedJson),
                         cancellationToken)
                     .ConfigureAwait(false);
                 updated.Add("Raven system nicknames");
@@ -586,8 +587,9 @@ public sealed class PublishedReferenceUpdateService
                 if (!regional.HasData || regional.Warnings.Count > 0)
                 {
                     throw new InvalidDataException(
-                        regional.Warnings.FirstOrDefault()
-                            ?? "The staged regional Codex candidate catalog is empty.");
+                        regional.Warnings.Count > 0
+                            ? regional.Warnings[0]
+                            : "The staged regional Codex candidate catalog is empty.");
                 }
 
                 continue;
@@ -599,8 +601,9 @@ public sealed class PublishedReferenceUpdateService
                 if (nicknames.RavenCount == 0 || nicknames.Warnings.Count > 0)
                 {
                     throw new InvalidDataException(
-                        nicknames.Warnings.FirstOrDefault()
-                            ?? "The staged Raven nickname catalog is empty.");
+                        nicknames.Warnings.Count > 0
+                            ? nicknames.Warnings[0]
+                            : "The staged Raven nickname catalog is empty.");
                 }
 
                 continue;
@@ -612,8 +615,9 @@ public sealed class PublishedReferenceUpdateService
                 if (!knownSystems.HasData || knownSystems.Warnings.Count > 0)
                 {
                     throw new InvalidDataException(
-                        knownSystems.Warnings.FirstOrDefault()
-                            ?? "The staged known-system address catalog is empty.");
+                        knownSystems.Warnings.Count > 0
+                            ? knownSystems.Warnings[0]
+                            : "The staged known-system address catalog is empty.");
                 }
 
                 continue;
@@ -744,7 +748,7 @@ public sealed class PublishedReferenceUpdateService
         return output.ToArray();
     }
 
-    private static IReadOnlyList<ArchiveEntryPayload> ValidateArchive(
+    private static List<ArchiveEntryPayload> ValidateArchive(
         byte[] bytes,
         params string[] allowedExtensions)
     {
@@ -765,47 +769,26 @@ public sealed class PublishedReferenceUpdateService
                 continue;
             }
 
-            var normalized = entry.FullName.Replace('\\', '/');
-            if (Path.IsPathRooted(normalized)
-                || normalized.Split('/').Any(segment => segment is "" or "." or ".."))
+            if (TryReadArchiveEntry(
+                entry,
+                allowedExtensions,
+                out var normalized,
+                out var payload,
+                out var warning))
             {
-                throw new InvalidDataException(
-                    $"The published reference archive has an unsafe path: {entry.FullName}");
-            }
+                expandedLength += payload!.Length;
+                if (expandedLength > MaximumExpandedArchiveBytes)
+                {
+                    throw new InvalidDataException(
+                        "The expanded published reference archive exceeds the safety limit.");
+                }
 
-            if (string.Equals(
-                    normalized,
-                    "readme.md",
-                    StringComparison.OrdinalIgnoreCase))
+                result.Add(new ArchiveEntryPayload(normalized!, payload));
+            }
+            else if (warning is not null)
             {
-                continue;
+                throw new InvalidDataException(warning);
             }
-
-            if (!allowedExtensions.Contains(
-                    Path.GetExtension(entry.Name),
-                    StringComparer.OrdinalIgnoreCase))
-            {
-                throw new InvalidDataException(
-                    $"The published reference archive has an unexpected file: {entry.FullName}");
-            }
-
-            expandedLength += entry.Length;
-            if (expandedLength > MaximumExpandedArchiveBytes)
-            {
-                throw new InvalidDataException(
-                    "The expanded published reference archive exceeds the safety limit.");
-            }
-
-            using var entryStream = entry.Open();
-            using var payload = new MemoryStream();
-            entryStream.CopyTo(payload);
-            if (payload.Length != entry.Length)
-            {
-                throw new InvalidDataException(
-                    $"The published reference archive entry was incomplete: {entry.FullName}");
-            }
-
-            result.Add(new ArchiveEntryPayload(normalized, payload.ToArray()));
         }
 
         if (result.Count == 0)
@@ -815,6 +798,52 @@ public sealed class PublishedReferenceUpdateService
         }
 
         return result;
+    }
+
+    private static bool TryReadArchiveEntry(
+        ZipArchiveEntry entry,
+        string[] allowedExtensions,
+        out string? normalized,
+        out byte[]? payload,
+        out string? warning)
+    {
+        normalized = null;
+        payload = null;
+        warning = null;
+
+        var path = entry.FullName.Replace('\\', '/');
+        if (Path.IsPathRooted(path)
+            || path.Split('/').Any(segment => segment is "" or "." or ".."))
+        {
+            warning = $"The published reference archive has an unsafe path: {entry.FullName}";
+            return false;
+        }
+
+        if (string.Equals(path, "readme.md", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!allowedExtensions.Contains(
+                Path.GetExtension(entry.Name),
+                StringComparer.OrdinalIgnoreCase))
+        {
+            warning = $"The published reference archive has an unexpected file: {entry.FullName}";
+            return false;
+        }
+
+        using var entryStream = entry.Open();
+        using var buffer = new MemoryStream();
+        entryStream.CopyTo(buffer);
+        if (buffer.Length != entry.Length)
+        {
+            warning = $"The published reference archive entry was incomplete: {entry.FullName}";
+            return false;
+        }
+
+        normalized = path;
+        payload = buffer.ToArray();
+        return true;
     }
 
     private static void ExtractArchive(

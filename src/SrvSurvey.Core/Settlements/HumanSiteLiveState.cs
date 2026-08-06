@@ -33,7 +33,7 @@ public sealed class HumanSiteLiveState(
 
         var heading = SurfaceNavigation.NormalizeDegrees(geometry.Heading);
         if (CurrentSite.SubType == geometry.SubType
-            && CurrentSite.Heading == heading)
+            && EquivalentHeading(CurrentSite.Heading, heading))
         {
             return false;
         }
@@ -72,9 +72,11 @@ public sealed class HumanSiteLiveState(
         var heading = mergeMode == HumanSiteKnowledgeMergeMode.FillMissing
                 && CurrentSite.Heading is not null
             ? CurrentSite.Heading
-            : knowledge.Heading is { } savedHeading
-                ? SurfaceNavigation.NormalizeDegrees(savedHeading)
-                : CurrentSite.Heading;
+            : knowledge.Heading switch
+            {
+                double savedHeading => SurfaceNavigation.NormalizeDegrees(savedHeading),
+                null => CurrentSite.Heading
+            };
         var pads = knowledge.AvailablePads.Total > 0
                 && (mergeMode != HumanSiteKnowledgeMergeMode.FillMissing
                     || CurrentSite.AvailablePads.Total == 0)
@@ -83,7 +85,7 @@ public sealed class HumanSiteLiveState(
         var subType = template?.SubType ?? CurrentSite.SubType;
         if (CurrentSite.SubType == subType
             && CurrentSite.Template == template
-            && CurrentSite.Heading == heading
+            && EquivalentHeading(CurrentSite.Heading, heading)
             && CurrentSite.AvailablePads == pads)
         {
             return false;
@@ -109,9 +111,9 @@ public sealed class HumanSiteLiveState(
             "DockingRequested" => ApplyDockingRequested(journalEvent.Payload),
             "DockingGranted" => ApplyDockingGranted(journalEvent.Payload),
             "DockingDenied" => ApplyDockingDenied(journalEvent.Payload),
-            "DockingCancelled" => ApplyDockingCancelled(journalEvent.Payload),
+            "DockingCancelled" => ApplyDockingReset(journalEvent.Payload),
             "Docked" => ApplyDocked(journalEvent.Payload),
-            "Undocked" => ApplyUndocked(journalEvent.Payload),
+            "Undocked" => ApplyDockingReset(journalEvent.Payload),
             "Touchdown" => ApplyTouchdown(journalEvent.Payload),
             "StartJump" or "SupercruiseEntry" or "FSDJump"
                 or "CarrierJump" or "Died" or "Resurrect" or "Shutdown" =>
@@ -240,7 +242,7 @@ public sealed class HumanSiteLiveState(
         return true;
     }
 
-    private bool ApplyDockingCancelled(JsonElement root)
+    private bool ApplyDockingReset(JsonElement root)
     {
         if (!IsCurrentStation(root))
         {
@@ -287,22 +289,6 @@ public sealed class HumanSiteLiveState(
         return true;
     }
 
-    private bool ApplyUndocked(JsonElement root)
-    {
-        if (!IsCurrentStation(root))
-        {
-            return false;
-        }
-
-        CurrentSite = CurrentSite! with
-        {
-            Docking = HumanSiteDockingStatus.None,
-            GrantedPad = 0,
-            DockingDeniedReason = null,
-        };
-        return true;
-    }
-
     private bool ApplyTouchdown(JsonElement root)
     {
         if (CurrentSite is null)
@@ -324,7 +310,7 @@ public sealed class HumanSiteLiveState(
         return true;
     }
 
-    private bool TryReadCompatibleSite(
+    private static bool TryReadCompatibleSite(
         JsonElement root,
         out HumanSiteLiveSnapshot site)
     {
@@ -346,7 +332,7 @@ public sealed class HumanSiteLiveState(
             || latitude is not >= -90 or > 90
             || longitude is not >= -180 or > 180
             || economy == HumanSiteEconomy.Unknown
-            || services.Count == 0
+            || services.Length == 0
             || services.Contains("socialspace", StringComparer.OrdinalIgnoreCase)
             || IsConstructionSite(name, services)
             || string.Equals(
@@ -462,7 +448,7 @@ public sealed class HumanSiteLiveState(
             Math.Max(0, GetInt32(pads, "Large") ?? 0));
     }
 
-    private static IReadOnlyList<string> GetStringArray(
+    private static string[] GetStringArray(
         JsonElement root,
         string propertyName)
     {
@@ -519,6 +505,17 @@ public sealed class HumanSiteLiveState(
             && double.IsFinite(result)
                 ? result
                 : null;
+    }
+
+    private static bool EquivalentHeading(double? left, double? right)
+    {
+        if (left.HasValue != right.HasValue)
+        {
+            return false;
+        }
+
+        return !left.HasValue
+            || Math.Abs(left.Value - right!.Value) <= 0.0001d;
     }
 }
 

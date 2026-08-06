@@ -94,7 +94,7 @@ public sealed class BoxelCompletionAuditor
         IReadOnlyList<BoxelSystemObservation> localSystems,
         IReadOnlyList<BoxelSystemObservation> routeSystems,
         BoxelCompletionAuditRequest request,
-        ICollection<string> errors,
+        List<string> errors,
         CancellationToken cancellationToken)
     {
         var systems = new Dictionary<string, AuditedSystem>(StringComparer.Ordinal);

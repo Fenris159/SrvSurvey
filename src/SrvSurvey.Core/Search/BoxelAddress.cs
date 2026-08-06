@@ -355,10 +355,7 @@ public sealed partial record BoxelAddress(
 
     public static int GetTotalChildCount(int massCodeDifference)
     {
-        if (massCodeDifference < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(massCodeDifference));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(massCodeDifference);
 
         var total = 0;
         for (var level = massCodeDifference; level >= 0; level--)
@@ -371,10 +368,7 @@ public sealed partial record BoxelAddress(
 
     public BoxelAddress WithSystemNumber(int systemNumber)
     {
-        if (systemNumber < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(systemNumber));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(systemNumber);
 
         var candidate = this with
         {

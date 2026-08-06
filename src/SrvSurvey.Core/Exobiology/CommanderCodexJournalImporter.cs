@@ -141,7 +141,7 @@ public sealed class CommanderCodexJournalImporter(
     private static async Task ApplyBatchAsync(
         CommanderCodexJournalTracker tracker,
         List<JournalEventEnvelope> batch,
-        ICollection<string> warnings,
+        List<string> warnings,
         Action<CommanderCodexJournalTrackResult> applyResult,
         CancellationToken cancellationToken)
     {

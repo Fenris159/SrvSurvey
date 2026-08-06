@@ -15,12 +15,16 @@ public interface IScreenshotProcessingService
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        CancellationToken cancellationToken = default,
         IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
             guardianContexts = null,
-        ScreenshotNavigationContext? navigationContext = null);
+        ScreenshotNavigationContext? navigationContext = null,
+        CancellationToken cancellationToken = default);
 }
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The service is application-scoped and its gate may have in-flight waiters.")]
 public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 {
     private readonly SemaphoreSlim processingLock = new(1, 1);
@@ -48,10 +52,10 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        CancellationToken cancellationToken = default,
         IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
             guardianContexts = null,
-        ScreenshotNavigationContext? navigationContext = null)
+        ScreenshotNavigationContext? navigationContext = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         ArgumentNullException.ThrowIfNull(preferences);
@@ -563,7 +567,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     }
 
     private static void AddNumber(
-        ICollection<string> values,
+        List<string> values,
         JournalEventEnvelope entry,
         string propertyName,
         string label,

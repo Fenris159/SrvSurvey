@@ -124,8 +124,8 @@ public static class ColonizationCommodityPlanner
     }
 
     private static ColonizationProject[] SelectProjects(
-        IReadOnlyList<ColonizationProject> projects,
-        IReadOnlySet<string> hidden,
+        ColonizationProject[] projects,
+        HashSet<string> hidden,
         string? primaryBuildId,
         bool atConstructionSite,
         ColonizationProject? localProject)
@@ -319,7 +319,7 @@ public static class ColonizationCommodityPlanner
         return ColonizationConstructionState.NormalizeCommodityName(value);
     }
 
-    private static IReadOnlyDictionary<string, string> CreateCategories()
+    private static Dictionary<string, string> CreateCategories()
     {
         var result = new Dictionary<string, string>(
             StringComparer.OrdinalIgnoreCase);
@@ -359,7 +359,7 @@ public static class ColonizationCommodityPlanner
     }
 
     private static void AddCategory(
-        IDictionary<string, string> destination,
+        Dictionary<string, string> destination,
         string category,
         params string[] commodities)
     {
@@ -369,7 +369,7 @@ public static class ColonizationCommodityPlanner
         }
     }
 
-    private static IReadOnlyDictionary<string, string> CreateDisplayNames()
+    private static Dictionary<string, string> CreateDisplayNames()
     {
         return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -523,5 +523,5 @@ public sealed record ColonizationFleetCarrierRegistration
     // this separate from ColonizationFleetCarrier prevents an empty local
     // collection from erasing an existing carrier inventory during linking.
     [JsonPropertyName("cargo")]
-    public Dictionary<string, int>? Cargo => null;
+    public Dictionary<string, int>? Cargo { get; }
 }

@@ -158,7 +158,7 @@ public sealed class GuardianSiteTemplateCatalogExporter
             {
                 ["name"] = template.Name,
                 ["backgroundImage"] = template.BackgroundImage,
-                ["imageOffset"] = FormattableString.Invariant(
+                ["imageOffset"] = string.Create(CultureInfo.InvariantCulture,
                     $"{template.ImageOffset.X}, {template.ImageOffset.Y}"),
                 ["scaleFactor"] = template.ScaleFactor,
                 ["poi"] = WritePoints(template.PointsOfInterest),
@@ -368,11 +368,10 @@ public sealed class GuardianSiteTemplateCatalogExporter
                 File.Delete(path);
             }
         }
-        catch (IOException)
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
         {
-        }
-        catch (UnauthorizedAccessException)
-        {
+            // Cleanup is best effort; a retained temporary file is harmless.
         }
     }
 

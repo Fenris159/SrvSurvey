@@ -3027,10 +3027,10 @@ public sealed class MainWindowViewModelTests
             IReadOnlyList<JournalEventEnvelope> journalEvents,
             ScreenshotProcessingPreferences preferences,
             string? commanderName,
-            CancellationToken cancellationToken = default,
             IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
                 guardianContexts = null,
-            ScreenshotNavigationContext? navigationContext = null)
+            ScreenshotNavigationContext? navigationContext = null,
+            CancellationToken cancellationToken = default)
         {
             CallCount++;
             Events = journalEvents;

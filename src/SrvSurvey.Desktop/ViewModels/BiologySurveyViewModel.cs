@@ -427,13 +427,15 @@ public sealed record BiologySurveyViewModel(
                     rewardEstimate.KnownReward,
                     rewardEstimate.HasUnknownReward),
             body.IsFirstFootfall && rewardEstimate.MaximumReward > 0
-                ? rewardEstimate.HasPredictedReward
-                    ? "First-footfall estimate: " + FormatRewardRange(
+                ? (rewardEstimate.HasPredictedReward) switch
+                {
+                    true => "First-footfall estimate: " + FormatRewardRange(
                         rewardEstimate.MinimumReward * 5,
                         rewardEstimate.MaximumReward * 5,
-                        rewardEstimate.HasUnknownReward)
-                    : "First-footfall value: "
-                        + FormatCredits(rewardEstimate.KnownReward * 5)
+                        rewardEstimate.HasUnknownReward),
+                    false => "First-footfall value: "
+                                                                                + FormatCredits(rewardEstimate.KnownReward * 5)
+                }
                 : string.Empty,
             exobiology.CountRadicoidaUnica,
             body.Organisms.Count == 0 && !body.IsDssComplete,
@@ -630,7 +632,7 @@ public sealed record BiologySurveyViewModel(
             !predictionSet.IsComplete || predictedCount < remainingSignals);
     }
 
-    private static IReadOnlyList<BiologySignalRewardBandViewModel>
+    private static BiologySignalRewardBandViewModel[]
         CreateSystemRewardBands(
             SystemScanBodySnapshot body,
             BiologyPredictionSet predictionSet,
@@ -951,15 +953,33 @@ public sealed record BiologyBodyRowViewModel(
     public bool IsComplete => SignalCount > 0
         && AnalyzedSignalCount >= SignalCount;
 
-    public string RewardText => HasPredictedReward
-        ? MinimumReward == MaximumReward
-            ? $"~{MinimumReward / 1_000_000d:N2} M CR"
-            : $"{MinimumReward / 1_000_000d:N2}–{MaximumReward / 1_000_000d:N2} M CR"
-        : KnownReward <= 0
-        ? ""
-        : HasUnknownReward
-            ? $"{KnownReward / 1_000_000d:N2} M+ CR"
-            : $"{KnownReward / 1_000_000d:N2} M CR";
+    public string RewardText
+    {
+        get
+        {
+            if (HasPredictedReward)
+            {
+                if (MinimumReward == MaximumReward)
+                {
+                    return $"~{MinimumReward / 1_000_000d:N2} M CR";
+                }
+
+                return $"{MinimumReward / 1_000_000d:N2}–{MaximumReward / 1_000_000d:N2} M CR";
+            }
+
+            if (KnownReward <= 0)
+            {
+                return string.Empty;
+            }
+
+            if (HasUnknownReward)
+            {
+                return $"{KnownReward / 1_000_000d:N2} M+ CR";
+            }
+
+            return $"{KnownReward / 1_000_000d:N2} M CR";
+        }
+    }
 
     public bool HasReward => KnownReward > 0 || HasPredictedReward;
 
@@ -1052,13 +1072,28 @@ public sealed record BiologyOrganismRowViewModel(
         ? $"{SampleDistanceMeters:N0} m sample separation"
         : string.Empty;
 
-    public string RewardText => HasReward
-        ? Reward >= 1_000_000
-            ? $"{Reward / 1_000_000d:N2} M CR"
-            : $"{Reward:N0} CR"
-        : IsPrediction
-            ? "Prediction pending"
-            : "Unidentified";
+    public string RewardText
+    {
+        get
+        {
+            if (HasReward)
+            {
+                if (Reward >= 1_000_000)
+                {
+                    return $"{Reward / 1_000_000d:N2} M CR";
+                }
+
+                return $"{Reward:N0} CR";
+            }
+
+            if (IsPrediction)
+            {
+                return "Prediction pending";
+            }
+
+            return "Unidentified";
+        }
+    }
 
     public static BiologyOrganismRowViewModel Unknown(
         int index,
@@ -1113,3 +1148,4 @@ public sealed record BiologyDiscoveryContext(
     public bool IsGlobalRegionalNew(long entryId) =>
         GlobalRegionalCandidates.IsCandidate(RegionId, entryId);
 }
+

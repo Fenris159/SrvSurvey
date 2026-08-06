@@ -205,7 +205,7 @@ public sealed class ExobiologyState
 
     public bool ToggleCurrentBodyFirstFootfall()
     {
-        if (currentBodyKey is not { } key)
+        if (currentBodyKey is null)
         {
             return false;
         }

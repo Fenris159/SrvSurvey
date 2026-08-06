@@ -410,9 +410,11 @@ public sealed class GuardianOverlayCoordinator : IDisposable
         var width = (int)Math.Ceiling(window.Width * screen.Scaling);
         var logicalHeight = window.Bounds.Height > 0
             ? window.Bounds.Height
-            : window.MinHeight > 0
-                ? window.MinHeight
-                : window.Height;
+            : (window.MinHeight > 0) switch
+            {
+                true => window.MinHeight,
+                false => window.Height
+            };
         var height = (int)Math.Ceiling(logicalHeight * screen.Scaling);
         var size = new PixelSize(Math.Max(width, 1), Math.Max(height, 1));
         var position = overlayLayout.GetPosition(plotterName, gameBounds, size)

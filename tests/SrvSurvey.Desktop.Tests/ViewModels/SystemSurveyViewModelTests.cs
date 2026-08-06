@@ -1322,7 +1322,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             viewModel.CreateFssTuningCaptureRequest());
 
         viewModel.ApplyUpdate(
-            [Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 2 A Ring","BodyID":4,"PlanetClass":"Rocky body","Parents":[{"Ring":3}]}""")],
+            [Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 2 A Ring","BodyID":4,"PlanetClass":"Rocky body","Parents":[{"Planet":2},{"Ring":3}]}""")],
             null);
         Assert.Equal(
             skipped.Revision,

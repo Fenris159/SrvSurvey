@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using SrvSurvey.Core.Journal;
 using SrvSurvey.Core.Navigation;
 
@@ -9,6 +10,10 @@ public sealed class GuardianSiteProximityEvaluator
     public const double NearbyPointDistance = 75;
     private const string GeneticSamplerWeapon = "$humanoid_companalyser_name;";
 
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "The evaluator is consumed through an instance service contract.")]
     public GuardianSiteProximitySnapshot? Evaluate(
         EliteStatus status,
         GuardianSurfaceLocation siteLocation,
@@ -115,7 +120,7 @@ public sealed class GuardianSiteProximityEvaluator
     private static bool IsSelectable(
         GuardianPointOfInterest point,
         EliteStatus status,
-        IReadOnlyDictionary<string, GuardianObelisk> activeByName,
+        Dictionary<string, GuardianObelisk> activeByName,
         IReadOnlySet<char>? obeliskGroups)
     {
         var isObelisk = point.Type is GuardianPoiType.Obelisk

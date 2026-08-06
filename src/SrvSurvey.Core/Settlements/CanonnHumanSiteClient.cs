@@ -49,10 +49,7 @@ public sealed class CanonnHumanSiteClient
         long systemAddress,
         CancellationToken cancellationToken = default)
     {
-        if (systemAddress <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(systemAddress));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(systemAddress);
 
         var uri = new Uri(
             baseUri,
@@ -148,10 +145,7 @@ public sealed class CanonnHumanSiteClient
         byte[] bytes,
         long expectedSystemAddress)
     {
-        if (expectedSystemAddress <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(expectedSystemAddress));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(expectedSystemAddress);
 
         try
         {
@@ -365,16 +359,17 @@ public sealed class CanonnHumanSiteClient
     {
         if (root.ValueKind == JsonValueKind.Object)
         {
-            foreach (var property in root.EnumerateObject())
-            {
-                if (string.Equals(
+            var matchedValue = root.EnumerateObject()
+                .Where(property => string.Equals(
                     property.Name,
                     propertyName,
                     StringComparison.OrdinalIgnoreCase))
-                {
-                    value = property.Value;
-                    return true;
-                }
+                .Select(property => (JsonElement?)property.Value)
+                .FirstOrDefault();
+            if (matchedValue is { } found)
+            {
+                value = found;
+                return true;
             }
         }
 

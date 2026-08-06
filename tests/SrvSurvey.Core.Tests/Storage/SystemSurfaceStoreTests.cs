@@ -457,7 +457,7 @@ public sealed class SystemSurfaceStoreTests : IDisposable
         Assert.False(result.FileExists);
     }
 
-    private SystemSurfaceContext Context()
+    private static SystemSurfaceContext Context()
     {
         return new SystemSurfaceContext(
             "F123",

@@ -15,6 +15,10 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     private readonly ICanonnSystemPoiClient client;
     private readonly PriorScanPlanner planner;
     private readonly Func<string?> commanderNameProvider;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "An in-flight refresh may release this gate after disposal cancellation.")]
     private readonly SemaphoreSlim refreshLock = new(1, 1);
     private readonly CancellationTokenSource disposalCancellation = new();
     private CanonnSystemPoiResult? cachedResult;
@@ -158,7 +162,9 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        if (!await refreshLock.WaitAsync(0).ConfigureAwait(true))
+        if (!await refreshLock.WaitAsync(
+            0,
+            CancellationToken.None).ConfigureAwait(true))
         {
             return;
         }
@@ -539,7 +545,8 @@ public sealed record PriorScanSpeciesViewModel(
         var genus = ExobiologyReferenceCatalog.GetGenusName(
             species.SpeciesName);
         var approachAngle = altitudeMeters > 500
-            && species.Targets.FirstOrDefault() is { DistanceMeters: > 0 } target
+            && species.Targets.Count > 0
+            && species.Targets[0] is { DistanceMeters: > 0 } target
                 ? Math.Atan(altitudeMeters / target.DistanceMeters)
                     * 180d / Math.PI
                 : 0;
@@ -594,9 +601,11 @@ public sealed record PriorScanTargetViewModel(
     {
         return meters >= 1_000_000
             ? $"{meters / 1_000_000d:N1} Mm"
-            : meters >= 1_000
-                ? $"{meters / 1_000d:N1} km"
-                : $"{meters:N0} m";
+            : (meters >= 1_000) switch
+            {
+                true => $"{meters / 1_000d:N1} km",
+                false => $"{meters:N0} m"
+            };
     }
 }
 

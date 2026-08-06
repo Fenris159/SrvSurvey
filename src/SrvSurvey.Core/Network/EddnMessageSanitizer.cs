@@ -31,6 +31,13 @@ namespace SrvSurvey.Core.Network
         private const string schemaRoot = "https://eddn.edcd.io/schemas/";
         private const string horizonsSku = "ELITE_HORIZONS_V_PLANETARY_LANDINGS";
         private static readonly TimeSpan regexTimeout = TimeSpan.FromSeconds(1);
+        private static readonly string[] RequiredCommodityFields =
+        [
+            "name", "meanPrice", "buyPrice", "stock", "stockBracket",
+            "sellPrice", "demand", "demandBracket",
+        ];
+        private static readonly string[] CommodityStatusFlags =
+            ["Producer", "Consumer", "Rare"];
 
         private static readonly HashSet<string> genericEvents = new(StringComparer.Ordinal)
         {
@@ -355,7 +362,7 @@ namespace SrvSurvey.Core.Network
             var message = new JObject
             {
                 ["event"] = "FSSSignalDiscovered",
-                ["timestamp"] = signals[0]!["timestamp"]!.DeepClone(),
+                ["timestamp"] = signals[0]["timestamp"]!.DeepClone(),
                 ["SystemAddress"] = location.systemAddress,
                 ["StarSystem"] = location.systemName,
                 ["StarPos"] = position(location),
@@ -459,17 +466,17 @@ namespace SrvSurvey.Core.Network
                     ["demand"] = commodity.Value<int?>("Demand"),
                     ["demandBracket"] = commodity["DemandBracket"]?.DeepClone(),
                 };
-                if (new[]
-                    {
-                        "name", "meanPrice", "buyPrice", "stock", "stockBracket",
-                        "sellPrice", "demand", "demandBracket",
-                    }.Any(field => !hasValue(output, field)))
+                if (RequiredCommodityFields.Any(field =>
+                    !hasValue(output, field)))
                 {
                     continue;
                 }
                 var statusFlags = new JArray();
-                foreach (var flag in new[] { "Producer", "Consumer", "Rare" })
-                    if (commodity.Value<bool?>(flag) == true) statusFlags.Add(flag);
+                foreach (var flag in CommodityStatusFlags
+                    .Where(flag => commodity.Value<bool?>(flag) == true))
+                {
+                    statusFlags.Add(flag);
+                }
                 if (statusFlags.Count > 0) output["statusFlags"] = statusFlags;
                 commodities.Add(output);
             }
@@ -657,10 +664,10 @@ namespace SrvSurvey.Core.Network
             }
 
             if (eventName is "Outfitting" or "Shipyard"
-                && message[required.Last()] is JArray array
+                && message[required[^1]] is JArray array
                 && array.Count == 0)
             {
-                reason = $"{required.Last()} was empty";
+                reason = $"{required[^1]} was empty";
                 return false;
             }
 

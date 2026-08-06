@@ -117,7 +117,9 @@ public sealed partial class TravelView : UserControl
                     Title = "Export selected routes",
                     AllowMultiple = false,
                 });
-            var path = folders.FirstOrDefault()?.TryGetLocalPath();
+            var path = folders.Count > 0
+                ? folders[0].TryGetLocalPath()
+                : null;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 await viewModel.RouteManager.ExportSelectedAsync(path);
@@ -225,7 +227,9 @@ public sealed partial class TravelView : UserControl
                     Title = "Export selected fleet-carrier routes",
                     AllowMultiple = false,
                 });
-            var path = folders.FirstOrDefault()?.TryGetLocalPath();
+            var path = folders.Count > 0
+                ? folders[0].TryGetLocalPath()
+                : null;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 await viewModel.FleetCarrierRouteManager.ExportSelectedAsync(path);
@@ -290,7 +294,9 @@ public sealed partial class TravelView : UserControl
                     Title = title,
                     AllowMultiple = false,
                 });
-            var path = folders.FirstOrDefault()?.TryGetLocalPath();
+            var path = folders.Count > 0
+                ? folders[0].TryGetLocalPath()
+                : null;
             if (!string.IsNullOrWhiteSpace(path))
             {
                 await export(path);

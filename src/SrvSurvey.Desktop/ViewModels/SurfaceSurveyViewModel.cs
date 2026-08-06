@@ -424,9 +424,11 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
                     .ToArray();
                 StatusText = messages.Length > 0
                     ? string.Join(Environment.NewLine, messages)
-                    : loadResult.BodyExists
-                        ? $"Loaded surface history from {Path.GetFileName(loadResult.Path)}."
-                        : "No saved surface history exists for this body yet.";
+                    : (loadResult.BodyExists) switch
+                    {
+                        true => $"Loaded surface history from {Path.GetFileName(loadResult.Path)}.",
+                        false => "No saved surface history exists for this body yet."
+                    };
             }
 
             Recalculate();
@@ -762,7 +764,7 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         return ExobiologyReferenceCatalog.GetGenusDisplayName(name);
     }
 
-    private IReadOnlySet<string> GetAnalyzedSpecies()
+    private HashSet<string> GetAnalyzedSpecies()
     {
         return survey.Snapshot.Bodies
             .SelectMany(body => body.Organisms)

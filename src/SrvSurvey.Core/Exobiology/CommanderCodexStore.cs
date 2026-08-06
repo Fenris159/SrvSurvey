@@ -6,6 +6,11 @@ namespace SrvSurvey.Core.Exobiology;
 
 public sealed class CommanderCodexStore(string dataDirectory)
 {
+    private static readonly JsonSerializerOptions IndentedJson = new()
+    {
+        WriteIndented = true,
+    };
+
     private readonly string dataDirectory = Path.GetFullPath(
         string.IsNullOrWhiteSpace(dataDirectory)
             ? throw new ArgumentException(
@@ -114,10 +119,10 @@ public sealed class CommanderCodexStore(string dataDirectory)
         var commanders = new List<CommanderCodexData>();
         var warnings = new List<string>();
         const string suffix = "-codex.json";
-        foreach (var file in files)
+        foreach (var fileName in files.Select(file => file.Name))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var frontierId = file.Name[..^suffix.Length];
+            var frontierId = fileName[..^suffix.Length];
             var loaded = await LoadAsync(
                     frontierId,
                     null,
@@ -129,7 +134,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
             }
 
             warnings.AddRange(loaded.Warnings.Select(warning =>
-                $"{file.Name}: {warning}"));
+                $"{fileName}: {warning}"));
         }
 
         return new CommanderCodexCommanderCatalogResult(
@@ -390,10 +395,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
                 nameof(frontierId));
         }
 
-        if (regionId < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(regionId));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(regionId);
 
         var fileName = regionId == 0
             ? $"{frontierId}-codex.json"
@@ -441,7 +443,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
                 await JsonSerializer.SerializeAsync(
                         stream,
                         root,
-                        new JsonSerializerOptions { WriteIndented = true },
+                        IndentedJson,
                         cancellationToken)
                     .ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
@@ -618,7 +620,9 @@ public sealed record CommanderCodexLoadResult(
 {
     public bool IsSuccess => Data is not null;
 
-    public string? Error => IsSuccess ? null : Warnings.FirstOrDefault();
+    public string? Error => IsSuccess || Warnings.Count == 0
+        ? null
+        : Warnings[0];
 
     public static CommanderCodexLoadResult Failed(string path, string error)
     {

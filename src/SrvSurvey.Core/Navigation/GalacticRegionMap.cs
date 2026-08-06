@@ -35,7 +35,7 @@ namespace EliteDangerousRegionMap
         public static IReadOnlyList<SrvSurvey.Core.Navigation.GalacticRegion>
             Regions => regions.Value;
 
-        private static IReadOnlyList<SrvSurvey.Core.Navigation.GalacticRegion>
+        private static SrvSurvey.Core.Navigation.GalacticRegion[]
             CreateRegions()
         {
             return RegionNames

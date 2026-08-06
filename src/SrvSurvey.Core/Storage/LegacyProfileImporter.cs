@@ -4,6 +4,11 @@ namespace SrvSurvey.Core.Storage;
 
 public sealed class LegacyProfileImporter
 {
+    private static readonly JsonSerializerOptions IndentedJson = new()
+    {
+        WriteIndented = true,
+    };
+
     public const string ManifestFileName = ".srv-survey-import.json";
 
     private const int ManifestVersion = 2;
@@ -318,13 +323,11 @@ public sealed class LegacyProfileImporter
                 cancellationToken)
             .ConfigureAwait(false);
         var actualEntries = actual.Entries
-            .Where(entry => hasImportManifest
-                && string.Equals(
+            .Where(entry => !hasImportManifest
+                || !string.Equals(
                     entry.RelativePath,
                     ManifestFileName,
-                    PathComparison)
-                    ? false
-                    : true)
+                    PathComparison))
             .ToArray();
         var expectedDirectories = sourceInventory.RelativeDirectories
             .Concat(previousInventory.RelativeDirectories)
@@ -491,7 +494,7 @@ public sealed class LegacyProfileImporter
                 StringComparison.Ordinal));
     }
 
-    private static IReadOnlyList<ProfileImportConflict> FindConflicts(
+    private static ProfileImportConflict[] FindConflicts(
         ProfileInventory source,
         ProfileInventory destination)
     {
@@ -595,7 +598,7 @@ public sealed class LegacyProfileImporter
         await JsonSerializer.SerializeAsync(
                 stream,
                 manifest,
-                new JsonSerializerOptions { WriteIndented = true },
+                IndentedJson,
                 cancellationToken)
             .ConfigureAwait(false);
         await stream.FlushAsync(cancellationToken).ConfigureAwait(false);

@@ -14,6 +14,10 @@ public sealed class GlobalControllerInputService : IDisposable
     private readonly GlobalInputBindingRouter router;
     private readonly ControllerChordTracker tracker = new();
     private GlobalInputSettings settings;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "The run observer disposes the captured source after the controller loop exits.")]
     private CancellationTokenSource? runCancellation;
     private long runVersion;
     private bool disposed;

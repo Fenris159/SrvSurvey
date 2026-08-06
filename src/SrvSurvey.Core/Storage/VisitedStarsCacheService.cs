@@ -16,6 +16,10 @@ public interface IVisitedStarsCacheService
         CancellationToken cancellationToken = default);
 }
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The service is process-scoped and its gate may have in-flight waiters.")]
 public sealed class VisitedStarsCacheService(
     HttpClient httpClient,
     string downloadDirectory,
@@ -92,7 +96,6 @@ public sealed class VisitedStarsCacheService(
                 activated = true;
                 await VerifyHashAsync(target, download.Sha256, cancellationToken)
                     .ConfigureAwait(false);
-                activated = false;
                 TryDeleteIfExists(rollback);
             }
             catch
@@ -195,7 +198,6 @@ public sealed class VisitedStarsCacheService(
                 activated = true;
                 await VerifyHashAsync(target, backupHash, cancellationToken)
                     .ConfigureAwait(false);
-                activated = false;
                 TryDeleteIfExists(rollback);
             }
             catch

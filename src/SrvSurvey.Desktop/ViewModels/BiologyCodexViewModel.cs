@@ -101,9 +101,11 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
     public string EmptyStateText => SystemAddress is null
         ? "Enter a system to browse biological Codex entries."
-        : Bodies.Count == 0
-            ? "No biological signals have been reported in this system."
-            : "No confirmed or predicted organisms are available for this body.";
+        : (Bodies.Count == 0) switch
+        {
+            true => "No biological signals have been reported in this system.",
+            false => "No confirmed or predicted organisms are available for this body."
+        };
 
     public BiologyCodexBodyViewModel? SelectedBody
     {
@@ -350,9 +352,11 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
             var status = organism.IsAnalyzed
                 ? BiologyCodexDiscoveryStatus.Analyzed
-                : organism.IsScanned
-                    ? BiologyCodexDiscoveryStatus.Confirmed
-                    : BiologyCodexDiscoveryStatus.Reported;
+                : (organism.IsScanned) switch
+                {
+                    true => BiologyCodexDiscoveryStatus.Confirmed,
+                    false => BiologyCodexDiscoveryStatus.Reported
+                };
             entries[reference.EntryId] = CreateOrganism(
                 body,
                 reference,
@@ -498,7 +502,9 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
             ? value?.Organisms.FirstOrDefault(candidate =>
                 candidate.EntryId == entryId)
             : null;
-        organism ??= value?.Organisms.FirstOrDefault();
+        organism ??= value?.Organisms is { Count: > 0 } organisms
+            ? organisms[0]
+            : null;
         SelectedOrganism = organism;
         if (bodyChanged)
         {

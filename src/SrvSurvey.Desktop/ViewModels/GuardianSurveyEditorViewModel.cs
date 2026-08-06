@@ -239,7 +239,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 group,
                 survey.ObeliskGroups.Contains(group)))
             .ToArray();
-        SelectedPoint = Points.FirstOrDefault();
+        SelectedPoint = Points.Count > 0 ? Points[0] : null;
         StatusMessage = $"Loaded {Points.Count:N0} surveyable point(s) from "
             + $"{Path.GetFileName(survey.Path)}.";
     }
@@ -309,7 +309,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         }
 
         Points = Points.Where(point => !ReferenceEquals(point, selected)).ToArray();
-        SelectedPoint = Points.FirstOrDefault();
+        SelectedPoint = Points.Count > 0 ? Points[0] : null;
         StatusMessage = $"Removed local raw point {selected.Name}. Save the survey to persist the removal.";
         return Task.CompletedTask;
     }
@@ -499,13 +499,16 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private static string NextRawPointName(IEnumerable<string> names)
     {
         var used = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        for (var index = 1; ; index++)
+        var index = 1;
+        while (true)
         {
             var candidate = $"x{index}";
             if (!used.Contains(candidate))
             {
                 return candidate;
             }
+
+            index++;
         }
     }
 
@@ -661,11 +664,13 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
 
     public string ComponentMaterialSummary => !SupportsComponentMaterials
         ? string.Empty
-        : SupportsMultipleComponentMaterials
-            ? $"Top {GetMaterialName(TopComponentMaterial)} / "
+        : (SupportsMultipleComponentMaterials) switch
+        {
+            true => $"Top {GetMaterialName(TopComponentMaterial)} / "
                 + $"middle {GetMaterialName(MiddleComponentMaterial)} / "
-                + $"bottom {GetMaterialName(BottomComponentMaterial)}"
-            : GetMaterialName(TopComponentMaterial);
+                + $"bottom {GetMaterialName(BottomComponentMaterial)}",
+            false => GetMaterialName(TopComponentMaterial)
+        };
 
     public bool SupportsEmptyStatus => Type is GuardianPoiType.Unknown
         or GuardianPoiType.Orb

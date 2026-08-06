@@ -117,23 +117,24 @@ internal static class ApplicationUpdateBootstrap
         string? confirmPath = null;
         string? resultPath = null;
         var applicationArguments = new List<string>();
-        for (var index = 0; index < arguments.Count; index++)
+        var index = 0;
+        while (index < arguments.Count)
         {
-            var argument = arguments[index];
+            var argument = arguments[index++];
             if (argument is not (ApplyArgument or ConfirmArgument or ResultArgument))
             {
                 applicationArguments.Add(argument);
                 continue;
             }
 
-            if (index + 1 >= arguments.Count
-                || string.IsNullOrWhiteSpace(arguments[index + 1]))
+            if (index >= arguments.Count
+                || string.IsNullOrWhiteSpace(arguments[index]))
             {
                 throw new InvalidDataException(
                     $"The internal update argument '{argument}' has no plan path.");
             }
 
-            var planPath = arguments[++index];
+            var planPath = arguments[index++];
             if (argument == ApplyArgument)
             {
                 if (applyPath is not null)
@@ -380,6 +381,7 @@ internal static class ApplicationUpdateBootstrap
                         or UnauthorizedAccessException
                         or InvalidDataException)
                 {
+                    // The primary update failure remains the actionable result.
                 }
 
                 var originalEntryPoint = Path.Combine(
@@ -402,6 +404,7 @@ internal static class ApplicationUpdateBootstrap
                             or UnauthorizedAccessException
                             or InvalidOperationException)
                     {
+                        // The original failure is returned when recovery cannot launch.
                     }
                 }
             }
@@ -497,6 +500,7 @@ internal static class ApplicationUpdateBootstrap
         }
         catch (ArgumentException)
         {
+            // The parent process already exited before it could be inspected.
         }
         finally
         {
@@ -541,6 +545,7 @@ internal static class ApplicationUpdateBootstrap
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
+            // Health confirmation timed out; rollback follows below.
         }
 
         await StopReplacementAsync(replacement).ConfigureAwait(false);

@@ -849,13 +849,11 @@ public sealed class LegacyOrganicProfileMigrator
         EnsureOptionalInt64(target, "entryId");
         EnsureOptionalInt64(target, "reward");
         EnsureOptionalBoolean(target, "analyzed");
-        foreach (var property in source)
+        foreach (var property in source.Where(property =>
+            target[property.Key] is null && property.Value is not null))
         {
-            if (target[property.Key] is null && property.Value is not null)
-            {
-                target[property.Key] = property.Value.DeepClone();
-                changed = true;
-            }
+            target[property.Key] = property.Value!.DeepClone();
+            changed = true;
         }
 
         if (reference is not null)
@@ -914,8 +912,7 @@ public sealed class LegacyOrganicProfileMigrator
 
         var systemAddress = GetInt64(bodySource, "systemAddress");
         var bodyId = GetInt32(bodySource, "bodyId");
-        if (reference is null
-            && systemAddress is not null
+        if (systemAddress is not null
             && bodyId is not null)
         {
             var speciesReference = catalog.FindBySpecies(species);
@@ -1038,8 +1035,10 @@ public sealed class LegacyOrganicProfileMigrator
             && firstLongitude is not null
             && secondLatitude is not null
             && secondLongitude is not null
-                ? firstLatitude == secondLatitude
-                    && firstLongitude == secondLongitude
+                ? Math.Abs(firstLatitude.Value - secondLatitude.Value)
+                        <= 0.0000001d
+                    && Math.Abs(firstLongitude.Value - secondLongitude.Value)
+                        <= 0.0000001d
                 : JsonNode.DeepEquals(first, second);
     }
 

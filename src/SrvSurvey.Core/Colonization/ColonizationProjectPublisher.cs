@@ -172,16 +172,16 @@ public sealed class ColonizationProjectPublisher(
 
         var ids = new List<string>(sites.Count);
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var site in sites)
+        foreach (var persistedId in sites.Select(site => site.Id))
         {
-            if (string.IsNullOrWhiteSpace(site.Id))
+            if (string.IsNullOrWhiteSpace(persistedId))
             {
                 throw new InvalidDataException(
                     "Raven returned a system site without a persisted ID after "
                     + "creating the project.");
             }
 
-            var id = site.Id.Trim();
+            var id = persistedId.Trim();
             if (!seen.Add(id))
             {
                 throw new InvalidDataException(

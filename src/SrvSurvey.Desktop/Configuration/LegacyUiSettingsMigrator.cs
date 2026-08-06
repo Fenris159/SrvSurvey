@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -14,6 +15,14 @@ public sealed class LegacyUiSettingsMigrator
 
     public const string BackupFileName = "previous-cross-platform-ui.json";
 
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "Migration is exposed as a replaceable service instance.")]
+    [SuppressMessage(
+        "Maintainability",
+        "S2325:Make methods and properties static",
+        Justification = "Migration is exposed as a replaceable service instance.")]
     public LegacyUiSettingsMigrationResult MigrateIfNeeded(AppDataPaths paths)
     {
         ArgumentNullException.ThrowIfNull(paths);
@@ -302,7 +311,7 @@ public sealed class LegacyUiSettingsMigrator
 
         var black = TryGetBoolean(legacy, "themeMainBlack", out var blackValue)
             && blackValue;
-        target["Theme"] = black ? "orange-dark" : dark ? "blue-dark" : "blue-light";
+        target["Theme"] = black ? "orange-dark" : (dark) switch { true => "blue-dark", false => "blue-light" };
         return 1;
     }
 
@@ -412,7 +421,7 @@ public sealed class LegacyUiSettingsMigrator
 
         if (!value.TryGetValue<double>(out var numeric)
             || !double.IsFinite(numeric)
-            || numeric != Math.Truncate(numeric)
+            || !double.IsInteger(numeric)
             || numeric is < int.MinValue or > int.MaxValue)
         {
             return false;
@@ -779,7 +788,7 @@ public sealed class LegacyUiSettingsMigrator
 
         GetOrCreateObject(target, "NetworkPrivacy")["EddnUseTestSchemas"] =
             !string.Equals(
-                environment?.Trim(),
+                environment.Trim(),
                 "live",
                 StringComparison.OrdinalIgnoreCase);
         return 1;

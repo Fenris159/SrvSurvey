@@ -102,9 +102,10 @@ public sealed class ExobiologyReferenceCatalog
         }
 
         var entries = new List<ExobiologyReference>();
-        foreach (var property in document.RootElement.EnumerateObject())
+        foreach (var value in document.RootElement
+            .EnumerateObject()
+            .Select(property => property.Value))
         {
-            var value = property.Value;
             var reward = GetInt64(value, "reward");
             var entryId = GetInt64(value, "entryid");
             var variantName = GetString(value, "name");

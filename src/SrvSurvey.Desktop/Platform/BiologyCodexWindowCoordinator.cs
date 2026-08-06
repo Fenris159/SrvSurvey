@@ -10,6 +10,10 @@ public sealed class BiologyCodexWindowCoordinator : IDisposable
     private readonly CodexImageSettingsViewModel imageSettings;
     private readonly Window owner;
     private readonly CodexImageCache imageCache;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "The pre-download worker disposes the captured source in its finally block.")]
     private CancellationTokenSource? preDownloadCancellation;
     private BiologyCodexWindow? window;
     private bool disposed;

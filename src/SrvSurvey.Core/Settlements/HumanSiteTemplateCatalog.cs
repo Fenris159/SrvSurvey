@@ -6,6 +6,11 @@ namespace SrvSurvey.Core.Settlements;
 
 public sealed class HumanSiteTemplateCatalog
 {
+    private static readonly JsonSerializerOptions CaseInsensitiveJson = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
+
     private const string ResourceName =
         "SrvSurvey.Core.Resources.humanSiteTemplates.json";
 
@@ -46,19 +51,15 @@ public sealed class HumanSiteTemplateCatalog
     public HumanSiteTemplateCatalog WithTemplate(HumanSiteTemplate template)
     {
         ArgumentNullException.ThrowIfNull(template);
-        var replaced = false;
-        var updated = templates.Select(candidate =>
+        var updated = templates.ToList();
+        var existingIndex = updated.FindIndex(candidate =>
+            candidate.Economy == template.Economy
+            && candidate.SubType == template.SubType);
+        if (existingIndex >= 0)
         {
-            if (candidate.Economy != template.Economy
-                || candidate.SubType != template.SubType)
-            {
-                return candidate;
-            }
-
-            replaced = true;
-            return template;
-        }).ToList();
-        if (!replaced)
+            updated[existingIndex] = template;
+        }
+        else
         {
             updated.Add(template);
         }
@@ -82,10 +83,7 @@ public sealed class HumanSiteTemplateCatalog
         {
             var rows = JsonSerializer.Deserialize<TemplateRow[]>(
                     stream,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true,
-                    })
+                    CaseInsensitiveJson)
                 ?? throw new InvalidDataException(
                     "The human settlement template catalog is empty.");
             return new HumanSiteTemplateCatalog(rows.Select(ToTemplate));
@@ -186,9 +184,9 @@ public sealed class HumanSiteTemplateCatalog
             : new HumanSiteMapPoint(row.X, row.Y);
     }
 
-    private static void Validate(IReadOnlyList<HumanSiteTemplate> templates)
+    private static void Validate(HumanSiteTemplate[] templates)
     {
-        if (templates.Count == 0)
+        if (templates.Length == 0)
         {
             throw new InvalidDataException(
                 "The human settlement template catalog has no entries.");

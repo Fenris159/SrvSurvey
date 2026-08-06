@@ -46,7 +46,7 @@ public static class InaraCommunityGoalEnricher
         FrontierCommunityGoalSnapshot frontier,
         IReadOnlyList<FrontierCommunityGoalSnapshot> frontierGoals,
         IReadOnlyList<InaraCommunityGoalSnapshot> inaraGoals,
-        IReadOnlySet<int> alreadyMatched)
+        HashSet<int> alreadyMatched)
     {
         var title = Normalize(frontier.Title);
         var candidates = inaraGoals
@@ -186,7 +186,7 @@ public static class InaraCommunityGoalEnricher
             HasContributorData: inara.Contributors is not null);
     }
 
-    private static IReadOnlyList<FrontierDataPointSnapshot> AddInaraData(
+    private static FrontierDataPointSnapshot[] AddInaraData(
         IReadOnlyList<FrontierDataPointSnapshot>? existing,
         InaraCommunityGoalSnapshot inara,
         DateTimeOffset fetchedAt)
@@ -239,11 +239,14 @@ public static class InaraCommunityGoalEnricher
 
     private static string FormatTier(int? reached, int? maximum)
     {
-        return reached is null
-            ? string.Empty
-            : maximum is > 0
-                ? $"Tier {reached:N0} / {maximum:N0}"
-                : $"Tier {reached:N0}";
+        if (reached is null)
+        {
+            return string.Empty;
+        }
+
+        return maximum is > 0
+            ? $"Tier {reached:N0} / {maximum:N0}"
+            : $"Tier {reached:N0}";
     }
 
     private static string FirstNonEmpty(string first, string second) =>

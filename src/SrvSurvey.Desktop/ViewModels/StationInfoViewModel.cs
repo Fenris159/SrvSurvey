@@ -37,7 +37,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     private bool forceShow;
     private bool manuallyHidden;
     private bool isBusy;
-    private IReadOnlySet<string> questTags = new HashSet<string>(
+    private HashSet<string> questTags = new HashSet<string>(
         StringComparer.OrdinalIgnoreCase);
     private SystemStationSummary? projectedStation;
     private IReadOnlyList<StationInfoLineViewModel> economyLines = [];
@@ -151,9 +151,11 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
 
     public string FactionText => SelectedStation is { } station
         && !string.IsNullOrWhiteSpace(station.ControllingFaction)
-            ? string.IsNullOrWhiteSpace(station.Government)
-                ? station.ControllingFaction
-                : $"{station.ControllingFaction} · {station.Government}"
+            ? (string.IsNullOrWhiteSpace(station.Government)) switch
+            {
+                true => station.ControllingFaction,
+                false => $"{station.ControllingFaction} · {station.Government}"
+            }
             : "Controlling faction unavailable";
 
     public IReadOnlyList<StationInfoLineViewModel> EconomyLines => economyLines;
@@ -333,6 +335,7 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
+            // A newer station request superseded this one.
         }
         catch (Exception exception) when (
             exception is HttpRequestException

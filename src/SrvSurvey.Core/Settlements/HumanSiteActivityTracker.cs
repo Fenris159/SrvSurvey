@@ -210,7 +210,7 @@ public sealed class HumanSiteActivityTracker
             timestamp);
     }
 
-    private static IReadOnlyList<HumanSiteMaterialItem> ReadAddedItems(
+    private static HumanSiteMaterialItem[] ReadAddedItems(
         JsonElement root)
     {
         if (!root.TryGetProperty("Added", out var added)

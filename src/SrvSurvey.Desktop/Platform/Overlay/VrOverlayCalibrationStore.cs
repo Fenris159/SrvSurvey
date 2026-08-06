@@ -151,7 +151,7 @@ public sealed class VrOverlayCalibrationStore
         return new VrOverlayCalibrationSaveResult(overridePath, backupPath);
     }
 
-    private static IReadOnlyDictionary<string, VrOverlayCalibration> LoadFile(
+    private static Dictionary<string, VrOverlayCalibration> LoadFile(
         string path,
         bool allowDesktopPrefix)
     {

@@ -58,7 +58,11 @@ public sealed record BiologyStatusViewModel(
     public double TrackedCompletionPercent => SignalCount <= 0
         ? 0
         : Math.Clamp(
-            (AnalyzedSignalCount + (HasActiveSample ? 1 : 0))
+            (AnalyzedSignalCount + ((HasActiveSample) switch
+            {
+                true => 1,
+                false => 0
+            }))
                 * 100d / SignalCount,
             0,
             100);
@@ -122,19 +126,24 @@ public sealed record BiologyStatusViewModel(
             options.CodexNotification?.BodyId == body.BodyId
                 ? options.CodexNotification
                 : null;
-        var footer = activeSample is not null || isStaleActiveSample
-            ? string.Empty
-            : allAnalyzed && body.IsFirstFootfall
-                ? "All signals analyzed with the first-footfall bonus applied."
-                : allAnalyzed
-                    ? "All biological signals analyzed."
-                    : currentNotification is not null
-                        ? currentNotification.SummaryText
-                    : body.Organisms.Count == 0
-                        ? string.Empty
-                        : body.IsFirstFootfall
-                            ? "First-footfall rewards apply to analyzed organisms."
-                            : "Use the Composition Scanner to identify organisms.";
+        var footer = string.Empty;
+        if (activeSample is null && !isStaleActiveSample)
+        {
+            if (allAnalyzed && body.IsFirstFootfall)
+            {
+                footer = "All signals analyzed with the first-footfall bonus applied.";
+            }
+            else if (currentNotification is not null)
+            {
+                footer = currentNotification.SummaryText;
+            }
+            else if (body.Organisms.Count > 0)
+            {
+                footer = body.IsFirstFootfall
+                    ? "First-footfall rewards apply to analyzed organisms."
+                    : "Use the Composition Scanner to identify organisms.";
+            }
+        }
 
         return new BiologyStatusViewModel(
             body.BodyId,
@@ -192,7 +201,7 @@ public sealed record BiologyStatusViewModel(
             temperatureClause?.Maximum);
     }
 
-    private static IReadOnlyList<BiologyStatusSignalViewModel> CreateSignals(
+    private static List<BiologyStatusSignalViewModel> CreateSignals(
         SystemScanBodySnapshot body,
         SystemOrganismSnapshot? activeOrganism,
         bool hideGeologicalSignals)
@@ -202,13 +211,16 @@ public sealed record BiologyStatusViewModel(
             {
                 var name = organism.GenusLocalized
                     ?? FormatJournalName(organism.Genus);
-                var distance = organism.IsAnalyzed
-                    ? string.Empty
-                    : ExobiologyReferenceCatalog.GetSampleDistanceMeters(
-                        organism.GenusLocalized ?? organism.Genus) is var meters
-                        && meters > 0
-                            ? $"{meters:N0} m"
-                            : string.Empty;
+                var distance = string.Empty;
+                if (!organism.IsAnalyzed)
+                {
+                    var meters = ExobiologyReferenceCatalog.GetSampleDistanceMeters(
+                        organism.GenusLocalized ?? organism.Genus);
+                    if (meters > 0)
+                    {
+                        distance = $"{meters:N0} m";
+                    }
+                }
                 return new BiologyStatusSignalViewModel(
                     name,
                     distance,
@@ -414,7 +426,11 @@ public sealed record BiologyActiveSampleViewModel(
     public bool HasReward => Reward > 0;
 
     public string RewardText => HasReward
-        ? FormatCredits(Reward) + (IsFirstFootfall ? " · FF bonus" : string.Empty)
+        ? FormatCredits(Reward) + ((IsFirstFootfall) switch
+        {
+            true => " · FF bonus",
+            false => string.Empty
+        })
         : string.Empty;
 
     public string RequiredDistanceText =>
@@ -437,10 +453,12 @@ public sealed record BiologyActiveSampleViewModel(
 
     public string DistanceText => NearestDistanceMeters is null
         ? $"Move {RequiredDistanceMeters:N0} m from a prior sample."
-        : IsSeparationReady
-            ? $"{NearestDistanceMeters:N0} m from the nearest sample · separation reached"
-            : $"{NearestDistanceMeters:N0} m from the nearest sample · "
-                + $"{RemainingDistanceMeters:N0} m remaining";
+        : (IsSeparationReady) switch
+        {
+            true => $"{NearestDistanceMeters:N0} m from the nearest sample · separation reached",
+            false => $"{NearestDistanceMeters:N0} m from the nearest sample · "
+                                                                                                                + $"{RemainingDistanceMeters:N0} m remaining"
+        };
 
     private static string FormatCredits(long value)
     {

@@ -38,13 +38,25 @@ public sealed record StationLandingPadSummary(
     int Medium,
     int Large)
 {
-    public string? Largest => Large > 0
-        ? "Large"
-        : Medium > 0
-            ? "Medium"
-            : Small > 0
+    public string? Largest
+    {
+        get
+        {
+            if (Large > 0)
+            {
+                return "Large";
+            }
+
+            if (Medium > 0)
+            {
+                return "Medium";
+            }
+
+            return Small > 0
                 ? "Small"
                 : null;
+        }
+    }
 }
 
 public sealed record SystemStationSummary(
@@ -177,13 +189,19 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             bodies.Value?.TotalBodyCount ?? 0,
             spansh.Value?.TotalBodyCount ?? 0);
         var attemptedProviders = systemAddress > 0 ? 3 : 2;
-        bool? isKnown = bodies.Value?.SystemAddress > 0
-            || traffic.Value?.SystemAddress > 0
-            || spansh.Value is not null
-                ? true
-                : warnings.Length == attemptedProviders
-                    ? null
-                    : false;
+        bool? isKnown;
+        if (bodies.Value?.SystemAddress > 0 || traffic.Value?.SystemAddress > 0 || spansh.Value is not null)
+        {
+            isKnown = true;
+        }
+        else if (warnings.Length == attemptedProviders)
+        {
+            isKnown = null;
+        }
+        else
+        {
+            isKnown = false;
+        }
         var points = spansh.Value?.PointsOfInterest
             ?? new SystemPoiSummary(totalBodyCount, 0, 0, 0, 0, 0, 0);
         points = points with { Bodies = totalBodyCount };
@@ -288,7 +306,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
 
         return new EdsmBodiesFragment(
             GetInt64(root, "id64") ?? 0,
-            bodies.Count,
+            bodies.Length,
             GetInt32(root, "bodyCount") ?? 0,
             starClass,
             discoveredBy,
@@ -693,7 +711,7 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         }
     }
 
-    private static IReadOnlyList<JsonElement> GetArray(
+    private static JsonElement[] GetArray(
         JsonElement element,
         string propertyName)
     {

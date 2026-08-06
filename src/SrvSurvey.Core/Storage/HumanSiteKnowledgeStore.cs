@@ -19,10 +19,7 @@ public sealed class HumanSiteKnowledgeStore
         CancellationToken cancellationToken = default)
     {
         ValidateContext(context);
-        if (marketId <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(marketId));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(marketId);
 
         var result = await fileStore.LoadAsync(
                 ToFileContext(context),
@@ -159,7 +156,7 @@ public sealed class HumanSiteKnowledgeStore
     private static HumanSiteKnowledge? ReadKnowledge(
         JsonObject station,
         HumanSiteKnowledgeContext context,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         var marketId = ReadInt64(station, "marketId") ?? 0;
         var systemAddress = ReadInt64(station, "systemAddress")
@@ -265,18 +262,11 @@ public sealed class HumanSiteKnowledgeStore
         JsonObject root,
         string propertyName)
     {
-        foreach (var property in root)
-        {
-            if (string.Equals(
+        return root.FirstOrDefault(property =>
+            string.Equals(
                 property.Key,
                 propertyName,
-                StringComparison.OrdinalIgnoreCase))
-            {
-                return property.Value;
-            }
-        }
-
-        return null;
+                StringComparison.OrdinalIgnoreCase)).Value;
     }
 
     private static string? ReadString(

@@ -125,7 +125,7 @@ public sealed class GlobalKeyboardHookService : IDisposable
         gameWindowTracker.Dispose();
     }
 
-    private static IGlobalHook CreateHook()
+    private static EventLoopGlobalHook CreateHook()
     {
         return new EventLoopGlobalHook(
             GlobalHookType.Keyboard,

@@ -2,7 +2,7 @@ namespace SrvSurvey.Core.Storage;
 
 internal static class LegacySurfaceBookmarkNames
 {
-    private static readonly IReadOnlyDictionary<string, string> CanonicalNames =
+    private static readonly Dictionary<string, string> CanonicalNames =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["ale"] = "$Codex_Ent_Aleoids_Genus_Name;",

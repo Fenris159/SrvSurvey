@@ -57,7 +57,6 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 
     private readonly object sync = new();
     private readonly object companionTasksSync = new();
-    private readonly EddnTransport transport;
     private readonly EddnOutbox outbox;
     private readonly Channel<OutboxWriteCommand> outboxWrites;
     private readonly Task outboxWriterTask;
@@ -85,6 +84,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     private long consentGeneration;
     private int stagedWriteCount;
     private volatile bool acceptingWrites = true;
+    private volatile bool disposing;
     private volatile bool disposed;
 
     public EddnPublisher(
@@ -99,7 +99,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(softwareVersion);
         this.softwareVersion = softwareVersion.Trim();
         this.log = log ?? (_ => { });
-        transport = new EddnTransport(
+        var transport = new EddnTransport(
             client,
             endpoint,
             $"SrvSurvey/{this.softwareVersion}");
@@ -131,7 +131,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         bool changed;
         lock (sync)
         {
-            if (disposed)
+            if (disposing || disposed)
             {
                 return;
             }
@@ -156,7 +156,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     {
         lock (sync)
         {
-            if (disposed || publishingSuspended == suspended)
+            if (disposing || disposed || publishingSuspended == suspended)
             {
                 return;
             }
@@ -188,7 +188,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         cancellationToken.ThrowIfCancellationRequested();
-        if (disposed)
+        if (disposing || disposed)
         {
             return Task.FromResult(EddnPublicationResult.Empty);
         }
@@ -427,8 +427,35 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 
     public void Dispose()
     {
-        acceptingWrites = false;
+        Task[] companionReads;
+        lock (companionTasksSync)
+        {
+            lock (sync)
+            {
+                if (disposing || disposed)
+                {
+                    return;
+                }
+
+                disposing = true;
+                acceptingWrites = false;
+            }
+
+            companionReads = companionTasks.ToArray();
+        }
+
         lifetimeCancellation.Cancel();
+        try
+        {
+            Task.WhenAll(companionReads).GetAwaiter().GetResult();
+        }
+        catch (Exception exception)
+        {
+            WriteLog(
+                "EDDN companion-file processing stopped during shutdown: "
+                    + exception.GetBaseException().Message);
+        }
+
         outboxWrites.Writer.TryComplete();
         try
         {
@@ -443,11 +470,6 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 
         lock (sync)
         {
-            if (disposed)
-            {
-                return;
-            }
-
             disposed = true;
             sharingEnabled = false;
             sessionGeneration++;
@@ -456,10 +478,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         }
 
         outbox.Dispose();
-
-        // Companion continuations can still observe cancellation and outbox
-        // workers can still release their semaphore. The CTS is intentionally
-        // left for GC so shutdown never disposes a primitive beneath a worker.
+        lifetimeCancellation.Dispose();
     }
 
     private void BeginJournalSessionIfNeeded(string? journalPath, JObject raw)
@@ -652,7 +671,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             return;
         }
 
-        var item = transport.prepare(
+        var item = EddnTransport.prepare(
             candidate.Prepared.message,
             candidate.Prepared.schemaRef,
             candidate.Header,
@@ -676,19 +695,29 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 
     private void StartCompanionRead(CompanionCandidate candidate)
     {
-        var task = ProcessCompanionFileAsync(
-            candidate,
-            lifetimeCancellation.Token);
         lock (companionTasksSync)
         {
-            companionTasks.Add(task);
-        }
+            CancellationToken cancellationToken;
+            lock (sync)
+            {
+                if (disposing || disposed)
+                {
+                    return;
+                }
 
-        _ = task.ContinueWith(
-            completed => CompleteCompanionTask(completed),
-            CancellationToken.None,
-            TaskContinuationOptions.ExecuteSynchronously,
-            TaskScheduler.Default);
+                cancellationToken = lifetimeCancellation.Token;
+            }
+
+            var task = ProcessCompanionFileAsync(
+                candidate,
+                cancellationToken);
+            companionTasks.Add(task);
+            _ = task.ContinueWith(
+                completed => CompleteCompanionTask(completed),
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+        }
     }
 
     private void CompleteCompanionTask(Task task)
@@ -752,7 +781,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                 return;
             }
 
-            var item = transport.prepare(
+            var item = EddnTransport.prepare(
                 prepared!.message,
                 prepared.schemaRef,
                 candidate.Header,
@@ -876,7 +905,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     private async Task RunOutboxWriterAsync()
     {
         await foreach (var command in outboxWrites.Reader
-                           .ReadAllAsync()
+                           .ReadAllAsync(CancellationToken.None)
                            .ConfigureAwait(false))
         {
             if (command is FlushOutboxWrites flush)

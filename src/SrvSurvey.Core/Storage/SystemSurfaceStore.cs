@@ -194,9 +194,8 @@ public sealed class SystemSurfaceStore
                     if (body["bookmarks"] is JsonObject existing)
                     {
                         NormalizeLegacyBookmarkKeys(existing);
-                        if (existing.ContainsKey(name))
+                        if (existing.Remove(name))
                         {
-                            existing.Remove(name);
                             if (existing.Count == 0)
                             {
                                 body.Remove("bookmarks");
@@ -406,7 +405,7 @@ public sealed class SystemSurfaceStore
 
     private static int MarkSystemBioScansDied(
         JsonObject root,
-        IReadOnlyDictionary<int, HashSet<long>> claimsByBody)
+        Dictionary<int, HashSet<long>> claimsByBody)
     {
         if (root["bodies"] is not JsonArray bodies)
         {
@@ -509,7 +508,7 @@ public sealed class SystemSurfaceStore
             scans);
     }
 
-    private static IReadOnlyDictionary<string, IReadOnlyList<SurfaceCoordinate>>
+    private static Dictionary<string, IReadOnlyList<SurfaceCoordinate>>
         ReadBookmarks(JsonObject body, List<string> warnings)
     {
         if (body["bookmarks"] is null)
@@ -598,7 +597,7 @@ public sealed class SystemSurfaceStore
         }
     }
 
-    private static IReadOnlyList<SurfaceBioScan> ReadBioScans(
+    private static List<SurfaceBioScan> ReadBioScans(
         JsonObject body,
         List<string> warnings)
     {
@@ -818,9 +817,11 @@ public sealed class SystemSurfaceStore
     {
         return radiusMeters > 0
             ? SurfaceNavigation.GetDistance(first, second, radiusMeters)
-            : first == second
-                ? 0
-                : double.PositiveInfinity;
+            : (first == second) switch
+            {
+                true => 0,
+                false => double.PositiveInfinity
+            };
     }
 
     private static string? GetString(JsonNode? node)

@@ -164,7 +164,7 @@ public sealed class GuardianSiteCatalog
                 StringComparison.OrdinalIgnoreCase) == true;
     }
 
-    private static IReadOnlyList<GuardianSiteReference> ReadSites(
+    private static List<GuardianSiteReference> ReadSites(
         Stream stream,
         GuardianSiteKind kind)
     {

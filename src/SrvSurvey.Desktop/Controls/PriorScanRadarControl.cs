@@ -155,9 +155,11 @@ public sealed class PriorScanRadarControl : Control
 
             var brush = target.IsClose
                 ? close
-                : target.IsActive
-                    ? accent
-                    : muted;
+                : (target.IsActive) switch
+                {
+                    true => accent,
+                    false => muted
+                };
             context.DrawEllipse(
                 null,
                 new Pen(brush, target.IsClose ? 2.5 : 1.5),

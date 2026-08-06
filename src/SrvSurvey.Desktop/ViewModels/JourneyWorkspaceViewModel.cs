@@ -230,9 +230,11 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         ? Unavailable
         : $"CMDR {selectedDocument.CommanderName} \u2022 "
             + $"set out {FormatTime(selectedDocument.StartTime)}"
-            + (selectedDocument.EndTime is { } end
-                ? $" \u2022 concluded {FormatTime(end)}"
-                : " \u2022 active");
+            + (selectedDocument.EndTime switch
+            {
+                DateTimeOffset end => $" \u2022 concluded {FormatTime(end)}",
+                null => " \u2022 active"
+            });
 
     public IReadOnlyList<JourneyStatisticViewModel> QuickStatistics
     {
@@ -707,7 +709,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
                     preferredFileName,
                     StringComparison.Ordinal))
                 ?? Journeys.FirstOrDefault(item => item.Document.IsActive)
-                ?? Journeys.FirstOrDefault();
+                ?? (Journeys.Count > 0 ? Journeys[0] : null);
             if (result.Errors.Count > 0)
             {
                 StatusMessage = string.Join(Environment.NewLine, result.Errors);
@@ -716,9 +718,11 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             {
                 StatusMessage = SelectedJourney is null
                     ? "No Journey history has been recorded for this commander."
-                    : SelectedJourney.Document.IsActive
-                        ? $"Active journey: {SelectedJourney.Document.Name}."
-                        : $"Loaded journey: {SelectedJourney.Document.Name}.";
+                    : (SelectedJourney.Document.IsActive) switch
+                    {
+                        true => $"Active journey: {SelectedJourney.Document.Name}.",
+                        false => $"Loaded journey: {SelectedJourney.Document.Name}."
+                    };
             }
         }
         catch (Exception exception) when (IsExpectedException(exception))
@@ -769,7 +773,9 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
                         system.Name,
                         StartSystemQuery.Trim(),
                         StringComparison.OrdinalIgnoreCase))
-                ?? StartSystemResults.FirstOrDefault();
+                ?? (StartSystemResults.Count > 0
+                    ? StartSystemResults[0]
+                    : null);
             StartStatus = StartSystemResults.Count == 0
                 ? "No matching systems were found."
                 : $"Found {StartSystemResults.Count:N0} matching systems.";
@@ -1100,12 +1106,15 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             suppressSystemLoad = preserveEdits;
             try
             {
+                var firstVisitedSystem = VisitedSystems.Count > 0
+                    ? VisitedSystems[0]
+                    : null;
                 SelectedSystem = preferredSystem is { } identity
                     ? VisitedSystems.FirstOrDefault(item =>
                         item.Visit.StarSystem.SystemAddress == identity.Address
                         && item.Visit.Arrived == identity.Arrived)
-                        ?? VisitedSystems.FirstOrDefault()
-                    : VisitedSystems.FirstOrDefault();
+                        ?? firstVisitedSystem
+                    : firstVisitedSystem;
             }
             finally
             {
@@ -1317,7 +1326,7 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         return string.Join(Environment.NewLine, lines);
     }
 
-    private static IReadOnlyList<JourneyStatisticViewModel> CreateStatistics(
+    private static List<JourneyStatisticViewModel> CreateStatistics(
         JourneyQuickStatistics statistics)
     {
         var values = new List<JourneyStatisticViewModel>
@@ -1356,21 +1365,25 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
         var flags = string.Empty;
         flags += visit.Counts.Screenshots > 0
             ? "P"
-            : sameNameVisits.Any(candidate => candidate.Counts.Screenshots > 0)
-                ? "p"
-                : string.Empty;
+            : (sameNameVisits.Any(candidate => candidate.Counts.Screenshots > 0)) switch
+            {
+                true => "p",
+                false => string.Empty
+            };
         flags += visit.Counts.Organisms > 0 ? "B" : string.Empty;
         flags += visit.Counts.Notes > 0
             ? "N"
-            : sameNameVisits.Any(candidate => candidate.Counts.Notes > 0)
-                ? "n"
-                : string.Empty;
+            : (sameNameVisits.Any(candidate => candidate.Counts.Notes > 0)) switch
+            {
+                true => "n",
+                false => string.Empty
+            };
         flags += visit.Counts.NewCodexEntries > 0 ? "C" : string.Empty;
         flags += visit.Counts.Touchdowns > 0 ? "T" : string.Empty;
         return flags;
     }
 
-    private static IReadOnlyList<string> GetScreenshotFiles(string? directory)
+    private static string[] GetScreenshotFiles(string? directory)
     {
         if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
         {

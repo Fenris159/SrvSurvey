@@ -180,16 +180,17 @@ public sealed class LegacySystemBiologyAnalyzer
             return true;
         }
 
-        foreach (var property in root.EnumerateObject())
+        var matchedValue = root.EnumerateObject()
+            .Where(property => string.Equals(
+                property.Name,
+                name,
+                StringComparison.OrdinalIgnoreCase))
+            .Select(property => (JsonElement?)property.Value)
+            .FirstOrDefault();
+        if (matchedValue is { } found)
         {
-            if (string.Equals(
-                    property.Name,
-                    name,
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                value = property.Value;
-                return true;
-            }
+            value = found;
+            return true;
         }
 
         value = default;
@@ -199,14 +200,14 @@ public sealed class LegacySystemBiologyAnalyzer
     private static void Report(
         IProgress<LegacySystemBiologyAnalysisProgress>? progress,
         int index,
-        IReadOnlyList<FileInfo> files,
+        FileInfo[] files,
         FileInfo file,
         int bodyCount,
         int organismCount)
     {
         progress?.Report(new LegacySystemBiologyAnalysisProgress(
             index + 1,
-            files.Count,
+            files.Length,
             file.Name,
             bodyCount,
             organismCount));

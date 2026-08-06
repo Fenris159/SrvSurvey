@@ -25,7 +25,11 @@ public sealed record LegacyReferenceCatalogLoadResult(
 {
     public int LocalCatalogCount => Sources.Count(source => source.IsLocal);
 
-    public IReadOnlyList<string> Warnings => Sources
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Performance",
+        "S2365:Properties should not make collection copies",
+        Justification = "This get-only property caches one immutable snapshot during construction.")]
+    public IReadOnlyList<string> Warnings { get; } = Sources
         .Where(source => source.Warning is not null)
         .Select(source => source.Warning!)
         .ToArray();
@@ -110,7 +114,7 @@ public static class LegacyReferenceCatalogLoader
         Func<T> loadEmbedded,
         Func<string, T> loadCandidate,
         Func<T, int> getCoverage,
-        ICollection<ReferenceCatalogSource> sources,
+        List<ReferenceCatalogSource> sources,
         Func<string, bool>? exists = null)
     {
         var embedded = loadEmbedded();

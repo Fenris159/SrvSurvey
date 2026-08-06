@@ -104,7 +104,7 @@ public sealed class GreenGasGiantClient : IGreenGasGiantClient
                 nameof(uri));
         }
 
-        return uri.AbsoluteUri.EndsWith("/", StringComparison.Ordinal)
+        return uri.AbsoluteUri.EndsWith('/')
             ? uri
             : new Uri(uri.AbsoluteUri + "/", UriKind.Absolute);
     }

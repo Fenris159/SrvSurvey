@@ -212,7 +212,7 @@ public sealed class CanonnSystemPoiClient : ICanonnSystemPoiClient
 
     private static Uri EnsureTrailingSlash(Uri uri)
     {
-        return uri.AbsolutePath.EndsWith("/", StringComparison.Ordinal)
+        return uri.AbsolutePath.EndsWith('/')
             ? uri
             : new Uri(uri.AbsoluteUri + "/");
     }

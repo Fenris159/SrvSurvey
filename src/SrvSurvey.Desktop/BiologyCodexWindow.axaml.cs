@@ -38,7 +38,7 @@ public sealed partial class BiologyCodexWindow : Window
         _ = LoadSelectedImageAsync(forceRefresh: false);
     }
 
-    protected override void OnClosed(EventArgs eventArgs)
+    protected override void OnClosed(EventArgs e)
     {
         imageLoadCancellation?.Cancel();
         imageLoadCancellation?.Dispose();
@@ -46,7 +46,7 @@ public sealed partial class BiologyCodexWindow : Window
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         viewModel.SetUriLauncher(null);
         ReplaceImage(null);
-        base.OnClosed(eventArgs);
+        base.OnClosed(e);
     }
 
     private void OnViewModelPropertyChanged(
@@ -61,8 +61,13 @@ public sealed partial class BiologyCodexWindow : Window
 
     private async Task LoadSelectedImageAsync(bool forceRefresh)
     {
-        imageLoadCancellation?.Cancel();
-        imageLoadCancellation?.Dispose();
+        var previousCancellation = imageLoadCancellation;
+        if (previousCancellation is not null)
+        {
+            await previousCancellation.CancelAsync();
+            previousCancellation.Dispose();
+        }
+
         var loadCancellation = new CancellationTokenSource();
         imageLoadCancellation = loadCancellation;
         var cancellationToken = loadCancellation.Token;
@@ -99,7 +104,7 @@ public sealed partial class BiologyCodexWindow : Window
         }
         catch (TimeoutException)
         {
-            loadCancellation.Cancel();
+            await loadCancellation.CancelAsync();
             ObserveFault(imageLoadTask);
             if (viewModel.SelectedOrganism?.EntryId == organism.EntryId)
             {
@@ -136,7 +141,11 @@ public sealed partial class BiologyCodexWindow : Window
             ImageStatusText.Text = result.IsLocal
                 ? "Local flora reference image"
                 : organism.ImageCreditText
-                    + (result.IsFromCache ? " · cached" : " · downloaded");
+                    + ((result.IsFromCache) switch
+                    {
+                        true => " · cached",
+                        false => " · downloaded"
+                    });
         }
         catch (Exception exception) when (
             exception is IOException

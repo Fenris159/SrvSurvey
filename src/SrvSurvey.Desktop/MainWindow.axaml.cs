@@ -84,17 +84,17 @@ public sealed partial class MainWindow : Window
         await monitorSession.StopAsync();
     }
 
-    protected override void OnClosing(WindowClosingEventArgs eventArgs)
+    protected override void OnClosing(WindowClosingEventArgs e)
     {
         if (!closeReady)
         {
-            eventArgs.Cancel = true;
-            base.OnClosing(eventArgs);
+            e.Cancel = true;
+            base.OnClosing(e);
             closePreparationTask ??= PrepareToCloseAsync();
             return;
         }
 
-        base.OnClosing(eventArgs);
+        base.OnClosing(e);
     }
 
     private async Task PrepareToCloseAsync()
@@ -115,7 +115,7 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    protected override void OnClosed(EventArgs eventArgs)
+    protected override void OnClosed(EventArgs e)
     {
         InputContext.SetActive(false);
         InputContext.SetTextInputActive(false);
@@ -123,7 +123,7 @@ public sealed partial class MainWindow : Window
         viewModel.ReleaseUpdates.SetDiagnosticsNavigator(null);
         trayIcon?.Dispose();
         trayIcon = null;
-        base.OnClosed(eventArgs);
+        base.OnClosed(e);
     }
 
     private TrayIcon? CreateTrayIcon()

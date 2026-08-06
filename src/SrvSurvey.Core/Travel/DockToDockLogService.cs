@@ -52,12 +52,11 @@ public sealed class DockToDockLogService
             ApplyIdentity(journalEvent);
             ApplyLocation(journalEvent);
 
-            if (!isBootstrapRead && enabled)
+            if (!isBootstrapRead
+                && enabled
+                && ApplyTripEvent(journalEvent) is { } entry)
             {
-                if (ApplyTripEvent(journalEvent) is { } entry)
-                {
-                    completed.Add(entry);
-                }
+                completed.Add(entry);
             }
 
             if (journalEvent.EventName == "Docked")

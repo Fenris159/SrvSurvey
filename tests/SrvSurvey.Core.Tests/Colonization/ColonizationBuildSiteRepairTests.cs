@@ -5,6 +5,11 @@ namespace SrvSurvey.Core.Tests.Colonization;
 
 public sealed class ColonizationBuildSiteRepairTests
 {
+    private static readonly JsonSerializerOptions CaseInsensitiveJson = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
+
     [Theory]
     [InlineData(4_310_842_115, true)]
     [InlineData(3_963_024_386, true)]
@@ -105,7 +110,7 @@ public sealed class ColonizationBuildSiteRepairTests
     {
         var site = JsonSerializer.Deserialize<ColonizationSystemSite>(
             """{"id":"x1","name":"Dampier Gateway"}""",
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            CaseInsensitiveJson);
 
         var plan = ColonizationBuildSiteRepair.CreatePlan(
             [Assert.IsType<ColonizationSystemSite>(site)],

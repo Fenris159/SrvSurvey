@@ -171,11 +171,19 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
     }
 
     public string NameSortIndicator => sortColumn == RouteManagerSortColumn.Name
-        ? sortAscending ? "\u25B2" : "\u25BC"
+        ? (sortAscending) switch
+        {
+            true => "\u25B2",
+            false => "\u25BC"
+        }
         : string.Empty;
 
     public string DateSortIndicator => sortColumn == RouteManagerSortColumn.Created
-        ? sortAscending ? "\u25B2" : "\u25BC"
+        ? (sortAscending) switch
+        {
+            true => "\u25B2",
+            false => "\u25BC"
+        }
         : string.Empty;
 
     public bool IsDeleteConfirmationVisible
@@ -554,7 +562,7 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
 
             StatusMessage = Routes.Count == 0
                 ? "No saved routes. Import a JSON route or create one in the workspace."
-                : $"Loaded {Routes.Count:N0} saved route{(Routes.Count == 1 ? string.Empty : "s")}.";
+                : $"Loaded {Routes.Count:N0} saved route{((Routes.Count == 1) switch { true => string.Empty, false => "s" })}.";
         }
         catch (Exception exception) when (IsExpectedException(exception))
         {

@@ -5,6 +5,10 @@ using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Journeys;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The store is application-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class JourneyStore(string dataDirectory)
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -210,7 +214,7 @@ public sealed class JourneyStore(string dataDirectory)
         return true;
     }
 
-    private async Task<JourneyLoadResult> LoadPathAsync(
+    private static async Task<JourneyLoadResult> LoadPathAsync(
         string frontierId,
         string path,
         CancellationToken cancellationToken)
@@ -594,7 +598,13 @@ public sealed class JourneyStore(string dataDirectory)
 
     private static void ValidateFolderName(string value, string parameterName)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException(
+                "The folder name cannot be empty.",
+                parameterName);
+        }
+
         if (value is "." or ".."
             || !string.Equals(
                 Path.GetFileName(value),
@@ -688,7 +698,7 @@ public sealed class JourneyStore(string dataDirectory)
                 : null;
     }
 
-    private static IReadOnlyDictionary<string, int>? ReadStringIntDictionary(
+    private static Dictionary<string, int>? ReadStringIntDictionary(
         JsonObject root,
         string propertyName)
     {
@@ -710,7 +720,7 @@ public sealed class JourneyStore(string dataDirectory)
         return result;
     }
 
-    private static IReadOnlySet<long>? ReadInt64Set(
+    private static HashSet<long>? ReadInt64Set(
         JsonObject root,
         string propertyName)
     {
@@ -729,7 +739,7 @@ public sealed class JourneyStore(string dataDirectory)
             .ToHashSet();
     }
 
-    private static IReadOnlySet<int>? ReadInt32Set(
+    private static HashSet<int>? ReadInt32Set(
         JsonObject root,
         string propertyName)
     {
@@ -748,7 +758,7 @@ public sealed class JourneyStore(string dataDirectory)
             .ToHashSet();
     }
 
-    private static IReadOnlySet<string>? ReadStringSet(
+    private static HashSet<string>? ReadStringSet(
         JsonObject root,
         string propertyName)
     {

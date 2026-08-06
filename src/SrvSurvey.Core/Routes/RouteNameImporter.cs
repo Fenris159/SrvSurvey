@@ -24,7 +24,7 @@ public sealed class RouteNameImporter(IStarSystemResolver resolver)
                     requestedName,
                     cancellationToken)
                 .ConfigureAwait(false);
-            var match = matches.FirstOrDefault();
+            var match = matches.Count > 0 ? matches[0] : null;
             if (match is not null)
             {
                 resolvedCount++;

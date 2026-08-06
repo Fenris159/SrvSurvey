@@ -41,6 +41,10 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
     private readonly ICodexDiscoveryLocationClient locationClient;
     private readonly CodexBingoNode rootDefinition;
     private readonly CodexBingoTreeNodeViewModel rootNode;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "An in-flight refresh may release this gate after disposal cancellation.")]
     private readonly SemaphoreSlim refreshLock = new(1, 1);
     private readonly AsyncCommand openWindowCommand;
     private readonly AsyncCommand refreshCommand;
@@ -296,22 +300,30 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     public string SelectedState => !HasSelectedEntry
         ? "Aggregate completion"
-        : SelectedIsJournalVerified
-            ? "Journal verified"
-            : SelectedIsManual
-                ? "Manual / Canonn import"
-                : "Undiscovered";
+        : (SelectedIsJournalVerified) switch
+        {
+            true => "Journal verified",
+            false => (SelectedIsManual) switch
+            {
+                true => "Manual / Canonn import",
+                false => "Undiscovered"
+            }
+        };
 
     public string ManualActionText => SelectedIsManual
         ? "Remove manual scan"
-        : SelectedIsJournalVerified
-            ? "Journal verified"
-            : "I have scanned this";
+        : (SelectedIsJournalVerified) switch
+        {
+            true => "Journal verified",
+            false => "I have scanned this"
+        };
 
     public string ManualConfirmationText => SelectedNode?.Definition.Entry is { } entry
-        ? (SelectedIsManual
-            ? "Remove the locationless manual/imported discovery for "
-            : "Confirm that you previously scanned ")
+        ? ((SelectedIsManual) switch
+        {
+            true => "Remove the locationless manual/imported discovery for ",
+            false => "Confirm that you previously scanned "
+        })
             + $"{SelectedTitle} (#{entry.EntryId})?"
         : string.Empty;
 
@@ -494,13 +506,14 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        await refreshLock.WaitAsync();
+        await refreshLock.WaitAsync(CancellationToken.None);
         try
         {
             IsBusy = true;
             StatusMessage = "Loading Commander Codex ledgers…";
             var previousFrontierId = SelectedCommander?.FrontierId;
-            var catalog = await store.DiscoverCommandersAsync();
+            var catalog = await store.DiscoverCommandersAsync(
+                CancellationToken.None);
             var options = catalog.Commanders
                 .Select(data => new CommanderCodexOptionViewModel(
                     data.FrontierId,
@@ -532,7 +545,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
                         previousFrontierId,
                         StringComparison.OrdinalIgnoreCase))
                 ?? Commanders.FirstOrDefault(option => option.IsActive)
-                ?? Commanders.FirstOrDefault();
+                ?? (Commanders.Count > 0 ? Commanders[0] : null);
             OnPropertyChanged(nameof(SelectedCommander));
             OnPropertyChanged(nameof(CommanderSummary));
 
@@ -564,7 +577,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             return;
         }
 
-        await refreshLock.WaitAsync();
+        await refreshLock.WaitAsync(CancellationToken.None);
         try
         {
             IsBusy = true;
@@ -590,7 +603,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             StatusMessage = $"Importing Canonn Challenge data for {commander.CommanderName}…";
             var result = await canonnImporter.ImportAsync(
                 commander.FrontierId,
-                commander.CommanderName);
+                commander.CommanderName,
+                CancellationToken.None);
             StatusMessage = result.IsSuccess
                 ? $"Canonn matched {result.MatchedEntryCount:N0} entries and added "
                     + $"{result.AddedEntryCount:N0}; {result.UnmatchedEntryCount:N0} "
@@ -624,7 +638,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             });
             var result = await journalImporter.ImportAsync(
                 commander.FrontierId,
-                progress);
+                progress,
+                CancellationToken.None);
             StatusMessage = $"Scanned {result.JournalFileCount:N0} journals and "
                 + $"{result.DiscoveryEventCount:N0} Codex events; added "
                 + $"{result.ChangedEntryCount:N0} global/regional firsts."
@@ -665,14 +680,19 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
                 commander.FrontierId,
                 commander.CommanderName,
                 entry.EntryId,
-                shouldDiscover);
+                shouldDiscover,
+                cancellationToken: CancellationToken.None);
             StatusMessage = !result.IsSuccess
                 ? "Manual discovery update failed: " + result.Error
-                : result.Changed
-                    ? shouldDiscover
-                        ? $"Marked {SelectedTitle} as previously scanned."
-                        : $"Removed the manual discovery for {SelectedTitle}."
-                    : "The journal-backed discovery was left unchanged.";
+                : (result.Changed) switch
+                {
+                    true => (shouldDiscover) switch
+                    {
+                        true => $"Marked {SelectedTitle} as previously scanned.",
+                        false => $"Removed the manual discovery for {SelectedTitle}."
+                    },
+                    false => "The journal-backed discovery was left unchanged."
+                };
             IsManualConfirmationPending = false;
             await LoadLedgerCoreAsync(preserveStatus: true);
         }
@@ -712,7 +732,8 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         var result = await store.LoadAsync(
             commander.FrontierId,
             commander.CommanderName,
-            region.RegionId);
+            region.RegionId,
+            CancellationToken.None);
         if (!string.Equals(
                 SelectedCommander?.FrontierId,
                 commander.FrontierId,
@@ -792,8 +813,13 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
     private async Task ResolveSelectedLocationAsync()
     {
-        locationCancellation?.Cancel();
-        locationCancellation?.Dispose();
+        var previousCancellation = locationCancellation;
+        if (previousCancellation is not null)
+        {
+            await previousCancellation.CancelAsync();
+            previousCancellation.Dispose();
+        }
+
         locationCancellation = new CancellationTokenSource();
         var cancellationToken = locationCancellation.Token;
         if (SelectedNode?.Definition.Entry is not { } entry
@@ -1001,12 +1027,13 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             return new Uri(EdAstroRootUrl);
         }
 
-        foreach (var pair in EdAstroLinks)
+        var match = EdAstroLinks.FirstOrDefault(pair =>
+            node.Name.Contains(
+                pair.Key,
+                StringComparison.OrdinalIgnoreCase));
+        if (match.Value is not null)
         {
-            if (node.Name.Contains(pair.Key, StringComparison.OrdinalIgnoreCase))
-            {
-                return new Uri(pair.Value);
-            }
+            return new Uri(match.Value);
         }
 
         if (string.IsNullOrWhiteSpace(node.Genus))
@@ -1026,7 +1053,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
                 + "-regions.jpg");
     }
 
-    private static IReadOnlyList<CodexBingoRegionOptionViewModel> CreateRegions(
+    private static CodexBingoRegionOptionViewModel[] CreateRegions(
         int? currentRegionId)
     {
         return new[]
@@ -1269,7 +1296,11 @@ public sealed class CodexBingoTreeNodeViewModel : INotifyPropertyChanged
     public bool IsIncomplete => TotalCount > 0 && !IsComplete;
 
     public string CompletionText => IsEntry
-        ? IsComplete ? "Discovered" : "Missing"
+        ? (IsComplete) switch
+        {
+            true => "Discovered",
+            false => "Missing"
+        }
         : $"{DiscoveredCount:N0}/{TotalCount:N0} · {Completion:P1}";
 
     public bool IsExpanded
@@ -1349,7 +1380,11 @@ public sealed record CodexBingoRegionOptionViewModel(
 {
     public string DisplayName => RegionId == 0
         ? Name
-        : $"#{RegionId} {Name}" + (IsCurrent ? " · current" : string.Empty);
+        : $"#{RegionId} {Name}" + ((IsCurrent) switch
+        {
+            true => " · current",
+            false => string.Empty
+        });
 }
 
 public enum CodexBingoNearestMode

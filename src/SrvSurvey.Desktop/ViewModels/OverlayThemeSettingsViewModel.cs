@@ -396,9 +396,12 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     {
         var collection = stateStore.Load();
         SavedStates = collection.States.Select(state => state.Name).ToArray();
+        var firstSavedState = SavedStates.Count > 0
+            ? SavedStates[0]
+            : null;
         SelectedSavedState = select is not null && SavedStates.Contains(select)
             ? select
-            : SavedStates.FirstOrDefault();
+            : firstSavedState;
         if (collection.Error is not null)
         {
             StatusMessage = collection.Error;

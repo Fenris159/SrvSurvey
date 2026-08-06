@@ -99,20 +99,19 @@ public sealed class InaraCommunityGoalClientTests
                      new System.Security.SecurityException("cleanup security failure"),
                  })
         {
-            var observed = Record.Exception((Action)(() =>
+            Exception? observed;
+            try
             {
-                try
-                {
-                    throw primaryFailure;
-                }
-                finally
-                {
-                    InaraCommunityGoalClient.TryDeleteTemporaryFile(
-                        "community-goals.tmp",
-                        _ => true,
-                        _ => throw cleanupFailure);
-                }
-            }));
+                throw primaryFailure;
+            }
+            catch (Exception exception)
+            {
+                observed = exception;
+                InaraCommunityGoalClient.TryDeleteTemporaryFile(
+                    "community-goals.tmp",
+                    _ => true,
+                    _ => throw cleanupFailure);
+            }
 
             Assert.Same(primaryFailure, observed);
         }

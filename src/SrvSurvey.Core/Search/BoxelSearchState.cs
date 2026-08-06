@@ -530,9 +530,11 @@ public sealed class BoxelSearchState
                 ? observation.Boxel
                 : existing.Boxel with
                 {
-                    SystemAddress = observation.Boxel.SystemAddress > 0
-                        ? observation.Boxel.SystemAddress
-                        : existing.Boxel.SystemAddress,
+                    SystemAddress = (observation.Boxel.SystemAddress > 0) switch
+                    {
+                        true => observation.Boxel.SystemAddress,
+                        false => existing.Boxel.SystemAddress
+                    },
                 };
         systems[observation.Boxel.GeneratedName] = new BoxelSystemState(
             observedBoxel,

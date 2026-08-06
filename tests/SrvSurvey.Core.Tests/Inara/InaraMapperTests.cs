@@ -139,6 +139,41 @@ public sealed class InaraMapperTests
     }
 
     [Fact]
+    public void ReputationEventsMapAllNumericEntries()
+    {
+        var mapper = new InaraEventMapper();
+
+        var major = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:00:00Z",
+              "event": "Reputation",
+              "Empire": 25.5,
+              "Federation": 91
+            }
+            """), Context, true);
+        var majorEvent = Assert.Single(
+            major,
+            item => item.Name == "setCommanderReputationMajorFaction");
+        Assert.Equal(2, Assert.IsType<JArray>(majorEvent.Data).Count);
+
+        var minor = mapper.Process(JObject.Parse("""
+            {
+              "timestamp": "2026-07-28T12:01:00Z",
+              "event": "Location",
+              "StarSystem": "Sol",
+              "Factions": [
+                { "Name": "Faction One", "MyReputation": 75 },
+                { "Name": "Faction Two", "MyReputation": -12.5 }
+              ]
+            }
+            """), Context, true);
+        var minorEvent = Assert.Single(
+            minor,
+            item => item.Name == "setCommanderReputationMinorFaction");
+        Assert.Equal(2, Assert.IsType<JArray>(minorEvent.Data).Count);
+    }
+
+    [Fact]
     public void UnknownTaxiStateDoesNotClaimTheCommandersShip()
     {
         var mapper = new InaraEventMapper();

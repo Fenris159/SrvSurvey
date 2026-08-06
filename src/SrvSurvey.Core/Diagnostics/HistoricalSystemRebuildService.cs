@@ -51,7 +51,7 @@ public sealed class HistoricalSystemRebuildService
         this.backupDirectory = Path.GetFullPath(backupDirectory);
         this.currentTime = currentTime ?? (() => DateTimeOffset.Now);
         this.activationFailure = activationFailure;
-        ValidateBackupLocation();
+        ValidateBackupLocation(backupDirectory);
     }
 
     public async Task<HistoricalSystemRebuildResult> RebuildAsync(
@@ -508,7 +508,7 @@ public sealed class HistoricalSystemRebuildService
             {
                 throw new AggregateException(
                     $"Historical system activation failed and rollback was incomplete. Verified backup: {finalBackup}",
-                    [activationException, .. rollbackErrors]);
+                    rollbackErrors.Prepend(activationException));
             }
 
             throw new InvalidOperationException(
@@ -757,16 +757,18 @@ public sealed class HistoricalSystemRebuildService
                     $"{systemName}_{systemAddress}.json"));
     }
 
-    private void ValidateBackupLocation()
+    private void ValidateBackupLocation(string candidateBackupDirectory)
     {
         var systemsDirectory = Path.GetFullPath(Path.Combine(
             dataDirectory,
             "systems"));
-        if (PathsOverlap(systemsDirectory, backupDirectory))
+        var normalizedBackupDirectory = Path.GetFullPath(
+            candidateBackupDirectory);
+        if (PathsOverlap(systemsDirectory, normalizedBackupDirectory))
         {
             throw new ArgumentException(
                 "Historical rebuild backups must be outside the active systems directory.",
-                nameof(backupDirectory));
+                nameof(candidateBackupDirectory));
         }
     }
 

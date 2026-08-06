@@ -478,10 +478,21 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
 
     private static long CalculateConfirmedReward(SystemScanSnapshot snapshot)
     {
-        return snapshot.Bodies.Sum(body => body.Organisms
-            .Where(organism => organism.IsAnalyzed)
-            .Sum(organism => (organism.Reward ?? 0)
-                * (body.IsFirstFootfall ? 5 : 1)));
+        return snapshot.Bodies.Sum((SystemScanBodySnapshot body) =>
+        {
+            long reward = 0;
+            var bonus = body.IsFirstFootfall ? 5 : 1;
+            foreach (var organism in body.Organisms)
+            {
+                if (!organism.IsAnalyzed)
+                {
+                    continue;
+                }
+
+                reward += (organism.Reward ?? 0) * bonus;
+            }
+            return reward;
+        });
     }
 
     private static string CalculateFirstFootfallEstimate(

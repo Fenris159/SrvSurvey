@@ -88,7 +88,7 @@ public sealed class GuardianSiteTemplateCatalog
         return new GuardianSiteTemplateCatalog(templates);
     }
 
-    private static IReadOnlyList<GuardianPointOfInterest> ReadPoints(
+    private static GuardianPointOfInterest[] ReadPoints(
         JsonElement root,
         string propertyName)
     {
@@ -178,7 +178,7 @@ public sealed class GuardianSiteTemplateCatalog
             "A Guardian point of interest has an unknown type.");
     }
 
-    private static IReadOnlyDictionary<string, GuardianMapPoint> ReadNamedPoints(
+    private static Dictionary<string, GuardianMapPoint> ReadNamedPoints(
         JsonElement root,
         string propertyName)
     {

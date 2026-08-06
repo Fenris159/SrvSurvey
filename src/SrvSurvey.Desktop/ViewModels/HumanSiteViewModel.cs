@@ -156,10 +156,18 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         StringComparer.OrdinalIgnoreCase));
 
     public string TemplateText => ActiveSite is { } site
-        ? site.Template is { } template
-            ? $"{site.Economy} #{site.SubType} · {template.Name}"
-            : $"{site.Economy} · type not identified"
+        ? GetTemplateText(site)
         : "Settlement type unavailable";
+
+    private static string GetTemplateText(HumanSiteLiveSnapshot site)
+    {
+        if (site.Template is { } template)
+        {
+            return $"{site.Economy} #{site.SubType} · {template.Name}";
+        }
+
+        return $"{site.Economy} · type not identified";
+    }
 
     public string GeometryStatus => ActiveSite switch
     {
@@ -172,9 +180,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     public string FactionText => ActiveSite is { } site
         && !string.IsNullOrWhiteSpace(site.FactionName)
-            ? string.IsNullOrWhiteSpace(site.FactionState)
-                ? site.FactionName
-                : $"{site.FactionName} · {site.FactionState}"
+            ? (string.IsNullOrWhiteSpace(site.FactionState)) switch
+            {
+                true => site.FactionName,
+                false => $"{site.FactionName} · {site.FactionState}"
+            }
             : "Controlling faction unavailable";
 
     public string GovernmentText => ActiveSite is { } site
@@ -675,7 +685,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         var manualFootAlignment = status?.OnFootExterior == true
             && allowManualFootAlignment;
         var automaticDockAlignment = status?.Docked == true
-            && status.OnFoot == false;
+            && !status.OnFoot;
         if (state.CurrentSite is not { } site
             || status is not { HasLatitudeLongitude: true } currentStatus
             || currentStatus.PlanetRadius <= 0
@@ -686,9 +696,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
         var activeVehicle = currentStatus.InTaxi
             ? "taxi"
-            : currentStatus.OnFoot
-                ? "foot"
-                : vehicle;
+            : (currentStatus.OnFoot) switch
+            {
+                true => "foot",
+                false => vehicle
+            };
         var source = currentStatus.InTaxi
             ? HumanSiteGeometrySource.TaxiDock
             : manualFootAlignment
@@ -872,11 +884,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     }
 
     private static bool TryParseQuestWaypoint(
-        IReadOnlyList<double> values,
+        double[] values,
         out SurfaceCoordinate coordinate)
     {
         coordinate = default;
-        if (values.Count < 2
+        if (values.Length < 2
             || !double.IsFinite(values[0])
             || !double.IsFinite(values[1]))
         {
@@ -1099,9 +1111,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
         var activeVehicle = currentStatus.InTaxi
             ? "taxi"
-            : currentStatus.OnFoot
-                ? "foot"
-                : vehicle;
+            : (currentStatus.OnFoot) switch
+            {
+                true => "foot",
+                false => vehicle
+            };
         if (string.IsNullOrWhiteSpace(activeVehicle))
         {
             const string warning =
@@ -1197,7 +1211,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     }
 
     private async Task SaveMaterialActivityAsync(
-        IReadOnlyList<HumanSiteCollectedMaterial> materials)
+        List<HumanSiteCollectedMaterial> materials)
     {
         if (materialStore is null
             || !TrackMaterialCollection
@@ -1337,19 +1351,24 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     private HumanSiteKnowledgeContext? CreateKnowledgeContext()
     {
-        return !string.IsNullOrWhiteSpace(frontierId)
-            && !string.IsNullOrWhiteSpace(systemName)
-            && systemAddress > 0
-                ? new HumanSiteKnowledgeContext(
-                    frontierId,
-                    commanderName,
-                    systemName,
-                    systemAddress,
-                    starPosition,
-                    status?.PlanetRadius is > 0
-                        ? (double)status.PlanetRadius
-                        : 0)
-                : null;
+        if (string.IsNullOrWhiteSpace(frontierId)
+            || string.IsNullOrWhiteSpace(systemName)
+            || systemAddress <= 0)
+        {
+            return null;
+        }
+
+        var radius = status?.PlanetRadius is > 0
+            ? (double)status.PlanetRadius
+            : 0;
+
+        return new HumanSiteKnowledgeContext(
+            frontierId,
+            commanderName,
+            systemName,
+            systemAddress,
+            starPosition,
+            radius);
     }
 
     private double? GetAutomaticZoom()
@@ -1392,9 +1411,11 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         {
             return DistanceToOriginMeters < 2_500
                 ? ShipZoom
-                : DistanceToOriginMeters < 4_000
-                    ? 0.2
-                    : 0.1;
+                : (DistanceToOriginMeters < 4_000) switch
+                {
+                    true => 0.2,
+                    false => 0.1
+                };
         }
 
         return null;

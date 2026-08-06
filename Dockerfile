@@ -33,4 +33,5 @@ RUN dotnet publish src/SrvSurvey.Desktop/SrvSurvey.Desktop.csproj \
 # Export the publish directory with:
 # docker build --output type=local,dest=./artifacts/docker .
 FROM scratch AS export
+USER 65532:65532
 COPY --from=publish /artifacts/linux-x64/ /

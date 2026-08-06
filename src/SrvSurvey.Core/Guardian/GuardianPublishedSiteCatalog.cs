@@ -115,10 +115,12 @@ public sealed class GuardianPublishedSiteCatalog
         var identifier = GetRequiredString(root, "sid");
         var kind = identifier.StartsWith("GR", StringComparison.OrdinalIgnoreCase)
             ? GuardianSiteKind.Ruins
-            : identifier.StartsWith("GS", StringComparison.OrdinalIgnoreCase)
-                ? GuardianSiteKind.Structure
-                : throw new InvalidDataException(
-                    $"Guardian survey {sourceName} has unknown ID {identifier}.");
+            : (identifier.StartsWith("GS", StringComparison.OrdinalIgnoreCase)) switch
+            {
+                true => GuardianSiteKind.Structure,
+                false => throw new InvalidDataException(
+                                                                      $"Guardian survey {sourceName} has unknown ID {identifier}.")
+            };
         if (!int.TryParse(
             identifier.AsSpan(2),
             NumberStyles.Integer,
@@ -188,7 +190,7 @@ public sealed class GuardianPublishedSiteCatalog
             : null;
     }
 
-    private static IReadOnlyDictionary<string, GuardianPoiStatus> ReadStatuses(
+    private static Dictionary<string, GuardianPoiStatus> ReadStatuses(
         JsonElement root)
     {
         var statuses = new Dictionary<string, GuardianPoiStatus>(
@@ -219,7 +221,7 @@ public sealed class GuardianPublishedSiteCatalog
         }
     }
 
-    private static IReadOnlyDictionary<string, int> ReadRelicHeadings(
+    private static Dictionary<string, int> ReadRelicHeadings(
         JsonElement root)
     {
         var headings = new Dictionary<string, int>(
@@ -254,7 +256,7 @@ public sealed class GuardianPublishedSiteCatalog
         return headings;
     }
 
-    private static IReadOnlyList<GuardianObelisk> ReadObelisks(JsonElement root)
+    private static GuardianObelisk[] ReadObelisks(JsonElement root)
     {
         if (!root.TryGetProperty("ao", out var value)
             || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)

@@ -13,6 +13,11 @@ public sealed record RegionalCodexCandidate(
 
 public sealed class RegionalCodexCandidateCatalog
 {
+    private static readonly JsonSerializerOptions IndentedJson = new()
+    {
+        WriteIndented = true,
+    };
+
     public const string LegacyFileName = "codexNotFound.json";
 
     private const long MaximumFileBytes = 16L * 1024 * 1024;
@@ -30,7 +35,7 @@ public sealed class RegionalCodexCandidateCatalog
         "Name",
         "Varient",
     ];
-    private readonly IReadOnlyDictionary<int, IReadOnlySet<long>> entryIdsByRegion;
+    private readonly Dictionary<int, IReadOnlySet<long>> entryIdsByRegion;
 
     private RegionalCodexCandidateCatalog(
         IReadOnlyList<RegionalCodexCandidate> entries,
@@ -194,10 +199,7 @@ public sealed class RegionalCodexCandidateCatalog
                         + entry.Variant)
                     .ToArray(),
                 StringComparer.Ordinal);
-        return JsonSerializer.Serialize(payload, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-        });
+        return JsonSerializer.Serialize(payload, IndentedJson);
     }
 
     internal static RegionalCodexCandidateCatalog ParsePublishedCsv(
@@ -374,28 +376,117 @@ public sealed class RegionalCodexCandidateCatalog
         return new RegionalCodexCandidateCatalog(distinct, sourcePath, []);
     }
 
-    private static IReadOnlyList<IReadOnlyList<string>> ParseCsvRows(string text)
+    private static List<IReadOnlyList<string>> ParseCsvRows(string text)
     {
-        var rows = new List<IReadOnlyList<string>>();
-        var row = new List<string>();
-        var field = new StringBuilder();
-        var inQuotes = false;
-        var closedQuote = false;
+        return new CsvRowParser(text).Parse();
+    }
 
-        void AddField()
+    private sealed class CsvRowParser(string text)
+    {
+        private readonly string text = text;
+        private readonly List<IReadOnlyList<string>> rows = [];
+        private readonly List<string> row = [];
+        private readonly StringBuilder field = new();
+        private bool inQuotes;
+        private bool closedQuote;
+        private int index;
+
+        public List<IReadOnlyList<string>> Parse()
         {
-            row.Add(field.ToString());
-            if (row.Count > MaximumCsvColumns)
+            while (index < text.Length)
             {
-                throw new InvalidDataException(
-                    "The published regional Codex candidate CSV has too many columns.");
+                var character = text[index];
+                if (inQuotes)
+                {
+                    ParseQuoted(character);
+                    continue;
+                }
+
+                ParseUnquoted(character);
             }
 
-            field.Clear();
-            closedQuote = false;
+            if (inQuotes)
+            {
+                throw new InvalidDataException(
+                    "The published regional Codex candidate CSV ends inside a quoted field.");
+            }
+
+            AddRow();
+
+            return rows;
         }
 
-        void AddRow()
+        private void ParseQuoted(char character)
+        {
+            if (character == '\"')
+            {
+                if (index + 1 < text.Length && text[index + 1] == '\"')
+                {
+                    AppendField('\"');
+                    index += 2;
+                    return;
+                }
+
+                inQuotes = false;
+                closedQuote = true;
+                index++;
+                return;
+            }
+
+            AppendField(character);
+            index++;
+        }
+
+        private void ParseUnquoted(char character)
+        {
+            if (character == '\"')
+            {
+                if (field.Length > 0 || closedQuote)
+                {
+                    throw new InvalidDataException(
+                        "The published regional Codex candidate CSV contains an invalid quote.");
+                }
+
+                inQuotes = true;
+                index++;
+                return;
+            }
+
+            if (character == ',')
+            {
+                AddField();
+                index++;
+                return;
+            }
+
+            if (character is '\r' or '\n')
+            {
+                AddRow();
+                if (character == '\r'
+                    && index + 1 < text.Length
+                    && text[index + 1] == '\n')
+                {
+                    index += 2;
+                }
+                else
+                {
+                    index++;
+                }
+
+                return;
+            }
+
+            if (closedQuote)
+            {
+                throw new InvalidDataException(
+                    "The published regional Codex candidate CSV contains text after a closing quote.");
+            }
+
+            AppendField(character);
+            index++;
+        }
+
+        private void AddRow()
         {
             AddField();
             if (row.Any(value => value.Length > 0))
@@ -411,83 +502,28 @@ public sealed class RegionalCodexCandidateCatalog
             row.Clear();
         }
 
-        for (var index = 0; index < text.Length; index++)
+        private void AddField()
         {
-            var character = text[index];
-            if (inQuotes)
+            row.Add(field.ToString());
+            if (row.Count > MaximumCsvColumns)
             {
-                if (character == '"')
-                {
-                    if (index + 1 < text.Length && text[index + 1] == '"')
-                    {
-                        field.Append('"');
-                        index++;
-                    }
-                    else
-                    {
-                        inQuotes = false;
-                        closedQuote = true;
-                    }
-                }
-                else
-                {
-                    field.Append(character);
-                }
-            }
-            else if (character == '"')
-            {
-                if (field.Length > 0 || closedQuote)
-                {
-                    throw new InvalidDataException(
-                        "The published regional Codex candidate CSV contains an invalid quote.");
-                }
-
-                inQuotes = true;
-            }
-            else if (character == ',')
-            {
-                AddField();
-            }
-            else if (character is '\r' or '\n')
-            {
-                AddRow();
-                if (character == '\r'
-                    && index + 1 < text.Length
-                    && text[index + 1] == '\n')
-                {
-                    index++;
-                }
-            }
-            else
-            {
-                if (closedQuote)
-                {
-                    throw new InvalidDataException(
-                        "The published regional Codex candidate CSV contains text after a closing quote.");
-                }
-
-                field.Append(character);
+                throw new InvalidDataException(
+                    "The published regional Codex candidate CSV has too many columns.");
             }
 
+            field.Clear();
+            closedQuote = false;
+        }
+
+        private void AppendField(char value)
+        {
+            field.Append(value);
             if (field.Length > MaximumCsvFieldCharacters)
             {
                 throw new InvalidDataException(
                     "The published regional Codex candidate CSV contains an oversized field.");
             }
         }
-
-        if (inQuotes)
-        {
-            throw new InvalidDataException(
-                "The published regional Codex candidate CSV ends inside a quoted field.");
-        }
-
-        if (field.Length > 0 || row.Count > 0 || closedQuote)
-        {
-            AddRow();
-        }
-
-        return rows;
     }
 
     private static bool ParseCsvBoolean(

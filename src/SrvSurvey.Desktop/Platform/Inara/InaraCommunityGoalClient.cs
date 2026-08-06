@@ -32,6 +32,10 @@ public sealed record InaraCommunityGoalsResult(
     bool IsStale,
     string Warning);
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The injected client is application-scoped and its gate may have in-flight waiters.")]
 public sealed class InaraCommunityGoalClient : IInaraCommunityGoalClient
 {
     public const string Endpoint = "https://inara.cz/inapi/v1/";

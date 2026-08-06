@@ -630,7 +630,7 @@ public sealed class EddnPublisherTests
     }
 
     private static async Task BootstrapAsync(
-        IEddnPublisher publisher,
+        EddnPublisher publisher,
         params JournalEventEnvelope[] additionalEvents)
     {
         await publisher.ApplyAsync(

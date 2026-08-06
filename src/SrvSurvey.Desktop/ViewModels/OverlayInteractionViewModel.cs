@@ -633,16 +633,18 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         var changes = session?.Changes
             ?? new Dictionary<string, LegacyOverlayPlacement>();
         var failures = new List<string>();
-        foreach (var state in liveWindows.Values.ToArray())
+        foreach (var window in liveWindows.Values
+            .Select(state => state.Window)
+            .ToArray())
         {
-            DetachLiveWindow(state.Window);
+            DetachLiveWindow(window);
             if (platform is null)
             {
                 continue;
             }
 
             var result = platform.SetInteractive(
-                state.Window,
+                window,
                 interactive: false);
             if (!result.IsPrepared || result.IsInteractive)
             {

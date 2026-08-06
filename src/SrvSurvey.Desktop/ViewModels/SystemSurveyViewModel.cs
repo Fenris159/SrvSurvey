@@ -31,7 +31,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     private IReadOnlyList<FssBodyRowViewModel> fssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> dssBodies = [];
     private IReadOnlyList<SurveyBodyReferenceViewModel> biologicalBodies = [];
-    private IReadOnlySet<int> canonnBiologyBodyIds = new HashSet<int>();
+    private HashSet<int> canonnBiologyBodyIds = new HashSet<int>();
     private bool hasCanonnSystemData;
     private BodyInformationViewModel? bodyInformation;
     private BiologySurveyViewModel? biologySurvey;
@@ -853,7 +853,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
     }
 
-    public string CanonnBiologyHint =>
+    public string CanonnBiologyHint { get; } =
         "Canonn has known biological signals for this body.";
 
     public bool HasTimedBiologySelection => timedBiologyBodyId is not null;
@@ -946,7 +946,8 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public bool HasFssBodies => FssBodies.Count > 0;
 
-    public string FssEmptyText => "Scan a body in the FSS to populate this list.";
+    public string FssEmptyText { get; } =
+        "Scan a body in the FSS to populate this list.";
 
     public SystemScanBodySnapshot? LastFssBody => snapshot.LastDetailedBodyId is { } id
         ? snapshot.Bodies.FirstOrDefault(body => body.BodyId == id)
@@ -955,7 +956,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
     public bool HasLastFssBody => LastFssBody is not null;
 
     public string LastFssBodyName => LastFssBody is { } body
-        ? (body.WasDiscovered ? string.Empty : "⚑ ") + body.Name
+        ? ((body.WasDiscovered) switch
+        {
+            true => string.Empty,
+            false => "⚑ "
+        }) + body.Name
         : "Waiting for a detailed body scan";
 
     public string LastFssBodyClass => LastFssBody is { } body
@@ -1002,9 +1007,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
     public string LastFssSignalsText => LastFssBody is
     { BiologicalSignalCount: > 0 } body
-            ? body.BiologicalSignalCount == 1
-                ? "1 biological signal"
-                : $"{body.BiologicalSignalCount:N0} biological signals"
+            ? (body.BiologicalSignalCount == 1) switch
+            {
+                true => "1 biological signal",
+                false => $"{body.BiologicalSignalCount:N0} biological signals"
+            }
             : string.Empty;
 
     public bool HasLastFssSignals => !string.IsNullOrWhiteSpace(
@@ -2100,9 +2107,11 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             HighlightDssCandidates
                 && (body.IsDssComplete
                     ? body.CurrentScanValue
-                    : planetish
-                        ? body.EstimatedMappedValue
-                        : body.ScanValue) > DssValueFloor,
+                    : (planetish) switch
+                    {
+                        true => body.EstimatedMappedValue,
+                        false => body.ScanValue
+                    }) > DssValueFloor,
             body.SurfacePressure <= 0
                 ? "None"
                 : $"{body.SurfacePressure / 100_000d:N4} bar",
@@ -2662,25 +2671,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return false;
         }
 
-        foreach (var parent in parents.EnumerateArray())
-        {
-            if (parent.ValueKind != System.Text.Json.JsonValueKind.Object)
-            {
-                return false;
-            }
-
-            foreach (var property in parent.EnumerateObject())
-            {
-                return string.Equals(
-                    property.Name,
-                    "Ring",
-                    StringComparison.OrdinalIgnoreCase);
-            }
-
-            return false;
-        }
-
-        return false;
+        return parents.EnumerateArray()
+            .Where(parent =>
+                parent.ValueKind == System.Text.Json.JsonValueKind.Object)
+            .SelectMany(parent => parent.EnumerateObject())
+            .Any(property => string.Equals(
+                property.Name,
+                "Ring",
+                StringComparison.OrdinalIgnoreCase));
     }
 
     private static long? GetInt64(

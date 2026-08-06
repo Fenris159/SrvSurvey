@@ -258,9 +258,9 @@ public sealed class SystemScanState
 
     private void ApplySystemLocation(JsonElement root)
     {
-        var address = GetInt64(root, "SystemAddress");
+        var address = GetInt64(root, nameof(SystemAddress));
         var name = GetString(root, "StarSystem")
-            ?? GetString(root, "SystemName");
+            ?? GetString(root, nameof(SystemName));
         if (address is not null)
         {
             SetSystem(address.Value, name);
@@ -270,7 +270,7 @@ public sealed class SystemScanState
             SystemName = name;
         }
 
-        Population = GetInt64(root, "Population") ?? Population;
+        Population = GetInt64(root, nameof(Population)) ?? Population;
         StarPosition = GetGalacticCoordinate(root, "StarPos")
             ?? StarPosition;
         var bodyId = GetInt32(root, "BodyID");
@@ -363,8 +363,8 @@ public sealed class SystemScanState
         if (parents is not null)
         {
             body.Parents = parents;
-            body.HasRingParent = parents.FirstOrDefault()?.Kind
-                == SystemBodyParentKind.Ring;
+            body.HasRingParent = parents.Count > 0
+                && parents[0].Kind == SystemBodyParentKind.Ring;
         }
 
         body.AtmosphereComposition = ReadComposition(root, "AtmosphereComposition");
@@ -595,7 +595,7 @@ public sealed class SystemScanState
 
     private bool EnsureSystem(JsonElement root)
     {
-        var address = GetInt64(root, "SystemAddress");
+        var address = GetInt64(root, nameof(SystemAddress));
         if (address is null)
         {
             return SystemAddress is not null;
@@ -605,7 +605,7 @@ public sealed class SystemScanState
         {
             SetSystem(
                 address.Value,
-                GetString(root, "SystemName")
+                GetString(root, nameof(SystemName))
                     ?? GetString(root, "StarSystem"));
         }
 
@@ -727,8 +727,8 @@ public sealed class SystemScanState
         if (target.Parents.Count == 0 && source.Parents.Count > 0)
         {
             target.Parents = source.Parents.ToArray();
-            target.HasRingParent = source.Parents.FirstOrDefault()?.Kind
-                == SystemBodyParentKind.Ring;
+            target.HasRingParent = source.Parents.Count > 0
+                && source.Parents[0].Kind == SystemBodyParentKind.Ring;
             changed = true;
         }
 
@@ -809,13 +809,11 @@ public sealed class SystemScanState
             target,
             StringComparer.OrdinalIgnoreCase);
         var changed = false;
-        foreach (var pair in source)
+        foreach (var pair in source.Where(pair =>
+            !merged.ContainsKey(pair.Key)))
         {
-            if (!merged.ContainsKey(pair.Key))
-            {
-                merged[pair.Key] = pair.Value;
-                changed = true;
-            }
+            merged[pair.Key] = pair.Value;
+            changed = true;
         }
 
         if (changed)
@@ -984,18 +982,14 @@ public sealed class SystemScanState
             return 0;
         }
 
-        foreach (var signal in signalsElement.EnumerateArray())
-        {
-            if (GetString(signal, "Type") == type)
-            {
-                return GetInt32(signal, "Count") ?? 0;
-            }
-        }
-
-        return 0;
+        var signal = signalsElement.EnumerateArray().FirstOrDefault(signal =>
+            GetString(signal, "Type") == type);
+        return signal.ValueKind == JsonValueKind.Undefined
+            ? 0
+            : GetInt32(signal, "Count") ?? 0;
     }
 
-    private static IReadOnlyDictionary<string, double> ReadComposition(
+    private static Dictionary<string, double> ReadComposition(
         JsonElement root,
         string propertyName)
     {
@@ -1019,7 +1013,7 @@ public sealed class SystemScanState
         return result;
     }
 
-    private static IReadOnlyList<SystemRingSnapshot> ReadRings(JsonElement root)
+    private static SystemRingSnapshot[] ReadRings(JsonElement root)
     {
         if (!root.TryGetProperty("Rings", out var rings)
             || rings.ValueKind != JsonValueKind.Array)
@@ -1036,7 +1030,7 @@ public sealed class SystemScanState
             .ToArray();
     }
 
-    private static IReadOnlyList<SystemBodyParentSnapshot>? ReadParents(
+    private static List<SystemBodyParentSnapshot>? ReadParents(
         JsonElement root)
     {
         if (!root.TryGetProperty("Parents", out var parents)

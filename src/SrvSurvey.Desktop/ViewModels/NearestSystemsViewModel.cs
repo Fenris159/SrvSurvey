@@ -202,9 +202,11 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
 
     public string SearchButtonText => IsSearching
         ? "Searching\u2026"
-        : IsCanonnMode
-            ? "Find nearest"
-            : "Find variants";
+        : (IsCanonnMode) switch
+        {
+            true => "Find nearest",
+            false => "Find variants"
+        };
 
     public bool IsSearching
     {
@@ -339,7 +341,7 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             Results = searchResult.Rows
                 .Select(row => new NearestSystemRowViewModel(row))
                 .ToArray();
-            SelectedResult = Results.FirstOrDefault();
+            SelectedResult = Results.Count > 0 ? Results[0] : null;
             SpanshSearchReference = searchResult.SpanshSearchReference;
             StatusMessage = Results.Count == 0
                 ? "No nearby systems matched this search."
@@ -478,10 +480,10 @@ public sealed class NearestSystemsViewModel : INotifyPropertyChanged
             ? !string.IsNullOrWhiteSpace(BiologicalSignal)
             : !string.IsNullOrWhiteSpace(Genus)
                 && !string.IsNullOrWhiteSpace(Species)
-                && ParseVariantColors().Count > 0;
+                && ParseVariantColors().Length > 0;
     }
 
-    private IReadOnlyList<string> ParseVariantColors()
+    private string[] ParseVariantColors()
     {
         return VariantColors.Split(
                 [',', ';', '\r', '\n'],

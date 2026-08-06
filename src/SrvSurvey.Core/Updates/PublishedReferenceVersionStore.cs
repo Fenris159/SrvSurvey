@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -30,6 +31,14 @@ public sealed class PublishedReferenceVersionStore
 
     private const int ManifestVersion = 1;
 
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "The instance API is injected as the published-version store contract.")]
+    [SuppressMessage(
+        "Maintainability",
+        "S2325:Make methods and properties static",
+        Justification = "The instance API is injected as the published-version store contract.")]
     public PublishedReferenceVersions Load(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
@@ -86,6 +95,10 @@ public sealed class PublishedReferenceVersionStore
         }
     }
 
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "The instance API is injected as the published-version store contract.")]
     public async Task WriteAsync(
         string publishedDataDirectory,
         PublishedReferenceVersions versions,
