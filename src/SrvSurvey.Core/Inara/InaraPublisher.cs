@@ -105,70 +105,15 @@ public sealed class InaraPublisher : IInaraPublisher
         foreach (var journalEvent in update.JournalEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                if (journalEvent.EventName is "Fileheader" or "LoadGame")
-                {
-                    ResetPublicationSession(update.JournalPath);
-                }
-
-                var entry = JObject.Parse(journalEvent.RawJson);
-                if (publicationAuthorized)
-                {
-                    entry = await AddSidecarDataAsync(
-                            entry,
-                            journalEvent,
-                            update.Cargo,
-                            update.JournalPath,
-                            update.AllowSharedData,
-                            warnings,
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                }
-
-                ApplyPublicationState(journalEvent, entry);
-                var context = CreateContext(update);
-                var identityMatches = CommanderMatchesOptions(
-                    context,
-                    options);
-                var canCollect = update.AllowPublishing
-                    && identityMatches
-                    && CanUpload(
-                        options.Enabled,
-                        options.ApiKey,
-                        options.GameVersion,
-                        options.IsOdyssey,
-                        mapper.InMulticrew);
-                var mapped = mapper.Process(entry, context, canCollect);
-                var credentials = identityMatches
-                    ? GetCredentials(context, options)
-                    : null;
-                if (credentials is not null && mapped.Count > 0)
-                {
-                    var dropped = queue.Enqueue(credentials, mapped);
-                    if (dropped > 0)
-                    {
-                        warnings.Add(
-                            $"Inara discarded {dropped} oldest queued event(s) to keep its local backlog bounded.");
-                    }
-                    queuedNames.AddRange(mapped.Select(item => item.Name));
-                    lock (sendStateSync)
-                    {
-                        nextSendAt ??= timeProvider.GetUtcNow() + SendInterval;
-                    }
-                }
-            }
-            catch (JsonException exception)
-            {
-                warnings.Add(
-                    $"Inara ignored {journalEvent.EventName}: {exception.Message}");
-            }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
-            {
-                warnings.Add(
-                    $"Inara could not prepare {journalEvent.EventName}: {exception.Message}");
-            }
+            await CollectJournalEventAsync(
+                    update,
+                    options,
+                    journalEvent,
+                    publicationAuthorized,
+                    queuedNames,
+                    warnings,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         var completed = TakeCompletedSendResult();
@@ -190,6 +135,97 @@ public sealed class InaraPublisher : IInaraPublisher
             GetPendingCount(),
             queuedNames.Distinct(StringComparer.Ordinal).ToArray(),
             warnings);
+    }
+
+    private async Task CollectJournalEventAsync(
+        InaraPublicationUpdate update,
+        InaraPublicationOptions options,
+        JournalEventEnvelope journalEvent,
+        bool publicationAuthorized,
+        List<string> queuedNames,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (journalEvent.EventName is "Fileheader" or "LoadGame")
+            {
+                ResetPublicationSession(update.JournalPath);
+            }
+
+            var entry = JObject.Parse(journalEvent.RawJson);
+            if (publicationAuthorized)
+            {
+                entry = await AddSidecarDataAsync(
+                        entry,
+                        journalEvent,
+                        update.Cargo,
+                        update.JournalPath,
+                        update.AllowSharedData,
+                        warnings,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            ApplyPublicationState(journalEvent, entry);
+            QueueMappedEvents(
+                update,
+                options,
+                entry,
+                queuedNames,
+                warnings);
+        }
+        catch (JsonException exception)
+        {
+            warnings.Add(
+                $"Inara ignored {journalEvent.EventName}: {exception.Message}");
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add(
+                $"Inara could not prepare {journalEvent.EventName}: {exception.Message}");
+        }
+    }
+
+    private void QueueMappedEvents(
+        InaraPublicationUpdate update,
+        InaraPublicationOptions options,
+        JObject entry,
+        List<string> queuedNames,
+        List<string> warnings)
+    {
+        var context = CreateContext(update);
+        var identityMatches = CommanderMatchesOptions(context, options);
+        var canCollect = update.AllowPublishing
+            && identityMatches
+            && CanUpload(
+                options.Enabled,
+                options.ApiKey,
+                options.GameVersion,
+                options.IsOdyssey,
+                mapper.InMulticrew);
+        var mapped = mapper.Process(entry, context, canCollect);
+        var credentials = identityMatches
+            ? GetCredentials(context, options)
+            : null;
+        if (credentials is null || mapped.Count == 0)
+        {
+            return;
+        }
+
+        var dropped = queue.Enqueue(credentials, mapped);
+        if (dropped > 0)
+        {
+            warnings.Add(
+                $"Inara discarded {dropped} oldest queued event(s) to keep its local backlog bounded.");
+        }
+
+        queuedNames.AddRange(mapped.Select(item => item.Name));
+        lock (sendStateSync)
+        {
+            nextSendAt ??= timeProvider.GetUtcNow() + SendInterval;
+        }
     }
 
     public async Task<InaraPublicationResult> FlushAsync(
@@ -675,13 +711,11 @@ public sealed class InaraPublisher : IInaraPublisher
 
             if (IsTransient(response.StatusCode))
             {
-                Requeue(batch, warnings);
-                ScheduleNextAttempt(
-                    transientFailure: true,
+                return DeferBatch(
+                    batch,
+                    warnings,
+                    $"Inara upload was deferred after HTTP {(int)response.StatusCode}; {batch.Count} event(s) were retained.",
                     GetRetryAfter(response.Headers.RetryAfter));
-                warnings.Add(
-                    $"Inara upload was deferred after HTTP {(int)response.StatusCode}; {batch.Count} event(s) were retained.");
-                return CreateSendResult(0, warnings);
             }
 
             if (!IsSuccess((int)response.StatusCode))
@@ -696,84 +730,7 @@ public sealed class InaraPublisher : IInaraPublisher
                     response.Content,
                     cancellationToken)
                 .ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(body))
-            {
-                throw new InvalidDataException("Inara returned an empty response.");
-            }
-
-            var result = JObject.Parse(body);
-            var headerStatus = result
-                .SelectToken("header.eventStatus")
-                ?.Value<int?>();
-            var responseEvents = result["events"] as JArray;
-            var responseIsComplete = headerStatus is not null
-                && responseEvents?.Count == batch.Count
-                && responseEvents.OfType<JObject>().All(
-                    eventResult => eventResult["eventStatus"] is not null);
-            if (!responseIsComplete)
-            {
-                throw new InvalidDataException(
-                    "Inara returned an incomplete response.");
-            }
-
-            if (!IsSuccess(headerStatus!.Value))
-            {
-                if (IsTransient(headerStatus.Value))
-                {
-                    Requeue(batch, warnings);
-                    ScheduleNextAttempt(transientFailure: true);
-                    warnings.Add(
-                        $"Inara deferred {batch.Count} event(s) with API status {headerStatus}.");
-                }
-                else
-                {
-                    warnings.Add(
-                        $"Inara rejected a batch of {batch.Count} event(s) with API status {headerStatus}.");
-                    ScheduleNextAttempt(transientFailure: false);
-                }
-
-                return CreateSendResult(0, warnings);
-            }
-
-            var statuses = responseEvents!
-                .OfType<JObject>()
-                .Select((eventResult, index) => new
-                {
-                    Index = index,
-                    Status = eventResult.Value<int>("eventStatus"),
-                })
-                .ToArray();
-            var transient = statuses
-                .Where(item => IsTransient(item.Status))
-                .Select(item => batch[item.Index])
-                .ToArray();
-            var rejected = statuses
-                .Where(item => !IsSuccess(item.Status)
-                    && !IsTransient(item.Status))
-                .ToArray();
-            if (transient.Length > 0)
-            {
-                Requeue(transient, warnings);
-                ScheduleNextAttempt(transientFailure: true);
-                warnings.Add(
-                    $"Inara deferred {transient.Length} event(s); they were retained for retry.");
-            }
-            else
-            {
-                ScheduleNextAttempt(transientFailure: false);
-            }
-
-            if (rejected.Length > 0)
-            {
-                var names = rejected
-                    .Select(item => batch[item.Index].Event.Name)
-                    .Distinct(StringComparer.Ordinal);
-                warnings.Add(
-                    $"Inara rejected {rejected.Length} event(s): {string.Join(", ", names)}.");
-            }
-
-            var accepted = statuses.Count(item => IsSuccess(item.Status));
-            return CreateSendResult(accepted, warnings);
+            return ProcessInaraResponseBody(body, batch, warnings);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -899,6 +856,119 @@ public sealed class InaraPublisher : IInaraPublisher
                 nextSendAt = candidate;
             }
         }
+    }
+
+    private InaraPublicationResult DeferBatch(
+        IReadOnlyList<InaraQueuedEvent> batch,
+        List<string> warnings,
+        string warning,
+        TimeSpan? retryAfter = null)
+    {
+        Requeue(batch, warnings);
+        ScheduleNextAttempt(transientFailure: true, retryAfter);
+        warnings.Add(warning);
+        return CreateSendResult(0, warnings);
+    }
+
+    private InaraPublicationResult ProcessInaraResponseBody(
+        string? body,
+        IReadOnlyList<InaraQueuedEvent> batch,
+        List<string> warnings)
+    {
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            throw new InvalidDataException("Inara returned an empty response.");
+        }
+
+        var result = JObject.Parse(body);
+        var headerStatus = result
+            .SelectToken("header.eventStatus")
+            ?.Value<int?>();
+        var responseEvents = result["events"] as JArray;
+        var responseIsComplete = headerStatus is not null
+            && responseEvents?.Count == batch.Count
+            && responseEvents.OfType<JObject>().All(
+                eventResult => eventResult["eventStatus"] is not null);
+        if (!responseIsComplete)
+        {
+            throw new InvalidDataException(
+                "Inara returned an incomplete response.");
+        }
+
+        if (!IsSuccess(headerStatus!.Value))
+        {
+            return HandleUnsuccessfulHeader(headerStatus.Value, batch, warnings);
+        }
+
+        return ApplyEventStatuses(responseEvents!, batch, warnings);
+    }
+
+    private InaraPublicationResult HandleUnsuccessfulHeader(
+        int headerStatus,
+        IReadOnlyList<InaraQueuedEvent> batch,
+        List<string> warnings)
+    {
+        if (IsTransient(headerStatus))
+        {
+            Requeue(batch, warnings);
+            ScheduleNextAttempt(transientFailure: true);
+            warnings.Add(
+                $"Inara deferred {batch.Count} event(s) with API status {headerStatus}.");
+        }
+        else
+        {
+            warnings.Add(
+                $"Inara rejected a batch of {batch.Count} event(s) with API status {headerStatus}.");
+            ScheduleNextAttempt(transientFailure: false);
+        }
+
+        return CreateSendResult(0, warnings);
+    }
+
+    private InaraPublicationResult ApplyEventStatuses(
+        JArray responseEvents,
+        IReadOnlyList<InaraQueuedEvent> batch,
+        List<string> warnings)
+    {
+        var statuses = responseEvents
+            .OfType<JObject>()
+            .Select((eventResult, index) => new
+            {
+                Index = index,
+                Status = eventResult.Value<int>("eventStatus"),
+            })
+            .ToArray();
+        var transient = statuses
+            .Where(item => IsTransient(item.Status))
+            .Select(item => batch[item.Index])
+            .ToArray();
+        var rejected = statuses
+            .Where(item => !IsSuccess(item.Status)
+                && !IsTransient(item.Status))
+            .ToArray();
+        if (transient.Length > 0)
+        {
+            Requeue(transient, warnings);
+            ScheduleNextAttempt(transientFailure: true);
+            warnings.Add(
+                $"Inara deferred {transient.Length} event(s); they were retained for retry.");
+        }
+        else
+        {
+            ScheduleNextAttempt(transientFailure: false);
+        }
+
+        if (rejected.Length > 0)
+        {
+            var names = rejected
+                .Select(item => batch[item.Index].Event.Name)
+                .Distinct(StringComparer.Ordinal);
+            warnings.Add(
+                $"Inara rejected {rejected.Length} event(s): {string.Join(", ", names)}.");
+        }
+
+        var accepted = statuses.Count(item => IsSuccess(item.Status));
+        return CreateSendResult(accepted, warnings);
     }
 
     private InaraPublicationResult CreateSendResult(

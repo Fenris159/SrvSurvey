@@ -8,6 +8,18 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+public sealed record ReleaseInstallerConfiguration(
+    IReleasePackageDownloadService DownloadService,
+    IReleasePackageStagingService StagingService,
+    IReleaseInstallationPreparer InstallationPreparer,
+    IApplicationUpdateHandoffService HandoffService,
+    string DataDirectory,
+    string InstallationDirectory,
+    IReadOnlyList<string> StartupArguments,
+    Func<Task> Shutdown,
+    string? AutomaticInstallationUnavailableReason = null,
+    bool IsAppImage = false);
+
 public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
 {
     private readonly IReleaseUpdateService service;
@@ -281,43 +293,36 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         openUpdateDiagnosticsCommand.RaiseCanExecuteChanged();
     }
 
-    public void ConfigureInstaller(
-        IReleasePackageDownloadService downloadService,
-        IReleasePackageStagingService stagingService,
-        IReleaseInstallationPreparer installationPreparer,
-        IApplicationUpdateHandoffService handoffService,
-        string dataDirectory,
-        string installationDirectory,
-        IReadOnlyList<string> startupArguments,
-        Func<Task> shutdown,
-        string? automaticInstallationUnavailableReason = null,
-        bool isAppImage = false)
+    public void ConfigureInstaller(ReleaseInstallerConfiguration configuration)
     {
-        ArgumentNullException.ThrowIfNull(downloadService);
-        ArgumentNullException.ThrowIfNull(stagingService);
-        ArgumentNullException.ThrowIfNull(installationPreparer);
-        ArgumentNullException.ThrowIfNull(handoffService);
-        ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
-        ArgumentException.ThrowIfNullOrWhiteSpace(installationDirectory);
-        ArgumentNullException.ThrowIfNull(startupArguments);
-        ArgumentNullException.ThrowIfNull(shutdown);
-        var fullInstallationDirectory = Path.GetFullPath(installationDirectory);
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(configuration.DownloadService);
+        ArgumentNullException.ThrowIfNull(configuration.StagingService);
+        ArgumentNullException.ThrowIfNull(configuration.InstallationPreparer);
+        ArgumentNullException.ThrowIfNull(configuration.HandoffService);
+        ArgumentException.ThrowIfNullOrWhiteSpace(configuration.DataDirectory);
+        ArgumentException.ThrowIfNullOrWhiteSpace(configuration.InstallationDirectory);
+        ArgumentNullException.ThrowIfNull(configuration.StartupArguments);
+        ArgumentNullException.ThrowIfNull(configuration.Shutdown);
+        var fullInstallationDirectory = Path.GetFullPath(
+            configuration.InstallationDirectory);
         installer = new InstallerContext(
-            downloadService,
-            stagingService,
-            installationPreparer,
-            handoffService,
-            Path.GetFullPath(dataDirectory),
+            configuration.DownloadService,
+            configuration.StagingService,
+            configuration.InstallationPreparer,
+            configuration.HandoffService,
+            Path.GetFullPath(configuration.DataDirectory),
             fullInstallationDirectory,
-            startupArguments.ToArray(),
-            shutdown,
+            configuration.StartupArguments.ToArray(),
+            configuration.Shutdown,
             File.Exists(Path.Combine(
                 fullInstallationDirectory,
                 "release-package.json")),
-            string.IsNullOrWhiteSpace(automaticInstallationUnavailableReason)
+            string.IsNullOrWhiteSpace(
+                configuration.AutomaticInstallationUnavailableReason)
                 ? null
-                : automaticInstallationUnavailableReason.Trim(),
-            isAppImage);
+                : configuration.AutomaticInstallationUnavailableReason.Trim(),
+            configuration.IsAppImage);
         OnPropertyChanged(nameof(CanInstallCurrentInstallation));
         OnPropertyChanged(nameof(ShowInstallUnavailable));
         OnPropertyChanged(nameof(ShowGenericInstallUnavailable));

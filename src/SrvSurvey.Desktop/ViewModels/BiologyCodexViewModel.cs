@@ -3,14 +3,12 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Exploration;
+using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 {
-    private const string ImageSubmissionUrl =
-        "https://docs.google.com/forms/d/e/1FAIpQLSdtS-78k6MDb_L2RodLnVGoB3r2958SA5ARnufAEZxLeoRbhA/viewform";
-
     private readonly SystemSurveyViewModel survey;
     private readonly ExobiologyReferenceCatalog catalog;
     private readonly BiologyPredictionEvaluator evaluator;
@@ -239,7 +237,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
 
         var commander = commanderNameProvider() ?? string.Empty;
         var uri = new Uri(
-            ImageSubmissionUrl
+            WellKnownUris.CodexMissingForm.AbsoluteUri
                 + "?entry.987977054=" + Uri.EscapeDataString(commander)
                 + "&entry.1282362439="
                 + Uri.EscapeDataString(organism.DisplayName)
@@ -252,7 +250,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         return SelectedOrganism is { } organism
             ? LaunchUriAsync(
                 new Uri(
-                    "https://canonn-science.github.io/Codex-Regions/?entryid="
+                    WellKnownUris.CanonnCodexRegionsEntryPrefix
                         + organism.EntryId
                         + "&hud_category=Biology"),
                 "Canonn Codex Regions")
@@ -264,7 +262,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         return SelectedOrganism is { } organism
             ? LaunchUriAsync(
                 new Uri(
-                    "https://bioforge.canonn.tech/?entryid="
+                    WellKnownUris.CanonnBioforgeEntryPrefix
                         + Uri.EscapeDataString(organism.DisplayName)),
                 "Bioforge")
             : Task.FromResult(false);
@@ -274,7 +272,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
     {
         return LaunchUriAsync(
             new Uri(
-                "https://canonn-science.github.io/canonn-signals/?system="
+                WellKnownUris.CanonnSignalsSystemPrefix
                     + Uri.EscapeDataString(SystemName)),
             "Canonn Signals");
     }
@@ -282,7 +280,7 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
     public Task<bool> OpenSpanshAsync()
     {
         return LaunchUriAsync(
-            new Uri($"https://spansh.co.uk/system/{SystemAddress}"),
+            new Uri(WellKnownUris.SpanshSystemPrefix + SystemAddress),
             "Spansh");
     }
 
@@ -339,6 +337,21 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
         var inputs = BiologyPredictionContextBuilder.Build(
             survey.Snapshot,
             body.BodyId);
+        AddObservedOrganisms(body, inputs, entries);
+        AddPredictedOrganisms(body, inputs, entries);
+        return new BiologyCodexBodyViewModel(
+            body.BodyId,
+            body.Name,
+            body.ShortName,
+            body.BiologicalSignalCount,
+            entries.Values.ToArray());
+    }
+
+    private void AddObservedOrganisms(
+        SystemScanBodySnapshot body,
+        BiologyPredictionInputs? inputs,
+        Dictionary<long, BiologyCodexOrganismViewModel> entries)
+    {
         foreach (var organism in body.Organisms)
         {
             var reference = organism.EntryId is { } entryId
@@ -350,47 +363,54 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
                 continue;
             }
 
-            var status = organism.IsAnalyzed
-                ? BiologyCodexDiscoveryStatus.Analyzed
-                : (organism.IsScanned) switch
-                {
-                    true => BiologyCodexDiscoveryStatus.Confirmed,
-                    false => BiologyCodexDiscoveryStatus.Reported
-                };
+            BiologyCodexDiscoveryStatus status;
+            if (organism.IsAnalyzed)
+            {
+                status = BiologyCodexDiscoveryStatus.Analyzed;
+            }
+            else if (organism.IsScanned)
+            {
+                status = BiologyCodexDiscoveryStatus.Confirmed;
+            }
+            else
+            {
+                status = BiologyCodexDiscoveryStatus.Reported;
+            }
             entries[reference.EntryId] = CreateOrganism(
                 body,
                 reference,
                 status,
                 inputs);
         }
+    }
 
-        if (!survey.DisableBioPredictions && inputs is not null)
+    private void AddPredictedOrganisms(
+        SystemScanBodySnapshot body,
+        BiologyPredictionInputs? inputs,
+        Dictionary<long, BiologyCodexOrganismViewModel> entries)
+    {
+        if (survey.DisableBioPredictions || inputs is null)
         {
-            var result = evaluator.Evaluate(inputs.Context, inputs.Knowledge);
-            foreach (var prediction in result.PredictionDetails)
-            {
-                var reference = catalog.FindByDisplayName(prediction.Name);
-                if (reference is null || entries.ContainsKey(reference.EntryId))
-                {
-                    continue;
-                }
-
-                entries.Add(
-                    reference.EntryId,
-                    CreateOrganism(
-                        body,
-                        reference,
-                        BiologyCodexDiscoveryStatus.Predicted,
-                        inputs));
-            }
+            return;
         }
 
-        return new BiologyCodexBodyViewModel(
-            body.BodyId,
-            body.Name,
-            body.ShortName,
-            body.BiologicalSignalCount,
-            entries.Values.ToArray());
+        var result = evaluator.Evaluate(inputs.Context, inputs.Knowledge);
+        foreach (var prediction in result.PredictionDetails)
+        {
+            var reference = catalog.FindByDisplayName(prediction.Name);
+            if (reference is null || entries.ContainsKey(reference.EntryId))
+            {
+                continue;
+            }
+
+            entries.Add(
+                reference.EntryId,
+                CreateOrganism(
+                    body,
+                    reference,
+                    BiologyCodexDiscoveryStatus.Predicted,
+                    inputs));
+        }
     }
 
     private BiologyCodexOrganismViewModel CreateOrganism(
