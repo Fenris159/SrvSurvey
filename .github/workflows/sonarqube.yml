@@ -129,6 +129,9 @@ jobs:
             $scanner = Join-Path "${{ runner.temp }}\sonar-scanner" "dotnet-sonarscanner"
           }
 
+          # Focus analysis on product C# code. tools/*.py and similar scripts are not
+          # product surface area; leaving them in scope enables the Python analyzer and
+          # produces "set sonar.python.version" warnings on an otherwise C# project.
           $args = @(
             "begin",
             "/k:$env:SONAR_PROJECT_KEY",
@@ -136,6 +139,7 @@ jobs:
             '/d:sonar.host.url=https://sonarcloud.io',
             '/d:sonar.cs.opencover.reportsPaths=**/TestResults/**/coverage.opencover.xml',
             '/d:sonar.coverage.exclusions=SrvSurvey.Desktop/**/*.axaml,src/SrvSurvey.Desktop/**/*.axaml,SrvSurvey.Desktop/**/*.axaml.cs,src/SrvSurvey.Desktop/**/*.axaml.cs,SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs,src/SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs,SrvSurvey/**/*.Designer.cs',
+            '/d:sonar.exclusions=**/tools/**,**/artifacts/**,**/*.py,**/*.ps1',
             "/d:sonar.token=$env:SONAR_TOKEN"
           )
 
