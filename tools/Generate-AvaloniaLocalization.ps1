@@ -261,11 +261,11 @@ function Protect-TranslationText([string]$Value) {
         $Value,
         '\{(\d+)\}',
         '[[[SRV_ARG_$1]]]')
-    $matches = $script:TechnicalTokenPattern.Matches($protected)
-    for ($index = $matches.Count - 1; $index -ge 0; $index--) {
-        $match = $matches[$index]
-        $protected = $protected.Remove($match.Index, $match.Length).Insert(
-            $match.Index,
+    $tokenMatches = $script:TechnicalTokenPattern.Matches($protected)
+    for ($index = $tokenMatches.Count - 1; $index -ge 0; $index--) {
+        $tokenMatch = $tokenMatches[$index]
+        $protected = $protected.Remove($tokenMatch.Index, $tokenMatch.Length).Insert(
+            $tokenMatch.Index,
             "[[[SRV_TECH_$index]]]")
     }
 

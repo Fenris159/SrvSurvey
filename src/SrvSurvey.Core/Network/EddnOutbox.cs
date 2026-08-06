@@ -650,9 +650,9 @@ namespace SrvSurvey.Core.Network
             if (!string.IsNullOrWhiteSpace(message)) messages.Add(message);
         }
 
-        private bool tryAcquireOwnershipLocked(List<string> messages)
+        private void tryAcquireOwnershipLocked(List<string> messages)
         {
-            if (ownershipLease is not null) return true;
+            if (ownershipLease is not null) return;
             try
             {
                 var folder = Path.GetDirectoryName(ownershipPath);
@@ -670,7 +670,7 @@ namespace SrvSurvey.Core.Network
                     ownershipWarningReported = false;
                 }
 
-                return true;
+                return;
             }
             catch (Exception exception) when (
                 exception is IOException or UnauthorizedAccessException)
@@ -682,7 +682,7 @@ namespace SrvSurvey.Core.Network
                     ownershipWarningReported = true;
                 }
 
-                return false;
+                return;
             }
         }
 

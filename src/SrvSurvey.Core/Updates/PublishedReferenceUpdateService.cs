@@ -61,9 +61,16 @@ internal enum PublishedReferenceUpdateCheckpoint
 public sealed class PublishedReferenceUpdateService
     : IPublishedReferenceUpdateService
 {
+    private const string CodexReferenceFileName = "codexRef.json";
     private const long MaximumDownloadBytes = 32L * 1024 * 1024;
     private const long MaximumExpandedArchiveBytes = 128L * 1024 * 1024;
     private const int MaximumArchiveEntries = 2_048;
+
+    private static readonly string[] GuardianSiteSourceCatalogs =
+    [
+        "Guardian site index",
+        "Guardian published surveys",
+    ];
 
     private static readonly HttpClient SharedClient = CreateSharedClient();
     private static readonly JsonSerializerOptions IndentedJson = new()
@@ -209,7 +216,7 @@ public sealed class PublishedReferenceUpdateService
             {
                 await WriteDownloadAsync(
                         uris.CodexReference,
-                        Path.Combine(stageRoot, "codexRef.json"),
+                        Path.Combine(stageRoot, CodexReferenceFileName),
                         cancellationToken)
                     .ConfigureAwait(false);
                 updated.Add("Codex reference");
@@ -436,17 +443,17 @@ public sealed class PublishedReferenceUpdateService
         CancellationToken cancellationToken)
     {
         var livePublished = Path.Combine(root, "pub");
-        var liveCodex = Path.Combine(root, "codexRef.json");
+        var liveCodex = Path.Combine(root, CodexReferenceFileName);
         var liveRegionalCodex = Path.Combine(
             root,
             RegionalCodexCandidateCatalog.LegacyFileName);
         var stagePublished = Path.Combine(stageRoot, "pub");
-        var stageCodex = Path.Combine(stageRoot, "codexRef.json");
+        var stageCodex = Path.Combine(stageRoot, CodexReferenceFileName);
         var stageRegionalCodex = Path.Combine(
             stageRoot,
             RegionalCodexCandidateCatalog.LegacyFileName);
         var rollbackPublished = Path.Combine(rollbackRoot, "pub");
-        var rollbackCodex = Path.Combine(rollbackRoot, "codexRef.json");
+        var rollbackCodex = Path.Combine(rollbackRoot, CodexReferenceFileName);
         var rollbackRegionalCodex = Path.Combine(
             rollbackRoot,
             RegionalCodexCandidateCatalog.LegacyFileName);
@@ -576,7 +583,7 @@ public sealed class PublishedReferenceUpdateService
         var expectedSources = updated.SelectMany(name => name switch
         {
             "Guardian site indexes and surveys" =>
-                new[] { "Guardian site index", "Guardian published surveys" },
+                GuardianSiteSourceCatalogs,
             _ => new[] { name },
         }).ToHashSet(StringComparer.Ordinal);
         foreach (var catalogName in expectedSources)
@@ -870,12 +877,12 @@ public sealed class PublishedReferenceUpdateService
         CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(destinationRoot);
-        var sourceCodex = Path.Combine(sourceRoot, "codexRef.json");
+        var sourceCodex = Path.Combine(sourceRoot, CodexReferenceFileName);
         if (File.Exists(sourceCodex))
         {
             await CopyFileVerifiedAsync(
                     sourceCodex,
-                    Path.Combine(destinationRoot, "codexRef.json"),
+                    Path.Combine(destinationRoot, CodexReferenceFileName),
                     cancellationToken)
                 .ConfigureAwait(false);
         }

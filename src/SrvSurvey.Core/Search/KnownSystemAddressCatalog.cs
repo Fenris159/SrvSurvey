@@ -9,7 +9,6 @@ public sealed partial class KnownSystemAddressCatalog
     public const string LegacyFileName = "Boxel.Names.txt";
 
     private const long MaximumFileBytes = 16L * 1024 * 1024;
-    private const int MaximumEntries = 250_000;
     private const int MaximumLineCharacters = 16_384;
     private readonly IReadOnlyDictionary<string, long> addresses;
 
@@ -102,8 +101,6 @@ public sealed partial class KnownSystemAddressCatalog
             StringComparer.OrdinalIgnoreCase);
         var foundStart = false;
         var foundMissingStart = false;
-        var foundMissingEnd = false;
-        var hasEntries = false;
         string? line;
         while ((line = reader.ReadLine()) is not null)
         {
@@ -136,8 +133,11 @@ public sealed partial class KnownSystemAddressCatalog
             {
                 if (string.Equals(trimmed, "]", StringComparison.Ordinal))
                 {
-                    foundMissingEnd = true;
-                    break;
+                    ThrowIfNoEntries(result);
+                    return new KnownSystemAddressCatalog(
+                        result,
+                        sourcePath,
+                        []);
                 }
 
                 continue;
@@ -162,24 +162,25 @@ public sealed partial class KnownSystemAddressCatalog
                     "The known-system address catalog contains an invalid entry.");
             }
 
-            result.TryAdd(name, address);
-            hasEntries = true;
-            if (result.Count > MaximumEntries)
+            if (!result.TryAdd(name, address))
             {
                 throw new InvalidDataException(
-                    "The known-system address catalog contains too many entries.");
+                    "The known-system address catalog contains duplicated entries.");
             }
+
         }
 
-        if (!foundMissingEnd || !hasEntries)
+        throw new InvalidDataException(
+            "The known-system address catalog is incomplete.");
+    }
+
+    private static void ThrowIfNoEntries(Dictionary<string, long> result)
+    {
+        if (result.Count is 0)
         {
             throw new InvalidDataException(
                 "The known-system address catalog is incomplete.");
         }
-        return new KnownSystemAddressCatalog(
-            result,
-            sourcePath,
-            []);
     }
 
     [GeneratedRegex(

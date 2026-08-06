@@ -30,6 +30,101 @@ namespace SrvSurvey.Core.Network
     {
         private const string schemaRoot = "https://eddn.edcd.io/schemas/";
         private const string horizonsSku = "ELITE_HORIZONS_V_PLANETARY_LANDINGS";
+        private const string EventKey = "event";
+        private const string TimestampKey = "timestamp";
+        private const string DockedEvent = "Docked";
+        private const string FsdJumpEvent = "FSDJump";
+        private const string CarrierJumpEvent = "CarrierJump";
+        private const string ScanEvent = "Scan";
+        private const string LocationEvent = "Location";
+        private const string SaasSignalsFoundEvent = "SAASignalsFound";
+        private const string MarketEvent = "Market";
+        private const string OutfittingEvent = "Outfitting";
+        private const string ShipyardEvent = "Shipyard";
+        private const string FcmaterialsEvent = "FCMaterials";
+        private const string NavrouteEvent = "NavRoute";
+        private const string CodexEntryEvent = "CodexEntry";
+        private const string ApproachSettlementEvent = "ApproachSettlement";
+        private const string DockingDeniedEvent = "DockingDenied";
+        private const string DockingGrantedEvent = "DockingGranted";
+        private const string FssAllBodiesFoundEvent = "FSSAllBodiesFound";
+        private const string FssBodySignalsEvent = "FSSBodySignals";
+        private const string FssDiscoveryScanEvent = "FSSDiscoveryScan";
+        private const string NavBeaconScanEvent = "NavBeaconScan";
+        private const string ScanBaryCentreEvent = "ScanBaryCentre";
+        private const string SystemProperty = "System";
+        private const string StarSystemProperty = "StarSystem";
+        private const string SystemNameProperty = "SystemName";
+        private const string SystemAddressProperty = "SystemAddress";
+        private const string StarPosProperty = "StarPos";
+        private const string NameProperty = "Name";
+        private const string RegionProperty = "Region";
+        private const string CategoryProperty = "Category";
+        private const string SubCategoryProperty = "SubCategory";
+        private const string NearestDestinationProperty = "NearestDestination";
+        private const string VoucherAmountProperty = "VoucherAmount";
+        private const string TraitsProperty = "Traits";
+        private const string BodyIdProperty = "BodyID";
+        private const string BodyNameProperty = "BodyName";
+        private const string StationNameProperty = "StationName";
+        private const string StationTypeProperty = "StationType";
+        private const string ReasonProperty = "Reason";
+        private const string CountProperty = "Count";
+        private const string LatitudeProperty = "Latitude";
+        private const string LongitudeProperty = "Longitude";
+        private const string MarketIdProperty = "MarketID";
+        private const string BodyProperty = "Body";
+        private const string BodyTypeProperty = "BodyType";
+        private const string IdProperty = "id";
+        private const string NameSourceProperty = "Name";
+        private const string MeanPriceSourceProperty = "MeanPrice";
+        private const string BuyPriceSourceProperty = "BuyPrice";
+        private const string StockSourceProperty = "Stock";
+        private const string StockBracketSourceProperty = "StockBracket";
+        private const string SellPriceSourceProperty = "SellPrice";
+        private const string DemandSourceProperty = "Demand";
+        private const string DemandBracketSourceProperty = "DemandBracket";
+        private const string MarketIdResultKey = "marketId";
+        private const string StationNameResultKey = "stationName";
+        private const string SystemNameResultKey = "systemName";
+        private const string SignalNameKey = "SignalName";
+        private const string SignalTypeKey = "SignalType";
+        private const string IsStationKey = "IsStation";
+        private const string UsstypeKey = "USSType";
+        private const string SpawningStateKey = "SpawningState";
+        private const string SpawningFactionKey = "SpawningFaction";
+        private const string SpawningPowerKey = "SpawningPower";
+        private const string OpposingPowerKey = "OpposingPower";
+        private const string ThreatLevelKey = "ThreatLevel";
+        private const string ItemsKey = "Items";
+        private const string EntryIdProperty = "EntryID";
+        private const string WantedProperty = "Wanted";
+        private const string ActiveFineProperty = "ActiveFine";
+        private const string CockpitBreachProperty = "CockpitBreach";
+        private const string BoostUsedProperty = "BoostUsed";
+        private const string FuelLevelProperty = "FuelLevel";
+        private const string FuelUsedProperty = "FuelUsed";
+        private const string JumpDistProperty = "JumpDist";
+        private const string RouteProperty = "Route";
+        private const string CommoditiesProperty = "commodities";
+        private const string CarrierNameProperty = "CarrierName";
+        private const string CarrierIdProperty = "CarrierID";
+        private const string SignalsProperty = "Signals";
+        private const string BodyCountProperty = "BodyCount";
+        private const string NonBodyCountProperty = "NonBodyCount";
+        private const string NumBodiesProperty = "NumBodies";
+        private const string ModulesProperty = "modules";
+        private const string ShipsProperty = "ships";
+        private const string StationTypeResultKey = "stationType";
+        private const string StockProperty = "stock";
+        private const string DemandProperty = "demand";
+        private const string CarrierDockingAccessSourceProperty = "CarrierDockingAccess";
+        private const string PriceProperty = "Price";
+        private const string CarrierDockingAccessProperty = "carrierDockingAccess";
+        private const string StarClassProperty = "StarClass";
+        private const string LandingPadProperty = "LandingPad";
+        private const string TheEventDidNotMatchTrackedSystemMessage =
+            "the event did not match the tracked system";
         private static readonly TimeSpan regexTimeout = TimeSpan.FromSeconds(1);
         private static readonly string[] RequiredCommodityFields =
         [
@@ -39,23 +134,28 @@ namespace SrvSurvey.Core.Network
         private static readonly string[] CommodityStatusFlags =
             ["Producer", "Consumer", "Rare"];
 
+        private static readonly string[] NavRouteFields =
+            [StarSystemProperty, SystemAddressProperty, StarPosProperty, StarClassProperty];
+        private static readonly string[] CodexRequiredProperties =
+            [SystemProperty, NameProperty, RegionProperty, CategoryProperty, SubCategoryProperty];
+
         private static readonly HashSet<string> genericEvents = new(StringComparer.Ordinal)
         {
-            "Docked",
-            "FSDJump",
-            "CarrierJump",
-            "Scan",
-            "Location",
-            "SAASignalsFound",
+            DockedEvent,
+            FsdJumpEvent,
+            CarrierJumpEvent,
+            ScanEvent,
+            LocationEvent,
+            SaasSignalsFoundEvent,
         };
 
         private static readonly HashSet<string> companionEvents = new(StringComparer.Ordinal)
         {
-            "Market",
-            "Outfitting",
-            "Shipyard",
-            "FCMaterials",
-            "NavRoute",
+            MarketEvent,
+            OutfittingEvent,
+            ShipyardEvent,
+            FcmaterialsEvent,
+            NavrouteEvent,
         };
 
         private static readonly Regex canonicalCommodityName = new(
@@ -77,13 +177,13 @@ namespace SrvSurvey.Core.Network
         {
             ArgumentNullException.ThrowIfNull(raw);
 
-            var eventName = raw.Value<string>("event");
-            if (eventName is not ("Location" or "FSDJump" or "CarrierJump"))
+            var eventName = raw.Value<string>(EventKey);
+            if (eventName is not (LocationEvent or FsdJumpEvent or CarrierJumpEvent))
                 return null;
 
-            var systemName = raw.Value<string>("StarSystem");
-            var systemAddress = raw.Value<long?>("SystemAddress");
-            var position = raw["StarPos"] as JArray;
+            var systemName = raw.Value<string>(StarSystemProperty);
+            var systemAddress = raw.Value<long?>(SystemAddressProperty);
+            var position = raw[StarPosProperty] as JArray;
             if (string.IsNullOrWhiteSpace(systemName)
                 || systemAddress is not > 0
                 || position?.Count != 3
@@ -108,7 +208,7 @@ namespace SrvSurvey.Core.Network
             ArgumentNullException.ThrowIfNull(context);
 
             prepared = null;
-            var eventName = raw.Value<string>("event");
+            var eventName = raw.Value<string>(EventKey);
             if (string.IsNullOrWhiteSpace(eventName))
             {
                 reason = "the journal event name was missing";
@@ -122,15 +222,18 @@ namespace SrvSurvey.Core.Network
             string schema;
             switch (eventName)
             {
-                case "CodexEntry":
+                case CodexEntryEvent:
                     schema = "codexentry/1";
-                    if (!hasMatchingLocation(raw, context, "System"))
-                        return fail("the event did not match the tracked system", out prepared, out reason);
+                    if (!hasMatchingLocation(raw, context, SystemProperty))
+                        return fail(
+                            TheEventDidNotMatchTrackedSystemMessage,
+                            out prepared,
+                            out reason);
                     message = select(raw,
-                        "timestamp", "event", "System", "SystemAddress", "EntryID", "Name",
-                        "Region", "Category", "Latitude", "Longitude", "SubCategory",
-                        "NearestDestination", "VoucherAmount", "Traits", "BodyID", "BodyName");
-                    message["StarPos"] = position(context.location!);
+                        TimestampKey, EventKey, SystemProperty, SystemAddressProperty, EntryIdProperty, NameProperty,
+                        RegionProperty, CategoryProperty, LatitudeProperty, LongitudeProperty, SubCategoryProperty,
+                        NearestDestinationProperty, VoucherAmountProperty, TraitsProperty, BodyIdProperty, BodyNameProperty);
+                    message[StarPosProperty] = position(context.location!);
                     addFlags(message, context);
 
                     var bodyNamesAgree = !string.IsNullOrWhiteSpace(context.statusBodyName)
@@ -138,105 +241,123 @@ namespace SrvSurvey.Core.Network
                             context.statusBodyName,
                             context.trackedBodyName,
                             StringComparison.Ordinal);
-                    if (!message.ContainsKey("BodyName")
+                    if (!message.ContainsKey(BodyNameProperty)
                         && bodyNamesAgree
-                        && (!message.ContainsKey("BodyID")
-                            || message.Value<int?>("BodyID") == context.trackedBodyId))
+                        && (!message.ContainsKey(BodyIdProperty)
+                            || message.Value<int?>(BodyIdProperty) == context.trackedBodyId))
                     {
-                        message["BodyName"] = context.statusBodyName;
+                        message[BodyNameProperty] = context.statusBodyName;
                     }
-                    if (!message.ContainsKey("BodyID")
+                    if (!message.ContainsKey(BodyIdProperty)
                         && context.trackedBodyId.HasValue
                         && bodyNamesAgree
-                        && (!message.ContainsKey("BodyName")
+                        && (!message.ContainsKey(BodyNameProperty)
                             || string.Equals(
-                                message.Value<string>("BodyName"),
+                                message.Value<string>(BodyNameProperty),
                                 context.statusBodyName,
                                 StringComparison.Ordinal)))
                     {
-                        message["BodyID"] = context.trackedBodyId.Value;
+                        message[BodyIdProperty] = context.trackedBodyId.Value;
                     }
                     break;
 
-                case "ApproachSettlement":
+                case ApproachSettlementEvent:
                     schema = "approachsettlement/1";
                     if (!hasMatchingLocation(raw, context))
-                        return fail("the event did not match the tracked system", out prepared, out reason);
+                        return fail(
+                            TheEventDidNotMatchTrackedSystemMessage,
+                            out prepared,
+                            out reason);
                     message = select(raw,
-                        "timestamp", "event", "SystemAddress", "Name", "MarketID", "BodyID",
-                        "BodyName", "Latitude", "Longitude", "StationGovernment",
+                        TimestampKey, EventKey, SystemAddressProperty, NameProperty, MarketIdProperty, BodyIdProperty,
+                        BodyNameProperty, LatitudeProperty, LongitudeProperty, "StationGovernment",
                         "StationAllegiance", "StationEconomies", "StationFaction",
                         "StationServices", "StationEconomy");
-                    message["StarSystem"] = context.location!.systemName;
-                    message["StarPos"] = position(context.location);
+                    message[StarSystemProperty] = context.location!.systemName;
+                    message[StarPosProperty] = position(context.location);
                     addFlags(message, context);
                     break;
 
-                case "DockingDenied":
+                case DockingDeniedEvent:
                     schema = "dockingdenied/1";
                     message = select(raw,
-                        "timestamp", "event", "MarketID", "StationName", "StationType", "Reason");
+                        TimestampKey, EventKey, MarketIdProperty, StationNameProperty, StationTypeProperty, ReasonProperty);
                     addFlags(message, context);
                     break;
 
-                case "DockingGranted":
+                case DockingGrantedEvent:
                     schema = "dockinggranted/1";
                     message = select(raw,
-                        "timestamp", "event", "MarketID", "StationName", "StationType", "LandingPad");
+                        TimestampKey, EventKey, MarketIdProperty, StationNameProperty, StationTypeProperty, LandingPadProperty);
                     addFlags(message, context);
                     break;
 
-                case "FSSAllBodiesFound":
+                case FssAllBodiesFoundEvent:
                     schema = "fssallbodiesfound/1";
-                    if (!hasMatchingLocation(raw, context, "SystemName"))
-                        return fail("the event did not match the tracked system", out prepared, out reason);
+                    if (!hasMatchingLocation(raw, context, SystemNameProperty))
+                        return fail(
+                            TheEventDidNotMatchTrackedSystemMessage,
+                            out prepared,
+                            out reason);
                     message = select(raw,
-                        "timestamp", "event", "SystemName", "SystemAddress", "Count");
-                    message["StarPos"] = position(context.location!);
+                        TimestampKey, EventKey, SystemNameProperty, SystemAddressProperty, CountProperty);
+                    message[StarPosProperty] = position(context.location!);
                     addFlags(message, context);
                     break;
 
-                case "FSSBodySignals":
+                case FssBodySignalsEvent:
                     schema = "fssbodysignals/1";
                     if (!hasMatchingLocation(raw, context))
-                        return fail("the event did not match the tracked system", out prepared, out reason);
+                        return fail(
+                            TheEventDidNotMatchTrackedSystemMessage,
+                            out prepared,
+                            out reason);
                     message = select(raw,
-                        "timestamp", "event", "SystemAddress", "BodyID", "BodyName", "Signals");
-                    message["StarSystem"] = context.location!.systemName;
-                    message["StarPos"] = position(context.location);
+                        TimestampKey, EventKey, SystemAddressProperty, BodyIdProperty, BodyNameProperty, SignalsProperty);
+                    message[StarSystemProperty] = context.location!.systemName;
+                    message[StarPosProperty] = position(context.location);
                     addFlags(message, context);
                     break;
 
-                case "FSSDiscoveryScan":
+                case FssDiscoveryScanEvent:
                     schema = "fssdiscoveryscan/1";
-                    if (!hasMatchingLocation(raw, context, "SystemName"))
-                        return fail("the event did not match the tracked system", out prepared, out reason);
+                    if (!hasMatchingLocation(raw, context, SystemNameProperty))
+                        return fail(
+                            TheEventDidNotMatchTrackedSystemMessage,
+                            out prepared,
+                            out reason);
                     message = select(raw,
-                        "timestamp", "event", "SystemName", "SystemAddress", "BodyCount", "NonBodyCount");
-                    message["StarPos"] = position(context.location!);
+                        TimestampKey, EventKey, SystemNameProperty, SystemAddressProperty, BodyCountProperty, NonBodyCountProperty);
+                    message[StarPosProperty] = position(context.location!);
                     addFlags(message, context);
                     break;
 
-                case "NavBeaconScan":
+                case NavBeaconScanEvent:
                     schema = "navbeaconscan/1";
                     if (!hasMatchingLocation(raw, context))
-                        return fail("the event did not match the tracked system", out prepared, out reason);
+                        return fail(
+                            TheEventDidNotMatchTrackedSystemMessage,
+                            out prepared,
+                            out reason);
                     message = select(raw,
-                        "timestamp", "event", "SystemAddress", "NumBodies");
-                    message["StarSystem"] = context.location!.systemName;
-                    message["StarPos"] = position(context.location);
+                        TimestampKey, EventKey, SystemAddressProperty, NumBodiesProperty);
+                    message[StarSystemProperty] = context.location!.systemName;
+                    message[StarPosProperty] = position(context.location);
                     addFlags(message, context);
                     break;
 
-                case "ScanBaryCentre":
+                case ScanBaryCentreEvent:
                     schema = "scanbarycentre/1";
-                    if (!hasMatchingLocation(raw, context, "StarSystem"))
-                        return fail("the event did not match the tracked system", out prepared, out reason);
+                    if (!hasMatchingLocation(raw, context, StarSystemProperty))
+                        return fail(
+                            TheEventDidNotMatchTrackedSystemMessage,
+                            out prepared,
+                            out reason);
                     message = select(raw,
-                        "timestamp", "event", "StarSystem", "SystemAddress", "BodyID",
+                        TimestampKey, EventKey, StarSystemProperty, SystemAddressProperty, BodyIdProperty,
                         "SemiMajorAxis", "Eccentricity", "OrbitalInclination", "Periapsis",
                         "OrbitalPeriod", "AscendingNode", "MeanAnomaly");
-                    message["StarPos"] = position(context.location!);
+                    message[StarPosProperty] = position(context.location!);
                     addFlags(message, context);
                     break;
 
@@ -247,7 +368,7 @@ namespace SrvSurvey.Core.Network
 
             removeLocalised(message);
             removeNulls(message);
-            if (eventName == "CodexEntry"
+            if (eventName == CodexEntryEvent
                 && !hasValidCodexStrings(message, out reason))
             {
                 return false;
@@ -270,32 +391,32 @@ namespace SrvSurvey.Core.Network
             ArgumentNullException.ThrowIfNull(context);
 
             prepared = null;
-            var eventName = companion.Value<string>("event");
+            var eventName = companion.Value<string>(EventKey);
             JObject message;
             string schema;
             switch (eventName)
             {
-                case "Market":
+                case MarketEvent:
                     schema = "commodity/3";
                     message = buildCommodity(companion, context);
                     break;
 
-                case "Outfitting":
+                case OutfittingEvent:
                     schema = "outfitting/2";
                     message = buildOutfitting(companion, context);
                     break;
 
-                case "Shipyard":
+                case ShipyardEvent:
                     schema = "shipyard/2";
                     message = buildShipyard(companion, context);
                     break;
 
-                case "FCMaterials":
+                case FcmaterialsEvent:
                     schema = "fcmaterials_journal/1";
                     message = buildFleetCarrierMaterials(companion, context);
                     break;
 
-                case "NavRoute":
+                case NavrouteEvent:
                     schema = "navroute/1";
                     message = buildNavRoute(companion, context);
                     break;
@@ -338,18 +459,18 @@ namespace SrvSurvey.Core.Network
             var signals = new JArray();
             foreach (var raw in pendingSignals)
             {
-                if (raw.Value<long?>("SystemAddress") != location.systemAddress
-                    || raw.Value<string>("USSType") == "$USS_Type_MissionTarget;")
+                if (raw.Value<long?>(SystemAddressProperty) != location.systemAddress
+                    || raw.Value<string>(UsstypeKey) == "$USS_Type_MissionTarget;")
                 {
                     continue;
                 }
 
                 var signal = select(raw,
-                    "timestamp", "SignalName", "SignalType", "IsStation", "USSType",
-                    "SpawningState", "SpawningFaction", "SpawningPower", "OpposingPower",
-                    "ThreatLevel");
+                    TimestampKey, SignalNameKey, SignalTypeKey, IsStationKey, UsstypeKey,
+                    SpawningStateKey, SpawningFactionKey, SpawningPowerKey, OpposingPowerKey,
+                    ThreatLevelKey);
                 removeLocalised(signal);
-                if (hasValue(signal, "timestamp") && hasValue(signal, "SignalName"))
+                if (hasValue(signal, TimestampKey) && hasValue(signal, SignalNameKey))
                     signals.Add(signal);
             }
 
@@ -361,11 +482,11 @@ namespace SrvSurvey.Core.Network
 
             var message = new JObject
             {
-                ["event"] = "FSSSignalDiscovered",
-                ["timestamp"] = signals[0]["timestamp"]!.DeepClone(),
-                ["SystemAddress"] = location.systemAddress,
-                ["StarSystem"] = location.systemName,
-                ["StarPos"] = position(location),
+                [EventKey] = "FSSSignalDiscovered",
+                [TimestampKey] = signals[0][TimestampKey]!.DeepClone(),
+                [SystemAddressProperty] = location.systemAddress,
+                [StarSystemProperty] = location.systemName,
+                [StarPosProperty] = position(location),
                 ["signals"] = signals,
             };
             addFlags(message, new EddnMessageContext(location, horizons, odyssey));
@@ -386,13 +507,13 @@ namespace SrvSurvey.Core.Network
             out string reason)
         {
             prepared = null;
-            var eventName = raw.Value<string>("event")!;
+            var eventName = raw.Value<string>(EventKey)!;
             if (!hasMatchingLocation(raw, context,
-                    eventName is "FSDJump" or "CarrierJump" or "Location" or "Docked" or "Scan"
-                        ? "StarSystem"
+                    eventName is FsdJumpEvent or CarrierJumpEvent or LocationEvent or DockedEvent or ScanEvent
+                        ? StarSystemProperty
                         : null))
             {
-                reason = "the event did not match the tracked system";
+                reason = TheEventDidNotMatchTrackedSystemMessage;
                 return false;
             }
 
@@ -400,32 +521,36 @@ namespace SrvSurvey.Core.Network
             removeLocalised(message);
             switch (eventName)
             {
-                case "Docked":
-                    remove(message, "Wanted", "ActiveFine", "CockpitBreach");
-                    if (!message.ContainsKey("Body")
+                case DockedEvent:
+                    remove(message, WantedProperty, ActiveFineProperty, CockpitBreachProperty);
+                    if (!message.ContainsKey(BodyProperty)
                         && context.trackedBodyType == "Planet"
                         && !string.IsNullOrWhiteSpace(context.trackedBodyName))
                     {
-                        message["Body"] = context.trackedBodyName;
-                        message["BodyType"] = "Planet";
+                        message[BodyProperty] = context.trackedBodyName;
+                        message[BodyTypeProperty] = "Planet";
                     }
                     break;
 
-                case "FSDJump":
-                case "CarrierJump":
+                case FsdJumpEvent:
+                case CarrierJumpEvent:
                     remove(message,
-                        "Wanted", "BoostUsed", "FuelLevel", "FuelUsed", "JumpDist");
+                        WantedProperty,
+                        BoostUsedProperty,
+                        FuelLevelProperty,
+                        FuelUsedProperty,
+                        JumpDistProperty);
                     removeFactionPersonalData(message);
                     break;
 
-                case "Location":
-                    remove(message, "Wanted", "Latitude", "Longitude");
+                case LocationEvent:
+                    remove(message, WantedProperty, LatitudeProperty, LongitudeProperty);
                     removeFactionPersonalData(message);
                     break;
             }
 
-            message["StarSystem"] ??= context.location!.systemName;
-            message["StarPos"] ??= position(context.location!);
+            message[StarSystemProperty] ??= context.location!.systemName;
+            message[StarPosProperty] ??= position(context.location!);
             addFlags(message, context);
             removeNulls(message);
             if (!hasRequiredFields(message, eventName, out reason))
@@ -442,10 +567,10 @@ namespace SrvSurvey.Core.Network
         private static JObject buildCommodity(JObject source, EddnMessageContext context)
         {
             var commodities = new List<JObject>();
-            foreach (var item in source["Items"] as JArray ?? [])
+            foreach (var item in source[ItemsKey] as JArray ?? [])
             {
                 if (item is not JObject commodity
-                    || commodity.Value<string>("Category")?.Contains(
+                    || commodity.Value<string>(CategoryProperty)?.Contains(
                         "NonMarketable",
                         StringComparison.OrdinalIgnoreCase) == true
                     || !string.IsNullOrWhiteSpace(commodity.Value<string>("Legality")))
@@ -453,18 +578,18 @@ namespace SrvSurvey.Core.Network
                     continue;
                 }
 
-                var name = canonicalCommodity(commodity.Value<string>("Name"));
+                var name = canonicalCommodity(commodity.Value<string>(NameSourceProperty));
                 if (string.IsNullOrWhiteSpace(name)) continue;
                 var output = new JObject
                 {
                     ["name"] = name,
-                    ["meanPrice"] = commodity.Value<int?>("MeanPrice"),
-                    ["buyPrice"] = commodity.Value<int?>("BuyPrice"),
-                    ["stock"] = commodity.Value<int?>("Stock"),
-                    ["stockBracket"] = commodity["StockBracket"]?.DeepClone(),
-                    ["sellPrice"] = commodity.Value<int?>("SellPrice"),
-                    ["demand"] = commodity.Value<int?>("Demand"),
-                    ["demandBracket"] = commodity["DemandBracket"]?.DeepClone(),
+                    ["meanPrice"] = commodity.Value<int?>(MeanPriceSourceProperty),
+                    ["buyPrice"] = commodity.Value<int?>(BuyPriceSourceProperty),
+                    [StockProperty] = commodity.Value<int?>(StockSourceProperty),
+                    ["stockBracket"] = commodity[StockBracketSourceProperty]?.DeepClone(),
+                    ["sellPrice"] = commodity.Value<int?>(SellPriceSourceProperty),
+                    [DemandProperty] = commodity.Value<int?>(DemandSourceProperty),
+                    ["demandBracket"] = commodity[DemandBracketSourceProperty]?.DeepClone(),
                 };
                 if (RequiredCommodityFields.Any(field =>
                     !hasValue(output, field)))
@@ -486,16 +611,16 @@ namespace SrvSurvey.Core.Network
                 StringComparer.Ordinal));
             var message = new JObject
             {
-                ["systemName"] = source.Value<string>("StarSystem"),
-                ["stationName"] = source.Value<string>("StationName"),
-                ["stationType"] = source.Value<string>("StationType"),
-                ["marketId"] = source.Value<long?>("MarketID"),
-                ["timestamp"] = source["timestamp"]?.DeepClone(),
-                ["commodities"] = sorted,
+                [SystemNameResultKey] = source.Value<string>(StarSystemProperty),
+                [StationNameResultKey] = source.Value<string>(StationNameProperty),
+                [StationTypeResultKey] = source.Value<string>(StationTypeProperty),
+                [MarketIdResultKey] = source.Value<long?>(MarketIdProperty),
+                [TimestampKey] = source[TimestampKey]?.DeepClone(),
+                [CommoditiesProperty] = sorted,
             };
-            var access = source.Value<string>("CarrierDockingAccess");
+            var access = source.Value<string>(CarrierDockingAccessSourceProperty);
             if (!string.IsNullOrWhiteSpace(access))
-                message["carrierDockingAccess"] = access;
+                message[CarrierDockingAccessProperty] = access;
             addFlags(message, context);
             removeNulls(message);
             return message;
@@ -504,10 +629,10 @@ namespace SrvSurvey.Core.Network
         private static JObject buildOutfitting(JObject source, EddnMessageContext context)
         {
             var modules = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var item in source["Items"] as JArray ?? [])
+            foreach (var item in source[ItemsKey] as JArray ?? [])
             {
                 if (item is not JObject module) continue;
-                var name = module.Value<string>("Name");
+                var name = module.Value<string>(NameProperty);
                 var sku = module.Value<string>("sku") ?? module.Value<string>("SKU");
                 if (string.IsNullOrWhiteSpace(name)
                     || !moduleName.IsMatch(name)
@@ -522,11 +647,11 @@ namespace SrvSurvey.Core.Network
 
             var message = new JObject
             {
-                ["systemName"] = source.Value<string>("StarSystem"),
-                ["stationName"] = source.Value<string>("StationName"),
-                ["marketId"] = source.Value<long?>("MarketID"),
-                ["timestamp"] = source["timestamp"]?.DeepClone(),
-                ["modules"] = new JArray(modules.OrderBy(value => value, StringComparer.Ordinal)),
+                [SystemNameResultKey] = source.Value<string>(StarSystemProperty),
+                [StationNameResultKey] = source.Value<string>(StationNameProperty),
+                [MarketIdResultKey] = source.Value<long?>(MarketIdProperty),
+                [TimestampKey] = source[TimestampKey]?.DeepClone(),
+                [ModulesProperty] = new JArray(modules.OrderBy(value => value, StringComparer.Ordinal)),
             };
             addFlags(message, context with
             {
@@ -548,11 +673,11 @@ namespace SrvSurvey.Core.Network
 
             var message = new JObject
             {
-                ["systemName"] = source.Value<string>("StarSystem"),
-                ["stationName"] = source.Value<string>("StationName"),
-                ["marketId"] = source.Value<long?>("MarketID"),
-                ["timestamp"] = source["timestamp"]?.DeepClone(),
-                ["ships"] = new JArray(ships.OrderBy(value => value, StringComparer.Ordinal)),
+                [SystemNameResultKey] = source.Value<string>(StarSystemProperty),
+                [StationNameResultKey] = source.Value<string>(StationNameProperty),
+                [MarketIdResultKey] = source.Value<long?>(MarketIdProperty),
+                [TimestampKey] = source[TimestampKey]?.DeepClone(),
+                [ShipsProperty] = new JArray(ships.OrderBy(value => value, StringComparer.Ordinal)),
             };
             if (source.Value<bool?>("AllowCobraMkIV") is bool allowCobra)
                 message["allowCobraMkIV"] = allowCobra;
@@ -569,15 +694,21 @@ namespace SrvSurvey.Core.Network
             EddnMessageContext context)
         {
             var items = new JArray();
-            foreach (var item in source["Items"] as JArray ?? [])
+            foreach (var item in source[ItemsKey] as JArray ?? [])
             {
                 if (item is not JObject material) continue;
-                var output = select(material, "id", "Name", "Price", "Stock", "Demand");
-                if (hasValue(output, "id")
-                    && hasValue(output, "Name")
-                    && hasValue(output, "Price")
-                    && hasValue(output, "Stock")
-                    && hasValue(output, "Demand"))
+                var output = select(
+                    material,
+                    IdProperty,
+                    NameProperty,
+                    PriceProperty,
+                    StockSourceProperty,
+                    DemandSourceProperty);
+                if (hasValue(output, IdProperty)
+                    && hasValue(output, NameProperty)
+                    && hasValue(output, PriceProperty)
+                    && hasValue(output, StockSourceProperty)
+                    && hasValue(output, DemandSourceProperty))
                 {
                     items.Add(output);
                 }
@@ -585,8 +716,8 @@ namespace SrvSurvey.Core.Network
 
             var message = select(
                 source,
-                "timestamp", "event", "MarketID", "CarrierName", "CarrierID");
-            message["Items"] = items;
+                TimestampKey, EventKey, MarketIdProperty, CarrierNameProperty, CarrierIdProperty);
+            message[ItemsKey] = items;
             addFlags(message, context);
             return message;
         }
@@ -594,21 +725,20 @@ namespace SrvSurvey.Core.Network
         private static JObject buildNavRoute(JObject source, EddnMessageContext context)
         {
             var route = new JArray();
-            foreach (var item in source["Route"] as JArray ?? [])
+            foreach (var item in source[RouteProperty] as JArray ?? [])
             {
                 if (item is not JObject waypoint) continue;
                 var output = select(
                     waypoint,
-                    "StarSystem", "SystemAddress", "StarPos", "StarClass");
-                if (new[] { "StarSystem", "SystemAddress", "StarPos", "StarClass" }
-                    .All(field => hasValue(output, field)))
+                    StarSystemProperty, SystemAddressProperty, StarPosProperty, StarClassProperty);
+                if (NavRouteFields.All(field => hasValue(output, field)))
                 {
                     route.Add(output);
                 }
             }
 
-            var message = select(source, "timestamp", "event");
-            message["Route"] = route;
+            var message = select(source, TimestampKey, EventKey);
+            message[RouteProperty] = route;
             addFlags(message, context);
             return message;
         }
@@ -620,7 +750,7 @@ namespace SrvSurvey.Core.Network
         {
             var location = context.location;
             if (location == null
-                || raw.Value<long?>("SystemAddress") != location.systemAddress)
+                || raw.Value<long?>(SystemAddressProperty) != location.systemAddress)
             {
                 return false;
             }
@@ -638,21 +768,21 @@ namespace SrvSurvey.Core.Network
         {
             string[] required = eventName switch
             {
-                "CodexEntry" => ["timestamp", "event", "System", "StarPos", "SystemAddress", "EntryID"],
-                "ApproachSettlement" => ["timestamp", "event", "StarSystem", "StarPos", "SystemAddress", "Name", "BodyID", "BodyName", "Latitude", "Longitude"],
-                "DockingDenied" => ["timestamp", "event", "MarketID", "StationName", "Reason"],
-                "DockingGranted" => ["timestamp", "event", "MarketID", "StationName"],
-                "FSSAllBodiesFound" => ["timestamp", "event", "SystemName", "StarPos", "SystemAddress", "Count"],
-                "FSSBodySignals" => ["timestamp", "event", "StarSystem", "StarPos", "SystemAddress", "BodyID", "Signals"],
-                "FSSDiscoveryScan" => ["timestamp", "event", "SystemName", "StarPos", "SystemAddress", "BodyCount", "NonBodyCount"],
-                "NavBeaconScan" => ["timestamp", "event", "StarSystem", "StarPos", "SystemAddress", "NumBodies"],
-                "ScanBaryCentre" => ["timestamp", "event", "StarSystem", "StarPos", "SystemAddress", "BodyID"],
-                "Market" => ["systemName", "stationName", "marketId", "timestamp", "commodities"],
-                "Outfitting" => ["systemName", "stationName", "marketId", "timestamp", "modules"],
-                "Shipyard" => ["systemName", "stationName", "marketId", "timestamp", "ships"],
-                "FCMaterials" => ["timestamp", "event", "MarketID", "CarrierName", "CarrierID", "Items"],
-                "NavRoute" => ["timestamp", "event", "Route"],
-                _ when genericEvents.Contains(eventName) => ["timestamp", "event", "StarSystem", "StarPos", "SystemAddress"],
+                CodexEntryEvent => [TimestampKey, EventKey, SystemProperty, StarPosProperty, SystemAddressProperty, EntryIdProperty],
+                ApproachSettlementEvent => [TimestampKey, EventKey, StarSystemProperty, StarPosProperty, SystemAddressProperty, NameProperty, BodyIdProperty, BodyNameProperty, LatitudeProperty, LongitudeProperty],
+                DockingDeniedEvent => [TimestampKey, EventKey, MarketIdProperty, StationNameProperty, ReasonProperty],
+                DockingGrantedEvent => [TimestampKey, EventKey, MarketIdProperty, StationNameProperty],
+                FssAllBodiesFoundEvent => [TimestampKey, EventKey, SystemNameProperty, StarPosProperty, SystemAddressProperty, CountProperty],
+                FssBodySignalsEvent => [TimestampKey, EventKey, StarSystemProperty, StarPosProperty, SystemAddressProperty, BodyIdProperty, SignalsProperty],
+                FssDiscoveryScanEvent => [TimestampKey, EventKey, SystemNameProperty, StarPosProperty, SystemAddressProperty, BodyCountProperty, NonBodyCountProperty],
+                NavBeaconScanEvent => [TimestampKey, EventKey, StarSystemProperty, StarPosProperty, SystemAddressProperty, NumBodiesProperty],
+                ScanBaryCentreEvent => [TimestampKey, EventKey, StarSystemProperty, StarPosProperty, SystemAddressProperty, BodyIdProperty],
+                MarketEvent => [SystemNameResultKey, StationNameResultKey, MarketIdResultKey, TimestampKey, CommoditiesProperty],
+                OutfittingEvent => [SystemNameResultKey, StationNameResultKey, MarketIdResultKey, TimestampKey, ModulesProperty],
+                ShipyardEvent => [SystemNameResultKey, StationNameResultKey, MarketIdResultKey, TimestampKey, ShipsProperty],
+                FcmaterialsEvent => [TimestampKey, EventKey, MarketIdProperty, CarrierNameProperty, CarrierIdProperty, ItemsKey],
+                NavrouteEvent => [TimestampKey, EventKey, RouteProperty],
+                _ when genericEvents.Contains(eventName) => [TimestampKey, EventKey, StarSystemProperty, StarPosProperty, SystemAddressProperty],
                 _ => [],
             };
 
@@ -663,7 +793,7 @@ namespace SrvSurvey.Core.Network
                 return false;
             }
 
-            if (eventName is "Outfitting" or "Shipyard"
+            if (eventName is OutfittingEvent or ShipyardEvent
                 && message[required[^1]] is JArray array
                 && array.Count == 0)
             {
@@ -677,7 +807,7 @@ namespace SrvSurvey.Core.Network
 
         private static bool hasValidCodexStrings(JObject message, out string reason)
         {
-            foreach (var field in new[] { "System", "Name", "Region", "Category", "SubCategory" })
+            foreach (var field in CodexRequiredProperties)
             {
                 if (message[field]?.Type == JTokenType.String
                     && string.IsNullOrWhiteSpace(message.Value<string>(field)))
@@ -810,5 +940,6 @@ namespace SrvSurvey.Core.Network
         }
     }
 }
+
 
 

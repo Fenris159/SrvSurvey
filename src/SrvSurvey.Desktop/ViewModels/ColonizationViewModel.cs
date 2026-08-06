@@ -544,11 +544,12 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             : apiKey.Trim();
         RavenApiKey = storedRavenApiKey ?? string.Empty;
         lastSyncedMarket = null;
+        var apiKeyStatus = storedRavenApiKey is null
+            ? "No Raven API key is saved for this commander."
+            : "A Raven API key is saved for this commander.";
         RavenCredentialStatus = profileFrontierId is null
             ? "Load a commander profile to configure a Raven API key."
-            : storedRavenApiKey is null
-                ? "No Raven API key is saved for this commander."
-                : "A Raven API key is saved for this commander.";
+            : apiKeyStatus;
         if (!FleetCarrierCargoSyncEnabled)
         {
             FleetCarrierSyncStatus =
@@ -2026,13 +2027,17 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         ColonizationProject project)
     {
         var matchingBuilds = buildCatalog.FindByLayout(project.BuildType);
-        var build = (matchingBuilds.Count > 0 ? matchingBuilds[0] : null)
-            ?? buildCatalog.FindByBuildType(project.BuildType);
-        var type = project.IsFleetCarrierLoading
+        var build = matchingBuilds.Count > 0
+            ? matchingBuilds[0]
+            : null;
+        if (build is null)
+        {
+            build = buildCatalog.FindByBuildType(project.BuildType);
+        }
+        var fleetCarrierType = project.IsFleetCarrierLoading
             ? "Fleet Carrier loading"
-            : build is null
-                ? project.BuildType
-                : $"{build.DisplayName} ({project.BuildType})";
+            : project.BuildType;
+        var type = build is null ? fleetCarrierType : $"{build.DisplayName} ({project.BuildType})";
         return new ColonizationProjectRowViewModel(
             project,
             type,

@@ -1571,11 +1571,23 @@ public sealed class GuardianViewModel
         private set => SetField(ref summary, value);
     }
 
-    public string OriginStatus => customOrigin is { } origin
-        ? $"Distances from custom origin {origin.Name}."
-        : currentPosition is null
-            ? "Distances unavailable until a journal supplies galactic coordinates."
-            : $"Distances from {currentSystemName ?? "current system"}.";
+    public string OriginStatus
+    {
+        get
+        {
+            if (customOrigin is { } origin)
+            {
+                return $"Distances from custom origin {origin.Name}.";
+            }
+
+            if (currentPosition is null)
+            {
+                return "Distances unavailable until a journal supplies galactic coordinates.";
+            }
+
+            return $"Distances from {currentSystemName ?? "current system"}.";
+        }
+    }
 
     public void SetClipboardWriter(Func<string, Task>? writer)
     {
@@ -5091,18 +5103,36 @@ public sealed class GuardianSiteRowViewModel(
 
     public string GalacticPosition => Reference.Position.ToString();
 
-    public string SurfaceLocation => Reference.Latitude is double latitude
-        && Reference.Longitude is double longitude
-            ? string.Create(
-                CultureInfo.InvariantCulture,
-                $"{latitude:F6}, {longitude:F6}")
-            : "Not recorded";
+    public string SurfaceLocation
+    {
+        get
+        {
+            if (Reference.Latitude is double latitude
+                && Reference.Longitude is double longitude)
+            {
+                return string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{latitude:F6}, {longitude:F6}");
+            }
 
-    public string Notes => string.IsNullOrWhiteSpace(Visit.Notes)
-        ? Reference.RelatedStructure is null
-            ? "No commander notes."
-            : $"Related structure: {Reference.RelatedStructure}"
-        : Visit.Notes;
+            return "Not recorded";
+        }
+    }
+
+    public string Notes
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(Visit.Notes))
+            {
+                return Visit.Notes;
+            }
+
+            return Reference.RelatedStructure is null
+                ? "No commander notes."
+                : $"Related structure: {Reference.RelatedStructure}";
+        }
+    }
 
     public string LegacyDisplayText
     {

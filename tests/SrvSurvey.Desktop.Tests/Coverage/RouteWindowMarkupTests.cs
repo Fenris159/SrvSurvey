@@ -4,6 +4,22 @@ namespace SrvSurvey.Desktop.Tests.Coverage;
 
 public sealed class RouteWindowMarkupTests
 {
+    private static readonly string[] RoutedFileNames =
+    [
+        "RouteWindow.axaml",
+        "JumpInfoOverlayWindow.axaml",
+    ];
+
+    private static readonly string[] FleetCarrierFooterCommands =
+    [
+        "{Binding DeleteCommand}",
+        "{Binding NewCommand}",
+        "{Binding SaveAsCommand}",
+        "{Binding ResetCommand}",
+        "{Binding DiscardCommand}",
+        "{Binding SaveCommand}",
+    ];
+
     private static readonly string[] FleetCarrierHeaderTexts =
     [
         "DONE",
@@ -177,11 +193,7 @@ public sealed class RouteWindowMarkupTests
     [Fact]
     public void RouteGuidanceBadgesKeepTheWorkspacePaletteInTheOverlay()
     {
-        foreach (var fileName in new[]
-                 {
-                     "RouteWindow.axaml",
-                     "JumpInfoOverlayWindow.axaml",
-                 })
+        foreach (var fileName in RoutedFileNames)
         {
             var document = XDocument.Load(Path.Combine(
                 FindRepositoryRoot(),
@@ -261,15 +273,7 @@ public sealed class RouteWindowMarkupTests
             .Single(element => element.Name.LocalName == "Border"
                 && element.Attribute("Grid.Row")?.Value == "2");
         Assert.Equal(
-            new[]
-            {
-                "{Binding DeleteCommand}",
-                "{Binding NewCommand}",
-                "{Binding SaveAsCommand}",
-                "{Binding ResetCommand}",
-                "{Binding DiscardCommand}",
-                "{Binding SaveCommand}",
-            },
+            FleetCarrierFooterCommands,
             footer.Descendants()
                 .Where(element => element.Name.LocalName == "Button")
                 .Select(element => element.Attribute("Command")?.Value)

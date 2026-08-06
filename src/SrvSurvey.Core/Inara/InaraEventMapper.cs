@@ -12,6 +12,51 @@ namespace SrvSurvey.Core.Inara
     /// </summary>
     internal sealed class InaraEventMapper
     {
+        private const string EventKey = "event";
+        private const string TimestampKey = "timestamp";
+        private const string LoadGameEvent = "LoadGame";
+        private const string StatisticsEvent = "Statistics";
+        private const string VesselKey = "Vessel";
+        private const string ShipVesselValue = "Ship";
+        private const string ToShipDirection = "toship";
+        private const string BodyTypeKey = "BodyType";
+        private const string PlanetBodyType = "Planet";
+        private const string BodyKey = "Body";
+        private const string StationNameRawKey = "StationName";
+        private const string LoadoutNameKey = "loadoutName";
+        private const string LoadoutNameSourceKey = "LoadoutName";
+        private const string PowerTrackCategory = "power";
+        private const string PowerProperty = "Power";
+        private const string PowerNameKey = "powerName";
+        private const string RankValueKey = "rankValue";
+        private const string StarSystemProperty = "StarSystem";
+        private const string StarSystemNameKey = "starsystemName";
+        private const string StarSystemBodyNameKey = "starsystemBodyName";
+        private const string ShipTypeProperty = "ShipType";
+        private const string ShipTypeKey = "shipType";
+        private const string ShipGameIdKey = "shipGameID";
+        private const string ShipIdProperty = "ShipID";
+        private const string StationNameKey = "stationName";
+        private const string MissionGameIdKey = "missionGameID";
+        private const string MissionIdKey = "MissionID";
+        private const string LoadoutIdKey = "LoadoutID";
+        private const string LoadoutGameIdKey = "loadoutGameID";
+        private const string CountProperty = "Count";
+        private const string ItemCountKey = "itemCount";
+        private const string ItemNameKey = "itemName";
+        private const string MarketIdProperty = "MarketID";
+        private const string MarketIdKey = "marketID";
+        private const string LongitudeKey = "Longitude";
+        private const string LatitudeKey = "Latitude";
+        private const string IsHotKey = "isHot";
+        private const string ShipNameKey = "shipName";
+        private const string BlueprintNameKey = "blueprintName";
+        private const string EngineeringKey = "engineering";
+        private const string FactionKey = "Faction";
+        private const string OpponentNameKey = "opponentName";
+        private const string LocationKey = "location";
+        private const string SetCommanderShipEvent = "setCommanderShip";
+        private const string SetCommanderRankPowerEvent = "setCommanderRankPower";
         private static readonly string[] materialCategories = ["Raw", "Manufactured", "Encoded"];
         private readonly Dictionary<string, int> cargo = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> materials = new(StringComparer.OrdinalIgnoreCase);
@@ -39,11 +84,11 @@ namespace SrvSurvey.Core.Inara
 
         public IReadOnlyList<InaraEvent> Process(JObject entry, InaraContext context, bool collectEvents)
         {
-            var name = entry.Value<string>("event");
+            var name = entry.Value<string>(EventKey);
             if (string.IsNullOrWhiteSpace(name))
                 return [];
 
-            if (name == "LoadGame")
+            if (name == LoadGameEvent)
                 Reset();
 
             var wasInMulticrew = InMulticrew;
@@ -65,7 +110,7 @@ namespace SrvSurvey.Core.Inara
                 return [];
             }
 
-            var timestamp = entry.Value<string>("timestamp") ?? DateTime.UtcNow.ToString("O");
+            var timestamp = entry.Value<string>(TimestampKey) ?? DateTime.UtcNow.ToString("O");
             var events = new List<InaraEvent>();
             var sessionStarting = !sessionStarted
                 || !string.Equals(sessionCommander, context.Commander, StringComparison.OrdinalIgnoreCase);
@@ -78,7 +123,7 @@ namespace SrvSurvey.Core.Inara
 
                 var ship = currentShip(context);
                 if (ship != null)
-                    events.Add(new("setCommanderShip", timestamp, ship, $"ship:{context.ShipId}"));
+                    events.Add(new(SetCommanderShipEvent, timestamp, ship, $"ship:{context.ShipId}"));
 
                 addInventorySnapshots(events, timestamp, true, true);
             }
@@ -90,9 +135,9 @@ namespace SrvSurvey.Core.Inara
             // Otherwise, coalesce transaction deltas to Inara's recommended hourly
             // cadence and flush any remaining change at session shutdown.
             var forceCreditReport = sessionStarting
-                || (name == "Statistics" && creditTracker.HasUnreportedChanges)
+                || (name == StatisticsEvent && creditTracker.HasUnreportedChanges)
                 || (name == "Shutdown" && creditTracker.HasUnreportedChanges);
-            var creditReport = creditTracker.CreateReport(timestamp, forceCreditReport, name == "Statistics");
+            var creditReport = creditTracker.CreateReport(timestamp, forceCreditReport, name == StatisticsEvent);
             if (creditReport != null) events.Add(creditReport);
             return events;
         }
@@ -118,24 +163,24 @@ namespace SrvSurvey.Core.Inara
                     mapMajorFactionReputation(timestamp, entry, events);
                     break;
                 case "PowerplayJoin":
-                    addRequired(events, "setCommanderRankPower", timestamp, obj(
-                        ("powerName", entry["Power"]), ("rankValue", 1)), "power");
+                    addRequired(events, SetCommanderRankPowerEvent, timestamp, obj(
+                        (PowerNameKey, entry[PowerProperty]), (RankValueKey, 1)), PowerTrackCategory);
                     break;
                 case "PowerplayLeave":
-                    addRequired(events, "setCommanderRankPower", timestamp, obj(
-                        ("powerName", entry["Power"]), ("rankValue", -1)), "power");
+                    addRequired(events, SetCommanderRankPowerEvent, timestamp, obj(
+                        (PowerNameKey, entry[PowerProperty]), (RankValueKey, -1)), PowerTrackCategory);
                     break;
                 case "PowerplayDefect":
-                    addRequired(events, "setCommanderRankPower", timestamp, obj(
-                        ("powerName", entry["ToPower"]), ("rankValue", 1)), "power");
+                    addRequired(events, SetCommanderRankPowerEvent, timestamp, obj(
+                        (PowerNameKey, entry["ToPower"]), (RankValueKey, 1)), PowerTrackCategory);
                     break;
                 case "Powerplay":
-                    addRequired(events, "setCommanderRankPower", timestamp, obj(
-                        ("powerName", entry["Power"]), ("rankValue", entry["Rank"]), ("meritsValue", entry["Merits"])), "power");
+                    addRequired(events, SetCommanderRankPowerEvent, timestamp, obj(
+                        (PowerNameKey, entry[PowerProperty]), (RankValueKey, entry["Rank"]), ("meritsValue", entry["Merits"])), PowerTrackCategory);
                     break;
                 case "PowerplayRank":
-                    addRequired(events, "setCommanderRankPower", timestamp, obj(
-                        ("powerName", entry["Power"]), ("rankValue", entry["Rank"])), "power");
+                    addRequired(events, SetCommanderRankPowerEvent, timestamp, obj(
+                        (PowerNameKey, entry[PowerProperty]), (RankValueKey, entry["Rank"])), PowerTrackCategory);
                     break;
                 case "Docked":
                     mapDocked(timestamp, entry, context, events);
@@ -160,8 +205,8 @@ namespace SrvSurvey.Core.Inara
                     break;
                 case "DropshipDeploy":
                     addRequired(events, "addCommanderTravelLand", timestamp, obj(
-                        ("starsystemName", entry["StarSystem"]),
-                        ("starsystemBodyName", entry["Body"]),
+                        (StarSystemNameKey, entry[StarSystemProperty]),
+                        (StarSystemBodyNameKey, entry[BodyKey]),
                         ("isTaxiDropship", true)));
                     break;
                 case "Touchdown":
@@ -172,8 +217,8 @@ namespace SrvSurvey.Core.Inara
                     break;
                 case "ShipyardNew":
                     addRequired(events, "addCommanderShip", timestamp, obj(
-                        ("shipType", entry["ShipType"]),
-                        ("shipGameID", entry["NewShipID"] ?? entry["ShipID"])));
+                        (ShipTypeKey, entry[ShipTypeProperty]),
+                        (ShipGameIdKey, entry["NewShipID"] ?? entry[ShipIdProperty])));
                     break;
                 case "ShipyardBuy":
                 case "ShipyardSell":
@@ -184,13 +229,13 @@ namespace SrvSurvey.Core.Inara
                 case "SetUserShipName":
                     var namedShip = currentShip(context);
                     if (namedShip != null)
-                        events.Add(new("setCommanderShip", timestamp, namedShip, $"ship:{context.ShipId}"));
+                        events.Add(new(SetCommanderShipEvent, timestamp, namedShip, $"ship:{context.ShipId}"));
                     break;
                 case "ShipyardTransfer":
                     addRequired(events, "setCommanderShipTransfer", timestamp, obj(
-                        ("shipType", entry["ShipType"]), ("shipGameID", entry["ShipID"]),
-                        ("starsystemName", context.SystemName), ("stationName", context.StationName),
-                        ("transferTime", entry["TransferTime"])), $"ship-transfer:{entry["ShipID"]}");
+                        (ShipTypeKey, entry[ShipTypeProperty]), (ShipGameIdKey, entry[ShipIdProperty]),
+                        (StarSystemNameKey, context.SystemName), (StationNameKey, context.StationName),
+                        ("transferTime", entry["TransferTime"])), $"ship-transfer:{entry[ShipIdProperty]}");
                     break;
                 case "StoredShips":
                     mapStoredShips(timestamp, entry, events);
@@ -206,14 +251,14 @@ namespace SrvSurvey.Core.Inara
                     break;
                 case "MissionAbandoned":
                     addRequired(events, "setCommanderMissionAbandoned", timestamp,
-                        obj(("missionGameID", entry["MissionID"])), $"mission-abandoned:{entry["MissionID"]}");
+                        obj((MissionGameIdKey, entry[MissionIdKey])), $"mission-abandoned:{entry[MissionIdKey]}");
                     break;
                 case "MissionCompleted":
                     mapMissionCompleted(timestamp, entry, events);
                     break;
                 case "MissionFailed":
                     addRequired(events, "setCommanderMissionFailed", timestamp,
-                        obj(("missionGameID", entry["MissionID"])), $"mission-failed:{entry["MissionID"]}");
+                        obj((MissionGameIdKey, entry[MissionIdKey])), $"mission-failed:{entry[MissionIdKey]}");
                     break;
                 case "Died":
                 case "Interdicted":
@@ -231,12 +276,13 @@ namespace SrvSurvey.Core.Inara
                     break;
                 case "DeleteSuitLoadout":
                     addRequired(events, "delCommanderSuitLoadout", timestamp,
-                        obj(("loadoutGameID", entry["LoadoutID"])), $"suit:{entry["LoadoutID"]}");
+                        obj((LoadoutGameIdKey, entry[LoadoutIdKey])), $"suit:{entry[LoadoutIdKey]}");
                     break;
                 case "RenameSuitLoadout":
                     addRequired(events, "updateCommanderSuitLoadout", timestamp, obj(
-                        ("loadoutGameID", entry["LoadoutID"]), ("loadoutName", entry["LoadoutName"]),
-                        ("suitType", entry["SuitName"]), ("suitGameID", entry["SuitID"])), $"suit:{entry["LoadoutID"]}");
+                        (LoadoutGameIdKey, entry[LoadoutIdKey]),
+                        (LoadoutNameKey, entry[LoadoutNameSourceKey]),
+                        ("suitType", entry["SuitName"]), ("suitGameID", entry["SuitID"])), $"suit:{entry[LoadoutIdKey]}");
                     break;
                 case "LoadoutEquipModule":
                     mapSuitModule(timestamp, entry, events);
@@ -262,7 +308,7 @@ namespace SrvSurvey.Core.Inara
                 Value: true,
             })
                 InMulticrew = true;
-            else if (name == "LoadGame")
+            else if (name == LoadGameEvent)
                 InMulticrew = false;
         }
 
@@ -272,12 +318,12 @@ namespace SrvSurvey.Core.Inara
             var materialsChanged = false;
 
             if (name == "Cargo"
-                && entry.Value<string>("Vessel") == "Ship"
+                && entry.Value<string>(VesselKey) == ShipVesselValue
                 && entry["Inventory"] is JArray inventory)
             {
                 cargo.Clear();
                 foreach (var item in inventory.OfType<JObject>())
-                    setCount(cargo, item.Value<string>("Name"), item.Value<int?>("Count") ?? 0);
+                    setCount(cargo, item.Value<string>("Name"), item.Value<int?>(CountProperty) ?? 0);
                 hasCargoSnapshot = true;
                 cargoChanged = true;
             }
@@ -293,7 +339,7 @@ namespace SrvSurvey.Core.Inara
                 {
                     if (entry[category] is not JArray items) continue;
                     foreach (var item in items.OfType<JObject>())
-                        setCount(materials, item.Value<string>("Name"), item.Value<int?>("Count") ?? 0);
+                        setCount(materials, item.Value<string>("Name"), item.Value<int?>(CountProperty) ?? 0);
                 }
                 hasMaterialsSnapshot = true;
                 materialsChanged = true;
@@ -317,7 +363,7 @@ namespace SrvSurvey.Core.Inara
         private void updateRankState(string name, JObject entry)
         {
             if (name != "Rank") return;
-            foreach (var property in entry.Properties().Where(p => p.Name is not "timestamp" and not "event"))
+            foreach (var property in entry.Properties().Where(p => p.Name is not TimestampKey and not EventKey))
                 if (property.Value.Type == JTokenType.Integer)
                     ranks[property.Name] = property.Value.Value<int>();
         }
@@ -341,7 +387,7 @@ namespace SrvSurvey.Core.Inara
                     {
                         var direction = item.Value<string>("Direction");
                         var amount = itemCount(item, 0);
-                        transferred |= changeCount(cargo, itemName(item), direction == "toship" ? amount : -amount);
+                transferred |= changeCount(cargo, itemName(item), direction == ToShipDirection ? amount : -amount);
                     }
                     return transferred;
                 case "SearchAndRescue":
@@ -396,14 +442,14 @@ namespace SrvSurvey.Core.Inara
             if (cargoChanged && hasCargoSnapshot)
             {
                 var data = new JArray(cargo.OrderBy(item => item.Key).Select(item => obj(
-                    ("itemName", item.Key), ("itemCount", item.Value))));
+                    (ItemNameKey, item.Key), (ItemCountKey, item.Value))));
                 events.Add(new("setCommanderInventoryCargo", timestamp, data, "inventory:cargo"));
             }
 
             if (materialsChanged && hasMaterialsSnapshot)
             {
                 var data = new JArray(materials.OrderBy(item => item.Key).Select(item => obj(
-                    ("itemName", item.Key), ("itemCount", item.Value))));
+                    (ItemNameKey, item.Key), (ItemCountKey, item.Value))));
                 events.Add(new("setCommanderInventoryMaterials", timestamp, data, "inventory:materials"));
             }
         }
@@ -411,11 +457,11 @@ namespace SrvSurvey.Core.Inara
         private void mapProgress(string timestamp, JObject entry, List<InaraEvent> events)
         {
             var values = new JArray();
-            foreach (var property in entry.Properties().Where(p => p.Name is not "timestamp" and not "event"))
+            foreach (var property in entry.Properties().Where(p => p.Name is not TimestampKey and not EventKey))
             {
                 var rankName = normalizeRank(property.Name);
                 var data = obj(("rankName", rankName), ("rankProgress", property.Value.Value<double>() / 100d));
-                if (ranks.TryGetValue(property.Name, out var rank)) data["rankValue"] = rank;
+                if (ranks.TryGetValue(property.Name, out var rank)) data[RankValueKey] = rank;
                 values.Add(data);
             }
             if (values.Count > 0) events.Add(new("setCommanderRankPilot", timestamp, values, "ranks"));
@@ -423,12 +469,12 @@ namespace SrvSurvey.Core.Inara
 
         private void mapPromotion(string timestamp, JObject entry, List<InaraEvent> events)
         {
-            foreach (var property in entry.Properties().Where(p => p.Name is not "timestamp" and not "event"))
+            foreach (var property in entry.Properties().Where(p => p.Name is not TimestampKey and not EventKey))
             {
                 var value = property.Value.Value<int>();
                 ranks[property.Name] = value;
                 events.Add(new("setCommanderRankPilot", timestamp, obj(
-                    ("rankName", normalizeRank(property.Name)), ("rankValue", value), ("rankProgress", 0d)),
+                    ("rankName", normalizeRank(property.Name)), (RankValueKey, value), ("rankProgress", 0d)),
                     $"rank:{property.Name.ToLowerInvariant()}"));
             }
         }
@@ -437,14 +483,14 @@ namespace SrvSurvey.Core.Inara
         {
             if (entry["Engineer"] == null) return;
             addRequired(events, "setCommanderRankEngineer", timestamp, obj(
-                ("engineerName", entry["Engineer"]), ("rankValue", entry["Rank"]),
+                ("engineerName", entry["Engineer"]), (RankValueKey, entry["Rank"]),
                 ("rankStage", entry["Progress"])), $"engineer:{entry["Engineer"]}");
         }
 
         private static void mapMajorFactionReputation(string timestamp, JObject entry, List<InaraEvent> events)
         {
             var reputation = entry.Properties()
-                .Where(property => property.Name is not "timestamp" and not "event" && property.Value.Type is JTokenType.Integer or JTokenType.Float)
+                .Where(property => property.Name is not TimestampKey and not EventKey && property.Value.Type is JTokenType.Integer or JTokenType.Float)
                 .Select(property => obj(
                     ("majorfactionName", property.Name.ToLowerInvariant()),
                     ("majorfactionReputation", property.Value.Value<double>() / 100d)))
@@ -456,9 +502,9 @@ namespace SrvSurvey.Core.Inara
         private static void mapDocked(string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
         {
             var data = obj(
-                ("starsystemName", entry["StarSystem"] ?? context.SystemName),
-                ("stationName", entry["StationName"] ?? context.StationName),
-                ("marketID", entry["MarketID"]));
+                (StarSystemNameKey, entry[StarSystemProperty] ?? context.SystemName),
+                (StationNameKey, entry[StationNameRawKey] ?? context.StationName),
+                (MarketIdKey, entry[MarketIdProperty]));
             addShipIdentity(data, context, entry.Value<bool?>("Taxi") ?? context.IsTaxi);
             addRequired(events, "addCommanderTravelDock", timestamp, data);
         }
@@ -466,11 +512,11 @@ namespace SrvSurvey.Core.Inara
         private static void mapJump(string eventName, string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
         {
             var data = obj(
-                ("starsystemName", entry["StarSystem"]),
+                (StarSystemNameKey, entry[StarSystemProperty]),
                 ("starsystemCoords", entry["StarPos"]),
                 ("jumpDistance", entry["JumpDist"]),
-                ("stationName", entry["StationName"]),
-                ("marketID", entry["MarketID"]));
+                (StationNameKey, entry[StationNameRawKey]),
+                (MarketIdKey, entry[MarketIdProperty]));
             addShipIdentity(data, context, entry.Value<bool?>("Taxi") ?? context.IsTaxi);
             addRequired(events, eventName, timestamp, data);
         }
@@ -478,48 +524,54 @@ namespace SrvSurvey.Core.Inara
         private static void mapLocation(string timestamp, JObject entry, List<InaraEvent> events)
         {
             var data = obj(
-                ("starsystemName", entry["StarSystem"]),
+                (StarSystemNameKey, entry[StarSystemProperty]),
                 ("starsystemCoords", entry["StarPos"]));
             if (entry.Value<bool?>("Docked") == true)
             {
-                copy(data, entry, ("stationName", "StationName"), ("marketID", "MarketID"));
-                if (entry.Value<string>("BodyType") == "Planet") copy(data, entry, ("starsystemBodyName", "Body"));
+                copy(data, entry, (StationNameKey, StationNameRawKey), (MarketIdKey, MarketIdProperty));
+                if (entry.Value<string>(BodyTypeKey) == PlanetBodyType)
+                {
+                    copy(data, entry, (StarSystemBodyNameKey, BodyKey));
+                }
             }
-            if (entry["Latitude"] != null && entry["Longitude"] != null)
+            if (entry[LatitudeKey] != null && entry[LongitudeKey] != null)
             {
-                copy(data, entry, ("starsystemBodyName", "Body"));
-                data["starsystemBodyCoords"] = new JArray(entry["Latitude"]!.DeepClone(), entry["Longitude"]!.DeepClone());
+                copy(data, entry, (StarSystemBodyNameKey, BodyKey));
+                data["starsystemBodyCoords"] = new JArray(entry[LatitudeKey]!.DeepClone(), entry[LongitudeKey]!.DeepClone());
             }
-            addRequired(events, "setCommanderTravelLocation", timestamp, data, "location");
+            addRequired(events, "setCommanderTravelLocation", timestamp, data, LocationKey);
         }
 
         private static void mapSupercruiseExit(string timestamp, JObject entry, List<InaraEvent> events)
         {
-            var data = obj(("starsystemName", entry["StarSystem"]));
-            if (entry.Value<string>("BodyType") == "Planet") copy(data, entry, ("starsystemBodyName", "Body"));
-            addRequired(events, "setCommanderTravelLocation", timestamp, data, "location");
+            var data = obj((StarSystemNameKey, entry[StarSystemProperty]));
+            if (entry.Value<string>(BodyTypeKey) == PlanetBodyType)
+            {
+                copy(data, entry, (StarSystemBodyNameKey, BodyKey));
+            }
+            addRequired(events, "setCommanderTravelLocation", timestamp, data, LocationKey);
         }
 
         private static void mapSettlement(string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
         {
             var data = obj(
-                ("starsystemName", entry["StarSystem"] ?? context.SystemName),
-                ("stationName", entry["Name"]),
-                ("starsystemBodyName", entry["BodyName"]),
-                ("marketID", entry["MarketID"]));
-            if (entry["Latitude"] != null && entry["Longitude"] != null)
-                data["starsystemBodyCoords"] = new JArray(entry["Latitude"]!.DeepClone(), entry["Longitude"]!.DeepClone());
-            addRequired(events, "setCommanderTravelLocation", timestamp, data, "location");
+                (StarSystemNameKey, entry[StarSystemProperty] ?? context.SystemName),
+                (StationNameKey, entry["Name"]),
+                (StarSystemBodyNameKey, entry["BodyName"]),
+                (MarketIdKey, entry[MarketIdProperty]));
+            if (entry[LatitudeKey] != null && entry[LongitudeKey] != null)
+                data["starsystemBodyCoords"] = new JArray(entry[LatitudeKey]!.DeepClone(), entry[LongitudeKey]!.DeepClone());
+            addRequired(events, "setCommanderTravelLocation", timestamp, data, LocationKey);
         }
 
         private static void mapTouchdown(string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
         {
             if (entry.Value<bool?>("PlayerControlled") == false || entry.Value<bool?>("OnPlanet") == false) return;
             var data = obj(
-                ("starsystemName", entry["StarSystem"] ?? context.SystemName),
-                ("starsystemBodyName", entry["Body"] ?? context.BodyName));
-            if (entry["Latitude"] != null && entry["Longitude"] != null)
-                data["starsystemBodyCoords"] = new JArray(entry["Latitude"]!.DeepClone(), entry["Longitude"]!.DeepClone());
+                (StarSystemNameKey, entry[StarSystemProperty] ?? context.SystemName),
+                (StarSystemBodyNameKey, entry[BodyKey] ?? context.BodyName));
+            if (entry[LatitudeKey] != null && entry[LongitudeKey] != null)
+                data["starsystemBodyCoords"] = new JArray(entry[LatitudeKey]!.DeepClone(), entry[LongitudeKey]!.DeepClone());
             addShipIdentity(data, context, entry.Value<bool?>("Taxi") ?? context.IsTaxi);
             addRequired(events, "addCommanderTravelLand", timestamp, data);
         }
@@ -540,76 +592,76 @@ namespace SrvSurvey.Core.Inara
         private static void mapStatistics(string timestamp, JObject entry, List<InaraEvent> events)
         {
             var stats = (JObject)entry.DeepClone();
-            stats.Remove("timestamp");
-            stats.Remove("event");
+            stats.Remove(TimestampKey);
+            stats.Remove(EventKey);
             if (stats.Count > 0) events.Add(new("setCommanderGameStatistics", timestamp, stats, "statistics"));
         }
 
         private static void mapShipyard(string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
         {
             if (entry["StoreShipID"] != null)
-                addRequired(events, "setCommanderShip", timestamp, obj(
-                    ("shipType", entry["StoreOldShip"]), ("shipGameID", entry["StoreShipID"]),
-                    ("starsystemName", context.SystemName), ("stationName", context.StationName)), $"ship:{entry["StoreShipID"]}");
+                addRequired(events, SetCommanderShipEvent, timestamp, obj(
+                    (ShipTypeKey, entry["StoreOldShip"]), (ShipGameIdKey, entry["StoreShipID"]),
+                    (StarSystemNameKey, context.SystemName), (StationNameKey, context.StationName)), $"ship:{entry["StoreShipID"]}");
             if (entry["SellShipID"] != null)
                 addRequired(events, "delCommanderShip", timestamp, obj(
-                    ("shipType", entry["SellOldShip"] ?? entry["ShipType"]),
-                    ("shipGameID", entry["SellShipID"])), $"ship:{entry["SellShipID"]}");
+                    (ShipTypeKey, entry["SellOldShip"] ?? entry[ShipTypeProperty]),
+                    (ShipGameIdKey, entry["SellShipID"])), $"ship:{entry["SellShipID"]}");
         }
 
         private static void mapStoredShips(string timestamp, JObject entry, List<InaraEvent> events)
         {
             foreach (var ship in (entry["ShipsHere"] as JArray)?.OfType<JObject>() ?? [])
             {
-                addRequired(events, "setCommanderShip", timestamp, obj(
-                    ("shipType", ship["ShipType"]), ("shipGameID", ship["ShipID"]),
-                    ("shipName", ship["Name"]), ("isHot", ship["Hot"]),
-                    ("starsystemName", entry["StarSystem"]), ("stationName", entry["StationName"]),
-                    ("marketID", entry["MarketID"])), $"ship:{ship["ShipID"]}");
+                addRequired(events, SetCommanderShipEvent, timestamp, obj(
+                    (ShipTypeKey, ship[ShipTypeProperty]), (ShipGameIdKey, ship[ShipIdProperty]),
+                    (ShipNameKey, ship["Name"]), (IsHotKey, ship["Hot"]),
+                    (StarSystemNameKey, entry[StarSystemProperty]), (StationNameKey, entry["StationName"]),
+                    (MarketIdKey, entry[MarketIdProperty])), $"ship:{ship[ShipIdProperty]}");
             }
             foreach (var ship in (entry["ShipsRemote"] as JArray)?.OfType<JObject>() ?? [])
             {
-                addRequired(events, "setCommanderShip", timestamp, obj(
-                    ("shipType", ship["ShipType"]), ("shipGameID", ship["ShipID"]),
-                    ("shipName", ship["Name"]), ("isHot", ship["Hot"]),
-                    ("starsystemName", ship["StarSystem"]), ("marketID", ship["ShipMarketID"])),
-                    $"ship:{ship["ShipID"]}");
+                addRequired(events, SetCommanderShipEvent, timestamp, obj(
+                    (ShipTypeKey, ship[ShipTypeProperty]), (ShipGameIdKey, ship[ShipIdProperty]),
+                    (ShipNameKey, ship["Name"]), (IsHotKey, ship["Hot"]),
+                    (StarSystemNameKey, ship[StarSystemProperty]), (MarketIdKey, ship["ShipMarketID"])),
+                    $"ship:{ship[ShipIdProperty]}");
             }
         }
 
         private static void mapLoadout(string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
         {
             var shipType = entry["Ship"] ?? context.ShipType;
-            var shipId = entry["ShipID"] ?? context.ShipId;
+            var shipId = entry[ShipIdProperty] ?? context.ShipId;
             var modules = new JArray();
             foreach (var module in (entry["Modules"] as JArray)?.OfType<JObject>() ?? [])
                 modules.Add(mapModule(module));
 
             addRequired(events, "setCommanderShipLoadout", timestamp, obj(
-                ("shipType", shipType), ("shipGameID", shipId), ("shipLoadout", modules)), $"loadout:{shipId}");
+                (ShipTypeKey, shipType), (ShipGameIdKey, shipId), ("shipLoadout", modules)), $"loadout:{shipId}");
 
             var ship = obj(
-                ("shipType", shipType), ("shipGameID", shipId),
-                ("shipName", entry["ShipName"] ?? context.ShipName),
+                (ShipTypeKey, shipType), (ShipGameIdKey, shipId),
+                (ShipNameKey, entry["ShipName"] ?? context.ShipName),
                 ("shipIdent", entry["ShipIdent"] ?? entry["ShipIDent"] ?? context.ShipIdent),
                 ("isCurrentShip", true), ("shipMaxJumpRange", entry["MaxJumpRange"]),
                 ("shipCargoCapacity", entry["CargoCapacity"]), ("shipHullValue", entry["HullValue"]),
                 ("shipModulesValue", entry["ModulesValue"]), ("shipRebuyCost", entry["Rebuy"]));
-            addRequired(events, "setCommanderShip", timestamp, ship, $"ship:{shipId}");
+            addRequired(events, SetCommanderShipEvent, timestamp, ship, $"ship:{shipId}");
         }
 
         private static JObject mapModule(JObject module)
         {
             var data = obj(
-                ("slotName", module["Slot"]), ("itemName", module["Item"]),
+                ("slotName", module["Slot"]), (ItemNameKey, module["Item"]),
                 ("itemHealth", module["Health"]), ("isOn", module["On"]),
                 ("itemPriority", module["Priority"]), ("itemAmmoClip", module["AmmoInClip"]),
                 ("itemAmmoHopper", module["AmmoInHopper"]), ("itemValue", module["Value"]),
-                ("isHot", module["Hot"]));
+                (IsHotKey, module["Hot"]));
             if (module["Engineering"] is JObject engineering)
             {
                 var mapped = obj(
-                    ("blueprintName", engineering["BlueprintName"]),
+                    (BlueprintNameKey, engineering["BlueprintName"]),
                     ("blueprintLevel", engineering["Level"]),
                     ("blueprintQuality", engineering["Quality"]),
                     ("experimentalEffect", engineering["ExperimentalEffect"]));
@@ -619,7 +671,7 @@ namespace SrvSurvey.Core.Inara
                         ("name", modifier["Label"]), ("value", modifier["Value"] ?? modifier["ValueStr"]),
                         ("originalValue", modifier["OriginalValue"]), ("lessIsGood", modifier["LessIsGood"]))));
                 }
-                data["engineering"] = mapped;
+                data[EngineeringKey] = mapped;
             }
             return data;
         }
@@ -631,11 +683,11 @@ namespace SrvSurvey.Core.Inara
             foreach (var item in storedModules.OrderBy(i => i.Value<int?>("StorageSlot")))
             {
                 var module = obj(
-                    ("itemName", item["Name"]), ("itemValue", item["BuyPrice"]), ("isHot", item["Hot"]),
-                    ("starsystemName", item["StarSystem"]), ("marketID", item["MarketID"]));
+                    (ItemNameKey, item["Name"]), ("itemValue", item["BuyPrice"]), (IsHotKey, item["Hot"]),
+                    (StarSystemNameKey, item[StarSystemProperty]), (MarketIdKey, item[MarketIdProperty]));
                 if (item["EngineerModifications"] != null)
-                    module["engineering"] = obj(
-                        ("blueprintName", item["EngineerModifications"]),
+                    module[EngineeringKey] = obj(
+                        (BlueprintNameKey, item["EngineerModifications"]),
                         ("blueprintLevel", item["Level"]), ("blueprintQuality", item["Quality"]));
                 modules.Add(module);
             }
@@ -645,30 +697,30 @@ namespace SrvSurvey.Core.Inara
         private static void mapMissionAccepted(string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
         {
             var data = obj(
-                ("missionName", entry["Name"]), ("missionGameID", entry["MissionID"]),
+                ("missionName", entry["Name"]), (MissionGameIdKey, entry[MissionIdKey]),
                 ("influenceGain", entry["Influence"]), ("reputationGain", entry["Reputation"]),
                 ("starsystemNameOrigin", context.SystemName), ("stationNameOrigin", context.StationName),
-                ("minorfactionNameOrigin", entry["Faction"]));
+                ("minorfactionNameOrigin", entry[FactionKey]));
             copy(data, entry,
                 ("missionExpiry", "Expiry"), ("starsystemNameTarget", "DestinationSystem"),
                 ("stationNameTarget", "DestinationStation"), ("minorfactionNameTarget", "TargetFaction"),
-                ("commodityName", "Commodity"), ("commodityCount", "Count"), ("targetName", "Target"),
+                ("commodityName", "Commodity"), ("commodityCount", CountProperty), ("targetName", "Target"),
                 ("targetType", "TargetType"), ("killCount", "KillCount"), ("passengerType", "PassengerType"),
                 ("passengerCount", "PassengerCount"), ("passengerIsVIP", "PassengerVIPs"),
                 ("passengerIsWanted", "PassengerWanted"));
-            addRequired(events, "addCommanderMission", timestamp, data, $"mission:{entry["MissionID"]}");
+            addRequired(events, "addCommanderMission", timestamp, data, $"mission:{entry[MissionIdKey]}");
         }
 
         private static void mapMissionCompleted(string timestamp, JObject entry, List<InaraEvent> events)
         {
             var data = obj(
-                ("missionGameID", entry["MissionID"]), ("donationCredits", entry["Donation"]),
+                (MissionGameIdKey, entry[MissionIdKey]), ("donationCredits", entry["Donation"]),
                 ("rewardCredits", entry["Reward"]));
             if (entry["PermitsAwarded"] is JArray permits)
             {
-                data["rewardPermits"] = new JArray(permits.Select(permit => obj(("starsystemName", permit))));
+                data["rewardPermits"] = new JArray(permits.Select(permit => obj((StarSystemNameKey, permit))));
                 foreach (var permit in permits)
-                    events.Add(new("addCommanderPermit", timestamp, obj(("starsystemName", permit))));
+                    events.Add(new("addCommanderPermit", timestamp, obj((StarSystemNameKey, permit))));
             }
             if (entry["CommodityReward"] is JArray commodities)
                 data["rewardCommodities"] = mapRewards(commodities);
@@ -681,7 +733,7 @@ namespace SrvSurvey.Core.Inara
                 foreach (var faction in factionEffects.OfType<JObject>())
                 {
                     var effect = obj(
-                        ("minorfactionName", faction["Faction"]),
+                        ("minorfactionName", faction[FactionKey]),
                         ("reputationGain", faction["Reputation"]));
                     var influence = (faction["Influence"] as JArray)?.OfType<JObject>()
                         .Select(value => value.Value<string>("Influence"))
@@ -693,15 +745,15 @@ namespace SrvSurvey.Core.Inara
                 }
                 if (effects.Count > 0) data["minorfactionEffects"] = effects;
             }
-            addRequired(events, "setCommanderMissionCompleted", timestamp, data, $"mission-completed:{entry["MissionID"]}");
+            addRequired(events, "setCommanderMissionCompleted", timestamp, data, $"mission-completed:{entry[MissionIdKey]}");
         }
 
         private static JArray mapRewards(JArray rewards) => new(rewards.OfType<JObject>().Select(item => obj(
-            ("itemName", item["Name"]), ("itemCount", item["Count"]))));
+            (ItemNameKey, item["Name"]), (ItemCountKey, item[CountProperty]))));
 
         private static void mapCombat(string name, string timestamp, JObject entry, InaraContext context, List<InaraEvent> events)
         {
-            var data = obj(("starsystemName", entry["StarSystem"] ?? context.SystemName));
+            var data = obj((StarSystemNameKey, entry[StarSystemProperty] ?? context.SystemName));
             string eventName;
             switch (name)
             {
@@ -710,30 +762,30 @@ namespace SrvSurvey.Core.Inara
                     if (entry["Killers"] is JArray killers)
                         data["wingOpponentNames"] = new JArray(killers.OfType<JObject>().Select(k => k["Name"]?.DeepClone()));
                     else
-                        data["opponentName"] = entry["KillerName"] ?? entry["KillerShip"];
+                        data[OpponentNameKey] = entry["KillerName"] ?? entry["KillerShip"];
                     break;
                 case "Interdicted":
                     eventName = "addCommanderCombatInterdicted";
                     copy(data, entry, ("isPlayer", "IsPlayer"), ("isSubmit", "Submitted"));
-                    data["opponentName"] = opponent(entry, "Interdictor");
+                    data[OpponentNameKey] = opponent(entry, "Interdictor");
                     break;
                 case "Interdiction":
                     eventName = "addCommanderCombatInterdiction";
                     copy(data, entry, ("isPlayer", "IsPlayer"), ("isSuccess", "Success"));
-                    data["opponentName"] = opponent(entry, "Interdicted");
+                    data[OpponentNameKey] = opponent(entry, "Interdicted");
                     break;
                 case "EscapeInterdiction":
                     eventName = "addCommanderCombatInterdictionEscape";
                     copy(data, entry, ("isPlayer", "IsPlayer"));
-                    data["opponentName"] = opponent(entry, "Interdictor");
+                    data[OpponentNameKey] = opponent(entry, "Interdictor");
                     break;
                 default:
                     eventName = "addCommanderCombatKill";
-                    data["opponentName"] = entry["Victim"];
+                    data[OpponentNameKey] = entry["Victim"];
                     break;
             }
 
-            var hasOpponent = !string.IsNullOrWhiteSpace(data.Value<string>("opponentName"))
+            var hasOpponent = !string.IsNullOrWhiteSpace(data.Value<string>(OpponentNameKey))
                 || data["wingOpponentNames"] is JArray { Count: > 0 };
             if (hasOpponent) events.Add(new(eventName, timestamp, data));
         }
@@ -741,8 +793,8 @@ namespace SrvSurvey.Core.Inara
         private static JToken? opponent(JObject entry, string primary)
         {
             if (entry[primary] != null) return entry[primary]!.DeepClone();
-            if (entry["Faction"] != null) return entry["Faction"]!.DeepClone();
-            if (entry["Power"] != null) return entry["Power"]!.DeepClone();
+            if (entry[FactionKey] != null) return entry[FactionKey]!.DeepClone();
+            if (entry[PowerProperty] != null) return entry[PowerProperty]!.DeepClone();
             if (entry.Value<bool?>("IsThargoid") == true || entry.Value<bool?>("isThargoid") == true) return "Thargoid";
             return null;
         }
@@ -758,7 +810,7 @@ namespace SrvSurvey.Core.Inara
             foreach (var type in types)
             {
                 foreach (var item in ((JArray)entry[type]!).OfType<JObject>())
-                    data.Add(obj(("itemName", item["Name"]), ("itemCount", item["Count"]),
+                    data.Add(obj((ItemNameKey, item["Name"]), (ItemCountKey, item[CountProperty]),
                         ("itemType", type), ("itemLocation", "ShipLocker")));
             }
             events.Add(new("setCommanderInventory", timestamp, data, "locker:items"));
@@ -770,26 +822,28 @@ namespace SrvSurvey.Core.Inara
             foreach (var module in (entry["Modules"] as JArray)?.OfType<JObject>() ?? [])
             {
                 modules.Add(obj(
-                    ("slotName", module["SlotName"]), ("itemName", module["ModuleName"]),
+                    ("slotName", module["SlotName"]), (ItemNameKey, module["ModuleName"]),
                     ("itemClass", module["Class"]), ("itemGameID", module["SuitModuleID"]),
-                    ("engineering", new JArray((module["WeaponMods"] as JArray)?.Select(mod => obj(("blueprintName", mod))) ?? []))));
+                    (EngineeringKey, new JArray((module["WeaponMods"] as JArray)?.Select(mod => obj((BlueprintNameKey, mod))) ?? []))));
             }
             addRequired(events, eventName, timestamp, obj(
-                ("loadoutGameID", entry["LoadoutID"]), ("loadoutName", entry["LoadoutName"]),
+                (LoadoutGameIdKey, entry[LoadoutIdKey]),
+                (LoadoutNameKey, entry[LoadoutNameSourceKey]),
                 ("suitGameID", entry["SuitID"]), ("suitType", entry["SuitName"]),
-                ("suitMods", entry["SuitMods"]), ("suitLoadout", modules)), $"suit:{entry["LoadoutID"]}");
+                ("suitMods", entry["SuitMods"]), ("suitLoadout", modules)), $"suit:{entry[LoadoutIdKey]}");
         }
 
         private static void mapSuitModule(string timestamp, JObject entry, List<InaraEvent> events)
         {
             var module = obj(
-                ("slotName", entry["SlotName"]), ("itemName", entry["ModuleName"]),
+                ("slotName", entry["SlotName"]), (ItemNameKey, entry["ModuleName"]),
                 ("itemClass", entry["Class"]), ("itemGameID", entry["SuitModuleID"]),
-                ("engineering", new JArray((entry["WeaponMods"] as JArray)?.Select(mod => obj(("blueprintName", mod))) ?? [])));
+                (EngineeringKey, new JArray((entry["WeaponMods"] as JArray)?.Select(mod => obj((BlueprintNameKey, mod))) ?? [])));
             addRequired(events, "updateCommanderSuitLoadout", timestamp, obj(
-                ("loadoutGameID", entry["LoadoutID"]), ("loadoutName", entry["LoadoutName"]),
+                (LoadoutGameIdKey, entry[LoadoutIdKey]),
+                (LoadoutNameKey, entry[LoadoutNameSourceKey]),
                 ("suitGameID", entry["SuitID"]), ("suitType", entry["SuitName"]),
-                ("suitLoadout", new JArray(module))), $"suit:{entry["LoadoutID"]}");
+                ("suitLoadout", new JArray(module))), $"suit:{entry[LoadoutIdKey]}");
         }
 
         private static void mapCommunityGoals(string timestamp, JObject entry, List<InaraEvent> events)
@@ -799,7 +853,7 @@ namespace SrvSurvey.Core.Inara
                 var id = goal["CGID"];
                 var data = obj(
                     ("communitygoalGameID", id), ("communitygoalName", goal["Title"]),
-                    ("starsystemName", goal["SystemName"]), ("stationName", goal["MarketName"]),
+                    (StarSystemNameKey, goal["SystemName"]), (StationNameKey, goal["MarketName"]),
                     ("goalExpiry", goal["Expiry"]), ("isCompleted", goal["IsComplete"]),
                     ("contributorsNum", goal["NumContributors"]), ("contributionsTotal", goal["CurrentTotal"]),
                     ("topRankSize", goal["TopRankSize"]));
@@ -831,8 +885,8 @@ namespace SrvSurvey.Core.Inara
         {
             if (context.ShipId is null or < 0 || string.IsNullOrWhiteSpace(context.ShipType)) return null;
             return obj(
-                ("shipType", context.ShipType), ("shipGameID", context.ShipId),
-                ("shipName", context.ShipName), ("shipIdent", context.ShipIdent),
+                (ShipTypeKey, context.ShipType), (ShipGameIdKey, context.ShipId),
+                (ShipNameKey, context.ShipName), ("shipIdent", context.ShipIdent),
                 ("isCurrentShip", true));
         }
 
@@ -848,8 +902,8 @@ namespace SrvSurvey.Core.Inara
             // An unknown taxi state must not claim that a travel event used the commander's ship.
             if (isTaxi == null) return;
 
-            if (!string.IsNullOrWhiteSpace(context.ShipType)) data["shipType"] = context.ShipType;
-            if (context.ShipId is >= 0) data["shipGameID"] = context.ShipId;
+            if (!string.IsNullOrWhiteSpace(context.ShipType)) data[ShipTypeKey] = context.ShipType;
+            if (context.ShipId is >= 0) data[ShipGameIdKey] = context.ShipId;
         }
 
         private static void addRequired(List<InaraEvent> events, string name, string timestamp, JObject data, string? replaceKey = null)
@@ -890,7 +944,7 @@ namespace SrvSurvey.Core.Inara
             entry.Value<string>("Type") ?? entry.Value<string>("Name") ?? entry.Value<string>("Material") ?? entry.Value<string>("Commodity");
 
         private static int itemCount(JObject entry, int fallback) =>
-            entry.Value<int?>("Count") ?? entry.Value<int?>("Amount") ?? entry.Value<int?>("Quantity") ?? fallback;
+            entry.Value<int?>(CountProperty) ?? entry.Value<int?>("Amount") ?? entry.Value<int?>("Quantity") ?? fallback;
 
         private static void setCount(Dictionary<string, int> inventory, string? name, int count)
         {
@@ -924,3 +978,5 @@ namespace SrvSurvey.Core.Inara
         }
     }
 }
+
+

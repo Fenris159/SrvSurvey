@@ -210,7 +210,7 @@ public sealed class GuardianCommanderDataReader
 
     private static async Task<JsonDocument?> ReadDocumentAsync(
         string path,
-        ICollection<string> errors,
+        List<string> errors,
         CancellationToken cancellationToken)
     {
         try

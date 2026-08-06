@@ -149,7 +149,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         }
     }
 
-    private static IReadOnlyList<FollowRouteHop> ParseRoute(
+    private static List<FollowRouteHop> ParseRoute(
         JsonObject root,
         SpanshRouteKind kind)
     {
@@ -170,7 +170,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         };
     }
 
-    private static IReadOnlyList<FollowRouteHop> ParseDetectedRoute(
+    private static List<FollowRouteHop> ParseDetectedRoute(
         JsonNode? result)
     {
         if (result is JsonArray rows)

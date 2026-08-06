@@ -963,7 +963,7 @@ public sealed class InaraPublisher : IInaraPublisher
         CargoSnapshot? cargo,
         string? journalPath,
         bool allowSharedData,
-        ICollection<string> warnings,
+        List<string> warnings,
         CancellationToken cancellationToken)
     {
         var needsCargo = journalEvent.EventName == "Cargo"

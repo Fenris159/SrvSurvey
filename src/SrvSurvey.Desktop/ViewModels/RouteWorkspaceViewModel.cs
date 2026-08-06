@@ -388,13 +388,28 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 false => "No route loaded"
             });
 
-    public string ProgressSummary => !HasRoute
-        ? "Import a route to begin."
-        : IsComplete
-            ? $"All {RouteCount:N0} systems reached."
-            : lastReachedIndex < 0
-                ? $"Not started \u2022 {RouteCount:N0} systems"
-                : $"Reached {ReachedCount:N0} of {RouteCount:N0} systems";
+    public string ProgressSummary
+    {
+        get
+        {
+            if (!HasRoute)
+            {
+                return "Import a route to begin.";
+            }
+
+            if (IsComplete)
+            {
+                return $"All {RouteCount:N0} systems reached.";
+            }
+
+            if (lastReachedIndex < 0)
+            {
+                return $"Not started \u2022 {RouteCount:N0} systems";
+            }
+
+            return $"Reached {ReachedCount:N0} of {RouteCount:N0} systems";
+        }
+    }
 
     public string AutoCopySummary => AutoCopy
         ? "Next-hop clipboard guidance is enabled."
@@ -759,17 +774,25 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                     RefreshPresentation();
                 }
 
-                var reachedName = reachedIndex is { } index
+                var name = currentSystemName ?? "the route";
+                if (reachedIndex is { } index
                     && index >= 0
-                    && index < loadedRoute.Hops.Count
-                        ? loadedRoute.Hops[index].Name
-                        : currentSystemName ?? "the route";
-                StatusMessage = loadedRoute.IsComplete
-                    ? $"Route complete after arriving at {reachedName}."
-                    : $"Arrived at hop #{reachedIndex + 1:N0}: {reachedName}."
-                        + (hadUnsavedChanges
-                            ? " Unsaved route edits were kept."
-                            : string.Empty);
+                    && index < loadedRoute.Hops.Count)
+                {
+                    name = loadedRoute.Hops[index].Name;
+                }
+                if (loadedRoute.IsComplete)
+                {
+                    StatusMessage = $"Route complete after arriving at {name}.";
+                }
+                else
+                {
+                    StatusMessage = $"Arrived at hop #{reachedIndex + 1:N0}: {name}.";
+                    if (hadUnsavedChanges)
+                    {
+                        StatusMessage += " Unsaved route edits were kept.";
+                    }
+                }
             }
 
             await ApplyBioArrivalEventsAsync(journalEvents);

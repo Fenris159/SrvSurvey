@@ -980,12 +980,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         string? error = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(description);
-        SettingsLinkStatusMessage = launched
-            ? $"Opened {description} in the default browser."
-            : $"Could not open {description}: "
-                + (string.IsNullOrWhiteSpace(error)
-                    ? "the desktop launcher declined the request."
-                    : error);
+        if (launched)
+        {
+            SettingsLinkStatusMessage = $"Opened {description} in the default browser.";
+            return;
+        }
+
+        var reason = string.IsNullOrWhiteSpace(error)
+            ? "the desktop launcher declined the request."
+            : error;
+        SettingsLinkStatusMessage = $"Could not open {description}: {reason}";
     }
 
     public string ImportProfileButtonText => IsImportingProfile

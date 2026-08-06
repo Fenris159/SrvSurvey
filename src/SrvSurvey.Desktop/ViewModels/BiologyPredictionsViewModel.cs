@@ -364,12 +364,16 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         FirstFootfallEstimate = CalculateFirstFootfallEstimate(
             snapshot,
             overview.Bodies);
+        var predictedBodyCountLabel = bodyRows.Length == 1
+            ? "body."
+            : "bodies.";
+        var predictionStatus = bodyRows.Any(body => body.HasPredictionStatus)
+            ? "Some bodies still need complete planet or parent-star scans."
+            : $"Exact criteria evaluated for {bodyRows.Length:N0} biological "
+                + predictedBodyCountLabel;
         StatusMessage = survey.DisableBioPredictions
             ? "Exact predictions are disabled in system-survey settings."
-            : bodyRows.Any(body => body.HasPredictionStatus)
-                ? "Some bodies still need complete planet or parent-star scans."
-                : $"Exact criteria evaluated for {bodyRows.Length:N0} biological "
-                    + (bodyRows.Length == 1 ? "body." : "bodies.");
+            : predictionStatus;
         Bodies = bodyRows;
         if (CurrentBodyOnly)
         {

@@ -142,9 +142,19 @@ public sealed class RouteManagerViewModel : INotifyPropertyChanged
         && !workspace.IsBusy
         && !IsBusy;
 
-    public string SelectionSummary => SelectedCount == 0
-        ? $"{Routes.Count:N0} saved route{(Routes.Count == 1 ? string.Empty : "s")}"
-        : $"{SelectedCount:N0} of {Routes.Count:N0} selected";
+    public string SelectionSummary
+    {
+        get
+        {
+            var routeCount = Routes.Count;
+            if (SelectedCount == 0)
+            {
+                return $"{routeCount:N0} saved route{(routeCount == 1 ? string.Empty : "s")}";
+            }
+
+            return $"{SelectedCount:N0} of {routeCount:N0} selected";
+        }
+    }
 
     public bool IsBusy
     {

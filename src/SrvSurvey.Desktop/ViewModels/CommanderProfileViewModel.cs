@@ -167,26 +167,53 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public bool IsAutomaticCommanderSelection => manuallySelectedFrontierId is null;
 
-    public string DetectedCommanderDescription => detectedFrontierId is null
-        ? "Waiting for active journal commander"
-        : string.IsNullOrWhiteSpace(detectedCommanderName)
-            ? detectedFrontierId
-            : $"{detectedCommanderName} ({detectedFrontierId})";
+    public string DetectedCommanderDescription
+    {
+        get
+        {
+            if (detectedFrontierId is null)
+            {
+                return "Waiting for active journal commander";
+            }
 
-    public string ActiveCommanderDescription => activeFrontierId is null
-        ? "No Frontier commander selected"
-        : string.IsNullOrWhiteSpace(activeCommanderName)
-            ? activeFrontierId
-            : $"{activeCommanderName} ({activeFrontierId})";
+            return string.IsNullOrWhiteSpace(detectedCommanderName)
+                ? detectedFrontierId
+                : $"{detectedCommanderName} ({detectedFrontierId})";
+        }
+    }
 
-    public string CommanderSelectionDescription => IsAutomaticCommanderSelection
-    ? $"Automatic · Journal: {DetectedCommanderDescription}"
-    : string.Equals(
-        activeFrontierId,
-        detectedFrontierId,
-        StringComparison.OrdinalIgnoreCase)
-        ? "Manual selection · Matches the active journal commander"
-        : $"Manual selection · Journal remains {DetectedCommanderDescription}";
+    public string ActiveCommanderDescription
+    {
+        get
+        {
+            if (activeFrontierId is null)
+            {
+                return "No Frontier commander selected";
+            }
+
+            return string.IsNullOrWhiteSpace(activeCommanderName)
+                ? activeFrontierId
+                : $"{activeCommanderName} ({activeFrontierId})";
+        }
+    }
+
+    public string CommanderSelectionDescription
+    {
+        get
+        {
+            if (IsAutomaticCommanderSelection)
+            {
+                return $"Automatic · Journal: {DetectedCommanderDescription}";
+            }
+
+            return string.Equals(
+                activeFrontierId,
+                detectedFrontierId,
+                StringComparison.OrdinalIgnoreCase)
+                ? "Manual selection · Matches the active journal commander"
+                : $"Manual selection · Journal remains {DetectedCommanderDescription}";
+        }
+    }
 
     public bool IsBusy
     {
