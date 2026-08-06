@@ -17,30 +17,32 @@ internal sealed class X11OverlayPlatformService
     private readonly nuint kdeOnScreenDisplayAtom;
     private readonly nuint normalWindowAtom;
 
-    private X11OverlayPlatformService(
-        nint display,
-        bool shapeAvailable,
-        OverlayHostKind host,
-        X11OverlayStackingMode stackingMode,
-        nuint atomType,
-        nuint windowTypeAtom,
-        nuint kdeOnScreenDisplayAtom,
-        nuint normalWindowAtom)
+    private X11OverlayPlatformService(X11OverlayPlatformContext context)
     {
-        this.display = display;
-        this.shapeAvailable = shapeAvailable;
-        this.stackingMode = stackingMode;
-        this.atomType = atomType;
-        this.windowTypeAtom = windowTypeAtom;
-        this.kdeOnScreenDisplayAtom = kdeOnScreenDisplayAtom;
-        this.normalWindowAtom = normalWindowAtom;
-        Capabilities = OverlayPlatformCapabilities.ForHost(host)
+        display = context.Display;
+        shapeAvailable = context.ShapeAvailable;
+        stackingMode = context.StackingMode;
+        atomType = context.AtomType;
+        windowTypeAtom = context.WindowTypeAtom;
+        kdeOnScreenDisplayAtom = context.KdeOnScreenDisplayAtom;
+        normalWindowAtom = context.NormalWindowAtom;
+        Capabilities = OverlayPlatformCapabilities.ForHost(context.Host)
             with
         {
-            SupportsClickThrough = shapeAvailable,
+            SupportsClickThrough = context.ShapeAvailable,
             SupportsGameWindowTracking = true,
         };
     }
+
+    private sealed record X11OverlayPlatformContext(
+        nint Display,
+        bool ShapeAvailable,
+        OverlayHostKind Host,
+        X11OverlayStackingMode StackingMode,
+        nuint AtomType,
+        nuint WindowTypeAtom,
+        nuint KdeOnScreenDisplayAtom,
+        nuint NormalWindowAtom);
 
     public OverlayPlatformCapabilities Capabilities { get; }
 
@@ -130,14 +132,15 @@ internal sealed class X11OverlayPlatformService
                 : "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).");
 
         return new X11OverlayPlatformService(
-            display,
-            shapeAvailable,
-            host,
-            stackingMode,
-            atomType,
-            windowTypeAtom,
-            kdeOnScreenDisplayAtom,
-            normalWindowAtom);
+            new X11OverlayPlatformContext(
+                display,
+                shapeAvailable,
+                host,
+                stackingMode,
+                atomType,
+                windowTypeAtom,
+                kdeOnScreenDisplayAtom,
+                normalWindowAtom));
     }
 
     public OverlayPreparationResult PreparePassiveWindow(Window window)

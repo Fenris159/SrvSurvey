@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Updates;
@@ -38,17 +39,17 @@ public sealed record PublishedReferenceUris(
     Uri RavenNicknames)
 {
     public static PublishedReferenceUris Default { get; } = new(
-        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/refs/heads/main/docs/codexRef.json"),
-        new Uri("https://docs.google.com/spreadsheets/d/1TpPZUFd61KUQWy1sV8VhScZiVbRWJ435wTN8xjN0Qv0/gviz/tq?tqx=out:csv&sheet=Individual+Items"),
-        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/game/Boxel.Names.txt"),
-        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/data/bio-criteria.zip"),
-        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/guardianSiteTemplates.json"),
-        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/allRuins.json"),
-        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/allStructures.json"),
-        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/data/guardian.zip"),
-        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/data/settlements.zip"),
-        new Uri("https://raw.githubusercontent.com/njthomson/SrvSurvey/main/SrvSurvey/ggg.json"),
-        new Uri("https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net/api/misc/nicknames"));
+        WellKnownUris.PublishedCodexReference,
+        WellKnownUris.PublishedRegionalCodexCandidatesCsv,
+        WellKnownUris.PublishedKnownSystemAddresses,
+        WellKnownUris.PublishedBiologyCriteriaArchive,
+        WellKnownUris.PublishedGuardianTemplates,
+        WellKnownUris.PublishedGuardianRuins,
+        WellKnownUris.PublishedGuardianStructures,
+        WellKnownUris.PublishedGuardianSurveyArchive,
+        WellKnownUris.PublishedHumanSettlementsArchive,
+        WellKnownUris.PublishedGreenGasGiants,
+        WellKnownUris.PublishedRavenNicknames);
 }
 
 internal enum PublishedReferenceUpdateCheckpoint
@@ -127,6 +128,519 @@ public sealed class PublishedReferenceUpdateService
         var previous = versionStore.Load(root);
         var remote = await indexClient.GetAsync(cancellationToken)
             .ConfigureAwait(false);
+        var plan = EvaluateUpdatePlan(root, previous, remote);
+        var warnings = plan.Warnings;
+        var updated = new List<string>();
+        if (!plan.HasAnyUpdate)
+        {
+            return new PublishedReferenceUpdateResult(
+                previous,
+                previous,
+                updated,
+                warnings,
+                null);
+        }
+
+        var operationId = Guid.NewGuid().ToString("N");
+        var stageRoot = Path.Combine(root, $".reference-update-{operationId}");
+        var rollbackRoot = Path.Combine(root, $".reference-rollback-{operationId}");
+        var backupRoot = Path.Combine(
+            root,
+            "reference-backups",
+            $"{timeProvider.GetUtcNow():yyyyMMddTHHmmssZ}-{operationId}");
+        EnsureChild(root, stageRoot);
+        EnsureChild(root, rollbackRoot);
+        EnsureChild(root, backupRoot);
+        Directory.CreateDirectory(stageRoot);
+        var activationCompleted = false;
+
+        try
+        {
+            await CopyCurrentReferencesAsync(root, stageRoot, cancellationToken)
+                .ConfigureAwait(false);
+            var stagePublished = await StageCatalogUpdatesAsync(
+                    plan,
+                    stageRoot,
+                    updated,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            var next = BuildNextVersions(previous, remote, plan);
+            await versionStore.WriteAsync(
+                    stagePublished,
+                    next,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            ValidateCandidate(stageRoot, updated);
+            await CopyCurrentReferencesAsync(root, backupRoot, cancellationToken)
+                .ConfigureAwait(false);
+            checkpoint?.Invoke(PublishedReferenceUpdateCheckpoint.BackupVerified);
+            await ActivateAsync(
+                    root,
+                    stageRoot,
+                    rollbackRoot,
+                    updated,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            activationCompleted = true;
+            var retainedBackup = Directory.EnumerateFileSystemEntries(
+                    backupRoot,
+                    "*",
+                    SearchOption.AllDirectories)
+                .Any()
+                    ? backupRoot
+                    : null;
+            return new PublishedReferenceUpdateResult(
+                previous,
+                next,
+                updated,
+                warnings,
+                retainedBackup);
+        }
+        finally
+        {
+            CleanupUpdateDirectories(
+                root,
+                stageRoot,
+                rollbackRoot,
+                backupRoot,
+                activationCompleted);
+        }
+    }
+
+    private async Task<string> StageCatalogUpdatesAsync(
+        UpdatePlan plan,
+        string stageRoot,
+        List<string> updated,
+        CancellationToken cancellationToken)
+    {
+        if (plan.UpdateCodex)
+        {
+            await WriteDownloadAsync(
+                    uris.CodexReference,
+                    Path.Combine(stageRoot, CodexReferenceFileName),
+                    cancellationToken)
+                .ConfigureAwait(false);
+            updated.Add("Codex reference");
+        }
+
+        if (plan.UpdateRegionalCodexCandidates)
+        {
+            await StageRegionalCodexCandidatesAsync(stageRoot, cancellationToken)
+                .ConfigureAwait(false);
+            updated.Add("regional Codex candidates");
+        }
+
+        var stagePublished = Path.Combine(stageRoot, "pub");
+        Directory.CreateDirectory(stagePublished);
+        await StagePublishedCatalogsAsync(
+                plan,
+                stageRoot,
+                stagePublished,
+                updated,
+                cancellationToken)
+            .ConfigureAwait(false);
+        return stagePublished;
+    }
+
+    private async Task StageRegionalCodexCandidatesAsync(
+        string stageRoot,
+        CancellationToken cancellationToken)
+    {
+        var bytes = await DownloadAsync(
+                uris.RegionalCodexCandidatesCsv,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var references = LegacyReferenceCatalogLoader.Load(stageRoot)
+            .Exobiology;
+        var regional = RegionalCodexCandidateCatalog.ParsePublishedCsv(
+            bytes,
+            references);
+        await File.WriteAllTextAsync(
+                Path.Combine(stageRoot, RegionalCodexCandidateCatalog.LegacyFileName),
+                regional.SerializeLegacy(),
+                cancellationToken)
+            .ConfigureAwait(false);
+        File.SetLastWriteTimeUtc(
+            Path.Combine(stageRoot, RegionalCodexCandidateCatalog.LegacyFileName),
+            timeProvider.GetUtcNow().UtcDateTime);
+    }
+
+    private async Task StagePublishedCatalogsAsync(
+        UpdatePlan plan,
+        string stageRoot,
+        string stagePublished,
+        List<string> updated,
+        CancellationToken cancellationToken)
+    {
+        if (plan.UpdateKnownSystemAddresses)
+        {
+            await WriteDownloadAsync(
+                    uris.KnownSystemAddresses,
+                    Path.Combine(
+                        stagePublished,
+                        KnownSystemAddressCatalog.LegacyFileName),
+                    cancellationToken)
+                .ConfigureAwait(false);
+            updated.Add("known system addresses");
+        }
+
+        if (plan.UpdateBiology)
+        {
+            await StageBiologyCriteriaAsync(stageRoot, stagePublished, cancellationToken)
+                .ConfigureAwait(false);
+            updated.Add("biology criteria");
+        }
+
+        if (plan.UpdateGuardianTemplates)
+        {
+            await WriteDownloadAsync(
+                    uris.GuardianTemplates,
+                    Path.Combine(stagePublished, "guardianSiteTemplates.json"),
+                    cancellationToken)
+                .ConfigureAwait(false);
+            updated.Add("Guardian site templates");
+        }
+
+        if (plan.UpdateGuardian)
+        {
+            await StageGuardianCatalogsAsync(stagePublished, cancellationToken)
+                .ConfigureAwait(false);
+            updated.Add("Guardian site indexes and surveys");
+        }
+
+        if (plan.UpdateSettlements)
+        {
+            await StageSettlementsAsync(stageRoot, stagePublished, cancellationToken)
+                .ConfigureAwait(false);
+            updated.Add("human settlement templates");
+        }
+
+        if (plan.UpdateGreenGasGiants)
+        {
+            await WriteDownloadAsync(
+                    uris.GreenGasGiants,
+                    Path.Combine(stagePublished, "ggg.json"),
+                    cancellationToken)
+                .ConfigureAwait(false);
+            updated.Add("Green Gas Giant criteria");
+        }
+
+        if (plan.UpdateNicknames)
+        {
+            await StageNicknamesAsync(stagePublished, cancellationToken)
+                .ConfigureAwait(false);
+            updated.Add("Raven system nicknames");
+        }
+    }
+
+    private async Task StageBiologyCriteriaAsync(
+        string stageRoot,
+        string stagePublished,
+        CancellationToken cancellationToken)
+    {
+        var bytes = await DownloadAsync(
+                uris.BiologyCriteriaArchive,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var destination = Path.Combine(stagePublished, "bio-criteria");
+        RecreateDirectory(stageRoot, destination);
+        ExtractArchive(bytes, destination, ".json");
+        await File.WriteAllBytesAsync(
+                Path.Combine(stagePublished, "bio-criteria.zip"),
+                bytes,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task StageGuardianCatalogsAsync(
+        string stagePublished,
+        CancellationToken cancellationToken)
+    {
+        await WriteDownloadAsync(
+                uris.GuardianRuins,
+                Path.Combine(stagePublished, "allRuins.json"),
+                cancellationToken)
+            .ConfigureAwait(false);
+        await WriteDownloadAsync(
+                uris.GuardianStructures,
+                Path.Combine(stagePublished, "allStructures.json"),
+                cancellationToken)
+            .ConfigureAwait(false);
+        var bytes = await DownloadAsync(
+                uris.GuardianSurveyArchive,
+                cancellationToken)
+            .ConfigureAwait(false);
+        _ = ValidateArchive(bytes, ".json");
+        await File.WriteAllBytesAsync(
+                Path.Combine(stagePublished, "guardian.zip"),
+                bytes,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task StageSettlementsAsync(
+        string stageRoot,
+        string stagePublished,
+        CancellationToken cancellationToken)
+    {
+        var bytes = await DownloadAsync(
+                uris.HumanSettlementsArchive,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var destination = Path.Combine(stagePublished, "settlements");
+        RecreateDirectory(stageRoot, destination);
+        ExtractArchive(bytes, destination, ".json", ".png");
+        await File.WriteAllBytesAsync(
+                Path.Combine(stagePublished, "settlements.zip"),
+                bytes,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task StageNicknamesAsync(
+        string stagePublished,
+        CancellationToken cancellationToken)
+    {
+        var bytes = await DownloadAsync(uris.RavenNicknames, cancellationToken)
+            .ConfigureAwait(false);
+        var nicknameMap = ParseNicknameMap(bytes);
+        await File.WriteAllTextAsync(
+                Path.Combine(stagePublished, "nicknames.json"),
+                JsonSerializer.Serialize(
+                    nicknameMap,
+                    IndentedJson),
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static PublishedReferenceVersions BuildNextVersions(
+        PublishedReferenceVersions previous,
+        PublishedDataIndex remote,
+        UpdatePlan plan)
+    {
+        return new PublishedReferenceVersions(
+            plan.UpdateCodex
+                ? Math.Max(previous.CodexReference, remote.CodexReferenceVersion)
+                : previous.CodexReference,
+            plan.UpdateBiology
+                ? Math.Max(previous.BiologyCriteria, remote.BiologyCriteriaVersion)
+                : previous.BiologyCriteria,
+            plan.UpdateBiology
+                ? remote.BiologyEngineVersion
+                : previous.BiologyEngine,
+            plan.UpdateGuardianTemplates
+                ? Math.Max(
+                    previous.SettlementTemplate,
+                    remote.SettlementTemplateVersion)
+                : previous.SettlementTemplate,
+            plan.UpdateGuardian
+                ? Math.Max(previous.Guardian, remote.GuardianVersion)
+                : previous.Guardian,
+            plan.UpdateSettlements
+                ? Math.Max(previous.Settlements, remote.SettlementsVersion)
+                : previous.Settlements,
+            plan.UpdateNicknames
+                ? Math.Max(previous.Nicknames, remote.NicknamesVersion)
+                : previous.Nicknames,
+            plan.UpdateGreenGasGiants
+                ? Math.Max(
+                    previous.GreenGasGiants,
+                    remote.GreenGasGiantsVersion)
+                : previous.GreenGasGiants);
+    }
+
+    private static void CleanupUpdateDirectories(
+        string root,
+        string stageRoot,
+        string rollbackRoot,
+        string backupRoot,
+        bool activationCompleted)
+    {
+        DeleteDirectoryIfExists(root, stageRoot);
+        if (activationCompleted
+            || !Directory.Exists(rollbackRoot)
+            || !Directory.EnumerateFileSystemEntries(
+                rollbackRoot,
+                "*",
+                SearchOption.AllDirectories).Any())
+        {
+            DeleteDirectoryIfExists(root, rollbackRoot);
+        }
+
+        if (Directory.Exists(backupRoot)
+            && !Directory.EnumerateFileSystemEntries(
+                backupRoot,
+                "*",
+                SearchOption.AllDirectories).Any())
+        {
+            DeleteDirectoryIfExists(root, backupRoot);
+        }
+    }
+
+    private async Task ActivateAsync(
+        string root,
+        string stageRoot,
+        string rollbackRoot,
+        IReadOnlyCollection<string> updated,
+        CancellationToken cancellationToken)
+    {
+        var paths = CreateActivationPaths(root, stageRoot, rollbackRoot);
+        Directory.CreateDirectory(rollbackRoot);
+        var moved = new ActivationMoveState();
+        try
+        {
+            MoveExistingReferences(paths, moved);
+            checkpoint?.Invoke(
+                PublishedReferenceUpdateCheckpoint.ExistingReferencesMoved);
+            ActivateCandidateReferences(paths, moved);
+            checkpoint?.Invoke(PublishedReferenceUpdateCheckpoint.CandidateActivated);
+            cancellationToken.ThrowIfCancellationRequested();
+            ValidateCandidate(root, updated);
+            await Task.CompletedTask.ConfigureAwait(false);
+        }
+        catch
+        {
+            RollbackActivation(paths, moved, stageRoot);
+            throw;
+        }
+    }
+
+    private static ActivationPaths CreateActivationPaths(
+        string root,
+        string stageRoot,
+        string rollbackRoot)
+    {
+        return new ActivationPaths(
+            Path.Combine(root, "pub"),
+            Path.Combine(root, CodexReferenceFileName),
+            Path.Combine(root, RegionalCodexCandidateCatalog.LegacyFileName),
+            Path.Combine(stageRoot, "pub"),
+            Path.Combine(stageRoot, CodexReferenceFileName),
+            Path.Combine(stageRoot, RegionalCodexCandidateCatalog.LegacyFileName),
+            Path.Combine(rollbackRoot, "pub"),
+            Path.Combine(rollbackRoot, CodexReferenceFileName),
+            Path.Combine(rollbackRoot, RegionalCodexCandidateCatalog.LegacyFileName));
+    }
+
+    private static void MoveExistingReferences(
+        ActivationPaths paths,
+        ActivationMoveState moved)
+    {
+        if (Directory.Exists(paths.LivePublished))
+        {
+            Directory.Move(paths.LivePublished, paths.RollbackPublished);
+            moved.PublishedMoved = true;
+        }
+
+        if (File.Exists(paths.LiveCodex))
+        {
+            File.Move(paths.LiveCodex, paths.RollbackCodex);
+            moved.CodexMoved = true;
+        }
+
+        if (File.Exists(paths.LiveRegionalCodex))
+        {
+            File.Move(paths.LiveRegionalCodex, paths.RollbackRegionalCodex);
+            moved.RegionalCodexMoved = true;
+        }
+    }
+
+    private static void ActivateCandidateReferences(
+        ActivationPaths paths,
+        ActivationMoveState moved)
+    {
+        Directory.Move(paths.StagePublished, paths.LivePublished);
+        moved.CandidatePublishedActivated = true;
+        if (File.Exists(paths.StageCodex))
+        {
+            File.Move(paths.StageCodex, paths.LiveCodex);
+            moved.CandidateCodexActivated = true;
+        }
+
+        if (File.Exists(paths.StageRegionalCodex))
+        {
+            File.Move(paths.StageRegionalCodex, paths.LiveRegionalCodex);
+            moved.CandidateRegionalCodexActivated = true;
+        }
+    }
+
+    private static void RollbackActivation(
+        ActivationPaths paths,
+        ActivationMoveState moved,
+        string stageRoot)
+    {
+        if (moved.CandidatePublishedActivated && Directory.Exists(paths.LivePublished))
+        {
+            Directory.Move(
+                paths.LivePublished,
+                Path.Combine(stageRoot, "failed-pub"));
+        }
+
+        if (moved.CandidateCodexActivated && File.Exists(paths.LiveCodex))
+        {
+            File.Move(
+                paths.LiveCodex,
+                Path.Combine(stageRoot, "failed-codexRef.json"));
+        }
+
+        if (moved.CandidateRegionalCodexActivated
+            && File.Exists(paths.LiveRegionalCodex))
+        {
+            File.Move(
+                paths.LiveRegionalCodex,
+                Path.Combine(stageRoot, "failed-codexNotFound.json"));
+        }
+
+        if (moved.PublishedMoved && Directory.Exists(paths.RollbackPublished))
+        {
+            Directory.Move(paths.RollbackPublished, paths.LivePublished);
+        }
+
+        if (moved.CodexMoved && File.Exists(paths.RollbackCodex))
+        {
+            File.Move(paths.RollbackCodex, paths.LiveCodex);
+        }
+
+        if (moved.RegionalCodexMoved && File.Exists(paths.RollbackRegionalCodex))
+        {
+            File.Move(paths.RollbackRegionalCodex, paths.LiveRegionalCodex);
+        }
+    }
+
+    private sealed record ActivationPaths(
+        string LivePublished,
+        string LiveCodex,
+        string LiveRegionalCodex,
+        string StagePublished,
+        string StageCodex,
+        string StageRegionalCodex,
+        string RollbackPublished,
+        string RollbackCodex,
+        string RollbackRegionalCodex);
+
+    private sealed class ActivationMoveState
+    {
+        public bool PublishedMoved { get; set; }
+        public bool CodexMoved { get; set; }
+        public bool RegionalCodexMoved { get; set; }
+        public bool CandidatePublishedActivated { get; set; }
+        public bool CandidateCodexActivated { get; set; }
+        public bool CandidateRegionalCodexActivated { get; set; }
+    }
+
+    private static bool NeedsUpdate(
+        int currentVersion,
+        int remoteVersion,
+        ReferenceCatalogSource source)
+    {
+        return remoteVersion > currentVersion || !source.IsLocal;
+    }
+
+    private UpdatePlan EvaluateUpdatePlan(
+        string root,
+        PublishedReferenceVersions previous,
+        PublishedDataIndex remote)
+    {
         var active = LegacyReferenceCatalogLoader.Load(root);
         var sources = active.Sources.ToDictionary(
             source => source.Catalog,
@@ -176,383 +690,41 @@ public sealed class PublishedReferenceUpdateService
         var currentNicknames = SystemNicknameCatalog.Load(root);
         var updateNicknames = remote.NicknamesVersion > previous.Nicknames
             || currentNicknames.RavenCount == 0;
-        var updated = new List<string>();
-        if (!updateCodex
-            && !updateRegionalCodexCandidates
-            && !updateKnownSystemAddresses
-            && !updateBiology
-            && !updateGuardianTemplates
-            && !updateGuardian
-            && !updateSettlements
-            && !updateGreenGasGiants
-            && !updateNicknames)
-        {
-            return new PublishedReferenceUpdateResult(
-                previous,
-                previous,
-                updated,
-                warnings,
-                null);
-        }
-
-        var operationId = Guid.NewGuid().ToString("N");
-        var stageRoot = Path.Combine(root, $".reference-update-{operationId}");
-        var rollbackRoot = Path.Combine(root, $".reference-rollback-{operationId}");
-        var backupRoot = Path.Combine(
-            root,
-            "reference-backups",
-            $"{timeProvider.GetUtcNow():yyyyMMddTHHmmssZ}-{operationId}");
-        EnsureChild(root, stageRoot);
-        EnsureChild(root, rollbackRoot);
-        EnsureChild(root, backupRoot);
-        Directory.CreateDirectory(stageRoot);
-        var activationCompleted = false;
-
-        try
-        {
-            await CopyCurrentReferencesAsync(root, stageRoot, cancellationToken)
-                .ConfigureAwait(false);
-            if (updateCodex)
-            {
-                await WriteDownloadAsync(
-                        uris.CodexReference,
-                        Path.Combine(stageRoot, CodexReferenceFileName),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                updated.Add("Codex reference");
-            }
-
-            if (updateRegionalCodexCandidates)
-            {
-                var bytes = await DownloadAsync(
-                        uris.RegionalCodexCandidatesCsv,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                var references = LegacyReferenceCatalogLoader.Load(stageRoot)
-                    .Exobiology;
-                var regional = RegionalCodexCandidateCatalog.ParsePublishedCsv(
-                    bytes,
-                    references);
-                await File.WriteAllTextAsync(
-                        Path.Combine(stageRoot, RegionalCodexCandidateCatalog.LegacyFileName),
-                        regional.SerializeLegacy(),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                File.SetLastWriteTimeUtc(
-                    Path.Combine(stageRoot, RegionalCodexCandidateCatalog.LegacyFileName),
-                    timeProvider.GetUtcNow().UtcDateTime);
-                updated.Add("regional Codex candidates");
-            }
-
-            var stagePublished = Path.Combine(stageRoot, "pub");
-            Directory.CreateDirectory(stagePublished);
-            if (updateKnownSystemAddresses)
-            {
-                await WriteDownloadAsync(
-                        uris.KnownSystemAddresses,
-                        Path.Combine(
-                            stagePublished,
-                            KnownSystemAddressCatalog.LegacyFileName),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                updated.Add("known system addresses");
-            }
-
-            if (updateBiology)
-            {
-                var bytes = await DownloadAsync(
-                        uris.BiologyCriteriaArchive,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                var destination = Path.Combine(stagePublished, "bio-criteria");
-                RecreateDirectory(stageRoot, destination);
-                ExtractArchive(bytes, destination, ".json");
-                await File.WriteAllBytesAsync(
-                        Path.Combine(stagePublished, "bio-criteria.zip"),
-                        bytes,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                updated.Add("biology criteria");
-            }
-
-            if (updateGuardianTemplates)
-            {
-                await WriteDownloadAsync(
-                        uris.GuardianTemplates,
-                        Path.Combine(stagePublished, "guardianSiteTemplates.json"),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                updated.Add("Guardian site templates");
-            }
-
-            if (updateGuardian)
-            {
-                await WriteDownloadAsync(
-                        uris.GuardianRuins,
-                        Path.Combine(stagePublished, "allRuins.json"),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                await WriteDownloadAsync(
-                        uris.GuardianStructures,
-                        Path.Combine(stagePublished, "allStructures.json"),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                var bytes = await DownloadAsync(
-                        uris.GuardianSurveyArchive,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                _ = ValidateArchive(bytes, ".json");
-                await File.WriteAllBytesAsync(
-                        Path.Combine(stagePublished, "guardian.zip"),
-                        bytes,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                updated.Add("Guardian site indexes and surveys");
-            }
-
-            if (updateSettlements)
-            {
-                var bytes = await DownloadAsync(
-                        uris.HumanSettlementsArchive,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                var destination = Path.Combine(stagePublished, "settlements");
-                RecreateDirectory(stageRoot, destination);
-                ExtractArchive(bytes, destination, ".json", ".png");
-                await File.WriteAllBytesAsync(
-                        Path.Combine(stagePublished, "settlements.zip"),
-                        bytes,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                updated.Add("human settlement templates");
-            }
-
-            if (updateGreenGasGiants)
-            {
-                await WriteDownloadAsync(
-                        uris.GreenGasGiants,
-                        Path.Combine(stagePublished, "ggg.json"),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                updated.Add("Green Gas Giant criteria");
-            }
-
-            if (updateNicknames)
-            {
-                var bytes = await DownloadAsync(uris.RavenNicknames, cancellationToken)
-                    .ConfigureAwait(false);
-                var nicknameMap = ParseNicknameMap(bytes);
-                await File.WriteAllTextAsync(
-                        Path.Combine(stagePublished, "nicknames.json"),
-                        JsonSerializer.Serialize(
-                            nicknameMap,
-                            IndentedJson),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                updated.Add("Raven system nicknames");
-            }
-
-            var next = new PublishedReferenceVersions(
-                updateCodex
-                    ? Math.Max(previous.CodexReference, remote.CodexReferenceVersion)
-                    : previous.CodexReference,
-                updateBiology
-                    ? Math.Max(previous.BiologyCriteria, remote.BiologyCriteriaVersion)
-                    : previous.BiologyCriteria,
-                updateBiology
-                    ? remote.BiologyEngineVersion
-                    : previous.BiologyEngine,
-                updateGuardianTemplates
-                    ? Math.Max(
-                        previous.SettlementTemplate,
-                        remote.SettlementTemplateVersion)
-                    : previous.SettlementTemplate,
-                updateGuardian
-                    ? Math.Max(previous.Guardian, remote.GuardianVersion)
-                    : previous.Guardian,
-                updateSettlements
-                    ? Math.Max(previous.Settlements, remote.SettlementsVersion)
-                    : previous.Settlements,
-                updateNicknames
-                    ? Math.Max(previous.Nicknames, remote.NicknamesVersion)
-                    : previous.Nicknames,
-                updateGreenGasGiants
-                    ? Math.Max(
-                        previous.GreenGasGiants,
-                        remote.GreenGasGiantsVersion)
-                    : previous.GreenGasGiants);
-            await versionStore.WriteAsync(
-                    stagePublished,
-                    next,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            ValidateCandidate(stageRoot, updated);
-            await CopyCurrentReferencesAsync(root, backupRoot, cancellationToken)
-                .ConfigureAwait(false);
-            checkpoint?.Invoke(PublishedReferenceUpdateCheckpoint.BackupVerified);
-            await ActivateAsync(
-                    root,
-                    stageRoot,
-                    rollbackRoot,
-                    updated,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            activationCompleted = true;
-            var retainedBackup = Directory.EnumerateFileSystemEntries(
-                    backupRoot,
-                    "*",
-                    SearchOption.AllDirectories)
-                .Any()
-                    ? backupRoot
-                    : null;
-            return new PublishedReferenceUpdateResult(
-                previous,
-                next,
-                updated,
-                warnings,
-                retainedBackup);
-        }
-        finally
-        {
-            DeleteDirectoryIfExists(root, stageRoot);
-            if (activationCompleted
-                || !Directory.Exists(rollbackRoot)
-                || !Directory.EnumerateFileSystemEntries(
-                    rollbackRoot,
-                    "*",
-                    SearchOption.AllDirectories).Any())
-            {
-                DeleteDirectoryIfExists(root, rollbackRoot);
-            }
-            if (Directory.Exists(backupRoot)
-                && !Directory.EnumerateFileSystemEntries(
-                    backupRoot,
-                    "*",
-                    SearchOption.AllDirectories).Any())
-            {
-                DeleteDirectoryIfExists(root, backupRoot);
-            }
-        }
+        return new UpdatePlan(
+            updateCodex,
+            updateRegionalCodexCandidates,
+            updateKnownSystemAddresses,
+            updateBiology,
+            updateGuardianTemplates,
+            updateGuardian,
+            updateSettlements,
+            updateGreenGasGiants,
+            updateNicknames,
+            warnings);
     }
 
-    private async Task ActivateAsync(
-        string root,
-        string stageRoot,
-        string rollbackRoot,
-        IReadOnlyCollection<string> updated,
-        CancellationToken cancellationToken)
+    private sealed record UpdatePlan(
+        bool UpdateCodex,
+        bool UpdateRegionalCodexCandidates,
+        bool UpdateKnownSystemAddresses,
+        bool UpdateBiology,
+        bool UpdateGuardianTemplates,
+        bool UpdateGuardian,
+        bool UpdateSettlements,
+        bool UpdateGreenGasGiants,
+        bool UpdateNicknames,
+        List<string> Warnings)
     {
-        var livePublished = Path.Combine(root, "pub");
-        var liveCodex = Path.Combine(root, CodexReferenceFileName);
-        var liveRegionalCodex = Path.Combine(
-            root,
-            RegionalCodexCandidateCatalog.LegacyFileName);
-        var stagePublished = Path.Combine(stageRoot, "pub");
-        var stageCodex = Path.Combine(stageRoot, CodexReferenceFileName);
-        var stageRegionalCodex = Path.Combine(
-            stageRoot,
-            RegionalCodexCandidateCatalog.LegacyFileName);
-        var rollbackPublished = Path.Combine(rollbackRoot, "pub");
-        var rollbackCodex = Path.Combine(rollbackRoot, CodexReferenceFileName);
-        var rollbackRegionalCodex = Path.Combine(
-            rollbackRoot,
-            RegionalCodexCandidateCatalog.LegacyFileName);
-        Directory.CreateDirectory(rollbackRoot);
-        var publishedMoved = false;
-        var codexMoved = false;
-        var regionalCodexMoved = false;
-        var candidatePublishedActivated = false;
-        var candidateCodexActivated = false;
-        var candidateRegionalCodexActivated = false;
-        try
-        {
-            if (Directory.Exists(livePublished))
-            {
-                Directory.Move(livePublished, rollbackPublished);
-                publishedMoved = true;
-            }
-
-            if (File.Exists(liveCodex))
-            {
-                File.Move(liveCodex, rollbackCodex);
-                codexMoved = true;
-            }
-
-            if (File.Exists(liveRegionalCodex))
-            {
-                File.Move(liveRegionalCodex, rollbackRegionalCodex);
-                regionalCodexMoved = true;
-            }
-
-            checkpoint?.Invoke(
-                PublishedReferenceUpdateCheckpoint.ExistingReferencesMoved);
-            Directory.Move(stagePublished, livePublished);
-            candidatePublishedActivated = true;
-            if (File.Exists(stageCodex))
-            {
-                File.Move(stageCodex, liveCodex);
-                candidateCodexActivated = true;
-            }
-
-            if (File.Exists(stageRegionalCodex))
-            {
-                File.Move(stageRegionalCodex, liveRegionalCodex);
-                candidateRegionalCodexActivated = true;
-            }
-
-            checkpoint?.Invoke(PublishedReferenceUpdateCheckpoint.CandidateActivated);
-            cancellationToken.ThrowIfCancellationRequested();
-            ValidateCandidate(root, updated);
-        }
-        catch
-        {
-            if (candidatePublishedActivated && Directory.Exists(livePublished))
-            {
-                Directory.Move(
-                    livePublished,
-                    Path.Combine(stageRoot, "failed-pub"));
-            }
-
-            if (candidateCodexActivated && File.Exists(liveCodex))
-            {
-                File.Move(
-                    liveCodex,
-                    Path.Combine(stageRoot, "failed-codexRef.json"));
-            }
-
-            if (candidateRegionalCodexActivated
-                && File.Exists(liveRegionalCodex))
-            {
-                File.Move(
-                    liveRegionalCodex,
-                    Path.Combine(stageRoot, "failed-codexNotFound.json"));
-            }
-
-            if (publishedMoved && Directory.Exists(rollbackPublished))
-            {
-                Directory.Move(rollbackPublished, livePublished);
-            }
-
-            if (codexMoved && File.Exists(rollbackCodex))
-            {
-                File.Move(rollbackCodex, liveCodex);
-            }
-
-            if (regionalCodexMoved && File.Exists(rollbackRegionalCodex))
-            {
-                File.Move(rollbackRegionalCodex, liveRegionalCodex);
-            }
-
-            throw;
-        }
-    }
-
-    private static bool NeedsUpdate(
-        int currentVersion,
-        int remoteVersion,
-        ReferenceCatalogSource source)
-    {
-        return remoteVersion > currentVersion || !source.IsLocal;
+        public bool HasAnyUpdate =>
+            UpdateCodex
+            || UpdateRegionalCodexCandidates
+            || UpdateKnownSystemAddresses
+            || UpdateBiology
+            || UpdateGuardianTemplates
+            || UpdateGuardian
+            || UpdateSettlements
+            || UpdateGreenGasGiants
+            || UpdateNicknames;
     }
 
     private static bool RegionalCodexCandidatesNeedUpdate(
@@ -588,58 +760,79 @@ public sealed class PublishedReferenceUpdateService
         }).ToHashSet(StringComparer.Ordinal);
         foreach (var catalogName in expectedSources)
         {
-            if (catalogName == "regional Codex candidates")
+            if (TryValidateSpecialCatalog(candidateRoot, catalogName))
             {
-                var regional = RegionalCodexCandidateCatalog.Load(candidateRoot);
-                if (!regional.HasData || regional.Warnings.Count > 0)
-                {
-                    throw new InvalidDataException(
-                        regional.Warnings.Count > 0
-                            ? regional.Warnings[0]
-                            : "The staged regional Codex candidate catalog is empty.");
-                }
-
                 continue;
             }
 
-            if (catalogName == "Raven system nicknames")
-            {
-                var nicknames = SystemNicknameCatalog.Load(candidateRoot);
-                if (nicknames.RavenCount == 0 || nicknames.Warnings.Count > 0)
-                {
-                    throw new InvalidDataException(
-                        nicknames.Warnings.Count > 0
-                            ? nicknames.Warnings[0]
-                            : "The staged Raven nickname catalog is empty.");
-                }
+            ValidateLocalCatalogSource(result, catalogName);
+        }
+    }
 
-                continue;
-            }
+    private static bool TryValidateSpecialCatalog(
+        string candidateRoot,
+        string catalogName)
+    {
+        if (catalogName == "regional Codex candidates")
+        {
+            var regional = RegionalCodexCandidateCatalog.Load(candidateRoot);
+            EnsureCatalogReady(
+                regional.HasData,
+                regional.Warnings,
+                "The staged regional Codex candidate catalog is empty.");
+            return true;
+        }
 
-            if (catalogName == "known system addresses")
-            {
-                var knownSystems = KnownSystemAddressCatalog.Load(candidateRoot);
-                if (!knownSystems.HasData || knownSystems.Warnings.Count > 0)
-                {
-                    throw new InvalidDataException(
-                        knownSystems.Warnings.Count > 0
-                            ? knownSystems.Warnings[0]
-                            : "The staged known-system address catalog is empty.");
-                }
+        if (catalogName == "Raven system nicknames")
+        {
+            var nicknames = SystemNicknameCatalog.Load(candidateRoot);
+            EnsureCatalogReady(
+                nicknames.RavenCount > 0,
+                nicknames.Warnings,
+                "The staged Raven nickname catalog is empty.");
+            return true;
+        }
 
-                continue;
-            }
+        if (catalogName == "known system addresses")
+        {
+            var knownSystems = KnownSystemAddressCatalog.Load(candidateRoot);
+            EnsureCatalogReady(
+                knownSystems.HasData,
+                knownSystems.Warnings,
+                "The staged known-system address catalog is empty.");
+            return true;
+        }
 
-            var source = result.Sources.Single(candidate => string.Equals(
-                candidate.Catalog,
-                catalogName,
-                StringComparison.Ordinal));
-            if (!source.IsLocal)
-            {
-                throw new InvalidDataException(
-                    source.Warning
-                        ?? $"The staged {catalogName} did not become active.");
-            }
+        return false;
+    }
+
+    private static void EnsureCatalogReady(
+        bool hasData,
+        IReadOnlyList<string> warnings,
+        string emptyMessage)
+    {
+        if (hasData && warnings.Count == 0)
+        {
+            return;
+        }
+
+        throw new InvalidDataException(
+            warnings.Count > 0 ? warnings[0] : emptyMessage);
+    }
+
+    private static void ValidateLocalCatalogSource(
+        LegacyReferenceCatalogLoadResult result,
+        string catalogName)
+    {
+        var source = result.Sources.Single(candidate => string.Equals(
+            candidate.Catalog,
+            catalogName,
+            StringComparison.Ordinal));
+        if (!source.IsLocal)
+        {
+            throw new InvalidDataException(
+                source.Warning
+                    ?? $"The staged {catalogName} did not become active.");
         }
     }
 

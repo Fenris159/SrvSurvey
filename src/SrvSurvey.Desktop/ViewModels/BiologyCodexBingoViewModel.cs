@@ -4,16 +4,13 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Exobiology;
 using SrvSurvey.Core.Navigation;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDisposable
 {
-    private const string CanonnChallengeUrl =
-        "https://canonn.science/codex/canonn-challenge/";
-    private const string EdAstroRootUrl =
-        "https://edastro.com/mapcharts/codex.html";
     private const string Unavailable = "—";
 
     private static readonly IReadOnlyDictionary<string, string> EdAstroLinks =
@@ -146,7 +143,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             OpenLocationAsync,
             () => selectedLocationUri is not null && !IsBusy);
         openCanonnChallengeCommand = new AsyncCommand(
-            () => LaunchUriAsync(new Uri(CanonnChallengeUrl), "Canonn Challenge"),
+            () => LaunchUriAsync(WellKnownUris.CanonnChallenge, "Canonn Challenge"),
             () => uriLauncher is not null && !IsBusy);
         openUndiscoveredCommand = new AsyncCommand(
             OpenUndiscoveredAsync,
@@ -894,7 +891,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         return SelectedNode?.Definition.Entry is { } entry
             ? LaunchUriAsync(
                 new Uri(
-                    "https://canonn-science.github.io/Codex-Regions/?entryid="
+                    WellKnownUris.CanonnCodexRegionsEntryPrefix
                         + entry.EntryId.ToString(CultureInfo.InvariantCulture)
                         + "&hud_category="
                         + Uri.EscapeDataString(entry.HudCategory ?? string.Empty)),
@@ -910,7 +907,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             ? Task.FromResult(false)
             : LaunchUriAsync(
                 new Uri(
-                    "https://bioforge.canonn.tech/?entryid="
+                    WellKnownUris.CanonnBioforgeEntryPrefix
                         + Uri.EscapeDataString(text)),
                 "Canonn Bioforge");
     }
@@ -937,7 +934,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
             return Task.FromResult(false);
         }
 
-        var uri = "https://canonn-science.github.io/undiscovered-codex/?cmdr="
+        var uri = WellKnownUris.CanonnUndiscoveredCodexCommanderPrefix
             + Uri.EscapeDataString(commander.CommanderName);
         if (!string.IsNullOrWhiteSpace(currentSystemName)
             && commander.IsActive)
@@ -1024,7 +1021,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
 
         if (node.Kind == CodexBingoNodeKind.Root)
         {
-            return new Uri(EdAstroRootUrl);
+            return WellKnownUris.EdastroCodexMap;
         }
 
         var match = EdAstroLinks.FirstOrDefault(pair =>
@@ -1048,7 +1045,7 @@ public sealed class BiologyCodexBingoViewModel : INotifyPropertyChanged, IDispos
         }
 
         return new Uri(
-            "https://edastro.b-cdn.net/mapcharts/organic/organic-"
+            WellKnownUris.EdastroOrganicMapPrefix
                 + Uri.EscapeDataString(genus)
                 + "-regions.jpg");
     }

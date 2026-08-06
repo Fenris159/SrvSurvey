@@ -15,6 +15,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 {
     private static readonly TimeSpan DockingRefreshDelay = TimeSpan.FromSeconds(4);
     private const int MaximumBuildSiteRepairVisits = 50;
+    private const string FleetCarrierStationType = "FleetCarrier";
+    private const string FleetCarrierSyncOffMessage =
+        "Automatic Fleet Carrier cargo sync is off.";
 
     private readonly IRavenColonialClient client;
     private readonly ColonizationBuildCatalog buildCatalog;
@@ -74,8 +77,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     private bool skipNextCargoEvent;
     private string ravenCredentialStatus =
         "Load a commander profile to configure a Raven API key.";
-    private string fleetCarrierSyncStatus =
-        "Automatic Fleet Carrier cargo sync is off.";
+    private string fleetCarrierSyncStatus = FleetCarrierSyncOffMessage;
     private string shipCargoPublishingStatus =
         "Automatic ship cargo publishing is off.";
     private string? currentShipType;
@@ -267,7 +269,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                         true => "Fleet Carrier cargo will sync from matching Market.json updates.",
                         false => "Save a Raven API key before Fleet Carrier cargo can sync."
                     }
-                    : "Automatic Fleet Carrier cargo sync is off.";
+                    : FleetCarrierSyncOffMessage;
                 syncFleetCarrierCargoCommand.RaiseCanExecuteChanged();
             }
             catch (Exception exception) when (
@@ -552,8 +554,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             : apiKeyStatus;
         if (!FleetCarrierCargoSyncEnabled)
         {
-            FleetCarrierSyncStatus =
-                "Automatic Fleet Carrier cargo sync is off.";
+            FleetCarrierSyncStatus = FleetCarrierSyncOffMessage;
         }
         else if (storedRavenApiKey is null)
         {
@@ -1000,7 +1001,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
     {
         return string.Equals(
                 dock.StationType,
-                "FleetCarrier",
+                FleetCarrierStationType,
                 StringComparison.OrdinalIgnoreCase)
             && ColonizationFleetCarrierCargoSynchronizer.IsSquadronFleetCarrier(dock)
             && fleetCarriers.Any(carrier => carrier.MarketId == dock.MarketId);
@@ -1547,38 +1548,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 ? null
                 : RavenApiKey.Trim();
             string? validatedCommander = null;
-            if (normalized is not null)
-            {
-                if (CommanderName is null)
-                {
-                    RavenCredentialStatus =
-                        "Load the active commander before validating a Raven API key.";
-                    return;
-                }
-
-                RavenCredentialStatus =
-                    "Validating the Raven API key without saving it...";
-                validatedCommander =
-                    await client.GetCommanderByApiKeyAsync(
+            if (normalized is not null
+                && !await TryValidateRavenApiKeyAsync(
                         normalized,
-                        CancellationToken.None);
-                if (validatedCommander is null)
-                {
-                    RavenCredentialStatus =
-                        "Raven rejected this API key. The saved key was not changed.";
-                    return;
-                }
-
-                if (!string.Equals(
-                        validatedCommander,
-                        CommanderName,
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    RavenCredentialStatus =
-                        $"This key belongs to {validatedCommander}, not "
-                        + $"{CommanderName}. The saved key was not changed.";
-                    return;
-                }
+                        commander => validatedCommander = commander)
+                    .ConfigureAwait(false))
+            {
+                return;
             }
 
             await commanderProfileStore.SaveRavenColonialApiKeyAsync(
@@ -1622,6 +1598,45 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             IsFleetCarrierSyncBusy = false;
             RaiseCommandStates();
         }
+    }
+
+    private async Task<bool> TryValidateRavenApiKeyAsync(
+        string normalized,
+        Action<string?> setValidatedCommander)
+    {
+        if (CommanderName is null)
+        {
+            RavenCredentialStatus =
+                "Load the active commander before validating a Raven API key.";
+            return false;
+        }
+
+        RavenCredentialStatus =
+            "Validating the Raven API key without saving it...";
+        var validatedCommander =
+            await client.GetCommanderByApiKeyAsync(
+                normalized,
+                CancellationToken.None);
+        setValidatedCommander(validatedCommander);
+        if (validatedCommander is null)
+        {
+            RavenCredentialStatus =
+                "Raven rejected this API key. The saved key was not changed.";
+            return false;
+        }
+
+        if (!string.Equals(
+                validatedCommander,
+                CommanderName,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            RavenCredentialStatus =
+                $"This key belongs to {validatedCommander}, not "
+                + $"{CommanderName}. The saved key was not changed.";
+            return false;
+        }
+
+        return true;
     }
 
     public async Task PublishCurrentFleetCarrierAsync()
@@ -2232,14 +2247,15 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             && currentMarket.Timestamp > dock.Timestamp;
         CommodityOverlay.Apply(
             ColonizationCommodityPlanner.Create(
-                Projects.Select(row => row.Project),
-                hiddenProjectIds,
-                primaryProjectId,
-                CommanderName,
-                fleetCarriers,
-                shipCargo,
-                construction,
-                currentMarket),
+                new ColonizationCommodityPlanRequest(
+                    Projects.Select(row => row.Project),
+                    hiddenProjectIds,
+                    primaryProjectId,
+                    CommanderName,
+                    fleetCarriers,
+                    shipCargo,
+                    construction,
+                    currentMarket)),
             latestStatus,
             hasMarketSinceDocking,
             construction.IsSquadronBankOpen);
@@ -2293,7 +2309,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             } dock
             && string.Equals(
                 dock.StationType,
-                "FleetCarrier",
+                FleetCarrierStationType,
                 StringComparison.OrdinalIgnoreCase);
     }
 
@@ -2320,7 +2336,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             && currentMarket.MarketId == dock.MarketId
             && string.Equals(
                 currentMarket.StationType,
-                "FleetCarrier",
+                FleetCarrierStationType,
                 StringComparison.OrdinalIgnoreCase)
             && currentMarket.Timestamp > dock.Timestamp
                 ? currentMarket
@@ -2336,7 +2352,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             || currentMarket is null
             || !string.Equals(
                 currentMarket.StationType,
-                "FleetCarrier",
+                FleetCarrierStationType,
                 StringComparison.OrdinalIgnoreCase)
             || !fleetCarriers.Any(carrier =>
                 carrier.MarketId == currentMarket.MarketId))
@@ -2359,7 +2375,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
         if (!FleetCarrierCargoSyncEnabled)
         {
-            return "Automatic Fleet Carrier cargo sync is off.";
+            return FleetCarrierSyncOffMessage;
         }
 
         if (!HasStoredRavenApiKey)
@@ -2374,7 +2390,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
         if (!string.Equals(
                 currentMarket.StationType,
-                "FleetCarrier",
+                FleetCarrierStationType,
                 StringComparison.OrdinalIgnoreCase))
         {
             return "The current market is not a Fleet Carrier market.";

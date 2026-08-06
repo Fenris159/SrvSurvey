@@ -139,32 +139,35 @@ public sealed class ExobiologyReferenceCatalog
         return new ExobiologyReferenceCatalog(entries);
     }
 
+    private const string CodexEntPrefix = "$Codex_Ent_";
+    private const string CodexNameSuffix = "_Name;";
+
     internal static string GetSpeciesName(string variantName)
     {
         var species = variantName
-            .Replace("$Codex_Ent_", string.Empty, StringComparison.Ordinal)
-            .Replace("_Name;", string.Empty, StringComparison.Ordinal);
+            .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
+            .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal);
         var lastSeparator = species.LastIndexOf('_');
         if (species.IndexOf('_') != lastSeparator)
         {
             species = species[..lastSeparator];
         }
 
-        return $"$Codex_Ent_{species}_Name;";
+        return $"{CodexEntPrefix}{species}{CodexNameSuffix}";
     }
 
     public static string GetGenusName(string speciesName)
     {
         var genus = speciesName
-            .Replace("$Codex_Ent_", string.Empty, StringComparison.Ordinal)
-            .Replace("_Name;", string.Empty, StringComparison.Ordinal);
+            .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
+            .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal);
         var separator = genus.IndexOf('_');
         if (separator >= 0)
         {
             genus = genus[..separator];
         }
 
-        return $"$Codex_Ent_{genus}_Genus_Name;";
+        return $"{CodexEntPrefix}{genus}_Genus_Name;";
     }
 
     public static int GetSampleDistanceMeters(string? genusName)

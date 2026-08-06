@@ -49,6 +49,18 @@ namespace SrvSurvey.Core.Inara
             // the tracked balance for the local commander.
             if (inMulticrew) return;
 
+            if (TryObserveExactBalance(entry, eventName))
+            {
+                return;
+            }
+
+            if (!credits.HasValue) return;
+
+            ApplyCreditDelta(ComputeCreditDelta(entry, eventName));
+        }
+
+        private bool TryObserveExactBalance(JObject entry, string? eventName)
+        {
             if (eventName == "Statistics")
             {
                 var currentAssets = value(entry["Bank_Account"] as JObject, "Current_Wealth");
@@ -57,22 +69,28 @@ namespace SrvSurvey.Core.Inara
                     assets = currentAssets;
                     HasUnreportedChanges = true;
                 }
-                return;
+
+                return true;
             }
 
-            if (eventName == "CarrierBankTransfer" && value(entry, "PlayerBalance") is long playerBalance)
+            if (eventName == "CarrierBankTransfer"
+                && value(entry, "PlayerBalance") is long playerBalance)
             {
                 if (playerBalance != credits)
                 {
                     credits = playerBalance;
                     HasUnreportedChanges = true;
                 }
-                return;
+
+                return true;
             }
 
-            if (!credits.HasValue) return;
+            return false;
+        }
 
-            var delta = eventName switch
+        private static long ComputeCreditDelta(JObject entry, string? eventName)
+        {
+            return eventName switch
             {
                 "ShipyardBuy" => -valueOrZero(entry, "ShipPrice"),
                 "ModuleBuy" => -valueOrZero(entry, "BuyPrice"),
@@ -103,23 +121,28 @@ namespace SrvSurvey.Core.Inara
                 "Resurrect" => -valueOrZero(entry, "Cost"),
                 _ => 0,
             };
+        }
 
-            if (delta != 0)
+        private void ApplyCreditDelta(long delta)
+        {
+            if (delta == 0 || !credits.HasValue)
             {
-                var updatedCredits = credits.Value + delta;
-                if (updatedCredits < 0)
-                {
-                    // A missing or malformed journal delta means the reconstructed
-                    // balance is no longer trustworthy. Wait for the next exact
-                    // LoadGame or CarrierBankTransfer value instead of uploading it.
-                    credits = null;
-                    HasUnreportedChanges = false;
-                    return;
-                }
-
-                credits = updatedCredits;
-                HasUnreportedChanges = true;
+                return;
             }
+
+            var updatedCredits = credits.Value + delta;
+            if (updatedCredits < 0)
+            {
+                // A missing or malformed journal delta means the reconstructed
+                // balance is no longer trustworthy. Wait for the next exact
+                // LoadGame or CarrierBankTransfer value instead of uploading it.
+                credits = null;
+                HasUnreportedChanges = false;
+                return;
+            }
+
+            credits = updatedCredits;
+            HasUnreportedChanges = true;
         }
 
         public InaraEvent? CreateReport(string timestamp, bool force, bool includeAssets = false)

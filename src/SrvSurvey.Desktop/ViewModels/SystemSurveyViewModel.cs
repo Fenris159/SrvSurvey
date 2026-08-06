@@ -1366,56 +1366,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         var previousStatus = status;
         foreach (var journalEvent in journalEvents)
         {
-            if (status?.GuiFocus == GuiFocus.Fss
-                && FssTuningDetectorEnabled
-                && journalEvent.EventName == "Scan"
-                && !HasRingParent(journalEvent.Payload))
-            {
-                ApplyFssTuningScan();
-            }
-
-            state.Apply(journalEvent);
-            switch (journalEvent.EventName)
-            {
-                case "Fileheader":
-                case "LoadGame":
-                    musicTrack = null;
-                    break;
-
-                case "StartJump" when GetString(
-                    journalEvent.Payload,
-                    "JumpType") == "Hyperspace":
-                    fsdJumping = true;
-                    break;
-
-                case "FSDJump":
-                case "CarrierJump":
-                case "Died":
-                case "Resurrect":
-                    fsdJumping = false;
-                    break;
-
-                case "Music":
-                    musicTrack = GetString(
-                        journalEvent.Payload,
-                        "MusicTrack");
-                    if (string.Equals(
-                            musicTrack,
-                            "MainMenu",
-                            StringComparison.Ordinal))
-                    {
-                        fsdJumping = false;
-                    }
-
-                    break;
-
-                case "SAAScanComplete":
-                    lastDssCompletedAt = journalEvent.Timestamp ?? utcNow();
-                    dssVisibilityWindowWasActive =
-                        IsWithinPostDssBiologyWindow;
-                    OnPropertyChanged(nameof(IsWithinPostDssBiologyWindow));
-                    break;
-            }
+            ApplyJournalEvent(journalEvent);
         }
 
         if (nextStatus is not null)
@@ -2029,25 +1980,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         var planetish = body.Kind is not SystemBodyKind.Star
             and not SystemBodyKind.Asteroid
             and not SystemBodyKind.Ring;
-        var markers = new List<string>();
-        if (body.IsTerraformable || body.IsEarthLike)
-        {
-            markers.Add("TERRAFORMABLE");
-        }
-
-        if (!body.WasDiscovered && !body.WasMapped)
-        {
-            markers.Add("UNDISCOVERED");
-        }
-        else if (!body.WasMapped && body.IsDssComplete)
-        {
-            markers.Add("FIRST MAPPED");
-        }
-        else if (!body.WasMapped && !IsWithinBodyInfoBubble)
-        {
-            markers.Add("UNMAPPED");
-        }
-
+        var markers = CreateBodyInfoMarkers(body);
         var atmosphere = FormatAtmosphere(body);
         var atmosphereComposition = body.AtmosphereComposition
             .OrderByDescending(entry => entry.Value)
@@ -2413,38 +2346,72 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                 continue;
             }
 
-            if (!SkipRingsForDss)
+            foreach (var candidate in CreateBodyDssCandidates(body, knownRingBodies))
             {
-                for (var index = 0; index < body.Rings.Count; index++)
+                yield return candidate;
+            }
+        }
+    }
+
+    private IEnumerable<string> CreateBodyDssCandidates(
+        SystemScanBodySnapshot body,
+        IReadOnlyDictionary<string, SystemScanBodySnapshot> knownRingBodies)
+    {
+        if (!SkipRingsForDss)
+        {
+            for (var index = 0; index < body.Rings.Count; index++)
+            {
+                var ring = body.Rings[index];
+                if (!knownRingBodies.TryGetValue(ring.Name, out var ringBody)
+                    || !ringBody.IsDssComplete)
                 {
-                    var ring = body.Rings[index];
-                    if (!knownRingBodies.TryGetValue(ring.Name, out var ringBody)
-                        || !ringBody.IsDssComplete)
-                    {
-                        yield return body.ShortName + "r" + (char)('A' + index);
-                    }
+                    yield return body.ShortName + "r" + (char)('A' + index);
                 }
             }
-
-            if (SkipGasGiantsForDss && body.Kind == SystemBodyKind.GasGiant)
-            {
-                continue;
-            }
-
-            if (HighlightDssCandidates
-                && body.EstimatedMappedValue < DssValueFloor)
-            {
-                continue;
-            }
-
-            if (SkipDistantDssCandidates
-                && body.DistanceFromArrivalLs > DssDistanceLimitLs)
-            {
-                continue;
-            }
-
-            yield return body.ShortName;
         }
+
+        if (SkipGasGiantsForDss && body.Kind == SystemBodyKind.GasGiant)
+        {
+            yield break;
+        }
+
+        if (HighlightDssCandidates
+            && body.EstimatedMappedValue < DssValueFloor)
+        {
+            yield break;
+        }
+
+        if (SkipDistantDssCandidates
+            && body.DistanceFromArrivalLs > DssDistanceLimitLs)
+        {
+            yield break;
+        }
+
+        yield return body.ShortName;
+    }
+
+    private List<string> CreateBodyInfoMarkers(SystemScanBodySnapshot body)
+    {
+        var markers = new List<string>();
+        if (body.IsTerraformable || body.IsEarthLike)
+        {
+            markers.Add("TERRAFORMABLE");
+        }
+
+        if (!body.WasDiscovered && !body.WasMapped)
+        {
+            markers.Add("UNDISCOVERED");
+        }
+        else if (!body.WasMapped && body.IsDssComplete)
+        {
+            markers.Add("FIRST MAPPED");
+        }
+        else if (!body.WasMapped && !IsWithinBodyInfoBubble)
+        {
+            markers.Add("UNMAPPED");
+        }
+
+        return markers;
     }
 
     private string? GetDestinationShortName()
@@ -2584,6 +2551,60 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
 
         SavePreferences();
         RaiseVisibilityProperties();
+    }
+
+    private void ApplyJournalEvent(JournalEventEnvelope journalEvent)
+    {
+        if (status?.GuiFocus == GuiFocus.Fss
+            && FssTuningDetectorEnabled
+            && journalEvent.EventName == "Scan"
+            && !HasRingParent(journalEvent.Payload))
+        {
+            ApplyFssTuningScan();
+        }
+
+        state.Apply(journalEvent);
+        switch (journalEvent.EventName)
+        {
+            case "Fileheader":
+            case "LoadGame":
+                musicTrack = null;
+                break;
+
+            case "StartJump" when GetString(
+                journalEvent.Payload,
+                "JumpType") == "Hyperspace":
+                fsdJumping = true;
+                break;
+
+            case "FSDJump":
+            case "CarrierJump":
+            case "Died":
+            case "Resurrect":
+                fsdJumping = false;
+                break;
+
+            case "Music":
+                musicTrack = GetString(
+                    journalEvent.Payload,
+                    "MusicTrack");
+                if (string.Equals(
+                        musicTrack,
+                        "MainMenu",
+                        StringComparison.Ordinal))
+                {
+                    fsdJumping = false;
+                }
+
+                break;
+
+            case "SAAScanComplete":
+                lastDssCompletedAt = journalEvent.Timestamp ?? utcNow();
+                dssVisibilityWindowWasActive =
+                    IsWithinPostDssBiologyWindow;
+                OnPropertyChanged(nameof(IsWithinPostDssBiologyWindow));
+                break;
+        }
     }
 
     private void ApplyFssTuningScan()

@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using SrvSurvey.Core.Network;
 
 namespace SrvSurvey.Desktop.Platform.Frontier;
 
@@ -11,7 +12,7 @@ public sealed record FrontierOAuthCallback(
 {
     public const string Scheme = "srvsurvey";
     public const string Host = "frontier-auth";
-    public const string RedirectUri = "srvsurvey://frontier-auth";
+    public static string RedirectUri => WellKnownUris.FrontierOAuthRedirect.OriginalString;
 
     public static FrontierOAuthCallback? Find(IEnumerable<string> arguments)
     {

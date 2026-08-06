@@ -68,24 +68,12 @@ public sealed class LegacySystemBiologyAnalyzer
                 }
 
                 processedFiles++;
-                if (TryGetProperty(
-                        document.RootElement,
-                        "bodies",
-                        out var bodies)
-                    && bodies.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var body in bodies.EnumerateArray())
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        if (body.ValueKind != JsonValueKind.Object)
-                        {
-                            continue;
-                        }
-
-                        bodyCount++;
-                        AnalyzeBody(body, summaries, ref organismCount);
-                    }
-                }
+                AnalyzeBodies(
+                    document.RootElement,
+                    summaries,
+                    ref bodyCount,
+                    ref organismCount,
+                    cancellationToken);
             }
             catch (Exception exception) when (
                 exception is IOException
@@ -114,6 +102,32 @@ public sealed class LegacySystemBiologyAnalyzer
                 .Select(summary => summary.Create())
                 .ToArray(),
             warnings);
+    }
+
+    private static void AnalyzeBodies(
+        JsonElement root,
+        IDictionary<string, MutableSpeciesSummary> summaries,
+        ref int bodyCount,
+        ref int organismCount,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetProperty(root, "bodies", out var bodies)
+            || bodies.ValueKind != JsonValueKind.Array)
+        {
+            return;
+        }
+
+        foreach (var body in bodies.EnumerateArray())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (body.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
+            bodyCount++;
+            AnalyzeBody(body, summaries, ref organismCount);
+        }
     }
 
     private static void AnalyzeBody(
