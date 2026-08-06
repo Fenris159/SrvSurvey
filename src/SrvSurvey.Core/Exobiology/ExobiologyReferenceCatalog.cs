@@ -178,9 +178,9 @@ public sealed class ExobiologyReferenceCatalog
         }
 
         var normalized = genusName
-            .Replace("$Codex_Ent_", string.Empty, StringComparison.Ordinal)
+            .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
             .Replace("_Genus_Name;", string.Empty, StringComparison.Ordinal)
-            .Replace("_Name;", string.Empty, StringComparison.Ordinal)
+            .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal)
             .Replace(" ", string.Empty, StringComparison.Ordinal)
             .Replace("-", string.Empty, StringComparison.Ordinal)
             .Replace("_", string.Empty, StringComparison.Ordinal)
@@ -213,9 +213,9 @@ public sealed class ExobiologyReferenceCatalog
         }
 
         var normalized = genusName
-            .Replace("$Codex_Ent_", string.Empty, StringComparison.Ordinal)
+            .Replace(CodexEntPrefix, string.Empty, StringComparison.Ordinal)
             .Replace("_Genus_Name;", string.Empty, StringComparison.Ordinal)
-            .Replace("_Name;", string.Empty, StringComparison.Ordinal)
+            .Replace(CodexNameSuffix, string.Empty, StringComparison.Ordinal)
             .ToUpperInvariant();
         return normalized switch
         {

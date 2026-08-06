@@ -8,6 +8,8 @@ public static class OpenVrNativeLibraryResolver
 {
     public const string LibraryEnvironmentVariable =
         "SRVSURVEY_OPENVR_LIBRARY";
+    private const string LinuxLibraryFileName = "libopenvr_api.so";
+    private const string OpenVrApiLibraryName = "openvr_api";
     private static readonly object RegistrationLock = new();
     private static bool registered;
 
@@ -54,7 +56,7 @@ public static class OpenVrNativeLibraryResolver
 
         candidates.Add(Path.Combine(
             AppContext.BaseDirectory,
-            "libopenvr_api.so"));
+            LinuxLibraryFileName));
         var profile = Environment.GetFolderPath(
             Environment.SpecialFolder.UserProfile);
         if (!string.IsNullOrWhiteSpace(profile))
@@ -68,7 +70,7 @@ public static class OpenVrNativeLibraryResolver
                 "SteamVR",
                 "bin",
                 "linux64",
-                "libopenvr_api.so"));
+                LinuxLibraryFileName));
             candidates.Add(Path.Combine(
                 profile,
                 ".local",
@@ -79,7 +81,7 @@ public static class OpenVrNativeLibraryResolver
                 "SteamVR",
                 "bin",
                 "linux64",
-                "libopenvr_api.so"));
+                LinuxLibraryFileName));
             candidates.Add(Path.Combine(
                 profile,
                 ".var",
@@ -93,7 +95,7 @@ public static class OpenVrNativeLibraryResolver
                 "SteamVR",
                 "bin",
                 "linux64",
-                "libopenvr_api.so"));
+                LinuxLibraryFileName));
         }
 
         return candidates.Distinct(StringComparer.Ordinal).ToArray();
@@ -106,11 +108,11 @@ public static class OpenVrNativeLibraryResolver
     {
         if (!string.Equals(
                 libraryName,
-                "openvr_api",
+                OpenVrApiLibraryName,
                 StringComparison.OrdinalIgnoreCase)
             && !string.Equals(
                 libraryName,
-                "libopenvr_api.so",
+                LinuxLibraryFileName,
                 StringComparison.OrdinalIgnoreCase))
         {
             return nint.Zero;
