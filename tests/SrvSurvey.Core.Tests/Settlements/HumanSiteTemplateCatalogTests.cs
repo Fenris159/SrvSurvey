@@ -58,29 +58,59 @@ public sealed class HumanSiteTemplateCatalogTests
         var agriculture = catalog.ForEconomy(HumanSiteEconomy.Agriculture);
         var picumnus = catalog.Find(HumanSiteEconomy.Agriculture, 1);
 
+        var subtypes = new List<int>(5);
+        foreach (var template in agriculture)
+        {
+            subtypes.Add(template.SubType);
+        }
         Assert.Equal(5, agriculture.Count);
-        Assert.Equal([1, 2, 3, 4, 5],
-            agriculture.Select((HumanSiteTemplate template) => template.SubType));
+        Assert.Equal([1, 2, 3, 4, 5], subtypes);
         Assert.NotNull(picumnus);
         Assert.Equal("Picumnus", picumnus.Name);
         Assert.Equal(HumanSiteLandingPadSize.Small,
             picumnus.LandingPads[0].Size);
         Assert.Equal(new HumanSiteMapPoint(149.1648, -122.47405),
             picumnus.LandingPads[0].Offset);
-        Assert.Contains(picumnus.NamedPoints,
-            (HumanSiteNamedPointOfInterest point) => point.Name == "Alarm" && point.SecurityLevel == 1);
+        var hasAlarm = false;
+        foreach (var point in picumnus.NamedPoints)
+        {
+            if (point.Name == "Alarm" && point.SecurityLevel == 1)
+            {
+                hasAlarm = true;
+                break;
+            }
+        }
+        Assert.True(hasAlarm);
     }
 
     [Fact]
     public void RetainsButIdentifiesImplausibleLegacyPoiOffsets()
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var allPoints = catalog.Templates.SelectMany((HumanSiteTemplate template) =>
-            template.NamedPoints.Select((HumanSiteNamedPointOfInterest point) => point.Offset));
+        var allPoints = new List<HumanSiteMapPoint>();
+        foreach (var template in catalog.Templates)
+        {
+            foreach (var point in template.NamedPoints)
+            {
+                allPoints.Add(point.Offset);
+            }
+        }
 
-        Assert.All(allPoints, (HumanSiteMapPoint point) => Assert.True(point.IsFinite));
-        Assert.Contains(allPoints,
-            (HumanSiteMapPoint point) => !point.IsPlausibleMapOffset());
+        foreach (var point in allPoints)
+        {
+            Assert.True(point.IsFinite);
+        }
+
+        var hasImprobableOffset = false;
+        foreach (var point in allPoints)
+        {
+            if (!point.IsPlausibleMapOffset())
+            {
+                hasImprobableOffset = true;
+                break;
+            }
+        }
+        Assert.True(hasImprobableOffset);
     }
 
     [Fact]
