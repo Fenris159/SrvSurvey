@@ -78,8 +78,8 @@ public static class FrontierProtocolRegistration
             "io.github.fenris159.SrvSurvey.frontier-auth.desktop");
         var escapedExecutable = executable.Replace("\\", "\\\\", StringComparison.Ordinal)
             .Replace("\"", "\\\"", StringComparison.Ordinal);
-        var content = string.Join('\n',
-        [
+        var content = string.Join(
+            '\n',
             "[Desktop Entry]",
             "Type=Application",
             "Name=SrvSurvey",
@@ -89,8 +89,7 @@ public static class FrontierProtocolRegistration
             "Terminal=false",
             "NoDisplay=true",
             $"MimeType=x-scheme-handler/{FrontierOAuthCallback.Scheme};",
-            string.Empty,
-        ]);
+            string.Empty);
         await File.WriteAllTextAsync(
                 desktopFile,
                 content,

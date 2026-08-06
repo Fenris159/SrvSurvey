@@ -920,20 +920,25 @@ public sealed class LegacyOrganicProfileMigrator
             var claim = string.IsNullOrWhiteSpace(prefix)
                 ? null
                 : commanderProfiles
-                    .Select(profile => profile.Root["scannedBioEntryIds"])
-                    .OfType<JsonArray>()
-                    .SelectMany(claims => claims.OfType<JsonValue>())
-                    .Select(value => value.TryGetValue<string>(out var text)
-                        ? text
-                        : null)
-                    .FirstOrDefault(value => value?.StartsWith(
-                        $"{systemAddress}_{bodyId}_{prefix}",
-                        StringComparison.Ordinal) == true);
-            if (claim is not null
-                && long.TryParse(claim.Split('_')[2], out var claimedEntryId))
+            .Select(profile => profile.Root["scannedBioEntryIds"])
+            .OfType<JsonArray>()
+            .SelectMany(claims => claims.OfType<JsonValue>())
+            .Select(value => value.TryGetValue<string>(out var text)
+                ? text
+                : null)
+            .FirstOrDefault(value => value is not null
+                && value.StartsWith(
+                    $"{systemAddress}_{bodyId}_{prefix}",
+                    StringComparison.Ordinal));
+            if (claim is not null)
             {
-                scan["entryId"] = claimedEntryId;
-                return;
+                var claimParts = claim.Split('_');
+                if (claimParts.Length > 2
+                    && long.TryParse(claimParts[2], out var claimedEntryId))
+                {
+                    scan["entryId"] = claimedEntryId;
+                    return;
+                }
             }
         }
 
