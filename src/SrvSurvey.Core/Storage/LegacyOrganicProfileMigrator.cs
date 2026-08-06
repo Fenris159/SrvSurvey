@@ -354,7 +354,7 @@ public sealed class LegacyOrganicProfileMigrator
         }
     }
 
-    private async Task MarkCommanderProfilesMigratedAsync(
+    private static async Task MarkCommanderProfilesMigratedAsync(
         IReadOnlyList<CommanderProfile> commanderProfiles,
         HashSet<string> migratedProfilePaths,
         CancellationToken cancellationToken)
@@ -438,12 +438,10 @@ public sealed class LegacyOrganicProfileMigrator
             return;
         }
 
-        foreach (var claim in CollectScannedOrganicsClaims(scannedOrganics))
+        foreach (var claim in CollectScannedOrganicsClaims(scannedOrganics)
+            .Where(claim => !migrated.Any(existing => IsSameLegacyClaim(existing, claim))))
         {
-            if (!migrated.Any(existing => IsSameLegacyClaim(existing, claim)))
-            {
-                migrated.Add(claim);
-            }
+            migrated.Add(claim);
         }
     }
 
@@ -1080,7 +1078,8 @@ public sealed class LegacyOrganicProfileMigrator
             changed = true;
         }
 
-        return changed | FillOrganism(existing, sourceOrganism, reference);
+        var organismChanged = FillOrganism(existing, sourceOrganism, reference);
+        return changed || organismChanged;
     }
 
     private static bool UpdateBioSignalCount(JsonObject body, int organismCount)

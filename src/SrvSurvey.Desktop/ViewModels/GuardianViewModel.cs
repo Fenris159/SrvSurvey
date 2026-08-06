@@ -126,32 +126,33 @@ public sealed class GuardianViewModel
         GuardianViewModelOptions? options = null)
     {
         options ??= new GuardianViewModelOptions();
-        var references = options.References;
-        var publishedSites = options.PublishedSites;
-        var templates = options.Templates;
-        var ramTah = options.RamTah;
-        var overlaySettingsStore = options.OverlaySettingsStore;
-        var systemResolver = options.SystemResolver;
-        var aerialAltitudeProvider = options.AerialAltitudeProvider;
+        var resolvedReferences = options.References;
+        var resolvedPublishedSites = options.PublishedSites;
+        var resolvedTemplates = options.Templates;
+        var resolvedRamTah = options.RamTah;
+        var resolvedOverlaySettingsStore = options.OverlaySettingsStore;
+        var resolvedSystemResolver = options.SystemResolver;
+        var resolvedAerialAltitudeProvider = options.AerialAltitudeProvider;
         var gesturePreferences = options.GesturePreferences;
-        var screenshotTargetFolderProvider = options.ScreenshotTargetFolderProvider;
+        var resolvedScreenshotTargetFolderProvider =
+            options.ScreenshotTargetFolderProvider;
 
-        this.references = references ?? GuardianSiteCatalog.LoadEmbedded();
-        this.publishedSites = publishedSites
+        this.references = resolvedReferences ?? GuardianSiteCatalog.LoadEmbedded();
+        this.publishedSites = resolvedPublishedSites
             ?? GuardianPublishedSiteCatalog.LoadEmbedded();
-        this.templates = templates ?? GuardianSiteTemplateCatalog.LoadEmbedded();
-        this.ramTah = ramTah;
-        this.overlaySettingsStore = overlaySettingsStore;
-        this.aerialAltitudeProvider = aerialAltitudeProvider
+        this.templates = resolvedTemplates ?? GuardianSiteTemplateCatalog.LoadEmbedded();
+        this.ramTah = resolvedRamTah;
+        this.overlaySettingsStore = resolvedOverlaySettingsStore;
+        this.aerialAltitudeProvider = resolvedAerialAltitudeProvider
             ?? (() => GuardianAerialAltitudes.Default);
-        this.screenshotTargetFolderProvider = screenshotTargetFolderProvider
+        this.screenshotTargetFolderProvider = resolvedScreenshotTargetFolderProvider
             ?? (() => null);
-        this.systemResolver = systemResolver ?? new SpanshStarSystemResolver();
+        this.systemResolver = resolvedSystemResolver ?? new SpanshStarSystemResolver();
         var gestures = gesturePreferences ?? GuardianGesturePreferences.Default;
         statusBlinkDetector = new StatusBlinkDetector(
             gestures.BlinkTrigger,
             TimeSpan.FromMilliseconds(gestures.BlinkDurationMilliseconds));
-        var overlayPreferences = overlaySettingsStore?.Load()
+        var overlayPreferences = resolvedOverlaySettingsStore?.Load()
             ?? GuardianOverlayPreferences.Default;
         enableGuardianSites = overlayPreferences.EnableGuardianSites;
         autoShowGuardianSummary = overlayPreferences.AutoShowGuardianSummary;

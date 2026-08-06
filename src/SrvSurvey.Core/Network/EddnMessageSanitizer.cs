@@ -1104,15 +1104,6 @@ namespace SrvSurvey.Core.Network
             }
         }
 
-        private static bool fail(
-            string failure,
-            out EddnPreparedMessage? prepared,
-            out string reason)
-        {
-            prepared = null;
-            reason = failure;
-            return false;
-        }
     }
 }
 

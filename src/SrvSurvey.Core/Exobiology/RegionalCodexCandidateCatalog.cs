@@ -267,7 +267,7 @@ public sealed class RegionalCodexCandidateCatalog
     }
 
     private static List<RegionalCodexCandidate> ParsePublishedCsvCandidates(
-        IReadOnlyList<IReadOnlyList<string>> rows,
+        List<IReadOnlyList<string>> rows,
         ExobiologyReferenceCatalog references)
     {
         var regionsById = GalacticRegionMap.Regions.ToDictionary(region => region.Id);

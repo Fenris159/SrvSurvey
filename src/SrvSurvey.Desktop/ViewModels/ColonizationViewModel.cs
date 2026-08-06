@@ -1579,8 +1579,14 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        await commanderProfileStore!.SaveRavenColonialApiKeyAsync(
-            profileFrontierId!,
+        var store = commanderProfileStore
+            ?? throw new InvalidOperationException(
+                "Commander profile storage is not available.");
+        var frontierId = profileFrontierId
+            ?? throw new InvalidOperationException(
+                "No commander frontier id is available.");
+        await store.SaveRavenColonialApiKeyAsync(
+            frontierId,
             CommanderName,
             profileIsOdyssey,
             normalized,

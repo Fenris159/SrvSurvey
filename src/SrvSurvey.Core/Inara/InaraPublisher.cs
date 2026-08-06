@@ -969,7 +969,7 @@ public sealed class InaraPublisher : IInaraPublisher
 
     private InaraPublicationResult ProcessInaraResponseBody(
         string? body,
-        IReadOnlyList<InaraQueuedEvent> batch,
+        List<InaraQueuedEvent> batch,
         List<string> warnings)
     {
         if (string.IsNullOrWhiteSpace(body))

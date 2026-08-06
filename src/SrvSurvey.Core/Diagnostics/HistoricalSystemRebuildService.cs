@@ -390,13 +390,16 @@ public sealed class HistoricalSystemRebuildService
                     reconstruction.Systems.Count,
                     Path.GetFileName(target));
                 var prepared = await TryPrepareActivationEntryAsync(
-                        reconstructed,
-                        snapshot,
-                        target,
-                        originalDirectory,
-                        candidateDirectory,
-                        commanderName,
-                        warnings,
+                        new ActivationPrepareRequest
+                        {
+                            Reconstructed = reconstructed,
+                            Snapshot = snapshot,
+                            Target = target,
+                            OriginalDirectory = originalDirectory,
+                            CandidateDirectory = candidateDirectory,
+                            CommanderName = commanderName,
+                            Warnings = warnings,
+                        },
                         cancellationToken)
                     .ConfigureAwait(false);
                 if (prepared is null)
@@ -457,23 +460,28 @@ public sealed class HistoricalSystemRebuildService
         }
     }
 
-    private async Task<ActivationEntry?> TryPrepareActivationEntryAsync(
-        ReconstructedSystem reconstructed,
-        SystemScanSnapshot snapshot,
-        string target,
-        string originalDirectory,
-        string candidateDirectory,
-        string? commanderName,
-        List<string> warnings,
+    private sealed class ActivationPrepareRequest
+    {
+        public required ReconstructedSystem Reconstructed { get; init; }
+        public required SystemScanSnapshot Snapshot { get; init; }
+        public required string Target { get; init; }
+        public required string OriginalDirectory { get; init; }
+        public required string CandidateDirectory { get; init; }
+        public string? CommanderName { get; init; }
+        public required List<string> Warnings { get; init; }
+    }
+
+    private static async Task<ActivationEntry?> TryPrepareActivationEntryAsync(
+        ActivationPrepareRequest request,
         CancellationToken cancellationToken)
     {
         JsonObject? existing = null;
         string? originalHash = null;
-        if (File.Exists(target))
+        if (File.Exists(request.Target))
         {
             try
             {
-                existing = await ReadObjectAsync(target, cancellationToken)
+                existing = await ReadObjectAsync(request.Target, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception exception) when (
@@ -482,17 +490,17 @@ public sealed class HistoricalSystemRebuildService
                     or JsonException
                     or InvalidDataException)
             {
-                warnings.Add(
-                    $"{Path.GetFileName(target)} was malformed and was not overwritten: "
+                request.Warnings.Add(
+                    $"{Path.GetFileName(request.Target)} was malformed and was not overwritten: "
                         + exception.Message);
                 return null;
             }
 
             var originalPath = Path.Combine(
-                originalDirectory,
-                Path.GetFileName(target));
-            File.Copy(target, originalPath, false);
-            originalHash = await ComputeHashAsync(target, cancellationToken)
+                request.OriginalDirectory,
+                Path.GetFileName(request.Target));
+            File.Copy(request.Target, originalPath, false);
+            originalHash = await ComputeHashAsync(request.Target, cancellationToken)
                 .ConfigureAwait(false);
             var backupHash = await ComputeHashAsync(
                     originalPath,
@@ -504,7 +512,7 @@ public sealed class HistoricalSystemRebuildService
                     StringComparison.Ordinal))
             {
                 throw new InvalidDataException(
-                    $"The backup for {Path.GetFileName(target)} did not match its source.");
+                    $"The backup for {Path.GetFileName(request.Target)} did not match its source.");
             }
         }
 
@@ -513,21 +521,21 @@ public sealed class HistoricalSystemRebuildService
         {
             merged = LegacySystemSnapshotMerger.Merge(
                 existing,
-                snapshot,
-                commanderName,
-                reconstructed.FirstVisited!.Value,
-                reconstructed.LastVisited!.Value);
+                request.Snapshot,
+                request.CommanderName,
+                request.Reconstructed.FirstVisited!.Value,
+                request.Reconstructed.LastVisited!.Value);
         }
         catch (InvalidDataException exception)
         {
-            warnings.Add(
-                $"{Path.GetFileName(target)} was not rebuilt: {exception.Message}");
+            request.Warnings.Add(
+                $"{Path.GetFileName(request.Target)} was not rebuilt: {exception.Message}");
             return null;
         }
 
         var candidatePath = Path.Combine(
-            candidateDirectory,
-            $"{snapshot.SystemAddress!.Value}.json");
+            request.CandidateDirectory,
+            $"{request.Snapshot.SystemAddress!.Value}.json");
         await WriteObjectAsync(candidatePath, merged, cancellationToken)
             .ConfigureAwait(false);
         _ = await ReadObjectAsync(candidatePath, cancellationToken)
@@ -537,9 +545,9 @@ public sealed class HistoricalSystemRebuildService
                 cancellationToken)
             .ConfigureAwait(false);
         return new ActivationEntry(
-            target,
+            request.Target,
             candidatePath,
-            File.Exists(target),
+            File.Exists(request.Target),
             originalHash,
             candidateHash);
     }

@@ -674,7 +674,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
 
         try
         {
-            return ApplyCarrierEndpoint(snapshot, previous, result.Content!, fetchedAt);
+            return ApplyCarrierEndpoint(snapshot, previous, result.Content, fetchedAt);
         }
         catch (Exception exception) when (
             exception is JsonException or InvalidDataException)

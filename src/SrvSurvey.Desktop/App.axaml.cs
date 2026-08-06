@@ -729,7 +729,7 @@ public sealed partial class App : Application
             "Verified update replacement startup with the handoff helper.");
     }
 
-    private IGameWindowTracker CreateOverlayGameWindowTracker()
+    private OverlayGameWindowTracker CreateOverlayGameWindowTracker()
     {
         var viewModel = mainViewModel
             ?? throw new InvalidOperationException("Main view model is not ready.");
@@ -904,8 +904,11 @@ public sealed partial class App : Application
     {
         var viewModel = mainViewModel
             ?? throw new InvalidOperationException("Main view model is not ready.");
-        var window = mainWindow
-            ?? throw new InvalidOperationException("Main window is not ready.");
+        if (mainWindow is null)
+        {
+            throw new InvalidOperationException("Main window is not ready.");
+        }
+
         return action switch
         {
             GlobalInputAction.MapZoomIn =>

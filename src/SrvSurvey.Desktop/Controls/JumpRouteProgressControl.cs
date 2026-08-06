@@ -136,7 +136,17 @@ public sealed class JumpRouteProgressControl : Control
             ? layout.Right
             : x + layout.Width * (leg.DistanceLy / layout.TotalDistance);
         var brush = ResolveLegBrush(index, brushes);
-        DrawLegSegments(context, leg, index, x, nextX, layout, brushes, brush);
+        DrawLegSegments(new LegSegmentDraw
+        {
+            Context = context,
+            Leg = leg,
+            Index = index,
+            X = x,
+            NextX = nextX,
+            Layout = layout,
+            Brushes = brushes,
+            Brush = brush,
+        });
         DrawLegMarker(context, leg, index, nextX, layout, brushes, brush);
         return nextX;
     }
@@ -151,28 +161,32 @@ public sealed class JumpRouteProgressControl : Control
         return index < TargetLegIndex ? brushes.Behind : brushes.Ahead;
     }
 
-    private void DrawLegSegments(
-        DrawingContext context,
-        JumpInfoRouteLeg leg,
-        int index,
-        double x,
-        double nextX,
-        LegLayout layout,
-        LegBrushes brushes,
-        IBrush brush)
+    private sealed class LegSegmentDraw
     {
-        if (leg.RequiresBoost)
+        public required DrawingContext Context { get; init; }
+        public required JumpInfoRouteLeg Leg { get; init; }
+        public int Index { get; init; }
+        public double X { get; init; }
+        public double NextX { get; init; }
+        public required LegLayout Layout { get; init; }
+        public required LegBrushes Brushes { get; init; }
+        public required IBrush Brush { get; init; }
+    }
+
+    private void DrawLegSegments(LegSegmentDraw draw)
+    {
+        if (draw.Leg.RequiresBoost)
         {
-            context.DrawLine(
-                new Pen(brushes.Boost, index == TargetLegIndex ? 7 : 5),
-                new Point(x, layout.Y),
-                new Point(nextX, layout.Y));
+            draw.Context.DrawLine(
+                new Pen(draw.Brushes.Boost, draw.Index == TargetLegIndex ? 7 : 5),
+                new Point(draw.X, draw.Layout.Y),
+                new Point(draw.NextX, draw.Layout.Y));
         }
 
-        context.DrawLine(
-            new Pen(brush, index == TargetLegIndex ? 4 : 2.5),
-            new Point(x, layout.Y),
-            new Point(nextX, layout.Y));
+        draw.Context.DrawLine(
+            new Pen(draw.Brush, draw.Index == TargetLegIndex ? 4 : 2.5),
+            new Point(draw.X, draw.Layout.Y),
+            new Point(draw.NextX, draw.Layout.Y));
     }
 
     private void DrawLegMarker(

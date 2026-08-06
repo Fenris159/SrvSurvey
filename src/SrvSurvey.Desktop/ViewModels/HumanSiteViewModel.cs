@@ -74,26 +74,26 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     public HumanSiteViewModel(HumanSiteViewModelOptions? options = null)
     {
         options ??= new HumanSiteViewModelOptions();
-        var settingsStore = options.SettingsStore;
-        var knowledgeStore = options.KnowledgeStore;
-        var materialStore = options.MaterialStore;
+        var resolvedSettingsStore = options.SettingsStore;
+        var resolvedKnowledgeStore = options.KnowledgeStore;
+        var resolvedMaterialStore = options.MaterialStore;
         var templateCatalog = options.TemplateCatalog;
-        var canonnClient = options.CanonnClient;
-        var useExternalData = options.UseExternalData;
-        var canonnPublisher = options.CanonnPublisher;
-        var publishCanonnGeometry = options.PublishCanonnGeometry;
-        var reportCanonnPublication = options.ReportCanonnPublication;
-        var clientVersion = options.ClientVersion;
+        var resolvedCanonnClient = options.CanonnClient;
+        var resolvedUseExternalData = options.UseExternalData;
+        var resolvedCanonnPublisher = options.CanonnPublisher;
+        var resolvedPublishCanonnGeometry = options.PublishCanonnGeometry;
+        var resolvedReportCanonnPublication = options.ReportCanonnPublication;
+        var resolvedClientVersion = options.ClientVersion;
 
-        this.settingsStore = settingsStore;
-        this.knowledgeStore = knowledgeStore;
-        this.materialStore = materialStore;
-        this.canonnClient = canonnClient;
-        this.canonnPublisher = canonnPublisher;
-        this.useExternalData = useExternalData ?? (() => true);
-        this.publishCanonnGeometry = publishCanonnGeometry ?? (() => false);
-        this.reportCanonnPublication = reportCanonnPublication;
-        this.clientVersion = clientVersion
+        this.settingsStore = resolvedSettingsStore;
+        this.knowledgeStore = resolvedKnowledgeStore;
+        this.materialStore = resolvedMaterialStore;
+        this.canonnClient = resolvedCanonnClient;
+        this.canonnPublisher = resolvedCanonnPublisher;
+        this.useExternalData = resolvedUseExternalData ?? (() => true);
+        this.publishCanonnGeometry = resolvedPublishCanonnGeometry ?? (() => false);
+        this.reportCanonnPublication = resolvedReportCanonnPublication;
+        this.clientVersion = resolvedClientVersion
             ?? typeof(HumanSiteViewModel).Assembly.GetName().Version
             ?? new Version(0, 0);
         var templates = templateCatalog
@@ -104,7 +104,7 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         state = new HumanSiteLiveState(templates);
         mapProjector = new HumanSiteMapProjector();
         navigation = new HumanSiteNavigation(templates);
-        var preferences = settingsStore?.Load()
+        var preferences = resolvedSettingsStore?.Load()
             ?? HumanSitePreferences.Default;
         autoShow = preferences.AutoShow;
         preferredWidth = preferences.Width;

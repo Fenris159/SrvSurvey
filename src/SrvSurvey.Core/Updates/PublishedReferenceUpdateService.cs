@@ -167,14 +167,17 @@ public sealed class PublishedReferenceUpdateService
         try
         {
             var next = await StageAndActivateAsync(
-                    root,
-                    stageRoot,
-                    rollbackRoot,
-                    backupRoot,
-                    previous,
-                    remote,
-                    plan,
-                    updated,
+                    new StageAndActivateRequest
+                    {
+                        Root = root,
+                        StageRoot = stageRoot,
+                        RollbackRoot = rollbackRoot,
+                        BackupRoot = backupRoot,
+                        Previous = previous,
+                        Remote = remote,
+                        Plan = plan,
+                        Updated = updated,
+                    },
                     cancellationToken)
                 .ConfigureAwait(false);
             activationCompleted = true;
@@ -196,37 +199,42 @@ public sealed class PublishedReferenceUpdateService
         }
     }
 
+    private sealed class StageAndActivateRequest
+    {
+        public required string Root { get; init; }
+        public required string StageRoot { get; init; }
+        public required string RollbackRoot { get; init; }
+        public required string BackupRoot { get; init; }
+        public required PublishedReferenceVersions Previous { get; init; }
+        public required PublishedDataIndex Remote { get; init; }
+        public required UpdatePlan Plan { get; init; }
+        public required List<string> Updated { get; init; }
+    }
+
     private async Task<PublishedReferenceVersions> StageAndActivateAsync(
-        string root,
-        string stageRoot,
-        string rollbackRoot,
-        string backupRoot,
-        PublishedReferenceVersions previous,
-        PublishedDataIndex remote,
-        UpdatePlan plan,
-        List<string> updated,
+        StageAndActivateRequest request,
         CancellationToken cancellationToken)
     {
-        await CopyCurrentReferencesAsync(root, stageRoot, cancellationToken)
+        await CopyCurrentReferencesAsync(request.Root, request.StageRoot, cancellationToken)
             .ConfigureAwait(false);
         var stagePublished = await StageCatalogUpdatesAsync(
-                plan,
-                stageRoot,
-                updated,
+                request.Plan,
+                request.StageRoot,
+                request.Updated,
                 cancellationToken)
             .ConfigureAwait(false);
-        var next = BuildNextVersions(previous, remote, plan);
+        var next = BuildNextVersions(request.Previous, request.Remote, request.Plan);
         await versionStore.WriteAsync(stagePublished, next, cancellationToken)
             .ConfigureAwait(false);
-        ValidateCandidate(stageRoot, updated);
-        await CopyCurrentReferencesAsync(root, backupRoot, cancellationToken)
+        ValidateCandidate(request.StageRoot, request.Updated);
+        await CopyCurrentReferencesAsync(request.Root, request.BackupRoot, cancellationToken)
             .ConfigureAwait(false);
         checkpoint?.Invoke(PublishedReferenceUpdateCheckpoint.BackupVerified);
         await ActivateAsync(
-                root,
-                stageRoot,
-                rollbackRoot,
-                updated,
+                request.Root,
+                request.StageRoot,
+                request.RollbackRoot,
+                request.Updated,
                 cancellationToken)
             .ConfigureAwait(false);
         return next;
@@ -768,7 +776,7 @@ public sealed class PublishedReferenceUpdateService
     private static bool EvaluateBiologyUpdate(
         PublishedReferenceVersions previous,
         PublishedDataIndex remote,
-        IReadOnlyDictionary<string, ReferenceCatalogSource> sources,
+        Dictionary<string, ReferenceCatalogSource> sources,
         List<string> warnings)
     {
         var updateBiology = NeedsUpdate(

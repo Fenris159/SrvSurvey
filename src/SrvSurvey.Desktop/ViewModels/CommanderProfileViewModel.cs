@@ -1079,7 +1079,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         public string SourceStatus { get; init; } = string.Empty;
     }
 
-    private CommunityGoalCardFields ResolveCommunityGoalCardFields(
+    private static CommunityGoalCardFields ResolveCommunityGoalCardFields(
         FrontierCommunityGoalSnapshot item)
     {
         var dataPoints = item.DataPoints ?? [];
@@ -1111,9 +1111,19 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             dataPoints,
             "target_qty",
             "targetTotal");
-        var target = item.TargetTotal is > 0
-            ? item.TargetTotal
-            : cachedTarget is > 0 ? cachedTarget : null;
+        long? target;
+        if (item.TargetTotal is > 0)
+        {
+            target = item.TargetTotal;
+        }
+        else if (cachedTarget is > 0)
+        {
+            target = cachedTarget;
+        }
+        else
+        {
+            target = null;
+        }
         var hasPlayerContributionData = item.HasPlayerContributionData
             || HasCommunityGoalData(
                 dataPoints,
@@ -1208,21 +1218,34 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     private static string ResolveCommunityGoalStatus(
         FrontierCommunityGoalSnapshot item,
-        DateTimeOffset currentTime) =>
-        item.IsComplete
-            ? "COMPLETED"
-            : item.ExpiresAt is { } expiry && expiry <= currentTime
-                ? "ENDED"
-                : "ACTIVE";
+        DateTimeOffset currentTime)
+    {
+        if (item.IsComplete)
+        {
+            return "COMPLETED";
+        }
+
+        if (item.ExpiresAt is { } expiry && expiry <= currentTime)
+        {
+            return "ENDED";
+        }
+
+        return "ACTIVE";
+    }
 
     private static string FormatPlayerContributionText(
         bool hasPlayerContributionData,
-        long playerContribution) =>
-        hasPlayerContributionData
-            ? playerContribution > 0
-                ? $"{playerContribution:N0} contributed"
-                : "Signed up · no contribution recorded"
-            : "Personal progress not supplied by Frontier or local journals";
+        long playerContribution)
+    {
+        if (!hasPlayerContributionData)
+        {
+            return "Personal progress not supplied by Frontier or local journals";
+        }
+
+        return playerContribution > 0
+            ? $"{playerContribution:N0} contributed"
+            : "Signed up · no contribution recorded";
+    }
 
     private static string FormatCommunityGoalStanding(
         FrontierCommunityGoalSnapshot item)

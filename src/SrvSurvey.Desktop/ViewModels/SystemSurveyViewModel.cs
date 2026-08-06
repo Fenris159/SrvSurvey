@@ -2058,11 +2058,20 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             return false;
         }
 
-        var value = body.IsDssComplete
-            ? body.CurrentScanValue
-            : planetish
-                ? body.EstimatedMappedValue
-                : body.ScanValue;
+        long value;
+        if (body.IsDssComplete)
+        {
+            value = body.CurrentScanValue;
+        }
+        else if (planetish)
+        {
+            value = body.EstimatedMappedValue;
+        }
+        else
+        {
+            value = body.ScanValue;
+        }
+
         return value > DssValueFloor;
     }
 

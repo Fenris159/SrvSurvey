@@ -105,36 +105,58 @@ namespace SrvSurvey.Core.Inara
 
         private static long ComputeCreditDelta(JObject entry, string? eventName)
         {
+            return TryShipAndModuleDelta(entry, eventName)
+                ?? TryOdysseyDelta(entry, eventName)
+                ?? TryTradeAndServiceDelta(entry, eventName)
+                ?? 0;
+        }
+
+        private static long? TryShipAndModuleDelta(JObject entry, string? eventName)
+        {
             return eventName switch
             {
                 "ShipyardBuy" => -valueOrZero(entry, "ShipPrice"),
                 "ModuleBuy" => -valueOrZero(entry, "BuyPrice"),
                 "ModuleRetrieve" or "ModuleStore" => -valueOrZero(entry, "Cost"),
                 "ModuleSell" or "ModuleSellRemote" => valueOrZero(entry, "SellPrice"),
+                "SellShipOnRebuy" or "ShipyardSell" => valueOrZero(entry, "ShipPrice"),
+                "ShipyardTransfer" => -valueOrZero(entry, "TransferPrice"),
+                "FetchRemoteModule" => -valueOrZero(entry, "TransferCost"),
+                _ => null,
+            };
+        }
 
+        private static long? TryOdysseyDelta(JObject entry, string? eventName)
+        {
+            return eventName switch
+            {
                 "BuyMicroResources" or "BuySuit" or "BuyWeapon" => -valueOrZero(entry, "Price"),
                 "SellMicroResources" or "SellSuit" or "SellWeapon" => valueOrZero(entry, "Price"),
                 "UpgradeSuit" or "UpgradeWeapon" => -valueOrZero(entry, "Cost"),
                 "SellOrganicData" => organicDataValue(entry),
                 "BookDropship" or "BookTaxi" => -valueOrZero(entry, "Cost"),
                 "CancelDropship" or "CancelTaxi" => valueOrZero(entry, "Refund"),
+                _ => null,
+            };
+        }
 
+        private static long? TryTradeAndServiceDelta(JObject entry, string? eventName)
+        {
+            return eventName switch
+            {
                 "BuyDrones" or "MarketBuy" => -valueOrZero(entry, "TotalCost"),
                 "MarketSell" or "SellDrones" => valueOrZero(entry, "TotalSale"),
                 "MissionCompleted" or "CommunityGoalReward" => valueOrZero(entry, "Reward"),
                 "MultiSellExplorationData" or "SellExplorationData" => valueOrZero(entry, "TotalEarnings"),
                 "BuyExplorationData" or "BuyTradeData" or "BuyAmmo" or "CrewHire" => -valueOrZero(entry, "Cost"),
-                "FetchRemoteModule" => -valueOrZero(entry, "TransferCost"),
                 "PayBounties" or "PayFines" or "PayLegacyFines" => -valueOrZero(entry, "Amount"),
                 "RedeemVoucher" or "PowerplaySalary" => valueOrZero(entry, "Amount"),
                 "RefuelAll" or "RefuelPartial" or "Repair" or "RepairAll" or "RestockVehicle" => -valueOrZero(entry, "Cost"),
-                "SellShipOnRebuy" or "ShipyardSell" => valueOrZero(entry, "ShipPrice"),
-                "ShipyardTransfer" => -valueOrZero(entry, "TransferPrice"),
                 "PowerplayFastTrack" => -valueOrZero(entry, "Cost"),
                 "CarrierBuy" => -valueOrZero(entry, "Price"),
                 "NpcCrewPaidWage" => -valueOrZero(entry, "Amount"),
                 "Resurrect" => -valueOrZero(entry, "Cost"),
-                _ => 0,
+                _ => null,
             };
         }
 

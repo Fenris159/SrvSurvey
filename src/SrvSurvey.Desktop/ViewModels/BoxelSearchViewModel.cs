@@ -844,7 +844,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             routeSystems);
     }
 
-    private IProgress<BoxelCompletionAuditProgress> CreateAuditProgressReporter(
+    private Progress<BoxelCompletionAuditProgress> CreateAuditProgressReporter(
         CancellationTokenSource cancellation)
     {
         return new Progress<BoxelCompletionAuditProgress>(update =>
@@ -1547,9 +1547,18 @@ public sealed class BoxelSystemRowViewModel
         Distance = options.Distance;
         VisitedAt = options.VisitedAt;
         SpanshUpdatedAt = options.SpanshUpdatedAt;
-        Status = options.IsComplete
-            ? "COMPLETE"
-            : options.IsKnown ? "KNOWN" : "UNKNOWN";
+        if (options.IsComplete)
+        {
+            Status = "COMPLETE";
+        }
+        else if (options.IsKnown)
+        {
+            Status = "KNOWN";
+        }
+        else
+        {
+            Status = "UNKNOWN";
+        }
         ToggleCommand = new RowCommand(options.Toggle, () => options.IsKnown);
     }
 

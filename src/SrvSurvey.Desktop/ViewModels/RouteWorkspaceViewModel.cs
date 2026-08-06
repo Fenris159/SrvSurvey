@@ -1907,11 +1907,15 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         List<RouteHopItemViewModel>? rows)
     {
         var hop = draftHops[index];
-        GalacticCoordinate? from = index == 0
-            ? lastReachedIndex < 0
-                ? currentPosition
-                : hop.Position
-            : draftHops[index - 1].Position;
+        GalacticCoordinate? from;
+        if (index == 0)
+        {
+            from = lastReachedIndex < 0 ? currentPosition : hop.Position;
+        }
+        else
+        {
+            from = draftHops[index - 1].Position;
+        }
         var distance = from is { } start && hop.Position is { } end
             ? start.DistanceTo(end)
             : (double?)null;

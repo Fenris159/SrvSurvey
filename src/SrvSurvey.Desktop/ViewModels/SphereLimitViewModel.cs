@@ -444,15 +444,20 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         GalacticCoordinate destinationPosition)
     {
         var evaluation = state.Evaluate(destinationName, destinationPosition);
-        DestinationDistance = evaluation is null
-            ? Unavailable
-            : $"{evaluation.Distance:N2} ly";
-        DestinationResult = evaluation is null
-            ? "The spherical limit is disabled"
-            : evaluation.IsInside
+        if (evaluation is null)
+        {
+            DestinationDistance = Unavailable;
+            DestinationResult = "The spherical limit is disabled";
+            IsDestinationInside = false;
+        }
+        else
+        {
+            DestinationDistance = $"{evaluation.Distance:N2} ly";
+            DestinationResult = evaluation.IsInside
                 ? $"Within the {state.Radius:N2} ly limit"
                 : $"Exceeds the {state.Radius:N2} ly limit";
-        IsDestinationInside = evaluation?.IsInside == true;
+            IsDestinationInside = evaluation.IsInside;
+        }
         IsDestinationUnknown = false;
     }
 
@@ -469,11 +474,23 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
             return null;
         }
 
+        long address;
+        if (routeDestination is not null)
+        {
+            address = routeDestination.SystemAddress;
+        }
+        else if (status?.Destination is { } destination)
+        {
+            address = destination.System;
+        }
+        else
+        {
+            address = 0;
+        }
+
         return (
             destinationName,
-            routeDestination?.SystemAddress
-                ?? status?.Destination?.System
-                ?? 0,
+            address,
             routeDestination?.Position);
     }
 

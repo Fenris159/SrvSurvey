@@ -252,7 +252,8 @@ public sealed class SystemScanState
             changed = true;
         }
 
-        return changed | MergeBody(target, source, includeBiologicalData);
+        var bodyChanged = MergeBody(target, source, includeBiologicalData);
+        return changed || bodyChanged;
     }
 
     public bool SetCurrentBodyFirstFootfall(bool value)

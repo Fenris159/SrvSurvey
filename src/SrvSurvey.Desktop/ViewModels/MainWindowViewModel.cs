@@ -151,9 +151,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         MainWindowViewModelOptions? options = null)
     {
         options ??= new MainWindowViewModelOptions();
-        var themeService = options.ThemeService;
+        // Locals that would shadow instance fields use a resolved* prefix (S1117).
+        var resolvedThemeService = options.ThemeService;
         var appDataPaths = options.AppDataPaths;
-        var profileImporter = options.ProfileImporter;
+        var resolvedProfileImporter = options.ProfileImporter;
         var exobiologyCatalog = options.ExobiologyCatalog;
         var starSystemResolver = options.StarSystemResolver;
         var boxelSystemResolver = options.BoxelSystemResolver;
@@ -169,17 +170,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var guardianOverlaySettingsStore = options.GuardianOverlaySettingsStore;
         var stationInfoSettingsStore = options.StationInfoSettingsStore;
         var humanSiteSettingsStore = options.HumanSiteSettingsStore;
-        var applicationLogService = options.ApplicationLogService;
+        var resolvedApplicationLogService = options.ApplicationLogService;
         var overlayLayoutStore = options.OverlayLayoutStore;
         var overlayLayout = options.OverlayLayout;
         var screenshotProcessingService = options.ScreenshotProcessingService;
-        var questRuntimeCoordinator = options.QuestRuntimeCoordinator;
-        var questSettingsStore = options.QuestSettingsStore;
+        var resolvedQuestRuntimeCoordinator = options.QuestRuntimeCoordinator;
+        var resolvedQuestSettingsStore = options.QuestSettingsStore;
         var targetFrontierId = options.TargetFrontierId;
         var commanderInstanceLauncher = options.CommanderInstanceLauncher;
         var gameWindowSwitcher = options.GameWindowSwitcher;
         var visitedStarsCache = options.VisitedStarsCache;
-        var greenGasGiantPublicationCoordinator =
+        var resolvedGreenGasGiantPublicationCoordinator =
             options.GreenGasGiantPublicationCoordinator;
         var notificationSettingsStore = options.NotificationSettingsStore;
         var streamOverlaySettingsStore = options.StreamOverlaySettingsStore;
@@ -190,7 +191,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var overlayBehaviorSettingsStore = options.OverlayBehaviorSettingsStore;
         var overlayScaleSettingsStore = options.OverlayScaleSettingsStore;
         var journalSettingsStore = options.JournalSettingsStore;
-        var systemScanPersistenceStore = options.SystemScanPersistenceStore;
+        var resolvedSystemScanPersistenceStore = options.SystemScanPersistenceStore;
         var codexImageSettingsStore = options.CodexImageSettingsStore;
         var dockToDockSettingsStore = options.DockToDockSettingsStore;
         var dockToDockLogService = options.DockToDockLogService;
@@ -202,9 +203,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             options.CommanderPreferenceCommandLineOverride;
         var commanderPreferenceInitialStatus =
             options.CommanderPreferenceInitialStatus;
-        var firstFootfallInferenceSettingsStore =
+        var resolvedFirstFootfallInferenceSettingsStore =
             options.FirstFootfallInferenceSettingsStore;
-        var firstFootfallInferenceService =
+        var resolvedFirstFootfallInferenceService =
             options.FirstFootfallInferenceService;
         var ravenServiceSettingsStore = options.RavenServiceSettingsStore;
         var releaseUpdates = options.ReleaseUpdates;
@@ -214,14 +215,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var overlayInteraction = options.OverlayInteraction;
         var canonnHumanSiteClient = options.CanonnHumanSiteClient;
         var canonnHumanSitePublisher = options.CanonnHumanSitePublisher;
-        var eddnPublisher = options.EddnPublisher;
-        var systemBodyDataClient = options.SystemBodyDataClient;
-        var inaraPublisher = options.InaraPublisher;
+        var resolvedEddnPublisher = options.EddnPublisher;
+        var resolvedSystemBodyDataClient = options.SystemBodyDataClient;
+        var resolvedInaraPublisher = options.InaraPublisher;
         var frontierProfile = options.FrontierProfile;
 
-        this.themeService = themeService;
-        this.profileImporter = profileImporter ?? new LegacyProfileImporter();
-        this.applicationLogService = applicationLogService;
+        this.themeService = resolvedThemeService;
+        this.profileImporter = resolvedProfileImporter ?? new LegacyProfileImporter();
+        this.applicationLogService = resolvedApplicationLogService;
         AppDataPaths = appDataPaths ?? AppDataPaths.ResolveCurrent();
         var sharedJournalSettingsStore = journalSettingsStore
             ?? new JournalSettingsStore(AppDataPaths.UiSettingsPath);
@@ -242,7 +243,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var knownSystems = KnownSystemAddressCatalog.Load(
             AppDataPaths.DataDirectory);
         AppendReferenceCatalogWarnings(
-            applicationLogService,
+            resolvedApplicationLogService,
             legacyReferences.Warnings,
             regionalCodexCandidates.Warnings,
             knownSystems.Warnings);
@@ -251,9 +252,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             regionalCodexCandidates,
             knownSystems);
 
-        Action<string>? referenceUpdateLog = applicationLogService is null
+        Action<string>? referenceUpdateLog = resolvedApplicationLogService is null
             ? null
-            : message => applicationLogService.Append(message);
+            : message => resolvedApplicationLogService.Append(message);
         ReferenceDataUpdates = referenceDataUpdates
             ?? new ReferenceDataUpdateViewModel(
                 new PublishedReferenceUpdateService(),
@@ -268,13 +269,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var ravenServiceUri = (ravenServiceSettingsStore
                 ?? new RavenServiceSettingsStore(AppDataPaths.UiSettingsPath))
             .LoadServiceUri();
-        this.questSettingsStore = questSettingsStore
+        this.questSettingsStore = resolvedQuestSettingsStore
             ?? new QuestSettingsStore(AppDataPaths.UiSettingsPath);
-        this.questRuntimeCoordinator = questRuntimeCoordinator
+        this.questRuntimeCoordinator = resolvedQuestRuntimeCoordinator
             ?? new QuestRuntimeCoordinator(
                 new LegacyQuestStateStore(AppDataPaths.DataDirectory),
                 new RavenQuestClient(serviceUri: ravenServiceUri),
-                message => applicationLogService?.Append(message));
+                message => resolvedApplicationLogService?.Append(message));
         QuestWorkspace = new QuestWorkspaceViewModel(
             this.questRuntimeCoordinator,
             this.questSettingsStore);
@@ -283,7 +284,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         SystemNicknames = new SystemNicknameViewModel(
             SystemNicknameCatalog.Load(AppDataPaths.DataDirectory),
             new SystemNicknameSettingsStore(AppDataPaths.UiSettingsPath));
-        DiagnosticsLog = new DiagnosticsLogViewModel(applicationLogService);
+        DiagnosticsLog = new DiagnosticsLogViewModel(resolvedApplicationLogService);
         ReleaseUpdates = releaseUpdates ?? new ReleaseUpdateViewModel(
             new ReleaseUpdateService(),
             ReleaseVersion.FromAssembly(typeof(MainWindowViewModel).Assembly),
@@ -299,14 +300,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             AppDataPaths.DataDirectory);
         commanderCodexJournalTracker = new CommanderCodexJournalTracker(
             commanderCodexStore);
-        this.systemScanPersistenceStore = systemScanPersistenceStore
+        this.systemScanPersistenceStore = resolvedSystemScanPersistenceStore
             ?? new SystemScanPersistenceStore(AppDataPaths.DataDirectory);
-        this.systemBodyDataClient = systemBodyDataClient;
+        this.systemBodyDataClient = resolvedSystemBodyDataClient;
         this.firstFootfallInferenceSettingsStore =
-            firstFootfallInferenceSettingsStore
+            resolvedFirstFootfallInferenceSettingsStore
                 ?? new FirstFootfallInferenceSettingsStore(
                     AppDataPaths.UiSettingsPath);
-        this.firstFootfallInferenceService = firstFootfallInferenceService
+        this.firstFootfallInferenceService = resolvedFirstFootfallInferenceService
             ?? new UnavailableFirstFootfallInferenceService();
         InputSettings = inputSettings ?? new GlobalInputSettingsViewModel(
             new GlobalInputSettingsStore(AppDataPaths.UiSettingsPath),
@@ -343,7 +344,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 Path.Combine(
                     AppDataPaths.DataDirectory,
                     "overlay-theme-states.json")),
-            themeService);
+            resolvedThemeService);
         ScreenshotProcessing = new ScreenshotProcessingViewModel(
             new ScreenshotProcessingSettingsStore(AppDataPaths.UiSettingsPath),
             screenshotProcessingService);
@@ -372,21 +373,21 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Inara = new InaraSettingsViewModel(
             new InaraSettingsStore(AppDataPaths.UiSettingsPath),
             commanderProfileStore);
-        this.inaraPublisher = inaraPublisher ?? new InaraPublisher(
+        this.inaraPublisher = resolvedInaraPublisher ?? new InaraPublisher(
             (typeof(MainWindowViewModel).Assembly.GetName().Version
                 ?? new Version(0, 0)).ToString());
         Inara.UploadDisabled += OnInaraUploadDisabled;
-        this.eddnPublisher = eddnPublisher ?? new EddnPublisher(
+        this.eddnPublisher = resolvedEddnPublisher ?? new EddnPublisher(
             (typeof(MainWindowViewModel).Assembly.GetName().Version
                 ?? new Version(0, 0)).ToString(),
             outboxPath: Path.Combine(
                 AppDataPaths.DataDirectory,
                 "eddn-outbox-v1.json"),
-            log: message => applicationLogService?.Append(message));
+            log: message => resolvedApplicationLogService?.Append(message));
         NetworkPrivacy.EddnUploadEnabledChanged += OnEddnUploadEnabledChanged;
         this.eddnPublisher.SetEnabled(NetworkPrivacy.EddnUploadEnabled);
         this.greenGasGiantPublicationCoordinator =
-            greenGasGiantPublicationCoordinator
+            resolvedGreenGasGiantPublicationCoordinator
                 ?? new GreenGasGiantPublicationCoordinator(
                     legacyReferences.GreenGasGiants,
                     new GreenGasGiantClient(serviceUri: ravenServiceUri));

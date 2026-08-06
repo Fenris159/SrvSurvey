@@ -11,7 +11,7 @@ public static class WellKnownUris
 {
     private const string ResourceName = "SrvSurvey.Core.Resources.well-known-uris.json";
 
-    private static readonly IReadOnlyDictionary<string, string> Values = Load();
+    private static readonly Dictionary<string, string> Values = Load();
 
     public static Uri PublishedCodexReference => RequireUri("PublishedCodexReference");
     public static Uri PublishedRegionalCodexCandidatesCsv => RequireUri("PublishedRegionalCodexCandidatesCsv");
@@ -57,7 +57,7 @@ public static class WellKnownUris
 
     public static Uri RequireUri(string key) => new(Require(key), UriKind.Absolute);
 
-    private static IReadOnlyDictionary<string, string> Load()
+    private static Dictionary<string, string> Load()
     {
         var assembly = typeof(WellKnownUris).Assembly;
         using var stream = assembly.GetManifestResourceStream(ResourceName)
