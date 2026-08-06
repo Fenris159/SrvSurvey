@@ -316,24 +316,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
 
     public async Task SaveAsync()
     {
-        if (!IsAvailable
-            || frontierId is null
-            || originalSurvey is null)
-        {
-            StatusMessage = AvailabilityMessage;
-            return;
-        }
-
-        if (!TryGetHeading(SiteHeading, out var normalizedSiteHeading)
-            || !TryGetHeading(
-                RelicTowerHeading,
+        if (!TryBeginSave(
+                out var normalizedSiteHeading,
                 out var normalizedRelicTowerHeading))
-        {
-            StatusMessage = "Headings must be -1 for unknown or a whole number from 0 through 359.";
-            return;
-        }
-
-        if (!TryValidatePointsForSave())
         {
             return;
         }
@@ -341,38 +326,12 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         IsBusy = true;
         try
         {
-            var maps = BuildSurveyMutationMaps();
-            var rawPoints = Points
-                .Where(point => point.IsRaw)
-                .Select(point => point.SupportsRelicHeading
-                    && TryGetHeading(point.RelicHeading, out var heading)
-                        ? point.Point with { Rotation = heading }
-                        : point.Point)
-                .ToArray();
-            var updated = originalSurvey with
-            {
-                Notes = Notes,
-                Survey = new GuardianSurveyData
-                {
-                    SiteType = originalSurvey.SiteType,
-                    SiteHeading = normalizedSiteHeading,
-                    RelicTowerHeading = normalizedRelicTowerHeading,
-                    Location = originalSurvey.Survey.Location,
-                    PoiStatuses = maps.Statuses,
-                    RelicHeadings = maps.RelicHeadings,
-                    ComponentMaterials = maps.ComponentMaterials,
-                    RawPointsOfInterest = rawPoints.Length == 0
-                        ? null
-                        : rawPoints,
-                },
-                ObeliskGroups = ObeliskGroups
-                    .Where(group => group.IsSelected)
-                    .Select(group => group.Name)
-                    .ToHashSet(),
-            };
-            var path = await store.SaveAsync(frontierId, isOdyssey, updated);
+            var updated = BuildSurveyForSave(
+                normalizedSiteHeading,
+                normalizedRelicTowerHeading);
+            var path = await store.SaveAsync(frontierId!, isOdyssey, updated);
             var saved = updated with { Path = path };
-            var previous = originalSurvey;
+            var previous = originalSurvey!;
             originalSurvey = saved;
             await surveySaved(previous, saved);
             StatusMessage = $"Saved Guardian survey to {Path.GetFileName(path)}.";
@@ -389,6 +348,73 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
         }
+    }
+
+    private bool TryBeginSave(
+        out int normalizedSiteHeading,
+        out int normalizedRelicTowerHeading)
+    {
+        normalizedSiteHeading = -1;
+        normalizedRelicTowerHeading = -1;
+        if (!IsAvailable
+            || frontierId is null
+            || originalSurvey is null)
+        {
+            StatusMessage = AvailabilityMessage;
+            return false;
+        }
+
+        if (!TryGetHeading(SiteHeading, out normalizedSiteHeading)
+            || !TryGetHeading(
+                RelicTowerHeading,
+                out normalizedRelicTowerHeading))
+        {
+            StatusMessage = "Headings must be -1 for unknown or a whole number from 0 through 359.";
+            return false;
+        }
+
+        return TryValidatePointsForSave();
+    }
+
+    private GuardianCommanderSiteSurvey BuildSurveyForSave(
+        int normalizedSiteHeading,
+        int normalizedRelicTowerHeading)
+    {
+        var maps = BuildSurveyMutationMaps();
+        var rawPoints = Points
+            .Where(point => point.IsRaw)
+            .Select(BuildRawPointForSave)
+            .ToArray();
+        return originalSurvey! with
+        {
+            Notes = Notes,
+            Survey = new GuardianSurveyData
+            {
+                SiteType = originalSurvey.SiteType,
+                SiteHeading = normalizedSiteHeading,
+                RelicTowerHeading = normalizedRelicTowerHeading,
+                Location = originalSurvey.Survey.Location,
+                PoiStatuses = maps.Statuses,
+                RelicHeadings = maps.RelicHeadings,
+                ComponentMaterials = maps.ComponentMaterials,
+                RawPointsOfInterest = rawPoints.Length == 0
+                    ? null
+                    : rawPoints,
+            },
+            ObeliskGroups = ObeliskGroups
+                .Where(group => group.IsSelected)
+                .Select(group => group.Name)
+                .ToHashSet(),
+        };
+    }
+
+    private static GuardianPointOfInterest BuildRawPointForSave(
+        GuardianSurveyPoiViewModel point)
+    {
+        return point.SupportsRelicHeading
+            && TryGetHeading(point.RelicHeading, out var heading)
+                ? point.Point with { Rotation = heading }
+                : point.Point;
     }
 
     private bool TryValidatePointsForSave()

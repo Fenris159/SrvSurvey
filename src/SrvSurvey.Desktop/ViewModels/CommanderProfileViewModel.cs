@@ -973,10 +973,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     {
         var fields = ResolveCommunityGoalCardFields(item);
         var currentTime = now().ToUniversalTime();
-        var progress = fields.Target is { } targetTotal
-            ? Math.Clamp((double)fields.CurrentTotal / targetTotal * 100, 0, 100)
-            : 0;
-        var status = ResolveCommunityGoalStatus(item, currentTime);
+        var progress = ComputeCommunityGoalProgress(fields);
         return new FrontierCommunityGoalCardViewModel(
             item.Title,
             fields.Briefing,
@@ -986,46 +983,81 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             fields.Market,
             JoinLocation(fields.System, fields.Market),
             FriendlyCommunityGoalActivity(fields.ActivityType),
-            item.Id is { } id ? $"GOAL #{id:N0}" : "COMMUNITY GOAL",
-            status,
-            item.ExpiresAt is { } deadline
-                ? deadline.ToLocalTime().ToString("f", CultureInfo.CurrentCulture)
-                : "No deadline supplied",
+            FormatCommunityGoalIdLabel(item.Id),
+            ResolveCommunityGoalStatus(item, currentTime),
+            FormatCommunityGoalDeadline(item.ExpiresAt),
             FormatCommunityGoalTimeRemaining(
                 item.ExpiresAt,
                 item.IsComplete,
                 currentTime),
             progress,
-            fields.Target is not null
-                ? $"{progress:0.00}% complete"
-                : "Target not supplied",
-            fields.Target is { } total
-                ? $"{fields.CurrentTotal:N0} / {total:N0}"
-                : $"{fields.CurrentTotal:N0} contributed",
-            fields.Target is { } maximum
-                ? $"{Math.Max(0, maximum - fields.CurrentTotal):N0} remaining"
-                : string.Empty,
+            FormatCommunityGoalProgressLabel(fields.Target, progress),
+            FormatCommunityGoalTotals(fields),
+            FormatCommunityGoalRemaining(fields),
             FormatPlayerContributionText(
                 fields.HasPlayerContributionData,
                 fields.PlayerContribution),
             FormatCommunityGoalStanding(item),
-            fields.HasContributorData
-                ? $"{fields.Contributors:N0} commanders"
-                : "Contributor count not supplied",
-            string.IsNullOrWhiteSpace(fields.Tier)
-                ? "Tier not supplied"
-                : fields.Tier,
+            FormatCommunityGoalContributors(fields),
+            FormatCommunityGoalTier(fields.Tier),
             !string.IsNullOrWhiteSpace(fields.Briefing),
             !string.IsNullOrWhiteSpace(fields.Objective),
             !string.IsNullOrWhiteSpace(fields.Reward),
-            !string.IsNullOrWhiteSpace(fields.System)
-                || !string.IsNullOrWhiteSpace(fields.Market),
+            HasCommunityGoalLocation(fields),
             fields.Target is not null,
             fields.SourceStatus,
             fields.HasInaraData,
             fields.DataPoints,
             PaneStates.GetCommunityGoalData(item.Id, item.Title));
     }
+
+    private static double ComputeCommunityGoalProgress(CommunityGoalCardFields fields)
+    {
+        if (fields.Target is not { } targetTotal)
+        {
+            return 0;
+        }
+
+        return Math.Clamp((double)fields.CurrentTotal / targetTotal * 100, 0, 100);
+    }
+
+    private static string FormatCommunityGoalIdLabel(long? id) =>
+        id is { } goalId ? $"GOAL #{goalId:N0}" : "COMMUNITY GOAL";
+
+    private static string FormatCommunityGoalDeadline(DateTimeOffset? expiresAt) =>
+        expiresAt is { } deadline
+            ? deadline.ToLocalTime().ToString("f", CultureInfo.CurrentCulture)
+            : "No deadline supplied";
+
+    private static string FormatCommunityGoalProgressLabel(
+        long? target,
+        double progress) =>
+        target is not null
+            ? $"{progress:0.00}% complete"
+            : "Target not supplied";
+
+    private static string FormatCommunityGoalTotals(CommunityGoalCardFields fields) =>
+        fields.Target is { } total
+            ? $"{fields.CurrentTotal:N0} / {total:N0}"
+            : $"{fields.CurrentTotal:N0} contributed";
+
+    private static string FormatCommunityGoalRemaining(CommunityGoalCardFields fields) =>
+        fields.Target is { } maximum
+            ? $"{Math.Max(0, maximum - fields.CurrentTotal):N0} remaining"
+            : string.Empty;
+
+    private static string FormatCommunityGoalContributors(
+        CommunityGoalCardFields fields) =>
+        fields.HasContributorData
+            ? $"{fields.Contributors:N0} commanders"
+            : "Contributor count not supplied";
+
+    private static string FormatCommunityGoalTier(string tier) =>
+        string.IsNullOrWhiteSpace(tier) ? "Tier not supplied" : tier;
+
+    private static bool HasCommunityGoalLocation(CommunityGoalCardFields fields) =>
+        !string.IsNullOrWhiteSpace(fields.System)
+        || !string.IsNullOrWhiteSpace(fields.Market);
 
     private sealed class CommunityGoalCardFields
     {
@@ -1960,21 +1992,27 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return "Military Internal";
         }
 
-        if (key is "armour" or "powerplant" or "mainengines" or "frameshiftdrive"
-            or "lifesupport" or "powerdistributor" or "radar" or "fueltank")
+        if (IsCoreInternalModuleKey(key))
         {
             return "Core Internal";
         }
 
-        if (key.StartsWith("slot", StringComparison.Ordinal)
-            || key.StartsWith("cargo", StringComparison.Ordinal)
-            || key.Contains("planetaryapproachsuite", StringComparison.Ordinal))
+        if (IsOptionalInternalModuleKey(key))
         {
             return "Optional Internal";
         }
 
         return "Ship Systems";
     }
+
+    private static bool IsCoreInternalModuleKey(string key) =>
+        key is "armour" or "powerplant" or "mainengines" or "frameshiftdrive"
+            or "lifesupport" or "powerdistributor" or "radar" or "fueltank";
+
+    private static bool IsOptionalInternalModuleKey(string key) =>
+        key.StartsWith("slot", StringComparison.Ordinal)
+        || key.StartsWith("cargo", StringComparison.Ordinal)
+        || key.Contains("planetaryapproachsuite", StringComparison.Ordinal);
 
     private static int ModuleGroupOrder(string group) => group switch
     {
@@ -2466,28 +2504,58 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         IReadOnlyList<FrontierCommunityGoalSnapshot> candidates,
         HashSet<int> alreadyMatched)
     {
-        if (goal.Id is { } id)
+        var idMatch = FindCommunityGoalIdMatch(goal, candidates, alreadyMatched);
+        if (idMatch is not null)
         {
-            var idMatch = candidates
-                .Select((candidate, index) => (candidate, index))
-                .FirstOrDefault(pair => !alreadyMatched.Contains(pair.index)
-                    && pair.candidate.Id == id);
-            if (idMatch.candidate is not null)
-            {
-                return idMatch.index;
-            }
+            return idMatch;
         }
 
+        return FindCommunityGoalTextMatch(goal, candidates, alreadyMatched);
+    }
+
+    private static int? FindCommunityGoalIdMatch(
+        FrontierCommunityGoalSnapshot goal,
+        IReadOnlyList<FrontierCommunityGoalSnapshot> candidates,
+        HashSet<int> alreadyMatched)
+    {
+        if (goal.Id is not { } id)
+        {
+            return null;
+        }
+
+        var idMatch = candidates
+            .Select((candidate, index) => (candidate, index))
+            .FirstOrDefault(pair => !alreadyMatched.Contains(pair.index)
+                && pair.candidate.Id == id);
+        return idMatch.candidate is not null ? idMatch.index : null;
+    }
+
+    private static int? FindCommunityGoalTextMatch(
+        FrontierCommunityGoalSnapshot goal,
+        IReadOnlyList<FrontierCommunityGoalSnapshot> candidates,
+        HashSet<int> alreadyMatched)
+    {
         var matches = candidates
             .Select((candidate, index) => (candidate, index))
-            .Where(pair => !alreadyMatched.Contains(pair.index)
-                && CommunityGoalTextMatches(goal.Title, pair.candidate.Title)
-                && CommunityGoalOptionalTextMatches(goal.System, pair.candidate.System)
-                && CommunityGoalOptionalTextMatches(goal.Market, pair.candidate.Market)
-                && CommunityGoalExpiryMatches(goal.ExpiresAt, pair.candidate.ExpiresAt))
+            .Where(pair => IsCommunityGoalTextMatchCandidate(
+                goal,
+                pair.candidate,
+                pair.index,
+                alreadyMatched))
             .ToArray();
         return matches.Length == 1 ? matches[0].index : null;
     }
+
+    private static bool IsCommunityGoalTextMatchCandidate(
+        FrontierCommunityGoalSnapshot goal,
+        FrontierCommunityGoalSnapshot candidate,
+        int index,
+        HashSet<int> alreadyMatched) =>
+        !alreadyMatched.Contains(index)
+        && CommunityGoalTextMatches(goal.Title, candidate.Title)
+        && CommunityGoalOptionalTextMatches(goal.System, candidate.System)
+        && CommunityGoalOptionalTextMatches(goal.Market, candidate.Market)
+        && CommunityGoalExpiryMatches(goal.ExpiresAt, candidate.ExpiresAt);
 
     private static bool CommunityGoalTextMatches(string first, string second) =>
         NormalizeLookupKey(first) == NormalizeLookupKey(second);

@@ -80,546 +80,653 @@ public sealed partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var appDataPaths = AppDataPaths.ResolveCurrent();
-            var applicationLog = Program.ApplicationLog
-                ?? new ApplicationLogService(appDataPaths.DataDirectory);
-            var settingsMigration = new LegacyUiSettingsMigrator()
-                .MigrateIfNeeded(appDataPaths);
-            if (settingsMigration.Migrated)
-            {
-                applicationLog.Append(
-                    $"Migrated {settingsMigration.MappedPreferenceCount:N0} legacy UI preferences."
-                    + (settingsMigration.PreviousSettingsBackupPath is null
-                        ? string.Empty
-                        : " Previous settings backup: "
-                            + settingsMigration.PreviousSettingsBackupPath));
-            }
-            else if (settingsMigration.Error is not null)
-            {
-                applicationLog.Append(
-                    "Legacy UI settings migration was skipped: "
-                    + settingsMigration.Error);
-            }
-
-            try
-            {
-                var organicMigration = new LegacyOrganicProfileMigrator(
-                        appDataPaths.DataDirectory)
-                    .MigrateAsync()
-                    .GetAwaiter()
-                    .GetResult();
-                if (organicMigration.Migrated)
-                {
-                    applicationLog.Append(
-                        "Migrated retired organic history into legacy-compatible "
-                            + $"profile/system data: {organicMigration.MigratedProfileCount:N0} "
-                            + $"profile(s), {organicMigration.MigratedBodyCount:N0} body file(s), "
-                            + $"{organicMigration.MigratedScanCount:N0} scan(s), and "
-                            + $"{organicMigration.MigratedOrganismCount:N0} organism(s).");
-                }
-
-                foreach (var error in organicMigration.Errors)
-                {
-                    applicationLog.Append(
-                        "Legacy organic history was preserved without conversion: "
-                            + error);
-                }
-            }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or InvalidDataException)
-            {
-                applicationLog.Append(
-                    "Legacy organic migration was skipped without modifying its "
-                        + "source data: "
-                        + exception.Message);
-            }
-
-            var overlayTheme = new LegacyOverlayThemeStore(
-                Path.Combine(appDataPaths.DataDirectory, "theme.json"))
-                .Load();
-            if (overlayTheme.Error is not null)
-            {
-                applicationLog.Append(overlayTheme.Error);
-            }
-
-            var overlayLayoutStore = new LegacyOverlayLayoutStore(
-                appDataPaths.DataDirectory);
-            var overlayLayout = overlayLayoutStore.Load();
-            if (overlayLayout.Error is not null)
-            {
-                applicationLog.Append(overlayLayout.Error);
-            }
-
-            var themeService = new RavenThemeService(
-                this,
-                new ThemePreferenceStore(appDataPaths.UiSettingsPath),
-                overlayTheme);
-            themeService.ApplyCurrent();
-            themeService.OverlayThemeChanged += (_, _) =>
-            {
-                OverlayThemeResources.RefreshAll();
-            };
-            var capabilities = OverlayPlatformCapabilities.DetectCurrent();
-            globalInputSettings = new GlobalInputSettingsViewModel(
-                new GlobalInputSettingsStore(appDataPaths.UiSettingsPath),
-                capabilities);
-            var inputSettings = globalInputSettings;
-            var overlayPresentation = OverlayPresentationSession.CreateCurrent();
-            overlayPresentationSession = overlayPresentation;
-            applicationLog.Append(
-                $"Overlay presentation: {overlayPresentation.Decision.Mode}. "
-                + overlayPresentation.Decision.Reason);
-            var overlayInteraction = new OverlayInteractionViewModel(
-                overlayPresentation.CreatePlatformService(),
-                GameWindowTracker.CreateCurrent(),
-                overlayLayoutStore,
-                overlayLayout);
-            gameTextInputService = GameTextInputService.CreateCurrent();
-            var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
-                Program.StartupArguments);
-            var commandLineFrontierId = StartupOptions.GetFrontierId(
-                Program.StartupArguments);
-            var commanderPreferenceStore = new CommanderPreferenceSettingsStore(
-                appDataPaths.UiSettingsPath);
-            var commanderPreferenceResolution = new CommanderPreferenceResolver(
-                    commanderPreferenceStore,
-                    new CommanderProfileCatalog(appDataPaths.DataDirectory))
-                .ResolveAsync(commandLineFrontierId)
-                .GetAwaiter()
-                .GetResult();
-            if (commanderPreferenceResolution.StatusMessage is not null)
-            {
-                applicationLog.Append(
-                    commanderPreferenceResolution.StatusMessage);
-            }
-
-            var targetFrontierId =
-                commanderPreferenceResolution.TargetFrontierId;
-            var firstFootfallInferenceService =
-                FirstFootfallInferenceService.CreateCurrent();
-            var canonnHumanSiteClient = new CanonnHumanSiteClient();
-            mainViewModel = new MainWindowViewModel(
-                configuredJournalDirectory,
-                new MainWindowViewModelOptions
-                {
-                    ThemeService = themeService,
-                    AppDataPaths = appDataPaths,
-                    InputSettings = inputSettings,
-                    ApplicationLogService = applicationLog,
-                    OverlayLayoutStore = overlayLayoutStore,
-                    OverlayLayout = overlayLayout,
-                    OverlayInteraction = overlayInteraction,
-                    TargetFrontierId = targetFrontierId,
-                    CommanderPreferenceSettingsStore = commanderPreferenceStore,
-                    CommanderPreferenceCommandLineOverride =
-                        commanderPreferenceResolution.IsCommandLineOverride,
-                    CommanderPreferenceInitialStatus =
-                        commanderPreferenceResolution.StatusMessage,
-                    FirstFootfallInferenceService =
-                        firstFootfallInferenceService,
-                    SystemBodyDataClient = new SystemBodyDataClient(),
-                    CanonnHumanSiteClient = canonnHumanSiteClient,
-                    CanonnHumanSitePublisher = canonnHumanSiteClient,
-                });
-            var viewModel = mainViewModel;
-            desktopLifetime = desktop;
-            applicationLogService = applicationLog;
-
-            mainWindow = new MainWindow(viewModel);
-            desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
-            desktop.MainWindow = mainWindow;
-
-            viewModel.FrontierProfile.AuthorizationCallbackReceived +=
-                HandleFrontierAuthorizationCallback;
-            viewModel.ReferenceDataUpdates.SetRestartHandler(() =>
-                RestartApplicationAsync("Published reference data refreshed"));
-            viewModel.Localization.SetRestartHandler(() =>
-                RestartApplicationAsync("Language preference changed"));
-            var appImagePath = Environment.GetEnvironmentVariable("APPIMAGE");
-            viewModel.ReleaseUpdates.ConfigureInstaller(
-                new ReleaseInstallerConfiguration
-                {
-                    DownloadService = new ReleasePackageDownloadService(),
-                    StagingService = new ReleasePackageStagingService(),
-                    InstallationPreparer = new ReleaseInstallationPreparer(),
-                    HandoffService = new ApplicationUpdateHandoffService(),
-                    DataDirectory = appDataPaths.DataDirectory,
-                    InstallationDirectory = AppContext.BaseDirectory,
-                    StartupArguments = Program.StartupArguments,
-                    Shutdown = async () => await Dispatcher.UIThread.InvokeAsync(
-                        () => desktop.Shutdown()),
-                    AutomaticInstallationUnavailableReason =
-                        string.IsNullOrWhiteSpace(appImagePath)
-                            ? null
-                            : "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually.",
-                    IsAppImage = !string.IsNullOrWhiteSpace(appImagePath),
-                });
-
-            viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
-            viewModel.JournalSettings.RestartRequested +=
-                RestartAfterJournalChangeAsync;
-            viewModel.CommanderPreference.RestartRequested +=
-                RestartAfterCommanderPreferenceChangeAsync;
-            viewModel.SetJournalCommandPlatformServices(
-                directory => mainWindow.Launcher.LaunchDirectoryInfoAsync(
-                    directory),
-                async () => await Dispatcher.UIThread.InvokeAsync(
-                    () => desktop.Shutdown()),
-                WriteClipboardAsync);
-
-            var errorReports = new ErrorReportWindowCoordinator(
-                mainWindow,
-                applicationLog,
-                () => viewModel.CurrentJournalPath,
-                () =>
-                {
-                    viewModel.ShowDiagnostics();
-                    mainWindow.Activate();
-                });
-            errorReportWindowCoordinator = errorReports;
-            Dispatcher.UIThread.UnhandledException += HandleUiException;
-            TaskScheduler.UnobservedTaskException +=
-                HandleUnobservedTaskException;
-            systemNotesWindowCoordinator = new SystemNotesWindowCoordinator(
-                viewModel.SystemNotes,
-                mainWindow);
-            journeyWindowCoordinator = new JourneyWindowCoordinator(
-                viewModel.Journey,
-                mainWindow);
-            routeWindowCoordinator = new RouteWindowCoordinator(
-                viewModel.Route,
-                mainWindow);
-            fleetCarrierRouteWindowCoordinator = new RouteWindowCoordinator(
-                viewModel.FleetCarrierRoute,
-                mainWindow);
-            fleetCarrierJumpCountdownCoordinator =
-                new FleetCarrierJumpCountdownCoordinator(
-                    viewModel.FleetCarrierRoute);
-            biologyPredictionsWindowCoordinator =
-                new BiologyPredictionsWindowCoordinator(
-                    viewModel.BiologyPredictions,
-                    mainWindow);
-            biologyCodexWindowCoordinator = new BiologyCodexWindowCoordinator(
-                viewModel.BiologyCodex,
-                mainWindow,
-                viewModel.CodexImages);
-            biologyCodexBingoWindowCoordinator =
-                new BiologyCodexBingoWindowCoordinator(
-                    viewModel.CodexBingo,
-                    mainWindow,
-                    viewModel.OpenCodexBingoNearestSearchAsync);
-            sphericalSearchOverlayCoordinator = new SphericalSearchOverlayCoordinator(
-                viewModel.Search,
-                viewModel.BoxelSearch,
-                viewModel.Route,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout,
-                viewModel.SystemNicknames);
-            guardianOverlayCoordinator = new GuardianOverlayCoordinator(
-                viewModel.Guardian,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout);
-            jumpInfoOverlayCoordinator = new JumpInfoOverlayCoordinator(
-                viewModel.JumpInfo,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout,
-                viewModel.SystemNicknames);
-            routeBioOverlayCoordinator = new RouteBioOverlayCoordinator(
-                viewModel.Route,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout);
-            fleetCarrierRouteOverlayCoordinator =
-                new FleetCarrierRouteOverlayCoordinator(
-                    viewModel.FleetCarrierRoute,
-                    overlayPresentation.CreatePlatformService(),
-                    CreateOverlayGameWindowTracker(),
-                    overlayLayout);
-            groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
-                viewModel.GroundTarget,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout);
-            combatOverlayCoordinator = new CombatOverlayCoordinator(
-                viewModel.Combat,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout);
-            stationInfoOverlayCoordinator = new StationInfoOverlayCoordinator(
-                viewModel.StationInfo,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout);
-            humanSiteOverlayCoordinator = new HumanSiteOverlayCoordinator(
-                viewModel.HumanSite,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout);
-            systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
-                viewModel.SystemSurvey,
-                viewModel.SurfaceSurvey,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                new SystemSurveyOverlayCoordinatorOptions
-                {
-                    CommanderNameProvider = () => viewModel.CommanderName,
-                    ExobiologyCatalog =
-                        viewModel.SystemSurvey.BiologyReferenceCatalog,
-                    OverlayLayout = overlayLayout,
-                    FssDiagnosticDirectory = Path.Combine(
-                        appDataPaths.CacheDirectory,
-                        "fss-diagnostics"),
-                });
-            questIndicatorOverlayCoordinator = new QuestIndicatorOverlayCoordinator(
-                viewModel.QuestIndicator,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout);
-            notificationOverlayCoordinator = new NotificationOverlayCoordinator(
-                viewModel.Notifications,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout);
-            pulseOverlayCoordinator = new PulseOverlayCoordinator(
-                viewModel.PulseOverlay,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout);
-            streamOverlayCoordinator = new StreamOverlayCoordinator(
-                viewModel.StreamOverlay,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker());
-            vrOverlayCoordinator = new VrOverlayCoordinator(
-                viewModel.VrOverlay,
-                modeProvider: () => viewModel.CurrentVrOverlayMode);
-            galaxyMapOverlayCoordinator = new GalaxyMapOverlayCoordinator(
-                viewModel.GalaxyMap,
-                overlayPresentation.CreatePlatformService(),
-                CreateOverlayGameWindowTracker(),
-                overlayLayout);
-            multiGameCommanderOverlayCoordinator =
-                new MultiGameCommanderOverlayCoordinator(
-                    viewModel.CommanderInstances,
-                    viewModel.OverlayBehavior,
-                    overlayPresentation.CreatePlatformService(),
-                    GameWindowTracker.CreateCurrent(),
-                    () => desktop.Windows.Any(window => window.IsActive),
-                    overlayLayout);
-
-            jumpInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
-                SynchronizeOverlayPriority();
-            systemSurveyOverlayCoordinator.VisibilityChanged += (_, _) =>
-                SynchronizeOverlayPriority();
-            guardianOverlayCoordinator.VisibilityChanged += (_, _) =>
-                SynchronizeOverlayPriority();
-            stationInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
-                SynchronizeOverlayPriority();
-            humanSiteOverlayCoordinator.VisibilityChanged += (_, _) =>
-                SynchronizeOverlayPriority();
-            SynchronizeOverlayPriority();
-            colonizationCommodityOverlayCoordinator =
-                new ColonizationCommodityOverlayCoordinator(
-                    viewModel.Colonization.CommodityOverlay,
-                    overlayPresentation.CreatePlatformService(),
-                    CreateOverlayGameWindowTracker(),
-                    overlayLayout);
-            viewModel.OverlayBehavior.PropertyChanged +=
-                HandleOverlayBehaviorChanged;
-            ApplyOverlaySuppression();
-            globalKeyboardHookService = new GlobalKeyboardHookService(
-                inputSettings.CurrentSettings,
-                capabilities.Host,
-                GameWindowTracker.CreateCurrent(),
-                () => mainWindow.InputContext.AreShortcutsActive
-                    || ((viewModel.OverlayInteraction.IsEditing
-                            || viewModel.OverlayInteraction.IsLiveInteractionEnabled)
-                        && !mainWindow.IsActive
-                        && desktop.Windows.Any(window => window.IsActive)));
-            globalControllerInputService = new GlobalControllerInputService(
-                inputSettings.CurrentSettings,
-                capabilities.Host,
-                GameWindowTracker.CreateCurrent(),
-                () => mainWindow.InputContext.AreShortcutsActive
-                    || ((viewModel.OverlayInteraction.IsEditing
-                            || viewModel.OverlayInteraction.IsLiveInteractionEnabled)
-                        && !mainWindow.IsActive
-                        && desktop.Windows.Any(window => window.IsActive)));
-            globalKeyboardHookService.StatusChanged += (_, _) =>
-            {
-                var status = globalKeyboardHookService?.Status;
-                if (status is not null)
-                {
-                    Dispatcher.UIThread.Post(
-                        () => inputSettings.UpdateRuntimeStatus(status));
-                }
-            };
-            globalControllerInputService.StatusChanged += (_, _) =>
-            {
-                var status = globalControllerInputService?.Status;
-                if (status is not null)
-                {
-                    Dispatcher.UIThread.Post(
-                        () => inputSettings.UpdateControllerRuntimeStatus(
-                            status));
-                }
-            };
-
-            globalKeyboardHookService.ActionTriggered += (_, eventArgs) =>
-                HandleAction(eventArgs);
-            globalControllerInputService.ActionTriggered += (_, eventArgs) =>
-                HandleAction(eventArgs);
-            inputSettings.SettingsChanged += (_, eventArgs) =>
-            {
-                globalKeyboardHookService?.Update(eventArgs.Settings);
-                globalControllerInputService?.Update(eventArgs.Settings);
-            };
-            inputSettings.UpdateRuntimeStatus(
-                globalKeyboardHookService.Status);
-            inputSettings.UpdateControllerRuntimeStatus(
-                globalControllerInputService.Status);
-            globalKeyboardHookService.Start();
-            globalControllerInputService.Start();
-            desktop.Exit += (_, _) =>
-            {
-                viewModel.SetJournalCommandPlatformServices(null, null, null);
-                viewModel.ProfileImportCompleted -=
-                    RestartAfterProfileImportAsync;
-                viewModel.JournalSettings.RestartRequested -=
-                    RestartAfterJournalChangeAsync;
-                viewModel.CommanderPreference.RestartRequested -=
-                    RestartAfterCommanderPreferenceChangeAsync;
-                viewModel.OverlayBehavior.PropertyChanged -=
-                    HandleOverlayBehaviorChanged;
-                viewModel.FrontierProfile.AuthorizationCallbackReceived -=
-                    HandleFrontierAuthorizationCallback;
-                Dispatcher.UIThread.UnhandledException -= HandleUiException;
-                TaskScheduler.UnobservedTaskException -=
-                    HandleUnobservedTaskException;
-                applicationLog.Append("Application exit");
-                multiGameCommanderOverlayCoordinator?.Dispose();
-                multiGameCommanderOverlayCoordinator = null;
-                viewModel.Dispose();
-                errorReportWindowCoordinator?.Dispose();
-                errorReportWindowCoordinator = null;
-                viewModel.DiagnosticsLog.Dispose();
-                viewModel.JumpInfo.Dispose();
-                globalControllerInputService?.Dispose();
-                globalControllerInputService = null;
-                globalKeyboardHookService?.Dispose();
-                globalKeyboardHookService = null;
-                colonizationCommodityOverlayCoordinator?.Dispose();
-                colonizationCommodityOverlayCoordinator = null;
-                systemNotesWindowCoordinator?.Dispose();
-                systemNotesWindowCoordinator = null;
-                journeyWindowCoordinator?.Dispose();
-                journeyWindowCoordinator = null;
-                routeWindowCoordinator?.Dispose();
-                routeWindowCoordinator = null;
-                fleetCarrierRouteWindowCoordinator?.Dispose();
-                fleetCarrierRouteWindowCoordinator = null;
-                fleetCarrierJumpCountdownCoordinator?.Dispose();
-                fleetCarrierJumpCountdownCoordinator = null;
-                biologyPredictionsWindowCoordinator?.Dispose();
-                biologyPredictionsWindowCoordinator = null;
-                viewModel.BiologyPredictions.Dispose();
-                biologyCodexWindowCoordinator?.Dispose();
-                biologyCodexWindowCoordinator = null;
-                viewModel.BiologyCodex.Dispose();
-                viewModel.SurfaceSurvey.Dispose();
-                biologyCodexBingoWindowCoordinator?.Dispose();
-                biologyCodexBingoWindowCoordinator = null;
-                viewModel.CodexBingo.Dispose();
-                sphericalSearchOverlayCoordinator?.Dispose();
-                sphericalSearchOverlayCoordinator = null;
-                jumpInfoOverlayCoordinator?.Dispose();
-                jumpInfoOverlayCoordinator = null;
-                routeBioOverlayCoordinator?.Dispose();
-                routeBioOverlayCoordinator = null;
-                fleetCarrierRouteOverlayCoordinator?.Dispose();
-                fleetCarrierRouteOverlayCoordinator = null;
-                groundTargetOverlayCoordinator?.Dispose();
-                groundTargetOverlayCoordinator = null;
-                combatOverlayCoordinator?.Dispose();
-                combatOverlayCoordinator = null;
-                stationInfoOverlayCoordinator?.Dispose();
-                stationInfoOverlayCoordinator = null;
-                viewModel.StationInfo.Dispose();
-                humanSiteOverlayCoordinator?.Dispose();
-                humanSiteOverlayCoordinator = null;
-                questIndicatorOverlayCoordinator?.Dispose();
-                questIndicatorOverlayCoordinator = null;
-                notificationOverlayCoordinator?.Dispose();
-                notificationOverlayCoordinator = null;
-                pulseOverlayCoordinator?.Dispose();
-                pulseOverlayCoordinator = null;
-                streamOverlayCoordinator?.Dispose();
-                streamOverlayCoordinator = null;
-                vrOverlayCoordinator?.Dispose();
-                vrOverlayCoordinator = null;
-                galaxyMapOverlayCoordinator?.Dispose();
-                galaxyMapOverlayCoordinator = null;
-                systemSurveyOverlayCoordinator?.Dispose();
-                systemSurveyOverlayCoordinator = null;
-                guardianOverlayCoordinator?.Dispose();
-                guardianOverlayCoordinator = null;
-                overlayPresentationSession?.Dispose();
-                overlayPresentationSession = null;
-            };
-            try
-            {
-                var updateOutcome = ApplicationUpdateBootstrap
-                    .ConsumePendingOutcomeAsync(appDataPaths)
-                    .GetAwaiter()
-                    .GetResult();
-                if (updateOutcome is not null)
-                {
-                    viewModel.ReleaseUpdates.SetPreviousInstallationOutcome(
-                        updateOutcome);
-                    applicationLog.Append(
-                        $"Update {updateOutcome.Version} outcome: "
-                            + updateOutcome.Status
-                            + (string.IsNullOrWhiteSpace(updateOutcome.Error)
-                                ? string.Empty
-                                : " - " + updateOutcome.Error));
-                }
-
-                var confirmedUpdate = ApplicationUpdateBootstrap
-                    .ConfirmPendingHealthyAsync(appDataPaths)
-                    .GetAwaiter()
-                    .GetResult();
-                if (confirmedUpdate is not null)
-                {
-                    viewModel.ReleaseUpdates.SetPreviousInstallationOutcome(
-                        new ReleaseInstallationOutcome(
-                            ReleaseInstallationOutcomeStatus.Installed,
-                            confirmedUpdate.Preparation.RequestId,
-                            confirmedUpdate.Preparation.Version,
-                            DateTimeOffset.UtcNow,
-                            confirmedUpdate.Preparation.BackupDirectory,
-                            null,
-                            null));
-                    applicationLog.Append(
-                        "Verified update replacement startup with the handoff helper.");
-                }
-            }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or InvalidDataException
-                    or InvalidOperationException)
-            {
-                applicationLog.Append(
-                    "Update replacement health confirmation failed: "
-                    + exception.Message);
-            }
+            InitializeDesktopApplication(desktop);
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void InitializeDesktopApplication(
+        IClassicDesktopStyleApplicationLifetime desktop)
+    {
+
+        var appDataPaths = AppDataPaths.ResolveCurrent();
+        var applicationLog = Program.ApplicationLog
+            ?? new ApplicationLogService(appDataPaths.DataDirectory);
+        MigrateLegacyUiSettings(appDataPaths, applicationLog);
+        MigrateLegacyOrganicProfiles(appDataPaths, applicationLog);
+
+        var overlayTheme = LoadOverlayTheme(appDataPaths, applicationLog);
+        var overlayLayoutStore = new LegacyOverlayLayoutStore(
+            appDataPaths.DataDirectory);
+        var overlayLayout = LoadOverlayLayout(overlayLayoutStore, applicationLog);
+
+        var themeService = new RavenThemeService(
+            this,
+            new ThemePreferenceStore(appDataPaths.UiSettingsPath),
+            overlayTheme);
+        themeService.ApplyCurrent();
+        themeService.OverlayThemeChanged += (_, _) =>
+        {
+            OverlayThemeResources.RefreshAll();
+        };
+        var capabilities = OverlayPlatformCapabilities.DetectCurrent();
+        globalInputSettings = new GlobalInputSettingsViewModel(
+            new GlobalInputSettingsStore(appDataPaths.UiSettingsPath),
+            capabilities);
+        var inputSettings = globalInputSettings;
+        var overlayPresentation = OverlayPresentationSession.CreateCurrent();
+        overlayPresentationSession = overlayPresentation;
+        applicationLog.Append(
+            $"Overlay presentation: {overlayPresentation.Decision.Mode}. "
+            + overlayPresentation.Decision.Reason);
+        var overlayInteraction = new OverlayInteractionViewModel(
+            overlayPresentation.CreatePlatformService(),
+            GameWindowTracker.CreateCurrent(),
+            overlayLayoutStore,
+            overlayLayout);
+        gameTextInputService = GameTextInputService.CreateCurrent();
+        var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
+            Program.StartupArguments);
+        var commandLineFrontierId = StartupOptions.GetFrontierId(
+            Program.StartupArguments);
+        var commanderPreferenceStore = new CommanderPreferenceSettingsStore(
+            appDataPaths.UiSettingsPath);
+        var commanderPreferenceResolution = new CommanderPreferenceResolver(
+                commanderPreferenceStore,
+                new CommanderProfileCatalog(appDataPaths.DataDirectory))
+            .ResolveAsync(commandLineFrontierId)
+            .GetAwaiter()
+            .GetResult();
+        if (commanderPreferenceResolution.StatusMessage is not null)
+        {
+            applicationLog.Append(
+                commanderPreferenceResolution.StatusMessage);
+        }
+
+        var targetFrontierId =
+            commanderPreferenceResolution.TargetFrontierId;
+        var firstFootfallInferenceService =
+            FirstFootfallInferenceService.CreateCurrent();
+        var canonnHumanSiteClient = new CanonnHumanSiteClient();
+        mainViewModel = new MainWindowViewModel(
+            configuredJournalDirectory,
+            new MainWindowViewModelOptions
+            {
+                ThemeService = themeService,
+                AppDataPaths = appDataPaths,
+                InputSettings = inputSettings,
+                ApplicationLogService = applicationLog,
+                OverlayLayoutStore = overlayLayoutStore,
+                OverlayLayout = overlayLayout,
+                OverlayInteraction = overlayInteraction,
+                TargetFrontierId = targetFrontierId,
+                CommanderPreferenceSettingsStore = commanderPreferenceStore,
+                CommanderPreferenceCommandLineOverride =
+                    commanderPreferenceResolution.IsCommandLineOverride,
+                CommanderPreferenceInitialStatus =
+                    commanderPreferenceResolution.StatusMessage,
+                FirstFootfallInferenceService =
+                    firstFootfallInferenceService,
+                SystemBodyDataClient = new SystemBodyDataClient(),
+                CanonnHumanSiteClient = canonnHumanSiteClient,
+                CanonnHumanSitePublisher = canonnHumanSiteClient,
+            });
+        var viewModel = mainViewModel;
+        desktopLifetime = desktop;
+        applicationLogService = applicationLog;
+
+        mainWindow = new MainWindow(viewModel);
+        desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
+        desktop.MainWindow = mainWindow;
+
+        viewModel.FrontierProfile.AuthorizationCallbackReceived +=
+            HandleFrontierAuthorizationCallback;
+        viewModel.ReferenceDataUpdates.SetRestartHandler(() =>
+            RestartApplicationAsync("Published reference data refreshed"));
+        viewModel.Localization.SetRestartHandler(() =>
+            RestartApplicationAsync("Language preference changed"));
+        ConfigureReleaseInstaller(viewModel, desktop, appDataPaths);
+
+        viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
+        viewModel.JournalSettings.RestartRequested +=
+            RestartAfterJournalChangeAsync;
+        viewModel.CommanderPreference.RestartRequested +=
+            RestartAfterCommanderPreferenceChangeAsync;
+        viewModel.SetJournalCommandPlatformServices(
+            directory => mainWindow.Launcher.LaunchDirectoryInfoAsync(
+                directory),
+            async () => await Dispatcher.UIThread.InvokeAsync(
+                () => desktop.Shutdown()),
+            WriteClipboardAsync);
+
+        var errorReports = new ErrorReportWindowCoordinator(
+            mainWindow,
+            applicationLog,
+            () => viewModel.CurrentJournalPath,
+            () =>
+            {
+                viewModel.ShowDiagnostics();
+                mainWindow.Activate();
+            });
+        errorReportWindowCoordinator = errorReports;
+        Dispatcher.UIThread.UnhandledException += HandleUiException;
+        TaskScheduler.UnobservedTaskException +=
+            HandleUnobservedTaskException;
+        systemNotesWindowCoordinator = new SystemNotesWindowCoordinator(
+            viewModel.SystemNotes,
+            mainWindow);
+        journeyWindowCoordinator = new JourneyWindowCoordinator(
+            viewModel.Journey,
+            mainWindow);
+        routeWindowCoordinator = new RouteWindowCoordinator(
+            viewModel.Route,
+            mainWindow);
+        fleetCarrierRouteWindowCoordinator = new RouteWindowCoordinator(
+            viewModel.FleetCarrierRoute,
+            mainWindow);
+        fleetCarrierJumpCountdownCoordinator =
+            new FleetCarrierJumpCountdownCoordinator(
+                viewModel.FleetCarrierRoute);
+        biologyPredictionsWindowCoordinator =
+            new BiologyPredictionsWindowCoordinator(
+                viewModel.BiologyPredictions,
+                mainWindow);
+        biologyCodexWindowCoordinator = new BiologyCodexWindowCoordinator(
+            viewModel.BiologyCodex,
+            mainWindow,
+            viewModel.CodexImages);
+        biologyCodexBingoWindowCoordinator =
+            new BiologyCodexBingoWindowCoordinator(
+                viewModel.CodexBingo,
+                mainWindow,
+                viewModel.OpenCodexBingoNearestSearchAsync);
+        sphericalSearchOverlayCoordinator = new SphericalSearchOverlayCoordinator(
+            viewModel.Search,
+            viewModel.BoxelSearch,
+            viewModel.Route,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout,
+            viewModel.SystemNicknames);
+        guardianOverlayCoordinator = new GuardianOverlayCoordinator(
+            viewModel.Guardian,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout);
+        jumpInfoOverlayCoordinator = new JumpInfoOverlayCoordinator(
+            viewModel.JumpInfo,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout,
+            viewModel.SystemNicknames);
+        routeBioOverlayCoordinator = new RouteBioOverlayCoordinator(
+            viewModel.Route,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout);
+        fleetCarrierRouteOverlayCoordinator =
+            new FleetCarrierRouteOverlayCoordinator(
+                viewModel.FleetCarrierRoute,
+                overlayPresentation.CreatePlatformService(),
+                CreateOverlayGameWindowTracker(),
+                overlayLayout);
+        groundTargetOverlayCoordinator = new GroundTargetOverlayCoordinator(
+            viewModel.GroundTarget,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout);
+        combatOverlayCoordinator = new CombatOverlayCoordinator(
+            viewModel.Combat,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout);
+        stationInfoOverlayCoordinator = new StationInfoOverlayCoordinator(
+            viewModel.StationInfo,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout);
+        humanSiteOverlayCoordinator = new HumanSiteOverlayCoordinator(
+            viewModel.HumanSite,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout);
+        systemSurveyOverlayCoordinator = new SystemSurveyOverlayCoordinator(
+            viewModel.SystemSurvey,
+            viewModel.SurfaceSurvey,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            new SystemSurveyOverlayCoordinatorOptions
+            {
+                CommanderNameProvider = () => viewModel.CommanderName,
+                ExobiologyCatalog =
+                    viewModel.SystemSurvey.BiologyReferenceCatalog,
+                OverlayLayout = overlayLayout,
+                FssDiagnosticDirectory = Path.Combine(
+                    appDataPaths.CacheDirectory,
+                    "fss-diagnostics"),
+            });
+        questIndicatorOverlayCoordinator = new QuestIndicatorOverlayCoordinator(
+            viewModel.QuestIndicator,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout);
+        notificationOverlayCoordinator = new NotificationOverlayCoordinator(
+            viewModel.Notifications,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout);
+        pulseOverlayCoordinator = new PulseOverlayCoordinator(
+            viewModel.PulseOverlay,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout);
+        streamOverlayCoordinator = new StreamOverlayCoordinator(
+            viewModel.StreamOverlay,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker());
+        vrOverlayCoordinator = new VrOverlayCoordinator(
+            viewModel.VrOverlay,
+            modeProvider: () => viewModel.CurrentVrOverlayMode);
+        galaxyMapOverlayCoordinator = new GalaxyMapOverlayCoordinator(
+            viewModel.GalaxyMap,
+            overlayPresentation.CreatePlatformService(),
+            CreateOverlayGameWindowTracker(),
+            overlayLayout);
+        multiGameCommanderOverlayCoordinator =
+            new MultiGameCommanderOverlayCoordinator(
+                viewModel.CommanderInstances,
+                viewModel.OverlayBehavior,
+                overlayPresentation.CreatePlatformService(),
+                GameWindowTracker.CreateCurrent(),
+                () => desktop.Windows.Any(window => window.IsActive),
+                overlayLayout);
+
+        jumpInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
+            SynchronizeOverlayPriority();
+        systemSurveyOverlayCoordinator.VisibilityChanged += (_, _) =>
+            SynchronizeOverlayPriority();
+        guardianOverlayCoordinator.VisibilityChanged += (_, _) =>
+            SynchronizeOverlayPriority();
+        stationInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
+            SynchronizeOverlayPriority();
+        humanSiteOverlayCoordinator.VisibilityChanged += (_, _) =>
+            SynchronizeOverlayPriority();
+        SynchronizeOverlayPriority();
+        colonizationCommodityOverlayCoordinator =
+            new ColonizationCommodityOverlayCoordinator(
+                viewModel.Colonization.CommodityOverlay,
+                overlayPresentation.CreatePlatformService(),
+                CreateOverlayGameWindowTracker(),
+                overlayLayout);
+        viewModel.OverlayBehavior.PropertyChanged +=
+            HandleOverlayBehaviorChanged;
+        ApplyOverlaySuppression();
+        StartGlobalInputServices(
+            inputSettings,
+            capabilities,
+            viewModel,
+            desktop);
+        desktop.Exit += (_, _) => HandleDesktopExit(viewModel, applicationLog);
+        ConfirmUpdateReplacementHealth(appDataPaths, viewModel, applicationLog);
+    }
+
+    private static void ConfigureReleaseInstaller(
+        MainWindowViewModel viewModel,
+        IClassicDesktopStyleApplicationLifetime desktop,
+        AppDataPaths appDataPaths)
+    {
+        var appImagePath = Environment.GetEnvironmentVariable("APPIMAGE");
+        viewModel.ReleaseUpdates.ConfigureInstaller(
+            new ReleaseInstallerConfiguration
+            {
+                DownloadService = new ReleasePackageDownloadService(),
+                StagingService = new ReleasePackageStagingService(),
+                InstallationPreparer = new ReleaseInstallationPreparer(),
+                HandoffService = new ApplicationUpdateHandoffService(),
+                DataDirectory = appDataPaths.DataDirectory,
+                InstallationDirectory = AppContext.BaseDirectory,
+                StartupArguments = Program.StartupArguments,
+                Shutdown = async () => await Dispatcher.UIThread.InvokeAsync(
+                    () => desktop.Shutdown()),
+                AutomaticInstallationUnavailableReason =
+                    string.IsNullOrWhiteSpace(appImagePath)
+                        ? null
+                        : "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually.",
+                IsAppImage = !string.IsNullOrWhiteSpace(appImagePath),
+            });
+    }
+
+    private static void MigrateLegacyUiSettings(
+        AppDataPaths appDataPaths,
+        ApplicationLogService applicationLog)
+    {
+        var settingsMigration = new LegacyUiSettingsMigrator()
+            .MigrateIfNeeded(appDataPaths);
+        if (settingsMigration.Migrated)
+        {
+            applicationLog.Append(
+                $"Migrated {settingsMigration.MappedPreferenceCount:N0} legacy UI preferences."
+                + (settingsMigration.PreviousSettingsBackupPath is null
+                    ? string.Empty
+                    : " Previous settings backup: "
+                        + settingsMigration.PreviousSettingsBackupPath));
+            return;
+        }
+
+        if (settingsMigration.Error is not null)
+        {
+            applicationLog.Append(
+                "Legacy UI settings migration was skipped: "
+                + settingsMigration.Error);
+        }
+    }
+
+    private static void MigrateLegacyOrganicProfiles(
+        AppDataPaths appDataPaths,
+        ApplicationLogService applicationLog)
+    {
+        try
+        {
+            var organicMigration = new LegacyOrganicProfileMigrator(
+                    appDataPaths.DataDirectory)
+                .MigrateAsync()
+                .GetAwaiter()
+                .GetResult();
+            if (organicMigration.Migrated)
+            {
+                applicationLog.Append(
+                    "Migrated retired organic history into legacy-compatible "
+                        + $"profile/system data: {organicMigration.MigratedProfileCount:N0} "
+                        + $"profile(s), {organicMigration.MigratedBodyCount:N0} body file(s), "
+                        + $"{organicMigration.MigratedScanCount:N0} scan(s), and "
+                        + $"{organicMigration.MigratedOrganismCount:N0} organism(s).");
+            }
+
+            foreach (var error in organicMigration.Errors)
+            {
+                applicationLog.Append(
+                    "Legacy organic history was preserved without conversion: "
+                        + error);
+            }
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            applicationLog.Append(
+                "Legacy organic migration was skipped without modifying its "
+                    + "source data: "
+                    + exception.Message);
+        }
+    }
+
+    private static LegacyOverlayTheme LoadOverlayTheme(
+        AppDataPaths appDataPaths,
+        ApplicationLogService applicationLog)
+    {
+        var overlayTheme = new LegacyOverlayThemeStore(
+            Path.Combine(appDataPaths.DataDirectory, "theme.json"))
+            .Load();
+        if (overlayTheme.Error is not null)
+        {
+            applicationLog.Append(overlayTheme.Error);
+        }
+
+        return overlayTheme;
+    }
+
+    private static LegacyOverlayLayout LoadOverlayLayout(
+        LegacyOverlayLayoutStore overlayLayoutStore,
+        ApplicationLogService applicationLog)
+    {
+        var overlayLayout = overlayLayoutStore.Load();
+        if (overlayLayout.Error is not null)
+        {
+            applicationLog.Append(overlayLayout.Error);
+        }
+
+        return overlayLayout;
+    }
+
+    private void StartGlobalInputServices(
+        GlobalInputSettingsViewModel inputSettings,
+        OverlayPlatformCapabilities capabilities,
+        MainWindowViewModel viewModel,
+        IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        Func<bool> areShortcutsActive = () =>
+            AreGlobalInputShortcutsActive(viewModel, desktop);
+        globalKeyboardHookService = new GlobalKeyboardHookService(
+            inputSettings.CurrentSettings,
+            capabilities.Host,
+            GameWindowTracker.CreateCurrent(),
+            areShortcutsActive);
+        globalControllerInputService = new GlobalControllerInputService(
+            inputSettings.CurrentSettings,
+            capabilities.Host,
+            GameWindowTracker.CreateCurrent(),
+            areShortcutsActive);
+        globalKeyboardHookService.StatusChanged += (_, _) =>
+            PostKeyboardRuntimeStatus(inputSettings);
+        globalControllerInputService.StatusChanged += (_, _) =>
+            PostControllerRuntimeStatus(inputSettings);
+
+        globalKeyboardHookService.ActionTriggered += (_, eventArgs) =>
+            HandleAction(eventArgs);
+        globalControllerInputService.ActionTriggered += (_, eventArgs) =>
+            HandleAction(eventArgs);
+        inputSettings.SettingsChanged += (_, eventArgs) =>
+        {
+            globalKeyboardHookService?.Update(eventArgs.Settings);
+            globalControllerInputService?.Update(eventArgs.Settings);
+        };
+        inputSettings.UpdateRuntimeStatus(
+            globalKeyboardHookService.Status);
+        inputSettings.UpdateControllerRuntimeStatus(
+            globalControllerInputService.Status);
+        globalKeyboardHookService.Start();
+        globalControllerInputService.Start();
+    }
+
+    private bool AreGlobalInputShortcutsActive(
+        MainWindowViewModel viewModel,
+        IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        return mainWindow!.InputContext.AreShortcutsActive
+            || ((viewModel.OverlayInteraction.IsEditing
+                    || viewModel.OverlayInteraction.IsLiveInteractionEnabled)
+                && !mainWindow.IsActive
+                && desktop.Windows.Any(window => window.IsActive));
+    }
+
+    private void PostKeyboardRuntimeStatus(
+        GlobalInputSettingsViewModel inputSettings)
+    {
+        var status = globalKeyboardHookService?.Status;
+        if (status is not null)
+        {
+            Dispatcher.UIThread.Post(
+                () => inputSettings.UpdateRuntimeStatus(status));
+        }
+    }
+
+    private void PostControllerRuntimeStatus(
+        GlobalInputSettingsViewModel inputSettings)
+    {
+        var status = globalControllerInputService?.Status;
+        if (status is not null)
+        {
+            Dispatcher.UIThread.Post(
+                () => inputSettings.UpdateControllerRuntimeStatus(status));
+        }
+    }
+
+    private void HandleDesktopExit(
+        MainWindowViewModel viewModel,
+        ApplicationLogService applicationLog)
+    {
+        viewModel.SetJournalCommandPlatformServices(null, null, null);
+        viewModel.ProfileImportCompleted -=
+            RestartAfterProfileImportAsync;
+        viewModel.JournalSettings.RestartRequested -=
+            RestartAfterJournalChangeAsync;
+        viewModel.CommanderPreference.RestartRequested -=
+            RestartAfterCommanderPreferenceChangeAsync;
+        viewModel.OverlayBehavior.PropertyChanged -=
+            HandleOverlayBehaviorChanged;
+        viewModel.FrontierProfile.AuthorizationCallbackReceived -=
+            HandleFrontierAuthorizationCallback;
+        Dispatcher.UIThread.UnhandledException -= HandleUiException;
+        TaskScheduler.UnobservedTaskException -=
+            HandleUnobservedTaskException;
+        applicationLog.Append("Application exit");
+        DisposeDesktopServices(viewModel);
+    }
+
+    private void DisposeDesktopServices(MainWindowViewModel viewModel)
+    {
+        multiGameCommanderOverlayCoordinator?.Dispose();
+        multiGameCommanderOverlayCoordinator = null;
+        viewModel.Dispose();
+        errorReportWindowCoordinator?.Dispose();
+        errorReportWindowCoordinator = null;
+        viewModel.DiagnosticsLog.Dispose();
+        viewModel.JumpInfo.Dispose();
+        globalControllerInputService?.Dispose();
+        globalControllerInputService = null;
+        globalKeyboardHookService?.Dispose();
+        globalKeyboardHookService = null;
+        colonizationCommodityOverlayCoordinator?.Dispose();
+        colonizationCommodityOverlayCoordinator = null;
+        systemNotesWindowCoordinator?.Dispose();
+        systemNotesWindowCoordinator = null;
+        journeyWindowCoordinator?.Dispose();
+        journeyWindowCoordinator = null;
+        routeWindowCoordinator?.Dispose();
+        routeWindowCoordinator = null;
+        fleetCarrierRouteWindowCoordinator?.Dispose();
+        fleetCarrierRouteWindowCoordinator = null;
+        fleetCarrierJumpCountdownCoordinator?.Dispose();
+        fleetCarrierJumpCountdownCoordinator = null;
+        biologyPredictionsWindowCoordinator?.Dispose();
+        biologyPredictionsWindowCoordinator = null;
+        viewModel.BiologyPredictions.Dispose();
+        biologyCodexWindowCoordinator?.Dispose();
+        biologyCodexWindowCoordinator = null;
+        viewModel.BiologyCodex.Dispose();
+        viewModel.SurfaceSurvey.Dispose();
+        biologyCodexBingoWindowCoordinator?.Dispose();
+        biologyCodexBingoWindowCoordinator = null;
+        viewModel.CodexBingo.Dispose();
+        sphericalSearchOverlayCoordinator?.Dispose();
+        sphericalSearchOverlayCoordinator = null;
+        jumpInfoOverlayCoordinator?.Dispose();
+        jumpInfoOverlayCoordinator = null;
+        routeBioOverlayCoordinator?.Dispose();
+        routeBioOverlayCoordinator = null;
+        fleetCarrierRouteOverlayCoordinator?.Dispose();
+        fleetCarrierRouteOverlayCoordinator = null;
+        groundTargetOverlayCoordinator?.Dispose();
+        groundTargetOverlayCoordinator = null;
+        combatOverlayCoordinator?.Dispose();
+        combatOverlayCoordinator = null;
+        stationInfoOverlayCoordinator?.Dispose();
+        stationInfoOverlayCoordinator = null;
+        viewModel.StationInfo.Dispose();
+        humanSiteOverlayCoordinator?.Dispose();
+        humanSiteOverlayCoordinator = null;
+        questIndicatorOverlayCoordinator?.Dispose();
+        questIndicatorOverlayCoordinator = null;
+        notificationOverlayCoordinator?.Dispose();
+        notificationOverlayCoordinator = null;
+        pulseOverlayCoordinator?.Dispose();
+        pulseOverlayCoordinator = null;
+        streamOverlayCoordinator?.Dispose();
+        streamOverlayCoordinator = null;
+        vrOverlayCoordinator?.Dispose();
+        vrOverlayCoordinator = null;
+        galaxyMapOverlayCoordinator?.Dispose();
+        galaxyMapOverlayCoordinator = null;
+        systemSurveyOverlayCoordinator?.Dispose();
+        systemSurveyOverlayCoordinator = null;
+        guardianOverlayCoordinator?.Dispose();
+        guardianOverlayCoordinator = null;
+        overlayPresentationSession?.Dispose();
+        overlayPresentationSession = null;
+    }
+
+    private static void ConfirmUpdateReplacementHealth(
+        AppDataPaths appDataPaths,
+        MainWindowViewModel viewModel,
+        ApplicationLogService applicationLog)
+    {
+        try
+        {
+            ApplyPendingUpdateOutcome(appDataPaths, viewModel, applicationLog);
+            ConfirmPendingHealthyUpdate(appDataPaths, viewModel, applicationLog);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException
+                or InvalidOperationException)
+        {
+            applicationLog.Append(
+                "Update replacement health confirmation failed: "
+                + exception.Message);
+        }
+    }
+
+    private static void ApplyPendingUpdateOutcome(
+        AppDataPaths appDataPaths,
+        MainWindowViewModel viewModel,
+        ApplicationLogService applicationLog)
+    {
+        var updateOutcome = ApplicationUpdateBootstrap
+            .ConsumePendingOutcomeAsync(appDataPaths)
+            .GetAwaiter()
+            .GetResult();
+        if (updateOutcome is null)
+        {
+            return;
+        }
+
+        viewModel.ReleaseUpdates.SetPreviousInstallationOutcome(updateOutcome);
+        applicationLog.Append(
+            $"Update {updateOutcome.Version} outcome: "
+                + updateOutcome.Status
+                + (string.IsNullOrWhiteSpace(updateOutcome.Error)
+                    ? string.Empty
+                    : " - " + updateOutcome.Error));
+    }
+
+    private static void ConfirmPendingHealthyUpdate(
+        AppDataPaths appDataPaths,
+        MainWindowViewModel viewModel,
+        ApplicationLogService applicationLog)
+    {
+        var confirmedUpdate = ApplicationUpdateBootstrap
+            .ConfirmPendingHealthyAsync(appDataPaths)
+            .GetAwaiter()
+            .GetResult();
+        if (confirmedUpdate is null)
+        {
+            return;
+        }
+
+        viewModel.ReleaseUpdates.SetPreviousInstallationOutcome(
+            new ReleaseInstallationOutcome(
+                ReleaseInstallationOutcomeStatus.Installed,
+                confirmedUpdate.Preparation.RequestId,
+                confirmedUpdate.Preparation.Version,
+                DateTimeOffset.UtcNow,
+                confirmedUpdate.Preparation.BackupDirectory,
+                null,
+                null));
+        applicationLog.Append(
+            "Verified update replacement startup with the handoff helper.");
     }
 
     private IGameWindowTracker CreateOverlayGameWindowTracker()

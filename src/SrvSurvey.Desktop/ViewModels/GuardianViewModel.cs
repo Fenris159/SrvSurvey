@@ -2543,27 +2543,7 @@ public sealed class GuardianViewModel
             SelectActiveReference();
             UpdateProximity();
 
-            var action = scanned ? "scanned" : "not scanned";
-            if (!artifactInventory.HasItems(currentObelisk.ItemCodes))
-            {
-                StatusMessage = $"Marked {currentObelisk.Name} {action}. Ram Tah "
-                    + "progress was not changed because the required artifacts are missing.";
-                return true;
-            }
-
-            if (ramTah is null || !ramTah.IsAnyMissionActive)
-            {
-                StatusMessage = $"Marked {currentObelisk.Name} {action}. No active "
-                    + "Ram Tah mission required a checklist update.";
-                return true;
-            }
-
-            await ramTah.SetLogCompletedAsync(
-                GetMission(),
-                currentObelisk.LogCode,
-                scanned);
-            StatusMessage = $"Marked {currentObelisk.Name} {action} and updated "
-                + $"Ram Tah log {currentObelisk.LogCode}.";
+            await ApplyObeliskScanRamTahSideEffectsAsync(currentObelisk, scanned);
             return true;
         }
         catch (Exception exception) when (
@@ -2576,6 +2556,33 @@ public sealed class GuardianViewModel
                 + exception.Message;
             return false;
         }
+    }
+
+    private async Task ApplyObeliskScanRamTahSideEffectsAsync(
+        GuardianObelisk currentObelisk,
+        bool scanned)
+    {
+        var action = scanned ? "scanned" : "not scanned";
+        if (!artifactInventory.HasItems(currentObelisk.ItemCodes))
+        {
+            StatusMessage = $"Marked {currentObelisk.Name} {action}. Ram Tah "
+                + "progress was not changed because the required artifacts are missing.";
+            return;
+        }
+
+        if (ramTah is null || !ramTah.IsAnyMissionActive)
+        {
+            StatusMessage = $"Marked {currentObelisk.Name} {action}. No active "
+                + "Ram Tah mission required a checklist update.";
+            return;
+        }
+
+        await ramTah.SetLogCompletedAsync(
+            GetMission(),
+            currentObelisk.LogCode,
+            scanned);
+        StatusMessage = $"Marked {currentObelisk.Name} {action} and updated "
+            + $"Ram Tah log {currentObelisk.LogCode}.";
     }
 
     private async Task HandleLiveCommandAsync(
@@ -2759,54 +2766,18 @@ public sealed class GuardianViewModel
         string text,
         CancellationToken cancellationToken)
     {
-        var changeHeading = false;
-        var newHeading = -1;
-        if (LiveMapMode == GuardianLiveMapMode.Heading)
+        var parseResult = TryParseHeadingCommand(text);
+        if (parseResult.EnteredHeadingMode)
         {
-            changeHeading = int.TryParse(
-                text,
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out newHeading);
+            return true;
         }
 
-        if (string.Equals(text, ".heading", StringComparison.OrdinalIgnoreCase))
-        {
-            if (LiveMapMode == GuardianLiveMapMode.Heading)
-            {
-                newHeading = currentStatus?.NormalizedHeading ?? -1;
-                changeHeading = newHeading >= 0;
-            }
-            else
-            {
-                LiveMapMode = GuardianLiveMapMode.Heading;
-                StatusMessage =
-                    "Face the Guardian alignment feature and type .heading again.";
-                return true;
-            }
-        }
-        else if (text.StartsWith(".heading", StringComparison.OrdinalIgnoreCase))
-        {
-            changeHeading = int.TryParse(
-                text[".heading".Length..].Trim(),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out newHeading);
-        }
-        else if (string.Equals(text, ".alphaflip", StringComparison.OrdinalIgnoreCase)
-            && ActiveSite is { } activeSite
-            && FindSurvey(activeSite) is { } alphaSurvey)
-        {
-            newHeading = alphaSurvey.Survey.SiteHeading + 180;
-            changeHeading = true;
-        }
-
-        if (!changeHeading)
+        if (!parseResult.ChangeHeading)
         {
             return false;
         }
 
-        var normalizedHeading = NormalizeHeading(newHeading);
+        var normalizedHeading = NormalizeHeading(parseResult.NewHeading);
         if (await SaveActiveSurveyMutationAsync(
             survey => survey with
             {
@@ -2826,6 +2797,68 @@ public sealed class GuardianViewModel
         }
 
         return true;
+    }
+
+    private readonly record struct HeadingCommandParseResult(
+        bool ChangeHeading,
+        int NewHeading,
+        bool EnteredHeadingMode);
+
+    private HeadingCommandParseResult TryParseHeadingCommand(string text)
+    {
+        if (LiveMapMode == GuardianLiveMapMode.Heading
+            && int.TryParse(
+                text,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var freeformHeading))
+        {
+            return new HeadingCommandParseResult(true, freeformHeading, false);
+        }
+
+        if (string.Equals(text, ".heading", StringComparison.OrdinalIgnoreCase))
+        {
+            return ParseDotHeadingCommand();
+        }
+
+        if (text.StartsWith(".heading", StringComparison.OrdinalIgnoreCase)
+            && int.TryParse(
+                text[".heading".Length..].Trim(),
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var parsedHeading))
+        {
+            return new HeadingCommandParseResult(true, parsedHeading, false);
+        }
+
+        if (string.Equals(text, ".alphaflip", StringComparison.OrdinalIgnoreCase)
+            && ActiveSite is { } activeSite
+            && FindSurvey(activeSite) is { } alphaSurvey)
+        {
+            return new HeadingCommandParseResult(
+                true,
+                alphaSurvey.Survey.SiteHeading + 180,
+                false);
+        }
+
+        return new HeadingCommandParseResult(false, -1, false);
+    }
+
+    private HeadingCommandParseResult ParseDotHeadingCommand()
+    {
+        if (LiveMapMode == GuardianLiveMapMode.Heading)
+        {
+            var newHeading = currentStatus?.NormalizedHeading ?? -1;
+            return new HeadingCommandParseResult(
+                newHeading >= 0,
+                newHeading,
+                false);
+        }
+
+        LiveMapMode = GuardianLiveMapMode.Heading;
+        StatusMessage =
+            "Face the Guardian alignment feature and type .heading again.";
+        return new HeadingCommandParseResult(false, -1, true);
     }
 
     private async Task<bool> TryHandleTowerCommandAsync(

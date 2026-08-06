@@ -1756,15 +1756,95 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
+        var previousFrontierId = journalState.FrontierId;
+        var previousCommanderName = journalState.CommanderName;
+        ApplyJournalAndStatusBaseline(update);
+        await ApplyCommanderChangeIfNeededAsync(
+            update,
+            previousFrontierId,
+            previousCommanderName);
+
+        var allowSharedCargo = !IsSharedCargoSuppressed;
+        var cargoChanged = ApplyCargoInventoryUpdate(update, allowSharedCargo);
+        ApplyShipLockerIfAllowed(update, allowSharedCargo);
+        ApplyLocalInventoryAndDesktopBehaviors(update, allowSharedCargo);
+        await ApplyStatusAndGroundTargetAsync(update);
+
+        var scansLostToDeath = new HashSet<string>(StringComparer.Ordinal);
+        await ApplyGreenGasGiantAndReputationAsync(update);
+        ApplyOverlayAndJournalPostProcessorContext();
+        var commanderCodexResult = await ApplyCommanderCodexUpdateAsync(update);
+        var codexDiscoveryChanged = commanderCodexResult.DiscoveryEventCount > 0;
+
+        Colonization.ApplyJournalEvents(update.JournalEvents);
+        Colonization.UpdateSystemContext(
+            journalState.SystemName,
+            journalState.StarPosition,
+            journalState.SystemAddress);
+        await UpdateFeatureSystemContextsAsync(codexDiscoveryChanged);
+
+        var loadedExistingProfile = await EnsureCommanderProfileAsync();
+        await ApplyQuestUpdateAsync(update, allowSharedCargo);
+        await Colonization.SetCommanderAsync(journalState.CommanderName);
+        await SynchronizeColonizationAndJourneyAsync(
+            update,
+            allowSharedCargo,
+            cargoChanged);
+        await ApplyRouteContextAndEventsAsync(update);
+
+        var explorationBefore = explorationState.CreateSnapshot();
+        var exobiologyVersionBefore = exobiologyState.Version;
+        var boxelBefore = BoxelSearch.CreateNotificationState();
+        var skipPersistedBootstrapEvents = update.IsBootstrapRead
+            && loadedExistingProfile;
+        await ApplySearchAndBoxelUpdatesAsync(
+            update,
+            skipPersistedBootstrapEvents);
+        ApplyNotificationAndPulseUpdates(update, boxelBefore);
+
+        var guardianScreenshotContexts = await ApplyGuardianCombatAndSitesAsync(
+            update,
+            allowSharedCargo,
+            cargoChanged,
+            skipPersistedBootstrapEvents);
+        await ApplyRouteAndBoxelStatusAsync();
+        await HumanSite.ApplyUpdateAsync(
+            update.JournalEvents,
+            update.Status,
+            journalState.ShipType,
+            allowExternalData: !update.IsBootstrapRead);
+        var requestShutdown = !update.IsBootstrapRead
+            && await ApplyDesktopTextCommandsAsync(update.JournalEvents);
+        await ApplyScreenshotProcessingAsync(update, guardianScreenshotContexts);
+        ApplyJumpInfoGalaxyAndExplorationEvents(
+            update,
+            skipPersistedBootstrapEvents,
+            scansLostToDeath);
+
+        await PersistExplorationIfChangedAsync(explorationBefore);
+        await ApplyExobiologyAndSurfaceSurveyAsync(
+            update,
+            isManualRefresh,
+            skipPersistedBootstrapEvents,
+            scansLostToDeath,
+            exobiologyVersionBefore,
+            codexDiscoveryChanged);
+        ApplyMonitorStatusMessages(update, isManualRefresh);
+
+        // External publication runs after every local reducer and persistence
+        // path so an unavailable gateway cannot delay live state projection.
+        await ApplyExternalPublicationAsync(update, allowSharedCargo);
+        await RequestShutdownIfNeededAsync(requestShutdown);
+    }
+
+    private void ApplyJournalAndStatusBaseline(JournalMonitorUpdate update)
+    {
         if (update.IsBootstrapRead || update.Status is not null)
         {
             latestStatus = update.Status;
         }
 
         JournalInspector.ApplyUpdate(update.JournalEvents, update.Status);
-
-        var previousFrontierId = journalState.FrontierId;
-        var previousCommanderName = journalState.CommanderName;
         foreach (var journalEvent in update.JournalEvents)
         {
             journalState.Apply(journalEvent);
@@ -1773,7 +1853,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         Colonization.UpdateMusicTrack(journalState.MusicTrack);
         StationInfo.UpdateMusicTrack(journalState.MusicTrack);
         GroundTarget.UpdateMusicTrack(journalState.MusicTrack);
+    }
 
+    private async Task ApplyCommanderChangeIfNeededAsync(
+        JournalMonitorUpdate update,
+        string? previousFrontierId,
+        string? previousCommanderName)
+    {
         var commanderChanged = !string.Equals(
                 previousFrontierId,
                 journalState.FrontierId,
@@ -1782,34 +1868,43 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 previousCommanderName,
                 journalState.CommanderName,
                 StringComparison.OrdinalIgnoreCase);
-        if (commanderChanged)
+        if (!commanderChanged)
         {
-            awaitFreshCargoSnapshot = true;
-            companionIdentityChangedAt = update.JournalEvents
-                .Where(journalEvent => journalEvent.EventName is "Commander" or "LoadGame")
-                .Select(journalEvent => journalEvent.Timestamp)
-                .LastOrDefault(timestamp => timestamp is not null)
-                ?? journalState.LastEventTimestamp;
-            cargoInventoryState.Reset(null);
-            latestCargo = null;
-            latestShipLocker = null;
-            await FrontierProfile.SetCommanderContextAsync(
-                journalState.FrontierId,
-                journalState.CommanderName,
-                refreshIfOpen: IsProfileSelected,
-                CancellationToken.None);
+            return;
         }
 
-        var allowSharedCargo = !IsSharedCargoSuppressed;
-        var cargoChanged = ApplyCargoInventoryUpdate(update, allowSharedCargo);
+        awaitFreshCargoSnapshot = true;
+        companionIdentityChangedAt = update.JournalEvents
+            .Where(journalEvent => journalEvent.EventName is "Commander" or "LoadGame")
+            .Select(journalEvent => journalEvent.Timestamp)
+            .LastOrDefault(timestamp => timestamp is not null)
+            ?? journalState.LastEventTimestamp;
+        cargoInventoryState.Reset(null);
+        latestCargo = null;
+        latestShipLocker = null;
+        await FrontierProfile.SetCommanderContextAsync(
+            journalState.FrontierId,
+            journalState.CommanderName,
+            refreshIfOpen: IsProfileSelected,
+            CancellationToken.None);
+    }
 
+    private void ApplyShipLockerIfAllowed(
+        JournalMonitorUpdate update,
+        bool allowSharedCargo)
+    {
         if (allowSharedCargo
             && update.ShipLocker is not null
             && IsCurrentCommanderCompanionSnapshot(update.ShipLocker.Timestamp))
         {
             latestShipLocker = update.ShipLocker;
         }
+    }
 
+    private void ApplyLocalInventoryAndDesktopBehaviors(
+        JournalMonitorUpdate update,
+        bool allowSharedCargo)
+    {
         FrontierProfile.UpdateLocalInventory(
             latestCargo,
             latestShipLocker,
@@ -1821,18 +1916,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         DesktopBehavior.ApplyJournalEvents(
             update.JournalEvents,
             update.IsBootstrapRead);
+    }
 
+    private async Task ApplyStatusAndGroundTargetAsync(JournalMonitorUpdate update)
+    {
         if (update.Status is not null)
         {
             exobiologyState.UpdateStatus(update.Status);
             GroundTarget.UpdateStatus(update.Status);
             Colonization.UpdateStatus(update.Status);
         }
+
         await GroundTarget.ApplyJournalEventsAsync(
             update.JournalEvents,
             allowCommands: !update.IsBootstrapRead);
+    }
 
-        var scansLostToDeath = new HashSet<string>(StringComparer.Ordinal);
+    private async Task ApplyGreenGasGiantAndReputationAsync(
+        JournalMonitorUpdate update)
+    {
         var greenGasGiantResult =
             await greenGasGiantPublicationCoordinator.ApplyAsync(
                 update.JournalEvents,
@@ -1849,12 +1951,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             applicationLogService?.Append(warning);
         }
+
         FrontierProfile.UpdateJournalReputation(
             journalState.CommanderName,
             update.JournalEvents);
         FrontierProfile.UpdateJournalCommunityGoals(
             journalState.CommanderName,
             update.JournalEvents);
+    }
+
+    private void ApplyOverlayAndJournalPostProcessorContext()
+    {
         OverlayBehavior.UpdateContext(
             journalState.CurrentSuit,
             latestStatus?.OnFoot == true);
@@ -1865,7 +1972,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             journalState.IsAtMainMenu,
             journalState.IsAtCarrierManagement);
         JournalPostProcessor.SelectCommander(journalState.FrontierId);
+    }
 
+    private async Task<CommanderCodexJournalTrackResult> ApplyCommanderCodexUpdateAsync(
+        JournalMonitorUpdate update)
+    {
         var commanderCodexResult =
             await commanderCodexJournalTracker.ApplyAsync(
                 update.JournalEvents,
@@ -1885,18 +1996,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 : "Commander Codex is current; no earlier firsts were found.";
         }
 
-        Colonization.ApplyJournalEvents(update.JournalEvents);
-        Colonization.UpdateSystemContext(
-            journalState.SystemName,
-            journalState.StarPosition,
-            journalState.SystemAddress);
+        return commanderCodexResult;
+    }
 
-        await UpdateFeatureSystemContextsAsync(
-            commanderCodexResult.DiscoveryEventCount > 0);
-
-        var loadedExistingProfile = await EnsureCommanderProfileAsync();
-        await ApplyQuestUpdateAsync(update, allowSharedCargo);
-        await Colonization.SetCommanderAsync(journalState.CommanderName);
+    private async Task SynchronizeColonizationAndJourneyAsync(
+        JournalMonitorUpdate update,
+        bool allowSharedCargo,
+        bool cargoChanged)
+    {
         var cargoActivity = allowSharedCargo
             && (cargoChanged
                 || update.Cargo is not null
@@ -1926,18 +2033,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             await Journey.ApplyJournalEventsAsync(update.JournalEvents);
         }
+    }
 
-        await ApplyRouteContextAndEventsAsync(update);
-
-        var explorationBefore = explorationState.CreateSnapshot();
-        var exobiologyVersionBefore = exobiologyState.Version;
-        var boxelBefore = BoxelSearch.CreateNotificationState();
-        var skipPersistedBootstrapEvents = update.IsBootstrapRead
-            && loadedExistingProfile;
-        await ApplySearchAndBoxelUpdatesAsync(
-            update,
-            skipPersistedBootstrapEvents);
-
+    private void ApplyNotificationAndPulseUpdates(
+        JournalMonitorUpdate update,
+        BoxelSearchNotificationState boxelBefore)
+    {
         Notifications.ApplyJournalEvents(
             update.JournalEvents,
             allowNotifications: !update.IsBootstrapRead);
@@ -1951,7 +2052,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.JournalEvents.Any(journalEvent =>
                 journalEvent.EventName == "FSSAllBodiesFound"),
             allowNotifications: !update.IsBootstrapRead);
+    }
 
+    private async Task<IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>>
+        ApplyGuardianCombatAndSitesAsync(
+            JournalMonitorUpdate update,
+            bool allowSharedCargo,
+            bool cargoChanged,
+            bool skipPersistedBootstrapEvents)
+    {
         var guardianScreenshotContexts = await Guardian.ApplyJournalEventsAsync(
             update.JournalEvents,
             activeProfileCommanderName,
@@ -1966,12 +2075,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             Guardian.UpdateCargo(latestCargo);
         }
+
         if (cargoChanged && latestCargo is not null)
         {
             await Colonization.UpdateCargoAsync(
                 latestCargo,
                 publishCurrentShipCargo: update.Cargo is not null);
         }
+
         await Colonization.UpdateMarketAsync(update.Market);
         SystemSurvey.SetActiveBuildProjects(Colonization.HasProjects);
         Combat.SetActiveBuildProjects(Colonization.HasProjects);
@@ -1991,50 +2102,63 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             StationInfo.UpdateStatus(update.Status);
         }
 
-        if (latestStatus is not null)
+        return guardianScreenshotContexts;
+    }
+
+    private async Task ApplyRouteAndBoxelStatusAsync()
+    {
+        if (latestStatus is null)
         {
-            await Route.UpdateStatusAsync(
-                latestStatus,
-                journalState.MusicTrack);
-            await FleetCarrierRoute.UpdateStatusAsync(
-                latestStatus,
-                journalState.MusicTrack);
-            await BoxelSearch.UpdateStatusAsync(
-                latestStatus,
-                allowAutoCopy: !Route.ShouldAutoCopyNextHop
-                    && !FleetCarrierRoute.ShouldAutoCopyNextHop,
-                nextMusicTrack: journalState.MusicTrack);
+            return;
         }
 
-        await HumanSite.ApplyUpdateAsync(
+        await Route.UpdateStatusAsync(
+            latestStatus,
+            journalState.MusicTrack);
+        await FleetCarrierRoute.UpdateStatusAsync(
+            latestStatus,
+            journalState.MusicTrack);
+        await BoxelSearch.UpdateStatusAsync(
+            latestStatus,
+            allowAutoCopy: !Route.ShouldAutoCopyNextHop
+                && !FleetCarrierRoute.ShouldAutoCopyNextHop,
+            nextMusicTrack: journalState.MusicTrack);
+    }
+
+    private async Task ApplyScreenshotProcessingAsync(
+        JournalMonitorUpdate update,
+        IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>
+            guardianScreenshotContexts)
+    {
+        if (update.IsBootstrapRead)
+        {
+            return;
+        }
+
+        var screenshotResult =
+            await ScreenshotProcessing.ProcessJournalEventsAsync(
             update.JournalEvents,
-            update.Status,
-            journalState.ShipType,
-            allowExternalData: !update.IsBootstrapRead);
-        var requestShutdown = !update.IsBootstrapRead
-            && await ApplyDesktopTextCommandsAsync(update.JournalEvents);
+            journalState.CommanderName,
+            guardianScreenshotContexts,
+            latestStatus is { } screenshotStatus
+                ? new ScreenshotNavigationContext(
+                    DateTimeOffset.UtcNow,
+                    screenshotStatus.Latitude,
+                    screenshotStatus.Longitude,
+                    screenshotStatus.NormalizedHeading,
+                    screenshotStatus.HasLatitudeLongitude)
+                : null,
+            CancellationToken.None);
+        Notifications.ReportScreenshotResult(
+            screenshotResult,
+            ScreenshotProcessing.AddBanner);
+    }
 
-        if (!update.IsBootstrapRead)
-        {
-            var screenshotResult =
-                await ScreenshotProcessing.ProcessJournalEventsAsync(
-                update.JournalEvents,
-                journalState.CommanderName,
-                guardianScreenshotContexts,
-                latestStatus is { } screenshotStatus
-                    ? new ScreenshotNavigationContext(
-                        DateTimeOffset.UtcNow,
-                        screenshotStatus.Latitude,
-                        screenshotStatus.Longitude,
-                        screenshotStatus.NormalizedHeading,
-                        screenshotStatus.HasLatitudeLongitude)
-                    : null,
-                CancellationToken.None);
-            Notifications.ReportScreenshotResult(
-                screenshotResult,
-                ScreenshotProcessing.AddBanner);
-        }
-
+    private void ApplyJumpInfoGalaxyAndExplorationEvents(
+        JournalMonitorUpdate update,
+        bool skipPersistedBootstrapEvents,
+        HashSet<string> scansLostToDeath)
+    {
         JumpInfo.ApplyUpdate(
             new JumpInfoApplyUpdateRequest(
                 journalState.SystemName,
@@ -2057,28 +2181,23 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             update.JournalEvents,
             skipPersistedBootstrapEvents,
             scansLostToDeath);
+    }
 
+    private async Task PersistExplorationIfChangedAsync(
+        ExplorationSnapshot explorationBefore)
+    {
         var explorationAfter = explorationState.CreateSnapshot();
-        if (explorationAfter != explorationBefore)
+        if (explorationAfter == explorationBefore)
         {
-            UpdateExplorationDisplay(explorationAfter);
-            await SaveExplorationAsync(explorationAfter);
+            return;
         }
 
-        var exobiologyAfter = await ApplyExobiologyAndSurfaceSurveyAsync(
-            update,
-            isManualRefresh,
-            skipPersistedBootstrapEvents,
-            scansLostToDeath,
-            exobiologyVersionBefore,
-            commanderCodexResult.DiscoveryEventCount > 0);
+        UpdateExplorationDisplay(explorationAfter);
+        await SaveExplorationAsync(explorationAfter);
+    }
 
-        ApplyMonitorStatusMessages(update, isManualRefresh);
-
-        // External publication runs after every local reducer and persistence
-        // path so an unavailable gateway cannot delay live state projection.
-        await ApplyExternalPublicationAsync(update, allowSharedCargo);
-
+    private async Task RequestShutdownIfNeededAsync(bool requestShutdown)
+    {
         if (requestShutdown
             && journalCommandShutdownRequester is { } requestShutdownAsync)
         {
@@ -3399,51 +3518,75 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var requestShutdown = false;
         foreach (var journalEvent in journalEvents)
         {
-            if (journalEvent.EventName != "SendText"
-                || !journalEvent.Payload.TryGetProperty("Message", out var value)
-                || value.ValueKind != JsonValueKind.String)
+            if (!TryGetDesktopTextCommand(journalEvent, out var command))
             {
                 continue;
             }
 
-            switch (value.GetString()?.Trim().ToLowerInvariant())
-            {
-                case ".imgs":
-                    await OpenCurrentSystemScreenshotFolderAsync();
-                    break;
-                case ".kill":
-                    if (journalCommandShutdownRequester is null)
-                    {
-                        StatusMessage =
-                            "The desktop shutdown service is not available.";
-                        break;
-                    }
-
-                    requestShutdown = true;
-                    break;
-                case "!" when HumanSite.ActiveSite is { } site:
-                    await GroundTarget.SetTargetAsync(
-                        new SurfaceCoordinate(
-                            site.Location.Latitude,
-                            site.Location.Longitude),
-                        "The active settlement origin is now the ground target.");
-                    break;
-                case "@@":
-                    await CaptureShipCockpitOffsetAsync();
-                    break;
-                case "!!":
-                    await CopyGroundTargetOffsetAsync();
-                    break;
-                case "..":
-                    await CopySettlementOffsetAsync();
-                    break;
-                case "//":
-                    CompareSettlementOffsetCalculations();
-                    break;
-            }
+            requestShutdown |= await ExecuteDesktopTextCommandAsync(command);
         }
 
         return requestShutdown;
+    }
+
+    private static bool TryGetDesktopTextCommand(
+        JournalEventEnvelope journalEvent,
+        out string command)
+    {
+        command = string.Empty;
+        if (journalEvent.EventName != "SendText"
+            || !journalEvent.Payload.TryGetProperty("Message", out var value)
+            || value.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        command = value.GetString()?.Trim().ToLowerInvariant() ?? string.Empty;
+        return command.Length > 0;
+    }
+
+    private async Task<bool> ExecuteDesktopTextCommandAsync(string command)
+    {
+        switch (command)
+        {
+            case ".imgs":
+                await OpenCurrentSystemScreenshotFolderAsync();
+                return false;
+            case ".kill":
+                return HandleKillDesktopCommand();
+            case "!" when HumanSite.ActiveSite is { } site:
+                await GroundTarget.SetTargetAsync(
+                    new SurfaceCoordinate(
+                        site.Location.Latitude,
+                        site.Location.Longitude),
+                    "The active settlement origin is now the ground target.");
+                return false;
+            case "@@":
+                await CaptureShipCockpitOffsetAsync();
+                return false;
+            case "!!":
+                await CopyGroundTargetOffsetAsync();
+                return false;
+            case "..":
+                await CopySettlementOffsetAsync();
+                return false;
+            case "//":
+                CompareSettlementOffsetCalculations();
+                return false;
+            default:
+                return false;
+        }
+    }
+
+    private bool HandleKillDesktopCommand()
+    {
+        if (journalCommandShutdownRequester is null)
+        {
+            StatusMessage = "The desktop shutdown service is not available.";
+            return false;
+        }
+
+        return true;
     }
 
     private async Task CaptureShipCockpitOffsetAsync()
@@ -3739,54 +3882,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             ? system.Bodies.FirstOrDefault(candidate =>
                 candidate.BodyId == bodyId)
             : null;
-        if (update.IsBootstrapRead
-            || !preferences.Enabled
-            || Guardian.ActiveSite is not null
-            || !update.JournalEvents.Any(IsSurfaceDisembark)
-            || system.SystemAddress is not { } systemAddress
-            || body is null
-            || system.Population != 0
-            || body.IsFirstFootfall
-            || body.WasFootfalled == false
-            || IsKnownLegacyValuableBody(body.Kind))
+        if (!CanAttemptFirstFootfallInference(update, preferences, system, body))
         {
             return false;
         }
 
-        FirstFootfallInferenceResult result;
-        try
-        {
-            result = await firstFootfallInferenceService.DetectAsync(
-                preferences,
-                firstFootfallInferenceCancellation.Token);
-        }
-        catch (OperationCanceledException) when (
-            firstFootfallInferenceCancellation.IsCancellationRequested)
-        {
-            return false;
-        }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException
-                or NotSupportedException)
-        {
-            applicationLogService?.Append(
-                "First-footfall notification detection stopped safely: "
-                    + exception.Message);
-            return false;
-        }
-
-        if (!result.Detected)
+        var systemAddress = system.SystemAddress!.Value;
+        var result = await DetectFirstFootfallAsync(preferences);
+        if (result is null || !result.Detected)
         {
             return false;
         }
 
-        var current = SystemSurvey.Snapshot;
-        if (Guardian.ActiveSite is not null
-            || current.SystemAddress != systemAddress
-            || current.CurrentBodyId != body.BodyId
-            || current.Population != 0)
+        if (!IsFirstFootfallContextStillValid(systemAddress, body!))
         {
             applicationLogService?.Append(
                 "Ignored a first-footfall notification because the active "
@@ -3799,13 +3907,67 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             return false;
         }
 
-        exobiologyState.SetFirstFootfall(systemAddress, body.BodyId, true);
+        exobiologyState.SetFirstFootfall(systemAddress, body!.BodyId, true);
         var message = "First footfall inferred from Elite's on-screen notification "
             + $"after {result.SampleCount:N0} sample(s); match ratio "
             + $"{result.MaximumMatchRatio:P3}.";
         applicationLogService?.Append(message);
         ExobiologyStatusMessage = message;
         return true;
+    }
+
+    private bool CanAttemptFirstFootfallInference(
+        JournalMonitorUpdate update,
+        FirstFootfallInferencePreferences preferences,
+        SystemScanSnapshot system,
+        SystemScanBodySnapshot? body) =>
+        !update.IsBootstrapRead
+        && preferences.Enabled
+        && Guardian.ActiveSite is null
+        && update.JournalEvents.Any(IsSurfaceDisembark)
+        && system.SystemAddress is not null
+        && body is not null
+        && system.Population == 0
+        && !body.IsFirstFootfall
+        && body.WasFootfalled != false
+        && !IsKnownLegacyValuableBody(body.Kind);
+
+    private async Task<FirstFootfallInferenceResult?> DetectFirstFootfallAsync(
+        FirstFootfallInferencePreferences preferences)
+    {
+        try
+        {
+            return await firstFootfallInferenceService.DetectAsync(
+                preferences,
+                firstFootfallInferenceCancellation.Token);
+        }
+        catch (OperationCanceledException) when (
+            firstFootfallInferenceCancellation.IsCancellationRequested)
+        {
+            return null;
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidOperationException
+                or NotSupportedException)
+        {
+            applicationLogService?.Append(
+                "First-footfall notification detection stopped safely: "
+                    + exception.Message);
+            return null;
+        }
+    }
+
+    private bool IsFirstFootfallContextStillValid(
+        long systemAddress,
+        SystemScanBodySnapshot body)
+    {
+        var current = SystemSurvey.Snapshot;
+        return Guardian.ActiveSite is null
+            && current.SystemAddress == systemAddress
+            && current.CurrentBodyId == body.BodyId
+            && current.Population == 0;
     }
 
     private static bool IsSurfaceDisembark(

@@ -1374,35 +1374,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             ApplyJournalEvent(journalEvent);
         }
 
-        if (nextStatus is not null)
-        {
-            if (status is not null && status.GuiFocus != nextStatus.GuiFocus)
-            {
-                manuallyHideFssInfo = false;
-                manuallyHideBodyInfo = false;
-            }
-
-            if (status is not null
-                && (!string.Equals(
-                        status.BodyName,
-                        nextStatus.BodyName,
-                        StringComparison.OrdinalIgnoreCase)
-                    || status.Destination?.System
-                        != nextStatus.Destination?.System
-                    || status.Destination?.Body
-                        != nextStatus.Destination?.Body))
-            {
-                manuallyHideBodyInfo = false;
-            }
-
-            status = nextStatus;
-            if (previousStatus?.GuiFocus == GuiFocus.Fss
-                && nextStatus.GuiFocus != GuiFocus.Fss)
-            {
-                ResetFssTuningDetection();
-            }
-        }
-
+        ApplyStatusUpdate(nextStatus, previousStatus);
         if (nextExobiology is not null)
         {
             exobiology = nextExobiology;
@@ -1411,20 +1383,7 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         snapshot = state.CreateSnapshot();
         if (snapshot.SystemAddress != previousAddress)
         {
-            suppressBiologyOverlaysForRepeatVisit = false;
-            ClearTimedBiologySelection(refreshDisplay: false);
-            biologyDiscoveryContext = BiologyDiscoveryContext.Unavailable;
-            canonnBiologyBodyIds = new HashSet<int>();
-            hasCanonnSystemData = false;
-            biologyCodexNotification = null;
-            forceShowFssInfo = false;
-            manuallyHideFssInfo = false;
-            forceShowBodyInfo = false;
-            manuallyHideBodyInfo = false;
-            ResetFssTuningDetection();
-            OnPropertyChanged(nameof(IsBodyInfoForced));
-            OnPropertyChanged(
-                nameof(AreBiologyOverlaysSuppressedForRepeatVisit));
+            ResetStateForSystemChange();
         }
 
         UpdateTimedBiologySelection(previousStatus, nextStatus);
@@ -1449,6 +1408,61 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         }
 
         RaiseVisibilityProperties();
+    }
+
+    private void ApplyStatusUpdate(
+        EliteStatus? nextStatus,
+        EliteStatus? previousStatus)
+    {
+        if (nextStatus is null)
+        {
+            return;
+        }
+
+        if (status is not null && status.GuiFocus != nextStatus.GuiFocus)
+        {
+            manuallyHideFssInfo = false;
+            manuallyHideBodyInfo = false;
+        }
+
+        if (status is not null && HasBodyOrDestinationChanged(status, nextStatus))
+        {
+            manuallyHideBodyInfo = false;
+        }
+
+        status = nextStatus;
+        if (previousStatus?.GuiFocus == GuiFocus.Fss
+            && nextStatus.GuiFocus != GuiFocus.Fss)
+        {
+            ResetFssTuningDetection();
+        }
+    }
+
+    private static bool HasBodyOrDestinationChanged(
+        EliteStatus current,
+        EliteStatus next) =>
+        !string.Equals(
+            current.BodyName,
+            next.BodyName,
+            StringComparison.OrdinalIgnoreCase)
+        || current.Destination?.System != next.Destination?.System
+        || current.Destination?.Body != next.Destination?.Body;
+
+    private void ResetStateForSystemChange()
+    {
+        suppressBiologyOverlaysForRepeatVisit = false;
+        ClearTimedBiologySelection(refreshDisplay: false);
+        biologyDiscoveryContext = BiologyDiscoveryContext.Unavailable;
+        canonnBiologyBodyIds = new HashSet<int>();
+        hasCanonnSystemData = false;
+        biologyCodexNotification = null;
+        forceShowFssInfo = false;
+        manuallyHideFssInfo = false;
+        forceShowBodyInfo = false;
+        manuallyHideBodyInfo = false;
+        ResetFssTuningDetection();
+        OnPropertyChanged(nameof(IsBodyInfoForced));
+        OnPropertyChanged(nameof(AreBiologyOverlaysSuppressedForRepeatVisit));
     }
 
     private static bool HasSameExobiology(
@@ -1994,16 +2008,114 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         var planetish = body.Kind is not SystemBodyKind.Star
             and not SystemBodyKind.Asteroid
             and not SystemBodyKind.Ring;
-        var markers = CreateBodyInfoMarkers(body);
-        var atmosphere = FormatAtmosphere(body);
-        var atmosphereComposition = body.AtmosphereComposition
+        var gravity = body.SurfaceGravity / 10d;
+        return new BodyInformationViewModel(
+            body.BodyId,
+            body.WasDiscovered ? body.Name : "⚑ " + body.Name,
+            FormatBodyClassLabel(body),
+            $"{body.DistanceFromArrivalLs:N0} LS",
+            string.Join(" · ", CreateBodyInfoMarkers(body)),
+            FormatBodyScanValue(body),
+            FormatBodyMappedValue(body, planetish),
+            $"{body.SurfaceTemperature:N0} K",
+            $"{gravity:N3} g",
+            gravity >= HighGravityWarningLevel,
+            IsBodyDssHighlight(body, planetish),
+            FormatBodyPressure(body),
+            planetish,
+            FormatSignalCount(body.BiologicalSignalCount, "biological"),
+            FormatBodyBiologyReward(body),
+            FormatSignalCount(body.GeologicalSignalCount, "geological"),
+            FormatBodyVolcanism(body, planetish),
+            FormatAtmosphere(body),
+            CreateAtmosphereCompositionRows(body),
+            CreateMaterialRows(body),
+            CreateRingRows(body),
+            false);
+    }
+
+    private static string FormatBodyClassLabel(SystemScanBodySnapshot body) =>
+        body.Kind == SystemBodyKind.Star
+            ? $"{body.StarClass ?? "Unknown"} star"
+            : body.PlanetClass ?? "Unknown body";
+
+    private static string FormatBodyScanValue(SystemScanBodySnapshot body) =>
+        body.IsDssComplete
+            ? "✓ " + FormatCredits(body.CurrentScanValue)
+            : FormatCredits(body.ScanValue);
+
+    private static string FormatBodyMappedValue(
+        SystemScanBodySnapshot body,
+        bool planetish) =>
+        !body.IsDssComplete && planetish
+            ? FormatCredits(body.EstimatedMappedValue)
+            : string.Empty;
+
+    private bool IsBodyDssHighlight(SystemScanBodySnapshot body, bool planetish)
+    {
+        if (!HighlightDssCandidates)
+        {
+            return false;
+        }
+
+        var value = body.IsDssComplete
+            ? body.CurrentScanValue
+            : planetish
+                ? body.EstimatedMappedValue
+                : body.ScanValue;
+        return value > DssValueFloor;
+    }
+
+    private static string FormatBodyPressure(SystemScanBodySnapshot body) =>
+        body.SurfacePressure <= 0
+            ? "None"
+            : $"{body.SurfacePressure / 100_000d:N4} bar";
+
+    private string FormatBodyBiologyReward(SystemScanBodySnapshot body)
+    {
+        if (body.BiologicalSignalCount <= 0)
+        {
+            return string.Empty;
+        }
+
+        return BiologySurveyViewModel.CreateBodyDetail(
+                snapshot,
+                body.BodyId,
+                exobiology,
+                new BiologySurveyBodyDetailOptions(
+                    HighlightRegionalFirsts,
+                    DimAnalyzedOrganisms,
+                    HideGeoCountInBioSystem,
+                    DisableBioPredictions)
+                {
+                    DiscoveryContext = biologyDiscoveryContext,
+                    RewardThresholds = BiologyRewardThresholds,
+                    PredictionEvaluator = biologyPredictionEvaluator,
+                    ReferenceCatalog = biologyCatalog,
+                })
+            ?.RewardSummary ?? string.Empty;
+    }
+
+    private static string FormatBodyVolcanism(
+        SystemScanBodySnapshot body,
+        bool planetish) =>
+        planetish && body.Kind != SystemBodyKind.GasGiant
+            ? FormatVolcanism(body.Volcanism)
+            : string.Empty;
+
+    private static BodyCompositionRowViewModel[] CreateAtmosphereCompositionRows(
+        SystemScanBodySnapshot body) =>
+        body.AtmosphereComposition
             .OrderByDescending(entry => entry.Value)
             .Select(entry => new BodyCompositionRowViewModel(
                 FormatIdentifier(entry.Key),
                 $"{entry.Value:N2}%",
                 false))
             .ToArray();
-        var materials = HideBodyInfoMaterials
+
+    private BodyCompositionRowViewModel[] CreateMaterialRows(
+        SystemScanBodySnapshot body) =>
+        HideBodyInfoMaterials
             ? []
             : body.Materials
                 .OrderByDescending(entry => entry.Value)
@@ -2012,72 +2124,14 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     $"{entry.Value:N2}%",
                     IsRareMaterial(entry.Key)))
                 .ToArray();
-        var rings = body.Rings
+
+    private static BodyRingRowViewModel[] CreateRingRows(
+        SystemScanBodySnapshot body) =>
+        body.Rings
             .Select(ring => new BodyRingRowViewModel(
                 GetRingName(body.Name, ring.Name),
                 FormatRingClass(ring.RingClass)))
             .ToArray();
-        var gravity = body.SurfaceGravity / 10d;
-        var biologyReward = body.BiologicalSignalCount > 0
-            ? BiologySurveyViewModel.CreateBodyDetail(
-                    snapshot,
-                    body.BodyId,
-                    exobiology,
-                    new BiologySurveyBodyDetailOptions(
-                        HighlightRegionalFirsts,
-                        DimAnalyzedOrganisms,
-                        HideGeoCountInBioSystem,
-                        DisableBioPredictions)
-                    {
-                        DiscoveryContext = biologyDiscoveryContext,
-                        RewardThresholds = BiologyRewardThresholds,
-                        PredictionEvaluator = biologyPredictionEvaluator,
-                        ReferenceCatalog = biologyCatalog,
-                    })
-                ?.RewardSummary ?? string.Empty
-            : string.Empty;
-
-        return new BodyInformationViewModel(
-            body.BodyId,
-            body.WasDiscovered ? body.Name : "⚑ " + body.Name,
-            body.Kind == SystemBodyKind.Star
-                ? $"{body.StarClass ?? "Unknown"} star"
-                : body.PlanetClass ?? "Unknown body",
-            $"{body.DistanceFromArrivalLs:N0} LS",
-            string.Join(" · ", markers),
-            body.IsDssComplete
-                ? "✓ " + FormatCredits(body.CurrentScanValue)
-                : FormatCredits(body.ScanValue),
-            !body.IsDssComplete && planetish
-                ? FormatCredits(body.EstimatedMappedValue)
-                : string.Empty,
-            $"{body.SurfaceTemperature:N0} K",
-            $"{gravity:N3} g",
-            gravity >= HighGravityWarningLevel,
-            HighlightDssCandidates
-                && (body.IsDssComplete
-                    ? body.CurrentScanValue
-                    : (planetish) switch
-                    {
-                        true => body.EstimatedMappedValue,
-                        false => body.ScanValue
-                    }) > DssValueFloor,
-            body.SurfacePressure <= 0
-                ? "None"
-                : $"{body.SurfacePressure / 100_000d:N4} bar",
-            planetish,
-            FormatSignalCount(body.BiologicalSignalCount, "biological"),
-            biologyReward,
-            FormatSignalCount(body.GeologicalSignalCount, "geological"),
-            planetish && body.Kind != SystemBodyKind.GasGiant
-                ? FormatVolcanism(body.Volcanism)
-                : string.Empty,
-            atmosphere,
-            atmosphereComposition,
-            materials,
-            rings,
-            false);
-    }
 
     private BodyInfoTarget? ResolveBodyInfoTarget()
     {
@@ -2374,38 +2428,44 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
         SystemScanBodySnapshot body,
         IReadOnlyDictionary<string, SystemScanBodySnapshot> knownRingBodies)
     {
-        if (!SkipRingsForDss)
+        foreach (var ringCandidate in CreateRingDssCandidates(body, knownRingBodies))
         {
-            for (var index = 0; index < body.Rings.Count; index++)
-            {
-                var ring = body.Rings[index];
-                if (!knownRingBodies.TryGetValue(ring.Name, out var ringBody)
-                    || !ringBody.IsDssComplete)
-                {
-                    yield return body.ShortName + "r" + (char)('A' + index);
-                }
-            }
+            yield return ringCandidate;
         }
 
-        if (SkipGasGiantsForDss && body.Kind == SystemBodyKind.GasGiant)
-        {
-            yield break;
-        }
-
-        if (HighlightDssCandidates
-            && body.EstimatedMappedValue < DssValueFloor)
-        {
-            yield break;
-        }
-
-        if (SkipDistantDssCandidates
-            && body.DistanceFromArrivalLs > DssDistanceLimitLs)
+        if (ShouldSkipBodyDssCandidate(body))
         {
             yield break;
         }
 
         yield return body.ShortName;
     }
+
+    private IEnumerable<string> CreateRingDssCandidates(
+        SystemScanBodySnapshot body,
+        IReadOnlyDictionary<string, SystemScanBodySnapshot> knownRingBodies)
+    {
+        if (SkipRingsForDss)
+        {
+            yield break;
+        }
+
+        for (var index = 0; index < body.Rings.Count; index++)
+        {
+            var ring = body.Rings[index];
+            if (!knownRingBodies.TryGetValue(ring.Name, out var ringBody)
+                || !ringBody.IsDssComplete)
+            {
+                yield return body.ShortName + "r" + (char)('A' + index);
+            }
+        }
+    }
+
+    private bool ShouldSkipBodyDssCandidate(SystemScanBodySnapshot body) =>
+        SkipGasGiantsForDss && body.Kind == SystemBodyKind.GasGiant
+        || HighlightDssCandidates && body.EstimatedMappedValue < DssValueFloor
+        || SkipDistantDssCandidates
+            && body.DistanceFromArrivalLs > DssDistanceLimitLs;
 
     private List<string> CreateBodyInfoMarkers(SystemScanBodySnapshot body)
     {

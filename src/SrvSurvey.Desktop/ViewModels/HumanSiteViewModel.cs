@@ -1409,21 +1409,28 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             return SrvZoom;
         }
 
-        if (currentStatus.Landed
-            || currentStatus.Docked
-            || currentStatus.InMainShip
-                && !currentStatus.Flags.HasFlag(StatusFlags.Supercruise))
+        if (IsShipZoomContext(currentStatus))
         {
-            return DistanceToOriginMeters < 2_500
-                ? ShipZoom
-                : (DistanceToOriginMeters < 4_000) switch
-                {
-                    true => 0.2,
-                    false => 0.1
-                };
+            return ResolveShipAutomaticZoom();
         }
 
         return null;
+    }
+
+    private static bool IsShipZoomContext(EliteStatus currentStatus) =>
+        currentStatus.Landed
+        || currentStatus.Docked
+        || currentStatus.InMainShip
+            && !currentStatus.Flags.HasFlag(StatusFlags.Supercruise);
+
+    private double ResolveShipAutomaticZoom()
+    {
+        if (DistanceToOriginMeters < 2_500)
+        {
+            return ShipZoom;
+        }
+
+        return DistanceToOriginMeters < 4_000 ? 0.2 : 0.1;
     }
 
     private void ApplyAutomaticZoom()
