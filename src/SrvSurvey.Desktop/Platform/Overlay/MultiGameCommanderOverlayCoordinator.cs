@@ -141,15 +141,17 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         gameWindow = gameWindowTracker.GetSnapshot();
         var capabilities = platform.Capabilities;
         var shouldShow = ShouldShow(
-            new MultiGameOverlayVisibilityContext(
-                commanderInstances.HasMultipleGameWindows,
-                overlayBehavior.HideMultiGameCommanderOverlay,
-                isSuppressed,
-                capabilities.SupportsPassiveOverlay,
-                capabilities.SupportsClickThrough,
-                capabilities.SupportsGameWindowTracking,
-                gameWindow,
-                isApplicationActive()));
+            new MultiGameOverlayVisibilityContext
+    {
+        HasMultipleGameWindows = commanderInstances.HasMultipleGameWindows,
+        HideByPreference = overlayBehavior.HideMultiGameCommanderOverlay,
+        IsSuppressed = isSuppressed,
+        SupportsPassiveOverlay = capabilities.SupportsPassiveOverlay,
+        SupportsClickThrough = capabilities.SupportsClickThrough,
+        SupportsGameWindowTracking = capabilities.SupportsGameWindowTracking,
+        GameWindow = gameWindow,
+        IsApplicationActive = isApplicationActive()
+    });
         if (!shouldShow)
         {
             CloseWindow();
@@ -253,12 +255,21 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
     }
 }
 
-public sealed record MultiGameOverlayVisibilityContext(
-    bool HasMultipleGameWindows,
-    bool HideByPreference,
-    bool IsSuppressed,
-    bool SupportsPassiveOverlay,
-    bool SupportsClickThrough,
-    bool SupportsGameWindowTracking,
-    GameWindowSnapshot GameWindow,
-    bool IsApplicationActive);
+public sealed class MultiGameOverlayVisibilityContext
+{
+    public bool HasMultipleGameWindows { get; init; }
+
+    public bool HideByPreference { get; init; }
+
+    public bool IsSuppressed { get; init; }
+
+    public bool SupportsPassiveOverlay { get; init; }
+
+    public bool SupportsClickThrough { get; init; }
+
+    public bool SupportsGameWindowTracking { get; init; }
+
+    public required GameWindowSnapshot GameWindow { get; init; }
+
+    public bool IsApplicationActive { get; init; }
+}

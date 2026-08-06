@@ -1269,39 +1269,45 @@ public sealed class SystemScanState
             var bodyClass = Kind == SystemBodyKind.Star ? StarClass : PlanetClass;
             var scanValue = IsScanned
                 ? ExplorationValueCalculator.Calculate(
-                    new ExplorationValueRequest(
-                        bodyClass,
-                        IsTerraformable,
-                        Mass,
-                        !WasDiscovered,
-                        false,
-                        !WasMapped,
-                        isOdyssey,
-                        WithEfficiencyBonus: false))
+                    new ExplorationValueRequest
+    {
+        BodyClass = bodyClass,
+        IsTerraformable = IsTerraformable,
+        Mass = Mass,
+        IsFirstDiscoverer = !WasDiscovered,
+        IsMapped = false,
+        IsFirstMapped = !WasMapped,
+        IsOdyssey = isOdyssey,
+        WithEfficiencyBonus = false
+    })
                 : 0;
             var mappedValue = IsScanned && Kind != SystemBodyKind.Star
                 ? ExplorationValueCalculator.Calculate(
-                    new ExplorationValueRequest(
-                        bodyClass,
-                        IsTerraformable,
-                        Mass,
-                        !WasDiscovered,
-                        true,
-                        !WasMapped,
-                        isOdyssey,
-                        WithEfficiencyBonus: true))
+                    new ExplorationValueRequest
+    {
+        BodyClass = bodyClass,
+        IsTerraformable = IsTerraformable,
+        Mass = Mass,
+        IsFirstDiscoverer = !WasDiscovered,
+        IsMapped = true,
+        IsFirstMapped = !WasMapped,
+        IsOdyssey = isOdyssey,
+        WithEfficiencyBonus = true
+    })
                 : scanValue;
             var currentValue = IsDssComplete
                 ? ExplorationValueCalculator.Calculate(
-                    new ExplorationValueRequest(
-                        bodyClass,
-                        IsTerraformable,
-                        Mass,
-                        !WasDiscovered,
-                        true,
-                        !WasMapped,
-                        isOdyssey,
-                        DssEfficiencyBonus))
+                    new ExplorationValueRequest
+    {
+        BodyClass = bodyClass,
+        IsTerraformable = IsTerraformable,
+        Mass = Mass,
+        IsFirstDiscoverer = !WasDiscovered,
+        IsMapped = true,
+        IsFirstMapped = !WasMapped,
+        IsOdyssey = isOdyssey,
+        WithEfficiencyBonus = DssEfficiencyBonus
+    })
                 : scanValue;
 
             return new SystemScanBodySnapshot(

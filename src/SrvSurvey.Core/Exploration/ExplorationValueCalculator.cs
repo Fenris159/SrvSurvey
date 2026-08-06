@@ -1,15 +1,25 @@
 namespace SrvSurvey.Core.Exploration;
 
-public sealed record ExplorationValueRequest(
-    string? BodyClass,
-    bool IsTerraformable,
-    double Mass,
-    bool IsFirstDiscoverer,
-    bool IsMapped,
-    bool IsFirstMapped,
-    bool IsOdyssey,
-    bool WithEfficiencyBonus = true,
-    bool IsFleetCarrierSale = false);
+public sealed class ExplorationValueRequest
+{
+    public string? BodyClass { get; init; }
+
+    public bool IsTerraformable { get; init; }
+
+    public double Mass { get; init; }
+
+    public bool IsFirstDiscoverer { get; init; }
+
+    public bool IsMapped { get; init; }
+
+    public bool IsFirstMapped { get; init; }
+
+    public bool IsOdyssey { get; init; }
+
+    public bool WithEfficiencyBonus { get; init; } = true;
+
+    public bool IsFleetCarrierSale { get; init; }
+}
 
 public static class ExplorationValueCalculator
 {

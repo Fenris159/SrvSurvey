@@ -1530,19 +1530,21 @@ public sealed class MainWindowViewModelTests
                 "F123",
                 "Drew",
                 true,
-                new BoxelSearchSnapshot(
-                    true,
-                    top,
-                    DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
-                    top,
-                    2,
-                    'c',
-                    [],
-                    true,
-                    false,
-                    false,
-                    false,
-                    BoxelCompletionMode.EnterSystem));
+                new BoxelSearchSnapshot
+    {
+        Active = true,
+        TopBoxel = top,
+        StartedOn = DateTimeOffset.Parse("2026-07-01T00:00:00Z"),
+        Current = top,
+        CurrentCount = 2,
+        LowMassCode = 'c',
+        CompletedPrefixes = [],
+        AutoCopy = true,
+        Collapsed = false,
+        SkipAlreadyVisited = false,
+        SkipKnownToSpansh = false,
+        CompletionMode = BoxelCompletionMode.EnterSystem
+    });
             var paths = new AppDataPaths(
                 Path.Combine(root, "config"),
                 profile,

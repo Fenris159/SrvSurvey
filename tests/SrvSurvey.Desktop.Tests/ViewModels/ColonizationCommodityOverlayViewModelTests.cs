@@ -85,15 +85,17 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         {
             Rows =
             [
-                new ColonizationCommodityPlanRow(
-                    "steel",
-                    "Steel",
-                    "Metals",
-                    100,
-                    0,
-                    100,
-                    false,
-                    false),
+                new ColonizationCommodityPlanRow
+    {
+        Commodity = "steel",
+        DisplayName = "Steel",
+        Category = "Metals",
+        Needed = 100,
+        InShip = 0,
+        OnFleetCarriers = 100,
+        IsAssignedToCommander = false,
+        IsAssignedToOther = false
+    },
             ],
             FleetCarriers =
             [
@@ -170,30 +172,34 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         {
             Rows =
             [
-                new ColonizationCommodityPlanRow(
-                    "steel",
-                    "Steel",
-                    "Metals",
-                    100,
-                    20,
-                    80,
-                    false,
-                    false,
-                    IsAvailableAtCurrentMarket: true,
-                    IsUnavailableAtCurrentMarket: false,
-                    CanCompleteFleetCarrierLoad: true),
-                new ColonizationCommodityPlanRow(
-                    "water",
-                    "Water",
-                    "Chemicals",
-                    50,
-                    0,
-                    0,
-                    false,
-                    false,
-                    IsAvailableAtCurrentMarket: false,
-                    IsUnavailableAtCurrentMarket: true,
-                    CanCompleteFleetCarrierLoad: false),
+                new ColonizationCommodityPlanRow
+    {
+        Commodity = "steel",
+        DisplayName = "Steel",
+        Category = "Metals",
+        Needed = 100,
+        InShip = 20,
+        OnFleetCarriers = 80,
+        IsAssignedToCommander = false,
+        IsAssignedToOther = false,
+        IsAvailableAtCurrentMarket = true,
+        IsUnavailableAtCurrentMarket = false,
+        CanCompleteFleetCarrierLoad = true
+    },
+                new ColonizationCommodityPlanRow
+    {
+        Commodity = "water",
+        DisplayName = "Water",
+        Category = "Chemicals",
+        Needed = 50,
+        InShip = 0,
+        OnFleetCarriers = 0,
+        IsAssignedToCommander = false,
+        IsAssignedToOther = false,
+        IsAvailableAtCurrentMarket = false,
+        IsUnavailableAtCurrentMarket = true,
+        CanCompleteFleetCarrierLoad = false
+    },
             ],
         };
         viewModel.Apply(plan, Status(GuiFocus.StationServices));
@@ -255,21 +261,24 @@ public sealed class ColonizationCommodityOverlayViewModelTests
 
     private static ColonizationCommodityPlan Plan()
     {
-        return new ColonizationCommodityPlan(
-            "Test build (no_truss)",
-            ["Test build (no_truss)"],
-            [
-                new ColonizationCommodityPlanRow(
-                    "steel",
-                    "Steel",
-                    "Metals",
-                    100,
-                    20,
-                    20,
-                    true,
-                    false),
+        return new ColonizationCommodityPlan
+    {
+        Title = "Test build (no_truss)",
+        ProjectNames = ["Test build (no_truss)"],
+        Rows = [
+                new ColonizationCommodityPlanRow
+    {
+        Commodity = "steel",
+        DisplayName = "Steel",
+        Category = "Metals",
+        Needed = 100,
+        InShip = 20,
+        OnFleetCarriers = 20,
+        IsAssignedToCommander = true,
+        IsAssignedToOther = false
+    },
             ],
-            [
+        FleetCarriers = [
                 new ColonizationFleetCarrier
                 {
                     MarketId = 1,
@@ -277,15 +286,16 @@ public sealed class ColonizationCommodityOverlayViewModelTests
                     DisplayName = "Supply carrier",
                 },
             ],
-            100,
-            2,
-            80,
-            2,
-            false,
-            false,
-            false,
-            false,
-            false);
+        TotalRemaining = 100,
+        TripsInCurrentShip = 2,
+        FleetCarrierDeficit = 80,
+        FleetCarrierDeficitTrips = 2,
+        IsAtConstructionSite = false,
+        IsLocalProjectUntracked = false,
+        IsDockedAtUntrackedFleetCarrier = false,
+        IsConstructionComplete = false,
+        IsConstructionFailed = false
+    };
     }
 
     private static EliteStatus Status(GuiFocus focus)

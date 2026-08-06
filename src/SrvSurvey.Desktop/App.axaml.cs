@@ -63,6 +63,13 @@ public sealed partial class App : Application
     private GlobalKeyboardHookService? globalKeyboardHookService;
     private GlobalControllerInputService? globalControllerInputService;
     private OverlayPresentationSession? overlayPresentationSession;
+    private MainWindowViewModel? mainViewModel;
+    private MainWindow? mainWindow;
+    private IClassicDesktopStyleApplicationLifetime? desktopLifetime;
+    private ApplicationLogService? applicationLogService;
+    private GlobalInputSettingsViewModel? globalInputSettings;
+    private IGameTextInputService? gameTextInputService;
+    private bool manualOverlaySuppressed;
 
     public override void Initialize()
     {
@@ -155,9 +162,10 @@ public sealed partial class App : Application
                 OverlayThemeResources.RefreshAll();
             };
             var capabilities = OverlayPlatformCapabilities.DetectCurrent();
-            var inputSettings = new GlobalInputSettingsViewModel(
+            globalInputSettings = new GlobalInputSettingsViewModel(
                 new GlobalInputSettingsStore(appDataPaths.UiSettingsPath),
                 capabilities);
+            var inputSettings = globalInputSettings;
             var overlayPresentation = OverlayPresentationSession.CreateCurrent();
             overlayPresentationSession = overlayPresentation;
             applicationLog.Append(
@@ -168,7 +176,7 @@ public sealed partial class App : Application
                 GameWindowTracker.CreateCurrent(),
                 overlayLayoutStore,
                 overlayLayout);
-            var gameTextInputService = GameTextInputService.CreateCurrent();
+            gameTextInputService = GameTextInputService.CreateCurrent();
             var configuredJournalDirectory = StartupOptions.GetJournalDirectory(
                 Program.StartupArguments);
             var commandLineFrontierId = StartupOptions.GetFrontierId(
@@ -192,7 +200,7 @@ public sealed partial class App : Application
             var firstFootfallInferenceService =
                 FirstFootfallInferenceService.CreateCurrent();
             var canonnHumanSiteClient = new CanonnHumanSiteClient();
-            var viewModel = new MainWindowViewModel(
+            mainViewModel = new MainWindowViewModel(
                 configuredJournalDirectory,
                 new MainWindowViewModelOptions
                 {
@@ -215,92 +223,45 @@ public sealed partial class App : Application
                     CanonnHumanSiteClient = canonnHumanSiteClient,
                     CanonnHumanSitePublisher = canonnHumanSiteClient,
                 });
-            IGameWindowTracker CreateOverlayGameWindowTracker()
-            {
-                return new OverlayGameWindowTracker(
-                    GameWindowTracker.CreateCurrent(),
-                    () => viewModel.OverlayBehavior.KeepWhenGameLosesFocus
-                        || viewModel.OverlayInteraction.IsEditing
-                        || viewModel.OverlayInteraction.IsLiveInteractionEnabled);
-            }
+            var viewModel = mainViewModel;
+            desktopLifetime = desktop;
+            applicationLogService = applicationLog;
 
-            var mainWindow = new MainWindow(viewModel);
+            mainWindow = new MainWindow(viewModel);
             desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
             desktop.MainWindow = mainWindow;
-            void HandleFrontierAuthorizationCallback(
-                object? sender,
-                EventArgs eventArgs)
-            {
-                mainWindow.RestoreAndActivate();
-            }
 
             viewModel.FrontierProfile.AuthorizationCallbackReceived +=
                 HandleFrontierAuthorizationCallback;
-            async Task RestartApplicationAsync(string reason)
-            {
-                new ApplicationRestartService().StartReplacement();
-                applicationLog.Append(reason + "; replacement process started.");
-                await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
-            }
-
-            Task RestartAfterProfileImportAsync()
-            {
-                return RestartApplicationAsync("Profile import verified");
-            }
-
-            Task RestartAfterJournalChangeAsync()
-            {
-                return RestartApplicationAsync("Journal folder changed");
-            }
-
-            Task RestartAfterCommanderPreferenceChangeAsync()
-            {
-                return RestartApplicationAsync("Commander preference changed");
-            }
-
             viewModel.ReferenceDataUpdates.SetRestartHandler(() =>
                 RestartApplicationAsync("Published reference data refreshed"));
             viewModel.Localization.SetRestartHandler(() =>
                 RestartApplicationAsync("Language preference changed"));
             var appImagePath = Environment.GetEnvironmentVariable("APPIMAGE");
             viewModel.ReleaseUpdates.ConfigureInstaller(
-                new ReleaseInstallerConfiguration(
-                    new ReleasePackageDownloadService(),
-                    new ReleasePackageStagingService(),
-                    new ReleaseInstallationPreparer(),
-                    new ApplicationUpdateHandoffService(),
-                    appDataPaths.DataDirectory,
-                    AppContext.BaseDirectory,
-                    Program.StartupArguments,
-                    async () => await Dispatcher.UIThread.InvokeAsync(
+                new ReleaseInstallerConfiguration
+                {
+                    DownloadService = new ReleasePackageDownloadService(),
+                    StagingService = new ReleasePackageStagingService(),
+                    InstallationPreparer = new ReleaseInstallationPreparer(),
+                    HandoffService = new ApplicationUpdateHandoffService(),
+                    DataDirectory = appDataPaths.DataDirectory,
+                    InstallationDirectory = AppContext.BaseDirectory,
+                    StartupArguments = Program.StartupArguments,
+                    Shutdown = async () => await Dispatcher.UIThread.InvokeAsync(
                         () => desktop.Shutdown()),
-                    string.IsNullOrWhiteSpace(appImagePath)
-                        ? null
-                        : "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually.",
-                    IsAppImage: !string.IsNullOrWhiteSpace(appImagePath)));
+                    AutomaticInstallationUnavailableReason =
+                        string.IsNullOrWhiteSpace(appImagePath)
+                            ? null
+                            : "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually.",
+                    IsAppImage = !string.IsNullOrWhiteSpace(appImagePath),
+                });
 
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested +=
                 RestartAfterJournalChangeAsync;
             viewModel.CommanderPreference.RestartRequested +=
                 RestartAfterCommanderPreferenceChangeAsync;
-            async Task WriteClipboardAsync(string text)
-            {
-                var clipboard = mainWindow.Clipboard
-                    ?? throw new InvalidOperationException(
-                        "The desktop clipboard is not available.");
-                await clipboard.SetTextAsync(text);
-                await clipboard.FlushAsync();
-            }
-
-            async Task<string?> ReadClipboardAsync()
-            {
-                var clipboard = mainWindow.Clipboard
-                    ?? throw new InvalidOperationException(
-                        "The desktop clipboard is not available.");
-                return await clipboard.TryGetValueAsync(DataFormat.Text);
-            }
-
             viewModel.SetJournalCommandPlatformServices(
                 directory => mainWindow.Launcher.LaunchDirectoryInfoAsync(
                     directory),
@@ -318,22 +279,6 @@ public sealed partial class App : Application
                     mainWindow.Activate();
                 });
             errorReportWindowCoordinator = errorReports;
-            void HandleUiException(
-                object? sender,
-                DispatcherUnhandledExceptionEventArgs eventArgs)
-            {
-                errorReports.Show(eventArgs.Exception);
-                eventArgs.Handled = true;
-            }
-
-            void HandleUnobservedTaskException(
-                object? sender,
-                UnobservedTaskExceptionEventArgs eventArgs)
-            {
-                errorReports.Show(eventArgs.Exception);
-                eventArgs.SetObserved();
-            }
-
             Dispatcher.UIThread.UnhandledException += HandleUiException;
             TaskScheduler.UnobservedTaskException +=
                 HandleUnobservedTaskException;
@@ -466,37 +411,6 @@ public sealed partial class App : Application
                     () => desktop.Windows.Any(window => window.IsActive),
                     overlayLayout);
 
-            void SynchronizeOverlayPriority()
-            {
-                var liveGuardianSite =
-                    guardianOverlayCoordinator?.IsLiveSiteVisible == true;
-                var humanSite =
-                    humanSiteOverlayCoordinator?.IsVisible == true;
-                var guardianSystemSummary = guardianOverlayCoordinator
-                    ?.IsSystemSummaryVisible == true;
-                systemSurveyOverlayCoordinator?.SetFssObscured(
-                    guardianSystemSummary);
-                systemSurveyOverlayCoordinator?.SetBodyInfoObscured(
-                    guardianSystemSummary);
-                systemSurveyOverlayCoordinator?.SetBiologyObscured(
-                    liveGuardianSite || humanSite);
-                systemSurveyOverlayCoordinator?.SetBiologyStatusObscured(
-                    liveGuardianSite
-                    || humanSite
-                    || jumpInfoOverlayCoordinator?.IsVisible == true);
-                systemSurveyOverlayCoordinator?.SetPriorScansObscured(
-                    liveGuardianSite
-                    || humanSite
-                    || stationInfoOverlayCoordinator?.IsVisible == true);
-                systemSurveyOverlayCoordinator?.SetSurfaceObscured(
-                    liveGuardianSite || humanSite);
-                guardianOverlayCoordinator?.SetLiveStatusObscured(
-                    jumpInfoOverlayCoordinator?.IsVisible == true);
-                guardianOverlayCoordinator?.SetSystemSummaryObscured(
-                    viewModel.SystemSurvey.IsFssInfoForced
-                    || viewModel.SystemSurvey.IsBodyInfoForced);
-            }
-
             jumpInfoOverlayCoordinator.VisibilityChanged += (_, _) =>
                 SynchronizeOverlayPriority();
             systemSurveyOverlayCoordinator.VisibilityChanged += (_, _) =>
@@ -514,44 +428,6 @@ public sealed partial class App : Application
                     overlayPresentation.CreatePlatformService(),
                     CreateOverlayGameWindowTracker(),
                     overlayLayout);
-            var manualOverlaySuppressed = false;
-            void ApplyOverlaySuppression()
-            {
-                var suppress = manualOverlaySuppressed
-                    || viewModel.OverlayBehavior.ShouldSuppressForSuit
-                    || viewModel.OverlayBehavior.ShouldSuppressForSession;
-                jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
-                routeBioOverlayCoordinator?.SetSuppressed(suppress);
-                fleetCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
-                systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
-                groundTargetOverlayCoordinator?.SetSuppressed(suppress);
-                combatOverlayCoordinator?.SetSuppressed(suppress);
-                guardianOverlayCoordinator?.SetSuppressed(suppress);
-                stationInfoOverlayCoordinator?.SetSuppressed(suppress);
-                humanSiteOverlayCoordinator?.SetSuppressed(suppress);
-                sphericalSearchOverlayCoordinator?.SetSuppressed(suppress);
-                colonizationCommodityOverlayCoordinator?.SetSuppressed(suppress);
-                questIndicatorOverlayCoordinator?.SetSuppressed(suppress);
-                notificationOverlayCoordinator?.SetSuppressed(suppress);
-                pulseOverlayCoordinator?.SetSuppressed(suppress);
-                galaxyMapOverlayCoordinator?.SetSuppressed(suppress);
-                multiGameCommanderOverlayCoordinator?.SetSuppressed(suppress);
-            }
-
-            void HandleOverlayBehaviorChanged(
-                object? sender,
-                System.ComponentModel.PropertyChangedEventArgs eventArgs)
-            {
-                if (eventArgs.PropertyName is
-                    nameof(OverlayBehaviorViewModel.ShouldSuppressForSuit)
-                    or nameof(OverlayBehaviorViewModel.ShouldSuppressForSession)
-                    or nameof(OverlayBehaviorViewModel.HideInDominatorSuit)
-                    or nameof(OverlayBehaviorViewModel.HideInMaverickSuit))
-                {
-                    ApplyOverlaySuppression();
-                }
-            }
-
             viewModel.OverlayBehavior.PropertyChanged +=
                 HandleOverlayBehaviorChanged;
             ApplyOverlaySuppression();
@@ -592,219 +468,6 @@ public sealed partial class App : Application
                             status));
                 }
             };
-
-            void HandleAction(GlobalInputActionTriggeredEventArgs eventArgs)
-            {
-                Dispatcher.UIThread.Post(async () =>
-                {
-                    var handled = false;
-                    switch (eventArgs.Action)
-                    {
-                        case GlobalInputAction.MapZoomIn:
-                            handled = guardianOverlayCoordinator
-                                ?.AdjustZoom(zoomIn: true) == true
-                                || humanSiteOverlayCoordinator
-                                ?.AdjustZoom(zoomIn: true) == true
-                                || systemSurveyOverlayCoordinator
-                                    ?.AdjustSurfaceZoom(zoomIn: true) == true;
-                            break;
-
-                        case GlobalInputAction.MapZoomOut:
-                            handled = guardianOverlayCoordinator
-                                ?.AdjustZoom(zoomIn: false) == true
-                                || humanSiteOverlayCoordinator
-                                ?.AdjustZoom(zoomIn: false) == true
-                                || systemSurveyOverlayCoordinator
-                                    ?.AdjustSurfaceZoom(zoomIn: false) == true;
-                            break;
-
-                        case GlobalInputAction.MapZoomAuto:
-                            handled = guardianOverlayCoordinator
-                                ?.ResetZoom() == true
-                                || humanSiteOverlayCoordinator
-                                ?.ResetZoom() == true
-                                || systemSurveyOverlayCoordinator
-                                    ?.ResetSurfaceZoom() == true;
-                            break;
-
-                        case GlobalInputAction.MapBeHuge:
-                            handled = humanSiteOverlayCoordinator
-                                ?.ToggleHuge() == true;
-                            break;
-
-                        case GlobalInputAction.ToggleAllVisibility:
-                            manualOverlaySuppressed =
-                                !manualOverlaySuppressed;
-                            ApplyOverlaySuppression();
-                            handled = true;
-                            break;
-
-                        case GlobalInputAction.ToggleOverlayInteraction:
-                            handled = viewModel.OverlayInteraction
-                                .ToggleLiveOverlayInteraction();
-                            break;
-
-                        case GlobalInputAction.ShowJumpInfo:
-                            handled = viewModel.JumpInfo.ToggleForcedVisibility();
-                            break;
-
-                        case GlobalInputAction.ShowFssInfo:
-                            handled = viewModel.SystemSurvey
-                                .ToggleFssInfoVisibility();
-                            break;
-
-                        case GlobalInputAction.ShowBodyInfo:
-                            handled = viewModel.SystemSurvey
-                                .ToggleBodyInfoVisibility();
-                            break;
-
-                        case GlobalInputAction.ShowStationInfo:
-                            handled = viewModel.StationInfo
-                                .ToggleForcedVisibility();
-                            break;
-
-                        case GlobalInputAction.NextWindow:
-                            handled = viewModel.CommanderInstances
-                                .SwitchToNextGameWindow();
-                            break;
-
-                        case GlobalInputAction.QuestShow:
-                            viewModel.ShowQuests();
-                            mainWindow.Show();
-                            mainWindow.Activate();
-                            handled = true;
-                            break;
-
-                        case GlobalInputAction.ShowColonyShopping:
-                            colonizationCommodityOverlayCoordinator
-                                ?.ToggleVisibility();
-                            handled = true;
-                            break;
-
-                        case GlobalInputAction.ShowSystemNotes:
-                            handled = systemNotesWindowCoordinator is not null
-                                && await systemNotesWindowCoordinator
-                                    .ShowOrActivateAsync();
-                            break;
-
-                        case GlobalInputAction.CopyNextBoxel:
-                            if (viewModel.BoxelSearch.ShouldShowGalaxyMapOverlay
-                                && viewModel.BoxelSearch.NextSystemForInput
-                                    is not null)
-                            {
-                                viewModel.BoxelSearch.SetClipboardWriter(
-                                    WriteClipboardAsync);
-                                await viewModel.BoxelSearch.CopyNextSystemAsync();
-                                handled = true;
-                            }
-
-                            break;
-
-                        case GlobalInputAction.PasteGalMap:
-                            var isGalaxyMapOpen = viewModel.SystemSurvey
-                                .CurrentStatus?.GuiFocus == GuiFocus.GalaxyMap;
-                            var routeNextHop = viewModel.Route
-                                .ShouldShowGalaxyMapOverlay
-                                    ? viewModel.Route.NextHop?.Name
-                                    : null;
-                            var resolvedText = GalaxyMapTextResolver.Resolve(
-                                isGalaxyMapOpen,
-                                routeNextHop,
-                                viewModel.BoxelSearch.NextSystemForInput,
-                                viewModel.BoxelSearch.ShouldPasteNextSystem,
-                                clipboardText: null);
-                            if (resolvedText is null && isGalaxyMapOpen)
-                            {
-                                resolvedText = GalaxyMapTextResolver.Resolve(
-                                    true,
-                                    null,
-                                    null,
-                                    useBoxelNextSystem: false,
-                                    await ReadClipboardAsync());
-                            }
-
-                            if (resolvedText is not null)
-                            {
-                                handled = gameTextInputService
-                                    .EnterText(resolvedText)
-                                    .Succeeded;
-                            }
-
-                            break;
-
-                        case GlobalInputAction.ToggleFirstFootfall:
-                            handled = await viewModel
-                                .ToggleCurrentBodyFirstFootfallAsync();
-                            break;
-
-                        case GlobalInputAction.StreamOne:
-                            handled = streamOverlayCoordinator?.Toggle() == true;
-                            break;
-
-                        case GlobalInputAction.AdjustVr:
-                            handled = viewModel.BeginVrAdjustment();
-                            mainWindow.Show();
-                            mainWindow.Activate();
-                            break;
-
-                        case GlobalInputAction.ResetVr:
-                            handled = vrOverlayCoordinator
-                                ?.ResetOrientation() == true;
-                            break;
-
-                        case GlobalInputAction.Track1:
-                        case GlobalInputAction.Track2:
-                        case GlobalInputAction.Track3:
-                        case GlobalInputAction.Track4:
-                        case GlobalInputAction.Track5:
-                        case GlobalInputAction.Track6:
-                        case GlobalInputAction.Track7:
-                        case GlobalInputAction.Track8:
-                            var trackerNumber = eventArgs.Action switch
-                            {
-                                GlobalInputAction.Track1 => 1,
-                                GlobalInputAction.Track2 => 2,
-                                GlobalInputAction.Track3 => 3,
-                                GlobalInputAction.Track4 => 4,
-                                GlobalInputAction.Track5 => 5,
-                                GlobalInputAction.Track6 => 6,
-                                GlobalInputAction.Track7 => 7,
-                                _ => 8,
-                            };
-                            handled = await viewModel.SurfaceSurvey
-                                .ToggleQuickTrackerAsync(trackerNumber);
-                            break;
-
-                        case GlobalInputAction.RefreshColonyData:
-                            handled = viewModel.Colonization.IsEnabled;
-                            if (handled)
-                            {
-                                _ = viewModel.Colonization.RefreshAsync();
-                            }
-
-                            break;
-
-                        case GlobalInputAction.CollapseColonyData:
-                            viewModel.Colonization.CommodityOverlay
-                                .ToggleSatisfiedGroups();
-                            handled = true;
-                            break;
-
-                        case GlobalInputAction.ToggleImageEmbed:
-                            handled = viewModel.ScreenshotProcessing
-                                .ToggleBanner();
-                            if (handled)
-                            {
-                                viewModel.Notifications.ShowBannerPreference(
-                                    viewModel.ScreenshotProcessing.AddBanner);
-                            }
-
-                            break;
-                    }
-
-                    inputSettings.ReportAction(eventArgs.Action, handled);
-                });
-            }
 
             globalKeyboardHookService.ActionTriggered += (_, eventArgs) =>
                 HandleAction(eventArgs);
@@ -958,4 +621,379 @@ public sealed partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
     }
+
+    private IGameWindowTracker CreateOverlayGameWindowTracker()
+    {
+        var viewModel = mainViewModel
+            ?? throw new InvalidOperationException("Main view model is not ready.");
+        return new OverlayGameWindowTracker(
+            GameWindowTracker.CreateCurrent(),
+            () => viewModel.OverlayBehavior.KeepWhenGameLosesFocus
+                || viewModel.OverlayInteraction.IsEditing
+                || viewModel.OverlayInteraction.IsLiveInteractionEnabled);
+    }
+
+    private void HandleFrontierAuthorizationCallback(
+        object? sender,
+        EventArgs eventArgs)
+    {
+        mainWindow?.RestoreAndActivate();
+    }
+
+    private async Task RestartApplicationAsync(string reason)
+    {
+        new ApplicationRestartService().StartReplacement();
+        applicationLogService?.Append(reason + "; replacement process started.");
+        if (desktopLifetime is { } desktop)
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
+        }
+    }
+
+    private Task RestartAfterProfileImportAsync()
+    {
+        return RestartApplicationAsync("Profile import verified");
+    }
+
+    private Task RestartAfterJournalChangeAsync()
+    {
+        return RestartApplicationAsync("Journal folder changed");
+    }
+
+    private Task RestartAfterCommanderPreferenceChangeAsync()
+    {
+        return RestartApplicationAsync("Commander preference changed");
+    }
+
+    private async Task WriteClipboardAsync(string text)
+    {
+        var clipboard = mainWindow?.Clipboard
+            ?? throw new InvalidOperationException(
+                "The desktop clipboard is not available.");
+        await clipboard.SetTextAsync(text);
+        await clipboard.FlushAsync();
+    }
+
+    private async Task<string?> ReadClipboardAsync()
+    {
+        var clipboard = mainWindow?.Clipboard
+            ?? throw new InvalidOperationException(
+                "The desktop clipboard is not available.");
+        return await clipboard.TryGetValueAsync(DataFormat.Text);
+    }
+
+    private void HandleUiException(
+        object? sender,
+        DispatcherUnhandledExceptionEventArgs eventArgs)
+    {
+        errorReportWindowCoordinator?.Show(eventArgs.Exception);
+        eventArgs.Handled = true;
+    }
+
+    private void HandleUnobservedTaskException(
+        object? sender,
+        UnobservedTaskExceptionEventArgs eventArgs)
+    {
+        errorReportWindowCoordinator?.Show(eventArgs.Exception);
+        eventArgs.SetObserved();
+    }
+
+    private void SynchronizeOverlayPriority()
+    {
+        var viewModel = mainViewModel;
+        if (viewModel is null)
+        {
+            return;
+        }
+
+        var liveGuardianSite =
+            guardianOverlayCoordinator?.IsLiveSiteVisible == true;
+        var humanSite = humanSiteOverlayCoordinator?.IsVisible == true;
+        var guardianSystemSummary = guardianOverlayCoordinator
+            ?.IsSystemSummaryVisible == true;
+        systemSurveyOverlayCoordinator?.SetFssObscured(guardianSystemSummary);
+        systemSurveyOverlayCoordinator?.SetBodyInfoObscured(
+            guardianSystemSummary);
+        systemSurveyOverlayCoordinator?.SetBiologyObscured(
+            liveGuardianSite || humanSite);
+        systemSurveyOverlayCoordinator?.SetBiologyStatusObscured(
+            liveGuardianSite
+            || humanSite
+            || jumpInfoOverlayCoordinator?.IsVisible == true);
+        systemSurveyOverlayCoordinator?.SetPriorScansObscured(
+            liveGuardianSite
+            || humanSite
+            || stationInfoOverlayCoordinator?.IsVisible == true);
+        systemSurveyOverlayCoordinator?.SetSurfaceObscured(
+            liveGuardianSite || humanSite);
+        guardianOverlayCoordinator?.SetLiveStatusObscured(
+            jumpInfoOverlayCoordinator?.IsVisible == true);
+        guardianOverlayCoordinator?.SetSystemSummaryObscured(
+            viewModel.SystemSurvey.IsFssInfoForced
+            || viewModel.SystemSurvey.IsBodyInfoForced);
+    }
+
+    private void ApplyOverlaySuppression()
+    {
+        var viewModel = mainViewModel;
+        if (viewModel is null)
+        {
+            return;
+        }
+
+        var suppress = manualOverlaySuppressed
+            || viewModel.OverlayBehavior.ShouldSuppressForSuit
+            || viewModel.OverlayBehavior.ShouldSuppressForSession;
+        jumpInfoOverlayCoordinator?.SetSuppressed(suppress);
+        routeBioOverlayCoordinator?.SetSuppressed(suppress);
+        fleetCarrierRouteOverlayCoordinator?.SetSuppressed(suppress);
+        systemSurveyOverlayCoordinator?.SetSuppressed(suppress);
+        groundTargetOverlayCoordinator?.SetSuppressed(suppress);
+        combatOverlayCoordinator?.SetSuppressed(suppress);
+        guardianOverlayCoordinator?.SetSuppressed(suppress);
+        stationInfoOverlayCoordinator?.SetSuppressed(suppress);
+        humanSiteOverlayCoordinator?.SetSuppressed(suppress);
+        sphericalSearchOverlayCoordinator?.SetSuppressed(suppress);
+        colonizationCommodityOverlayCoordinator?.SetSuppressed(suppress);
+        questIndicatorOverlayCoordinator?.SetSuppressed(suppress);
+        notificationOverlayCoordinator?.SetSuppressed(suppress);
+        pulseOverlayCoordinator?.SetSuppressed(suppress);
+        galaxyMapOverlayCoordinator?.SetSuppressed(suppress);
+        multiGameCommanderOverlayCoordinator?.SetSuppressed(suppress);
+    }
+
+    private void HandleOverlayBehaviorChanged(
+        object? sender,
+        System.ComponentModel.PropertyChangedEventArgs eventArgs)
+    {
+        if (eventArgs.PropertyName is
+            nameof(OverlayBehaviorViewModel.ShouldSuppressForSuit)
+            or nameof(OverlayBehaviorViewModel.ShouldSuppressForSession)
+            or nameof(OverlayBehaviorViewModel.HideInDominatorSuit)
+            or nameof(OverlayBehaviorViewModel.HideInMaverickSuit))
+        {
+            ApplyOverlaySuppression();
+        }
+    }
+
+    private void HandleAction(GlobalInputActionTriggeredEventArgs eventArgs)
+    {
+        Dispatcher.UIThread.Post(async () =>
+        {
+            var viewModel = mainViewModel;
+            var window = mainWindow;
+            var inputSettings = globalInputSettings;
+            if (viewModel is null || window is null || inputSettings is null)
+            {
+                return;
+            }
+
+            var handled = await ExecuteGlobalInputActionAsync(eventArgs.Action);
+            inputSettings.ReportAction(eventArgs.Action, handled);
+        });
+    }
+
+    private async Task<bool> ExecuteGlobalInputActionAsync(GlobalInputAction action)
+    {
+        var viewModel = mainViewModel
+            ?? throw new InvalidOperationException("Main view model is not ready.");
+        var window = mainWindow
+            ?? throw new InvalidOperationException("Main window is not ready.");
+        return action switch
+        {
+            GlobalInputAction.MapZoomIn =>
+                guardianOverlayCoordinator?.AdjustZoom(zoomIn: true) == true
+                || humanSiteOverlayCoordinator?.AdjustZoom(zoomIn: true) == true
+                || systemSurveyOverlayCoordinator?.AdjustSurfaceZoom(zoomIn: true)
+                    == true,
+            GlobalInputAction.MapZoomOut =>
+                guardianOverlayCoordinator?.AdjustZoom(zoomIn: false) == true
+                || humanSiteOverlayCoordinator?.AdjustZoom(zoomIn: false) == true
+                || systemSurveyOverlayCoordinator?.AdjustSurfaceZoom(zoomIn: false)
+                    == true,
+            GlobalInputAction.MapZoomAuto =>
+                guardianOverlayCoordinator?.ResetZoom() == true
+                || humanSiteOverlayCoordinator?.ResetZoom() == true
+                || systemSurveyOverlayCoordinator?.ResetSurfaceZoom() == true,
+            GlobalInputAction.MapBeHuge =>
+                humanSiteOverlayCoordinator?.ToggleHuge() == true,
+            GlobalInputAction.ToggleAllVisibility => ToggleAllOverlayVisibility(),
+            GlobalInputAction.ToggleOverlayInteraction =>
+                viewModel.OverlayInteraction.ToggleLiveOverlayInteraction(),
+            GlobalInputAction.ShowJumpInfo =>
+                viewModel.JumpInfo.ToggleForcedVisibility(),
+            GlobalInputAction.ShowFssInfo =>
+                viewModel.SystemSurvey.ToggleFssInfoVisibility(),
+            GlobalInputAction.ShowBodyInfo =>
+                viewModel.SystemSurvey.ToggleBodyInfoVisibility(),
+            GlobalInputAction.ShowStationInfo =>
+                viewModel.StationInfo.ToggleForcedVisibility(),
+            GlobalInputAction.NextWindow =>
+                viewModel.CommanderInstances.SwitchToNextGameWindow(),
+            GlobalInputAction.QuestShow => ShowQuestsWindow(),
+            GlobalInputAction.ShowColonyShopping => ToggleColonyShopping(),
+            GlobalInputAction.ShowSystemNotes =>
+                systemNotesWindowCoordinator is not null
+                && await systemNotesWindowCoordinator.ShowOrActivateAsync(),
+            GlobalInputAction.CopyNextBoxel => await CopyNextBoxelAsync(),
+            GlobalInputAction.PasteGalMap => await PasteGalaxyMapAsync(),
+            GlobalInputAction.ToggleFirstFootfall =>
+                await viewModel.ToggleCurrentBodyFirstFootfallAsync(),
+            GlobalInputAction.StreamOne => streamOverlayCoordinator?.Toggle() == true,
+            GlobalInputAction.AdjustVr => BeginVrAdjustment(),
+            GlobalInputAction.ResetVr =>
+                vrOverlayCoordinator?.ResetOrientation() == true,
+            GlobalInputAction.Track1 => await ToggleQuickTrackerAsync(1),
+            GlobalInputAction.Track2 => await ToggleQuickTrackerAsync(2),
+            GlobalInputAction.Track3 => await ToggleQuickTrackerAsync(3),
+            GlobalInputAction.Track4 => await ToggleQuickTrackerAsync(4),
+            GlobalInputAction.Track5 => await ToggleQuickTrackerAsync(5),
+            GlobalInputAction.Track6 => await ToggleQuickTrackerAsync(6),
+            GlobalInputAction.Track7 => await ToggleQuickTrackerAsync(7),
+            GlobalInputAction.Track8 => await ToggleQuickTrackerAsync(8),
+            GlobalInputAction.RefreshColonyData => RefreshColonyData(),
+            GlobalInputAction.CollapseColonyData => CollapseColonyData(),
+            GlobalInputAction.ToggleImageEmbed => ToggleImageEmbed(),
+            _ => false,
+        };
+    }
+
+    private bool ToggleAllOverlayVisibility()
+    {
+        manualOverlaySuppressed = !manualOverlaySuppressed;
+        ApplyOverlaySuppression();
+        return true;
+    }
+
+    private bool ShowQuestsWindow()
+    {
+        var viewModel = mainViewModel;
+        var window = mainWindow;
+        if (viewModel is null || window is null)
+        {
+            return false;
+        }
+
+        viewModel.ShowQuests();
+        window.Show();
+        window.Activate();
+        return true;
+    }
+
+    private bool ToggleColonyShopping()
+    {
+        colonizationCommodityOverlayCoordinator?.ToggleVisibility();
+        return true;
+    }
+
+    private async Task<bool> CopyNextBoxelAsync()
+    {
+        var viewModel = mainViewModel;
+        if (viewModel is null
+            || !viewModel.BoxelSearch.ShouldShowGalaxyMapOverlay
+            || viewModel.BoxelSearch.NextSystemForInput is null)
+        {
+            return false;
+        }
+
+        viewModel.BoxelSearch.SetClipboardWriter(WriteClipboardAsync);
+        await viewModel.BoxelSearch.CopyNextSystemAsync();
+        return true;
+    }
+
+    private async Task<bool> PasteGalaxyMapAsync()
+    {
+        var viewModel = mainViewModel;
+        if (viewModel is null || gameTextInputService is null)
+        {
+            return false;
+        }
+
+        var isGalaxyMapOpen = viewModel.SystemSurvey.CurrentStatus?.GuiFocus
+            == GuiFocus.GalaxyMap;
+        var routeNextHop = viewModel.Route.ShouldShowGalaxyMapOverlay
+            ? viewModel.Route.NextHop?.Name
+            : null;
+        var resolvedText = GalaxyMapTextResolver.Resolve(
+            isGalaxyMapOpen,
+            routeNextHop,
+            viewModel.BoxelSearch.NextSystemForInput,
+            viewModel.BoxelSearch.ShouldPasteNextSystem,
+            clipboardText: null);
+        if (resolvedText is null && isGalaxyMapOpen)
+        {
+            resolvedText = GalaxyMapTextResolver.Resolve(
+                true,
+                null,
+                null,
+                useBoxelNextSystem: false,
+                await ReadClipboardAsync());
+        }
+
+        return resolvedText is not null
+            && gameTextInputService.EnterText(resolvedText).Succeeded;
+    }
+
+    private bool BeginVrAdjustment()
+    {
+        var viewModel = mainViewModel;
+        var window = mainWindow;
+        if (viewModel is null || window is null)
+        {
+            return false;
+        }
+
+        var handled = viewModel.BeginVrAdjustment();
+        window.Show();
+        window.Activate();
+        return handled;
+    }
+
+    private Task<bool> ToggleQuickTrackerAsync(int trackerNumber)
+    {
+        var viewModel = mainViewModel;
+        if (viewModel is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        return viewModel.SurfaceSurvey.ToggleQuickTrackerAsync(trackerNumber);
+    }
+
+    private bool RefreshColonyData()
+    {
+        var viewModel = mainViewModel;
+        if (viewModel is null || !viewModel.Colonization.IsEnabled)
+        {
+            return false;
+        }
+
+        _ = viewModel.Colonization.RefreshAsync();
+        return true;
+    }
+
+    private bool CollapseColonyData()
+    {
+        mainViewModel?.Colonization.CommodityOverlay.ToggleSatisfiedGroups();
+        return true;
+    }
+
+    private bool ToggleImageEmbed()
+    {
+        var viewModel = mainViewModel;
+        if (viewModel is null)
+        {
+            return false;
+        }
+
+        var handled = viewModel.ScreenshotProcessing.ToggleBanner();
+        if (handled)
+        {
+            viewModel.Notifications.ShowBannerPreference(
+                viewModel.ScreenshotProcessing.AddBanner);
+        }
+
+        return handled;
+    }
+
 }

@@ -4420,15 +4420,17 @@ public sealed class GuardianViewModel
         activeMapRelativeHeading = SurfaceNavigation.NormalizeDegrees(
             currentStatus.NormalizedHeading - siteHeading);
 
-        proximity = proximityEvaluator.Evaluate(
-            currentStatus,
-            location.Value,
-            siteHeading,
-            template,
-            rendererSurvey,
-            activeObelisks,
-            obeliskGroups,
-            ShowComponentMaterials);
+        proximity = proximityEvaluator.Evaluate(new GuardianSiteProximityEvaluateRequest
+        {
+            Status = currentStatus,
+            SiteLocation = location.Value,
+            SiteHeading = siteHeading,
+            Template = template,
+            Survey = rendererSurvey,
+            ActiveObelisks = activeObelisks,
+            ObeliskGroups = obeliskGroups,
+            IncludeComponentMaterials = ShowComponentMaterials,
+        });
         if (proximity is { } measurement
             && reference is not null
             && SelectedSite?.Reference == reference)

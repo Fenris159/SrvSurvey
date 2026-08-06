@@ -81,25 +81,27 @@ public sealed class OverlayCatalogPresentationRenderingTests
     {
         var viewModel = new ColonizationCommodityOverlayViewModel();
         viewModel.Apply(
-            new ColonizationCommodityPlan(
-                "Raven's Reach",
-                ["Raven's Reach"],
-                [
+            new ColonizationCommodityPlan
+    {
+        Title = "Raven's Reach",
+        ProjectNames = ["Raven's Reach"],
+        Rows = [
                     Row("steel", "Steel", "Metals", 2450, 96, 620),
                     Row("powergenerators", "Power generators", "Machinery", 840, 32, 210),
                     Row("polymers", "Polymers", "Chemicals", 610, 24, 180),
                     Row("waterpurifiers", "Water purifiers", "Machinery", 420, 16, 120),
                 ],
-                [],
-                4320,
-                45,
-                3190,
-                null,
-                false,
-                false,
-                false,
-                false,
-                false),
+        FleetCarriers = [],
+        TotalRemaining = 4320,
+        TripsInCurrentShip = 45,
+        FleetCarrierDeficit = 3190,
+        FleetCarrierDeficitTrips = null,
+        IsAtConstructionSite = false,
+        IsLocalProjectUntracked = false,
+        IsDockedAtUntrackedFleetCarrier = false,
+        IsConstructionComplete = false,
+        IsConstructionFailed = false
+    },
             null);
         var window = new ColonizationCommodityOverlayWindow(viewModel);
         var layout = new LegacyOverlayLayout(
@@ -142,13 +144,15 @@ public sealed class OverlayCatalogPresentationRenderingTests
         string category,
         int needed,
         int inShip,
-        int onFleetCarriers) => new(
-            commodity,
-            displayName,
-            category,
-            needed,
-            inShip,
-            onFleetCarriers,
-            false,
-            false);
+        int onFleetCarriers) => new()
+    {
+        Commodity = commodity,
+        DisplayName = displayName,
+        Category = category,
+        Needed = needed,
+        InShip = inShip,
+        OnFleetCarriers = onFleetCarriers,
+        IsAssignedToCommander = false,
+        IsAssignedToOther = false,
+    };
 }

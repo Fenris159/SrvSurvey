@@ -3,15 +3,24 @@ using SrvSurvey.Core.Journal;
 
 namespace SrvSurvey.Core.Colonization;
 
-public sealed record ColonizationCommodityPlanRequest(
-    IEnumerable<ColonizationProject> Projects,
-    IEnumerable<string>? HiddenBuildIds,
-    string? PrimaryBuildId,
-    string? CommanderName,
-    IReadOnlyList<ColonizationFleetCarrier>? FleetCarriers,
-    CargoSnapshot? ShipCargo,
-    ColonizationConstructionSnapshot Construction,
-    MarketSnapshot? Market = null);
+public sealed class ColonizationCommodityPlanRequest
+{
+    public required IEnumerable<ColonizationProject> Projects { get; init; }
+
+    public IEnumerable<string>? HiddenBuildIds { get; init; }
+
+    public string? PrimaryBuildId { get; init; }
+
+    public string? CommanderName { get; init; }
+
+    public IReadOnlyList<ColonizationFleetCarrier>? FleetCarriers { get; init; }
+
+    public CargoSnapshot? ShipCargo { get; init; }
+
+    public required ColonizationConstructionSnapshot Construction { get; init; }
+
+    public MarketSnapshot? Market { get; init; }
+}
 
 public static class ColonizationCommodityPlanner
 {
@@ -81,15 +90,17 @@ public static class ColonizationCommodityPlanner
                 "FleetCarrier",
                 StringComparison.OrdinalIgnoreCase)
             && !carriers.Any(carrier => carrier.MarketId == dock.MarketId);
-        var rowContext = new CommodityRowContext(
-            relevantProjects,
-            request.CommanderName,
-            cargoNames,
-            shipCounts,
-            carrierCounts,
-            localMarket,
-            Math.Max(0, construction.ShipCargoCapacity),
-            dockedAtLinkedCarrier);
+        var rowContext = new CommodityRowContext
+    {
+        Projects = relevantProjects,
+        CommanderName = request.CommanderName,
+        CargoNames = cargoNames,
+        ShipCounts = shipCounts,
+        CarrierCounts = carrierCounts,
+        LocalMarket = localMarket,
+        Capacity = Math.Max(0, construction.ShipCargoCapacity),
+        DockedAtLinkedCarrier = dockedAtLinkedCarrier
+    };
         var rows = requirements
             .Where(requirement => requirement.Value.Remaining > 0)
             .Select(requirement => CreateRow(
@@ -104,31 +115,33 @@ public static class ColonizationCommodityPlanner
             Math.Min((long)row.Needed, row.OnFleetCarriers));
         var carrierDeficit = Math.Max(0, totalRemaining - carrierCovered);
         var capacity = Math.Max(0, construction.ShipCargoCapacity);
-        return new ColonizationCommodityPlan(
-            CreateTitle(
+        return new ColonizationCommodityPlan
+        {
+            Title = CreateTitle(
                 relevantProjects,
                 dock,
                 localProject,
                 atConstructionSite),
-            relevantProjects.Select(project =>
+            ProjectNames = relevantProjects.Select(project =>
                     $"{project.BuildName} ({project.BuildType})")
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
-            rows,
-            relevantCarriers,
-            totalRemaining,
-            capacity > 0
+            Rows = rows,
+            FleetCarriers = relevantCarriers,
+            TotalRemaining = totalRemaining,
+            TripsInCurrentShip = capacity > 0
                 ? (long?)Math.Ceiling(totalRemaining / (double)capacity)
                 : null,
-            carrierDeficit,
-            capacity > 0
+            FleetCarrierDeficit = carrierDeficit,
+            FleetCarrierDeficitTrips = capacity > 0
                 ? (long?)Math.Ceiling(carrierDeficit / (double)capacity)
                 : null,
-            atConstructionSite,
-            atConstructionSite && localProject is null,
-            isDockedAtUntrackedFleetCarrier,
-            hasCurrentDepot && depot?.IsComplete == true,
-            hasCurrentDepot && depot?.IsFailed == true);
+            IsAtConstructionSite = atConstructionSite,
+            IsLocalProjectUntracked = atConstructionSite && localProject is null,
+            IsDockedAtUntrackedFleetCarrier = isDockedAtUntrackedFleetCarrier,
+            IsConstructionComplete = hasCurrentDepot && depot?.IsComplete == true,
+            IsConstructionFailed = hasCurrentDepot && depot?.IsFailed == true,
+        };
     }
 
     private static ColonizationProject[] SelectProjects(
@@ -227,36 +240,47 @@ public static class ColonizationCommodityPlanner
             context.CarrierCounts.GetValueOrDefault(commodity));
         var isAvailable = context.LocalMarket.AvailableCommodities.Contains(commodity);
         var carrierDeficit = Math.Max(0, requirement.Remaining - onCarriers);
-        return new ColonizationCommodityPlanRow(
-            commodity,
-            string.IsNullOrWhiteSpace(localizedName)
+        return new ColonizationCommodityPlanRow
+    {
+        Commodity = commodity,
+        DisplayName = string.IsNullOrWhiteSpace(localizedName)
                 ? DisplayNames.GetValueOrDefault(
                     commodity,
                     commodity)
                 : localizedName,
-            Categories.GetValueOrDefault(commodity, "Other"),
-            requirement.Remaining,
-            inShip,
-            onCarriers,
-            assignedToCommander,
-            !assignedToCommander && assigners.Length > 0,
-            isAvailable,
-            context.LocalMarket.HasAvailableCommodities && !isAvailable,
-            isAvailable
+        Category = Categories.GetValueOrDefault(commodity, "Other"),
+        Needed = requirement.Remaining,
+        InShip = inShip,
+        OnFleetCarriers = onCarriers,
+        IsAssignedToCommander = assignedToCommander,
+        IsAssignedToOther = !assignedToCommander && assigners.Length > 0,
+        IsAvailableAtCurrentMarket = isAvailable,
+        IsUnavailableAtCurrentMarket = context.LocalMarket.HasAvailableCommodities && !isAvailable,
+        CanCompleteFleetCarrierLoad = isAvailable
                 && !context.DockedAtLinkedCarrier
                 && carrierDeficit > 0
-                && context.Capacity > carrierDeficit);
+                && context.Capacity > carrierDeficit
+    };
     }
 
-    private sealed record CommodityRowContext(
-        IReadOnlyList<ColonizationProject> Projects,
-        string? CommanderName,
-        IReadOnlyDictionary<string, string?> CargoNames,
-        IReadOnlyDictionary<string, int> ShipCounts,
-        IReadOnlyDictionary<string, int> CarrierCounts,
-        LocalMarketContext LocalMarket,
-        int Capacity,
-        bool DockedAtLinkedCarrier);
+    private sealed class CommodityRowContext
+    {
+        public required IReadOnlyList<ColonizationProject> Projects { get; init; }
+
+        public string? CommanderName { get; init; }
+
+        public required IReadOnlyDictionary<string, string?> CargoNames { get; init; }
+
+        public required IReadOnlyDictionary<string, int> ShipCounts { get; init; }
+
+        public required IReadOnlyDictionary<string, int> CarrierCounts { get; init; }
+
+        public required LocalMarketContext LocalMarket { get; init; }
+
+        public int Capacity { get; init; }
+
+        public bool DockedAtLinkedCarrier { get; init; }
+    }
 
     private static LocalMarketContext GetLocalMarketContext(
         MarketSnapshot? market,
@@ -461,21 +485,34 @@ public static class ColonizationCommodityPlanner
     }
 }
 
-public sealed record ColonizationCommodityPlan(
-    string Title,
-    IReadOnlyList<string> ProjectNames,
-    IReadOnlyList<ColonizationCommodityPlanRow> Rows,
-    IReadOnlyList<ColonizationFleetCarrier> FleetCarriers,
-    long TotalRemaining,
-    long? TripsInCurrentShip,
-    long FleetCarrierDeficit,
-    long? FleetCarrierDeficitTrips,
-    bool IsAtConstructionSite,
-    bool IsLocalProjectUntracked,
-    bool IsDockedAtUntrackedFleetCarrier,
-    bool IsConstructionComplete,
-    bool IsConstructionFailed)
+public sealed record ColonizationCommodityPlan
 {
+    public required string Title { get; init; }
+
+    public required IReadOnlyList<string> ProjectNames { get; init; }
+
+    public required IReadOnlyList<ColonizationCommodityPlanRow> Rows { get; init; }
+
+    public required IReadOnlyList<ColonizationFleetCarrier> FleetCarriers { get; init; }
+
+    public long TotalRemaining { get; init; }
+
+    public long? TripsInCurrentShip { get; init; }
+
+    public long FleetCarrierDeficit { get; init; }
+
+    public long? FleetCarrierDeficitTrips { get; init; }
+
+    public bool IsAtConstructionSite { get; init; }
+
+    public bool IsLocalProjectUntracked { get; init; }
+
+    public bool IsDockedAtUntrackedFleetCarrier { get; init; }
+
+    public bool IsConstructionComplete { get; init; }
+
+    public bool IsConstructionFailed { get; init; }
+
     public bool HasContent => Rows.Count > 0
         || IsAtConstructionSite
         || IsDockedAtUntrackedFleetCarrier
@@ -483,19 +520,30 @@ public sealed record ColonizationCommodityPlan(
         || IsConstructionFailed;
 }
 
-public sealed record ColonizationCommodityPlanRow(
-    string Commodity,
-    string DisplayName,
-    string Category,
-    int Needed,
-    int InShip,
-    int OnFleetCarriers,
-    bool IsAssignedToCommander,
-    bool IsAssignedToOther,
-    bool IsAvailableAtCurrentMarket = false,
-    bool IsUnavailableAtCurrentMarket = false,
-    bool CanCompleteFleetCarrierLoad = false)
+public sealed record ColonizationCommodityPlanRow
 {
+    public required string Commodity { get; init; }
+
+    public required string DisplayName { get; init; }
+
+    public required string Category { get; init; }
+
+    public int Needed { get; init; }
+
+    public int InShip { get; init; }
+
+    public int OnFleetCarriers { get; init; }
+
+    public bool IsAssignedToCommander { get; init; }
+
+    public bool IsAssignedToOther { get; init; }
+
+    public bool IsAvailableAtCurrentMarket { get; init; }
+
+    public bool IsUnavailableAtCurrentMarket { get; init; }
+
+    public bool CanCompleteFleetCarrierLoad { get; init; }
+
     public bool ShipHasEnough => InShip >= Needed;
 
     public bool FleetCarriersHaveEnough => OnFleetCarriers >= Needed;

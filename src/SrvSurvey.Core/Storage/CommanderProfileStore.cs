@@ -409,22 +409,24 @@ public sealed class CommanderProfileStore(string profileDirectory)
         var lowMassCode = string.IsNullOrWhiteSpace(lowMassCodeText)
             ? 'c'
             : char.ToLowerInvariant(lowMassCodeText[0]);
-        return new BoxelSearchSnapshot(
-            GetBoolean(boxelSearch, ActiveProperty) ?? false,
-            topBoxel,
-            GetDateTimeOffset(boxelSearch, "startedOn")
+        return new BoxelSearchSnapshot
+    {
+        Active = GetBoolean(boxelSearch, ActiveProperty) ?? false,
+        TopBoxel = topBoxel,
+        StartedOn = GetDateTimeOffset(boxelSearch, "startedOn")
                 ?? DateTimeOffset.MinValue,
-            current,
-            GetInt32(boxelSearch, "currentCount") ?? 0,
-            lowMassCode,
-            ReadStringArray(boxelSearch, "completed"),
-            GetBoolean(boxelSearch, "autoCopy") ?? false,
-            GetBoolean(boxelSearch, "collapsed") ?? false,
-            GetBoolean(boxelSearch, "skipAlreadyVisited") ?? false,
-            GetBoolean(boxelSearch, "skipKnownToSpansh") ?? false,
-            GetBoolean(boxelSearch, "completeOnFssAllBodies") == true
+        Current = current,
+        CurrentCount = GetInt32(boxelSearch, "currentCount") ?? 0,
+        LowMassCode = lowMassCode,
+        CompletedPrefixes = ReadStringArray(boxelSearch, "completed"),
+        AutoCopy = GetBoolean(boxelSearch, "autoCopy") ?? false,
+        Collapsed = GetBoolean(boxelSearch, "collapsed") ?? false,
+        SkipAlreadyVisited = GetBoolean(boxelSearch, "skipAlreadyVisited") ?? false,
+        SkipKnownToSpansh = GetBoolean(boxelSearch, "skipKnownToSpansh") ?? false,
+        CompletionMode = GetBoolean(boxelSearch, "completeOnFssAllBodies") == true
                 ? BoxelCompletionMode.FssAllBodies
-                : BoxelCompletionMode.EnterSystem);
+                : BoxelCompletionMode.EnterSystem
+    };
     }
 
     private static RamTahSnapshot ReadRamTah(JsonObject root)

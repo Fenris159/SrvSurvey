@@ -2247,15 +2247,17 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             && currentMarket.Timestamp > dock.Timestamp;
         CommodityOverlay.Apply(
             ColonizationCommodityPlanner.Create(
-                new ColonizationCommodityPlanRequest(
-                    Projects.Select(row => row.Project),
-                    hiddenProjectIds,
-                    primaryProjectId,
-                    CommanderName,
-                    fleetCarriers,
-                    shipCargo,
-                    construction,
-                    currentMarket)),
+                new ColonizationCommodityPlanRequest
+    {
+        Projects = Projects.Select(row => row.Project),
+        HiddenBuildIds = hiddenProjectIds,
+        PrimaryBuildId = primaryProjectId,
+        CommanderName = CommanderName,
+        FleetCarriers = fleetCarriers,
+        ShipCargo = shipCargo,
+        Construction = construction,
+        Market = currentMarket
+    }),
             latestStatus,
             hasMarketSinceDocking,
             construction.IsSquadronBankOpen);

@@ -8,17 +8,28 @@ using SrvSurvey.Desktop.Platform;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
-public sealed record ReleaseInstallerConfiguration(
-    IReleasePackageDownloadService DownloadService,
-    IReleasePackageStagingService StagingService,
-    IReleaseInstallationPreparer InstallationPreparer,
-    IApplicationUpdateHandoffService HandoffService,
-    string DataDirectory,
-    string InstallationDirectory,
-    IReadOnlyList<string> StartupArguments,
-    Func<Task> Shutdown,
-    string? AutomaticInstallationUnavailableReason = null,
-    bool IsAppImage = false);
+public sealed class ReleaseInstallerConfiguration
+{
+    public required IReleasePackageDownloadService DownloadService { get; init; }
+
+    public required IReleasePackageStagingService StagingService { get; init; }
+
+    public required IReleaseInstallationPreparer InstallationPreparer { get; init; }
+
+    public required IApplicationUpdateHandoffService HandoffService { get; init; }
+
+    public required string DataDirectory { get; init; }
+
+    public required string InstallationDirectory { get; init; }
+
+    public required IReadOnlyList<string> StartupArguments { get; init; }
+
+    public required Func<Task> Shutdown { get; init; }
+
+    public string? AutomaticInstallationUnavailableReason { get; init; }
+
+    public bool IsAppImage { get; init; }
+}
 
 public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
 {
@@ -306,23 +317,25 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         ArgumentNullException.ThrowIfNull(configuration.Shutdown);
         var fullInstallationDirectory = Path.GetFullPath(
             configuration.InstallationDirectory);
-        installer = new InstallerContext(
-            configuration.DownloadService,
-            configuration.StagingService,
-            configuration.InstallationPreparer,
-            configuration.HandoffService,
-            Path.GetFullPath(configuration.DataDirectory),
-            fullInstallationDirectory,
-            configuration.StartupArguments.ToArray(),
-            configuration.Shutdown,
-            File.Exists(Path.Combine(
+        installer = new InstallerContext
+        {
+            DownloadService = configuration.DownloadService,
+            StagingService = configuration.StagingService,
+            InstallationPreparer = configuration.InstallationPreparer,
+            HandoffService = configuration.HandoffService,
+            DataDirectory = Path.GetFullPath(configuration.DataDirectory),
+            InstallationDirectory = fullInstallationDirectory,
+            StartupArguments = configuration.StartupArguments.ToArray(),
+            Shutdown = configuration.Shutdown,
+            IsPackaged = File.Exists(Path.Combine(
                 fullInstallationDirectory,
                 "release-package.json")),
-            string.IsNullOrWhiteSpace(
+            AutomaticInstallationUnavailableReason = string.IsNullOrWhiteSpace(
                 configuration.AutomaticInstallationUnavailableReason)
                 ? null
                 : configuration.AutomaticInstallationUnavailableReason.Trim(),
-            configuration.IsAppImage);
+            IsAppImage = configuration.IsAppImage,
+        };
         OnPropertyChanged(nameof(CanInstallCurrentInstallation));
         OnPropertyChanged(nameof(ShowInstallUnavailable));
         OnPropertyChanged(nameof(ShowGenericInstallUnavailable));
@@ -622,18 +635,30 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private sealed record InstallerContext(
-        IReleasePackageDownloadService DownloadService,
-        IReleasePackageStagingService StagingService,
-        IReleaseInstallationPreparer InstallationPreparer,
-        IApplicationUpdateHandoffService HandoffService,
-        string DataDirectory,
-        string InstallationDirectory,
-        IReadOnlyList<string> StartupArguments,
-        Func<Task> Shutdown,
-        bool IsPackaged,
-        string? AutomaticInstallationUnavailableReason,
-        bool IsAppImage);
+    private sealed class InstallerContext
+    {
+        public required IReleasePackageDownloadService DownloadService { get; init; }
+
+        public required IReleasePackageStagingService StagingService { get; init; }
+
+        public required IReleaseInstallationPreparer InstallationPreparer { get; init; }
+
+        public required IApplicationUpdateHandoffService HandoffService { get; init; }
+
+        public required string DataDirectory { get; init; }
+
+        public required string InstallationDirectory { get; init; }
+
+        public required IReadOnlyList<string> StartupArguments { get; init; }
+
+        public required Func<Task> Shutdown { get; init; }
+
+        public bool IsPackaged { get; init; }
+
+        public string? AutomaticInstallationUnavailableReason { get; init; }
+
+        public bool IsAppImage { get; init; }
+    }
 
     private sealed class GuardedProgress<T> : IProgress<T>
     {

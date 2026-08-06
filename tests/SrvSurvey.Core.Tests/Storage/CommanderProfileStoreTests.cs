@@ -505,9 +505,19 @@ public sealed class CommanderProfileStoreTests : IDisposable
             "F123",
             "Drew",
             true,
-            boxelSearch with
+            new BoxelSearchSnapshot
             {
                 Active = false,
+                TopBoxel = boxelSearch.TopBoxel,
+                StartedOn = boxelSearch.StartedOn,
+                Current = boxelSearch.Current,
+                CurrentCount = boxelSearch.CurrentCount,
+                LowMassCode = boxelSearch.LowMassCode,
+                CompletedPrefixes = boxelSearch.CompletedPrefixes,
+                AutoCopy = boxelSearch.AutoCopy,
+                Collapsed = boxelSearch.Collapsed,
+                SkipAlreadyVisited = boxelSearch.SkipAlreadyVisited,
+                SkipKnownToSpansh = boxelSearch.SkipKnownToSpansh,
                 CompletionMode = BoxelCompletionMode.FssAllBodies,
             });
 

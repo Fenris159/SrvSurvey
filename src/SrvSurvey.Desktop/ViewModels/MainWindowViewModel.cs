@@ -2434,16 +2434,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             canShareCargo &= !hasMultipleGameWindows;
             eddnPublisher.SetSuspended(hasMultipleGameWindows);
             var eddnResult = await eddnPublisher.ApplyAsync(
-                new EddnApplyRequest(
-                    update.JournalEvents,
-                    latestStatus,
-                    NetworkPrivacy.EddnUploadEnabled,
-                    NetworkPrivacy.EddnUseTestSchemas,
-                    AllowPublishing: !update.IsBootstrapRead
+                new EddnApplyRequest
+    {
+        JournalEvents = update.JournalEvents,
+        Status = latestStatus,
+        Enabled = NetworkPrivacy.EddnUploadEnabled,
+        UseTestSchemas = NetworkPrivacy.EddnUseTestSchemas,
+        AllowPublishing = !update.IsBootstrapRead
                         && !hasMultipleGameWindows,
-                    JournalDirectory: folderResolution.SelectedPath,
-                    JournalPath: update.JournalPath,
-                    AllowSharedData: !hasMultipleGameWindows),
+        JournalDirectory = folderResolution.SelectedPath,
+        JournalPath = update.JournalPath,
+        AllowSharedData = !hasMultipleGameWindows
+    },
                 cancellationToken: CancellationToken.None);
             NetworkPrivacy.ReportPublicationResult(eddnResult);
             foreach (var warning in eddnResult.Warnings)

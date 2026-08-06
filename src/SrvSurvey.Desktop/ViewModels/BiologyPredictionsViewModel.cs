@@ -747,28 +747,48 @@ public sealed class BiologyPredictionBodyViewModel : INotifyPropertyChanged
     }
 }
 
-public sealed record BiologyPredictionOrganismViewModel(
-    string DisplayName,
-    string GenusName,
-    string SampleDistanceText,
-    string RewardText,
-    bool IsAnalyzed,
-    bool IsCommanderFirst,
-    bool IsRegionalFirst,
-    bool IsGlobalRegionalFirst,
-    bool IsHighlightedFirst,
-    bool IsCurrentSample,
-    bool IsPrediction,
-    bool IsGenusIdentified,
-    bool IsUnknown,
-    double RowOpacity,
-    double RowFontSize,
-    double RowVerticalPadding,
-    long Reward,
-    double RewardBucketOneMillions,
-    double RewardBucketTwoMillions,
-    double RewardBucketThreeMillions)
+public sealed class BiologyPredictionOrganismViewModel
 {
+    public string DisplayName { get; init; } = string.Empty;
+
+    public string GenusName { get; init; } = string.Empty;
+
+    public string SampleDistanceText { get; init; } = string.Empty;
+
+    public string RewardText { get; init; } = string.Empty;
+
+    public bool IsAnalyzed { get; init; }
+
+    public bool IsCommanderFirst { get; init; }
+
+    public bool IsRegionalFirst { get; init; }
+
+    public bool IsGlobalRegionalFirst { get; init; }
+
+    public bool IsHighlightedFirst { get; init; }
+
+    public bool IsCurrentSample { get; init; }
+
+    public bool IsPrediction { get; init; }
+
+    public bool IsGenusIdentified { get; init; }
+
+    public bool IsUnknown { get; init; }
+
+    public double RowOpacity { get; init; }
+
+    public double RowFontSize { get; init; }
+
+    public double RowVerticalPadding { get; init; }
+
+    public long Reward { get; init; }
+
+    public double RewardBucketOneMillions { get; init; }
+
+    public double RewardBucketTwoMillions { get; init; }
+
+    public double RewardBucketThreeMillions { get; init; }
+
     public bool HasSampleDistance => !string.IsNullOrWhiteSpace(
         SampleDistanceText);
 
@@ -778,26 +798,28 @@ public sealed record BiologyPredictionOrganismViewModel(
         double rowVerticalPadding)
     {
         ArgumentNullException.ThrowIfNull(source);
-        return new BiologyPredictionOrganismViewModel(
-            source.DisplayName,
-            source.GenusName,
-            source.SampleDistanceText,
-            source.RewardText,
-            source.IsAnalyzed,
-            source.IsCommanderFirst,
-            source.IsRegionalFirst,
-            source.IsGlobalRegionalFirst,
-            source.IsHighlightedFirst,
-            source.IsCurrentSample,
-            source.IsPrediction,
-            source.IsGenusIdentified,
-            source.IsUnknown,
-            source.RowOpacity,
-            rowFontSize,
-            rowVerticalPadding,
-            source.Reward,
-            source.RewardBucketOneMillions,
-            source.RewardBucketTwoMillions,
-            source.RewardBucketThreeMillions);
+        return new BiologyPredictionOrganismViewModel
+        {
+            DisplayName = source.DisplayName,
+            GenusName = source.GenusName,
+            SampleDistanceText = source.SampleDistanceText,
+            RewardText = source.RewardText,
+            IsAnalyzed = source.IsAnalyzed,
+            IsCommanderFirst = source.IsCommanderFirst,
+            IsRegionalFirst = source.IsRegionalFirst,
+            IsGlobalRegionalFirst = source.IsGlobalRegionalFirst,
+            IsHighlightedFirst = source.IsHighlightedFirst,
+            IsCurrentSample = source.IsCurrentSample,
+            IsPrediction = source.IsPrediction,
+            IsGenusIdentified = source.IsGenusIdentified,
+            IsUnknown = source.IsUnknown,
+            RowOpacity = source.RowOpacity,
+            RowFontSize = rowFontSize,
+            RowVerticalPadding = rowVerticalPadding,
+            Reward = source.Reward,
+            RewardBucketOneMillions = source.RewardBucketOneMillions,
+            RewardBucketTwoMillions = source.RewardBucketTwoMillions,
+            RewardBucketThreeMillions = source.RewardBucketThreeMillions,
+        };
     }
 }

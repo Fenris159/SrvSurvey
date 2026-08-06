@@ -34,15 +34,24 @@ internal sealed class X11OverlayPlatformService
         };
     }
 
-    private sealed record X11OverlayPlatformContext(
-        nint Display,
-        bool ShapeAvailable,
-        OverlayHostKind Host,
-        X11OverlayStackingMode StackingMode,
-        nuint AtomType,
-        nuint WindowTypeAtom,
-        nuint KdeOnScreenDisplayAtom,
-        nuint NormalWindowAtom);
+    private sealed class X11OverlayPlatformContext
+    {
+        public nint Display { get; init; }
+
+        public bool ShapeAvailable { get; init; }
+
+        public OverlayHostKind Host { get; init; }
+
+        public X11OverlayStackingMode StackingMode { get; init; }
+
+        public nuint AtomType { get; init; }
+
+        public nuint WindowTypeAtom { get; init; }
+
+        public nuint KdeOnScreenDisplayAtom { get; init; }
+
+        public nuint NormalWindowAtom { get; init; }
+    }
 
     public OverlayPlatformCapabilities Capabilities { get; }
 
@@ -132,15 +141,17 @@ internal sealed class X11OverlayPlatformService
                 : "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).");
 
         return new X11OverlayPlatformService(
-            new X11OverlayPlatformContext(
-                display,
-                shapeAvailable,
-                host,
-                stackingMode,
-                atomType,
-                windowTypeAtom,
-                kdeOnScreenDisplayAtom,
-                normalWindowAtom));
+            new X11OverlayPlatformContext
+    {
+        Display = display,
+        ShapeAvailable = shapeAvailable,
+        Host = host,
+        StackingMode = stackingMode,
+        AtomType = atomType,
+        WindowTypeAtom = windowTypeAtom,
+        KdeOnScreenDisplayAtom = kdeOnScreenDisplayAtom,
+        NormalWindowAtom = normalWindowAtom
+    });
     }
 
     public OverlayPreparationResult PreparePassiveWindow(Window window)

@@ -420,19 +420,21 @@ public sealed class BoxelSearchState
 
     public BoxelSearchSnapshot CreateSnapshot()
     {
-        return new BoxelSearchSnapshot(
-            IsActive,
-            TopBoxel,
-            StartedOn,
-            Current,
-            CurrentCount,
-            LowMassCode,
-            completed.Order(StringComparer.Ordinal).ToArray(),
-            AutoCopy,
-            Collapsed,
-            SkipAlreadyVisited,
-            SkipKnownToSpansh,
-            CompletionMode);
+        return new BoxelSearchSnapshot
+    {
+        Active = IsActive,
+        TopBoxel = TopBoxel,
+        StartedOn = StartedOn,
+        Current = Current,
+        CurrentCount = CurrentCount,
+        LowMassCode = LowMassCode,
+        CompletedPrefixes = completed.Order(StringComparer.Ordinal).ToArray(),
+        AutoCopy = AutoCopy,
+        Collapsed = Collapsed,
+        SkipAlreadyVisited = SkipAlreadyVisited,
+        SkipKnownToSpansh = SkipKnownToSpansh,
+        CompletionMode = CompletionMode
+    };
     }
 
     private bool ApplyVisitedSystem(
@@ -703,14 +705,22 @@ public sealed class BoxelSearchState
     }
 }
 
-public sealed record BoxelSearchActivationRequest(
-    BoxelAddress? TopBoxel,
-    char LowMassCode,
-    DateTimeOffset StartedOn,
-    bool SkipAlreadyVisited,
-    bool SkipKnownToSpansh,
-    BoxelCompletionMode CompletionMode,
-    bool AutoCopy);
+public sealed class BoxelSearchActivationRequest
+{
+    public BoxelAddress? TopBoxel { get; init; }
+
+    public char LowMassCode { get; init; }
+
+    public DateTimeOffset StartedOn { get; init; }
+
+    public bool SkipAlreadyVisited { get; init; }
+
+    public bool SkipKnownToSpansh { get; init; }
+
+    public BoxelCompletionMode CompletionMode { get; init; }
+
+    public bool AutoCopy { get; init; }
+}
 
 public enum BoxelCompletionMode
 {
@@ -718,33 +728,34 @@ public enum BoxelCompletionMode
     FssAllBodies,
 }
 
-public sealed record BoxelSearchSnapshot(
-    bool Active,
-    BoxelAddress? TopBoxel,
-    DateTimeOffset StartedOn,
-    BoxelAddress? Current,
-    int CurrentCount,
-    char LowMassCode,
-    IReadOnlyList<string> CompletedPrefixes,
-    bool AutoCopy,
-    bool Collapsed,
-    bool SkipAlreadyVisited,
-    bool SkipKnownToSpansh,
-    BoxelCompletionMode CompletionMode)
+public sealed record BoxelSearchSnapshot
 {
-    public static BoxelSearchSnapshot Empty { get; } = new(
-        false,
-        null,
-        DateTimeOffset.MinValue,
-        null,
-        0,
-        'c',
-        [],
-        false,
-        false,
-        false,
-        false,
-        BoxelCompletionMode.EnterSystem);
+    public bool Active { get; init; }
+
+    public BoxelAddress? TopBoxel { get; init; }
+
+    public DateTimeOffset StartedOn { get; init; }
+
+    public BoxelAddress? Current { get; init; }
+
+    public int CurrentCount { get; init; }
+
+    public char LowMassCode { get; init; } = 'c';
+
+    public IReadOnlyList<string> CompletedPrefixes { get; init; } = [];
+
+    public bool AutoCopy { get; init; }
+
+    public bool Collapsed { get; init; }
+
+    public bool SkipAlreadyVisited { get; init; }
+
+    public bool SkipKnownToSpansh { get; init; }
+
+    public BoxelCompletionMode CompletionMode { get; init; } =
+        BoxelCompletionMode.EnterSystem;
+
+    public static BoxelSearchSnapshot Empty { get; } = new();
 }
 
 public sealed record BoxelSystemObservation(

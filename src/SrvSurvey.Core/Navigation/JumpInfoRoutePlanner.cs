@@ -35,15 +35,24 @@ public sealed record JumpInfoRoutePlan(
     public double TotalDistanceLy => Legs.Sum(leg => leg.DistanceLy);
 }
 
-public sealed record JumpInfoRoutePlannerRequest(
-    JumpTarget? FsdTarget,
-    EliteStatus? Status,
-    string? CurrentSystemName,
-    long? CurrentSystemAddress,
-    GalacticCoordinate? CurrentPosition,
-    NavRouteSnapshot? NavRoute,
-    FollowRouteDocument? FollowedRoute,
-    double? MaximumJumpRange = null);
+public sealed class JumpInfoRoutePlannerRequest
+{
+    public JumpTarget? FsdTarget { get; init; }
+
+    public EliteStatus? Status { get; init; }
+
+    public string? CurrentSystemName { get; init; }
+
+    public long? CurrentSystemAddress { get; init; }
+
+    public GalacticCoordinate? CurrentPosition { get; init; }
+
+    public NavRouteSnapshot? NavRoute { get; init; }
+
+    public FollowRouteDocument? FollowedRoute { get; init; }
+
+    public double? MaximumJumpRange { get; init; }
+}
 
 public static class JumpInfoRoutePlanner
 {

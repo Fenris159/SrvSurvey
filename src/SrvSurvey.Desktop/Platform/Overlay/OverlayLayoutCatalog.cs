@@ -18,20 +18,20 @@ public static class OverlayLayoutCatalog
     [
         Define("PlotBioStatus", "Biology sample status", "SystemSurvey.AutoShowBioStatus", OverlayLayoutCategory.BiologyAndSurface, new(480, 80), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8)),
         Define("PlotBioSystem", "System biology", "SystemSurvey.AutoShowBioSystem", OverlayLayoutCategory.BiologyAndSurface, new(240, 200), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Bottom, 144)),
-        Define("PlotBodyInfo", "Body information", "SystemSurvey.AutoShowBodyInfo", OverlayLayoutCategory.ExplorationAndNavigation, new(320, 280), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8), showInGalaxyMap: true),
-        Define("PlotBuildCommodities", "Colonization commodities", "Colonization.AutoShowCommodityOverlay", OverlayLayoutCategory.CombatAndColonization, new(440, 400), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8), showInGalaxyMap: true),
+        Define("PlotBodyInfo", "Body information", "SystemSurvey.AutoShowBodyInfo", OverlayLayoutCategory.ExplorationAndNavigation, new(320, 280), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)),
+        Define("PlotBuildCommodities", "Colonization commodities", "Colonization.AutoShowCommodityOverlay", OverlayLayoutCategory.CombatAndColonization, new(440, 400), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)),
         Define("PlotFlightWarning", "Flight warning", "SystemSurvey.AutoShowFlightWarnings", OverlayLayoutCategory.StatusAndUtilities, new(300, 80), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 90)),
-        Define("PlotFloatie", "Notifications", "Notifications.Enabled", OverlayLayoutCategory.StatusAndUtilities, new(200, 80), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Bottom, 24), showInGalaxyMap: true),
+        Define("PlotFloatie", "Notifications", "Notifications.Enabled", OverlayLayoutCategory.StatusAndUtilities, new(200, 80), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Bottom, 24, ShowInGalaxyMap: true)),
         Define("PlotFootCombat", "Ground combat", "Combat.AutoShowFootCombat", OverlayLayoutCategory.CombatAndColonization, new(180, 200), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8)),
         Define("PlotFSS", "FSS body feed", "SystemSurvey.AutoShowLastFssBody", OverlayLayoutCategory.ExplorationAndNavigation, new(420, 100), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8)),
-        Define("PlotFSSInfo", "FSS information", "SystemSurvey.AutoShowFssInfo", OverlayLayoutCategory.ExplorationAndNavigation, new(300, 400), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8), showInGalaxyMap: true),
-        Define("PlotGalMap", "Galaxy Map system intelligence", "GalaxyMap.AutoShow", OverlayLayoutCategory.ExplorationAndNavigation, new(240, 180), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8), showInGalaxyMap: true),
+        Define("PlotFSSInfo", "FSS information", "SystemSurvey.AutoShowFssInfo", OverlayLayoutCategory.ExplorationAndNavigation, new(300, 400), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)),
+        Define("PlotGalMap", "Galaxy Map system intelligence", "GalaxyMap.AutoShow", OverlayLayoutCategory.ExplorationAndNavigation, new(240, 180), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)),
         Define("PlotGrounded", "Surface survey", "SystemSurvey.AutoShowSurfaceRadar", OverlayLayoutCategory.BiologyAndSurface, new(320, 440), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Middle, 0)),
         Define("PlotGuardians", "Guardian site", "Guardian.EnableGuardianSites", OverlayLayoutCategory.Guardian, new(300, 400), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0)),
         Define("PlotGuardianStatus", "Guardian status", "Guardian.EnableGuardianSites", OverlayLayoutCategory.Guardian, new(380, 108), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8)),
         Define("PlotGuardianSystem", "Guardian system", "Guardian.AutoShowGuardianSummary", OverlayLayoutCategory.Guardian, new(220, 96), new(LegacyHorizontalAnchor.Left, 10, LegacyVerticalAnchor.Top, 8)),
         Define("PlotHumanSite", "Human settlement", "HumanSite.AutoShow", OverlayLayoutCategory.SitesAndQuests, new(320, 440), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0)),
-        Define("PlotJumpInfo", "Next-jump information", "JumpInfo.AutoShow", OverlayLayoutCategory.ExplorationAndNavigation, new(600, 100), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8), showInGalaxyMap: true),
+        Define("PlotJumpInfo", "Next-jump information", "JumpInfo.AutoShow", OverlayLayoutCategory.ExplorationAndNavigation, new(600, 100), new(LegacyHorizontalAnchor.Center, 0, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)),
         Define("PlotFleetCarrierRoute", "Fleet carrier route", "FleetCarrierRoute.IsActive", OverlayLayoutCategory.ExplorationAndNavigation, new(460, 400), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8)),
         Define("PlotRouteBio", "Route bodies", "Route.IsActive", OverlayLayoutCategory.ExplorationAndNavigation, new(220, 420), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8)),
         Define("PlotMassacre", "Massacre missions", "Combat.AutoShowMassacreMissions", OverlayLayoutCategory.CombatAndColonization, new(240, 200), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8)),
@@ -41,8 +41,8 @@ public static class OverlayLayoutCatalog
         Define("PlotPulse", "Journal activity and SCO status", "PulseOverlay.Enabled", OverlayLayoutCategory.StatusAndUtilities, new(32, 32), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Bottom, 8)),
         Define("PlotQuestMini", "Quest indicator", "QuestWorkspace.IsEnabled", OverlayLayoutCategory.SitesAndQuests, new(240, 200), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8)),
         Define("PlotRamTah", "Ram Tah guidance", "Guardian.AutoShowRamTah", OverlayLayoutCategory.Guardian, new(240, 224), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Middle, 0)),
-        Define("PlotSphericalSearch", "Spherical search", "Search, BoxelSearch, or Route active", OverlayLayoutCategory.ExplorationAndNavigation, new(240, 240), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8), showInGalaxyMap: true),
-        Define("PlotStationInfo", "Station information", "StationInfo.AutoShow", OverlayLayoutCategory.CombatAndColonization, new(240, 300), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0), showInGalaxyMap: true),
+        Define("PlotSphericalSearch", "Spherical search", "Search, BoxelSearch, or Route active", OverlayLayoutCategory.ExplorationAndNavigation, new(240, 240), new(LegacyHorizontalAnchor.Right, 8, LegacyVerticalAnchor.Top, 8, ShowInGalaxyMap: true)),
+        Define("PlotStationInfo", "Station information", "StationInfo.AutoShow", OverlayLayoutCategory.CombatAndColonization, new(240, 300), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Middle, 0, ShowInGalaxyMap: true)),
         Define("PlotSysStatus", "System status", "SystemSurvey.AutoShowSystemStatus", OverlayLayoutCategory.ExplorationAndNavigation, new(170, 40), new(LegacyHorizontalAnchor.Left, 8, LegacyVerticalAnchor.Bottom, 44)),
         Define("PlotTrackTarget", "Ground target", "GroundTarget.ShouldShow", OverlayLayoutCategory.BiologyAndSurface, new(128, 108), new(LegacyHorizontalAnchor.Center, 480, LegacyVerticalAnchor.Top, 8)),
     ];
@@ -74,8 +74,7 @@ public static class OverlayLayoutCatalog
         string configurationBinding,
         OverlayLayoutCategory category,
         OverlayLayoutPreview preview,
-        OverlayLayoutAnchor anchor,
-        bool showInGalaxyMap = false)
+        OverlayLayoutAnchor anchor)
     {
         return new OverlayLayoutDefinition(
             name,
@@ -89,7 +88,7 @@ public static class OverlayLayoutCatalog
                 anchor.Vertical,
                 anchor.VerticalOffset,
                 null),
-            showInGalaxyMap);
+            anchor.ShowInGalaxyMap);
     }
 }
 
@@ -99,7 +98,8 @@ internal readonly record struct OverlayLayoutAnchor(
     LegacyHorizontalAnchor Horizontal,
     int HorizontalOffset,
     LegacyVerticalAnchor Vertical,
-    int VerticalOffset);
+    int VerticalOffset,
+    bool ShowInGalaxyMap = false);
 
 public sealed record OverlayLayoutDefinition(
     string Name,

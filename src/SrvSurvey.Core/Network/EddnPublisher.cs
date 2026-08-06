@@ -9,15 +9,24 @@ namespace SrvSurvey.Core.Network;
 // https://github.com/EDCD/EDDN/blob/live/docs/Developers.md
 // Message organization follows EDMarketConnector's plugins/eddn.py.
 
-public sealed record EddnApplyRequest(
-    IReadOnlyList<JournalEventEnvelope> JournalEvents,
-    EliteStatus? Status,
-    bool Enabled,
-    bool UseTestSchemas,
-    bool AllowPublishing,
-    string? JournalDirectory = null,
-    string? JournalPath = null,
-    bool AllowSharedData = true);
+public sealed class EddnApplyRequest
+{
+    public required IReadOnlyList<JournalEventEnvelope> JournalEvents { get; init; }
+
+    public EliteStatus? Status { get; init; }
+
+    public bool Enabled { get; init; }
+
+    public bool UseTestSchemas { get; init; }
+
+    public bool AllowPublishing { get; init; }
+
+    public string? JournalDirectory { get; init; }
+
+    public string? JournalPath { get; init; }
+
+    public bool AllowSharedData { get; init; } = true;
+}
 
 public interface IEddnPublisher
 {
@@ -239,20 +248,22 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                 "EDDN sharing is paused while multiple Elite windows are active; pending uploads were preserved.");
         }
 
+        var processContext = new EddnJournalProcessContext
+        {
+            Status = status,
+            Enabled = enabled,
+            UseTestSchemas = useTestSchemas,
+            AllowPublishing = allowPublishing,
+            JournalDirectory = journalDirectory,
+            JournalPath = journalPath,
+            AllowSharedData = allowSharedData,
+            Queued = queued,
+            Warnings = warnings,
+        };
         foreach (var journalEvent in journalEvents)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (!TryProcessJournalEvent(
-                    journalEvent,
-                    status,
-                    enabled,
-                    useTestSchemas,
-                    allowPublishing,
-                    journalDirectory,
-                    journalPath,
-                    allowSharedData,
-                    queued,
-                    warnings))
+            if (!TryProcessJournalEvent(journalEvent, processContext))
             {
                 break;
             }
@@ -261,18 +272,41 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         return Task.FromResult(new EddnPublicationResult(queued, warnings));
     }
 
+    private sealed class EddnJournalProcessContext
+    {
+        public EliteStatus? Status { get; init; }
+
+        public bool Enabled { get; init; }
+
+        public bool UseTestSchemas { get; init; }
+
+        public bool AllowPublishing { get; init; }
+
+        public string? JournalDirectory { get; init; }
+
+        public string? JournalPath { get; init; }
+
+        public bool AllowSharedData { get; init; }
+
+        public required List<EddnPublishedEvent> Queued { get; init; }
+
+        public required List<string> Warnings { get; init; }
+    }
+
     private bool TryProcessJournalEvent(
         JournalEventEnvelope journalEvent,
-        EliteStatus? status,
-        bool enabled,
-        bool useTestSchemas,
-        bool allowPublishing,
-        string? journalDirectory,
-        string? journalPath,
-        bool allowSharedData,
-        List<EddnPublishedEvent> queued,
-        List<string> warnings)
+        EddnJournalProcessContext context)
     {
+        var status = context.Status;
+        var enabled = context.Enabled;
+        var useTestSchemas = context.UseTestSchemas;
+        var allowPublishing = context.AllowPublishing;
+        var journalDirectory = context.JournalDirectory;
+        var journalPath = context.JournalPath;
+        var allowSharedData = context.AllowSharedData;
+        var queued = context.Queued;
+        var warnings = context.Warnings;
+
         JObject raw;
         try
         {
@@ -326,14 +360,16 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                 UpdateExpansionFlags(raw);
                 UpdateCrewMembership(eventName);
                 (journalCandidate, companionCandidate, skipReason) =
-                    BuildPublicationCandidates(
-                        eventName,
-                        raw,
-                        enabled,
-                        useTestSchemas,
-                        allowPublishing,
-                        journalDirectory,
-                        allowSharedData);
+                    BuildPublicationCandidates(new EddnPublicationCandidateContext
+                    {
+                        EventName = eventName,
+                        Raw = raw,
+                        Enabled = enabled,
+                        UseTestSchemas = useTestSchemas,
+                        AllowPublishing = allowPublishing,
+                        JournalDirectory = journalDirectory,
+                        AllowSharedData = allowSharedData,
+                    });
             }
         }
 
@@ -433,16 +469,34 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         }
     }
 
-    private (QueueCandidate? Journal, CompanionCandidate? Companion, string? SkipReason)
-        BuildPublicationCandidates(
-            string eventName,
-            JObject raw,
-            bool enabled,
-            bool useTestSchemas,
-            bool allowPublishing,
-            string? journalDirectory,
-            bool allowSharedData)
+    private sealed class EddnPublicationCandidateContext
     {
+        public required string EventName { get; init; }
+
+        public required JObject Raw { get; init; }
+
+        public bool Enabled { get; init; }
+
+        public bool UseTestSchemas { get; init; }
+
+        public bool AllowPublishing { get; init; }
+
+        public string? JournalDirectory { get; init; }
+
+        public bool AllowSharedData { get; init; }
+    }
+
+    private (QueueCandidate? Journal, CompanionCandidate? Companion, string? SkipReason)
+        BuildPublicationCandidates(EddnPublicationCandidateContext request)
+    {
+        var eventName = request.EventName;
+        var raw = request.Raw;
+        var enabled = request.Enabled;
+        var useTestSchemas = request.UseTestSchemas;
+        var allowPublishing = request.AllowPublishing;
+        var journalDirectory = request.JournalDirectory;
+        var allowSharedData = request.AllowSharedData;
+
         if (eventName == "FSSSignalDiscovered")
         {
             if (enabled

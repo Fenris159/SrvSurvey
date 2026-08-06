@@ -632,15 +632,24 @@ public sealed record CommanderCodexCommanderCatalogResult(
     public bool IsSuccess => Warnings.Count == 0;
 }
 
-public sealed record CommanderCodexTrackRequest(
-    string FrontierId,
-    string? CommanderName,
-    long EntryId,
-    DateTimeOffset Timestamp,
-    long SystemAddress,
-    int? BodyId = null,
-    int RegionId = 0,
-    string? RegionName = null);
+public sealed class CommanderCodexTrackRequest
+{
+    public required string FrontierId { get; init; }
+
+    public string? CommanderName { get; init; }
+
+    public long EntryId { get; init; }
+
+    public DateTimeOffset Timestamp { get; init; }
+
+    public long SystemAddress { get; init; }
+
+    public int? BodyId { get; init; }
+
+    public int RegionId { get; init; }
+
+    public string? RegionName { get; init; }
+}
 
 public sealed record CommanderCodexTrackResult(
     string Path,

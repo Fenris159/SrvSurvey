@@ -382,15 +382,17 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     {
         var previousTarget = routePlan?.Target;
         routePlan = JumpInfoRoutePlanner.Create(
-            new JumpInfoRoutePlannerRequest(
-                fsdTarget,
-                status,
-                currentSystemName,
-                currentSystemAddress,
-                currentPosition,
-                navRoute,
-                followedRoute,
-                maximumJumpRange));
+            new JumpInfoRoutePlannerRequest
+    {
+        FsdTarget = fsdTarget,
+        Status = status,
+        CurrentSystemName = currentSystemName,
+        CurrentSystemAddress = currentSystemAddress,
+        CurrentPosition = currentPosition,
+        NavRoute = navRoute,
+        FollowedRoute = followedRoute,
+        MaximumJumpRange = maximumJumpRange
+    });
         RaisePlanProperties();
 
         var nextTarget = routePlan?.Target;

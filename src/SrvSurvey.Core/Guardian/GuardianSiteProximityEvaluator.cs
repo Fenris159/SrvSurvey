@@ -15,17 +15,19 @@ public sealed class GuardianSiteProximityEvaluator
         "CA1822:Mark members as static",
         Justification = "The evaluator is consumed through an instance service contract.")]
     public GuardianSiteProximitySnapshot? Evaluate(
-        EliteStatus status,
-        GuardianSurfaceLocation siteLocation,
-        int siteHeading,
-        GuardianSiteTemplate template,
-        GuardianSurveyData? survey = null,
-        IReadOnlyList<GuardianObelisk>? activeObelisks = null,
-        IReadOnlySet<char>? obeliskGroups = null,
-        bool includeComponentMaterials = false)
+        GuardianSiteProximityEvaluateRequest request)
     {
-        ArgumentNullException.ThrowIfNull(status);
-        ArgumentNullException.ThrowIfNull(template);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.Status);
+        ArgumentNullException.ThrowIfNull(request.Template);
+        var status = request.Status;
+        var siteLocation = request.SiteLocation;
+        var siteHeading = request.SiteHeading;
+        var template = request.Template;
+        var survey = request.Survey;
+        var activeObelisks = request.ActiveObelisks;
+        var obeliskGroups = request.ObeliskGroups;
+        var includeComponentMaterials = request.IncludeComponentMaterials;
         var radius = (double)status.PlanetRadius;
         if (!status.HasLatitudeLongitude
             || !double.IsFinite(radius)
@@ -174,6 +176,25 @@ public sealed class GuardianSiteProximityEvaluator
     {
         return degrees * Math.PI / 180;
     }
+}
+
+public sealed class GuardianSiteProximityEvaluateRequest
+{
+    public required EliteStatus Status { get; init; }
+
+    public required GuardianSurfaceLocation SiteLocation { get; init; }
+
+    public int SiteHeading { get; init; }
+
+    public required GuardianSiteTemplate Template { get; init; }
+
+    public GuardianSurveyData? Survey { get; init; }
+
+    public IReadOnlyList<GuardianObelisk>? ActiveObelisks { get; init; }
+
+    public IReadOnlySet<char>? ObeliskGroups { get; init; }
+
+    public bool IncludeComponentMaterials { get; init; }
 }
 
 public sealed record GuardianSiteProximitySnapshot(

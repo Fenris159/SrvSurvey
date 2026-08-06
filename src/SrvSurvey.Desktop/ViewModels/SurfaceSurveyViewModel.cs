@@ -621,18 +621,20 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
         var bearing = SurfaceNavigation.GetBearing(
             options.Current,
             options.Location);
-        return new SurfaceRadarMarkerViewModel(
-            options.Name,
-            options.Kind,
-            options.StatusText,
-            distance,
-            bearing,
-            SurfaceNavigation.NormalizeDegrees(
+        return new SurfaceRadarMarkerViewModel
+        {
+            Name = options.Name,
+            Kind = options.Kind,
+            Status = options.StatusText,
+            DistanceMeters = distance,
+            BearingDegrees = bearing,
+            RelativeBearingDegrees = SurfaceNavigation.NormalizeDegrees(
                 bearing - options.Status.NormalizedHeading),
-            Math.Max(0, options.RadiusMeters),
-            distance < options.RadiusMeters,
-            options.Location,
-            options.IsActive);
+            RadiusMeters = Math.Max(0, options.RadiusMeters),
+            IsInsideRadius = distance < options.RadiusMeters,
+            Location = options.Location,
+            IsActive = options.IsActive,
+        };
     }
 
     private static bool HasSameExobiology(
@@ -899,18 +901,28 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     }
 }
 
-public sealed record SurfaceRadarMarkerViewModel(
-    string Name,
-    SurfaceRadarMarkerKind Kind,
-    string Status,
-    double DistanceMeters,
-    double BearingDegrees,
-    double RelativeBearingDegrees,
-    double RadiusMeters,
-    bool IsInsideRadius,
-    SurfaceCoordinate Location,
-    bool IsActive = true)
+public sealed class SurfaceRadarMarkerViewModel
 {
+    public string Name { get; init; } = string.Empty;
+
+    public SurfaceRadarMarkerKind Kind { get; init; }
+
+    public string Status { get; init; } = string.Empty;
+
+    public double DistanceMeters { get; init; }
+
+    public double BearingDegrees { get; init; }
+
+    public double RelativeBearingDegrees { get; init; }
+
+    public double RadiusMeters { get; init; }
+
+    public bool IsInsideRadius { get; init; }
+
+    public required SurfaceCoordinate Location { get; init; }
+
+    public bool IsActive { get; init; } = true;
+
     public string DistanceText => DistanceMeters >= 1_000
         ? $"{DistanceMeters / 1_000:N2} km"
         : $"{DistanceMeters:N0} m";
