@@ -1592,12 +1592,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     private async Task PrepareForProfileImportAsync()
     {
-        if (ProfileImportPreparing is not { } handlers)
+        var preparingHandlers = ProfileImportPreparing;
+        if (preparingHandlers is null)
         {
             return;
         }
 
-        foreach (var handler in handlers.GetInvocationList().Cast<Func<Task>>())
+        foreach (var handler in preparingHandlers.GetInvocationList().Cast<Func<Task>>())
         {
             await handler();
         }
@@ -1605,7 +1606,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     private async Task CompleteProfileImportAsync()
     {
-        if (ProfileImportCompleted is not { } handlers)
+        var completedHandlers = ProfileImportCompleted;
+        if (completedHandlers is null)
         {
             ProfileStatusMessage +=
                 " Restart SrvSurvey to load the migrated profile.";
@@ -1616,7 +1618,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             " Verification complete; restarting SrvSurvey with the migrated profile...";
         try
         {
-            foreach (var handler in handlers.GetInvocationList().Cast<Func<Task>>())
+            foreach (var handler in completedHandlers.GetInvocationList().Cast<Func<Task>>())
             {
                 await handler();
             }
@@ -2820,11 +2822,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         {
             OrganicSampleRange = $"{distance:N0} m from nearest sample · clear to sample";
         }
-        OrganicScanProgress = snapshot.ScanOne is null
-            ? "Ready for sample 1 of 3"
-            : snapshot.ScanTwo is null
-                ? "Sample 1 of 3 recorded"
-                : "Samples 1 and 2 of 3 recorded";
+        if (snapshot.ScanOne is null)
+        {
+            OrganicScanProgress = "Ready for sample 1 of 3";
+        }
+        else if (snapshot.ScanTwo is null)
+        {
+            OrganicScanProgress = "Sample 1 of 3 recorded";
+        }
+        else
+        {
+            OrganicScanProgress = "Samples 1 and 2 of 3 recorded";
+        }
         BioFirstFootfall = exobiologyState.CurrentBodyFirstFootfall switch
         {
             true => "Confirmed; 5x reward applies",
