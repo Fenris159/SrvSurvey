@@ -65,11 +65,21 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
         }
     }
 
-    public string CurrentCommander => string.IsNullOrWhiteSpace(currentCommanderName)
-        ? currentFrontierId ?? "Waiting for journal identity"
-        : string.IsNullOrWhiteSpace(currentFrontierId)
-            ? currentCommanderName
-            : $"{currentCommanderName} ({currentFrontierId})";
+    public string CurrentCommander
+    {
+        get
+        {
+            var commander = string.IsNullOrWhiteSpace(currentCommanderName)
+                ? currentFrontierId ?? "Waiting for journal identity"
+                : currentCommanderName;
+            if (string.IsNullOrWhiteSpace(currentFrontierId))
+            {
+                return commander;
+            }
+
+            return $"{commander} ({currentFrontierId})";
+        }
+    }
 
     public string MultiGameOverlayLabel =>
         $"~ {(!string.IsNullOrWhiteSpace(currentCommanderName)

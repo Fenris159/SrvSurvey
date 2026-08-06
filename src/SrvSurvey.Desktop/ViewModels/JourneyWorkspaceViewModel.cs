@@ -579,13 +579,22 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
                 frontierId,
                 isOdyssey);
             await RefreshCatalogAsync(active.Journey?.FileName);
-            StatusMessage = active.Errors.Count > 0
-                ? string.Join(Environment.NewLine, active.Errors)
-                : active.Journey is null
-                    ? "No active journey. Browse history or begin a new expedition."
-                    : active.ProcessedEventCount > 0
-                        ? $"Caught up {active.ProcessedEventCount:N0} Journey journal events."
-                        : $"Active journey: {active.Journey.Name}.";
+            if (active.Errors.Count > 0)
+            {
+                StatusMessage = string.Join(Environment.NewLine, active.Errors);
+            }
+            else if (active.Journey is null)
+            {
+                StatusMessage = "No active journey. Browse history or begin a new expedition.";
+            }
+            else if (active.ProcessedEventCount > 0)
+            {
+                StatusMessage = $"Caught up {active.ProcessedEventCount:N0} Journey journal events.";
+            }
+            else
+            {
+                StatusMessage = $"Active journey: {active.Journey.Name}.";
+            }
             RaiseActiveState();
             return true;
         }

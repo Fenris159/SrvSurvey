@@ -484,11 +484,17 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
     private static string FormatCredits(long value)
     {
-        return value >= 1_000_000
-            ? $"{value / 1_000_000d:N1} M CR"
-            : value >= 1_000
-                ? $"{value / 1_000d:N0} K CR"
-                : $"{value:N0} CR";
+        if (value >= 1_000_000)
+        {
+            return $"{value / 1_000_000d:N1} M CR";
+        }
+
+        if (value >= 1_000)
+        {
+            return $"{value / 1_000d:N0} K CR";
+        }
+
+        return $"{value:N0} CR";
     }
 
     private bool SetField<T>(
@@ -568,11 +574,17 @@ public sealed record PriorScanSpeciesViewModel(
 
     private static string FormatCredits(long value)
     {
-        return value >= 1_000_000
-            ? $"{value / 1_000_000d:N2} M CR"
-            : value >= 1_000
-                ? $"{value / 1_000d:N1} K CR"
-                : $"{value:N0} CR";
+        if (value >= 1_000_000)
+        {
+            return $"{value / 1_000_000d:N2} M CR";
+        }
+
+        if (value >= 1_000)
+        {
+            return $"{value / 1_000d:N1} K CR";
+        }
+
+        return $"{value:N0} CR";
     }
 }
 

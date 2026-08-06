@@ -35,6 +35,29 @@ public interface IEddnPublisher
 /// </summary>
 public sealed class EddnPublisher : IEddnPublisher, IDisposable
 {
+    private const string EventKey = "event";
+    private const string FileheaderEvent = "Fileheader";
+    private const string PartKey = "part";
+    private const string CommanderEvent = "Commander";
+    private const string LoadGameEvent = "LoadGame";
+    private const string FsdJumpEvent = "FSDJump";
+    private const string CarrierJumpEvent = "CarrierJump";
+    private const string StartJumpEvent = "StartJump";
+    private const string ApproachBodyEvent = "ApproachBody";
+    private const string SupercruiseExitEvent = "SupercruiseExit";
+    private const string LocationEvent = "Location";
+    private const string HorizonsKey = "Horizons";
+    private const string OdysseyKey = "Odyssey";
+    private const string BodyNameKey = "BodyName";
+    private const string BodyKey = "Body";
+    private const string BodyIdKey = "BodyID";
+    private const string BodyTypeKey = "BodyType";
+    private const string PlanetBodyType = "Planet";
+    private const string GameVersionKey = "gameversion";
+    private const string BuildKey = "build";
+    private const string NameKey = "Name";
+    private const string CommanderNameKey = "Commander";
+
     private static readonly HashSet<string> JournalEvents = new(
         StringComparer.Ordinal)
     {
@@ -483,7 +506,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 
     private void BeginJournalSessionIfNeeded(string? journalPath, JObject raw)
     {
-        var eventName = raw.Value<string>("event");
+        var eventName = raw.Value<string>(EventKey);
         var normalizedJournalPath = string.IsNullOrWhiteSpace(journalPath)
             ? null
             : Path.GetFullPath(journalPath);
@@ -495,14 +518,14 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                 OperatingSystem.IsWindows()
                     ? StringComparison.OrdinalIgnoreCase
                     : StringComparison.Ordinal);
-        if (!pathChanged && eventName != "Fileheader")
+        if (!pathChanged && eventName != FileheaderEvent)
         {
             currentJournalPath ??= normalizedJournalPath;
             return;
         }
 
-        var isContinuedPart = eventName == "Fileheader"
-            && raw.Value<int?>("part") is > 1
+        var isContinuedPart = eventName == FileheaderEvent
+            && raw.Value<int?>(PartKey) is > 1
             && HasUsableHeader()
             && (!pathChanged
                 || IsSameJournalSeries(
@@ -529,18 +552,18 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 
     private void UpdateHeader(JObject raw)
     {
-        var eventName = raw.Value<string>("event");
-        if (eventName == "Fileheader")
+        var eventName = raw.Value<string>(EventKey);
+        if (eventName == FileheaderEvent)
         {
             header = new UploadPayloadHeader(
                 header?.uploaderID ?? string.Empty,
-                raw.Value<string>("gameversion"),
-                raw.Value<string>("build"),
+                raw.Value<string>(GameVersionKey),
+                raw.Value<string>(BuildKey),
                 softwareVersion);
         }
-        else if (eventName == "Commander")
+        else if (eventName == CommanderEvent)
         {
-            var commander = raw.Value<string>("Name");
+            var commander = raw.Value<string>(NameKey);
             if (!string.IsNullOrWhiteSpace(commander))
             {
                 header = new UploadPayloadHeader(
@@ -550,15 +573,15 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                     softwareVersion);
             }
         }
-        else if (eventName == "LoadGame")
+        else if (eventName == LoadGameEvent)
         {
-            var commander = raw.Value<string>("Commander");
+            var commander = raw.Value<string>(CommanderNameKey);
             if (!string.IsNullOrWhiteSpace(commander))
             {
                 header = new UploadPayloadHeader(
                     commander,
-                    header?.gameversion ?? raw.Value<string>("gameversion"),
-                    header?.gamebuild ?? raw.Value<string>("build"),
+                    header?.gameversion ?? raw.Value<string>(GameVersionKey),
+                    header?.gamebuild ?? raw.Value<string>(BuildKey),
                     softwareVersion);
             }
         }
@@ -566,34 +589,34 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 
     private void UpdateExpansionFlags(JObject raw)
     {
-        if (raw.Value<string>("event") is not ("Fileheader" or "LoadGame"))
+        if (raw.Value<string>(EventKey) is not (FileheaderEvent or LoadGameEvent))
         {
             return;
         }
 
-        horizons = raw.Value<bool?>("Horizons") ?? horizons;
-        odyssey = raw.Value<bool?>("Odyssey") ?? odyssey;
+        horizons = raw.Value<bool?>(HorizonsKey) ?? horizons;
+        odyssey = raw.Value<bool?>(OdysseyKey) ?? odyssey;
     }
 
     private void UpdateBodyContext(JObject raw)
     {
-        var eventName = raw.Value<string>("event");
-        if (eventName is "FSDJump" or "CarrierJump" or "StartJump")
+        var eventName = raw.Value<string>(EventKey);
+        if (eventName is FsdJumpEvent or CarrierJumpEvent or StartJumpEvent)
         {
             ClearTrackedBody();
             return;
         }
 
-        if (eventName is "ApproachBody" or "SupercruiseExit" or "Location")
+        if (eventName is ApproachBodyEvent or SupercruiseExitEvent or LocationEvent)
         {
-            var bodyName = raw.Value<string>("BodyName")
-                ?? raw.Value<string>("Body");
-            var bodyId = raw.Value<int?>("BodyID");
+            var bodyName = raw.Value<string>(BodyNameKey)
+                ?? raw.Value<string>(BodyKey);
+            var bodyId = raw.Value<int?>(BodyIdKey);
             if (!string.IsNullOrWhiteSpace(bodyName) && bodyId is >= 0)
             {
                 trackedBodyName = bodyName;
                 trackedBodyId = bodyId;
-                trackedBodyType = raw.Value<string>("BodyType") ?? "Planet";
+                trackedBodyType = raw.Value<string>(BodyTypeKey) ?? PlanetBodyType;
             }
         }
     }

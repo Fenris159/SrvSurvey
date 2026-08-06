@@ -9,7 +9,6 @@ public sealed partial class KnownSystemAddressCatalog
     public const string LegacyFileName = "Boxel.Names.txt";
 
     private const long MaximumFileBytes = 16L * 1024 * 1024;
-    private const int MaximumEntries = 250_000;
     private const int MaximumLineCharacters = 16_384;
     private readonly IReadOnlyDictionary<string, long> addresses;
 
@@ -100,6 +99,7 @@ public sealed partial class KnownSystemAddressCatalog
             leaveOpen: true);
         var result = new Dictionary<string, long>(
             StringComparer.OrdinalIgnoreCase);
+        var hasEntry = false;
         var foundStart = false;
         var foundMissingStart = false;
         string? line;
@@ -134,7 +134,7 @@ public sealed partial class KnownSystemAddressCatalog
             {
                 if (string.Equals(trimmed, "]", StringComparison.Ordinal))
                 {
-                    if (result.Count == 0)
+                    if (!hasEntry)
                     {
                         throw new InvalidDataException(
                             "The known-system address catalog is incomplete.");
@@ -168,13 +168,13 @@ public sealed partial class KnownSystemAddressCatalog
                     "The known-system address catalog contains an invalid entry.");
             }
 
-            if (result.ContainsKey(name))
+            if (!result.TryAdd(name, address))
             {
                 throw new InvalidDataException(
                     "The known-system address catalog contains duplicated entries.");
             }
 
-            result[name] = address;
+            hasEntry = true;
         }
         throw new InvalidDataException(
             "The known-system address catalog is incomplete.");

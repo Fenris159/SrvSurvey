@@ -701,11 +701,15 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                 true => "foot",
                 false => vehicle
             };
-        var source = currentStatus.InTaxi
-            ? HumanSiteGeometrySource.TaxiDock
-            : manualFootAlignment
-                ? HumanSiteGeometrySource.ManualFoot
-                : HumanSiteGeometrySource.AutoDock;
+        var source = HumanSiteGeometrySource.AutoDock;
+        if (currentStatus.InTaxi)
+        {
+            source = HumanSiteGeometrySource.TaxiDock;
+        }
+        else if (manualFootAlignment)
+        {
+            source = HumanSiteGeometrySource.ManualFoot;
+        }
         var geometry = navigation.InferGeometry(
             site,
             new SurfaceCoordinate(

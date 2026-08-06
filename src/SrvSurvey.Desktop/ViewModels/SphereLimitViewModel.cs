@@ -255,11 +255,18 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
             SelectedCenterSystem = null;
         }
 
-        StatusMessage = state.IsActive
-            ? "Loaded the active legacy spherical limit."
-            : state.Center is not null
-                ? "Loaded the saved spherical limit; it is currently disabled."
-                : "No spherical limit is configured for this commander.";
+        if (state.IsActive)
+        {
+            StatusMessage = "Loaded the active legacy spherical limit.";
+        }
+        else if (state.Center is not null)
+        {
+            StatusMessage = "Loaded the saved spherical limit; it is currently disabled.";
+        }
+        else
+        {
+            StatusMessage = "No spherical limit is configured for this commander.";
+        }
         enableCommand.RaiseCanExecuteChanged();
         disableCommand.RaiseCanExecuteChanged();
         UpdateDisplay();

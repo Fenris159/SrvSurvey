@@ -125,14 +125,22 @@ public sealed class HumanSiteTemplateCatalogTests
             [{"economy":"Agriculture","subType":1,"name":"X","landingPads":[{"size":"Small","offset":{"X":0,"Y":0}}],"buildings":[{"name":"HAB","paths":[{"PathPoints":[{"X":0,"Y":0},{"X":1,"Y":1}],"PathTypes":"AA==","FillMode":0}]}]}]
             """);
 
+        void LoadUnknownEconomy() => LoadTemplateCatalog(unknownEconomy);
+        void LoadMismatchedPath() => LoadTemplateCatalog(mismatchedPath);
+
         Assert.Throws<InvalidDataException>(
-            () => HumanSiteTemplateCatalog.Load(unknownEconomy));
+            LoadUnknownEconomy);
         Assert.Throws<InvalidDataException>(
-            () => HumanSiteTemplateCatalog.Load(mismatchedPath));
+            LoadMismatchedPath);
     }
 
     private static MemoryStream Json(string json)
     {
         return new MemoryStream(Encoding.UTF8.GetBytes(json));
+    }
+
+    private static void LoadTemplateCatalog(Stream catalogJson)
+    {
+        _ = HumanSiteTemplateCatalog.Load(catalogJson);
     }
 }

@@ -10,7 +10,26 @@ namespace SrvSurvey.Core.Routes;
     Justification = "The store is process-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class FollowRouteStore
 {
+    private const string RouteFileExtension = ".json";
+    private const string RouteJsonFilePattern = "*.json";
     private const string WorkspaceFileName = ".workspace.json";
+    private const string NotePropertyName = "notes";
+    private const string SavedRouteMissingMessage = "The saved route no longer exists.";
+    private const string SavedRouteNameAlreadyExistsMessage =
+        "A saved route named '{0}' already exists.";
+    private const string SavedRouteMustBeJsonFileMessage =
+        "The selected route must be a JSON file.";
+    private const string SelectedRouteMissingMessage =
+        "The selected route file no longer exists:";
+    private const string SavedRouteLoadErrorMessage = "The saved route could not be loaded.";
+    private const string FavoriteRouteReloadErrorMessage = "The favorite route could not be reloaded.";
+    private const string RenamedRouteReloadErrorMessage = "The renamed route could not be reloaded.";
+    private const string SavedRouteExportLoadErrorMessage =
+        "The saved route could not be loaded for export.";
+    private const string SavedRouteLoadForExportErrorMessage =
+        "The selected route could not be loaded: {0}";
+    private const string SavedRouteMissingFileTemplateMessage =
+        "The saved route could not be found: {0}";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -66,7 +85,7 @@ public sealed class FollowRouteStore
                     selectedPath,
                     true,
                     null,
-                    $"The selected route file no longer exists: {selectedPath}");
+                    $"{SelectedRouteMissingMessage} {selectedPath}");
             }
 
             return await LoadFromPathAsync(
@@ -106,7 +125,7 @@ public sealed class FollowRouteStore
         if (Directory.Exists(namedDirectory))
         {
             paths.AddRange(Directory
-                .EnumerateFiles(namedDirectory, "*.json", SearchOption.TopDirectoryOnly)
+                .EnumerateFiles(namedDirectory, RouteJsonFilePattern, SearchOption.TopDirectoryOnly)
                 .Where(path => !string.Equals(
                     Path.GetFileName(path),
                     WorkspaceFileName,
@@ -214,7 +233,9 @@ public sealed class FollowRouteStore
             if (File.Exists(path))
             {
                 throw new IOException(
-                    $"A saved route named '{normalizedName}' already exists.");
+                    string.Format(
+                        SavedRouteNameAlreadyExistsMessage,
+                        normalizedName));
             }
 
             var saved = route with
@@ -293,7 +314,7 @@ public sealed class FollowRouteStore
         {
             var root = await ReadRequiredObjectAsync(path, cancellationToken)
                 .ConfigureAwait(false);
-            WriteOptional(root, "notes", normalizedNotes);
+            WriteOptional(root, NotePropertyName, normalizedNotes);
             await WriteObjectAsync(path, root, cancellationToken)
                 .ConfigureAwait(false);
             return route with { Notes = normalizedNotes };
@@ -320,7 +341,7 @@ public sealed class FollowRouteStore
         if (loaded.Route is null)
         {
             throw new InvalidDataException(
-                loaded.Error ?? "The saved route could not be loaded.");
+                loaded.Error ?? SavedRouteLoadErrorMessage);
         }
 
         return await SaveNotesAsync(loaded.Route, notes, cancellationToken)
@@ -355,7 +376,7 @@ public sealed class FollowRouteStore
                 cancellationToken)
             .ConfigureAwait(false);
         return loaded.Route ?? throw new InvalidDataException(
-            loaded.Error ?? "The favorite route could not be reloaded.");
+            loaded.Error ?? FavoriteRouteReloadErrorMessage);
     }
 
     public async Task<FollowRouteDocument> ImportAsync(
@@ -368,7 +389,7 @@ public sealed class FollowRouteStore
         var fullSourcePath = Path.GetFullPath(sourcePath);
         if (!string.Equals(
                 Path.GetExtension(fullSourcePath),
-                ".json",
+                RouteFileExtension,
                 StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidDataException(
@@ -432,7 +453,7 @@ public sealed class FollowRouteStore
             if (!File.Exists(source))
             {
                 throw new FileNotFoundException(
-                    "The saved route no longer exists.",
+                    SavedRouteMissingMessage,
                     source);
             }
 
@@ -514,7 +535,7 @@ public sealed class FollowRouteStore
             if (!File.Exists(source))
             {
                 throw new FileNotFoundException(
-                    "The saved route no longer exists.",
+                    SavedRouteMissingMessage,
                     source);
             }
 
@@ -579,7 +600,7 @@ public sealed class FollowRouteStore
                     cancellationToken)
                 .ConfigureAwait(false);
             var renamed = loaded.Route ?? throw new InvalidDataException(
-                loaded.Error ?? "The renamed route could not be reloaded.");
+                loaded.Error ?? RenamedRouteReloadErrorMessage);
             var entry = new FollowRouteCatalogEntry(
                 normalizedName,
                 Path.GetFileName(destination),
@@ -614,7 +635,7 @@ public sealed class FollowRouteStore
             if (!File.Exists(path))
             {
                 throw new FileNotFoundException(
-                    "The saved route no longer exists.",
+                    SavedRouteMissingMessage,
                     path);
             }
 
@@ -626,7 +647,7 @@ public sealed class FollowRouteStore
                 trashDirectory,
                 $"{Path.GetFileNameWithoutExtension(path)}-"
                     + $"{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}-"
-                    + $"{Guid.NewGuid():N}.json");
+                    + $"{Guid.NewGuid():N}{RouteFileExtension}");
             File.Move(path, trashPath);
 
             var selection = await ReadSelectionAsync(
@@ -668,7 +689,7 @@ public sealed class FollowRouteStore
             if (!File.Exists(path))
             {
                 throw new FileNotFoundException(
-                    "The saved route no longer exists.",
+                    SavedRouteMissingMessage,
                     path);
             }
 
@@ -679,7 +700,7 @@ public sealed class FollowRouteStore
             var trashPath = Path.Combine(
                 trashDirectory,
                 $"{Path.GetFileNameWithoutExtension(path)}-"
-                    + $"{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}.json");
+                    + $"{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}{RouteFileExtension}");
             File.Move(path, trashPath);
             await WriteSelectionObjectAsync(
                     route.FrontierId,
@@ -698,7 +719,7 @@ public sealed class FollowRouteStore
     public string GetPath(string frontierId)
     {
         ValidateFileName(frontierId, nameof(frontierId));
-        return Path.Combine(GetRoutesDirectory(), frontierId + ".json");
+        return Path.Combine(GetRoutesDirectory(), frontierId + RouteFileExtension);
     }
 
     private string GetRoutesDirectory()
@@ -788,7 +809,7 @@ public sealed class FollowRouteStore
         return new[]
             {
                 GetPath(frontierId),
-                Path.Combine(dataDirectory, "routes", frontierId + ".json"),
+                Path.Combine(dataDirectory, "routes", frontierId + RouteFileExtension),
             }
             .Select(Path.GetFullPath)
             .Distinct(comparison);
@@ -803,11 +824,11 @@ public sealed class FollowRouteStore
         ValidateFileName(fileName, nameof(fileName));
         if (!string.Equals(
                 Path.GetExtension(fileName),
-                ".json",
+                RouteFileExtension,
                 StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException(
-                "The selected route must be a JSON file.",
+                SavedRouteMustBeJsonFileMessage,
                 nameof(fileName));
         }
 
@@ -857,7 +878,7 @@ public sealed class FollowRouteStore
             || string.Equals(relativePath, WorkspaceFileName, comparison)
             || !string.Equals(
                 Path.GetExtension(relativePath),
-                ".json",
+                RouteFileExtension,
                 StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
@@ -936,7 +957,7 @@ public sealed class FollowRouteStore
                     cancellationToken)
                 .ConfigureAwait(false);
             var document = loaded.Route ?? throw new InvalidDataException(
-                loaded.Error ?? "The saved route could not be loaded for export.");
+                loaded.Error ?? SavedRouteExportLoadErrorMessage);
             var destination = GetAvailableExportPath(
                 fullDestination,
                 getFileName(route));
@@ -971,7 +992,7 @@ public sealed class FollowRouteStore
         }
 
         WriteOptional(root, "name", NormalizeOptionalText(route.Name));
-        WriteOptional(root, "notes", NormalizeNotes(route.Notes));
+        WriteOptional(root, NotePropertyName, NormalizeNotes(route.Notes));
         WriteOptional(
             root,
             "spanshRouteKind",
@@ -998,7 +1019,9 @@ public sealed class FollowRouteStore
     {
         if (!File.Exists(path))
         {
-            throw new FileNotFoundException("The saved route no longer exists.", path);
+            throw new FileNotFoundException(
+                SavedRouteMissingMessage,
+                path);
         }
 
         var read = await ReadObjectAsync(path, cancellationToken)
@@ -1129,7 +1152,7 @@ public sealed class FollowRouteStore
                 nameof(name));
         }
 
-        return stem + ".json";
+        return stem + RouteFileExtension;
     }
 
     private static string? NormalizeOptionalText(string? value)
@@ -1204,7 +1227,7 @@ public sealed class FollowRouteStore
             GetInt32(root, "last") ?? -1,
             hops,
             NormalizeOptionalText(GetString(root, "name")),
-            NormalizeNotes(GetString(root, "notes")),
+            NormalizeNotes(GetString(root, NotePropertyName)),
             GetBoolean(root, "favorite") ?? false,
             parsedKind,
             ParseSpanshRouteKind(path, GetString(root, "spanshRouteKind")));
@@ -1271,7 +1294,7 @@ public sealed class FollowRouteStore
             name,
             GetInt64(root, "id64"),
             position,
-            GetString(root, "notes"),
+            GetString(root, NotePropertyName),
             GetBoolean(root, "refuel") ?? false,
             GetBoolean(root, "neutron") ?? false,
             ParseBioTargets(path, index, root["bio"]),
@@ -1468,7 +1491,7 @@ public sealed class FollowRouteStore
             root.Remove("z");
         }
 
-        WriteOptional(root, "notes", hop.Notes);
+        WriteOptional(root, NotePropertyName, hop.Notes);
         WriteTrue(root, "refuel", hop.Refuel);
         WriteTrue(root, "neutron", hop.Neutron);
         WriteBioTargets(root, hop.BioTargets);

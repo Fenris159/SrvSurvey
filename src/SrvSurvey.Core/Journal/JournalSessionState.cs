@@ -5,6 +5,7 @@ namespace SrvSurvey.Core.Journal;
 
 public sealed class JournalSessionState
 {
+    private const string ShipIdProperty = "ShipID";
     public string? GameVersion { get; private set; }
 
     public string? GameBuild { get; private set; }
@@ -89,7 +90,7 @@ public sealed class JournalSessionState
                 GameBuild = GetString(root, "build") ?? GameBuild;
                 IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
                 ShipType = GetString(root, "Ship") ?? ShipType;
-                ShipId = GetInt64(root, "ShipID") ?? ShipId;
+                ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
                 ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
                 ShipIdent = GetString(root, nameof(ShipIdent)) ?? ShipIdent;
                 IsShutdown = false;
@@ -100,7 +101,7 @@ public sealed class JournalSessionState
 
             case "Loadout":
                 ShipType = GetString(root, "Ship") ?? ShipType;
-                ShipId = GetInt64(root, "ShipID") ?? ShipId;
+                ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
                 ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
                 ShipIdent = GetString(root, nameof(ShipIdent))
                     ?? GetString(root, "ShipIDent")
@@ -109,20 +110,20 @@ public sealed class JournalSessionState
 
             case "ShipyardSwap":
                 ShipType = GetString(root, nameof(ShipType)) ?? ShipType;
-                ShipId = GetInt64(root, "ShipID") ?? ShipId;
+                ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
                 break;
 
             case "ShipyardBuy":
             case "ShipyardNew":
                 ShipType = GetString(root, nameof(ShipType)) ?? ShipType;
                 ShipId = GetInt64(root, "NewShipID")
-                    ?? GetInt64(root, "ShipID")
+                    ?? GetInt64(root, ShipIdProperty)
                     ?? ShipId;
                 break;
 
             case "SetUserShipName":
                 ShipType = GetString(root, "Ship") ?? ShipType;
-                ShipId = GetInt64(root, "ShipID") ?? ShipId;
+                ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
                 ShipName = GetString(root, "UserShipName") ?? ShipName;
                 ShipIdent = GetString(root, "UserShipId") ?? ShipIdent;
                 break;
