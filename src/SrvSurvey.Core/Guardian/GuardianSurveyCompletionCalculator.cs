@@ -38,11 +38,51 @@ public sealed class GuardianSurveyCompletionCalculator(
             ? survey.RelicTowerHeading
             : published?.RelicTowerHeading ?? -1;
 
-        var score = siteHeading != -1 ? 1 : 0;
+        var tallies = TallyPoints(survey, published, points, isRuins);
+        var score = (siteHeading != -1 ? 1 : 0) + tallies.Confirmed;
+        var maxScore = points.Count + 1;
+        if (isRuins)
+        {
+            maxScore++;
+            if (relicTowerHeading != -1)
+            {
+                score++;
+            }
+        }
+        else
+        {
+            maxScore += tallies.PresentRelics;
+            score += tallies.RelicHeadingScore;
+        }
+
+        var progress = maxScore == 0
+            ? 0
+            : (int)(100d / maxScore * score);
+        return new GuardianSurveyCompletion(
+            score,
+            maxScore,
+            tallies.Confirmed,
+            points.Count,
+            tallies.PresentRelics,
+            tallies.PresentPuddles,
+            template.PointsOfInterest.Count(
+                point => IsBasicPoi(point.Type)),
+            tallies.RelicsNeedingHeading,
+            progress,
+            progress == 100);
+    }
+
+    private static PointTallies TallyPoints(
+        GuardianSurveyData survey,
+        GuardianPublishedSite? published,
+        IReadOnlyList<GuardianPointOfInterest> points,
+        bool isRuins)
+    {
         var confirmed = 0;
         var presentRelics = 0;
         var presentPuddles = 0;
         var relicsNeedingHeading = 0;
+        var relicHeadingScore = 0;
 
         foreach (var point in points)
         {
@@ -62,7 +102,7 @@ public sealed class GuardianSurveyCompletionCalculator(
                 }
                 else if (!isRuins)
                 {
-                    score++;
+                    relicHeadingScore++;
                 }
             }
             else if (status == GuardianPoiStatus.Present
@@ -72,37 +112,20 @@ public sealed class GuardianSurveyCompletionCalculator(
             }
         }
 
-        score += confirmed;
-        var maxScore = points.Count + 1;
-        if (isRuins)
-        {
-            maxScore++;
-            if (relicTowerHeading != -1)
-            {
-                score++;
-            }
-        }
-        else
-        {
-            maxScore += presentRelics;
-        }
-
-        var progress = maxScore == 0
-            ? 0
-            : (int)(100d / maxScore * score);
-        return new GuardianSurveyCompletion(
-            score,
-            maxScore,
+        return new PointTallies(
             confirmed,
-            points.Count,
             presentRelics,
             presentPuddles,
-            template.PointsOfInterest.Count(
-                point => IsBasicPoi(point.Type)),
             relicsNeedingHeading,
-            progress,
-            progress == 100);
+            relicHeadingScore);
     }
+
+    private readonly record struct PointTallies(
+        int Confirmed,
+        int PresentRelics,
+        int PresentPuddles,
+        int RelicsNeedingHeading,
+        int RelicHeadingScore);
 
     public bool IsSurveyComplete(
         GuardianSurveyData survey,

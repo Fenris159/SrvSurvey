@@ -261,63 +261,104 @@ public sealed class SystemSurfaceStore
                 ToFileContext(context),
                 root =>
                 {
-                    var body = FindBody(root, context);
-                    if (body?[BookmarksProperty] is not JsonObject bookmarks)
+                    if (TryRemoveBookmark(
+                        root,
+                        context,
+                        name,
+                        location,
+                        nearest,
+                        maximumDistanceMeters))
                     {
-                        return;
+                        outcome = SurfaceBookmarkMutation.Removed;
                     }
-
-                    NormalizeLegacyBookmarkKeys(bookmarks);
-                    if (bookmarks[name] is not JsonArray locations)
-                    {
-                        return;
-                    }
-
-                    var candidates = locations
-                        .Select((node, index) => new
-                        {
-                            Index = index,
-                            Coordinate = ReadCoordinate(node),
-                        })
-                        .Where(candidate => candidate.Coordinate is not null)
-                        .Select(candidate => new
-                        {
-                            candidate.Index,
-                            Distance = GetDistance(
-                                candidate.Coordinate!.Value,
-                                location,
-                                context.RadiusMeters),
-                        })
-                        .OrderBy(candidate => candidate.Distance)
-                        .ToArray();
-                    if (candidates.Length == 0)
-                    {
-                        return;
-                    }
-
-                    var selected = nearest ? candidates[0] : candidates[^1];
-                    if (maximumDistanceMeters is { } limit
-                        && selected.Distance >= limit)
-                    {
-                        return;
-                    }
-
-                    locations.RemoveAt(selected.Index);
-                    if (locations.Count == 0)
-                    {
-                        bookmarks.Remove(name);
-                    }
-
-                    if (bookmarks.Count == 0)
-                    {
-                        body.Remove(BookmarksProperty);
-                    }
-
-                    outcome = SurfaceBookmarkMutation.Removed;
                 },
                 cancellationToken)
             .ConfigureAwait(false);
         return new SurfaceBookmarkMutationResult(path, outcome);
+    }
+
+    private static bool TryRemoveBookmark(
+        JsonObject root,
+        SystemSurfaceContext context,
+        string name,
+        SurfaceCoordinate location,
+        bool nearest,
+        double? maximumDistanceMeters)
+    {
+        var body = FindBody(root, context);
+        if (body?[BookmarksProperty] is not JsonObject bookmarks)
+        {
+            return false;
+        }
+
+        NormalizeLegacyBookmarkKeys(bookmarks);
+        if (bookmarks[name] is not JsonArray locations)
+        {
+            return false;
+        }
+
+        var selectedIndex = FindBookmarkIndex(
+            locations,
+            location,
+            context.RadiusMeters,
+            nearest,
+            maximumDistanceMeters);
+        if (selectedIndex is null)
+        {
+            return false;
+        }
+
+        locations.RemoveAt(selectedIndex.Value);
+        if (locations.Count == 0)
+        {
+            bookmarks.Remove(name);
+        }
+
+        if (bookmarks.Count == 0)
+        {
+            body.Remove(BookmarksProperty);
+        }
+
+        return true;
+    }
+
+    private static int? FindBookmarkIndex(
+        JsonArray locations,
+        SurfaceCoordinate location,
+        double radiusMeters,
+        bool nearest,
+        double? maximumDistanceMeters)
+    {
+        var candidates = locations
+            .Select((node, index) => new
+            {
+                Index = index,
+                Coordinate = ReadCoordinate(node),
+            })
+            .Where(candidate => candidate.Coordinate is not null)
+            .Select(candidate => new
+            {
+                candidate.Index,
+                Distance = GetDistance(
+                    candidate.Coordinate!.Value,
+                    location,
+                    radiusMeters),
+            })
+            .OrderBy(candidate => candidate.Distance)
+            .ToArray();
+        if (candidates.Length == 0)
+        {
+            return null;
+        }
+
+        var selected = nearest ? candidates[0] : candidates[^1];
+        if (maximumDistanceMeters is { } limit
+            && selected.Distance >= limit)
+        {
+            return null;
+        }
+
+        return selected.Index;
     }
 
     public async Task<string> AppendBioScansAsync(

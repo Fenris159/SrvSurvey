@@ -39,6 +39,7 @@ public static class WellKnownUris
     public static string CanonnBioforgeEntryPrefix => Require("CanonnBioforgeEntry");
     public static string CanonnUndiscoveredCodexCommanderPrefix => Require("CanonnUndiscoveredCodexCommander");
     public static string EdastroOrganicMapPrefix => Require("EdastroOrganicMapPrefix");
+    public static Uri SpanshApiBase => RequireUri("SpanshApiBase");
     public static string SpanshBodyPrefix => Require("SpanshBody");
     public static string SpanshSystemPrefix => Require("SpanshSystem");
     public static string EdsmSystemById64Prefix => Require("EdsmSystemById64");

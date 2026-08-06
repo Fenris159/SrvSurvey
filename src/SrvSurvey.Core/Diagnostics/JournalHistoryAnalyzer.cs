@@ -45,28 +45,7 @@ public sealed class JournalHistoryAnalyzer
         }
 
         var warnings = new List<string>();
-        var files = new DirectoryInfo(journalDirectory)
-            .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
-            .Select(file => new JournalFileCandidate(
-                file,
-                TryGetJournalTimestamp(file.Name, out var timestamp)
-                    ? timestamp
-                    : null))
-            .Where(candidate =>
-            {
-                if (candidate.OpenedAt is null)
-                {
-                    warnings.Add(
-                        $"Ignored {candidate.File.Name} because its journal timestamp is invalid.");
-                    return false;
-                }
-
-                return candidate.OpenedAt > startTime
-                    && candidate.File.LastWriteTimeUtc >= startTime.UtcDateTime;
-            })
-            .OrderBy(candidate => candidate.OpenedAt)
-            .ThenBy(candidate => candidate.File.Name, StringComparer.Ordinal)
-            .ToArray();
+        var files = EnumerateJournalCandidates(startTime, warnings);
         var totals = new MutableTotals(greenGasGiantCriteria);
         var processedFiles = 0;
         var skippedCommanderFiles = 0;
@@ -158,6 +137,34 @@ public sealed class JournalHistoryAnalyzer
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
             out timestamp);
+    }
+
+    private JournalFileCandidate[] EnumerateJournalCandidates(
+        DateTimeOffset startTime,
+        List<string> warnings)
+    {
+        return new DirectoryInfo(journalDirectory)
+            .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
+            .Select(file => new JournalFileCandidate(
+                file,
+                TryGetJournalTimestamp(file.Name, out var timestamp)
+                    ? timestamp
+                    : null))
+            .Where(candidate =>
+            {
+                if (candidate.OpenedAt is null)
+                {
+                    warnings.Add(
+                        $"Ignored {candidate.File.Name} because its journal timestamp is invalid.");
+                    return false;
+                }
+
+                return candidate.OpenedAt > startTime
+                    && candidate.File.LastWriteTimeUtc >= startTime.UtcDateTime;
+            })
+            .OrderBy(candidate => candidate.OpenedAt)
+            .ThenBy(candidate => candidate.File.Name, StringComparer.Ordinal)
+            .ToArray();
     }
 
     private static async Task<JournalHistoryFileRead> ReadFileAsync(

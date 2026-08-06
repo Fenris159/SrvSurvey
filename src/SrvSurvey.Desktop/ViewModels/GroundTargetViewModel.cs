@@ -263,32 +263,37 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
         var applied = 0;
         foreach (var journalEvent in journalEvents)
         {
-            if (journalEvent.EventName != "SendText"
-                || !journalEvent.Payload.TryGetProperty("Message", out var value)
-                || value.ValueKind != System.Text.Json.JsonValueKind.String)
-            {
-                continue;
-            }
-
-            var message = value.GetString()?.Trim().ToLowerInvariant();
-            switch (message)
-            {
-                case ".target here":
-                case "@":
-                    var before = state.Version;
-                    await UseCurrentLocationAsync();
-                    applied += state.Version != before ? 1 : 0;
-                    break;
-                case ".target off":
-                    applied += await SetActiveAsync(false) ? 1 : 0;
-                    break;
-                case ".target on":
-                    applied += await SetActiveAsync(true) ? 1 : 0;
-                    break;
-            }
+            applied += await TryApplyTargetCommandAsync(journalEvent);
         }
 
         return applied;
+    }
+
+    private async Task<int> TryApplyTargetCommandAsync(
+        JournalEventEnvelope journalEvent)
+    {
+        if (journalEvent.EventName != "SendText"
+            || !journalEvent.Payload.TryGetProperty("Message", out var value)
+            || value.ValueKind != System.Text.Json.JsonValueKind.String)
+        {
+            return 0;
+        }
+
+        var message = value.GetString()?.Trim().ToLowerInvariant();
+        switch (message)
+        {
+            case ".target here":
+            case "@":
+                var before = state.Version;
+                await UseCurrentLocationAsync();
+                return state.Version != before ? 1 : 0;
+            case ".target off":
+                return await SetActiveAsync(false) ? 1 : 0;
+            case ".target on":
+                return await SetActiveAsync(true) ? 1 : 0;
+            default:
+                return 0;
+        }
     }
 
     public async Task ClearTargetAsync()

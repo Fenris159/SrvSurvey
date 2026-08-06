@@ -320,27 +320,16 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         musicTrack = nextMusicTrack;
         OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
 
-        var routeDestination = latestNavRoute?.Route.Count > 1
-            ? latestNavRoute.Route[^1]
-            : null;
-        var destinationName = routeDestination?.StarSystem
-            ?? status?.Destination?.Name;
-        var destinationAddress = routeDestination?.SystemAddress
-            ?? status?.Destination?.System
-            ?? 0;
-        var destinationPosition = routeDestination?.Position;
-        if (string.IsNullOrWhiteSpace(destinationName))
+        var destination = ResolveRouteDestination();
+        if (destination is null)
         {
-            destinationSystemAddress = 0;
-            resolvedDestinationPosition = null;
-            DestinationSystemName = "n/a";
-            DestinationDistance = Unavailable;
-            DestinationResult = "No Galaxy Map destination selected";
-            IsDestinationInside = false;
-            IsDestinationUnknown = false;
+            ClearDestinationDisplay();
             return;
         }
 
+        var destinationName = destination.Value.Name;
+        var destinationAddress = destination.Value.Address;
+        var destinationPosition = destination.Value.Position;
         var targetChanged = destinationSystemAddress != destinationAddress
             || !string.Equals(
                 DestinationSystemName,
@@ -358,10 +347,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         destinationPosition = resolvedDestinationPosition;
         if (!state.IsActive)
         {
-            DestinationDistance = Unavailable;
-            DestinationResult = "The spherical limit is disabled";
-            IsDestinationInside = false;
-            IsDestinationUnknown = false;
+            SetInactiveDestinationDisplay();
             return;
         }
 
@@ -422,6 +408,46 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
                 false => $"Exceeds the {state.Radius:N2} ly limit"
             };
         IsDestinationInside = evaluation?.IsInside == true;
+        IsDestinationUnknown = false;
+    }
+
+    private (string Name, long Address, GalacticCoordinate? Position)?
+        ResolveRouteDestination()
+    {
+        var routeDestination = latestNavRoute?.Route.Count > 1
+            ? latestNavRoute.Route[^1]
+            : null;
+        var destinationName = routeDestination?.StarSystem
+            ?? status?.Destination?.Name;
+        if (string.IsNullOrWhiteSpace(destinationName))
+        {
+            return null;
+        }
+
+        return (
+            destinationName,
+            routeDestination?.SystemAddress
+                ?? status?.Destination?.System
+                ?? 0,
+            routeDestination?.Position);
+    }
+
+    private void ClearDestinationDisplay()
+    {
+        destinationSystemAddress = 0;
+        resolvedDestinationPosition = null;
+        DestinationSystemName = "n/a";
+        DestinationDistance = Unavailable;
+        DestinationResult = "No Galaxy Map destination selected";
+        IsDestinationInside = false;
+        IsDestinationUnknown = false;
+    }
+
+    private void SetInactiveDestinationDisplay()
+    {
+        DestinationDistance = Unavailable;
+        DestinationResult = "The spherical limit is disabled";
+        IsDestinationInside = false;
         IsDestinationUnknown = false;
     }
 

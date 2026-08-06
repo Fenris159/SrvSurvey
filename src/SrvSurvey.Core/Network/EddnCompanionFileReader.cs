@@ -42,39 +42,17 @@ namespace SrvSurvey.Core.Network
                 cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
-                    if (!File.Exists(filepath))
+                    var attemptResult = await tryReadCompanionFile(
+                        filepath,
+                        eventName!,
+                        journalEvent,
+                        cancellationToken).ConfigureAwait(false);
+                    if (attemptResult.isSuccess)
                     {
-                        lastError = $"{eventName}.json was not found";
+                        return attemptResult;
                     }
-                    else
-                    {
-                        using var stream = new FileStream(
-                            filepath,
-                            FileMode.Open,
-                            FileAccess.Read,
-                            FileShare.ReadWrite);
-                        using var reader = new StreamReader(stream);
-                        using var jsonReader = new JsonTextReader(reader);
-                        var content = await JObject.LoadAsync(
-                            jsonReader,
-                            cancellationToken).ConfigureAwait(false);
-                        if (content.Value<string>("event") != eventName)
-                        {
-                            lastError = $"{eventName}.json contained a different event";
-                        }
-                        else if (!matchesMarket(journalEvent, content))
-                        {
-                            lastError = $"{eventName}.json did not match the event's MarketID";
-                        }
-                        else if (!isCurrent(journalEvent, content))
-                        {
-                            lastError = $"{eventName}.json was older than the journal event";
-                        }
-                        else
-                        {
-                            return new EddnCompanionReadResult(content, null);
-                        }
-                    }
+
+                    lastError = attemptResult.error;
                 }
                 catch (Exception ex) when (ex is IOException or JsonException)
                 {
@@ -88,6 +66,53 @@ namespace SrvSurvey.Core.Network
             return new EddnCompanionReadResult(
                 null,
                 lastError ?? $"{eventName}.json could not be read");
+        }
+
+        private static async Task<EddnCompanionReadResult> tryReadCompanionFile(
+            string filepath,
+            string eventName,
+            JObject journalEvent,
+            CancellationToken cancellationToken)
+        {
+            if (!File.Exists(filepath))
+            {
+                return new EddnCompanionReadResult(
+                    null,
+                    $"{eventName}.json was not found");
+            }
+
+            using var stream = new FileStream(
+                filepath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite);
+            using var reader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(reader);
+            var content = await JObject.LoadAsync(
+                jsonReader,
+                cancellationToken).ConfigureAwait(false);
+            if (content.Value<string>("event") != eventName)
+            {
+                return new EddnCompanionReadResult(
+                    null,
+                    $"{eventName}.json contained a different event");
+            }
+
+            if (!matchesMarket(journalEvent, content))
+            {
+                return new EddnCompanionReadResult(
+                    null,
+                    $"{eventName}.json did not match the event's MarketID");
+            }
+
+            if (!isCurrent(journalEvent, content))
+            {
+                return new EddnCompanionReadResult(
+                    null,
+                    $"{eventName}.json was older than the journal event");
+            }
+
+            return new EddnCompanionReadResult(content, null);
         }
 
         private static bool matchesMarket(JObject journalEvent, JObject content)

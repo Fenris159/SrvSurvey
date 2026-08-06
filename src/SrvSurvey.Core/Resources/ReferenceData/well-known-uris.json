@@ -19,6 +19,7 @@
   "CanonnChallenge": "https://canonn.science/codex/canonn-challenge/",
   "EdastroCodexMap": "https://edastro.com/mapcharts/codex.html",
   "EdastroOrganicMapPrefix": "https://edastro.b-cdn.net/mapcharts/organic/organic-",
+  "SpanshApiBase": "https://spansh.co.uk/api/",
   "SpanshBody": "https://spansh.co.uk/body/",
   "SpanshSystem": "https://spansh.co.uk/system/",
   "EdsmSystemById64": "https://www.edsm.net/en/system?systemID64=",

@@ -39,8 +39,6 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
 {
     private const int MaximumResponseBytes = 32 * 1024 * 1024;
 
-    private static readonly Uri DefaultBaseUri = new(
-        "https://spansh.co.uk/api/");
     private static readonly HttpClient SharedClient = new()
     {
         Timeout = TimeSpan.FromSeconds(20),
@@ -56,7 +54,7 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
         TimeSpan? requestTimeout = null)
     {
         this.client = client ?? SharedClient;
-        this.baseUri = baseUri ?? DefaultBaseUri;
+        this.baseUri = baseUri ?? WellKnownUris.SpanshApiBase;
         this.requestTimeout = requestTimeout ?? TimeSpan.FromSeconds(20);
         if (this.requestTimeout <= TimeSpan.Zero)
         {
@@ -80,78 +78,21 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
 
         var requestUri = new Uri(
             baseUri,
-            "dump/" + systemAddress.ToString(CultureInfo.InvariantCulture) + "/");
+            UriPath.CombineWithTrailingSeparator(
+                "dump",
+                systemAddress.ToString(CultureInfo.InvariantCulture)));
         using var timeoutCancellation = CancellationTokenSource
             .CreateLinkedTokenSource(cancellationToken);
         timeoutCancellation.CancelAfter(requestTimeout);
         var operationToken = timeoutCancellation.Token;
         try
         {
-            using var response = await client.GetAsync(
+            return await LoadLocationAsync(
                     requestUri,
-                    HttpCompletionOption.ResponseHeadersRead,
-                    operationToken)
-                .ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            using var document = await BoundedHttpContent.ReadJsonDocumentAsync(
-                    response.Content,
-                    MaximumResponseBytes,
-                    "The Spansh system-dump response",
-                    operationToken)
-                .ConfigureAwait(false);
-            if (!document.RootElement.TryGetProperty("system", out var system)
-                || system.ValueKind != JsonValueKind.Object)
-            {
-                throw new InvalidDataException(
-                    "The Spansh dump has no system object.");
-            }
-
-            var systemName = GetString(system, "name")
-                ?? systemAddress.ToString(CultureInfo.InvariantCulture);
-            GalacticCoordinate? position = null;
-            if (system.TryGetProperty("coords", out var coords)
-                && coords.ValueKind == JsonValueKind.Object
-                && GetDouble(coords, "x") is { } x
-                && GetDouble(coords, "y") is { } y
-                && GetDouble(coords, "z") is { } z)
-            {
-                position = new GalacticCoordinate(x, y, z);
-            }
-
-            string? bodyName = null;
-            long? bodyAddress = null;
-            if (system.TryGetProperty("bodies", out var bodies)
-                && bodies.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var body in bodies.EnumerateArray())
-                {
-                    if (body.ValueKind != JsonValueKind.Object
-                        || GetInt32(body, "bodyId") != bodyId)
-                    {
-                        continue;
-                    }
-
-                    bodyName = GetString(body, "name");
-                    bodyAddress = GetInt64(body, "id64");
-                    break;
-                }
-            }
-
-            var spanshUri = bodyAddress is > 0
-                ? new Uri("https://spansh.co.uk/body/" + bodyAddress.Value
-                    .ToString(CultureInfo.InvariantCulture))
-                : new Uri("https://spansh.co.uk/system/" + systemAddress
-                    .ToString(CultureInfo.InvariantCulture));
-            return new CodexDiscoveryLocationLoadResult(
-                new CodexDiscoveryLocation(
                     systemAddress,
                     bodyId,
-                    systemName,
-                    bodyName ?? $"{systemName} #{bodyId}",
-                    position is null ? null : GalacticRegionMap.Find(position.Value),
-                    position,
-                    spanshUri),
-                null);
+                    operationToken)
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -169,6 +110,100 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
         {
             return CodexDiscoveryLocationLoadResult.Failed(exception.Message);
         }
+    }
+
+    private async Task<CodexDiscoveryLocationLoadResult> LoadLocationAsync(
+        Uri requestUri,
+        long systemAddress,
+        int bodyId,
+        CancellationToken operationToken)
+    {
+        using var response = await client.GetAsync(
+                requestUri,
+                HttpCompletionOption.ResponseHeadersRead,
+                operationToken)
+            .ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        using var document = await BoundedHttpContent.ReadJsonDocumentAsync(
+                response.Content,
+                MaximumResponseBytes,
+                "The Spansh system-dump response",
+                operationToken)
+            .ConfigureAwait(false);
+        if (!document.RootElement.TryGetProperty("system", out var system)
+            || system.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidDataException(
+                "The Spansh dump has no system object.");
+        }
+
+        var systemName = GetString(system, "name")
+            ?? systemAddress.ToString(CultureInfo.InvariantCulture);
+        var position = TryReadPosition(system);
+        var (bodyName, bodyAddress) = FindBody(system, bodyId);
+        var spanshUri = CreateSpanshUri(systemAddress, bodyAddress);
+        return new CodexDiscoveryLocationLoadResult(
+            new CodexDiscoveryLocation(
+                systemAddress,
+                bodyId,
+                systemName,
+                bodyName ?? $"{systemName} #{bodyId}",
+                position is null ? null : GalacticRegionMap.Find(position.Value),
+                position,
+                spanshUri),
+            null);
+    }
+
+    private static GalacticCoordinate? TryReadPosition(JsonElement system)
+    {
+        if (system.TryGetProperty("coords", out var coords)
+            && coords.ValueKind == JsonValueKind.Object
+            && GetDouble(coords, "x") is { } x
+            && GetDouble(coords, "y") is { } y
+            && GetDouble(coords, "z") is { } z)
+        {
+            return new GalacticCoordinate(x, y, z);
+        }
+
+        return null;
+    }
+
+    private static (string? BodyName, long? BodyAddress) FindBody(
+        JsonElement system,
+        int bodyId)
+    {
+        if (!system.TryGetProperty("bodies", out var bodies)
+            || bodies.ValueKind != JsonValueKind.Array)
+        {
+            return (null, null);
+        }
+
+        foreach (var body in bodies.EnumerateArray())
+        {
+            if (body.ValueKind != JsonValueKind.Object
+                || GetInt32(body, "bodyId") != bodyId)
+            {
+                continue;
+            }
+
+            return (GetString(body, "name"), GetInt64(body, "id64"));
+        }
+
+        return (null, null);
+    }
+
+    private static Uri CreateSpanshUri(long systemAddress, long? bodyAddress)
+    {
+        if (bodyAddress is > 0)
+        {
+            return new Uri(
+                WellKnownUris.SpanshBodyPrefix
+                    + bodyAddress.Value.ToString(CultureInfo.InvariantCulture));
+        }
+
+        return new Uri(
+            WellKnownUris.SpanshSystemPrefix
+                + systemAddress.ToString(CultureInfo.InvariantCulture));
     }
 
     private static string? GetString(JsonElement root, string name)

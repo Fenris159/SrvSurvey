@@ -74,79 +74,123 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             "results/" + route.JobId.ToString("D").ToUpperInvariant());
         var timer = Stopwatch.StartNew();
         var nextPollInterval = pollInterval;
-        string? lastState = null;
-        string? lastStatus = null;
         while (true)
         {
-            using var response = await client.GetAsync(
-                    requestUri,
-                    HttpCompletionOption.ResponseHeadersRead,
+            var root = await FetchRouteStatusAsync(requestUri, cancellationToken)
+                .ConfigureAwait(false);
+            var completed = TryCompleteRoute(root, route, out var hops);
+            if (completed)
+            {
+                return hops!;
+            }
+
+            ThrowIfTimedOut(route, timer, GetString(root, "state"), GetString(root, "status"));
+            nextPollInterval = await DelayBeforeNextPollAsync(
+                    timer,
+                    nextPollInterval,
                     cancellationToken)
                 .ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            JsonObject root;
-            try
-            {
-                root = (await BoundedHttpContent.ReadJsonNodeAsync(
-                        response.Content,
-                        MaximumResponseBytes,
-                        "The Spansh route response",
-                        cancellationToken)
-                    .ConfigureAwait(false)) as JsonObject
-                    ?? throw InvalidResponse("the root value is not an object");
-            }
-            catch (JsonException exception)
-            {
-                throw InvalidResponse("the response is not valid JSON", exception);
-            }
-
-            lastState = GetString(root, "state");
-            lastStatus = GetString(root, "status");
-            if (string.Equals(lastStatus, "error", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(lastStatus, "failed", StringComparison.OrdinalIgnoreCase))
-            {
-                throw InvalidResponse(
-                    $"job {route.JobId:D} returned status '{lastStatus}'");
-            }
-
-            if (string.Equals(lastStatus, "ok", StringComparison.OrdinalIgnoreCase)
-                && root["result"] is not null)
-            {
-                return ParseRoute(root, route.Kind);
-            }
-
-            if (string.Equals(lastState, "completed", StringComparison.OrdinalIgnoreCase))
-            {
-                throw InvalidResponse(
-                    $"job {route.JobId:D} completed with status "
-                        + $"'{lastStatus ?? "unknown"}'");
-            }
-
-            if (timer.Elapsed >= maximumWait)
-            {
-                throw new TimeoutException(
-                    $"Spansh route {route.JobId:D} did not complete within "
-                        + $"{maximumWait.TotalSeconds:N0} seconds "
-                        + $"(state: {lastState ?? "unknown"}, "
-                        + $"status: {lastStatus ?? "unknown"}).");
-            }
-
-            var remaining = maximumWait - timer.Elapsed;
-            var delay = nextPollInterval <= remaining
-                ? nextPollInterval
-                : remaining;
-            if (delay > TimeSpan.Zero)
-            {
-                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
-            }
-
-            if (useExponentialPolling && nextPollInterval < maximumPollInterval)
-            {
-                nextPollInterval = TimeSpan.FromTicks(Math.Min(
-                    nextPollInterval.Ticks * 2,
-                    maximumPollInterval.Ticks));
-            }
         }
+    }
+
+    private async Task<JsonObject> FetchRouteStatusAsync(
+        Uri requestUri,
+        CancellationToken cancellationToken)
+    {
+        using var response = await client.GetAsync(
+                requestUri,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken)
+            .ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        try
+        {
+            return (await BoundedHttpContent.ReadJsonNodeAsync(
+                    response.Content,
+                    MaximumResponseBytes,
+                    "The Spansh route response",
+                    cancellationToken)
+                .ConfigureAwait(false)) as JsonObject
+                ?? throw InvalidResponse("the root value is not an object");
+        }
+        catch (JsonException exception)
+        {
+            throw InvalidResponse("the response is not valid JSON", exception);
+        }
+    }
+
+    private static bool TryCompleteRoute(
+        JsonObject root,
+        SpanshRouteReference route,
+        out IReadOnlyList<FollowRouteHop>? hops)
+    {
+        hops = null;
+        var lastState = GetString(root, "state");
+        var lastStatus = GetString(root, "status");
+        if (string.Equals(lastStatus, "error", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(lastStatus, "failed", StringComparison.OrdinalIgnoreCase))
+        {
+            throw InvalidResponse(
+                $"job {route.JobId:D} returned status '{lastStatus}'");
+        }
+
+        if (string.Equals(lastStatus, "ok", StringComparison.OrdinalIgnoreCase)
+            && root["result"] is not null)
+        {
+            hops = ParseRoute(root, route.Kind);
+            return true;
+        }
+
+        if (string.Equals(lastState, "completed", StringComparison.OrdinalIgnoreCase))
+        {
+            throw InvalidResponse(
+                $"job {route.JobId:D} completed with status "
+                    + $"'{lastStatus ?? "unknown"}'");
+        }
+
+        return false;
+    }
+
+    private void ThrowIfTimedOut(
+        SpanshRouteReference route,
+        Stopwatch timer,
+        string? lastState,
+        string? lastStatus)
+    {
+        if (timer.Elapsed < maximumWait)
+        {
+            return;
+        }
+
+        throw new TimeoutException(
+            $"Spansh route {route.JobId:D} did not complete within "
+                + $"{maximumWait.TotalSeconds:N0} seconds "
+                + $"(state: {lastState ?? "unknown"}, "
+                + $"status: {lastStatus ?? "unknown"}).");
+    }
+
+    private async Task<TimeSpan> DelayBeforeNextPollAsync(
+        Stopwatch timer,
+        TimeSpan nextPollInterval,
+        CancellationToken cancellationToken)
+    {
+        var remaining = maximumWait - timer.Elapsed;
+        var delay = nextPollInterval <= remaining
+            ? nextPollInterval
+            : remaining;
+        if (delay > TimeSpan.Zero)
+        {
+            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (useExponentialPolling && nextPollInterval < maximumPollInterval)
+        {
+            return TimeSpan.FromTicks(Math.Min(
+                nextPollInterval.Ticks * 2,
+                maximumPollInterval.Ticks));
+        }
+
+        return nextPollInterval;
     }
 
     private static List<FollowRouteHop> ParseRoute(

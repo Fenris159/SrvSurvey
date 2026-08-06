@@ -333,95 +333,15 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             return;
         }
 
-        foreach (var point in Points)
+        if (!TryValidatePointsForSave())
         {
-            if (point.Status == GuardianPoiStatus.Empty
-                && !point.SupportsEmptyStatus)
-            {
-                StatusMessage = $"{point.Name} ({point.Type}) cannot be marked empty.";
-                return;
-            }
-
-            if (!TryGetHeading(point.RelicHeading, out _))
-            {
-                StatusMessage = $"The relic heading for {point.Name} must be -1 "
-                    + "or a whole number from 0 through 359.";
-                return;
-            }
+            return;
         }
 
         IsBusy = true;
         try
         {
-            var statuses = new Dictionary<string, GuardianPoiStatus>(
-                originalSurvey.Survey.PoiStatuses,
-                StringComparer.Ordinal);
-            var relicHeadings = new Dictionary<string, int>(
-                originalSurvey.Survey.RelicHeadings,
-                StringComparer.Ordinal);
-            var componentMaterials = new Dictionary<
-                string,
-                GuardianComponentLoadout>(
-                    originalSurvey.Survey.ComponentMaterials,
-                    StringComparer.Ordinal);
-            var retainedRawNames = Points
-                .Where(point => point.IsRaw)
-                .Select(point => point.Name)
-                .ToHashSet(StringComparer.Ordinal);
-            foreach (var removedName in (originalSurvey.Survey.RawPointsOfInterest ?? [])
-                         .Select(point => point.Name)
-                         .Where(name => !retainedRawNames.Contains(name)))
-            {
-                statuses.Remove(removedName);
-                relicHeadings.Remove(removedName);
-                componentMaterials.Remove(removedName);
-            }
-
-            foreach (var point in Points)
-            {
-                if (point.HasComponentRecord)
-                {
-                    componentMaterials[point.Name] =
-                        point.CreateComponentLoadout();
-                }
-
-                if (point.IsRaw)
-                {
-                    if (point.SupportsRelicHeading
-                        && TryGetHeading(point.RelicHeading, out var rawHeading)
-                        && rawHeading >= 0)
-                    {
-                        relicHeadings[point.Name] = rawHeading;
-                    }
-                    else if (point.SupportsRelicHeading)
-                    {
-                        relicHeadings.Remove(point.Name);
-                    }
-
-                    continue;
-                }
-
-                if (point.Status == GuardianPoiStatus.Unknown)
-                {
-                    statuses.Remove(point.Name);
-                }
-                else
-                {
-                    statuses[point.Name] = point.Status;
-                }
-
-                if (point.SupportsRelicHeading
-                    && TryGetHeading(point.RelicHeading, out var heading)
-                    && heading >= 0)
-                {
-                    relicHeadings[point.Name] = heading;
-                }
-                else if (point.SupportsRelicHeading)
-                {
-                    relicHeadings.Remove(point.Name);
-                }
-            }
-
+            var maps = BuildSurveyMutationMaps();
             var rawPoints = Points
                 .Where(point => point.IsRaw)
                 .Select(point => point.SupportsRelicHeading
@@ -438,9 +358,9 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                     SiteHeading = normalizedSiteHeading,
                     RelicTowerHeading = normalizedRelicTowerHeading,
                     Location = originalSurvey.Survey.Location,
-                    PoiStatuses = statuses,
-                    RelicHeadings = relicHeadings,
-                    ComponentMaterials = componentMaterials,
+                    PoiStatuses = maps.Statuses,
+                    RelicHeadings = maps.RelicHeadings,
+                    ComponentMaterials = maps.ComponentMaterials,
                     RawPointsOfInterest = rawPoints.Length == 0
                         ? null
                         : rawPoints,
@@ -470,6 +390,115 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             IsBusy = false;
         }
     }
+
+    private bool TryValidatePointsForSave()
+    {
+        foreach (var point in Points)
+        {
+            if (point.Status == GuardianPoiStatus.Empty
+                && !point.SupportsEmptyStatus)
+            {
+                StatusMessage = $"{point.Name} ({point.Type}) cannot be marked empty.";
+                return false;
+            }
+
+            if (!TryGetHeading(point.RelicHeading, out _))
+            {
+                StatusMessage = $"The relic heading for {point.Name} must be -1 "
+                    + "or a whole number from 0 through 359.";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private SurveyMutationMaps BuildSurveyMutationMaps()
+    {
+        var statuses = new Dictionary<string, GuardianPoiStatus>(
+            originalSurvey!.Survey.PoiStatuses,
+            StringComparer.Ordinal);
+        var relicHeadings = new Dictionary<string, int>(
+            originalSurvey.Survey.RelicHeadings,
+            StringComparer.Ordinal);
+        var componentMaterials = new Dictionary<
+            string,
+            GuardianComponentLoadout>(
+                originalSurvey.Survey.ComponentMaterials,
+                StringComparer.Ordinal);
+        var retainedRawNames = Points
+            .Where(point => point.IsRaw)
+            .Select(point => point.Name)
+            .ToHashSet(StringComparer.Ordinal);
+        foreach (var removedName in (originalSurvey.Survey.RawPointsOfInterest ?? [])
+                     .Select(point => point.Name)
+                     .Where(name => !retainedRawNames.Contains(name)))
+        {
+            statuses.Remove(removedName);
+            relicHeadings.Remove(removedName);
+            componentMaterials.Remove(removedName);
+        }
+
+        foreach (var point in Points)
+        {
+            ApplyPointMutation(point, statuses, relicHeadings, componentMaterials);
+        }
+
+        return new SurveyMutationMaps(statuses, relicHeadings, componentMaterials);
+    }
+
+    private static void ApplyPointMutation(
+        GuardianSurveyPoiViewModel point,
+        Dictionary<string, GuardianPoiStatus> statuses,
+        Dictionary<string, int> relicHeadings,
+        Dictionary<string, GuardianComponentLoadout> componentMaterials)
+    {
+        if (point.HasComponentRecord)
+        {
+            componentMaterials[point.Name] = point.CreateComponentLoadout();
+        }
+
+        if (point.IsRaw)
+        {
+            ApplyRelicHeading(point, relicHeadings);
+            return;
+        }
+
+        if (point.Status == GuardianPoiStatus.Unknown)
+        {
+            statuses.Remove(point.Name);
+        }
+        else
+        {
+            statuses[point.Name] = point.Status;
+        }
+
+        ApplyRelicHeading(point, relicHeadings);
+    }
+
+    private static void ApplyRelicHeading(
+        GuardianSurveyPoiViewModel point,
+        Dictionary<string, int> relicHeadings)
+    {
+        if (!point.SupportsRelicHeading)
+        {
+            return;
+        }
+
+        if (TryGetHeading(point.RelicHeading, out var heading) && heading >= 0)
+        {
+            relicHeadings[point.Name] = heading;
+        }
+        else
+        {
+            relicHeadings.Remove(point.Name);
+        }
+    }
+
+    private sealed record SurveyMutationMaps(
+        Dictionary<string, GuardianPoiStatus> Statuses,
+        Dictionary<string, int> RelicHeadings,
+        Dictionary<string, GuardianComponentLoadout> ComponentMaterials);
 
     private static bool TryGetHeading(decimal value, out int heading)
     {

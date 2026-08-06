@@ -125,12 +125,7 @@ public sealed class HistoricalSystemRebuildService
             .ThenBy(candidate => candidate.File.Name, StringComparer.Ordinal)
             .ToArray();
         var systems = new Dictionary<long, ReconstructedSystem>();
-        var processedFiles = 0;
-        var skippedCommanderFiles = 0;
-        var skippedRecentFiles = 0;
-        var skippedLegacyFiles = 0;
-        var malformedLines = 0;
-        var appliedEvents = 0;
+        var stats = new ReconstructionStats();
         for (var index = 0; index < files.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -141,86 +136,16 @@ public sealed class HistoricalSystemRebuildService
                 index,
                 files.Length,
                 candidate.File.Name);
-            JournalReadResult read;
-            try
-            {
-                read = await ReadJournalAsync(
-                        candidate.File,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
-            {
-                warnings.Add($"{candidate.File.Name}: {exception.Message}");
-                continue;
-            }
-
-            malformedLines += read.MalformedLineCount;
-            if (!string.Equals(
-                    read.FrontierId,
+            if (!await TryProcessJournalFileAsync(
+                    candidate,
                     frontierId,
-                    StringComparison.OrdinalIgnoreCase))
+                    systems,
+                    stats,
+                    warnings,
+                    cancellationToken)
+                .ConfigureAwait(false))
             {
-                skippedCommanderFiles++;
                 continue;
-            }
-
-            if (!read.IsShutdown
-                && candidate.OpenedAt > currentTime().AddDays(-2))
-            {
-                skippedRecentFiles++;
-                continue;
-            }
-
-            if (!read.IsOdyssey)
-            {
-                skippedLegacyFiles++;
-                continue;
-            }
-
-            processedFiles++;
-            long? currentAddress = null;
-            foreach (var journalEvent in read.Events)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                if (journalEvent.EventName is "Location" or "FSDJump" or "CarrierJump")
-                {
-                    currentAddress = GetInt64(
-                        journalEvent.Payload,
-                        "SystemAddress");
-                    if (currentAddress is not > 0)
-                    {
-                        currentAddress = null;
-                        continue;
-                    }
-                }
-
-                if (currentAddress is not { } address)
-                {
-                    continue;
-                }
-
-                if (!systems.TryGetValue(address, out var system))
-                {
-                    system = new ReconstructedSystem(new SystemScanState());
-                    systems.Add(address, system);
-                }
-
-                if (system.State.Apply(journalEvent))
-                {
-                    appliedEvents++;
-                    var timestamp = journalEvent.Timestamp
-                        ?? candidate.OpenedAt!.Value;
-                    system.FirstVisited = system.FirstVisited is null
-                        || timestamp < system.FirstVisited
-                            ? timestamp
-                            : system.FirstVisited;
-                    system.LastVisited = system.LastVisited is null
-                        || timestamp > system.LastVisited
-                            ? timestamp
-                            : system.LastVisited;
-                }
             }
         }
 
@@ -232,21 +157,142 @@ public sealed class HistoricalSystemRebuildService
             string.Empty);
         return new ReconstructionResult(
             files.Length,
-            processedFiles,
-            skippedCommanderFiles,
-            skippedRecentFiles,
-            skippedLegacyFiles,
-            malformedLines,
-            appliedEvents,
+            stats.ProcessedFiles,
+            stats.SkippedCommanderFiles,
+            stats.SkippedRecentFiles,
+            stats.SkippedLegacyFiles,
+            stats.MalformedLines,
+            stats.AppliedEvents,
             systems.Values
-                .Where(system =>
-                    system.FirstVisited is not null
-                    && system.LastVisited is not null
-                    && system.State.CreateSnapshot().SystemAddress is > 0
-                    && !string.IsNullOrWhiteSpace(
-                        system.State.CreateSnapshot().SystemName))
+                .Where(IsValidReconstructedSystem)
                 .ToArray(),
             warnings);
+    }
+
+    private async Task<bool> TryProcessJournalFileAsync(
+        JournalCandidate candidate,
+        string frontierId,
+        Dictionary<long, ReconstructedSystem> systems,
+        ReconstructionStats stats,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
+        JournalReadResult read;
+        try
+        {
+            read = await ReadJournalAsync(
+                    candidate.File,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add($"{candidate.File.Name}: {exception.Message}");
+            return false;
+        }
+
+        stats.MalformedLines += read.MalformedLineCount;
+        if (!string.Equals(
+                read.FrontierId,
+                frontierId,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            stats.SkippedCommanderFiles++;
+            return false;
+        }
+
+        if (!read.IsShutdown
+            && candidate.OpenedAt > currentTime().AddDays(-2))
+        {
+            stats.SkippedRecentFiles++;
+            return false;
+        }
+
+        if (!read.IsOdyssey)
+        {
+            stats.SkippedLegacyFiles++;
+            return false;
+        }
+
+        stats.ProcessedFiles++;
+        ApplyJournalEvents(read, candidate, systems, stats, cancellationToken);
+        return true;
+    }
+
+    private static void ApplyJournalEvents(
+        JournalReadResult read,
+        JournalCandidate candidate,
+        Dictionary<long, ReconstructedSystem> systems,
+        ReconstructionStats stats,
+        CancellationToken cancellationToken)
+    {
+        long? currentAddress = null;
+        foreach (var journalEvent in read.Events)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (journalEvent.EventName is "Location" or "FSDJump" or "CarrierJump")
+            {
+                currentAddress = GetInt64(
+                    journalEvent.Payload,
+                    "SystemAddress");
+                if (currentAddress is not > 0)
+                {
+                    currentAddress = null;
+                    continue;
+                }
+            }
+
+            if (currentAddress is not { } address)
+            {
+                continue;
+            }
+
+            if (!systems.TryGetValue(address, out var system))
+            {
+                system = new ReconstructedSystem(new SystemScanState());
+                systems.Add(address, system);
+            }
+
+            if (!system.State.Apply(journalEvent))
+            {
+                continue;
+            }
+
+            stats.AppliedEvents++;
+            var timestamp = journalEvent.Timestamp
+                ?? candidate.OpenedAt!.Value;
+            system.FirstVisited = system.FirstVisited is null
+                || timestamp < system.FirstVisited
+                    ? timestamp
+                    : system.FirstVisited;
+            system.LastVisited = system.LastVisited is null
+                || timestamp > system.LastVisited
+                    ? timestamp
+                    : system.LastVisited;
+        }
+    }
+
+    private static bool IsValidReconstructedSystem(ReconstructedSystem system)
+    {
+        if (system.FirstVisited is null || system.LastVisited is null)
+        {
+            return false;
+        }
+
+        var snapshot = system.State.CreateSnapshot();
+        return snapshot.SystemAddress is > 0
+            && !string.IsNullOrWhiteSpace(snapshot.SystemName);
+    }
+
+    private sealed class ReconstructionStats
+    {
+        public int ProcessedFiles { get; set; }
+        public int SkippedCommanderFiles { get; set; }
+        public int SkippedRecentFiles { get; set; }
+        public int SkippedLegacyFiles { get; set; }
+        public int MalformedLines { get; set; }
+        public int AppliedEvents { get; set; }
     }
 
     private async Task<HistoricalSystemRebuildResult> ActivateAsync(
@@ -294,86 +340,22 @@ public sealed class HistoricalSystemRebuildService
                     index,
                     reconstruction.Systems.Count,
                     Path.GetFileName(target));
-                JsonObject? existing = null;
-                string? originalHash = null;
-                if (File.Exists(target))
-                {
-                    try
-                    {
-                        existing = await ReadObjectAsync(target, cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-                    catch (Exception exception) when (
-                        exception is IOException
-                            or UnauthorizedAccessException
-                            or JsonException
-                            or InvalidDataException)
-                    {
-                        warnings.Add(
-                            $"{Path.GetFileName(target)} was malformed and was not overwritten: "
-                                + exception.Message);
-                        continue;
-                    }
-
-                    var originalPath = Path.Combine(
-                        originalDirectory,
-                        Path.GetFileName(target));
-                    File.Copy(target, originalPath, false);
-                    originalHash = await ComputeHashAsync(
-                            target,
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                    var backupHash = await ComputeHashAsync(
-                            originalPath,
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                    if (!string.Equals(
-                            originalHash,
-                            backupHash,
-                            StringComparison.Ordinal))
-                    {
-                        throw new InvalidDataException(
-                            $"The backup for {Path.GetFileName(target)} did not match its source.");
-                    }
-                }
-
-                JsonObject merged;
-                try
-                {
-                    merged = LegacySystemSnapshotMerger.Merge(
-                        existing,
+                var prepared = await TryPrepareActivationEntryAsync(
+                        reconstructed,
                         snapshot,
+                        target,
+                        originalDirectory,
+                        candidateDirectory,
                         commanderName,
-                        reconstructed.FirstVisited!.Value,
-                        reconstructed.LastVisited!.Value);
-                }
-                catch (InvalidDataException exception)
+                        warnings,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                if (prepared is null)
                 {
-                    warnings.Add(
-                        $"{Path.GetFileName(target)} was not rebuilt: {exception.Message}");
                     continue;
                 }
 
-                var candidatePath = Path.Combine(
-                    candidateDirectory,
-                    $"{snapshot.SystemAddress.Value}.json");
-                await WriteObjectAsync(
-                        candidatePath,
-                        merged,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                _ = await ReadObjectAsync(candidatePath, cancellationToken)
-                    .ConfigureAwait(false);
-                var candidateHash = await ComputeHashAsync(
-                        candidatePath,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                entries.Add(new ActivationEntry(
-                    target,
-                    candidatePath,
-                    File.Exists(target),
-                    originalHash,
-                    candidateHash));
+                entries.Add(prepared);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -424,6 +406,93 @@ public sealed class HistoricalSystemRebuildService
 
             throw;
         }
+    }
+
+    private async Task<ActivationEntry?> TryPrepareActivationEntryAsync(
+        ReconstructedSystem reconstructed,
+        SystemScanSnapshot snapshot,
+        string target,
+        string originalDirectory,
+        string candidateDirectory,
+        string? commanderName,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
+        JsonObject? existing = null;
+        string? originalHash = null;
+        if (File.Exists(target))
+        {
+            try
+            {
+                existing = await ReadObjectAsync(target, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception exception) when (
+                exception is IOException
+                    or UnauthorizedAccessException
+                    or JsonException
+                    or InvalidDataException)
+            {
+                warnings.Add(
+                    $"{Path.GetFileName(target)} was malformed and was not overwritten: "
+                        + exception.Message);
+                return null;
+            }
+
+            var originalPath = Path.Combine(
+                originalDirectory,
+                Path.GetFileName(target));
+            File.Copy(target, originalPath, false);
+            originalHash = await ComputeHashAsync(target, cancellationToken)
+                .ConfigureAwait(false);
+            var backupHash = await ComputeHashAsync(
+                    originalPath,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (!string.Equals(
+                    originalHash,
+                    backupHash,
+                    StringComparison.Ordinal))
+            {
+                throw new InvalidDataException(
+                    $"The backup for {Path.GetFileName(target)} did not match its source.");
+            }
+        }
+
+        JsonObject merged;
+        try
+        {
+            merged = LegacySystemSnapshotMerger.Merge(
+                existing,
+                snapshot,
+                commanderName,
+                reconstructed.FirstVisited!.Value,
+                reconstructed.LastVisited!.Value);
+        }
+        catch (InvalidDataException exception)
+        {
+            warnings.Add(
+                $"{Path.GetFileName(target)} was not rebuilt: {exception.Message}");
+            return null;
+        }
+
+        var candidatePath = Path.Combine(
+            candidateDirectory,
+            $"{snapshot.SystemAddress!.Value}.json");
+        await WriteObjectAsync(candidatePath, merged, cancellationToken)
+            .ConfigureAwait(false);
+        _ = await ReadObjectAsync(candidatePath, cancellationToken)
+            .ConfigureAwait(false);
+        var candidateHash = await ComputeHashAsync(
+                candidatePath,
+                cancellationToken)
+            .ConfigureAwait(false);
+        return new ActivationEntry(
+            target,
+            candidatePath,
+            File.Exists(target),
+            originalHash,
+            candidateHash);
     }
 
     private async Task ActivateEntriesAsync(
