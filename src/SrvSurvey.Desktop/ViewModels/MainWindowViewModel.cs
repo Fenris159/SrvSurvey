@@ -1639,7 +1639,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
 
     // Constructor helper methods keep nested conditionals out of the MainWindow
     // constructor so Sonar S3776 stays at or below the complexity budget.
-    private static ICommunityGoalJournalHistoryReader? CreateCommunityGoalHistoryReader(
+    private static CommunityGoalJournalHistoryReader? CreateCommunityGoalHistoryReader(
         JournalFolderResolution resolution) =>
         resolution.SelectedPath is { } journalPath
             ? new CommunityGoalJournalHistoryReader(journalPath)
