@@ -413,7 +413,7 @@ public sealed class RegionalCodexCandidateCatalog
             row.Clear();
         }
 
-        var index = 0;
+        int index = 0;
         while (index < text.Length)
         {
             var character = text[index];
@@ -431,13 +431,23 @@ public sealed class RegionalCodexCandidateCatalog
                         inQuotes = false;
                         closedQuote = true;
                     }
+
+                    if (field.Length > MaximumCsvFieldCharacters)
+                    {
+                        throw new InvalidDataException(
+                            "The published regional Codex candidate CSV contains an oversized field.");
+                    }
+
+                    index++;
+                    continue;
                 }
-                else
-                {
-                    field.Append(character);
-                }
+
+                field.Append(character);
+                index++;
+                continue;
             }
-            else if (character == '"')
+
+            if (character == '"')
             {
                 if (field.Length > 0 || closedQuote)
                 {
@@ -446,12 +456,18 @@ public sealed class RegionalCodexCandidateCatalog
                 }
 
                 inQuotes = true;
+                index++;
+                continue;
             }
-            else if (character == ',')
+
+            if (character == ',')
             {
                 AddField();
+                index++;
+                continue;
             }
-            else if (character is '\r' or '\n')
+
+            if (character is '\r' or '\n')
             {
                 AddRow();
                 if (character == '\r'
@@ -460,18 +476,18 @@ public sealed class RegionalCodexCandidateCatalog
                 {
                     index++;
                 }
+
+                index++;
+                continue;
             }
-            else
+
+            if (closedQuote)
             {
-                if (closedQuote)
-                {
-                    throw new InvalidDataException(
-                        "The published regional Codex candidate CSV contains text after a closing quote.");
-                }
-
-                field.Append(character);
+                throw new InvalidDataException(
+                    "The published regional Codex candidate CSV contains text after a closing quote.");
             }
 
+            field.Append(character);
             if (field.Length > MaximumCsvFieldCharacters)
             {
                 throw new InvalidDataException(
@@ -479,6 +495,12 @@ public sealed class RegionalCodexCandidateCatalog
             }
 
             index++;
+        }
+
+        if (field.Length > MaximumCsvFieldCharacters)
+        {
+            throw new InvalidDataException(
+                "The published regional Codex candidate CSV contains an oversized field.");
         }
 
         if (inQuotes)

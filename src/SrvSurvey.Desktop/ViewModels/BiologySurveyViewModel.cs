@@ -953,21 +953,33 @@ public sealed record BiologyBodyRowViewModel(
     public bool IsComplete => SignalCount > 0
         && AnalyzedSignalCount >= SignalCount;
 
-    public string RewardText => HasPredictedReward
-        ? (MinimumReward == MaximumReward) switch
+    public string RewardText
+    {
+        get
         {
-            true => $"~{MinimumReward / 1_000_000d:N2} M CR",
-            false => $"{MinimumReward / 1_000_000d:N2}–{MaximumReward / 1_000_000d:N2} M CR"
-        }
-        : (KnownReward <= 0) switch
-        {
-            true => "",
-            false => (HasUnknownReward) switch
+            if (HasPredictedReward)
             {
-                true => $"{KnownReward / 1_000_000d:N2} M+ CR",
-                false => $"{KnownReward / 1_000_000d:N2} M CR"
+                if (MinimumReward == MaximumReward)
+                {
+                    return $"~{MinimumReward / 1_000_000d:N2} M CR";
+                }
+
+                return $"{MinimumReward / 1_000_000d:N2}–{MaximumReward / 1_000_000d:N2} M CR";
             }
-        };
+
+            if (KnownReward <= 0)
+            {
+                return string.Empty;
+            }
+
+            if (HasUnknownReward)
+            {
+                return $"{KnownReward / 1_000_000d:N2} M+ CR";
+            }
+
+            return $"{KnownReward / 1_000_000d:N2} M CR";
+        }
+    }
 
     public bool HasReward => KnownReward > 0 || HasPredictedReward;
 
@@ -1060,17 +1072,28 @@ public sealed record BiologyOrganismRowViewModel(
         ? $"{SampleDistanceMeters:N0} m sample separation"
         : string.Empty;
 
-    public string RewardText => HasReward
-        ? (Reward >= 1_000_000) switch
+    public string RewardText
+    {
+        get
         {
-            true => $"{Reward / 1_000_000d:N2} M CR",
-            false => $"{Reward:N0} CR"
+            if (HasReward)
+            {
+                if (Reward >= 1_000_000)
+                {
+                    return $"{Reward / 1_000_000d:N2} M CR";
+                }
+
+                return $"{Reward:N0} CR";
+            }
+
+            if (IsPrediction)
+            {
+                return "Prediction pending";
+            }
+
+            return "Unidentified";
         }
-        : (IsPrediction) switch
-        {
-            true => "Prediction pending",
-            false => "Unidentified"
-        };
+    }
 
     public static BiologyOrganismRowViewModel Unknown(
         int index,
@@ -1125,3 +1148,4 @@ public sealed record BiologyDiscoveryContext(
     public bool IsGlobalRegionalNew(long entryId) =>
         GlobalRegionalCandidates.IsCandidate(RegionId, entryId);
 }
+

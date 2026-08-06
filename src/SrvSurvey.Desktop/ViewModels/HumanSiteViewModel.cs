@@ -697,11 +697,9 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
             };
         var source = currentStatus.InTaxi
             ? HumanSiteGeometrySource.TaxiDock
-            : (manualFootAlignment) switch
-            {
-                true => HumanSiteGeometrySource.ManualFoot,
-                false => HumanSiteGeometrySource.AutoDock
-            };
+            : manualFootAlignment
+                ? HumanSiteGeometrySource.ManualFoot
+                : HumanSiteGeometrySource.AutoDock;
         var geometry = navigation.InferGeometry(
             site,
             new SurfaceCoordinate(
@@ -1356,11 +1354,9 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
                     systemName,
                     systemAddress,
                     starPosition,
-                    (status?.PlanetRadius is > 0) switch
-                    {
-                        true => (double)status.PlanetRadius,
-                        false => 0
-                    })
+                    (status?.PlanetRadius is > 0
+                        ? (double)status.PlanetRadius
+                        : 0))
                 : null;
     }
 

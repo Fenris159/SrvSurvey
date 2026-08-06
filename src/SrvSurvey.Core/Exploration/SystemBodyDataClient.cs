@@ -423,43 +423,62 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         var result = new List<SystemBodyParentSnapshot>();
         foreach (var parent in parents.EnumerateArray())
         {
-            if (parent.ValueKind != JsonValueKind.Object)
-            {
-                throw new InvalidDataException(
-                    $"A {provider} body parent is not an object.");
-            }
-
-            string? kindText;
-            int? parentBodyId;
-            if (GetString(parent, "type") is { } storedKind)
-            {
-                kindText = storedKind;
-                parentBodyId = GetInt32(parent, "id");
-            }
-            else
-            {
-                var property = parent.EnumerateObject().FirstOrDefault();
-                kindText = property.Name;
-                parentBodyId = property.Value.ValueKind == JsonValueKind.Number
-                    && property.Value.TryGetInt32(out var value)
-                        ? value
-                        : null;
-            }
-
-            if (!Enum.TryParse<SystemBodyParentKind>(
-                    kindText,
-                    ignoreCase: true,
-                    out var kind)
-                || parentBodyId is null or < 0)
-            {
-                throw new InvalidDataException(
-                    $"A {provider} body parent is invalid.");
-            }
-
-            result.Add(new SystemBodyParentSnapshot(kind, parentBodyId.Value));
+            result.Add(ParseParentSnapshot(parent, provider));
         }
 
         return result;
+    }
+
+    private static SystemBodyParentSnapshot ParseParentSnapshot(
+        JsonElement parent,
+        BodyProvider provider)
+    {
+        if (parent.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidDataException(
+                $"A {provider} body parent is not an object.");
+        }
+
+        if (!TryReadParentBodyId(parent, provider, out var kindText, out var parentBodyId)
+            || !Enum.TryParse<SystemBodyParentKind>(
+                kindText,
+                ignoreCase: true,
+                out var kind)
+            || parentBodyId is null or < 0)
+        {
+            throw new InvalidDataException(
+                $"A {provider} body parent is invalid.");
+        }
+
+        return new SystemBodyParentSnapshot(kind, parentBodyId.Value);
+    }
+
+    private static bool TryReadParentBodyId(
+        JsonElement parent,
+        BodyProvider provider,
+        out string kindText,
+        out int? parentBodyId)
+    {
+        kindText = string.Empty;
+        parentBodyId = null;
+        if (GetString(parent, "type") is { } storedKind)
+        {
+            kindText = storedKind;
+            parentBodyId = GetInt32(parent, "id");
+            return true;
+        }
+
+        foreach (var property in parent.EnumerateObject())
+        {
+            kindText = property.Name;
+            parentBodyId = property.Value.ValueKind == JsonValueKind.Number
+                && property.Value.TryGetInt32(out var id)
+                    ? id
+                    : null;
+            return true;
+        }
+
+        return false;
     }
 
     private static SystemRingSnapshot[] ReadRings(

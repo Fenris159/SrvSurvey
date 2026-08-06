@@ -67,11 +67,9 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
 
     public string CurrentCommander => string.IsNullOrWhiteSpace(currentCommanderName)
         ? currentFrontierId ?? "Waiting for journal identity"
-        : (string.IsNullOrWhiteSpace(currentFrontierId)) switch
-        {
-            true => currentCommanderName,
-            false => $"{currentCommanderName} ({currentFrontierId})"
-        };
+        : string.IsNullOrWhiteSpace(currentFrontierId)
+            ? currentCommanderName
+            : $"{currentCommanderName} ({currentFrontierId})";
 
     public string MultiGameOverlayLabel =>
         $"~ {(!string.IsNullOrWhiteSpace(currentCommanderName)
@@ -168,19 +166,13 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
             StatusMessage = result.Warnings.Count > 0
                 ? $"Found {result.Profiles.Count:N0} commander profile(s). "
                     + string.Join(" ", result.Warnings)
-                : (!Directory.Exists(journalDirectory)) switch
-                {
-                    true => "The Elite journal folder is unavailable; configure it before launching another commander instance.",
-                    false => (result.Profiles.Count == 0) switch
-                    {
-                        true => "No saved commander profiles were found. Import the original profile or start Elite once.",
-                        false => (Commanders.Count == 0) switch
-                        {
-                            true => "Only the current commander profile is available.",
-                            false => $"Choose one of {Commanders.Count:N0} other commander profile(s) to launch."
-                        }
-                    }
-                };
+                : Directory.Exists(journalDirectory)
+                    ? result.Profiles.Count == 0
+                        ? "No saved commander profiles were found. Import the original profile or start Elite once."
+                        : Commanders.Count == 0
+                            ? "Only the current commander profile is available."
+                            : $"Choose one of {Commanders.Count:N0} other commander profile(s) to launch."
+                    : "The Elite journal folder is unavailable; configure it before launching another commander instance.";
         }
         catch (Exception exception) when (
             exception is IOException or UnauthorizedAccessException)

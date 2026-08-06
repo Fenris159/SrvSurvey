@@ -983,11 +983,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         SettingsLinkStatusMessage = launched
             ? $"Opened {description} in the default browser."
             : $"Could not open {description}: "
-                + ((string.IsNullOrWhiteSpace(error)) switch
-                {
-                    true => "the desktop launcher declined the request.",
-                    false => error
-                });
+                + (string.IsNullOrWhiteSpace(error)
+                    ? "the desktop launcher declined the request."
+                    : error);
     }
 
     public string ImportProfileButtonText => IsImportingProfile
@@ -2810,11 +2808,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             };
         OrganicScanProgress = snapshot.ScanOne is null
             ? "Ready for sample 1 of 3"
-            : (snapshot.ScanTwo is null) switch
-            {
-                true => "Sample 1 of 3 recorded",
-                false => "Samples 1 and 2 of 3 recorded"
-            };
+            : snapshot.ScanTwo is null
+                ? "Sample 1 of 3 recorded"
+                : "Samples 1 and 2 of 3 recorded";
         BioFirstFootfall = exobiologyState.CurrentBodyFirstFootfall switch
         {
             true => "Confirmed; 5x reward applies",

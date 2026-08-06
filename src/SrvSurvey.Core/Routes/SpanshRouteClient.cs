@@ -238,11 +238,25 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             hops.Add(ParseHop(row, index, kind));
         }
 
-        return kind is SpanshRouteKind.Riches or SpanshRouteKind.Exobiology
-            || kind == SpanshRouteKind.Generic
-                && hops.Any(hop => hop.BioTargets.Count > 0)
-            ? AggregateBodyRouteHops(hops)
-            : hops;
+        if (!ShouldAggregateBodyHops(kind, hops))
+        {
+            return hops;
+        }
+
+        return AggregateBodyRouteHops(hops);
+    }
+
+    private static bool ShouldAggregateBodyHops(
+        SpanshRouteKind kind,
+        IReadOnlyList<FollowRouteHop> hops)
+    {
+        if (kind is SpanshRouteKind.Riches or SpanshRouteKind.Exobiology)
+        {
+            return true;
+        }
+
+        return kind == SpanshRouteKind.Generic
+            && hops.Any(hop => hop.BioTargets.Count > 0);
     }
 
     private static List<FollowRouteHop> ParseTradeRoute(
@@ -385,7 +399,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             and not SpanshRouteKind.Trade;
     }
 
-    private static IReadOnlyList<FollowRouteHop> AggregateBodyRouteHops(
+    private static List<FollowRouteHop> AggregateBodyRouteHops(
         List<FollowRouteHop> hops)
     {
         if (hops.Count < 2)
@@ -466,13 +480,17 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private static long? MaxNullable(long? first, long? second)
     {
-        return first is null
-            ? second
-            : (second is null) switch
-            {
-                true => first,
-                false => Math.Max(first.Value, second.Value)
-            };
+        if (first is null)
+        {
+            return second;
+        }
+
+        if (second is null)
+        {
+            return first;
+        }
+
+        return Math.Max(first.Value, second.Value);
     }
 
     private static long? MergeBiologyValues(
@@ -563,100 +581,136 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
                 Index = index,
                 Body = body as JsonObject,
             })
-            .OrderBy(item => item.Body is null
-                ? long.MaxValue
-                : GetInt64(item.Body, "id") ?? long.MaxValue)
+            .Where(item => item.Body is not null)
+            .OrderBy(item => GetInt64(item.Body!, "id") ?? long.MaxValue)
             .ThenBy(item => item.Index))
         {
-            var body = bodyNode.Body
-                ?? throw InvalidResponse("a route body is not an object");
-            var bodyName = GetString(body, "name")
-                ?? GetString(body, "body_name")
-                ?? throw InvalidResponse("a route body has no name");
-            var species = new List<string>();
-            var speciesValues = new Dictionary<string, long>(
-                StringComparer.OrdinalIgnoreCase);
-            if (body["landmarks"] is JsonArray landmarks)
+            result.Add(ParseBodyTarget(
+                systemName,
+                bodyNode.Index,
+                bodyNode.Body!,
+                isBiologicalRoute));
+        }
+
+        return result.Count == 0 ? null : result;
+    }
+
+    private static FollowRouteBioTarget ParseBodyTarget(
+        string systemName,
+        int bodyIndex,
+        JsonObject body,
+        bool isBiologicalRoute)
+    {
+        var bodyName = GetString(body, "name")
+            ?? GetString(body, "body_name")
+            ?? throw InvalidResponse(
+                $"a route body {bodyIndex + 1} has no name");
+
+        var species = ReadSpecies(body, out var speciesValues);
+        var biologyValue = ReadBiologyValue(body, speciesValues);
+
+        return new FollowRouteBioTarget(
+            NormalizeBodyName(systemName, bodyName),
+            GetInt64Any(body, "id", "body_id", "bodyId"),
+            species,
+            Subtype: GetStringAny(body, "subtype", "body_subtype", "type"),
+            DistanceToArrivalLs: GetDoubleAny(
+                body,
+                "distance_to_arrival",
+                "distance_to_arrival_ls",
+                "distanceToArrival"),
+            EstimatedScanValue: GetInt64Any(
+                body,
+                "estimated_scan_value",
+                "scan_value",
+                "estimatedScanValue"),
+            EstimatedMappingValue: GetInt64Any(
+                body,
+                "estimated_mapping_value",
+                "mapping_value",
+                "estimatedMappingValue"),
+            EstimatedBiologyValue: biologyValue,
+            IsTerraformable: IsTerraformable(body),
+            IsBiological: isBiologicalRoute
+                || species.Count > 0
+                || biologyValue is not null);
+    }
+
+    private static List<string> ReadSpecies(
+        JsonObject body,
+        out Dictionary<string, long> speciesValues)
+    {
+        speciesValues = [];
+        if (body["landmarks"] is not JsonArray landmarks)
+        {
+            if (body["landmarks"] is not null)
             {
-                foreach (var landmarkNode in landmarks)
-                {
-                    if (landmarkNode is not JsonObject landmark)
-                    {
-                        throw InvalidResponse(
-                            "a route body landmark is not an object");
-                    }
-
-                    var name = GetString(landmark, "subtype")
-                        ?? GetString(landmark, "name");
-                    if (string.IsNullOrWhiteSpace(name))
-                    {
-                        throw InvalidResponse(
-                            "a route body landmark has no subtype");
-                    }
-
-                    if (!species.Contains(name, StringComparer.OrdinalIgnoreCase))
-                    {
-                        species.Add(name.Trim());
-                    }
-
-                    var value = GetInt64Any(
-                        landmark,
-                        "value",
-                        "estimated_value",
-                        "landmark_value",
-                        "scan_value");
-                    if (value is not null
-                        && (!speciesValues.TryGetValue(name, out var existing)
-                            || value > existing))
-                    {
-                        speciesValues[name] = value.Value;
-                    }
-                }
+                throw InvalidResponse("a route body has invalid landmarks");
             }
-            else if (body["landmarks"] is not null)
+
+            return [];
+        }
+
+        return ReadSpeciesFromLandmarks(landmarks, speciesValues);
+    }
+
+    private static List<string> ReadSpeciesFromLandmarks(
+        JsonArray landmarks,
+        Dictionary<string, long> speciesValues)
+    {
+        var species = new List<string>();
+        foreach (var landmarkNode in landmarks)
+        {
+            if (landmarkNode is not JsonObject landmark)
             {
                 throw InvalidResponse(
-                    "a route body has invalid landmarks");
+                    "a route body landmark is not an object");
             }
 
-            var biologyValue = GetInt64Any(
+            var name = GetString(landmark, "subtype")
+                ?? GetString(landmark, "name");
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw InvalidResponse(
+                    "a route body landmark has no subtype");
+            }
+
+            var trimmed = name.Trim();
+            if (!species.Contains(trimmed, StringComparer.OrdinalIgnoreCase))
+            {
+                species.Add(trimmed);
+            }
+
+            var value = GetInt64Any(
+                landmark,
+                "value",
+                "estimated_value",
+                "landmark_value",
+                "scan_value");
+            if (value is not null
+                && (!speciesValues.TryGetValue(trimmed, out var existing)
+                    || value > existing))
+            {
+                speciesValues[trimmed] = value.Value;
+            }
+        }
+
+        return species;
+    }
+
+    private static long? ReadBiologyValue(
+        JsonObject body,
+        Dictionary<string, long> speciesValues)
+    {
+        return GetInt64Any(
                 body,
                 "landmark_value",
                 "estimated_biology_value",
                 "estimated_bio_value",
                 "biology_value")
-                ?? (speciesValues.Count == 0
-                    ? null
-                    : speciesValues.Values.Sum());
-
-            result.Add(new FollowRouteBioTarget(
-                NormalizeBodyName(systemName, bodyName),
-                GetInt64Any(body, "id", "body_id", "bodyId"),
-                species,
-                Subtype: GetStringAny(body, "subtype", "body_subtype", "type"),
-                DistanceToArrivalLs: GetDoubleAny(
-                    body,
-                    "distance_to_arrival",
-                    "distance_to_arrival_ls",
-                    "distanceToArrival"),
-                EstimatedScanValue: GetInt64Any(
-                    body,
-                    "estimated_scan_value",
-                    "scan_value",
-                    "estimatedScanValue"),
-                EstimatedMappingValue: GetInt64Any(
-                    body,
-                    "estimated_mapping_value",
-                    "mapping_value",
-                    "estimatedMappingValue"),
-                EstimatedBiologyValue: biologyValue,
-                IsTerraformable: IsTerraformable(body),
-                IsBiological: isBiologicalRoute
-                    || species.Count > 0
-                    || biologyValue is not null));
-        }
-
-        return result.Count == 0 ? null : result;
+            ?? (speciesValues.Count == 0
+                ? null
+                : speciesValues.Values.Sum());
     }
 
     private static string NormalizeBodyName(string systemName, string bodyName)

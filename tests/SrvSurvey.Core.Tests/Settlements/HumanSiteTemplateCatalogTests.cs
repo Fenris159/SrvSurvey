@@ -12,17 +12,17 @@ public sealed class HumanSiteTemplateCatalogTests
 
         Assert.Equal(28, catalog.Count);
         Assert.Equal(48, catalog.Templates.Sum(
-            template => template.LandingPads.Count));
+            (HumanSiteTemplate template) => template.LandingPads.Count));
         Assert.Equal(398, catalog.Templates.Sum(
-            template => template.SecureDoors.Count));
+            (HumanSiteTemplate template) => template.SecureDoors.Count));
         Assert.Equal(594, catalog.Templates.Sum(
-            template => template.NamedPoints.Count));
+            (HumanSiteTemplate template) => template.NamedPoints.Count));
         Assert.Equal(144, catalog.Templates.Sum(
-            template => template.DataTerminals.Count));
+            (HumanSiteTemplate template) => template.DataTerminals.Count));
         Assert.Equal(160, catalog.Templates.Sum(
-            template => template.ConflictZonePoints.Count));
+            (HumanSiteTemplate template) => template.ConflictZonePoints.Count));
         Assert.Equal(128, catalog.Templates.Sum(
-            template => template.Buildings.Count));
+            (HumanSiteTemplate template) => template.Buildings.Count));
         Assert.Equal(191, catalog.Templates.Sum((HumanSiteTemplate template) =>
             template.Buildings.Sum((HumanSiteBuilding building) =>
                 building.Paths.Count)));

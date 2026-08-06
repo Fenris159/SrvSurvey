@@ -148,11 +148,9 @@ public sealed class InaraSettingsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CommanderDisplayName));
         CredentialStatus = profileFrontierId is null
             ? "Load a commander profile to configure an Inara API key."
-            : (storedApiKey is null) switch
-            {
-                true => $"No Inara API key is saved for {CommanderDisplayName}.",
-                false => $"An Inara API key is saved for {CommanderDisplayName}."
-            };
+            : storedApiKey is null
+                ? $"No Inara API key is saved for {CommanderDisplayName}."
+                : $"An Inara API key is saved for {CommanderDisplayName}.";
         saveApiKeyCommand.RaiseCanExecuteChanged();
     }
 

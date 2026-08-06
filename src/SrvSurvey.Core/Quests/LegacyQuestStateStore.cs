@@ -910,7 +910,7 @@ public sealed class LegacyQuestStateStore
 
     private static List<LegacyQuestRoute> ParseRoutes(
         JsonNode? node,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is not JsonArray array)
         {
@@ -920,40 +920,80 @@ public sealed class LegacyQuestStateStore
         var routes = new List<LegacyQuestRoute>();
         foreach (var item in array)
         {
-            if (item is not JsonObject root
-                || GetString(root, "id") is not { } id
-                || GetDouble(root, "w") is not { } width
-                || root["wp"] is not JsonArray waypointArray)
+            if (!TryParseRoute(item, out var route) || route is null)
             {
                 warnings.Add("A quest route is invalid and was ignored.");
                 continue;
             }
 
-            var waypoints = new List<IReadOnlyList<double>>();
-            foreach (var waypoint in waypointArray)
-            {
-                if (waypoint is not JsonArray coordinates)
-                {
-                    continue;
-                }
-
-                var values = coordinates
-                    .Select(value => value is JsonValue number
-                        && number.TryGetValue<double>(out var coordinate)
-                        && double.IsFinite(coordinate)
-                            ? (double?)coordinate
-                            : null)
-                    .ToArray();
-                if (values.Length > 0 && values.All(value => value is not null))
-                {
-                    waypoints.Add(values.Select(value => value!.Value).ToArray());
-                }
-            }
-
-            routes.Add(new LegacyQuestRoute(id, width, waypoints));
+            routes.Add(route);
         }
 
         return routes;
+    }
+
+    private static bool TryParseRoute(
+        JsonNode? item,
+        out LegacyQuestRoute? route)
+    {
+        route = null;
+        if (item is not JsonObject root
+            || GetString(root, "id") is not { } id
+            || GetDouble(root, "w") is not { } width)
+        {
+            return false;
+        }
+
+        if (root["wp"] is not JsonArray waypointArray)
+        {
+            route = new LegacyQuestRoute(id, width, []);
+            return true;
+        }
+
+        route = new LegacyQuestRoute(
+            id,
+            width,
+            ParseWaypoints(waypointArray));
+        return true;
+    }
+
+    private static IReadOnlyList<IReadOnlyList<double>> ParseWaypoints(
+        JsonArray waypointArray)
+    {
+        var waypoints = new List<IReadOnlyList<double>>(waypointArray.Count);
+        foreach (var waypoint in waypointArray)
+        {
+            if (waypoint is not JsonArray coordinates
+                || !TryReadWaypoint(coordinates, out var values))
+            {
+                continue;
+            }
+
+            waypoints.Add(values);
+        }
+
+        return waypoints;
+    }
+
+    private static bool TryReadWaypoint(
+        JsonArray coordinates,
+        out IReadOnlyList<double> values)
+    {
+        values = [];
+        var parsed = coordinates
+            .Select(value => value is JsonValue number
+                && number.TryGetValue<double>(out var coordinate)
+                && double.IsFinite(coordinate)
+                    ? (double?)coordinate
+                    : null)
+            .ToArray();
+        if (parsed.Length == 0 || parsed.Any(value => value is null))
+        {
+            return false;
+        }
+
+        values = parsed.Select(value => value!.Value).ToArray();
+        return true;
     }
 
     private static LegacyQuestReference? ParseReference(

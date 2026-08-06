@@ -72,7 +72,7 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
         var unread = quests.Sum(quest => quest.UnreadMessageCount);
         HasUnreadMessages = unread > 0;
         UnreadMessageText = unread > 0
-            ? $"{unread:N0} unread message{((unread == 1) switch { true => string.Empty, false => "s" })}"
+            ? $"{unread:N0} unread message{(unread == 1 ? string.Empty : "s")}"
             : string.Empty;
         Objectives = firstQuest?.Objectives
             .Where(pair => pair.Value.StartsWith(

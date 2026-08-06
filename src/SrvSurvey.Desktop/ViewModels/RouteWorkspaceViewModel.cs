@@ -390,15 +390,11 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
 
     public string ProgressSummary => !HasRoute
         ? "Import a route to begin."
-        : (IsComplete) switch
-        {
-            true => $"All {RouteCount:N0} systems reached.",
-            false => (lastReachedIndex < 0) switch
-            {
-                true => $"Not started \u2022 {RouteCount:N0} systems",
-                false => $"Reached {ReachedCount:N0} of {RouteCount:N0} systems"
-            }
-        };
+        : IsComplete
+            ? $"All {RouteCount:N0} systems reached."
+            : lastReachedIndex < 0
+                ? $"Not started \u2022 {RouteCount:N0} systems"
+                : $"Reached {ReachedCount:N0} of {RouteCount:N0} systems";
 
     public string AutoCopySummary => AutoCopy
         ? "Next-hop clipboard guidance is enabled."
@@ -771,11 +767,9 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
                 StatusMessage = loadedRoute.IsComplete
                     ? $"Route complete after arriving at {reachedName}."
                     : $"Arrived at hop #{reachedIndex + 1:N0}: {reachedName}."
-                        + ((hadUnsavedChanges) switch
-                        {
-                            true => " Unsaved route edits were kept.",
-                            false => string.Empty
-                        });
+                        + (hadUnsavedChanges
+                            ? " Unsaved route edits were kept."
+                            : string.Empty);
             }
 
             await ApplyBioArrivalEventsAsync(journalEvents);

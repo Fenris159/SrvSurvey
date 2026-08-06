@@ -197,7 +197,7 @@ public sealed class BiologyCriteriaCatalog
             .ToArray();
     }
 
-    private static IReadOnlyList<BiologyCriteriaNode>? ParseOptionalChildren(
+    private static BiologyCriteriaNode[]? ParseOptionalChildren(
         JsonElement element,
         string propertyName,
         string sourceName)

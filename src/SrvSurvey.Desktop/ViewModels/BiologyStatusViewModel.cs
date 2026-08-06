@@ -126,29 +126,24 @@ public sealed record BiologyStatusViewModel(
             options.CodexNotification?.BodyId == body.BodyId
                 ? options.CodexNotification
                 : null;
-        var footer = activeSample is not null || isStaleActiveSample
-            ? string.Empty
-            : (allAnalyzed && body.IsFirstFootfall) switch
+        var footer = string.Empty;
+        if (activeSample is null && !isStaleActiveSample)
+        {
+            if (allAnalyzed && body.IsFirstFootfall)
             {
-                true => "All signals analyzed with the first-footfall bonus applied.",
-                false => (allAnalyzed) switch
-                {
-                    true => "All biological signals analyzed.",
-                    false => (currentNotification is not null) switch
-                    {
-                        true => currentNotification.SummaryText,
-                        false => (body.Organisms.Count == 0) switch
-                        {
-                            true => string.Empty,
-                            false => (body.IsFirstFootfall) switch
-                            {
-                                true => "First-footfall rewards apply to analyzed organisms.",
-                                false => "Use the Composition Scanner to identify organisms."
-                            }
-                        }
-                    }
-                }
-            };
+                footer = "All signals analyzed with the first-footfall bonus applied.";
+            }
+            else if (currentNotification is not null)
+            {
+                footer = currentNotification.SummaryText;
+            }
+            else if (body.Organisms.Count > 0)
+            {
+                footer = body.IsFirstFootfall
+                    ? "First-footfall rewards apply to analyzed organisms."
+                    : "Use the Composition Scanner to identify organisms.";
+            }
+        }
 
         return new BiologyStatusViewModel(
             body.BodyId,
@@ -217,14 +212,12 @@ public sealed record BiologyStatusViewModel(
                 var name = organism.GenusLocalized
                     ?? FormatJournalName(organism.Genus);
                 var distance = organism.IsAnalyzed
-                    ? string.Empty
-                    : (ExobiologyReferenceCatalog.GetSampleDistanceMeters(
+                ? string.Empty
+                : (ExobiologyReferenceCatalog.GetSampleDistanceMeters(
                         organism.GenusLocalized ?? organism.Genus) is var meters
-                        && meters > 0) switch
-                    {
-                        true => $"{meters:N0} m",
-                        false => string.Empty
-                    };
+                        && meters > 0)
+                        ? $"{meters:N0} m"
+                        : string.Empty;
                 return new BiologyStatusSignalViewModel(
                     name,
                     distance,

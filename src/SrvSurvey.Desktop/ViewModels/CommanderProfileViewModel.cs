@@ -169,30 +169,24 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public string DetectedCommanderDescription => detectedFrontierId is null
         ? "Waiting for active journal commander"
-        : (string.IsNullOrWhiteSpace(detectedCommanderName)) switch
-        {
-            true => detectedFrontierId,
-            false => $"{detectedCommanderName} ({detectedFrontierId})"
-        };
+        : string.IsNullOrWhiteSpace(detectedCommanderName)
+            ? detectedFrontierId
+            : $"{detectedCommanderName} ({detectedFrontierId})";
 
     public string ActiveCommanderDescription => activeFrontierId is null
         ? "No Frontier commander selected"
-        : (string.IsNullOrWhiteSpace(activeCommanderName)) switch
-        {
-            true => activeFrontierId,
-            false => $"{activeCommanderName} ({activeFrontierId})"
-        };
+        : string.IsNullOrWhiteSpace(activeCommanderName)
+            ? activeFrontierId
+            : $"{activeCommanderName} ({activeFrontierId})";
 
     public string CommanderSelectionDescription => IsAutomaticCommanderSelection
-        ? $"Automatic · Journal: {DetectedCommanderDescription}"
-        : (string.Equals(
-            activeFrontierId,
-            detectedFrontierId,
-            StringComparison.OrdinalIgnoreCase)) switch
-        {
-            true => "Manual selection · Matches the active journal commander",
-            false => $"Manual selection · Journal remains {DetectedCommanderDescription}"
-        };
+    ? $"Automatic · Journal: {DetectedCommanderDescription}"
+    : string.Equals(
+        activeFrontierId,
+        detectedFrontierId,
+        StringComparison.OrdinalIgnoreCase)
+        ? "Manual selection · Matches the active journal commander"
+        : $"Manual selection · Journal remains {DetectedCommanderDescription}";
 
     public bool IsBusy
     {
@@ -2677,21 +2671,25 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         params string[] names)
     {
         var value = CommunityGoalDataValue(dataPoints, names);
-        return long.TryParse(
+        if (long.TryParse(
             value,
             NumberStyles.Integer | NumberStyles.AllowThousands,
             CultureInfo.InvariantCulture,
-            out var parsed)
-                ? parsed
-                : (long.TryParse(
-                    value,
-                    NumberStyles.Integer | NumberStyles.AllowThousands,
-                    CultureInfo.CurrentCulture,
-                    out parsed)) switch
-                {
-                    true => parsed,
-                    false => null
-                };
+            out var parsed))
+        {
+            return parsed;
+        }
+
+        if (long.TryParse(
+            value,
+            NumberStyles.Integer | NumberStyles.AllowThousands,
+            CultureInfo.CurrentCulture,
+            out parsed))
+        {
+            return parsed;
+        }
+
+        return null;
     }
 
     private static DateTimeOffset? CommunityGoalDataDateTimeOffset(
@@ -2921,27 +2919,28 @@ public sealed record FrontierCommanderSelectionOption(
     bool IsAutomatic)
 {
     public static FrontierCommanderSelectionOption Automatic(
-        string? frontierId,
-        string? commanderName)
+    string? frontierId,
+    string? commanderName)
+{
+    var commander = string.IsNullOrWhiteSpace(commanderName)
+        ? frontierId
+        : commanderName.Trim();
+    var detail = "waiting for journal";
+    if (!string.IsNullOrWhiteSpace(commander))
     {
-        var commander = string.IsNullOrWhiteSpace(commanderName)
-            ? frontierId
-            : commanderName.Trim();
-        var detail = string.IsNullOrWhiteSpace(commander)
-            ? "waiting for journal"
-            : (string.IsNullOrWhiteSpace(frontierId)) switch
-            {
-                true => commander,
-                false => $"{commander} ({frontierId})"
-            };
-        return new FrontierCommanderSelectionOption(
-            frontierId ?? string.Empty,
-            commander ?? string.Empty,
-            $"Automatic · {detail}",
-            true);
+        detail = string.IsNullOrWhiteSpace(frontierId)
+            ? commander
+            : $"{commander} ({frontierId})";
     }
 
-    public static FrontierCommanderSelectionOption Linked(
+    return new FrontierCommanderSelectionOption(
+        frontierId ?? string.Empty,
+        commander ?? string.Empty,
+        $"Automatic · {detail}",
+        true);
+}
+
+public static FrontierCommanderSelectionOption Linked(
         FrontierLinkedCommander commander) => new(
         commander.FrontierId,
         commander.CommanderName,
@@ -3280,3 +3279,7 @@ file sealed class PanelToggleCommand(Action execute) : ICommand
 
     public void Execute(object? parameter) => execute();
 }
+
+
+
+

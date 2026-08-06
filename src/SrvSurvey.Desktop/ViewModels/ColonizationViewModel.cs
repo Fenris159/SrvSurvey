@@ -546,17 +546,13 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         lastSyncedMarket = null;
         RavenCredentialStatus = profileFrontierId is null
             ? "Load a commander profile to configure a Raven API key."
-            : (storedRavenApiKey is null) switch
-            {
-                true => "No Raven API key is saved for this commander.",
-                false => "A Raven API key is saved for this commander."
-            };
+            : storedRavenApiKey is null
+                ? "No Raven API key is saved for this commander."
+                : "A Raven API key is saved for this commander.";
         FleetCarrierSyncStatus = FleetCarrierCargoSyncEnabled
-            ? (storedRavenApiKey is null) switch
-            {
-                true => "Save a Raven API key before Fleet Carrier cargo can sync.",
-                false => "Fleet Carrier cargo will sync from matching Market.json updates."
-            }
+            ? (storedRavenApiKey is null
+                ? "Save a Raven API key before Fleet Carrier cargo can sync."
+                : "Fleet Carrier cargo will sync from matching Market.json updates.")
             : "Automatic Fleet Carrier cargo sync is off.";
         ShipCargoPublishingStatus = GetShipCargoReadyStatus();
         OnPropertyChanged(nameof(HasCommanderProfile));
@@ -2012,11 +2008,9 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             ?? buildCatalog.FindByBuildType(project.BuildType);
         var type = project.IsFleetCarrierLoading
             ? "Fleet Carrier loading"
-            : (build is null) switch
-            {
-                true => project.BuildType,
-                false => $"{build.DisplayName} ({project.BuildType})"
-            };
+            : build is null
+                ? project.BuildType
+                : $"{build.DisplayName} ({project.BuildType})";
         return new ColonizationProjectRowViewModel(
             project,
             type,

@@ -366,16 +366,10 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
             overview.Bodies);
         StatusMessage = survey.DisableBioPredictions
             ? "Exact predictions are disabled in system-survey settings."
-            : (bodyRows.Any(body => body.HasPredictionStatus)) switch
-            {
-                true => "Some bodies still need complete planet or parent-star scans.",
-                false => $"Exact criteria evaluated for {bodyRows.Length:N0} biological "
-                                                                                                          + ((bodyRows.Length == 1) switch
-                                                                                                          {
-                                                                                                              true => "body.",
-                                                                                                              false => "bodies."
-                                                                                                          })
-            };
+            : bodyRows.Any(body => body.HasPredictionStatus)
+                ? "Some bodies still need complete planet or parent-star scans."
+                : $"Exact criteria evaluated for {bodyRows.Length:N0} biological "
+                    + (bodyRows.Length == 1 ? "body." : "bodies.");
         Bodies = bodyRows;
         if (CurrentBodyOnly)
         {
@@ -485,10 +479,20 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
     private static long CalculateConfirmedReward(SystemScanSnapshot snapshot)
     {
         return snapshot.Bodies.Sum((SystemScanBodySnapshot body) =>
-            body.Organisms
-            .Where((SystemOrganismSnapshot organism) => organism.IsAnalyzed)
-            .Sum((SystemOrganismSnapshot organism) => (organism.Reward ?? 0)
-                * (body.IsFirstFootfall ? 5 : 1)));
+        {
+            long reward = 0;
+            var bonus = body.IsFirstFootfall ? 5 : 1;
+            foreach (var organism in body.Organisms)
+            {
+                if (!organism.IsAnalyzed)
+                {
+                    continue;
+                }
+
+                reward += (organism.Reward ?? 0) * bonus;
+            }
+            return reward;
+        });
     }
 
     private static string CalculateFirstFootfallEstimate(

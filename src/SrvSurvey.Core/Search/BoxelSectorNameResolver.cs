@@ -719,9 +719,6 @@ internal static class BoxelSectorNameResolver
 
     private const int sector_size = 1280;
     private static readonly int[] galaxy_size = [128, 128, 128];
-    private const int base_sector_x = 39;
-    private const int base_sector_y = 32;
-    private const int base_sector_z = 18;
 
     public static int get_mcode_cube_width(char mcode)
     {

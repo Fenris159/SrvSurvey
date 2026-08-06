@@ -38,17 +38,25 @@ public sealed record StationLandingPadSummary(
     int Medium,
     int Large)
 {
-    public string? Largest => Large > 0
-        ? "Large"
-        : (Medium > 0) switch
+    public string? Largest
+    {
+        get
         {
-            true => "Medium",
-            false => (Small > 0) switch
+            if (Large > 0)
             {
-                true => "Small",
-                false => null
+                return "Large";
             }
-        };
+
+            if (Medium > 0)
+            {
+                return "Medium";
+            }
+
+            return Small > 0
+                ? "Small"
+                : null;
+        }
+    }
 }
 
 public sealed record SystemStationSummary(
@@ -181,15 +189,19 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             bodies.Value?.TotalBodyCount ?? 0,
             spansh.Value?.TotalBodyCount ?? 0);
         var attemptedProviders = systemAddress > 0 ? 3 : 2;
-        bool? isKnown = bodies.Value?.SystemAddress > 0
-            || traffic.Value?.SystemAddress > 0
-            || spansh.Value is not null
-                ? true
-                : (warnings.Length == attemptedProviders) switch
-                {
-                    true => null,
-                    false => false
-                };
+        bool? isKnown;
+        if (bodies.Value?.SystemAddress > 0 || traffic.Value?.SystemAddress > 0 || spansh.Value is not null)
+        {
+            isKnown = true;
+        }
+        else if (warnings.Length == attemptedProviders)
+        {
+            isKnown = null;
+        }
+        else
+        {
+            isKnown = false;
+        }
         var points = spansh.Value?.PointsOfInterest
             ?? new SystemPoiSummary(totalBodyCount, 0, 0, 0, 0, 0, 0);
         points = points with { Bodies = totalBodyCount };

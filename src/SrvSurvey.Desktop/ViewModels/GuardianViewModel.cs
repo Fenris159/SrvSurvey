@@ -1573,11 +1573,9 @@ public sealed class GuardianViewModel
 
     public string OriginStatus => customOrigin is { } origin
         ? $"Distances from custom origin {origin.Name}."
-        : (currentPosition is null) switch
-        {
-            true => "Distances unavailable until a journal supplies galactic coordinates.",
-            false => $"Distances from {currentSystemName ?? "current system"}."
-        };
+        : currentPosition is null
+            ? "Distances unavailable until a journal supplies galactic coordinates."
+            : $"Distances from {currentSystemName ?? "current system"}.";
 
     public void SetClipboardWriter(Func<string, Task>? writer)
     {
@@ -3813,25 +3811,37 @@ public sealed class GuardianViewModel
             return 2;
         }
 
-        return siteKind == GuardianSiteKind.Ruins
-            ? (distanceFromSite > 1_000) switch
+        if (siteKind == GuardianSiteKind.Ruins)
+        {
+            if (distanceFromSite is not { } ruinsDistance)
             {
-                true => 0.2,
-                false => (distanceFromSite > 800) switch
-                {
-                    true => 0.5,
-                    false => 0.65
-                }
+                return 0.65;
             }
-            : (distanceFromSite > 800) switch
+
+            if (ruinsDistance > 1_000)
             {
-                true => 0.2,
-                false => (distanceFromSite > 500) switch
-                {
-                    true => 0.5,
-                    false => 1.5
-                }
-            };
+                return 0.2;
+            }
+
+            return ruinsDistance > 800 ? 0.5 : 0.65;
+        }
+
+        if (distanceFromSite is not { } distance)
+        {
+            return 1.5;
+        }
+
+        if (distance > 800)
+        {
+            return 0.2;
+        }
+
+        if (distance > 500)
+        {
+            return 0.5;
+        }
+
+        return 1.5;
     }
 
     private double GetNearestObeliskDistance()
@@ -5089,11 +5099,9 @@ public sealed class GuardianSiteRowViewModel(
             : "Not recorded";
 
     public string Notes => string.IsNullOrWhiteSpace(Visit.Notes)
-        ? (Reference.RelatedStructure is null) switch
-        {
-            true => "No commander notes.",
-            false => $"Related structure: {Reference.RelatedStructure}"
-        }
+        ? Reference.RelatedStructure is null
+            ? "No commander notes."
+            : $"Related structure: {Reference.RelatedStructure}"
         : Visit.Notes;
 
     public string LegacyDisplayText

@@ -57,7 +57,6 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
 
     private readonly object sync = new();
     private readonly object companionTasksSync = new();
-    private readonly EddnTransport transport;
     private readonly EddnOutbox outbox;
     private readonly Channel<OutboxWriteCommand> outboxWrites;
     private readonly Task outboxWriterTask;
@@ -100,7 +99,7 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(softwareVersion);
         this.softwareVersion = softwareVersion.Trim();
         this.log = log ?? (_ => { });
-        transport = new EddnTransport(
+        var transport = new EddnTransport(
             client,
             endpoint,
             $"SrvSurvey/{this.softwareVersion}");

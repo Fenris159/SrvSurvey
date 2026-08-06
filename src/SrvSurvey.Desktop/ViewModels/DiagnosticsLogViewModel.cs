@@ -211,9 +211,13 @@ public sealed class DiagnosticsLogViewModel : INotifyPropertyChanged, IDisposabl
     private string GetSessionDescription()
     {
         var count = applicationLog?.Entries.Count ?? 0;
-        return applicationLog is null
-            ? "Application logging is unavailable."
-            : $"{count:N0} session {((count == 1) switch { true => "entry", false => "entries" })}";
+        if (applicationLog is null)
+        {
+            return "Application logging is unavailable.";
+        }
+
+        var unit = count == 1 ? "entry" : "entries";
+        return $"{count:N0} session {unit}";
     }
 
     private string GetPersistenceStatus()

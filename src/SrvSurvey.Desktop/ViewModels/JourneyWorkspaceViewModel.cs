@@ -581,15 +581,11 @@ public sealed class JourneyWorkspaceViewModel : INotifyPropertyChanged
             await RefreshCatalogAsync(active.Journey?.FileName);
             StatusMessage = active.Errors.Count > 0
                 ? string.Join(Environment.NewLine, active.Errors)
-                : (active.Journey is null) switch
-                {
-                    true => "No active journey. Browse history or begin a new expedition.",
-                    false => (active.ProcessedEventCount > 0) switch
-                    {
-                        true => $"Caught up {active.ProcessedEventCount:N0} Journey journal events.",
-                        false => $"Active journey: {active.Journey.Name}."
-                    }
-                };
+                : active.Journey is null
+                    ? "No active journey. Browse history or begin a new expedition."
+                    : active.ProcessedEventCount > 0
+                        ? $"Caught up {active.ProcessedEventCount:N0} Journey journal events."
+                        : $"Active journey: {active.Journey.Name}.";
             RaiseActiveState();
             return true;
         }
