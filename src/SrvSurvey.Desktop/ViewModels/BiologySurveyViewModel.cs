@@ -74,21 +74,11 @@ public sealed record BiologySurveyViewModel(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
         ExobiologySnapshot exobiology,
-        bool drawBodyBiosOnlyWhenNear,
-        bool highlightRegionalFirsts,
-        bool dimAnalyzedOrganisms,
-        bool hideGeoCount,
-        bool disablePredictions,
-        BiologyDiscoveryContext? discoveryContext = null,
-        BiologyRewardThresholds? rewardThresholds = null,
-        BiologyPredictionEvaluator? predictionEvaluator = null,
-        ExobiologyReferenceCatalog? referenceCatalog = null,
-        IReadOnlySet<int>? canonnBiologyBodyIds = null,
-        bool allowRetainedCurrentBody = true,
-        bool forceSystemOverview = false)
+        BiologySurveyCreateOptions options)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
+        ArgumentNullException.ThrowIfNull(options);
         var biologicalBodies = snapshot.Bodies
             .Where(body => body.BiologicalSignalCount > 0)
             .OrderBy(body => body.BodyId)
@@ -102,48 +92,57 @@ public sealed record BiologySurveyViewModel(
             snapshot,
             status,
             biologicalBodies,
-            drawBodyBiosOnlyWhenNear,
-            allowRetainedCurrentBody,
-            forceSystemOverview);
+            options.DrawBodyBiosOnlyWhenNear,
+            options.AllowRetainedCurrentBody,
+            options.ForceSystemOverview);
         return body is null
             ? CreateSystem(
                 snapshot,
                 status,
                 biologicalBodies,
-                highlightRegionalFirsts,
-                discoveryContext ?? BiologyDiscoveryContext.Unavailable,
-                disablePredictions,
-                exobiology.CountRadicoidaUnica,
-                rewardThresholds ?? BiologyRewardThresholds.Default,
-                predictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                referenceCatalog ?? DefaultBioReferenceCatalog.Value,
-                canonnBiologyBodyIds)
+                new BiologySurveySystemBuildOptions
+                {
+                    HighlightRegionalFirsts = options.HighlightRegionalFirsts,
+                    DiscoveryContext = options.DiscoveryContext
+                        ?? BiologyDiscoveryContext.Unavailable,
+                    DisablePredictions = options.DisablePredictions,
+                    RadicoidaUnicaCount = exobiology.CountRadicoidaUnica,
+                    RewardThresholds = options.RewardThresholds
+                        ?? BiologyRewardThresholds.Default,
+                    PredictionEvaluator = options.PredictionEvaluator
+                        ?? DefaultPredictionEvaluator.Value,
+                    ReferenceCatalog = options.ReferenceCatalog
+                        ?? DefaultBioReferenceCatalog.Value,
+                    CanonnBiologyBodyIds = options.CanonnBiologyBodyIds,
+                })
             : CreateBody(
                 snapshot,
                 body,
                 exobiology,
-                highlightRegionalFirsts,
-                dimAnalyzedOrganisms,
-                hideGeoCount,
-                disablePredictions,
-                discoveryContext ?? BiologyDiscoveryContext.Unavailable,
-                rewardThresholds ?? BiologyRewardThresholds.Default,
-                predictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                referenceCatalog ?? DefaultBioReferenceCatalog.Value);
+                new BiologySurveyBodyBuildOptions
+                {
+                    HighlightRegionalFirsts = options.HighlightRegionalFirsts,
+                    DimAnalyzedOrganisms = options.DimAnalyzedOrganisms,
+                    HideGeoCount = options.HideGeoCount,
+                    DisablePredictions = options.DisablePredictions,
+                    DiscoveryContext = options.DiscoveryContext
+                        ?? BiologyDiscoveryContext.Unavailable,
+                    RewardThresholds = options.RewardThresholds
+                        ?? BiologyRewardThresholds.Default,
+                    PredictionEvaluator = options.PredictionEvaluator
+                        ?? DefaultPredictionEvaluator.Value,
+                    ReferenceCatalog = options.ReferenceCatalog
+                        ?? DefaultBioReferenceCatalog.Value,
+                });
     }
 
     public static BiologySurveyViewModel? CreateSystemOverview(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
-        bool disablePredictions,
-        BiologyRewardThresholds? rewardThresholds = null,
-        BiologyPredictionEvaluator? predictionEvaluator = null,
-        ExobiologyReferenceCatalog? referenceCatalog = null,
-        int radicoidaUnicaCount = 0,
-        bool highlightRegionalFirsts = false,
-        BiologyDiscoveryContext? discoveryContext = null)
+        BiologySurveySystemOverviewOptions options)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(options);
         var biologicalBodies = snapshot.Bodies
             .Where(body => body.BiologicalSignalCount > 0)
             .OrderBy(body => body.BodyId)
@@ -154,31 +153,32 @@ public sealed record BiologySurveyViewModel(
                 snapshot,
                 status,
                 biologicalBodies,
-                highlightRegionalFirsts,
-                discoveryContext ?? BiologyDiscoveryContext.Unavailable,
-                disablePredictions,
-                radicoidaUnicaCount,
-                rewardThresholds ?? BiologyRewardThresholds.Default,
-                predictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                referenceCatalog ?? DefaultBioReferenceCatalog.Value,
-                canonnBiologyBodyIds: null);
+                new BiologySurveySystemBuildOptions
+                {
+                    HighlightRegionalFirsts = options.HighlightRegionalFirsts,
+                    DiscoveryContext = options.DiscoveryContext
+                        ?? BiologyDiscoveryContext.Unavailable,
+                    DisablePredictions = options.DisablePredictions,
+                    RadicoidaUnicaCount = options.RadicoidaUnicaCount,
+                    RewardThresholds = options.RewardThresholds
+                        ?? BiologyRewardThresholds.Default,
+                    PredictionEvaluator = options.PredictionEvaluator
+                        ?? DefaultPredictionEvaluator.Value,
+                    ReferenceCatalog = options.ReferenceCatalog
+                        ?? DefaultBioReferenceCatalog.Value,
+                    CanonnBiologyBodyIds = null,
+                });
     }
 
     public static BiologySurveyViewModel? CreateBodyDetail(
         SystemScanSnapshot snapshot,
         int bodyId,
         ExobiologySnapshot exobiology,
-        bool highlightRegionalFirsts,
-        bool dimAnalyzedOrganisms,
-        bool hideGeoCount,
-        bool disablePredictions,
-        BiologyDiscoveryContext? discoveryContext = null,
-        BiologyRewardThresholds? rewardThresholds = null,
-        BiologyPredictionEvaluator? predictionEvaluator = null,
-        ExobiologyReferenceCatalog? referenceCatalog = null)
+        BiologySurveyBodyDetailOptions options)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(exobiology);
+        ArgumentNullException.ThrowIfNull(options);
         var body = snapshot.Bodies.FirstOrDefault(candidate =>
             candidate.BodyId == bodyId
             && candidate.BiologicalSignalCount > 0);
@@ -188,41 +188,44 @@ public sealed record BiologySurveyViewModel(
                 snapshot,
                 body,
                 exobiology,
-                highlightRegionalFirsts,
-                dimAnalyzedOrganisms,
-                hideGeoCount,
-                disablePredictions,
-                discoveryContext ?? BiologyDiscoveryContext.Unavailable,
-                rewardThresholds ?? BiologyRewardThresholds.Default,
-                predictionEvaluator ?? DefaultPredictionEvaluator.Value,
-                referenceCatalog ?? DefaultBioReferenceCatalog.Value);
+                new BiologySurveyBodyBuildOptions
+                {
+                    HighlightRegionalFirsts = options.HighlightRegionalFirsts,
+                    DimAnalyzedOrganisms = options.DimAnalyzedOrganisms,
+                    HideGeoCount = options.HideGeoCount,
+                    DisablePredictions = options.DisablePredictions,
+                    DiscoveryContext = options.DiscoveryContext
+                        ?? BiologyDiscoveryContext.Unavailable,
+                    RewardThresholds = options.RewardThresholds
+                        ?? BiologyRewardThresholds.Default,
+                    PredictionEvaluator = options.PredictionEvaluator
+                        ?? DefaultPredictionEvaluator.Value,
+                    ReferenceCatalog = options.ReferenceCatalog
+                        ?? DefaultBioReferenceCatalog.Value,
+                });
     }
 
     public static IReadOnlyList<BiologySignalRewardBandViewModel>
         CreateRewardBandsForBody(
             SystemScanSnapshot snapshot,
             SystemScanBodySnapshot body,
-            bool disablePredictions,
-            BiologyRewardThresholds? rewardThresholds = null,
-            BiologyPredictionEvaluator? predictionEvaluator = null,
-            ExobiologyReferenceCatalog? referenceCatalog = null,
-            bool highlightRegionalFirsts = false,
-            BiologyDiscoveryContext? discoveryContext = null)
+            BiologySurveyRewardBandOptions options)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(body);
-        var thresholds = rewardThresholds ?? BiologyRewardThresholds.Default;
+        ArgumentNullException.ThrowIfNull(options);
+        var thresholds = options.RewardThresholds ?? BiologyRewardThresholds.Default;
         var predictions = CreatePredictions(
             snapshot,
             body,
-            disablePredictions,
-            predictionEvaluator ?? DefaultPredictionEvaluator.Value,
-            referenceCatalog ?? DefaultBioReferenceCatalog.Value);
+            options.DisablePredictions,
+            options.PredictionEvaluator ?? DefaultPredictionEvaluator.Value,
+            options.ReferenceCatalog ?? DefaultBioReferenceCatalog.Value);
         return CreateSystemRewardBands(
             body,
             predictions,
-            highlightRegionalFirsts,
-            discoveryContext ?? BiologyDiscoveryContext.Unavailable,
+            options.HighlightRegionalFirsts,
+            options.DiscoveryContext ?? BiologyDiscoveryContext.Unavailable,
             thresholds);
     }
 
@@ -230,15 +233,9 @@ public sealed record BiologySurveyViewModel(
         SystemScanSnapshot snapshot,
         EliteStatus? status,
         IReadOnlyList<SystemScanBodySnapshot> biologicalBodies,
-        bool highlightRegionalFirsts,
-        BiologyDiscoveryContext discoveryContext,
-        bool disablePredictions,
-        int radicoidaUnicaCount,
-        BiologyRewardThresholds rewardThresholds,
-        BiologyPredictionEvaluator predictionEvaluator,
-        ExobiologyReferenceCatalog referenceCatalog,
-        IReadOnlySet<int>? canonnBiologyBodyIds)
+        BiologySurveySystemBuildOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
         var destinationBodyId = status?.Destination is { } destination
             && destination.System == snapshot.SystemAddress
             ? destination.Body
@@ -250,16 +247,16 @@ public sealed record BiologySurveyViewModel(
                 var predictions = CreatePredictions(
                     snapshot,
                     body,
-                    disablePredictions,
-                    predictionEvaluator,
-                    referenceCatalog);
+                    options.DisablePredictions,
+                    options.PredictionEvaluator,
+                    options.ReferenceCatalog);
                 var estimate = CreateRewardEstimate(body, predictions);
                 var rewardBands = CreateSystemRewardBands(
                     body,
                     predictions,
-                    highlightRegionalFirsts,
-                    discoveryContext,
-                    rewardThresholds);
+                    options.HighlightRegionalFirsts,
+                    options.DiscoveryContext,
+                    options.RewardThresholds);
                 var row = new BiologyBodyRowViewModel(
                     body.BodyId,
                     body.ShortName,
@@ -272,11 +269,11 @@ public sealed record BiologySurveyViewModel(
                     estimate.HasUnknownReward,
                     body.BodyId == destinationBodyId,
                     body.BodyId == currentBodyId,
-                    canonnBiologyBodyIds?.Contains(body.BodyId) == true,
+                    options.CanonnBiologyBodyIds?.Contains(body.BodyId) == true,
                     rewardBands,
-                    rewardThresholds.BucketOneMillions,
-                    rewardThresholds.BucketTwoMillions,
-                    rewardThresholds.BucketThreeMillions);
+                    options.RewardThresholds.BucketOneMillions,
+                    options.RewardThresholds.BucketTwoMillions,
+                    options.RewardThresholds.BucketThreeMillions);
                 return new { Row = row, Estimate = estimate };
             })
             .ToArray();
@@ -308,7 +305,7 @@ public sealed record BiologySurveyViewModel(
                     hasUnknownReward)
                 : FormatKnownReward(knownSystemReward, hasUnknownReward),
             string.Empty,
-            radicoidaUnicaCount,
+            options.RadicoidaUnicaCount,
             false,
             string.Empty,
             0,
@@ -319,90 +316,31 @@ public sealed record BiologySurveyViewModel(
         SystemScanSnapshot snapshot,
         SystemScanBodySnapshot body,
         ExobiologySnapshot exobiology,
-        bool highlightRegionalFirsts,
-        bool dimAnalyzedOrganisms,
-        bool hideGeoCount,
-        bool disablePredictions,
-        BiologyDiscoveryContext discoveryContext,
-        BiologyRewardThresholds rewardThresholds,
-        BiologyPredictionEvaluator predictionEvaluator,
-        ExobiologyReferenceCatalog referenceCatalog)
+        BiologySurveyBodyBuildOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
+        var highlightRegionalFirsts = options.HighlightRegionalFirsts;
+        var dimAnalyzedOrganisms = options.DimAnalyzedOrganisms;
+        var hideGeoCount = options.HideGeoCount;
+        var disablePredictions = options.DisablePredictions;
+        var discoveryContext = options.DiscoveryContext;
+        var rewardThresholds = options.RewardThresholds;
+        var predictionEvaluator = options.PredictionEvaluator;
+        var referenceCatalog = options.ReferenceCatalog;
         var predictionSet = CreatePredictions(
             snapshot,
             body,
             disablePredictions,
             predictionEvaluator,
             referenceCatalog);
-        var predictionsByGenus = predictionSet.Predictions
-            .GroupBy(
-                prediction => prediction.Prediction.Genus,
-                StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(
-                group => group.Key,
-                group => group.ToArray(),
-                StringComparer.OrdinalIgnoreCase);
-        var consumedPredictions = new HashSet<string>(StringComparer.Ordinal);
-        var organisms = new List<BiologyOrganismRowViewModel>();
-        foreach (var organism in body.Organisms)
-        {
-            var genusName = organism.GenusLocalized
-                ?? FormatJournalName(organism.Genus);
-            if (organism.Variant is null
-                && predictionsByGenus.TryGetValue(genusName, out var predictions))
-            {
-                foreach (var prediction in predictions)
-                {
-                    organisms.Add(CreatePrediction(
-                        body,
-                        prediction,
-                        exobiology,
-                        highlightRegionalFirsts,
-                        discoveryContext,
-                        rewardThresholds));
-                    consumedPredictions.Add(prediction.Prediction.Name);
-                }
-
-                continue;
-            }
-
-            organisms.Add(CreateOrganism(
-                body,
-                organism,
-                exobiology,
-                highlightRegionalFirsts,
-                dimAnalyzedOrganisms,
-                discoveryContext,
-                rewardThresholds));
-        }
-
-        foreach (var prediction in predictionSet.Predictions.Where(
-                     prediction => !consumedPredictions.Contains(
-                         prediction.Prediction.Name)))
-        {
-            if (body.Organisms.Any(organism => prediction.Reference is not null
-                    && (organism.Variant == prediction.Reference.VariantName
-                        || organism.Species == prediction.Reference.SpeciesName)))
-            {
-                continue;
-            }
-
-            organisms.Add(CreatePrediction(
-                body,
-                prediction,
-                exobiology,
-                highlightRegionalFirsts,
-                discoveryContext,
-                rewardThresholds));
-        }
-
-        while (organisms.Count < body.BiologicalSignalCount)
-        {
-            organisms.Add(BiologyOrganismRowViewModel.Unknown(
-                organisms.Count + 1,
-                rewardThresholds));
-        }
-
+        var organisms = BuildBodyOrganismRows(
+            body,
+            exobiology,
+            predictionSet,
+            highlightRegionalFirsts,
+            dimAnalyzedOrganisms,
+            discoveryContext,
+            rewardThresholds);
         var rewardEstimate = CreateRewardEstimate(body, predictionSet);
         var geoCount = hideGeoCount ? 0 : body.GeologicalSignalCount;
         var geoSignals = hideGeoCount
@@ -442,6 +380,133 @@ public sealed record BiologySurveyViewModel(
             predictionSet.Status,
             geoCount,
             geoSignals);
+    }
+
+    private static List<BiologyOrganismRowViewModel> BuildBodyOrganismRows(
+        SystemScanBodySnapshot body,
+        ExobiologySnapshot exobiology,
+        BiologyPredictionSet predictionSet,
+        bool highlightRegionalFirsts,
+        bool dimAnalyzedOrganisms,
+        BiologyDiscoveryContext discoveryContext,
+        BiologyRewardThresholds rewardThresholds)
+    {
+        var predictionsByGenus = predictionSet.Predictions
+            .GroupBy(
+                prediction => prediction.Prediction.Genus,
+                StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.ToArray(),
+                StringComparer.OrdinalIgnoreCase);
+        var consumedPredictions = new HashSet<string>(StringComparer.Ordinal);
+        var organisms = new List<BiologyOrganismRowViewModel>();
+        foreach (var organism in body.Organisms)
+        {
+            AddKnownOrganismRows(
+                organisms,
+                consumedPredictions,
+                body,
+                organism,
+                exobiology,
+                predictionsByGenus,
+                highlightRegionalFirsts,
+                dimAnalyzedOrganisms,
+                discoveryContext,
+                rewardThresholds);
+        }
+
+        AddRemainingPredictionRows(
+            organisms,
+            consumedPredictions,
+            body,
+            exobiology,
+            predictionSet,
+            highlightRegionalFirsts,
+            discoveryContext,
+            rewardThresholds);
+
+        while (organisms.Count < body.BiologicalSignalCount)
+        {
+            organisms.Add(BiologyOrganismRowViewModel.Unknown(
+                organisms.Count + 1,
+                rewardThresholds));
+        }
+
+        return organisms;
+    }
+
+    private static void AddKnownOrganismRows(
+        List<BiologyOrganismRowViewModel> organisms,
+        HashSet<string> consumedPredictions,
+        SystemScanBodySnapshot body,
+        SystemOrganismSnapshot organism,
+        ExobiologySnapshot exobiology,
+        IReadOnlyDictionary<string, BiologyPredictionPresentation[]> predictionsByGenus,
+        bool highlightRegionalFirsts,
+        bool dimAnalyzedOrganisms,
+        BiologyDiscoveryContext discoveryContext,
+        BiologyRewardThresholds rewardThresholds)
+    {
+        var genusName = organism.GenusLocalized
+            ?? FormatJournalName(organism.Genus);
+        if (organism.Variant is null
+            && predictionsByGenus.TryGetValue(genusName, out var predictions))
+        {
+            foreach (var prediction in predictions)
+            {
+                organisms.Add(CreatePrediction(
+                    body,
+                    prediction,
+                    exobiology,
+                    highlightRegionalFirsts,
+                    discoveryContext,
+                    rewardThresholds));
+                consumedPredictions.Add(prediction.Prediction.Name);
+            }
+
+            return;
+        }
+
+        organisms.Add(CreateOrganism(
+            body,
+            organism,
+            exobiology,
+            highlightRegionalFirsts,
+            dimAnalyzedOrganisms,
+            discoveryContext,
+            rewardThresholds));
+    }
+
+    private static void AddRemainingPredictionRows(
+        List<BiologyOrganismRowViewModel> organisms,
+        HashSet<string> consumedPredictions,
+        SystemScanBodySnapshot body,
+        ExobiologySnapshot exobiology,
+        BiologyPredictionSet predictionSet,
+        bool highlightRegionalFirsts,
+        BiologyDiscoveryContext discoveryContext,
+        BiologyRewardThresholds rewardThresholds)
+    {
+        foreach (var prediction in predictionSet.Predictions.Where(
+                     prediction => !consumedPredictions.Contains(
+                         prediction.Prediction.Name)))
+        {
+            if (body.Organisms.Any(organism => prediction.Reference is not null
+                    && (organism.Variant == prediction.Reference.VariantName
+                        || organism.Species == prediction.Reference.SpeciesName)))
+            {
+                continue;
+            }
+
+            organisms.Add(CreatePrediction(
+                body,
+                prediction,
+                exobiology,
+                highlightRegionalFirsts,
+                discoveryContext,
+                rewardThresholds));
+        }
     }
 
     private static BiologyOrganismRowViewModel CreateOrganism(
@@ -1120,6 +1185,131 @@ public sealed record BiologyOrganismRowViewModel(
             thresholds.BucketTwoMillions,
             thresholds.BucketThreeMillions);
     }
+}
+
+public sealed class BiologySurveyCreateOptions
+{
+    public bool DrawBodyBiosOnlyWhenNear { get; init; }
+    public bool HighlightRegionalFirsts { get; init; }
+    public bool DimAnalyzedOrganisms { get; init; }
+    public bool HideGeoCount { get; init; }
+    public bool DisablePredictions { get; init; }
+    public BiologyDiscoveryContext? DiscoveryContext { get; init; }
+    public BiologyRewardThresholds? RewardThresholds { get; init; }
+    public BiologyPredictionEvaluator? PredictionEvaluator { get; init; }
+    public ExobiologyReferenceCatalog? ReferenceCatalog { get; init; }
+    public IReadOnlySet<int>? CanonnBiologyBodyIds { get; init; }
+    public bool AllowRetainedCurrentBody { get; init; } = true;
+    public bool ForceSystemOverview { get; init; }
+
+    public BiologySurveyCreateOptions()
+    {
+    }
+
+    public BiologySurveyCreateOptions(
+        bool drawBodyBiosOnlyWhenNear,
+        bool highlightRegionalFirsts,
+        bool dimAnalyzedOrganisms,
+        bool hideGeoCount,
+        bool disablePredictions,
+        BiologyDiscoveryContext? discoveryContext,
+        BiologyRewardThresholds? rewardThresholds)
+    {
+        DrawBodyBiosOnlyWhenNear = drawBodyBiosOnlyWhenNear;
+        HighlightRegionalFirsts = highlightRegionalFirsts;
+        DimAnalyzedOrganisms = dimAnalyzedOrganisms;
+        HideGeoCount = hideGeoCount;
+        DisablePredictions = disablePredictions;
+        DiscoveryContext = discoveryContext;
+        RewardThresholds = rewardThresholds;
+    }
+}
+
+public sealed class BiologySurveySystemOverviewOptions
+{
+    public bool DisablePredictions { get; init; }
+    public BiologyRewardThresholds? RewardThresholds { get; init; }
+    public BiologyPredictionEvaluator? PredictionEvaluator { get; init; }
+    public ExobiologyReferenceCatalog? ReferenceCatalog { get; init; }
+    public int RadicoidaUnicaCount { get; init; }
+    public bool HighlightRegionalFirsts { get; init; }
+    public BiologyDiscoveryContext? DiscoveryContext { get; init; }
+
+    public BiologySurveySystemOverviewOptions(bool disablePredictions)
+    {
+        DisablePredictions = disablePredictions;
+    }
+}
+
+public sealed class BiologySurveyBodyDetailOptions
+{
+    public bool HighlightRegionalFirsts { get; init; }
+    public bool DimAnalyzedOrganisms { get; init; }
+    public bool HideGeoCount { get; init; }
+    public bool DisablePredictions { get; init; }
+    public BiologyDiscoveryContext? DiscoveryContext { get; init; }
+    public BiologyRewardThresholds? RewardThresholds { get; init; }
+    public BiologyPredictionEvaluator? PredictionEvaluator { get; init; }
+    public ExobiologyReferenceCatalog? ReferenceCatalog { get; init; }
+
+    public BiologySurveyBodyDetailOptions(
+        bool highlightRegionalFirsts,
+        bool dimAnalyzedOrganisms,
+        bool hideGeoCount,
+        bool disablePredictions)
+    {
+        HighlightRegionalFirsts = highlightRegionalFirsts;
+        DimAnalyzedOrganisms = dimAnalyzedOrganisms;
+        HideGeoCount = hideGeoCount;
+        DisablePredictions = disablePredictions;
+    }
+}
+
+public sealed class BiologySurveyRewardBandOptions
+{
+    public bool DisablePredictions { get; init; }
+    public BiologyRewardThresholds? RewardThresholds { get; init; }
+    public BiologyPredictionEvaluator? PredictionEvaluator { get; init; }
+    public ExobiologyReferenceCatalog? ReferenceCatalog { get; init; }
+    public bool HighlightRegionalFirsts { get; init; }
+    public BiologyDiscoveryContext? DiscoveryContext { get; init; }
+
+    public BiologySurveyRewardBandOptions(bool disablePredictions)
+    {
+        DisablePredictions = disablePredictions;
+    }
+}
+
+public sealed class BiologySurveySystemBuildOptions
+{
+    public bool HighlightRegionalFirsts { get; init; }
+    public BiologyDiscoveryContext DiscoveryContext { get; init; } =
+        BiologyDiscoveryContext.Unavailable;
+    public bool DisablePredictions { get; init; }
+    public int RadicoidaUnicaCount { get; init; }
+    public BiologyRewardThresholds RewardThresholds { get; init; } =
+        BiologyRewardThresholds.Default;
+    public BiologyPredictionEvaluator PredictionEvaluator { get; init; } =
+        null!;
+    public ExobiologyReferenceCatalog ReferenceCatalog { get; init; } =
+        null!;
+    public IReadOnlySet<int>? CanonnBiologyBodyIds { get; init; }
+}
+
+public sealed class BiologySurveyBodyBuildOptions
+{
+    public bool HighlightRegionalFirsts { get; init; }
+    public bool DimAnalyzedOrganisms { get; init; }
+    public bool HideGeoCount { get; init; }
+    public bool DisablePredictions { get; init; }
+    public BiologyDiscoveryContext DiscoveryContext { get; init; } =
+        BiologyDiscoveryContext.Unavailable;
+    public BiologyRewardThresholds RewardThresholds { get; init; } =
+        BiologyRewardThresholds.Default;
+    public BiologyPredictionEvaluator PredictionEvaluator { get; init; } =
+        null!;
+    public ExobiologyReferenceCatalog ReferenceCatalog { get; init; } =
+        null!;
 }
 
 public sealed record BiologyDiscoveryContext(

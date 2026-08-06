@@ -285,12 +285,14 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
         var overview = BiologySurveyViewModel.CreateSystemOverview(
             snapshot,
             survey.CurrentStatus,
-            survey.DisableBioPredictions,
-            survey.BiologyRewardThresholds,
-            survey.BiologyPredictionEvaluator,
-            survey.BiologyReferenceCatalog,
-            highlightRegionalFirsts: survey.HighlightRegionalFirsts,
-            discoveryContext: survey.CurrentBiologyDiscoveryContext);
+            new BiologySurveySystemOverviewOptions(survey.DisableBioPredictions)
+            {
+                RewardThresholds = survey.BiologyRewardThresholds,
+                PredictionEvaluator = survey.BiologyPredictionEvaluator,
+                ReferenceCatalog = survey.BiologyReferenceCatalog,
+                HighlightRegionalFirsts = survey.HighlightRegionalFirsts,
+                DiscoveryContext = survey.CurrentBiologyDiscoveryContext,
+            });
         if (overview is null)
         {
             SystemName = snapshot.SystemName ?? "No biological signals";
@@ -324,14 +326,17 @@ public sealed class BiologyPredictionsViewModel : INotifyPropertyChanged, IDispo
                 snapshot,
                 body.BodyId,
                 survey.CurrentExobiology,
-                survey.HighlightRegionalFirsts,
-                survey.DimAnalyzedOrganisms,
-                survey.HideGeoCountInBioSystem,
-                survey.DisableBioPredictions,
-                survey.CurrentBiologyDiscoveryContext,
-                survey.BiologyRewardThresholds,
-                survey.BiologyPredictionEvaluator,
-                survey.BiologyReferenceCatalog)!;
+                new BiologySurveyBodyDetailOptions(
+                    survey.HighlightRegionalFirsts,
+                    survey.DimAnalyzedOrganisms,
+                    survey.HideGeoCountInBioSystem,
+                    survey.DisableBioPredictions)
+                {
+                    DiscoveryContext = survey.CurrentBiologyDiscoveryContext,
+                    RewardThresholds = survey.BiologyRewardThresholds,
+                    PredictionEvaluator = survey.BiologyPredictionEvaluator,
+                    ReferenceCatalog = survey.BiologyReferenceCatalog,
+                })!;
             var isExpanded = expandedState.GetValueOrDefault(
                 body.BodyId,
                 !CurrentBodyOnly || row.IsCurrentBody);

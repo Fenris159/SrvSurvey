@@ -1,38 +1,43 @@
 namespace SrvSurvey.Core.Exploration;
 
+public sealed record ExplorationValueRequest(
+    string? BodyClass,
+    bool IsTerraformable,
+    double Mass,
+    bool IsFirstDiscoverer,
+    bool IsMapped,
+    bool IsFirstMapped,
+    bool IsOdyssey,
+    bool WithEfficiencyBonus = true,
+    bool IsFleetCarrierSale = false);
+
 public static class ExplorationValueCalculator
 {
     private const double PlanetValueExponent = 0.56591828;
 
-    public static int Calculate(
-        string? bodyClass,
-        bool isTerraformable,
-        double mass,
-        bool isFirstDiscoverer,
-        bool isMapped,
-        bool isFirstMapped,
-        bool isOdyssey,
-        bool withEfficiencyBonus = true,
-        bool isFleetCarrierSale = false)
+    public static int Calculate(ExplorationValueRequest request)
     {
-        if (string.IsNullOrWhiteSpace(bodyClass))
+        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(request.BodyClass))
         {
             return 0;
         }
 
-        if (IsStar(bodyClass))
+        if (IsStar(request.BodyClass))
         {
-            var starBaseValue = GetStarBaseValue(bodyClass);
+            var starBaseValue = GetStarBaseValue(request.BodyClass);
             return (int)Math.Round(
-                starBaseValue + (mass * starBaseValue / 66.25));
+                starBaseValue + (request.Mass * starBaseValue / 66.25));
         }
 
-        var bodyBaseValue = GetPlanetBaseValue(bodyClass, isTerraformable);
-        var mappingMultiplier = isMapped
-            ? (isFirstDiscoverer && isFirstMapped) switch
+        var bodyBaseValue = GetPlanetBaseValue(
+            request.BodyClass,
+            request.IsTerraformable);
+        var mappingMultiplier = request.IsMapped
+            ? (request.IsFirstDiscoverer && request.IsFirstMapped) switch
             {
                 true => 3.699622554,
-                false => (isFirstMapped) switch
+                false => request.IsFirstMapped switch
                 {
                     true => 8.0956,
                     false => 3.3333333333
@@ -40,25 +45,25 @@ public static class ExplorationValueCalculator
             }
             : 1;
         var value = (bodyBaseValue
-            + bodyBaseValue * PlanetValueExponent * Math.Pow(mass, 0.2))
+            + bodyBaseValue * PlanetValueExponent * Math.Pow(request.Mass, 0.2))
             * mappingMultiplier;
 
-        if (isMapped)
+        if (request.IsMapped)
         {
-            if (isOdyssey)
+            if (request.IsOdyssey)
             {
                 value += Math.Max(value * 0.3, 555);
             }
 
-            if (withEfficiencyBonus)
+            if (request.WithEfficiencyBonus)
             {
                 value *= 1.25;
             }
         }
 
         value = Math.Max(500, value);
-        value *= isFirstDiscoverer ? 2.6 : 1;
-        value *= isFleetCarrierSale ? 0.75 : 1;
+        value *= request.IsFirstDiscoverer ? 2.6 : 1;
+        value *= request.IsFleetCarrierSale ? 0.75 : 1;
         return (int)Math.Round(value);
     }
 

@@ -69,9 +69,9 @@ public sealed class JourneyJournalProcessorTests
         Assert.Equal(1, sol.SubCategories!["Biology"]);
 
         var starReward = ExplorationValueCalculator.Calculate(
-            "G", false, 1, true, false, true, true, false);
+            new ExplorationValueRequest("G", false, 1, true, false, true, true, false));
         var mappedPlanetReward = ExplorationValueCalculator.Calculate(
-            "Earthlike body", false, 1, true, true, true, true, true);
+            new ExplorationValueRequest("Earthlike body", false, 1, true, true, true, true, true));
         Assert.Equal(
             starReward + mappedPlanetReward,
             sol.Counts.ExplorationRewards);
@@ -82,7 +82,7 @@ public sealed class JourneyJournalProcessorTests
     public void CatchUpPrimesOldScanForLaterMappingWithoutRecounting()
     {
         var scanReward = ExplorationValueCalculator.Calculate(
-            "Water world", true, 1.2, true, false, true, true, false);
+            new ExplorationValueRequest("Water world", true, 1.2, true, false, true, true, false));
         var visit = CreateVisit() with
         {
             BodiesScanned = new HashSet<int> { 4 },
@@ -107,7 +107,7 @@ public sealed class JourneyJournalProcessorTests
 
         var counts = result.Journey.CurrentSystem!.Counts;
         var mappedReward = ExplorationValueCalculator.Calculate(
-            "Water world", true, 1.2, true, true, true, true, true);
+            new ExplorationValueRequest("Water world", true, 1.2, true, true, true, true, true));
         Assert.Equal(1, result.ProcessedEventCount);
         Assert.Equal(2, result.IgnoredEventCount);
         Assert.Equal(1, counts.BodyScans);

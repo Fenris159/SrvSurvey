@@ -277,86 +277,127 @@ public sealed class QuestDevelopmentFolderLoader
     private static RavenQuestMessageDefinition ParseMessage(
         LoadedSourceFile file)
     {
+        var parsed = ParseMessageFields(file);
+        return new RavenQuestMessageDefinition
+        {
+            Id = Path.GetFileNameWithoutExtension(file.RelativePath),
+            From = parsed.From,
+            Subject = parsed.Subject,
+            Body = parsed.Body.Count == 0
+                ? string.Empty
+                : string.Join('\n', parsed.Body) + "\n",
+            Actions = parsed.Actions.Count == 0 ? null : parsed.Actions,
+            Tags = parsed.Tags,
+        };
+    }
+
+    private sealed record MessageFields(
+        string From,
+        string? Subject,
+        Dictionary<string, string> Actions,
+        HashSet<string>? Tags,
+        List<string> Body);
+
+    private static MessageFields ParseMessageFields(LoadedSourceFile file)
+    {
         var from = string.Empty;
         string? subject = null;
-        Dictionary<string, string>? actions = [];
+        Dictionary<string, string> actions = [];
         HashSet<string>? tags = null;
         var body = new List<string>();
         var firstBlankLine = true;
         foreach (var line in SplitLines(Decode(file, file.RelativePath)))
         {
-            if (line.StartsWith("from:", StringComparison.OrdinalIgnoreCase))
+            if (TryParseMessageHeader(file, line, ref from, ref subject, actions, ref tags))
             {
-                from = line["from:".Length..].Trim();
+                continue;
             }
-            else if (line.StartsWith(
-                         "subject:",
-                         StringComparison.OrdinalIgnoreCase))
-            {
-                subject = line["subject:".Length..].Trim();
-            }
-            else if (line.StartsWith(
-                         "action:",
-                         StringComparison.OrdinalIgnoreCase))
-            {
-                var value = line["action:".Length..];
-                var separator = value.IndexOf(':', StringComparison.Ordinal);
-                if (separator < 0)
-                {
-                    throw new InvalidDataException(
-                        $"{file.RelativePath} contains an action without an ID and label.");
-                }
 
-                var id = value[..separator].Trim();
-                var label = value[(separator + 1)..].Trim();
-                if (id.Length == 0 || label.Length == 0)
-                {
-                    throw new InvalidDataException(
-                        $"{file.RelativePath} contains an action without an ID and label.");
-                }
-
-                if (!actions.TryAdd(id, label))
-                {
-                    throw new InvalidDataException(
-                        $"{file.RelativePath} defines action '{id}' more than once.");
-                }
-            }
-            else if (line.StartsWith(
-                         "tags:",
-                         StringComparison.OrdinalIgnoreCase))
-            {
-                try
-                {
-                    tags = JsonSerializer.Deserialize<HashSet<string>>(
-                        line["tags:".Length..],
-                        JsonOptions);
-                }
-                catch (JsonException exception)
-                {
-                    throw new InvalidDataException(
-                        $"{file.RelativePath} contains invalid message tags.",
-                        exception);
-                }
-            }
-            else if (line.Length == 0 && firstBlankLine)
+            if (line.Length == 0 && firstBlankLine)
             {
                 firstBlankLine = false;
+                continue;
             }
-            else
-            {
-                body.Add(line);
-            }
+
+            body.Add(line);
         }
 
-        return new RavenQuestMessageDefinition
+        return new MessageFields(from, subject, actions, tags, body);
+    }
+
+    private static bool TryParseMessageHeader(
+        LoadedSourceFile file,
+        string line,
+        ref string from,
+        ref string? subject,
+        Dictionary<string, string> actions,
+        ref HashSet<string>? tags)
+    {
+        if (line.StartsWith("from:", StringComparison.OrdinalIgnoreCase))
         {
-            Id = Path.GetFileNameWithoutExtension(file.RelativePath),
-            From = from,
-            Subject = subject,
-            Body = body.Count == 0 ? string.Empty : string.Join('\n', body) + "\n",
-            Actions = actions.Count == 0 ? null : actions,
-            Tags = tags,
-        };
+            from = line["from:".Length..].Trim();
+            return true;
+        }
+
+        if (line.StartsWith("subject:", StringComparison.OrdinalIgnoreCase))
+        {
+            subject = line["subject:".Length..].Trim();
+            return true;
+        }
+
+        if (line.StartsWith("action:", StringComparison.OrdinalIgnoreCase))
+        {
+            ParseMessageAction(file, line, actions);
+            return true;
+        }
+
+        if (line.StartsWith("tags:", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                tags = JsonSerializer.Deserialize<HashSet<string>>(
+                    line["tags:".Length..],
+                    JsonOptions);
+            }
+            catch (JsonException exception)
+            {
+                throw new InvalidDataException(
+                    $"{file.RelativePath} contains invalid message tags.",
+                    exception);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void ParseMessageAction(
+        LoadedSourceFile file,
+        string line,
+        Dictionary<string, string> actions)
+    {
+        var value = line["action:".Length..];
+        var separator = value.IndexOf(':', StringComparison.Ordinal);
+        if (separator < 0)
+        {
+            throw new InvalidDataException(
+                $"{file.RelativePath} contains an action without an ID and label.");
+        }
+
+        var id = value[..separator].Trim();
+        var label = value[(separator + 1)..].Trim();
+        if (id.Length == 0 || label.Length == 0)
+        {
+            throw new InvalidDataException(
+                $"{file.RelativePath} contains an action without an ID and label.");
+        }
+
+        if (!actions.TryAdd(id, label))
+        {
+            throw new InvalidDataException(
+                $"{file.RelativePath} defines action '{id}' more than once.");
+        }
     }
 
     private static IEnumerable<string> SplitLines(string value)

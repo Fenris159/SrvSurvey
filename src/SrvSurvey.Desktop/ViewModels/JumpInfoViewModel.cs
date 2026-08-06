@@ -257,33 +257,26 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(IsQuestTagged));
     }
 
-    public void ApplyUpdate(
-        string? nextCurrentSystemName,
-        long? nextCurrentSystemAddress,
-        GalacticCoordinate? nextCurrentPosition,
-        NavRouteSnapshot? nextNavRoute,
-        IReadOnlyList<JournalEventEnvelope> journalEvents,
-        EliteStatus? nextStatus,
-        FollowRouteDocument? nextFollowedRoute,
-        bool isBootstrapRead = false)
+    public void ApplyUpdate(JumpInfoApplyUpdateRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
         ObjectDisposedException.ThrowIf(disposed, this);
-        ArgumentNullException.ThrowIfNull(journalEvents);
-        currentSystemName = nextCurrentSystemName;
-        currentSystemAddress = nextCurrentSystemAddress;
-        currentPosition = nextCurrentPosition;
-        followedRoute = nextFollowedRoute;
-        if (nextNavRoute is not null)
+        ArgumentNullException.ThrowIfNull(request.JournalEvents);
+        currentSystemName = request.CurrentSystemName;
+        currentSystemAddress = request.CurrentSystemAddress;
+        currentPosition = request.CurrentPosition;
+        followedRoute = request.FollowedRoute;
+        if (request.NavRoute is not null)
         {
-            navRoute = nextNavRoute;
+            navRoute = request.NavRoute;
         }
 
-        if (nextStatus is not null)
+        if (request.Status is not null)
         {
-            status = nextStatus;
+            status = request.Status;
         }
 
-        ApplyJournalEvents(journalEvents, isBootstrapRead);
+        ApplyJournalEvents(request.JournalEvents, request.IsBootstrapRead);
         RefreshPlan();
     }
 
@@ -389,14 +382,15 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     {
         var previousTarget = routePlan?.Target;
         routePlan = JumpInfoRoutePlanner.Create(
-            fsdTarget,
-            status,
-            currentSystemName,
-            currentSystemAddress,
-            currentPosition,
-            navRoute,
-            followedRoute,
-            maximumJumpRange);
+            new JumpInfoRoutePlannerRequest(
+                fsdTarget,
+                status,
+                currentSystemName,
+                currentSystemAddress,
+                currentPosition,
+                navRoute,
+                followedRoute,
+                maximumJumpRange));
         RaisePlanProperties();
 
         var nextTarget = routePlan?.Target;
@@ -509,70 +503,9 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
                     string.Join(" \u2022 ", special.Details))));
         }
 
-        if (routePlan?.Target is { } target)
-        {
-            var sites = target.SystemAddress > 0
-                ? guardianSites.FindBySystemAddress(target.SystemAddress)
-                : [];
-            var ruins = sites.Count(site => site.Kind == GuardianSiteKind.Ruins);
-            var structures = sites.Count(
-                site => site.Kind == GuardianSiteKind.Structure);
-            var beacons = sites.Count(site => site.Kind == GuardianSiteKind.Beacon);
-            var guardianDetails = new List<string>();
-            if (ruins > 0)
-            {
-                guardianDetails.Add($"{ruins:N0} ruins");
-            }
-
-            if (structures > 0)
-            {
-                guardianDetails.Add($"{structures:N0} structures");
-            }
-
-            if (beacons > 0)
-            {
-                guardianDetails.Add($"{beacons:N0} beacon{(beacons == 1 ? string.Empty : "s")}");
-            }
-
-            if (guardianDetails.Count > 0)
-            {
-                lines.Add(new JumpInfoDetailLineViewModel(
-                    "Guardian",
-                    string.Join(" \u2022 ", guardianDetails)));
-            }
-
-            var nextHop = followedRoute?.NextHop;
-            if (nextHop is not null && MatchesTarget(nextHop, target))
-            {
-                var routeDetails = new List<string>
-                {
-                    $"Hop {(followedRoute!.LastReachedIndex + 2):N0} of "
-                        + $"{followedRoute.Hops.Count:N0}",
-                };
-                if (!string.IsNullOrWhiteSpace(nextHop.Notes))
-                {
-                    routeDetails.Add(nextHop.Notes);
-                }
-
-                lines.Add(new JumpInfoDetailLineViewModel(
-                    "Followed route",
-                    string.Join(" \u2022 ", routeDetails),
-                    nextHop.Refuel,
-                    nextHop.Neutron));
-            }
-
-            var targetPosition = routePlan.TargetPosition ?? summary?.Position;
-            if (currentPosition is { } origin
-                && targetPosition is { } destination
-                && GalacticRegionMap.Find(origin) is { } currentRegion
-                && GalacticRegionMap.Find(destination) is { } nextRegion
-                && currentRegion.Id != nextRegion.Id)
-            {
-                lines.Add(new JumpInfoDetailLineViewModel(
-                    "Now entering",
-                    nextRegion.Name));
-            }
-        }
+        AppendGuardianSiteDetails(lines);
+        AppendFollowedRouteDetails(lines);
+        AppendRegionDetails(lines);
 
         DetailLines = lines;
         OnPropertyChanged(nameof(HasDetailLines));
@@ -580,6 +513,99 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         OnPropertyChanged(nameof(HasNeutronGuidance));
         OnPropertyChanged(nameof(HasRouteGuidanceBadges));
         OnPropertyChanged(nameof(HasDiscoveryOrRouteGuidance));
+    }
+
+    private void AppendGuardianSiteDetails(
+        List<JumpInfoDetailLineViewModel> lines)
+    {
+        if (routePlan?.Target is not { } target)
+        {
+            return;
+        }
+
+        var sites = target.SystemAddress > 0
+            ? guardianSites.FindBySystemAddress(target.SystemAddress)
+            : [];
+        var ruins = sites.Count(site => site.Kind == GuardianSiteKind.Ruins);
+        var structures = sites.Count(
+            site => site.Kind == GuardianSiteKind.Structure);
+        var beacons = sites.Count(site => site.Kind == GuardianSiteKind.Beacon);
+        var guardianDetails = new List<string>();
+        if (ruins > 0)
+        {
+            guardianDetails.Add($"{ruins:N0} ruins");
+        }
+
+        if (structures > 0)
+        {
+            guardianDetails.Add($"{structures:N0} structures");
+        }
+
+        if (beacons > 0)
+        {
+            guardianDetails.Add(
+                $"{beacons:N0} beacon{(beacons == 1 ? string.Empty : "s")}");
+        }
+
+        if (guardianDetails.Count > 0)
+        {
+            lines.Add(new JumpInfoDetailLineViewModel(
+                "Guardian",
+                string.Join(" \u2022 ", guardianDetails)));
+        }
+    }
+
+    private void AppendFollowedRouteDetails(
+        List<JumpInfoDetailLineViewModel> lines)
+    {
+        if (routePlan?.Target is not { } target)
+        {
+            return;
+        }
+
+        var nextHop = followedRoute?.NextHop;
+        if (nextHop is null || !MatchesTarget(nextHop, target))
+        {
+            return;
+        }
+
+        var routeDetails = new List<string>
+        {
+            $"Hop {(followedRoute!.LastReachedIndex + 2):N0} of "
+                + $"{followedRoute.Hops.Count:N0}",
+        };
+        if (!string.IsNullOrWhiteSpace(nextHop.Notes))
+        {
+            routeDetails.Add(nextHop.Notes);
+        }
+
+        lines.Add(new JumpInfoDetailLineViewModel(
+            "Followed route",
+            string.Join(" \u2022 ", routeDetails),
+            nextHop.Refuel,
+            nextHop.Neutron));
+    }
+
+    private void AppendRegionDetails(List<JumpInfoDetailLineViewModel> lines)
+    {
+        if (routePlan is null)
+        {
+            return;
+        }
+
+        var targetPosition = routePlan.TargetPosition ?? summary?.Position;
+        if (currentPosition is not { } origin
+            || targetPosition is not { } destination
+            || GalacticRegionMap.Find(origin) is not { } currentRegion
+            || GalacticRegionMap.Find(destination) is not { } nextRegion
+            || currentRegion.Id == nextRegion.Id)
+        {
+            return;
+        }
+
+        lines.Add(new JumpInfoDetailLineViewModel(
+            "Now entering",
+            nextRegion.Name));
     }
 
     private bool IsSelectedFollowedRouteHop()
@@ -791,6 +817,16 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
+
+public sealed record JumpInfoApplyUpdateRequest(
+    string? CurrentSystemName,
+    long? CurrentSystemAddress,
+    GalacticCoordinate? CurrentPosition,
+    NavRouteSnapshot? NavRoute,
+    IReadOnlyList<JournalEventEnvelope> JournalEvents,
+    EliteStatus? Status,
+    FollowRouteDocument? FollowedRoute,
+    bool IsBootstrapRead = false);
 
 public sealed record JumpInfoDetailLineViewModel(
     string Label,

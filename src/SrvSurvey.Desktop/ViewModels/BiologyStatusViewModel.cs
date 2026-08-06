@@ -126,24 +126,12 @@ public sealed record BiologyStatusViewModel(
             options.CodexNotification?.BodyId == body.BodyId
                 ? options.CodexNotification
                 : null;
-        var footer = string.Empty;
-        if (activeSample is null && !isStaleActiveSample)
-        {
-            if (allAnalyzed && body.IsFirstFootfall)
-            {
-                footer = "All signals analyzed with the first-footfall bonus applied.";
-            }
-            else if (currentNotification is not null)
-            {
-                footer = currentNotification.SummaryText;
-            }
-            else if (body.Organisms.Count > 0)
-            {
-                footer = body.IsFirstFootfall
-                    ? "First-footfall rewards apply to analyzed organisms."
-                    : "Use the Composition Scanner to identify organisms.";
-            }
-        }
+        var footer = BiologyStatusFooter.Build(
+            body,
+            activeSample,
+            isStaleActiveSample,
+            allAnalyzed,
+            currentNotification);
 
         return new BiologyStatusViewModel(
             body.BodyId,
@@ -367,6 +355,41 @@ public readonly record struct BiologyStatusCreateOptions(
     bool ShowTemperatureRangeDebug = false,
     BiologyPredictionEvaluator? PredictionEvaluator = null,
     bool AllowRetainedCurrentBody = true);
+
+internal static class BiologyStatusFooter
+{
+    public static string Build(
+        SystemScanBodySnapshot body,
+        BiologyActiveSampleViewModel? activeSample,
+        bool isStaleActiveSample,
+        bool allAnalyzed,
+        BiologyCodexNotificationViewModel? currentNotification)
+    {
+        if (activeSample is not null || isStaleActiveSample)
+        {
+            return string.Empty;
+        }
+
+        if (allAnalyzed && body.IsFirstFootfall)
+        {
+            return "All signals analyzed with the first-footfall bonus applied.";
+        }
+
+        if (currentNotification is not null)
+        {
+            return currentNotification.SummaryText;
+        }
+
+        if (body.Organisms.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return body.IsFirstFootfall
+            ? "First-footfall rewards apply to analyzed organisms."
+            : "Use the Composition Scanner to identify organisms.";
+    }
+}
 
 public sealed record BiologyCodexNotificationViewModel(
     long EntryId,

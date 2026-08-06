@@ -52,45 +52,12 @@ public sealed class HumanSiteActivityTracker
             commanderOffset.Value,
             status.NormalizedHeading,
             site.Heading.Value);
-        var terminalsChanged = false;
-        var added = Array.Empty<HumanSiteCollectedMaterial>();
-        if (journalEvent.EventName == "BackpackChange")
-        {
-            var dataItems = ReadAddedItems(journalEvent.Payload)
-                .Where(item => string.Equals(
-                    item.Type,
-                    "Data",
-                    StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-            if (dataItems.Length > 0)
-            {
-                terminalsChanged = MarkClosestTerminal(
-                    site,
-                    commanderOffset.Value);
-                if (trackMaterialCollection)
-                {
-                    added = dataItems
-                        .Select(item => CreateMaterial(
-                            item,
-                            collectionOffset,
-                            journalEvent.Timestamp))
-                        .ToArray();
-                }
-            }
-        }
-        else if (journalEvent.EventName == "CollectItems"
-            && trackMaterialCollection
-            && ReadCollectedItem(journalEvent.Payload) is { } item
-            && !string.Equals(
-                item.Type,
-                "Data",
-                StringComparison.OrdinalIgnoreCase))
-        {
-            added =
-            [
-                CreateMaterial(item, collectionOffset, journalEvent.Timestamp),
-            ];
-        }
+        var (terminalsChanged, added) = ApplyCollectionEvents(
+            journalEvent,
+            site,
+            commanderOffset.Value,
+            collectionOffset,
+            trackMaterialCollection);
 
         if (added.Length > 0)
         {
@@ -107,6 +74,72 @@ public sealed class HumanSiteActivityTracker
             reset,
             terminalsChanged,
             added);
+    }
+
+    private (bool TerminalsChanged, HumanSiteCollectedMaterial[] Added)
+        ApplyCollectionEvents(
+            JournalEventEnvelope journalEvent,
+            HumanSiteLiveSnapshot site,
+            HumanSiteMapPoint commanderOffset,
+            HumanSiteMapPoint collectionOffset,
+            bool trackMaterialCollection)
+    {
+        if (journalEvent.EventName == "BackpackChange")
+        {
+            return ApplyBackpackChange(
+                journalEvent,
+                site,
+                commanderOffset,
+                collectionOffset,
+                trackMaterialCollection);
+        }
+
+        if (journalEvent.EventName == "CollectItems"
+            && trackMaterialCollection
+            && ReadCollectedItem(journalEvent.Payload) is { } item
+            && !string.Equals(
+                item.Type,
+                "Data",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return (false,
+            [
+                CreateMaterial(item, collectionOffset, journalEvent.Timestamp),
+            ]);
+        }
+
+        return (false, []);
+    }
+
+    private (bool TerminalsChanged, HumanSiteCollectedMaterial[] Added)
+        ApplyBackpackChange(
+            JournalEventEnvelope journalEvent,
+            HumanSiteLiveSnapshot site,
+            HumanSiteMapPoint commanderOffset,
+            HumanSiteMapPoint collectionOffset,
+            bool trackMaterialCollection)
+    {
+        var dataItems = ReadAddedItems(journalEvent.Payload)
+            .Where(item => string.Equals(
+                item.Type,
+                "Data",
+                StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        if (dataItems.Length == 0)
+        {
+            return (false, []);
+        }
+
+        var terminalsChanged = MarkClosestTerminal(site, commanderOffset);
+        var added = trackMaterialCollection
+            ? dataItems
+                .Select(item => CreateMaterial(
+                    item,
+                    collectionOffset,
+                    journalEvent.Timestamp))
+                .ToArray()
+            : [];
+        return (terminalsChanged, added);
     }
 
     public bool ReplaceCollectedMaterials(

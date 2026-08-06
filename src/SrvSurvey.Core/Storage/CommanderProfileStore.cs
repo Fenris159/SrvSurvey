@@ -15,6 +15,8 @@ namespace SrvSurvey.Core.Storage;
     Justification = "The store is profile-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class CommanderProfileStore(string profileDirectory)
 {
+    private const string ActiveProperty = "active";
+    private const string RadiusProperty = "radius";
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         WriteIndented = true,
@@ -381,10 +383,10 @@ public sealed class CommanderProfileStore(string profileDirectory)
             return SphereLimitSnapshot.Empty;
         }
 
-        var radius = GetDouble(sphere, "radius")
+        var radius = GetDouble(sphere, RadiusProperty)
             ?? SphereLimitState.DefaultRadius;
         return new SphereLimitSnapshot(
-            GetBoolean(sphere, "active") ?? false,
+            GetBoolean(sphere, ActiveProperty) ?? false,
             GetString(sphere, "centerSystemName"),
             ReadGalacticCoordinate(sphere, "centerStarPos"),
             radius);
@@ -408,7 +410,7 @@ public sealed class CommanderProfileStore(string profileDirectory)
             ? 'c'
             : char.ToLowerInvariant(lowMassCodeText[0]);
         return new BoxelSearchSnapshot(
-            GetBoolean(boxelSearch, "active") ?? false,
+            GetBoolean(boxelSearch, ActiveProperty) ?? false,
             topBoxel,
             GetDateTimeOffset(boxelSearch, "startedOn")
                 ?? DateTimeOffset.MinValue,
@@ -506,12 +508,12 @@ public sealed class CommanderProfileStore(string profileDirectory)
             root["sphereLimit"] = node;
         }
 
-        node["active"] = sphereLimit.Active;
+        node[ActiveProperty] = sphereLimit.Active;
         node["centerSystemName"] = sphereLimit.CenterSystemName;
         node["centerStarPos"] = sphereLimit.Center is { } center
             ? new JsonArray(center.X, center.Y, center.Z)
             : null;
-        node["radius"] = sphereLimit.Radius;
+        node[RadiusProperty] = sphereLimit.Radius;
     }
 
     private static void WriteBoxelSearch(
@@ -530,7 +532,7 @@ public sealed class CommanderProfileStore(string profileDirectory)
             root["boxelSearch"] = node;
         }
 
-        node["active"] = boxelSearch.Active;
+        node[ActiveProperty] = boxelSearch.Active;
         node["startedOn"] = boxelSearch.StartedOn;
         node["boxel"] = boxelSearch.TopBoxel.ToStoredString();
         node["current"] = boxelSearch.Current?.ToStoredString();
@@ -615,7 +617,7 @@ public sealed class CommanderProfileStore(string profileDirectory)
             new SurfaceLocation(
                 location is null ? 0 : GetDouble(location, "lat") ?? 0,
                 location is null ? 0 : GetDouble(location, "long") ?? 0),
-            (float)(GetDouble(sample, "radius") ?? 0),
+            (float)(GetDouble(sample, RadiusProperty) ?? 0),
             GetString(sample, "genus") ?? string.Empty,
             GetString(sample, "species") ?? string.Empty,
             GetString(sample, "status") ?? "Active",
@@ -667,7 +669,7 @@ public sealed class CommanderProfileStore(string profileDirectory)
 
         location["lat"] = sample.Location.Latitude;
         location["long"] = sample.Location.Longitude;
-        node["radius"] = sample.Radius;
+        node[RadiusProperty] = sample.Radius;
         node["genus"] = sample.Genus;
         node["species"] = sample.Species;
         node["status"] = sample.Status;

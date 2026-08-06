@@ -35,20 +35,31 @@ public sealed record JumpInfoRoutePlan(
     public double TotalDistanceLy => Legs.Sum(leg => leg.DistanceLy);
 }
 
+public sealed record JumpInfoRoutePlannerRequest(
+    JumpTarget? FsdTarget,
+    EliteStatus? Status,
+    string? CurrentSystemName,
+    long? CurrentSystemAddress,
+    GalacticCoordinate? CurrentPosition,
+    NavRouteSnapshot? NavRoute,
+    FollowRouteDocument? FollowedRoute,
+    double? MaximumJumpRange = null);
+
 public static class JumpInfoRoutePlanner
 {
     private const string ScoopableStarClasses = "KGBFOAM";
 
-    public static JumpInfoRoutePlan? Create(
-        JumpTarget? fsdTarget,
-        EliteStatus? status,
-        string? currentSystemName,
-        long? currentSystemAddress,
-        GalacticCoordinate? currentPosition,
-        NavRouteSnapshot? navRoute,
-        FollowRouteDocument? followedRoute,
-        double? maximumJumpRange = null)
+    public static JumpInfoRoutePlan? Create(JumpInfoRoutePlannerRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        var fsdTarget = request.FsdTarget;
+        var status = request.Status;
+        var currentSystemName = request.CurrentSystemName;
+        var currentSystemAddress = request.CurrentSystemAddress;
+        var currentPosition = request.CurrentPosition;
+        var navRoute = request.NavRoute;
+        var followedRoute = request.FollowedRoute;
+        var maximumJumpRange = request.MaximumJumpRange;
         var target = SelectTarget(fsdTarget, status);
         if (target is null)
         {

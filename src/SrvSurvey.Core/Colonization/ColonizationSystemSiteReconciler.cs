@@ -23,94 +23,24 @@ public static class ColonizationSystemSiteReconciler
 
         foreach (var local in edited)
         {
-            var original = FindMatch(baseline, local);
-            if (original is null)
-            {
-                var concurrent = FindMatch(latest, local);
-                if (concurrent is null)
-                {
-                    updates.Add(Clone(local));
-                }
-                else if (KnownFieldsEqual(concurrent, local))
-                {
-                    unchanged++;
-                }
-                else
-                {
-                    conflicts.Add(new ColonizationSystemSiteConflict(
-                        DisplayIdentity(local),
-                        "site",
-                        "The site was also added remotely with different values."));
-                }
-
-                continue;
-            }
-
-            var remote = FindMatch(latest, original)
-                ?? FindMatch(latest, local);
-            if (remote is null)
-            {
-                conflicts.Add(new ColonizationSystemSiteConflict(
-                    DisplayIdentity(local),
-                    "site",
-                    "The site was removed remotely after this workspace opened."));
-                continue;
-            }
-
-            var merge = MergeChangedFields(original, remote, local);
-            if (merge.Conflicts.Count > 0)
-            {
-                conflicts.AddRange(merge.Conflicts.Select(field =>
-                    new ColonizationSystemSiteConflict(
-                        DisplayIdentity(local),
-                        field,
-                        "Both the local workspace and Raven changed this field.")));
-                continue;
-            }
-
-            if (!merge.HasLocalChanges || KnownFieldsEqual(remote, merge.Site))
-            {
-                unchanged++;
-            }
-            else
-            {
-                updates.Add(merge.Site);
-            }
+            ApplyEditedSite(
+                local,
+                baseline,
+                latest,
+                updates,
+                conflicts,
+                ref unchanged);
         }
 
         foreach (var original in baseline)
         {
-            if (FindMatch(edited, original) is not null)
-            {
-                continue;
-            }
-
-            var remote = FindMatch(latest, original);
-            if (remote is null)
-            {
-                unchanged++;
-                continue;
-            }
-
-            if (!AllFieldsEqual(original, remote))
-            {
-                conflicts.Add(new ColonizationSystemSiteConflict(
-                    DisplayIdentity(original),
-                    "delete",
-                    "The site changed remotely and was not scheduled for deletion."));
-                continue;
-            }
-
-            if (string.IsNullOrWhiteSpace(original.Id))
-            {
-                conflicts.Add(new ColonizationSystemSiteConflict(
-                    DisplayIdentity(original),
-                    "delete",
-                    "A persisted Raven site ID is required for deletion."));
-                continue;
-            }
-
-            deletes.Add(original.Id);
+            ApplyDeletedBaselineSite(
+                original,
+                latest,
+                edited,
+                deletes,
+                conflicts,
+                ref unchanged);
         }
 
         return new ColonizationSystemSiteReconciliationPlan(
@@ -200,6 +130,119 @@ public static class ColonizationSystemSiteReconciler
             },
             changed,
             conflicts);
+    }
+
+    private static void ApplyEditedSite(
+        ColonizationSystemSite local,
+        IReadOnlyList<ColonizationSystemSite> baseline,
+        IReadOnlyList<ColonizationSystemSite> latest,
+        List<ColonizationSystemSite> updates,
+        List<ColonizationSystemSiteConflict> conflicts,
+        ref int unchanged)
+    {
+        var original = FindMatch(baseline, local);
+        if (original is null)
+        {
+            ApplyNewEditedSite(local, latest, updates, conflicts, ref unchanged);
+            return;
+        }
+
+        var remote = FindMatch(latest, original)
+            ?? FindMatch(latest, local);
+        if (remote is null)
+        {
+            conflicts.Add(new ColonizationSystemSiteConflict(
+                DisplayIdentity(local),
+                "site",
+                "The site was removed remotely after this workspace opened."));
+            return;
+        }
+
+        var merge = MergeChangedFields(original, remote, local);
+        if (merge.Conflicts.Count > 0)
+        {
+            conflicts.AddRange(merge.Conflicts.Select(field =>
+                new ColonizationSystemSiteConflict(
+                    DisplayIdentity(local),
+                    field,
+                    "Both the local workspace and Raven changed this field.")));
+            return;
+        }
+
+        if (!merge.HasLocalChanges || KnownFieldsEqual(remote, merge.Site))
+        {
+            unchanged++;
+        }
+        else
+        {
+            updates.Add(merge.Site);
+        }
+    }
+
+    private static void ApplyNewEditedSite(
+        ColonizationSystemSite local,
+        IReadOnlyList<ColonizationSystemSite> latest,
+        List<ColonizationSystemSite> updates,
+        List<ColonizationSystemSiteConflict> conflicts,
+        ref int unchanged)
+    {
+        var concurrent = FindMatch(latest, local);
+        if (concurrent is null)
+        {
+            updates.Add(Clone(local));
+        }
+        else if (KnownFieldsEqual(concurrent, local))
+        {
+            unchanged++;
+        }
+        else
+        {
+            conflicts.Add(new ColonizationSystemSiteConflict(
+                DisplayIdentity(local),
+                "site",
+                "The site was also added remotely with different values."));
+        }
+    }
+
+    private static void ApplyDeletedBaselineSite(
+        ColonizationSystemSite original,
+        IReadOnlyList<ColonizationSystemSite> latest,
+        IReadOnlyList<ColonizationSystemSite> edited,
+        List<string> deletes,
+        List<ColonizationSystemSiteConflict> conflicts,
+        ref int unchanged)
+    {
+        if (FindMatch(edited, original) is not null)
+        {
+            return;
+        }
+
+        var remote = FindMatch(latest, original);
+        if (remote is null)
+        {
+            unchanged++;
+            return;
+        }
+
+        if (!AllFieldsEqual(original, remote))
+        {
+            conflicts.Add(new ColonizationSystemSiteConflict(
+                DisplayIdentity(original),
+                "delete",
+                "The site changed remotely and was not scheduled for deletion."));
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(original.Id))
+        {
+            conflicts.Add(new ColonizationSystemSiteConflict(
+                DisplayIdentity(original),
+                "delete",
+                "A persisted Raven site ID is required for deletion."));
+            return;
+        }
+
+        deletes.Add(original.Id);
     }
 
     private static T Merge<T>(

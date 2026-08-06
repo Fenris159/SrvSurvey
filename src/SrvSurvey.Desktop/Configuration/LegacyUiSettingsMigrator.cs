@@ -12,6 +12,9 @@ public sealed class LegacyUiSettingsMigrator
         "buildProjectsSuppressOtherOverlays";
     private const string SuppressForActiveBuildProjectsProperty =
         "SuppressForActiveBuildProjects";
+    private const string FirstFootfallInferenceSection = "FirstFootfallInference";
+    private const string EnabledProperty = "Enabled";
+    private const string AutoShowProperty = "AutoShow";
 
     public const string BackupFileName = "previous-cross-platform-ui.json";
 
@@ -63,14 +66,14 @@ public sealed class LegacyUiSettingsMigrator
                 mappedCount += MapTheme(legacy, root);
                 mappedCount += MapSection(legacy, root, "JumpInfo",
                 [
-                    ("autoShowPlotJumpInfo", "AutoShow"),
+                    ("autoShowPlotJumpInfo", AutoShowProperty),
                     ("plotJumpInfoMinimal", "Minimal"),
                     ("showPlotJumpInfoIfNextHop", "ShowWhenNextHopSelected"),
                     ("useLastUpdatedFromSpanshNotEDSM", "UseSpanshLastUpdated"),
                 ]);
                 mappedCount += MapSection(legacy, root, "GalaxyMap",
                 [
-                    ("autoShowPlotGalMap", "AutoShow"),
+                    ("autoShowPlotGalMap", AutoShowProperty),
                     ("galMapFactions", "ShowFactions"),
                 ]);
                 mappedCount += MapPulseOverlay(legacy, root);
@@ -196,7 +199,7 @@ public sealed class LegacyUiSettingsMigrator
                 ]);
                 mappedCount += MapSection(legacy, root, "HumanSite",
                 [
-                    ("autoShowHumanSitesTest", "AutoShow"),
+                    ("autoShowHumanSitesTest", AutoShowProperty),
                     ("plotHumanSiteWidth", "Width"),
                     ("plotHumanSiteHeight", "Height"),
                     ("humanSiteZoomShip", "ShipZoom"),
@@ -215,19 +218,19 @@ public sealed class LegacyUiSettingsMigrator
                 ]);
                 mappedCount += MapSection(legacy, root, "StationInfo",
                 [
-                    ("autoShowPlotStationInfo_TEST", "AutoShow"),
+                    ("autoShowPlotStationInfo_TEST", AutoShowProperty),
                 ]);
                 mappedCount += MapSection(legacy, root, "SystemNicknames",
                 [
-                    ("useSystemNickNames", "Enabled"),
+                    ("useSystemNickNames", EnabledProperty),
                 ]);
                 mappedCount += MapSection(legacy, root, "Quests",
                 [
-                    ("enableQuests", "Enabled"),
+                    ("enableQuests", EnabledProperty),
                 ]);
                 mappedCount += MapSection(legacy, root, "Screenshots",
                 [
-                    ("processScreenshots", "Enabled"),
+                    ("processScreenshots", EnabledProperty),
                     ("addBannerToScreenshots", "AddBanner"),
                     ("deleteScreenshotOriginal", "DeleteOriginal"),
                     ("useGuardianAerialScreenshotsFolder", "UseGuardianAerialFolder"),
@@ -248,7 +251,7 @@ public sealed class LegacyUiSettingsMigrator
                 ]);
                 mappedCount += MapSection(legacy, root, "VirtualReality",
                 [
-                    ("displayVR", "Enabled"),
+                    ("displayVR", EnabledProperty),
                     ("vrProcessName", "RuntimeProcessName"),
                 ]);
                 mappedCount += MapSection(legacy, root, "NetworkPrivacy",
@@ -326,8 +329,8 @@ public sealed class LegacyUiSettingsMigrator
             ("CommanderPreference", "preferredCommander", "PreferredCommanderName"),
             ("GuardianGestures", "blinkTigger", "BlinkTrigger"),
             ("GuardianGestures", "blinkDuration", "BlinkDurationMilliseconds"),
-            ("FirstFootfallInference", "inferTolerance", "Tolerance"),
-            ("FirstFootfallInference", "inferThreshold", "Threshold"),
+            (FirstFootfallInferenceSection, "inferTolerance", "Tolerance"),
+            (FirstFootfallInferenceSection, "inferThreshold", "Threshold"),
             ("OverlayBehavior", "hideMultiFloatie", "HideMultiGameCommanderOverlay"),
             ("RavenService", "buildProjectsUrl_TEST", "ServiceUri"),
             ("JumpInfo", "useLastUpdatedFromSpanshNotEDSM", "UseSpanshLastUpdated"),
@@ -340,7 +343,7 @@ public sealed class LegacyUiSettingsMigrator
                 || !section.ContainsKey(mapping.Current)))
             .ToArray();
         var shouldMapColor = legacy["inferColor"] is JsonObject
-            && (existing["FirstFootfallInference"] is not JsonObject inference
+            && (existing[FirstFootfallInferenceSection] is not JsonObject inference
                 || !inference.ContainsKey("Color"));
         var shouldMapOverlayScale = legacy["plotterScale"] is not null
             && (existing["OverlayScale"] is not JsonObject overlayScale
@@ -383,7 +386,7 @@ public sealed class LegacyUiSettingsMigrator
         JsonObject legacy,
         JsonObject target)
     {
-        var section = GetOrCreateObject(target, "FirstFootfallInference");
+        var section = GetOrCreateObject(target, FirstFootfallInferenceSection);
         var count = Copy(legacy, "inferTolerance", section, "Tolerance");
         count += Copy(legacy, "inferThreshold", section, "Threshold");
         count += MapFirstFootfallColor(legacy, target);
@@ -440,7 +443,7 @@ public sealed class LegacyUiSettingsMigrator
             return 0;
         }
 
-        var section = GetOrCreateObject(target, "FirstFootfallInference");
+        var section = GetOrCreateObject(target, FirstFootfallInferenceSection);
         var color = GetOrCreateObject(section, "Color");
         var count = Copy(source, "R", color, "Red");
         count += Copy(source, "G", color, "Green");
@@ -610,11 +613,11 @@ public sealed class LegacyUiSettingsMigrator
             "FssTuningDetector");
         if (legacyDetector is not JsonObject source)
         {
-            detector["Enabled"] = false;
+            detector[EnabledProperty] = false;
             return 1;
         }
 
-        detector["Enabled"] = true;
+        detector[EnabledProperty] = true;
         var count = 1;
         count += Copy(
             source,
@@ -657,14 +660,14 @@ public sealed class LegacyUiSettingsMigrator
     {
         var count = 0;
         var section = GetOrCreateObject(target, "Colonization");
-        count += Copy(legacy, "buildProjects_TEST", section, "Enabled");
+        count += Copy(legacy, "buildProjects_TEST", section, EnabledProperty);
         count += Copy(
             legacy,
             "buildProjectsTrackShipCargo",
             section,
             "ShipCargoPublishingEnabled");
         var overlay = GetOrCreateObject(section, "Overlay");
-        count += Copy(legacy, "autoShowPlotBuildCommodities", overlay, "AutoShow");
+        count += Copy(legacy, "autoShowPlotBuildCommodities", overlay, AutoShowProperty);
         count += Copy(legacy, "buildProjectsOnRightScreen", overlay, "ShowOnRightPanel");
         count += Copy(legacy, "buildProjectsShowSumFC_TEST", overlay, "ShowFleetCarrierCargo");
         count += Copy(legacy, "buildProjectsShowSumFCDelta_TEST", overlay, "ShowFleetCarrierDelta");
@@ -677,7 +680,7 @@ public sealed class LegacyUiSettingsMigrator
     private static int MapNotifications(JsonObject legacy, JsonObject target)
     {
         var section = GetOrCreateObject(target, "Notifications");
-        var count = Copy(legacy, "autoShowFloatie_TEST", section, "Enabled");
+        var count = Copy(legacy, "autoShowFloatie_TEST", section, EnabledProperty);
         if (legacy["allowNotifications"] is not JsonObject notifications)
         {
             return count;
@@ -738,7 +741,7 @@ public sealed class LegacyUiSettingsMigrator
             return 0;
         }
 
-        GetOrCreateObject(target, "PulseOverlay")["Enabled"] = !hidden;
+        GetOrCreateObject(target, "PulseOverlay")[EnabledProperty] = !hidden;
         return 1;
     }
 

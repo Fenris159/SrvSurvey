@@ -2971,28 +2971,24 @@ public sealed class MainWindowViewModelTests
         public List<bool> SuspensionStates { get; } = [];
 
         public Task<EddnPublicationResult> ApplyAsync(
-            IReadOnlyList<JournalEventEnvelope> journalEvents,
-            EliteStatus? status,
-            bool enabled,
-            bool useTestSchemas,
-            bool allowPublishing,
-            string? journalDirectory = null,
-            string? journalPath = null,
-            bool allowSharedData = true,
+            EddnApplyRequest request,
             CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(request);
             Calls.Add(new EddnCall(
-                journalEvents.ToArray(),
-                enabled,
-                useTestSchemas,
-                allowPublishing,
-                allowSharedData));
+                request.JournalEvents.ToArray(),
+                request.Enabled,
+                request.UseTestSchemas,
+                request.AllowPublishing,
+                request.AllowSharedData));
             IReadOnlyList<EddnPublishedEvent> published =
-                enabled && allowPublishing && journalEvents.Count > 0
+                request.Enabled
+                    && request.AllowPublishing
+                    && request.JournalEvents.Count > 0
                     ? [new EddnPublishedEvent(
-                        journalEvents[0].EventName,
+                        request.JournalEvents[0].EventName,
                         "https://eddn.edcd.io/schemas/test/1/test",
-                        useTestSchemas)]
+                        request.UseTestSchemas)]
                     : [];
             return Task.FromResult(new EddnPublicationResult(published, []));
         }

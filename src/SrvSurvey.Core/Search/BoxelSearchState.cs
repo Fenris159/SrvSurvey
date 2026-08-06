@@ -165,15 +165,18 @@ public sealed class BoxelSearchState
     }
 
     public bool TryActivate(
-        BoxelAddress? topBoxel,
-        char lowMassCode,
-        DateTimeOffset startedOn,
-        bool skipAlreadyVisited,
-        bool skipKnownToSpansh,
-        BoxelCompletionMode completionMode,
-        bool autoCopy,
+        BoxelSearchActivationRequest request,
         out string? error)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        var topBoxel = request.TopBoxel;
+        var lowMassCode = request.LowMassCode;
+        var startedOn = request.StartedOn;
+        var skipAlreadyVisited = request.SkipAlreadyVisited;
+        var skipKnownToSpansh = request.SkipKnownToSpansh;
+        var completionMode = request.CompletionMode;
+        var autoCopy = request.AutoCopy;
+
         if (topBoxel is null)
         {
             error = "Enter a valid generated system or boxel name.";
@@ -699,6 +702,15 @@ public sealed class BoxelSearchState
         Spansh,
     }
 }
+
+public sealed record BoxelSearchActivationRequest(
+    BoxelAddress? TopBoxel,
+    char LowMassCode,
+    DateTimeOffset StartedOn,
+    bool SkipAlreadyVisited,
+    bool SkipKnownToSpansh,
+    BoxelCompletionMode CompletionMode,
+    bool AutoCopy);
 
 public enum BoxelCompletionMode
 {

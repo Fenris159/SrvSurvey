@@ -63,14 +63,15 @@ public sealed class JumpInfoRoutePlannerTests
             ]);
 
         var plan = JumpInfoRoutePlanner.Create(
-            new JumpTarget("Neutron", 3),
-            null,
-            "Sol",
-            1,
-            new GalacticCoordinate(0, 0, 0),
-            route,
-            null,
-            maximumJumpRange: 25);
+            new JumpInfoRoutePlannerRequest(
+                new JumpTarget("Neutron", 3),
+                null,
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                route,
+                null,
+                MaximumJumpRange: 25));
 
         Assert.NotNull(plan);
         Assert.Equal(JumpInfoRouteSource.NavRoute, plan.Source);
@@ -103,21 +104,22 @@ public sealed class JumpInfoRoutePlannerTests
             ]);
 
         var plan = JumpInfoRoutePlanner.Create(
-            null,
-            new EliteStatus
-            {
-                Destination = new StatusDestination
+            new JumpInfoRoutePlannerRequest(
+                null,
+                new EliteStatus
                 {
-                    Name = "Jackson's Lighthouse",
-                    System = 3,
-                    Body = 0,
+                    Destination = new StatusDestination
+                    {
+                        Name = "Jackson's Lighthouse",
+                        System = 3,
+                        Body = 0,
+                    },
                 },
-            },
-            "Sol",
-            1,
-            new GalacticCoordinate(0, 0, 0),
-            navRoute,
-            followed);
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                navRoute,
+                followed));
 
         Assert.NotNull(plan);
         Assert.Equal(JumpInfoRouteSource.FollowedRoute, plan.Source);
@@ -131,20 +133,21 @@ public sealed class JumpInfoRoutePlannerTests
     public void TargetOutsideRouteCreatesDirectPlanWhenCoordinatesAreUnknown()
     {
         var plan = JumpInfoRoutePlanner.Create(
-            new JumpTarget("Unlisted", 99, "A"),
-            null,
-            "Sol",
-            1,
-            new GalacticCoordinate(0, 0, 0),
-            new NavRouteSnapshot(
-                DateTimeOffset.UtcNow,
-                "NavRoute",
-                [
-                    Entry("Sol", 1, 0, "G"),
-                    Entry("Alpha", 2, 10, "K"),
-                    Entry("Beta", 3, 20, "M"),
-                ]),
-            null);
+            new JumpInfoRoutePlannerRequest(
+                new JumpTarget("Unlisted", 99, "A"),
+                null,
+                "Sol",
+                1,
+                new GalacticCoordinate(0, 0, 0),
+                new NavRouteSnapshot(
+                    DateTimeOffset.UtcNow,
+                    "NavRoute",
+                    [
+                        Entry("Sol", 1, 0, "G"),
+                        Entry("Alpha", 2, 10, "K"),
+                        Entry("Beta", 3, 20, "M"),
+                    ]),
+                null));
 
         Assert.NotNull(plan);
         Assert.Equal(JumpInfoRouteSource.Direct, plan.Source);

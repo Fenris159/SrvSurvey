@@ -107,27 +107,27 @@ public sealed class CommanderCodexStoreTests : IDisposable
             5,
             TimeSpan.Zero);
 
-        var repaired = await store.TrackAsync(
+        var repaired = await store.TrackAsync(new CommanderCodexTrackRequest(
             "F123",
             "Cmdr Test",
             2310101,
             firstTime,
             42,
-            7);
-        var later = await store.TrackAsync(
+            7));
+        var later = await store.TrackAsync(new CommanderCodexTrackRequest(
             "F123",
             "Cmdr Test",
             2310101,
             firstTime.AddDays(1),
             99,
-            8);
-        var earlier = await store.TrackAsync(
+            8));
+        var earlier = await store.TrackAsync(new CommanderCodexTrackRequest(
             "F123",
             "Cmdr Test",
             2310101,
             firstTime.AddDays(-1),
             24,
-            3);
+            3));
 
         Assert.True(repaired.IsSuccess);
         Assert.True(repaired.Changed);
@@ -149,15 +149,15 @@ public sealed class CommanderCodexStoreTests : IDisposable
     {
         var store = new CommanderCodexStore(temporaryDirectory);
 
-        var tracked = await store.TrackAsync(
+        var tracked = await store.TrackAsync(new CommanderCodexTrackRequest(
             "F123",
             "Cmdr Test",
             2310101,
             DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
             42,
             1,
-            regionId: 18,
-            regionName: "Inner Orion Spur");
+            RegionId: 18,
+            RegionName: "Inner Orion Spur"));
         var loaded = await store.LoadAsync(
             "F123",
             "Cmdr Test",

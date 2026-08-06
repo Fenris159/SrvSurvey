@@ -169,14 +169,15 @@ public sealed class ExplorationState
         bool withEfficiencyBonus)
     {
         return ExplorationValueCalculator.Calculate(
-            body.BodyClass,
-            body.IsTerraformable,
-            body.Mass,
-            body.IsFirstDiscoverer,
-            isMapped,
-            body.IsFirstMapped,
-            isOdyssey,
-            withEfficiencyBonus);
+            new ExplorationValueRequest(
+                body.BodyClass,
+                body.IsTerraformable,
+                body.Mass,
+                body.IsFirstDiscoverer,
+                isMapped,
+                body.IsFirstMapped,
+                isOdyssey,
+                withEfficiencyBonus));
     }
 
     private static BodyKey? GetBodyKey(JsonElement root)

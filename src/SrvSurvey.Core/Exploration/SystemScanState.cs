@@ -13,6 +13,8 @@ public sealed class SystemScanState
         "$Codex_SubCategory_Geology_and_Anomalies;";
     private const string OrganicCodexCategory =
         "$Codex_SubCategory_Organic_Structures;";
+    private const string BodyIdProperty = "BodyID";
+    private const string BodyNameProperty = "BodyName";
     private static readonly Lazy<ExobiologyReferenceCatalog> DefaultBioCatalog =
         new(ExobiologyReferenceCatalog.LoadEmbedded);
 
@@ -183,6 +185,17 @@ public sealed class SystemScanState
             return false;
         }
 
+        var changed = MergeKnownSystemFields(known);
+        foreach (var source in known.Bodies)
+        {
+            changed |= MergeKnownBody(source, includeBiologicalData);
+        }
+
+        return changed;
+    }
+
+    private bool MergeKnownSystemFields(SystemScanSnapshot known)
+    {
         var changed = false;
         if (string.IsNullOrWhiteSpace(SystemName))
         {
@@ -214,29 +227,32 @@ public sealed class SystemScanState
             changed = true;
         }
 
-        foreach (var source in known.Bodies)
+        return changed;
+    }
+
+    private bool MergeKnownBody(
+        SystemScanBodySnapshot source,
+        bool includeBiologicalData)
+    {
+        if (source.BodyId < 0 || string.IsNullOrWhiteSpace(source.Name))
         {
-            if (source.BodyId < 0 || string.IsNullOrWhiteSpace(source.Name))
-            {
-                continue;
-            }
-
-            if (!bodies.TryGetValue(source.BodyId, out var target))
-            {
-                target = new BodyState(source.BodyId, source.Name);
-                bodies.Add(source.BodyId, target);
-                changed = true;
-            }
-            else if (target.Name == $"Body {source.BodyId}")
-            {
-                target.Name = source.Name;
-                changed = true;
-            }
-
-            changed |= MergeBody(target, source, includeBiologicalData);
+            return false;
         }
 
-        return changed;
+        var changed = false;
+        if (!bodies.TryGetValue(source.BodyId, out var target))
+        {
+            target = new BodyState(source.BodyId, source.Name);
+            bodies.Add(source.BodyId, target);
+            changed = true;
+        }
+        else if (target.Name == $"Body {source.BodyId}")
+        {
+            target.Name = source.Name;
+            changed = true;
+        }
+
+        return changed | MergeBody(target, source, includeBiologicalData);
     }
 
     public bool SetCurrentBodyFirstFootfall(bool value)
@@ -273,7 +289,7 @@ public sealed class SystemScanState
         Population = GetInt64(root, nameof(Population)) ?? Population;
         StarPosition = GetGalacticCoordinate(root, "StarPos")
             ?? StarPosition;
-        var bodyId = GetInt32(root, "BodyID");
+        var bodyId = GetInt32(root, BodyIdProperty);
         if (bodyId is not null && GetString(root, "BodyType") == "Planet")
         {
             CurrentBodyId = bodyId;
@@ -320,7 +336,7 @@ public sealed class SystemScanState
             return;
         }
 
-        var bodyId = GetInt32(root, "BodyID");
+        var bodyId = GetInt32(root, BodyIdProperty);
         if (bodyId is null)
         {
             return;
@@ -328,9 +344,9 @@ public sealed class SystemScanState
 
         var body = GetOrCreateBody(
             bodyId.Value,
-            GetString(root, "BodyName"));
+            GetString(root, BodyNameProperty));
         body.IsScanned = true;
-        body.Name = GetString(root, "BodyName") ?? body.Name;
+        body.Name = GetString(root, BodyNameProperty) ?? body.Name;
         body.StarClass = GetString(root, "StarType");
         body.PlanetClass = GetString(root, "PlanetClass");
         body.IsLandable = GetBoolean(root, "Landable") ?? false;
@@ -389,7 +405,7 @@ public sealed class SystemScanState
             return;
         }
 
-        var bodyId = GetInt32(root, "BodyID");
+        var bodyId = GetInt32(root, BodyIdProperty);
         if (bodyId is null)
         {
             return;
@@ -404,7 +420,7 @@ public sealed class SystemScanState
 
     private void ApplyDssComplete(JsonElement root)
     {
-        if (!TryGetBody(root, "BodyID", "BodyName", out var body))
+        if (!TryGetBody(root, BodyIdProperty, BodyNameProperty, out var body))
         {
             return;
         }
@@ -417,7 +433,7 @@ public sealed class SystemScanState
 
     private void ApplyBodySignals(JsonElement root)
     {
-        if (!TryGetBody(root, "BodyID", "BodyName", out var body))
+        if (!TryGetBody(root, BodyIdProperty, BodyNameProperty, out var body))
         {
             return;
         }
@@ -494,7 +510,7 @@ public sealed class SystemScanState
 
     private void ApplyCodexEntry(JsonElement root)
     {
-        if (!TryGetBody(root, "BodyID", null, out var body))
+        if (!TryGetBody(root, BodyIdProperty, null, out var body))
         {
             return;
         }
@@ -553,7 +569,7 @@ public sealed class SystemScanState
 
     private void ApplyBodyContext(JsonElement root, string eventName)
     {
-        if (!TryGetBody(root, "BodyID", "Body", out var body))
+        if (!TryGetBody(root, BodyIdProperty, "Body", out var body))
         {
             return;
         }
@@ -643,99 +659,10 @@ public sealed class SystemScanState
         SystemScanBodySnapshot source,
         bool includeBiologicalData)
     {
-        var changed = false;
-        var hasLiveScan = target.IsScanned;
-        if (target.Kind == SystemBodyKind.Unknown
-            && source.Kind != SystemBodyKind.Unknown)
-        {
-            target.Kind = source.Kind;
-            changed = true;
-        }
-        else if (target.Kind == SystemBodyKind.Planet
-            && source.Kind == SystemBodyKind.LandablePlanet)
-        {
-            target.Kind = SystemBodyKind.LandablePlanet;
-            changed = true;
-        }
-
-        changed |= SetIfMissing(ref target.StarClass, source.StarClass);
-        changed |= SetIfMissing(ref target.PlanetClass, source.PlanetClass);
-        changed |= SetTrue(ref target.IsLandable, source.IsLandable);
-        changed |= SetTrue(ref target.IsTerraformable, source.IsTerraformable);
-        changed |= SetTrue(ref target.IsScanned, source.IsScanned);
-        changed |= SetTrue(ref target.IsDssComplete, source.IsDssComplete);
-        if (!hasLiveScan)
-        {
-            changed |= SetTrue(ref target.WasDiscovered, source.WasDiscovered);
-            changed |= SetTrue(ref target.WasMapped, source.WasMapped);
-        }
-        if (target.WasFootfalled is null && source.WasFootfalled is not null)
-        {
-            target.WasFootfalled = source.WasFootfalled;
-            changed = true;
-        }
-        else if (target.WasFootfalled == false && source.WasFootfalled == true)
-        {
-            target.WasFootfalled = true;
-            changed = true;
-        }
-
-        changed |= SetTrue(ref target.IsFirstFootfall, source.IsFirstFootfall);
-        changed |= SetTrue(ref target.HasRingParent, source.HasRingParent);
-        if (target.TidalLock is null && source.TidalLock is not null)
-        {
-            target.TidalLock = source.TidalLock;
-            changed = true;
-        }
-
-        changed |= SetIfZero(ref target.Mass, source.Mass);
-        changed |= SetIfZero(
-            ref target.DistanceFromArrivalLs,
-            source.DistanceFromArrivalLs);
-        changed |= SetIfZero(ref target.RadiusMeters, source.RadiusMeters);
-        changed |= SetIfZero(ref target.SurfaceGravity, source.SurfaceGravity);
-        changed |= SetIfZero(
-            ref target.SurfaceTemperature,
-            source.SurfaceTemperature);
-        changed |= SetIfZero(ref target.SurfacePressure, source.SurfacePressure);
-        changed |= SetIfZero(ref target.SemiMajorAxis, source.SemiMajorAxis);
-        changed |= SetIfZero(
-            ref target.AbsoluteMagnitude,
-            source.AbsoluteMagnitude);
-        changed |= SetIfMissing(
-            ref target.Atmosphere,
-            source.Atmosphere,
-            allowEmpty: true);
-        changed |= SetIfMissing(
-            ref target.AtmosphereType,
-            source.AtmosphereType);
-        changed |= SetIfMissing(
-            ref target.Volcanism,
-            source.Volcanism,
-            allowEmpty: true);
-        changed |= SetMaximum(
-            ref target.BiologicalSignalCount,
-            source.BiologicalSignalCount);
-        changed |= SetMaximum(
-            ref target.GeologicalSignalCount,
-            source.GeologicalSignalCount);
-        changed |= MergeDictionary(
-            ref target.AtmosphereComposition,
-            source.AtmosphereComposition);
-        changed |= MergeDictionary(ref target.Materials, source.Materials);
-        changed |= MergeRings(target, source.Rings);
-        if (target.Parents.Count == 0 && source.Parents.Count > 0)
-        {
-            target.Parents = source.Parents.ToArray();
-            target.HasRingParent = source.Parents.Count > 0
-                && source.Parents[0].Kind == SystemBodyParentKind.Ring;
-            changed = true;
-        }
-
-        foreach (var signal in source.AnalyzedGeologicalSignals)
-        {
-            changed |= target.AnalyzedGeologicalSignals.Add(signal);
-        }
+        var changed = MergeBodyClassification(target, source);
+        changed |= MergeBodyFlags(target, source);
+        changed |= MergeBodyScalars(target, source);
+        changed |= MergeBodyCollections(target, source);
 
         if (!includeBiologicalData)
         {
@@ -793,6 +720,130 @@ public sealed class SystemScanState
         changed |= SetMaximum(
             ref target.BiologicalSignalCount,
             target.Organisms.Count);
+        return changed;
+    }
+
+    private static bool MergeBodyClassification(
+        BodyState target,
+        SystemScanBodySnapshot source)
+    {
+        var changed = false;
+        if (target.Kind == SystemBodyKind.Unknown
+            && source.Kind != SystemBodyKind.Unknown)
+        {
+            target.Kind = source.Kind;
+            changed = true;
+        }
+        else if (target.Kind == SystemBodyKind.Planet
+            && source.Kind == SystemBodyKind.LandablePlanet)
+        {
+            target.Kind = SystemBodyKind.LandablePlanet;
+            changed = true;
+        }
+
+        changed |= SetIfMissing(ref target.StarClass, source.StarClass);
+        changed |= SetIfMissing(ref target.PlanetClass, source.PlanetClass);
+        return changed;
+    }
+
+    private static bool MergeBodyFlags(
+        BodyState target,
+        SystemScanBodySnapshot source)
+    {
+        var changed = false;
+        var hasLiveScan = target.IsScanned;
+        changed |= SetTrue(ref target.IsLandable, source.IsLandable);
+        changed |= SetTrue(ref target.IsTerraformable, source.IsTerraformable);
+        changed |= SetTrue(ref target.IsScanned, source.IsScanned);
+        changed |= SetTrue(ref target.IsDssComplete, source.IsDssComplete);
+        if (!hasLiveScan)
+        {
+            changed |= SetTrue(ref target.WasDiscovered, source.WasDiscovered);
+            changed |= SetTrue(ref target.WasMapped, source.WasMapped);
+        }
+
+        if (target.WasFootfalled is null && source.WasFootfalled is not null)
+        {
+            target.WasFootfalled = source.WasFootfalled;
+            changed = true;
+        }
+        else if (target.WasFootfalled == false && source.WasFootfalled == true)
+        {
+            target.WasFootfalled = true;
+            changed = true;
+        }
+
+        changed |= SetTrue(ref target.IsFirstFootfall, source.IsFirstFootfall);
+        changed |= SetTrue(ref target.HasRingParent, source.HasRingParent);
+        if (target.TidalLock is null && source.TidalLock is not null)
+        {
+            target.TidalLock = source.TidalLock;
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    private static bool MergeBodyScalars(
+        BodyState target,
+        SystemScanBodySnapshot source)
+    {
+        var changed = SetIfZero(ref target.Mass, source.Mass);
+        changed |= SetIfZero(
+            ref target.DistanceFromArrivalLs,
+            source.DistanceFromArrivalLs);
+        changed |= SetIfZero(ref target.RadiusMeters, source.RadiusMeters);
+        changed |= SetIfZero(ref target.SurfaceGravity, source.SurfaceGravity);
+        changed |= SetIfZero(
+            ref target.SurfaceTemperature,
+            source.SurfaceTemperature);
+        changed |= SetIfZero(ref target.SurfacePressure, source.SurfacePressure);
+        changed |= SetIfZero(ref target.SemiMajorAxis, source.SemiMajorAxis);
+        changed |= SetIfZero(
+            ref target.AbsoluteMagnitude,
+            source.AbsoluteMagnitude);
+        changed |= SetIfMissing(
+            ref target.Atmosphere,
+            source.Atmosphere,
+            allowEmpty: true);
+        changed |= SetIfMissing(
+            ref target.AtmosphereType,
+            source.AtmosphereType);
+        changed |= SetIfMissing(
+            ref target.Volcanism,
+            source.Volcanism,
+            allowEmpty: true);
+        changed |= SetMaximum(
+            ref target.BiologicalSignalCount,
+            source.BiologicalSignalCount);
+        changed |= SetMaximum(
+            ref target.GeologicalSignalCount,
+            source.GeologicalSignalCount);
+        return changed;
+    }
+
+    private static bool MergeBodyCollections(
+        BodyState target,
+        SystemScanBodySnapshot source)
+    {
+        var changed = MergeDictionary(
+            ref target.AtmosphereComposition,
+            source.AtmosphereComposition);
+        changed |= MergeDictionary(ref target.Materials, source.Materials);
+        changed |= MergeRings(target, source.Rings);
+        if (target.Parents.Count == 0 && source.Parents.Count > 0)
+        {
+            target.Parents = source.Parents.ToArray();
+            target.HasRingParent = source.Parents.Count > 0
+                && source.Parents[0].Kind == SystemBodyParentKind.Ring;
+            changed = true;
+        }
+
+        foreach (var signal in source.AnalyzedGeologicalSignals)
+        {
+            changed |= target.AnalyzedGeologicalSignals.Add(signal);
+        }
+
         return changed;
     }
 
@@ -1218,36 +1269,39 @@ public sealed class SystemScanState
             var bodyClass = Kind == SystemBodyKind.Star ? StarClass : PlanetClass;
             var scanValue = IsScanned
                 ? ExplorationValueCalculator.Calculate(
-                    bodyClass,
-                    IsTerraformable,
-                    Mass,
-                    !WasDiscovered,
-                    false,
-                    !WasMapped,
-                    isOdyssey,
-                    withEfficiencyBonus: false)
+                    new ExplorationValueRequest(
+                        bodyClass,
+                        IsTerraformable,
+                        Mass,
+                        !WasDiscovered,
+                        false,
+                        !WasMapped,
+                        isOdyssey,
+                        WithEfficiencyBonus: false))
                 : 0;
             var mappedValue = IsScanned && Kind != SystemBodyKind.Star
                 ? ExplorationValueCalculator.Calculate(
-                    bodyClass,
-                    IsTerraformable,
-                    Mass,
-                    !WasDiscovered,
-                    true,
-                    !WasMapped,
-                    isOdyssey,
-                    withEfficiencyBonus: true)
+                    new ExplorationValueRequest(
+                        bodyClass,
+                        IsTerraformable,
+                        Mass,
+                        !WasDiscovered,
+                        true,
+                        !WasMapped,
+                        isOdyssey,
+                        WithEfficiencyBonus: true))
                 : scanValue;
             var currentValue = IsDssComplete
                 ? ExplorationValueCalculator.Calculate(
-                    bodyClass,
-                    IsTerraformable,
-                    Mass,
-                    !WasDiscovered,
-                    true,
-                    !WasMapped,
-                    isOdyssey,
-                    DssEfficiencyBonus)
+                    new ExplorationValueRequest(
+                        bodyClass,
+                        IsTerraformable,
+                        Mass,
+                        !WasDiscovered,
+                        true,
+                        !WasMapped,
+                        isOdyssey,
+                        DssEfficiencyBonus))
                 : scanValue;
 
             return new SystemScanBodySnapshot(

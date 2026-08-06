@@ -70,13 +70,14 @@ public sealed class MultiGameCommanderOverlayCoordinatorTests
         bool isApplicationActive = false)
     {
         return MultiGameCommanderOverlayCoordinator.ShouldShow(
-            hasMultipleGameWindows,
-            hideByPreference,
-            isSuppressed,
-            supportsPassiveOverlay,
-            supportsClickThrough,
-            supportsGameWindowTracking,
-            gameWindow,
-            isApplicationActive);
+            new MultiGameOverlayVisibilityContext(
+                hasMultipleGameWindows,
+                hideByPreference,
+                isSuppressed,
+                supportsPassiveOverlay,
+                supportsClickThrough,
+                supportsGameWindowTracking,
+                gameWindow,
+                isApplicationActive));
     }
 }

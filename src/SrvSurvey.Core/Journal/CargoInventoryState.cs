@@ -9,6 +9,9 @@ namespace SrvSurvey.Core.Journal;
 /// </summary>
 public sealed class CargoInventoryState
 {
+    private const string TypeLocalisedProperty = "Type_Localised";
+    private const string CountProperty = "Count";
+
     /// <summary>Lock for all Inventory / lastInventory readers and writers.</summary>
     private readonly Lock syncRoot = new();
 
@@ -145,20 +148,20 @@ public sealed class CargoInventoryState
             {
                 "CollectCargo" => ApplyDelta(
                     GetString(root, "Type"),
-                    GetString(root, "Type_Localised"),
+                    GetString(root, TypeLocalisedProperty),
                     1),
                 "EjectCargo" => ApplyDelta(
                     GetString(root, "Type"),
-                    GetString(root, "Type_Localised"),
-                    -Math.Max(0, GetInt32(root, "Count") ?? 0)),
+                    GetString(root, TypeLocalisedProperty),
+                    -Math.Max(0, GetInt32(root, CountProperty) ?? 0)),
                 "MarketBuy" => ApplyDelta(
                     GetString(root, "Type"),
-                    GetString(root, "Type_Localised"),
-                    Math.Max(0, GetInt32(root, "Count") ?? 0)),
+                    GetString(root, TypeLocalisedProperty),
+                    Math.Max(0, GetInt32(root, CountProperty) ?? 0)),
                 "MarketSell" => ApplyDelta(
                     GetString(root, "Type"),
-                    GetString(root, "Type_Localised"),
-                    -Math.Max(0, GetInt32(root, "Count") ?? 0)),
+                    GetString(root, TypeLocalisedProperty),
+                    -Math.Max(0, GetInt32(root, CountProperty) ?? 0)),
                 "CargoTransfer" => ApplyTransfers(root, isInSrv),
                 "ColonisationContribution" => ApplyContributions(root),
                 "Cargo" => ApplyCargoEvent(root),
@@ -248,7 +251,7 @@ public sealed class CargoInventoryState
         var changed = false;
         foreach (var transfer in transfers.EnumerateArray())
         {
-            var count = GetInt32(transfer, "Count") ?? 0;
+            var count = GetInt32(transfer, CountProperty) ?? 0;
             var direction = GetString(transfer, "Direction");
             if (count <= 0)
             {
@@ -270,7 +273,7 @@ public sealed class CargoInventoryState
                 };
             changed |= ApplyDelta(
                 GetString(transfer, "Type"),
-                GetString(transfer, "Type_Localised"),
+                GetString(transfer, TypeLocalisedProperty),
                 delta);
         }
 
@@ -384,7 +387,7 @@ public sealed class CargoInventoryState
                 replacement,
                 GetString(item, "Name"),
                 GetString(item, "Name_Localised"),
-                GetInt32(item, "Count") ?? 0,
+                GetInt32(item, CountProperty) ?? 0,
                 GetInt32(item, "Stolen") ?? 0);
         }
 

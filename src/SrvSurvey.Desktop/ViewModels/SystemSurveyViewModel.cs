@@ -1022,10 +1022,12 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             ? BiologySurveyViewModel.CreateRewardBandsForBody(
                 snapshot,
                 body,
-                DisableBioPredictions,
-                BiologyRewardThresholds,
-                highlightRegionalFirsts: HighlightRegionalFirsts,
-                discoveryContext: biologyDiscoveryContext)
+                new BiologySurveyRewardBandOptions(DisableBioPredictions)
+                {
+                    RewardThresholds = BiologyRewardThresholds,
+                    HighlightRegionalFirsts = HighlightRegionalFirsts,
+                    DiscoveryContext = biologyDiscoveryContext,
+                })
             : [];
 
     public string LastFssBiologyRewardText => LastFssBody is { } body
@@ -1034,14 +1036,17 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     snapshot,
                     body.BodyId,
                     exobiology,
-                    HighlightRegionalFirsts,
-                    DimAnalyzedOrganisms,
-                    HideGeoCountInBioSystem,
-                    DisableBioPredictions,
-                    biologyDiscoveryContext,
-                    BiologyRewardThresholds,
-                    biologyPredictionEvaluator,
-                    biologyCatalog)
+                    new BiologySurveyBodyDetailOptions(
+                        HighlightRegionalFirsts,
+                        DimAnalyzedOrganisms,
+                        HideGeoCountInBioSystem,
+                        DisableBioPredictions)
+                    {
+                        DiscoveryContext = biologyDiscoveryContext,
+                        RewardThresholds = BiologyRewardThresholds,
+                        PredictionEvaluator = biologyPredictionEvaluator,
+                        ReferenceCatalog = biologyCatalog,
+                    })
                 ?.RewardSummary ?? string.Empty
             : string.Empty;
 
@@ -1753,30 +1758,36 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     snapshot,
                     selectedBodyId,
                     exobiology,
-                    HighlightRegionalFirsts,
-                    DimAnalyzedOrganisms,
-                    HideGeoCountInBioSystem,
-                    DisableBioPredictions,
-                    biologyDiscoveryContext,
-                    BiologyRewardThresholds,
-                    biologyPredictionEvaluator,
-                    biologyCatalog)
+                    new BiologySurveyBodyDetailOptions(
+                        HighlightRegionalFirsts,
+                        DimAnalyzedOrganisms,
+                        HideGeoCountInBioSystem,
+                        DisableBioPredictions)
+                    {
+                        DiscoveryContext = biologyDiscoveryContext,
+                        RewardThresholds = BiologyRewardThresholds,
+                        PredictionEvaluator = biologyPredictionEvaluator,
+                        ReferenceCatalog = biologyCatalog,
+                    })
                 : BiologySurveyViewModel.Create(
                     snapshot,
                     status,
                     exobiology,
-                    DrawBodyBiosOnlyWhenNear,
-                    HighlightRegionalFirsts,
-                    DimAnalyzedOrganisms,
-                    HideGeoCountInBioSystem,
-                    DisableBioPredictions,
-                    biologyDiscoveryContext,
-                    BiologyRewardThresholds,
-                    biologyPredictionEvaluator,
-                    biologyCatalog,
-                    externalBiologyBodyIds,
-                    allowRetainedBiologyBody,
-                    IsBiologyMapMode(status));
+                    new BiologySurveyCreateOptions(
+                        DrawBodyBiosOnlyWhenNear,
+                        HighlightRegionalFirsts,
+                        DimAnalyzedOrganisms,
+                        HideGeoCountInBioSystem,
+                        DisableBioPredictions,
+                        biologyDiscoveryContext,
+                        BiologyRewardThresholds)
+                    {
+                        PredictionEvaluator = biologyPredictionEvaluator,
+                        ReferenceCatalog = biologyCatalog,
+                        CanonnBiologyBodyIds = externalBiologyBodyIds,
+                        AllowRetainedCurrentBody = allowRetainedBiologyBody,
+                        ForceSystemOverview = IsBiologyMapMode(status),
+                    });
         BiologyStatus = BiologyStatusViewModel.Create(
             snapshot,
             status,
@@ -1901,14 +1912,17 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
             snapshot,
             body.BodyId,
             exobiology,
-            HighlightRegionalFirsts,
-            DimAnalyzedOrganisms,
-            HideGeoCountInBioSystem,
-            DisableBioPredictions,
-            biologyDiscoveryContext,
-            BiologyRewardThresholds,
-            biologyPredictionEvaluator,
-            biologyCatalog);
+            new BiologySurveyBodyDetailOptions(
+                        HighlightRegionalFirsts,
+                        DimAnalyzedOrganisms,
+                        HideGeoCountInBioSystem,
+                        DisableBioPredictions)
+                    {
+                        DiscoveryContext = biologyDiscoveryContext,
+                        RewardThresholds = BiologyRewardThresholds,
+                        PredictionEvaluator = biologyPredictionEvaluator,
+                        ReferenceCatalog = biologyCatalog,
+                    });
         var signalCount = Math.Max(
             1,
             details?.Organisms.Count ?? body.BiologicalSignalCount);
@@ -2076,14 +2090,17 @@ public sealed class SystemSurveyViewModel : INotifyPropertyChanged
                     snapshot,
                     body.BodyId,
                     exobiology,
-                    HighlightRegionalFirsts,
-                    DimAnalyzedOrganisms,
-                    HideGeoCountInBioSystem,
-                    DisableBioPredictions,
-                    biologyDiscoveryContext,
-                    BiologyRewardThresholds,
-                    biologyPredictionEvaluator,
-                    biologyCatalog)
+                    new BiologySurveyBodyDetailOptions(
+                        HighlightRegionalFirsts,
+                        DimAnalyzedOrganisms,
+                        HideGeoCountInBioSystem,
+                        DisableBioPredictions)
+                    {
+                        DiscoveryContext = biologyDiscoveryContext,
+                        RewardThresholds = BiologyRewardThresholds,
+                        PredictionEvaluator = biologyPredictionEvaluator,
+                        ReferenceCatalog = biologyCatalog,
+                    })
                 ?.RewardSummary ?? string.Empty
             : string.Empty;
 

@@ -70,26 +70,19 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         SynchronizeWindow();
     }
 
-    public static bool ShouldShow(
-        bool hasMultipleGameWindows,
-        bool hideByPreference,
-        bool isSuppressed,
-        bool supportsPassiveOverlay,
-        bool supportsClickThrough,
-        bool supportsGameWindowTracking,
-        GameWindowSnapshot gameWindow,
-        bool isApplicationActive)
+    public static bool ShouldShow(MultiGameOverlayVisibilityContext context)
     {
-        ArgumentNullException.ThrowIfNull(gameWindow);
-        return hasMultipleGameWindows
-            && !hideByPreference
-            && !isSuppressed
-            && supportsPassiveOverlay
-            && supportsClickThrough
-            && supportsGameWindowTracking
-            && gameWindow.IsAvailable
-            && gameWindow.IsVisible
-            && (gameWindow.IsForeground || isApplicationActive);
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(context.GameWindow);
+        return context.HasMultipleGameWindows
+            && !context.HideByPreference
+            && !context.IsSuppressed
+            && context.SupportsPassiveOverlay
+            && context.SupportsClickThrough
+            && context.SupportsGameWindowTracking
+            && context.GameWindow.IsAvailable
+            && context.GameWindow.IsVisible
+            && (context.GameWindow.IsForeground || context.IsApplicationActive);
     }
 
     public void Dispose()
@@ -148,14 +141,15 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         gameWindow = gameWindowTracker.GetSnapshot();
         var capabilities = platform.Capabilities;
         var shouldShow = ShouldShow(
-            commanderInstances.HasMultipleGameWindows,
-            overlayBehavior.HideMultiGameCommanderOverlay,
-            isSuppressed,
-            capabilities.SupportsPassiveOverlay,
-            capabilities.SupportsClickThrough,
-            capabilities.SupportsGameWindowTracking,
-            gameWindow,
-            isApplicationActive());
+            new MultiGameOverlayVisibilityContext(
+                commanderInstances.HasMultipleGameWindows,
+                overlayBehavior.HideMultiGameCommanderOverlay,
+                isSuppressed,
+                capabilities.SupportsPassiveOverlay,
+                capabilities.SupportsClickThrough,
+                capabilities.SupportsGameWindowTracking,
+                gameWindow,
+                isApplicationActive()));
         if (!shouldShow)
         {
             CloseWindow();
@@ -258,3 +252,13 @@ public sealed class MultiGameCommanderOverlayCoordinator : IDisposable
         overlay.Close();
     }
 }
+
+public sealed record MultiGameOverlayVisibilityContext(
+    bool HasMultipleGameWindows,
+    bool HideByPreference,
+    bool IsSuppressed,
+    bool SupportsPassiveOverlay,
+    bool SupportsClickThrough,
+    bool SupportsGameWindowTracking,
+    GameWindowSnapshot GameWindow,
+    bool IsApplicationActive);

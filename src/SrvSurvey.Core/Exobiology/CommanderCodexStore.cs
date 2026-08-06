@@ -6,6 +6,7 @@ namespace SrvSurvey.Core.Exobiology;
 
 public sealed class CommanderCodexStore(string dataDirectory)
 {
+    private const string CodexFirstsProperty = "codexFirsts";
     private static readonly JsonSerializerOptions IndentedJson = new()
     {
         WriteIndented = true,
@@ -52,7 +53,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
 
             var warnings = new List<string>();
             var entries = new Dictionary<long, CommanderCodexFirst>();
-            if (root["codexFirsts"] is JsonObject firsts)
+            if (root[CodexFirstsProperty] is JsonObject firsts)
             {
                 foreach (var property in firsts)
                 {
@@ -152,26 +153,20 @@ public sealed class CommanderCodexStore(string dataDirectory)
     }
 
     public async Task<CommanderCodexTrackResult> TrackAsync(
-        string frontierId,
-        string? commanderName,
-        long entryId,
-        DateTimeOffset timestamp,
-        long systemAddress,
-        int? bodyId,
-        int regionId = 0,
-        string? regionName = null,
+        CommanderCodexTrackRequest request,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
         var result = await TrackBatchAsync(
-                frontierId,
-                commanderName,
+                request.FrontierId,
+                request.CommanderName,
                 [new CommanderCodexDiscovery(
-                    entryId,
-                    timestamp,
-                    systemAddress,
-                    bodyId ?? -1)],
-                regionId,
-                regionName,
+                    request.EntryId,
+                    request.Timestamp,
+                    request.SystemAddress,
+                    request.BodyId ?? -1)],
+                request.RegionId,
+                request.RegionName,
                 cancellationToken)
             .ConfigureAwait(false);
         return new CommanderCodexTrackResult(
@@ -215,11 +210,11 @@ public sealed class CommanderCodexStore(string dataDirectory)
                 exception.Message);
         }
 
-        var firsts = root["codexFirsts"] as JsonObject;
+        var firsts = root[CodexFirstsProperty] as JsonObject;
         if (firsts is null)
         {
             firsts = [];
-            root["codexFirsts"] = firsts;
+            root[CodexFirstsProperty] = firsts;
         }
 
         var key = entryId.ToString(CultureInfo.InvariantCulture);
@@ -317,11 +312,11 @@ public sealed class CommanderCodexStore(string dataDirectory)
                 exception.Message);
         }
 
-        var firsts = root["codexFirsts"] as JsonObject;
+        var firsts = root[CodexFirstsProperty] as JsonObject;
         if (firsts is null)
         {
             firsts = [];
-            root["codexFirsts"] = firsts;
+            root[CodexFirstsProperty] = firsts;
         }
 
         var changedEntryIds = new HashSet<string>(StringComparer.Ordinal);
@@ -636,6 +631,16 @@ public sealed record CommanderCodexCommanderCatalogResult(
 {
     public bool IsSuccess => Warnings.Count == 0;
 }
+
+public sealed record CommanderCodexTrackRequest(
+    string FrontierId,
+    string? CommanderName,
+    long EntryId,
+    DateTimeOffset Timestamp,
+    long SystemAddress,
+    int? BodyId = null,
+    int RegionId = 0,
+    string? RegionName = null);
 
 public sealed record CommanderCodexTrackResult(
     string Path,

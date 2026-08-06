@@ -2164,14 +2164,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         }
 
         JumpInfo.ApplyUpdate(
-            journalState.SystemName,
-            journalState.SystemAddress,
-            journalState.StarPosition,
-            update.NavRoute,
-            update.JournalEvents,
-            update.Status,
-            Route.CreateSnapshot(),
-            update.IsBootstrapRead);
+            new JumpInfoApplyUpdateRequest(
+                journalState.SystemName,
+                journalState.SystemAddress,
+                journalState.StarPosition,
+                update.NavRoute,
+                update.JournalEvents,
+                update.Status,
+                Route.CreateSnapshot(),
+                update.IsBootstrapRead));
         GalaxyMap.ApplyUpdate(
             journalState.SystemName,
             journalState.SystemAddress,
@@ -2374,15 +2375,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             canShareCargo &= !hasMultipleGameWindows;
             eddnPublisher.SetSuspended(hasMultipleGameWindows);
             var eddnResult = await eddnPublisher.ApplyAsync(
-                update.JournalEvents,
-                latestStatus,
-                NetworkPrivacy.EddnUploadEnabled,
-                NetworkPrivacy.EddnUseTestSchemas,
-                allowPublishing: !update.IsBootstrapRead
-                    && !hasMultipleGameWindows,
-                journalDirectory: folderResolution.SelectedPath,
-                journalPath: update.JournalPath,
-                allowSharedData: !hasMultipleGameWindows,
+                new EddnApplyRequest(
+                    update.JournalEvents,
+                    latestStatus,
+                    NetworkPrivacy.EddnUploadEnabled,
+                    NetworkPrivacy.EddnUseTestSchemas,
+                    AllowPublishing: !update.IsBootstrapRead
+                        && !hasMultipleGameWindows,
+                    JournalDirectory: folderResolution.SelectedPath,
+                    JournalPath: update.JournalPath,
+                    AllowSharedData: !hasMultipleGameWindows),
                 cancellationToken: CancellationToken.None);
             NetworkPrivacy.ReportPublicationResult(eddnResult);
             foreach (var warning in eddnResult.Warnings)
