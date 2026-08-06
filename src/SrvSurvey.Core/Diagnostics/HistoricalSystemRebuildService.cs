@@ -100,61 +100,18 @@ public sealed class HistoricalSystemRebuildService
         CancellationToken cancellationToken)
     {
         var warnings = new List<string>();
-        var files = new DirectoryInfo(journalDirectory)
-            .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
-            .Select(file => new JournalCandidate(
-                file,
-                JournalHistoryAnalyzer.TryGetJournalTimestamp(
-                    file.Name,
-                    out var openedAt)
-                        ? openedAt
-                        : null))
-            .Where(candidate =>
-            {
-                if (candidate.OpenedAt is null)
-                {
-                    warnings.Add(
-                        $"Ignored {candidate.File.Name} because its journal timestamp is invalid.");
-                    return false;
-                }
-
-                return candidate.OpenedAt > startTime
-                    && candidate.File.LastWriteTimeUtc >= startTime.UtcDateTime;
-            })
-            .OrderBy(candidate => candidate.OpenedAt)
-            .ThenBy(candidate => candidate.File.Name, StringComparer.Ordinal)
-            .ToArray();
+        var files = CollectJournalCandidates(startTime, warnings);
         var systems = new Dictionary<long, ReconstructedSystem>();
         var stats = new ReconstructionStats();
-        for (var index = 0; index < files.Length; index++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var candidate = files[index];
-            Report(
+        await ProcessJournalCandidatesAsync(
+                files,
+                frontierId,
+                systems,
+                stats,
+                warnings,
                 progress,
-                "Reading journals",
-                index,
-                files.Length,
-                candidate.File.Name);
-            if (!await TryProcessJournalFileAsync(
-                    candidate,
-                    frontierId,
-                    systems,
-                    stats,
-                    warnings,
-                    cancellationToken)
-                .ConfigureAwait(false))
-            {
-                continue;
-            }
-        }
-
-        Report(
-            progress,
-            "Reading journals",
-            files.Length,
-            files.Length,
-            string.Empty);
+                cancellationToken)
+            .ConfigureAwait(false);
         return new ReconstructionResult(
             files.Length,
             stats.ProcessedFiles,
@@ -167,6 +124,78 @@ public sealed class HistoricalSystemRebuildService
                 .Where(IsValidReconstructedSystem)
                 .ToArray(),
             warnings);
+    }
+
+    private JournalCandidate[] CollectJournalCandidates(
+        DateTimeOffset startTime,
+        List<string> warnings)
+    {
+        return new DirectoryInfo(journalDirectory)
+            .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
+            .Select(file => new JournalCandidate(
+                file,
+                JournalHistoryAnalyzer.TryGetJournalTimestamp(
+                    file.Name,
+                    out var openedAt)
+                        ? openedAt
+                        : null))
+            .Where(candidate => IsEligibleJournalCandidate(candidate, startTime, warnings))
+            .OrderBy(candidate => candidate.OpenedAt)
+            .ThenBy(candidate => candidate.File.Name, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static bool IsEligibleJournalCandidate(
+        JournalCandidate candidate,
+        DateTimeOffset startTime,
+        List<string> warnings)
+    {
+        if (candidate.OpenedAt is null)
+        {
+            warnings.Add(
+                $"Ignored {candidate.File.Name} because its journal timestamp is invalid.");
+            return false;
+        }
+
+        return candidate.OpenedAt > startTime
+            && candidate.File.LastWriteTimeUtc >= startTime.UtcDateTime;
+    }
+
+    private async Task ProcessJournalCandidatesAsync(
+        JournalCandidate[] files,
+        string frontierId,
+        Dictionary<long, ReconstructedSystem> systems,
+        ReconstructionStats stats,
+        List<string> warnings,
+        IProgress<HistoricalSystemRebuildProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        for (var index = 0; index < files.Length; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var candidate = files[index];
+            Report(
+                progress,
+                "Reading journals",
+                index,
+                files.Length,
+                candidate.File.Name);
+            await TryProcessJournalFileAsync(
+                    candidate,
+                    frontierId,
+                    systems,
+                    stats,
+                    warnings,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        Report(
+            progress,
+            "Reading journals",
+            files.Length,
+            files.Length,
+            string.Empty);
     }
 
     private async Task<bool> TryProcessJournalFileAsync(
@@ -231,47 +260,67 @@ public sealed class HistoricalSystemRebuildService
         foreach (var journalEvent in read.Events)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (journalEvent.EventName is "Location" or "FSDJump" or "CarrierJump")
-            {
-                currentAddress = GetInt64(
-                    journalEvent.Payload,
-                    "SystemAddress");
-                if (currentAddress is not > 0)
-                {
-                    currentAddress = null;
-                    continue;
-                }
-            }
-
+            currentAddress = UpdateCurrentAddress(journalEvent, currentAddress);
             if (currentAddress is not { } address)
             {
                 continue;
             }
 
-            if (!systems.TryGetValue(address, out var system))
-            {
-                system = new ReconstructedSystem(new SystemScanState());
-                systems.Add(address, system);
-            }
-
-            if (!system.State.Apply(journalEvent))
-            {
-                continue;
-            }
-
-            stats.AppliedEvents++;
-            var timestamp = journalEvent.Timestamp
-                ?? candidate.OpenedAt!.Value;
-            system.FirstVisited = system.FirstVisited is null
-                || timestamp < system.FirstVisited
-                    ? timestamp
-                    : system.FirstVisited;
-            system.LastVisited = system.LastVisited is null
-                || timestamp > system.LastVisited
-                    ? timestamp
-                    : system.LastVisited;
+            ApplyJournalEventToSystem(
+                journalEvent,
+                candidate,
+                address,
+                systems,
+                stats);
         }
     }
+
+    private static long? UpdateCurrentAddress(
+        JournalEventEnvelope journalEvent,
+        long? currentAddress)
+    {
+        if (journalEvent.EventName is not ("Location" or "FSDJump" or "CarrierJump"))
+        {
+            return currentAddress;
+        }
+
+        var address = GetInt64(journalEvent.Payload, "SystemAddress");
+        return address is > 0 ? address : null;
+    }
+
+    private static void ApplyJournalEventToSystem(
+        JournalEventEnvelope journalEvent,
+        JournalCandidate candidate,
+        long address,
+        Dictionary<long, ReconstructedSystem> systems,
+        ReconstructionStats stats)
+    {
+        if (!systems.TryGetValue(address, out var system))
+        {
+            system = new ReconstructedSystem(new SystemScanState());
+            systems.Add(address, system);
+        }
+
+        if (!system.State.Apply(journalEvent))
+        {
+            return;
+        }
+
+        stats.AppliedEvents++;
+        var timestamp = journalEvent.Timestamp ?? candidate.OpenedAt!.Value;
+        system.FirstVisited = MinTimestamp(system.FirstVisited, timestamp);
+        system.LastVisited = MaxTimestamp(system.LastVisited, timestamp);
+    }
+
+    private static DateTimeOffset MinTimestamp(
+        DateTimeOffset? current,
+        DateTimeOffset candidate) =>
+        current is null || candidate < current ? candidate : current.Value;
+
+    private static DateTimeOffset MaxTimestamp(
+        DateTimeOffset? current,
+        DateTimeOffset candidate) =>
+        current is null || candidate > current ? candidate : current.Value;
 
     private static bool IsValidReconstructedSystem(ReconstructedSystem system)
     {
@@ -503,65 +552,8 @@ public sealed class HistoricalSystemRebuildService
         var activated = new List<ActivationEntry>();
         try
         {
-            for (var index = 0; index < entries.Count; index++)
-            {
-                var entry = entries[index];
-                Report(
-                    progress,
-                    "Activating reconstructed systems",
-                    index,
-                    entries.Count,
-                    Path.GetFileName(entry.TargetPath));
-                if (activationFailure?.Invoke(entry.TargetPath) is { } failure)
-                {
-                    throw failure;
-                }
-
-                var directory = Path.GetDirectoryName(entry.TargetPath)!;
-                Directory.CreateDirectory(directory);
-                var temporaryPath = $"{entry.TargetPath}.{Guid.NewGuid():N}.tmp";
-                try
-                {
-                    File.Copy(entry.CandidatePath, temporaryPath, false);
-                    var stagedHash = await ComputeHashAsync(
-                            temporaryPath,
-                            CancellationToken.None)
-                        .ConfigureAwait(false);
-                    if (!string.Equals(
-                            stagedHash,
-                            entry.CandidateHash,
-                            StringComparison.Ordinal))
-                    {
-                        throw new InvalidDataException(
-                            $"The staged candidate for {Path.GetFileName(entry.TargetPath)} failed verification.");
-                    }
-
-                    File.Move(temporaryPath, entry.TargetPath, true);
-                    activated.Add(entry);
-                }
-                finally
-                {
-                    if (File.Exists(temporaryPath))
-                    {
-                        File.Delete(temporaryPath);
-                    }
-                }
-
-                var targetHash = await ComputeHashAsync(
-                        entry.TargetPath,
-                        CancellationToken.None)
-                    .ConfigureAwait(false);
-                if (!string.Equals(
-                        targetHash,
-                        entry.CandidateHash,
-                        StringComparison.Ordinal))
-                {
-                    throw new InvalidDataException(
-                        $"The activated candidate for {Path.GetFileName(entry.TargetPath)} failed verification.");
-                }
-
-            }
-
+            await ActivateAllEntriesAsync(entries, activated, progress)
+                .ConfigureAwait(false);
             Report(
                 progress,
                 "Activating reconstructed systems",
@@ -571,19 +563,94 @@ public sealed class HistoricalSystemRebuildService
         }
         catch (Exception activationException)
         {
-            var rollbackErrors = await RollBackAsync(activated, finalBackup)
+            await FailActivationAsync(activated, finalBackup, activationException)
                 .ConfigureAwait(false);
-            if (rollbackErrors.Count > 0)
-            {
-                throw new AggregateException(
-                    $"Historical system activation failed and rollback was incomplete. Verified backup: {finalBackup}",
-                    rollbackErrors.Prepend(activationException));
-            }
-
-            throw new InvalidOperationException(
-                $"Historical system activation failed and was rolled back. Verified backup: {finalBackup}",
-                activationException);
         }
+    }
+
+    private async Task ActivateAllEntriesAsync(
+        IReadOnlyList<ActivationEntry> entries,
+        List<ActivationEntry> activated,
+        IProgress<HistoricalSystemRebuildProgress>? progress)
+    {
+        for (var index = 0; index < entries.Count; index++)
+        {
+            var entry = entries[index];
+            Report(
+                progress,
+                "Activating reconstructed systems",
+                index,
+                entries.Count,
+                Path.GetFileName(entry.TargetPath));
+            await ActivateSingleEntryAsync(entry).ConfigureAwait(false);
+            activated.Add(entry);
+        }
+    }
+
+    private async Task ActivateSingleEntryAsync(ActivationEntry entry)
+    {
+        if (activationFailure?.Invoke(entry.TargetPath) is { } failure)
+        {
+            throw failure;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(entry.TargetPath)!);
+        var temporaryPath = $"{entry.TargetPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            File.Copy(entry.CandidatePath, temporaryPath, false);
+            await VerifyHashAsync(
+                    temporaryPath,
+                    entry.CandidateHash,
+                    $"The staged candidate for {Path.GetFileName(entry.TargetPath)} failed verification.")
+                .ConfigureAwait(false);
+            File.Move(temporaryPath, entry.TargetPath, true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
+
+        await VerifyHashAsync(
+                entry.TargetPath,
+                entry.CandidateHash,
+                $"The activated candidate for {Path.GetFileName(entry.TargetPath)} failed verification.")
+            .ConfigureAwait(false);
+    }
+
+    private static async Task VerifyHashAsync(
+        string path,
+        string expectedHash,
+        string failureMessage)
+    {
+        var actualHash = await ComputeHashAsync(path, CancellationToken.None)
+            .ConfigureAwait(false);
+        if (!string.Equals(actualHash, expectedHash, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(failureMessage);
+        }
+    }
+
+    private static async Task FailActivationAsync(
+        List<ActivationEntry> activated,
+        string finalBackup,
+        Exception activationException)
+    {
+        var rollbackErrors = await RollBackAsync(activated, finalBackup)
+            .ConfigureAwait(false);
+        if (rollbackErrors.Count > 0)
+        {
+            throw new AggregateException(
+                $"Historical system activation failed and rollback was incomplete. Verified backup: {finalBackup}",
+                rollbackErrors.Prepend(activationException));
+        }
+
+        throw new InvalidOperationException(
+            $"Historical system activation failed and was rolled back. Verified backup: {finalBackup}",
+            activationException);
     }
 
     private static async Task<IReadOnlyList<Exception>> RollBackAsync(

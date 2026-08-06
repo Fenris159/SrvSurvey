@@ -67,52 +67,82 @@ public sealed class ColonizationProjectFactory
         ColonizationConstructionDepotSnapshot? depot)
     {
         var errors = new List<string>();
+        ValidateCommander(draft, errors);
+        ValidateDock(dock, errors);
+        ValidateDepot(dock, depot, errors);
+        ValidateProjectIdentity(draft, dock, errors);
+        ValidateCoordinates(draft, errors);
+        return errors;
+    }
+
+    private static void ValidateCommander(
+        ColonizationProjectDraft draft,
+        List<string> errors)
+    {
         if (string.IsNullOrWhiteSpace(draft.CommanderName))
         {
             errors.Add("An active commander is required.");
         }
+    }
 
+    private static void ValidateDock(
+        ColonizationDockingSnapshot? dock,
+        List<string> errors)
+    {
         if (dock is null)
         {
             errors.Add("Dock at a colonisation construction site first.");
+            return;
         }
-        else if (!dock.IsConstructionSite)
+
+        if (!dock.IsConstructionSite)
         {
             errors.Add("The current station is not a colonisation construction site.");
         }
+    }
 
+    private static void ValidateDepot(
+        ColonizationDockingSnapshot? dock,
+        ColonizationConstructionDepotSnapshot? depot,
+        List<string> errors)
+    {
         if (depot is null)
         {
             errors.Add("Open Construction Services to load required commodities.");
+            return;
         }
-        else
+
+        if (dock is not null && depot.MarketId != dock.MarketId)
         {
-            if (dock is not null && depot.MarketId != dock.MarketId)
-            {
-                errors.Add("The construction requirements belong to a different market.");
-            }
-
-            if (depot.IsComplete)
-            {
-                errors.Add("The current construction project is already complete.");
-            }
-
-            if (depot.IsFailed)
-            {
-                errors.Add("The current construction project has failed.");
-            }
-
-            if (depot.Resources.Count == 0)
-            {
-                errors.Add("The construction depot reported no required commodities.");
-            }
-
-            if (depot.TotalRequired > int.MaxValue)
-            {
-                errors.Add("The construction requirement exceeds the supported size.");
-            }
+            errors.Add("The construction requirements belong to a different market.");
         }
 
+        if (depot.IsComplete)
+        {
+            errors.Add("The current construction project is already complete.");
+        }
+
+        if (depot.IsFailed)
+        {
+            errors.Add("The current construction project has failed.");
+        }
+
+        if (depot.Resources.Count == 0)
+        {
+            errors.Add("The construction depot reported no required commodities.");
+        }
+
+        if (depot.TotalRequired > int.MaxValue)
+        {
+            errors.Add("The construction requirement exceeds the supported size.");
+        }
+    }
+
+    private void ValidateProjectIdentity(
+        ColonizationProjectDraft draft,
+        ColonizationDockingSnapshot? dock,
+        List<string> errors)
+    {
         if (string.IsNullOrWhiteSpace(draft.BuildName))
         {
             errors.Add("Enter a project name.");
@@ -126,15 +156,20 @@ public sealed class ColonizationProjectFactory
         }
 
         if (string.IsNullOrWhiteSpace(draft.SystemName)
-            || dock is not null
+            || (dock is not null
                 && !string.Equals(
                     draft.SystemName.Trim(),
                     dock.SystemName,
-                    StringComparison.OrdinalIgnoreCase))
+                    StringComparison.OrdinalIgnoreCase)))
         {
             errors.Add("The project system does not match the current dock.");
         }
+    }
 
+    private static void ValidateCoordinates(
+        ColonizationProjectDraft draft,
+        List<string> errors)
+    {
         if (draft.StarPosition.Count != 3
             || draft.StarPosition.Any(coordinate => !double.IsFinite(coordinate)))
         {
@@ -145,8 +180,6 @@ public sealed class ColonizationProjectFactory
         {
             errors.Add("The body number is not valid.");
         }
-
-        return errors;
     }
 
     private static string? NormalizeOptional(string? value)

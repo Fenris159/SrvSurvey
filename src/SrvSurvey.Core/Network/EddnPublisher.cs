@@ -414,47 +414,71 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             return null;
         }
 
-        var suppressBatchForCrew = isCrewMember;
-        var batchLocation = pendingSignalLocation;
-        if (batchLocation is null
-            && eventLocation is not null
-            && pendingSignals.All(signal =>
-                signal.Value<long?>("SystemAddress")
-                    == eventLocation.systemAddress))
-        {
-            batchLocation = eventLocation;
-        }
-
-        QueueCandidate? signalBatch = null;
-        if (EddnMessageSanitizer.tryBuildSignalBatch(
-            pendingSignals,
+        var batchLocation = ResolvePendingSignalLocation(eventLocation);
+        var signalBatch = BuildPendingSignalBatch(
             batchLocation,
-            horizons,
-            odyssey,
-            out var preparedBatch,
-            out var batchReason))
-        {
-            if (HasUsableHeader()
-                && enabled
-                && allowPublishing
-                && !publishingSuspended
-                && !suppressBatchForCrew)
-            {
-                signalBatch = new QueueCandidate(
-                    preparedBatch!,
-                    header!.clone(),
-                    useTestSchemas,
-                    sessionGeneration);
-            }
-        }
-        else if (batchReason != "no public signals remained after filtering")
-        {
-            warnings.Add(
-                "EDDN skipped FSSSignalDiscovered batch: " + batchReason);
-        }
-
+            enabled,
+            useTestSchemas,
+            allowPublishing,
+            warnings);
         ClearPendingSignals();
         return signalBatch;
+    }
+
+    private EddnLocationContext? ResolvePendingSignalLocation(
+        EddnLocationContext? eventLocation)
+    {
+        if (pendingSignalLocation is not null)
+        {
+            return pendingSignalLocation;
+        }
+
+        if (eventLocation is null)
+        {
+            return null;
+        }
+
+        var address = eventLocation.systemAddress;
+        return pendingSignals.All(signal =>
+                signal.Value<long?>("SystemAddress") == address)
+            ? eventLocation
+            : null;
+    }
+
+    private QueueCandidate? BuildPendingSignalBatch(
+        EddnLocationContext? batchLocation,
+        bool enabled,
+        bool useTestSchemas,
+        bool allowPublishing,
+        List<string> warnings)
+    {
+        if (!EddnMessageSanitizer.tryBuildSignalBatch(
+                pendingSignals,
+                batchLocation,
+                horizons,
+                odyssey,
+                out var preparedBatch,
+                out var batchReason))
+        {
+            if (batchReason != "no public signals remained after filtering")
+            {
+                warnings.Add(
+                    "EDDN skipped FSSSignalDiscovered batch: " + batchReason);
+            }
+
+            return null;
+        }
+
+        if (!CanPublishNow(enabled, allowPublishing))
+        {
+            return null;
+        }
+
+        return new QueueCandidate(
+            preparedBatch!,
+            header!.clone(),
+            useTestSchemas,
+            sessionGeneration);
     }
 
     private void UpdateCrewMembership(string eventName)
@@ -489,76 +513,86 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
     private (QueueCandidate? Journal, CompanionCandidate? Companion, string? SkipReason)
         BuildPublicationCandidates(EddnPublicationCandidateContext request)
     {
-        var eventName = request.EventName;
-        var raw = request.Raw;
-        var enabled = request.Enabled;
-        var useTestSchemas = request.UseTestSchemas;
-        var allowPublishing = request.AllowPublishing;
-        var journalDirectory = request.JournalDirectory;
-        var allowSharedData = request.AllowSharedData;
-
-        if (eventName == "FSSSignalDiscovered")
+        if (request.EventName == "FSSSignalDiscovered")
         {
-            if (enabled
-                && allowPublishing
-                && !publishingSuspended
-                && !isCrewMember
-                && HasUsableHeader())
-            {
-                pendingSignalLocation ??= location;
-                pendingSignals.Add(new JObject(raw));
-            }
-
+            BufferSignalIfPublishable(request);
             return (null, null, null);
         }
 
-        if (!enabled
-            || !allowPublishing
-            || publishingSuspended
-            || isCrewMember
-            || !HasUsableHeader())
+        if (!CanPublishNow(request.Enabled, request.AllowPublishing))
         {
             return (null, null, null);
         }
 
-        var context = CreateContext();
-        if (EddnMessageSanitizer.isCompanionEvent(eventName))
+        if (EddnMessageSanitizer.isCompanionEvent(request.EventName))
         {
-            if (!allowSharedData)
-            {
-                return (null, null,
-                    "shared companion files are suppressed while multiple Elite instances are active");
-            }
-
-            if (string.IsNullOrWhiteSpace(journalDirectory))
-            {
-                return (null, null, "the journal directory was unavailable");
-            }
-
-            return (null, new CompanionCandidate(
-                new JObject(raw),
-                context,
-                header!.clone(),
-                useTestSchemas,
-                sessionGeneration,
-                journalDirectory), null);
+            return BuildCompanionCandidate(request);
         }
 
-        if (!JournalEvents.Contains(eventName))
+        return BuildJournalCandidate(request);
+    }
+
+    private void BufferSignalIfPublishable(EddnPublicationCandidateContext request)
+    {
+        if (!CanPublishNow(request.Enabled, request.AllowPublishing))
+        {
+            return;
+        }
+
+        pendingSignalLocation ??= location;
+        pendingSignals.Add(new JObject(request.Raw));
+    }
+
+    private bool CanPublishNow(bool enabled, bool allowPublishing)
+    {
+        return enabled
+            && allowPublishing
+            && !publishingSuspended
+            && !isCrewMember
+            && HasUsableHeader();
+    }
+
+    private (QueueCandidate? Journal, CompanionCandidate? Companion, string? SkipReason)
+        BuildCompanionCandidate(EddnPublicationCandidateContext request)
+    {
+        if (!request.AllowSharedData)
+        {
+            return (null, null,
+                "shared companion files are suppressed while multiple Elite instances are active");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.JournalDirectory))
+        {
+            return (null, null, "the journal directory was unavailable");
+        }
+
+        return (null, new CompanionCandidate(
+            new JObject(request.Raw),
+            CreateContext(),
+            header!.clone(),
+            request.UseTestSchemas,
+            sessionGeneration,
+            request.JournalDirectory), null);
+    }
+
+    private (QueueCandidate? Journal, CompanionCandidate? Companion, string? SkipReason)
+        BuildJournalCandidate(EddnPublicationCandidateContext request)
+    {
+        if (!JournalEvents.Contains(request.EventName))
         {
             return (null, null, null);
         }
 
         if (EddnMessageSanitizer.tryBuildJournal(
-            raw,
-            context,
-            out var prepared,
-            out var reason))
+                request.Raw,
+                CreateContext(),
+                out var prepared,
+                out var reason))
         {
             return (new QueueCandidate(
                 prepared!,
                 header!.clone(),
-                useTestSchemas,
+                request.UseTestSchemas,
                 sessionGeneration), null, null);
         }
 
@@ -911,61 +945,8 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
             ?? "companion file";
         try
         {
-            var read = await EddnCompanionFileReader.read(
-                candidate.JournalDirectory,
-                candidate.JournalEvent,
-                cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (!read.isSuccess)
-            {
-                if (IsCurrentSession(candidate.Generation))
-                {
-                    WriteLog($"EDDN skipped {eventName}: {read.error}");
-                }
-
-                return;
-            }
-
-            if (!IsCurrentSession(candidate.Generation))
-            {
-                return;
-            }
-
-            if (!EddnMessageSanitizer.tryBuildCompanion(
-                read.content!,
-                candidate.Context,
-                out var prepared,
-                out var reason))
-            {
-                WriteLog($"EDDN skipped {eventName}: {reason}");
-                return;
-            }
-
-            if (!TryReserveStationSignature(
-                prepared!,
-                candidate.Generation,
-                out var signatureKey,
-                out var signature))
-            {
-                return;
-            }
-
-            var item = EddnTransport.prepare(
-                prepared!.message,
-                prepared.schemaRef,
-                candidate.Header,
-                candidate.UseTestSchemas);
-            if (!TryStageOutboxWrite(
-                item,
-                candidate.Generation,
-                eventName,
-                () => ReleaseStationSignature(signatureKey, signature)))
-            {
-                ReleaseStationSignature(signatureKey, signature);
-                if (IsCurrentSession(candidate.Generation))
-                {
-                    WriteLog($"EDDN could not queue {eventName} for upload.");
-                }
-            }
+            await ProcessCompanionFileCoreAsync(candidate, eventName, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (
             cancellationToken.IsCancellationRequested)
@@ -979,10 +960,84 @@ public sealed class EddnPublisher : IEddnPublisher, IDisposable
                 or UnauthorizedAccessException
                 or InvalidDataException)
         {
-            if (IsCurrentSession(candidate.Generation))
-            {
-                WriteLog($"EDDN skipped {eventName}: {exception.Message}");
-            }
+            LogSkippedIfCurrent(candidate.Generation, eventName, exception.Message);
+        }
+    }
+
+    private async Task ProcessCompanionFileCoreAsync(
+        CompanionCandidate candidate,
+        string eventName,
+        CancellationToken cancellationToken)
+    {
+        var read = await EddnCompanionFileReader.read(
+                candidate.JournalDirectory,
+                candidate.JournalEvent,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+        if (!read.isSuccess)
+        {
+            LogSkippedIfCurrent(candidate.Generation, eventName, read.error);
+            return;
+        }
+
+        if (!IsCurrentSession(candidate.Generation))
+        {
+            return;
+        }
+
+        if (!EddnMessageSanitizer.tryBuildCompanion(
+                read.content!,
+                candidate.Context,
+                out var prepared,
+                out var reason))
+        {
+            WriteLog($"EDDN skipped {eventName}: {reason}");
+            return;
+        }
+
+        QueuePreparedCompanion(candidate, eventName, prepared!);
+    }
+
+    private void QueuePreparedCompanion(
+        CompanionCandidate candidate,
+        string eventName,
+        EddnPreparedMessage prepared)
+    {
+        if (!TryReserveStationSignature(
+                prepared,
+                candidate.Generation,
+                out var signatureKey,
+                out var signature))
+        {
+            return;
+        }
+
+        var item = EddnTransport.prepare(
+            prepared.message,
+            prepared.schemaRef,
+            candidate.Header,
+            candidate.UseTestSchemas);
+        if (TryStageOutboxWrite(
+                item,
+                candidate.Generation,
+                eventName,
+                () => ReleaseStationSignature(signatureKey, signature)))
+        {
+            return;
+        }
+
+        ReleaseStationSignature(signatureKey, signature);
+        if (IsCurrentSession(candidate.Generation))
+        {
+            WriteLog($"EDDN could not queue {eventName} for upload.");
+        }
+    }
+
+    private void LogSkippedIfCurrent(long generation, string eventName, string? detail)
+    {
+        if (IsCurrentSession(generation))
+        {
+            WriteLog($"EDDN skipped {eventName}: {detail}");
         }
     }
 

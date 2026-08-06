@@ -318,20 +318,41 @@ public sealed class ReleasePackageStagingService
             return manifestBytes;
         }
 
-        if (!isDirectory
-            && entry.EntryType is not (
-                TarEntryType.RegularFile or TarEntryType.V7RegularFile))
-        {
-            throw new InvalidDataException(
-                $"The update archive contains unsupported entry '{entry.Name}'.");
-        }
-
+        EnsureSupportedTarEntry(entry, isDirectory);
         var path = NormalizeArchivePath(entry.Name, isDirectory);
         if (isDirectory)
         {
             return manifestBytes;
         }
 
+        return await CaptureTarFileEntryAsync(
+                entry,
+                path,
+                entries,
+                manifestBytes,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static void EnsureSupportedTarEntry(TarEntry entry, bool isDirectory)
+    {
+        if (isDirectory
+            || entry.EntryType is TarEntryType.RegularFile or TarEntryType.V7RegularFile)
+        {
+            return;
+        }
+
+        throw new InvalidDataException(
+            $"The update archive contains unsupported entry '{entry.Name}'.");
+    }
+
+    private static async Task<byte[]?> CaptureTarFileEntryAsync(
+        TarEntry entry,
+        string path,
+        Dictionary<string, ArchiveEntryInfo> entries,
+        byte[]? manifestBytes,
+        CancellationToken cancellationToken)
+    {
         if (!entries.TryAdd(path, new ArchiveEntryInfo(entry.Length)))
         {
             throw new InvalidDataException(
@@ -366,24 +387,7 @@ public sealed class ReleasePackageStagingService
 
         try
         {
-            using var document = JsonDocument.Parse(bytes);
-            var root = document.RootElement;
-            var manifestVersion = ValidateManifestHeader(root, version, package);
-            var runtimeIdentifier = ReadString(root, "runtimeIdentifier");
-            var entryPoint = ValidateEntryPoint(root, runtimeIdentifier);
-            var (files, expandedBytes) = ParseManifestFiles(root, runtimeIdentifier);
-            if (files.Count == 0 || !files.ContainsKey(entryPoint))
-            {
-                throw new InvalidDataException(
-                    "The update package manifest does not contain its entry point.");
-            }
-
-            return new ReleasePackageManifest(
-                manifestVersion,
-                runtimeIdentifier,
-                entryPoint,
-                files,
-                expandedBytes);
+            return ParseManifestDocument(bytes, version, package);
         }
         catch (JsonException exception)
         {
@@ -397,6 +401,31 @@ public sealed class ReleasePackageStagingService
                 "The update package manifest size total overflowed.",
                 exception);
         }
+    }
+
+    private static ReleasePackageManifest ParseManifestDocument(
+        byte[] bytes,
+        ReleaseVersion version,
+        CrossPlatformReleasePackage package)
+    {
+        using var document = JsonDocument.Parse(bytes);
+        var root = document.RootElement;
+        var manifestVersion = ValidateManifestHeader(root, version, package);
+        var runtimeIdentifier = ReadString(root, "runtimeIdentifier");
+        var entryPoint = ValidateEntryPoint(root, runtimeIdentifier);
+        var (files, expandedBytes) = ParseManifestFiles(root, runtimeIdentifier);
+        if (files.Count == 0 || !files.ContainsKey(entryPoint))
+        {
+            throw new InvalidDataException(
+                "The update package manifest does not contain its entry point.");
+        }
+
+        return new ReleasePackageManifest(
+            manifestVersion,
+            runtimeIdentifier,
+            entryPoint,
+            files,
+            expandedBytes);
     }
 
     private static ReleaseVersion ValidateManifestHeader(
@@ -495,6 +524,23 @@ public sealed class ReleasePackageStagingService
                 "The update package manifest contains too many files.");
         }
 
+        var path = ReadManifestPath(fileElement);
+        var size = ReadManifestSize(fileElement, path);
+        expandedBytes = checked(expandedBytes + size);
+        EnsureExpandedSizeWithinLimit(expandedBytes);
+        var sha256 = ReadManifestSha256(fileElement, path);
+        RegisterManifestFile(
+            files,
+            caseInsensitivePaths,
+            runtimeIdentifier,
+            path,
+            size,
+            sha256);
+        return expandedBytes;
+    }
+
+    private static string ReadManifestPath(JsonElement fileElement)
+    {
         var path = ReadString(fileElement, "path");
         if (NormalizeArchivePath(path, isDirectory: false) != path
             || path == ManifestName)
@@ -503,6 +549,11 @@ public sealed class ReleasePackageStagingService
                 $"The update package manifest has invalid path '{path}'.");
         }
 
+        return path;
+    }
+
+    private static long ReadManifestSize(JsonElement fileElement, string path)
+    {
         var size = ReadInt64(fileElement, "size");
         if (size is < 0 or > MaximumSingleFileBytes)
         {
@@ -510,13 +561,20 @@ public sealed class ReleasePackageStagingService
                 $"The update package file '{path}' has an invalid size.");
         }
 
-        expandedBytes = checked(expandedBytes + size);
+        return size;
+    }
+
+    private static void EnsureExpandedSizeWithinLimit(long expandedBytes)
+    {
         if (expandedBytes > MaximumExpandedBytes)
         {
             throw new InvalidDataException(
                 "The update package exceeds the supported expanded size.");
         }
+    }
 
+    private static string ReadManifestSha256(JsonElement fileElement, string path)
+    {
         var sha256 = ReadString(fileElement, "sha256").ToLowerInvariant();
         if (sha256.Length != 64
             || sha256.Any(character => !Uri.IsHexDigit(character)))
@@ -525,6 +583,17 @@ public sealed class ReleasePackageStagingService
                 $"The update package file '{path}' has an invalid SHA-256.");
         }
 
+        return sha256;
+    }
+
+    private static void RegisterManifestFile(
+        Dictionary<string, ReleasePackageManifestFile> files,
+        HashSet<string> caseInsensitivePaths,
+        string runtimeIdentifier,
+        string path,
+        long size,
+        string sha256)
+    {
         if (!files.TryAdd(
                 path,
                 new ReleasePackageManifestFile(path, size, sha256))
@@ -534,8 +603,6 @@ public sealed class ReleasePackageStagingService
             throw new InvalidDataException(
                 $"The update package manifest contains duplicate path '{path}'.");
         }
-
-        return expandedBytes;
     }
 
     private static void ValidateEntrySet(
@@ -691,6 +758,26 @@ public sealed class ReleasePackageStagingService
             128 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        var total = await CopyAndHashAsync(
+                source,
+                output,
+                hash,
+                file,
+                cancellationToken)
+            .ConfigureAwait(false);
+        ValidateExtractedFile(file, total, hash);
+        await output.FlushAsync(cancellationToken).ConfigureAwait(false);
+        output.Close();
+        ApplyUnixModeIfNeeded(destination, mode);
+    }
+
+    private static async Task<long> CopyAndHashAsync(
+        Stream source,
+        Stream output,
+        IncrementalHash hash,
+        ReleasePackageManifestFile file,
+        CancellationToken cancellationToken)
+    {
         var buffer = new byte[128 * 1024];
         long total = 0;
         while (true)
@@ -699,7 +786,7 @@ public sealed class ReleasePackageStagingService
                 .ConfigureAwait(false);
             if (read == 0)
             {
-                break;
+                return total;
             }
 
             total += read;
@@ -713,7 +800,13 @@ public sealed class ReleasePackageStagingService
             await output.WriteAsync(buffer.AsMemory(0, read), cancellationToken)
                 .ConfigureAwait(false);
         }
+    }
 
+    private static void ValidateExtractedFile(
+        ReleasePackageManifestFile file,
+        long total,
+        IncrementalHash hash)
+    {
         if (total != file.Size)
         {
             throw new InvalidDataException(
@@ -726,9 +819,10 @@ public sealed class ReleasePackageStagingService
             throw new InvalidDataException(
                 $"The update archive entry '{file.Path}' failed SHA-256 verification.");
         }
+    }
 
-        await output.FlushAsync(cancellationToken).ConfigureAwait(false);
-        output.Close();
+    private static void ApplyUnixModeIfNeeded(string destination, UnixFileMode? mode)
+    {
         if (!OperatingSystem.IsWindows() && mode.HasValue)
         {
             File.SetUnixFileMode(destination, SanitizeMode(mode.Value));

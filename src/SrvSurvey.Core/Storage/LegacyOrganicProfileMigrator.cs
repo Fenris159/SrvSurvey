@@ -250,19 +250,50 @@ public sealed class LegacyOrganicProfileMigrator
             return (0, 0, 0);
         }
 
-        if (commanderProfiles.Count > 0
-            && commanderProfiles.All(profile => GetBoolean(
-                profile.Root,
-                MigratedNonSystemDataOrganicsProperty) == true))
+        if (AreCommanderProfilesAlreadyMigrated(commanderProfiles))
         {
             return (0, 0, 0);
         }
 
+        var bodyErrorsBefore = errors.Count;
+        var totals = await MigrateBodyFilesAsync(
+                frontierDirectory,
+                frontierId,
+                commanderProfiles,
+                errors,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (commanderProfiles.Count > 0 && errors.Count == bodyErrorsBefore)
+        {
+            await MarkCommanderProfilesMigratedAsync(
+                    commanderProfiles,
+                    migratedProfilePaths,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        return totals;
+    }
+
+    private static bool AreCommanderProfilesAlreadyMigrated(
+        IReadOnlyList<CommanderProfile> commanderProfiles)
+    {
+        return commanderProfiles.Count > 0
+            && commanderProfiles.All(profile => GetBoolean(
+                profile.Root,
+                MigratedNonSystemDataOrganicsProperty) == true);
+    }
+
+    private async Task<(int migratedBodies, int migratedScans, int migratedOrganisms)> MigrateBodyFilesAsync(
+        string frontierDirectory,
+        string frontierId,
+        IReadOnlyList<CommanderProfile> commanderProfiles,
+        List<string> errors,
+        CancellationToken cancellationToken)
+    {
         var migratedBodies = 0;
         var migratedScans = 0;
         var migratedOrganisms = 0;
-        var bodyErrorsBefore = errors.Count;
-
         foreach (var bodyPath in Directory.EnumerateFiles(
                      frontierDirectory,
                      "*.json",
@@ -270,95 +301,121 @@ public sealed class LegacyOrganicProfileMigrator
                  .Order(StringComparer.Ordinal))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                EnsureRegularFile(bodyPath);
-                var source = await ReadObjectAsync(
-                        bodyPath,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                var migration = await MigrateBodyAsync(
-                        frontierId,
-                        source,
-                        commanderProfiles,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                if (migration.Changed)
-                {
-                    migratedBodies++;
-                }
-
-                migratedScans += migration.ScanCount;
-                migratedOrganisms += migration.OrganismCount;
-            }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or JsonException
-                    or InvalidDataException
-                    or ArgumentException)
-            {
-                errors.Add(
-                    $"organic/{frontierId}/{Path.GetFileName(bodyPath)} "
-                        + "was preserved but not converted: "
-                        + exception.Message);
-            }
-        }
-
-        if (commanderProfiles.Count > 0
-            && errors.Count == bodyErrorsBefore)
-        {
-            foreach (var profile in commanderProfiles)
-            {
-                if (GetBoolean(
-                        profile.Root,
-                        MigratedNonSystemDataOrganicsProperty) == true)
-                {
-                    continue;
-                }
-
-                profile.Root[MigratedNonSystemDataOrganicsProperty] = true;
-                await WriteObjectAsync(profile.Path, profile.Root, cancellationToken)
-                    .ConfigureAwait(false);
-                migratedProfilePaths.Add(profile.Path);
-            }
+            var result = await TryMigrateBodyFileAsync(
+                    bodyPath,
+                    frontierId,
+                    commanderProfiles,
+                    errors,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            migratedBodies += result.migratedBodies;
+            migratedScans += result.migratedScans;
+            migratedOrganisms += result.migratedOrganisms;
         }
 
         return (migratedBodies, migratedScans, migratedOrganisms);
     }
 
+    private async Task<(int migratedBodies, int migratedScans, int migratedOrganisms)> TryMigrateBodyFileAsync(
+        string bodyPath,
+        string frontierId,
+        IReadOnlyList<CommanderProfile> commanderProfiles,
+        List<string> errors,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            EnsureRegularFile(bodyPath);
+            var source = await ReadObjectAsync(bodyPath, cancellationToken)
+                .ConfigureAwait(false);
+            var migration = await MigrateBodyAsync(
+                    frontierId,
+                    source,
+                    commanderProfiles,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            return (
+                migration.Changed ? 1 : 0,
+                migration.ScanCount,
+                migration.OrganismCount);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or JsonException
+                or InvalidDataException
+                or ArgumentException)
+        {
+            errors.Add(
+                $"organic/{frontierId}/{Path.GetFileName(bodyPath)} "
+                    + "was preserved but not converted: "
+                    + exception.Message);
+            return (0, 0, 0);
+        }
+    }
+
+    private async Task MarkCommanderProfilesMigratedAsync(
+        IReadOnlyList<CommanderProfile> commanderProfiles,
+        HashSet<string> migratedProfilePaths,
+        CancellationToken cancellationToken)
+    {
+        foreach (var profile in commanderProfiles)
+        {
+            if (GetBoolean(profile.Root, MigratedNonSystemDataOrganicsProperty) == true)
+            {
+                continue;
+            }
+
+            profile.Root[MigratedNonSystemDataOrganicsProperty] = true;
+            await WriteObjectAsync(profile.Path, profile.Root, cancellationToken)
+                .ConfigureAwait(false);
+            migratedProfilePaths.Add(profile.Path);
+        }
+    }
+
     private bool MigrateCommanderClaims(JsonObject root)
     {
         var entries = ReadClaimEntries(root);
-        if (root[ScannedOrganicsProperty] is { } organicNode
-            && organicNode is not JsonArray)
-        {
-            throw new InvalidDataException(
-                "The legacy scannedOrganics value is not an array.");
-        }
-
-        var scannedOrganics = root[ScannedOrganicsProperty] as JsonArray;
+        var scannedOrganics = RequireOptionalArray(root, ScannedOrganicsProperty);
         if (entries.Count == 0 && scannedOrganics is not { Count: > 0 })
         {
             return false;
         }
 
+        var migrated = BuildMigratedClaims(entries, scannedOrganics);
+        if (ClaimsAlreadyMigrated(root, entries, migrated))
+        {
+            return false;
+        }
+
+        root[ScannedBioEntryIdsProperty] = new JsonArray(
+            migrated.Select(value => JsonValue.Create(value)).ToArray());
+        root[OrganicRewardsProperty] = CalculateClaimRewards(migrated);
+        root[MigratedScannedOrganicsInEntryIdProperty] = true;
+        return true;
+    }
+
+    private static JsonArray? RequireOptionalArray(JsonObject root, string propertyName)
+    {
+        if (root[propertyName] is { } node && node is not JsonArray)
+        {
+            throw new InvalidDataException(
+                $"The legacy {propertyName} value is not an array.");
+        }
+
+        return root[propertyName] as JsonArray;
+    }
+
+    private List<string> BuildMigratedClaims(
+        List<string> entries,
+        JsonArray? scannedOrganics)
+    {
         var migrated = entries
             .Select(entry => NormalizeClaim(entry)
                 ?? throw new InvalidDataException(
                     $"The legacy organic claim '{entry}' could not be converted safely."))
             .ToList();
-        if (scannedOrganics is not null)
-        {
-            foreach (var claim in CollectScannedOrganicsClaims(scannedOrganics))
-            {
-                if (!migrated.Any(existing => IsSameLegacyClaim(existing, claim)))
-                {
-                    migrated.Add(claim);
-                }
-            }
-        }
-
+        MergeScannedOrganicsClaims(migrated, scannedOrganics);
         migrated = migrated
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
@@ -369,21 +426,38 @@ public sealed class LegacyOrganicProfileMigrator
                 "The converted legacy organic claims did not pass validation.");
         }
 
+        return migrated;
+    }
+
+    private void MergeScannedOrganicsClaims(
+        List<string> migrated,
+        JsonArray? scannedOrganics)
+    {
+        if (scannedOrganics is null)
+        {
+            return;
+        }
+
+        foreach (var claim in CollectScannedOrganicsClaims(scannedOrganics))
+        {
+            if (!migrated.Any(existing => IsSameLegacyClaim(existing, claim)))
+            {
+                migrated.Add(claim);
+            }
+        }
+    }
+
+    private static bool ClaimsAlreadyMigrated(
+        JsonObject root,
+        List<string> entries,
+        List<string> migrated)
+    {
         var current = entries
             .Distinct(StringComparer.Ordinal)
             .Order(StringComparer.Ordinal)
             .ToArray();
-        if (current.SequenceEqual(migrated, StringComparer.Ordinal)
-            && GetBoolean(root, MigratedScannedOrganicsInEntryIdProperty) == true)
-        {
-            return false;
-        }
-
-        root[ScannedBioEntryIdsProperty] = new JsonArray(
-            migrated.Select(value => JsonValue.Create(value)).ToArray());
-        root[OrganicRewardsProperty] = CalculateClaimRewards(migrated);
-        root[MigratedScannedOrganicsInEntryIdProperty] = true;
-        return true;
+        return current.SequenceEqual(migrated, StringComparer.Ordinal)
+            && GetBoolean(root, MigratedScannedOrganicsInEntryIdProperty) == true;
     }
 
     private static List<string> ReadClaimEntries(JsonObject root)
@@ -449,38 +523,54 @@ public sealed class LegacyOrganicProfileMigrator
     private string? NormalizeClaim(string value)
     {
         var parts = value.Split('_', StringSplitOptions.TrimEntries);
-        if (parts.Length is < 3 or > 5
-            || !long.TryParse(
-                parts[0],
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var systemAddress)
-            || systemAddress <= 0
-            || !int.TryParse(
-                parts[1],
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var bodyId)
-            || bodyId < 0
-            || !long.TryParse(
-                parts[2],
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var entryId)
-            || entryId <= 0)
+        if (!TryParseClaimIdentity(parts, out var entryId))
         {
             return null;
         }
 
-        var reference = FindByEntryIdOrPrefix(entryId.ToString(
-            CultureInfo.InvariantCulture));
-        if (parts.Length == 3)
+        return parts.Length switch
         {
-            return reference is null
-                ? null
-                : $"{value}_{reference.Reward}_{bool.FalseString}";
-        }
+            3 => ExpandShortClaim(value, entryId),
+            4 => ExpandRewardOnlyClaim(value, parts),
+            5 => NormalizeFullClaim(parts),
+            _ => null,
+        };
+    }
 
+    private static bool TryParseClaimIdentity(string[] parts, out long entryId)
+    {
+        entryId = 0;
+        return parts.Length is >= 3 and <= 5
+            && long.TryParse(
+                parts[0],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var systemAddress)
+            && systemAddress > 0
+            && int.TryParse(
+                parts[1],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var bodyId)
+            && bodyId >= 0
+            && long.TryParse(
+                parts[2],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out entryId)
+            && entryId > 0;
+    }
+
+    private string? ExpandShortClaim(string value, long entryId)
+    {
+        var reference = FindByEntryIdOrPrefix(entryId.ToString(CultureInfo.InvariantCulture));
+        return reference is null
+            ? null
+            : $"{value}_{reference.Reward}_{bool.FalseString}";
+    }
+
+    private static string? ExpandRewardOnlyClaim(string value, string[] parts)
+    {
         if (!long.TryParse(
                 parts[3],
                 NumberStyles.Integer,
@@ -491,15 +581,25 @@ public sealed class LegacyOrganicProfileMigrator
             return null;
         }
 
-        if (parts.Length == 4)
+        return $"{value}_{bool.FalseString}";
+    }
+
+    private static string? NormalizeFullClaim(string[] parts)
+    {
+        if (!long.TryParse(
+                parts[3],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var reward)
+            || reward < 0)
         {
-            return $"{value}_{bool.FalseString}";
+            return null;
         }
 
         return bool.TryParse(parts[4], out var firstFootfall)
             && (!firstFootfall || reward <= long.MaxValue / 5)
-            ? $"{parts[0]}_{parts[1]}_{parts[2]}_{reward}_{firstFootfall}"
-            : null;
+                ? $"{parts[0]}_{parts[1]}_{parts[2]}_{reward}_{firstFootfall}"
+                : null;
     }
 
     private string? CreateLegacyClaim(JsonObject scan)
@@ -643,13 +743,7 @@ public sealed class LegacyOrganicProfileMigrator
         int bodyId,
         ref bool changed)
     {
-        var body = bodies.OfType<JsonObject>().FirstOrDefault(candidate =>
-                GetInt32(candidate, IdProperty) == bodyId)
-            ?? bodies.OfType<JsonObject>().FirstOrDefault(candidate =>
-                string.Equals(
-                    GetString(candidate, NameProperty),
-                    bodyName,
-                    StringComparison.OrdinalIgnoreCase));
+        var body = FindBody(bodies, bodyName, bodyId);
         if (body is null)
         {
             body = new JsonObject
@@ -660,15 +754,27 @@ public sealed class LegacyOrganicProfileMigrator
             };
             bodies.Add(body);
             changed = true;
-        }
-        else
-        {
-            changed |= SetIfMissing(body, NameProperty, bodyName);
-            changed |= SetIfMissing(body, IdProperty, bodyId);
-            changed |= EnsureBodyType(body);
+            return body;
         }
 
+        changed |= SetIfMissing(body, NameProperty, bodyName);
+        changed |= SetIfMissing(body, IdProperty, bodyId);
+        changed |= EnsureBodyType(body);
         return body;
+    }
+
+    private static JsonObject? FindBody(
+        JsonArray bodies,
+        string bodyName,
+        int bodyId)
+    {
+        return bodies.OfType<JsonObject>().FirstOrDefault(candidate =>
+                GetInt32(candidate, IdProperty) == bodyId)
+            ?? bodies.OfType<JsonObject>().FirstOrDefault(candidate =>
+                string.Equals(
+                    GetString(candidate, NameProperty),
+                    bodyName,
+                    StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool EnsureBodyType(JsonObject body)
@@ -726,14 +832,7 @@ public sealed class LegacyOrganicProfileMigrator
             return;
         }
 
-        var exactEntryIds = body[OrganicsProperty] is JsonArray organisms
-            ? organisms.OfType<JsonObject>()
-                .Select(organism => GetInt64(organism, EntryIdProperty))
-                .Where(entryId => entryId is > 0 && !IsWeakEntryId(entryId))
-                .Select(entryId => entryId!.Value)
-                .Distinct()
-                .ToArray()
-            : [];
+        var exactEntryIds = CollectExactEntryIds(body);
         var prefix = $"{systemAddress}_{bodyId}_";
         var firstFootfall = GetBoolean(body, FirstFootFallProperty) == true;
         var claims = claimArray
@@ -742,47 +841,8 @@ public sealed class LegacyOrganicProfileMigrator
         var changed = false;
         for (var index = 0; index < claims.Length; index++)
         {
-            if (!claims[index].StartsWith(prefix, StringComparison.Ordinal))
+            if (TryRepairClaim(claims, index, prefix, exactEntryIds, firstFootfall))
             {
-                continue;
-            }
-
-            var parts = claims[index].Split('_');
-            if (parts.Length != 5)
-            {
-                continue;
-            }
-
-            if (long.TryParse(
-                    parts[2],
-                    NumberStyles.Integer,
-                    CultureInfo.InvariantCulture,
-                    out var claimedEntryId)
-                && IsWeakEntryId(claimedEntryId)
-                && parts[2].Length >= 5)
-            {
-                var entryPrefix = parts[2][..5];
-                var exactEntryId = exactEntryIds.FirstOrDefault(candidate =>
-                    candidate.ToString(CultureInfo.InvariantCulture).StartsWith(
-                        entryPrefix,
-                        StringComparison.Ordinal));
-                if (exactEntryId > 0)
-                {
-                    parts[2] = exactEntryId.ToString(CultureInfo.InvariantCulture);
-                }
-            }
-
-            if (firstFootfall
-                && bool.TryParse(parts[4], out var claimedFirstFootfall)
-                && !claimedFirstFootfall)
-            {
-                parts[4] = bool.TrueString;
-            }
-
-            var repaired = string.Join('_', parts);
-            if (!string.Equals(repaired, claims[index], StringComparison.Ordinal))
-            {
-                claims[index] = repaired;
                 changed = true;
             }
         }
@@ -795,6 +855,82 @@ public sealed class LegacyOrganicProfileMigrator
         commanderProfile[ScannedBioEntryIdsProperty] = new JsonArray(
             claims.Select(value => JsonValue.Create(value)).ToArray());
         commanderProfile[OrganicRewardsProperty] = CalculateClaimRewards(claims);
+    }
+
+    private static long[] CollectExactEntryIds(JsonObject body)
+    {
+        return body[OrganicsProperty] is JsonArray organisms
+            ? organisms.OfType<JsonObject>()
+                .Select(organism => GetInt64(organism, EntryIdProperty))
+                .Where(entryId => entryId is > 0 && !IsWeakEntryId(entryId))
+                .Select(entryId => entryId!.Value)
+                .Distinct()
+                .ToArray()
+            : [];
+    }
+
+    private static bool TryRepairClaim(
+        string[] claims,
+        int index,
+        string prefix,
+        long[] exactEntryIds,
+        bool firstFootfall)
+    {
+        if (!claims[index].StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var parts = claims[index].Split('_');
+        if (parts.Length != 5)
+        {
+            return false;
+        }
+
+        RepairWeakEntryId(parts, exactEntryIds);
+        RepairFirstFootfall(parts, firstFootfall);
+        var repaired = string.Join('_', parts);
+        if (string.Equals(repaired, claims[index], StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        claims[index] = repaired;
+        return true;
+    }
+
+    private static void RepairWeakEntryId(string[] parts, long[] exactEntryIds)
+    {
+        if (!long.TryParse(
+                parts[2],
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var claimedEntryId)
+            || !IsWeakEntryId(claimedEntryId)
+            || parts[2].Length < 5)
+        {
+            return;
+        }
+
+        var entryPrefix = parts[2][..5];
+        var exactEntryId = exactEntryIds.FirstOrDefault(candidate =>
+            candidate.ToString(CultureInfo.InvariantCulture).StartsWith(
+                entryPrefix,
+                StringComparison.Ordinal));
+        if (exactEntryId > 0)
+        {
+            parts[2] = exactEntryId.ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    private static void RepairFirstFootfall(string[] parts, bool firstFootfall)
+    {
+        if (firstFootfall
+            && bool.TryParse(parts[4], out var claimedFirstFootfall)
+            && !claimedFirstFootfall)
+        {
+            parts[4] = bool.TrueString;
+        }
     }
 
     private bool MergeBioScans(
@@ -891,43 +1027,64 @@ public sealed class LegacyOrganicProfileMigrator
 
         var changed = false;
         var target = GetOrCreateArray(body, OrganicsProperty, ref changed);
+        EnsureOrganismArray(target);
+        foreach (var pair in sourceOrganisms)
+        {
+            changed |= MergeOrganismEntry(
+                pair.Key,
+                pair.Value,
+                target,
+                ref organismCount);
+        }
+
+        changed |= UpdateBioSignalCount(body, target.Count);
+        return changed;
+    }
+
+    private static void EnsureOrganismArray(JsonArray target)
+    {
         if (target.Any(node => node is not JsonObject))
         {
             throw new InvalidDataException(
                 "The target organisms array contains a non-object entry.");
         }
+    }
 
-        foreach (var pair in sourceOrganisms)
+    private bool MergeOrganismEntry(
+        string key,
+        JsonNode? value,
+        JsonArray target,
+        ref int organismCount)
+    {
+        if (value is not JsonObject sourceOrganism)
         {
-            if (pair.Value is not JsonObject sourceOrganism)
-            {
-                throw new InvalidDataException(
-                    $"The legacy organism '{pair.Key}' is not an object.");
-            }
-
-            ValidateLegacyOrganism(sourceOrganism);
-            var (reference, genus) = ResolveOrganismMetadata(sourceOrganism);
-            if (string.IsNullOrWhiteSpace(genus))
-            {
-                throw new InvalidDataException(
-                    $"The legacy organism '{pair.Key}' has no recoverable genus.");
-            }
-
-            var existing = FindExistingOrganism(
-                target,
-                sourceOrganism,
-                genus);
-            if (existing is null)
-            {
-                existing = new JsonObject { [GenusProperty] = genus };
-                target.Add(existing);
-                organismCount++;
-                changed = true;
-            }
-
-            changed |= FillOrganism(existing, sourceOrganism, reference);
+            throw new InvalidDataException(
+                $"The legacy organism '{key}' is not an object.");
         }
 
+        ValidateLegacyOrganism(sourceOrganism);
+        var (reference, genus) = ResolveOrganismMetadata(sourceOrganism);
+        if (string.IsNullOrWhiteSpace(genus))
+        {
+            throw new InvalidDataException(
+                $"The legacy organism '{key}' has no recoverable genus.");
+        }
+
+        var existing = FindExistingOrganism(target, sourceOrganism, genus);
+        var changed = false;
+        if (existing is null)
+        {
+            existing = new JsonObject { [GenusProperty] = genus };
+            target.Add(existing);
+            organismCount++;
+            changed = true;
+        }
+
+        return changed | FillOrganism(existing, sourceOrganism, reference);
+    }
+
+    private static bool UpdateBioSignalCount(JsonObject body, int organismCount)
+    {
         if (body[BioSignalCountProperty] is not null
             && GetInt32(body, BioSignalCountProperty) is null)
         {
@@ -936,13 +1093,13 @@ public sealed class LegacyOrganicProfileMigrator
         }
 
         var currentSignalCount = GetInt32(body, BioSignalCountProperty) ?? 0;
-        if (target.Count > currentSignalCount)
+        if (organismCount <= currentSignalCount)
         {
-            body[BioSignalCountProperty] = target.Count;
-            changed = true;
+            return false;
         }
 
-        return changed;
+        body[BioSignalCountProperty] = organismCount;
+        return true;
     }
 
     private (ExobiologyReference? Reference, string? Genus) ResolveOrganismMetadata(

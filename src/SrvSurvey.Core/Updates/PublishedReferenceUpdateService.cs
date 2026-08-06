@@ -129,18 +129,27 @@ public sealed class PublishedReferenceUpdateService
         var remote = await indexClient.GetAsync(cancellationToken)
             .ConfigureAwait(false);
         var plan = EvaluateUpdatePlan(root, previous, remote);
-        var warnings = plan.Warnings;
-        var updated = new List<string>();
         if (!plan.HasAnyUpdate)
         {
             return new PublishedReferenceUpdateResult(
                 previous,
                 previous,
-                updated,
-                warnings,
+                [],
+                plan.Warnings,
                 null);
         }
 
+        return await ApplyUpdatePlanAsync(root, previous, remote, plan, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<PublishedReferenceUpdateResult> ApplyUpdatePlanAsync(
+        string root,
+        PublishedReferenceVersions previous,
+        PublishedDataIndex remote,
+        UpdatePlan plan,
+        CancellationToken cancellationToken)
+    {
         var operationId = Guid.NewGuid().ToString("N");
         var stageRoot = Path.Combine(root, $".reference-update-{operationId}");
         var rollbackRoot = Path.Combine(root, $".reference-rollback-{operationId}");
@@ -153,48 +162,28 @@ public sealed class PublishedReferenceUpdateService
         EnsureChild(root, backupRoot);
         Directory.CreateDirectory(stageRoot);
         var activationCompleted = false;
+        var updated = new List<string>();
 
         try
         {
-            await CopyCurrentReferencesAsync(root, stageRoot, cancellationToken)
-                .ConfigureAwait(false);
-            var stagePublished = await StageCatalogUpdatesAsync(
-                    plan,
-                    stageRoot,
-                    updated,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            var next = BuildNextVersions(previous, remote, plan);
-            await versionStore.WriteAsync(
-                    stagePublished,
-                    next,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            ValidateCandidate(stageRoot, updated);
-            await CopyCurrentReferencesAsync(root, backupRoot, cancellationToken)
-                .ConfigureAwait(false);
-            checkpoint?.Invoke(PublishedReferenceUpdateCheckpoint.BackupVerified);
-            await ActivateAsync(
+            var next = await StageAndActivateAsync(
                     root,
                     stageRoot,
                     rollbackRoot,
+                    backupRoot,
+                    previous,
+                    remote,
+                    plan,
                     updated,
                     cancellationToken)
                 .ConfigureAwait(false);
             activationCompleted = true;
-            var retainedBackup = Directory.EnumerateFileSystemEntries(
-                    backupRoot,
-                    "*",
-                    SearchOption.AllDirectories)
-                .Any()
-                    ? backupRoot
-                    : null;
             return new PublishedReferenceUpdateResult(
                 previous,
                 next,
                 updated,
-                warnings,
-                retainedBackup);
+                plan.Warnings,
+                HasAnyEntries(backupRoot) ? backupRoot : null);
         }
         finally
         {
@@ -206,6 +195,49 @@ public sealed class PublishedReferenceUpdateService
                 activationCompleted);
         }
     }
+
+    private async Task<PublishedReferenceVersions> StageAndActivateAsync(
+        string root,
+        string stageRoot,
+        string rollbackRoot,
+        string backupRoot,
+        PublishedReferenceVersions previous,
+        PublishedDataIndex remote,
+        UpdatePlan plan,
+        List<string> updated,
+        CancellationToken cancellationToken)
+    {
+        await CopyCurrentReferencesAsync(root, stageRoot, cancellationToken)
+            .ConfigureAwait(false);
+        var stagePublished = await StageCatalogUpdatesAsync(
+                plan,
+                stageRoot,
+                updated,
+                cancellationToken)
+            .ConfigureAwait(false);
+        var next = BuildNextVersions(previous, remote, plan);
+        await versionStore.WriteAsync(stagePublished, next, cancellationToken)
+            .ConfigureAwait(false);
+        ValidateCandidate(stageRoot, updated);
+        await CopyCurrentReferencesAsync(root, backupRoot, cancellationToken)
+            .ConfigureAwait(false);
+        checkpoint?.Invoke(PublishedReferenceUpdateCheckpoint.BackupVerified);
+        await ActivateAsync(
+                root,
+                stageRoot,
+                rollbackRoot,
+                updated,
+                cancellationToken)
+            .ConfigureAwait(false);
+        return next;
+    }
+
+    private static bool HasAnyEntries(string directory) =>
+        Directory.EnumerateFileSystemEntries(
+                directory,
+                "*",
+                SearchOption.AllDirectories)
+            .Any();
 
     private async Task<string> StageCatalogUpdatesAsync(
         UpdatePlan plan,
@@ -569,41 +601,89 @@ public sealed class PublishedReferenceUpdateService
         ActivationMoveState moved,
         string stageRoot)
     {
-        if (moved.CandidatePublishedActivated && Directory.Exists(paths.LivePublished))
+        MoveAwayIfActivated(
+            moved.CandidatePublishedActivated,
+            paths.LivePublished,
+            Path.Combine(stageRoot, "failed-pub"),
+            isDirectory: true);
+        MoveAwayIfActivated(
+            moved.CandidateCodexActivated,
+            paths.LiveCodex,
+            Path.Combine(stageRoot, "failed-codexRef.json"),
+            isDirectory: false);
+        MoveAwayIfActivated(
+            moved.CandidateRegionalCodexActivated,
+            paths.LiveRegionalCodex,
+            Path.Combine(stageRoot, "failed-codexNotFound.json"),
+            isDirectory: false);
+        RestoreIfMoved(
+            moved.PublishedMoved,
+            paths.RollbackPublished,
+            paths.LivePublished,
+            isDirectory: true);
+        RestoreIfMoved(
+            moved.CodexMoved,
+            paths.RollbackCodex,
+            paths.LiveCodex,
+            isDirectory: false);
+        RestoreIfMoved(
+            moved.RegionalCodexMoved,
+            paths.RollbackRegionalCodex,
+            paths.LiveRegionalCodex,
+            isDirectory: false);
+    }
+
+    private static void MoveAwayIfActivated(
+        bool activated,
+        string livePath,
+        string failedPath,
+        bool isDirectory)
+    {
+        if (!activated)
         {
-            Directory.Move(
-                paths.LivePublished,
-                Path.Combine(stageRoot, "failed-pub"));
+            return;
         }
 
-        if (moved.CandidateCodexActivated && File.Exists(paths.LiveCodex))
+        if (isDirectory)
         {
-            File.Move(
-                paths.LiveCodex,
-                Path.Combine(stageRoot, "failed-codexRef.json"));
+            if (Directory.Exists(livePath))
+            {
+                Directory.Move(livePath, failedPath);
+            }
+
+            return;
         }
 
-        if (moved.CandidateRegionalCodexActivated
-            && File.Exists(paths.LiveRegionalCodex))
+        if (File.Exists(livePath))
         {
-            File.Move(
-                paths.LiveRegionalCodex,
-                Path.Combine(stageRoot, "failed-codexNotFound.json"));
+            File.Move(livePath, failedPath);
+        }
+    }
+
+    private static void RestoreIfMoved(
+        bool moved,
+        string rollbackPath,
+        string livePath,
+        bool isDirectory)
+    {
+        if (!moved)
+        {
+            return;
         }
 
-        if (moved.PublishedMoved && Directory.Exists(paths.RollbackPublished))
+        if (isDirectory)
         {
-            Directory.Move(paths.RollbackPublished, paths.LivePublished);
+            if (Directory.Exists(rollbackPath))
+            {
+                Directory.Move(rollbackPath, livePath);
+            }
+
+            return;
         }
 
-        if (moved.CodexMoved && File.Exists(paths.RollbackCodex))
+        if (File.Exists(rollbackPath))
         {
-            File.Move(paths.RollbackCodex, paths.LiveCodex);
-        }
-
-        if (moved.RegionalCodexMoved && File.Exists(paths.RollbackRegionalCodex))
-        {
-            File.Move(paths.RollbackRegionalCodex, paths.LiveRegionalCodex);
+            File.Move(rollbackPath, livePath);
         }
     }
 
@@ -641,8 +721,7 @@ public sealed class PublishedReferenceUpdateService
         PublishedReferenceVersions previous,
         PublishedDataIndex remote)
     {
-        var active = LegacyReferenceCatalogLoader.Load(root);
-        var sources = active.Sources.ToDictionary(
+        var sources = LegacyReferenceCatalogLoader.Load(root).Sources.ToDictionary(
             source => source.Catalog,
             StringComparer.Ordinal);
         var warnings = new List<string>();
@@ -650,57 +729,62 @@ public sealed class PublishedReferenceUpdateService
             previous.CodexReference,
             remote.CodexReferenceVersion,
             sources["Codex reference"]);
-        var regionalCodexCandidates = RegionalCodexCandidateCatalog.Load(root);
-        var updateRegionalCodexCandidates = updateCodex
-            || RegionalCodexCandidatesNeedUpdate(
-                root,
-                regionalCodexCandidates,
-                timeProvider.GetUtcNow());
+        return new UpdatePlan(
+            updateCodex,
+            updateCodex
+                || RegionalCodexCandidatesNeedUpdate(
+                    root,
+                    RegionalCodexCandidateCatalog.Load(root),
+                    timeProvider.GetUtcNow()),
+            KnownSystemAddressesNeedUpdate(root),
+            EvaluateBiologyUpdate(previous, remote, sources, warnings),
+            NeedsUpdate(
+                previous.SettlementTemplate,
+                remote.SettlementTemplateVersion,
+                sources["Guardian site templates"]),
+            remote.GuardianVersion > previous.Guardian
+                || !sources["Guardian site index"].IsLocal
+                || !sources["Guardian published surveys"].IsLocal,
+            NeedsUpdate(
+                previous.Settlements,
+                remote.SettlementsVersion,
+                sources["human settlement templates"]),
+            NeedsUpdate(
+                previous.GreenGasGiants,
+                remote.GreenGasGiantsVersion,
+                sources["Green Gas Giant criteria"]),
+            remote.NicknamesVersion > previous.Nicknames
+                || SystemNicknameCatalog.Load(root).RavenCount == 0,
+            warnings);
+    }
+
+    private static bool KnownSystemAddressesNeedUpdate(string root)
+    {
         var knownSystemAddresses = KnownSystemAddressCatalog.Load(root);
-        var updateKnownSystemAddresses = !knownSystemAddresses.HasData
+        return !knownSystemAddresses.HasData
             || knownSystemAddresses.Warnings.Count > 0;
+    }
+
+    private static bool EvaluateBiologyUpdate(
+        PublishedReferenceVersions previous,
+        PublishedDataIndex remote,
+        IReadOnlyDictionary<string, ReferenceCatalogSource> sources,
+        List<string> warnings)
+    {
         var updateBiology = NeedsUpdate(
             previous.BiologyCriteria,
             remote.BiologyCriteriaVersion,
             sources["biology criteria"]);
-        if (updateBiology
-            && remote.BiologyEngineVersion > BiologyCriteriaCatalog.EngineVersion)
+        if (!updateBiology
+            || remote.BiologyEngineVersion <= BiologyCriteriaCatalog.EngineVersion)
         {
-            updateBiology = false;
-            warnings.Add(
-                $"Published biology criteria require engine {remote.BiologyEngineVersion}, "
-                + $"but this build supports engine {BiologyCriteriaCatalog.EngineVersion}.");
+            return updateBiology;
         }
 
-        var updateGuardianTemplates = NeedsUpdate(
-            previous.SettlementTemplate,
-            remote.SettlementTemplateVersion,
-            sources["Guardian site templates"]);
-        var updateGuardian = remote.GuardianVersion > previous.Guardian
-            || !sources["Guardian site index"].IsLocal
-            || !sources["Guardian published surveys"].IsLocal;
-        var updateSettlements = NeedsUpdate(
-            previous.Settlements,
-            remote.SettlementsVersion,
-            sources["human settlement templates"]);
-        var updateGreenGasGiants = NeedsUpdate(
-            previous.GreenGasGiants,
-            remote.GreenGasGiantsVersion,
-            sources["Green Gas Giant criteria"]);
-        var currentNicknames = SystemNicknameCatalog.Load(root);
-        var updateNicknames = remote.NicknamesVersion > previous.Nicknames
-            || currentNicknames.RavenCount == 0;
-        return new UpdatePlan(
-            updateCodex,
-            updateRegionalCodexCandidates,
-            updateKnownSystemAddresses,
-            updateBiology,
-            updateGuardianTemplates,
-            updateGuardian,
-            updateSettlements,
-            updateGreenGasGiants,
-            updateNicknames,
-            warnings);
+        warnings.Add(
+            $"Published biology criteria require engine {remote.BiologyEngineVersion}, "
+            + $"but this build supports engine {BiologyCriteriaCatalog.EngineVersion}.");
+        return false;
     }
 
     private sealed record UpdatePlan(

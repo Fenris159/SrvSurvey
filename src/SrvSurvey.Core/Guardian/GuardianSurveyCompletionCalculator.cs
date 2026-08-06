@@ -11,12 +11,7 @@ public sealed class GuardianSurveyCompletionCalculator(
         GuardianPublishedSite? published = null)
     {
         ArgumentNullException.ThrowIfNull(survey);
-        var siteType = string.Equals(
-            survey.SiteType,
-            "Unknown",
-            StringComparison.OrdinalIgnoreCase)
-                ? published?.SiteType
-                : survey.SiteType;
+        var siteType = ResolveSiteType(survey, published);
         var template = templates.Find(siteType);
         if (template is null)
         {
@@ -24,26 +19,68 @@ public sealed class GuardianSurveyCompletionCalculator(
         }
 
         var isRuins = IsRuins(siteType);
-        var points = survey.RawPointsOfInterest is null
+        var points = CollectSurveyPoints(survey, template);
+        var tallies = TallyPoints(survey, published, points, isRuins);
+        var (score, maxScore) = ScoreSurvey(
+            survey,
+            published,
+            points.Count,
+            tallies,
+            isRuins);
+        var progress = maxScore == 0
+            ? 0
+            : (int)(100d / maxScore * score);
+        return new GuardianSurveyCompletion(
+            score,
+            maxScore,
+            tallies.Confirmed,
+            points.Count,
+            tallies.PresentRelics,
+            tallies.PresentPuddles,
+            template.PointsOfInterest.Count(point => IsBasicPoi(point.Type)),
+            tallies.RelicsNeedingHeading,
+            progress,
+            progress == 100);
+    }
+
+    private static string? ResolveSiteType(
+        GuardianSurveyData survey,
+        GuardianPublishedSite? published) =>
+        string.Equals(survey.SiteType, "Unknown", StringComparison.OrdinalIgnoreCase)
+            ? published?.SiteType
+            : survey.SiteType;
+
+    private static IReadOnlyList<GuardianPointOfInterest> CollectSurveyPoints(
+        GuardianSurveyData survey,
+        GuardianSiteTemplate template)
+    {
+        return survey.RawPointsOfInterest is null
             ? template.SurveyPoints
             : template.SurveyPoints
                 .Concat(survey.RawPointsOfInterest)
                 .Where(point => point.Type is not GuardianPoiType.Obelisk
                     and not GuardianPoiType.BrokenObelisk)
                 .ToArray();
+    }
+
+    private static (int Score, int MaxScore) ScoreSurvey(
+        GuardianSurveyData survey,
+        GuardianPublishedSite? published,
+        int pointCount,
+        PointTallies tallies,
+        bool isRuins)
+    {
         var siteHeading = survey.SiteHeading != -1
             ? survey.SiteHeading
             : published?.SiteHeading ?? -1;
-        var relicTowerHeading = survey.RelicTowerHeading != -1
-            ? survey.RelicTowerHeading
-            : published?.RelicTowerHeading ?? -1;
-
-        var tallies = TallyPoints(survey, published, points, isRuins);
         var score = (siteHeading != -1 ? 1 : 0) + tallies.Confirmed;
-        var maxScore = points.Count + 1;
+        var maxScore = pointCount + 1;
         if (isRuins)
         {
             maxScore++;
+            var relicTowerHeading = survey.RelicTowerHeading != -1
+                ? survey.RelicTowerHeading
+                : published?.RelicTowerHeading ?? -1;
             if (relicTowerHeading != -1)
             {
                 score++;
@@ -55,21 +92,7 @@ public sealed class GuardianSurveyCompletionCalculator(
             score += tallies.RelicHeadingScore;
         }
 
-        var progress = maxScore == 0
-            ? 0
-            : (int)(100d / maxScore * score);
-        return new GuardianSurveyCompletion(
-            score,
-            maxScore,
-            tallies.Confirmed,
-            points.Count,
-            tallies.PresentRelics,
-            tallies.PresentPuddles,
-            template.PointsOfInterest.Count(
-                point => IsBasicPoi(point.Type)),
-            tallies.RelicsNeedingHeading,
-            progress,
-            progress == 100);
+        return (score, maxScore);
     }
 
     private static PointTallies TallyPoints(
@@ -86,30 +109,16 @@ public sealed class GuardianSurveyCompletionCalculator(
 
         foreach (var point in points)
         {
-            var status = GetStatus(survey, published, point.Name);
-            if (status != GuardianPoiStatus.Unknown)
-            {
-                confirmed++;
-            }
-
-            if (point.Type == GuardianPoiType.Relic
-                && status == GuardianPoiStatus.Present)
-            {
-                presentRelics++;
-                if (GetRelicHeading(survey, published, point.Name) is null)
-                {
-                    relicsNeedingHeading++;
-                }
-                else if (!isRuins)
-                {
-                    relicHeadingScore++;
-                }
-            }
-            else if (status == GuardianPoiStatus.Present
-                && IsBasicPoi(point.Type))
-            {
-                presentPuddles++;
-            }
+            TallyPoint(
+                survey,
+                published,
+                point,
+                isRuins,
+                ref confirmed,
+                ref presentRelics,
+                ref presentPuddles,
+                ref relicsNeedingHeading,
+                ref relicHeadingScore);
         }
 
         return new PointTallies(
@@ -118,6 +127,45 @@ public sealed class GuardianSurveyCompletionCalculator(
             presentPuddles,
             relicsNeedingHeading,
             relicHeadingScore);
+    }
+
+    private static void TallyPoint(
+        GuardianSurveyData survey,
+        GuardianPublishedSite? published,
+        GuardianPointOfInterest point,
+        bool isRuins,
+        ref int confirmed,
+        ref int presentRelics,
+        ref int presentPuddles,
+        ref int relicsNeedingHeading,
+        ref int relicHeadingScore)
+    {
+        var status = GetStatus(survey, published, point.Name);
+        if (status != GuardianPoiStatus.Unknown)
+        {
+            confirmed++;
+        }
+
+        if (point.Type == GuardianPoiType.Relic
+            && status == GuardianPoiStatus.Present)
+        {
+            presentRelics++;
+            if (GetRelicHeading(survey, published, point.Name) is null)
+            {
+                relicsNeedingHeading++;
+            }
+            else if (!isRuins)
+            {
+                relicHeadingScore++;
+            }
+
+            return;
+        }
+
+        if (status == GuardianPoiStatus.Present && IsBasicPoi(point.Type))
+        {
+            presentPuddles++;
+        }
     }
 
     private readonly record struct PointTallies(

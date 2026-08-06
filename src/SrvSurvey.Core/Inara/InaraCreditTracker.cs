@@ -38,54 +38,69 @@ namespace SrvSurvey.Core.Inara
             var eventName = entry.Value<string>("event");
             if (eventName == "LoadGame")
             {
-                Reset();
-                credits = value(entry, "Credits");
-                loan = value(entry, "Loan");
-                HasUnreportedChanges = credits.HasValue;
+                ObserveLoadGame(entry);
                 return;
             }
 
             // Journal activity while serving on somebody else's ship must not alter
             // the tracked balance for the local commander.
-            if (inMulticrew) return;
-
-            if (TryObserveExactBalance(entry, eventName))
+            if (inMulticrew)
             {
                 return;
             }
 
-            if (!credits.HasValue) return;
+            if (TryObserveExactBalance(entry, eventName) || !credits.HasValue)
+            {
+                return;
+            }
 
             ApplyCreditDelta(ComputeCreditDelta(entry, eventName));
         }
 
+        private void ObserveLoadGame(JObject entry)
+        {
+            Reset();
+            credits = value(entry, "Credits");
+            loan = value(entry, "Loan");
+            HasUnreportedChanges = credits.HasValue;
+        }
+
         private bool TryObserveExactBalance(JObject entry, string? eventName)
         {
-            if (eventName == "Statistics")
+            return eventName switch
             {
-                var currentAssets = value(entry["Bank_Account"] as JObject, "Current_Wealth");
-                if (currentAssets.HasValue && currentAssets != assets)
-                {
-                    assets = currentAssets;
-                    HasUnreportedChanges = true;
-                }
+                "Statistics" => ObserveStatistics(entry),
+                "CarrierBankTransfer" => ObserveCarrierBankTransfer(entry),
+                _ => false,
+            };
+        }
 
-                return true;
+        private bool ObserveStatistics(JObject entry)
+        {
+            var currentAssets = value(entry["Bank_Account"] as JObject, "Current_Wealth");
+            if (currentAssets.HasValue && currentAssets != assets)
+            {
+                assets = currentAssets;
+                HasUnreportedChanges = true;
             }
 
-            if (eventName == "CarrierBankTransfer"
-                && value(entry, "PlayerBalance") is long playerBalance)
-            {
-                if (playerBalance != credits)
-                {
-                    credits = playerBalance;
-                    HasUnreportedChanges = true;
-                }
+            return true;
+        }
 
-                return true;
+        private bool ObserveCarrierBankTransfer(JObject entry)
+        {
+            if (value(entry, "PlayerBalance") is not long playerBalance)
+            {
+                return false;
             }
 
-            return false;
+            if (playerBalance != credits)
+            {
+                credits = playerBalance;
+                HasUnreportedChanges = true;
+            }
+
+            return true;
         }
 
         private static long ComputeCreditDelta(JObject entry, string? eventName)
@@ -147,27 +162,56 @@ namespace SrvSurvey.Core.Inara
 
         public InaraEvent? CreateReport(string timestamp, bool force, bool includeAssets = false)
         {
-            if (!credits.HasValue) return null;
-
-            var reportAt = parseTimestamp(timestamp);
-            if (!force)
+            if (!credits.HasValue)
             {
-                if (!HasUnreportedChanges) return null;
-                if (lastReportAt.HasValue && reportAt - lastReportAt.Value < ReportInterval) return null;
+                return null;
             }
 
-            var data = new JObject
+            var reportAt = parseTimestamp(timestamp);
+            if (!force && !ShouldReport(reportAt))
             {
-                ["commanderCredits"] = credits.Value,
-            };
-            if (loan.HasValue) data["commanderLoan"] = loan.Value;
-            // Current_Wealth is authoritative only at the Statistics timestamp.
-            // Omitting a later stale value lets Inara calculate assets from its data.
-            if (includeAssets && assets.HasValue) data["commanderAssets"] = assets.Value;
+                return null;
+            }
 
             lastReportAt = reportAt;
             HasUnreportedChanges = false;
-            return new InaraEvent("setCommanderCredits", timestamp, data, "credits");
+            return new InaraEvent(
+                "setCommanderCredits",
+                timestamp,
+                BuildCreditsPayload(includeAssets),
+                "credits");
+        }
+
+        private bool ShouldReport(DateTimeOffset reportAt)
+        {
+            if (!HasUnreportedChanges)
+            {
+                return false;
+            }
+
+            return !lastReportAt.HasValue
+                || reportAt - lastReportAt.Value >= ReportInterval;
+        }
+
+        private JObject BuildCreditsPayload(bool includeAssets)
+        {
+            var data = new JObject
+            {
+                ["commanderCredits"] = credits!.Value,
+            };
+            if (loan.HasValue)
+            {
+                data["commanderLoan"] = loan.Value;
+            }
+
+            // Current_Wealth is authoritative only at the Statistics timestamp.
+            // Omitting a later stale value lets Inara calculate assets from its data.
+            if (includeAssets && assets.HasValue)
+            {
+                data["commanderAssets"] = assets.Value;
+            }
+
+            return data;
         }
 
         private static DateTimeOffset parseTimestamp(string timestamp) =>

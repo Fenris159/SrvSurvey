@@ -663,63 +663,81 @@ public sealed class SystemScanState
         changed |= MergeBodyFlags(target, source);
         changed |= MergeBodyScalars(target, source);
         changed |= MergeBodyCollections(target, source);
-
-        if (!includeBiologicalData)
+        if (includeBiologicalData)
         {
-            return changed;
+            changed |= MergeBodyOrganisms(target, source);
         }
 
+        return changed;
+    }
+
+    private static bool MergeBodyOrganisms(
+        BodyState target,
+        SystemScanBodySnapshot source)
+    {
+        var changed = false;
         foreach (var sourceOrganism in source.Organisms)
         {
-            if (string.IsNullOrWhiteSpace(sourceOrganism.Genus))
-            {
-                continue;
-            }
-
-            var existed = target.Organisms.TryGetValue(
-                sourceOrganism.Genus,
-                out var organism);
-            organism ??= target.GetOrCreateOrganism(sourceOrganism.Genus);
-            changed |= !existed;
-            changed |= SetIfMissing(
-                ref organism.GenusLocalized,
-                sourceOrganism.GenusLocalized);
-            changed |= SetIfMissing(
-                ref organism.Species,
-                sourceOrganism.Species);
-            changed |= SetIfMissing(
-                ref organism.SpeciesLocalized,
-                sourceOrganism.SpeciesLocalized);
-            changed |= SetIfMissing(
-                ref organism.Variant,
-                sourceOrganism.Variant);
-            changed |= SetIfMissing(
-                ref organism.VariantLocalized,
-                sourceOrganism.VariantLocalized);
-            if (organism.EntryId is null && sourceOrganism.EntryId is > 0)
-            {
-                organism.EntryId = sourceOrganism.EntryId;
-                changed = true;
-            }
-
-            if (organism.Reward is null && sourceOrganism.Reward is >= 0)
-            {
-                organism.Reward = sourceOrganism.Reward;
-                changed = true;
-            }
-
-            changed |= SetTrue(ref organism.IsScanned, sourceOrganism.IsScanned);
-            changed |= SetTrue(
-                ref organism.IsAnalyzed,
-                sourceOrganism.IsAnalyzed);
-            changed |= SetTrue(
-                ref organism.IsRegionalFirst,
-                sourceOrganism.IsRegionalFirst);
+            changed |= MergeKnownOrganism(target, sourceOrganism);
         }
 
         changed |= SetMaximum(
             ref target.BiologicalSignalCount,
             target.Organisms.Count);
+        return changed;
+    }
+
+    private static bool MergeKnownOrganism(
+        BodyState target,
+        SystemOrganismSnapshot sourceOrganism)
+    {
+        if (string.IsNullOrWhiteSpace(sourceOrganism.Genus))
+        {
+            return false;
+        }
+
+        var existed = target.Organisms.TryGetValue(
+            sourceOrganism.Genus,
+            out var organism);
+        organism ??= target.GetOrCreateOrganism(sourceOrganism.Genus);
+        var changed = !existed;
+        changed |= SetIfMissing(
+            ref organism.GenusLocalized,
+            sourceOrganism.GenusLocalized);
+        changed |= SetIfMissing(ref organism.Species, sourceOrganism.Species);
+        changed |= SetIfMissing(
+            ref organism.SpeciesLocalized,
+            sourceOrganism.SpeciesLocalized);
+        changed |= SetIfMissing(ref organism.Variant, sourceOrganism.Variant);
+        changed |= SetIfMissing(
+            ref organism.VariantLocalized,
+            sourceOrganism.VariantLocalized);
+        changed |= MergeOrganismScalars(organism, sourceOrganism);
+        changed |= SetTrue(ref organism.IsScanned, sourceOrganism.IsScanned);
+        changed |= SetTrue(ref organism.IsAnalyzed, sourceOrganism.IsAnalyzed);
+        changed |= SetTrue(
+            ref organism.IsRegionalFirst,
+            sourceOrganism.IsRegionalFirst);
+        return changed;
+    }
+
+    private static bool MergeOrganismScalars(
+        OrganismState organism,
+        SystemOrganismSnapshot sourceOrganism)
+    {
+        var changed = false;
+        if (organism.EntryId is null && sourceOrganism.EntryId is > 0)
+        {
+            organism.EntryId = sourceOrganism.EntryId;
+            changed = true;
+        }
+
+        if (organism.Reward is null && sourceOrganism.Reward is >= 0)
+        {
+            organism.Reward = sourceOrganism.Reward;
+            changed = true;
+        }
+
         return changed;
     }
 

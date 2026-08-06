@@ -94,94 +94,131 @@ public sealed class JournalDirectoryMonitor
         JournalMonitorUpdate update;
         try
         {
-            if (!Directory.Exists(journalDirectory))
-            {
-                throw new DirectoryNotFoundException(
-                    $"The journal folder does not exist: {journalDirectory}");
-            }
-
-            var events = new List<JournalEventEnvelope>();
-            var errors = new List<string>();
-            var latestJournal = await FindLatestJournalAsync(cancellationToken)
-                .ConfigureAwait(false);
-            if (latestJournal is not null)
-            {
-                if (!PathsEqual(latestJournal.FullName, currentJournalPath))
-                {
-                    FlushPendingLine(events, errors);
-                    currentJournalPath = latestJournal.FullName;
-                    currentJournalOffset = 0;
-                    pendingJournalBytes = [];
-                }
-
-                await ReadJournalAppendAsync(events, errors, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            var status = await PollStatusCompanionAsync(errors, cancellationToken)
-                .ConfigureAwait(false);
-            var navRoute = await PollNavRouteCompanionAsync(
-                    errors,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            var cargo = await PollCargoCompanionAsync(errors, cancellationToken)
-                .ConfigureAwait(false);
-            var shipLocker = await PollShipLockerCompanionAsync(
-                    errors,
-                    cancellationToken)
-                .ConfigureAwait(false);
-            var market = await PollMarketCompanionAsync(errors, cancellationToken)
-                .ConfigureAwait(false);
-
-            update = new JournalMonitorUpdate(
-                currentJournalPath,
-                events,
-                status,
-                navRoute,
-                cargo,
-                market,
-                errors,
-                IsBootstrapRead: !hasCompletedFirstPoll,
-                ShipLocker: shipLocker);
-            hasCompletedFirstPoll = true;
+            update = await PollLockedAsync(cancellationToken).ConfigureAwait(false);
         }
         finally
         {
             pollLock.Release();
         }
 
-        foreach (var journalEvent in update.JournalEvents)
+        RaiseUpdateEvents(update);
+        return update;
+    }
+
+    private async Task<JournalMonitorUpdate> PollLockedAsync(
+        CancellationToken cancellationToken)
+    {
+        if (!Directory.Exists(journalDirectory))
+        {
+            throw new DirectoryNotFoundException(
+                $"The journal folder does not exist: {journalDirectory}");
+        }
+
+        var events = new List<JournalEventEnvelope>();
+        var errors = new List<string>();
+        await ReadLatestJournalAsync(events, errors, cancellationToken)
+            .ConfigureAwait(false);
+        var companions = await PollAllCompanionsAsync(errors, cancellationToken)
+            .ConfigureAwait(false);
+
+        var update = new JournalMonitorUpdate(
+            currentJournalPath,
+            events,
+            companions.Status,
+            companions.NavRoute,
+            companions.Cargo,
+            companions.Market,
+            errors,
+            IsBootstrapRead: !hasCompletedFirstPoll,
+            ShipLocker: companions.ShipLocker);
+        hasCompletedFirstPoll = true;
+        return update;
+    }
+
+    private async Task ReadLatestJournalAsync(
+        List<JournalEventEnvelope> events,
+        List<string> errors,
+        CancellationToken cancellationToken)
+    {
+        var latestJournal = await FindLatestJournalAsync(cancellationToken)
+            .ConfigureAwait(false);
+        if (latestJournal is null)
+        {
+            return;
+        }
+
+        if (!PathsEqual(latestJournal.FullName, currentJournalPath))
+        {
+            FlushPendingLine(events, errors);
+            currentJournalPath = latestJournal.FullName;
+            currentJournalOffset = 0;
+            pendingJournalBytes = [];
+        }
+
+        await ReadJournalAppendAsync(events, errors, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<CompanionPollResults> PollAllCompanionsAsync(
+        List<string> errors,
+        CancellationToken cancellationToken)
+    {
+        var status = await PollStatusCompanionAsync(errors, cancellationToken)
+            .ConfigureAwait(false);
+        var navRoute = await PollNavRouteCompanionAsync(errors, cancellationToken)
+            .ConfigureAwait(false);
+        var cargo = await PollCargoCompanionAsync(errors, cancellationToken)
+            .ConfigureAwait(false);
+        var shipLocker = await PollShipLockerCompanionAsync(errors, cancellationToken)
+            .ConfigureAwait(false);
+        var market = await PollMarketCompanionAsync(errors, cancellationToken)
+            .ConfigureAwait(false);
+        return new CompanionPollResults(status, navRoute, cargo, shipLocker, market);
+    }
+
+    private void RaiseUpdateEvents(JournalMonitorUpdate update)
+    {
+        RaiseJournalEvents(update.JournalEvents);
+        RaiseIfPresent(update.Status, StatusUpdated);
+        RaiseIfPresent(update.NavRoute, NavRouteUpdated);
+        RaiseIfPresent(update.Cargo, CargoUpdated);
+        RaiseIfPresent(update.Market, MarketUpdated);
+        RaiseErrors(update.Errors);
+    }
+
+    private void RaiseJournalEvents(IReadOnlyList<JournalEventEnvelope> journalEvents)
+    {
+        foreach (var journalEvent in journalEvents)
         {
             JournalEventReceived?.Invoke(this, journalEvent);
         }
+    }
 
-        if (update.Status is not null)
-        {
-            StatusUpdated?.Invoke(this, update.Status);
-        }
-
-        if (update.NavRoute is not null)
-        {
-            NavRouteUpdated?.Invoke(this, update.NavRoute);
-        }
-
-        if (update.Cargo is not null)
-        {
-            CargoUpdated?.Invoke(this, update.Cargo);
-        }
-
-        if (update.Market is not null)
-        {
-            MarketUpdated?.Invoke(this, update.Market);
-        }
-
-        foreach (var error in update.Errors)
+    private void RaiseErrors(IReadOnlyList<string> errors)
+    {
+        foreach (var error in errors)
         {
             ReadError?.Invoke(this, error);
         }
-
-        return update;
     }
+
+    private void RaiseIfPresent<T>(
+        T? value,
+        EventHandler<T>? handler)
+        where T : class
+    {
+        if (value is not null)
+        {
+            handler?.Invoke(this, value);
+        }
+    }
+
+    private readonly record struct CompanionPollResults(
+        EliteStatus? Status,
+        NavRouteSnapshot? NavRoute,
+        CargoSnapshot? Cargo,
+        ShipLockerSnapshot? ShipLocker,
+        MarketSnapshot? Market);
 
     public async Task RunAsync(
         TimeSpan? pollingInterval = null,
