@@ -60,76 +60,82 @@ public static class ColonizationSystemSiteReconciler
     {
         var conflicts = new List<string>();
         var changed = false;
-        var id = Merge(
-            "id",
-            original.Id,
-            remote.Id,
-            local.Id,
-            StringComparer.Ordinal,
+        var merged = MergeKnownSiteFields(
+            original,
+            remote,
+            local,
             conflicts,
             ref changed);
-        var name = Merge(
-            "name",
-            original.Name,
-            remote.Name,
-            local.Name,
-            StringComparer.Ordinal,
-            conflicts,
-            ref changed);
-        var body = Merge(
-            "bodyNum",
-            original.BodyNumber,
-            remote.BodyNumber,
-            local.BodyNumber,
-            EqualityComparer<int>.Default,
-            conflicts,
-            ref changed);
-        var buildType = Merge(
-            "buildType",
-            original.BuildType,
-            remote.BuildType,
-            local.BuildType,
-            StringComparer.Ordinal,
-            conflicts,
-            ref changed);
-        var buildId = Merge(
-            "buildId",
-            original.BuildId,
-            remote.BuildId,
-            local.BuildId,
-            StringComparer.Ordinal,
-            conflicts,
-            ref changed);
-        var marketId = Merge(
-            "marketId",
-            original.MarketId,
-            remote.MarketId,
-            local.MarketId,
-            EqualityComparer<long?>.Default,
-            conflicts,
-            ref changed);
-        var status = Merge(
-            "status",
-            original.Status,
-            remote.Status,
-            local.Status,
-            EqualityComparer<ColonizationSystemSiteStatus>.Default,
-            conflicts,
-            ref changed);
-        return new MergeResult(
-            remote with
-            {
-                Id = id,
-                Name = name,
-                BodyNumber = body,
-                BuildType = buildType,
-                BuildId = buildId,
-                MarketId = marketId,
-                Status = status,
-                ExtensionData = CloneJsonMap(remote.ExtensionData),
-            },
-            changed,
-            conflicts);
+        return new MergeResult(merged, changed, conflicts);
+    }
+
+    private static ColonizationSystemSite MergeKnownSiteFields(
+        ColonizationSystemSite original,
+        ColonizationSystemSite remote,
+        ColonizationSystemSite local,
+        List<string> conflicts,
+        ref bool changed)
+    {
+        return remote with
+        {
+            Id = Merge(
+                "id",
+                original.Id,
+                remote.Id,
+                local.Id,
+                StringComparer.Ordinal,
+                conflicts,
+                ref changed),
+            Name = Merge(
+                "name",
+                original.Name,
+                remote.Name,
+                local.Name,
+                StringComparer.Ordinal,
+                conflicts,
+                ref changed),
+            BodyNumber = Merge(
+                "bodyNum",
+                original.BodyNumber,
+                remote.BodyNumber,
+                local.BodyNumber,
+                EqualityComparer<int>.Default,
+                conflicts,
+                ref changed),
+            BuildType = Merge(
+                "buildType",
+                original.BuildType,
+                remote.BuildType,
+                local.BuildType,
+                StringComparer.Ordinal,
+                conflicts,
+                ref changed),
+            BuildId = Merge(
+                "buildId",
+                original.BuildId,
+                remote.BuildId,
+                local.BuildId,
+                StringComparer.Ordinal,
+                conflicts,
+                ref changed),
+            MarketId = Merge(
+                "marketId",
+                original.MarketId,
+                remote.MarketId,
+                local.MarketId,
+                EqualityComparer<long?>.Default,
+                conflicts,
+                ref changed),
+            Status = Merge(
+                "status",
+                original.Status,
+                remote.Status,
+                local.Status,
+                EqualityComparer<ColonizationSystemSiteStatus>.Default,
+                conflicts,
+                ref changed),
+            ExtensionData = CloneJsonMap(remote.ExtensionData),
+        };
     }
 
     private static void ApplyEditedSite(

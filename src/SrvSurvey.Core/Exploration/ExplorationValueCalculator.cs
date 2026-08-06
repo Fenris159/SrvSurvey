@@ -35,46 +35,69 @@ public static class ExplorationValueCalculator
 
         if (IsStar(request.BodyClass))
         {
-            var starBaseValue = GetStarBaseValue(request.BodyClass);
-            return (int)Math.Round(
-                starBaseValue + (request.Mass * starBaseValue / 66.25));
+            return CalculateStarValue(request.BodyClass, request.Mass);
         }
 
-        var bodyBaseValue = GetPlanetBaseValue(
-            request.BodyClass,
-            request.IsTerraformable);
-        var mappingMultiplier = request.IsMapped
-            ? (request.IsFirstDiscoverer && request.IsFirstMapped) switch
-            {
-                true => 3.699622554,
-                false => request.IsFirstMapped switch
-                {
-                    true => 8.0956,
-                    false => 3.3333333333
-                }
-            }
-            : 1;
-        var value = (bodyBaseValue
-            + bodyBaseValue * PlanetValueExponent * Math.Pow(request.Mass, 0.2))
-            * mappingMultiplier;
-
-        if (request.IsMapped)
-        {
-            if (request.IsOdyssey)
-            {
-                value += Math.Max(value * 0.3, 555);
-            }
-
-            if (request.WithEfficiencyBonus)
-            {
-                value *= 1.25;
-            }
-        }
-
+        var value = CalculatePlanetBaseValue(request);
+        value = ApplyMappedBonuses(value, request);
         value = Math.Max(500, value);
         value *= request.IsFirstDiscoverer ? 2.6 : 1;
         value *= request.IsFleetCarrierSale ? 0.75 : 1;
         return (int)Math.Round(value);
+    }
+
+    private static int CalculateStarValue(string bodyClass, double mass)
+    {
+        var starBaseValue = GetStarBaseValue(bodyClass);
+        return (int)Math.Round(
+            starBaseValue + (mass * starBaseValue / 66.25));
+    }
+
+    private static double CalculatePlanetBaseValue(ExplorationValueRequest request)
+    {
+        var bodyBaseValue = GetPlanetBaseValue(
+            request.BodyClass!,
+            request.IsTerraformable);
+        return (bodyBaseValue
+            + bodyBaseValue * PlanetValueExponent * Math.Pow(request.Mass, 0.2))
+            * GetMappingMultiplier(request);
+    }
+
+    private static double GetMappingMultiplier(ExplorationValueRequest request)
+    {
+        if (!request.IsMapped)
+        {
+            return 1;
+        }
+
+        if (request.IsFirstDiscoverer && request.IsFirstMapped)
+        {
+            return 3.699622554;
+        }
+
+        return request.IsFirstMapped ? 8.0956 : 3.3333333333;
+    }
+
+    private static double ApplyMappedBonuses(
+        double value,
+        ExplorationValueRequest request)
+    {
+        if (!request.IsMapped)
+        {
+            return value;
+        }
+
+        if (request.IsOdyssey)
+        {
+            value += Math.Max(value * 0.3, 555);
+        }
+
+        if (request.WithEfficiencyBonus)
+        {
+            value *= 1.25;
+        }
+
+        return value;
     }
 
     public static double GetStarBaseValue(string starClass)

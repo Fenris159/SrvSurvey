@@ -49,16 +49,7 @@ public sealed class CommanderCodexJournalTracker(
         List<string> warnings)
     {
         session.Apply(journalEvent);
-        if (journalEvent.EventName != "CodexEntry")
-        {
-            return 0;
-        }
-
-        if (!string.IsNullOrWhiteSpace(frontierIdFilter)
-            && !string.Equals(
-                session.FrontierId,
-                frontierIdFilter,
-                StringComparison.OrdinalIgnoreCase))
+        if (!ShouldTrackCodexEntry(journalEvent))
         {
             return 0;
         }
@@ -69,6 +60,35 @@ public sealed class CommanderCodexJournalTracker(
             return 1;
         }
 
+        if (!TryCreateDiscovery(journalEvent, warnings, out var discovery))
+        {
+            return 1;
+        }
+
+        QueueDiscovery(pending, discovery);
+        return 1;
+    }
+
+    private bool ShouldTrackCodexEntry(JournalEventEnvelope journalEvent)
+    {
+        if (journalEvent.EventName != "CodexEntry")
+        {
+            return false;
+        }
+
+        return string.IsNullOrWhiteSpace(frontierIdFilter)
+            || string.Equals(
+                session.FrontierId,
+                frontierIdFilter,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool TryCreateDiscovery(
+        JournalEventEnvelope journalEvent,
+        List<string> warnings,
+        out CommanderCodexDiscovery discovery)
+    {
+        discovery = null!;
         var root = journalEvent.Payload;
         var entryId = GetInt64(root, "EntryID");
         var systemAddress = GetInt64(root, "SystemAddress")
@@ -80,36 +100,43 @@ public sealed class CommanderCodexJournalTracker(
         {
             warnings.Add(
                 "Skipped a Codex entry with missing ID, timestamp, or system address.");
-            return 1;
+            return false;
         }
 
-        var discovery = new CommanderCodexDiscovery(
+        discovery = new CommanderCodexDiscovery(
             entryId.Value,
             timestamp.Value,
             systemAddress.Value,
             GetInt32(root, "BodyID") ?? -1);
+        return true;
+    }
+
+    private void QueueDiscovery(
+        Dictionary<LedgerKey, List<CommanderCodexDiscovery>> pending,
+        CommanderCodexDiscovery discovery)
+    {
         AddPending(
             pending,
             new LedgerKey(
-                session.FrontierId,
+                session.FrontierId!,
                 session.CommanderName,
                 0,
                 null),
             discovery);
-        if (session.StarPosition is { } position
-            && GalacticRegionMap.Find(position) is { } region)
+        if (session.StarPosition is not { } position
+            || GalacticRegionMap.Find(position) is not { } region)
         {
-            AddPending(
-                pending,
-                new LedgerKey(
-                    session.FrontierId,
-                    session.CommanderName,
-                    region.Id,
-                    region.Name),
-                discovery);
+            return;
         }
 
-        return 1;
+        AddPending(
+            pending,
+            new LedgerKey(
+                session.FrontierId!,
+                session.CommanderName,
+                region.Id,
+                region.Name),
+            discovery);
     }
 
     private async Task<(int ChangedEntryCount, int ChangedFileCount)> PersistPendingAsync(

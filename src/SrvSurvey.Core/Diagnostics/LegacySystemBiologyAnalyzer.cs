@@ -41,46 +41,20 @@ public sealed class LegacySystemBiologyAnalyzer
         {
             cancellationToken.ThrowIfCancellationRequested();
             var file = files[index];
-            try
-            {
-                await using var stream = new FileStream(
-                    file.FullName,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.ReadWrite | FileShare.Delete,
-                    16 * 1024,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan);
-                using var document = await JsonDocument.ParseAsync(
-                        stream,
-                        cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
-                if (document.RootElement.ValueKind != JsonValueKind.Object)
-                {
-                    warnings.Add($"{file.Name}: the root value is not an object.");
-                    Report(
-                        progress,
-                        index,
-                        files,
-                        file,
-                        bodyCount,
-                        organismCount);
-                    continue;
-                }
-
-                processedFiles++;
-                AnalyzeBodies(
-                    document.RootElement,
+            var analyzed = await TryAnalyzeFileAsync(
+                    file,
                     summaries,
-                    ref bodyCount,
-                    ref organismCount,
-                    cancellationToken);
-            }
-            catch (Exception exception) when (
-                exception is IOException
-                    or UnauthorizedAccessException
-                    or JsonException)
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (analyzed.Warning is not null)
             {
-                warnings.Add($"{file.Name}: {exception.Message}");
+                warnings.Add(analyzed.Warning);
+            }
+            else
+            {
+                processedFiles++;
+                bodyCount += analyzed.BodyCount;
+                organismCount += analyzed.OrganismCount;
             }
 
             Report(
@@ -102,6 +76,58 @@ public sealed class LegacySystemBiologyAnalyzer
                 .Select(summary => summary.Create())
                 .ToArray(),
             warnings);
+    }
+
+    private static async Task<FileAnalysisCounts> TryAnalyzeFileAsync(
+        FileInfo file,
+        IDictionary<string, MutableSpeciesSummary> summaries,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var stream = new FileStream(
+                file.FullName,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete,
+                16 * 1024,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+            using var document = await JsonDocument.ParseAsync(
+                    stream,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                return FileAnalysisCounts.Failed(
+                    $"{file.Name}: the root value is not an object.");
+            }
+
+            var bodyCount = 0;
+            var organismCount = 0;
+            AnalyzeBodies(
+                document.RootElement,
+                summaries,
+                ref bodyCount,
+                ref organismCount,
+                cancellationToken);
+            return new FileAnalysisCounts(bodyCount, organismCount, null);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or JsonException)
+        {
+            return FileAnalysisCounts.Failed($"{file.Name}: {exception.Message}");
+        }
+    }
+
+    private readonly record struct FileAnalysisCounts(
+        int BodyCount,
+        int OrganismCount,
+        string? Warning)
+    {
+        public static FileAnalysisCounts Failed(string warning) =>
+            new(0, 0, warning);
     }
 
     private static void AnalyzeBodies(

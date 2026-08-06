@@ -30,63 +30,96 @@ public sealed class CommanderCodexJournalImporter(
                 $"The journal folder does not exist: {journalDirectory}");
         }
 
-        FileInfo[] files;
-        try
+        var filesResult = TryEnumerateJournalFiles();
+        if (filesResult.Error is not null)
         {
-            files = new DirectoryInfo(journalDirectory)
-                .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
-                .OrderBy(file => file.Name, StringComparer.Ordinal)
-                .ToArray();
-        }
-        catch (Exception exception) when (
-            exception is IOException or UnauthorizedAccessException)
-        {
-            return CommanderCodexJournalImportResult.Failed(exception.Message);
+            return CommanderCodexJournalImportResult.Failed(filesResult.Error);
         }
 
+        var files = filesResult.Files!;
         var warnings = new List<string>();
-        var parsedEvents = 0;
-        var malformedLines = 0;
-        var discoveryEvents = 0;
-        var changedEntries = 0;
+        var totals = new ImportTotals();
         for (var index = 0; index < files.Length; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var file = files[index];
-            try
-            {
-                var fileResult = await ImportFileAsync(
-                        file,
-                        frontierId,
-                        warnings,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                parsedEvents += fileResult.ParsedEvents;
-                malformedLines += fileResult.MalformedLines;
-                discoveryEvents += fileResult.DiscoveryEvents;
-                changedEntries += fileResult.ChangedEntries;
-            }
-            catch (Exception exception) when (
-                exception is IOException or UnauthorizedAccessException)
-            {
-                warnings.Add($"{file.Name}: {exception.Message}");
-            }
-
+            await ImportFileSafelyAsync(
+                    file,
+                    frontierId,
+                    warnings,
+                    totals,
+                    cancellationToken)
+                .ConfigureAwait(false);
             progress?.Report(new CommanderCodexJournalImportProgress(
                 index + 1,
                 files.Length,
                 file.Name,
-                discoveryEvents,
-                changedEntries));
+                totals.DiscoveryEvents,
+                totals.ChangedEntries));
         }
 
         return new CommanderCodexJournalImportResult(
             files.Length,
-            parsedEvents,
-            malformedLines,
-            discoveryEvents,
-            changedEntries,
+            totals.ParsedEvents,
+            totals.MalformedLines,
+            totals.DiscoveryEvents,
+            totals.ChangedEntries,
             warnings);
+    }
+
+    private (FileInfo[]? Files, string? Error) TryEnumerateJournalFiles()
+    {
+        try
+        {
+            var files = new DirectoryInfo(journalDirectory)
+                .EnumerateFiles("Journal.*.log", SearchOption.TopDirectoryOnly)
+                .OrderBy(file => file.Name, StringComparer.Ordinal)
+                .ToArray();
+            return (files, null);
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            return (null, exception.Message);
+        }
+    }
+
+    private async Task ImportFileSafelyAsync(
+        FileInfo file,
+        string frontierId,
+        List<string> warnings,
+        ImportTotals totals,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var fileResult = await ImportFileAsync(
+                    file,
+                    frontierId,
+                    warnings,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            totals.ParsedEvents += fileResult.ParsedEvents;
+            totals.MalformedLines += fileResult.MalformedLines;
+            totals.DiscoveryEvents += fileResult.DiscoveryEvents;
+            totals.ChangedEntries += fileResult.ChangedEntries;
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add($"{file.Name}: {exception.Message}");
+        }
+    }
+
+    private sealed class ImportTotals
+    {
+        public int ParsedEvents { get; set; }
+
+        public int MalformedLines { get; set; }
+
+        public int DiscoveryEvents { get; set; }
+
+        public int ChangedEntries { get; set; }
     }
 
     private async Task<FileImportCounts> ImportFileAsync(

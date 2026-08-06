@@ -292,26 +292,53 @@ public sealed class CommanderCodexStore(string dataDirectory)
             return new CommanderCodexBatchTrackResult(path, 0, true, null);
         }
 
-        JsonObject root;
+        var load = await TryLoadRootAsync(path, cancellationToken)
+            .ConfigureAwait(false);
+        if (!load.IsSuccess)
+        {
+            return new CommanderCodexBatchTrackResult(
+                path,
+                0,
+                false,
+                load.Error);
+        }
+
+        var root = load.Root!;
+        var changedEntryCount = ApplyDiscoveries(root, discoveries);
+        if (changedEntryCount == 0)
+        {
+            return new CommanderCodexBatchTrackResult(path, 0, true, null);
+        }
+
+        ApplyLedgerMetadata(root, frontierId, commanderName, regionId, regionName);
+        return await TryWriteRootAsync(path, root, changedEntryCount, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static async Task<(bool IsSuccess, JsonObject? Root, string? Error)>
+        TryLoadRootAsync(string path, CancellationToken cancellationToken)
+    {
         try
         {
-            root = File.Exists(path)
+            var root = File.Exists(path)
                 ? await ReadRootAsync(path, cancellationToken)
                     .ConfigureAwait(false) ?? []
                 : [];
+            return (true, root, null);
         }
         catch (Exception exception) when (
             exception is IOException
                 or UnauthorizedAccessException
                 or JsonException)
         {
-            return new CommanderCodexBatchTrackResult(
-                path,
-                0,
-                false,
-                exception.Message);
+            return (false, null, exception.Message);
         }
+    }
 
+    private static int ApplyDiscoveries(
+        JsonObject root,
+        IReadOnlyList<CommanderCodexDiscovery> discoveries)
+    {
         var firsts = root[CodexFirstsProperty] as JsonObject;
         if (firsts is null)
         {
@@ -322,26 +349,38 @@ public sealed class CommanderCodexStore(string dataDirectory)
         var changedEntryIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var discovery in discoveries)
         {
-            var key = discovery.EntryId.ToString(CultureInfo.InvariantCulture);
-            if (TryParseFirst(firsts[key], out var existing)
-                && ShouldKeepExistingFirst(existing, discovery))
-            {
-                continue;
-            }
-
-            firsts[key] = FormatFirst(new CommanderCodexFirst(
-                discovery.Timestamp,
-                discovery.SystemAddress,
-                discovery.BodyId));
-            changedEntryIds.Add(key);
+            ApplyDiscovery(firsts, discovery, changedEntryIds);
         }
 
-        var changedEntryCount = changedEntryIds.Count;
-        if (changedEntryCount == 0)
+        return changedEntryIds.Count;
+    }
+
+    private static void ApplyDiscovery(
+        JsonObject firsts,
+        CommanderCodexDiscovery discovery,
+        HashSet<string> changedEntryIds)
+    {
+        var key = discovery.EntryId.ToString(CultureInfo.InvariantCulture);
+        if (TryParseFirst(firsts[key], out var existing)
+            && ShouldKeepExistingFirst(existing, discovery))
         {
-            return new CommanderCodexBatchTrackResult(path, 0, true, null);
+            return;
         }
 
+        firsts[key] = FormatFirst(new CommanderCodexFirst(
+            discovery.Timestamp,
+            discovery.SystemAddress,
+            discovery.BodyId));
+        changedEntryIds.Add(key);
+    }
+
+    private static void ApplyLedgerMetadata(
+        JsonObject root,
+        string frontierId,
+        string? commanderName,
+        int regionId,
+        string? regionName)
+    {
         root["fid"] = frontierId;
         if (!string.IsNullOrWhiteSpace(commanderName))
         {
@@ -352,7 +391,14 @@ public sealed class CommanderCodexStore(string dataDirectory)
         {
             root["region"] = regionName;
         }
+    }
 
+    private static async Task<CommanderCodexBatchTrackResult> TryWriteRootAsync(
+        string path,
+        JsonObject root,
+        int changedEntryCount,
+        CancellationToken cancellationToken)
+    {
         try
         {
             await WriteAtomicAsync(path, root, cancellationToken)

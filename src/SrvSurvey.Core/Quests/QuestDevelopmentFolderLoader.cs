@@ -300,76 +300,94 @@ public sealed class QuestDevelopmentFolderLoader
 
     private static MessageFields ParseMessageFields(LoadedSourceFile file)
     {
-        var from = string.Empty;
-        string? subject = null;
-        Dictionary<string, string> actions = [];
-        HashSet<string>? tags = null;
-        var body = new List<string>();
-        var firstBlankLine = true;
+        var state = new MessageParseState();
         foreach (var line in SplitLines(Decode(file, file.RelativePath)))
         {
-            if (TryParseMessageHeader(file, line, ref from, ref subject, actions, ref tags))
+            if (TryParseMessageHeader(file, line, state))
             {
                 continue;
             }
 
-            if (line.Length == 0 && firstBlankLine)
+            if (line.Length == 0 && state.FirstBlankLine)
             {
-                firstBlankLine = false;
+                state.FirstBlankLine = false;
                 continue;
             }
 
-            body.Add(line);
+            state.Body.Add(line);
         }
 
-        return new MessageFields(from, subject, actions, tags, body);
+        return new MessageFields(
+            state.From,
+            state.Subject,
+            state.Actions,
+            state.Tags,
+            state.Body);
+    }
+
+    private sealed class MessageParseState
+    {
+        public string From { get; set; } = string.Empty;
+
+        public string? Subject { get; set; }
+
+        public Dictionary<string, string> Actions { get; } = [];
+
+        public HashSet<string>? Tags { get; set; }
+
+        public List<string> Body { get; } = [];
+
+        public bool FirstBlankLine { get; set; } = true;
     }
 
     private static bool TryParseMessageHeader(
         LoadedSourceFile file,
         string line,
-        ref string from,
-        ref string? subject,
-        Dictionary<string, string> actions,
-        ref HashSet<string>? tags)
+        MessageParseState state)
     {
         if (line.StartsWith("from:", StringComparison.OrdinalIgnoreCase))
         {
-            from = line["from:".Length..].Trim();
+            state.From = line["from:".Length..].Trim();
             return true;
         }
 
         if (line.StartsWith("subject:", StringComparison.OrdinalIgnoreCase))
         {
-            subject = line["subject:".Length..].Trim();
+            state.Subject = line["subject:".Length..].Trim();
             return true;
         }
 
         if (line.StartsWith("action:", StringComparison.OrdinalIgnoreCase))
         {
-            ParseMessageAction(file, line, actions);
+            ParseMessageAction(file, line, state.Actions);
             return true;
         }
 
         if (line.StartsWith("tags:", StringComparison.OrdinalIgnoreCase))
         {
-            try
-            {
-                tags = JsonSerializer.Deserialize<HashSet<string>>(
-                    line["tags:".Length..],
-                    JsonOptions);
-            }
-            catch (JsonException exception)
-            {
-                throw new InvalidDataException(
-                    $"{file.RelativePath} contains invalid message tags.",
-                    exception);
-            }
-
+            state.Tags = ParseMessageTags(file, line);
             return true;
         }
 
         return false;
+    }
+
+    private static HashSet<string>? ParseMessageTags(
+        LoadedSourceFile file,
+        string line)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<HashSet<string>>(
+                line["tags:".Length..],
+                JsonOptions);
+        }
+        catch (JsonException exception)
+        {
+            throw new InvalidDataException(
+                $"{file.RelativePath} contains invalid message tags.",
+                exception);
+        }
     }
 
     private static void ParseMessageAction(

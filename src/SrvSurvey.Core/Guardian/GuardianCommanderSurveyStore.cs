@@ -281,31 +281,35 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
 
         foreach (var node in existing)
         {
-            if (node is JsonValue value
-                && value.TryGetValue<string>(out var encoded)
-                && GuardianComponentLoadout.TryParseLegacy(
-                    encoded,
-                    out var existingComponent))
-            {
-                if (components.TryGetValue(
-                    existingComponent.Name,
-                    out var replacement))
-                {
-                    output.Add(replacement.ToLegacyString());
-                    pending.Remove(existingComponent.Name);
-                }
-                else
-                {
-                    output.Add(value.DeepClone());
-                }
-            }
-            else
-            {
-                output.Add(node?.DeepClone());
-            }
+            output.Add(MergeComponentNode(node, components, pending));
         }
 
         return output;
+    }
+
+    private static JsonNode? MergeComponentNode(
+        JsonNode? node,
+        IReadOnlyDictionary<string, GuardianComponentLoadout> components,
+        Dictionary<string, GuardianComponentLoadout> pending)
+    {
+        if (node is JsonValue value
+            && value.TryGetValue<string>(out var encoded)
+            && GuardianComponentLoadout.TryParseLegacy(
+                encoded,
+                out var existingComponent))
+        {
+            if (components.TryGetValue(
+                existingComponent.Name,
+                out var replacement))
+            {
+                pending.Remove(existingComponent.Name);
+                return replacement.ToLegacyString();
+            }
+
+            return value.DeepClone();
+        }
+
+        return node?.DeepClone();
     }
     private static string GetLegacyPoiType(GuardianPoiType type)
     {

@@ -276,18 +276,30 @@ public sealed class SystemScanPersistenceStore
         var analyzedCount = 0;
         foreach (var organismNode in organisms)
         {
-            if (organismNode is not JsonObject organism)
+            if (!TryCountAnalyzedOrganism(organismNode, ref analyzedCount))
             {
                 return null;
-            }
-
-            if (ReadBoolean(organism["analyzed"]) == true)
-            {
-                analyzedCount++;
             }
         }
 
         return analyzedCount;
+    }
+
+    private static bool TryCountAnalyzedOrganism(
+        JsonNode? organismNode,
+        ref int analyzedCount)
+    {
+        if (organismNode is not JsonObject organism)
+        {
+            return false;
+        }
+
+        if (ReadBoolean(organism["analyzed"]) == true)
+        {
+            analyzedCount++;
+        }
+
+        return true;
     }
 
     private static int? ReadInt32(JsonNode? node)

@@ -76,15 +76,35 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
                 "A positive system address is required.");
         }
 
-        var requestUri = new Uri(
+        var requestUri = CreateRequestUri(systemAddress);
+        using var timeoutCancellation = CancellationTokenSource
+            .CreateLinkedTokenSource(cancellationToken);
+        timeoutCancellation.CancelAfter(requestTimeout);
+        return await LoadLocationSafelyAsync(
+                requestUri,
+                systemAddress,
+                bodyId,
+                timeoutCancellation.Token,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private Uri CreateRequestUri(long systemAddress)
+    {
+        return new Uri(
             baseUri,
             UriPath.CombineWithTrailingSeparator(
                 "dump",
                 systemAddress.ToString(CultureInfo.InvariantCulture)));
-        using var timeoutCancellation = CancellationTokenSource
-            .CreateLinkedTokenSource(cancellationToken);
-        timeoutCancellation.CancelAfter(requestTimeout);
-        var operationToken = timeoutCancellation.Token;
+    }
+
+    private async Task<CodexDiscoveryLocationLoadResult> LoadLocationSafelyAsync(
+        Uri requestUri,
+        long systemAddress,
+        int bodyId,
+        CancellationToken operationToken,
+        CancellationToken callerToken)
+    {
         try
         {
             return await LoadLocationAsync(
@@ -94,7 +114,7 @@ public sealed class CodexDiscoveryLocationClient : ICodexDiscoveryLocationClient
                     operationToken)
                 .ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (callerToken.IsCancellationRequested)
         {
             throw;
         }

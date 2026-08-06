@@ -410,31 +410,40 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                 continue;
             }
 
-            if (!string.Equals(
-                GetString(body, "type"),
-                "Barycentre",
-                StringComparison.OrdinalIgnoreCase))
-            {
-                scannedBodies++;
-            }
-
-            if (starClass is null
-                && GetBoolean(body, "mainStar") == true
-                && GetString(body, "spectralClass") is { Length: > 0 } spectral)
-            {
-                starClass = spectral[..1];
-            }
-
-            if (TryGetObject(body, "signals", out var signals)
-                && TryGetObject(signals, "signals", out var signalCounts))
-            {
-                genus += GetInt32(
-                    signalCounts,
-                    "$SAA_SignalType_Biological;") ?? 0;
-            }
+            AccumulateSpanshBody(body, ref scannedBodies, ref genus, ref starClass);
         }
 
         return (scannedBodies, genus, starClass);
+    }
+
+    private static void AccumulateSpanshBody(
+        JsonElement body,
+        ref int scannedBodies,
+        ref int genus,
+        ref string? starClass)
+    {
+        if (!string.Equals(
+            GetString(body, "type"),
+            "Barycentre",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            scannedBodies++;
+        }
+
+        if (starClass is null
+            && GetBoolean(body, "mainStar") == true
+            && GetString(body, "spectralClass") is { Length: > 0 } spectral)
+        {
+            starClass = spectral[..1];
+        }
+
+        if (TryGetObject(body, "signals", out var signals)
+            && TryGetObject(signals, "signals", out var signalCounts))
+        {
+            genus += GetInt32(
+                signalCounts,
+                "$SAA_SignalType_Biological;") ?? 0;
+        }
     }
 
     private static (
@@ -453,38 +462,61 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
         var fleetCarriers = 0;
         foreach (var station in stationElements)
         {
-            var type = GetString(station, "type") ?? string.Empty;
-            if (string.Equals(
-                type,
-                "Drake-Class Carrier",
-                StringComparison.OrdinalIgnoreCase))
-            {
-                fleetCarriers++;
-            }
-
-            if (string.Equals(type, "Settlement", StringComparison.OrdinalIgnoreCase))
-            {
-                settlements++;
-            }
-
-            if (string.Equals(type, "Outpost", StringComparison.OrdinalIgnoreCase))
-            {
-                outposts++;
-            }
-
-            if (StarportTypes.Contains(type)
-                || string.Equals(type, "Mega ship", StringComparison.OrdinalIgnoreCase)
-                    && station.TryGetProperty("landingPads", out var landingPads)
-                    && landingPads.ValueKind is not JsonValueKind.Null
-                        and not JsonValueKind.Undefined)
-            {
-                starports++;
-            }
-
+            CountStationType(
+                station,
+                ref starports,
+                ref outposts,
+                ref settlements,
+                ref fleetCarriers);
             AddStationSpecials(station, specials);
         }
 
         return (specials, starports, outposts, settlements, fleetCarriers);
+    }
+
+    private static void CountStationType(
+        JsonElement station,
+        ref int starports,
+        ref int outposts,
+        ref int settlements,
+        ref int fleetCarriers)
+    {
+        var type = GetString(station, "type") ?? string.Empty;
+        if (string.Equals(
+            type,
+            "Drake-Class Carrier",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            fleetCarriers++;
+        }
+
+        if (string.Equals(type, "Settlement", StringComparison.OrdinalIgnoreCase))
+        {
+            settlements++;
+        }
+
+        if (string.Equals(type, "Outpost", StringComparison.OrdinalIgnoreCase))
+        {
+            outposts++;
+        }
+
+        if (IsStarportStation(station, type))
+        {
+            starports++;
+        }
+    }
+
+    private static bool IsStarportStation(JsonElement station, string type)
+    {
+        if (StarportTypes.Contains(type))
+        {
+            return true;
+        }
+
+        return string.Equals(type, "Mega ship", StringComparison.OrdinalIgnoreCase)
+            && station.TryGetProperty("landingPads", out var landingPads)
+            && landingPads.ValueKind is not JsonValueKind.Null
+                and not JsonValueKind.Undefined;
     }
 
     private static SystemFactionSummary[] ParseSpanshFactions(

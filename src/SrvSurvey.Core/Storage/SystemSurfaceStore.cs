@@ -209,33 +209,40 @@ public sealed class SystemSurfaceStore
                 ToFileContext(context),
                 root =>
                 {
-                    var body = GetOrCreateBody(root, context);
-                    if (body[BookmarksProperty] is not JsonObject existing)
-                    {
-                        var bookmarks = GetOrCreateObject(body, BookmarksProperty);
-                        bookmarks[name] = new JsonArray(WriteCoordinate(location));
-                        return;
-                    }
-
-                    NormalizeLegacyBookmarkKeys(existing);
-                    if (!existing.Remove(name))
-                    {
-                        existing[name] = new JsonArray(WriteCoordinate(location));
-                        return;
-                    }
-
-                    if (existing.Count > 0)
-                    {
-                        outcome = SurfaceBookmarkMutation.Removed;
-                        return;
-                    }
-
-                    body.Remove(BookmarksProperty);
-                    outcome = SurfaceBookmarkMutation.Removed;
+                    outcome = ToggleBookmarkGroup(root, context, name, location);
                 },
                 cancellationToken)
             .ConfigureAwait(false);
         return new SurfaceBookmarkMutationResult(path, outcome);
+    }
+
+    private static SurfaceBookmarkMutation ToggleBookmarkGroup(
+        JsonObject root,
+        SystemSurfaceContext context,
+        string name,
+        SurfaceCoordinate location)
+    {
+        var body = GetOrCreateBody(root, context);
+        if (body[BookmarksProperty] is not JsonObject existing)
+        {
+            var bookmarks = GetOrCreateObject(body, BookmarksProperty);
+            bookmarks[name] = new JsonArray(WriteCoordinate(location));
+            return SurfaceBookmarkMutation.Added;
+        }
+
+        NormalizeLegacyBookmarkKeys(existing);
+        if (!existing.Remove(name))
+        {
+            existing[name] = new JsonArray(WriteCoordinate(location));
+            return SurfaceBookmarkMutation.Added;
+        }
+
+        if (existing.Count == 0)
+        {
+            body.Remove(BookmarksProperty);
+        }
+
+        return SurfaceBookmarkMutation.Removed;
     }
 
     public async Task<SurfaceBookmarkMutationResult> RemoveBookmarkAsync(

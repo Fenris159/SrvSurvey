@@ -711,12 +711,24 @@ public static partial class FrontierCapiSnapshotParser
 
         var values = reputation.Value.ValueKind == JsonValueKind.Object
             ? ParseReputationObject(reputation.Value)
-            : EnumerateObjects(reputation.Value)
-                .Select(item => new FrontierReputationSnapshot(
-                    HumanizeIdentifier(GetString(item, "majorFaction")),
-                    GetDouble(item, "score") ?? 0))
-                .ToList();
+            : ParseReputationArray(reputation.Value);
 
+        return NormalizeReputation(values);
+    }
+
+    private static List<FrontierReputationSnapshot> ParseReputationArray(
+        JsonElement reputation)
+    {
+        return EnumerateObjects(reputation)
+            .Select(item => new FrontierReputationSnapshot(
+                HumanizeIdentifier(GetString(item, "majorFaction")),
+                GetDouble(item, "score") ?? 0))
+            .ToList();
+    }
+
+    private static FrontierReputationSnapshot[] NormalizeReputation(
+        IEnumerable<FrontierReputationSnapshot> values)
+    {
         return values
             .Where(item => !string.IsNullOrWhiteSpace(item.Faction))
             .GroupBy(item => item.Faction, StringComparer.OrdinalIgnoreCase)
@@ -728,31 +740,56 @@ public static partial class FrontierCapiSnapshotParser
     private static List<FrontierReputationSnapshot> ParseReputationObject(
         JsonElement reputation)
     {
-        var values = new List<FrontierReputationSnapshot>();
-        var faction = GetString(reputation, "majorFaction");
-        var score = GetDouble(reputation, "score");
-        if (!string.IsNullOrWhiteSpace(faction) && score is not null)
+        if (TryParseSingleReputation(reputation, out var single))
         {
-            values.Add(new FrontierReputationSnapshot(
-                HumanizeIdentifier(faction),
-                score.Value));
-            return values;
+            return [single];
         }
 
+        var values = new List<FrontierReputationSnapshot>();
         foreach (var property in reputation.EnumerateObject())
         {
-            score = property.Value.ValueKind == JsonValueKind.Object
-                ? GetDouble(property.Value, "score")
-                : ReadDouble(property.Value);
-            if (score is not null)
+            if (TryReadReputationScore(property.Value, out var score))
             {
                 values.Add(new FrontierReputationSnapshot(
                     HumanizeIdentifier(property.Name),
-                    score.Value));
+                    score));
             }
         }
 
         return values;
+    }
+
+    private static bool TryParseSingleReputation(
+        JsonElement reputation,
+        out FrontierReputationSnapshot snapshot)
+    {
+        snapshot = null!;
+        var faction = GetString(reputation, "majorFaction");
+        var score = GetDouble(reputation, "score");
+        if (string.IsNullOrWhiteSpace(faction) || score is null)
+        {
+            return false;
+        }
+
+        snapshot = new FrontierReputationSnapshot(
+            HumanizeIdentifier(faction),
+            score.Value);
+        return true;
+    }
+
+    private static bool TryReadReputationScore(JsonElement value, out double score)
+    {
+        var parsed = value.ValueKind == JsonValueKind.Object
+            ? GetDouble(value, "score")
+            : ReadDouble(value);
+        if (parsed is null)
+        {
+            score = 0;
+            return false;
+        }
+
+        score = parsed.Value;
+        return true;
     }
 
     private static FrontierReputationSnapshot[] MergeReputation(

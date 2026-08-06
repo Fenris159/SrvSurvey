@@ -243,6 +243,23 @@ public sealed partial record BoxelAddress(
     public bool TryEncodeSystemAddress(out long systemAddress)
     {
         systemAddress = 0;
+        if (!TryBuildPackedAddress(out var address))
+        {
+            return false;
+        }
+
+        if (!IsConsistentEncodedAddress(address))
+        {
+            return false;
+        }
+
+        systemAddress = address;
+        return true;
+    }
+
+    private bool TryBuildPackedAddress(out long address)
+    {
+        address = 0;
         if (!CanEncodeSystemAddress())
         {
             return false;
@@ -273,6 +290,22 @@ public sealed partial record BoxelAddress(
             return false;
         }
 
+        address = PackSystemAddress(
+            sector,
+            relative,
+            massCodeValue,
+            relativeBitCount,
+            systemNumberBits);
+        return address > 0;
+    }
+
+    private long PackSystemAddress(
+        SectorCoordinate sector,
+        BoxelCoordinate relative,
+        int massCodeValue,
+        int relativeBitCount,
+        int systemNumberBits)
+    {
         long address = 0;
         address = BoxelSectorNameResolver.pack_and_shift(address, 0, 9);
         address = BoxelSectorNameResolver.pack_and_shift(
@@ -303,27 +336,20 @@ public sealed partial record BoxelAddress(
             address,
             relative.Z,
             relativeBitCount);
-        address = BoxelSectorNameResolver.pack_and_shift(
+        return BoxelSectorNameResolver.pack_and_shift(
             address,
             massCodeValue,
             3);
-        if (address <= 0)
-        {
-            return false;
-        }
+    }
 
-        if (!TryFromSystemAddress(address, null, out var decoded)
-            || decoded is null
-            || !string.Equals(
+    private bool IsConsistentEncodedAddress(long address)
+    {
+        return TryFromSystemAddress(address, null, out var decoded)
+            && decoded is not null
+            && string.Equals(
                 GeneratedName,
                 decoded.GeneratedName,
-                StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        systemAddress = address;
-        return true;
+                StringComparison.Ordinal);
     }
 
     public static bool IsValidMassCode(char massCode)

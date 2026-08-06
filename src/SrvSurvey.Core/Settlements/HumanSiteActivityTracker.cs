@@ -27,35 +27,61 @@ public sealed class HumanSiteActivityTracker
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
         var reset = SynchronizeSite(site);
-        if (site is not { Template: not null, Heading: not null }
-            || status is not { HasLatitudeLongitude: true }
-            || status.PlanetRadius <= 0)
+        if (!CanTrackSite(site, status))
         {
-            if (reset)
-            {
-                Version++;
-            }
-
-            return new HumanSiteActivityApplyResult(
-                reset,
-                false,
-                []);
+            return CompleteIfReset(reset);
         }
 
-        var commanderOffset = GetCommanderOffset(site, status);
+        var commanderOffset = GetCommanderOffset(site!, status!);
         if (commanderOffset is null)
         {
             return HumanSiteActivityApplyResult.None;
         }
 
-        var collectionOffset = MoveOneMeterAhead(
+        return ApplyWithOffset(
+            journalEvent,
+            site!,
+            status!,
             commanderOffset.Value,
+            trackMaterialCollection,
+            reset);
+    }
+
+    private static bool CanTrackSite(
+        HumanSiteLiveSnapshot? site,
+        EliteStatus? status)
+    {
+        return site is { Template: not null, Heading: not null }
+            && status is { HasLatitudeLongitude: true }
+            && status.PlanetRadius > 0;
+    }
+
+    private HumanSiteActivityApplyResult CompleteIfReset(bool reset)
+    {
+        if (reset)
+        {
+            Version++;
+        }
+
+        return new HumanSiteActivityApplyResult(reset, false, []);
+    }
+
+    private HumanSiteActivityApplyResult ApplyWithOffset(
+        JournalEventEnvelope journalEvent,
+        HumanSiteLiveSnapshot site,
+        EliteStatus status,
+        HumanSiteMapPoint commanderOffset,
+        bool trackMaterialCollection,
+        bool reset)
+    {
+        var collectionOffset = MoveOneMeterAhead(
+            commanderOffset,
             status.NormalizedHeading,
-            site.Heading.Value);
+            site.Heading!.Value);
         var (terminalsChanged, added) = ApplyCollectionEvents(
             journalEvent,
             site,
-            commanderOffset.Value,
+            commanderOffset,
             collectionOffset,
             trackMaterialCollection);
 
@@ -64,8 +90,7 @@ public sealed class HumanSiteActivityTracker
             collectedMaterials.AddRange(added);
         }
 
-        var changed = reset || terminalsChanged || added.Length > 0;
-        if (changed)
+        if (reset || terminalsChanged || added.Length > 0)
         {
             Version++;
         }

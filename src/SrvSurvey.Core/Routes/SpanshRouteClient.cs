@@ -127,28 +127,47 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         hops = null;
         var lastState = GetString(root, "state");
         var lastStatus = GetString(root, "status");
+        ThrowIfRouteFailed(route, lastStatus);
+
+        if (IsRouteReady(root, lastStatus))
+        {
+            hops = ParseRoute(root, route.Kind);
+            return true;
+        }
+
+        ThrowIfRouteCompletedWithoutResult(route, lastState, lastStatus);
+        return false;
+    }
+
+    private static void ThrowIfRouteFailed(
+        SpanshRouteReference route,
+        string? lastStatus)
+    {
         if (string.Equals(lastStatus, "error", StringComparison.OrdinalIgnoreCase)
             || string.Equals(lastStatus, "failed", StringComparison.OrdinalIgnoreCase))
         {
             throw InvalidResponse(
                 $"job {route.JobId:D} returned status '{lastStatus}'");
         }
+    }
 
-        if (string.Equals(lastStatus, "ok", StringComparison.OrdinalIgnoreCase)
-            && root["result"] is not null)
-        {
-            hops = ParseRoute(root, route.Kind);
-            return true;
-        }
+    private static bool IsRouteReady(JsonObject root, string? lastStatus)
+    {
+        return string.Equals(lastStatus, "ok", StringComparison.OrdinalIgnoreCase)
+            && root["result"] is not null;
+    }
 
+    private static void ThrowIfRouteCompletedWithoutResult(
+        SpanshRouteReference route,
+        string? lastState,
+        string? lastStatus)
+    {
         if (string.Equals(lastState, "completed", StringComparison.OrdinalIgnoreCase))
         {
             throw InvalidResponse(
                 $"job {route.JobId:D} completed with status "
                     + $"'{lastStatus ?? "unknown"}'");
         }
-
-        return false;
     }
 
     private void ThrowIfTimedOut(

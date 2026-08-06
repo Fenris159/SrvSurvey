@@ -33,9 +33,7 @@ public sealed class GreenGasGiantPublicationCoordinator
         {
             cancellationToken.ThrowIfCancellationRequested();
             UpdateContext(journalEvent);
-            if (journalEvent.EventName != "Scan"
-                || !enabled
-                || !allowPublishing)
+            if (!ShouldAttemptPublish(journalEvent, enabled, allowPublishing))
             {
                 continue;
             }
@@ -51,11 +49,39 @@ public sealed class GreenGasGiantPublicationCoordinator
         return new GreenGasGiantPublicationResult(published, warnings);
     }
 
+    private static bool ShouldAttemptPublish(
+        JournalEventEnvelope journalEvent,
+        bool enabled,
+        bool allowPublishing)
+    {
+        return journalEvent.EventName == "Scan"
+            && enabled
+            && allowPublishing;
+    }
+
     private async Task TryPublishScanAsync(
         JournalEventEnvelope journalEvent,
         List<GreenGasGiantCandidate> published,
         List<string> warnings,
         CancellationToken cancellationToken)
+    {
+        var candidate = TryCreateCandidate(journalEvent, warnings);
+        if (candidate is null)
+        {
+            return;
+        }
+
+        await PublishCandidateAsync(
+                candidate,
+                published,
+                warnings,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private GreenGasGiantCandidate? TryCreateCandidate(
+        JournalEventEnvelope journalEvent,
+        List<string> warnings)
     {
         var root = journalEvent.Payload;
         var planetClass = GetString(root, "PlanetClass");
@@ -65,7 +91,7 @@ public sealed class GreenGasGiantPublicationCoordinator
             : null;
         if (tag is null)
         {
-            return;
+            return null;
         }
 
         if (string.IsNullOrWhiteSpace(commanderName)
@@ -73,14 +99,22 @@ public sealed class GreenGasGiantPublicationCoordinator
         {
             warnings.Add(
                 $"A {tag} Green Gas Giant candidate was not uploaded because commander or system coordinates were unavailable.");
-            return;
+            return null;
         }
 
-        var candidate = new GreenGasGiantCandidate(
+        return new GreenGasGiantCandidate(
             commanderName,
             tag,
             starPosition.Value,
             journalEvent.RawJson);
+    }
+
+    private async Task PublishCandidateAsync(
+        GreenGasGiantCandidate candidate,
+        List<GreenGasGiantCandidate> published,
+        List<string> warnings,
+        CancellationToken cancellationToken)
+    {
         try
         {
             await client.PublishAsync(candidate, cancellationToken)
