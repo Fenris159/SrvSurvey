@@ -511,69 +511,13 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
         vehicle = nextVehicle;
         var versionBefore = state.Version;
-        var source = HumanSiteGeometrySource.Unknown;
-        var publicationSource = HumanSiteGeometrySource.Unknown;
-        var addedMaterials = new List<HumanSiteCollectedMaterial>();
-        var completeMaterialSurvey = false;
-        int? requestedThreatLevel = null;
+        var accumulator = new JournalUpdateAccumulator();
         foreach (var journalEvent in events)
         {
-            state.Apply(journalEvent);
-            vehicleTracker.Apply(journalEvent, status);
-            if (journalEvent.EventName == "ApproachSettlement"
-                && state.CurrentSite is not null)
-            {
-                var loadedSource = await LoadKnowledgeAsync();
-                if (source == HumanSiteGeometrySource.Unknown
-                    && loadedSource != HumanSiteGeometrySource.Unknown)
-                {
-                    source = loadedSource;
-                }
-
-                var canonnSource = await LoadCanonnKnowledgeAsync(
-                    allowExternalData);
-                if (source == HumanSiteGeometrySource.Unknown
-                    && canonnSource != HumanSiteGeometrySource.Unknown)
-                {
-                    source = canonnSource;
-                }
-            }
-
-            var inferredSource = TryInferGeometry(
-                IsSettlementAlignmentCommand(journalEvent));
-            if (inferredSource != HumanSiteGeometrySource.Unknown)
-            {
-                source = inferredSource;
-                publicationSource = inferredSource;
-            }
-
-            var activity = activityTracker.Apply(
+            await ProcessJournalEventAsync(
                 journalEvent,
-                state.CurrentSite,
-                status,
-                TrackMaterialCollection);
-            addedMaterials.AddRange(activity.AddedMaterials);
-            if (journalEvent.EventName == "ApproachSettlement"
-                && state.CurrentSite is { } approachedSite)
-            {
-                var materialSiteKey =
-                    $"{approachedSite.SystemAddress}/{approachedSite.MarketId}";
-                if (!string.Equals(
-                    materialSiteKey,
-                    loadedMaterialSiteKey,
-                    StringComparison.Ordinal))
-                {
-                    ThreatLevel = -1;
-                }
-
-                await LoadMaterialSurveyAsync();
-            }
-
-            completeMaterialSurvey |= IsStopMaterialSurveyCommand(journalEvent);
-            if (TryParseThreatLevelCommand(journalEvent) is { } parsedThreatLevel)
-            {
-                requestedThreatLevel = parsedThreatLevel;
-            }
+                allowExternalData,
+                accumulator);
         }
 
         if (state.CurrentSite is null)
@@ -586,41 +530,139 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         var finalSource = TryInferGeometry();
         if (finalSource != HumanSiteGeometrySource.Unknown)
         {
-            source = finalSource;
-            publicationSource = finalSource;
+            accumulator.Source = finalSource;
+            accumulator.PublicationSource = finalSource;
         }
 
-        if (addedMaterials.Count > 0)
-        {
-            await SaveMaterialActivityAsync(addedMaterials);
-        }
-
-        if (requestedThreatLevel is { } nextThreatLevel)
-        {
-            await SaveThreatLevelAsync(nextThreatLevel);
-        }
-
-        if (completeMaterialSurvey)
-        {
-            await CompleteMaterialSurveyAsync();
-        }
-
+        await ApplyPostEventUpdatesAsync(accumulator);
         UpdateNavigation();
         if (AutoZoom)
         {
             ApplyAutomaticZoom();
         }
 
-        if (state.Version != versionBefore && state.CurrentSite is { } site)
+        await PersistSiteKnowledgeIfChangedAsync(
+            versionBefore,
+            accumulator.Source,
+            accumulator.PublicationSource,
+            allowExternalData);
+        NotifySiteState();
+    }
+
+    private async Task ProcessJournalEventAsync(
+        JournalEventEnvelope journalEvent,
+        bool allowExternalData,
+        JournalUpdateAccumulator accumulator)
+    {
+        state.Apply(journalEvent);
+        vehicleTracker.Apply(journalEvent, status);
+        if (journalEvent.EventName == "ApproachSettlement"
+            && state.CurrentSite is not null)
         {
-            await SaveKnowledgeAsync(site, source);
-            await PublishCanonnKnowledgeAsync(
-                site,
-                publicationSource,
+            var loadedSource = await LoadKnowledgeAsync();
+            if (accumulator.Source == HumanSiteGeometrySource.Unknown
+                && loadedSource != HumanSiteGeometrySource.Unknown)
+            {
+                accumulator.Source = loadedSource;
+            }
+
+            var canonnSource = await LoadCanonnKnowledgeAsync(
                 allowExternalData);
+            if (accumulator.Source == HumanSiteGeometrySource.Unknown
+                && canonnSource != HumanSiteGeometrySource.Unknown)
+            {
+                accumulator.Source = canonnSource;
+            }
         }
 
-        NotifySiteState();
+        var inferredSource = TryInferGeometry(
+            IsSettlementAlignmentCommand(journalEvent));
+        if (inferredSource != HumanSiteGeometrySource.Unknown)
+        {
+            accumulator.Source = inferredSource;
+            accumulator.PublicationSource = inferredSource;
+        }
+
+        var activity = activityTracker.Apply(
+            journalEvent,
+            state.CurrentSite,
+            status,
+            TrackMaterialCollection);
+        accumulator.AddedMaterials.AddRange(activity.AddedMaterials);
+        if (journalEvent.EventName == "ApproachSettlement"
+            && state.CurrentSite is { } approachedSite)
+        {
+            var materialSiteKey =
+                $"{approachedSite.SystemAddress}/{approachedSite.MarketId}";
+            if (!string.Equals(
+                materialSiteKey,
+                loadedMaterialSiteKey,
+                StringComparison.Ordinal))
+            {
+                ThreatLevel = -1;
+            }
+
+            await LoadMaterialSurveyAsync();
+        }
+
+        accumulator.CompleteMaterialSurvey |=
+            IsStopMaterialSurveyCommand(journalEvent);
+        if (TryParseThreatLevelCommand(journalEvent) is { } parsedThreatLevel)
+        {
+            accumulator.RequestedThreatLevel = parsedThreatLevel;
+        }
+    }
+
+    private async Task ApplyPostEventUpdatesAsync(
+        JournalUpdateAccumulator accumulator)
+    {
+        if (accumulator.AddedMaterials.Count > 0)
+        {
+            await SaveMaterialActivityAsync(accumulator.AddedMaterials);
+        }
+
+        if (accumulator.RequestedThreatLevel is { } nextThreatLevel)
+        {
+            await SaveThreatLevelAsync(nextThreatLevel);
+        }
+
+        if (accumulator.CompleteMaterialSurvey)
+        {
+            await CompleteMaterialSurveyAsync();
+        }
+    }
+
+    private async Task PersistSiteKnowledgeIfChangedAsync(
+        int versionBefore,
+        HumanSiteGeometrySource source,
+        HumanSiteGeometrySource publicationSource,
+        bool allowExternalData)
+    {
+        if (state.Version == versionBefore || state.CurrentSite is not { } site)
+        {
+            return;
+        }
+
+        await SaveKnowledgeAsync(site, source);
+        await PublishCanonnKnowledgeAsync(
+            site,
+            publicationSource,
+            allowExternalData);
+    }
+
+    private sealed class JournalUpdateAccumulator
+    {
+        public HumanSiteGeometrySource Source { get; set; } =
+            HumanSiteGeometrySource.Unknown;
+
+        public HumanSiteGeometrySource PublicationSource { get; set; } =
+            HumanSiteGeometrySource.Unknown;
+
+        public List<HumanSiteCollectedMaterial> AddedMaterials { get; } = [];
+
+        public bool CompleteMaterialSurvey { get; set; }
+
+        public int? RequestedThreatLevel { get; set; }
     }
 
     public void UpdateStatus(EliteStatus? currentStatus, string? currentVehicle = null)
@@ -794,79 +836,146 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         {
             foreach (var location in quest.BodyLocations)
             {
-                if (!TryParseQuestLocation(
-                    location.Value,
-                    out var coordinate,
-                    out var radius))
+                if (TryAddQuestLocationMarker(
+                    location,
+                    origin,
+                    current,
+                    bodyRadius,
+                    heading,
+                    out var marker))
                 {
-                    continue;
-                }
-
-                try
-                {
-                    var offset = HumanSiteNavigation.GetSiteOffset(
-                        origin,
-                        coordinate,
-                        bodyRadius,
-                        heading);
-                    var distance = SurfaceNavigation.GetDistance(
-                        current,
-                        coordinate,
-                        bodyRadius);
-                    markers.Add(new HumanSiteQuestMarker(
-                        location.Key,
-                        offset,
-                        radius,
-                        distance < radius));
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    // Imported quest data is retained, but invalid coordinates
-                    // are deliberately excluded from the live map.
+                    markers.Add(marker);
                 }
             }
 
             foreach (var route in quest.Routes)
             {
-                if (!double.IsFinite(route.Width) || route.Width < 0)
+                if (TryBuildQuestRoute(
+                    route,
+                    origin,
+                    bodyRadius,
+                    heading,
+                    out var builtRoute))
                 {
-                    continue;
-                }
-
-                var points = new List<HumanSiteMapPoint>();
-                foreach (var waypoint in route.Waypoints)
-                {
-                    if (!TryParseQuestWaypoint(waypoint, out var coordinate))
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        points.Add(HumanSiteNavigation.GetSiteOffset(
-                            origin,
-                            coordinate,
-                            bodyRadius,
-                            heading));
-                    }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                        // Skip only the malformed waypoint.
-                    }
-                }
-
-                if (points.Count >= 2)
-                {
-                    routes.Add(new HumanSiteQuestRoute(
-                        route.Id,
-                        route.Width,
-                        points));
+                    routes.Add(builtRoute);
                 }
             }
         }
 
         questMarkers = markers;
         questRoutes = routes;
+    }
+
+    private static bool TryAddQuestLocationMarker(
+        KeyValuePair<string, string> location,
+        SurfaceCoordinate origin,
+        SurfaceCoordinate current,
+        double bodyRadius,
+        double heading,
+        out HumanSiteQuestMarker marker)
+    {
+        marker = default!;
+        if (!TryParseQuestLocation(
+            location.Value,
+            out var coordinate,
+            out var radius))
+        {
+            return false;
+        }
+
+        var built = BuildQuestMarkerForLocation(
+            location.Key,
+            coordinate,
+            radius,
+            origin,
+            current,
+            bodyRadius,
+            heading);
+        if (built is null)
+        {
+            return false;
+        }
+
+        marker = built;
+        return true;
+    }
+
+    private static HumanSiteQuestMarker? BuildQuestMarkerForLocation(
+        string key,
+        SurfaceCoordinate coordinate,
+        double radius,
+        SurfaceCoordinate origin,
+        SurfaceCoordinate current,
+        double bodyRadius,
+        double heading)
+    {
+        try
+        {
+            var offset = HumanSiteNavigation.GetSiteOffset(
+                origin,
+                coordinate,
+                bodyRadius,
+                heading);
+            var distance = SurfaceNavigation.GetDistance(
+                current,
+                coordinate,
+                bodyRadius);
+            return new HumanSiteQuestMarker(
+                key,
+                offset,
+                radius,
+                distance < radius);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            // Imported quest data is retained, but invalid coordinates
+            // are deliberately excluded from the live map.
+            return null;
+        }
+    }
+
+    private static bool TryBuildQuestRoute(
+        RavenQuestRoute route,
+        SurfaceCoordinate origin,
+        double bodyRadius,
+        double heading,
+        out HumanSiteQuestRoute builtRoute)
+    {
+        builtRoute = default!;
+        if (!double.IsFinite(route.Width) || route.Width < 0)
+        {
+            return false;
+        }
+
+        var points = new List<HumanSiteMapPoint>();
+        foreach (var waypoint in route.Waypoints)
+        {
+            if (!TryParseQuestWaypoint(waypoint, out var coordinate))
+            {
+                continue;
+            }
+
+            try
+            {
+                points.Add(HumanSiteNavigation.GetSiteOffset(
+                    origin,
+                    coordinate,
+                    bodyRadius,
+                    heading));
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                // Skip only the malformed waypoint.
+            }
+        }
+
+        if (points.Count < 2)
+        {
+            return false;
+        }
+
+        builtRoute = new HumanSiteQuestRoute(route.Id, route.Width, points);
+        return true;
     }
 
     private static bool TryParseQuestLocation(

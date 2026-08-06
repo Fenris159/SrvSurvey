@@ -229,13 +229,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         folderResolution = JournalFolderLocator.ResolveCurrent(
             configuredJournalDirectory
                 ?? sharedJournalSettingsStore.Load().Directory);
-        ICommunityGoalJournalHistoryReader? communityGoalHistoryReader =
-            folderResolution.SelectedPath is { } journalPath
-                ? new CommunityGoalJournalHistoryReader(journalPath)
-                : null;
         FrontierProfile = frontierProfile ?? new CommanderProfileViewModel(
             FrontierAccountService.CreateCurrent(AppDataPaths.DataDirectory),
-            communityGoalHistoryReader: communityGoalHistoryReader);
+            communityGoalHistoryReader: CreateCommunityGoalHistoryReader(
+                folderResolution));
         var legacyReferences = LegacyReferenceCatalogLoader.Load(
             AppDataPaths.DataDirectory);
         var regionalCodexCandidates = RegionalCodexCandidateCatalog.Load(
@@ -252,15 +249,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             regionalCodexCandidates,
             knownSystems);
 
-        Action<string>? referenceUpdateLog = resolvedApplicationLogService is null
-            ? null
-            : message => resolvedApplicationLogService.Append(message);
         ReferenceDataUpdates = referenceDataUpdates
             ?? new ReferenceDataUpdateViewModel(
                 new PublishedReferenceUpdateService(),
                 AppDataPaths.DataDirectory,
                 ReferenceDataStatus,
-                referenceUpdateLog);
+                CreateReferenceUpdateLogger(resolvedApplicationLogService));
         Localization = localization ?? new LocalizationViewModel(
             new LocalizationSettingsStore(
                 AppDataPaths.UiSettingsPath,
@@ -417,11 +411,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         var journeyService = new JourneyService(
             new JourneyStore(AppDataPaths.DataDirectory),
             new JourneyJournalHistoryReader(
-                folderResolution.SelectedPath
-                    ?? (folderResolution.CandidatePaths.Count > 0
-                        ? folderResolution.CandidatePaths[0]
-                        : null)
-                    ?? Path.Combine(AppDataPaths.DataDirectory, "journals")),
+                ResolveJournalPathOrDefault(
+                    folderResolution,
+                    AppDataPaths.DataDirectory)),
             commanderProfileStore,
             sharedExobiologyCatalog);
         Search = new SphereLimitViewModel(
@@ -548,11 +540,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             sharedExobiologyCatalog,
             legacyReferences.BiologyCriteria,
             () => activeProfileCommanderName ?? journalState.CommanderName);
-        var journalImportDirectory = folderResolution.SelectedPath
-            ?? (folderResolution.CandidatePaths.Count > 0
-                ? folderResolution.CandidatePaths[0]
-                : null)
-            ?? Path.Combine(AppDataPaths.DataDirectory, "journals");
+        var journalImportDirectory = ResolveJournalPathOrDefault(
+            folderResolution,
+            AppDataPaths.DataDirectory);
         ProfileBackupDirectory = Path.Combine(
             Path.GetDirectoryName(AppDataPaths.DataDirectory)
                 ?? AppDataPaths.ConfigDirectory,
@@ -618,26 +608,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                 AppDataPaths.LegacyProfileCandidates)
             .Select(discovery => new LegacyProfileOptionViewModel(discovery))
             .ToArray();
-        selectedLegacyProfile = LegacyProfiles.Count > 0
-            ? LegacyProfiles[0]
-            : null;
+        selectedLegacyProfile = SelectInitialLegacyProfile(LegacyProfiles);
         legacyProfileSourcePath = selectedLegacyProfile?.Path ?? string.Empty;
         profileStatusMessage = GetInitialProfileStatus();
         importLegacyProfileCommand = new AsyncCommand(
             ImportLegacyProfileAsync,
             CanImportLegacyProfile);
         ImportLegacyProfileCommand = importLegacyProfileCommand;
-        JournalFolderPath = folderResolution.SelectedPath
-            ?? (folderResolution.CandidatePaths.Count > 0
-                ? folderResolution.CandidatePaths[0]
-                : null)
+        JournalFolderPath = ResolvePrimaryJournalPath(folderResolution)
             ?? "No journal location is configured.";
-        CandidatePaths = folderResolution.CandidatePaths.Count == 0
-            ? "No default locations are available for this platform."
-            : string.Join(Environment.NewLine, folderResolution.CandidatePaths);
-        TargetFrontierId = string.IsNullOrWhiteSpace(targetFrontierId)
-            ? null
-            : targetFrontierId.Trim();
+        CandidatePaths = FormatCandidatePathsDisplay(folderResolution);
+        TargetFrontierId = NormalizeOptionalId(targetFrontierId);
         var commanderProfileCatalog = new CommanderProfileCatalog(
             AppDataPaths.DataDirectory);
         CommanderPreference = new CommanderPreferenceViewModel(
@@ -658,39 +639,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
         SetSharedCargoSuppressed(CommanderInstances.HasMultipleGameWindows);
         this.eddnPublisher.SetSuspended(
             CommanderInstances.HasMultipleGameWindows);
-        if (visitedStarsCache is null)
-        {
-            var processDetector = new EliteGameProcessDetector();
-            visitedStarsHttpClient = new HttpClient
-            {
-                Timeout = TimeSpan.FromSeconds(45),
-            };
-            VisitedStarsCache = new VisitedStarsCacheViewModel(
-                new CommanderProfileCatalog(AppDataPaths.DataDirectory),
-                new VisitedStarsCacheService(
-                    visitedStarsHttpClient,
-                    Path.Combine(AppDataPaths.CacheDirectory, "star-cache"),
-                    processDetector.IsRunning),
-                VisitedStarsCacheTargetLocator.ResolveCurrent,
-                processDetector.IsRunning);
-        }
-        else
-        {
-            VisitedStarsCache = visitedStarsCache;
-        }
-        statusMessage = folderResolution.IsFound
-            ? (TargetFrontierId is null) switch
-            {
-                true => "Ready to read the newest Journal.*.log file.",
-                false => $"Ready to read journals for {TargetFrontierId}."
-            }
-            : $"Journal folder not found. Set {JournalFolderLocator.EnvironmentVariableName} "
-                + "or start with --journal-directory <path>.";
-        journalMonitor = folderResolution.SelectedPath is null
-            ? null
-            : new JournalDirectoryMonitor(
-                folderResolution.SelectedPath,
-                TargetFrontierId);
+        (visitedStarsHttpClient, VisitedStarsCache) = CreateVisitedStarsCache(
+            visitedStarsCache,
+            AppDataPaths);
+        statusMessage = BuildJournalReadyStatus(
+            folderResolution.IsFound,
+            TargetFrontierId);
+        journalMonitor = CreateJournalMonitor(folderResolution, TargetFrontierId);
         RefreshCommand = new AsyncCommand(RefreshAsync, () => !IsBusy);
         ShowProfileCommand = new AsyncCommand(ShowProfileAsync, () => true);
         resetExplorationCommand = new AsyncCommand(
@@ -1680,6 +1635,102 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             : $"Found {LegacyProfiles.Count:N0} legacy profile source(s). "
                 + "Import creates checksum-verified backups, preserves current-only files, "
                 + "records collisions, and activates the merged copy transactionally.";
+    }
+
+    // Constructor helper methods keep nested conditionals out of the MainWindow
+    // constructor so Sonar S3776 stays at or below the complexity budget.
+    private static ICommunityGoalJournalHistoryReader? CreateCommunityGoalHistoryReader(
+        JournalFolderResolution resolution) =>
+        resolution.SelectedPath is { } journalPath
+            ? new CommunityGoalJournalHistoryReader(journalPath)
+            : null;
+
+    private static Action<string>? CreateReferenceUpdateLogger(
+        ApplicationLogService? logService) =>
+        logService is null
+            ? null
+            : message => logService.Append(message);
+
+    private static string? ResolvePrimaryJournalPath(
+        JournalFolderResolution resolution)
+    {
+        if (resolution.SelectedPath is not null)
+        {
+            return resolution.SelectedPath;
+        }
+
+        return resolution.CandidatePaths.Count > 0
+            ? resolution.CandidatePaths[0]
+            : null;
+    }
+
+    private static string ResolveJournalPathOrDefault(
+        JournalFolderResolution resolution,
+        string dataDirectory) =>
+        ResolvePrimaryJournalPath(resolution)
+            ?? Path.Combine(dataDirectory, "journals");
+
+    private static string FormatCandidatePathsDisplay(
+        JournalFolderResolution resolution) =>
+        resolution.CandidatePaths.Count == 0
+            ? "No default locations are available for this platform."
+            : string.Join(Environment.NewLine, resolution.CandidatePaths);
+
+    private static string? NormalizeOptionalId(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static LegacyProfileOptionViewModel? SelectInitialLegacyProfile(
+        IReadOnlyList<LegacyProfileOptionViewModel> profiles) =>
+        profiles.Count > 0 ? profiles[0] : null;
+
+    private static string BuildJournalReadyStatus(
+        bool isFound,
+        string? targetFrontierId)
+    {
+        if (!isFound)
+        {
+            return $"Journal folder not found. Set {JournalFolderLocator.EnvironmentVariableName} "
+                + "or start with --journal-directory <path>.";
+        }
+
+        return targetFrontierId is null
+            ? "Ready to read the newest Journal.*.log file."
+            : $"Ready to read journals for {targetFrontierId}.";
+    }
+
+    private static JournalDirectoryMonitor? CreateJournalMonitor(
+        JournalFolderResolution resolution,
+        string? targetFrontierId) =>
+        resolution.SelectedPath is null
+            ? null
+            : new JournalDirectoryMonitor(
+                resolution.SelectedPath,
+                targetFrontierId);
+
+    private static (HttpClient? Client, VisitedStarsCacheViewModel Cache)
+        CreateVisitedStarsCache(
+            VisitedStarsCacheViewModel? provided,
+            AppDataPaths appDataPaths)
+    {
+        if (provided is not null)
+        {
+            return (null, provided);
+        }
+
+        var processDetector = new EliteGameProcessDetector();
+        var client = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(45),
+        };
+        var cache = new VisitedStarsCacheViewModel(
+            new CommanderProfileCatalog(appDataPaths.DataDirectory),
+            new VisitedStarsCacheService(
+                client,
+                Path.Combine(appDataPaths.CacheDirectory, "star-cache"),
+                processDetector.IsRunning),
+            VisitedStarsCacheTargetLocator.ResolveCurrent,
+            processDetector.IsRunning);
+        return (client, cache);
     }
 
     private void SelectTheme(ThemeOptionViewModel option)

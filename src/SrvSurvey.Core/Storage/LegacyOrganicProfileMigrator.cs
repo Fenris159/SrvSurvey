@@ -1253,9 +1253,33 @@ public sealed class LegacyOrganicProfileMigrator
         }
 
         var species = GetString(scan, SpeciesProperty);
+        var organism = FindOrganismBySpecies(bodySource, species);
+        var reference = catalog.FindByVariant(GetString(organism, VariantProperty));
+        if (reference is not null)
+        {
+            scan[EntryIdProperty] = reference.EntryId;
+            return;
+        }
+
+        var speciesReference = catalog.FindBySpecies(species);
+        if (TryRepairFromClaim(
+                scan,
+                bodySource,
+                commanderProfiles,
+                speciesReference))
+        {
+            return;
+        }
+
+        ApplySpeciesReferenceEntryId(scan, speciesReference);
+    }
+
+    private static JsonObject? FindOrganismBySpecies(
+        JsonObject bodySource,
+        string? species)
+    {
         var organisms = bodySource[OrganicsProperty] as JsonObject
             ?? EmptyOrganisms;
-        JsonObject? organism = null;
         foreach (var pair in organisms)
         {
             if (pair.Value is JsonObject candidate
@@ -1264,60 +1288,73 @@ public sealed class LegacyOrganicProfileMigrator
                     species,
                     StringComparison.Ordinal))
             {
-                organism = candidate;
-                break;
+                return candidate;
             }
         }
-        var reference = catalog.FindByVariant(GetString(organism, VariantProperty));
-        if (reference is not null)
+
+        return null;
+    }
+
+    private static bool TryRepairFromClaim(
+        JsonObject scan,
+        JsonObject bodySource,
+        IReadOnlyList<CommanderProfile> commanderProfiles,
+        ExobiologyReference? speciesReference)
+    {
+        var systemAddress = GetInt64(bodySource, SystemAddressProperty);
+        var bodyId = GetInt32(bodySource, BodyIdProperty);
+        if (systemAddress is null || bodyId is null)
         {
-            scan[EntryIdProperty] = reference.EntryId;
+            return false;
+        }
+
+        var prefix = speciesReference?.EntryIdPrefix;
+        var claim = string.IsNullOrWhiteSpace(prefix)
+            ? null
+            : commanderProfiles
+                .Select(profile => profile.Root[ScannedBioEntryIdsProperty])
+                .OfType<JsonArray>()
+                .SelectMany(claims => claims.OfType<JsonValue>())
+                .Select(value => value.TryGetValue<string>(out var text)
+                    ? text
+                    : null)
+                .FirstOrDefault(value => value is not null
+                    && value.StartsWith(
+                        $"{systemAddress}_{bodyId}_{prefix}",
+                        StringComparison.Ordinal));
+        if (claim is null)
+        {
+            return false;
+        }
+
+        var claimParts = claim.Split('_');
+        if (claimParts.Length <= 2
+            || !long.TryParse(claimParts[2], out var claimedEntryId))
+        {
+            return false;
+        }
+
+        scan[EntryIdProperty] = claimedEntryId;
+        return true;
+    }
+
+    private static void ApplySpeciesReferenceEntryId(
+        JsonObject scan,
+        ExobiologyReference? speciesReference)
+    {
+        if (speciesReference is null)
+        {
             return;
         }
 
-        var systemAddress = GetInt64(bodySource, SystemAddressProperty);
-        var bodyId = GetInt32(bodySource, BodyIdProperty);
-        var speciesReference = catalog.FindBySpecies(species);
-        if (systemAddress is not null
-            && bodyId is not null)
-        {
-            var prefix = speciesReference?.EntryIdPrefix;
-            var claim = string.IsNullOrWhiteSpace(prefix)
-                ? null
-                : commanderProfiles
-                    .Select(profile => profile.Root[ScannedBioEntryIdsProperty])
-                    .OfType<JsonArray>()
-                    .SelectMany(claims => claims.OfType<JsonValue>())
-                    .Select(value => value.TryGetValue<string>(out var text)
-                        ? text
-                        : null)
-                    .FirstOrDefault(value => value is not null
-                        && value.StartsWith(
-                            $"{systemAddress}_{bodyId}_{prefix}",
-                            StringComparison.Ordinal));
-            if (claim is not null)
-            {
-                var claimParts = claim.Split('_');
-                if (claimParts.Length > 2
-                    && long.TryParse(claimParts[2], out var claimedEntryId))
-                {
-                    scan[EntryIdProperty] = claimedEntryId;
-                    return;
-                }
-            }
-        }
-
-        if (speciesReference is not null)
-        {
-            scan[EntryIdProperty] = string.Equals(
-                    speciesReference.Platform,
-                    OdysseYPlatform,
-                    StringComparison.OrdinalIgnoreCase)
-                ? long.Parse(
-                    speciesReference.EntryIdPrefix + "00",
-                    CultureInfo.InvariantCulture)
-                : speciesReference.EntryId;
-        }
+        scan[EntryIdProperty] = string.Equals(
+                speciesReference.Platform,
+                OdysseYPlatform,
+                StringComparison.OrdinalIgnoreCase)
+            ? long.Parse(
+                speciesReference.EntryIdPrefix + "00",
+                CultureInfo.InvariantCulture)
+            : speciesReference.EntryId;
     }
 
     private ExobiologyReference? FindByEntryIdOrPrefix(string entryId)
