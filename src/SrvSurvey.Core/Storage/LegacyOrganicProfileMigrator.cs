@@ -44,7 +44,6 @@ public sealed class LegacyOrganicProfileMigrator
     private const string VariantLocalizedProperty = "variantLocalized";
     private const string UnknownType = "Unknown";
     private const string VariantProperty = "variant";
-    private const string FirstFootfallProperty = "firstFootfall";
     private const string FirstVisitedProperty = "firstVisited";
     private const string LastVisitedProperty = "lastVisited";
     private static readonly JsonSerializerOptions SerializerOptions = new()

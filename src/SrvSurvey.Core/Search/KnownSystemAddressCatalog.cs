@@ -99,7 +99,6 @@ public sealed partial class KnownSystemAddressCatalog
             leaveOpen: true);
         var result = new Dictionary<string, long>(
             StringComparer.OrdinalIgnoreCase);
-        var hasEntry = false;
         var foundStart = false;
         var foundMissingStart = false;
         string? line;
@@ -134,7 +133,7 @@ public sealed partial class KnownSystemAddressCatalog
             {
                 if (string.Equals(trimmed, "]", StringComparison.Ordinal))
                 {
-                    if (!hasEntry)
+                    if (result.Count == 0)
                     {
                         throw new InvalidDataException(
                             "The known-system address catalog is incomplete.");
@@ -173,8 +172,6 @@ public sealed partial class KnownSystemAddressCatalog
                 throw new InvalidDataException(
                     "The known-system address catalog contains duplicated entries.");
             }
-
-            hasEntry = true;
         }
         throw new InvalidDataException(
             "The known-system address catalog is incomplete.");

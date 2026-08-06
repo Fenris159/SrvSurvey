@@ -18,14 +18,13 @@ namespace SrvSurvey.Core.Inara
         private const string StatisticsEvent = "Statistics";
         private const string VesselKey = "Vessel";
         private const string ShipVesselValue = "Ship";
+        private const string ToShipDirection = "toship";
         private const string BodyTypeKey = "BodyType";
         private const string PlanetBodyType = "Planet";
-        private const string BodyNameKey = "Body";
-        private const string LocationBodyKey = "Body";
+        private const string BodyKey = "Body";
         private const string StationNameRawKey = "StationName";
         private const string LoadoutNameKey = "loadoutName";
         private const string LoadoutNameSourceKey = "LoadoutName";
-        private const string ToShipDirection = "toship";
         private const string PowerTrackCategory = "power";
         private const string PowerProperty = "Power";
         private const string PowerNameKey = "powerName";
@@ -207,7 +206,7 @@ namespace SrvSurvey.Core.Inara
                 case "DropshipDeploy":
                     addRequired(events, "addCommanderTravelLand", timestamp, obj(
                         (StarSystemNameKey, entry[StarSystemProperty]),
-                        (StarSystemBodyNameKey, entry["Body"]),
+                        (StarSystemBodyNameKey, entry[BodyKey]),
                         ("isTaxiDropship", true)));
                     break;
                 case "Touchdown":
@@ -281,7 +280,8 @@ namespace SrvSurvey.Core.Inara
                     break;
                 case "RenameSuitLoadout":
                     addRequired(events, "updateCommanderSuitLoadout", timestamp, obj(
-                        (LoadoutGameIdKey, entry[LoadoutIdKey]), ("loadoutName", entry["LoadoutName"]),
+                        (LoadoutGameIdKey, entry[LoadoutIdKey]),
+                        (LoadoutNameKey, entry[LoadoutNameSourceKey]),
                         ("suitType", entry["SuitName"]), ("suitGameID", entry["SuitID"])), $"suit:{entry[LoadoutIdKey]}");
                     break;
                 case "LoadoutEquipModule":
@@ -503,7 +503,7 @@ namespace SrvSurvey.Core.Inara
         {
             var data = obj(
                 (StarSystemNameKey, entry[StarSystemProperty] ?? context.SystemName),
-                (StationNameKey, entry["StationName"] ?? context.StationName),
+                (StationNameKey, entry[StationNameRawKey] ?? context.StationName),
                 (MarketIdKey, entry[MarketIdProperty]));
             addShipIdentity(data, context, entry.Value<bool?>("Taxi") ?? context.IsTaxi);
             addRequired(events, "addCommanderTravelDock", timestamp, data);
@@ -515,7 +515,7 @@ namespace SrvSurvey.Core.Inara
                 (StarSystemNameKey, entry[StarSystemProperty]),
                 ("starsystemCoords", entry["StarPos"]),
                 ("jumpDistance", entry["JumpDist"]),
-                (StationNameKey, entry["StationName"]),
+                (StationNameKey, entry[StationNameRawKey]),
                 (MarketIdKey, entry[MarketIdProperty]));
             addShipIdentity(data, context, entry.Value<bool?>("Taxi") ?? context.IsTaxi);
             addRequired(events, eventName, timestamp, data);
@@ -528,12 +528,15 @@ namespace SrvSurvey.Core.Inara
                 ("starsystemCoords", entry["StarPos"]));
             if (entry.Value<bool?>("Docked") == true)
             {
-                copy(data, entry, (StationNameKey, "StationName"), (MarketIdKey, MarketIdProperty));
-                if (entry.Value<string>("BodyType") == "Planet") copy(data, entry, (StarSystemBodyNameKey, "Body"));
+                copy(data, entry, (StationNameKey, StationNameRawKey), (MarketIdKey, MarketIdProperty));
+                if (entry.Value<string>(BodyTypeKey) == PlanetBodyType)
+                {
+                    copy(data, entry, (StarSystemBodyNameKey, BodyKey));
+                }
             }
             if (entry[LatitudeKey] != null && entry[LongitudeKey] != null)
             {
-                copy(data, entry, (StarSystemBodyNameKey, "Body"));
+                copy(data, entry, (StarSystemBodyNameKey, BodyKey));
                 data["starsystemBodyCoords"] = new JArray(entry[LatitudeKey]!.DeepClone(), entry[LongitudeKey]!.DeepClone());
             }
             addRequired(events, "setCommanderTravelLocation", timestamp, data, LocationKey);
@@ -542,7 +545,10 @@ namespace SrvSurvey.Core.Inara
         private static void mapSupercruiseExit(string timestamp, JObject entry, List<InaraEvent> events)
         {
             var data = obj((StarSystemNameKey, entry[StarSystemProperty]));
-            if (entry.Value<string>("BodyType") == "Planet") copy(data, entry, (StarSystemBodyNameKey, "Body"));
+            if (entry.Value<string>(BodyTypeKey) == PlanetBodyType)
+            {
+                copy(data, entry, (StarSystemBodyNameKey, BodyKey));
+            }
             addRequired(events, "setCommanderTravelLocation", timestamp, data, LocationKey);
         }
 
@@ -563,7 +569,7 @@ namespace SrvSurvey.Core.Inara
             if (entry.Value<bool?>("PlayerControlled") == false || entry.Value<bool?>("OnPlanet") == false) return;
             var data = obj(
                 (StarSystemNameKey, entry[StarSystemProperty] ?? context.SystemName),
-                (StarSystemBodyNameKey, entry["Body"] ?? context.BodyName));
+                (StarSystemBodyNameKey, entry[BodyKey] ?? context.BodyName));
             if (entry[LatitudeKey] != null && entry[LongitudeKey] != null)
                 data["starsystemBodyCoords"] = new JArray(entry[LatitudeKey]!.DeepClone(), entry[LongitudeKey]!.DeepClone());
             addShipIdentity(data, context, entry.Value<bool?>("Taxi") ?? context.IsTaxi);
@@ -821,7 +827,8 @@ namespace SrvSurvey.Core.Inara
                     (EngineeringKey, new JArray((module["WeaponMods"] as JArray)?.Select(mod => obj((BlueprintNameKey, mod))) ?? []))));
             }
             addRequired(events, eventName, timestamp, obj(
-                (LoadoutGameIdKey, entry[LoadoutIdKey]), ("loadoutName", entry["LoadoutName"]),
+                (LoadoutGameIdKey, entry[LoadoutIdKey]),
+                (LoadoutNameKey, entry[LoadoutNameSourceKey]),
                 ("suitGameID", entry["SuitID"]), ("suitType", entry["SuitName"]),
                 ("suitMods", entry["SuitMods"]), ("suitLoadout", modules)), $"suit:{entry[LoadoutIdKey]}");
         }
@@ -833,7 +840,8 @@ namespace SrvSurvey.Core.Inara
                 ("itemClass", entry["Class"]), ("itemGameID", entry["SuitModuleID"]),
                 (EngineeringKey, new JArray((entry["WeaponMods"] as JArray)?.Select(mod => obj((BlueprintNameKey, mod))) ?? [])));
             addRequired(events, "updateCommanderSuitLoadout", timestamp, obj(
-                (LoadoutGameIdKey, entry[LoadoutIdKey]), ("loadoutName", entry["LoadoutName"]),
+                (LoadoutGameIdKey, entry[LoadoutIdKey]),
+                (LoadoutNameKey, entry[LoadoutNameSourceKey]),
                 ("suitGameID", entry["SuitID"]), ("suitType", entry["SuitName"]),
                 ("suitLoadout", new JArray(module))), $"suit:{entry[LoadoutIdKey]}");
         }

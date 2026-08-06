@@ -26,10 +26,6 @@ public sealed class FollowRouteStore
     private const string RenamedRouteReloadErrorMessage = "The renamed route could not be reloaded.";
     private const string SavedRouteExportLoadErrorMessage =
         "The saved route could not be loaded for export.";
-    private const string SavedRouteLoadForExportErrorMessage =
-        "The selected route could not be loaded: {0}";
-    private const string SavedRouteMissingFileTemplateMessage =
-        "The saved route could not be found: {0}";
 
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
