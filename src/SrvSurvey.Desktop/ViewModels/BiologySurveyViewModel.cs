@@ -348,44 +348,68 @@ public sealed class BiologySurveyViewModel
         var rewardEstimate = CreateRewardEstimate(body, predictionSet);
         var geoCount = hideGeoCount ? 0 : body.GeologicalSignalCount;
         var geoSignals = hideGeoCount
-            ? []
+            ? Array.Empty<string>()
             : body.AnalyzedGeologicalSignals;
 
         return new BiologySurveyViewModel
+        {
+            Mode = BiologySurveyMode.Body,
+            SelectedBodyId = body.BodyId,
+            Heading = $"{body.Name} biology",
+            ProgressText = FormatBodyProgressText(body.BiologicalSignalCount),
+            Bodies = [],
+            Organisms = organisms,
+            RewardSummary = FormatBodyRewardSummary(rewardEstimate),
+            FirstFootfallRewardSummary = FormatFirstFootfallRewardSummary(
+                body,
+                rewardEstimate),
+            RadicoidaUnicaCount = exobiology.CountRadicoidaUnica,
+            RequiresDss = body.Organisms.Count == 0 && !body.IsDssComplete,
+            PredictionStatus = predictionSet.Status,
+            GeologicalSignalCount = geoCount,
+            GeologicalSignals = geoSignals
+        };
+    }
+
+    private static string FormatBodyProgressText(int biologicalSignalCount)
     {
-        Mode = BiologySurveyMode.Body,
-        SelectedBodyId = body.BodyId,
-        Heading = $"{body.Name} biology",
-        ProgressText = body.BiologicalSignalCount == 1
-                ? "1 biological signal"
-                : $"{body.BiologicalSignalCount:N0} biological signals",
-        Bodies = [],
-        Organisms = organisms,
-        RewardSummary = rewardEstimate.HasPredictedReward
-                ? FormatEstimatedReward(
-                    rewardEstimate.MinimumReward,
-                    rewardEstimate.MaximumReward,
-                    rewardEstimate.HasUnknownReward)
-                : FormatKnownReward(
-                    rewardEstimate.KnownReward,
-                    rewardEstimate.HasUnknownReward),
-        FirstFootfallRewardSummary = body.IsFirstFootfall && rewardEstimate.MaximumReward > 0
-                ? (rewardEstimate.HasPredictedReward) switch
-                {
-                    true => "First-footfall estimate: " + FormatRewardRange(
-                        rewardEstimate.MinimumReward * 5,
-                        rewardEstimate.MaximumReward * 5,
-                        rewardEstimate.HasUnknownReward),
-                    false => "First-footfall value: "
-                                                                                + FormatCredits(rewardEstimate.KnownReward * 5)
-                }
-                : string.Empty,
-        RadicoidaUnicaCount = exobiology.CountRadicoidaUnica,
-        RequiresDss = body.Organisms.Count == 0 && !body.IsDssComplete,
-        PredictionStatus = predictionSet.Status,
-        GeologicalSignalCount = geoCount,
-        GeologicalSignals = geoSignals
-    };
+        return biologicalSignalCount == 1
+            ? "1 biological signal"
+            : $"{biologicalSignalCount:N0} biological signals";
+    }
+
+    private static string FormatBodyRewardSummary(
+        BiologyRewardEstimate rewardEstimate)
+    {
+        return rewardEstimate.HasPredictedReward
+            ? FormatEstimatedReward(
+                rewardEstimate.MinimumReward,
+                rewardEstimate.MaximumReward,
+                rewardEstimate.HasUnknownReward)
+            : FormatKnownReward(
+                rewardEstimate.KnownReward,
+                rewardEstimate.HasUnknownReward);
+    }
+
+    private static string FormatFirstFootfallRewardSummary(
+        SystemScanBodySnapshot body,
+        BiologyRewardEstimate rewardEstimate)
+    {
+        if (!body.IsFirstFootfall || rewardEstimate.MaximumReward <= 0)
+        {
+            return string.Empty;
+        }
+
+        if (rewardEstimate.HasPredictedReward)
+        {
+            return "First-footfall estimate: " + FormatRewardRange(
+                rewardEstimate.MinimumReward * 5,
+                rewardEstimate.MaximumReward * 5,
+                rewardEstimate.HasUnknownReward);
+        }
+
+        return "First-footfall value: "
+            + FormatCredits(rewardEstimate.KnownReward * 5);
     }
 
     private sealed class BodyOrganismRowBuildContext

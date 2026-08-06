@@ -135,9 +135,32 @@ public sealed class JumpRouteProgressControl : Control
         var nextX = index == legs.Count - 1
             ? layout.Right
             : x + layout.Width * (leg.DistanceLy / layout.TotalDistance);
-        var brush = index == TargetLegIndex
-            ? brushes.Target
-            : index < TargetLegIndex ? brushes.Behind : brushes.Ahead;
+        var brush = ResolveLegBrush(index, brushes);
+        DrawLegSegments(context, leg, index, x, nextX, layout, brushes, brush);
+        DrawLegMarker(context, leg, index, nextX, layout, brushes, brush);
+        return nextX;
+    }
+
+    private IBrush ResolveLegBrush(int index, LegBrushes brushes)
+    {
+        if (index == TargetLegIndex)
+        {
+            return brushes.Target;
+        }
+
+        return index < TargetLegIndex ? brushes.Behind : brushes.Ahead;
+    }
+
+    private void DrawLegSegments(
+        DrawingContext context,
+        JumpInfoRouteLeg leg,
+        int index,
+        double x,
+        double nextX,
+        LegLayout layout,
+        LegBrushes brushes,
+        IBrush brush)
+    {
         if (leg.RequiresBoost)
         {
             context.DrawLine(
@@ -150,6 +173,17 @@ public sealed class JumpRouteProgressControl : Control
             new Pen(brush, index == TargetLegIndex ? 4 : 2.5),
             new Point(x, layout.Y),
             new Point(nextX, layout.Y));
+    }
+
+    private void DrawLegMarker(
+        DrawingContext context,
+        JumpInfoRouteLeg leg,
+        int index,
+        double nextX,
+        LegLayout layout,
+        LegBrushes brushes,
+        IBrush brush)
+    {
         var radius = index == TargetLegIndex ? 5d : 3.5;
         context.DrawEllipse(
             brush,
@@ -166,8 +200,6 @@ public sealed class JumpRouteProgressControl : Control
                 4,
                 2.5);
         }
-
-        return nextX;
     }
 
     private readonly record struct LegLayout(

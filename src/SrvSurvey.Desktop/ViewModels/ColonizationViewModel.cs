@@ -1544,43 +1544,7 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         IsFleetCarrierSyncBusy = true;
         try
         {
-            var normalized = string.IsNullOrWhiteSpace(RavenApiKey)
-                ? null
-                : RavenApiKey.Trim();
-            string? validatedCommander = null;
-            if (normalized is not null
-                && !await TryValidateRavenApiKeyAsync(
-                        normalized,
-                        commander => validatedCommander = commander)
-                    .ConfigureAwait(false))
-            {
-                return;
-            }
-
-            await commanderProfileStore.SaveRavenColonialApiKeyAsync(
-                profileFrontierId,
-                CommanderName,
-                profileIsOdyssey,
-                normalized,
-                CancellationToken.None);
-            storedRavenApiKey = normalized;
-            RavenApiKey = normalized ?? string.Empty;
-            RavenCredentialStatus = normalized is null
-                ? "The Raven API key was removed from this commander profile."
-                : $"The Raven API key was validated for {validatedCommander} and saved.";
-            OnPropertyChanged(nameof(HasStoredRavenApiKey));
-            if (normalized is null && FleetCarrierCargoSyncEnabled)
-            {
-                FleetCarrierCargoSyncEnabled = false;
-            }
-
-            if (ShipCargoPublishingEnabled)
-            {
-                ShipCargoPublishingStatus = GetShipCargoReadyStatus();
-            }
-
-            UpdateProjectEditorContext();
-            UpdateSystemEditorContext();
+            await PersistRavenApiKeyAsync().ConfigureAwait(false);
         }
         catch (Exception exception) when (
             exception is IOException
@@ -1598,6 +1562,54 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             IsFleetCarrierSyncBusy = false;
             RaiseCommandStates();
         }
+    }
+
+    private async Task PersistRavenApiKeyAsync()
+    {
+        var normalized = string.IsNullOrWhiteSpace(RavenApiKey)
+            ? null
+            : RavenApiKey.Trim();
+        string? validatedCommander = null;
+        if (normalized is not null
+            && !await TryValidateRavenApiKeyAsync(
+                    normalized,
+                    commander => validatedCommander = commander)
+                .ConfigureAwait(false))
+        {
+            return;
+        }
+
+        await commanderProfileStore!.SaveRavenColonialApiKeyAsync(
+            profileFrontierId!,
+            CommanderName,
+            profileIsOdyssey,
+            normalized,
+            CancellationToken.None);
+        ApplySavedRavenApiKey(normalized, validatedCommander);
+    }
+
+    private void ApplySavedRavenApiKey(
+        string? normalized,
+        string? validatedCommander)
+    {
+        storedRavenApiKey = normalized;
+        RavenApiKey = normalized ?? string.Empty;
+        RavenCredentialStatus = normalized is null
+            ? "The Raven API key was removed from this commander profile."
+            : $"The Raven API key was validated for {validatedCommander} and saved.";
+        OnPropertyChanged(nameof(HasStoredRavenApiKey));
+        if (normalized is null && FleetCarrierCargoSyncEnabled)
+        {
+            FleetCarrierCargoSyncEnabled = false;
+        }
+
+        if (ShipCargoPublishingEnabled)
+        {
+            ShipCargoPublishingStatus = GetShipCargoReadyStatus();
+        }
+
+        UpdateProjectEditorContext();
+        UpdateSystemEditorContext();
     }
 
     private async Task<bool> TryValidateRavenApiKeyAsync(

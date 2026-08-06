@@ -307,6 +307,45 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         EliteStatus? nextStatus,
         string? nextMusicTrack = null)
     {
+        ApplyNavigationInputs(navRoute, nextStatus, nextMusicTrack);
+        var destination = ResolveRouteDestination();
+        if (destination is null)
+        {
+            ClearDestinationDisplay();
+            return;
+        }
+
+        var targetChanged = ApplyDestinationIdentity(destination.Value);
+        var destinationName = destination.Value.Name;
+        var destinationAddress = destination.Value.Address;
+        var destinationPosition = resolvedDestinationPosition;
+        if (!state.IsActive)
+        {
+            SetInactiveDestinationDisplay();
+            return;
+        }
+
+        if (destinationPosition is null && targetChanged)
+        {
+            destinationPosition = await ResolveDestinationPositionAsync(
+                destinationName,
+                destinationAddress);
+        }
+
+        if (destinationPosition is null)
+        {
+            ApplyUnknownDestinationDisplay();
+            return;
+        }
+
+        ApplyDestinationEvaluation(destinationName, destinationPosition.Value);
+    }
+
+    private void ApplyNavigationInputs(
+        NavRouteSnapshot? navRoute,
+        EliteStatus? nextStatus,
+        string? nextMusicTrack)
+    {
         if (navRoute is not null)
         {
             latestNavRoute = navRoute;
@@ -319,94 +358,100 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
         musicTrack = nextMusicTrack;
         OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
+    }
 
-        var destination = ResolveRouteDestination();
-        if (destination is null)
-        {
-            ClearDestinationDisplay();
-            return;
-        }
-
-        var destinationName = destination.Value.Name;
-        var destinationAddress = destination.Value.Address;
-        var destinationPosition = destination.Value.Position;
-        var targetChanged = destinationSystemAddress != destinationAddress
+    private bool ApplyDestinationIdentity(
+        (string Name, long Address, GalacticCoordinate? Position) destination)
+    {
+        var targetChanged = destinationSystemAddress != destination.Address
             || !string.Equals(
                 DestinationSystemName,
-                destinationName,
+                destination.Name,
                 StringComparison.OrdinalIgnoreCase);
         if (targetChanged)
         {
             resolvedDestinationPosition = null;
         }
 
-        destinationSystemAddress = destinationAddress;
-        DestinationSystemName = destinationName;
-        resolvedDestinationPosition = destinationPosition
+        destinationSystemAddress = destination.Address;
+        DestinationSystemName = destination.Name;
+        resolvedDestinationPosition = destination.Position
             ?? resolvedDestinationPosition;
-        destinationPosition = resolvedDestinationPosition;
-        if (!state.IsActive)
+        return targetChanged;
+    }
+
+    private async Task<GalacticCoordinate?> ResolveDestinationPositionAsync(
+        string destinationName,
+        long destinationAddress)
+    {
+        DestinationDistance = Unavailable;
+        DestinationResult = "Resolving destination coordinates…";
+        IsDestinationInside = false;
+        IsDestinationUnknown = false;
+        try
         {
-            SetInactiveDestinationDisplay();
-            return;
+            var matches = await systemResolver.SearchAsync(destinationName);
+            var destinationPosition = SelectDestinationPosition(
+                matches,
+                destinationName,
+                destinationAddress);
+            resolvedDestinationPosition = destinationPosition;
+            return destinationPosition;
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or TaskCanceledException
+                or System.Text.Json.JsonException)
+        {
+            DestinationResult = "Destination coordinates are unavailable: "
+                + exception.Message;
+            return null;
+        }
+    }
+
+    private static GalacticCoordinate? SelectDestinationPosition(
+        IReadOnlyList<StarSystemReference> matches,
+        string destinationName,
+        long destinationAddress)
+    {
+        return matches.FirstOrDefault(candidate =>
+                destinationAddress > 0
+                && candidate.SystemAddress == destinationAddress)
+            ?.Position
+            ?? matches.FirstOrDefault(candidate => string.Equals(
+                candidate.Name,
+                destinationName,
+                StringComparison.OrdinalIgnoreCase))
+            ?.Position;
+    }
+
+    private void ApplyUnknownDestinationDisplay()
+    {
+        DestinationDistance = Unavailable;
+        if (!DestinationResult.StartsWith(
+                "Destination coordinates are unavailable:",
+                StringComparison.Ordinal))
+        {
+            DestinationResult = "Destination distance is unknown";
         }
 
-        if (destinationPosition is null && targetChanged)
-        {
-            DestinationDistance = Unavailable;
-            DestinationResult = "Resolving destination coordinates…";
-            IsDestinationInside = false;
-            IsDestinationUnknown = false;
-            try
-            {
-                var matches = await systemResolver.SearchAsync(destinationName);
-                destinationPosition = matches.FirstOrDefault(candidate =>
-                        destinationAddress > 0
-                        && candidate.SystemAddress == destinationAddress)
-                    ?.Position
-                    ?? matches.FirstOrDefault(candidate => string.Equals(
-                        candidate.Name,
-                        destinationName,
-                        StringComparison.OrdinalIgnoreCase))
-                    ?.Position;
-                resolvedDestinationPosition = destinationPosition;
-            }
-            catch (Exception exception) when (
-                exception is HttpRequestException
-                    or TaskCanceledException
-                    or System.Text.Json.JsonException)
-            {
-                DestinationResult = "Destination coordinates are unavailable: "
-                    + exception.Message;
-            }
-        }
+        IsDestinationInside = false;
+        IsDestinationUnknown = true;
+    }
 
-        if (destinationPosition is null)
-        {
-            DestinationDistance = Unavailable;
-            if (!DestinationResult.StartsWith(
-                    "Destination coordinates are unavailable:",
-                    StringComparison.Ordinal))
-            {
-                DestinationResult = "Destination distance is unknown";
-            }
-
-            IsDestinationInside = false;
-            IsDestinationUnknown = true;
-            return;
-        }
-
-        var evaluation = state.Evaluate(destinationName, destinationPosition.Value);
+    private void ApplyDestinationEvaluation(
+        string destinationName,
+        GalacticCoordinate destinationPosition)
+    {
+        var evaluation = state.Evaluate(destinationName, destinationPosition);
         DestinationDistance = evaluation is null
             ? Unavailable
             : $"{evaluation.Distance:N2} ly";
         DestinationResult = evaluation is null
             ? "The spherical limit is disabled"
-            : (evaluation.IsInside) switch
-            {
-                true => $"Within the {state.Radius:N2} ly limit",
-                false => $"Exceeds the {state.Radius:N2} ly limit"
-            };
+            : evaluation.IsInside
+                ? $"Within the {state.Radius:N2} ly limit"
+                : $"Exceeds the {state.Radius:N2} ly limit";
         IsDestinationInside = evaluation?.IsInside == true;
         IsDestinationUnknown = false;
     }

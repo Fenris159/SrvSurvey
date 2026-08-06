@@ -118,6 +118,17 @@ public sealed class VrOverlayCoordinator : IDisposable
             return;
         }
 
+        var (active, lastError) = PublishRegistrations(registrations);
+        RemoveStaleOverlays(active);
+        published.Clear();
+        published.UnionWith(active);
+        viewModel.SetRuntimeStatus(lastError
+            ?? $"OpenVR is active with {active.Count:N0} live overlays.");
+    }
+
+    private (HashSet<string> Active, string? LastError) PublishRegistrations(
+        IReadOnlyList<RegisteredOverlayWindow> registrations)
+    {
         var active = new HashSet<string>(StringComparer.Ordinal);
         string? lastError = null;
         foreach (var registration in registrations)
@@ -129,15 +140,15 @@ public sealed class VrOverlayCoordinator : IDisposable
             }
         }
 
+        return (active, lastError);
+    }
+
+    private void RemoveStaleOverlays(HashSet<string> active)
+    {
         foreach (var removed in published.Except(active).ToArray())
         {
             runtime.RemoveOverlay(removed);
         }
-
-        published.Clear();
-        published.UnionWith(active);
-        viewModel.SetRuntimeStatus(lastError
-            ?? $"OpenVR is active with {active.Count:N0} live overlays.");
     }
 
     private bool TryEnsureVrRuntimeReady()

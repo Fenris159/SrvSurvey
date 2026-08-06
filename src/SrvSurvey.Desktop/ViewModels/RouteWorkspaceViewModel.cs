@@ -740,42 +740,8 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         IReadOnlyList<JournalEventEnvelope> journalEvents)
     {
         var hadUnsavedChanges = IsDirty;
-        var changed = false;
-        int? reachedIndex = null;
-        var arrivalEvent = IsFleetCarrierWorkspace
-            ? "CarrierJump"
-            : "FSDJump";
-        foreach (var journalEvent in journalEvents)
-        {
-            if (!string.Equals(
-                journalEvent.EventName,
-                arrivalEvent,
-                StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            var name = GetString(journalEvent.Payload, "StarSystem");
-            var address = GetInt64(journalEvent.Payload, "SystemAddress");
-            if (string.IsNullOrWhiteSpace(name) && address is null)
-            {
-                continue;
-            }
-
-            var result = await routeService.ApplyArrivalAsync(
-                loadedRoute!,
-                name ?? string.Empty,
-                address);
-            if (!result.Changed)
-            {
-                continue;
-            }
-
-            loadedRoute = result.Route;
-            changed = true;
-            reachedIndex = result.ReachedIndex;
-        }
-
+        var (changed, reachedIndex) = await ProcessArrivalEventsAsync(journalEvents)
+            .ConfigureAwait(true);
         if (!changed || loadedRoute is null)
         {
             return;
@@ -793,6 +759,69 @@ public sealed class RouteWorkspaceViewModel : INotifyPropertyChanged
         StatusMessage = BuildArrivalStatusMessage(
             reachedIndex,
             hadUnsavedChanges);
+    }
+
+    private async Task<(bool Changed, int? ReachedIndex)> ProcessArrivalEventsAsync(
+        IReadOnlyList<JournalEventEnvelope> journalEvents)
+    {
+        var changed = false;
+        int? reachedIndex = null;
+        var arrivalEvent = IsFleetCarrierWorkspace
+            ? "CarrierJump"
+            : "FSDJump";
+        foreach (var journalEvent in journalEvents)
+        {
+            if (!TryGetArrivalTarget(
+                    journalEvent,
+                    arrivalEvent,
+                    out var name,
+                    out var address))
+            {
+                continue;
+            }
+
+            var result = await routeService.ApplyArrivalAsync(
+                loadedRoute!,
+                name,
+                address);
+            if (!result.Changed)
+            {
+                continue;
+            }
+
+            loadedRoute = result.Route;
+            changed = true;
+            reachedIndex = result.ReachedIndex;
+        }
+
+        return (changed, reachedIndex);
+    }
+
+    private static bool TryGetArrivalTarget(
+        JournalEventEnvelope journalEvent,
+        string arrivalEvent,
+        out string name,
+        out long? address)
+    {
+        name = string.Empty;
+        address = null;
+        if (!string.Equals(
+                journalEvent.EventName,
+                arrivalEvent,
+                StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var systemName = GetString(journalEvent.Payload, "StarSystem");
+        address = GetInt64(journalEvent.Payload, "SystemAddress");
+        if (string.IsNullOrWhiteSpace(systemName) && address is null)
+        {
+            return false;
+        }
+
+        name = systemName ?? string.Empty;
+        return true;
     }
 
     private string BuildArrivalStatusMessage(

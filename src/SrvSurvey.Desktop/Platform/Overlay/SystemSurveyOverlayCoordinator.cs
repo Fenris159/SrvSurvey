@@ -319,12 +319,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
     private async Task RefreshFssTuningAsync()
     {
         var request = survey.CreateFssTuningCaptureRequest();
-        if (disposed
-            || request is null
-            || lastFssBodyWindow is null
-            || !gameWindow.IsAvailable
-            || !gameWindow.IsVisible
-            || !gameWindow.IsForeground)
+        if (!CanCaptureFssTuning(request))
         {
             return;
         }
@@ -344,68 +339,7 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
 
         try
         {
-            var halfWidth = gameWindow.ClientBounds.Width / 2;
-            var halfHeight = gameWindow.ClientBounds.Height / 2;
-            if (halfWidth <= 0 || halfHeight <= 0)
-            {
-                return;
-            }
-
-            var captureBounds = new PixelRect(
-                gameWindow.ClientBounds.X + halfWidth,
-                gameWindow.ClientBounds.Y,
-                halfWidth,
-                halfHeight);
-            var captureResult = await Task.Run(
-                () =>
-                {
-                    var pixels = gameScreenCapture.Capture(captureBounds);
-                    var analysis = FssTuningDetector.Analyze(
-                        pixels,
-                        request.Settings,
-                        request.State);
-                    return (Pixels: pixels, Analysis: analysis);
-                },
-                disposalCancellation.Token).ConfigureAwait(true);
-            if (disposed)
-            {
-                return;
-            }
-
-            if (captureResult.Analysis.Failure is not null
-                && request.Settings.SaveDiagnosticImages
-                && fssDiagnosticDirectory is not null
-                && fssDiagnosticRevision != request.Revision)
-            {
-                fssDiagnosticRevision = request.Revision;
-                try
-                {
-                    _ = await Task.Run(
-                        () => FssTuningDiagnosticWriter.Save(
-                            fssDiagnosticDirectory,
-                            captureResult.Pixels,
-                            request.Revision),
-                        disposalCancellation.Token).ConfigureAwait(true);
-                }
-                catch (Exception exception) when (
-                    exception is IOException
-                        or UnauthorizedAccessException
-                        or InvalidOperationException)
-                {
-                    survey.UpdateFssTuningDetectorStatus(
-                        "FSS tuning detection is active, but its diagnostic "
-                            + "image could not be saved: "
-                            + exception.Message);
-                }
-            }
-            else
-            {
-                survey.UpdateFssTuningDetectorStatus(null);
-            }
-
-            survey.ApplyFssTuningAnalysis(
-                request.Revision,
-                captureResult.Analysis);
+            await CaptureAndApplyFssTuningAsync(request!).ConfigureAwait(true);
         }
         catch (OperationCanceledException)
             when (disposalCancellation.IsCancellationRequested)
@@ -431,6 +365,90 @@ public sealed class SystemSurveyOverlayCoordinator : IDisposable
         finally
         {
             fssCaptureLock.Release();
+        }
+    }
+
+    private bool CanCaptureFssTuning(FssTuningCaptureRequest? request)
+    {
+        return !disposed
+            && request is not null
+            && lastFssBodyWindow is not null
+            && gameWindow.IsAvailable
+            && gameWindow.IsVisible
+            && gameWindow.IsForeground;
+    }
+
+    private async Task CaptureAndApplyFssTuningAsync(
+        FssTuningCaptureRequest request)
+    {
+        var halfWidth = gameWindow.ClientBounds.Width / 2;
+        var halfHeight = gameWindow.ClientBounds.Height / 2;
+        if (halfWidth <= 0 || halfHeight <= 0)
+        {
+            return;
+        }
+
+        var captureBounds = new PixelRect(
+            gameWindow.ClientBounds.X + halfWidth,
+            gameWindow.ClientBounds.Y,
+            halfWidth,
+            halfHeight);
+        var captureResult = await Task.Run(
+            () =>
+            {
+                var pixels = gameScreenCapture.Capture(captureBounds);
+                var analysis = FssTuningDetector.Analyze(
+                    pixels,
+                    request.Settings,
+                    request.State);
+                return (Pixels: pixels, Analysis: analysis);
+            },
+            disposalCancellation.Token).ConfigureAwait(true);
+        if (disposed)
+        {
+            return;
+        }
+
+        await MaybeSaveFssDiagnosticAsync(request, captureResult)
+            .ConfigureAwait(true);
+        survey.ApplyFssTuningAnalysis(
+            request.Revision,
+            captureResult.Analysis);
+    }
+
+    private async Task MaybeSaveFssDiagnosticAsync(
+        FssTuningCaptureRequest request,
+        (CapturedPixelBuffer Pixels, FssTuningAnalysis Analysis) captureResult)
+    {
+        var shouldSaveDiagnostic = captureResult.Analysis.Failure is not null
+            && request.Settings.SaveDiagnosticImages
+            && fssDiagnosticDirectory is not null
+            && fssDiagnosticRevision != request.Revision;
+        if (!shouldSaveDiagnostic)
+        {
+            survey.UpdateFssTuningDetectorStatus(null);
+            return;
+        }
+
+        fssDiagnosticRevision = request.Revision;
+        try
+        {
+            _ = await Task.Run(
+                () => FssTuningDiagnosticWriter.Save(
+                    fssDiagnosticDirectory!,
+                    captureResult.Pixels,
+                    request.Revision),
+                disposalCancellation.Token).ConfigureAwait(true);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidOperationException)
+        {
+            survey.UpdateFssTuningDetectorStatus(
+                "FSS tuning detection is active, but its diagnostic "
+                    + "image could not be saved: "
+                    + exception.Message);
         }
     }
 

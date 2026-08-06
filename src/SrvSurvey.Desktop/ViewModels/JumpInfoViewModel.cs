@@ -326,55 +326,62 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
     {
         foreach (var journalEvent in journalEvents)
         {
-            if (journalEvent.EventName == "Music")
+            ApplyMusicAndLoadout(journalEvent);
+            if (!isBootstrapRead)
             {
-                musicTrack = GetString(journalEvent.Payload, "MusicTrack");
+                ApplyLiveJumpEvent(journalEvent);
             }
-            else if (journalEvent.EventName is "Fileheader" or "LoadGame")
-            {
-                musicTrack = null;
-            }
+        }
+    }
 
-            if (journalEvent.EventName == "Loadout")
-            {
-                maximumJumpRange = GetDouble(
-                    journalEvent.Payload,
-                    "MaxJumpRange") ?? maximumJumpRange;
-            }
+    private void ApplyMusicAndLoadout(JournalEventEnvelope journalEvent)
+    {
+        if (journalEvent.EventName == "Music")
+        {
+            musicTrack = GetString(journalEvent.Payload, "MusicTrack");
+        }
+        else if (journalEvent.EventName is "Fileheader" or "LoadGame")
+        {
+            musicTrack = null;
+        }
 
-            if (isBootstrapRead)
-            {
-                continue;
-            }
+        if (journalEvent.EventName == "Loadout")
+        {
+            maximumJumpRange = GetDouble(
+                journalEvent.Payload,
+                "MaxJumpRange") ?? maximumJumpRange;
+        }
+    }
 
-            switch (journalEvent.EventName)
-            {
-                case "FSDTarget":
-                    fsdTarget = ParseTarget(journalEvent.Payload);
-                    manuallyHidden = false;
-                    break;
+    private void ApplyLiveJumpEvent(JournalEventEnvelope journalEvent)
+    {
+        switch (journalEvent.EventName)
+        {
+            case "FSDTarget":
+                fsdTarget = ParseTarget(journalEvent.Payload);
+                manuallyHidden = false;
+                break;
 
-                case "NavRouteClear":
-                    fsdTarget = null;
-                    navRoute = null;
-                    forceShow = false;
-                    manuallyHidden = false;
-                    break;
+            case "NavRouteClear":
+                fsdTarget = null;
+                navRoute = null;
+                forceShow = false;
+                manuallyHidden = false;
+                break;
 
-                case "StartJump" when string.Equals(
-                    GetString(journalEvent.Payload, "JumpType"),
-                    "Hyperspace",
-                    StringComparison.OrdinalIgnoreCase):
-                    fsdJumping = true;
-                    jumpVisibleUntil = null;
-                    break;
+            case "StartJump" when string.Equals(
+                GetString(journalEvent.Payload, "JumpType"),
+                "Hyperspace",
+                StringComparison.OrdinalIgnoreCase):
+                fsdJumping = true;
+                jumpVisibleUntil = null;
+                break;
 
-                case "FSDJump":
-                case "CarrierJump":
-                    fsdJumping = false;
-                    jumpVisibleUntil = DateTimeOffset.UtcNow.AddSeconds(1);
-                    break;
-            }
+            case "FSDJump":
+            case "CarrierJump":
+                fsdJumping = false;
+                jumpVisibleUntil = DateTimeOffset.UtcNow.AddSeconds(1);
+                break;
         }
     }
 
@@ -685,26 +692,49 @@ public sealed class JumpInfoViewModel : INotifyPropertyChanged, IDisposable
             return "Undiscovered system";
         }
 
-        var scanStatus = value.TotalBodyCount == 0
-            ? "Unscanned system"
-            : (value.ScannedBodyCount >= value.TotalBodyCount) switch
-            {
-                true => $"All {value.TotalBodyCount:N0} bodies reported",
-                false => $"{value.ScannedBodyCount:N0} of {value.TotalBodyCount:N0} bodies reported"
-            };
         var discovered = value.DiscoveredAt is { } discoveredAt
-            ? "Discovered"
-                + ((string.IsNullOrWhiteSpace(value.DiscoveredBy)) switch
-                {
-                    true => string.Empty,
-                    false => " by " + value.DiscoveredBy
-                })
-                + $" on {discoveredAt.ToLocalTime():g}"
-            : scanStatus;
-        return value.LastUpdatedAt is { } updated
-            && (value.DiscoveredAt is null || updated > value.DiscoveredAt)
-                ? discovered + $" \u2022 updated {updated.ToLocalTime():g}"
-                : discovered;
+            ? FormatDiscoveredText(value, discoveredAt)
+            : FormatScanStatusText(value);
+        return AppendUpdatedSuffix(value, discovered);
+    }
+
+    private static string FormatScanStatusText(SystemSummary value)
+    {
+        if (value.TotalBodyCount == 0)
+        {
+            return "Unscanned system";
+        }
+
+        return value.ScannedBodyCount >= value.TotalBodyCount
+            ? $"All {value.TotalBodyCount:N0} bodies reported"
+            : $"{value.ScannedBodyCount:N0} of {value.TotalBodyCount:N0} bodies reported";
+    }
+
+    private static string FormatDiscoveredText(
+        SystemSummary value,
+        DateTimeOffset discoveredAt)
+    {
+        var byline = string.IsNullOrWhiteSpace(value.DiscoveredBy)
+            ? string.Empty
+            : " by " + value.DiscoveredBy;
+        return "Discovered" + byline + $" on {discoveredAt.ToLocalTime():g}";
+    }
+
+    private static string AppendUpdatedSuffix(
+        SystemSummary value,
+        string discovered)
+    {
+        if (value.LastUpdatedAt is not { } updated)
+        {
+            return discovered;
+        }
+
+        if (value.DiscoveredAt is not null && updated <= value.DiscoveredAt)
+        {
+            return discovered;
+        }
+
+        return discovered + $" \u2022 updated {updated.ToLocalTime():g}";
     }
 
     private static string CreatePointsOfInterestText(SystemSummary? value)

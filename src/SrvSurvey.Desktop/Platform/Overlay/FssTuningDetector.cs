@@ -115,21 +115,7 @@ public static class FssTuningDetector
         }
 
         var center = source.Width / 2;
-        var x = center;
-        var y = source.Height - 1;
-        var yellowY = 0;
-        while (y > 0)
-        {
-            if (Matches(source.GetPixel(x, y), settings.YellowBar))
-            {
-                yellowY = y;
-                break;
-            }
-
-            y--;
-        }
-
-        if (yellowY == 0)
+        if (!TryFindYellowBarY(source, settings, center, out var yellowY))
         {
             failure = "The FSS tuning bar was not found.";
             return false;
@@ -139,38 +125,13 @@ public static class FssTuningDetector
         {
             Tolerance = settings.YellowHorizontalTolerance,
         };
-        var left = 0;
-        while (x > 0)
-        {
-            if (!Matches(source.GetPixel(x, y), horizontalYellow))
-            {
-                left = x;
-                break;
-            }
-
-            x--;
-        }
-
-        if (left == 0)
+        if (!TryFindBarLeft(source, horizontalYellow, center, yellowY, out var left))
         {
             failure = "The left edge of the FSS tuning bar was not found.";
             return false;
         }
 
-        x = center;
-        var right = 0;
-        while (x < source.Width)
-        {
-            if (!Matches(source.GetPixel(x, y), horizontalYellow))
-            {
-                right = x;
-                break;
-            }
-
-            x++;
-        }
-
-        if (right == 0)
+        if (!TryFindBarRight(source, horizontalYellow, center, yellowY, out var right))
         {
             failure = "The right edge of the FSS tuning bar was not found.";
             return false;
@@ -185,24 +146,124 @@ public static class FssTuningDetector
             return false;
         }
 
-        var blackY = 0;
-        while (y < source.Height)
-        {
-            if (Matches(source.GetPixel(blackX, y), settings.BlackArea))
-            {
-                blackY = y;
-                break;
-            }
-
-            y++;
-        }
-
-        if (blackY == 0)
+        if (!TryFindBlackAreaY(source, settings, blackX, yellowY, out var blackY))
         {
             failure = "The dark area below the FSS tuning bar was not found.";
             return false;
         }
 
+        return TryBuildWatchArea(
+            source,
+            yellowY,
+            blackY,
+            watchX,
+            width,
+            out area,
+            out failure);
+    }
+
+    private static bool TryFindYellowBarY(
+        IFssPixelSource source,
+        FssTuningDetectorSettings settings,
+        int x,
+        out int yellowY)
+    {
+        yellowY = 0;
+        var y = source.Height - 1;
+        while (y > 0)
+        {
+            if (Matches(source.GetPixel(x, y), settings.YellowBar))
+            {
+                yellowY = y;
+                return true;
+            }
+
+            y--;
+        }
+
+        return false;
+    }
+
+    private static bool TryFindBarLeft(
+        IFssPixelSource source,
+        FssPixelColor horizontalYellow,
+        int center,
+        int y,
+        out int left)
+    {
+        left = 0;
+        var x = center;
+        while (x > 0)
+        {
+            if (!Matches(source.GetPixel(x, y), horizontalYellow))
+            {
+                left = x;
+                return true;
+            }
+
+            x--;
+        }
+
+        return false;
+    }
+
+    private static bool TryFindBarRight(
+        IFssPixelSource source,
+        FssPixelColor horizontalYellow,
+        int center,
+        int y,
+        out int right)
+    {
+        right = 0;
+        var x = center;
+        while (x < source.Width)
+        {
+            if (!Matches(source.GetPixel(x, y), horizontalYellow))
+            {
+                right = x;
+                return true;
+            }
+
+            x++;
+        }
+
+        return false;
+    }
+
+    private static bool TryFindBlackAreaY(
+        IFssPixelSource source,
+        FssTuningDetectorSettings settings,
+        int blackX,
+        int startY,
+        out int blackY)
+    {
+        blackY = 0;
+        var y = startY;
+        while (y < source.Height)
+        {
+            if (Matches(source.GetPixel(blackX, y), settings.BlackArea))
+            {
+                blackY = y;
+                return true;
+            }
+
+            y++;
+        }
+
+        return false;
+    }
+
+    private static bool TryBuildWatchArea(
+        IFssPixelSource source,
+        int yellowY,
+        int blackY,
+        int watchX,
+        int width,
+        out FssPixelRegion area,
+        out string? failure)
+    {
+        area = default;
+        failure = null;
         var heightDelta = (blackY - yellowY) / 3;
         var watchY = blackY + heightDelta;
         var height = (source.Height - watchY - 1) / 2;

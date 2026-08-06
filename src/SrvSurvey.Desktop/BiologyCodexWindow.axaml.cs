@@ -61,15 +61,7 @@ public sealed partial class BiologyCodexWindow : Window
 
     private async Task LoadSelectedImageAsync(bool forceRefresh)
     {
-        var previousCancellation = imageLoadCancellation;
-        if (previousCancellation is not null)
-        {
-            await previousCancellation.CancelAsync();
-            previousCancellation.Dispose();
-        }
-
-        var loadCancellation = new CancellationTokenSource();
-        imageLoadCancellation = loadCancellation;
+        var loadCancellation = await BeginImageLoadAsync();
         var cancellationToken = loadCancellation.Token;
         var organism = viewModel.SelectedOrganism;
         if (organism is null || string.IsNullOrWhiteSpace(organism.ImageUrl))
@@ -85,50 +77,84 @@ public sealed partial class BiologyCodexWindow : Window
         ImageStatusText.Text = forceRefresh
             ? "Refreshing reference image…"
             : "Loading reference image…";
-        CodexImageCacheResult result;
-        var imageLoadTask = imageCache.GetAsync(
-            organism.EntryId,
-            organism.ImageUrl,
-            organism.LocalImageName,
+        var result = await TryLoadImageResultAsync(
+            organism,
             forceRefresh,
-            cancellationToken);
-        try
-        {
-            result = await imageLoadTask.WaitAsync(
-                ImageLoadTimeout,
-                cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
-        catch (TimeoutException)
-        {
-            await loadCancellation.CancelAsync();
-            ObserveFault(imageLoadTask);
-            if (viewModel.SelectedOrganism?.EntryId == organism.EntryId)
-            {
-                ImageStatusText.Text =
-                    "Image unavailable: The reference image download timed out.";
-            }
-
-            return;
-        }
-        catch (Exception exception)
-        {
-            if (viewModel.SelectedOrganism?.EntryId == organism.EntryId)
-            {
-                ImageStatusText.Text = "Image unavailable: " + exception.Message;
-            }
-
-            return;
-        }
-        if (cancellationToken.IsCancellationRequested
+            loadCancellation);
+        if (result is null
+            || cancellationToken.IsCancellationRequested
             || viewModel.SelectedOrganism?.EntryId != organism.EntryId)
         {
             return;
         }
 
+        ApplyImageResult(organism, result);
+    }
+
+    private async Task<CancellationTokenSource> BeginImageLoadAsync()
+    {
+        var previousCancellation = imageLoadCancellation;
+        if (previousCancellation is not null)
+        {
+            await previousCancellation.CancelAsync();
+            previousCancellation.Dispose();
+        }
+
+        var loadCancellation = new CancellationTokenSource();
+        imageLoadCancellation = loadCancellation;
+        return loadCancellation;
+    }
+
+    private async Task<CodexImageCacheResult?> TryLoadImageResultAsync(
+        BiologyCodexOrganismViewModel organism,
+        bool forceRefresh,
+        CancellationTokenSource loadCancellation)
+    {
+        var cancellationToken = loadCancellation.Token;
+        var imageLoadTask = imageCache.GetAsync(
+            organism.EntryId,
+            organism.ImageUrl!,
+            organism.LocalImageName,
+            forceRefresh,
+            cancellationToken);
+        try
+        {
+            return await imageLoadTask.WaitAsync(
+                ImageLoadTimeout,
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+        catch (TimeoutException)
+        {
+            await loadCancellation.CancelAsync();
+            ObserveFault(imageLoadTask);
+            SetImageUnavailableIfCurrent(
+                organism.EntryId,
+                "The reference image download timed out.");
+            return null;
+        }
+        catch (Exception exception)
+        {
+            SetImageUnavailableIfCurrent(organism.EntryId, exception.Message);
+            return null;
+        }
+    }
+
+    private void SetImageUnavailableIfCurrent(long entryId, string message)
+    {
+        if (viewModel.SelectedOrganism?.EntryId == entryId)
+        {
+            ImageStatusText.Text = "Image unavailable: " + message;
+        }
+    }
+
+    private void ApplyImageResult(
+        BiologyCodexOrganismViewModel organism,
+        CodexImageCacheResult result)
+    {
         if (!result.IsSuccess)
         {
             ImageStatusText.Text = "Image unavailable: " + result.Error;
@@ -138,14 +164,7 @@ public sealed partial class BiologyCodexWindow : Window
         try
         {
             ReplaceImage(new Bitmap(result.Path));
-            ImageStatusText.Text = result.IsLocal
-                ? "Local flora reference image"
-                : organism.ImageCreditText
-                    + ((result.IsFromCache) switch
-                    {
-                        true => " · cached",
-                        false => " · downloaded"
-                    });
+            ImageStatusText.Text = FormatImageStatus(organism, result);
         }
         catch (Exception exception) when (
             exception is IOException
@@ -156,6 +175,19 @@ public sealed partial class BiologyCodexWindow : Window
             ImageStatusText.Text = "Image could not be decoded: "
                 + exception.Message;
         }
+    }
+
+    private static string FormatImageStatus(
+        BiologyCodexOrganismViewModel organism,
+        CodexImageCacheResult result)
+    {
+        if (result.IsLocal)
+        {
+            return "Local flora reference image";
+        }
+
+        return organism.ImageCreditText
+            + (result.IsFromCache ? " · cached" : " · downloaded");
     }
 
     private void ReplaceImage(Bitmap? image)

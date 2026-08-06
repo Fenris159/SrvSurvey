@@ -272,21 +272,37 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
     private async Task<int> TryApplyTargetCommandAsync(
         JournalEventEnvelope journalEvent)
     {
-        if (journalEvent.EventName != "SendText"
-            || !journalEvent.Payload.TryGetProperty("Message", out var value)
-            || value.ValueKind != System.Text.Json.JsonValueKind.String)
+        if (!TryReadTargetCommand(journalEvent, out var message))
         {
             return 0;
         }
 
-        var message = value.GetString()?.Trim().ToLowerInvariant();
+        return await ApplyTargetCommandAsync(message).ConfigureAwait(true);
+    }
+
+    private static bool TryReadTargetCommand(
+        JournalEventEnvelope journalEvent,
+        out string? message)
+    {
+        message = null;
+        if (journalEvent.EventName != "SendText"
+            || !journalEvent.Payload.TryGetProperty("Message", out var value)
+            || value.ValueKind != System.Text.Json.JsonValueKind.String)
+        {
+            return false;
+        }
+
+        message = value.GetString()?.Trim().ToLowerInvariant();
+        return true;
+    }
+
+    private async Task<int> ApplyTargetCommandAsync(string? message)
+    {
         switch (message)
         {
             case ".target here":
             case "@":
-                var before = state.Version;
-                await UseCurrentLocationAsync();
-                return state.Version != before ? 1 : 0;
+                return await ApplyTargetHereCommandAsync().ConfigureAwait(true);
             case ".target off":
                 return await SetActiveAsync(false) ? 1 : 0;
             case ".target on":
@@ -294,6 +310,13 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
             default:
                 return 0;
         }
+    }
+
+    private async Task<int> ApplyTargetHereCommandAsync()
+    {
+        var before = state.Version;
+        await UseCurrentLocationAsync();
+        return state.Version != before ? 1 : 0;
     }
 
     public async Task ClearTargetAsync()

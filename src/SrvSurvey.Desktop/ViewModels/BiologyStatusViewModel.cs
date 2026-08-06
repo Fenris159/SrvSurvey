@@ -83,49 +83,26 @@ public sealed record BiologyStatusViewModel(
             return null;
         }
 
-        var activeScan = exobiology.ScanOne;
-        var activeScanIsLocal = activeScan is not null
-            && (string.IsNullOrWhiteSpace(activeScan.Body)
-                || string.Equals(
-                    activeScan.Body,
-                    body.Name,
-                    StringComparison.OrdinalIgnoreCase));
-        var activeOrganism = activeScanIsLocal
-            ? body.Organisms.FirstOrDefault(organism =>
-                string.Equals(
-                    organism.Species,
-                    activeScan!.Species,
-                    StringComparison.Ordinal)
-                || string.Equals(
-                    organism.Genus,
-                    activeScan.Genus,
-                    StringComparison.Ordinal))
-            : null;
+        var activeContext = ResolveActiveScanContext(body, exobiology);
         var signals = CreateSignals(
             body,
-            activeOrganism,
+            activeContext.Organism,
             options.HideGeologicalSignals);
-        var activeSample = activeScanIsLocal && activeScan is not null
+        var activeSample = activeContext.IsLocal && activeContext.Scan is not null
             ? CreateActiveSample(
                 body,
-                activeOrganism,
+                activeContext.Organism,
                 exobiology,
                 status)
             : null;
-        var isStaleActiveSample = !activeScanIsLocal && activeScan is not null;
-        var warning = isStaleActiveSample
-            ? "Incomplete "
-                + FormatJournalName(activeScan!.Genus)
-                + " samples remain on "
-                + (activeScan.Body ?? "another body")
-                + "."
-            : string.Empty;
+        var isStaleActiveSample = !activeContext.IsLocal
+            && activeContext.Scan is not null;
+        var warning = BuildStaleSampleWarning(activeContext.Scan, isStaleActiveSample);
         var allAnalyzed = body.AnalyzedBiologicalSignalCount
             >= body.BiologicalSignalCount;
-        var currentNotification =
-            options.CodexNotification?.BodyId == body.BodyId
-                ? options.CodexNotification
-                : null;
+        var currentNotification = ResolveBodyNotification(
+            options.CodexNotification,
+            body.BodyId);
         var footer = BiologyStatusFooter.Build(
             body,
             activeSample,
@@ -144,18 +121,102 @@ public sealed record BiologyStatusViewModel(
             body.Organisms.Count == 0,
             warning,
             footer,
-            options.ShowTemperatureRangeDebug
-                ? CreateTemperatureRange(
-                    snapshot,
-                    body,
-                    activeOrganism,
-                    status,
-                    options.PredictionEvaluator
-                        ?? DefaultPredictionEvaluator.Value)
-                : null,
+            ResolveOptionalTemperatureRange(
+                snapshot,
+                body,
+                activeContext.Organism,
+                status,
+                options),
             HasCodexImageIndicator: currentNotification is not null,
             HasCodexImage: currentNotification?.HasImage == true,
             IsStaleActiveSample: isStaleActiveSample);
+    }
+
+    private readonly record struct ActiveScanContext(
+        BioSampleSnapshot? Scan,
+        bool IsLocal,
+        SystemOrganismSnapshot? Organism);
+
+    private static ActiveScanContext ResolveActiveScanContext(
+        SystemScanBodySnapshot body,
+        ExobiologySnapshot exobiology)
+    {
+        var activeScan = exobiology.ScanOne;
+        var isLocal = IsActiveScanLocal(activeScan, body.Name);
+        var organism = isLocal
+            ? FindActiveOrganism(body, activeScan!)
+            : null;
+        return new ActiveScanContext(activeScan, isLocal, organism);
+    }
+
+    private static bool IsActiveScanLocal(
+        BioSampleSnapshot? activeScan,
+        string bodyName)
+    {
+        return activeScan is not null
+            && (string.IsNullOrWhiteSpace(activeScan.Body)
+                || string.Equals(
+                    activeScan.Body,
+                    bodyName,
+                    StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static SystemOrganismSnapshot? FindActiveOrganism(
+        SystemScanBodySnapshot body,
+        BioSampleSnapshot activeScan)
+    {
+        return body.Organisms.FirstOrDefault(organism =>
+            string.Equals(
+                organism.Species,
+                activeScan.Species,
+                StringComparison.Ordinal)
+            || string.Equals(
+                organism.Genus,
+                activeScan.Genus,
+                StringComparison.Ordinal));
+    }
+
+    private static string BuildStaleSampleWarning(
+        BioSampleSnapshot? activeScan,
+        bool isStaleActiveSample)
+    {
+        if (!isStaleActiveSample || activeScan is null)
+        {
+            return string.Empty;
+        }
+
+        return "Incomplete "
+            + FormatJournalName(activeScan.Genus)
+            + " samples remain on "
+            + (activeScan.Body ?? "another body")
+            + ".";
+    }
+
+    private static BiologyCodexNotificationViewModel? ResolveBodyNotification(
+        BiologyCodexNotificationViewModel? notification,
+        int bodyId)
+    {
+        return notification?.BodyId == bodyId ? notification : null;
+    }
+
+    private static BiologyTemperatureRangeViewModel? ResolveOptionalTemperatureRange(
+        SystemScanSnapshot snapshot,
+        SystemScanBodySnapshot body,
+        SystemOrganismSnapshot? activeOrganism,
+        EliteStatus? status,
+        BiologyStatusCreateOptions options)
+    {
+        if (!options.ShowTemperatureRangeDebug)
+        {
+            return null;
+        }
+
+        return CreateTemperatureRange(
+            snapshot,
+            body,
+            activeOrganism,
+            status,
+            options.PredictionEvaluator ?? DefaultPredictionEvaluator.Value);
     }
 
     private static BiologyTemperatureRangeViewModel CreateTemperatureRange(

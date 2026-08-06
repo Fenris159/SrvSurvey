@@ -658,6 +658,15 @@ public sealed class FrontierAccountService : IFrontierAccountService
             return PreserveCarrierState(snapshot, previous, result.Error);
         }
 
+        return ApplySucceededCarrierResult(snapshot, previous, result, fetchedAt);
+    }
+
+    private static FrontierAccountSnapshot ApplySucceededCarrierResult(
+        FrontierAccountSnapshot snapshot,
+        FrontierAccountSnapshot? previous,
+        OptionalCapiResponse result,
+        DateTimeOffset fetchedAt)
+    {
         if (string.IsNullOrWhiteSpace(result.Content))
         {
             return ClearCarrierState(snapshot, previous, fetchedAt);
@@ -1418,11 +1427,7 @@ public sealed class FrontierAccountService : IFrontierAccountService
     {
         var candidates = new List<(string FrontierId, FrontierAccountSnapshot Snapshot)>();
         foreach (var account in document.Accounts.Where(pair =>
-                     pair.Value.IsLinked
-                     && !string.Equals(
-                         pair.Key,
-                         commander.FrontierId,
-                         StringComparison.OrdinalIgnoreCase)))
+                     IsForeignLinkedAccount(pair, commander.FrontierId)))
         {
             var candidate = FrontierCommanderIdentity.Create(account.Key, null);
             if (candidate is null)
@@ -1430,32 +1435,59 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 continue;
             }
 
-            FrontierAccountSnapshot? snapshot;
-            try
-            {
-                snapshot = await CacheFor(candidate)
-                    .LoadAsync(cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            catch (JsonException)
+            var snapshot = await TryLoadCandidateSnapshotAsync(
+                    candidate,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (!IsMiskeyedCandidate(commander, candidate, snapshot))
             {
                 continue;
             }
 
-            if (snapshot?.CommanderId is not { } capiCommanderId
-                || !string.Equals(
-                    candidate.FrontierId,
-                    $"F{capiCommanderId}",
-                    StringComparison.OrdinalIgnoreCase)
-                || !commander.Matches(snapshot))
-            {
-                continue;
-            }
-
-            candidates.Add((candidate.FrontierId, snapshot));
+            candidates.Add((candidate.FrontierId, snapshot!));
         }
 
         return candidates;
+    }
+
+    private static bool IsForeignLinkedAccount(
+        KeyValuePair<string, FrontierAccountCredential> pair,
+        string commanderFrontierId)
+    {
+        return pair.Value.IsLinked
+            && !string.Equals(
+                pair.Key,
+                commanderFrontierId,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task<FrontierAccountSnapshot?> TryLoadCandidateSnapshotAsync(
+        FrontierCommanderIdentity candidate,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await CacheFor(candidate)
+                .LoadAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static bool IsMiskeyedCandidate(
+        FrontierCommanderIdentity commander,
+        FrontierCommanderIdentity candidate,
+        FrontierAccountSnapshot? snapshot)
+    {
+        return snapshot?.CommanderId is { } capiCommanderId
+            && string.Equals(
+                candidate.FrontierId,
+                $"F{capiCommanderId}",
+                StringComparison.OrdinalIgnoreCase)
+            && commander.Matches(snapshot);
     }
 
     private async Task<HashSet<string>> RelinkMiskeyedAccountsAsync(

@@ -354,34 +354,40 @@ public sealed class BiologyCodexViewModel : INotifyPropertyChanged, IDisposable
     {
         foreach (var organism in body.Organisms)
         {
-            var reference = organism.EntryId is { } entryId
-                ? catalog.FindByEntryId(entryId)
-                : catalog.FindByVariant(organism.Variant)
-                    ?? catalog.FindBySpecies(organism.Species);
+            var reference = ResolveOrganismReference(organism);
             if (reference is null)
             {
                 continue;
             }
 
-            BiologyCodexDiscoveryStatus status;
-            if (organism.IsAnalyzed)
-            {
-                status = BiologyCodexDiscoveryStatus.Analyzed;
-            }
-            else if (organism.IsScanned)
-            {
-                status = BiologyCodexDiscoveryStatus.Confirmed;
-            }
-            else
-            {
-                status = BiologyCodexDiscoveryStatus.Reported;
-            }
             entries[reference.EntryId] = CreateOrganism(
                 body,
                 reference,
-                status,
+                ResolveObservedDiscoveryStatus(organism),
                 inputs);
         }
+    }
+
+    private ExobiologyReference? ResolveOrganismReference(
+        SystemOrganismSnapshot organism)
+    {
+        return organism.EntryId is { } entryId
+            ? catalog.FindByEntryId(entryId)
+            : catalog.FindByVariant(organism.Variant)
+                ?? catalog.FindBySpecies(organism.Species);
+    }
+
+    private static BiologyCodexDiscoveryStatus ResolveObservedDiscoveryStatus(
+        SystemOrganismSnapshot organism)
+    {
+        if (organism.IsAnalyzed)
+        {
+            return BiologyCodexDiscoveryStatus.Analyzed;
+        }
+
+        return organism.IsScanned
+            ? BiologyCodexDiscoveryStatus.Confirmed
+            : BiologyCodexDiscoveryStatus.Reported;
     }
 
     private void AddPredictedOrganisms(
