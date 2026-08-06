@@ -1,7 +1,9 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using SrvSurvey.Core.Journeys;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 using SrvSurvey.Core.Storage;
 
@@ -332,16 +334,16 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
 
         var system = Uri.EscapeDataString(context.SystemName);
         return LaunchUriAsync(
-            new Uri(
-                "https://canonn-science.github.io/canonn-signals/?system="
-                    + system),
+            new Uri(WellKnownUris.CanonnSignalsSystemPrefix + system),
             "Canonn Signals");
     }
 
     public Task OpenSpanshAsync()
     {
         return LaunchSystemAddressAsync(
-            address => new Uri($"https://spansh.co.uk/system/{address}"),
+            address => new Uri(
+                WellKnownUris.SpanshSystemPrefix
+                    + address.ToString(CultureInfo.InvariantCulture)),
             "Spansh");
     }
 
@@ -349,7 +351,8 @@ public sealed class SystemNotesViewModel : INotifyPropertyChanged
     {
         return LaunchSystemAddressAsync(
             address => new Uri(
-                $"https://www.edsm.net/en/system?systemID64={address}"),
+                WellKnownUris.EdsmSystemById64Prefix
+                    + address.ToString(CultureInfo.InvariantCulture)),
             "EDSM");
     }
 

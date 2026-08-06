@@ -1355,14 +1355,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                         boxel.Name,
                         StringComparison.Ordinal);
                 return new BoxelSystemRowViewModel(
-                    boxel.Name,
-                    system?.IsComplete == true,
-                    system is not null,
-                    isCurrent,
-                    distance,
-                    FormatDate(system?.VisitedAt),
-                    FormatDate(system?.SpanshUpdatedAt),
-                    () => ToggleSystemAsync(boxel.Name));
+                    new BoxelSystemRowOptions
+                    {
+                        Name = boxel.Name,
+                        IsComplete = system?.IsComplete == true,
+                        IsKnown = system is not null,
+                        IsCurrent = isCurrent,
+                        Distance = distance,
+                        VisitedAt = FormatDate(system?.VisitedAt),
+                        SpanshUpdatedAt = FormatDate(system?.SpanshUpdatedAt),
+                        Toggle = () => ToggleSystemAsync(boxel.Name),
+                    });
             })
             .ToArray();
     }
@@ -1490,25 +1493,20 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
 public sealed class BoxelSystemRowViewModel
 {
-    public BoxelSystemRowViewModel(
-        string name,
-        bool isComplete,
-        bool isKnown,
-        bool isCurrent,
-        string distance,
-        string visitedAt,
-        string spanshUpdatedAt,
-        Func<Task> toggle)
+    public BoxelSystemRowViewModel(BoxelSystemRowOptions options)
     {
-        Name = name;
-        IsComplete = isComplete;
-        IsKnown = isKnown;
-        IsCurrent = isCurrent;
-        Distance = distance;
-        VisitedAt = visitedAt;
-        SpanshUpdatedAt = spanshUpdatedAt;
-        Status = isComplete ? "COMPLETE" : (isKnown) switch { true => "KNOWN", false => "UNKNOWN" };
-        ToggleCommand = new RowCommand(toggle, () => isKnown);
+        ArgumentNullException.ThrowIfNull(options);
+        Name = options.Name;
+        IsComplete = options.IsComplete;
+        IsKnown = options.IsKnown;
+        IsCurrent = options.IsCurrent;
+        Distance = options.Distance;
+        VisitedAt = options.VisitedAt;
+        SpanshUpdatedAt = options.SpanshUpdatedAt;
+        Status = options.IsComplete
+            ? "COMPLETE"
+            : options.IsKnown ? "KNOWN" : "UNKNOWN";
+        ToggleCommand = new RowCommand(options.Toggle, () => options.IsKnown);
     }
 
     public string Name { get; }

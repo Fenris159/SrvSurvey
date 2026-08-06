@@ -100,7 +100,8 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (RestartRequested is not { } handlers)
+        var restartHandlers = RestartRequested;
+        if (restartHandlers is null)
         {
             StatusMessage = "Journal folder saved. Restart SrvSurvey to use it.";
             return;
@@ -109,7 +110,7 @@ public sealed class JournalSettingsViewModel : INotifyPropertyChanged
         StatusMessage = "Journal folder saved; restarting SrvSurvey...";
         try
         {
-            foreach (var handler in handlers.GetInvocationList().Cast<Func<Task>>())
+            foreach (var handler in restartHandlers.GetInvocationList().Cast<Func<Task>>())
             {
                 await handler();
             }

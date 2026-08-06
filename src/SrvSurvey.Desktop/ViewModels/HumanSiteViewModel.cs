@@ -71,19 +71,20 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     private string statusMessage = "Waiting to approach a human settlement.";
     private string settingsStatus = string.Empty;
 
-    public HumanSiteViewModel(
-        HumanSiteSettingsStore? settingsStore = null,
-        HumanSiteKnowledgeStore? knowledgeStore = null,
-        HumanSiteMaterialStore? materialStore = null,
-        HumanSiteTemplateCatalog? templateCatalog = null,
-        ICanonnHumanSiteClient? canonnClient = null,
-        Func<bool>? useExternalData = null,
-        ICanonnHumanSitePublisher? canonnPublisher = null,
-        Func<bool>? publishCanonnGeometry = null,
-        Action<CanonnHumanSitePublicationResult>?
-            reportCanonnPublication = null,
-        Version? clientVersion = null)
+    public HumanSiteViewModel(HumanSiteViewModelOptions? options = null)
     {
+        options ??= new HumanSiteViewModelOptions();
+        var settingsStore = options.SettingsStore;
+        var knowledgeStore = options.KnowledgeStore;
+        var materialStore = options.MaterialStore;
+        var templateCatalog = options.TemplateCatalog;
+        var canonnClient = options.CanonnClient;
+        var useExternalData = options.UseExternalData;
+        var canonnPublisher = options.CanonnPublisher;
+        var publishCanonnGeometry = options.PublishCanonnGeometry;
+        var reportCanonnPublication = options.ReportCanonnPublication;
+        var clientVersion = options.ClientVersion;
+
         this.settingsStore = settingsStore;
         this.knowledgeStore = knowledgeStore;
         this.materialStore = materialStore;

@@ -27,6 +27,8 @@ public interface IScreenshotProcessingService
     Justification = "The service is application-scoped and its gate may have in-flight waiters.")]
 public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 {
+    private const string UnknownLabel = "unknown";
+
     private readonly SemaphoreSlim processingLock = new(1, 1);
     private readonly Func<int?> primaryWorkingAreaWidthProvider;
 
@@ -202,8 +204,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                 request.NavigationContext);
         }
 
-        var systemName = GetString(entry, "System") ?? "unknown";
-        var bodyName = GetString(entry, "Body") ?? "unknown";
+        var systemName = GetString(entry, "System") ?? UnknownLabel;
+        var bodyName = GetString(entry, "Body") ?? UnknownLabel;
         var timestamp = entry.Timestamp ?? DateTimeOffset.UtcNow;
         var folder = GetSystemFolderPath(request.TargetDirectory, systemName);
         Directory.CreateDirectory(folder);
@@ -492,8 +494,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             Color = ParseColor(preferences.BannerColor),
             IsAntialias = true,
         };
-        var body = GetString(entry, "Body") ?? "unknown";
-        var system = GetString(entry, "System") ?? "unknown";
+        var body = GetString(entry, "Body") ?? UnknownLabel;
+        var system = GetString(entry, "System") ?? UnknownLabel;
         var timestamp = entry.Timestamp ?? DateTimeOffset.UtcNow;
         var displayedTime = preferences.BannerLocalTime
             ? timestamp.ToLocalTime().ToString("G", CultureInfo.CurrentCulture)
@@ -501,7 +503,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         var details = new List<string>
         {
             $"System: {system}",
-            $"Cmdr: {commanderName ?? "unknown"} - {displayedTime}",
+            $"Cmdr: {commanderName ?? UnknownLabel} - {displayedTime}",
         };
         if (guardianContext is not null)
         {
@@ -649,7 +651,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         }
 
         var safe = result.ToString().TrimEnd(' ', '.');
-        return string.IsNullOrWhiteSpace(safe) ? "unknown" : safe;
+        return string.IsNullOrWhiteSpace(safe) ? UnknownLabel : safe;
     }
 }
 

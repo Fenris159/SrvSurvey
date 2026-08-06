@@ -11,6 +11,9 @@ namespace SrvSurvey.Core.Journeys;
     Justification = "The store is application-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class JourneyStore(string dataDirectory)
 {
+    private const string JsonFileExtension = ".json";
+    private const string CodexNewPropertyName = "codexNew";
+
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         WriteIndented = true,
@@ -34,7 +37,7 @@ public sealed class JourneyStore(string dataDirectory)
         var errors = new List<string>();
         foreach (var path in Directory.EnumerateFiles(
                      directory,
-                     "*.json",
+                     "*" + JsonFileExtension,
                      SearchOption.TopDirectoryOnly)
                  .Order(StringComparer.Ordinal))
         {
@@ -71,7 +74,7 @@ public sealed class JourneyStore(string dataDirectory)
         var normalizedFileName = NormalizeFileName(fileName);
         var path = Path.Combine(
             GetJourneyDirectory(frontierId),
-            normalizedFileName + ".json");
+            normalizedFileName + JsonFileExtension);
         return LoadPathAsync(frontierId, path, cancellationToken);
     }
 
@@ -100,7 +103,7 @@ public sealed class JourneyStore(string dataDirectory)
             CultureInfo.InvariantCulture);
         var path = Path.Combine(
             GetJourneyDirectory(request.FrontierId),
-            fileName + ".json");
+            fileName + JsonFileExtension);
         var legacyStartTime = request.StartingEventTimestamp.AddMilliseconds(-10);
         var journey = new JourneyDocument(
             fileName,
@@ -145,7 +148,7 @@ public sealed class JourneyStore(string dataDirectory)
         var fileName = NormalizeFileName(journey.FileName);
         var path = Path.Combine(
             GetJourneyDirectory(journey.FrontierId),
-            fileName + ".json");
+            fileName + JsonFileExtension);
         await saveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -302,7 +305,7 @@ public sealed class JourneyStore(string dataDirectory)
             ReadStringIntDictionary(root, "landedOn"),
             ReadInt64Set(root, "codexScanned"),
             ReadInt32Set(root, "bodiesScanned"),
-            ReadStringSet(root, "codexNew"),
+            ReadStringSet(root, CodexNewPropertyName),
             ReadStringIntDictionary(root, "subCats"),
             ReadStringIntDictionary(root, "saaSignals"),
             ReadStringIntDictionary(root, "fssSignals"));
@@ -397,7 +400,7 @@ public sealed class JourneyStore(string dataDirectory)
         return new JourneyCounts(
             GetInt32(root, "bodyScans") ?? 0,
             GetInt32(root, "dss") ?? 0,
-            GetInt32(root, "codexNew") ?? 0,
+            GetInt32(root, CodexNewPropertyName) ?? 0,
             GetInt32(root, "organic") ?? 0,
             GetInt32(root, "touchdown") ?? 0,
             GetInt32(root, "bodyCount") ?? 0,
@@ -503,7 +506,7 @@ public sealed class JourneyStore(string dataDirectory)
         WriteDictionary(root, "landedOn", visit.LandedOn);
         WriteSet(root, "codexScanned", visit.CodexScanned);
         WriteSet(root, "bodiesScanned", visit.BodiesScanned);
-        WriteSet(root, "codexNew", visit.CodexNew);
+        WriteSet(root, CodexNewPropertyName, visit.CodexNew);
         WriteDictionary(root, "subCats", visit.SubCategories);
         WriteDictionary(root, "saaSignals", visit.SurfaceSignals);
         WriteDictionary(root, "fssSignals", visit.FssSignals);
@@ -513,7 +516,7 @@ public sealed class JourneyStore(string dataDirectory)
     {
         root["bodyScans"] = counts.BodyScans;
         root["dss"] = counts.DetailedSurfaceScans;
-        root["codexNew"] = counts.NewCodexEntries;
+        root[CodexNewPropertyName] = counts.NewCodexEntries;
         root["organic"] = counts.Organisms;
         root["touchdown"] = counts.Touchdowns;
         root["bodyCount"] = counts.BodyCount;
@@ -589,7 +592,7 @@ public sealed class JourneyStore(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
         ValidateFolderName(fileName, nameof(fileName));
-        var normalized = fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+        var normalized = fileName.EndsWith(JsonFileExtension, StringComparison.OrdinalIgnoreCase)
             ? Path.GetFileNameWithoutExtension(fileName)
             : fileName;
         ValidateFolderName(normalized, nameof(fileName));

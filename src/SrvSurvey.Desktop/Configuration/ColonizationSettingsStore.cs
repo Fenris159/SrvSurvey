@@ -4,6 +4,9 @@ namespace SrvSurvey.Desktop.Configuration;
 
 public sealed class ColonizationSettingsStore
 {
+    private const string ColonizationSectionKey = "Colonization";
+    private const string VersionKey = "Version";
+
     private readonly UiSettingsDocumentStore documentStore;
 
     public ColonizationSettingsStore(string path)
@@ -14,7 +17,7 @@ public sealed class ColonizationSettingsStore
     public bool LoadEnabled()
     {
         var root = documentStore.Load();
-        return root["Colonization"] is JsonObject colonization
+        return root[ColonizationSectionKey] is JsonObject colonization
             && colonization["Enabled"] is JsonValue enabled
             && enabled.TryGetValue<bool>(out var value)
             && value;
@@ -23,7 +26,7 @@ public sealed class ColonizationSettingsStore
     public ColonizationOverlayPreferences LoadOverlayPreferences()
     {
         var root = documentStore.Load();
-        var colonization = root["Colonization"] as JsonObject;
+        var colonization = root[ColonizationSectionKey] as JsonObject;
         var overlay = colonization?["Overlay"] as JsonObject;
         var defaults = ColonizationOverlayPreferences.Default;
         return new ColonizationOverlayPreferences(
@@ -57,7 +60,7 @@ public sealed class ColonizationSettingsStore
     public bool LoadFleetCarrierCargoSyncEnabled()
     {
         var root = documentStore.Load();
-        return root["Colonization"] is JsonObject colonization
+        return root[ColonizationSectionKey] is JsonObject colonization
             && colonization["FleetCarrierCargoSyncEnabled"]
                 is JsonValue enabled
             && enabled.TryGetValue<bool>(out var value)
@@ -67,7 +70,7 @@ public sealed class ColonizationSettingsStore
     public bool LoadShipCargoPublishingEnabled()
     {
         var root = documentStore.Load();
-        return root["Colonization"] is JsonObject colonization
+        return root[ColonizationSectionKey] is JsonObject colonization
             && colonization["ShipCargoPublishingEnabled"]
                 is JsonValue enabled
             && enabled.TryGetValue<bool>(out var value)
@@ -78,7 +81,7 @@ public sealed class ColonizationSettingsStore
         LoadBuildSiteRepairVisits()
     {
         var root = documentStore.Load();
-        var visits = root["Colonization"]?["BuildSiteRepairVisits"]
+        var visits = root[ColonizationSectionKey]?["BuildSiteRepairVisits"]
             as JsonArray;
         if (visits is null)
         {
@@ -112,14 +115,14 @@ public sealed class ColonizationSettingsStore
     {
         documentStore.Update(root =>
         {
-            var colonization = root["Colonization"] as JsonObject;
+            var colonization = root[ColonizationSectionKey] as JsonObject;
             if (colonization is null)
             {
                 colonization = [];
-                root["Colonization"] = colonization;
+                root[ColonizationSectionKey] = colonization;
             }
 
-            root["Version"] = 1;
+            root[VersionKey] = 1;
             colonization["Enabled"] = enabled;
         });
     }
@@ -130,11 +133,11 @@ public sealed class ColonizationSettingsStore
         ArgumentNullException.ThrowIfNull(preferences);
         documentStore.Update(root =>
         {
-            var colonization = root["Colonization"] as JsonObject;
+            var colonization = root[ColonizationSectionKey] as JsonObject;
             if (colonization is null)
             {
                 colonization = [];
-                root["Colonization"] = colonization;
+                root[ColonizationSectionKey] = colonization;
             }
 
             var overlay = colonization["Overlay"] as JsonObject;
@@ -144,7 +147,7 @@ public sealed class ColonizationSettingsStore
                 colonization["Overlay"] = overlay;
             }
 
-            root["Version"] = 1;
+            root[VersionKey] = 1;
             overlay["AutoShow"] = preferences.AutoShow;
             overlay["ShowOnRightPanel"] = preferences.ShowOnRightPanel;
             overlay["ShowFleetCarrierCargo"] =
@@ -164,14 +167,14 @@ public sealed class ColonizationSettingsStore
     {
         documentStore.Update(root =>
         {
-            var colonization = root["Colonization"] as JsonObject;
+            var colonization = root[ColonizationSectionKey] as JsonObject;
             if (colonization is null)
             {
                 colonization = [];
-                root["Colonization"] = colonization;
+                root[ColonizationSectionKey] = colonization;
             }
 
-            root["Version"] = 1;
+            root[VersionKey] = 1;
             colonization["FleetCarrierCargoSyncEnabled"] = enabled;
         });
     }
@@ -180,14 +183,14 @@ public sealed class ColonizationSettingsStore
     {
         documentStore.Update(root =>
         {
-            var colonization = root["Colonization"] as JsonObject;
+            var colonization = root[ColonizationSectionKey] as JsonObject;
             if (colonization is null)
             {
                 colonization = [];
-                root["Colonization"] = colonization;
+                root[ColonizationSectionKey] = colonization;
             }
 
-            root["Version"] = 1;
+            root[VersionKey] = 1;
             colonization["ShipCargoPublishingEnabled"] = enabled;
         });
     }
@@ -208,14 +211,14 @@ public sealed class ColonizationSettingsStore
             .ToArray();
         documentStore.Update(root =>
         {
-            var colonization = root["Colonization"] as JsonObject;
+            var colonization = root[ColonizationSectionKey] as JsonObject;
             if (colonization is null)
             {
                 colonization = [];
-                root["Colonization"] = colonization;
+                root[ColonizationSectionKey] = colonization;
             }
 
-            root["Version"] = 1;
+            root[VersionKey] = 1;
             colonization["BuildSiteRepairVisits"] = new JsonArray(
                 normalized.Select(visit => new JsonObject
                 {
