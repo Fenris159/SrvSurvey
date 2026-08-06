@@ -101,6 +101,7 @@ public sealed partial class KnownSystemAddressCatalog
             StringComparer.OrdinalIgnoreCase);
         var foundStart = false;
         var foundMissingStart = false;
+        var foundMissingEnd = false;
         var hasEntries = false;
         string? line;
         while ((line = reader.ReadLine()) is not null)
@@ -134,6 +135,7 @@ public sealed partial class KnownSystemAddressCatalog
             {
                 if (string.Equals(trimmed, "]", StringComparison.Ordinal))
                 {
+                    foundMissingEnd = true;
                     break;
                 }
 
@@ -168,7 +170,7 @@ public sealed partial class KnownSystemAddressCatalog
             hasEntries = true;
         }
 
-        if (!foundMissingStart || !hasEntries)
+        if (!foundMissingStart || !foundMissingEnd || !hasEntries)
         {
             throw new InvalidDataException(
                 "The known-system address catalog is incomplete.");
