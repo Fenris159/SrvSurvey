@@ -131,7 +131,7 @@ public sealed partial class KnownSystemAddressCatalog
 
             if (foundMissingStart)
             {
-                if (string.Equals(trimmed, "]", StringComparison.Ordinal))
+                if (trimmed is "]" or "],")
                 {
                     ThrowIfNoEntries(result);
                     return new KnownSystemAddressCatalog(
@@ -167,7 +167,6 @@ public sealed partial class KnownSystemAddressCatalog
                 throw new InvalidDataException(
                     "The known-system address catalog contains duplicated entries.");
             }
-
         }
 
         throw new InvalidDataException(

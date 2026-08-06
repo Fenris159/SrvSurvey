@@ -7,6 +7,8 @@ namespace SrvSurvey.Core.Storage;
 
 public sealed class LegacyOrganicProfileMigrator
 {
+    private static readonly JsonObject EmptyOrganisms = [];
+
     private const string BioScansProperty = "bioScans";
     private const string AnalyzedProperty = "analyzed";
     private const string BioSignalCountProperty = "bioSignalCount";
@@ -935,14 +937,21 @@ public sealed class LegacyOrganicProfileMigrator
         }
 
         var species = GetString(scan, SpeciesProperty);
-        var organism = bodySource[OrganicsProperty] is JsonObject organisms
-            ? organisms.Select(pair => pair.Value)
-                .OfType<JsonObject>()
-                .FirstOrDefault(candidate => string.Equals(
+        var organisms = bodySource[OrganicsProperty] as JsonObject
+            ?? EmptyOrganisms;
+        JsonObject? organism = null;
+        foreach (var pair in organisms)
+        {
+            if (pair.Value is JsonObject candidate
+                && string.Equals(
                     GetString(candidate, SpeciesProperty),
                     species,
                     StringComparison.Ordinal))
-            : null;
+            {
+                organism = candidate;
+                break;
+            }
+        }
         var reference = catalog.FindByVariant(GetString(organism, VariantProperty));
         if (reference is not null)
         {
