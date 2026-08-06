@@ -156,12 +156,18 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
         StringComparer.OrdinalIgnoreCase));
 
     public string TemplateText => ActiveSite is { } site
-        ? site.Template switch
-        {
-            { } template => $"{site.Economy} #{site.SubType} · {template.Name}",
-            null => $"{site.Economy} · type not identified"
-        }
+        ? GetTemplateText(site)
         : "Settlement type unavailable";
+
+    private static string GetTemplateText(HumanSiteLiveSnapshot site)
+    {
+        if (site.Template is { } template)
+        {
+            return $"{site.Economy} #{site.SubType} · {template.Name}";
+        }
+
+        return $"{site.Economy} · type not identified";
+    }
 
     public string GeometryStatus => ActiveSite switch
     {
@@ -1345,19 +1351,24 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
 
     private HumanSiteKnowledgeContext? CreateKnowledgeContext()
     {
-        return !string.IsNullOrWhiteSpace(frontierId)
-            && !string.IsNullOrWhiteSpace(systemName)
-            && systemAddress > 0
-                ? new HumanSiteKnowledgeContext(
-                    frontierId,
-                    commanderName,
-                    systemName,
-                    systemAddress,
-                    starPosition,
-                    (status?.PlanetRadius is > 0
-                        ? (double)status.PlanetRadius
-                        : 0))
-                : null;
+        if (string.IsNullOrWhiteSpace(frontierId)
+            || string.IsNullOrWhiteSpace(systemName)
+            || systemAddress <= 0)
+        {
+            return null;
+        }
+
+        var radius = status?.PlanetRadius is > 0
+            ? (double)status.PlanetRadius
+            : 0;
+
+        return new HumanSiteKnowledgeContext(
+            frontierId,
+            commanderName,
+            systemName,
+            systemAddress,
+            starPosition,
+            radius);
     }
 
     private double? GetAutomaticZoom()

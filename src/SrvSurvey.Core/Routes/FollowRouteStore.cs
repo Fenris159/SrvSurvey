@@ -127,23 +127,26 @@ public sealed class FollowRouteStore
                 continue;
             }
 
-            result.Add(new FollowRouteCatalogEntry(
-                string.IsNullOrWhiteSpace(route.Name)
-            ? (candidate.IsLegacy)
+        var routeName = route.Name?.Trim();
+        if (string.IsNullOrWhiteSpace(routeName))
+        {
+            routeName = candidate.IsLegacy
                 ? $"Commander route ({frontierId})"
-                : Path.GetFileNameWithoutExtension(candidate.Path)
-                    : route.Name.Trim(),
-                Path.GetFileName(candidate.Path),
-                candidate.Path,
-                candidate.IsLegacy,
-                new DateTimeOffset(
-                    File.GetLastWriteTimeUtc(candidate.Path),
-                    TimeSpan.Zero),
-                new DateTimeOffset(
-                    File.GetCreationTimeUtc(candidate.Path),
-                    TimeSpan.Zero),
-                route.Notes,
-                route.IsFavorite));
+                : Path.GetFileNameWithoutExtension(candidate.Path);
+        }
+        result.Add(new FollowRouteCatalogEntry(
+            routeName,
+            Path.GetFileName(candidate.Path),
+            candidate.Path,
+            candidate.IsLegacy,
+            new DateTimeOffset(
+                File.GetLastWriteTimeUtc(candidate.Path),
+                TimeSpan.Zero),
+            new DateTimeOffset(
+                File.GetCreationTimeUtc(candidate.Path),
+                TimeSpan.Zero),
+            route.Notes,
+            route.IsFavorite));
         }
 
         return result
@@ -1361,7 +1364,7 @@ public sealed class FollowRouteStore
             GetBoolean(target, "biological") ?? true);
     }
 
-    private static IReadOnlyList<string> ParseBioTargetSpecies(
+    private static List<string> ParseBioTargetSpecies(
         string path,
         int hopIndex,
         int index,

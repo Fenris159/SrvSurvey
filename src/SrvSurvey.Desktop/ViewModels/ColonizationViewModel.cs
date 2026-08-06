@@ -549,11 +549,21 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             : storedRavenApiKey is null
                 ? "No Raven API key is saved for this commander."
                 : "A Raven API key is saved for this commander.";
-        FleetCarrierSyncStatus = FleetCarrierCargoSyncEnabled
-            ? (storedRavenApiKey is null
-                ? "Save a Raven API key before Fleet Carrier cargo can sync."
-                : "Fleet Carrier cargo will sync from matching Market.json updates.")
-            : "Automatic Fleet Carrier cargo sync is off.";
+        if (!FleetCarrierCargoSyncEnabled)
+        {
+            FleetCarrierSyncStatus =
+                "Automatic Fleet Carrier cargo sync is off.";
+        }
+        else if (storedRavenApiKey is null)
+        {
+            FleetCarrierSyncStatus =
+                "Save a Raven API key before Fleet Carrier cargo can sync.";
+        }
+        else
+        {
+            FleetCarrierSyncStatus =
+                "Fleet Carrier cargo will sync from matching Market.json updates.";
+        }
         ShipCargoPublishingStatus = GetShipCargoReadyStatus();
         OnPropertyChanged(nameof(HasCommanderProfile));
         OnPropertyChanged(nameof(HasStoredRavenApiKey));

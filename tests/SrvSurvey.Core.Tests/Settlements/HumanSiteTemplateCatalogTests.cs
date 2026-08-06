@@ -23,13 +23,15 @@ public sealed class HumanSiteTemplateCatalogTests
             (HumanSiteTemplate template) => template.ConflictZonePoints.Count));
         Assert.Equal(128, catalog.Templates.Sum(
             (HumanSiteTemplate template) => template.Buildings.Count));
-        Assert.Equal(191, catalog.Templates.Sum((HumanSiteTemplate template) =>
-            template.Buildings.Sum((HumanSiteBuilding building) =>
-                building.Paths.Count)));
-        Assert.Equal(2_711, catalog.Templates.Sum((HumanSiteTemplate template) =>
-            template.Buildings.Sum((HumanSiteBuilding building) =>
-                building.Paths.Sum((HumanSiteBuildingPath path) =>
-                    path.Points.Count))));
+        Assert.Equal(191, catalog.Templates.Sum(
+            (HumanSiteTemplate template) => template.Buildings.Sum(
+                (HumanSiteBuilding building) => building.Paths.Count)));
+        Assert.Equal(2_711, catalog.Templates.Sum(
+            (HumanSiteTemplate template) =>
+                template.Buildings.Sum(
+                    (HumanSiteBuilding building) =>
+                        building.Paths.Sum((HumanSiteBuildingPath path) =>
+                            path.Points.Count))));
     }
 
     [Fact]

@@ -217,7 +217,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             .Any(body => body.ContainsKey("landmarks"));
     }
 
-    private static IReadOnlyList<FollowRouteHop> ParseRows(
+    private static List<FollowRouteHop> ParseRows(
         JsonArray? rows,
         SpanshRouteKind kind)
     {

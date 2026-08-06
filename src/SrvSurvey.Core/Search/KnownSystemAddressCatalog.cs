@@ -102,6 +102,8 @@ public sealed partial class KnownSystemAddressCatalog
             StringComparer.OrdinalIgnoreCase);
         var foundStart = false;
         var foundMissingStart = false;
+        var foundMissingEnd = false;
+        var hasEntries = false;
         string? line;
         while ((line = reader.ReadLine()) is not null)
         {
@@ -134,16 +136,8 @@ public sealed partial class KnownSystemAddressCatalog
             {
                 if (string.Equals(trimmed, "]", StringComparison.Ordinal))
                 {
-                    if (result.Count == 0)
-                    {
-                        throw new InvalidDataException(
-                            "The known-system address catalog is incomplete.");
-                    }
-
-                    return new KnownSystemAddressCatalog(
-                        result,
-                        sourcePath,
-                        []);
+                    foundMissingEnd = true;
+                    break;
                 }
 
                 continue;
@@ -169,6 +163,7 @@ public sealed partial class KnownSystemAddressCatalog
             }
 
             result.TryAdd(name, address);
+            hasEntries = true;
             if (result.Count > MaximumEntries)
             {
                 throw new InvalidDataException(
@@ -176,8 +171,15 @@ public sealed partial class KnownSystemAddressCatalog
             }
         }
 
-        throw new InvalidDataException(
-            "The known-system address catalog is incomplete.");
+        if (!foundMissingEnd || !hasEntries)
+        {
+            throw new InvalidDataException(
+                "The known-system address catalog is incomplete.");
+        }
+        return new KnownSystemAddressCatalog(
+            result,
+            sourcePath,
+            []);
     }
 
     [GeneratedRegex(

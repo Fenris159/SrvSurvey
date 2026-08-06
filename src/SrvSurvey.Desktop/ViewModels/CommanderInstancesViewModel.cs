@@ -152,10 +152,10 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
 
     public async Task RefreshAsync()
     {
-        if (IsBusy)
-        {
-            return;
-        }
+            if (IsBusy)
+            {
+                return;
+            }
 
         try
         {
@@ -163,16 +163,32 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
             var result = await catalog.LoadAsync();
             catalogProfiles = result.Profiles;
             RebuildOptions();
-            StatusMessage = result.Warnings.Count > 0
-                ? $"Found {result.Profiles.Count:N0} commander profile(s). "
-                    + string.Join(" ", result.Warnings)
-                : Directory.Exists(journalDirectory)
-                    ? result.Profiles.Count == 0
-                        ? "No saved commander profiles were found. Import the original profile or start Elite once."
-                        : Commanders.Count == 0
-                            ? "Only the current commander profile is available."
-                            : $"Choose one of {Commanders.Count:N0} other commander profile(s) to launch."
-                    : "The Elite journal folder is unavailable; configure it before launching another commander instance.";
+            if (result.Warnings.Count > 0)
+            {
+                StatusMessage = $"Found {result.Profiles.Count:N0} commander profile(s). "
+                    + string.Join(" ", result.Warnings);
+            }
+            else if (Directory.Exists(journalDirectory))
+            {
+                if (result.Profiles.Count == 0)
+                {
+                    StatusMessage =
+                        "No saved commander profiles were found. Import the original profile or start Elite once.";
+                }
+                else if (Commanders.Count == 0)
+                {
+                    StatusMessage = "Only the current commander profile is available.";
+                }
+                else
+                {
+                    StatusMessage =
+                        $"Choose one of {Commanders.Count:N0} other commander profile(s) to launch.";
+                }
+            }
+            else
+            {
+                StatusMessage = "The Elite journal folder is unavailable; configure it before launching another commander instance.";
+            }
         }
         catch (Exception exception) when (
             exception is IOException or UnauthorizedAccessException)

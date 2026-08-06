@@ -553,11 +553,16 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         DistanceToCenter = distance is null
             ? Unavailable
             : $"{distance:N2} ly";
-        LimitSummary = state.CenterSystemName is null
-            ? (selectedCenterSystem is null
+        if (state.CenterSystemName is not null)
+        {
+            LimitSummary = $"{state.Radius:N0} ly around {state.CenterSystemName}";
+        }
+        else
+        {
+            LimitSummary = selectedCenterSystem is null
                 ? "No spherical limit configured"
-                : $"Candidate center: {selectedCenterSystem.Name}")
-            : $"{state.Radius:N0} ly around {state.CenterSystemName}";
+                : $"Candidate center: {selectedCenterSystem.Name}";
+        }
 
         var evaluation = currentPosition is { } position
             ? state.Evaluate(CurrentSystemName, position)

@@ -211,13 +211,16 @@ public sealed record BiologyStatusViewModel(
             {
                 var name = organism.GenusLocalized
                     ?? FormatJournalName(organism.Genus);
-                var distance = organism.IsAnalyzed
-                ? string.Empty
-                : (ExobiologyReferenceCatalog.GetSampleDistanceMeters(
-                        organism.GenusLocalized ?? organism.Genus) is var meters
-                        && meters > 0)
-                        ? $"{meters:N0} m"
-                        : string.Empty;
+                var distance = string.Empty;
+                if (!organism.IsAnalyzed)
+                {
+                    var meters = ExobiologyReferenceCatalog.GetSampleDistanceMeters(
+                        organism.GenusLocalized ?? organism.Genus);
+                    if (meters > 0)
+                    {
+                        distance = $"{meters:N0} m";
+                    }
+                }
                 return new BiologyStatusSignalViewModel(
                     name,
                     distance,

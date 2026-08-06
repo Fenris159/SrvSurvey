@@ -957,7 +957,7 @@ public sealed class LegacyQuestStateStore
         return true;
     }
 
-    private static IReadOnlyList<IReadOnlyList<double>> ParseWaypoints(
+    private static List<IReadOnlyList<double>> ParseWaypoints(
         JsonArray waypointArray)
     {
         var waypoints = new List<IReadOnlyList<double>>(waypointArray.Count);

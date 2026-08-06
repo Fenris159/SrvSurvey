@@ -2794,18 +2794,22 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
             ? Unavailable
             : exobiologyState.ActiveSpeciesDisplayName
                 ?? activeSample.Species;
-        OrganicSampleRange = activeSample is null
-            ? Unavailable
-            : exobiologyState.NearestActiveSampleDistance switch
-            {
-                double distance => (exobiologyState.RemainingSampleDistance is > 0) switch
-                {
-                    true => $"{distance:N0} m from nearest sample · "
-                        + $"{exobiologyState.RemainingSampleDistance:N0} m remaining",
-                    false => $"{distance:N0} m from nearest sample · clear to sample"
-                },
-                null => $"{activeSample.Radius:N0} m minimum separation"
-            };
+        if (activeSample is null)
+        {
+            OrganicSampleRange = Unavailable;
+        }
+        else if (exobiologyState.NearestActiveSampleDistance is not { } distance)
+        {
+            OrganicSampleRange = $"{activeSample.Radius:N0} m minimum separation";
+        }
+        else if (exobiologyState.RemainingSampleDistance > 0)
+        {
+            OrganicSampleRange = $"{distance:N0} m from nearest sample · {exobiologyState.RemainingSampleDistance:N0} m remaining";
+        }
+        else
+        {
+            OrganicSampleRange = $"{distance:N0} m from nearest sample · clear to sample";
+        }
         OrganicScanProgress = snapshot.ScanOne is null
             ? "Ready for sample 1 of 3"
             : snapshot.ScanTwo is null

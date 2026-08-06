@@ -439,7 +439,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
                 $"A {provider} body parent is not an object.");
         }
 
-        if (!TryReadParentBodyId(parent, provider, out var kindText, out var parentBodyId)
+        if (!TryReadParentBodyId(parent, out var kindText, out var parentBodyId)
             || !Enum.TryParse<SystemBodyParentKind>(
                 kindText,
                 ignoreCase: true,
@@ -455,7 +455,6 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
 
     private static bool TryReadParentBodyId(
         JsonElement parent,
-        BodyProvider provider,
         out string kindText,
         out int? parentBodyId)
     {
@@ -468,17 +467,18 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             return true;
         }
 
-        foreach (var property in parent.EnumerateObject())
+        var firstProperty = parent.EnumerateObject().FirstOrDefault();
+        if (firstProperty.Value.ValueKind is JsonValueKind.Undefined)
         {
-            kindText = property.Name;
-            parentBodyId = property.Value.ValueKind == JsonValueKind.Number
-                && property.Value.TryGetInt32(out var id)
-                    ? id
-                    : null;
-            return true;
+            return false;
         }
 
-        return false;
+        kindText = firstProperty.Name;
+        parentBodyId = firstProperty.Value.ValueKind == JsonValueKind.Number
+            && firstProperty.Value.TryGetInt32(out var id)
+                ? id
+                : null;
+        return true;
     }
 
     private static SystemRingSnapshot[] ReadRings(
