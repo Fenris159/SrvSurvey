@@ -629,7 +629,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         bool allowPublishing,
         CargoInventoryState? cargoInventory = null,
-        bool cargoActivity = false)
+        bool cargoActivity = false,
+        bool preferShipCargoDiffForSquadron = true)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         if (!allowPublishing
@@ -640,25 +641,28 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        // When ship cargo is available, squadron carriers use GetDiff. Otherwise
-        // (shared-cargo suppression) fall back to journal transfer adjustments.
-        var preferShipCargoDiffForSquadron = cargoInventory is not null;
+        // When ship cargo is not current (or suppressed), squadron carriers use
+        // journal transfer adjustments. Otherwise use the full GetDiff path.
+        var preferSquadronCargoDiff = cargoInventory is not null
+            && preferShipCargoDiffForSquadron;
         var messages = new List<string>();
         foreach (var journalEvent in journalEvents)
         {
             var message = await TrySynchronizeLiveJournalEventAsync(
                 journalEvent,
-                preferShipCargoDiffForSquadron);
+                preferSquadronCargoDiff,
+                cargoInventory);
             if (!string.IsNullOrWhiteSpace(message))
             {
                 messages.Add(message);
             }
         }
 
-        if (cargoInventory is not null)
+        if (cargoInventory is { } squadronCargoInventory
+            && preferSquadronCargoDiff)
         {
             var squadronMessage = await TrySynchronizeSquadronCargoDiffAsync(
-                cargoInventory,
+                squadronCargoInventory,
                 cargoActivity);
             if (!string.IsNullOrWhiteSpace(squadronMessage))
             {
@@ -685,7 +689,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private async Task<string?> TrySynchronizeLiveJournalEventAsync(
         JournalEventEnvelope journalEvent,
-        bool preferShipCargoDiffForSquadron)
+        bool preferShipCargoDiffForSquadron,
+        CargoInventoryState? cargoInventory)
     {
         try
         {
@@ -708,7 +713,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 "MarketBuy" or "MarketSell" or "CargoTransfer" =>
                     await SynchronizeFleetCarrierCargoAdjustmentAsync(
                         journalEvent,
-                        preferShipCargoDiffForSquadron),
+                        preferShipCargoDiffForSquadron,
+                        cargoInventory),
                 _ => null,
             };
         }
@@ -924,7 +930,8 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
 
     private async Task<string?> SynchronizeFleetCarrierCargoAdjustmentAsync(
         JournalEventEnvelope journalEvent,
-        bool preferShipCargoDiffForSquadron)
+        bool preferShipCargoDiffForSquadron,
+        CargoInventoryState? cargoInventory = null)
     {
         if (!FleetCarrierCargoSyncEnabled
             || storedRavenApiKey is null
@@ -953,6 +960,11 @@ public sealed class ColonizationViewModel : INotifyPropertyChanged, IDisposable
                 adjustments,
                 storedRavenApiKey,
                 CancellationToken.None);
+            if (!preferShipCargoDiffForSquadron
+                && IsLinkedSquadronFleetCarrier(dock))
+            {
+                cargoInventory?.ClearPreservedSnapshot();
+            }
             var localCarrier = fleetCarriers.FirstOrDefault(carrier =>
                 carrier.MarketId == dock.MarketId);
             if (localCarrier is not null)

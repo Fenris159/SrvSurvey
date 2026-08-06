@@ -1649,6 +1649,98 @@ public sealed class ColonizationViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task SkipsDuplicateSquadronDiffWhenFallbackRunsBeforeSnapshotReplay()
+    {
+        var carrier = new ColonizationFleetCarrier
+        {
+            MarketId = 42,
+            Name = "SQD-001",
+            Cargo = new Dictionary<string, int> { ["steel"] = 75 },
+        };
+        var client = new StubRavenColonialClient
+        {
+            Workspace = new ColonizationCommanderProjects(
+                [],
+                [],
+                null,
+                [carrier]),
+            FleetCarrierResponse = carrier,
+        };
+        var viewModel = Create(client);
+        viewModel.IsEnabled = true;
+        viewModel.SetCommanderProfile(
+            "F123",
+            isOdyssey: true,
+            apiKey: "secret-key");
+        await viewModel.SetCommanderAsync("Test Cmdr");
+        viewModel.FleetCarrierCargoSyncEnabled = true;
+        viewModel.ApplyJournalEvents(
+        [
+            Event(
+                "Docked",
+                """
+                "MarketID":42,"SystemAddress":20,"StarSystem":"Test",
+                "StationName":"SQD-001","StationType":"FleetCarrier",
+                "StationServices":["commodities","squadronBank"]
+                """),
+        ]);
+        viewModel.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.InMainShip,
+        });
+
+        var cargo = new CargoInventoryState();
+        cargo.Reset(new CargoSnapshot(
+            DateTimeOffset.Parse("2026-07-24T12:00:00Z"),
+            "Cargo",
+            "Ship",
+            50,
+            [new CargoItem("steel", "Steel", 50, 0)]));
+
+        // Initial transfer path uses journal fallback because squadron diff is disabled
+        // for this read. Preserve the baseline so this call can still be replay-safe.
+        viewModel.PrepareSquadronCargoTransferSnapshot(cargo);
+        Assert.True(cargo.Apply(Event(
+            "CargoTransfer",
+            """
+            "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
+            """)));
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [
+                Event(
+                    "CargoTransfer",
+                    """
+                    "Transfers":[{"Type":"Steel","Count":10,"Direction":"tocarrier"}]
+                    """),
+            ],
+            allowPublishing: true,
+            cargoInventory: cargo,
+            cargoActivity: true,
+            preferShipCargoDiffForSquadron: false);
+
+        Assert.Single(client.FleetCarrierAdjustments);
+        Assert.False(cargo.HasPreservedSnapshot);
+
+        // Next read with fresh cargo snapshot should use GetDiff, but not replay the
+        // already synced transfer (the snapshot replay is now rebased from 40).
+        cargo.Reset(new CargoSnapshot(
+            DateTimeOffset.Parse("2026-07-24T12:00:01Z"),
+            "Cargo",
+            "Ship",
+            40,
+            [new CargoItem("steel", "Steel", 40, 0)]));
+
+        await viewModel.SynchronizeLiveProjectsAsync(
+            [],
+            allowPublishing: true,
+            cargoInventory: cargo,
+            cargoActivity: false);
+
+        Assert.Single(client.FleetCarrierAdjustments);
+    }
+
+    [Fact]
     public async Task PublishesCurrentCarrierAndThenReconcilesFreshMarket()
     {
         var carrier = new ColonizationFleetCarrier

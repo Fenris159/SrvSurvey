@@ -1993,10 +1993,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IDisposable
                         or "CargoTransfer"
                         or "MarketBuy"
                         or "MarketSell"));
+        var isCurrentCargoInventoryAvailable =
+            !awaitFreshCargoSnapshot
+            || update.Cargo is not null;
         await Colonization.SynchronizeLiveProjectsAsync(
             update.JournalEvents,
             allowPublishing: !update.IsBootstrapRead,
-            cargoInventory: allowSharedCargo ? cargoInventoryState : null,
+            cargoInventory: allowSharedCargo
+                ? cargoInventoryState
+                : null,
+            preferShipCargoDiffForSquadron: isCurrentCargoInventoryAvailable,
             cargoActivity: cargoActivity);
         var initializedJourney = await Journey.UpdateContextAsync(
             journalState.FrontierId,
