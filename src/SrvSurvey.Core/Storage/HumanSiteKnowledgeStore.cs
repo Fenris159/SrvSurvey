@@ -6,6 +6,9 @@ namespace SrvSurvey.Core.Storage;
 
 public sealed class HumanSiteKnowledgeStore
 {
+    private const string HeadingProperty = "heading";
+    private const string CalcMethodProperty = "calcMethod";
+
     private readonly LegacySystemDataFileStore fileStore;
 
     public HumanSiteKnowledgeStore(string dataDirectory)
@@ -135,21 +138,21 @@ public sealed class HumanSiteKnowledgeStore
             station["subType"] = Math.Max(0, site.SubType);
         }
 
-        var existingHeading = ReadDouble(station, "heading");
+        var existingHeading = ReadDouble(station, HeadingProperty);
         if (site.Heading is { } heading && double.IsFinite(heading))
         {
-            station["heading"] = heading;
+            station[HeadingProperty] = heading;
             if (geometrySource != HumanSiteGeometrySource.Unknown
                 || isNew
-                || GetProperty(station, "calcMethod") is null)
+                || GetProperty(station, CalcMethodProperty) is null)
             {
-                station["calcMethod"] = geometrySource.ToString();
+                station[CalcMethodProperty] = geometrySource.ToString();
             }
         }
         else if (isNew && existingHeading is null)
         {
-            station["heading"] = -1;
-            station["calcMethod"] = HumanSiteGeometrySource.Unknown.ToString();
+            station[HeadingProperty] = -1;
+            station[CalcMethodProperty] = HumanSiteGeometrySource.Unknown.ToString();
         }
     }
 
@@ -179,7 +182,7 @@ public sealed class HumanSiteKnowledgeStore
         }
 
         var subType = Math.Max(0, ReadInt32(station, "subType") ?? 0);
-        var heading = ReadDouble(station, "heading");
+        var heading = ReadDouble(station, HeadingProperty);
         if (heading is not null
             && (!double.IsFinite(heading.Value) || heading < 0))
         {
@@ -215,7 +218,7 @@ public sealed class HumanSiteKnowledgeStore
     private static HumanSiteGeometrySource ReadGeometrySource(
         JsonObject station)
     {
-        var value = ReadString(station, "calcMethod");
+        var value = ReadString(station, CalcMethodProperty);
         return Enum.TryParse<HumanSiteGeometrySource>(
             value,
             ignoreCase: true,

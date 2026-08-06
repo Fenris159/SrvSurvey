@@ -42,6 +42,13 @@ public sealed record FrontierLinkedCommander(
     string FrontierId,
     string CommanderName);
 
+public sealed record FrontierAccountServiceOptions(
+    FrontierProfileCacheStore? LegacyCache = null,
+    Func<DateTimeOffset>? UtcNow = null,
+    Func<Uri, CancellationToken, Task>? OpenBrowser = null,
+    Func<CancellationToken, Task>? RegisterProtocol = null,
+    IInaraCommunityGoalClient? InaraCommunityGoals = null);
+
 internal sealed record FrontierCommanderIdentity(
     string FrontierId,
     string CommanderName)
@@ -128,33 +135,17 @@ public sealed class FrontierAccountService : IFrontierAccountService
         HttpClient httpClient,
         IFrontierCredentialStore credentials,
         FrontierProfileCacheStore cache,
-        Func<DateTimeOffset>? utcNow = null,
-        Func<Uri, CancellationToken, Task>? openBrowser = null,
-        Func<CancellationToken, Task>? registerProtocol = null,
-        IInaraCommunityGoalClient? inaraCommunityGoals = null)
+        FrontierAccountServiceOptions? options = null)
+        : this(httpClient, credentials, _ => cache, options)
     {
-        this.httpClient = httpClient
-            ?? throw new ArgumentNullException(nameof(httpClient));
-        this.credentials = credentials
-            ?? throw new ArgumentNullException(nameof(credentials));
         ArgumentNullException.ThrowIfNull(cache);
-        cacheFactory = _ => cache;
-        this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
-        this.openBrowser = openBrowser ?? OpenBrowserAsync;
-        this.registerProtocol = registerProtocol
-            ?? FrontierProtocolRegistration.RegisterCurrentAsync;
-        this.inaraCommunityGoals = inaraCommunityGoals;
     }
 
     public FrontierAccountService(
         HttpClient httpClient,
         IFrontierCredentialStore credentials,
         Func<string, FrontierProfileCacheStore> cacheFactory,
-        FrontierProfileCacheStore? legacyCache = null,
-        Func<DateTimeOffset>? utcNow = null,
-        Func<Uri, CancellationToken, Task>? openBrowser = null,
-        Func<CancellationToken, Task>? registerProtocol = null,
-        IInaraCommunityGoalClient? inaraCommunityGoals = null)
+        FrontierAccountServiceOptions? options = null)
     {
         this.httpClient = httpClient
             ?? throw new ArgumentNullException(nameof(httpClient));
@@ -162,12 +153,13 @@ public sealed class FrontierAccountService : IFrontierAccountService
             ?? throw new ArgumentNullException(nameof(credentials));
         this.cacheFactory = cacheFactory
             ?? throw new ArgumentNullException(nameof(cacheFactory));
-        this.legacyCache = legacyCache;
-        this.utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
-        this.openBrowser = openBrowser ?? OpenBrowserAsync;
-        this.registerProtocol = registerProtocol
+        options ??= new FrontierAccountServiceOptions();
+        legacyCache = options.LegacyCache;
+        utcNow = options.UtcNow ?? (() => DateTimeOffset.UtcNow);
+        openBrowser = options.OpenBrowser ?? OpenBrowserAsync;
+        registerProtocol = options.RegisterProtocol
             ?? FrontierProtocolRegistration.RegisterCurrentAsync;
-        this.inaraCommunityGoals = inaraCommunityGoals;
+        inaraCommunityGoals = options.InaraCommunityGoals;
     }
 
     public static FrontierAccountService CreateCurrent(string dataDirectory)
@@ -198,10 +190,11 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 dataDirectory,
                 "frontier-profile-cache",
                 frontierId + ".json")),
-            new FrontierProfileCacheStore(Path.Combine(
-                dataDirectory,
-                "frontier-profile-cache.json")),
-            inaraCommunityGoals: inaraCommunityGoals);
+            new FrontierAccountServiceOptions(
+                LegacyCache: new FrontierProfileCacheStore(Path.Combine(
+                    dataDirectory,
+                    "frontier-profile-cache.json")),
+                InaraCommunityGoals: inaraCommunityGoals));
     }
 
     public void SetActiveCommander(string? frontierId, string? commanderName)
@@ -224,6 +217,21 @@ public sealed class FrontierAccountService : IFrontierAccountService
             return [];
         }
 
+        var linked = CollectLinkedCommanderIds(document);
+        await ResolveLinkedCommanderNamesAsync(linked, cancellationToken)
+            .ConfigureAwait(false);
+        return linked
+            .Select(pair => new FrontierLinkedCommander(
+                pair.Key,
+                string.IsNullOrWhiteSpace(pair.Value) ? pair.Key : pair.Value))
+            .OrderBy(commander => commander.CommanderName, StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(commander => commander.FrontierId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private Dictionary<string, string> CollectLinkedCommanderIds(
+        FrontierCredentialDocument document)
+    {
         var linked = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var account in document.Accounts.Where(pair => pair.Value.IsLinked))
         {
@@ -249,6 +257,13 @@ public sealed class FrontierAccountService : IFrontierAccountService
             linked.TryAdd(active.FrontierId, active.CommanderName);
         }
 
+        return linked;
+    }
+
+    private async Task ResolveLinkedCommanderNamesAsync(
+        Dictionary<string, string> linked,
+        CancellationToken cancellationToken)
+    {
         foreach (var frontierId in linked.Keys.ToArray())
         {
             var identity = FrontierCommanderIdentity.Create(frontierId, null)!;
@@ -278,14 +293,6 @@ public sealed class FrontierAccountService : IFrontierAccountService
                 linked[frontierId] = current.CommanderName;
             }
         }
-
-        return linked
-            .Select(pair => new FrontierLinkedCommander(
-                pair.Key,
-                string.IsNullOrWhiteSpace(pair.Value) ? pair.Key : pair.Value))
-            .OrderBy(commander => commander.CommanderName, StringComparer.CurrentCultureIgnoreCase)
-            .ThenBy(commander => commander.FrontierId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
     }
 
     public async Task<FrontierAccountState> GetStateAsync(
@@ -640,101 +647,105 @@ public sealed class FrontierAccountService : IFrontierAccountService
         previous = IsSameCommander(snapshot, previous) ? previous : null;
         if (!result.Queried)
         {
-            return snapshot with
-            {
-                Carrier = previous?.Carrier,
-                CarrierFetchedAt = previous?.CarrierFetchedAt,
-                CarrierError = previous?.CarrierError ?? string.Empty,
-                CommanderReputation = MergeReputation(
-                    previous?.CommanderReputation,
-                    snapshot.CommanderReputation),
-                CommanderReputationFetchedAt =
-                    snapshot.CommanderReputation?.Count > 0
-                        ? snapshot.CommanderReputationFetchedAt
-                        : previous?.CommanderReputationFetchedAt,
-                CarrierEndpointData = previous?.CarrierEndpointData,
-            };
+            return PreserveCarrierState(
+                snapshot,
+                previous,
+                previous?.CarrierError ?? string.Empty);
         }
 
         if (!result.Succeeded)
         {
-            return snapshot with
-            {
-                Carrier = previous?.Carrier,
-                CarrierFetchedAt = previous?.CarrierFetchedAt,
-                CarrierError = result.Error,
-                CommanderReputation = MergeReputation(
-                    previous?.CommanderReputation,
-                    snapshot.CommanderReputation),
-                CommanderReputationFetchedAt =
-                    snapshot.CommanderReputation?.Count > 0
-                        ? snapshot.CommanderReputationFetchedAt
-                        : previous?.CommanderReputationFetchedAt,
-                CarrierEndpointData = previous?.CarrierEndpointData,
-            };
+            return PreserveCarrierState(snapshot, previous, result.Error);
         }
 
         if (string.IsNullOrWhiteSpace(result.Content))
         {
-            return snapshot with
-            {
-                Carrier = null,
-                CarrierFetchedAt = fetchedAt,
-                CarrierError = string.Empty,
-                CommanderReputation = MergeReputation(
-                    previous?.CommanderReputation,
-                    snapshot.CommanderReputation),
-                CommanderReputationFetchedAt =
-                    snapshot.CommanderReputation?.Count > 0
-                        ? snapshot.CommanderReputationFetchedAt
-                        : previous?.CommanderReputationFetchedAt,
-                CarrierEndpointData = [],
-            };
+            return ClearCarrierState(snapshot, previous, fetchedAt);
         }
 
         try
         {
-            var endpoint = FrontierCapiSnapshotParser.ParseCarrierEndpoint(
-                result.Content,
-                fetchedAt);
-            var commanderReputation = MergeReputation(
-                previous?.CommanderReputation,
-                snapshot.CommanderReputation,
-                endpoint.CommanderReputation);
-            return snapshot with
-            {
-                Carrier = endpoint.Carrier,
-                CarrierFetchedAt = fetchedAt,
-                CarrierError = string.Empty,
-                CommanderReputation = commanderReputation,
-                CommanderReputationFetchedAt =
-                    snapshot.CommanderReputation?.Count > 0
-                        || endpoint.CommanderReputation.Count > 0
-                        ? fetchedAt
-                        : previous?.CommanderReputationFetchedAt,
-                CarrierEndpointData = endpoint.DataPoints,
-            };
+            return ApplyCarrierEndpoint(snapshot, previous, result.Content!, fetchedAt);
         }
         catch (Exception exception) when (
             exception is JsonException or InvalidDataException)
         {
-            return snapshot with
-            {
-                Carrier = previous?.Carrier,
-                CarrierFetchedAt = previous?.CarrierFetchedAt,
-                CarrierError =
-                    "Frontier fleet-carrier data could not be read: "
-                    + exception.Message,
-                CommanderReputation = MergeReputation(
-                    previous?.CommanderReputation,
-                    snapshot.CommanderReputation),
-                CommanderReputationFetchedAt =
-                    snapshot.CommanderReputation?.Count > 0
-                        ? snapshot.CommanderReputationFetchedAt
-                        : previous?.CommanderReputationFetchedAt,
-                CarrierEndpointData = previous?.CarrierEndpointData,
-            };
+            return PreserveCarrierState(
+                snapshot,
+                previous,
+                "Frontier fleet-carrier data could not be read: "
+                    + exception.Message);
         }
+    }
+
+    private static FrontierAccountSnapshot PreserveCarrierState(
+        FrontierAccountSnapshot snapshot,
+        FrontierAccountSnapshot? previous,
+        string carrierError)
+    {
+        return snapshot with
+        {
+            Carrier = previous?.Carrier,
+            CarrierFetchedAt = previous?.CarrierFetchedAt,
+            CarrierError = carrierError,
+            CommanderReputation = MergeReputation(
+                previous?.CommanderReputation,
+                snapshot.CommanderReputation),
+            CommanderReputationFetchedAt =
+                snapshot.CommanderReputation?.Count > 0
+                    ? snapshot.CommanderReputationFetchedAt
+                    : previous?.CommanderReputationFetchedAt,
+            CarrierEndpointData = previous?.CarrierEndpointData,
+        };
+    }
+
+    private static FrontierAccountSnapshot ClearCarrierState(
+        FrontierAccountSnapshot snapshot,
+        FrontierAccountSnapshot? previous,
+        DateTimeOffset fetchedAt)
+    {
+        return snapshot with
+        {
+            Carrier = null,
+            CarrierFetchedAt = fetchedAt,
+            CarrierError = string.Empty,
+            CommanderReputation = MergeReputation(
+                previous?.CommanderReputation,
+                snapshot.CommanderReputation),
+            CommanderReputationFetchedAt =
+                snapshot.CommanderReputation?.Count > 0
+                    ? snapshot.CommanderReputationFetchedAt
+                    : previous?.CommanderReputationFetchedAt,
+            CarrierEndpointData = [],
+        };
+    }
+
+    private static FrontierAccountSnapshot ApplyCarrierEndpoint(
+        FrontierAccountSnapshot snapshot,
+        FrontierAccountSnapshot? previous,
+        string content,
+        DateTimeOffset fetchedAt)
+    {
+        var endpoint = FrontierCapiSnapshotParser.ParseCarrierEndpoint(
+            content,
+            fetchedAt);
+        var commanderReputation = MergeReputation(
+            previous?.CommanderReputation,
+            snapshot.CommanderReputation,
+            endpoint.CommanderReputation);
+        return snapshot with
+        {
+            Carrier = endpoint.Carrier,
+            CarrierFetchedAt = fetchedAt,
+            CarrierError = string.Empty,
+            CommanderReputation = commanderReputation,
+            CommanderReputationFetchedAt =
+                snapshot.CommanderReputation?.Count > 0
+                    || endpoint.CommanderReputation.Count > 0
+                    ? fetchedAt
+                    : previous?.CommanderReputationFetchedAt,
+            CarrierEndpointData = endpoint.DataPoints,
+        };
     }
 
     private static bool IsSameCommander(
@@ -1368,6 +1379,43 @@ public sealed class FrontierAccountService : IFrontierAccountService
             return document;
         }
 
+        var candidates = await CollectMiskeyedCandidatesAsync(
+                commander,
+                document,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (candidates.Count == 0)
+        {
+            return document;
+        }
+
+        var migratedAliases = await RelinkMiskeyedAccountsAsync(
+                commander,
+                candidates,
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (migratedAliases.Count == 0)
+        {
+            return await credentials.LoadAsync(cancellationToken)
+                .ConfigureAwait(false) ?? document;
+        }
+
+        await ConsolidateMiskeyedCachesAsync(
+                commander,
+                candidates,
+                migratedAliases,
+                cancellationToken)
+            .ConfigureAwait(false);
+        return await credentials.LoadAsync(cancellationToken)
+            .ConfigureAwait(false) ?? document;
+    }
+
+    private async Task<List<(string FrontierId, FrontierAccountSnapshot Snapshot)>>
+        CollectMiskeyedCandidatesAsync(
+            FrontierCommanderIdentity commander,
+            FrontierCredentialDocument document,
+            CancellationToken cancellationToken)
+    {
         var candidates = new List<(string FrontierId, FrontierAccountSnapshot Snapshot)>();
         foreach (var account in document.Accounts.Where(pair =>
                      pair.Value.IsLinked
@@ -1407,53 +1455,62 @@ public sealed class FrontierAccountService : IFrontierAccountService
             candidates.Add((candidate.FrontierId, snapshot));
         }
 
-        if (candidates.Count == 0)
-        {
-            return document;
-        }
+        return candidates;
+    }
 
+    private async Task<HashSet<string>> RelinkMiskeyedAccountsAsync(
+        FrontierCommanderIdentity commander,
+        IReadOnlyList<(string FrontierId, FrontierAccountSnapshot Snapshot)> candidates,
+        CancellationToken cancellationToken)
+    {
         var migratedAliases = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        await using (var lease = await credentials
+        await using var lease = await credentials
             .AcquireLeaseAsync(cancellationToken)
-            .ConfigureAwait(false))
+            .ConfigureAwait(false);
+        var document = await credentials.LoadAsync(cancellationToken)
+            .ConfigureAwait(false) ?? new FrontierCredentialDocument();
+        var accounts = CopyAccounts(document);
+        var target = GetAccount(document, commander.FrontierId);
+        foreach (var candidateFrontierId in candidates.Select(
+            candidate => candidate.FrontierId))
         {
-            document = await credentials.LoadAsync(cancellationToken)
-                .ConfigureAwait(false) ?? new FrontierCredentialDocument();
-            var accounts = CopyAccounts(document);
-            var target = GetAccount(document, commander.FrontierId);
-            foreach (var candidateFrontierId in candidates.Select(
-                candidate => candidate.FrontierId))
+            if (!accounts.TryGetValue(candidateFrontierId, out var source)
+                || !source.IsLinked)
             {
-                if (!accounts.TryGetValue(candidateFrontierId, out var source)
-                    || !source.IsLinked)
-                {
-                    continue;
-                }
-
-                if (target?.IsLinked != true)
-                {
-                    target = source;
-                    accounts[commander.FrontierId] = source;
-                }
-
-                accounts.Remove(candidateFrontierId);
-                migratedAliases.Add(candidateFrontierId);
+                continue;
             }
 
-            if (migratedAliases.Count == 0)
+            if (target?.IsLinked != true)
             {
-                return document;
+                target = source;
+                accounts[commander.FrontierId] = source;
             }
 
-            document = document with
-            {
-                Version = 2,
-                Accounts = accounts,
-            };
-            await credentials.SaveAsync(document, cancellationToken)
-                .ConfigureAwait(false);
+            accounts.Remove(candidateFrontierId);
+            migratedAliases.Add(candidateFrontierId);
         }
 
+        if (migratedAliases.Count == 0)
+        {
+            return migratedAliases;
+        }
+
+        document = document with
+        {
+            Version = 2,
+            Accounts = accounts,
+        };
+        await credentials.SaveAsync(document, cancellationToken)
+            .ConfigureAwait(false);
+        return migratedAliases;
+    }
+
+    private async Task ConsolidateMiskeyedCachesAsync(
+        FrontierCommanderIdentity commander,
+        IReadOnlyList<(string FrontierId, FrontierAccountSnapshot Snapshot)> candidates,
+        HashSet<string> migratedAliases,
+        CancellationToken cancellationToken)
+    {
         FrontierAccountSnapshot? activeSnapshot = null;
         try
         {
@@ -1486,7 +1543,6 @@ public sealed class FrontierAccountService : IFrontierAccountService
 
         await CacheFor(commander).SaveAsync(bestSnapshot, cancellationToken)
             .ConfigureAwait(false);
-        return document;
     }
 
     private static void EnsureCommanderNameIsAvailable(

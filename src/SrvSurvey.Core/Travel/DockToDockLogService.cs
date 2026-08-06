@@ -146,20 +146,22 @@ public sealed class DockToDockLogService
                 StringComparer.OrdinalIgnoreCase);
         return new DockToDockTrip(
             GetEventTime(journalEvent),
-            docked?.SystemName ?? systemName,
-            docked?.SystemAddress ?? systemAddress,
-            docked?.BodyId ?? bodyId,
-            docked?.BodyName ?? bodyName,
-            docked?.DistanceFromStarLs ?? bodyDistanceLs,
-            marketId,
-            GetString(root, "StationName")
-                ?? docked?.StationName
-                ?? "?",
-            docked?.StationType ?? "?",
-            shipType ?? "?",
-            shipName ?? "?",
-            shipMaximumJump,
-            cargoCounts);
+            new DockToDockStartLocation(
+                docked?.SystemName ?? systemName,
+                docked?.SystemAddress ?? systemAddress,
+                docked?.BodyId ?? bodyId,
+                docked?.BodyName ?? bodyName,
+                docked?.DistanceFromStarLs ?? bodyDistanceLs,
+                marketId,
+                GetString(root, "StationName")
+                    ?? docked?.StationName
+                    ?? "?",
+                docked?.StationType ?? "?"),
+            new DockToDockShipContext(
+                shipType ?? "?",
+                shipName ?? "?",
+                shipMaximumJump,
+                cargoCounts));
     }
 
     private DockToDockLogEntry CompleteTrip(
@@ -333,34 +335,40 @@ public sealed class DockToDockLogService
         string StationName,
         string StationType);
 
+    private sealed record DockToDockStartLocation(
+        string? SystemName,
+        long? SystemAddress,
+        int? BodyId,
+        string? BodyName,
+        double? DistanceFromStarLs,
+        long MarketId,
+        string StationName,
+        string StationType);
+
+    private sealed record DockToDockShipContext(
+        string ShipType,
+        string ShipName,
+        double? ShipMaximumJump,
+        IReadOnlyDictionary<string, int> Cargo);
+
     private sealed class DockToDockTrip(
         DateTimeOffset startedAt,
-        string? startSystem,
-        long? startAddress,
-        int? startBodyId,
-        string? startBodyName,
-        double? startDistanceFromStarLs,
-        long startMarketId,
-        string startStationName,
-        string startStationType,
-        string shipType,
-        string shipName,
-        double? shipMaximumJump,
-        IReadOnlyDictionary<string, int> cargo)
+        DockToDockStartLocation start,
+        DockToDockShipContext ship)
     {
         public DateTimeOffset StartedAt { get; } = startedAt;
-        public string? StartSystem { get; } = startSystem;
-        public long? StartAddress { get; } = startAddress;
-        public int? StartBodyId { get; } = startBodyId;
-        public string? StartBodyName { get; } = startBodyName;
-        public double? StartDistanceFromStarLs { get; } = startDistanceFromStarLs;
-        public long StartMarketId { get; } = startMarketId;
-        public string StartStationName { get; } = startStationName;
-        public string StartStationType { get; } = startStationType;
-        public string ShipType { get; } = shipType;
-        public string ShipName { get; } = shipName;
-        public double? ShipMaximumJump { get; } = shipMaximumJump;
-        public IReadOnlyDictionary<string, int> Cargo { get; } = cargo;
+        public string? StartSystem { get; } = start.SystemName;
+        public long? StartAddress { get; } = start.SystemAddress;
+        public int? StartBodyId { get; } = start.BodyId;
+        public string? StartBodyName { get; } = start.BodyName;
+        public double? StartDistanceFromStarLs { get; } = start.DistanceFromStarLs;
+        public long StartMarketId { get; } = start.MarketId;
+        public string StartStationName { get; } = start.StationName;
+        public string StartStationType { get; } = start.StationType;
+        public string ShipType { get; } = ship.ShipType;
+        public string ShipName { get; } = ship.ShipName;
+        public double? ShipMaximumJump { get; } = ship.ShipMaximumJump;
+        public IReadOnlyDictionary<string, int> Cargo { get; } = ship.Cargo;
         public DateTimeOffset? EgressEndedAt { get; set; }
         public DateTimeOffset? IngressStartedAt { get; set; }
         public int Jumps { get; set; }
@@ -371,6 +379,8 @@ public sealed class DockToDockLogService
 
 public sealed class DockToDockCsvWriter
 {
+    private const string HighPrecisionNumberFormat = "0.################";
+
     public const string FileName = "SrvSurvey-dock-to-dock-times.csv";
 
     private static readonly string[] Columns =
@@ -484,13 +494,13 @@ public sealed class DockToDockCsvWriter
             FormatDuration(entry.EgressDuration),
             FormatDuration(entry.IngressDuration),
             entry.Jumps.ToString(CultureInfo.InvariantCulture),
-            entry.Distance.ToString("0.################", CultureInfo.InvariantCulture),
+            entry.Distance.ToString(HighPrecisionNumberFormat, CultureInfo.InvariantCulture),
             entry.StartSystem ?? "?",
             entry.StartAddress?.ToString(CultureInfo.InvariantCulture) ?? "-1",
             entry.StartBodyId?.ToString(CultureInfo.InvariantCulture) ?? "-1",
             entry.StartBodyName ?? "?",
             entry.StartDistanceFromStarLs?.ToString(
-                "0.################",
+                HighPrecisionNumberFormat,
                 CultureInfo.InvariantCulture) ?? "-1",
             entry.StartMarketId.ToString(CultureInfo.InvariantCulture),
             entry.StartStationName,
@@ -504,12 +514,12 @@ public sealed class DockToDockCsvWriter
             entry.EndStationName,
             entry.EndStationType,
             entry.EndDistanceFromStarLs?.ToString(
-                "0.################",
+                HighPrecisionNumberFormat,
                 CultureInfo.InvariantCulture) ?? "-1",
             entry.ShipType,
             entry.ShipName,
             entry.ShipMaximumJump?.ToString(
-                "0.################",
+                HighPrecisionNumberFormat,
                 CultureInfo.InvariantCulture) ?? "-1",
             JsonSerializer.Serialize(entry.Cargo),
         ];

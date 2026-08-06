@@ -161,8 +161,9 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                 "Spansh system dump",
                 new Uri(
                     spanshBaseUri,
-                    "dump/" + systemAddress.ToString(
-                        CultureInfo.InvariantCulture) + "/"),
+                    UriPath.CombineWithTrailingSeparator(
+                        "dump",
+                        systemAddress.ToString(CultureInfo.InvariantCulture))),
                 ParseSpanshDump,
                 cancellationToken)
             : Task.FromResult(FetchResult<SpanshFragment>.Empty);
@@ -350,16 +351,55 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
                 "The Spansh system dump has no system object.");
         }
 
-        GalacticCoordinate? position = null;
+        var position = ReadSpanshPosition(system);
+        var bodies = GetArray(system, "bodies");
+        var (scannedBodies, genus, starClass) = SummarizeSpanshBodies(bodies);
+        var stationElements = EnumerateStations(system, bodies).ToArray();
+        var (specials, starports, outposts, settlements, fleetCarriers) =
+            SummarizeSpanshStations(stationElements);
+        var factions = ParseSpanshFactions(system, out var warPresences);
+        var totalBodies = GetInt32(system, "bodyCount") ?? 0;
+        return new SpanshFragment(
+            position,
+            starClass,
+            scannedBodies,
+            totalBodies,
+            GetDateTimeOffset(system, "updated_at"),
+            new SystemPoiSummary(
+                totalBodies,
+                genus,
+                starports,
+                outposts,
+                settlements,
+                fleetCarriers,
+                warPresences / 2),
+            specials.Select(pair => new SystemSpecialSummary(
+                pair.Key,
+                pair.Value.ToArray())).ToArray(),
+            stationElements
+                .Select(ParseStation)
+                .Where(station => !string.IsNullOrWhiteSpace(station.Name))
+                .OrderBy(station => station.Name)
+                .ToArray(),
+            factions);
+    }
+
+    private static GalacticCoordinate? ReadSpanshPosition(JsonElement system)
+    {
         if (TryGetObject(system, "coords", out var coords)
             && GetDouble(coords, "x") is { } x
             && GetDouble(coords, "y") is { } y
             && GetDouble(coords, "z") is { } z)
         {
-            position = new GalacticCoordinate(x, y, z);
+            return new GalacticCoordinate(x, y, z);
         }
 
-        var bodies = GetArray(system, "bodies");
+        return null;
+    }
+
+    private static (int ScannedBodies, int Genus, string? StarClass)
+        SummarizeSpanshBodies(IReadOnlyList<JsonElement> bodies)
+    {
         var scannedBodies = 0;
         var genus = 0;
         string? starClass = null;
@@ -394,13 +434,23 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             }
         }
 
+        return (scannedBodies, genus, starClass);
+    }
+
+    private static (
+        Dictionary<string, List<string>> Specials,
+        int Starports,
+        int Outposts,
+        int Settlements,
+        int FleetCarriers)
+        SummarizeSpanshStations(IReadOnlyList<JsonElement> stationElements)
+    {
         var specials = new Dictionary<string, List<string>>(
             StringComparer.OrdinalIgnoreCase);
         var starports = 0;
         var outposts = 0;
         var settlements = 0;
         var fleetCarriers = 0;
-        var stationElements = EnumerateStations(system, bodies).ToArray();
         foreach (var station in stationElements)
         {
             var type = GetString(station, "type") ?? string.Empty;
@@ -434,11 +484,18 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             AddStationSpecials(station, specials);
         }
 
+        return (specials, starports, outposts, settlements, fleetCarriers);
+    }
+
+    private static SystemFactionSummary[] ParseSpanshFactions(
+        JsonElement system,
+        out int warPresences)
+    {
         var factionElements = GetArray(system, "factions");
-        var warPresences = factionElements
+        warPresences = factionElements
             .Count(faction => faction.ValueKind == JsonValueKind.Object
                 && GetString(faction, "state") is "War" or "Civil War");
-        var factions = factionElements
+        return factionElements
             .Where(faction => faction.ValueKind == JsonValueKind.Object)
             .Select(faction => new SystemFactionSummary(
                 GetString(faction, "name") ?? string.Empty,
@@ -448,30 +505,6 @@ public sealed class SystemSummaryClient : ISystemSummaryClient
             .OrderByDescending(faction => faction.Influence)
             .ThenBy(faction => faction.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var totalBodies = GetInt32(system, "bodyCount") ?? 0;
-        return new SpanshFragment(
-            position,
-            starClass,
-            scannedBodies,
-            totalBodies,
-            GetDateTimeOffset(system, "updated_at"),
-            new SystemPoiSummary(
-                totalBodies,
-                genus,
-                starports,
-                outposts,
-                settlements,
-                fleetCarriers,
-                warPresences / 2),
-            specials.Select(pair => new SystemSpecialSummary(
-                pair.Key,
-                pair.Value.ToArray())).ToArray(),
-            stationElements
-                .Select(ParseStation)
-                .Where(station => !string.IsNullOrWhiteSpace(station.Name))
-                .OrderBy(station => station.Name)
-                .ToArray(),
-            factions);
     }
 
     private static SystemStationSummary ParseStation(JsonElement station)

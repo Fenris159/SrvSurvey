@@ -4,6 +4,8 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
 
+using SrvSurvey.Core.Network;
+
 namespace SrvSurvey.Core.Updates;
 
 public interface IReleasePackageStagingService
@@ -41,6 +43,10 @@ public sealed class ReleasePackageStagingService
     private const long MaximumSingleFileBytes = 512L * 1024 * 1024;
     private const string ManifestName = "release-package.json";
     private const string ProductName = "SrvSurvey.XP";
+    private const string RuntimeWinX64 = "win-x64";
+    private const string RuntimeLinuxX64 = "linux-x64";
+    private const string ArchiveTypeZip = "zip";
+    private const string ArchiveTypeTarGz = "tar.gz";
     private static readonly char[] InvalidPortableNameCharacters =
         ['<', '>', ':', '"', '|', '?', '*'];
     private static readonly SearchValues<char> InvalidPortableNameSearch =
@@ -130,7 +136,7 @@ public sealed class ReleasePackageStagingService
         ArgumentException.ThrowIfNullOrWhiteSpace(readyDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestSha256);
         if (version.Build < 0
-            || runtimeIdentifier is not ("win-x64" or "linux-x64")
+            || runtimeIdentifier is not (RuntimeWinX64 or RuntimeLinuxX64)
             || manifestSha256.Length != 64
             || manifestSha256.Any(character => !Uri.IsHexDigit(character)))
         {
@@ -157,15 +163,15 @@ public sealed class ReleasePackageStagingService
                 "The ready update manifest no longer matches the verified archive.");
         }
 
-        var archiveType = runtimeIdentifier == "win-x64" ? "zip" : "tar.gz";
-        var suffix = archiveType == "zip" ? ".zip" : ".tar.gz";
+        var archiveType = runtimeIdentifier == RuntimeWinX64 ? ArchiveTypeZip : ArchiveTypeTarGz;
+        var suffix = archiveType == ArchiveTypeZip ? ".zip" : ".tar.gz";
         var package = new CrossPlatformReleasePackage(
             runtimeIdentifier,
             $"SrvSurvey-XP-{version}-{runtimeIdentifier}{suffix}",
             archiveType,
             1,
             new string('0', 64),
-            new Uri("https://example.invalid/package"));
+            WellKnownUris.ExampleInvalidPackage);
         var manifest = ParseManifest(bytes, version, package);
         if (!await IsReadyAsync(
                 readyDirectory,
@@ -193,13 +199,13 @@ public sealed class ReleasePackageStagingService
     {
         return package.ArchiveType switch
         {
-            "zip" => await InspectZipAsync(
+            ArchiveTypeZip => await InspectZipAsync(
                     version,
                     package,
                     archivePath,
                     cancellationToken)
                 .ConfigureAwait(false),
-            "tar.gz" => await InspectTarAsync(
+            ArchiveTypeTarGz => await InspectTarAsync(
                     version,
                     package,
                     archivePath,
@@ -287,50 +293,64 @@ public sealed class ReleasePackageStagingService
                     "The update archive contains too many entries.");
             }
 
-            var isDirectory = entry.EntryType == TarEntryType.Directory;
-            if (isDirectory && entry.Name is "." or "./")
-            {
-                continue;
-            }
-
-            if (!isDirectory
-                && entry.EntryType is not (
-                    TarEntryType.RegularFile or TarEntryType.V7RegularFile))
-            {
-                throw new InvalidDataException(
-                    $"The update archive contains unsupported entry '{entry.Name}'.");
-            }
-
-            var path = NormalizeArchivePath(entry.Name, isDirectory);
-            if (isDirectory)
-            {
-                continue;
-            }
-
-            if (!entries.TryAdd(
-                    path,
-                    new ArchiveEntryInfo(entry.Length)))
-            {
-                throw new InvalidDataException(
-                    $"The update archive contains duplicate file '{path}'.");
-            }
-
-            if (path == ManifestName)
-            {
-                var stream = entry.DataStream
-                    ?? throw new InvalidDataException(
-                        "The update package manifest has no data stream.");
-                manifestBytes = await ReadBoundedAsync(
-                        stream,
-                        MaximumManifestBytes,
-                        cancellationToken)
-                    .ConfigureAwait(false);
-            }
+            manifestBytes = await CollectTarEntryAsync(
+                    entry,
+                    entries,
+                    manifestBytes,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         var manifest = ParseManifest(manifestBytes, version, package);
         ValidateEntrySet(entries, manifest);
         return new InspectedArchive(manifest, manifestBytes!);
+    }
+
+    private static async Task<byte[]?> CollectTarEntryAsync(
+        TarEntry entry,
+        Dictionary<string, ArchiveEntryInfo> entries,
+        byte[]? manifestBytes,
+        CancellationToken cancellationToken)
+    {
+        var isDirectory = entry.EntryType == TarEntryType.Directory;
+        if (isDirectory && entry.Name is "." or "./")
+        {
+            return manifestBytes;
+        }
+
+        if (!isDirectory
+            && entry.EntryType is not (
+                TarEntryType.RegularFile or TarEntryType.V7RegularFile))
+        {
+            throw new InvalidDataException(
+                $"The update archive contains unsupported entry '{entry.Name}'.");
+        }
+
+        var path = NormalizeArchivePath(entry.Name, isDirectory);
+        if (isDirectory)
+        {
+            return manifestBytes;
+        }
+
+        if (!entries.TryAdd(path, new ArchiveEntryInfo(entry.Length)))
+        {
+            throw new InvalidDataException(
+                $"The update archive contains duplicate file '{path}'.");
+        }
+
+        if (path != ManifestName)
+        {
+            return manifestBytes;
+        }
+
+        var stream = entry.DataStream
+            ?? throw new InvalidDataException(
+                "The update package manifest has no data stream.");
+        return await ReadBoundedAsync(
+                stream,
+                MaximumManifestBytes,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private static ReleasePackageManifest ParseManifest(
@@ -348,107 +368,10 @@ public sealed class ReleasePackageStagingService
         {
             using var document = JsonDocument.Parse(bytes);
             var root = document.RootElement;
-            if (root.ValueKind != JsonValueKind.Object
-                || ReadInt32(root, "schemaVersion") != 1
-                || !string.Equals(
-                    ReadString(root, "product"),
-                    ProductName,
-                    StringComparison.Ordinal))
-            {
-                throw new InvalidDataException(
-                    "The update package manifest has an incompatible schema or product.");
-            }
-
-            var versionText = ReadString(root, "version");
-            if (!ReleaseVersion.TryParse(versionText, out var manifestVersion)
-                || manifestVersion != version)
-            {
-                throw new InvalidDataException(
-                    "The update package manifest version does not match the release.");
-            }
-
+            var manifestVersion = ValidateManifestHeader(root, version, package);
             var runtimeIdentifier = ReadString(root, "runtimeIdentifier");
-            if (!string.Equals(
-                    runtimeIdentifier,
-                    package.RuntimeIdentifier,
-                    StringComparison.Ordinal))
-            {
-                throw new InvalidDataException(
-                    "The update package manifest runtime does not match the release.");
-            }
-
-            var expectedEntryPoint = runtimeIdentifier == "win-x64"
-                ? "SrvSurvey.Desktop.exe"
-                : "SrvSurvey.Desktop";
-            var entryPoint = ReadString(root, "entryPoint");
-            if (!string.Equals(entryPoint, expectedEntryPoint, StringComparison.Ordinal)
-                || NormalizeArchivePath(entryPoint, isDirectory: false) != entryPoint)
-            {
-                throw new InvalidDataException(
-                    "The update package manifest has an invalid entry point.");
-            }
-
-            if (!root.TryGetProperty("files", out var filesElement)
-                || filesElement.ValueKind != JsonValueKind.Array)
-            {
-                throw new InvalidDataException(
-                    "The update package manifest has no file array.");
-            }
-
-            var files = new Dictionary<string, ReleasePackageManifestFile>(
-                StringComparer.Ordinal);
-            var caseInsensitivePaths = new HashSet<string>(
-                StringComparer.OrdinalIgnoreCase);
-            long expandedBytes = 0;
-            foreach (var fileElement in filesElement.EnumerateArray())
-            {
-                if (files.Count >= MaximumFileCount)
-                {
-                    throw new InvalidDataException(
-                        "The update package manifest contains too many files.");
-                }
-
-                var path = ReadString(fileElement, "path");
-                if (NormalizeArchivePath(path, isDirectory: false) != path
-                    || path == ManifestName)
-                {
-                    throw new InvalidDataException(
-                        $"The update package manifest has invalid path '{path}'.");
-                }
-
-                var size = ReadInt64(fileElement, "size");
-                if (size is < 0 or > MaximumSingleFileBytes)
-                {
-                    throw new InvalidDataException(
-                        $"The update package file '{path}' has an invalid size.");
-                }
-
-                expandedBytes = checked(expandedBytes + size);
-                if (expandedBytes > MaximumExpandedBytes)
-                {
-                    throw new InvalidDataException(
-                        "The update package exceeds the supported expanded size.");
-                }
-
-                var sha256 = ReadString(fileElement, "sha256").ToLowerInvariant();
-                if (sha256.Length != 64
-                    || sha256.Any(character => !Uri.IsHexDigit(character)))
-                {
-                    throw new InvalidDataException(
-                        $"The update package file '{path}' has an invalid SHA-256.");
-                }
-
-                if (!files.TryAdd(
-                        path,
-                        new ReleasePackageManifestFile(path, size, sha256))
-                    || (runtimeIdentifier == "win-x64"
-                        && !caseInsensitivePaths.Add(path)))
-                {
-                    throw new InvalidDataException(
-                        $"The update package manifest contains duplicate path '{path}'.");
-                }
-            }
-
+            var entryPoint = ValidateEntryPoint(root, runtimeIdentifier);
+            var (files, expandedBytes) = ParseManifestFiles(root, runtimeIdentifier);
             if (files.Count == 0 || !files.ContainsKey(entryPoint))
             {
                 throw new InvalidDataException(
@@ -474,6 +397,145 @@ public sealed class ReleasePackageStagingService
                 "The update package manifest size total overflowed.",
                 exception);
         }
+    }
+
+    private static ReleaseVersion ValidateManifestHeader(
+        JsonElement root,
+        ReleaseVersion version,
+        CrossPlatformReleasePackage package)
+    {
+        if (root.ValueKind != JsonValueKind.Object
+            || ReadInt32(root, "schemaVersion") != 1
+            || !string.Equals(
+                ReadString(root, "product"),
+                ProductName,
+                StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                "The update package manifest has an incompatible schema or product.");
+        }
+
+        var versionText = ReadString(root, "version");
+        if (!ReleaseVersion.TryParse(versionText, out var manifestVersion)
+            || manifestVersion != version)
+        {
+            throw new InvalidDataException(
+                "The update package manifest version does not match the release.");
+        }
+
+        var runtimeIdentifier = ReadString(root, "runtimeIdentifier");
+        if (!string.Equals(
+                runtimeIdentifier,
+                package.RuntimeIdentifier,
+                StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                "The update package manifest runtime does not match the release.");
+        }
+
+        return manifestVersion;
+    }
+
+    private static string ValidateEntryPoint(
+        JsonElement root,
+        string runtimeIdentifier)
+    {
+        var expectedEntryPoint = runtimeIdentifier == RuntimeWinX64
+            ? "SrvSurvey.Desktop.exe"
+            : "SrvSurvey.Desktop";
+        var entryPoint = ReadString(root, "entryPoint");
+        if (!string.Equals(entryPoint, expectedEntryPoint, StringComparison.Ordinal)
+            || NormalizeArchivePath(entryPoint, isDirectory: false) != entryPoint)
+        {
+            throw new InvalidDataException(
+                "The update package manifest has an invalid entry point.");
+        }
+
+        return entryPoint;
+    }
+
+    private static (Dictionary<string, ReleasePackageManifestFile> Files, long ExpandedBytes)
+        ParseManifestFiles(JsonElement root, string runtimeIdentifier)
+    {
+        if (!root.TryGetProperty("files", out var filesElement)
+            || filesElement.ValueKind != JsonValueKind.Array)
+        {
+            throw new InvalidDataException(
+                "The update package manifest has no file array.");
+        }
+
+        var files = new Dictionary<string, ReleasePackageManifestFile>(
+            StringComparer.Ordinal);
+        var caseInsensitivePaths = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase);
+        long expandedBytes = 0;
+        foreach (var fileElement in filesElement.EnumerateArray())
+        {
+            expandedBytes = AddManifestFile(
+                fileElement,
+                files,
+                caseInsensitivePaths,
+                runtimeIdentifier,
+                expandedBytes);
+        }
+
+        return (files, expandedBytes);
+    }
+
+    private static long AddManifestFile(
+        JsonElement fileElement,
+        Dictionary<string, ReleasePackageManifestFile> files,
+        HashSet<string> caseInsensitivePaths,
+        string runtimeIdentifier,
+        long expandedBytes)
+    {
+        if (files.Count >= MaximumFileCount)
+        {
+            throw new InvalidDataException(
+                "The update package manifest contains too many files.");
+        }
+
+        var path = ReadString(fileElement, "path");
+        if (NormalizeArchivePath(path, isDirectory: false) != path
+            || path == ManifestName)
+        {
+            throw new InvalidDataException(
+                $"The update package manifest has invalid path '{path}'.");
+        }
+
+        var size = ReadInt64(fileElement, "size");
+        if (size is < 0 or > MaximumSingleFileBytes)
+        {
+            throw new InvalidDataException(
+                $"The update package file '{path}' has an invalid size.");
+        }
+
+        expandedBytes = checked(expandedBytes + size);
+        if (expandedBytes > MaximumExpandedBytes)
+        {
+            throw new InvalidDataException(
+                "The update package exceeds the supported expanded size.");
+        }
+
+        var sha256 = ReadString(fileElement, "sha256").ToLowerInvariant();
+        if (sha256.Length != 64
+            || sha256.Any(character => !Uri.IsHexDigit(character)))
+        {
+            throw new InvalidDataException(
+                $"The update package file '{path}' has an invalid SHA-256.");
+        }
+
+        if (!files.TryAdd(
+                path,
+                new ReleasePackageManifestFile(path, size, sha256))
+            || (runtimeIdentifier == RuntimeWinX64
+                && !caseInsensitivePaths.Add(path)))
+        {
+            throw new InvalidDataException(
+                $"The update package manifest contains duplicate path '{path}'.");
+        }
+
+        return expandedBytes;
     }
 
     private static void ValidateEntrySet(
@@ -511,7 +573,7 @@ public sealed class ReleasePackageStagingService
                 archive.ManifestBytes,
                 cancellationToken)
             .ConfigureAwait(false);
-        if (archiveType == "zip")
+        if (archiveType == ArchiveTypeZip)
         {
             await ExtractZipAsync(
                     archivePath,
@@ -686,76 +748,23 @@ public sealed class ReleasePackageStagingService
 
         try
         {
-            var manifestPath = Path.Combine(directory, ManifestName);
-            var manifestInfo = new FileInfo(manifestPath);
-            if (!manifestInfo.Exists
-                || manifestInfo.Length is <= 0 or > MaximumManifestBytes)
-            {
-                return false;
-            }
-
-            var bytes = await File.ReadAllBytesAsync(manifestPath, cancellationToken)
+            var manifest = await LoadReadyManifestAsync(
+                    directory,
+                    expectedManifest,
+                    expectedManifestBytes,
+                    cancellationToken)
                 .ConfigureAwait(false);
-            if (!bytes.AsSpan().SequenceEqual(expectedManifestBytes))
+            if (manifest is null)
             {
                 return false;
             }
 
-            var package = new CrossPlatformReleasePackage(
-                expectedManifest.RuntimeIdentifier,
-                expectedManifest.RuntimeIdentifier == "win-x64" ? "unused.zip" : "unused.tar.gz",
-                expectedManifest.RuntimeIdentifier == "win-x64" ? "zip" : "tar.gz",
-                1,
-                new string('0', 64),
-                new Uri("https://example.invalid/package"));
-            var manifest = ParseManifest(bytes, expectedManifest.Version, package);
-            if (manifest.Files.Count != expectedManifest.Files.Count
-                || manifest.ExpandedBytes != expectedManifest.ExpandedBytes)
-            {
-                return false;
-            }
-
-            if (!TryEnumerateReadyFiles(directory, out var actualFiles))
-            {
-                return false;
-            }
-
-            var expectedFiles = expectedManifest.Files.Keys
-                .Append(ManifestName)
-                .ToHashSet(StringComparer.Ordinal);
-            if (!actualFiles.SetEquals(expectedFiles))
-            {
-                return false;
-            }
-
-            foreach (var expected in expectedManifest.Files.Values)
-            {
-                if (!manifest.Files.TryGetValue(expected.Path, out var staged)
-                    || staged != expected)
-                {
-                    return false;
-                }
-
-                var path = ResolveDestination(directory, expected.Path);
-                var info = new FileInfo(path);
-                if (!info.Exists || info.Length != expected.Size)
-                {
-                    return false;
-                }
-
-                await using var stream = OpenRead(path);
-                var hash = await SHA256.HashDataAsync(stream, cancellationToken)
-                    .ConfigureAwait(false);
-                if (!HashesMatch(Convert.ToHexString(hash), expected.Sha256))
-                {
-                    return false;
-                }
-            }
-
-            var entryPoint = ResolveDestination(directory, expectedManifest.EntryPoint);
-            return OperatingSystem.IsWindows()
-                || expectedManifest.RuntimeIdentifier != "linux-x64"
-                || (File.GetUnixFileMode(entryPoint) & UnixFileMode.UserExecute) != 0;
+            return await VerifyReadyContentAsync(
+                    directory,
+                    expectedManifest,
+                    manifest,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (Exception exception) when (
             exception is IOException
@@ -765,6 +774,105 @@ public sealed class ReleasePackageStagingService
         {
             return false;
         }
+    }
+
+    private static async Task<ReleasePackageManifest?> LoadReadyManifestAsync(
+        string directory,
+        ReleasePackageManifest expectedManifest,
+        byte[] expectedManifestBytes,
+        CancellationToken cancellationToken)
+    {
+        var manifestPath = Path.Combine(directory, ManifestName);
+        var manifestInfo = new FileInfo(manifestPath);
+        if (!manifestInfo.Exists
+            || manifestInfo.Length is <= 0 or > MaximumManifestBytes)
+        {
+            return null;
+        }
+
+        var bytes = await File.ReadAllBytesAsync(manifestPath, cancellationToken)
+            .ConfigureAwait(false);
+        if (!bytes.AsSpan().SequenceEqual(expectedManifestBytes))
+        {
+            return null;
+        }
+
+        var package = new CrossPlatformReleasePackage(
+            expectedManifest.RuntimeIdentifier,
+            expectedManifest.RuntimeIdentifier == RuntimeWinX64 ? "unused.zip" : "unused.tar.gz",
+            expectedManifest.RuntimeIdentifier == RuntimeWinX64 ? ArchiveTypeZip : ArchiveTypeTarGz,
+            1,
+            new string('0', 64),
+            WellKnownUris.ExampleInvalidPackage);
+        var manifest = ParseManifest(bytes, expectedManifest.Version, package);
+        if (manifest.Files.Count != expectedManifest.Files.Count
+            || manifest.ExpandedBytes != expectedManifest.ExpandedBytes)
+        {
+            return null;
+        }
+
+        return manifest;
+    }
+
+    private static async Task<bool> VerifyReadyContentAsync(
+        string directory,
+        ReleasePackageManifest expectedManifest,
+        ReleasePackageManifest manifest,
+        CancellationToken cancellationToken)
+    {
+        if (!TryEnumerateReadyFiles(directory, out var actualFiles))
+        {
+            return false;
+        }
+
+        var expectedFiles = expectedManifest.Files.Keys
+            .Append(ManifestName)
+            .ToHashSet(StringComparer.Ordinal);
+        if (!actualFiles.SetEquals(expectedFiles))
+        {
+            return false;
+        }
+
+        foreach (var expected in expectedManifest.Files.Values)
+        {
+            if (!manifest.Files.TryGetValue(expected.Path, out var staged)
+                || staged != expected)
+            {
+                return false;
+            }
+
+            if (!await FileMatchesExpectedAsync(
+                    directory,
+                    expected,
+                    cancellationToken)
+                .ConfigureAwait(false))
+            {
+                return false;
+            }
+        }
+
+        var entryPoint = ResolveDestination(directory, expectedManifest.EntryPoint);
+        return OperatingSystem.IsWindows()
+            || expectedManifest.RuntimeIdentifier != RuntimeLinuxX64
+            || (File.GetUnixFileMode(entryPoint) & UnixFileMode.UserExecute) != 0;
+    }
+
+    private static async Task<bool> FileMatchesExpectedAsync(
+        string directory,
+        ReleasePackageManifestFile expected,
+        CancellationToken cancellationToken)
+    {
+        var path = ResolveDestination(directory, expected.Path);
+        var info = new FileInfo(path);
+        if (!info.Exists || info.Length != expected.Size)
+        {
+            return false;
+        }
+
+        await using var stream = OpenRead(path);
+        var hash = await SHA256.HashDataAsync(stream, cancellationToken)
+            .ConfigureAwait(false);
+        return HashesMatch(Convert.ToHexString(hash), expected.Sha256);
     }
 
     private static void ActivateCandidate(
@@ -1112,11 +1220,11 @@ public sealed class ReleasePackageStagingService
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         var archiveType = package.RuntimeIdentifier switch
         {
-            "win-x64" => "zip",
-            "linux-x64" => "tar.gz",
+            RuntimeWinX64 => ArchiveTypeZip,
+            RuntimeLinuxX64 => ArchiveTypeTarGz,
             _ => string.Empty,
         };
-        var suffix = archiveType == "zip" ? ".zip" : ".tar.gz";
+        var suffix = archiveType == ArchiveTypeZip ? ".zip" : ".tar.gz";
         var expectedArchiveName =
             $"SrvSurvey-XP-{version}-{package.RuntimeIdentifier}{suffix}";
         if (version.Build < 0

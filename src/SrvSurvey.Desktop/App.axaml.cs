@@ -261,19 +261,20 @@ public sealed partial class App : Application
                 RestartApplicationAsync("Language preference changed"));
             var appImagePath = Environment.GetEnvironmentVariable("APPIMAGE");
             viewModel.ReleaseUpdates.ConfigureInstaller(
-                new ReleasePackageDownloadService(),
-                new ReleasePackageStagingService(),
-                new ReleaseInstallationPreparer(),
-                new ApplicationUpdateHandoffService(),
-                appDataPaths.DataDirectory,
-                AppContext.BaseDirectory,
-                Program.StartupArguments,
-                async () => await Dispatcher.UIThread.InvokeAsync(
-                    () => desktop.Shutdown()),
-                string.IsNullOrWhiteSpace(appImagePath)
-                    ? null
-                    : "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually.",
-                isAppImage: !string.IsNullOrWhiteSpace(appImagePath));
+                new ReleaseInstallerConfiguration(
+                    new ReleasePackageDownloadService(),
+                    new ReleasePackageStagingService(),
+                    new ReleaseInstallationPreparer(),
+                    new ApplicationUpdateHandoffService(),
+                    appDataPaths.DataDirectory,
+                    AppContext.BaseDirectory,
+                    Program.StartupArguments,
+                    async () => await Dispatcher.UIThread.InvokeAsync(
+                        () => desktop.Shutdown()),
+                    string.IsNullOrWhiteSpace(appImagePath)
+                        ? null
+                        : "This AppImage is mounted read-only and cannot replace itself; open the selected release and install its AppImage manually.",
+                    IsAppImage: !string.IsNullOrWhiteSpace(appImagePath)));
 
             viewModel.ProfileImportCompleted += RestartAfterProfileImportAsync;
             viewModel.JournalSettings.RestartRequested +=
