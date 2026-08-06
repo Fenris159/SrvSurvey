@@ -168,11 +168,13 @@ public sealed partial class KnownSystemAddressCatalog
                     "The known-system address catalog contains an invalid entry.");
             }
 
-            if (!result.TryAdd(name, address))
+            if (result.ContainsKey(name))
             {
                 throw new InvalidDataException(
                     "The known-system address catalog contains duplicated entries.");
             }
+
+            result[name] = address;
         }
         throw new InvalidDataException(
             "The known-system address catalog is incomplete.");

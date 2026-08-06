@@ -297,7 +297,7 @@ public static class ColonizationCommodityPlanner
     }
 
     private static string CreateTitle(
-        IReadOnlyList<ColonizationProject> projects,
+        ColonizationProject[] projects,
         ColonizationDockingSnapshot? dock,
         ColonizationProject? localProject,
         bool atConstructionSite)
@@ -309,9 +309,9 @@ public static class ColonizationCommodityPlanner
                 : $"{localProject.BuildName} ({localProject.BuildType})";
         }
 
-        return projects.Count == 1
+        return projects.Length == 1
             ? $"{projects[0].BuildName} ({projects[0].BuildType})"
-            : $"{projects.Count:N0} projects";
+            : $"{projects.Length:N0} projects";
     }
 
     private static string Normalize(string value)

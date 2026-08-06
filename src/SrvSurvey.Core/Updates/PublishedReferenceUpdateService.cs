@@ -65,6 +65,12 @@ public sealed class PublishedReferenceUpdateService
     private const long MaximumExpandedArchiveBytes = 128L * 1024 * 1024;
     private const int MaximumArchiveEntries = 2_048;
 
+    private static readonly string[] GuardianSiteSourceCatalogs =
+    [
+        "Guardian site index",
+        "Guardian published surveys",
+    ];
+
     private static readonly HttpClient SharedClient = CreateSharedClient();
     private static readonly JsonSerializerOptions IndentedJson = new()
     {
@@ -576,7 +582,7 @@ public sealed class PublishedReferenceUpdateService
         var expectedSources = updated.SelectMany(name => name switch
         {
             "Guardian site indexes and surveys" =>
-                new[] { "Guardian site index", "Guardian published surveys" },
+                GuardianSiteSourceCatalogs,
             _ => new[] { name },
         }).ToHashSet(StringComparer.Ordinal);
         foreach (var catalogName in expectedSources)

@@ -39,6 +39,9 @@ namespace SrvSurvey.Core.Network
         private static readonly string[] CommodityStatusFlags =
             ["Producer", "Consumer", "Rare"];
 
+        private static readonly string[] NavRouteFields =
+            ["StarSystem", "SystemAddress", "StarPos", "StarClass"];
+
         private static readonly HashSet<string> genericEvents = new(StringComparer.Ordinal)
         {
             "Docked",
@@ -600,8 +603,7 @@ namespace SrvSurvey.Core.Network
                 var output = select(
                     waypoint,
                     "StarSystem", "SystemAddress", "StarPos", "StarClass");
-                if (new[] { "StarSystem", "SystemAddress", "StarPos", "StarClass" }
-                    .All(field => hasValue(output, field)))
+                if (NavRouteFields.All(field => hasValue(output, field)))
                 {
                     route.Add(output);
                 }

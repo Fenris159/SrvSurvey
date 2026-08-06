@@ -804,7 +804,7 @@ public sealed class LegacyQuestStateStore
 
     private static List<LegacyQuestMessageDefinition> ParseMessageDefinitions(
         JsonNode? node,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is not JsonArray array)
         {
@@ -838,7 +838,7 @@ public sealed class LegacyQuestStateStore
 
     private static List<LegacyQuestChapter> ParseChapters(
         JsonNode? node,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is not JsonArray array)
         {
@@ -866,7 +866,7 @@ public sealed class LegacyQuestStateStore
     }
 
     private static Dictionary<string, LegacyQuestBodyLocation>
-        ParseBodyLocations(JsonNode? node, ICollection<string> warnings)
+        ParseBodyLocations(JsonNode? node, List<string> warnings)
     {
         var locations = new Dictionary<string, LegacyQuestBodyLocation>(
             StringComparer.Ordinal);
@@ -998,7 +998,7 @@ public sealed class LegacyQuestStateStore
 
     private static LegacyQuestReference? ParseReference(
         JsonNode? node,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is null)
         {
@@ -1175,7 +1175,7 @@ public sealed class LegacyQuestStateStore
 
     private static LegacyQuestDuration ParseDuration(
         JsonNode? node,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is null)
         {

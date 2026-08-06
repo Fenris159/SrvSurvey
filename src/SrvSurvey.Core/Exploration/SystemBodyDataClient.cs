@@ -692,10 +692,10 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     }
 
     private static void ValidateUniqueBodyIds(
-        IReadOnlyList<SystemScanBodySnapshot> bodies,
+        SystemScanBodySnapshot[] bodies,
         string source)
     {
-        if (bodies.Select(body => body.BodyId).Distinct().Count() != bodies.Count)
+        if (bodies.Select(body => body.BodyId).Distinct().Count() != bodies.Length)
         {
             throw new InvalidDataException(
                 $"The {source} contains duplicate body IDs.");
