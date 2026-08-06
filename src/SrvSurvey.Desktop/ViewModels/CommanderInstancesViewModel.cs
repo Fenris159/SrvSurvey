@@ -69,15 +69,14 @@ public sealed class CommanderInstancesViewModel : INotifyPropertyChanged, IDispo
     {
         get
         {
-            var commander = string.IsNullOrWhiteSpace(currentCommanderName)
-                ? currentFrontierId ?? "Waiting for journal identity"
-                : currentCommanderName;
-            if (string.IsNullOrWhiteSpace(currentFrontierId))
+            if (string.IsNullOrWhiteSpace(currentCommanderName))
             {
-                return commander;
+                return currentFrontierId ?? "Waiting for journal identity";
             }
 
-            return $"{commander} ({currentFrontierId})";
+            return string.IsNullOrWhiteSpace(currentFrontierId)
+                ? currentCommanderName
+                : $"{currentCommanderName} ({currentFrontierId})";
         }
     }
 

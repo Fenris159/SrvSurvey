@@ -11,7 +11,6 @@ namespace SrvSurvey.Core.Routes;
 public sealed class FollowRouteStore
 {
     private const string RouteFileExtension = ".json";
-    private const string RouteJsonFilePattern = "*.json";
     private const string WorkspaceFileName = ".workspace.json";
     private const string NotePropertyName = "notes";
     private const string SavedRouteMissingMessage = "The saved route no longer exists.";
@@ -121,7 +120,11 @@ public sealed class FollowRouteStore
         if (Directory.Exists(namedDirectory))
         {
             paths.AddRange(Directory
-                .EnumerateFiles(namedDirectory, RouteJsonFilePattern, SearchOption.TopDirectoryOnly)
+                .EnumerateFiles(namedDirectory, "*", SearchOption.TopDirectoryOnly)
+                .Where(path => string.Equals(
+                    Path.GetExtension(path),
+                    RouteFileExtension,
+                    StringComparison.OrdinalIgnoreCase))
                 .Where(path => !string.Equals(
                     Path.GetFileName(path),
                     WorkspaceFileName,
@@ -538,7 +541,9 @@ public sealed class FollowRouteStore
             if (!samePath && File.Exists(destination))
             {
                 throw new IOException(
-                    $"A saved route named '{normalizedName}' already exists.");
+                    string.Format(
+                        SavedRouteNameAlreadyExistsMessage,
+                        normalizedName));
             }
 
             var root = await ReadRequiredObjectAsync(source, cancellationToken)
