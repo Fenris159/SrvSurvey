@@ -7,6 +7,25 @@ namespace SrvSurvey.Core.Storage;
 
 public sealed class SystemSurfaceStore
 {
+    private const string ActiveStatus = "Active";
+    private const string AbandonedStatus = "Abandoned";
+    private const string BodyCollectionProperty = "bodies";
+    private const string BodyIdProperty = "id";
+    private const string BodyNameProperty = "name";
+    private const string BodyRadiusProperty = "radius";
+    private const string BodyStatusProperty = "status";
+    private const string BioScansProperty = "bioScans";
+    private const string BookmarksProperty = "bookmarks";
+    private const string DiedStatus = "Died";
+    private const string EntryIdProperty = "entryId";
+    private const string GenusProperty = "genus";
+    private const string LastTouchdownProperty = "lastTouchdown";
+    private const string LatitudeProperty = "lat";
+    private const string LocationProperty = "location";
+    private const string LongitudeProperty = "long";
+    private const string OrbitingBodyProperty = "body";
+    private const string SpeciesProperty = "species";
+
     private readonly LegacySystemDataFileStore fileStore;
 
     public SystemSurfaceStore(string dataDirectory)
@@ -77,11 +96,11 @@ public sealed class SystemSurfaceStore
                     var body = GetOrCreateBody(root, context);
                     if (location is null)
                     {
-                        body.Remove("lastTouchdown");
+                        body.Remove(LastTouchdownProperty);
                     }
                     else
                     {
-                        body["lastTouchdown"] = WriteCoordinate(location.Value);
+                        body[LastTouchdownProperty] = WriteCoordinate(location.Value);
                     }
                 },
                 cancellationToken)
@@ -111,7 +130,7 @@ public sealed class SystemSurfaceStore
                 root =>
                 {
                     var body = GetOrCreateBody(root, context);
-                    var bookmarks = GetOrCreateObject(body, "bookmarks");
+                    var bookmarks = GetOrCreateObject(body, BookmarksProperty);
                     NormalizeLegacyBookmarkKeys(bookmarks);
                     var locations = GetOrCreateArray(bookmarks, name);
                     var existing = locations
@@ -148,7 +167,7 @@ public sealed class SystemSurfaceStore
                 root =>
                 {
                     var body = FindBody(root, context);
-                    if (body?["bookmarks"] is not JsonObject bookmarks)
+                    if (body?[BookmarksProperty] is not JsonObject bookmarks)
                     {
                         return;
                     }
@@ -157,7 +176,7 @@ public sealed class SystemSurfaceStore
                     bookmarks.Remove(name);
                     if (bookmarks.Count == 0)
                     {
-                        body.Remove("bookmarks");
+                        body.Remove(BookmarksProperty);
                     }
                 },
                 cancellationToken)
@@ -171,7 +190,7 @@ public sealed class SystemSurfaceStore
         ValidateContext(context);
         return await fileStore.UpdateAsync(
                 ToFileContext(context),
-                root => FindBody(root, context)?.Remove("bookmarks"),
+                root => FindBody(root, context)?.Remove(BookmarksProperty),
                 cancellationToken)
             .ConfigureAwait(false);
     }
@@ -191,23 +210,28 @@ public sealed class SystemSurfaceStore
                 root =>
                 {
                     var body = GetOrCreateBody(root, context);
-                    if (body["bookmarks"] is JsonObject existing)
+                    if (body[BookmarksProperty] is not JsonObject existing)
                     {
-                        NormalizeLegacyBookmarkKeys(existing);
-                        if (existing.Remove(name))
-                        {
-                            if (existing.Count == 0)
-                            {
-                                body.Remove("bookmarks");
-                            }
-
-                            outcome = SurfaceBookmarkMutation.Removed;
-                            return;
-                        }
+                        var bookmarks = GetOrCreateObject(body, BookmarksProperty);
+                        bookmarks[name] = new JsonArray(WriteCoordinate(location));
+                        return;
                     }
 
-                    var bookmarks = GetOrCreateObject(body, "bookmarks");
-                    bookmarks[name] = new JsonArray(WriteCoordinate(location));
+                    NormalizeLegacyBookmarkKeys(existing);
+                    if (!existing.Remove(name))
+                    {
+                        existing[name] = new JsonArray(WriteCoordinate(location));
+                        return;
+                    }
+
+                    if (existing.Count > 0)
+                    {
+                        outcome = SurfaceBookmarkMutation.Removed;
+                        return;
+                    }
+
+                    body.Remove(BookmarksProperty);
+                    outcome = SurfaceBookmarkMutation.Removed;
                 },
                 cancellationToken)
             .ConfigureAwait(false);
@@ -238,7 +262,7 @@ public sealed class SystemSurfaceStore
                 root =>
                 {
                     var body = FindBody(root, context);
-                    if (body?["bookmarks"] is not JsonObject bookmarks)
+                    if (body?[BookmarksProperty] is not JsonObject bookmarks)
                     {
                         return;
                     }
@@ -286,7 +310,7 @@ public sealed class SystemSurfaceStore
 
                     if (bookmarks.Count == 0)
                     {
-                        body.Remove("bookmarks");
+                        body.Remove(BookmarksProperty);
                     }
 
                     outcome = SurfaceBookmarkMutation.Removed;
@@ -319,7 +343,7 @@ public sealed class SystemSurfaceStore
                 root =>
                 {
                     var body = GetOrCreateBody(root, context);
-                    var bioScans = GetOrCreateArray(body, "bioScans");
+                    var bioScans = GetOrCreateArray(body, BioScansProperty);
                     foreach (var scan in scans)
                     {
                         if (bioScans.Any(node => IsSameScan(node, scan)))
@@ -407,7 +431,7 @@ public sealed class SystemSurfaceStore
         JsonObject root,
         Dictionary<int, HashSet<long>> claimsByBody)
     {
-        if (root["bodies"] is not JsonArray bodies)
+        if (root[BodyCollectionProperty] is not JsonArray bodies)
         {
             return 0;
         }
@@ -415,30 +439,30 @@ public sealed class SystemSurfaceStore
         var markedScanCount = 0;
         foreach (var body in bodies.OfType<JsonObject>())
         {
-            if (GetInt32(body["id"]) is not { } bodyId
+            if (GetInt32(body[BodyIdProperty]) is not { } bodyId
                 || !claimsByBody.TryGetValue(bodyId, out var entryIds)
-                || body["bioScans"] is not JsonArray scans)
+                || body[BioScansProperty] is not JsonArray scans)
             {
                 continue;
             }
 
             foreach (var scan in scans.OfType<JsonObject>())
             {
-                if (GetInt64(scan["entryId"]) is not { } entryId
+                if (GetInt64(scan[EntryIdProperty]) is not { } entryId
                     || !entryIds.Contains(entryId)
                     || string.Equals(
-                        GetString(scan["status"]),
-                        "Abandoned",
+                        GetString(scan[BodyStatusProperty]),
+                        AbandonedStatus,
                         StringComparison.OrdinalIgnoreCase)
                     || string.Equals(
-                        GetString(scan["status"]),
-                        "Died",
+                        GetString(scan[BodyStatusProperty]),
+                        DiedStatus,
                         StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                scan["status"] = "Died";
+                scan[BodyStatusProperty] = DiedStatus;
                 markedScanCount++;
             }
         }
@@ -493,16 +517,16 @@ public sealed class SystemSurfaceStore
     {
         var bookmarks = ReadBookmarks(body, warnings);
         var scans = ReadBioScans(body, warnings);
-        var touchdown = ReadCoordinate(body["lastTouchdown"]);
-        if (body["lastTouchdown"] is not null && touchdown is null)
+        var touchdown = ReadCoordinate(body[LastTouchdownProperty]);
+        if (body[LastTouchdownProperty] is not null && touchdown is null)
         {
             warnings.Add("The saved touchdown coordinates are invalid and were ignored.");
         }
 
         return new SystemSurfaceBodySnapshot(
-            GetInt32(body["id"]) ?? context.BodyId,
-            GetString(body["name"]) ?? context.BodyName,
-            GetDouble(body["radius"]) ?? context.RadiusMeters,
+            GetInt32(body[BodyIdProperty]) ?? context.BodyId,
+            GetString(body[BodyNameProperty]) ?? context.BodyName,
+            GetDouble(body[BodyRadiusProperty]) ?? context.RadiusMeters,
             touchdown,
             bookmarks,
             scans);
@@ -511,13 +535,13 @@ public sealed class SystemSurfaceStore
     private static Dictionary<string, IReadOnlyList<SurfaceCoordinate>>
         ReadBookmarks(JsonObject body, List<string> warnings)
     {
-        if (body["bookmarks"] is null)
+        if (body[BookmarksProperty] is null)
         {
             return new Dictionary<string, IReadOnlyList<SurfaceCoordinate>>(
                 StringComparer.Ordinal);
         }
 
-        if (body["bookmarks"] is not JsonObject bookmarks)
+        if (body[BookmarksProperty] is not JsonObject bookmarks)
         {
             warnings.Add("The saved bookmarks are not a JSON object and were ignored.");
             return new Dictionary<string, IReadOnlyList<SurfaceCoordinate>>(
@@ -601,12 +625,12 @@ public sealed class SystemSurfaceStore
         JsonObject body,
         List<string> warnings)
     {
-        if (body["bioScans"] is null)
+        if (body[BioScansProperty] is null)
         {
             return [];
         }
 
-        if (body["bioScans"] is not JsonArray scans)
+        if (body[BioScansProperty] is not JsonArray scans)
         {
             warnings.Add("The saved biological scans are not an array and were ignored.");
             return [];
@@ -616,13 +640,13 @@ public sealed class SystemSurfaceStore
         foreach (var node in scans)
         {
             if (node is not JsonObject scan
-                || ReadCoordinate(scan["location"]) is not { } location)
+                || ReadCoordinate(scan[LocationProperty]) is not { } location)
             {
                 warnings.Add("A biological scan with invalid coordinates was ignored.");
                 continue;
             }
 
-            var radius = GetDouble(scan["radius"]) ?? 50;
+            var radius = GetDouble(scan[BodyRadiusProperty]) ?? 50;
             if (!double.IsFinite(radius) || radius <= 0)
             {
                 warnings.Add("A biological scan with an invalid radius was ignored.");
@@ -632,11 +656,11 @@ public sealed class SystemSurfaceStore
             result.Add(new SurfaceBioScan(
                 location,
                 radius,
-                GetString(scan["genus"]) ?? string.Empty,
-                GetString(scan["species"]) ?? string.Empty,
-                GetString(scan["status"]) ?? "Active",
-                GetInt64(scan["entryId"]) ?? 0,
-                GetString(scan["body"])));
+                GetString(scan[GenusProperty]) ?? string.Empty,
+                GetString(scan[SpeciesProperty]) ?? string.Empty,
+                GetString(scan[BodyStatusProperty]) ?? ActiveStatus,
+                GetInt64(scan[EntryIdProperty]) ?? 0,
+                GetString(scan[OrbitingBodyProperty])));
         }
 
         return result;
@@ -646,18 +670,18 @@ public sealed class SystemSurfaceStore
         JsonObject root,
         SystemSurfaceContext context)
     {
-        if (root["bodies"] is not JsonArray bodies)
+        if (root[BodyCollectionProperty] is not JsonArray bodies)
         {
             return null;
         }
 
         return bodies
-                .OfType<JsonObject>()
-                .FirstOrDefault(body => GetInt32(body["id"]) == context.BodyId)
+            .OfType<JsonObject>()
+            .FirstOrDefault(body => GetInt32(body[BodyIdProperty]) == context.BodyId)
             ?? bodies
                 .OfType<JsonObject>()
                 .FirstOrDefault(body => string.Equals(
-                    GetString(body["name"]),
+                    GetString(body[BodyNameProperty]),
                     context.BodyName,
                     StringComparison.OrdinalIgnoreCase));
     }
@@ -667,12 +691,12 @@ public sealed class SystemSurfaceStore
         SystemSurfaceContext context)
     {
         JsonArray bodies;
-        if (root["bodies"] is null)
+        if (root[BodyCollectionProperty] is null)
         {
             bodies = [];
-            root["bodies"] = bodies;
+            root[BodyCollectionProperty] = bodies;
         }
-        else if (root["bodies"] is JsonArray existingBodies)
+        else if (root[BodyCollectionProperty] is JsonArray existingBodies)
         {
             bodies = existingBodies;
         }
@@ -690,12 +714,12 @@ public sealed class SystemSurfaceStore
 
         body = new JsonObject
         {
-            ["name"] = context.BodyName,
-            ["id"] = context.BodyId,
+            [BodyNameProperty] = context.BodyName,
+            [BodyIdProperty] = context.BodyId,
         };
         if (context.RadiusMeters > 0)
         {
-            body["radius"] = context.RadiusMeters;
+            body[BodyRadiusProperty] = context.RadiusMeters;
         }
 
         bodies.Add(body);
@@ -738,8 +762,8 @@ public sealed class SystemSurfaceStore
     {
         return new JsonObject
         {
-            ["lat"] = location.Latitude,
-            ["long"] = location.Longitude,
+            [LatitudeProperty] = location.Latitude,
+            [LongitudeProperty] = location.Longitude,
         };
     }
 
@@ -747,20 +771,20 @@ public sealed class SystemSurfaceStore
     {
         var result = new JsonObject
         {
-            ["location"] = WriteCoordinate(scan.Location),
-            ["radius"] = scan.RadiusMeters,
-            ["genus"] = scan.Genus,
-            ["species"] = scan.Species,
-            ["status"] = scan.Status,
+            [LocationProperty] = WriteCoordinate(scan.Location),
+            [BodyRadiusProperty] = scan.RadiusMeters,
+            [GenusProperty] = scan.Genus,
+            [SpeciesProperty] = scan.Species,
+            [BodyStatusProperty] = scan.Status,
         };
         if (scan.EntryId != 0)
         {
-            result["entryId"] = scan.EntryId;
+            result[EntryIdProperty] = scan.EntryId;
         }
 
         if (!string.IsNullOrWhiteSpace(scan.BodyName))
         {
-            result["body"] = scan.BodyName;
+            result[OrbitingBodyProperty] = scan.BodyName;
         }
 
         return result;
@@ -769,9 +793,9 @@ public sealed class SystemSurfaceStore
     private static bool IsSameScan(JsonNode? node, SurfaceBioScan scan)
     {
         return node is JsonObject existing
-            && ReadCoordinate(existing["location"]) == scan.Location
+            && ReadCoordinate(existing[LocationProperty]) == scan.Location
             && string.Equals(
-                GetString(existing["species"]),
+                GetString(existing[SpeciesProperty]),
                 scan.Species,
                 StringComparison.Ordinal);
     }
@@ -779,8 +803,8 @@ public sealed class SystemSurfaceStore
     private static SurfaceCoordinate? ReadCoordinate(JsonNode? node)
     {
         if (node is not JsonObject coordinate
-            || GetDouble(coordinate["lat"]) is not { } latitude
-            || GetDouble(coordinate["long"]) is not { } longitude)
+            || GetDouble(coordinate[LatitudeProperty]) is not { } latitude
+            || GetDouble(coordinate[LongitudeProperty]) is not { } longitude)
         {
             return null;
         }

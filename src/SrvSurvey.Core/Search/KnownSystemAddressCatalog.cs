@@ -131,7 +131,8 @@ public sealed partial class KnownSystemAddressCatalog
 
             if (foundMissingStart)
             {
-                if (trimmed is "]" or "],")
+                if (string.Equals(trimmed, "]", StringComparison.Ordinal)
+                    || string.Equals(trimmed, "],", StringComparison.Ordinal))
                 {
                     ThrowIfNoEntries(result);
                     return new KnownSystemAddressCatalog(
