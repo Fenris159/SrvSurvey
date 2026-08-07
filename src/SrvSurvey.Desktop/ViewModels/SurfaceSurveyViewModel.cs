@@ -178,9 +178,15 @@ public sealed class SurfaceSurveyViewModel : INotifyPropertyChanged, IDisposable
     public void SetPriorScanSurfaceMarkers(
         IReadOnlyList<PriorScanSurfaceMarkerViewModel>? markers)
     {
-        priorScanSurfaceMarkers = markers is { Count: > 0 }
+        var next = markers is { Count: > 0 }
             ? markers.ToArray()
             : [];
+        if (priorScanSurfaceMarkers.SequenceEqual(next))
+        {
+            return;
+        }
+
+        priorScanSurfaceMarkers = next;
         Recalculate();
     }
 

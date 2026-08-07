@@ -24,6 +24,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     private IReadOnlyList<PriorScanSpeciesViewModel> species = [];
     private IReadOnlyList<PriorScanRadarTargetViewModel> radarTargets = [];
     private IReadOnlyList<PriorScanSurfaceMarkerViewModel> surfaceMarkers = [];
+    private string? retainedPresentationKey;
     private string statusText = "Waiting for surface navigation context.";
     private string inputMode;
     private bool isLoading;
@@ -209,13 +210,11 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             {
                 cachedResult = null;
                 cachedKey = null;
+                retainedPresentationKey = null;
                 failedKey = context.CacheKey;
                 retryAfter = DateTimeOffset.UtcNow.AddSeconds(30);
-                Species = [];
-                RadarTargets = [];
-                SurfaceMarkers = [];
-                StatusText = "Canonn prior scans are unavailable: "
-                    + exception.Message;
+                ClearPresentation(
+                    "Canonn prior scans are unavailable: " + exception.Message);
             }
         }
         finally
@@ -272,20 +271,27 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     {
         if (!TryCreateContext(out var context))
         {
-            Species = [];
-            RadarTargets = [];
-            SurfaceMarkers = [];
-            StatusText = "Waiting for surface navigation context.";
+            retainedPresentationKey = null;
+            ClearPresentation("Waiting for surface navigation context.");
             RaiseContextProperties();
             return;
         }
 
+        var presentationKey = BuildPresentationKey(context);
         if (cachedResult is null
             || !string.Equals(cachedKey, context.CacheKey, StringComparison.Ordinal))
         {
-            Species = [];
-            RadarTargets = [];
-            SurfaceMarkers = [];
+            // Same body/system: keep the last plan while Canonn reloads so
+            // status thrash does not flash empty prior rings.
+            if (!string.Equals(
+                    retainedPresentationKey,
+                    presentationKey,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                retainedPresentationKey = null;
+                ClearPresentation(null);
+            }
+
             RaiseContextProperties();
             return;
         }
@@ -311,13 +317,14 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             context.ActiveSpeciesName,
             survey.SkipPriorScansLowValue,
             survey.PriorScanMinimumValue,
-            survey.HideOwnCanonnSignals));
-        Species = plan.Species
+            survey.HideOwnCanonnSignals,
+            SystemName: context.SystemName));
+        var nextSpecies = plan.Species
             .Select(item => PriorScanSpeciesViewModel.Create(
                 item,
                 survey.CurrentStatus?.Altitude ?? 0))
             .ToArray();
-        RadarTargets = Species
+        var nextRadar = nextSpecies
             .Where(item => !item.IsAnalyzed)
             .SelectMany(item => item.Targets.Select(target =>
                 new PriorScanRadarTargetViewModel(
@@ -328,7 +335,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
                     target.IsClose)))
             .ToArray();
         // Absolute lat/long for PlotGrounded-style surface radar rings.
-        SurfaceMarkers = plan.Species
+        var nextSurface = plan.Species
             .Where(item => !item.IsAnalyzed)
             .SelectMany(item =>
             {
@@ -347,10 +354,33 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
                         target.State == PriorScanTargetState.Close));
             })
             .ToArray();
+
+        // Assign presentation fields after the plan is complete so listeners
+        // never observe half-built lists for the same recalculation.
+        Species = nextSpecies;
+        RadarTargets = nextRadar;
+        SurfaceMarkers = nextSurface;
+        retainedPresentationKey = BuildPresentationKey(context);
         StatusText = Species.Count == 0
             ? "No unfiltered Canonn biology coordinates remain for this body."
             : "Surface bearings update from the live journal status.";
         RaiseContextProperties();
+    }
+
+    private void ClearPresentation(string? statusMessage)
+    {
+        Species = [];
+        RadarTargets = [];
+        SurfaceMarkers = [];
+        if (statusMessage is not null)
+        {
+            StatusText = statusMessage;
+        }
+    }
+
+    private static string BuildPresentationKey(PriorScanContext context)
+    {
+        return context.SystemName + "\n" + context.BodyShortName;
     }
 
     private bool TryCreateContext(out PriorScanContext context)
@@ -388,8 +418,17 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             return false;
         }
 
-        var bodyShortName = body?.ShortName
-            ?? GetBodyShortName(status.BodyName, snapshot.SystemName);
+        // Prefer full body name + system strip so keys match Canonn short labels
+        // whether or not the body is already in the system snapshot.
+        var bodyShortName = ExobiologyBodyNames.NormalizeKey(
+            body?.Name ?? status.BodyName,
+            snapshot.SystemName);
+        if (bodyShortName.Length == 0)
+        {
+            bodyShortName = body?.ShortName
+                ?? GetBodyShortName(status.BodyName, snapshot.SystemName);
+        }
+
         var analyzed = body?.Organisms
             .Where(organism => organism.IsAnalyzed && organism.EntryId is > 0)
             .Select(organism => organism.EntryId!.Value)
@@ -402,10 +441,10 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
             }
             .Where(sample => sample is not null
                 && (string.IsNullOrWhiteSpace(sample.Body)
-                    || string.Equals(
+                    || ExobiologyBodyNames.Matches(
                         sample.Body,
                         status.BodyName,
-                        StringComparison.OrdinalIgnoreCase)))
+                        snapshot.SystemName)))
             .Cast<BioSampleSnapshot>()
             .Select(TryCreatePersonalSample)
             .Where(sample => sample is not null)
@@ -441,19 +480,44 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
         SystemScanSnapshot snapshot,
         string bodyName)
     {
-        return snapshot.Bodies.FirstOrDefault(body => string.Equals(
+        var byExactName = snapshot.Bodies.FirstOrDefault(body => string.Equals(
+            body.Name,
+            bodyName,
+            StringComparison.OrdinalIgnoreCase));
+        if (byExactName is not null)
+        {
+            return byExactName;
+        }
+
+        var byKey = snapshot.Bodies.FirstOrDefault(body =>
+            ExobiologyBodyNames.Matches(
                 body.Name,
                 bodyName,
-                StringComparison.OrdinalIgnoreCase))
-            ?? (snapshot.CurrentBodyId is { } bodyId
-                ? snapshot.Bodies.FirstOrDefault(body => body.BodyId == bodyId)
-                : null);
+                snapshot.SystemName)
+            || ExobiologyBodyNames.Matches(
+                body.ShortName,
+                bodyName,
+                snapshot.SystemName));
+        if (byKey is not null)
+        {
+            return byKey;
+        }
+
+        return snapshot.CurrentBodyId is { } bodyId
+            ? snapshot.Bodies.FirstOrDefault(body => body.BodyId == bodyId)
+            : null;
     }
 
     private static string GetBodyShortName(
         string bodyName,
         string systemName)
     {
+        var normalized = ExobiologyBodyNames.NormalizeKey(bodyName, systemName);
+        if (normalized.Length > 0)
+        {
+            return normalized;
+        }
+
         return bodyName.StartsWith(systemName, StringComparison.OrdinalIgnoreCase)
             ? bodyName[systemName.Length..].Trim()
             : bodyName;

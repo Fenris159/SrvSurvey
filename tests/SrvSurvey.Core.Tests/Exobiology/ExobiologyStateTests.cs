@@ -73,6 +73,64 @@ public sealed class ExobiologyStateTests
     }
 
     [Fact]
+    public void SwitchingBodyOnNewOrganicAbandonsPriorActiveSamples()
+    {
+        var state = CreateState();
+        state.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong,
+            Latitude = 1,
+            Longitude = 2,
+            BodyName = "Test System 1",
+        });
+        Assert.True(state.Apply(Event(Organic("Log", bodyId: 7))));
+        Assert.Equal("Test System 1", state.ScanOne?.Body);
+
+        state.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong,
+            Latitude = 3,
+            Longitude = 4,
+            BodyName = "Test System 2",
+        });
+        Assert.True(state.Apply(Event(Organic("Log", bodyId: 8))));
+
+        Assert.NotNull(state.ScanOne);
+        Assert.Equal("Test System 2", state.ScanOne.Body);
+        Assert.Null(state.ScanTwo);
+        Assert.Equal("123456|8|" + AleoidaSpecies, state.LastOrganicScan);
+    }
+
+    [Fact]
+    public void StatusBodyChangeWithoutNewOrganicKeepsStaleActiveSample()
+    {
+        var state = CreateState();
+        state.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong,
+            Latitude = 1,
+            Longitude = 2,
+            BodyName = "Test System 1",
+        });
+        Assert.True(state.Apply(Event(Organic("Log", bodyId: 7))));
+
+        state.UpdateStatus(new EliteStatus
+        {
+            Flags = StatusFlags.HasLatLong,
+            Latitude = 5,
+            Longitude = 6,
+            BodyName = "Test System 2",
+        });
+        state.Apply(Event(
+            """{"event":"ApproachBody","Body":"Test System 2","SystemAddress":123456}"""));
+
+        // Legacy keeps the active sample and surfaces a stale-body warning in UI.
+        Assert.NotNull(state.ScanOne);
+        Assert.Equal("Test System 1", state.ScanOne.Body);
+        Assert.Equal("123456|7|" + AleoidaSpecies, state.LastOrganicScan);
+    }
+
+    [Fact]
     public void StatusComputesDistanceRemainingFromNearestActiveSample()
     {
         var state = CreateState();
@@ -266,10 +324,11 @@ public sealed class ExobiologyStateTests
         string scanType,
         string variant = AleoidaVariant,
         string species = AleoidaSpecies,
-        string genus = AleoidaGenus)
+        string genus = AleoidaGenus,
+        int bodyId = 7)
     {
         return $$"""
-        {"event":"ScanOrganic","ScanType":"{{scanType}}","Genus":"{{genus}}","Species":"{{species}}","Variant":"{{variant}}","SystemAddress":123456,"Body":7}
+        {"event":"ScanOrganic","ScanType":"{{scanType}}","Genus":"{{genus}}","Species":"{{species}}","Variant":"{{variant}}","SystemAddress":123456,"Body":{{bodyId}}}
         """;
     }
 

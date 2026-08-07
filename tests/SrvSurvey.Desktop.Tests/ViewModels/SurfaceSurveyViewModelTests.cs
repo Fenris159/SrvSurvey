@@ -307,6 +307,77 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task BootstrapJournalDoesNotMutateSurfaceTrackers()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        var organic = Event(
+            """
+            {"event":"ScanOrganic","ScanType":"Log","Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;","SystemAddress":42,"Body":7}
+            """);
+        var bookmark = Event(
+            """
+            {"event":"SendText","Message":"+tracker","To":"Local"}
+            """);
+
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [organic, bookmark],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty,
+            processJournalMutations: false);
+
+        var body = await store.LoadBodyAsync(BodyContext());
+        Assert.NotNull(body.Snapshot);
+        Assert.Empty(body.Snapshot.Bookmarks);
+        Assert.Empty(body.Snapshot.BioScans);
+    }
+
+    [Fact]
+    public async Task LiveJournalMutatesSurfaceTrackersWhenEnabled()
+    {
+        var (viewModel, survey, store) = CreateViewModel();
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        var bookmark = Event(
+            """
+            {"event":"SendText","Message":"+tracker","To":"Local"}
+            """);
+
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [bookmark],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty,
+            processJournalMutations: true);
+
+        var body = await store.LoadBodyAsync(BodyContext());
+        Assert.NotNull(body.Snapshot);
+        Assert.True(body.Snapshot.Bookmarks.Count > 0);
+    }
+
+    [Fact]
+    public async Task ActiveSampleOnOtherBodyDoesNotCountAsRadarContent()
+    {
+        var (viewModel, survey, _) = CreateViewModel();
+        ApplySurveyContext(survey, Status(StatusFlags.InSrv));
+        var otherBodySample = Sample(new SurfaceLocation(0, 1)) with
+        {
+            Body = "Test System 2",
+        };
+
+        await viewModel.ApplyUpdateAsync(
+            Session(),
+            [],
+            survey.CurrentStatus,
+            ExobiologySnapshot.Empty with { ScanOne = otherBodySample });
+
+        Assert.False(viewModel.ShouldShowRadar);
+        Assert.DoesNotContain(
+            viewModel.RadarMarkers,
+            marker => marker.IsActiveSample);
+    }
+
+    [Fact]
     public async Task PriorScanMarkersDrawOnSurfaceRadarWhenEnabled()
     {
         var (viewModel, survey, store) = CreateViewModel();
@@ -490,7 +561,10 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             "Drew",
             "Test System",
             42,
-            null);
+            null,
+            BodyId: 7,
+            BodyName: "Test System 1",
+            BodyRadiusMeters: 1_000);
     }
 
     private static SystemSurfaceContext BodyContext()

@@ -29,9 +29,10 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
 
         var analyzedEntryIds = request.AnalyzedEntryIds.ToHashSet();
         var candidates = request.Signals
-            .Where(signal => BodyNamesMatch(
+            .Where(signal => ExobiologyBodyNames.Matches(
                 signal.BodyName,
-                request.BodyName))
+                request.BodyName,
+                request.SystemName))
             .Select(signal => new Candidate(
                 signal,
                 catalog.FindByEntryId(signal.EntryId)))
@@ -218,14 +219,6 @@ public sealed class PriorScanPlanner(ExobiologyReferenceCatalog catalog)
                 bodyRadiusMeters) < highlightDistanceMeters);
     }
 
-    private static bool BodyNamesMatch(string first, string second)
-    {
-        return string.Equals(
-            first.Replace(" ", string.Empty, StringComparison.Ordinal),
-            second.Replace(" ", string.Empty, StringComparison.Ordinal),
-            StringComparison.OrdinalIgnoreCase);
-    }
-
     private static void RemoveNearbyDuplicates(
         List<PriorScanTarget> targets,
         double bodyRadiusMeters,
@@ -267,7 +260,12 @@ public sealed record PriorScanPlanRequest(
     long MinimumReward = 1_000_000,
     bool HideOwnSignals = false,
     double HighlightDistanceMeters = 150,
-    double FarDistanceMeters = 1_000_000);
+    double FarDistanceMeters = 1_000_000,
+    /// <summary>
+    /// Optional system name so full Elite body names and Canonn short labels
+    /// normalize to the same comparison key.
+    /// </summary>
+    string? SystemName = null);
 
 public sealed record PriorScanPersonalSample(
     string SpeciesName,

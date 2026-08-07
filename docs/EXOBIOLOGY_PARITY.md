@@ -95,6 +95,15 @@ obscuring (coordinator), build-project suppress.
   settings UI (advanced; values migrate from legacy JSON)
 - Opening predictions/codex/bingo is UI-driven (legacy Main buttons), not hotkeys
 
+## Offline residual-risk hardenings (items 1–4)
+
+| Risk | Safe mitigation in tree |
+|------|-------------------------|
+| Canonn body-name join | `ExobiologyBodyNames` normalize (spaces + system prefix with token boundary); planner + prior context + personal-sample filter |
+| Status thrash / empty flash | Prior plan presentation retained across reload of the same body; surface markers only apply when the list changes |
+| Multi-body sampling | Tests: new organic on new body abandons prior active sample; status-only body change keeps stale sample; other-body sample not radar content |
+| Bootstrap organic skip | Tests: `processJournalMutations: false` ignores ScanOrganic/SendText surface mutations; live path still mutates |
+
 ## Remaining runtime proof (not source gaps)
 
 Live Elite Dangerous validation of overlay placement, Canonn POI freshness,
