@@ -31,7 +31,7 @@ on:
         description: RC number used only for development releases
         required: true
         type: string
-        default: "2"
+        default: "3"
 
 permissions:
   contents: read
