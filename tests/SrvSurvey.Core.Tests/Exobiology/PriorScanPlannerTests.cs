@@ -292,6 +292,25 @@ public sealed class PriorScanPlannerTests
             target => Assert.Equal(PriorScanTargetState.Far, target.State));
     }
 
+    [Fact]
+    public void CreatePlanMatchesFullEliteBodyNameToCanonnShortLabel()
+    {
+        var plan = planner.CreatePlan(new PriorScanPlanRequest(
+            "Col 285 Sector AB-C d1-2 1 a",
+            Radius,
+            new SurfaceCoordinate(0, 0),
+            0,
+            [
+                Signal("1 a", 2310101, 0, 0.01),
+                Signal("1 b", 2320101, 0, 0.02),
+            ],
+            [],
+            [],
+            SystemName: "Col 285 Sector AB-C d1-2"));
+
+        Assert.Equal(2310101, Assert.Single(plan.Species).EntryId);
+    }
+
     private static PriorScanPlanRequest Request(
         IReadOnlyList<CanonnSurfaceBiologySignal> signals,
         double heading = 0,
