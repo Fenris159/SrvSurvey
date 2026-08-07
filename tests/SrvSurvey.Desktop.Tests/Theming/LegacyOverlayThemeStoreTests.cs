@@ -42,14 +42,61 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         Assert.Equal(theme.GetColor("green"), theme.GetColor("colonise.surplus"));
         Assert.Equal(Color.FromArgb(255, 255, 0, 0), theme.GetColor("red"));
         Assert.Equal(
-            LegacyOverlayThemeStore.CreateDefault().Colors.Count,
-            theme.Colors.Count);
+            Color.FromArgb(255, 0, 0, 0),
+            theme.GetColor("guardian.background"));
+        Assert.Equal(
+            Color.FromArgb(255, 255, 255, 0),
+            theme.GetColor("guardian.header"));
         Assert.Equal(
             Color.FromArgb(255, 255, 111, 0),
             theme.GetColor("guardian.primary"));
         Assert.Equal(
+            Color.FromArgb(255, 95, 48, 3),
+            theme.GetColor("guardian.primaryDark"));
+        Assert.Equal(
             Color.FromArgb(255, 84, 223, 237),
             theme.GetColor("guardian.secondary"));
+        Assert.Equal(
+            Color.FromArgb(255, 0, 139, 139),
+            theme.GetColor("guardian.secondaryDark"));
+        Assert.Equal(
+            Color.FromArgb(255, 255, 255, 255),
+            theme.GetColor("guardian.text"));
+        Assert.Equal(
+            Color.FromArgb(255, 100, 100, 100),
+            theme.GetColor("guardian.muted"));
+        Assert.Equal(
+            Color.FromArgb(255, 255, 0, 0),
+            theme.GetColor("guardian.danger"));
+        Assert.Equal(
+            Color.FromArgb(255, 0, 255, 0),
+            theme.GetColor("guardian.success"));
+        Assert.Equal(
+            Color.FromArgb(255, 255, 255, 0),
+            theme.GetColor("guardian.warning"));
+        Assert.Equal(
+            Color.FromArgb(255, 20, 20, 20),
+            theme.GetColor("guardian.surface"));
+    }
+
+    [Fact]
+    public void SaveRoundTripsCustomGuardianPrimary()
+    {
+        Directory.CreateDirectory(temporaryDirectory);
+        var path = Path.Combine(temporaryDirectory, "theme.json");
+        var store = new LegacyOverlayThemeStore(path);
+        var colors = LegacyOverlayThemeStore.CreateDefault().Colors.ToDictionary();
+        var customPrimary = Color.FromArgb(255, 9, 18, 27);
+        colors["guardian.primary"] = customPrimary;
+
+        _ = store.Save(new LegacyOverlayTheme(colors, true, null));
+        var loaded = store.Load();
+
+        Assert.Null(loaded.Error);
+        Assert.Equal(customPrimary, loaded.GetColor("guardian.primary"));
+        Assert.Equal(
+            Color.FromArgb(255, 84, 223, 237),
+            loaded.GetColor("guardian.secondary"));
     }
 
     [Fact]

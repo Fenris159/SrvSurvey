@@ -11,6 +11,8 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     private const string CategoryGeneral = "General";
     private const string CategoryExobiology = "Exobiology";
     private const string CategoryColonisation = "Colonisation";
+    private const string CategoryHumanSettlements = "Human settlements";
+    private const string CategoryGuardian = "Guardian";
 
     private static readonly IReadOnlyList<OverlayThemeColorDefinition> Definitions =
     [
@@ -40,21 +42,21 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
         new(CategoryColonisation, "colonise.highlight", "Highlight"),
         new(CategoryColonisation, "colonise.item", "Item"),
         new(CategoryColonisation, "colonise.itemDark", "Item (dim)"),
-        new("Human settlements", "fcz.checkpoint", "Checkpoint"),
-        new("Human settlements", "fcz.checkpointLocal", "Local checkpoint"),
-        new("Human settlements", "fcz.powerPost", "Power post"),
-        new("Guardian", "guardian.background", "Background"),
-        new("Guardian", "guardian.surface", "Surface / choice fill"),
-        new("Guardian", "guardian.header", "Header / title"),
-        new("Guardian", "guardian.primary", "Primary accent"),
-        new("Guardian", "guardian.primaryDark", "Primary accent (dim)"),
-        new("Guardian", "guardian.secondary", "Live / destination"),
-        new("Guardian", "guardian.secondaryDark", "Live / destination (dim)"),
-        new("Guardian", "guardian.text", "Body text"),
-        new("Guardian", "guardian.muted", "Muted / detail text"),
-        new("Guardian", "guardian.warning", "Warning / alignment"),
-        new("Guardian", "guardian.success", "Success / present"),
-        new("Guardian", "guardian.danger", "Danger / missing"),
+        new(CategoryHumanSettlements, "fcz.checkpoint", "Checkpoint"),
+        new(CategoryHumanSettlements, "fcz.checkpointLocal", "Local checkpoint"),
+        new(CategoryHumanSettlements, "fcz.powerPost", "Power post"),
+        new(CategoryGuardian, "guardian.background", "Background"),
+        new(CategoryGuardian, "guardian.surface", "Surface / choice fill"),
+        new(CategoryGuardian, "guardian.header", "Header / title"),
+        new(CategoryGuardian, "guardian.primary", "Primary accent"),
+        new(CategoryGuardian, "guardian.primaryDark", "Primary accent (dim)"),
+        new(CategoryGuardian, "guardian.secondary", "Live / destination"),
+        new(CategoryGuardian, "guardian.secondaryDark", "Live / destination (dim)"),
+        new(CategoryGuardian, "guardian.text", "Body text"),
+        new(CategoryGuardian, "guardian.muted", "Muted / detail text"),
+        new(CategoryGuardian, "guardian.warning", "Warning / alignment"),
+        new(CategoryGuardian, "guardian.success", "Success / present"),
+        new(CategoryGuardian, "guardian.danger", "Danger / missing"),
     ];
 
     private readonly LegacyOverlayThemeStore activeStore;

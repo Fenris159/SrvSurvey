@@ -46,6 +46,7 @@ public sealed class RavenThemeServiceTests : IDisposable
         colors["orange"] = Color.FromArgb(255, 12, 34, 56);
         colors["orangeDark"] = Color.FromArgb(255, 65, 43, 21);
         colors["bio.gold"] = Color.FromArgb(255, 78, 90, 12);
+        colors["guardian.primary"] = Color.FromArgb(255, 21, 42, 63);
         var service = new RavenThemeService(
             application,
             store,
@@ -73,6 +74,14 @@ public sealed class RavenThemeServiceTests : IDisposable
             Color.FromArgb(255, 78, 90, 12),
             Assert.IsType<SolidColorBrush>(
                 application.Resources["RavenOverlayBioGoldBrush"]).Color);
+        Assert.Equal(
+            Color.FromArgb(255, 21, 42, 63),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["LegacyTheme.guardian.primary"]).Color);
+        Assert.Equal(
+            Color.FromArgb(255, 21, 42, 63),
+            Assert.IsType<SolidColorBrush>(
+                application.Resources["RavenOverlayGuardianPrimaryBrush"]).Color);
         foreach (var resource in new[]
                  {
                      "RavenOverlayPrimaryBrush",
