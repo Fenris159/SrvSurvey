@@ -129,9 +129,10 @@ jobs:
             $scanner = Join-Path "${{ runner.temp }}\sonar-scanner" "dotnet-sonarscanner"
           }
 
-          # Focus analysis on product C# code. tools/*.py and similar scripts are not
-          # product surface area; leaving them in scope enables the Python analyzer and
-          # produces "set sonar.python.version" warnings on an otherwise C# project.
+          # Focus analysis on product C# code:
+          # - Skip tooling/scripts so the Python analyzer is not enabled on this repo.
+          # - Skip binary assets (png/ttf/zip/etc.) so the scanner does not try to read
+          #   them as UTF-8 and emit "Invalid character encountered" encoding warnings.
           $args = @(
             "begin",
             "/k:$env:SONAR_PROJECT_KEY",
@@ -139,7 +140,7 @@ jobs:
             '/d:sonar.host.url=https://sonarcloud.io',
             '/d:sonar.cs.opencover.reportsPaths=**/TestResults/**/coverage.opencover.xml',
             '/d:sonar.coverage.exclusions=SrvSurvey.Desktop/**/*.axaml,src/SrvSurvey.Desktop/**/*.axaml,SrvSurvey.Desktop/**/*.axaml.cs,src/SrvSurvey.Desktop/**/*.axaml.cs,SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs,src/SrvSurvey.Desktop/Platform/Overlay/*Coordinator.cs,SrvSurvey/**/*.Designer.cs',
-            '/d:sonar.exclusions=**/tools/**,**/artifacts/**,**/*.py,**/*.ps1',
+            '/d:sonar.exclusions=**/tools/**,**/artifacts/**,**/*.py,**/*.ps1,**/Assets/**,**/*.png,**/*.jpg,**/*.jpeg,**/*.gif,**/*.ico,**/*.webp,**/*.ttf,**/*.otf,**/*.woff,**/*.woff2,**/*.zip,**/*.dll,**/*.exe,**/*.pdb,**/*.so,**/*.dylib',
             "/d:sonar.token=$env:SONAR_TOKEN"
           )
 
