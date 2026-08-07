@@ -128,7 +128,7 @@ public sealed class BiologyCriteriaCatalog
             element,
             "useCommonChildren",
             sourceName);
-        if (useCommonChildren && children.Count > 0)
+        if (useCommonChildren && children.Length > 0)
         {
             throw new InvalidDataException(
                 $"Biology criteria '{sourceName}' has a node with both "
@@ -145,7 +145,7 @@ public sealed class BiologyCriteriaCatalog
             commonChildren);
     }
 
-    private static IReadOnlyList<BiologyCriteriaClause> ParseQuery(
+    private static List<BiologyCriteriaClause> ParseQuery(
         JsonElement element,
         string sourceName)
     {
@@ -176,7 +176,7 @@ public sealed class BiologyCriteriaCatalog
         return clauses;
     }
 
-    private static IReadOnlyList<BiologyCriteriaNode> ParseChildren(
+    private static BiologyCriteriaNode[] ParseChildren(
         JsonElement element,
         string propertyName,
         string sourceName)
@@ -197,7 +197,7 @@ public sealed class BiologyCriteriaCatalog
             .ToArray();
     }
 
-    private static IReadOnlyList<BiologyCriteriaNode>? ParseOptionalChildren(
+    private static BiologyCriteriaNode[]? ParseOptionalChildren(
         JsonElement element,
         string propertyName,
         string sourceName)
@@ -280,7 +280,7 @@ public sealed class BiologyCriteriaClause
             ["MRB"] = "Metal rich body",
         };
 
-    private static readonly IReadOnlyDictionary<string, int[]> RegionAliases =
+    private static readonly Dictionary<string, int[]> RegionAliases =
         new Dictionary<string, int[]>(StringComparer.Ordinal)
         {
             ["Orion-CygnusArm"] = [7, 8, 16, 17, 18, 35],
@@ -300,7 +300,7 @@ public sealed class BiologyCriteriaClause
             ["ShardBatch"] = [14, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 34, 36, 37, 38, 39, 40, 41, 42],
         };
 
-    private static readonly IReadOnlySet<string> SupportedProperties =
+    private static readonly HashSet<string> SupportedProperties =
         new HashSet<string>(StringComparer.Ordinal)
         {
             "body",

@@ -23,6 +23,58 @@ public sealed class GuardianViewModelTests
             GuardianViewModel.GetGuardianBlueprintText(siteType));
     }
 
+    [Fact]
+    public void DisableAlignmentGridPreferencesInvertShowFlagsAndPersist()
+    {
+        var root = Path.Combine(
+            Path.GetTempPath(),
+            "SrvSurvey-GuardianDisableGrids-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var settingsPath = Path.Combine(root, "ui-settings.json");
+            var store = new GuardianOverlaySettingsStore(settingsPath);
+            var viewModel = new GuardianViewModel(
+                root,
+                new GuardianViewModelOptions
+                {
+                    OverlaySettingsStore = store,
+                });
+
+            Assert.True(viewModel.ShowRuinsMeasurementGrid);
+            Assert.False(viewModel.DisableRuinsMeasurementGrid);
+            Assert.True(viewModel.ShowAerialAlignmentGrid);
+            Assert.False(viewModel.DisableAerialAlignmentGrid);
+
+            viewModel.DisableRuinsMeasurementGrid = true;
+            viewModel.DisableAerialAlignmentGrid = true;
+
+            Assert.True(viewModel.DisableRuinsMeasurementGrid);
+            Assert.False(viewModel.ShowRuinsMeasurementGrid);
+            Assert.True(viewModel.DisableAerialAlignmentGrid);
+            Assert.False(viewModel.ShowAerialAlignmentGrid);
+
+            var saved = store.Load();
+            Assert.True(saved.DisableRuinsMeasurementGrid);
+            Assert.True(saved.DisableAerialAlignmentGrid);
+
+            viewModel.DisableRuinsMeasurementGrid = false;
+            viewModel.DisableAerialAlignmentGrid = false;
+
+            Assert.False(viewModel.DisableRuinsMeasurementGrid);
+            Assert.True(viewModel.ShowRuinsMeasurementGrid);
+            Assert.False(viewModel.DisableAerialAlignmentGrid);
+            Assert.True(viewModel.ShowAerialAlignmentGrid);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
+        }
+    }
+
     [Theory]
     [InlineData("Alpha", "$Ancient:#index=1;", "alpha-heading-guide.png")]
     [InlineData("Beta", "$Ancient:#index=1;", "beta-heading-guide.png")]
@@ -78,14 +130,17 @@ public sealed class GuardianViewModelTests
         double expected)
     {
         var actual = GuardianViewModel.CalculateAutomaticMapScale(
-            kind,
-            distance,
-            onFoot: false,
-            usingSrvTurret: false,
-            mobileOnSurface: true,
-            nearestObeliskDistance: 100,
-            autoZoomNearObelisks: true,
-            autoZoomInSrvTurret: true);
+            new GuardianAutomaticMapScaleOptions
+            {
+                SiteKind = kind,
+                DistanceFromSite = distance,
+                OnFoot = false,
+                UsingSrvTurret = false,
+                MobileOnSurface = true,
+                NearestObeliskDistance = 100,
+                AutoZoomNearObelisks = true,
+                AutoZoomInSrvTurret = true,
+            });
 
         Assert.Equal(expected, actual);
     }
@@ -256,12 +311,14 @@ public sealed class GuardianViewModelTests
                     100,
                     new GalacticCoordinate(100, 0, 0)),
             ]);
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([near, far]),
-                new GuardianPublishedSiteCatalog([]),
-                new GuardianSiteTemplateCatalog([]),
-                systemResolver: resolver);
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    SystemResolver = resolver,
+                    References = new GuardianSiteCatalog([near, far]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([]),
+                    Templates = new GuardianSiteTemplateCatalog([]),
+                });
             viewModel.UpdateCurrentSystem("Near Origin", near.Position);
 
             Assert.Equal(near, viewModel.Rows[0].Reference);
@@ -327,12 +384,14 @@ public sealed class GuardianViewModelTests
                     RamTahMissionStatus.NotStarted,
                     ["H1"],
                     []));
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([ruins, structure]),
-                published,
-                new GuardianSiteTemplateCatalog([]),
-                ramTah);
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([ruins, structure]),
+                    PublishedSites = published,
+                    Templates = new GuardianSiteTemplateCatalog([]),
+                    RamTah = ramTah,
+                });
 
             viewModel.IncludeRamTahLogs = true;
 
@@ -536,11 +595,13 @@ public sealed class GuardianViewModelTests
                     null,
                     null),
             ]);
-            var viewModel = new GuardianViewModel(
-                root,
-                catalog,
-                new GuardianPublishedSiteCatalog([]),
-                new GuardianSiteTemplateCatalog([]));
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = catalog,
+                    PublishedSites = new GuardianPublishedSiteCatalog([]),
+                    Templates = new GuardianSiteTemplateCatalog([]),
+                });
 
             viewModel.SetClipboardWriter(_ => Task.CompletedTask);
             await viewModel.CopySurfaceLocationAsync();
@@ -648,12 +709,14 @@ public sealed class GuardianViewModelTests
                 "Zulu",
                 2,
                 new GalacticCoordinate(1, 0, 0));
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([alpha, zulu]),
-                new GuardianPublishedSiteCatalog([]),
-                new GuardianSiteTemplateCatalog([]),
-                screenshotTargetFolderProvider: () => screenshotRoot);
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    ScreenshotTargetFolderProvider = () => screenshotRoot,
+                    References = new GuardianSiteCatalog([alpha, zulu]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([]),
+                    Templates = new GuardianSiteTemplateCatalog([]),
+                });
 
             Assert.All(viewModel.Rows, row => Assert.False(row.HasImages));
             var zuluFolder = Path.Combine(screenshotRoot, zulu.SystemName);
@@ -697,11 +760,12 @@ public sealed class GuardianViewModelTests
                 SiteHeading = 90,
                 ObeliskGroups = "A",
             };
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([reference]),
-                new GuardianPublishedSiteCatalog([published]),
-                new GuardianSiteTemplateCatalog(
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([published]),
+                    Templates = new GuardianSiteTemplateCatalog(
                 [
                     new GuardianSiteTemplate(
                         "Test",
@@ -719,7 +783,8 @@ public sealed class GuardianViewModelTests
                         ],
                         [],
                         new Dictionary<string, GuardianMapPoint>()),
-                ]));
+                ]),
+                });
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
             await viewModel.ApplyJournalEventsAsync(
                 [Parse(
@@ -768,11 +833,13 @@ public sealed class GuardianViewModelTests
         var root = CreateTemporaryDirectory();
         try
         {
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([]),
-                new GuardianPublishedSiteCatalog([]),
-                new GuardianSiteTemplateCatalog([]));
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([]),
+                    Templates = new GuardianSiteTemplateCatalog([]),
+                });
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
 
             await viewModel.ApplyJournalEventsAsync(
@@ -804,12 +871,13 @@ public sealed class GuardianViewModelTests
         try
         {
             var reference = CreateProximityReference();
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([reference]),
-                new GuardianPublishedSiteCatalog(
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    PublishedSites = new GuardianPublishedSiteCatalog(
                     [CreatePublishedSite(reference, [])]),
-                new GuardianSiteTemplateCatalog(
+                    Templates = new GuardianSiteTemplateCatalog(
                 [
                     new GuardianSiteTemplate(
                         "Test",
@@ -820,7 +888,8 @@ public sealed class GuardianViewModelTests
                         [],
                         [],
                         new Dictionary<string, GuardianMapPoint>()),
-                ]));
+                ]),
+                });
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
             await viewModel.ApplyJournalEventsAsync(
             [
@@ -900,11 +969,13 @@ public sealed class GuardianViewModelTests
         var root = CreateTemporaryDirectory();
         try
         {
-            var viewModel = new GuardianViewModel(
-                root,
-                gesturePreferences: new GuardianGesturePreferences(
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    GesturePreferences = new GuardianGesturePreferences(
                     StatusFlags.LightsOn,
-                    1_500));
+                    1_500),
+                });
 
             viewModel.UpdateStatus(new EliteStatus
             {
@@ -937,11 +1008,12 @@ public sealed class GuardianViewModelTests
             {
                 SiteHeading = 90,
             };
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([reference]),
-                new GuardianPublishedSiteCatalog([published]),
-                new GuardianSiteTemplateCatalog(
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([published]),
+                    Templates = new GuardianSiteTemplateCatalog(
                 [
                     new GuardianSiteTemplate(
                         "Test",
@@ -959,7 +1031,8 @@ public sealed class GuardianViewModelTests
                         ],
                         [],
                         new Dictionary<string, GuardianMapPoint>()),
-                ]));
+                ]),
+                });
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
             await viewModel.ApplyJournalEventsAsync(
                 [Parse(
@@ -1002,10 +1075,11 @@ public sealed class GuardianViewModelTests
                     RamTahMissionStatus.NotStarted,
                     [],
                     []));
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([reference]),
-                new GuardianPublishedSiteCatalog(
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    PublishedSites = new GuardianPublishedSiteCatalog(
                 [
                     new GuardianPublishedSite(
                         1,
@@ -1022,7 +1096,7 @@ public sealed class GuardianViewModelTests
                         "A",
                         "test-ruins-1.json"),
                 ]),
-                new GuardianSiteTemplateCatalog(
+                    Templates = new GuardianSiteTemplateCatalog(
                 [
                     new GuardianSiteTemplate(
                         "Test",
@@ -1050,7 +1124,8 @@ public sealed class GuardianViewModelTests
                         [],
                         new Dictionary<string, GuardianMapPoint>()),
                 ]),
-                ramTah);
+                    RamTah = ramTah,
+                });
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
             await viewModel.ApplyJournalEventsAsync(
             [
@@ -1415,11 +1490,12 @@ public sealed class GuardianViewModelTests
             {
                 SiteHeading = 90,
             };
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([reference]),
-                new GuardianPublishedSiteCatalog([published]),
-                new GuardianSiteTemplateCatalog(
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([published]),
+                    Templates = new GuardianSiteTemplateCatalog(
                 [
                     new GuardianSiteTemplate(
                         "Test",
@@ -1437,7 +1513,8 @@ public sealed class GuardianViewModelTests
                         ],
                         [],
                         new Dictionary<string, GuardianMapPoint>()),
-                ]));
+                ]),
+                });
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
             await viewModel.ApplyJournalEventsAsync(
                 [Parse(
@@ -1581,11 +1658,13 @@ public sealed class GuardianViewModelTests
         var root = CreateTemporaryDirectory();
         try
         {
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([]),
-                new GuardianPublishedSiteCatalog([]),
-                new GuardianSiteTemplateCatalog([]));
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([]),
+                    Templates = new GuardianSiteTemplateCatalog([]),
+                });
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
 
             await viewModel.ApplyJournalEventsAsync(
@@ -1622,11 +1701,13 @@ public sealed class GuardianViewModelTests
         var root = CreateTemporaryDirectory();
         try
         {
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([]),
-                new GuardianPublishedSiteCatalog([]),
-                new GuardianSiteTemplateCatalog([]));
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([]),
+                    Templates = new GuardianSiteTemplateCatalog([]),
+                });
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
 
             await viewModel.ApplyJournalEventsAsync(
@@ -1673,11 +1754,13 @@ public sealed class GuardianViewModelTests
                         [firstScan] = new GuardianSurfaceLocation(1, 2),
                     }));
 
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([]),
-                new GuardianPublishedSiteCatalog([]),
-                new GuardianSiteTemplateCatalog([]));
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([]),
+                    Templates = new GuardianSiteTemplateCatalog([]),
+                });
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
             viewModel.UpdateStatus(new EliteStatus
             {
@@ -1715,11 +1798,13 @@ public sealed class GuardianViewModelTests
         var root = CreateTemporaryDirectory();
         try
         {
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([]),
-                new GuardianPublishedSiteCatalog([]),
-                new GuardianSiteTemplateCatalog([]));
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([]),
+                    PublishedSites = new GuardianPublishedSiteCatalog([]),
+                    Templates = new GuardianSiteTemplateCatalog([]),
+                });
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
 
             await viewModel.ApplyJournalEventsAsync(
@@ -1744,12 +1829,13 @@ public sealed class GuardianViewModelTests
         try
         {
             var reference = CreateProximityReference();
-            var viewModel = new GuardianViewModel(
-                root,
-                new GuardianSiteCatalog([reference]),
-                new GuardianPublishedSiteCatalog(
+            var viewModel = new GuardianViewModel(root,
+                new GuardianViewModelOptions
+                {
+                    References = new GuardianSiteCatalog([reference]),
+                    PublishedSites = new GuardianPublishedSiteCatalog(
                     [CreatePublishedSite(reference, [])]),
-                new GuardianSiteTemplateCatalog(
+                    Templates = new GuardianSiteTemplateCatalog(
                 [
                     new GuardianSiteTemplate(
                         "Test",
@@ -1760,7 +1846,8 @@ public sealed class GuardianViewModelTests
                         [],
                         [],
                         new Dictionary<string, GuardianMapPoint>()),
-                ]));
+                ]),
+                });
             await viewModel.LoadProfileAsync("F123", isOdyssey: true);
 
             // Replace the writable survey path with a file so SaveAsync fails.

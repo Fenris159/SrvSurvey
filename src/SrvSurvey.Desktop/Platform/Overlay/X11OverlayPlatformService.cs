@@ -17,29 +17,40 @@ internal sealed class X11OverlayPlatformService
     private readonly nuint kdeOnScreenDisplayAtom;
     private readonly nuint normalWindowAtom;
 
-    private X11OverlayPlatformService(
-        nint display,
-        bool shapeAvailable,
-        OverlayHostKind host,
-        X11OverlayStackingMode stackingMode,
-        nuint atomType,
-        nuint windowTypeAtom,
-        nuint kdeOnScreenDisplayAtom,
-        nuint normalWindowAtom)
+    private X11OverlayPlatformService(X11OverlayPlatformContext context)
     {
-        this.display = display;
-        this.shapeAvailable = shapeAvailable;
-        this.stackingMode = stackingMode;
-        this.atomType = atomType;
-        this.windowTypeAtom = windowTypeAtom;
-        this.kdeOnScreenDisplayAtom = kdeOnScreenDisplayAtom;
-        this.normalWindowAtom = normalWindowAtom;
-        Capabilities = OverlayPlatformCapabilities.ForHost(host)
+        display = context.Display;
+        shapeAvailable = context.ShapeAvailable;
+        stackingMode = context.StackingMode;
+        atomType = context.AtomType;
+        windowTypeAtom = context.WindowTypeAtom;
+        kdeOnScreenDisplayAtom = context.KdeOnScreenDisplayAtom;
+        normalWindowAtom = context.NormalWindowAtom;
+        Capabilities = OverlayPlatformCapabilities.ForHost(context.Host)
             with
         {
-            SupportsClickThrough = shapeAvailable,
+            SupportsClickThrough = context.ShapeAvailable,
             SupportsGameWindowTracking = true,
         };
+    }
+
+    private sealed class X11OverlayPlatformContext
+    {
+        public nint Display { get; init; }
+
+        public bool ShapeAvailable { get; init; }
+
+        public OverlayHostKind Host { get; init; }
+
+        public X11OverlayStackingMode StackingMode { get; init; }
+
+        public nuint AtomType { get; init; }
+
+        public nuint WindowTypeAtom { get; init; }
+
+        public nuint KdeOnScreenDisplayAtom { get; init; }
+
+        public nuint NormalWindowAtom { get; init; }
     }
 
     public OverlayPlatformCapabilities Capabilities { get; }
@@ -130,14 +141,17 @@ internal sealed class X11OverlayPlatformService
                 : "X11 overlay stacking policy: standard topmost (KDE on-screen display support was not advertised).");
 
         return new X11OverlayPlatformService(
-            display,
-            shapeAvailable,
-            host,
-            stackingMode,
-            atomType,
-            windowTypeAtom,
-            kdeOnScreenDisplayAtom,
-            normalWindowAtom);
+            new X11OverlayPlatformContext
+    {
+        Display = display,
+        ShapeAvailable = shapeAvailable,
+        Host = host,
+        StackingMode = stackingMode,
+        AtomType = atomType,
+        WindowTypeAtom = windowTypeAtom,
+        KdeOnScreenDisplayAtom = kdeOnScreenDisplayAtom,
+        NormalWindowAtom = normalWindowAtom
+    });
     }
 
     public OverlayPreparationResult PreparePassiveWindow(Window window)
@@ -262,7 +276,7 @@ internal sealed class X11OverlayPlatformService
         }
     }
 
-    public unsafe OverlayInteractionResult SetInteractiveRegions(
+    public OverlayInteractionResult SetInteractiveRegions(
         Window window,
         IReadOnlyList<PixelRect> regions)
     {
@@ -292,7 +306,7 @@ internal sealed class X11OverlayPlatformService
 
         try
         {
-            var rectangles = stackalloc X11Native.XRectangle[regions.Count];
+            var rectangles = new X11Native.XRectangle[regions.Count];
             var rectangleCount = 0;
             foreach (var region in regions)
             {
@@ -320,16 +334,26 @@ internal sealed class X11OverlayPlatformService
             }
 
             var stackingApplied = ApplyWindowType(handle);
-            X11Native.XShapeCombineRectangles(
-                display,
-                unchecked((nuint)handle),
-                X11Native.ShapeInput,
-                0,
-                0,
-                (nint)rectangles,
-                rectangleCount,
-                X11Native.ShapeSet,
-                X11Native.Unsorted);
+            var pinnedRectangles = GCHandle.Alloc(
+                rectangles,
+                GCHandleType.Pinned);
+            try
+            {
+                X11Native.XShapeCombineRectangles(
+                    display,
+                    unchecked((nuint)handle),
+                    X11Native.ShapeInput,
+                    0,
+                    0,
+                    pinnedRectangles.AddrOfPinnedObject(),
+                    rectangleCount,
+                    X11Native.ShapeSet,
+                    X11Native.Unsorted);
+            }
+            finally
+            {
+                pinnedRectangles.Free();
+            }
             _ = X11Native.XFlush(display);
             window.IsHitTestVisible = true;
             return new OverlayInteractionResult(
@@ -421,7 +445,7 @@ internal sealed class X11OverlayPlatformService
         }
     }
 
-    private unsafe bool ApplyWindowType(nint handle)
+    private bool ApplyWindowType(nint handle)
     {
         var windowTypes = X11OverlayWindowManagerPolicy.CreateWindowTypes(
             stackingMode,
@@ -437,21 +461,29 @@ internal sealed class X11OverlayPlatformService
             return false;
         }
 
-        var values = stackalloc nint[windowTypes.Length];
+        var values = new nint[windowTypes.Length];
         for (var index = 0; index < windowTypes.Length; index++)
         {
             values[index] = unchecked((nint)windowTypes[index]);
         }
 
-        return X11Native.XChangeProperty(
-            display,
-            unchecked((nuint)handle),
-            windowTypeAtom,
-            atomType,
-            format: 32,
-            X11Native.PropertyReplace,
-            (nint)values,
-            windowTypes.Length) != 0;
+        var pinnedValues = GCHandle.Alloc(values, GCHandleType.Pinned);
+        try
+        {
+            return X11Native.XChangeProperty(
+                display,
+                unchecked((nuint)handle),
+                windowTypeAtom,
+                atomType,
+                format: 32,
+                X11Native.PropertyReplace,
+                pinnedValues.AddrOfPinnedObject(),
+                windowTypes.Length) != 0;
+        }
+        finally
+        {
+            pinnedValues.Free();
+        }
     }
 
     private string CreateStatus(bool interactive, bool stackingApplied)

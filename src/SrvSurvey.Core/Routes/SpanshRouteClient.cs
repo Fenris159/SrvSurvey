@@ -74,82 +74,145 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             "results/" + route.JobId.ToString("D").ToUpperInvariant());
         var timer = Stopwatch.StartNew();
         var nextPollInterval = pollInterval;
-        string? lastState = null;
-        string? lastStatus = null;
         while (true)
         {
-            using var response = await client.GetAsync(
-                    requestUri,
-                    HttpCompletionOption.ResponseHeadersRead,
+            var root = await FetchRouteStatusAsync(requestUri, cancellationToken)
+                .ConfigureAwait(false);
+            var completed = TryCompleteRoute(root, route, out var hops);
+            if (completed)
+            {
+                return hops!;
+            }
+
+            ThrowIfTimedOut(route, timer, GetString(root, "state"), GetString(root, "status"));
+            nextPollInterval = await DelayBeforeNextPollAsync(
+                    timer,
+                    nextPollInterval,
                     cancellationToken)
                 .ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            JsonObject root;
-            try
-            {
-                root = (await BoundedHttpContent.ReadJsonNodeAsync(
-                        response.Content,
-                        MaximumResponseBytes,
-                        "The Spansh route response",
-                        cancellationToken)
-                    .ConfigureAwait(false)) as JsonObject
-                    ?? throw InvalidResponse("the root value is not an object");
-            }
-            catch (JsonException exception)
-            {
-                throw InvalidResponse("the response is not valid JSON", exception);
-            }
-
-            lastState = GetString(root, "state");
-            lastStatus = GetString(root, "status");
-            if (string.Equals(lastStatus, "error", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(lastStatus, "failed", StringComparison.OrdinalIgnoreCase))
-            {
-                throw InvalidResponse(
-                    $"job {route.JobId:D} returned status '{lastStatus}'");
-            }
-
-            if (string.Equals(lastStatus, "ok", StringComparison.OrdinalIgnoreCase)
-                && root["result"] is not null)
-            {
-                return ParseRoute(root, route.Kind);
-            }
-
-            if (string.Equals(lastState, "completed", StringComparison.OrdinalIgnoreCase))
-            {
-                throw InvalidResponse(
-                    $"job {route.JobId:D} completed with status "
-                        + $"'{lastStatus ?? "unknown"}'");
-            }
-
-            if (timer.Elapsed >= maximumWait)
-            {
-                throw new TimeoutException(
-                    $"Spansh route {route.JobId:D} did not complete within "
-                        + $"{maximumWait.TotalSeconds:N0} seconds "
-                        + $"(state: {lastState ?? "unknown"}, "
-                        + $"status: {lastStatus ?? "unknown"}).");
-            }
-
-            var remaining = maximumWait - timer.Elapsed;
-            var delay = nextPollInterval <= remaining
-                ? nextPollInterval
-                : remaining;
-            if (delay > TimeSpan.Zero)
-            {
-                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
-            }
-
-            if (useExponentialPolling && nextPollInterval < maximumPollInterval)
-            {
-                nextPollInterval = TimeSpan.FromTicks(Math.Min(
-                    nextPollInterval.Ticks * 2,
-                    maximumPollInterval.Ticks));
-            }
         }
     }
 
-    private static IReadOnlyList<FollowRouteHop> ParseRoute(
+    private async Task<JsonObject> FetchRouteStatusAsync(
+        Uri requestUri,
+        CancellationToken cancellationToken)
+    {
+        using var response = await client.GetAsync(
+                requestUri,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken)
+            .ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        try
+        {
+            return (await BoundedHttpContent.ReadJsonNodeAsync(
+                    response.Content,
+                    MaximumResponseBytes,
+                    "The Spansh route response",
+                    cancellationToken)
+                .ConfigureAwait(false)) as JsonObject
+                ?? throw InvalidResponse("the root value is not an object");
+        }
+        catch (JsonException exception)
+        {
+            throw InvalidResponse("the response is not valid JSON", exception);
+        }
+    }
+
+    private static bool TryCompleteRoute(
+        JsonObject root,
+        SpanshRouteReference route,
+        out IReadOnlyList<FollowRouteHop>? hops)
+    {
+        hops = null;
+        var lastState = GetString(root, "state");
+        var lastStatus = GetString(root, "status");
+        ThrowIfRouteFailed(route, lastStatus);
+
+        if (IsRouteReady(root, lastStatus))
+        {
+            hops = ParseRoute(root, route.Kind);
+            return true;
+        }
+
+        ThrowIfRouteCompletedWithoutResult(route, lastState, lastStatus);
+        return false;
+    }
+
+    private static void ThrowIfRouteFailed(
+        SpanshRouteReference route,
+        string? lastStatus)
+    {
+        if (string.Equals(lastStatus, "error", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(lastStatus, "failed", StringComparison.OrdinalIgnoreCase))
+        {
+            throw InvalidResponse(
+                $"job {route.JobId:D} returned status '{lastStatus}'");
+        }
+    }
+
+    private static bool IsRouteReady(JsonObject root, string? lastStatus)
+    {
+        return string.Equals(lastStatus, "ok", StringComparison.OrdinalIgnoreCase)
+            && root["result"] is not null;
+    }
+
+    private static void ThrowIfRouteCompletedWithoutResult(
+        SpanshRouteReference route,
+        string? lastState,
+        string? lastStatus)
+    {
+        if (string.Equals(lastState, "completed", StringComparison.OrdinalIgnoreCase))
+        {
+            throw InvalidResponse(
+                $"job {route.JobId:D} completed with status "
+                    + $"'{lastStatus ?? "unknown"}'");
+        }
+    }
+
+    private void ThrowIfTimedOut(
+        SpanshRouteReference route,
+        Stopwatch timer,
+        string? lastState,
+        string? lastStatus)
+    {
+        if (timer.Elapsed < maximumWait)
+        {
+            return;
+        }
+
+        throw new TimeoutException(
+            $"Spansh route {route.JobId:D} did not complete within "
+                + $"{maximumWait.TotalSeconds:N0} seconds "
+                + $"(state: {lastState ?? "unknown"}, "
+                + $"status: {lastStatus ?? "unknown"}).");
+    }
+
+    private async Task<TimeSpan> DelayBeforeNextPollAsync(
+        Stopwatch timer,
+        TimeSpan nextPollInterval,
+        CancellationToken cancellationToken)
+    {
+        var remaining = maximumWait - timer.Elapsed;
+        var delay = nextPollInterval <= remaining
+            ? nextPollInterval
+            : remaining;
+        if (delay > TimeSpan.Zero)
+        {
+            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (useExponentialPolling && nextPollInterval < maximumPollInterval)
+        {
+            return TimeSpan.FromTicks(Math.Min(
+                nextPollInterval.Ticks * 2,
+                maximumPollInterval.Ticks));
+        }
+
+        return nextPollInterval;
+    }
+
+    private static List<FollowRouteHop> ParseRoute(
         JsonObject root,
         SpanshRouteKind kind)
     {
@@ -170,7 +233,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         };
     }
 
-    private static IReadOnlyList<FollowRouteHop> ParseDetectedRoute(
+    private static List<FollowRouteHop> ParseDetectedRoute(
         JsonNode? result)
     {
         if (result is JsonArray rows)
@@ -217,7 +280,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             .Any(body => body.ContainsKey("landmarks"));
     }
 
-    private static IReadOnlyList<FollowRouteHop> ParseRows(
+    private static List<FollowRouteHop> ParseRows(
         JsonArray? rows,
         SpanshRouteKind kind)
     {
@@ -238,14 +301,28 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             hops.Add(ParseHop(row, index, kind));
         }
 
-        return kind is SpanshRouteKind.Riches or SpanshRouteKind.Exobiology
-            || kind == SpanshRouteKind.Generic
-                && hops.Any(hop => hop.BioTargets.Count > 0)
-            ? AggregateBodyRouteHops(hops)
-            : hops;
+        if (!ShouldAggregateBodyHops(kind, hops))
+        {
+            return hops;
+        }
+
+        return AggregateBodyRouteHops(hops);
     }
 
-    private static IReadOnlyList<FollowRouteHop> ParseTradeRoute(
+    private static bool ShouldAggregateBodyHops(
+        SpanshRouteKind kind,
+        IReadOnlyList<FollowRouteHop> hops)
+    {
+        if (kind is SpanshRouteKind.Riches or SpanshRouteKind.Exobiology)
+        {
+            return true;
+        }
+
+        return kind == SpanshRouteKind.Generic
+            && hops.Any(hop => hop.BioTargets.Count > 0);
+    }
+
+    private static List<FollowRouteHop> ParseTradeRoute(
         JsonArray? legs)
     {
         if (legs is null)
@@ -385,8 +462,8 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
             and not SpanshRouteKind.Trade;
     }
 
-    private static IReadOnlyList<FollowRouteHop> AggregateBodyRouteHops(
-        IReadOnlyList<FollowRouteHop> hops)
+    private static List<FollowRouteHop> AggregateBodyRouteHops(
+        List<FollowRouteHop> hops)
     {
         if (hops.Count < 2)
         {
@@ -418,7 +495,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         return result;
     }
 
-    private static IReadOnlyList<FollowRouteBioTarget> MergeBioTargets(
+    private static List<FollowRouteBioTarget> MergeBioTargets(
         IReadOnlyList<FollowRouteBioTarget> existing,
         IReadOnlyList<FollowRouteBioTarget> incoming)
     {
@@ -466,11 +543,17 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
 
     private static long? MaxNullable(long? first, long? second)
     {
-        return first is null
-            ? second
-            : second is null
-                ? first
-                : Math.Max(first.Value, second.Value);
+        if (first is null)
+        {
+            return second;
+        }
+
+        if (second is null)
+        {
+            return first;
+        }
+
+        return Math.Max(first.Value, second.Value);
     }
 
     private static long? MergeBiologyValues(
@@ -539,7 +622,7 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
         return null;
     }
 
-    private static IReadOnlyList<FollowRouteBioTarget>? ParseBodyTargets(
+    private static List<FollowRouteBioTarget>? ParseBodyTargets(
         string systemName,
         JsonNode? node,
         bool isBiologicalRoute)
@@ -561,100 +644,136 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
                 Index = index,
                 Body = body as JsonObject,
             })
-            .OrderBy(item => item.Body is null
-                ? long.MaxValue
-                : GetInt64(item.Body, "id") ?? long.MaxValue)
+            .Where(item => item.Body is not null)
+            .OrderBy(item => GetInt64(item.Body!, "id") ?? long.MaxValue)
             .ThenBy(item => item.Index))
         {
-            var body = bodyNode.Body
-                ?? throw InvalidResponse("a route body is not an object");
-            var bodyName = GetString(body, "name")
-                ?? GetString(body, "body_name")
-                ?? throw InvalidResponse("a route body has no name");
-            var species = new List<string>();
-            var speciesValues = new Dictionary<string, long>(
-                StringComparer.OrdinalIgnoreCase);
-            if (body["landmarks"] is JsonArray landmarks)
+            result.Add(ParseBodyTarget(
+                systemName,
+                bodyNode.Index,
+                bodyNode.Body!,
+                isBiologicalRoute));
+        }
+
+        return result.Count == 0 ? null : result;
+    }
+
+    private static FollowRouteBioTarget ParseBodyTarget(
+        string systemName,
+        int bodyIndex,
+        JsonObject body,
+        bool isBiologicalRoute)
+    {
+        var bodyName = GetString(body, "name")
+            ?? GetString(body, "body_name")
+            ?? throw InvalidResponse(
+                $"a route body {bodyIndex + 1} has no name");
+
+        var species = ReadSpecies(body, out var speciesValues);
+        var biologyValue = ReadBiologyValue(body, speciesValues);
+
+        return new FollowRouteBioTarget(
+            NormalizeBodyName(systemName, bodyName),
+            GetInt64Any(body, "id", "body_id", "bodyId"),
+            species,
+            Subtype: GetStringAny(body, "subtype", "body_subtype", "type"),
+            DistanceToArrivalLs: GetDoubleAny(
+                body,
+                "distance_to_arrival",
+                "distance_to_arrival_ls",
+                "distanceToArrival"),
+            EstimatedScanValue: GetInt64Any(
+                body,
+                "estimated_scan_value",
+                "scan_value",
+                "estimatedScanValue"),
+            EstimatedMappingValue: GetInt64Any(
+                body,
+                "estimated_mapping_value",
+                "mapping_value",
+                "estimatedMappingValue"),
+            EstimatedBiologyValue: biologyValue,
+            IsTerraformable: IsTerraformable(body),
+            IsBiological: isBiologicalRoute
+                || species.Count > 0
+                || biologyValue is not null);
+    }
+
+    private static List<string> ReadSpecies(
+        JsonObject body,
+        out Dictionary<string, long> speciesValues)
+    {
+        speciesValues = [];
+        if (body["landmarks"] is not JsonArray landmarks)
+        {
+            if (body["landmarks"] is not null)
             {
-                foreach (var landmarkNode in landmarks)
-                {
-                    if (landmarkNode is not JsonObject landmark)
-                    {
-                        throw InvalidResponse(
-                            "a route body landmark is not an object");
-                    }
-
-                    var name = GetString(landmark, "subtype")
-                        ?? GetString(landmark, "name");
-                    if (string.IsNullOrWhiteSpace(name))
-                    {
-                        throw InvalidResponse(
-                            "a route body landmark has no subtype");
-                    }
-
-                    if (!species.Contains(name, StringComparer.OrdinalIgnoreCase))
-                    {
-                        species.Add(name.Trim());
-                    }
-
-                    var value = GetInt64Any(
-                        landmark,
-                        "value",
-                        "estimated_value",
-                        "landmark_value",
-                        "scan_value");
-                    if (value is not null
-                        && (!speciesValues.TryGetValue(name, out var existing)
-                            || value > existing))
-                    {
-                        speciesValues[name] = value.Value;
-                    }
-                }
+                throw InvalidResponse("a route body has invalid landmarks");
             }
-            else if (body["landmarks"] is not null)
+
+            return [];
+        }
+
+        return ReadSpeciesFromLandmarks(landmarks, speciesValues);
+    }
+
+    private static List<string> ReadSpeciesFromLandmarks(
+        JsonArray landmarks,
+        Dictionary<string, long> speciesValues)
+    {
+        var species = new List<string>();
+        foreach (var landmarkNode in landmarks)
+        {
+            if (landmarkNode is not JsonObject landmark)
             {
                 throw InvalidResponse(
-                    "a route body has invalid landmarks");
+                    "a route body landmark is not an object");
             }
 
-            var biologyValue = GetInt64Any(
+            var name = GetString(landmark, "subtype")
+                ?? GetString(landmark, "name");
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw InvalidResponse(
+                    "a route body landmark has no subtype");
+            }
+
+            var trimmed = name.Trim();
+            if (!species.Contains(trimmed, StringComparer.OrdinalIgnoreCase))
+            {
+                species.Add(trimmed);
+            }
+
+            var value = GetInt64Any(
+                landmark,
+                "value",
+                "estimated_value",
+                "landmark_value",
+                "scan_value");
+            if (value is not null
+                && (!speciesValues.TryGetValue(trimmed, out var existing)
+                    || value > existing))
+            {
+                speciesValues[trimmed] = value.Value;
+            }
+        }
+
+        return species;
+    }
+
+    private static long? ReadBiologyValue(
+        JsonObject body,
+        Dictionary<string, long> speciesValues)
+    {
+        return GetInt64Any(
                 body,
                 "landmark_value",
                 "estimated_biology_value",
                 "estimated_bio_value",
                 "biology_value")
-                ?? (speciesValues.Count == 0
-                    ? null
-                    : speciesValues.Values.Sum());
-
-            result.Add(new FollowRouteBioTarget(
-                NormalizeBodyName(systemName, bodyName),
-                GetInt64Any(body, "id", "body_id", "bodyId"),
-                species,
-                Subtype: GetStringAny(body, "subtype", "body_subtype", "type"),
-                DistanceToArrivalLs: GetDoubleAny(
-                    body,
-                    "distance_to_arrival",
-                    "distance_to_arrival_ls",
-                    "distanceToArrival"),
-                EstimatedScanValue: GetInt64Any(
-                    body,
-                    "estimated_scan_value",
-                    "scan_value",
-                    "estimatedScanValue"),
-                EstimatedMappingValue: GetInt64Any(
-                    body,
-                    "estimated_mapping_value",
-                    "mapping_value",
-                    "estimatedMappingValue"),
-                EstimatedBiologyValue: biologyValue,
-                IsTerraformable: IsTerraformable(body),
-                IsBiological: isBiologicalRoute
-                    || species.Count > 0
-                    || biologyValue is not null));
-        }
-
-        return result.Count == 0 ? null : result;
+            ?? (speciesValues.Count == 0
+                ? null
+                : speciesValues.Values.Sum());
     }
 
     private static string NormalizeBodyName(string systemName, string bodyName)
@@ -733,7 +852,11 @@ public sealed class SpanshRouteClient : ISpanshRouteClient
     {
         var node = FindValue(root, propertyNames);
         return node is not null && node.TryGetValue<string>(out var result)
-            ? string.IsNullOrWhiteSpace(result) ? null : result.Trim()
+            ? (string.IsNullOrWhiteSpace(result)) switch
+            {
+                true => null,
+                false => result.Trim()
+            }
             : null;
     }
 

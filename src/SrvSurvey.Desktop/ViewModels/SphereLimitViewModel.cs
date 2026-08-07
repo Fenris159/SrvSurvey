@@ -255,11 +255,18 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
             SelectedCenterSystem = null;
         }
 
-        StatusMessage = state.IsActive
-            ? "Loaded the active legacy spherical limit."
-            : state.Center is not null
-                ? "Loaded the saved spherical limit; it is currently disabled."
-                : "No spherical limit is configured for this commander.";
+        if (state.IsActive)
+        {
+            StatusMessage = "Loaded the active legacy spherical limit.";
+        }
+        else if (state.Center is not null)
+        {
+            StatusMessage = "Loaded the saved spherical limit; it is currently disabled.";
+        }
+        else
+        {
+            StatusMessage = "No spherical limit is configured for this commander.";
+        }
         enableCommand.RaiseCanExecuteChanged();
         disableCommand.RaiseCanExecuteChanged();
         UpdateDisplay();
@@ -300,6 +307,45 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         EliteStatus? nextStatus,
         string? nextMusicTrack = null)
     {
+        ApplyNavigationInputs(navRoute, nextStatus, nextMusicTrack);
+        var destination = ResolveRouteDestination();
+        if (destination is null)
+        {
+            ClearDestinationDisplay();
+            return;
+        }
+
+        var targetChanged = ApplyDestinationIdentity(destination.Value);
+        var destinationName = destination.Value.Name;
+        var destinationAddress = destination.Value.Address;
+        var destinationPosition = resolvedDestinationPosition;
+        if (!state.IsActive)
+        {
+            SetInactiveDestinationDisplay();
+            return;
+        }
+
+        if (destinationPosition is null && targetChanged)
+        {
+            destinationPosition = await ResolveDestinationPositionAsync(
+                destinationName,
+                destinationAddress);
+        }
+
+        if (destinationPosition is null)
+        {
+            ApplyUnknownDestinationDisplay();
+            return;
+        }
+
+        ApplyDestinationEvaluation(destinationName, destinationPosition.Value);
+    }
+
+    private void ApplyNavigationInputs(
+        NavRouteSnapshot? navRoute,
+        EliteStatus? nextStatus,
+        string? nextMusicTrack)
+    {
         if (navRoute is not null)
         {
             latestNavRoute = navRoute;
@@ -312,107 +358,157 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
 
         musicTrack = nextMusicTrack;
         OnPropertyChanged(nameof(ShouldShowGalaxyMapOverlay));
+    }
 
-        var routeDestination = latestNavRoute?.Route.Count > 1
-            ? latestNavRoute.Route[^1]
-            : null;
-        var destinationName = routeDestination?.StarSystem
-            ?? status?.Destination?.Name;
-        var destinationAddress = routeDestination?.SystemAddress
-            ?? status?.Destination?.System
-            ?? 0;
-        var destinationPosition = routeDestination?.Position;
-        if (string.IsNullOrWhiteSpace(destinationName))
-        {
-            destinationSystemAddress = 0;
-            resolvedDestinationPosition = null;
-            DestinationSystemName = "n/a";
-            DestinationDistance = Unavailable;
-            DestinationResult = "No Galaxy Map destination selected";
-            IsDestinationInside = false;
-            IsDestinationUnknown = false;
-            return;
-        }
-
-        var targetChanged = destinationSystemAddress != destinationAddress
+    private bool ApplyDestinationIdentity(
+        (string Name, long Address, GalacticCoordinate? Position) destination)
+    {
+        var targetChanged = destinationSystemAddress != destination.Address
             || !string.Equals(
                 DestinationSystemName,
-                destinationName,
+                destination.Name,
                 StringComparison.OrdinalIgnoreCase);
         if (targetChanged)
         {
             resolvedDestinationPosition = null;
         }
 
-        destinationSystemAddress = destinationAddress;
-        DestinationSystemName = destinationName;
-        resolvedDestinationPosition = destinationPosition
+        destinationSystemAddress = destination.Address;
+        DestinationSystemName = destination.Name;
+        resolvedDestinationPosition = destination.Position
             ?? resolvedDestinationPosition;
-        destinationPosition = resolvedDestinationPosition;
-        if (!state.IsActive)
+        return targetChanged;
+    }
+
+    private async Task<GalacticCoordinate?> ResolveDestinationPositionAsync(
+        string destinationName,
+        long destinationAddress)
+    {
+        DestinationDistance = Unavailable;
+        DestinationResult = "Resolving destination coordinates…";
+        IsDestinationInside = false;
+        IsDestinationUnknown = false;
+        try
+        {
+            var matches = await systemResolver.SearchAsync(destinationName);
+            var destinationPosition = SelectDestinationPosition(
+                matches,
+                destinationName,
+                destinationAddress);
+            resolvedDestinationPosition = destinationPosition;
+            return destinationPosition;
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException
+                or TaskCanceledException
+                or System.Text.Json.JsonException)
+        {
+            DestinationResult = "Destination coordinates are unavailable: "
+                + exception.Message;
+            return null;
+        }
+    }
+
+    private static GalacticCoordinate? SelectDestinationPosition(
+        IReadOnlyList<StarSystemReference> matches,
+        string destinationName,
+        long destinationAddress)
+    {
+        return matches.FirstOrDefault(candidate =>
+                destinationAddress > 0
+                && candidate.SystemAddress == destinationAddress)
+            ?.Position
+            ?? matches.FirstOrDefault(candidate => string.Equals(
+                candidate.Name,
+                destinationName,
+                StringComparison.OrdinalIgnoreCase))
+            ?.Position;
+    }
+
+    private void ApplyUnknownDestinationDisplay()
+    {
+        DestinationDistance = Unavailable;
+        if (!DestinationResult.StartsWith(
+                "Destination coordinates are unavailable:",
+                StringComparison.Ordinal))
+        {
+            DestinationResult = "Destination distance is unknown";
+        }
+
+        IsDestinationInside = false;
+        IsDestinationUnknown = true;
+    }
+
+    private void ApplyDestinationEvaluation(
+        string destinationName,
+        GalacticCoordinate destinationPosition)
+    {
+        var evaluation = state.Evaluate(destinationName, destinationPosition);
+        if (evaluation is null)
         {
             DestinationDistance = Unavailable;
             DestinationResult = "The spherical limit is disabled";
             IsDestinationInside = false;
-            IsDestinationUnknown = false;
-            return;
         }
-
-        if (destinationPosition is null && targetChanged)
+        else
         {
-            DestinationDistance = Unavailable;
-            DestinationResult = "Resolving destination coordinates…";
-            IsDestinationInside = false;
-            IsDestinationUnknown = false;
-            try
-            {
-                var matches = await systemResolver.SearchAsync(destinationName);
-                destinationPosition = matches.FirstOrDefault(candidate =>
-                        destinationAddress > 0
-                        && candidate.SystemAddress == destinationAddress)
-                    ?.Position
-                    ?? matches.FirstOrDefault(candidate => string.Equals(
-                        candidate.Name,
-                        destinationName,
-                        StringComparison.OrdinalIgnoreCase))
-                    ?.Position;
-                resolvedDestinationPosition = destinationPosition;
-            }
-            catch (Exception exception) when (
-                exception is HttpRequestException
-                    or TaskCanceledException
-                    or System.Text.Json.JsonException)
-            {
-                DestinationResult = "Destination coordinates are unavailable: "
-                    + exception.Message;
-            }
-        }
-
-        if (destinationPosition is null)
-        {
-            DestinationDistance = Unavailable;
-            if (!DestinationResult.StartsWith(
-                    "Destination coordinates are unavailable:",
-                    StringComparison.Ordinal))
-            {
-                DestinationResult = "Destination distance is unknown";
-            }
-
-            IsDestinationInside = false;
-            IsDestinationUnknown = true;
-            return;
-        }
-
-        var evaluation = state.Evaluate(destinationName, destinationPosition.Value);
-        DestinationDistance = evaluation is null
-            ? Unavailable
-            : $"{evaluation.Distance:N2} ly";
-        DestinationResult = evaluation is null
-            ? "The spherical limit is disabled"
-            : evaluation.IsInside
+            DestinationDistance = $"{evaluation.Distance:N2} ly";
+            DestinationResult = evaluation.IsInside
                 ? $"Within the {state.Radius:N2} ly limit"
                 : $"Exceeds the {state.Radius:N2} ly limit";
-        IsDestinationInside = evaluation?.IsInside == true;
+            IsDestinationInside = evaluation.IsInside;
+        }
+        IsDestinationUnknown = false;
+    }
+
+    private (string Name, long Address, GalacticCoordinate? Position)?
+        ResolveRouteDestination()
+    {
+        var routeDestination = latestNavRoute?.Route.Count > 1
+            ? latestNavRoute.Route[^1]
+            : null;
+        if (routeDestination is not null)
+        {
+            if (string.IsNullOrWhiteSpace(routeDestination.StarSystem))
+            {
+                return null;
+            }
+
+            return (
+                routeDestination.StarSystem,
+                routeDestination.SystemAddress,
+                routeDestination.Position);
+        }
+
+        var statusDestination = status?.Destination;
+        if (statusDestination is null
+            || string.IsNullOrWhiteSpace(statusDestination.Name))
+        {
+            return null;
+        }
+
+        return (
+            statusDestination.Name,
+            statusDestination.System,
+            null);
+    }
+
+    private void ClearDestinationDisplay()
+    {
+        destinationSystemAddress = 0;
+        resolvedDestinationPosition = null;
+        DestinationSystemName = "n/a";
+        DestinationDistance = Unavailable;
+        DestinationResult = "No Galaxy Map destination selected";
+        IsDestinationInside = false;
+        IsDestinationUnknown = false;
+    }
+
+    private void SetInactiveDestinationDisplay()
+    {
+        DestinationDistance = Unavailable;
+        DestinationResult = "The spherical limit is disabled";
+        IsDestinationInside = false;
         IsDestinationUnknown = false;
     }
 
@@ -435,7 +531,7 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
                         system.Name,
                         Query.Trim(),
                         StringComparison.OrdinalIgnoreCase))
-                ?? results.FirstOrDefault();
+                ?? (results.Count > 0 ? results[0] : null);
             StatusMessage = results.Count switch
             {
                 0 => "No matching system was returned by Spansh.",
@@ -551,22 +647,31 @@ public sealed class SphereLimitViewModel : INotifyPropertyChanged
         DistanceToCenter = distance is null
             ? Unavailable
             : $"{distance:N2} ly";
-        LimitSummary = state.CenterSystemName is null
-            ? selectedCenterSystem is null
+        if (state.CenterSystemName is not null)
+        {
+            LimitSummary = $"{state.Radius:N0} ly around {state.CenterSystemName}";
+        }
+        else
+        {
+            LimitSummary = selectedCenterSystem is null
                 ? "No spherical limit configured"
-                : $"Candidate center: {selectedCenterSystem.Name}"
-            : $"{state.Radius:N0} ly around {state.CenterSystemName}";
+                : $"Candidate center: {selectedCenterSystem.Name}";
+        }
 
         var evaluation = currentPosition is { } position
             ? state.Evaluate(CurrentSystemName, position)
             : null;
         CurrentSystemResult = evaluation is null
-            ? state.IsActive
-                ? "Waiting for current system coordinates"
-                : "Enable the limit to evaluate the current system"
-            : evaluation.IsInside
-                ? "Current system is inside the limit"
-                : "Current system is outside the limit";
+            ? (state.IsActive) switch
+            {
+                true => "Waiting for current system coordinates",
+                false => "Enable the limit to evaluate the current system"
+            }
+            : (evaluation.IsInside) switch
+            {
+                true => "Current system is inside the limit",
+                false => "Current system is outside the limit"
+            };
     }
 
     private static bool TryParseRadius(string value, out double result)

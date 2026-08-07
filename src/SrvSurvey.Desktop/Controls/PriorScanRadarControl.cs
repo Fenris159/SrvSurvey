@@ -132,51 +132,97 @@ public sealed class PriorScanRadarControl : Control
 
         foreach (var target in Targets ?? [])
         {
-            var radians = target.RelativeBearingDegrees * Math.PI / 180d;
-            var point = new Point(
-                center.X + Math.Sin(radians)
-                    * target.DistanceMeters / MetersPerPixel,
-                center.Y - Math.Cos(radians)
-                    * target.DistanceMeters / MetersPerPixel);
-            var signalRadiusMeters = UseSmallCircles
-                ? 100
-                : target.SampleRadiusMeters;
-            var signalRadius = Math.Clamp(
-                signalRadiusMeters / MetersPerPixel,
-                5,
-                100);
-            if (point.X + signalRadius < bounds.Left
-                || point.X - signalRadius > bounds.Right
-                || point.Y + signalRadius < bounds.Top
-                || point.Y - signalRadius > bounds.Bottom)
-            {
-                continue;
-            }
-
-            var brush = target.IsClose
-                ? close
-                : target.IsActive
-                    ? accent
-                    : muted;
-            context.DrawEllipse(
-                null,
-                new Pen(brush, target.IsClose ? 2.5 : 1.5),
-                point,
-                signalRadius,
-                signalRadius);
-            context.DrawEllipse(brush, null, point, 3, 3);
-            if (target.IsClose)
-            {
-                context.DrawEllipse(
-                    null,
-                    new Pen(brush, 1),
-                    point,
-                    12.5,
-                    12.5);
-            }
+            DrawTarget(
+                context,
+                target,
+                center,
+                bounds,
+                accent,
+                muted,
+                close);
         }
 
         DrawCommander(context, center, accent);
+    }
+
+    private void DrawTarget(
+        DrawingContext context,
+        PriorScanRadarTargetViewModel target,
+        Point center,
+        Rect bounds,
+        IBrush accent,
+        IBrush muted,
+        IBrush close)
+    {
+        var point = ResolveTargetPoint(target, center);
+        var signalRadius = ResolveSignalRadius(target);
+        if (!IsTargetVisible(point, signalRadius, bounds))
+        {
+            return;
+        }
+
+        var brush = ResolveTargetBrush(target, accent, muted, close);
+        context.DrawEllipse(
+            null,
+            new Pen(brush, target.IsClose ? 2.5 : 1.5),
+            point,
+            signalRadius,
+            signalRadius);
+        context.DrawEllipse(brush, null, point, 3, 3);
+        if (target.IsClose)
+        {
+            context.DrawEllipse(
+                null,
+                new Pen(brush, 1),
+                point,
+                12.5,
+                12.5);
+        }
+    }
+
+    private static Point ResolveTargetPoint(
+        PriorScanRadarTargetViewModel target,
+        Point center)
+    {
+        var radians = target.RelativeBearingDegrees * Math.PI / 180d;
+        return new Point(
+            center.X + Math.Sin(radians)
+                * target.DistanceMeters / MetersPerPixel,
+            center.Y - Math.Cos(radians)
+                * target.DistanceMeters / MetersPerPixel);
+    }
+
+    private double ResolveSignalRadius(PriorScanRadarTargetViewModel target)
+    {
+        var signalRadiusMeters = UseSmallCircles
+            ? 100
+            : target.SampleRadiusMeters;
+        return Math.Clamp(
+            signalRadiusMeters / MetersPerPixel,
+            5,
+            100);
+    }
+
+    private static bool IsTargetVisible(Point point, double signalRadius, Rect bounds)
+    {
+        return point.X + signalRadius >= bounds.Left
+            && point.X - signalRadius <= bounds.Right
+            && point.Y + signalRadius >= bounds.Top
+            && point.Y - signalRadius <= bounds.Bottom;
+    }
+
+    private static IBrush ResolveTargetBrush(
+        PriorScanRadarTargetViewModel target,
+        IBrush accent,
+        IBrush muted,
+        IBrush close)
+    {
+        if (target.IsClose)
+        {
+            return close;
+        }
+
+        return target.IsActive ? accent : muted;
     }
 
     private static void DrawCommander(

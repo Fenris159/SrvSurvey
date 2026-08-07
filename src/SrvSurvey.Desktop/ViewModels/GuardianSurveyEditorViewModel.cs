@@ -239,7 +239,7 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
                 group,
                 survey.ObeliskGroups.Contains(group)))
             .ToArray();
-        SelectedPoint = Points.FirstOrDefault();
+        SelectedPoint = Points.Count > 0 ? Points[0] : null;
         StatusMessage = $"Loaded {Points.Count:N0} surveyable point(s) from "
             + $"{Path.GetFileName(survey.Path)}.";
     }
@@ -309,150 +309,29 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
         }
 
         Points = Points.Where(point => !ReferenceEquals(point, selected)).ToArray();
-        SelectedPoint = Points.FirstOrDefault();
+        SelectedPoint = Points.Count > 0 ? Points[0] : null;
         StatusMessage = $"Removed local raw point {selected.Name}. Save the survey to persist the removal.";
         return Task.CompletedTask;
     }
 
     public async Task SaveAsync()
     {
-        if (!IsAvailable
-            || frontierId is null
-            || originalSurvey is null)
-        {
-            StatusMessage = AvailabilityMessage;
-            return;
-        }
-
-        if (!TryGetHeading(SiteHeading, out var normalizedSiteHeading)
-            || !TryGetHeading(
-                RelicTowerHeading,
+        if (!TryBeginSave(
+                out var normalizedSiteHeading,
                 out var normalizedRelicTowerHeading))
         {
-            StatusMessage = "Headings must be -1 for unknown or a whole number from 0 through 359.";
             return;
-        }
-
-        foreach (var point in Points)
-        {
-            if (point.Status == GuardianPoiStatus.Empty
-                && !point.SupportsEmptyStatus)
-            {
-                StatusMessage = $"{point.Name} ({point.Type}) cannot be marked empty.";
-                return;
-            }
-
-            if (!TryGetHeading(point.RelicHeading, out _))
-            {
-                StatusMessage = $"The relic heading for {point.Name} must be -1 "
-                    + "or a whole number from 0 through 359.";
-                return;
-            }
         }
 
         IsBusy = true;
         try
         {
-            var statuses = new Dictionary<string, GuardianPoiStatus>(
-                originalSurvey.Survey.PoiStatuses,
-                StringComparer.Ordinal);
-            var relicHeadings = new Dictionary<string, int>(
-                originalSurvey.Survey.RelicHeadings,
-                StringComparer.Ordinal);
-            var componentMaterials = new Dictionary<
-                string,
-                GuardianComponentLoadout>(
-                    originalSurvey.Survey.ComponentMaterials,
-                    StringComparer.Ordinal);
-            var retainedRawNames = Points
-                .Where(point => point.IsRaw)
-                .Select(point => point.Name)
-                .ToHashSet(StringComparer.Ordinal);
-            foreach (var removedName in (originalSurvey.Survey.RawPointsOfInterest ?? [])
-                         .Select(point => point.Name)
-                         .Where(name => !retainedRawNames.Contains(name)))
-            {
-                statuses.Remove(removedName);
-                relicHeadings.Remove(removedName);
-                componentMaterials.Remove(removedName);
-            }
-
-            foreach (var point in Points)
-            {
-                if (point.HasComponentRecord)
-                {
-                    componentMaterials[point.Name] =
-                        point.CreateComponentLoadout();
-                }
-
-                if (point.IsRaw)
-                {
-                    if (point.SupportsRelicHeading
-                        && TryGetHeading(point.RelicHeading, out var rawHeading)
-                        && rawHeading >= 0)
-                    {
-                        relicHeadings[point.Name] = rawHeading;
-                    }
-                    else if (point.SupportsRelicHeading)
-                    {
-                        relicHeadings.Remove(point.Name);
-                    }
-
-                    continue;
-                }
-
-                if (point.Status == GuardianPoiStatus.Unknown)
-                {
-                    statuses.Remove(point.Name);
-                }
-                else
-                {
-                    statuses[point.Name] = point.Status;
-                }
-
-                if (point.SupportsRelicHeading
-                    && TryGetHeading(point.RelicHeading, out var heading)
-                    && heading >= 0)
-                {
-                    relicHeadings[point.Name] = heading;
-                }
-                else if (point.SupportsRelicHeading)
-                {
-                    relicHeadings.Remove(point.Name);
-                }
-            }
-
-            var rawPoints = Points
-                .Where(point => point.IsRaw)
-                .Select(point => point.SupportsRelicHeading
-                    && TryGetHeading(point.RelicHeading, out var heading)
-                        ? point.Point with { Rotation = heading }
-                        : point.Point)
-                .ToArray();
-            var updated = originalSurvey with
-            {
-                Notes = Notes,
-                Survey = new GuardianSurveyData
-                {
-                    SiteType = originalSurvey.SiteType,
-                    SiteHeading = normalizedSiteHeading,
-                    RelicTowerHeading = normalizedRelicTowerHeading,
-                    Location = originalSurvey.Survey.Location,
-                    PoiStatuses = statuses,
-                    RelicHeadings = relicHeadings,
-                    ComponentMaterials = componentMaterials,
-                    RawPointsOfInterest = rawPoints.Length == 0
-                        ? null
-                        : rawPoints,
-                },
-                ObeliskGroups = ObeliskGroups
-                    .Where(group => group.IsSelected)
-                    .Select(group => group.Name)
-                    .ToHashSet(),
-            };
-            var path = await store.SaveAsync(frontierId, isOdyssey, updated);
+            var updated = BuildSurveyForSave(
+                normalizedSiteHeading,
+                normalizedRelicTowerHeading);
+            var path = await store.SaveAsync(frontierId!, isOdyssey, updated);
             var saved = updated with { Path = path };
-            var previous = originalSurvey;
+            var previous = originalSurvey!;
             originalSurvey = saved;
             await surveySaved(previous, saved);
             StatusMessage = $"Saved Guardian survey to {Path.GetFileName(path)}.";
@@ -470,6 +349,182 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
             IsBusy = false;
         }
     }
+
+    private bool TryBeginSave(
+        out int normalizedSiteHeading,
+        out int normalizedRelicTowerHeading)
+    {
+        normalizedSiteHeading = -1;
+        normalizedRelicTowerHeading = -1;
+        if (!IsAvailable
+            || frontierId is null
+            || originalSurvey is null)
+        {
+            StatusMessage = AvailabilityMessage;
+            return false;
+        }
+
+        if (!TryGetHeading(SiteHeading, out normalizedSiteHeading)
+            || !TryGetHeading(
+                RelicTowerHeading,
+                out normalizedRelicTowerHeading))
+        {
+            StatusMessage = "Headings must be -1 for unknown or a whole number from 0 through 359.";
+            return false;
+        }
+
+        return TryValidatePointsForSave();
+    }
+
+    private GuardianCommanderSiteSurvey BuildSurveyForSave(
+        int normalizedSiteHeading,
+        int normalizedRelicTowerHeading)
+    {
+        var maps = BuildSurveyMutationMaps();
+        var rawPoints = Points
+            .Where(point => point.IsRaw)
+            .Select(BuildRawPointForSave)
+            .ToArray();
+        return originalSurvey! with
+        {
+            Notes = Notes,
+            Survey = new GuardianSurveyData
+            {
+                SiteType = originalSurvey.SiteType,
+                SiteHeading = normalizedSiteHeading,
+                RelicTowerHeading = normalizedRelicTowerHeading,
+                Location = originalSurvey.Survey.Location,
+                PoiStatuses = maps.Statuses,
+                RelicHeadings = maps.RelicHeadings,
+                ComponentMaterials = maps.ComponentMaterials,
+                RawPointsOfInterest = rawPoints.Length == 0
+                    ? null
+                    : rawPoints,
+            },
+            ObeliskGroups = ObeliskGroups
+                .Where(group => group.IsSelected)
+                .Select(group => group.Name)
+                .ToHashSet(),
+        };
+    }
+
+    private static GuardianPointOfInterest BuildRawPointForSave(
+        GuardianSurveyPoiViewModel point)
+    {
+        return point.SupportsRelicHeading
+            && TryGetHeading(point.RelicHeading, out var heading)
+                ? point.Point with { Rotation = heading }
+                : point.Point;
+    }
+
+    private bool TryValidatePointsForSave()
+    {
+        foreach (var point in Points)
+        {
+            if (point.Status == GuardianPoiStatus.Empty
+                && !point.SupportsEmptyStatus)
+            {
+                StatusMessage = $"{point.Name} ({point.Type}) cannot be marked empty.";
+                return false;
+            }
+
+            if (!TryGetHeading(point.RelicHeading, out _))
+            {
+                StatusMessage = $"The relic heading for {point.Name} must be -1 "
+                    + "or a whole number from 0 through 359.";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private SurveyMutationMaps BuildSurveyMutationMaps()
+    {
+        var statuses = new Dictionary<string, GuardianPoiStatus>(
+            originalSurvey!.Survey.PoiStatuses,
+            StringComparer.Ordinal);
+        var relicHeadings = new Dictionary<string, int>(
+            originalSurvey.Survey.RelicHeadings,
+            StringComparer.Ordinal);
+        var componentMaterials = new Dictionary<
+            string,
+            GuardianComponentLoadout>(
+                originalSurvey.Survey.ComponentMaterials,
+                StringComparer.Ordinal);
+        var retainedRawNames = Points
+            .Where(point => point.IsRaw)
+            .Select(point => point.Name)
+            .ToHashSet(StringComparer.Ordinal);
+        foreach (var removedName in (originalSurvey.Survey.RawPointsOfInterest ?? [])
+                     .Select(point => point.Name)
+                     .Where(name => !retainedRawNames.Contains(name)))
+        {
+            statuses.Remove(removedName);
+            relicHeadings.Remove(removedName);
+            componentMaterials.Remove(removedName);
+        }
+
+        foreach (var point in Points)
+        {
+            ApplyPointMutation(point, statuses, relicHeadings, componentMaterials);
+        }
+
+        return new SurveyMutationMaps(statuses, relicHeadings, componentMaterials);
+    }
+
+    private static void ApplyPointMutation(
+        GuardianSurveyPoiViewModel point,
+        Dictionary<string, GuardianPoiStatus> statuses,
+        Dictionary<string, int> relicHeadings,
+        Dictionary<string, GuardianComponentLoadout> componentMaterials)
+    {
+        if (point.HasComponentRecord)
+        {
+            componentMaterials[point.Name] = point.CreateComponentLoadout();
+        }
+
+        if (point.IsRaw)
+        {
+            ApplyRelicHeading(point, relicHeadings);
+            return;
+        }
+
+        if (point.Status == GuardianPoiStatus.Unknown)
+        {
+            statuses.Remove(point.Name);
+        }
+        else
+        {
+            statuses[point.Name] = point.Status;
+        }
+
+        ApplyRelicHeading(point, relicHeadings);
+    }
+
+    private static void ApplyRelicHeading(
+        GuardianSurveyPoiViewModel point,
+        Dictionary<string, int> relicHeadings)
+    {
+        if (!point.SupportsRelicHeading)
+        {
+            return;
+        }
+
+        if (TryGetHeading(point.RelicHeading, out var heading) && heading >= 0)
+        {
+            relicHeadings[point.Name] = heading;
+        }
+        else
+        {
+            relicHeadings.Remove(point.Name);
+        }
+    }
+
+    private sealed record SurveyMutationMaps(
+        Dictionary<string, GuardianPoiStatus> Statuses,
+        Dictionary<string, int> RelicHeadings,
+        Dictionary<string, GuardianComponentLoadout> ComponentMaterials);
 
     private static bool TryGetHeading(decimal value, out int heading)
     {
@@ -499,13 +554,16 @@ public sealed class GuardianSurveyEditorViewModel : INotifyPropertyChanged
     private static string NextRawPointName(IEnumerable<string> names)
     {
         var used = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        for (var index = 1; ; index++)
+        var index = 1;
+        while (true)
         {
             var candidate = $"x{index}";
             if (!used.Contains(candidate))
             {
                 return candidate;
             }
+
+            index++;
         }
     }
 
@@ -661,11 +719,13 @@ public sealed class GuardianSurveyPoiViewModel : INotifyPropertyChanged
 
     public string ComponentMaterialSummary => !SupportsComponentMaterials
         ? string.Empty
-        : SupportsMultipleComponentMaterials
-            ? $"Top {GetMaterialName(TopComponentMaterial)} / "
+        : (SupportsMultipleComponentMaterials) switch
+        {
+            true => $"Top {GetMaterialName(TopComponentMaterial)} / "
                 + $"middle {GetMaterialName(MiddleComponentMaterial)} / "
-                + $"bottom {GetMaterialName(BottomComponentMaterial)}"
-            : GetMaterialName(TopComponentMaterial);
+                + $"bottom {GetMaterialName(BottomComponentMaterial)}",
+            false => GetMaterialName(TopComponentMaterial)
+        };
 
     public bool SupportsEmptyStatus => Type is GuardianPoiType.Unknown
         or GuardianPoiType.Orb

@@ -6,6 +6,13 @@ namespace SrvSurvey.Desktop.Tests.ViewModels;
 
 public sealed class OverlayPositionPreviewViewModelTests
 {
+    private static readonly string[] LegacyGlyphs =
+    [
+        "PlotFSSInfo",
+        "PlotJumpInfo",
+        "PlotFlightWarning",
+    ];
+
     [Fact]
     public void FssPreviewUsesOverlaySpecificSimulatedSystemData()
     {
@@ -131,7 +138,7 @@ public sealed class OverlayPositionPreviewViewModelTests
     [Fact]
     public void SimulatedStateIncludesLegacySemanticGlyphs()
     {
-        var definitions = new[] { "PlotFSSInfo", "PlotJumpInfo", "PlotFlightWarning" }
+        var definitions = LegacyGlyphs
             .Select(name => OverlayLayoutCatalog.Supported.Single(item =>
                 item.Name == name));
 

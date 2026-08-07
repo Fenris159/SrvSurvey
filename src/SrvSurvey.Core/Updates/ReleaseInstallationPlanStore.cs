@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace SrvSurvey.Core.Updates;
@@ -243,6 +244,14 @@ public sealed class ReleaseInstallationPlanStore
             .ConfigureAwait(false);
     }
 
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "The instance API represents one installation-plan store contract.")]
+    [SuppressMessage(
+        "Maintainability",
+        "S2325:Make methods and properties static",
+        Justification = "The instance API represents one installation-plan store contract.")]
     public async Task<bool> IsHealthConfirmedAsync(
         ReleaseInstallationHandoffPlan plan,
         CancellationToken cancellationToken = default)
@@ -284,6 +293,10 @@ public sealed class ReleaseInstallationPlanStore
         }
     }
 
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "The instance API represents one installation-plan store contract.")]
     public async Task WriteOutcomeAsync(
         ReleaseInstallationHandoffPlan plan,
         ReleaseInstallationOutcome outcome,
@@ -316,6 +329,14 @@ public sealed class ReleaseInstallationPlanStore
             .ConfigureAwait(false);
     }
 
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "The instance API represents one installation-plan store contract.")]
+    [SuppressMessage(
+        "Maintainability",
+        "S2325:Make methods and properties static",
+        Justification = "The instance API represents one installation-plan store contract.")]
     public async Task<ReleaseInstallationOutcome> ReadOutcomeAsync(
         ReleaseInstallationHandoffPlan plan,
         CancellationToken cancellationToken = default)
@@ -464,7 +485,7 @@ public sealed class ReleaseInstallationPlanStore
             Path.Combine(planDirectory, "outcome.json"));
     }
 
-    private static IReadOnlyList<string> ReadArguments(JsonElement preparation)
+    private static List<string> ReadArguments(JsonElement preparation)
     {
         if (!preparation.TryGetProperty("startupArguments", out var arguments)
             || arguments.ValueKind != JsonValueKind.Array)
@@ -607,11 +628,10 @@ public sealed class ReleaseInstallationPlanStore
                 Directory.Delete(path, recursive: true);
             }
         }
-        catch (IOException)
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
         {
-        }
-        catch (UnauthorizedAccessException)
-        {
+            // Cleanup is best effort; a later run can remove the stale plan.
         }
     }
 

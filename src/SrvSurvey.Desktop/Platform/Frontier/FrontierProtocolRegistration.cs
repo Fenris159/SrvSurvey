@@ -7,6 +7,14 @@ namespace SrvSurvey.Desktop.Platform.Frontier;
 
 public static class FrontierProtocolRegistration
 {
+    private static readonly string[] XdgMimePaths =
+    [
+        "/usr/bin/xdg-mime",
+        "/bin/xdg-mime",
+        "/usr/local/bin/xdg-mime",
+        "/run/current-system/sw/bin/xdg-mime",
+    ];
+
     public static async Task RegisterCurrentAsync(
         CancellationToken cancellationToken = default)
     {
@@ -70,8 +78,8 @@ public static class FrontierProtocolRegistration
             "io.github.fenris159.SrvSurvey.frontier-auth.desktop");
         var escapedExecutable = executable.Replace("\\", "\\\\", StringComparison.Ordinal)
             .Replace("\"", "\\\"", StringComparison.Ordinal);
-        var content = string.Join('\n',
-        [
+        var content = string.Join(
+            '\n',
             "[Desktop Entry]",
             "Type=Application",
             "Name=SrvSurvey",
@@ -81,8 +89,7 @@ public static class FrontierProtocolRegistration
             "Terminal=false",
             "NoDisplay=true",
             $"MimeType=x-scheme-handler/{FrontierOAuthCallback.Scheme};",
-            string.Empty,
-        ]);
+            string.Empty);
         await File.WriteAllTextAsync(
                 desktopFile,
                 content,
@@ -91,7 +98,7 @@ public static class FrontierProtocolRegistration
 
         var startInfo = new ProcessStartInfo
         {
-            FileName = "xdg-mime",
+            FileName = ResolveXdgMimePath(),
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardError = true,
@@ -121,5 +128,11 @@ public static class FrontierProtocolRegistration
                 "SrvSurvey requires xdg-mime to register Frontier authorization on Linux.",
                 exception);
         }
+    }
+
+    private static string ResolveXdgMimePath()
+    {
+        return XdgMimePaths.FirstOrDefault(File.Exists)
+            ?? XdgMimePaths[0];
     }
 }

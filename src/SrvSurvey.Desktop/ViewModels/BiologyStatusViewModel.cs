@@ -58,7 +58,11 @@ public sealed record BiologyStatusViewModel(
     public double TrackedCompletionPercent => SignalCount <= 0
         ? 0
         : Math.Clamp(
-            (AnalyzedSignalCount + (HasActiveSample ? 1 : 0))
+            (AnalyzedSignalCount + ((HasActiveSample) switch
+            {
+                true => 1,
+                false => 0
+            }))
                 * 100d / SignalCount,
             0,
             100);
@@ -79,62 +83,32 @@ public sealed record BiologyStatusViewModel(
             return null;
         }
 
-        var activeScan = exobiology.ScanOne;
-        var activeScanIsLocal = activeScan is not null
-            && (string.IsNullOrWhiteSpace(activeScan.Body)
-                || string.Equals(
-                    activeScan.Body,
-                    body.Name,
-                    StringComparison.OrdinalIgnoreCase));
-        var activeOrganism = activeScanIsLocal
-            ? body.Organisms.FirstOrDefault(organism =>
-                string.Equals(
-                    organism.Species,
-                    activeScan!.Species,
-                    StringComparison.Ordinal)
-                || string.Equals(
-                    organism.Genus,
-                    activeScan.Genus,
-                    StringComparison.Ordinal))
-            : null;
+        var activeContext = ResolveActiveScanContext(body, exobiology);
         var signals = CreateSignals(
             body,
-            activeOrganism,
+            activeContext.Organism,
             options.HideGeologicalSignals);
-        var activeSample = activeScanIsLocal && activeScan is not null
+        var activeSample = activeContext.IsLocal && activeContext.Scan is not null
             ? CreateActiveSample(
                 body,
-                activeOrganism,
+                activeContext.Organism,
                 exobiology,
                 status)
             : null;
-        var isStaleActiveSample = !activeScanIsLocal && activeScan is not null;
-        var warning = isStaleActiveSample
-            ? "Incomplete "
-                + FormatJournalName(activeScan!.Genus)
-                + " samples remain on "
-                + (activeScan.Body ?? "another body")
-                + "."
-            : string.Empty;
+        var isStaleActiveSample = !activeContext.IsLocal
+            && activeContext.Scan is not null;
+        var warning = BuildStaleSampleWarning(activeContext.Scan, isStaleActiveSample);
         var allAnalyzed = body.AnalyzedBiologicalSignalCount
             >= body.BiologicalSignalCount;
-        var currentNotification =
-            options.CodexNotification?.BodyId == body.BodyId
-                ? options.CodexNotification
-                : null;
-        var footer = activeSample is not null || isStaleActiveSample
-            ? string.Empty
-            : allAnalyzed && body.IsFirstFootfall
-                ? "All signals analyzed with the first-footfall bonus applied."
-                : allAnalyzed
-                    ? "All biological signals analyzed."
-                    : currentNotification is not null
-                        ? currentNotification.SummaryText
-                    : body.Organisms.Count == 0
-                        ? string.Empty
-                        : body.IsFirstFootfall
-                            ? "First-footfall rewards apply to analyzed organisms."
-                            : "Use the Composition Scanner to identify organisms.";
+        var currentNotification = ResolveBodyNotification(
+            options.CodexNotification,
+            body.BodyId);
+        var footer = BiologyStatusFooter.Build(
+            body,
+            activeSample,
+            isStaleActiveSample,
+            allAnalyzed,
+            currentNotification);
 
         return new BiologyStatusViewModel(
             body.BodyId,
@@ -147,18 +121,102 @@ public sealed record BiologyStatusViewModel(
             body.Organisms.Count == 0,
             warning,
             footer,
-            options.ShowTemperatureRangeDebug
-                ? CreateTemperatureRange(
-                    snapshot,
-                    body,
-                    activeOrganism,
-                    status,
-                    options.PredictionEvaluator
-                        ?? DefaultPredictionEvaluator.Value)
-                : null,
+            ResolveOptionalTemperatureRange(
+                snapshot,
+                body,
+                activeContext.Organism,
+                status,
+                options),
             HasCodexImageIndicator: currentNotification is not null,
             HasCodexImage: currentNotification?.HasImage == true,
             IsStaleActiveSample: isStaleActiveSample);
+    }
+
+    private readonly record struct ActiveScanContext(
+        BioSampleSnapshot? Scan,
+        bool IsLocal,
+        SystemOrganismSnapshot? Organism);
+
+    private static ActiveScanContext ResolveActiveScanContext(
+        SystemScanBodySnapshot body,
+        ExobiologySnapshot exobiology)
+    {
+        var activeScan = exobiology.ScanOne;
+        var isLocal = IsActiveScanLocal(activeScan, body.Name);
+        var organism = isLocal
+            ? FindActiveOrganism(body, activeScan!)
+            : null;
+        return new ActiveScanContext(activeScan, isLocal, organism);
+    }
+
+    private static bool IsActiveScanLocal(
+        BioSampleSnapshot? activeScan,
+        string bodyName)
+    {
+        return activeScan is not null
+            && (string.IsNullOrWhiteSpace(activeScan.Body)
+                || string.Equals(
+                    activeScan.Body,
+                    bodyName,
+                    StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static SystemOrganismSnapshot? FindActiveOrganism(
+        SystemScanBodySnapshot body,
+        BioSampleSnapshot activeScan)
+    {
+        return body.Organisms.FirstOrDefault(organism =>
+            string.Equals(
+                organism.Species,
+                activeScan.Species,
+                StringComparison.Ordinal)
+            || string.Equals(
+                organism.Genus,
+                activeScan.Genus,
+                StringComparison.Ordinal));
+    }
+
+    private static string BuildStaleSampleWarning(
+        BioSampleSnapshot? activeScan,
+        bool isStaleActiveSample)
+    {
+        if (!isStaleActiveSample || activeScan is null)
+        {
+            return string.Empty;
+        }
+
+        return "Incomplete "
+            + FormatJournalName(activeScan.Genus)
+            + " samples remain on "
+            + (activeScan.Body ?? "another body")
+            + ".";
+    }
+
+    private static BiologyCodexNotificationViewModel? ResolveBodyNotification(
+        BiologyCodexNotificationViewModel? notification,
+        int bodyId)
+    {
+        return notification?.BodyId == bodyId ? notification : null;
+    }
+
+    private static BiologyTemperatureRangeViewModel? ResolveOptionalTemperatureRange(
+        SystemScanSnapshot snapshot,
+        SystemScanBodySnapshot body,
+        SystemOrganismSnapshot? activeOrganism,
+        EliteStatus? status,
+        BiologyStatusCreateOptions options)
+    {
+        if (!options.ShowTemperatureRangeDebug)
+        {
+            return null;
+        }
+
+        return CreateTemperatureRange(
+            snapshot,
+            body,
+            activeOrganism,
+            status,
+            options.PredictionEvaluator ?? DefaultPredictionEvaluator.Value);
     }
 
     private static BiologyTemperatureRangeViewModel CreateTemperatureRange(
@@ -192,7 +250,7 @@ public sealed record BiologyStatusViewModel(
             temperatureClause?.Maximum);
     }
 
-    private static IReadOnlyList<BiologyStatusSignalViewModel> CreateSignals(
+    private static List<BiologyStatusSignalViewModel> CreateSignals(
         SystemScanBodySnapshot body,
         SystemOrganismSnapshot? activeOrganism,
         bool hideGeologicalSignals)
@@ -202,13 +260,16 @@ public sealed record BiologyStatusViewModel(
             {
                 var name = organism.GenusLocalized
                     ?? FormatJournalName(organism.Genus);
-                var distance = organism.IsAnalyzed
-                    ? string.Empty
-                    : ExobiologyReferenceCatalog.GetSampleDistanceMeters(
-                        organism.GenusLocalized ?? organism.Genus) is var meters
-                        && meters > 0
-                            ? $"{meters:N0} m"
-                            : string.Empty;
+                var distance = string.Empty;
+                if (!organism.IsAnalyzed)
+                {
+                    var meters = ExobiologyReferenceCatalog.GetSampleDistanceMeters(
+                        organism.GenusLocalized ?? organism.Genus);
+                    if (meters > 0)
+                    {
+                        distance = $"{meters:N0} m";
+                    }
+                }
                 return new BiologyStatusSignalViewModel(
                     name,
                     distance,
@@ -356,6 +417,41 @@ public readonly record struct BiologyStatusCreateOptions(
     BiologyPredictionEvaluator? PredictionEvaluator = null,
     bool AllowRetainedCurrentBody = true);
 
+internal static class BiologyStatusFooter
+{
+    public static string Build(
+        SystemScanBodySnapshot body,
+        BiologyActiveSampleViewModel? activeSample,
+        bool isStaleActiveSample,
+        bool allAnalyzed,
+        BiologyCodexNotificationViewModel? currentNotification)
+    {
+        if (activeSample is not null || isStaleActiveSample)
+        {
+            return string.Empty;
+        }
+
+        if (allAnalyzed && body.IsFirstFootfall)
+        {
+            return "All signals analyzed with the first-footfall bonus applied.";
+        }
+
+        if (currentNotification is not null)
+        {
+            return currentNotification.SummaryText;
+        }
+
+        if (body.Organisms.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return body.IsFirstFootfall
+            ? "First-footfall rewards apply to analyzed organisms."
+            : "Use the Composition Scanner to identify organisms.";
+    }
+}
+
 public sealed record BiologyCodexNotificationViewModel(
     long EntryId,
     int BodyId,
@@ -414,7 +510,11 @@ public sealed record BiologyActiveSampleViewModel(
     public bool HasReward => Reward > 0;
 
     public string RewardText => HasReward
-        ? FormatCredits(Reward) + (IsFirstFootfall ? " · FF bonus" : string.Empty)
+        ? FormatCredits(Reward) + ((IsFirstFootfall) switch
+        {
+            true => " · FF bonus",
+            false => string.Empty
+        })
         : string.Empty;
 
     public string RequiredDistanceText =>
@@ -437,10 +537,12 @@ public sealed record BiologyActiveSampleViewModel(
 
     public string DistanceText => NearestDistanceMeters is null
         ? $"Move {RequiredDistanceMeters:N0} m from a prior sample."
-        : IsSeparationReady
-            ? $"{NearestDistanceMeters:N0} m from the nearest sample · separation reached"
-            : $"{NearestDistanceMeters:N0} m from the nearest sample · "
-                + $"{RemainingDistanceMeters:N0} m remaining";
+        : (IsSeparationReady) switch
+        {
+            true => $"{NearestDistanceMeters:N0} m from the nearest sample · separation reached",
+            false => $"{NearestDistanceMeters:N0} m from the nearest sample · "
+                                                                                                                + $"{RemainingDistanceMeters:N0} m remaining"
+        };
 
     private static string FormatCredits(long value)
     {

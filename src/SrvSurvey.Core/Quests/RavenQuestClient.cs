@@ -468,9 +468,7 @@ public sealed class RavenQuestClient : IRavenQuestClient
                 nameof(uri));
         }
 
-        return uri.AbsoluteUri.EndsWith("/", StringComparison.Ordinal)
-            ? uri
-            : new Uri(uri.AbsoluteUri + "/");
+        return UriPath.EnsureTrailingSeparator(uri);
     }
 }
 

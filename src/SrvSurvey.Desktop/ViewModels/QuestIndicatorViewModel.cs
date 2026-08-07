@@ -61,7 +61,7 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
         string? musicTrack = null)
     {
         ArgumentNullException.ThrowIfNull(quests);
-        var firstQuest = quests.FirstOrDefault();
+        var firstQuest = quests.Count > 0 ? quests[0] : null;
         var mode = OverlayGameModeResolver.Resolve(
             status,
             musicTrack: musicTrack);
@@ -71,9 +71,14 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
         QuestTitle = firstQuest?.Title ?? string.Empty;
         var unread = quests.Sum(quest => quest.UnreadMessageCount);
         HasUnreadMessages = unread > 0;
-        UnreadMessageText = unread > 0
-            ? $"{unread:N0} unread message{(unread == 1 ? string.Empty : "s")}"
-            : string.Empty;
+        if (unread == 0)
+        {
+            UnreadMessageText = string.Empty;
+        }
+        else
+        {
+            UnreadMessageText = $"{unread:N0} unread message{(unread == 1 ? string.Empty : "s")}";
+        }
         Objectives = firstQuest?.Objectives
             .Where(pair => pair.Value.StartsWith(
                 "visible",
@@ -178,9 +183,11 @@ public sealed class QuestIndicatorViewModel : INotifyPropertyChanged
     {
         return meters >= 10_000
             ? $"{meters / 1_000:N1} km"
-            : meters >= 1_000
-                ? $"{meters / 1_000:N2} km"
-                : $"{meters:N0} m";
+            : (meters >= 1_000) switch
+            {
+                true => $"{meters / 1_000:N2} km",
+                false => $"{meters:N0} m"
+            };
     }
 
     private bool SetField<T>(

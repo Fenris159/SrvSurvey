@@ -12,6 +12,12 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposable
 {
+    private const string CommunityGoalTimestampKey = "journal.communityGoalTimestamp";
+    private const string UnavailableLabel = "Unavailable";
+    private const string DecalPrefix = "decal";
+    private const string UtilityMountsGroup = "Utility Mounts";
+    private const string FederationFaction = "federation";
+    private const string EmpireFaction = "empire";
     private static readonly TimeSpan AutomaticRefreshAge = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromSeconds(1);
 
@@ -58,7 +64,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private IReadOnlyList<FrontierShipForSaleRowViewModel>? shipyardShipRows;
     private IReadOnlyList<FrontierOutfittingModuleRowViewModel>? shipyardModuleRows;
     private IReadOnlyList<FrontierCommunityGoalCardViewModel>? communityGoalRows;
-    private IReadOnlyList<FrontierReputationSnapshot> journalReputation = [];
+    private FrontierReputationSnapshot[] journalReputation = [];
     private string? journalReputationCommanderName;
     private DateTimeOffset? journalReputationUpdatedAt;
     private IReadOnlyList<FrontierCommunityGoalSnapshot> journalCommunityGoals = [];
@@ -161,32 +167,59 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 return;
             }
 
-            _ = SelectCommanderAsync(value);
+            _ = SelectCommanderAsync(value, CancellationToken.None);
         }
     }
 
     public bool IsAutomaticCommanderSelection => manuallySelectedFrontierId is null;
 
-    public string DetectedCommanderDescription => detectedFrontierId is null
-        ? "Waiting for active journal commander"
-        : string.IsNullOrWhiteSpace(detectedCommanderName)
-            ? detectedFrontierId
-            : $"{detectedCommanderName} ({detectedFrontierId})";
+    public string DetectedCommanderDescription
+    {
+        get
+        {
+            if (detectedFrontierId is null)
+            {
+                return "Waiting for active journal commander";
+            }
 
-    public string ActiveCommanderDescription => activeFrontierId is null
-        ? "No Frontier commander selected"
-        : string.IsNullOrWhiteSpace(activeCommanderName)
-            ? activeFrontierId
-            : $"{activeCommanderName} ({activeFrontierId})";
+            return string.IsNullOrWhiteSpace(detectedCommanderName)
+                ? detectedFrontierId
+                : $"{detectedCommanderName} ({detectedFrontierId})";
+        }
+    }
 
-    public string CommanderSelectionDescription => IsAutomaticCommanderSelection
-        ? $"Automatic · Journal: {DetectedCommanderDescription}"
-        : string.Equals(
-            activeFrontierId,
-            detectedFrontierId,
-            StringComparison.OrdinalIgnoreCase)
+    public string ActiveCommanderDescription
+    {
+        get
+        {
+            if (activeFrontierId is null)
+            {
+                return "No Frontier commander selected";
+            }
+
+            return string.IsNullOrWhiteSpace(activeCommanderName)
+                ? activeFrontierId
+                : $"{activeCommanderName} ({activeFrontierId})";
+        }
+    }
+
+    public string CommanderSelectionDescription
+    {
+        get
+        {
+            if (IsAutomaticCommanderSelection)
+            {
+                return $"Automatic · Journal: {DetectedCommanderDescription}";
+            }
+
+            return string.Equals(
+                activeFrontierId,
+                detectedFrontierId,
+                StringComparison.OrdinalIgnoreCase)
                 ? "Manual selection · Matches the active journal commander"
                 : $"Manual selection · Journal remains {DetectedCommanderDescription}";
+        }
+    }
 
     public bool IsBusy
     {
@@ -317,12 +350,16 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public string CommanderId => Snapshot?.CommanderId is { } id
         ? id.ToString(CultureInfo.InvariantCulture)
-        : "Unavailable";
+        : UnavailableLabel;
 
     public string CommanderState => Snapshot is null
-        ? "Unavailable"
-        : $"{(Snapshot.IsDocked ? "Docked" : "In flight")} · "
-            + (Snapshot.IsAlive ? "Active" : "Destroyed");
+        ? UnavailableLabel
+        : $"{((Snapshot.IsDocked) switch { true => "Docked", false => "In flight" })} · "
+            + ((Snapshot.IsAlive) switch
+            {
+                true => "Active",
+                false => "Destroyed"
+            });
 
     public string LocationAllegiance => FirstNonEmpty(
         Snapshot?.LastSystemDetails?.Allegiance,
@@ -644,13 +681,19 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
     public string CarrierTitle => Carrier is null
         ? "No Fleet Carrier is associated with this account."
-        : string.Equals(Carrier.Name, Carrier.Callsign, StringComparison.OrdinalIgnoreCase)
-            ? Carrier.Callsign
-            : $"{Carrier.Name} · {Carrier.Callsign}";
+        : (string.Equals(Carrier.Name, Carrier.Callsign, StringComparison.OrdinalIgnoreCase)) switch
+        {
+            true => Carrier.Callsign,
+            false => $"{Carrier.Name} · {Carrier.Callsign}"
+        };
 
     public string CarrierLocation => Carrier is null
         ? "—"
-        : string.IsNullOrWhiteSpace(Carrier.System) ? "Unknown system" : Carrier.System;
+        : (string.IsNullOrWhiteSpace(Carrier.System)) switch
+        {
+            true => "Unknown system",
+            false => Carrier.System
+        };
 
     public string CarrierBalance => FormatCredits(Carrier?.BankBalance ?? 0);
 
@@ -928,6 +971,117 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private FrontierCommunityGoalCardViewModel CreateCommunityGoalCard(
         FrontierCommunityGoalSnapshot item)
     {
+        var fields = ResolveCommunityGoalCardFields(item);
+        var currentTime = now().ToUniversalTime();
+        var progress = ComputeCommunityGoalProgress(fields);
+        return new FrontierCommunityGoalCardViewModel(
+            item.Title,
+            fields.Briefing,
+            fields.Objective,
+            fields.Reward,
+            fields.System,
+            fields.Market,
+            JoinLocation(fields.System, fields.Market),
+            FriendlyCommunityGoalActivity(fields.ActivityType),
+            FormatCommunityGoalIdLabel(item.Id),
+            ResolveCommunityGoalStatus(item, currentTime),
+            FormatCommunityGoalDeadline(item.ExpiresAt),
+            FormatCommunityGoalTimeRemaining(
+                item.ExpiresAt,
+                item.IsComplete,
+                currentTime),
+            progress,
+            FormatCommunityGoalProgressLabel(fields.Target, progress),
+            FormatCommunityGoalTotals(fields),
+            FormatCommunityGoalRemaining(fields),
+            FormatPlayerContributionText(
+                fields.HasPlayerContributionData,
+                fields.PlayerContribution),
+            FormatCommunityGoalStanding(item),
+            FormatCommunityGoalContributors(fields),
+            FormatCommunityGoalTier(fields.Tier),
+            !string.IsNullOrWhiteSpace(fields.Briefing),
+            !string.IsNullOrWhiteSpace(fields.Objective),
+            !string.IsNullOrWhiteSpace(fields.Reward),
+            HasCommunityGoalLocation(fields),
+            fields.Target is not null,
+            fields.SourceStatus,
+            fields.HasInaraData,
+            fields.DataPoints,
+            PaneStates.GetCommunityGoalData(item.Id, item.Title));
+    }
+
+    private static double ComputeCommunityGoalProgress(CommunityGoalCardFields fields)
+    {
+        if (fields.Target is not { } targetTotal)
+        {
+            return 0;
+        }
+
+        return Math.Clamp((double)fields.CurrentTotal / targetTotal * 100, 0, 100);
+    }
+
+    private static string FormatCommunityGoalIdLabel(long? id) =>
+        id is { } goalId ? $"GOAL #{goalId:N0}" : "COMMUNITY GOAL";
+
+    private static string FormatCommunityGoalDeadline(DateTimeOffset? expiresAt) =>
+        expiresAt is { } deadline
+            ? deadline.ToLocalTime().ToString("f", CultureInfo.CurrentCulture)
+            : "No deadline supplied";
+
+    private static string FormatCommunityGoalProgressLabel(
+        long? target,
+        double progress) =>
+        target is not null
+            ? $"{progress:0.00}% complete"
+            : "Target not supplied";
+
+    private static string FormatCommunityGoalTotals(CommunityGoalCardFields fields) =>
+        fields.Target is { } total
+            ? $"{fields.CurrentTotal:N0} / {total:N0}"
+            : $"{fields.CurrentTotal:N0} contributed";
+
+    private static string FormatCommunityGoalRemaining(CommunityGoalCardFields fields) =>
+        fields.Target is { } maximum
+            ? $"{Math.Max(0, maximum - fields.CurrentTotal):N0} remaining"
+            : string.Empty;
+
+    private static string FormatCommunityGoalContributors(
+        CommunityGoalCardFields fields) =>
+        fields.HasContributorData
+            ? $"{fields.Contributors:N0} commanders"
+            : "Contributor count not supplied";
+
+    private static string FormatCommunityGoalTier(string tier) =>
+        string.IsNullOrWhiteSpace(tier) ? "Tier not supplied" : tier;
+
+    private static bool HasCommunityGoalLocation(CommunityGoalCardFields fields) =>
+        !string.IsNullOrWhiteSpace(fields.System)
+        || !string.IsNullOrWhiteSpace(fields.Market);
+
+    private sealed class CommunityGoalCardFields
+    {
+        public IReadOnlyList<FrontierDataPointSnapshot> DataPoints { get; init; } = [];
+        public string System { get; init; } = string.Empty;
+        public string Market { get; init; } = string.Empty;
+        public string Objective { get; init; } = string.Empty;
+        public string Reward { get; init; } = string.Empty;
+        public string Briefing { get; init; } = string.Empty;
+        public string ActivityType { get; init; } = string.Empty;
+        public long CurrentTotal { get; init; }
+        public long? Target { get; init; }
+        public bool HasPlayerContributionData { get; init; }
+        public long PlayerContribution { get; init; }
+        public bool HasContributorData { get; init; }
+        public int Contributors { get; init; }
+        public string Tier { get; init; } = string.Empty;
+        public bool HasInaraData { get; init; }
+        public string SourceStatus { get; init; } = string.Empty;
+    }
+
+    private static CommunityGoalCardFields ResolveCommunityGoalCardFields(
+        FrontierCommunityGoalSnapshot item)
+    {
         var dataPoints = item.DataPoints ?? [];
         var system = FirstNonEmpty(
             item.System,
@@ -957,11 +1111,19 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             dataPoints,
             "target_qty",
             "targetTotal");
-        var target = item.TargetTotal is > 0
-            ? item.TargetTotal
-            : cachedTarget is > 0
-                ? cachedTarget
-                : null;
+        long? target;
+        if (item.TargetTotal is > 0)
+        {
+            target = item.TargetTotal;
+        }
+        else if (cachedTarget is > 0)
+        {
+            target = cachedTarget;
+        }
+        else
+        {
+            target = null;
+        }
         var hasPlayerContributionData = item.HasPlayerContributionData
             || HasCommunityGoalData(
                 dataPoints,
@@ -1000,14 +1162,44 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             "inara.fetchedAt");
         var journalRecordedAt = CommunityGoalDataDateTimeOffset(
             dataPoints,
-            "journal.communityGoalTimestamp");
+            CommunityGoalTimestampKey);
         var hasInaraData = inaraLastUpdated is not null || inaraFetchedAt is not null;
-        var isInaraOnly = IsInaraOnlyGoal(item);
+        return new CommunityGoalCardFields
+        {
+            DataPoints = dataPoints,
+            System = system,
+            Market = market,
+            Objective = objective,
+            Reward = reward,
+            Briefing = briefing,
+            ActivityType = activityType,
+            CurrentTotal = currentTotal,
+            Target = target,
+            HasPlayerContributionData = hasPlayerContributionData,
+            PlayerContribution = playerContribution,
+            HasContributorData = hasContributorData,
+            Contributors = contributors,
+            Tier = tier,
+            HasInaraData = hasInaraData,
+            SourceStatus = BuildCommunityGoalSourceStatus(
+                item,
+                hasInaraData,
+                inaraLastUpdated,
+                journalRecordedAt),
+        };
+    }
+
+    private static string BuildCommunityGoalSourceStatus(
+        FrontierCommunityGoalSnapshot item,
+        bool hasInaraData,
+        DateTimeOffset? inaraLastUpdated,
+        DateTimeOffset? journalRecordedAt)
+    {
         var sourceStatusParts = new List<string>();
         if (hasInaraData)
         {
             sourceStatusParts.Add(
-                (isInaraOnly
+                (IsInaraOnlyGoal(item)
                     ? "Global goal supplied by Inara"
                     : "Frontier goal supplemented by Inara")
                 + (inaraLastUpdated is { } updated
@@ -1021,75 +1213,60 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 $"Personal progress restored from local journals · recorded {recordedAt.ToLocalTime():g}");
         }
 
-        var sourceStatus = string.Join(" · ", sourceStatusParts);
-        var currentTime = now().ToUniversalTime();
-        var progress = target is { } targetTotal
-            ? Math.Clamp((double)currentTotal / targetTotal * 100, 0, 100)
-            : 0;
-        var status = item.IsComplete
-            ? "COMPLETED"
-            : item.ExpiresAt is { } expiry && expiry <= currentTime
-                ? "ENDED"
-                : "ACTIVE";
-        var standing = item.PlayerPercentile is { } percentile
-            ? item.Bonus > 0
+        return string.Join(" · ", sourceStatusParts);
+    }
+
+    private static string ResolveCommunityGoalStatus(
+        FrontierCommunityGoalSnapshot item,
+        DateTimeOffset currentTime)
+    {
+        if (item.IsComplete)
+        {
+            return "COMPLETED";
+        }
+
+        if (item.ExpiresAt is { } expiry && expiry <= currentTime)
+        {
+            return "ENDED";
+        }
+
+        return "ACTIVE";
+    }
+
+    private static string FormatPlayerContributionText(
+        bool hasPlayerContributionData,
+        long playerContribution)
+    {
+        if (!hasPlayerContributionData)
+        {
+            return "Personal progress not supplied by Frontier or local journals";
+        }
+
+        return playerContribution > 0
+            ? $"{playerContribution:N0} contributed"
+            : "Signed up · no contribution recorded";
+    }
+
+    private static string FormatCommunityGoalStanding(
+        FrontierCommunityGoalSnapshot item)
+    {
+        if (item.PlayerPercentile is { } percentile)
+        {
+            return item.Bonus > 0
                 ? $"Top {percentile:N0}% · {FormatCredits(item.Bonus)} reward"
-                : $"Top {percentile:N0}%"
-            : item.PlayerInTopRank
-                ? item.TopRankSize is { } topRankSize
-                    ? $"Top {topRankSize:N0} commander"
-                    : "Top contributor"
-                : item.Bonus > 0
-                    ? $"Reward: {FormatCredits(item.Bonus)}"
-                    : string.Empty;
-        return new FrontierCommunityGoalCardViewModel(
-            item.Title,
-            briefing,
-            objective,
-            reward,
-            system,
-            market,
-            JoinLocation(system, market),
-            FriendlyCommunityGoalActivity(activityType),
-            item.Id is { } id ? $"GOAL #{id:N0}" : "COMMUNITY GOAL",
-            status,
-            item.ExpiresAt is { } deadline
-                ? deadline.ToLocalTime().ToString("f", CultureInfo.CurrentCulture)
-                : "No deadline supplied",
-            FormatCommunityGoalTimeRemaining(
-                item.ExpiresAt,
-                item.IsComplete,
-                currentTime),
-            progress,
-            target is not null ? $"{progress:0.00}% complete" : "Target not supplied",
-            target is { } total
-                ? $"{currentTotal:N0} / {total:N0}"
-                : $"{currentTotal:N0} contributed",
-            target is { } maximum
-                ? $"{Math.Max(0, maximum - currentTotal):N0} remaining"
-                : string.Empty,
-            hasPlayerContributionData
-                ? playerContribution > 0
-                    ? $"{playerContribution:N0} contributed"
-                    : "Signed up · no contribution recorded"
-                : "Personal progress not supplied by Frontier or local journals",
-            standing,
-            hasContributorData
-                ? $"{contributors:N0} commanders"
-                : "Contributor count not supplied",
-            string.IsNullOrWhiteSpace(tier)
-                ? "Tier not supplied"
-                : tier,
-            !string.IsNullOrWhiteSpace(briefing),
-            !string.IsNullOrWhiteSpace(objective),
-            !string.IsNullOrWhiteSpace(reward),
-            !string.IsNullOrWhiteSpace(system)
-                || !string.IsNullOrWhiteSpace(market),
-            target is not null,
-            sourceStatus,
-            hasInaraData,
-            dataPoints,
-            PaneStates.GetCommunityGoalData(item.Id, item.Title));
+                : $"Top {percentile:N0}%";
+        }
+
+        if (item.PlayerInTopRank)
+        {
+            return item.TopRankSize is { } topRankSize
+                ? $"Top {topRankSize:N0} commander"
+                : "Top contributor";
+        }
+
+        return item.Bonus > 0
+            ? $"Reward: {FormatCredits(item.Bonus)}"
+            : string.Empty;
     }
 
     public async Task SetCommanderContextAsync(
@@ -1213,8 +1390,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         Interlocked.Increment(ref commanderContextVersion);
         var previousConnection = connectionCancellation;
         connectionCancellation = null;
-        previousConnection?.Cancel();
-        previousConnection?.Dispose();
+        if (previousConnection is not null)
+        {
+            await previousConnection.CancelAsync();
+            previousConnection.Dispose();
+        }
         IsBusy = false;
         IsConnecting = false;
         Snapshot = null;
@@ -1345,50 +1525,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         try
         {
             IsBusy = true;
-            var state = await accountService.GetStateAsync(cancellationToken);
-            if (contextVersion != Interlocked.Read(ref commanderContextVersion))
-            {
-                return;
-            }
-
-            IsLinked = state.IsLinked;
-            if (Snapshot is null
-                || state.Snapshot is { } cached
-                && cached.FetchedAt >= Snapshot.FetchedAt)
-            {
-                Snapshot = state.Snapshot;
-            }
-            if (!state.IsLinked)
-            {
-                StatusMessage = string.Empty;
-                initialized = true;
-                return;
-            }
-
-            var shouldRefresh = state.Snapshot is null
-                || now().ToUniversalTime() - state.Snapshot.FetchedAt
-                    >= AutomaticRefreshAge;
-            var lastRequest = state.LastCapiAttemptAt is { } attempt
-                && (state.LastCapiRefreshAt is null
-                    || attempt > state.LastCapiRefreshAt)
-                    ? attempt
-                    : state.LastCapiRefreshAt;
-            var cooldownActive = lastRequest is { } priorRequest
-                && now().ToUniversalTime() - priorRequest < TimeSpan.FromMinutes(1);
-            if (!initialized && shouldRefresh && !cooldownActive)
-            {
-                StatusMessage = "Refreshing commander data from Frontier...";
-                var refreshed = await accountService.RefreshAsync(cancellationToken);
-                if (contextVersion != Interlocked.Read(ref commanderContextVersion))
-                {
-                    return;
-                }
-
-                Snapshot = refreshed;
-            }
-
-            StatusMessage = string.Empty;
-            initialized = true;
+            await OpenLinkedCommanderAsync(contextVersion, cancellationToken);
         }
         catch (Exception exception) when (IsExpected(exception))
         {
@@ -1407,18 +1544,80 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
     }
 
+    private async Task OpenLinkedCommanderAsync(
+        long contextVersion,
+        CancellationToken cancellationToken)
+    {
+        var state = await accountService.GetStateAsync(cancellationToken);
+        if (contextVersion != Interlocked.Read(ref commanderContextVersion))
+        {
+            return;
+        }
+
+        IsLinked = state.IsLinked;
+        if (Snapshot is null
+            || state.Snapshot is { } cached
+            && cached.FetchedAt >= Snapshot.FetchedAt)
+        {
+            Snapshot = state.Snapshot;
+        }
+
+        if (!state.IsLinked)
+        {
+            StatusMessage = string.Empty;
+            initialized = true;
+            return;
+        }
+
+        if (!initialized
+            && ShouldAutoRefresh(state)
+            && !IsRefreshCooled(state))
+        {
+            StatusMessage = "Refreshing commander data from Frontier...";
+            var refreshed = await accountService.RefreshAsync(cancellationToken);
+            if (contextVersion != Interlocked.Read(ref commanderContextVersion))
+            {
+                return;
+            }
+
+            Snapshot = refreshed;
+        }
+
+        StatusMessage = string.Empty;
+        initialized = true;
+    }
+
+    private bool ShouldAutoRefresh(FrontierAccountState state) =>
+        state.Snapshot is null
+        || now().ToUniversalTime() - state.Snapshot.FetchedAt
+            >= AutomaticRefreshAge;
+
+    private bool IsRefreshCooled(FrontierAccountState state)
+    {
+        var lastRequest = state.LastCapiAttemptAt is { } attempt
+            && (state.LastCapiRefreshAt is null
+                || attempt > state.LastCapiRefreshAt)
+                ? attempt
+                : state.LastCapiRefreshAt;
+        return lastRequest is { } priorRequest
+            && now().ToUniversalTime() - priorRequest < TimeSpan.FromMinutes(1);
+    }
+
     private async Task ConnectAsync()
     {
         var contextVersion = Interlocked.Read(ref commanderContextVersion);
         connectionCancellation?.Dispose();
-        connectionCancellation = new CancellationTokenSource();
+        var cancellation = new CancellationTokenSource();
+        connectionCancellation = cancellation;
+        var cancellationToken = cancellation.Token;
         try
         {
             IsBusy = true;
             IsConnecting = true;
             StatusMessage =
                 "Complete authorization in your browser. SrvSurvey will update this page when Frontier returns.";
-            var connected = await accountService.ConnectAsync(connectionCancellation.Token);
+            var connected = await accountService.ConnectAsync(
+                cancellationToken);
             if (contextVersion != Interlocked.Read(ref commanderContextVersion))
             {
                 return;
@@ -1428,7 +1627,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             IsLinked = true;
             initialized = true;
             StatusMessage = "Frontier account connected.";
-            await TryRefreshCommanderSelectionOptionsAsync();
+            await TryRefreshCommanderSelectionOptionsAsync(
+                cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -1451,16 +1651,24 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             {
                 IsConnecting = false;
                 IsBusy = false;
-                connectionCancellation?.Dispose();
-                connectionCancellation = null;
+                if (ReferenceEquals(connectionCancellation, cancellation))
+                {
+                    connectionCancellation = null;
+                }
+
+                cancellation.Dispose();
             }
         }
     }
 
     private async Task CancelConnectionAsync()
     {
-        connectionCancellation?.Cancel();
-        await accountService.CancelConnectionAsync();
+        if (connectionCancellation is not null)
+        {
+            await connectionCancellation.CancelAsync();
+        }
+
+        await accountService.CancelConnectionAsync(CancellationToken.None);
         StatusMessage = "Frontier authorization was cancelled.";
     }
 
@@ -1471,7 +1679,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         {
             IsBusy = true;
             StatusMessage = "Refreshing commander data from Frontier...";
-            var refreshed = await accountService.RefreshAsync();
+            var refreshed = await accountService.RefreshAsync(
+                CancellationToken.None);
             if (contextVersion != Interlocked.Read(ref commanderContextVersion))
             {
                 return;
@@ -1479,7 +1688,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
             Snapshot = refreshed;
             StatusMessage = "Commander data refreshed.";
-            await TryRefreshCommanderSelectionOptionsAsync();
+            await TryRefreshCommanderSelectionOptionsAsync(
+                CancellationToken.None);
         }
         catch (Exception exception) when (IsExpected(exception))
         {
@@ -1505,7 +1715,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         try
         {
             IsBusy = true;
-            await accountService.UnlinkAsync();
+            await accountService.UnlinkAsync(CancellationToken.None);
             if (contextVersion != Interlocked.Read(ref commanderContextVersion))
             {
                 return;
@@ -1515,14 +1725,16 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             IsLinked = false;
             initialized = true;
             StatusMessage = string.Empty;
-            await TryRefreshCommanderSelectionOptionsAsync();
+            await TryRefreshCommanderSelectionOptionsAsync(
+                CancellationToken.None);
             if (wasManuallySelected && manuallySelectedFrontierId is null)
             {
                 IsBusy = false;
                 await ActivateFrontierCommanderAsync(
                     detectedFrontierId,
                     detectedCommanderName,
-                    refreshIfOpen: true);
+                    refreshIfOpen: true,
+                    CancellationToken.None);
             }
         }
         catch (Exception exception) when (IsExpected(exception))
@@ -1554,9 +1766,11 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             FormatCredits(item.Value),
             FormatPercent(item.Health),
             item.IsPowered
-                ? item.Priority is { } priority
-                    ? $"Powered · priority {priority}"
-                    : "Powered"
+                ? item.Priority switch
+                {
+                    int priority => $"Powered · priority {priority}",
+                    null => "Powered"
+                }
                 : "Powered off",
             blueprint,
             item.BlueprintLevel is { } level ? $"Grade {level}" : string.Empty,
@@ -1588,7 +1802,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private static bool IsLiverySlot(string slot)
     {
         var key = NormalizeLookupKey(slot);
-        return key.StartsWith("decal", StringComparison.Ordinal)
+        return key.StartsWith(DecalPrefix, StringComparison.Ordinal)
             || key is "enginecolour" or "paintjob" or "vesselvoice" or "weaponcolour"
             || key.StartsWith("shipkit", StringComparison.Ordinal)
             || key.StartsWith("shipname", StringComparison.Ordinal);
@@ -1597,7 +1811,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private static string FriendlyLiverySlot(string slot)
     {
         var key = NormalizeLookupKey(slot);
-        if (key.StartsWith("decal", StringComparison.Ordinal))
+        if (key.StartsWith(DecalPrefix, StringComparison.Ordinal))
         {
             return "Decal";
         }
@@ -1633,7 +1847,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
         var key = NormalizeLookupKey(item.Slot);
         var value = internalName;
-        if (key.StartsWith("decal", StringComparison.Ordinal)
+        if (key.StartsWith(DecalPrefix, StringComparison.Ordinal)
             && value.Contains("SquadronLogo", StringComparison.OrdinalIgnoreCase))
         {
             return "Squadron Logo";
@@ -1645,7 +1859,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             "weaponcolour" => RemovePrefix(value, "WeaponCustomisation_"),
             "paintjob" => RemovePrefix(value, "PaintJob_"),
             "vesselvoice" => RemovePrefix(value, "VoicePack_"),
-            _ when key.StartsWith("decal", StringComparison.Ordinal) =>
+            _ when key.StartsWith(DecalPrefix, StringComparison.Ordinal) =>
                 RemovePrefix(value, "Decal_"),
             _ when key.StartsWith("shipname", StringComparison.Ordinal) =>
                 RemovePrefix(value, "Nameplate_"),
@@ -1788,7 +2002,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         var key = NormalizeLookupKey(slot);
         if (key.Contains("tinyhardpoint", StringComparison.Ordinal))
         {
-            return "Utility Mounts";
+            return UtilityMountsGroup;
         }
 
         if (key.Contains("hardpoint", StringComparison.Ordinal))
@@ -1801,15 +2015,12 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             return "Military Internal";
         }
 
-        if (key is "armour" or "powerplant" or "mainengines" or "frameshiftdrive"
-            or "lifesupport" or "powerdistributor" or "radar" or "fueltank")
+        if (IsCoreInternalModuleKey(key))
         {
             return "Core Internal";
         }
 
-        if (key.StartsWith("slot", StringComparison.Ordinal)
-            || key.StartsWith("cargo", StringComparison.Ordinal)
-            || key.Contains("planetaryapproachsuite", StringComparison.Ordinal))
+        if (IsOptionalInternalModuleKey(key))
         {
             return "Optional Internal";
         }
@@ -1817,10 +2028,19 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         return "Ship Systems";
     }
 
+    private static bool IsCoreInternalModuleKey(string key) =>
+        key is "armour" or "powerplant" or "mainengines" or "frameshiftdrive"
+            or "lifesupport" or "powerdistributor" or "radar" or "fueltank";
+
+    private static bool IsOptionalInternalModuleKey(string key) =>
+        key.StartsWith("slot", StringComparison.Ordinal)
+        || key.StartsWith("cargo", StringComparison.Ordinal)
+        || key.Contains("planetaryapproachsuite", StringComparison.Ordinal);
+
     private static int ModuleGroupOrder(string group) => group switch
     {
         "Hardpoints" => 0,
-        "Utility Mounts" => 1,
+        UtilityMountsGroup => 1,
         "Core Internal" => 2,
         "Military Internal" => 3,
         "Optional Internal" => 4,
@@ -1847,7 +2067,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private static string ModuleGroupGlyph(string group) => group switch
     {
         "Hardpoints" => "◎",
-        "Utility Mounts" => "◇",
+        UtilityMountsGroup => "◇",
         "Core Internal" => "⬢",
         "Military Internal" => "◆",
         "Optional Internal" => "▦",
@@ -1857,26 +2077,27 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private static string ModuleGlyph(string name, string group)
     {
         var value = name.ToLowerInvariant();
-        if (value.Contains("laser", StringComparison.Ordinal)) return "✦";
-        if (value.Contains("missile", StringComparison.Ordinal)
-            || value.Contains("torpedo", StringComparison.Ordinal)) return "➤";
-        if (value.Contains("cannon", StringComparison.Ordinal)
-            || value.Contains("gun", StringComparison.Ordinal)) return "◎";
-        if (value.Contains("shield", StringComparison.Ordinal)) return "⬡";
-        if (value.Contains("thruster", StringComparison.Ordinal)
-            || value.Contains("engine", StringComparison.Ordinal)) return "»";
-        if (value.Contains("frame shift", StringComparison.Ordinal)) return "✦";
-        if (value.Contains("power", StringComparison.Ordinal)) return "⚡";
-        if (value.Contains("sensor", StringComparison.Ordinal)
-            || value.Contains("scanner", StringComparison.Ordinal)
-            || value.Contains("radar", StringComparison.Ordinal)) return "⌁";
-        if (value.Contains("cargo", StringComparison.Ordinal)) return "▦";
-        if (value.Contains("fuel", StringComparison.Ordinal)) return "◒";
-        if (value.Contains("armour", StringComparison.Ordinal)
-            || value.Contains("hull", StringComparison.Ordinal)
-            || value.Contains("reinforcement", StringComparison.Ordinal)) return "◆";
-        return ModuleGroupGlyph(group);
+        return ResolveModuleGlyphFromName(value) ?? ModuleGroupGlyph(group);
     }
+
+    private static string? ResolveModuleGlyphFromName(string value)
+    {
+        if (ContainsAny(value, "laser")) return "✦";
+        if (ContainsAny(value, "missile", "torpedo")) return "➤";
+        if (ContainsAny(value, "cannon", "gun")) return "◎";
+        if (ContainsAny(value, "shield")) return "⬡";
+        if (ContainsAny(value, "thruster", "engine")) return "»";
+        if (ContainsAny(value, "frame shift")) return "✦";
+        if (ContainsAny(value, "power")) return "⚡";
+        if (ContainsAny(value, "sensor", "scanner", "radar")) return "⌁";
+        if (ContainsAny(value, "cargo")) return "▦";
+        if (ContainsAny(value, "fuel")) return "◒";
+        if (ContainsAny(value, "armour", "hull", "reinforcement")) return "◆";
+        return null;
+    }
+
+    private static bool ContainsAny(string value, params string[] tokens) =>
+        tokens.Any(token => value.Contains(token, StringComparison.Ordinal));
 
     private static string ModuleClassRating(
         string internalName,
@@ -1908,7 +2129,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         if (key.Contains("large", StringComparison.Ordinal)) return "L";
         if (key.Contains("medium", StringComparison.Ordinal)) return "M";
         if (key.Contains("small", StringComparison.Ordinal)) return "S";
-        return group == "Utility Mounts" ? "U" : string.Empty;
+        return group == UtilityMountsGroup ? "U" : string.Empty;
     }
 
     private static string FriendlyModuleSlot(string slot)
@@ -1997,7 +2218,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
 
         var oxygen = ship.OxygenRemaining is { } oxygenRemaining
             ? $"{oxygenRemaining:N0} seconds"
-            : "Unavailable";
+            : UnavailableLabel;
         return
         [
             new("Hull", FormatPercent(ship.HullHealth)),
@@ -2201,15 +2422,13 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 journalUpdatedAt));
         }
 
-        foreach (var currentGoal in journalCommunityGoals)
+        foreach (var currentGoal in journalCommunityGoals.Where(currentGoal =>
+            FindCommunityGoalMatch(
+                currentGoal,
+                result,
+                new HashSet<int>()) is null))
         {
-            if (FindCommunityGoalMatch(
-                    currentGoal,
-                    result,
-                    new HashSet<int>()) is null)
-            {
-                result.Add(currentGoal);
-            }
+            result.Add(currentGoal);
         }
 
         return FrontierCommunityGoalOrdering.Order(result);
@@ -2234,7 +2453,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
                 data[point.Path] = point.Value;
             }
 
-            data["journal.communityGoalTimestamp"] = timestamp.Value.ToString(
+            data[CommunityGoalTimestampKey] = timestamp.Value.ToString(
                 "O",
                 CultureInfo.InvariantCulture);
             return goal with
@@ -2248,7 +2467,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }).ToArray();
     }
 
-    private static IReadOnlyList<FrontierCommunityGoalSnapshot>
+    private static FrontierCommunityGoalSnapshot[]
         MergeJournalCommunityGoalHistory(
             IReadOnlyList<FrontierCommunityGoalSnapshot> existing,
             IReadOnlyList<FrontierCommunityGoalSnapshot> incoming)
@@ -2280,7 +2499,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         FrontierCommunityGoalSnapshot goal) =>
         CommunityGoalDataDateTimeOffset(
             goal.DataPoints ?? [],
-            "journal.communityGoalTimestamp");
+            CommunityGoalTimestampKey);
 
     private static string CommunityGoalHistoryKey(
         FrontierCommunityGoalSnapshot goal) =>
@@ -2306,30 +2525,60 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     private static int? FindCommunityGoalMatch(
         FrontierCommunityGoalSnapshot goal,
         IReadOnlyList<FrontierCommunityGoalSnapshot> candidates,
-        IReadOnlySet<int> alreadyMatched)
+        HashSet<int> alreadyMatched)
     {
-        if (goal.Id is { } id)
+        var idMatch = FindCommunityGoalIdMatch(goal, candidates, alreadyMatched);
+        if (idMatch is not null)
         {
-            var idMatch = candidates
-                .Select((candidate, index) => (candidate, index))
-                .FirstOrDefault(pair => !alreadyMatched.Contains(pair.index)
-                    && pair.candidate.Id == id);
-            if (idMatch.candidate is not null)
-            {
-                return idMatch.index;
-            }
+            return idMatch;
         }
 
+        return FindCommunityGoalTextMatch(goal, candidates, alreadyMatched);
+    }
+
+    private static int? FindCommunityGoalIdMatch(
+        FrontierCommunityGoalSnapshot goal,
+        IReadOnlyList<FrontierCommunityGoalSnapshot> candidates,
+        HashSet<int> alreadyMatched)
+    {
+        if (goal.Id is not { } id)
+        {
+            return null;
+        }
+
+        var idMatch = candidates
+            .Select((candidate, index) => (candidate, index))
+            .FirstOrDefault(pair => !alreadyMatched.Contains(pair.index)
+                && pair.candidate.Id == id);
+        return idMatch.candidate is not null ? idMatch.index : null;
+    }
+
+    private static int? FindCommunityGoalTextMatch(
+        FrontierCommunityGoalSnapshot goal,
+        IReadOnlyList<FrontierCommunityGoalSnapshot> candidates,
+        HashSet<int> alreadyMatched)
+    {
         var matches = candidates
             .Select((candidate, index) => (candidate, index))
-            .Where(pair => !alreadyMatched.Contains(pair.index)
-                && CommunityGoalTextMatches(goal.Title, pair.candidate.Title)
-                && CommunityGoalOptionalTextMatches(goal.System, pair.candidate.System)
-                && CommunityGoalOptionalTextMatches(goal.Market, pair.candidate.Market)
-                && CommunityGoalExpiryMatches(goal.ExpiresAt, pair.candidate.ExpiresAt))
+            .Where(pair => IsCommunityGoalTextMatchCandidate(
+                goal,
+                pair.candidate,
+                pair.index,
+                alreadyMatched))
             .ToArray();
         return matches.Length == 1 ? matches[0].index : null;
     }
+
+    private static bool IsCommunityGoalTextMatchCandidate(
+        FrontierCommunityGoalSnapshot goal,
+        FrontierCommunityGoalSnapshot candidate,
+        int index,
+        HashSet<int> alreadyMatched) =>
+        !alreadyMatched.Contains(index)
+        && CommunityGoalTextMatches(goal.Title, candidate.Title)
+        && CommunityGoalOptionalTextMatches(goal.System, candidate.System)
+        && CommunityGoalOptionalTextMatches(goal.Market, candidate.Market)
+        && CommunityGoalExpiryMatches(goal.ExpiresAt, candidate.ExpiresAt);
 
     private static bool CommunityGoalTextMatches(string first, string second) =>
         NormalizeLookupKey(first) == NormalizeLookupKey(second);
@@ -2354,27 +2603,52 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         bool journalIsCurrent,
         DateTimeOffset? journalUpdatedAt)
     {
+        var data = MergeCommunityGoalDataPoints(
+            account,
+            journal,
+            journalIsCurrent,
+            journalUpdatedAt);
+        return BuildMergedCommunityGoalSnapshot(
+            account,
+            journal,
+            journalIsCurrent,
+            data);
+    }
+
+    private static Dictionary<string, string> MergeCommunityGoalDataPoints(
+        FrontierCommunityGoalSnapshot account,
+        FrontierCommunityGoalSnapshot journal,
+        bool journalIsCurrent,
+        DateTimeOffset? journalUpdatedAt)
+    {
         var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var point in account.DataPoints ?? [])
         {
             data[point.Path] = point.Value;
         }
 
-        foreach (var point in journal.DataPoints ?? [])
+        foreach (var point in (journal.DataPoints ?? []).Where(point =>
+            journalIsCurrent || !data.ContainsKey(point.Path)))
         {
-            if (journalIsCurrent || !data.ContainsKey(point.Path))
-            {
-                data[point.Path] = point.Value;
-            }
+            data[point.Path] = point.Value;
         }
 
         if (journalUpdatedAt is { } timestamp)
         {
-            data["journal.communityGoalTimestamp"] = timestamp.ToString(
+            data[CommunityGoalTimestampKey] = timestamp.ToString(
                 "O",
                 CultureInfo.InvariantCulture);
         }
 
+        return data;
+    }
+
+    private static FrontierCommunityGoalSnapshot BuildMergedCommunityGoalSnapshot(
+        FrontierCommunityGoalSnapshot account,
+        FrontierCommunityGoalSnapshot journal,
+        bool journalIsCurrent,
+        Dictionary<string, string> data)
+    {
         return account with
         {
             Id = account.Id ?? journal.Id,
@@ -2384,40 +2658,56 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             System = FirstNonEmpty(account.System, journal.System),
             Market = FirstNonEmpty(account.Market, journal.Market),
             ExpiresAt = account.ExpiresAt ?? journal.ExpiresAt,
-            IsComplete = account.IsComplete || journalIsCurrent && journal.IsComplete,
-            CurrentTotal = journalIsCurrent || account.CurrentTotal == 0
-                ? journal.CurrentTotal
-                : account.CurrentTotal,
-            TargetTotal = journalIsCurrent || account.TargetTotal is null
-                ? journal.TargetTotal ?? account.TargetTotal
-                : account.TargetTotal,
-            PlayerContribution = journal.HasPlayerContributionData
-                && (journalIsCurrent || !account.HasPlayerContributionData)
-                    ? journal.PlayerContribution
-                    : account.PlayerContribution,
-            Contributors = journal.HasContributorData
-                && (journalIsCurrent || !account.HasContributorData)
-                    ? journal.Contributors
-                    : account.Contributors,
-            TierReached = journalIsCurrent && !string.IsNullOrWhiteSpace(journal.TierReached)
-                ? journal.TierReached
-                : FirstNonEmpty(account.TierReached, journal.TierReached),
-            PlayerPercentile = journal.HasPlayerContributionData
-                && (journalIsCurrent || !account.HasPlayerContributionData)
-                    ? journal.PlayerPercentile
-                    : account.PlayerPercentile,
-            Bonus = journal.HasPlayerContributionData
-                && (journalIsCurrent || !account.HasPlayerContributionData)
-                    ? journal.Bonus
-                    : account.Bonus,
-            TopRankSize = journal.HasPlayerContributionData
-                && (journalIsCurrent || !account.HasPlayerContributionData)
-                    ? journal.TopRankSize
-                    : account.TopRankSize,
-            PlayerInTopRank = journal.HasPlayerContributionData
-                && (journalIsCurrent || !account.HasPlayerContributionData)
-                    ? journal.PlayerInTopRank
-                    : account.PlayerInTopRank,
+            IsComplete = account.IsComplete
+                || journalIsCurrent && journal.IsComplete,
+            CurrentTotal = PreferJournalOrAccount(
+                journalIsCurrent || account.CurrentTotal == 0,
+                journal.CurrentTotal,
+                account.CurrentTotal),
+            TargetTotal = PreferJournalOrAccount(
+                journalIsCurrent || account.TargetTotal is null,
+                journal.TargetTotal ?? account.TargetTotal,
+                account.TargetTotal),
+            PlayerContribution = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasPlayerContributionData,
+                account.HasPlayerContributionData,
+                journal.PlayerContribution,
+                account.PlayerContribution),
+            Contributors = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasContributorData,
+                account.HasContributorData,
+                journal.Contributors,
+                account.Contributors),
+            TierReached = PreferJournalTierReached(
+                journalIsCurrent,
+                journal.TierReached,
+                account.TierReached),
+            PlayerPercentile = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasPlayerContributionData,
+                account.HasPlayerContributionData,
+                journal.PlayerPercentile,
+                account.PlayerPercentile),
+            Bonus = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasPlayerContributionData,
+                account.HasPlayerContributionData,
+                journal.Bonus,
+                account.Bonus),
+            TopRankSize = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasPlayerContributionData,
+                account.HasPlayerContributionData,
+                journal.TopRankSize,
+                account.TopRankSize),
+            PlayerInTopRank = PreferJournalPlayerContributionField(
+                journalIsCurrent,
+                journal.HasPlayerContributionData,
+                account.HasPlayerContributionData,
+                journal.PlayerInTopRank,
+                account.PlayerInTopRank),
             ActivityType = FirstNonEmpty(account.ActivityType, journal.ActivityType),
             HasPlayerContributionData = account.HasPlayerContributionData
                 || journal.HasPlayerContributionData,
@@ -2429,12 +2719,36 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         };
     }
 
+    private static T PreferJournalOrAccount<T>(
+        bool preferJournal,
+        T journal,
+        T account) =>
+        preferJournal ? journal : account;
+
+    private static T PreferJournalPlayerContributionField<T>(
+        bool journalIsCurrent,
+        bool journalHasData,
+        bool accountHasData,
+        T journalValue,
+        T accountValue) =>
+        journalHasData && (journalIsCurrent || !accountHasData)
+            ? journalValue
+            : accountValue;
+
+    private static string PreferJournalTierReached(
+        bool journalIsCurrent,
+        string journalTierReached,
+        string accountTierReached) =>
+        journalIsCurrent && !string.IsNullOrWhiteSpace(journalTierReached)
+            ? journalTierReached
+            : FirstNonEmpty(accountTierReached, journalTierReached);
+
     private IReadOnlyList<FrontierReputationSnapshot> EffectiveCommanderReputation()
     {
         var capiReputation = Snapshot?.CommanderReputation is { Count: > 0 } account
             ? account
             : Carrier?.Reputation ?? [];
-        if (journalReputation.Count == 0
+        if (journalReputation.Length == 0
             || Snapshot is null
             || manuallySelectedFrontierId is not null
                 && !string.Equals(
@@ -2494,7 +2808,7 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     {
         return value is { } number
             ? $"{NormalizePercentForDisplay(number):N0}%"
-            : "Unavailable";
+            : UnavailableLabel;
     }
 
     private static double NormalizePercentForDisplay(double value) =>
@@ -2555,8 +2869,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
             "explore" => RankAsset("exploration", rank),
             "cqc" => RankAsset("cqc", rank),
             "power" => RankAsset("powerplay", Math.Clamp(level + 1, 1, 5)),
-            "federation" => FactionAsset("federation"),
-            "empire" => FactionAsset("empire"),
+            FederationFaction => FactionAsset(FederationFaction),
+            EmpireFaction => FactionAsset(EmpireFaction),
             _ => RankAsset("pilots-federation", rank),
         };
     }
@@ -2569,15 +2883,15 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         }
 
         var value = faction.ToLowerInvariant();
-        if (value.Contains("federation", StringComparison.Ordinal))
+        if (value.Contains(FederationFaction, StringComparison.Ordinal))
         {
-            return FactionAsset("federation");
+            return FactionAsset(FederationFaction);
         }
 
-        if (value.Contains("empire", StringComparison.Ordinal)
+        if (value.Contains(EmpireFaction, StringComparison.Ordinal)
             || value.Contains("imperial", StringComparison.Ordinal))
         {
-            return FactionAsset("empire");
+            return FactionAsset(EmpireFaction);
         }
 
         if (value.Contains("alliance", StringComparison.Ordinal))
@@ -2630,19 +2944,25 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
         params string[] names)
     {
         var value = CommunityGoalDataValue(dataPoints, names);
-        return long.TryParse(
+        if (long.TryParse(
             value,
             NumberStyles.Integer | NumberStyles.AllowThousands,
             CultureInfo.InvariantCulture,
-            out var parsed)
-                ? parsed
-                : long.TryParse(
-                    value,
-                    NumberStyles.Integer | NumberStyles.AllowThousands,
-                    CultureInfo.CurrentCulture,
-                    out parsed)
-                        ? parsed
-                        : null;
+            out var parsed))
+        {
+            return parsed;
+        }
+
+        if (long.TryParse(
+            value,
+            NumberStyles.Integer | NumberStyles.AllowThousands,
+            CultureInfo.CurrentCulture,
+            out parsed))
+        {
+            return parsed;
+        }
+
+        return null;
     }
 
     private static DateTimeOffset? CommunityGoalDataDateTimeOffset(
@@ -2774,7 +3094,8 @@ public sealed class CommanderProfileViewModel : INotifyPropertyChanged, IDisposa
     {
         try
         {
-            var state = await accountService.GetStateAsync();
+            var state = await accountService.GetStateAsync(
+                CancellationToken.None);
             IsLinked = state.IsLinked;
             Snapshot = state.Snapshot;
         }
@@ -2871,25 +3192,28 @@ public sealed record FrontierCommanderSelectionOption(
     bool IsAutomatic)
 {
     public static FrontierCommanderSelectionOption Automatic(
-        string? frontierId,
-        string? commanderName)
+    string? frontierId,
+    string? commanderName)
+{
+    var commander = string.IsNullOrWhiteSpace(commanderName)
+        ? frontierId
+        : commanderName.Trim();
+    var detail = "waiting for journal";
+    if (!string.IsNullOrWhiteSpace(commander))
     {
-        var commander = string.IsNullOrWhiteSpace(commanderName)
-            ? frontierId
-            : commanderName.Trim();
-        var detail = string.IsNullOrWhiteSpace(commander)
-            ? "waiting for journal"
-            : string.IsNullOrWhiteSpace(frontierId)
-                ? commander
-                : $"{commander} ({frontierId})";
-        return new FrontierCommanderSelectionOption(
-            frontierId ?? string.Empty,
-            commander ?? string.Empty,
-            $"Automatic · {detail}",
-            true);
+        detail = string.IsNullOrWhiteSpace(frontierId)
+            ? commander
+            : $"{commander} ({frontierId})";
     }
 
-    public static FrontierCommanderSelectionOption Linked(
+    return new FrontierCommanderSelectionOption(
+        frontierId ?? string.Empty,
+        commander ?? string.Empty,
+        $"Automatic · {detail}",
+        true);
+}
+
+public static FrontierCommanderSelectionOption Linked(
         FrontierLinkedCommander commander) => new(
         commander.FrontierId,
         commander.CommanderName,
@@ -3220,11 +3544,15 @@ file sealed class PanelToggleCommand(Action execute) : ICommand
 {
     public event EventHandler? CanExecuteChanged
     {
-        add { }
-        remove { }
+        add { /* This command is always executable. */ }
+        remove { /* This command is always executable. */ }
     }
 
     public bool CanExecute(object? parameter) => true;
 
     public void Execute(object? parameter) => execute();
 }
+
+
+
+

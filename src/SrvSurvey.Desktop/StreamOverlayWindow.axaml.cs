@@ -40,10 +40,10 @@ public sealed partial class StreamOverlayWindow : Window
         }
     }
 
-    protected override void OnClosed(EventArgs eventArgs)
+    protected override void OnClosed(EventArgs e)
     {
         ReplaceFrames([]);
-        base.OnClosed(eventArgs);
+        base.OnClosed(e);
     }
 }
 

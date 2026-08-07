@@ -15,14 +15,20 @@ public interface IScreenshotProcessingService
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        CancellationToken cancellationToken = default,
         IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
             guardianContexts = null,
-        ScreenshotNavigationContext? navigationContext = null);
+        ScreenshotNavigationContext? navigationContext = null,
+        CancellationToken cancellationToken = default);
 }
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The service is application-scoped and its gate may have in-flight waiters.")]
 public sealed class ScreenshotProcessingService : IScreenshotProcessingService
 {
+    private const string UnknownLabel = "unknown";
+
     private readonly SemaphoreSlim processingLock = new(1, 1);
     private readonly Func<int?> primaryWorkingAreaWidthProvider;
 
@@ -48,10 +54,10 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         ScreenshotProcessingPreferences preferences,
         string? commanderName,
-        CancellationToken cancellationToken = default,
         IReadOnlyDictionary<JournalEventEnvelope, ScreenshotGuardianContext>?
             guardianContexts = null,
-        ScreenshotNavigationContext? navigationContext = null)
+        ScreenshotNavigationContext? navigationContext = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(journalEvents);
         ArgumentNullException.ThrowIfNull(preferences);
@@ -198,8 +204,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
                 request.NavigationContext);
         }
 
-        var systemName = GetString(entry, "System") ?? "unknown";
-        var bodyName = GetString(entry, "Body") ?? "unknown";
+        var systemName = GetString(entry, "System") ?? UnknownLabel;
+        var bodyName = GetString(entry, "Body") ?? UnknownLabel;
         var timestamp = entry.Timestamp ?? DateTimeOffset.UtcNow;
         var folder = GetSystemFolderPath(request.TargetDirectory, systemName);
         Directory.CreateDirectory(folder);
@@ -488,8 +494,8 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
             Color = ParseColor(preferences.BannerColor),
             IsAntialias = true,
         };
-        var body = GetString(entry, "Body") ?? "unknown";
-        var system = GetString(entry, "System") ?? "unknown";
+        var body = GetString(entry, "Body") ?? UnknownLabel;
+        var system = GetString(entry, "System") ?? UnknownLabel;
         var timestamp = entry.Timestamp ?? DateTimeOffset.UtcNow;
         var displayedTime = preferences.BannerLocalTime
             ? timestamp.ToLocalTime().ToString("G", CultureInfo.CurrentCulture)
@@ -497,7 +503,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         var details = new List<string>
         {
             $"System: {system}",
-            $"Cmdr: {commanderName ?? "unknown"} - {displayedTime}",
+            $"Cmdr: {commanderName ?? UnknownLabel} - {displayedTime}",
         };
         if (guardianContext is not null)
         {
@@ -563,7 +569,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
     }
 
     private static void AddNumber(
-        ICollection<string> values,
+        List<string> values,
         JournalEventEnvelope entry,
         string propertyName,
         string label,
@@ -645,7 +651,7 @@ public sealed class ScreenshotProcessingService : IScreenshotProcessingService
         }
 
         var safe = result.ToString().TrimEnd(' ', '.');
-        return string.IsNullOrWhiteSpace(safe) ? "unknown" : safe;
+        return string.IsNullOrWhiteSpace(safe) ? UnknownLabel : safe;
     }
 }
 

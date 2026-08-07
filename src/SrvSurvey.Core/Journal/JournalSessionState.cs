@@ -5,6 +5,7 @@ namespace SrvSurvey.Core.Journal;
 
 public sealed class JournalSessionState
 {
+    private const string ShipIdProperty = "ShipID";
     public string? GameVersion { get; private set; }
 
     public string? GameBuild { get; private set; }
@@ -84,14 +85,14 @@ public sealed class JournalSessionState
             case "LoadGame":
                 CommanderName = GetString(root, "Commander") ?? CommanderName;
                 FrontierId = GetString(root, "FID") ?? FrontierId;
-                GameMode = GetString(root, "GameMode") ?? GameMode;
+                GameMode = GetString(root, nameof(GameMode)) ?? GameMode;
                 GameVersion = GetString(root, "gameversion") ?? GameVersion;
                 GameBuild = GetString(root, "build") ?? GameBuild;
                 IsOdyssey = GetBoolean(root, "Odyssey") ?? IsOdyssey;
                 ShipType = GetString(root, "Ship") ?? ShipType;
-                ShipId = GetInt64(root, "ShipID") ?? ShipId;
-                ShipName = GetString(root, "ShipName") ?? ShipName;
-                ShipIdent = GetString(root, "ShipIdent") ?? ShipIdent;
+                ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
+                ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
+                ShipIdent = GetString(root, nameof(ShipIdent)) ?? ShipIdent;
                 IsShutdown = false;
                 IsAtMainMenu = false;
                 IsAtCarrierManagement = false;
@@ -100,29 +101,29 @@ public sealed class JournalSessionState
 
             case "Loadout":
                 ShipType = GetString(root, "Ship") ?? ShipType;
-                ShipId = GetInt64(root, "ShipID") ?? ShipId;
-                ShipName = GetString(root, "ShipName") ?? ShipName;
-                ShipIdent = GetString(root, "ShipIdent")
+                ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
+                ShipName = GetString(root, nameof(ShipName)) ?? ShipName;
+                ShipIdent = GetString(root, nameof(ShipIdent))
                     ?? GetString(root, "ShipIDent")
                     ?? ShipIdent;
                 break;
 
             case "ShipyardSwap":
-                ShipType = GetString(root, "ShipType") ?? ShipType;
-                ShipId = GetInt64(root, "ShipID") ?? ShipId;
+                ShipType = GetString(root, nameof(ShipType)) ?? ShipType;
+                ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
                 break;
 
             case "ShipyardBuy":
             case "ShipyardNew":
-                ShipType = GetString(root, "ShipType") ?? ShipType;
+                ShipType = GetString(root, nameof(ShipType)) ?? ShipType;
                 ShipId = GetInt64(root, "NewShipID")
-                    ?? GetInt64(root, "ShipID")
+                    ?? GetInt64(root, ShipIdProperty)
                     ?? ShipId;
                 break;
 
             case "SetUserShipName":
                 ShipType = GetString(root, "Ship") ?? ShipType;
-                ShipId = GetInt64(root, "ShipID") ?? ShipId;
+                ShipId = GetInt64(root, ShipIdProperty) ?? ShipId;
                 ShipName = GetString(root, "UserShipName") ?? ShipName;
                 ShipIdent = GetString(root, "UserShipId") ?? ShipIdent;
                 break;
@@ -150,12 +151,12 @@ public sealed class JournalSessionState
 
             case "Location":
                 SystemName = GetString(root, "StarSystem") ?? SystemName;
-                SystemAddress = GetInt64(root, "SystemAddress") ?? SystemAddress;
+                SystemAddress = GetInt64(root, nameof(SystemAddress)) ?? SystemAddress;
                 StarPosition = GetGalacticCoordinate(root, "StarPos")
                     ?? StarPosition;
                 BodyName = GetCurrentPlanetName(root);
                 StationName = GetBoolean(root, "Docked") == true
-                    ? GetString(root, "StationName") ?? StationName
+                    ? GetString(root, nameof(StationName)) ?? StationName
                     : null;
                 IsShutdown = false;
                 IsAtMainMenu = false;
@@ -163,8 +164,8 @@ public sealed class JournalSessionState
 
             case "Docked":
                 SystemName = GetString(root, "StarSystem") ?? SystemName;
-                SystemAddress = GetInt64(root, "SystemAddress") ?? SystemAddress;
-                StationName = GetString(root, "StationName") ?? StationName;
+                SystemAddress = GetInt64(root, nameof(SystemAddress)) ?? SystemAddress;
+                StationName = GetString(root, nameof(StationName)) ?? StationName;
                 IsShutdown = false;
                 IsAtMainMenu = false;
                 break;
@@ -177,7 +178,7 @@ public sealed class JournalSessionState
             case "FSDJump":
             case "CarrierJump":
                 SystemName = GetString(root, "StarSystem") ?? SystemName;
-                SystemAddress = GetInt64(root, "SystemAddress") ?? SystemAddress;
+                SystemAddress = GetInt64(root, nameof(SystemAddress)) ?? SystemAddress;
                 StarPosition = GetGalacticCoordinate(root, "StarPos")
                     ?? StarPosition;
                 BodyName = GetCurrentPlanetName(root);

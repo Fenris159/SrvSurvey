@@ -5,6 +5,8 @@ namespace SrvSurvey.Core.Tests.Quests;
 
 public sealed class QuestProgressMapperTests
 {
+    private static readonly double[] SampleRouteWaypoint = [1d, 2d];
+
     [Fact]
     public void KnownLegacyStateMapsWithoutLosingRuntimeValues()
     {
@@ -76,7 +78,7 @@ public sealed class QuestProgressMapperTests
                 new LegacyQuestRoute(
                     "route",
                     2.5,
-                    [new[] { 1d, 2d }]),
+                    [SampleRouteWaypoint]),
             ],
             new Dictionary<string, JsonElement>
             {

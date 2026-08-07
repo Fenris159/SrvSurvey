@@ -1,4 +1,5 @@
 using SrvSurvey.Desktop.Configuration;
+using SrvSurvey.Desktop.Controls;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Tests.ViewModels;
@@ -22,6 +23,110 @@ public sealed class BiologyRewardSettingsViewModelTests : IDisposable
         Assert.Equal(new BiologyRewardThresholds(8, 8, 8), viewModel.Thresholds);
         Assert.Equal(viewModel.Thresholds, store.Load());
         Assert.False(viewModel.HasStatusMessage);
+    }
+
+    [Fact]
+    public void SpeciesGroupPreviewRewardsFillOneThroughFourBars()
+    {
+        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        var viewModel = new BiologyRewardSettingsViewModel(
+            new BiologyRewardSettingsStore(path));
+        var thresholds = BiologyRewardThresholds.Default;
+
+        Assert.Equal(
+            [
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Empty,
+                BiologyRewardBandSegment.Empty,
+                BiologyRewardBandSegment.Empty,
+            ],
+            BiologyRewardBandScale.Calculate(
+                BiologyRewardSettingsViewModel.PreviewOneBarReward,
+                BiologyRewardSettingsViewModel.PreviewOneBarReward,
+                thresholds).Segments);
+        Assert.Equal(
+            [
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Empty,
+                BiologyRewardBandSegment.Empty,
+            ],
+            BiologyRewardBandScale.Calculate(
+                viewModel.PreviewTwoBarReward,
+                viewModel.PreviewTwoBarReward,
+                thresholds).Segments);
+        Assert.Equal(
+            [
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Empty,
+            ],
+            BiologyRewardBandScale.Calculate(
+                viewModel.PreviewThreeBarReward,
+                viewModel.PreviewThreeBarReward,
+                thresholds).Segments);
+        Assert.Equal(
+            [
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Filled,
+            ],
+            BiologyRewardBandScale.Calculate(
+                viewModel.PreviewFourBarReward,
+                viewModel.PreviewFourBarReward,
+                thresholds).Segments);
+    }
+
+    [Fact]
+    public void LegacySampleRewardAliasesMatchProgressivePreviewRewards()
+    {
+        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        var viewModel = new BiologyRewardSettingsViewModel(
+            new BiologyRewardSettingsStore(path));
+
+        Assert.Equal(viewModel.PreviewTwoBarReward, viewModel.BucketOneSampleReward);
+        Assert.Equal(viewModel.PreviewThreeBarReward, viewModel.BucketTwoSampleReward);
+        Assert.Equal(viewModel.PreviewFourBarReward, viewModel.BucketThreeSampleReward);
+
+        viewModel.BucketOneMillions = 4;
+        viewModel.BucketTwoMillions = 8;
+        viewModel.BucketThreeMillions = 13;
+
+        Assert.Equal(viewModel.PreviewTwoBarReward, viewModel.BucketOneSampleReward);
+        Assert.Equal(viewModel.PreviewThreeBarReward, viewModel.BucketTwoSampleReward);
+        Assert.Equal(viewModel.PreviewFourBarReward, viewModel.BucketThreeSampleReward);
+    }
+
+    [Fact]
+    public void PreviewRewardsStayStrictlyAboveNearIntegerMillionThresholds()
+    {
+        var path = Path.Combine(temporaryDirectory, "ui-settings.json");
+        var viewModel = new BiologyRewardSettingsViewModel(
+            new BiologyRewardSettingsStore(path));
+
+        // Just below the displayed 3 M boundary; truncation alone would under-fill.
+        viewModel.BucketOneMillions = 2.999999999d;
+        viewModel.BucketTwoMillions = 6.999999999d;
+        viewModel.BucketThreeMillions = 11.999999999d;
+
+        var state = BiologyRewardBandScale.Calculate(
+            viewModel.PreviewTwoBarReward,
+            viewModel.PreviewTwoBarReward,
+            viewModel.Thresholds);
+
+        Assert.Equal(
+            [
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Filled,
+                BiologyRewardBandSegment.Empty,
+                BiologyRewardBandSegment.Empty,
+            ],
+            state.Segments);
+        Assert.True(viewModel.PreviewTwoBarReward > 3_000_000);
+        Assert.True(viewModel.PreviewThreeBarReward > 7_000_000);
+        Assert.True(viewModel.PreviewFourBarReward > 12_000_000);
     }
 
     public void Dispose()

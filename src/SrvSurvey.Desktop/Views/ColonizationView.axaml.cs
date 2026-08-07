@@ -1,12 +1,18 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using SrvSurvey.Core.Colonization;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
 
 public sealed partial class ColonizationView : UserControl
 {
+    private const string DesktopLinkLauncherUnavailable =
+        "The desktop link launcher is not available.";
+    private const string DefaultBrowserDeclined =
+        "The default browser declined the request.";
+
     public ColonizationView()
     {
         InitializeComponent();
@@ -25,12 +31,12 @@ public sealed partial class ColonizationView : UserControl
         {
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
-                    "The desktop link launcher is not available.");
+                    DesktopLinkLauncherUnavailable);
             if (!await launcher.LaunchUriAsync(
                     new Uri(RavenColonialClient.WebsiteUri, "user")))
             {
                 throw new InvalidOperationException(
-                    "The default browser declined the request.");
+                    DefaultBrowserDeclined);
             }
         }
         catch (Exception exception) when (
@@ -49,12 +55,12 @@ public sealed partial class ColonizationView : UserControl
         {
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
-                    "The desktop link launcher is not available.");
+                    DesktopLinkLauncherUnavailable);
             if (!await launcher.LaunchUriAsync(
                     new Uri(RavenColonialClient.WebsiteUri, "build")))
             {
                 throw new InvalidOperationException(
-                    "The default browser declined the request.");
+                    DefaultBrowserDeclined);
             }
         }
         catch (Exception exception) when (
@@ -84,7 +90,7 @@ public sealed partial class ColonizationView : UserControl
         {
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
-                    "The desktop link launcher is not available.");
+                    DesktopLinkLauncherUnavailable);
             var buildId = Uri.EscapeDataString(
                 viewModel.Colonization.ProjectEditor.CreatedProjectId);
             if (!await launcher.LaunchUriAsync(new Uri(
@@ -92,7 +98,7 @@ public sealed partial class ColonizationView : UserControl
                     $"#build={buildId}")))
             {
                 throw new InvalidOperationException(
-                    "The default browser declined the request.");
+                    DefaultBrowserDeclined);
             }
         }
         catch (Exception exception) when (
@@ -128,8 +134,7 @@ public sealed partial class ColonizationView : UserControl
         if (DataContext is MainWindowViewModel viewModel)
         {
             await OpenSystemEditorUriAsync(
-                new Uri(
-                    "https://github.com/njthomson/SrvSurvey/wiki/Colonisation-System-Update-Tool"),
+                WellKnownUris.ColonisationWiki,
                 viewModel);
         }
     }
@@ -154,11 +159,11 @@ public sealed partial class ColonizationView : UserControl
         {
             var launcher = TopLevel.GetTopLevel(this)?.Launcher
                 ?? throw new InvalidOperationException(
-                    "The desktop link launcher is not available.");
+                    DesktopLinkLauncherUnavailable);
             if (!await launcher.LaunchUriAsync(uri))
             {
                 throw new InvalidOperationException(
-                    "The default browser declined the request.");
+                    DefaultBrowserDeclined);
             }
         }
         catch (Exception exception) when (

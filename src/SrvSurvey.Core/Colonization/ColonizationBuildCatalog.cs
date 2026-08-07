@@ -6,6 +6,11 @@ namespace SrvSurvey.Core.Colonization;
 
 public sealed class ColonizationBuildCatalog
 {
+    private static readonly JsonSerializerOptions CaseInsensitiveJson = new()
+    {
+        PropertyNameCaseInsensitive = true,
+    };
+
     private const string ResourceName =
         "SrvSurvey.Core.Resources.colonization-costs2.json";
 
@@ -77,10 +82,7 @@ public sealed class ColonizationBuildCatalog
         {
             var rows = JsonSerializer.Deserialize<BuildCostRow[]>(
                     stream,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true,
-                    })
+                    CaseInsensitiveJson)
                 ?? throw new InvalidDataException(
                     "The colonisation build catalog is empty.");
             return new ColonizationBuildCatalog(rows.Select(ToBuildCost));
@@ -115,9 +117,9 @@ public sealed class ColonizationBuildCatalog
     }
 
     private static void Validate(
-        IReadOnlyList<ColonizationBuildCost> candidateBuilds)
+        ColonizationBuildCost[] candidateBuilds)
     {
-        if (candidateBuilds.Count == 0)
+        if (candidateBuilds.Length == 0)
         {
             throw new InvalidDataException(
                 "The colonisation build catalog has no entries.");

@@ -512,14 +512,17 @@ public sealed class JourneyJournalProcessor
         bool withEfficiencyBonus)
     {
         return ExplorationValueCalculator.Calculate(
-            body.BodyClass,
-            body.IsTerraformable,
-            body.Mass,
-            body.IsFirstDiscoverer,
-            isMapped,
-            body.IsFirstMapped,
-            isOdyssey,
-            withEfficiencyBonus);
+            new ExplorationValueRequest
+    {
+        BodyClass = body.BodyClass,
+        IsTerraformable = body.IsTerraformable,
+        Mass = body.Mass,
+        IsFirstDiscoverer = body.IsFirstDiscoverer,
+        IsMapped = isMapped,
+        IsFirstMapped = body.IsFirstMapped,
+        IsOdyssey = isOdyssey,
+        WithEfficiencyBonus = withEfficiencyBonus
+    });
     }
 
     private void UpdateCurrent(
@@ -536,7 +539,7 @@ public sealed class JourneyJournalProcessor
         Journey = Journey with { VisitedSystems = visits };
     }
 
-    private static int FindCurrentIndex(IReadOnlyList<JourneySystemVisit> visits)
+    private static int FindCurrentIndex(List<JourneySystemVisit> visits)
     {
         for (var index = visits.Count - 1; index >= 0; index--)
         {

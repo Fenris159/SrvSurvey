@@ -1,7 +1,17 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace SrvSurvey.Core.Guardian;
 
 public sealed class GuardianSiteMapProjector
 {
+    [SuppressMessage(
+        "Performance",
+        "CA1822:Mark members as static",
+        Justification = "The projector is consumed through an instance service contract.")]
+    [SuppressMessage(
+        "Maintainability",
+        "S2325:Make methods and properties static",
+        Justification = "The projector is consumed through an instance service contract.")]
     public GuardianSiteMapProjection Project(
         GuardianSiteTemplate template,
         GuardianSurveyData? survey = null,

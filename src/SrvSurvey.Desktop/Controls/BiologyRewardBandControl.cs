@@ -2,6 +2,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using SrvSurvey.Desktop.Configuration;
 
 namespace SrvSurvey.Desktop.Controls;
@@ -66,9 +67,17 @@ public sealed class BiologyRewardBandControl : Control
     public static readonly StyledProperty<IBrush?> HatchBrushProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
             nameof(HatchBrush));
+    public static readonly StyledProperty<IBrush?> EmptyBrushProperty =
+        AvaloniaProperty.Register<BiologyRewardBandControl, IBrush?>(
+            nameof(EmptyBrush));
     public static readonly StyledProperty<bool> IsDimmedProperty =
         AvaloniaProperty.Register<BiologyRewardBandControl, bool>(
             nameof(IsDimmed));
+
+    // Immutable brush is free-threaded; a static SolidColorBrush would pin to the
+    // first UI thread that touches it and break parallel Avalonia rendering tests.
+    private static readonly IBrush DefaultEmptyBrush =
+        new ImmutableSolidColorBrush(Color.FromArgb(40, 255, 255, 255));
 
     static BiologyRewardBandControl()
     {
@@ -91,6 +100,7 @@ public sealed class BiologyRewardBandControl : Control
             PredictionBrushProperty,
             UnknownBrushProperty,
             HatchBrushProperty,
+            EmptyBrushProperty,
             IsDimmedProperty);
     }
 
@@ -202,6 +212,12 @@ public sealed class BiologyRewardBandControl : Control
         set => SetValue(HatchBrushProperty, value);
     }
 
+    public IBrush? EmptyBrush
+    {
+        get => GetValue(EmptyBrushProperty);
+        set => SetValue(EmptyBrushProperty, value);
+    }
+
     public bool IsDimmed
     {
         get => GetValue(IsDimmedProperty);
@@ -216,23 +232,7 @@ public sealed class BiologyRewardBandControl : Control
             return;
         }
 
-        var unknown = UnknownBrush ?? Brushes.Gray;
-        var filled = IsHighlighted
-            ? IsDimmed
-                ? DimmedHighlightBrush ?? Brushes.DarkGoldenrod
-                : HighlightBrush ?? Brushes.Gold
-            : IsPrediction
-                ? PredictionFilledBrush ?? Brushes.Cyan
-                : IsDimmed
-                    ? DimmedFilledBrush ?? Brushes.DarkOrange
-                    : FilledBrush ?? Brushes.Orange;
-        var potential = IsHighlighted
-            ? DimmedHighlightBrush ?? Brushes.DarkGoldenrod
-            : IsPrediction
-                ? PredictionPotentialBrush ?? Brushes.DarkCyan
-                : PotentialBrush ?? Brushes.DarkOrange;
-        var prediction = PredictionBrush ?? Brushes.LightGray;
-        var hatch = HatchBrush ?? prediction;
+        var brushes = ResolveBandBrushes();
         var state = BiologyRewardBandScale.Calculate(
             MinimumReward,
             MaximumReward,
@@ -240,27 +240,95 @@ public sealed class BiologyRewardBandControl : Control
                 BucketOneMillions,
                 BucketTwoMillions,
                 BucketThreeMillions));
-        var edge = state.IsUnknown ? unknown : EdgeBrush ?? filled;
+        var edge = state.IsUnknown
+            ? brushes.Unknown
+            : EdgeBrush ?? brushes.Filled;
         var outer = new Rect(0.5, 0.5, Bounds.Width - 1, Bounds.Height - 1);
         context.DrawRectangle(Brushes.Transparent, new Pen(edge, 1), outer, 2, 2);
 
         if (state.IsUnknown)
         {
-            var text = new FormattedText(
-                "?",
-                CultureInfo.CurrentCulture,
-                FlowDirection.LeftToRight,
-                Typeface.Default,
-                Math.Max(9, Bounds.Height * 0.48),
-                prediction);
-            context.DrawText(
-                text,
-                new Point(
-                    (Bounds.Width - text.Width) / 2,
-                    (Bounds.Height - text.Height) / 2));
+            DrawUnknownMarker(context, brushes.Prediction);
             return;
         }
 
+        DrawSegments(context, state, brushes.Filled, brushes.Potential);
+        if (IsPrediction)
+        {
+            DrawPredictionHatch(context, brushes.Hatch);
+        }
+    }
+
+    private readonly record struct BandBrushes(
+        IBrush Unknown,
+        IBrush Filled,
+        IBrush Potential,
+        IBrush Prediction,
+        IBrush Hatch);
+
+    private BandBrushes ResolveBandBrushes()
+    {
+        return new BandBrushes(
+            UnknownBrush ?? Brushes.Gray,
+            ResolveFilledBrush(),
+            ResolvePotentialBrush(),
+            PredictionBrush ?? Brushes.LightGray,
+            HatchBrush ?? PredictionBrush ?? Brushes.LightGray);
+    }
+
+    private IBrush ResolveFilledBrush()
+    {
+        if (IsHighlighted)
+        {
+            return IsDimmed
+                ? DimmedHighlightBrush ?? Brushes.DarkGoldenrod
+                : HighlightBrush ?? Brushes.Gold;
+        }
+
+        if (IsPrediction)
+        {
+            return PredictionFilledBrush ?? Brushes.Cyan;
+        }
+
+        return IsDimmed
+            ? DimmedFilledBrush ?? Brushes.DarkOrange
+            : FilledBrush ?? Brushes.Orange;
+    }
+
+    private IBrush ResolvePotentialBrush()
+    {
+        if (IsHighlighted)
+        {
+            return DimmedHighlightBrush ?? Brushes.DarkGoldenrod;
+        }
+
+        return IsPrediction
+            ? PredictionPotentialBrush ?? Brushes.DarkCyan
+            : PotentialBrush ?? Brushes.DarkOrange;
+    }
+
+    private void DrawUnknownMarker(DrawingContext context, IBrush prediction)
+    {
+        var text = new FormattedText(
+            "?",
+            CultureInfo.CurrentCulture,
+            FlowDirection.LeftToRight,
+            Typeface.Default,
+            Math.Max(9, Bounds.Height * 0.48),
+            prediction);
+        context.DrawText(
+            text,
+            new Point(
+                (Bounds.Width - text.Width) / 2,
+                (Bounds.Height - text.Height) / 2));
+    }
+
+    private void DrawSegments(
+        DrawingContext context,
+        BiologyRewardBandState state,
+        IBrush filled,
+        IBrush potential)
+    {
         const double gap = 1;
         var segmentHeight = (Bounds.Height - 3 - gap * 3) / 4;
         for (var index = 0; index < state.Segments.Count; index++)
@@ -269,26 +337,48 @@ public sealed class BiologyRewardBandControl : Control
             var y = Bounds.Height - 1.5 - segmentHeight
                 - index * (segmentHeight + gap);
             var rect = new Rect(2, y, Bounds.Width - 4, segmentHeight);
-            if (segment == BiologyRewardBandSegment.Filled)
-            {
-                context.DrawRectangle(filled, null, rect, 1, 1);
-            }
-            else if (segment == BiologyRewardBandSegment.Potential)
-            {
-                context.DrawRectangle(potential, null, rect, 1, 1);
-            }
+            DrawSegment(context, segment, rect, filled, potential);
+        }
+    }
+
+    private void DrawSegment(
+        DrawingContext context,
+        BiologyRewardBandSegment segment,
+        Rect rect,
+        IBrush filled,
+        IBrush potential)
+    {
+        if (segment == BiologyRewardBandSegment.Filled)
+        {
+            context.DrawRectangle(filled, null, rect, 1, 1);
+            return;
         }
 
-        if (IsPrediction)
+        if (segment == BiologyRewardBandSegment.Potential)
         {
-            var hatchPen = new Pen(hatch, 0.75);
-            for (var x = -Bounds.Height; x < Bounds.Width; x += 4)
-            {
-                context.DrawLine(
-                    hatchPen,
-                    new Point(x, Bounds.Height - 1),
-                    new Point(x + Bounds.Height, 1));
-            }
+            context.DrawRectangle(potential, null, rect, 1, 1);
+            return;
+        }
+
+        // Leave empty slots visible as recessed gaps so 1/2/3-bar
+        // illustrations still show the full four-slot structure.
+        context.DrawRectangle(
+            EmptyBrush ?? DefaultEmptyBrush,
+            null,
+            rect,
+            1,
+            1);
+    }
+
+    private void DrawPredictionHatch(DrawingContext context, IBrush hatch)
+    {
+        var hatchPen = new Pen(hatch, 0.75);
+        for (var x = -Bounds.Height; x < Bounds.Width; x += 4)
+        {
+            context.DrawLine(
+                hatchPen,
+                new Point(x, Bounds.Height - 1),
+                new Point(x + Bounds.Height, 1));
         }
     }
 }
@@ -315,9 +405,11 @@ public static class BiologyRewardBandScale
         };
         var segments = buckets.Select(bucket => minimumReward > bucket
                 ? BiologyRewardBandSegment.Filled
-                : maximumReward > bucket
-                    ? BiologyRewardBandSegment.Potential
-                    : BiologyRewardBandSegment.Empty)
+                : (maximumReward > bucket) switch
+                {
+                    true => BiologyRewardBandSegment.Potential,
+                    false => BiologyRewardBandSegment.Empty
+                })
             .ToArray();
         return new BiologyRewardBandState(false, segments);
     }

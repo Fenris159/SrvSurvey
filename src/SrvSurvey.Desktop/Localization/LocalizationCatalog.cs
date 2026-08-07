@@ -222,11 +222,13 @@ public static class LocalizationCatalog
         }
 
         var value = translated.TrimEnd();
-        return value.EndsWith("…", StringComparison.Ordinal)
+        return value.EndsWith('…')
             ? value[..^1].TrimEnd()
-            : value.EndsWith("...", StringComparison.Ordinal)
-                ? value[..^3].TrimEnd()
-                : value;
+            : (value.EndsWith("...", StringComparison.Ordinal)) switch
+            {
+                true => value[..^3].TrimEnd(),
+                false => value
+            };
     }
 
     private static bool HasEllipsis(string value)

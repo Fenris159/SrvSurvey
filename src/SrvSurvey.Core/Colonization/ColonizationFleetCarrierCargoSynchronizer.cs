@@ -4,10 +4,14 @@ namespace SrvSurvey.Core.Colonization;
 
 public static class ColonizationFleetCarrierCargoSynchronizer
 {
+    /// <summary>StationServices flag used to detect squadron fleet carriers.</summary>
+    public const string StationServiceSquadronBank = "squadronBank";
+
     public static IReadOnlyDictionary<string, int> CreateJournalAdjustment(
         JournalEventEnvelope journalEvent,
         ColonizationDockingSnapshot dock,
-        bool isInMainShip)
+        bool isInMainShip,
+        bool preferShipCargoDiffForSquadron = true)
     {
         ArgumentNullException.ThrowIfNull(journalEvent);
         ArgumentNullException.ThrowIfNull(dock);
@@ -16,7 +20,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
                 "FleetCarrier",
                 StringComparison.OrdinalIgnoreCase))
         {
-            return new Dictionary<string, int>();
+            return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         }
 
         return journalEvent.EventName switch
@@ -29,11 +33,37 @@ public static class ColonizationFleetCarrierCargoSynchronizer
                 journalEvent.Payload,
                 dock,
                 sign: 1),
-            "CargoTransfer" when isInMainShip => CreateTransferAdjustment(
-                journalEvent.Payload,
-                dock),
-            _ => new Dictionary<string, int>(),
+            // Personal linked FCs always use journal transfer deltas.
+            // Squadron carriers prefer ship-cargo GetDiff when available; fall back
+            // to journal transfers when shared cargo is suppressed / no inventory.
+            "CargoTransfer" when isInMainShip
+                && !(IsSquadronFleetCarrier(dock) && preferShipCargoDiffForSquadron) =>
+                CreateTransferAdjustment(journalEvent.Payload),
+            _ => new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase),
         };
+    }
+
+    /// <summary>
+    /// True when docked station services explicitly list squadron bank.
+    /// Missing/empty StationServices is treated as non-squadron.
+    /// </summary>
+    public static bool IsSquadronFleetCarrier(ColonizationDockingSnapshot dock)
+    {
+        ArgumentNullException.ThrowIfNull(dock);
+        return dock.StationServices.Contains(
+            StationServiceSquadronBank,
+            StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Invert a ship cargo delta into a fleet-carrier cargo adjustment for Raven Colonial.
+    /// Ship lost cargo (negative) means the FC gained it (positive).
+    /// </summary>
+    public static IReadOnlyDictionary<string, int> CreateSquadronCargoDiffAdjustment(
+        IReadOnlyDictionary<string, int> shipDiff)
+    {
+        ArgumentNullException.ThrowIfNull(shipDiff);
+        return CargoInventoryDiff.InvertForFleetCarrier(shipDiff);
     }
 
     public static IReadOnlyDictionary<string, int> CreateMarketReplacement(
@@ -70,13 +100,8 @@ public static class ColonizationFleetCarrierCargoSynchronizer
 
             var stock = Math.Max(0, item.Stock);
             var tracked = currentCargo.GetValueOrDefault(commodity);
-            if (item.Producer && tracked != stock)
-            {
-                replacement[commodity] = stock;
-            }
-            else if (!item.Producer
-                && !item.Consumer
-                && tracked > 0)
+            if ((item.Producer && tracked != stock)
+                || (!item.Producer && !item.Consumer && tracked > 0))
             {
                 replacement[commodity] = stock;
             }
@@ -85,7 +110,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         return replacement;
     }
 
-    private static IReadOnlyDictionary<string, int> CreateMarketAdjustment(
+    private static Dictionary<string, int> CreateMarketAdjustment(
         System.Text.Json.JsonElement root,
         ColonizationDockingSnapshot dock,
         int sign)
@@ -93,7 +118,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         var marketId = GetInt64(root, "MarketID");
         if (marketId != dock.MarketId)
         {
-            return new Dictionary<string, int>();
+            return new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         }
 
         var commodity = ColonizationConstructionState.NormalizeCommodityName(
@@ -111,9 +136,8 @@ public static class ColonizationFleetCarrierCargoSynchronizer
         };
     }
 
-    private static IReadOnlyDictionary<string, int> CreateTransferAdjustment(
-        System.Text.Json.JsonElement root,
-        ColonizationDockingSnapshot dock)
+    private static Dictionary<string, int> CreateTransferAdjustment(
+        System.Text.Json.JsonElement root)
     {
         if (!root.TryGetProperty("Transfers", out var transfers)
             || transfers.ValueKind != System.Text.Json.JsonValueKind.Array)
@@ -142,13 +166,6 @@ public static class ColonizationFleetCarrierCargoSynchronizer
                     "tocarrier",
                     StringComparison.OrdinalIgnoreCase))
             {
-                if (dock.StationServices.Contains(
-                        "squadronBank",
-                        StringComparer.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
                 delta = count.Value;
             }
             else if (string.Equals(
@@ -170,7 +187,7 @@ public static class ColonizationFleetCarrierCargoSynchronizer
     }
 
     private static void AddDelta(
-        IDictionary<string, int> result,
+        Dictionary<string, int> result,
         string commodity,
         int delta)
     {

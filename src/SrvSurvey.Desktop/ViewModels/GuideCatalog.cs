@@ -8,6 +8,9 @@ public static class GuideCatalog
     private const string DesktopAssemblyName = "SrvSurvey.Desktop";
     private const string GuardianSiteMap = "Guardian site map";
     private const string GuardianSiteMapLegend = "Guardian site map legend";
+    private const string HumanSettlementMap = "Human settlement map";
+    private const string HumanSettlementQuestMap = "Human settlement quest map";
+    private const string HumanSettlementConflictZoneMap = "Human settlement conflict-zone map";
 
     public static IReadOnlyList<GuideCategoryViewModel> Create()
     {
@@ -631,23 +634,23 @@ public static class GuideCatalog
             Icon(GuideIconKind.GuardianTowerHeading, "", "Guardian tower heading", "A translucent blue line through site center is the general relic-tower heading. A wider, fainter line through one relic records that tower's individual heading.", GuardianSiteMapLegend),
             Icon(GuideIconKind.GuardianSurveyNeeded, "", "Guardian survey needed", "A dotted ring marks a point or site state that still needs survey data.", GuardianSiteMapLegend),
             Icon(GuideIconKind.GuardianPoiStates, "", "Guardian survey states", "Unknown points use the cyan dotted survey treatment, absent points use translucent gray, present points use their POI-specific legacy color, and empty puddles use gold with a yellow edge.", GuardianSiteMapLegend, "unknown absent present empty colors"),
-            Icon(GuideIconKind.Glyph, "A", "Atmospheric regulator", "A named atmospheric-control point in a human settlement.", "Human settlement map", "atmos"),
-            Icon(GuideIconKind.Glyph, "!", "Settlement alarm", "An alarm-control point in a human settlement. Its color reflects access/security context.", "Human settlement map"),
-            Icon(GuideIconKind.Glyph, "K", "Authorization point", "An authorization or security-clearance point in a human settlement.", "Human settlement map", "auth access"),
-            Icon(GuideIconKind.Glyph, "+", "Medkit", "A known medical-kit location in a human settlement.", "Human settlement map"),
-            Icon(GuideIconKind.Glyph, "B", "Battery", "A known battery or energy-cell location in a human settlement.", "Human settlement map"),
-            Icon(GuideIconKind.Glyph, "P", "Power control", "A named power-control point in a human settlement.", "Human settlement map"),
-            Icon(GuideIconKind.HumanLandingPad, "", "Landing pad", "A rotated rectangular outline and pad number show a settlement landing pad and its orientation.", "Human settlement map"),
-            Icon(GuideIconKind.HumanDoor, "", "Secure door", "A short filled bar marks a secure door. Green, cyan, gold, and danger colors correspond to increasing security levels.", "Human settlement map"),
-            Icon(GuideIconKind.HumanTerminal, "", "Data terminal", "A rounded square with a center line marks a data terminal. A dim/processed color means it has already been handled.", "Human settlement map"),
-            Icon(GuideIconKind.HumanMaterial, "", "Collected material", "A small outlined dot marks material already collected at that settlement position.", "Human settlement map"),
-            Icon(GuideIconKind.HumanCommander, "", "Settlement Commander", "A circle with a heading stalk shows the Commander's position and facing on the settlement map.", "Human settlement map"),
-            Icon(GuideIconKind.HumanShip, "", "Settlement ship", "A large circle labeled SHIP marks the current or departed ship. A dashed boundary can show the dismissal distance.", "Human settlement map"),
-            Icon(GuideIconKind.HumanSrv, "", "Settlement SRV", "A rounded square labeled SRV marks the vehicle on the settlement map.", "Human settlement map"),
-            Icon(GuideIconKind.HumanQuestTarget, "", "Settlement quest target", "A target-radius circle marks quest geometry. Gold means outside the target; the active accent means within it.", "Human settlement quest map"),
-            Icon(GuideIconKind.HumanFloor, "", "Upper floor", "One upward chevron means floor 2; two chevrons mean floor 3 or higher for a named point or terminal.", "Human settlement map"),
-            Icon(GuideIconKind.ConflictCheckpoint, "", "Conflict-zone checkpoint", "A labeled circle marks a frontline checkpoint. The local checkpoint uses the configured local/success color.", "Human settlement conflict-zone map", "fcz"),
-            Icon(GuideIconKind.ConflictPowerPost, "", "Conflict-zone power post", "A circle with a lightning stroke marks a power post.", "Human settlement conflict-zone map", "fcz"),
+            Icon(GuideIconKind.Glyph, "A", "Atmospheric regulator", "A named atmospheric-control point in a human settlement.", HumanSettlementMap, "atmos"),
+            Icon(GuideIconKind.Glyph, "!", "Settlement alarm", "An alarm-control point in a human settlement. Its color reflects access/security context.", HumanSettlementMap),
+            Icon(GuideIconKind.Glyph, "K", "Authorization point", "An authorization or security-clearance point in a human settlement.", HumanSettlementMap, "auth access"),
+            Icon(GuideIconKind.Glyph, "+", "Medkit", "A known medical-kit location in a human settlement.", HumanSettlementMap),
+            Icon(GuideIconKind.Glyph, "B", "Battery", "A known battery or energy-cell location in a human settlement.", HumanSettlementMap),
+            Icon(GuideIconKind.Glyph, "P", "Power control", "A named power-control point in a human settlement.", HumanSettlementMap),
+            Icon(GuideIconKind.HumanLandingPad, "", "Landing pad", "A rotated rectangular outline and pad number show a settlement landing pad and its orientation.", HumanSettlementMap),
+            Icon(GuideIconKind.HumanDoor, "", "Secure door", "A short filled bar marks a secure door. Green, cyan, gold, and danger colors correspond to increasing security levels.", HumanSettlementMap),
+            Icon(GuideIconKind.HumanTerminal, "", "Data terminal", "A rounded square with a center line marks a data terminal. A dim/processed color means it has already been handled.", HumanSettlementMap),
+            Icon(GuideIconKind.HumanMaterial, "", "Collected material", "A small outlined dot marks material already collected at that settlement position.", HumanSettlementMap),
+            Icon(GuideIconKind.HumanCommander, "", "Settlement Commander", "A circle with a heading stalk shows the Commander's position and facing on the settlement map.", HumanSettlementMap),
+            Icon(GuideIconKind.HumanShip, "", "Settlement ship", "A large circle labeled SHIP marks the current or departed ship. A dashed boundary can show the dismissal distance.", HumanSettlementMap),
+            Icon(GuideIconKind.HumanSrv, "", "Settlement SRV", "A rounded square labeled SRV marks the vehicle on the settlement map.", HumanSettlementMap),
+            Icon(GuideIconKind.HumanQuestTarget, "", "Settlement quest target", "A target-radius circle marks quest geometry. Gold means outside the target; the active accent means within it.", HumanSettlementQuestMap),
+            Icon(GuideIconKind.HumanFloor, "", "Upper floor", "One upward chevron means floor 2; two chevrons mean floor 3 or higher for a named point or terminal.", HumanSettlementMap),
+            Icon(GuideIconKind.ConflictCheckpoint, "", "Conflict-zone checkpoint", "A labeled circle marks a frontline checkpoint. The local checkpoint uses the configured local/success color.", HumanSettlementConflictZoneMap, "fcz"),
+            Icon(GuideIconKind.ConflictPowerPost, "", "Conflict-zone power post", "A circle with a lightning stroke marks a power post.", HumanSettlementConflictZoneMap, "fcz"),
         ];
     }
 

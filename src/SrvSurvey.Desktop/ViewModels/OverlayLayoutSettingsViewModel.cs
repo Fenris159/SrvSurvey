@@ -84,7 +84,7 @@ public sealed class OverlayLayoutSettingsViewModel : INotifyPropertyChanged
                 inheritedOpacity,
                 OnEditorChanged))
             .ToArray();
-        SelectedOverlay = Overlays.FirstOrDefault();
+        SelectedOverlay = Overlays.Count > 0 ? Overlays[0] : null;
         StatusMessage = layout.Error
             ?? "Opacity overrides are ready. Changes apply to visible overlays after Save.";
         OnPropertyChanged(nameof(Overlays));
@@ -238,10 +238,10 @@ public sealed class OverlayPlacementEditorViewModel : INotifyPropertyChanged
     public static IReadOnlyList<LegacyVerticalAnchor> VerticalAnchors { get; } =
         Enum.GetValues<LegacyVerticalAnchor>();
 
-    public IReadOnlyList<LegacyHorizontalAnchor> HorizontalAnchorOptions =>
+    public IReadOnlyList<LegacyHorizontalAnchor> HorizontalAnchorOptions { get; } =
         HorizontalAnchors;
 
-    public IReadOnlyList<LegacyVerticalAnchor> VerticalAnchorOptions =>
+    public IReadOnlyList<LegacyVerticalAnchor> VerticalAnchorOptions { get; } =
         VerticalAnchors;
 
     public string Name => definition.Name;

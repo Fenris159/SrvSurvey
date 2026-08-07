@@ -20,13 +20,16 @@ public sealed class ColonizationCommodityPlannerTests
             new Dictionary<string, int> { ["water"] = 70 });
 
         var plan = ColonizationCommodityPlanner.Create(
-            [other, primary],
-            ["primary"],
-            "primary",
-            "Test Cmdr",
-            [],
-            shipCargo: null,
-            EmptyConstruction());
+            new ColonizationCommodityPlanRequest
+    {
+        Projects = [other, primary],
+        HiddenBuildIds = ["primary"],
+        PrimaryBuildId = "primary",
+        CommanderName = "Test Cmdr",
+        FleetCarriers = [],
+        ShipCargo = null,
+        Construction = EmptyConstruction()
+    });
 
         Assert.Equal("primary (no_truss)", plan.Title);
         var row = Assert.Single(plan.Rows);
@@ -57,13 +60,16 @@ public sealed class ColonizationCommodityPlannerTests
                 ]));
 
         var plan = ColonizationCommodityPlanner.Create(
-            [tracked],
-            [],
-            primaryBuildId: null,
-            "Test Cmdr",
-            [],
-            shipCargo: null,
-            construction);
+            new ColonizationCommodityPlanRequest
+    {
+        Projects = [tracked],
+        HiddenBuildIds = [],
+        PrimaryBuildId = null,
+        CommanderName = "Test Cmdr",
+        FleetCarriers = [],
+        ShipCargo = null,
+        Construction = construction
+    });
 
         Assert.True(plan.IsAtConstructionSite);
         Assert.False(plan.IsLocalProjectUntracked);
@@ -125,13 +131,16 @@ public sealed class ColonizationCommodityPlannerTests
         };
 
         var plan = ColonizationCommodityPlanner.Create(
-            [project],
-            [],
-            primaryBuildId: null,
-            "Test Cmdr",
-            [carrier],
-            cargo,
-            construction);
+            new ColonizationCommodityPlanRequest
+    {
+        Projects = [project],
+        HiddenBuildIds = [],
+        PrimaryBuildId = null,
+        CommanderName = "Test Cmdr",
+        FleetCarriers = [carrier],
+        ShipCargo = cargo,
+        Construction = construction
+    });
 
         var steel = plan.Rows.Single(row => row.Commodity == "steel");
         var water = plan.Rows.Single(row => row.Commodity == "water");
@@ -170,13 +179,16 @@ public sealed class ColonizationCommodityPlannerTests
         };
 
         var plan = ColonizationCommodityPlanner.Create(
-            [],
-            [],
-            primaryBuildId: null,
-            "Test Cmdr",
-            [carrier],
-            shipCargo: null,
-            construction);
+            new ColonizationCommodityPlanRequest
+    {
+        Projects = [],
+        HiddenBuildIds = [],
+        PrimaryBuildId = null,
+        CommanderName = "Test Cmdr",
+        FleetCarriers = [carrier],
+        ShipCargo = null,
+        Construction = construction
+    });
 
         Assert.True(plan.IsLocalProjectUntracked);
         Assert.Equal("Hope", plan.Title);
@@ -204,13 +216,16 @@ public sealed class ColonizationCommodityPlannerTests
         };
 
         var plan = ColonizationCommodityPlanner.Create(
-            [project],
-            [],
-            primaryBuildId: null,
-            "Test Cmdr",
-            [],
-            shipCargo: null,
-            construction);
+            new ColonizationCommodityPlanRequest
+    {
+        Projects = [project],
+        HiddenBuildIds = [],
+        PrimaryBuildId = null,
+        CommanderName = "Test Cmdr",
+        FleetCarriers = [],
+        ShipCargo = null,
+        Construction = construction
+    });
 
         Assert.True(plan.IsAtConstructionSite);
         Assert.False(plan.IsLocalProjectUntracked);
@@ -234,42 +249,51 @@ public sealed class ColonizationCommodityPlannerTests
         };
 
         var untracked = ColonizationCommodityPlanner.Create(
-            [],
-            [],
-            primaryBuildId: null,
-            "Test Cmdr",
-            [],
-            shipCargo: null,
-            construction);
+            new ColonizationCommodityPlanRequest
+    {
+        Projects = [],
+        HiddenBuildIds = [],
+        PrimaryBuildId = null,
+        CommanderName = "Test Cmdr",
+        FleetCarriers = [],
+        ShipCargo = null,
+        Construction = construction
+    });
 
         Assert.True(untracked.IsDockedAtUntrackedFleetCarrier);
         Assert.True(untracked.HasContent);
 
         var linked = ColonizationCommodityPlanner.Create(
-            [],
-            [],
-            primaryBuildId: null,
-            "Test Cmdr",
-            [new ColonizationFleetCarrier { MarketId = 900 }],
-            shipCargo: null,
-            construction);
+            new ColonizationCommodityPlanRequest
+    {
+        Projects = [],
+        HiddenBuildIds = [],
+        PrimaryBuildId = null,
+        CommanderName = "Test Cmdr",
+        FleetCarriers = [new ColonizationFleetCarrier { MarketId = 900 }],
+        ShipCargo = null,
+        Construction = construction
+    });
 
         Assert.False(linked.IsDockedAtUntrackedFleetCarrier);
 
         var ordinaryStation = ColonizationCommodityPlanner.Create(
-            [],
-            [],
-            primaryBuildId: null,
-            "Test Cmdr",
-            [],
-            shipCargo: null,
-            construction with
-            {
-                CurrentDock = construction.CurrentDock! with
+            new ColonizationCommodityPlanRequest
+    {
+        Projects = [],
+        HiddenBuildIds = [],
+        PrimaryBuildId = null,
+        CommanderName = "Test Cmdr",
+        FleetCarriers = [],
+        ShipCargo = null,
+        Construction = construction with
                 {
-                    StationType = "Coriolis",
-                },
-            });
+                    CurrentDock = construction.CurrentDock! with
+                    {
+                        StationType = "Coriolis",
+                    },
+                }
+    });
 
         Assert.False(ordinaryStation.IsDockedAtUntrackedFleetCarrier);
     }
@@ -287,13 +311,16 @@ public sealed class ColonizationCommodityPlannerTests
                 []));
 
         var plan = ColonizationCommodityPlanner.Create(
-            [],
-            [],
-            primaryBuildId: null,
-            "Test Cmdr",
-            [],
-            shipCargo: null,
-            construction);
+            new ColonizationCommodityPlanRequest
+    {
+        Projects = [],
+        HiddenBuildIds = [],
+        PrimaryBuildId = null,
+        CommanderName = "Test Cmdr",
+        FleetCarriers = [],
+        ShipCargo = null,
+        Construction = construction
+    });
 
         Assert.True(plan.IsConstructionComplete);
         Assert.True(plan.HasContent);
@@ -350,14 +377,17 @@ public sealed class ColonizationCommodityPlannerTests
             ]);
 
         var plan = ColonizationCommodityPlanner.Create(
-            [project],
-            [],
-            primaryBuildId: null,
-            "Test Cmdr",
-            [carrier],
-            shipCargo: null,
-            construction,
-            market);
+            new ColonizationCommodityPlanRequest
+    {
+        Projects = [project],
+        HiddenBuildIds = [],
+        PrimaryBuildId = null,
+        CommanderName = "Test Cmdr",
+        FleetCarriers = [carrier],
+        ShipCargo = null,
+        Construction = construction,
+        Market = market
+    });
 
         var steel = plan.Rows.Single(row => row.Commodity == "steel");
         var water = plan.Rows.Single(row => row.Commodity == "water");
@@ -370,14 +400,17 @@ public sealed class ColonizationCommodityPlannerTests
         Assert.False(water.CanCompleteFleetCarrierLoad);
 
         var stalePlan = ColonizationCommodityPlanner.Create(
-            [project],
-            [],
-            primaryBuildId: null,
-            "Test Cmdr",
-            [carrier],
-            shipCargo: null,
-            construction,
-            market with { Timestamp = dockedAt });
+            new ColonizationCommodityPlanRequest
+    {
+        Projects = [project],
+        HiddenBuildIds = [],
+        PrimaryBuildId = null,
+        CommanderName = "Test Cmdr",
+        FleetCarriers = [carrier],
+        ShipCargo = null,
+        Construction = construction,
+        Market = market with { Timestamp = dockedAt }
+    });
         Assert.All(stalePlan.Rows, row =>
         {
             Assert.False(row.IsAvailableAtCurrentMarket);

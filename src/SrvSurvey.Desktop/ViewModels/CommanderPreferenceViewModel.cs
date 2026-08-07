@@ -172,7 +172,8 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (RestartRequested is not { } handlers)
+        var restartHandlers = RestartRequested;
+        if (restartHandlers is null)
         {
             StatusMessage = "Commander preference saved. Restart SrvSurvey to use it.";
             return;
@@ -181,7 +182,7 @@ public sealed class CommanderPreferenceViewModel : INotifyPropertyChanged
         StatusMessage = "Commander preference saved; restarting SrvSurvey...";
         try
         {
-            foreach (var handler in handlers.GetInvocationList().Cast<Func<Task>>())
+            foreach (var handler in restartHandlers.GetInvocationList().Cast<Func<Task>>())
             {
                 await handler();
             }

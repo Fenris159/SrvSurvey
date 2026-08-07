@@ -38,6 +38,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
     private const string ProductTagPrefix = "xp-v";
     private const string PackageNamePrefix = "SrvSurvey-XP";
     private const string ReleaseIndexName = "release-index.json";
+    private const string WinX64RuntimeIdentifier = "win-x64";
     private static readonly Uri DefaultDevelopmentReleasesApiUri = new(
         "https://api.github.com/repos/Fenris159/SrvSurvey/releases?per_page=100");
     private static readonly Uri DefaultStableReleasesApiUri = new(
@@ -160,7 +161,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
 
         if (OperatingSystem.IsWindows())
         {
-            return "win-x64";
+            return WinX64RuntimeIdentifier;
         }
 
         if (OperatingSystem.IsLinux())
@@ -327,7 +328,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
             var windows = ParseIndexedPackage(
                 packages,
                 expectedVersion,
-                "win-x64",
+                WinX64RuntimeIdentifier,
                 "zip",
                 assets);
             var linux = ParseIndexedPackage(
@@ -336,7 +337,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
                 "linux-x64",
                 "tar.gz",
                 assets);
-            return runtimeIdentifier == "win-x64" ? windows : linux;
+            return runtimeIdentifier == WinX64RuntimeIdentifier ? windows : linux;
         }
         catch (JsonException exception)
         {
@@ -441,7 +442,10 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
                     $"The update response exceeded {maximumBytes:N0} bytes: {uri}");
             }
 
-            output.Write(buffer, 0, read);
+            await output.WriteAsync(
+                    buffer.AsMemory(0, read),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         return output.ToArray();
@@ -540,7 +544,7 @@ public sealed class CrossPlatformReleaseClient : ICrossPlatformReleaseClient
 
     private static void ValidateRuntimeIdentifier(string runtimeIdentifier)
     {
-        if (runtimeIdentifier is not ("win-x64" or "linux-x64"))
+        if (runtimeIdentifier is not (WinX64RuntimeIdentifier or "linux-x64"))
         {
             throw new PlatformNotSupportedException(
                 $"The runtime '{runtimeIdentifier}' has no SrvSurvey update package.");

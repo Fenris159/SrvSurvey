@@ -607,14 +607,15 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
                     pair.Value))
                 .ToArray()
             ?? [];
+        var firstPoint = Points.Count > 0 ? Points[0] : null;
         SelectedPoint = selectedName is null
-            ? Points.FirstOrDefault()
+            ? firstPoint
             : Points.FirstOrDefault(point => string.Equals(
                 point.Point.Name,
                 selectedName,
                 StringComparison.OrdinalIgnoreCase))
-                ?? Points.FirstOrDefault();
-        SelectedGroup = Groups.FirstOrDefault();
+                ?? firstPoint;
+        SelectedGroup = Groups.Count > 0 ? Groups[0] : null;
         OnPropertyChanged(nameof(PreviewTemplate));
     }
 
@@ -642,7 +643,8 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             .Concat(session?.Template.DestructiblePanels ?? [])
             .Select(point => point.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        for (var index = 1; ; index++)
+        var index = 1;
+        while (true)
         {
             var candidate = prefix == "A"
                 ? $"A{index:00}"
@@ -651,6 +653,8 @@ public sealed class GuardianTemplateAuthoringViewModel : INotifyPropertyChanged
             {
                 return candidate;
             }
+
+            index++;
         }
     }
 

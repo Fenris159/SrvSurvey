@@ -632,24 +632,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
         var session = liveEditSession;
         var changes = session?.Changes
             ?? new Dictionary<string, LegacyOverlayPlacement>();
-        var failures = new List<string>();
-        foreach (var state in liveWindows.Values.ToArray())
-        {
-            DetachLiveWindow(state.Window);
-            if (platform is null)
-            {
-                continue;
-            }
-
-            var result = platform.SetInteractive(
-                state.Window,
-                interactive: false);
-            if (!result.IsPrepared || result.IsInteractive)
-            {
-                failures.Add(result.Status);
-            }
-        }
-
+        var failures = DetachAndRestoreClickThrough();
         liveEditSession = null;
         IsLiveInteractionEnabled = false;
         if (IsEditing)
@@ -668,13 +651,43 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
         if (changes.Count == 0)
         {
-            StatusMessage = failures.Count == 0
-                ? "Live overlays returned to click-through mode; no positions moved."
-                : "Live overlay interaction ended, but one or more windows could not be restored: "
-                    + string.Join(" ", failures.Distinct(StringComparer.Ordinal));
+            StatusMessage = GetNoChangeInteractionStatus(failures);
             return;
         }
 
+        SaveLiveInteractionChanges(session, changes, failures);
+    }
+
+    private List<string> DetachAndRestoreClickThrough()
+    {
+        var failures = new List<string>();
+        foreach (var window in liveWindows.Values
+            .Select(state => state.Window)
+            .ToArray())
+        {
+            DetachLiveWindow(window);
+            if (platform is null)
+            {
+                continue;
+            }
+
+            var result = platform.SetInteractive(
+                window,
+                interactive: false);
+            if (!result.IsPrepared || result.IsInteractive)
+            {
+                failures.Add(result.Status);
+            }
+        }
+
+        return failures;
+    }
+
+    private void SaveLiveInteractionChanges(
+        OverlayPositionEditSession? session,
+        IReadOnlyDictionary<string, LegacyOverlayPlacement> changes,
+        List<string> failures)
+    {
         try
         {
             if (layoutStore is null || activeLayout is null)
@@ -692,10 +705,7 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
 
             activeLayout.ReplaceWith(updated);
             StatusMessage = $"Saved {result.UpdatedPlacementCount:N0} live overlay position(s) and restored click-through mode."
-                + (failures.Count == 0
-                    ? string.Empty
-                    : " One or more windows reported a click-through restore warning: "
-                        + string.Join(" ", failures.Distinct(StringComparer.Ordinal)));
+                + FormatFailureSuffix(failures);
         }
         catch (Exception exception) when (
             exception is IOException
@@ -708,6 +718,25 @@ public sealed class OverlayInteractionViewModel : INotifyPropertyChanged, IDispo
             StatusMessage = "Live overlays returned to click-through mode, but their moved positions were not saved: "
                 + exception.Message;
         }
+    }
+
+    private static string GetNoChangeInteractionStatus(List<string> failures)
+    {
+        return failures.Count == 0
+            ? "Live overlays returned to click-through mode; no positions moved."
+            : "Live overlay interaction ended, but one or more windows could not be restored: "
+                + string.Join(" ", failures.Distinct(StringComparer.Ordinal));
+    }
+
+    private static string FormatFailureSuffix(List<string> failures)
+    {
+        if (failures.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        return " One or more windows reported a click-through restore warning: "
+            + string.Join(" ", failures.Distinct(StringComparer.Ordinal));
     }
 
     private static string GetUnsavedInteractionStatus(

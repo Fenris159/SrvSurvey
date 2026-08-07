@@ -135,13 +135,13 @@ public sealed class GuardianSurveyShareService
         CancellationToken cancellationToken)
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        foreach (var site in sites)
+        foreach (var sourcePath in sites.Select(site => site.SourcePath))
         {
             cancellationToken.ThrowIfCancellationRequested();
             hash.AppendData(Encoding.UTF8.GetBytes(
-                Path.GetFileName(site.SourcePath)));
+                Path.GetFileName(sourcePath)));
             await using var stream = new FileStream(
-                site.SourcePath,
+                sourcePath,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite | FileShare.Delete,
@@ -182,10 +182,10 @@ public sealed class GuardianSurveyShareService
             {
                 var entryNames = new HashSet<string>(
                     StringComparer.OrdinalIgnoreCase);
-                foreach (var site in sites)
+                foreach (var sourcePath in sites.Select(site => site.SourcePath))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var entryName = Path.GetFileName(site.SourcePath);
+                    var entryName = Path.GetFileName(sourcePath);
                     if (!entryNames.Add(entryName))
                     {
                         throw new InvalidDataException(
@@ -196,13 +196,14 @@ public sealed class GuardianSurveyShareService
                         entryName,
                         CompressionLevel.SmallestSize);
                     await using var input = new FileStream(
-                        site.SourcePath,
+                        sourcePath,
                         FileMode.Open,
                         FileAccess.Read,
                         FileShare.ReadWrite | FileShare.Delete,
                         16 * 1024,
                         FileOptions.Asynchronous | FileOptions.SequentialScan);
-                    await using var entryStream = entry.Open();
+                    await using var entryStream = await entry.OpenAsync(
+                        cancellationToken);
                     await input.CopyToAsync(entryStream, cancellationToken)
                         .ConfigureAwait(false);
                 }

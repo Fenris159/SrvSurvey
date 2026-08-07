@@ -21,15 +21,9 @@ public sealed class CapturedPixelBuffer : IFssPixelSource
 
     public CapturedPixelBuffer(int width, int height, byte[] bgraPixels)
     {
-        if (width <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(width));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
 
-        if (height <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(height));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
 
         ArgumentNullException.ThrowIfNull(bgraPixels);
         var expectedLength = checked(width * height * 4);
@@ -372,10 +366,9 @@ internal sealed class X11GameScreenCapture : IGameScreenCapture
 
     public CapturedPixelBuffer Capture(PixelRect bounds)
     {
-        if (display == nint.Zero)
-        {
-            throw new ObjectDisposedException(nameof(X11GameScreenCapture));
-        }
+        ObjectDisposedException.ThrowIf(
+            display == nint.Zero,
+            this);
 
         ValidateBounds(bounds);
         var image = X11Native.XGetImage(

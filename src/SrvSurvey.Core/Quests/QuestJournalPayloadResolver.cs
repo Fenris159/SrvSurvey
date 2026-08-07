@@ -22,8 +22,8 @@ public static class QuestJournalPayloadResolver
     public static async Task<QuestJournalPayloadResult> ResolveAsync(
         string journalDirectory,
         JournalEventEnvelope journalEvent,
-        CancellationToken cancellationToken = default,
-        bool allowCargoFile = true)
+        bool allowCargoFile = true,
+        CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         ArgumentNullException.ThrowIfNull(journalEvent);

@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.Input;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -84,17 +85,17 @@ public sealed partial class MainWindow : Window
         await monitorSession.StopAsync();
     }
 
-    protected override void OnClosing(WindowClosingEventArgs eventArgs)
+    protected override void OnClosing(WindowClosingEventArgs e)
     {
         if (!closeReady)
         {
-            eventArgs.Cancel = true;
-            base.OnClosing(eventArgs);
+            e.Cancel = true;
+            base.OnClosing(e);
             closePreparationTask ??= PrepareToCloseAsync();
             return;
         }
 
-        base.OnClosing(eventArgs);
+        base.OnClosing(e);
     }
 
     private async Task PrepareToCloseAsync()
@@ -115,7 +116,7 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    protected override void OnClosed(EventArgs eventArgs)
+    protected override void OnClosed(EventArgs e)
     {
         InputContext.SetActive(false);
         InputContext.SetTextInputActive(false);
@@ -123,7 +124,7 @@ public sealed partial class MainWindow : Window
         viewModel.ReleaseUpdates.SetDiagnosticsNavigator(null);
         trayIcon?.Dispose();
         trayIcon = null;
-        base.OnClosed(eventArgs);
+        base.OnClosed(e);
     }
 
     private TrayIcon? CreateTrayIcon()
@@ -159,7 +160,7 @@ public sealed partial class MainWindow : Window
             var icon = new TrayIcon
             {
                 Icon = new WindowIcon(AssetLoader.Open(
-                    new Uri("avares://SrvSurvey.Desktop/Assets/logo.ico"))),
+                    WellKnownUris.DesktopLogoAsset)),
                 ToolTipText = "SrvSurvey - click to show",
                 Menu = menu,
                 IsVisible = true,

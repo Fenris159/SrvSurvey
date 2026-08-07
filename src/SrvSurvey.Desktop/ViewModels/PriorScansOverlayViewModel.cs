@@ -15,6 +15,10 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
     private readonly ICanonnSystemPoiClient client;
     private readonly PriorScanPlanner planner;
     private readonly Func<string?> commanderNameProvider;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "An in-flight refresh may release this gate after disposal cancellation.")]
     private readonly SemaphoreSlim refreshLock = new(1, 1);
     private readonly CancellationTokenSource disposalCancellation = new();
     private CanonnSystemPoiResult? cachedResult;
@@ -140,64 +144,26 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
     public async Task RefreshAsync()
     {
-        if (disposed || !TryCreateContext(out var context))
-        {
-            Recalculate();
-            return;
-        }
-
-        if (cachedResult is not null
-            && string.Equals(cachedKey, context.CacheKey, StringComparison.Ordinal))
-        {
-            Recalculate(context);
-            return;
-        }
-
-        if (string.Equals(failedKey, context.CacheKey, StringComparison.Ordinal)
-            && DateTimeOffset.UtcNow < retryAfter)
+        if (!TryBeginRefresh(out var context))
         {
             return;
         }
 
-        if (!await refreshLock.WaitAsync(0).ConfigureAwait(true))
+        if (!await refreshLock.WaitAsync(
+            0,
+            CancellationToken.None).ConfigureAwait(true))
         {
             return;
         }
 
         try
         {
-            if (disposed || !TryCreateContext(out context))
-            {
-                Recalculate();
-                return;
-            }
-
-            if (cachedResult is not null
-                && string.Equals(
-                    cachedKey,
-                    context.CacheKey,
-                    StringComparison.Ordinal))
-            {
-                Recalculate(context);
-                return;
-            }
-
-            IsLoading = true;
-            StatusText = $"Loading Canonn signals for {context.SystemName}…";
-            var result = await client.GetAsync(
-                context.SystemName,
-                context.CommanderName,
-                disposalCancellation.Token).ConfigureAwait(true);
-            if (disposed)
+            if (!TryBeginRefresh(out context))
             {
                 return;
             }
 
-            cachedResult = result;
-            cachedKey = context.CacheKey;
-            failedKey = null;
-            retryAfter = default;
-            Recalculate(context);
+            await LoadPriorScansAsync(context).ConfigureAwait(true);
         }
         catch (Exception exception) when (
             exception is HttpRequestException
@@ -206,16 +172,7 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
                 or IOException
                 or InvalidOperationException)
         {
-            if (!disposed)
-            {
-                cachedResult = null;
-                cachedKey = null;
-                retainedPresentationKey = null;
-                failedKey = context.CacheKey;
-                retryAfter = DateTimeOffset.UtcNow.AddSeconds(30);
-                ClearPresentation(
-                    "Canonn prior scans are unavailable: " + exception.Message);
-            }
+            ApplyRefreshFailure(context, exception);
         }
         finally
         {
@@ -226,6 +183,69 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
             refreshLock.Release();
         }
+    }
+
+    private bool TryBeginRefresh(out PriorScanContext context)
+    {
+        if (disposed || !TryCreateContext(out context!))
+        {
+            context = default!;
+            Recalculate();
+            return false;
+        }
+
+        if (cachedResult is not null
+            && string.Equals(cachedKey, context.CacheKey, StringComparison.Ordinal))
+        {
+            Recalculate(context);
+            return false;
+        }
+
+        if (string.Equals(failedKey, context.CacheKey, StringComparison.Ordinal)
+            && DateTimeOffset.UtcNow < retryAfter)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task LoadPriorScansAsync(PriorScanContext context)
+    {
+        IsLoading = true;
+        StatusText = $"Loading Canonn signals for {context.SystemName}…";
+        var result = await client.GetAsync(
+            context.SystemName,
+            context.CommanderName,
+            disposalCancellation.Token).ConfigureAwait(true);
+        if (disposed)
+        {
+            return;
+        }
+
+        cachedResult = result;
+        cachedKey = context.CacheKey;
+        failedKey = null;
+        retryAfter = default;
+        Recalculate(context);
+    }
+
+    private void ApplyRefreshFailure(
+        PriorScanContext context,
+        Exception exception)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        cachedResult = null;
+        cachedKey = null;
+        retainedPresentationKey = null;
+        failedKey = context.CacheKey;
+        retryAfter = DateTimeOffset.UtcNow.AddSeconds(30);
+        ClearPresentation(
+            "Canonn prior scans are unavailable: " + exception.Message);
     }
 
     public void ApplyPreparation(OverlayPreparationResult result)
@@ -542,11 +562,17 @@ public sealed class PriorScansOverlayViewModel : INotifyPropertyChanged, IDispos
 
     private static string FormatCredits(long value)
     {
-        return value >= 1_000_000
-            ? $"{value / 1_000_000d:N1} M CR"
-            : value >= 1_000
-                ? $"{value / 1_000d:N0} K CR"
-                : $"{value:N0} CR";
+        if (value >= 1_000_000)
+        {
+            return $"{value / 1_000_000d:N1} M CR";
+        }
+
+        if (value >= 1_000)
+        {
+            return $"{value / 1_000d:N0} K CR";
+        }
+
+        return $"{value:N0} CR";
     }
 
     private bool SetField<T>(
@@ -603,7 +629,8 @@ public sealed record PriorScanSpeciesViewModel(
         var genus = ExobiologyReferenceCatalog.GetGenusName(
             species.SpeciesName);
         var approachAngle = altitudeMeters > 500
-            && species.Targets.FirstOrDefault() is { DistanceMeters: > 0 } target
+            && species.Targets.Count > 0
+            && species.Targets[0] is { DistanceMeters: > 0 } target
                 ? Math.Atan(altitudeMeters / target.DistanceMeters)
                     * 180d / Math.PI
                 : 0;
@@ -625,11 +652,17 @@ public sealed record PriorScanSpeciesViewModel(
 
     private static string FormatCredits(long value)
     {
-        return value >= 1_000_000
-            ? $"{value / 1_000_000d:N2} M CR"
-            : value >= 1_000
-                ? $"{value / 1_000d:N1} K CR"
-                : $"{value:N0} CR";
+        if (value >= 1_000_000)
+        {
+            return $"{value / 1_000_000d:N2} M CR";
+        }
+
+        if (value >= 1_000)
+        {
+            return $"{value / 1_000d:N1} K CR";
+        }
+
+        return $"{value:N0} CR";
     }
 }
 
@@ -658,9 +691,11 @@ public sealed record PriorScanTargetViewModel(
     {
         return meters >= 1_000_000
             ? $"{meters / 1_000_000d:N1} Mm"
-            : meters >= 1_000
-                ? $"{meters / 1_000d:N1} km"
-                : $"{meters:N0} m";
+            : (meters >= 1_000) switch
+            {
+                true => $"{meters / 1_000d:N1} km",
+                false => $"{meters:N0} m"
+            };
     }
 }
 

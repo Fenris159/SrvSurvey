@@ -113,71 +113,19 @@ internal static class ApplicationUpdateBootstrap
         IReadOnlyList<string> arguments)
     {
         ArgumentNullException.ThrowIfNull(arguments);
-        string? applyPath = null;
-        string? confirmPath = null;
-        string? resultPath = null;
-        var applicationArguments = new List<string>();
-        for (var index = 0; index < arguments.Count; index++)
-        {
-            var argument = arguments[index];
-            if (argument is not (ApplyArgument or ConfirmArgument or ResultArgument))
-            {
-                applicationArguments.Add(argument);
-                continue;
-            }
-
-            if (index + 1 >= arguments.Count
-                || string.IsNullOrWhiteSpace(arguments[index + 1]))
-            {
-                throw new InvalidDataException(
-                    $"The internal update argument '{argument}' has no plan path.");
-            }
-
-            var planPath = arguments[++index];
-            if (argument == ApplyArgument)
-            {
-                if (applyPath is not null)
-                {
-                    throw new InvalidDataException(
-                        "The internal update apply argument was repeated.");
-                }
-
-                applyPath = planPath;
-            }
-            else if (argument == ConfirmArgument)
-            {
-                if (confirmPath is not null)
-                {
-                    throw new InvalidDataException(
-                        "The internal update confirmation argument was repeated.");
-                }
-
-                confirmPath = planPath;
-            }
-            else
-            {
-                if (resultPath is not null)
-                {
-                    throw new InvalidDataException(
-                        "The internal update result argument was repeated.");
-                }
-
-                resultPath = planPath;
-            }
-        }
-
-        var internalModeCount = (applyPath is null ? 0 : 1)
-            + (confirmPath is null ? 0 : 1)
-            + (resultPath is null ? 0 : 1);
+        var parsed = ParseInternalPaths(arguments);
+        var internalModeCount = (parsed.ApplyPath is null ? 0 : 1)
+            + (parsed.ConfirmPath is null ? 0 : 1)
+            + (parsed.ResultPath is null ? 0 : 1);
         if (internalModeCount > 1)
         {
             throw new InvalidDataException(
                 "Internal update helper modes cannot be combined.");
         }
 
-        if (applyPath is not null)
+        if (parsed.ApplyPath is not null)
         {
-            if (applicationArguments.Count != 0)
+            if (parsed.ApplicationArguments.Count != 0)
             {
                 throw new InvalidDataException(
                     "The update helper does not accept application arguments.");
@@ -185,31 +133,117 @@ internal static class ApplicationUpdateBootstrap
 
             return new ApplicationUpdateStartup(
                 ApplicationUpdateStartupMode.Apply,
-                applyPath,
+                parsed.ApplyPath,
                 []);
         }
 
-        if (confirmPath is not null)
+        if (parsed.ConfirmPath is not null)
         {
             return new ApplicationUpdateStartup(
                 ApplicationUpdateStartupMode.Confirm,
-                confirmPath,
-                applicationArguments);
+                parsed.ConfirmPath,
+                parsed.ApplicationArguments);
         }
 
-        if (resultPath is not null)
+        if (parsed.ResultPath is not null)
         {
             return new ApplicationUpdateStartup(
                 ApplicationUpdateStartupMode.Result,
-                resultPath,
-                applicationArguments);
+                parsed.ResultPath,
+                parsed.ApplicationArguments);
         }
 
         return new ApplicationUpdateStartup(
             ApplicationUpdateStartupMode.Normal,
             null,
+            parsed.ApplicationArguments);
+    }
+
+    private static ParsedStartupArguments ParseInternalPaths(
+        IReadOnlyList<string> arguments)
+    {
+        string? applyPath = null;
+        string? confirmPath = null;
+        string? resultPath = null;
+        var applicationArguments = new List<string>();
+        var index = 0;
+        while (index < arguments.Count)
+        {
+            var argument = arguments[index++];
+            if (argument is not (ApplyArgument or ConfirmArgument or ResultArgument))
+            {
+                applicationArguments.Add(argument);
+                continue;
+            }
+
+            if (index >= arguments.Count
+                || string.IsNullOrWhiteSpace(arguments[index]))
+            {
+                throw new InvalidDataException(
+                    $"The internal update argument '{argument}' has no plan path.");
+            }
+
+            var planPath = arguments[index++];
+            AssignInternalPath(
+                argument,
+                planPath,
+                ref applyPath,
+                ref confirmPath,
+                ref resultPath);
+        }
+
+        return new ParsedStartupArguments(
+            applyPath,
+            confirmPath,
+            resultPath,
             applicationArguments);
     }
+
+    private static void AssignInternalPath(
+        string argument,
+        string planPath,
+        ref string? applyPath,
+        ref string? confirmPath,
+        ref string? resultPath)
+    {
+        if (argument == ApplyArgument)
+        {
+            if (applyPath is not null)
+            {
+                throw new InvalidDataException(
+                    "The internal update apply argument was repeated.");
+            }
+
+            applyPath = planPath;
+            return;
+        }
+
+        if (argument == ConfirmArgument)
+        {
+            if (confirmPath is not null)
+            {
+                throw new InvalidDataException(
+                    "The internal update confirmation argument was repeated.");
+            }
+
+            confirmPath = planPath;
+            return;
+        }
+
+        if (resultPath is not null)
+        {
+            throw new InvalidDataException(
+                "The internal update result argument was repeated.");
+        }
+
+        resultPath = planPath;
+    }
+
+    private sealed record ParsedStartupArguments(
+        string? ApplyPath,
+        string? ConfirmPath,
+        string? ResultPath,
+        IReadOnlyList<string> ApplicationArguments);
 
     public static void SetPendingConfirmation(string? planPath)
     {
@@ -305,47 +339,8 @@ internal static class ApplicationUpdateBootstrap
                     planPath,
                     cancellationToken)
                 .ConfigureAwait(false);
-            await WaitForParentExitAsync(plan, cancellationToken)
+            return await ApplyHelperPlanAsync(store, plan, cancellationToken)
                 .ConfigureAwait(false);
-            var transaction = new ReleaseInstallationTransaction();
-            var result = await transaction.ApplyAsync(
-                    plan.Preparation,
-                    (entryPoint, arguments, token) =>
-                        LaunchAndConfirmAsync(
-                            store,
-                            plan,
-                            entryPoint,
-                            arguments,
-                            token),
-                    cancellationToken)
-                .ConfigureAwait(false);
-            var status = result.Status == ReleaseInstallationStatus.Installed
-                ? ReleaseInstallationOutcomeStatus.Installed
-                : ReleaseInstallationOutcomeStatus.RolledBack;
-            await store.WriteOutcomeAsync(
-                    plan,
-                    new ReleaseInstallationOutcome(
-                        status,
-                        plan.Preparation.RequestId,
-                        plan.Preparation.Version,
-                        DateTimeOffset.UtcNow,
-                        result.BackupDirectory,
-                        result.FailedDirectory,
-                        result.Error),
-                    cancellationToken)
-                .ConfigureAwait(false);
-            if (result.Status == ReleaseInstallationStatus.RolledBack)
-            {
-                StartWithoutConfirmation(
-                    Path.Combine(
-                        plan.Preparation.InstallationDirectory,
-                        plan.Preparation.EntryPoint),
-                    plan.Preparation.StartupArguments,
-                    plan.PlanPath);
-                return 3;
-            }
-
-            return 0;
         }
         catch (Exception exception) when (
             exception is IOException
@@ -354,59 +349,127 @@ internal static class ApplicationUpdateBootstrap
                 or InvalidOperationException
                 or TaskCanceledException)
         {
-            if (plan is not null)
-            {
-                try
-                {
-                    await store.WriteOutcomeAsync(
-                            plan,
-                            new ReleaseInstallationOutcome(
-                                ReleaseInstallationOutcomeStatus.Aborted,
-                                plan.Preparation.RequestId,
-                                plan.Preparation.Version,
-                                DateTimeOffset.UtcNow,
-                                Directory.Exists(plan.Preparation.BackupDirectory)
-                                    ? plan.Preparation.BackupDirectory
-                                    : null,
-                                Directory.Exists(plan.Preparation.FailedDirectory)
-                                    ? plan.Preparation.FailedDirectory
-                                    : null,
-                                exception.Message),
-                            CancellationToken.None)
-                        .ConfigureAwait(false);
-                }
-                catch (Exception outcomeException) when (
-                    outcomeException is IOException
-                        or UnauthorizedAccessException
-                        or InvalidDataException)
-                {
-                }
-
-                var originalEntryPoint = Path.Combine(
-                    plan.Preparation.InstallationDirectory,
-                    plan.Preparation.EntryPoint);
-                if (exception is not (
-                        UpdateParentStillRunningException
-                        or OperationCanceledException)
-                    && File.Exists(originalEntryPoint))
-                {
-                    try
-                    {
-                        StartWithoutConfirmation(
-                            originalEntryPoint,
-                            plan.Preparation.StartupArguments,
-                            plan.PlanPath);
-                    }
-                    catch (Exception launchException) when (
-                        launchException is IOException
-                            or UnauthorizedAccessException
-                            or InvalidOperationException)
-                    {
-                    }
-                }
-            }
-
+            await HandleHelperFailureAsync(store, plan, exception)
+                .ConfigureAwait(false);
             return 2;
+        }
+    }
+
+    private static async Task<int> ApplyHelperPlanAsync(
+        ReleaseInstallationPlanStore store,
+        ReleaseInstallationHandoffPlan plan,
+        CancellationToken cancellationToken)
+    {
+        await WaitForParentExitAsync(plan, cancellationToken)
+            .ConfigureAwait(false);
+        var transaction = new ReleaseInstallationTransaction();
+        var result = await transaction.ApplyAsync(
+                plan.Preparation,
+                (entryPoint, arguments, token) =>
+                    LaunchAndConfirmAsync(
+                        store,
+                        plan,
+                        entryPoint,
+                        arguments,
+                        token),
+                cancellationToken)
+            .ConfigureAwait(false);
+        var status = result.Status == ReleaseInstallationStatus.Installed
+            ? ReleaseInstallationOutcomeStatus.Installed
+            : ReleaseInstallationOutcomeStatus.RolledBack;
+        await store.WriteOutcomeAsync(
+                plan,
+                new ReleaseInstallationOutcome(
+                    status,
+                    plan.Preparation.RequestId,
+                    plan.Preparation.Version,
+                    DateTimeOffset.UtcNow,
+                    result.BackupDirectory,
+                    result.FailedDirectory,
+                    result.Error),
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (result.Status == ReleaseInstallationStatus.RolledBack)
+        {
+            StartWithoutConfirmation(
+                Path.Combine(
+                    plan.Preparation.InstallationDirectory,
+                    plan.Preparation.EntryPoint),
+                plan.Preparation.StartupArguments,
+                plan.PlanPath);
+            return 3;
+        }
+
+        return 0;
+    }
+
+    private static async Task HandleHelperFailureAsync(
+        ReleaseInstallationPlanStore store,
+        ReleaseInstallationHandoffPlan? plan,
+        Exception exception)
+    {
+        if (plan is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await store.WriteOutcomeAsync(
+                    plan,
+                    new ReleaseInstallationOutcome(
+                        ReleaseInstallationOutcomeStatus.Aborted,
+                        plan.Preparation.RequestId,
+                        plan.Preparation.Version,
+                        DateTimeOffset.UtcNow,
+                        Directory.Exists(plan.Preparation.BackupDirectory)
+                            ? plan.Preparation.BackupDirectory
+                            : null,
+                        Directory.Exists(plan.Preparation.FailedDirectory)
+                            ? plan.Preparation.FailedDirectory
+                            : null,
+                        exception.Message),
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+        catch (Exception outcomeException) when (
+            outcomeException is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            // The primary update failure remains the actionable result.
+        }
+
+        TryRestartOriginalInstallation(plan, exception);
+    }
+
+    private static void TryRestartOriginalInstallation(
+        ReleaseInstallationHandoffPlan plan,
+        Exception exception)
+    {
+        var originalEntryPoint = Path.Combine(
+            plan.Preparation.InstallationDirectory,
+            plan.Preparation.EntryPoint);
+        if (exception is UpdateParentStillRunningException
+                or OperationCanceledException
+            || !File.Exists(originalEntryPoint))
+        {
+            return;
+        }
+
+        try
+        {
+            StartWithoutConfirmation(
+                originalEntryPoint,
+                plan.Preparation.StartupArguments,
+                plan.PlanPath);
+        }
+        catch (Exception launchException) when (
+            launchException is IOException
+                or UnauthorizedAccessException
+                or InvalidOperationException)
+        {
+            // The original failure is returned when recovery cannot launch.
         }
     }
 
@@ -497,6 +560,7 @@ internal static class ApplicationUpdateBootstrap
         }
         catch (ArgumentException)
         {
+            // The parent process already exited before it could be inspected.
         }
         finally
         {
@@ -541,6 +605,7 @@ internal static class ApplicationUpdateBootstrap
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
+            // Health confirmation timed out; rollback follows below.
         }
 
         await StopReplacementAsync(replacement).ConfigureAwait(false);

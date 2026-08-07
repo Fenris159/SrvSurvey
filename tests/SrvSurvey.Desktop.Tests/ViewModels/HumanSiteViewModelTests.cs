@@ -58,7 +58,10 @@ public sealed class HumanSiteViewModelTests
             pad.Offset,
             radius,
             siteHeading);
-        var viewModel = new HumanSiteViewModel(templateCatalog: catalog);
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+            {
+                TemplateCatalog = catalog,
+            });
         var status = OnFootStatus(
             location.Latitude,
             location.Longitude,
@@ -125,7 +128,10 @@ public sealed class HumanSiteViewModelTests
             Heading = (int)Math.Round(observerHeading),
             PlanetRadius = (decimal)radius,
         };
-        var viewModel = new HumanSiteViewModel(templateCatalog: catalog);
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+            {
+                TemplateCatalog = catalog,
+            });
 
         await viewModel.ApplyUpdateAsync(
             [
@@ -173,7 +179,10 @@ public sealed class HumanSiteViewModelTests
         {
             PlanetRadius = (decimal)radius,
         };
-        var viewModel = new HumanSiteViewModel(templateCatalog: catalog);
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+            {
+                TemplateCatalog = catalog,
+            });
         await viewModel.ApplyUpdateAsync(
             [
                 Parse(Approach(
@@ -309,7 +318,10 @@ public sealed class HumanSiteViewModelTests
         {
             PlanetRadius = (decimal)radius,
         };
-        var viewModel = new HumanSiteViewModel(templateCatalog: catalog);
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+            {
+                TemplateCatalog = catalog,
+            });
         await viewModel.ApplyUpdateAsync(
             [
                 Parse(Approach(
@@ -386,9 +398,11 @@ public sealed class HumanSiteViewModelTests
                 pad.Offset,
                 radius,
                 siteHeading);
-            var viewModel = new HumanSiteViewModel(
-                materialStore: new HumanSiteMaterialStore(root),
-                templateCatalog: catalog);
+            var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+                {
+                    MaterialStore = new HumanSiteMaterialStore(root),
+                    TemplateCatalog = catalog,
+                });
             viewModel.UpdateContext(
                 "F123",
                 "Drew",
@@ -481,7 +495,10 @@ public sealed class HumanSiteViewModelTests
         try
         {
             var store = new HumanSiteMaterialStore(root);
-            var viewModel = new HumanSiteViewModel(materialStore: store);
+            var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+            {
+                MaterialStore = store,
+            });
             viewModel.UpdateContext("F123", "Drew", "Test", 42, null);
             await viewModel.ApplyUpdateAsync(
                 [Parse(Approach())],
@@ -517,12 +534,14 @@ public sealed class HumanSiteViewModelTests
             [CreateCanonnKnowledge()],
             []));
         var publisher = new StubCanonnPublisher();
-        var viewModel = new HumanSiteViewModel(
-            templateCatalog: HumanSiteTemplateCatalog.LoadEmbedded(),
-            canonnClient: client,
-            useExternalData: () => true,
-            canonnPublisher: publisher,
-            publishCanonnGeometry: () => true);
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+            {
+                TemplateCatalog = HumanSiteTemplateCatalog.LoadEmbedded(),
+                CanonnClient = client,
+                UseExternalData = () => true,
+                CanonnPublisher = publisher,
+                PublishCanonnGeometry = () => true,
+            });
 
         await viewModel.ApplyUpdateAsync(
             [Parse(Approach())],
@@ -549,9 +568,11 @@ public sealed class HumanSiteViewModelTests
         var client = new StubCanonnClient(new CanonnHumanSiteLookupResult(
             [CreateCanonnKnowledge()],
             []));
-        var viewModel = new HumanSiteViewModel(
-            canonnClient: client,
-            useExternalData: () => externalDataEnabled);
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+            {
+                CanonnClient = client,
+                UseExternalData = () => externalDataEnabled,
+            });
 
         await viewModel.ApplyUpdateAsync(
             [Parse(Approach())],
@@ -567,9 +588,11 @@ public sealed class HumanSiteViewModelTests
     public async Task CanonnFailureDoesNotInterruptJournalProcessing()
     {
         var client = new StubCanonnClient(new HttpRequestException("offline"));
-        var viewModel = new HumanSiteViewModel(
-            canonnClient: client,
-            useExternalData: () => true);
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+            {
+                CanonnClient = client,
+                UseExternalData = () => true,
+            });
 
         await viewModel.ApplyUpdateAsync(
             [Parse(Approach())],
@@ -609,9 +632,11 @@ public sealed class HumanSiteViewModelTests
                 context,
                 site,
                 HumanSiteGeometrySource.AutoDock);
-            var viewModel = new HumanSiteViewModel(
-                knowledgeStore: store,
-                templateCatalog: catalog);
+            var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+                {
+                    KnowledgeStore = store,
+                    TemplateCatalog = catalog,
+                });
             viewModel.UpdateContext("F123", "Drew", "Test", 42, null);
 
             await viewModel.ApplyUpdateAsync(
@@ -662,12 +687,14 @@ public sealed class HumanSiteViewModelTests
         };
         var publisher = new StubCanonnPublisher();
         CanonnHumanSitePublicationResult? reported = null;
-        var viewModel = new HumanSiteViewModel(
-            templateCatalog: catalog,
-            canonnPublisher: publisher,
-            publishCanonnGeometry: () => true,
-            reportCanonnPublication: result => reported = result,
-            clientVersion: new Version(2, 0, 95, 0));
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+            {
+                TemplateCatalog = catalog,
+                CanonnPublisher = publisher,
+                PublishCanonnGeometry = () => true,
+                ReportCanonnPublication = result => reported = result,
+                ClientVersion = new Version(2, 0, 95, 0),
+            });
 
         await viewModel.ApplyUpdateAsync(
             [
@@ -721,10 +748,12 @@ public sealed class HumanSiteViewModelTests
             radius,
             siteHeading);
         var publisher = new StubCanonnPublisher();
-        var viewModel = new HumanSiteViewModel(
-            templateCatalog: catalog,
-            canonnPublisher: publisher,
-            publishCanonnGeometry: () => consent);
+        var viewModel = new HumanSiteViewModel(new HumanSiteViewModelOptions
+            {
+                TemplateCatalog = catalog,
+                CanonnPublisher = publisher,
+                PublishCanonnGeometry = () => consent,
+            });
 
         await viewModel.ApplyUpdateAsync(
             [

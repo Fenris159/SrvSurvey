@@ -357,9 +357,7 @@ public sealed class NearestSystemsClient : INearestSystemsClient
             throw new ArgumentException("The service URI must be absolute.");
         }
 
-        return uri.AbsoluteUri.EndsWith("/", StringComparison.Ordinal)
-            ? uri
-            : new Uri(uri.AbsoluteUri + "/");
+        return UriPath.EnsureTrailingSeparator(uri);
     }
 
     private static HttpClient CreateSharedClient()

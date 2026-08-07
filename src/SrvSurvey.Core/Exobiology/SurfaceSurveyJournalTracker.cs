@@ -15,7 +15,7 @@ public sealed class SurfaceSurveyJournalTracker
     private const string FixedLifeRing = "$Fixed_Event_Life_Ring;";
     private const double TrackerRemovalDistanceMeters = 150;
 
-    private static readonly IReadOnlyDictionary<string, string> GenusShortNames =
+    private static readonly Dictionary<string, string> GenusShortNames =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["ale"] = "Aleoida",
@@ -169,7 +169,7 @@ public sealed class SurfaceSurveyJournalTracker
         }
 
         if (status is null
-            || !TryCreateBodyContext(session, status, out var context))
+            || !TryCreateBodyContext(session, out var context))
         {
             return 0;
         }
@@ -263,7 +263,6 @@ public sealed class SurfaceSurveyJournalTracker
 
     private static bool TryCreateBodyContext(
         SurfaceSurveySessionContext session,
-        EliteStatus currentStatus,
         out SystemSurfaceContext context)
     {
         context = null!;

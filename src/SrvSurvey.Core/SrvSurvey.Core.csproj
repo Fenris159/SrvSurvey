@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -34,6 +34,8 @@
                       LogicalName="SrvSurvey.Core.Resources.colonization-costs2.json" />
     <EmbeddedResource Include="Resources\ReferenceData\ggg.json"
                       LogicalName="SrvSurvey.Core.Resources.ggg.json" />
+    <EmbeddedResource Include="Resources\ReferenceData\well-known-uris.json"
+                      LogicalName="SrvSurvey.Core.Resources.well-known-uris.json" />
     <EmbeddedResource Include="Resources\bio-criteria\*.json"
                       LogicalName="SrvSurvey.Core.Resources.bio-criteria.%(Filename)%(Extension)" />
   </ItemGroup>

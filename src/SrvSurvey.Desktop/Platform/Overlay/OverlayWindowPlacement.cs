@@ -135,9 +135,6 @@ public static class OverlayWindowPlacement
                 "Overlay size must have a positive size.");
         }
 
-        if (margin < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(margin));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(margin);
     }
 }

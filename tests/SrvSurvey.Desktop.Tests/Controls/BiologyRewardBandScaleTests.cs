@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using SrvSurvey.Desktop.Configuration;
 using SrvSurvey.Desktop.Controls;
 
@@ -5,6 +6,17 @@ namespace SrvSurvey.Desktop.Tests.Controls;
 
 public sealed class BiologyRewardBandScaleTests
 {
+    [Fact]
+    public void EmptyBrushPropertyRoundTripsThroughTheControl()
+    {
+        var control = new BiologyRewardBandControl();
+        var brush = Brushes.Gray;
+
+        control.EmptyBrush = brush;
+
+        Assert.Same(brush, control.EmptyBrush);
+    }
+
     [Fact]
     public void UnknownRewardUsesQuestionStateEvenWithMaximum()
     {

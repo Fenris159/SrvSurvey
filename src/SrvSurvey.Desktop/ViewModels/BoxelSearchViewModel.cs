@@ -8,6 +8,10 @@ using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The view model is application-scoped; its background workers own their cancellation sources.")]
 public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 {
     private const string Unavailable = "\u2014";
@@ -287,9 +291,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         state.NextSystem,
         StringComparison.Ordinal)
             ? "NEXT SEARCH COPIED"
-            : state.AutoCopy
-                ? "AUTO-COPY READY"
-                : "MANUAL COPY";
+            : (state.AutoCopy) switch
+            {
+                true => "AUTO-COPY READY",
+                false => "MANUAL COPY"
+            };
 
     public bool IsCurrentEmpty => state.CurrentIsEmpty;
 
@@ -450,7 +456,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(profileFrontierId);
         ArgumentNullException.ThrowIfNull(snapshot);
-        auditCancellation?.Cancel();
+        if (auditCancellation is not null)
+        {
+            await auditCancellation.CancelAsync();
+        }
+
         frontierId = profileFrontierId;
         commanderName = profileCommanderName;
         isOdyssey = profileIsOdyssey;
@@ -483,7 +493,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             try
             {
                 state.ApplyEmptyBoxels(
-                    await emptyBoxelStore.LoadGroupAsync(state.TopBoxel));
+                    await emptyBoxelStore.LoadGroupAsync(
+                        state.TopBoxel,
+                        CancellationToken.None));
             }
             catch (InvalidDataException exception)
             {
@@ -543,7 +555,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        await operationLock.WaitAsync();
+        await operationLock.WaitAsync(CancellationToken.None);
         try
         {
             var changed = state.MergeRoute(route.Route
@@ -570,7 +582,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        await operationLock.WaitAsync();
+        await operationLock.WaitAsync(CancellationToken.None);
         try
         {
             var changed = false;
@@ -633,15 +645,18 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             ? '\0'
             : char.ToLowerInvariant(LowMassCode[0]);
         if (!state.TryActivate(
-                topBoxel,
-                selectedMassCode,
-                StartedOn,
-                SkipAlreadyVisited,
-                SkipKnownToSpansh,
-                CompleteOnFssAllBodies
-                    ? BoxelCompletionMode.FssAllBodies
-                    : BoxelCompletionMode.EnterSystem,
-                AutoCopy,
+                new BoxelSearchActivationRequest
+    {
+        TopBoxel = topBoxel,
+        LowMassCode = selectedMassCode,
+        StartedOn = StartedOn,
+        SkipAlreadyVisited = SkipAlreadyVisited,
+        SkipKnownToSpansh = SkipKnownToSpansh,
+        CompletionMode = CompleteOnFssAllBodies
+                        ? BoxelCompletionMode.FssAllBodies
+                        : BoxelCompletionMode.EnterSystem,
+        AutoCopy = AutoCopy
+    },
                 out var error))
         {
             StatusMessage = error ?? "The boxel search configuration is invalid.";
@@ -651,7 +666,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         try
         {
             state.ApplyEmptyBoxels(
-                await emptyBoxelStore.LoadGroupAsync(topBoxel!));
+                await emptyBoxelStore.LoadGroupAsync(
+                    topBoxel!,
+                    CancellationToken.None));
             UpdateDisplay();
             await SaveAsync();
             await RefreshCurrentAsync();
@@ -677,7 +694,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        await operationLock.WaitAsync();
+        await operationLock.WaitAsync(CancellationToken.None);
         try
         {
             IsBusy = true;
@@ -686,7 +703,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             try
             {
                 state.ApplyEmptyBoxels(
-                    await emptyBoxelStore.LoadGroupAsync(state.Current));
+                    await emptyBoxelStore.LoadGroupAsync(
+                        state.Current,
+                        CancellationToken.None));
             }
             catch (InvalidDataException exception)
             {
@@ -697,7 +716,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             {
                 var local = await localSystemReader.ReadAsync(
                     frontierId!,
-                    state.Current);
+                    state.Current,
+                    CancellationToken.None);
                 state.MergeLocalSystems(local.Systems);
                 warnings.AddRange(local.Errors);
                 if (latestRoute is not null)
@@ -710,7 +730,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 try
                 {
                     state.MergeSpanshSystems(
-                        await systemResolver.SearchAsync(state.Current));
+                        await systemResolver.SearchAsync(
+                            state.Current,
+                            CancellationToken.None));
                 }
                 catch (Exception exception) when (
                     exception is HttpRequestException
@@ -750,12 +772,49 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             || frontierId is null
             || state.TopBoxel is null)
         {
-            StatusMessage = ShowLargeAuditConfirmation && !ConfirmLargeAudit
-                ? "Confirm the large network audit before starting it."
-                : "Activate a boxel search before auditing its full area.";
+            StatusMessage = GetAuditUnavailableStatus();
             return;
         }
 
+        BeginAuditProgress();
+        var cancellation = auditCancellation!;
+        var auditFrontierId = frontierId;
+        var auditTopPrefix = state.TopBoxel.Prefix;
+        var request = CreateCompletionAuditRequest(auditFrontierId);
+        var progress = CreateAuditProgressReporter(cancellation);
+
+        try
+        {
+            var result = await completionAuditor.AuditAsync(
+                request,
+                progress,
+                cancellation.Token);
+            await ApplyAuditResultAsync(result, auditFrontierId, auditTopPrefix, cancellation);
+        }
+        catch (Exception exception) when (
+            exception is IOException
+                or UnauthorizedAccessException
+                or InvalidDataException)
+        {
+            AuditProgress = $"Audit stopped after {AuditProcessed:N0} boxels.";
+            StatusMessage = "The full-area audit could not be completed: "
+                + exception.Message;
+        }
+        finally
+        {
+            CompleteAudit(cancellation);
+        }
+    }
+
+    private string GetAuditUnavailableStatus()
+    {
+        return ShowLargeAuditConfirmation && !ConfirmLargeAudit
+            ? "Confirm the large network audit before starting it."
+            : "Activate a boxel search before auditing its full area.";
+    }
+
+    private void BeginAuditProgress()
+    {
         IsBusy = true;
         IsAuditing = true;
         AuditProcessed = 0;
@@ -763,15 +822,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         AuditProgress = $"Preparing to audit {state.TotalBoxelCount:N0} boxels\u2026";
         StatusMessage = "The full-area audit is running in the background.";
         auditCancellation = new CancellationTokenSource();
-        var cancellation = auditCancellation;
-        var auditFrontierId = frontierId;
-        var auditTopPrefix = state.TopBoxel.Prefix;
+    }
+
+    private BoxelCompletionAuditRequest CreateCompletionAuditRequest(
+        string auditFrontierId)
+    {
         var snapshot = state.CreateSnapshot();
         var routeSystems = latestRoute?.Route
             .Select(entry => entry.ToBoxelObservation())
             .OfType<BoxelSystemObservation>()
             .ToArray() ?? [];
-        var request = new BoxelCompletionAuditRequest(
+        return new BoxelCompletionAuditRequest(
             auditFrontierId,
             state.Boxels,
             state.EmptyBoxelPrefixes,
@@ -781,7 +842,12 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             snapshot.SkipKnownToSpansh,
             snapshot.CompletionMode,
             routeSystems);
-        var progress = new Progress<BoxelCompletionAuditProgress>(update =>
+    }
+
+    private Progress<BoxelCompletionAuditProgress> CreateAuditProgressReporter(
+        CancellationTokenSource cancellation)
+    {
+        return new Progress<BoxelCompletionAuditProgress>(update =>
         {
             if (!IsAuditing || !ReferenceEquals(auditCancellation, cancellation))
             {
@@ -797,62 +863,59 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             AuditProgress = $"Audited {update.Processed:N0} of {update.Total:N0}: "
                 + update.Prefix;
         });
+    }
 
+    private async Task ApplyAuditResultAsync(
+        BoxelCompletionAuditResult result,
+        string auditFrontierId,
+        string auditTopPrefix,
+        CancellationTokenSource cancellation)
+    {
+        AuditProcessed = result.Processed;
+        AuditTotal = Math.Max(1, result.Total);
+        await operationLock.WaitAsync(cancellation.Token);
         try
         {
-            var result = await completionAuditor.AuditAsync(
-                request,
-                progress,
-                cancellation.Token);
-            AuditProcessed = result.Processed;
-            AuditTotal = Math.Max(1, result.Total);
-            await operationLock.WaitAsync();
-            try
+            if (!IsAuditStillCurrent(auditFrontierId, auditTopPrefix))
             {
-                if (!string.Equals(frontierId, auditFrontierId, StringComparison.Ordinal)
-                    || !string.Equals(
-                        state.TopBoxel?.Prefix,
-                        auditTopPrefix,
-                        StringComparison.Ordinal))
-                {
-                    StatusMessage = "The audit finished for a profile that is no longer active; its results were not applied.";
-                    return;
-                }
-
-                state.ApplyCompletionAudit(result.Entries);
-                UpdateDisplay();
-                await SaveAsync();
-            }
-            finally
-            {
-                operationLock.Release();
+                StatusMessage = "The audit finished for a profile that is no longer active; its results were not applied.";
+                return;
             }
 
-            AuditProgress = result.WasCancelled
-                ? $"Cancelled after {result.Processed:N0} of {result.Total:N0} boxels."
-                : $"Audited all {result.Total:N0} boxels.";
-            StatusMessage = BuildAuditStatus(result);
-        }
-        catch (Exception exception) when (
-            exception is IOException
-                or UnauthorizedAccessException
-                or InvalidDataException)
-        {
-            AuditProgress = $"Audit stopped after {AuditProcessed:N0} boxels.";
-            StatusMessage = "The full-area audit could not be completed: "
-                + exception.Message;
+            state.ApplyCompletionAudit(result.Entries);
+            UpdateDisplay();
+            await SaveAsync();
         }
         finally
         {
-            cancellation.Dispose();
-            if (ReferenceEquals(auditCancellation, cancellation))
-            {
-                auditCancellation = null;
-            }
-
-            IsAuditing = false;
-            IsBusy = false;
+            operationLock.Release();
         }
+
+        AuditProgress = result.WasCancelled
+            ? $"Cancelled after {result.Processed:N0} of {result.Total:N0} boxels."
+            : $"Audited all {result.Total:N0} boxels.";
+        StatusMessage = BuildAuditStatus(result);
+    }
+
+    private bool IsAuditStillCurrent(string auditFrontierId, string auditTopPrefix)
+    {
+        return string.Equals(frontierId, auditFrontierId, StringComparison.Ordinal)
+            && string.Equals(
+                state.TopBoxel?.Prefix,
+                auditTopPrefix,
+                StringComparison.Ordinal);
+    }
+
+    private void CompleteAudit(CancellationTokenSource cancellation)
+    {
+        cancellation.Dispose();
+        if (ReferenceEquals(auditCancellation, cancellation))
+        {
+            auditCancellation = null;
+        }
+
+        IsAuditing = false;
+        IsBusy = false;
     }
 
     public Task CancelAuditAsync()
@@ -893,13 +956,16 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        await operationLock.WaitAsync();
+        await operationLock.WaitAsync(CancellationToken.None);
         try
         {
             IsBusy = true;
             var original = state.Current;
             var markEmpty = !state.CurrentIsEmpty;
-            await emptyBoxelStore.SetEmptyAsync(original, markEmpty);
+            await emptyBoxelStore.SetEmptyAsync(
+                original,
+                markEmpty,
+                CancellationToken.None);
             state.SetCurrentEmpty(markEmpty);
             var moved = false;
             if (markEmpty
@@ -916,11 +982,13 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             UpdateDisplay();
             await SaveAsync();
             StatusMessage = markEmpty
-                ? moved
-                    ? $"Marked {original.Prefix} empty and advanced to "
+                ? (moved) switch
+                {
+                    true => $"Marked {original.Prefix} empty and advanced to "
                         + state.Current?.Prefix
-                        + "."
-                    : $"Marked {original.Prefix} empty."
+                        + ".",
+                    false => $"Marked {original.Prefix} empty."
+                }
                 : $"Removed the empty marker from {original.Prefix}.";
             if (moved)
             {
@@ -1038,7 +1106,10 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        var local = await localSystemReader.ReadAsync(frontierId!, state.Current);
+        var local = await localSystemReader.ReadAsync(
+            frontierId!,
+            state.Current,
+            CancellationToken.None);
         state.MergeLocalSystems(local.Systems);
         if (latestRoute is not null)
         {
@@ -1049,7 +1120,9 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
         try
         {
-            state.MergeSpanshSystems(await systemResolver.SearchAsync(state.Current));
+            state.MergeSpanshSystems(await systemResolver.SearchAsync(
+                state.Current,
+                CancellationToken.None));
         }
         catch (Exception exception) when (
             exception is HttpRequestException
@@ -1152,7 +1225,11 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         return result.Errors.Count == 0
             ? outcome
             : outcome + $" {result.Errors.Count:N0} warning"
-                + (result.Errors.Count == 1 ? string.Empty : "s")
+                + ((result.Errors.Count == 1) switch
+                {
+                    true => string.Empty,
+                    false => "s"
+                })
                 + $" occurred. First: {result.Errors[0]}";
     }
 
@@ -1169,7 +1246,8 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                 frontierId,
                 commanderName,
                 isOdyssey,
-                state.CreateSnapshot());
+                state.CreateSnapshot(),
+                CancellationToken.None);
             if (successMessage is not null)
             {
                 StatusMessage = successMessage;
@@ -1288,7 +1366,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
             return;
         }
 
-        var knownSystems = state.Systems.ToDictionary(
+        var systemsByNumber = state.Systems.ToDictionary(
             system => system.Boxel.N2);
         var rowCount = Math.Max(
             state.CurrentCount,
@@ -1296,7 +1374,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         var rowNumbers = Enumerable.Range(
                 0,
                 Math.Min(Math.Max(1, rowCount), MaximumVisibleSystemRows))
-            .Concat(knownSystems.Keys)
+            .Concat(systemsByNumber.Keys)
             .Distinct()
             .Order()
             .ToArray();
@@ -1307,7 +1385,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
         Systems = rowNumbers
             .Select(number =>
             {
-                knownSystems.TryGetValue(number, out var system);
+                systemsByNumber.TryGetValue(number, out var system);
                 var boxel = system?.Boxel ?? state.Current.WithSystemNumber(number);
                 var distance = system?.Position is { } position
                     && currentPosition is { } from
@@ -1321,14 +1399,17 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
                         boxel.Name,
                         StringComparison.Ordinal);
                 return new BoxelSystemRowViewModel(
-                    boxel.Name,
-                    system?.IsComplete == true,
-                    system is not null,
-                    isCurrent,
-                    distance,
-                    FormatDate(system?.VisitedAt),
-                    FormatDate(system?.SpanshUpdatedAt),
-                    () => ToggleSystemAsync(boxel.Name));
+                    new BoxelSystemRowOptions
+                    {
+                        Name = boxel.Name,
+                        IsComplete = system?.IsComplete == true,
+                        IsKnown = system is not null,
+                        IsCurrent = isCurrent,
+                        Distance = distance,
+                        VisitedAt = FormatDate(system?.VisitedAt),
+                        SpanshUpdatedAt = FormatDate(system?.SpanshUpdatedAt),
+                        Toggle = () => ToggleSystemAsync(boxel.Name),
+                    });
             })
             .ToArray();
     }
@@ -1385,7 +1466,7 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
     {
         var systemName = value?.Trim();
         var normalized = systemName;
-        if (normalized?.EndsWith("-", StringComparison.Ordinal) == true)
+        if (normalized?.EndsWith('-') == true)
         {
             normalized += "0";
         }
@@ -1456,25 +1537,29 @@ public sealed class BoxelSearchViewModel : INotifyPropertyChanged
 
 public sealed class BoxelSystemRowViewModel
 {
-    public BoxelSystemRowViewModel(
-        string name,
-        bool isComplete,
-        bool isKnown,
-        bool isCurrent,
-        string distance,
-        string visitedAt,
-        string spanshUpdatedAt,
-        Func<Task> toggle)
+    public BoxelSystemRowViewModel(BoxelSystemRowOptions options)
     {
-        Name = name;
-        IsComplete = isComplete;
-        IsKnown = isKnown;
-        IsCurrent = isCurrent;
-        Distance = distance;
-        VisitedAt = visitedAt;
-        SpanshUpdatedAt = spanshUpdatedAt;
-        Status = isComplete ? "COMPLETE" : isKnown ? "KNOWN" : "UNKNOWN";
-        ToggleCommand = new RowCommand(toggle, () => isKnown);
+        ArgumentNullException.ThrowIfNull(options);
+        Name = options.Name;
+        IsComplete = options.IsComplete;
+        IsKnown = options.IsKnown;
+        IsCurrent = options.IsCurrent;
+        Distance = options.Distance;
+        VisitedAt = options.VisitedAt;
+        SpanshUpdatedAt = options.SpanshUpdatedAt;
+        if (options.IsComplete)
+        {
+            Status = "COMPLETE";
+        }
+        else if (options.IsKnown)
+        {
+            Status = "KNOWN";
+        }
+        else
+        {
+            Status = "UNKNOWN";
+        }
+        ToggleCommand = new RowCommand(options.Toggle, () => options.IsKnown);
     }
 
     public string Name { get; }
@@ -1503,8 +1588,8 @@ public sealed class BoxelSystemRowViewModel
     {
         public event EventHandler? CanExecuteChanged
         {
-            add { }
-            remove { }
+            add { /* Availability is evaluated when the command is queried. */ }
+            remove { /* Availability is evaluated when the command is queried. */ }
         }
 
         public bool CanExecute(object? parameter)
@@ -1540,8 +1625,8 @@ public sealed class BoxelNavigationOptionViewModel
     {
         public event EventHandler? CanExecuteChanged
         {
-            add { }
-            remove { }
+            add { /* This command is always executable. */ }
+            remove { /* This command is always executable. */ }
         }
 
         public bool CanExecute(object? parameter)

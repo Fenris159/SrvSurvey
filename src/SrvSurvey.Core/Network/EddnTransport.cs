@@ -29,7 +29,7 @@ namespace SrvSurvey.Core.Network
             validateEndpoint(this.endpoint);
         }
 
-        internal EddnQueuedMessage prepare(
+        internal static EddnQueuedMessage prepare(
             JObject message,
             string schemaRef,
             UploadPayloadHeader header,

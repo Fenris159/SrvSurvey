@@ -6,6 +6,10 @@ public sealed class RouteAutoCopyCoordinator : IDisposable
 {
     private readonly RouteWorkspaceViewModel standardRoute;
     private readonly RouteWorkspaceViewModel fleetCarrierRoute;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "The gate may still be released by an in-flight clipboard operation during disposal.")]
     private readonly SemaphoreSlim ownershipGate = new(1, 1);
     private bool disposed;
 

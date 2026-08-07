@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using SrvSurvey.Core.Colonization;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
@@ -37,7 +38,7 @@ public sealed partial class SettingsView : UserControl
                 Title = "Choose the original SrvSurvey profile folder",
                 AllowMultiple = false,
             });
-        var folder = folders.FirstOrDefault();
+        var folder = folders.Count > 0 ? folders[0] : null;
         if (folder is not null)
         {
             viewModel.LegacyProfileSourcePath = folder.Path.LocalPath;
@@ -118,7 +119,7 @@ public sealed partial class SettingsView : UserControl
                 Title = title,
                 AllowMultiple = false,
             });
-        return folders.FirstOrDefault()?.Path.LocalPath;
+        return folders.Count > 0 ? folders[0].Path.LocalPath : null;
     }
 
     private async void OpenGreenGasGiantGuide_Click(
@@ -135,7 +136,7 @@ public sealed partial class SettingsView : UserControl
         RoutedEventArgs eventArgs)
     {
         await OpenSettingsUriAsync(
-            new Uri("https://inara.cz/elite/cmdr-settings-api/"),
+            WellKnownUris.InaraCommanderApiSettings,
             "the Inara API key page");
     }
 

@@ -598,7 +598,7 @@ public sealed class LegacyOverlayLayoutStore
         }
     }
 
-    private double? LoadDefaultOpacity(ICollection<string> errors)
+    private double? LoadDefaultOpacity(List<string> errors)
     {
         if (!File.Exists(settingsPath))
         {

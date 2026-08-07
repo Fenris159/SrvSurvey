@@ -48,6 +48,32 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
 
     public BiologyRewardThresholds Thresholds => thresholds;
 
+    /// <summary>
+    /// Species-group illustration reward for a single filled band (upstream picBucket1 uses 1 CR).
+    /// </summary>
+    public static long PreviewOneBarReward => 1;
+
+    /// <summary>Just above bucket one so only the bottom two segments fill.</summary>
+    public long PreviewTwoBarReward =>
+        ToPreviewRewardAbove(thresholds.BucketOneMillions);
+
+    /// <summary>Just above bucket two so three segments fill.</summary>
+    public long PreviewThreeBarReward =>
+        ToPreviewRewardAbove(thresholds.BucketTwoMillions);
+
+    /// <summary>Just above bucket three so all four segments fill.</summary>
+    public long PreviewFourBarReward =>
+        ToPreviewRewardAbove(thresholds.BucketThreeMillions);
+
+    /// <summary>Legacy alias used by earlier preview bindings.</summary>
+    public long BucketOneSampleReward => PreviewTwoBarReward;
+
+    /// <summary>Legacy alias used by earlier preview bindings.</summary>
+    public long BucketTwoSampleReward => PreviewThreeBarReward;
+
+    /// <summary>Legacy alias used by earlier preview bindings.</summary>
+    public long BucketThreeSampleReward => PreviewFourBarReward;
+
     public string StatusMessage
     {
         get => statusMessage;
@@ -92,7 +118,24 @@ public sealed class BiologyRewardSettingsViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(BucketOneMillions));
         OnPropertyChanged(nameof(BucketTwoMillions));
         OnPropertyChanged(nameof(BucketThreeMillions));
+        OnPropertyChanged(nameof(PreviewTwoBarReward));
+        OnPropertyChanged(nameof(PreviewThreeBarReward));
+        OnPropertyChanged(nameof(PreviewFourBarReward));
+        OnPropertyChanged(nameof(BucketOneSampleReward));
+        OnPropertyChanged(nameof(BucketTwoSampleReward));
+        OnPropertyChanged(nameof(BucketThreeSampleReward));
         OnPropertyChanged(nameof(Thresholds));
+    }
+
+    /// <summary>
+    /// Credit sample strictly above a millions-of-CR threshold for settings previews.
+    /// Ceiling avoids floating-point values just below an integer million truncating
+    /// into the lower band and leaving the preview under-filled.
+    /// </summary>
+    private static long ToPreviewRewardAbove(double millions)
+    {
+        var credits = checked((long)Math.Ceiling(Math.Max(0d, millions) * 1_000_000d));
+        return Math.Max(1, credits + 1);
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

@@ -9,7 +9,6 @@ public sealed partial class KnownSystemAddressCatalog
     public const string LegacyFileName = "Boxel.Names.txt";
 
     private const long MaximumFileBytes = 16L * 1024 * 1024;
-    private const int MaximumEntries = 250_000;
     private const int MaximumLineCharacters = 16_384;
     private readonly IReadOnlyDictionary<string, long> addresses;
 
@@ -100,82 +99,117 @@ public sealed partial class KnownSystemAddressCatalog
             leaveOpen: true);
         var result = new Dictionary<string, long>(
             StringComparer.OrdinalIgnoreCase);
-        var foundStart = false;
-        var foundMissingStart = false;
-        var foundEnd = false;
+        var state = new CatalogParseState();
         string? line;
         while ((line = reader.ReadLine()) is not null)
         {
-            if (line.Length > MaximumLineCharacters)
+            var completed = ProcessCatalogLine(line, result, state, sourcePath);
+            if (completed is not null)
             {
-                throw new InvalidDataException(
-                    "The known-system address catalog contains an oversized line.");
-            }
-
-            var trimmed = line.Trim();
-            if (!foundStart)
-            {
-                foundStart = string.Equals(
-                    trimmed,
-                    "known_systems = {",
-                    StringComparison.Ordinal);
-                continue;
-            }
-
-            if (string.Equals(
-                    trimmed,
-                    "known_missing = [",
-                    StringComparison.Ordinal))
-            {
-                foundMissingStart = true;
-                continue;
-            }
-
-            if (foundMissingStart)
-            {
-                if (string.Equals(trimmed, "]", StringComparison.Ordinal))
-                {
-                    foundEnd = true;
-                    break;
-                }
-
-                continue;
-            }
-
-            var match = EntryPattern().Match(line);
-            if (!match.Success)
-            {
-                continue;
-            }
-
-            var name = match.Groups["name"].Value.Trim();
-            if (name.Length == 0
-                || !long.TryParse(
-                    match.Groups["address"].Value,
-                    NumberStyles.None,
-                    CultureInfo.InvariantCulture,
-                    out var address)
-                || address <= 0)
-            {
-                throw new InvalidDataException(
-                    "The known-system address catalog contains an invalid entry.");
-            }
-
-            result.TryAdd(name, address);
-            if (result.Count > MaximumEntries)
-            {
-                throw new InvalidDataException(
-                    "The known-system address catalog contains too many entries.");
+                return completed;
             }
         }
 
-        if (!foundStart || !foundMissingStart || !foundEnd || result.Count == 0)
+        throw new InvalidDataException(
+            "The known-system address catalog is incomplete.");
+    }
+
+    private sealed class CatalogParseState
+    {
+        public bool FoundStart { get; set; }
+
+        public bool FoundMissingStart { get; set; }
+    }
+
+    private static KnownSystemAddressCatalog? ProcessCatalogLine(
+        string line,
+        Dictionary<string, long> result,
+        CatalogParseState state,
+        string? sourcePath)
+    {
+        if (line.Length > MaximumLineCharacters)
+        {
+            throw new InvalidDataException(
+                "The known-system address catalog contains an oversized line.");
+        }
+
+        var trimmed = line.Trim();
+        if (!state.FoundStart)
+        {
+            state.FoundStart = string.Equals(
+                trimmed,
+                "known_systems = {",
+                StringComparison.Ordinal);
+            return null;
+        }
+
+        if (string.Equals(trimmed, "known_missing = [", StringComparison.Ordinal))
+        {
+            state.FoundMissingStart = true;
+            return null;
+        }
+
+        if (state.FoundMissingStart)
+        {
+            return TryFinishMissingSection(trimmed, result, sourcePath);
+        }
+
+        ParseCatalogEntry(line, result);
+        return null;
+    }
+
+    private static KnownSystemAddressCatalog? TryFinishMissingSection(
+        string trimmed,
+        Dictionary<string, long> result,
+        string? sourcePath)
+    {
+        if (string.Equals(trimmed, "]", StringComparison.Ordinal)
+            || string.Equals(trimmed, "],", StringComparison.Ordinal))
+        {
+            ThrowIfNoEntries(result);
+            return new KnownSystemAddressCatalog(result, sourcePath, []);
+        }
+
+        return null;
+    }
+
+    private static void ParseCatalogEntry(
+        string line,
+        Dictionary<string, long> result)
+    {
+        var match = EntryPattern().Match(line);
+        if (!match.Success)
+        {
+            return;
+        }
+
+        var name = match.Groups["name"].Value.Trim();
+        if (name.Length == 0
+            || !long.TryParse(
+                match.Groups["address"].Value,
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out var address)
+            || address <= 0)
+        {
+            throw new InvalidDataException(
+                "The known-system address catalog contains an invalid entry.");
+        }
+
+        if (!result.TryAdd(name, address))
+        {
+            throw new InvalidDataException(
+                "The known-system address catalog contains duplicated entries.");
+        }
+    }
+
+    private static void ThrowIfNoEntries(Dictionary<string, long> result)
+    {
+        if (result.Count is 0)
         {
             throw new InvalidDataException(
                 "The known-system address catalog is incomplete.");
         }
-
-        return new KnownSystemAddressCatalog(result, sourcePath, []);
     }
 
     [GeneratedRegex(

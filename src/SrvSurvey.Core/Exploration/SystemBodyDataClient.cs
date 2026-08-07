@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using SrvSurvey.Core.Exobiology;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Core.Search;
 
 namespace SrvSurvey.Core.Exploration;
@@ -26,6 +27,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     private const int MaximumResponseBytes = 16 * 1024 * 1024;
     private const double LightSecondMeters = 299_792_458d;
     private const double SolarRadiusMeters = 695_700_000d;
+    private const string EdsmBodiesResponseLabel = "EDSM bodies response";
     private static readonly DateTimeOffset BiologicalSignalCutoff =
         new(2022, 11, 29, 0, 0, 0, TimeSpan.Zero);
     private static readonly Uri DefaultEdsmBaseUri = new(
@@ -77,9 +79,9 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             "Spansh",
             new Uri(
                 spanshBaseUri,
-                "dump/"
-                    + systemAddress.ToString(CultureInfo.InvariantCulture)
-                    + "/"),
+                UriPath.CombineWithTrailingSeparator(
+                    "dump",
+                    systemAddress.ToString(CultureInfo.InvariantCulture))),
             root => ParseSpansh(root, normalizedName, systemAddress),
             cancellationToken);
         await Task.WhenAll(edsmTask, spanshTask).ConfigureAwait(false);
@@ -156,13 +158,13 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         string expectedName,
         long expectedAddress)
     {
-        RequireObject(root, "EDSM bodies response");
-        ValidateAddress(root, expectedAddress, "EDSM bodies response");
+        RequireObject(root, EdsmBodiesResponseLabel);
+        ValidateAddress(root, expectedAddress, EdsmBodiesResponseLabel);
         var systemName = GetString(root, "name") ?? expectedName;
-        var bodies = ReadBodyArray(root, "EDSM bodies response")
+        var bodies = ReadBodyArray(root, EdsmBodiesResponseLabel)
             .Select(body => ParseBody(body, systemName, BodyProvider.Edsm))
             .ToArray();
-        ValidateUniqueBodyIds(bodies, "EDSM bodies response");
+        ValidateUniqueBodyIds(bodies, EdsmBodiesResponseLabel);
         return CreateSnapshot(
             systemName,
             expectedAddress,
@@ -211,7 +213,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         long systemAddress,
         GalacticCoordinate? position,
         int expectedBodyCount,
-        IReadOnlyList<SystemScanBodySnapshot> bodies)
+        SystemScanBodySnapshot[] bodies)
     {
         return new SystemScanSnapshot(
             systemName,
@@ -263,12 +265,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             : [];
         var atmosphereType = NormalizeAtmosphereType(
             GetString(body, "atmosphereType"));
-        var radius = GetDouble(body, "radius") is > 0 and var radiusValue
-            ? radiusValue * 1_000d
-            : provider == BodyProvider.Spansh
-                && GetDouble(body, "solarRadius") is > 0 and var solarRadius
-                    ? solarRadius * SolarRadiusMeters
-                    : 0;
+        var radius = ReadRadius(body, provider);
         var mass = GetDouble(body, "earthMasses") is > 0 and var earthMasses
             ? earthMasses
             : GetDouble(body, "solarMasses") ?? 0;
@@ -292,7 +289,8 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             false,
             null,
             false,
-            parents.FirstOrDefault()?.Kind == SystemBodyParentKind.Ring,
+            parents.Count > 0
+                && parents[0].Kind == SystemBodyParentKind.Ring,
             ReadTidalLock(body, provider),
             mass,
             GetDouble(body, "distanceToArrival") ?? 0,
@@ -330,7 +328,20 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             []);
     }
 
-    private static IReadOnlyList<SystemOrganismSnapshot> ReadOrganisms(
+    private static double ReadRadius(JsonElement body, BodyProvider provider)
+    {
+        if (GetDouble(body, "radius") is > 0 and var radius)
+        {
+            return radius * 1_000d;
+        }
+
+        return provider == BodyProvider.Spansh
+            && GetDouble(body, "solarRadius") is > 0 and var solarRadius
+                ? solarRadius * SolarRadiusMeters
+                : 0;
+    }
+
+    private static SystemOrganismSnapshot[] ReadOrganisms(
         JsonElement body)
     {
         if (!TryGetObject(body, "signals", out var signals)
@@ -395,7 +406,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         return provider == BodyProvider.Edsm && value != true ? null : value;
     }
 
-    private static IReadOnlyList<SystemBodyParentSnapshot> ReadParents(
+    private static List<SystemBodyParentSnapshot> ReadParents(
         JsonElement body,
         BodyProvider provider)
     {
@@ -414,46 +425,65 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         var result = new List<SystemBodyParentSnapshot>();
         foreach (var parent in parents.EnumerateArray())
         {
-            if (parent.ValueKind != JsonValueKind.Object)
-            {
-                throw new InvalidDataException(
-                    $"A {provider} body parent is not an object.");
-            }
-
-            string? kindText;
-            int? parentBodyId;
-            if (GetString(parent, "type") is { } storedKind)
-            {
-                kindText = storedKind;
-                parentBodyId = GetInt32(parent, "id");
-            }
-            else
-            {
-                var property = parent.EnumerateObject().FirstOrDefault();
-                kindText = property.Name;
-                parentBodyId = property.Value.ValueKind == JsonValueKind.Number
-                    && property.Value.TryGetInt32(out var value)
-                        ? value
-                        : null;
-            }
-
-            if (!Enum.TryParse<SystemBodyParentKind>(
-                    kindText,
-                    ignoreCase: true,
-                    out var kind)
-                || parentBodyId is null or < 0)
-            {
-                throw new InvalidDataException(
-                    $"A {provider} body parent is invalid.");
-            }
-
-            result.Add(new SystemBodyParentSnapshot(kind, parentBodyId.Value));
+            result.Add(ParseParentSnapshot(parent, provider));
         }
 
         return result;
     }
 
-    private static IReadOnlyList<SystemRingSnapshot> ReadRings(
+    private static SystemBodyParentSnapshot ParseParentSnapshot(
+        JsonElement parent,
+        BodyProvider provider)
+    {
+        if (parent.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidDataException(
+                $"A {provider} body parent is not an object.");
+        }
+
+        if (!TryReadParentBodyId(parent, out var kindText, out var parentBodyId)
+            || !Enum.TryParse<SystemBodyParentKind>(
+                kindText,
+                ignoreCase: true,
+                out var kind)
+            || parentBodyId is null or < 0)
+        {
+            throw new InvalidDataException(
+                $"A {provider} body parent is invalid.");
+        }
+
+        return new SystemBodyParentSnapshot(kind, parentBodyId.Value);
+    }
+
+    private static bool TryReadParentBodyId(
+        JsonElement parent,
+        out string kindText,
+        out int? parentBodyId)
+    {
+        kindText = string.Empty;
+        parentBodyId = null;
+        if (GetString(parent, "type") is { } storedKind)
+        {
+            kindText = storedKind;
+            parentBodyId = GetInt32(parent, "id");
+            return true;
+        }
+
+        var firstProperty = parent.EnumerateObject().FirstOrDefault();
+        if (firstProperty.Value.ValueKind is JsonValueKind.Undefined)
+        {
+            return false;
+        }
+
+        kindText = firstProperty.Name;
+        parentBodyId = firstProperty.Value.ValueKind == JsonValueKind.Number
+            && firstProperty.Value.TryGetInt32(out var id)
+                ? id
+                : null;
+        return true;
+    }
+
+    private static SystemRingSnapshot[] ReadRings(
         JsonElement body,
         BodyProvider provider)
     {
@@ -484,7 +514,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
             .ToArray();
     }
 
-    private static IReadOnlyDictionary<string, double> ReadDictionary(
+    private static Dictionary<string, double> ReadDictionary(
         JsonElement owner,
         string propertyName,
         bool normalizeCompositionKeys,
@@ -649,7 +679,7 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
         }
     }
 
-    private static IReadOnlyList<JsonElement> ReadBodyArray(
+    private static JsonElement[] ReadBodyArray(
         JsonElement owner,
         string source)
     {
@@ -664,10 +694,10 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
     }
 
     private static void ValidateUniqueBodyIds(
-        IReadOnlyList<SystemScanBodySnapshot> bodies,
+        SystemScanBodySnapshot[] bodies,
         string source)
     {
-        if (bodies.Select(body => body.BodyId).Distinct().Count() != bodies.Count)
+        if (bodies.Select(body => body.BodyId).Distinct().Count() != bodies.Length)
         {
             throw new InvalidDataException(
                 $"The {source} contains duplicate body IDs.");
@@ -703,7 +733,10 @@ public sealed class SystemBodyDataClient : ISystemBodyDataClient
                     "The external body response exceeds the 16 MiB safety limit.");
             }
 
-            buffer.Write(block, 0, count);
+            await buffer.WriteAsync(
+                    block.AsMemory(0, count),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 

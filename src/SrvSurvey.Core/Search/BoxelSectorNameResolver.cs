@@ -50,6 +50,10 @@ internal static class BoxelSectorNameResolver
     private static int c1_infix_s1_total_run_length;
     private static int c1_infix_s2_total_run_length;
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Maintainability",
+        "S3963:Static fields should be initialized inline",
+        Justification = "The ordered offset tables require multi-step initialization after all ported source tables exist.")]
     static BoxelSectorNameResolver()
     {
         // Sort fragments by length to ensure we check the longest ones first
@@ -101,12 +105,7 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     public static SectorCoordinate? getSectorCoords(string sectorName, char mcode)
     {
-        /* Not yet working ...
-        // is this a hand-authored sector?
-        var ha = ha_regions.Find(r => r.name.like(sectorName));
-        if (ha != null)
-            return ha.get_origin(mcode);
-        // */
+        // Hand-authored sectors are not currently resolved by this port.
 
         var offset = get_offset_from_name(sectorName);
         if (offset == -1) return null;
@@ -195,7 +194,7 @@ internal static class BoxelSectorNameResolver
 
     private static string[][] c1_infixes = new string[][]
     {
-                new string[0],
+                Array.Empty<string>(),
                 c1_infixes_s1,
                 c1_infixes_s2,
     };
@@ -242,14 +241,14 @@ internal static class BoxelSectorNameResolver
 
     private static string[][] c1_suffixes = new string[][]
     {
-                new string[0],
+                Array.Empty<string>(),
                 cx_suffixes_s1,
                 c1_suffixes_s2,
     };
 
     private static string[][] c2_suffixes = new string[][]
     {
-                new string[0],
+                Array.Empty<string>(),
                 cx_suffixes_s1,
                 c2_suffixes_s2,
     };
@@ -324,9 +323,6 @@ internal static class BoxelSectorNameResolver
         if (allow_ha)
         {
             throw new NotImplementedException();
-            //string ha_name = _ha_get_name(pos);
-            //if (ha_name != null)
-            //    return ha_name;
         }
 
         int offset = _c1_get_offset(pos);
@@ -399,7 +395,7 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     private static int _get_sector_class(List<string> frags)
     {
-        // TODO: HA
+        // Hand-authored sectors do not use a procedural sector class.
 
         if (frags.Count == 4 && cx_prefixes.Contains(frags[0]) && cx_prefixes.Contains(frags[2]))
             return 2;
@@ -458,7 +454,9 @@ internal static class BoxelSectorNameResolver
     /// </summary>
     private static int _get_prefix_run_length(string prefix)
     {
-        var len = cx_prefix_length_overrides.ContainsKey(prefix) ? cx_prefix_length_overrides[prefix] : cx_prefix_length_default;
+        var len = cx_prefix_length_overrides.TryGetValue(prefix, out var value)
+            ? value
+            : cx_prefix_length_default;
         return len;
     }
 
@@ -480,24 +478,6 @@ internal static class BoxelSectorNameResolver
         return offset;
     }
 
-    /* TODO: needed?
-    private static SectorCoordinate _get_sector_pos_from_offset(int offset, int[] galSize)
-    {
-        var x = (offset % galSize[0]);
-        var y = (offset / galSize[0]) % galSize[1];
-        var z = (offset / (galSize[0] * galSize[1]));
-        if (z >= galaxy_size[2])
-            Debug.WriteLine($"Sector position for offset {offset} is outside expected galaxy size!");
-
-        // Put it in "our" coordinate space
-        x -= base_sector_index[0];
-        y -= base_sector_index[1];
-        z -= base_sector_index[2];
-
-        return new SectorCoordinate(x, y, z);
-    }
-    */
-
     private static int _get_c1_or_c2(int key)
     {
         // Use Jenkins hash
@@ -506,76 +486,6 @@ internal static class BoxelSectorNameResolver
         // Return 1 for a class 1 sector, 2 for a class 2
         return (hash % 2) + 1;
     }
-
-    /* TODO: needed?
-    private static PGSector? _get_sector_from_name(string sector_name, bool allow_ha = true)
-    {
-        //sector_name = get_canonical_name(sector_name, sector_only: true);
-        //if (sector_name == null)                    return null;
-
-        if (false && allow_ha && ha_regions.ContainsKey(sector_name.ToLower()))
-        {
-            return null; //  ha_regions[sector_name.ToLower()];
-        }
-        else
-        {
-            var frags = util.IsString(sector_name) ? get_sector_fragments(sector_name) : (List<string>)sector_name;
-            if (frags != null)
-            {
-                int sc = _get_sector_class(frags);
-                if (sc == 2)
-                {
-                    // Class 2
-                    return _c2_get_sector(frags);
-                }
-                else if (sc == 1)
-                {
-                    // Class 1
-                    return _c1_get_sector(frags);
-                }
-                else
-                {
-                    return null!;
-                }
-            }
-            else
-            {
-                return null!;
-            }
-        }
-    }
-    */
-
-    /* TODO: needed?
-    public static SectorCoordinate? _get_coords_from_name(string raw_system_name, bool allow_ha = true)
-    {
-        var bx = Boxel.parse(raw_system_name)!;
-        var sector_name = bx.sector;
-        var sect = _get_sector_from_name(sector_name, allow_ha);
-        if (sect == null)
-            return null;
-
-        // Get the absolute position of the sector
-        var abs_pos = sect.get_origin(get_mcode_cube_width(bx.massCode));
-
-        // Get the relative position of the star within the sector
-        // Also get the +/- error bounds
-        var rel_pos = bx.getRelativeCoords();// _get_relpos_from_sysid(m["L1"], m["L2"], m["L3"], m["MCode"], m["N1"], m["N2"]);
-
-        //// Check if the relpos is invalid
-        //var leeway = (sect.sector_class == "ha") ? rel_pos_error : 0;
-        //if (rel_pos.Any(s => s > (sector_size + leeway)))
-        //{
-        //    Debug.WriteLine($"RelPos for input {bx.name} was invalid: {rel_pos}, uncertainty {rel_pos_error}");
-        //    return (null, null);
-        //}
-
-        if (abs_pos != null && rel_pos != null)
-            return abs_pos + rel_pos;
-        else
-            return null;
-    }
-    */
 
     /// <summary>
     /// # Get the full list of infixes for a given set of fragments missing an infix
@@ -595,7 +505,7 @@ internal static class BoxelSectorNameResolver
         else if (c1_infixes[2].Contains(frags[^1]))
             return c1_infixes[1];
         else
-            return new string[0];
+            return Array.Empty<string>();
     }
 
     /// <summary>
@@ -629,16 +539,6 @@ internal static class BoxelSectorNameResolver
     {
         return _get_offset_from_pos(pos, galaxy_size);
     }
-
-    /* TODO: needed?
-    /// <summary>
-    /// Get the zero-based offset (counting from bottom-left of the galaxy) of the input sector name/position
-    /// </summary>
-    private static int _c1_get_offset(List<string> frags)
-    {
-        return _c1_get_offset_from_name(frags);
-    }
-    */
 
     /// <summary>
     /// Get the zero-based offset (counting from bottom-left of the galaxy) of the input sector name/position
@@ -710,18 +610,6 @@ internal static class BoxelSectorNameResolver
             return 0;
         }
     }
-
-    /* TODO: needed?
-    private static PGSector _c1_get_sector(List<string> frags)
-    {
-        var offset = _c1_get_offset(frags);
-
-        // Calculate the X/Y/Z positions from the offset
-        var spos = _get_sector_pos_from_offset(offset, galaxy_size);
-        var name = format_sector_name(frags);
-        return new PGSector(spos, name, _get_sector_class(frags));
-    }
-    */
 
     private static string? _c1_get_name(SectorCoordinate pos)
     {
@@ -799,18 +687,6 @@ internal static class BoxelSectorNameResolver
         return _c2_get_name_from_offset(offset);
     }
 
-    /* TODO: needed?
-    private static PGSector _c2_get_sector(List<string> frags)
-    {
-        var offset = _c2_get_offset_from_name(frags);
-
-        // Calculate the X / Y / Z positions from the offset
-        var spos = _get_sector_pos_from_offset(offset, galaxy_size);
-        var name = format_sector_name(frags);
-        return new PGSector(spos, name, _get_sector_class(frags));
-    }
-    */
-
     private static string? _c2_get_name_from_offset(int offset)
     {
         var tt = Deinterleave(offset, 32);
@@ -841,11 +717,8 @@ internal static class BoxelSectorNameResolver
     #region sector.py
     // From: https://bitbucket.org/Esvandiary/edts/src/develop/edtslib/sector.py
 
-    public static int sector_size = 1280;
-    public static int[] galaxy_size = new int[] { 128, 128, 128 };
-    public static SectorCoordinate internal_origin_offset = new SectorCoordinate(-49985, -40985, -24105);
-    private static int[] base_sector_index = new int[] { 39, 32, 18 };
-    public static SectorCoordinate base_coords = internal_origin_offset + (new SectorCoordinate(base_sector_index) * sector_size);
+    private const int sector_size = 1280;
+    private static readonly int[] galaxy_size = [128, 128, 128];
 
     public static int get_mcode_cube_width(char mcode)
     {
@@ -893,7 +766,6 @@ internal static class BoxelSectorNameResolver
 
     private static int Interleave(int val1, int val2, int maxbits)
     {
-        //Debug.WriteLine($"interleave:\r\n\t{toBin(val1)}\r\n\t{toBin(val2)}");
         int output = 0;
 
         for (int i = 0; i <= maxbits / 2; i++)
@@ -902,15 +774,11 @@ internal static class BoxelSectorNameResolver
         for (int i = 0; i <= maxbits / 2; i++)
             output |= ((val2 >> i) & 1) << (i * 2 + 1);
 
-        //var rslt = output & ((1 << maxbits) - 1);
-
-        //Debug.WriteLine($"interleave:\r\n\t{toBin(output)}");
         return output;
     }
 
     private static (int, int) Deinterleave(int val, int maxbits)
     {
-        //Debug.WriteLine($"deinterleave:\r\n\t{toBin(val)}");
         int out1 = 0;
         int out2 = 0;
 
@@ -920,8 +788,6 @@ internal static class BoxelSectorNameResolver
         for (int i = 1; i < maxbits; i += 2)
             out2 |= ((val >> i) & 1) << (i / 2);
 
-
-        //Debug.WriteLine($"deinterleave:\r\n\t{toBin(out1)}\r\n\t{toBin(out2)}");
         return (out1, out2);
     }
 

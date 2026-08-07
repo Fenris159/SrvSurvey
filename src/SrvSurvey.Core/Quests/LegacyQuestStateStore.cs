@@ -7,8 +7,18 @@ using System.Text.Json.Serialization;
 
 namespace SrvSurvey.Core.Quests;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The store is coordinator-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class LegacyQuestStateStore
 {
+    private const string JsonExtension = ".json";
+    private const string DevQuestProperty = "devQuest";
+    private const string StartTimeProperty = "startTime";
+    private const string EndTimeProperty = "endTime";
+    private const string ChaptersProperty = "chapters";
+    private const string ActionsProperty = "actions";
     private static readonly JsonSerializerOptions PortableJsonOptions = new()
     {
         AllowTrailingCommas = true,
@@ -43,11 +53,11 @@ public sealed class LegacyQuestStateStore
                 nameof(frontierId));
         }
 
-        var statePath = Path.Combine(questDirectory, frontierId + ".json");
+        var statePath = Path.Combine(questDirectory, frontierId + JsonExtension);
 
         try
         {
-            statePath = FindFile(frontierId + ".json") ?? statePath;
+            statePath = FindFile(frontierId + JsonExtension) ?? statePath;
             if (!File.Exists(statePath))
             {
                 return new LegacyQuestStateLoadResult(
@@ -75,7 +85,7 @@ public sealed class LegacyQuestStateStore
 
             var reference = ParseReference(root["devRef"], warnings);
             LegacyQuestProgress? devQuest = null;
-            if (root["devQuest"] is JsonObject progress)
+            if (root[DevQuestProperty] is JsonObject progress)
             {
                 if (reference is null)
                 {
@@ -182,8 +192,8 @@ public sealed class LegacyQuestStateStore
         try
         {
             Directory.CreateDirectory(questDirectory);
-            var path = FindFile(frontierId + ".json")
-                ?? Path.Combine(questDirectory, frontierId + ".json");
+            var path = FindFile(frontierId + JsonExtension)
+                ?? Path.Combine(questDirectory, frontierId + JsonExtension);
             JsonObject root;
             if (File.Exists(path))
             {
@@ -212,21 +222,21 @@ public sealed class LegacyQuestStateStore
             if (progress is null)
             {
                 root.Remove("devRef");
-                root.Remove("devQuest");
+                root.Remove(DevQuestProperty);
             }
             else
             {
                 root["devRef"] = progress.Reference.ToString();
                 var questRoot = replaceExistingProgress
                     ? new JsonObject()
-                    : root["devQuest"] switch
+                    : root[DevQuestProperty] switch
                     {
                         null => new JsonObject(),
                         JsonObject existing => existing,
                         _ => throw new InvalidDataException(
                             "The legacy development quest state is not a JSON object and was not overwritten."),
                     };
-                root["devQuest"] = questRoot;
+                root[DevQuestProperty] = questRoot;
                 MergeProgress(questRoot, progress);
             }
 
@@ -264,8 +274,8 @@ public sealed class LegacyQuestStateStore
         }
 
         root["objectives"] = ToStringObject(progress.Objectives);
-        SetOrRemove(root, "startTime", progress.StartTime);
-        SetOrRemove(root, "endTime", progress.EndTime);
+        SetOrRemove(root, StartTimeProperty, progress.StartTime);
+        SetOrRemove(root, EndTimeProperty, progress.EndTime);
         if (progress.Paused)
         {
             root["paused"] = true;
@@ -280,8 +290,8 @@ public sealed class LegacyQuestStateStore
                 .Select(value => (JsonNode?)JsonValue.Create(value))
                 .ToArray());
         root["bodyLocations"] = ToStringObject(progress.BodyLocations);
-        root["chapters"] = MergeById(
-            root["chapters"],
+        root[ChaptersProperty] = MergeById(
+            root[ChaptersProperty],
             progress.Chapters,
             chapter => chapter.Id,
             MergeChapter);
@@ -305,8 +315,8 @@ public sealed class LegacyQuestStateStore
     {
         MergeExtensionData(root, chapter.ExtensionData);
         root["id"] = chapter.Id;
-        SetOrRemove(root, "startTime", chapter.StartTime);
-        SetOrRemove(root, "endTime", chapter.EndTime);
+        SetOrRemove(root, StartTimeProperty, chapter.StartTime);
+        SetOrRemove(root, EndTimeProperty, chapter.EndTime);
         root["vars"] = ToJsonObject(chapter.Variables);
     }
 
@@ -328,11 +338,11 @@ public sealed class LegacyQuestStateStore
         SetOrRemove(root, "chapter", message.Chapter);
         if (message.Actions is null)
         {
-            root.Remove("actions");
+            root.Remove(ActionsProperty);
         }
         else
         {
-            root["actions"] = new JsonArray(
+            root[ActionsProperty] = new JsonArray(
                 message.Actions
                     .Select(value => (JsonNode?)JsonValue.Create(value))
                     .ToArray());
@@ -593,7 +603,7 @@ public sealed class LegacyQuestStateStore
 
     private LegacyQuestDefinition? LoadDefinition(
         LegacyQuestReference reference,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (ContainsPathSeparator(reference.Id))
         {
@@ -622,7 +632,7 @@ public sealed class LegacyQuestStateStore
                     reference.Publisher,
                     StringComparison.Ordinal)
                 || !string.Equals(id, reference.Id, StringComparison.Ordinal)
-                || version != reference.Version)
+                || version.CompareTo(reference.Version) != 0)
             {
                 warnings.Add(
                     $"Development quest definition identity '{publisher}|{id}|{version.ToString(CultureInfo.InvariantCulture)}' "
@@ -645,7 +655,7 @@ public sealed class LegacyQuestStateStore
                 GetStringMap(root["strings"]),
                 ParseMessageDefinitions(root["msgs"], warnings),
                 GetRequiredString(root, "firstChapter", path),
-                GetStringMap(root["chapters"]),
+                GetStringMap(root[ChaptersProperty]),
                 path);
         }
         catch (Exception exception) when (
@@ -664,7 +674,7 @@ public sealed class LegacyQuestStateStore
     private static RavenQuestDefinition? ParsePortableDefinition(
         JsonNode? node,
         LegacyQuestReference reference,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is null)
         {
@@ -697,7 +707,7 @@ public sealed class LegacyQuestStateStore
                     definition.Id,
                     reference.Id,
                     StringComparison.Ordinal)
-                || definition.Version != reference.Version)
+                || definition.Version.CompareTo(reference.Version) != 0)
             {
                 warnings.Add(
                     $"Embedded development quest definition identity '{definition.Reference}' does not match '{reference}'.");
@@ -719,7 +729,7 @@ public sealed class LegacyQuestStateStore
         LegacyQuestReference reference,
         LegacyQuestDefinition? definition,
         JsonObject root,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         var objectives = new Dictionary<string, LegacyQuestObjective>(
             StringComparer.Ordinal);
@@ -744,12 +754,12 @@ public sealed class LegacyQuestStateStore
             root["msgs"],
             definition,
             warnings);
-        var chapters = ParseChapters(root["chapters"], warnings);
+        var chapters = ParseChapters(root[ChaptersProperty], warnings);
         return new LegacyQuestProgress(
             reference,
             definition,
-            GetDateTimeOffset(root, "startTime"),
-            GetDateTimeOffset(root, "endTime"),
+            GetDateTimeOffset(root, StartTimeProperty),
+            GetDateTimeOffset(root, EndTimeProperty),
             GetBoolean(root, "paused") ?? false,
             objectives,
             GetStringSet(root["tags"]),
@@ -761,10 +771,10 @@ public sealed class LegacyQuestStateStore
             GetJsonMap(root["keptLasts"]));
     }
 
-    private static IReadOnlyList<LegacyQuestMessage> ParseDeliveredMessages(
+    private static List<LegacyQuestMessage> ParseDeliveredMessages(
         JsonNode? node,
         LegacyQuestDefinition? definition,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is not JsonArray array)
         {
@@ -790,7 +800,7 @@ public sealed class LegacyQuestStateStore
                 GetString(root, "subject") ?? declared?.Subject,
                 GetString(root, "body") ?? declared?.Body,
                 GetString(root, "chapter"),
-                GetStringArray(root["actions"]),
+                GetStringArray(root[ActionsProperty]),
                 GetBoolean(root, "read") ?? false,
                 GetString(root, "replied")));
         }
@@ -798,9 +808,9 @@ public sealed class LegacyQuestStateStore
         return messages;
     }
 
-    private static IReadOnlyList<LegacyQuestMessageDefinition> ParseMessageDefinitions(
+    private static List<LegacyQuestMessageDefinition> ParseMessageDefinitions(
         JsonNode? node,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is not JsonArray array)
         {
@@ -825,16 +835,16 @@ public sealed class LegacyQuestStateStore
                 from,
                 GetString(root, "subject"),
                 body,
-                GetStringMap(root["actions"]),
+                GetStringMap(root[ActionsProperty]),
                 GetStringSet(root["tags"])));
         }
 
         return messages;
     }
 
-    private static IReadOnlyList<LegacyQuestChapter> ParseChapters(
+    private static List<LegacyQuestChapter> ParseChapters(
         JsonNode? node,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is not JsonArray array)
         {
@@ -853,16 +863,16 @@ public sealed class LegacyQuestStateStore
 
             chapters.Add(new LegacyQuestChapter(
                 id,
-                GetDateTimeOffset(root, "startTime"),
-                GetDateTimeOffset(root, "endTime"),
+                GetDateTimeOffset(root, StartTimeProperty),
+                GetDateTimeOffset(root, EndTimeProperty),
                 GetJsonMap(root["vars"])));
         }
 
         return chapters;
     }
 
-    private static IReadOnlyDictionary<string, LegacyQuestBodyLocation>
-        ParseBodyLocations(JsonNode? node, ICollection<string> warnings)
+    private static Dictionary<string, LegacyQuestBodyLocation>
+        ParseBodyLocations(JsonNode? node, List<string> warnings)
     {
         var locations = new Dictionary<string, LegacyQuestBodyLocation>(
             StringComparer.Ordinal);
@@ -904,9 +914,9 @@ public sealed class LegacyQuestStateStore
         return locations;
     }
 
-    private static IReadOnlyList<LegacyQuestRoute> ParseRoutes(
+    private static List<LegacyQuestRoute> ParseRoutes(
         JsonNode? node,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is not JsonArray array)
         {
@@ -916,45 +926,85 @@ public sealed class LegacyQuestStateStore
         var routes = new List<LegacyQuestRoute>();
         foreach (var item in array)
         {
-            if (item is not JsonObject root
-                || GetString(root, "id") is not { } id
-                || GetDouble(root, "w") is not { } width
-                || root["wp"] is not JsonArray waypointArray)
+            if (!TryParseRoute(item, out var route) || route is null)
             {
                 warnings.Add("A quest route is invalid and was ignored.");
                 continue;
             }
 
-            var waypoints = new List<IReadOnlyList<double>>();
-            foreach (var waypoint in waypointArray)
-            {
-                if (waypoint is not JsonArray coordinates)
-                {
-                    continue;
-                }
-
-                var values = coordinates
-                    .Select(value => value is JsonValue number
-                        && number.TryGetValue<double>(out var coordinate)
-                        && double.IsFinite(coordinate)
-                            ? (double?)coordinate
-                            : null)
-                    .ToArray();
-                if (values.Length > 0 && values.All(value => value is not null))
-                {
-                    waypoints.Add(values.Select(value => value!.Value).ToArray());
-                }
-            }
-
-            routes.Add(new LegacyQuestRoute(id, width, waypoints));
+            routes.Add(route);
         }
 
         return routes;
     }
 
+    private static bool TryParseRoute(
+        JsonNode? item,
+        out LegacyQuestRoute? route)
+    {
+        route = null;
+        if (item is not JsonObject root
+            || GetString(root, "id") is not { } id
+            || GetDouble(root, "w") is not { } width)
+        {
+            return false;
+        }
+
+        if (root["wp"] is not JsonArray waypointArray)
+        {
+            route = new LegacyQuestRoute(id, width, []);
+            return true;
+        }
+
+        route = new LegacyQuestRoute(
+            id,
+            width,
+            ParseWaypoints(waypointArray));
+        return true;
+    }
+
+    private static List<IReadOnlyList<double>> ParseWaypoints(
+        JsonArray waypointArray)
+    {
+        var waypoints = new List<IReadOnlyList<double>>(waypointArray.Count);
+        foreach (var waypoint in waypointArray)
+        {
+            if (waypoint is not JsonArray coordinates
+                || !TryReadWaypoint(coordinates, out var values))
+            {
+                continue;
+            }
+
+            waypoints.Add(values);
+        }
+
+        return waypoints;
+    }
+
+    private static bool TryReadWaypoint(
+        JsonArray coordinates,
+        out IReadOnlyList<double> values)
+    {
+        values = [];
+        var parsed = coordinates
+            .Select(value => value is JsonValue number
+                && number.TryGetValue<double>(out var coordinate)
+                && double.IsFinite(coordinate)
+                    ? (double?)coordinate
+                    : null)
+            .ToArray();
+        if (parsed.Length == 0 || parsed.Any(value => value is null))
+        {
+            return false;
+        }
+
+        values = parsed.Select(value => value!.Value).ToArray();
+        return true;
+    }
+
     private static LegacyQuestReference? ParseReference(
         JsonNode? node,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is null)
         {
@@ -1057,7 +1107,7 @@ public sealed class LegacyQuestStateStore
         return true;
     }
 
-    private static IReadOnlyDictionary<string, string> GetStringMap(JsonNode? node)
+    private static Dictionary<string, string> GetStringMap(JsonNode? node)
     {
         var result = new Dictionary<string, string>(StringComparer.Ordinal);
         if (node is not JsonObject root)
@@ -1077,7 +1127,7 @@ public sealed class LegacyQuestStateStore
         return result;
     }
 
-    private static IReadOnlySet<string> GetStringSet(JsonNode? node)
+    private static HashSet<string> GetStringSet(JsonNode? node)
     {
         return node is JsonArray array
             ? array
@@ -1091,7 +1141,7 @@ public sealed class LegacyQuestStateStore
             : new HashSet<string>(StringComparer.Ordinal);
     }
 
-    private static IReadOnlyList<string> GetStringArray(JsonNode? node)
+    private static List<string> GetStringArray(JsonNode? node)
     {
         if (node is not JsonArray array)
         {
@@ -1112,7 +1162,7 @@ public sealed class LegacyQuestStateStore
         return result;
     }
 
-    private static IReadOnlyDictionary<string, JsonElement> GetJsonMap(
+    private static Dictionary<string, JsonElement> GetJsonMap(
         JsonNode? node)
     {
         var result = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
@@ -1131,7 +1181,7 @@ public sealed class LegacyQuestStateStore
 
     private static LegacyQuestDuration ParseDuration(
         JsonNode? node,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         if (node is null)
         {

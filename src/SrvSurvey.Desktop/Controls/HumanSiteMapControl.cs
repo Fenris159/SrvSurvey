@@ -663,15 +663,12 @@ public sealed class HumanSiteMapControl : Control
         }
 
         var brush = TextBrush ?? Brushes.White;
-        foreach (var material in CollectedMaterials)
+        foreach (var offset in CollectedMaterials
+            .Where(material => material.Offset.IsFinite)
+            .Select(material => material.Offset))
         {
-            if (!material.Offset.IsFinite)
-            {
-                continue;
-            }
-
             var location = Transform(
-                material.Offset,
+                offset,
                 center,
                 commander,
                 scale);
@@ -924,12 +921,12 @@ public sealed class HumanSiteMapControl : Control
             origin.Y + (y * Math.Cos(radians)) - (x * Math.Sin(radians)));
     }
 
-    private static StreamGeometry CreatePolygon(IReadOnlyList<Point> points)
+    private static StreamGeometry CreatePolygon(Point[] points)
     {
         var geometry = new StreamGeometry();
         using var target = geometry.Open();
         target.BeginFigure(points[0], isFilled: true);
-        for (var index = 1; index < points.Count; index++)
+        for (var index = 1; index < points.Length; index++)
         {
             target.LineTo(points[index]);
         }

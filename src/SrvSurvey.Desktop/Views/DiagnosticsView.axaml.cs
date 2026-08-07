@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using SrvSurvey.Core.Network;
 using SrvSurvey.Desktop.ViewModels;
 
 namespace SrvSurvey.Desktop.Views;
@@ -95,7 +96,7 @@ public sealed partial class DiagnosticsView : UserControl
                     },
                 ],
             });
-        var file = files.FirstOrDefault();
+        var file = files.Count > 0 ? files[0] : null;
         if (file is not null)
         {
             viewModel.VisitedStarsCache.TargetPath = file.Path.LocalPath;
@@ -109,8 +110,7 @@ public sealed partial class DiagnosticsView : UserControl
         var launcher = TopLevel.GetTopLevel(this)?.Launcher;
         if (launcher is not null)
         {
-            await launcher.LaunchUriAsync(
-                new Uri("https://edgalaxy.net/visitedstars"));
+            await launcher.LaunchUriAsync(WellKnownUris.EdGalaxyVisitedStars);
         }
     }
 }

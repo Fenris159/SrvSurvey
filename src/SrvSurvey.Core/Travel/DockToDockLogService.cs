@@ -52,12 +52,11 @@ public sealed class DockToDockLogService
             ApplyIdentity(journalEvent);
             ApplyLocation(journalEvent);
 
-            if (!isBootstrapRead && enabled)
+            if (!isBootstrapRead
+                && enabled
+                && ApplyTripEvent(journalEvent) is { } entry)
             {
-                if (ApplyTripEvent(journalEvent) is { } entry)
-                {
-                    completed.Add(entry);
-                }
+                completed.Add(entry);
             }
 
             if (journalEvent.EventName == "Docked")
@@ -147,20 +146,25 @@ public sealed class DockToDockLogService
                 StringComparer.OrdinalIgnoreCase);
         return new DockToDockTrip(
             GetEventTime(journalEvent),
-            docked?.SystemName ?? systemName,
-            docked?.SystemAddress ?? systemAddress,
-            docked?.BodyId ?? bodyId,
-            docked?.BodyName ?? bodyName,
-            docked?.DistanceFromStarLs ?? bodyDistanceLs,
-            marketId,
-            GetString(root, "StationName")
-                ?? docked?.StationName
-                ?? "?",
-            docked?.StationType ?? "?",
-            shipType ?? "?",
-            shipName ?? "?",
-            shipMaximumJump,
-            cargoCounts);
+            new DockToDockStartLocation
+            {
+                SystemName = docked?.SystemName ?? systemName,
+                SystemAddress = docked?.SystemAddress ?? systemAddress,
+                BodyId = docked?.BodyId ?? bodyId,
+                BodyName = docked?.BodyName ?? bodyName,
+                DistanceFromStarLs = docked?.DistanceFromStarLs
+                    ?? bodyDistanceLs,
+                MarketId = marketId,
+                StationName = GetString(root, "StationName")
+                    ?? docked?.StationName
+                    ?? "?",
+                StationType = docked?.StationType ?? "?",
+            },
+            new DockToDockShipContext(
+                shipType ?? "?",
+                shipName ?? "?",
+                shipMaximumJump,
+                cargoCounts));
     }
 
     private DockToDockLogEntry CompleteTrip(
@@ -169,39 +173,42 @@ public sealed class DockToDockLogService
     {
         var root = journalEvent.Payload;
         var endedAt = GetEventTime(journalEvent);
-        return new DockToDockLogEntry(
-            trip.StartedAt,
-            endedAt,
-            endedAt - trip.StartedAt,
-            trip.EgressEndedAt is { } egress
+        return new DockToDockLogEntry
+        {
+            StartedAt = trip.StartedAt,
+            EndedAt = endedAt,
+            Duration = endedAt - trip.StartedAt,
+            EgressDuration = trip.EgressEndedAt is { } egress
                 ? egress - trip.StartedAt
                 : TimeSpan.Zero,
-            trip.IngressStartedAt is { } ingress
+            IngressDuration = trip.IngressStartedAt is { } ingress
                 ? endedAt - ingress
                 : TimeSpan.Zero,
-            trip.Jumps,
-            trip.Distance,
-            trip.StartSystem,
-            trip.StartAddress,
-            trip.StartBodyId,
-            trip.StartBodyName,
-            trip.StartDistanceFromStarLs,
-            trip.StartMarketId,
-            trip.StartStationName,
-            trip.StartStationType,
-            trip.WasInterdicted,
-            GetString(root, "StarSystem") ?? systemName,
-            GetInt64(root, "SystemAddress") ?? systemAddress,
-            bodyId,
-            bodyName,
-            GetInt64(root, "MarketID") ?? -1,
-            GetString(root, "StationName") ?? "?",
-            GetString(root, "StationType") ?? "?",
-            GetDouble(root, "DistFromStarLS") ?? bodyDistanceLs,
-            trip.ShipType,
-            trip.ShipName,
-            trip.ShipMaximumJump,
-            trip.Cargo);
+            Jumps = trip.Jumps,
+            Distance = trip.Distance,
+            StartSystem = trip.StartSystem,
+            StartAddress = trip.StartAddress,
+            StartBodyId = trip.StartBodyId,
+            StartBodyName = trip.StartBodyName,
+            StartDistanceFromStarLs = trip.StartDistanceFromStarLs,
+            StartMarketId = trip.StartMarketId,
+            StartStationName = trip.StartStationName,
+            StartStationType = trip.StartStationType,
+            WasInterdicted = trip.WasInterdicted,
+            EndSystem = GetString(root, "StarSystem") ?? systemName,
+            EndAddress = GetInt64(root, "SystemAddress") ?? systemAddress,
+            EndBodyId = bodyId,
+            EndBodyName = bodyName,
+            EndMarketId = GetInt64(root, "MarketID") ?? -1,
+            EndStationName = GetString(root, "StationName") ?? "?",
+            EndStationType = GetString(root, "StationType") ?? "?",
+            EndDistanceFromStarLs = GetDouble(root, "DistFromStarLS")
+                ?? bodyDistanceLs,
+            ShipType = trip.ShipType,
+            ShipName = trip.ShipName,
+            ShipMaximumJump = trip.ShipMaximumJump,
+            Cargo = trip.Cargo,
+        };
     }
 
     private void ApplyIdentity(JournalEventEnvelope journalEvent)
@@ -272,15 +279,18 @@ public sealed class DockToDockLogService
     private DockedLocation CreateDockedLocation(JournalEventEnvelope journalEvent)
     {
         var root = journalEvent.Payload;
-        return new DockedLocation(
-            GetString(root, "StarSystem") ?? systemName,
-            GetInt64(root, "SystemAddress") ?? systemAddress,
-            bodyId,
-            bodyName,
-            GetDouble(root, "DistFromStarLS") ?? bodyDistanceLs,
-            GetInt64(root, "MarketID") ?? -1,
-            GetString(root, "StationName") ?? "?",
-            GetString(root, "StationType") ?? "?");
+        return new DockedLocation
+        {
+            SystemName = GetString(root, "StarSystem") ?? systemName,
+            SystemAddress = GetInt64(root, "SystemAddress") ?? systemAddress,
+            BodyId = bodyId,
+            BodyName = bodyName,
+            DistanceFromStarLs = GetDouble(root, "DistFromStarLS")
+                ?? bodyDistanceLs,
+            MarketId = GetInt64(root, "MarketID") ?? -1,
+            StationName = GetString(root, "StationName") ?? "?",
+            StationType = GetString(root, "StationType") ?? "?",
+        };
     }
 
     private DateTimeOffset GetEventTime(JournalEventEnvelope journalEvent)
@@ -324,44 +334,68 @@ public sealed class DockToDockLogService
                 : null;
     }
 
-    private sealed record DockedLocation(
-        string? SystemName,
-        long? SystemAddress,
-        int? BodyId,
-        string? BodyName,
-        double? DistanceFromStarLs,
-        long MarketId,
-        string StationName,
-        string StationType);
+    private sealed class DockedLocation
+    {
+        public string? SystemName { get; init; }
+
+        public long? SystemAddress { get; init; }
+
+        public int? BodyId { get; init; }
+
+        public string? BodyName { get; init; }
+
+        public double? DistanceFromStarLs { get; init; }
+
+        public long MarketId { get; init; }
+
+        public required string StationName { get; init; }
+
+        public required string StationType { get; init; }
+    }
+
+    private sealed class DockToDockStartLocation
+    {
+        public string? SystemName { get; init; }
+
+        public long? SystemAddress { get; init; }
+
+        public int? BodyId { get; init; }
+
+        public string? BodyName { get; init; }
+
+        public double? DistanceFromStarLs { get; init; }
+
+        public long MarketId { get; init; }
+
+        public required string StationName { get; init; }
+
+        public required string StationType { get; init; }
+    }
+
+    private sealed record DockToDockShipContext(
+        string ShipType,
+        string ShipName,
+        double? ShipMaximumJump,
+        IReadOnlyDictionary<string, int> Cargo);
 
     private sealed class DockToDockTrip(
         DateTimeOffset startedAt,
-        string? startSystem,
-        long? startAddress,
-        int? startBodyId,
-        string? startBodyName,
-        double? startDistanceFromStarLs,
-        long startMarketId,
-        string startStationName,
-        string startStationType,
-        string shipType,
-        string shipName,
-        double? shipMaximumJump,
-        IReadOnlyDictionary<string, int> cargo)
+        DockToDockStartLocation start,
+        DockToDockShipContext ship)
     {
         public DateTimeOffset StartedAt { get; } = startedAt;
-        public string? StartSystem { get; } = startSystem;
-        public long? StartAddress { get; } = startAddress;
-        public int? StartBodyId { get; } = startBodyId;
-        public string? StartBodyName { get; } = startBodyName;
-        public double? StartDistanceFromStarLs { get; } = startDistanceFromStarLs;
-        public long StartMarketId { get; } = startMarketId;
-        public string StartStationName { get; } = startStationName;
-        public string StartStationType { get; } = startStationType;
-        public string ShipType { get; } = shipType;
-        public string ShipName { get; } = shipName;
-        public double? ShipMaximumJump { get; } = shipMaximumJump;
-        public IReadOnlyDictionary<string, int> Cargo { get; } = cargo;
+        public string? StartSystem { get; } = start.SystemName;
+        public long? StartAddress { get; } = start.SystemAddress;
+        public int? StartBodyId { get; } = start.BodyId;
+        public string? StartBodyName { get; } = start.BodyName;
+        public double? StartDistanceFromStarLs { get; } = start.DistanceFromStarLs;
+        public long StartMarketId { get; } = start.MarketId;
+        public string StartStationName { get; } = start.StationName;
+        public string StartStationType { get; } = start.StationType;
+        public string ShipType { get; } = ship.ShipType;
+        public string ShipName { get; } = ship.ShipName;
+        public double? ShipMaximumJump { get; } = ship.ShipMaximumJump;
+        public IReadOnlyDictionary<string, int> Cargo { get; } = ship.Cargo;
         public DateTimeOffset? EgressEndedAt { get; set; }
         public DateTimeOffset? IngressStartedAt { get; set; }
         public int Jumps { get; set; }
@@ -372,6 +406,8 @@ public sealed class DockToDockLogService
 
 public sealed class DockToDockCsvWriter
 {
+    private const string HighPrecisionNumberFormat = "0.################";
+
     public const string FileName = "SrvSurvey-dock-to-dock-times.csv";
 
     private static readonly string[] Columns =
@@ -485,13 +521,13 @@ public sealed class DockToDockCsvWriter
             FormatDuration(entry.EgressDuration),
             FormatDuration(entry.IngressDuration),
             entry.Jumps.ToString(CultureInfo.InvariantCulture),
-            entry.Distance.ToString("0.################", CultureInfo.InvariantCulture),
+            entry.Distance.ToString(HighPrecisionNumberFormat, CultureInfo.InvariantCulture),
             entry.StartSystem ?? "?",
             entry.StartAddress?.ToString(CultureInfo.InvariantCulture) ?? "-1",
             entry.StartBodyId?.ToString(CultureInfo.InvariantCulture) ?? "-1",
             entry.StartBodyName ?? "?",
             entry.StartDistanceFromStarLs?.ToString(
-                "0.################",
+                HighPrecisionNumberFormat,
                 CultureInfo.InvariantCulture) ?? "-1",
             entry.StartMarketId.ToString(CultureInfo.InvariantCulture),
             entry.StartStationName,
@@ -505,12 +541,12 @@ public sealed class DockToDockCsvWriter
             entry.EndStationName,
             entry.EndStationType,
             entry.EndDistanceFromStarLs?.ToString(
-                "0.################",
+                HighPrecisionNumberFormat,
                 CultureInfo.InvariantCulture) ?? "-1",
             entry.ShipType,
             entry.ShipName,
             entry.ShipMaximumJump?.ToString(
-                "0.################",
+                HighPrecisionNumberFormat,
                 CultureInfo.InvariantCulture) ?? "-1",
             JsonSerializer.Serialize(entry.Cargo),
         ];
@@ -530,35 +566,64 @@ public sealed class DockToDockCsvWriter
     }
 }
 
-public sealed record DockToDockLogEntry(
-    DateTimeOffset StartedAt,
-    DateTimeOffset EndedAt,
-    TimeSpan Duration,
-    TimeSpan EgressDuration,
-    TimeSpan IngressDuration,
-    int Jumps,
-    double Distance,
-    string? StartSystem,
-    long? StartAddress,
-    int? StartBodyId,
-    string? StartBodyName,
-    double? StartDistanceFromStarLs,
-    long StartMarketId,
-    string StartStationName,
-    string StartStationType,
-    bool WasInterdicted,
-    string? EndSystem,
-    long? EndAddress,
-    int? EndBodyId,
-    string? EndBodyName,
-    long EndMarketId,
-    string EndStationName,
-    string EndStationType,
-    double? EndDistanceFromStarLs,
-    string ShipType,
-    string ShipName,
-    double? ShipMaximumJump,
-    IReadOnlyDictionary<string, int> Cargo);
+public sealed class DockToDockLogEntry
+{
+    public DateTimeOffset StartedAt { get; init; }
+
+    public DateTimeOffset EndedAt { get; init; }
+
+    public TimeSpan Duration { get; init; }
+
+    public TimeSpan EgressDuration { get; init; }
+
+    public TimeSpan IngressDuration { get; init; }
+
+    public int Jumps { get; init; }
+
+    public double Distance { get; init; }
+
+    public string? StartSystem { get; init; }
+
+    public long? StartAddress { get; init; }
+
+    public int? StartBodyId { get; init; }
+
+    public string? StartBodyName { get; init; }
+
+    public double? StartDistanceFromStarLs { get; init; }
+
+    public long StartMarketId { get; init; }
+
+    public required string StartStationName { get; init; }
+
+    public required string StartStationType { get; init; }
+
+    public bool WasInterdicted { get; init; }
+
+    public string? EndSystem { get; init; }
+
+    public long? EndAddress { get; init; }
+
+    public int? EndBodyId { get; init; }
+
+    public string? EndBodyName { get; init; }
+
+    public long EndMarketId { get; init; }
+
+    public required string EndStationName { get; init; }
+
+    public required string EndStationType { get; init; }
+
+    public double? EndDistanceFromStarLs { get; init; }
+
+    public required string ShipType { get; init; }
+
+    public required string ShipName { get; init; }
+
+    public double? ShipMaximumJump { get; init; }
+
+    public required IReadOnlyDictionary<string, int> Cargo { get; init; }
+}
 
 public sealed record DockToDockApplyResult(
     int WrittenCount,

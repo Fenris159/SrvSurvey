@@ -99,9 +99,11 @@ public sealed class ApplicationLogService
         try
         {
             Directory.CreateDirectory(LogDirectory);
-            for (var suffix = 1; File.Exists(path); suffix++)
+            var suffix = 1;
+            while (File.Exists(path))
             {
                 path = Path.Combine(LogDirectory, $"{stem}_{suffix}.txt");
+                suffix++;
             }
 
             using var stream = new FileStream(
@@ -139,7 +141,7 @@ public sealed class ApplicationLogService
             }
         }
 
-        lastWriteError = lastException?.Message;
+        lastWriteError = lastException!.Message;
     }
 
     private void PruneOldFiles()

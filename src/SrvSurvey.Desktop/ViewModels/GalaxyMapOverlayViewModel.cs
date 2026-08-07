@@ -26,7 +26,7 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
     private GalaxyMapSystemViewModel? primarySystem;
     private GalaxyMapSystemViewModel? secondarySystem;
     private IReadOnlyList<GalaxyMapFactionViewModel> factions = [];
-    private IReadOnlySet<string> questTags = new HashSet<string>(
+    private HashSet<string> questTags = new HashSet<string>(
         StringComparer.OrdinalIgnoreCase);
     private bool routeWasCleared;
     private bool isLoading;
@@ -404,9 +404,9 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
             cancellationToken.ThrowIfCancellationRequested();
 
             PrimarySystem = Project(primary.Label, primaryResult.Summary);
-            SecondarySystem = secondaryResult is null || secondary is null
+            SecondarySystem = secondaryResult is null
                 ? null
-                : Project(secondary.Label, secondaryResult.Summary);
+                : Project(secondary!.Label, secondaryResult.Summary);
             Factions = primaryResult.Summary.Factions
                 .Select(faction => new GalaxyMapFactionViewModel(
                     faction.Name,
@@ -468,9 +468,11 @@ public sealed class GalaxyMapOverlayViewModel : INotifyPropertyChanged, IDisposa
         };
         var discovered = !string.IsNullOrWhiteSpace(summary.DiscoveredBy)
             ? "Discovered by " + summary.DiscoveredBy
-                + (summary.DiscoveredAt is { } discoveredAt
-                    ? " · " + discoveredAt.ToLocalTime().ToString("g")
-                    : string.Empty)
+                + (summary.DiscoveredAt switch
+                {
+                    DateTimeOffset discoveredAt => " · " + discoveredAt.ToLocalTime().ToString("g"),
+                    null => string.Empty
+                })
             : string.Empty;
         var updated = summary.LastUpdatedAt is { } updatedAt
             && (summary.DiscoveredAt is null

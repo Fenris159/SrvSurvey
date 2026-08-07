@@ -1,12 +1,19 @@
+using System.Buffers;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace SrvSurvey.Core.Guardian;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The store is application-scoped and its semaphore may still have in-flight waiters.")]
 public sealed class GuardianCommanderSurveyStore(string dataDirectory)
 {
     private static readonly char[] CrossPlatformInvalidFileNameCharacters =
         ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '\0'];
+    private static readonly SearchValues<char> InvalidFileNameSearch =
+        SearchValues.Create(CrossPlatformInvalidFileNameCharacters);
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         WriteIndented = true,
@@ -244,42 +251,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         var pending = new Dictionary<string, GuardianComponentLoadout>(
             components,
             StringComparer.Ordinal);
-        var output = new JsonArray();
-        if (root["components"] is { } existingNode)
-        {
-            if (existingNode is not JsonArray existing)
-            {
-                throw new InvalidDataException(
-                    "The Guardian component-material data uses an unsupported JSON shape and was not overwritten.");
-            }
-
-            foreach (var node in existing)
-            {
-                if (node is JsonValue value
-                    && value.TryGetValue<string>(out var encoded)
-                    && GuardianComponentLoadout.TryParseLegacy(
-                        encoded,
-                        out var existingComponent))
-                {
-                    if (components.TryGetValue(
-                        existingComponent.Name,
-                        out var replacement))
-                    {
-                        output.Add(replacement.ToLegacyString());
-                        pending.Remove(existingComponent.Name);
-                    }
-                    else
-                    {
-                        output.Add(value.DeepClone());
-                    }
-                }
-                else
-                {
-                    output.Add(node?.DeepClone());
-                }
-            }
-        }
-
+        var output = MergeExistingComponentMaterials(root, components, pending);
         foreach (var component in pending.Values.OrderBy(
                      item => item.Name,
                      StringComparer.Ordinal))
@@ -288,6 +260,56 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
         }
 
         root["components"] = output;
+    }
+
+    private static JsonArray MergeExistingComponentMaterials(
+        JsonObject root,
+        IReadOnlyDictionary<string, GuardianComponentLoadout> components,
+        Dictionary<string, GuardianComponentLoadout> pending)
+    {
+        var output = new JsonArray();
+        if (root["components"] is not { } existingNode)
+        {
+            return output;
+        }
+
+        if (existingNode is not JsonArray existing)
+        {
+            throw new InvalidDataException(
+                "The Guardian component-material data uses an unsupported JSON shape and was not overwritten.");
+        }
+
+        foreach (var node in existing)
+        {
+            output.Add(MergeComponentNode(node, components, pending));
+        }
+
+        return output;
+    }
+
+    private static JsonNode? MergeComponentNode(
+        JsonNode? node,
+        IReadOnlyDictionary<string, GuardianComponentLoadout> components,
+        Dictionary<string, GuardianComponentLoadout> pending)
+    {
+        if (node is JsonValue value
+            && value.TryGetValue<string>(out var encoded)
+            && GuardianComponentLoadout.TryParseLegacy(
+                encoded,
+                out var existingComponent))
+        {
+            if (components.TryGetValue(
+                existingComponent.Name,
+                out var replacement))
+            {
+                pending.Remove(existingComponent.Name);
+                return replacement.ToLegacyString();
+            }
+
+            return value.DeepClone();
+        }
+
+        return node?.DeepClone();
     }
     private static string GetLegacyPoiType(GuardianPoiType type)
     {
@@ -376,7 +398,7 @@ public sealed class GuardianCommanderSurveyStore(string dataDirectory)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(bodyName);
         if (!IsSingleFileName(bodyName)
-            || bodyName.IndexOfAny(CrossPlatformInvalidFileNameCharacters) >= 0)
+            || bodyName.AsSpan().IndexOfAny(InvalidFileNameSearch) >= 0)
         {
             throw new ArgumentException(
                 "The body name cannot be represented by a cross-platform survey filename.",

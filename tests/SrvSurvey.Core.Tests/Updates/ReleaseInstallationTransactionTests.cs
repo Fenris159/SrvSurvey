@@ -36,10 +36,10 @@ public sealed class ReleaseInstallationTransactionTests : IDisposable
         var transaction = new ReleaseInstallationTransaction();
         var result = await transaction.ApplyAsync(
             preparation,
-            async (entryPoint, arguments, _) =>
+            async (entryPoint, arguments, cancellationToken) =>
             {
                 Assert.Equal(fixture.NewEntryPoint,
-                    await File.ReadAllBytesAsync(entryPoint));
+                    await File.ReadAllBytesAsync(entryPoint, cancellationToken));
                 Assert.Equal(["--journal", "C:\\Elite Journals"], arguments);
                 return true;
             });

@@ -24,9 +24,11 @@ public static class JournalFolderLocator
     {
         var platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? DesktopPlatform.Windows
-            : RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
-                ? DesktopPlatform.Linux
-                : DesktopPlatform.Other;
+            : (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) switch
+            {
+                true => DesktopPlatform.Linux,
+                false => DesktopPlatform.Other
+            };
 
         return Resolve(
             configuredPath,

@@ -826,9 +826,11 @@ public sealed class CommanderProfileViewModelTests
         {
             var profile = new CommanderProfileViewModel(
                 new StubAccountService(new FrontierAccountState(false, null, null)));
-            using var main = new MainWindowViewModel(
-                Path.Combine(root, "journals"),
-                frontierProfile: profile);
+            using var main = new MainWindowViewModel(Path.Combine(root, "journals"),
+                new MainWindowViewModelOptions
+                {
+                    FrontierProfile = profile,
+                });
 
             await main.ShowProfileAsync();
 
@@ -882,14 +884,16 @@ public sealed class CommanderProfileViewModelTests
                 snapshot.FetchedAt));
             var profile = new CommanderProfileViewModel(account);
             await profile.OpenAsync();
-            using var main = new MainWindowViewModel(
-                journals,
-                appDataPaths: new AppDataPaths(
+            using var main = new MainWindowViewModel(journals,
+                new MainWindowViewModelOptions
+                {
+                    AppDataPaths = new AppDataPaths(
                     Path.Combine(root, "config"),
                     Path.Combine(root, "profile"),
                     Path.Combine(root, "cache"),
                     []),
-                frontierProfile: profile);
+                    FrontierProfile = profile,
+                });
 
             await main.ShowProfileAsync();
             await main.RefreshAsync();

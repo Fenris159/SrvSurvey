@@ -11,23 +11,43 @@ public sealed class HumanSiteTemplateCatalogTests
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
 
         Assert.Equal(28, catalog.Count);
-        Assert.Equal(48, catalog.Templates.Sum(
-            template => template.LandingPads.Count));
-        Assert.Equal(398, catalog.Templates.Sum(
-            template => template.SecureDoors.Count));
-        Assert.Equal(594, catalog.Templates.Sum(
-            template => template.NamedPoints.Count));
-        Assert.Equal(144, catalog.Templates.Sum(
-            template => template.DataTerminals.Count));
-        Assert.Equal(160, catalog.Templates.Sum(
-            template => template.ConflictZonePoints.Count));
-        Assert.Equal(128, catalog.Templates.Sum(
-            template => template.Buildings.Count));
-        Assert.Equal(191, catalog.Templates.Sum(template =>
-            template.Buildings.Sum(building => building.Paths.Count)));
-        Assert.Equal(2_711, catalog.Templates.Sum(template =>
-            template.Buildings.Sum(building =>
-                building.Paths.Sum(path => path.Points.Count))));
+        var totalLandingPads = 0;
+        var totalSecureDoors = 0;
+        var totalNamedPoints = 0;
+        var totalDataTerminals = 0;
+        var totalConflictZonePoints = 0;
+        var totalBuildings = 0;
+        var totalBuildingPaths = 0;
+        var totalPathPoints = 0;
+
+        foreach (var template in catalog.Templates)
+        {
+            totalLandingPads += template.LandingPads.Count;
+            totalSecureDoors += template.SecureDoors.Count;
+            totalNamedPoints += template.NamedPoints.Count;
+            totalDataTerminals += template.DataTerminals.Count;
+            totalConflictZonePoints += template.ConflictZonePoints.Count;
+            totalBuildings += template.Buildings.Count;
+
+            foreach (var building in template.Buildings)
+            {
+                totalBuildingPaths += building.Paths.Count;
+
+                foreach (var path in building.Paths)
+                {
+                    totalPathPoints += path.Points.Count;
+                }
+            }
+        }
+
+        Assert.Equal(48, totalLandingPads);
+        Assert.Equal(398, totalSecureDoors);
+        Assert.Equal(594, totalNamedPoints);
+        Assert.Equal(144, totalDataTerminals);
+        Assert.Equal(160, totalConflictZonePoints);
+        Assert.Equal(128, totalBuildings);
+        Assert.Equal(191, totalBuildingPaths);
+        Assert.Equal(2_711, totalPathPoints);
     }
 
     [Fact]
@@ -38,29 +58,59 @@ public sealed class HumanSiteTemplateCatalogTests
         var agriculture = catalog.ForEconomy(HumanSiteEconomy.Agriculture);
         var picumnus = catalog.Find(HumanSiteEconomy.Agriculture, 1);
 
+        var subtypes = new List<int>(5);
+        foreach (var template in agriculture)
+        {
+            subtypes.Add(template.SubType);
+        }
         Assert.Equal(5, agriculture.Count);
-        Assert.Equal([1, 2, 3, 4, 5],
-            agriculture.Select(template => template.SubType));
+        Assert.Equal([1, 2, 3, 4, 5], subtypes);
         Assert.NotNull(picumnus);
         Assert.Equal("Picumnus", picumnus.Name);
         Assert.Equal(HumanSiteLandingPadSize.Small,
             picumnus.LandingPads[0].Size);
         Assert.Equal(new HumanSiteMapPoint(149.1648, -122.47405),
             picumnus.LandingPads[0].Offset);
-        Assert.Contains(picumnus.NamedPoints,
-            point => point.Name == "Alarm" && point.SecurityLevel == 1);
+        var hasAlarm = false;
+        foreach (var point in picumnus.NamedPoints)
+        {
+            if (point.Name == "Alarm" && point.SecurityLevel == 1)
+            {
+                hasAlarm = true;
+                break;
+            }
+        }
+        Assert.True(hasAlarm);
     }
 
     [Fact]
     public void RetainsButIdentifiesImplausibleLegacyPoiOffsets()
     {
         var catalog = HumanSiteTemplateCatalog.LoadEmbedded();
-        var allPoints = catalog.Templates.SelectMany(template =>
-            template.NamedPoints.Select(point => point.Offset));
+        var allPoints = new List<HumanSiteMapPoint>();
+        foreach (var template in catalog.Templates)
+        {
+            foreach (var point in template.NamedPoints)
+            {
+                allPoints.Add(point.Offset);
+            }
+        }
 
-        Assert.All(allPoints, point => Assert.True(point.IsFinite));
-        Assert.Contains(allPoints,
-            point => !point.IsPlausibleMapOffset());
+        foreach (var point in allPoints)
+        {
+            Assert.True(point.IsFinite);
+        }
+
+        var hasImprobableOffset = false;
+        foreach (var point in allPoints)
+        {
+            if (!point.IsPlausibleMapOffset())
+            {
+                hasImprobableOffset = true;
+                break;
+            }
+        }
+        Assert.True(hasImprobableOffset);
     }
 
     [Fact]
@@ -76,13 +126,18 @@ public sealed class HumanSiteTemplateCatalogTests
             """);
 
         Assert.Throws<InvalidDataException>(
-            () => HumanSiteTemplateCatalog.Load(unknownEconomy));
+            () => LoadTemplateCatalog(unknownEconomy));
         Assert.Throws<InvalidDataException>(
-            () => HumanSiteTemplateCatalog.Load(mismatchedPath));
+            () => LoadTemplateCatalog(mismatchedPath));
     }
 
     private static MemoryStream Json(string json)
     {
         return new MemoryStream(Encoding.UTF8.GetBytes(json));
+    }
+
+    private static void LoadTemplateCatalog(Stream catalogJson)
+    {
+        _ = HumanSiteTemplateCatalog.Load(catalogJson);
     }
 }

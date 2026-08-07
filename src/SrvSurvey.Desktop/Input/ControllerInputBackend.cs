@@ -115,6 +115,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
         catch (OperationCanceledException)
             when (cancellationToken.IsCancellationRequested)
         {
+            // Stopping controller monitoring is an expected cancellation path.
         }
         catch (Exception exception) when (
             exception is DllNotFoundException
@@ -278,7 +279,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
     }
 
     private static void AddHat(
-        ISet<string> pressed,
+        HashSet<string> pressed,
         bool up,
         bool right,
         bool down,
@@ -303,7 +304,7 @@ public sealed class SdlControllerInputBackend : IControllerInputBackend
     }
 
     private static void AddHat(
-        ISet<string> pressed,
+        HashSet<string> pressed,
         SDL.JoystickHat direction)
     {
         var token = direction switch

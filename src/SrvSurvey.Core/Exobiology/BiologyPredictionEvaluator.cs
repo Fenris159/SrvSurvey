@@ -189,7 +189,7 @@ public sealed class BiologyPredictionEvaluator
             };
         }
 
-        private bool MatchesAny(
+        private static bool MatchesAny(
             BiologyCriteriaClause clause,
             object bodyValue)
         {
@@ -423,7 +423,11 @@ public sealed record BiologyPredictionResult(
     IReadOnlyList<string> MissingProperties,
     IReadOnlyList<BiologyCriteriaClause> TargetClauses)
 {
-    public IReadOnlyList<string> Predictions => PredictionDetails
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Performance",
+        "S2365:Properties should not make collection copies",
+        Justification = "This get-only property caches one immutable snapshot during construction.")]
+    public IReadOnlyList<string> Predictions { get; } = PredictionDetails
         .Select(prediction => prediction.Name)
         .ToArray();
 

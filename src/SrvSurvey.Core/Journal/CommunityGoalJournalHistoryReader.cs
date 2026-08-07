@@ -105,68 +105,108 @@ public sealed class CommunityGoalJournalHistoryReader(
             stream,
             Encoding.UTF8,
             detectEncodingFromByteOrderMarks: true);
-        var malformedEntries = 0;
-        string? currentFrontierId = null;
-        var pending = new List<JournalEventEnvelope>();
+        var state = new HistoryReadState();
         while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)
                is { } line)
         {
-            if (!LooksRelevant(line))
-            {
-                continue;
-            }
-
-            if (!JournalEventEnvelope.TryParse(
-                    line,
-                    out var journalEvent,
-                    out _)
-                || journalEvent is null)
-            {
-                malformedEntries++;
-                continue;
-            }
-
-            if (journalEvent.EventName is "Commander" or "LoadGame")
-            {
-                currentFrontierId = ReadFrontierId(journalEvent.Payload)
-                    ?? currentFrontierId;
-                if (currentFrontierId is not null && pending.Count > 0)
-                {
-                    if (MatchesFrontierId(currentFrontierId, targetFrontierId))
-                    {
-                        foreach (var pendingEvent in pending)
-                        {
-                            malformedEntries += ApplyCommunityGoalEvent(
-                                pendingEvent,
-                                latest);
-                        }
-                    }
-
-                    pending.Clear();
-                }
-
-                continue;
-            }
-
-            if (!string.Equals(
-                    journalEvent.EventName,
-                    "CommunityGoal",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            if (currentFrontierId is null)
-            {
-                pending.Add(journalEvent);
-            }
-            else if (MatchesFrontierId(currentFrontierId, targetFrontierId))
-            {
-                malformedEntries += ApplyCommunityGoalEvent(journalEvent, latest);
-            }
+            ProcessHistoryLine(line, targetFrontierId, latest, state);
         }
 
-        return malformedEntries;
+        return state.MalformedEntries;
+    }
+
+    private sealed class HistoryReadState
+    {
+        public int MalformedEntries { get; set; }
+
+        public string? CurrentFrontierId { get; set; }
+
+        public List<JournalEventEnvelope> Pending { get; } = [];
+    }
+
+    private static void ProcessHistoryLine(
+        string line,
+        string targetFrontierId,
+        IDictionary<string, HistoryGoal> latest,
+        HistoryReadState state)
+    {
+        if (!LooksRelevant(line))
+        {
+            return;
+        }
+
+        if (!JournalEventEnvelope.TryParse(line, out var journalEvent, out _)
+            || journalEvent is null)
+        {
+            state.MalformedEntries++;
+            return;
+        }
+
+        if (journalEvent.EventName is "Commander" or "LoadGame")
+        {
+            ApplyCommanderIdentity(journalEvent, targetFrontierId, latest, state);
+            return;
+        }
+
+        if (!string.Equals(
+                journalEvent.EventName,
+                "CommunityGoal",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        ApplyOrBufferCommunityGoal(journalEvent, targetFrontierId, latest, state);
+    }
+
+    private static void ApplyCommanderIdentity(
+        JournalEventEnvelope journalEvent,
+        string targetFrontierId,
+        IDictionary<string, HistoryGoal> latest,
+        HistoryReadState state)
+    {
+        state.CurrentFrontierId = ReadFrontierId(journalEvent.Payload)
+            ?? state.CurrentFrontierId;
+        if (state.CurrentFrontierId is null || state.Pending.Count == 0)
+        {
+            return;
+        }
+
+        if (MatchesFrontierId(state.CurrentFrontierId, targetFrontierId))
+        {
+            FlushPendingGoals(state.Pending, latest, state);
+        }
+
+        state.Pending.Clear();
+    }
+
+    private static void FlushPendingGoals(
+        List<JournalEventEnvelope> pending,
+        IDictionary<string, HistoryGoal> latest,
+        HistoryReadState state)
+    {
+        foreach (var pendingEvent in pending)
+        {
+            state.MalformedEntries += ApplyCommunityGoalEvent(pendingEvent, latest);
+        }
+    }
+
+    private static void ApplyOrBufferCommunityGoal(
+        JournalEventEnvelope journalEvent,
+        string targetFrontierId,
+        IDictionary<string, HistoryGoal> latest,
+        HistoryReadState state)
+    {
+        if (state.CurrentFrontierId is null)
+        {
+            state.Pending.Add(journalEvent);
+            return;
+        }
+
+        if (MatchesFrontierId(state.CurrentFrontierId, targetFrontierId))
+        {
+            state.MalformedEntries += ApplyCommunityGoalEvent(journalEvent, latest);
+        }
     }
 
     private static int ApplyCommunityGoalEvent(

@@ -1,61 +1,103 @@
 namespace SrvSurvey.Core.Exploration;
 
+public sealed class ExplorationValueRequest
+{
+    public string? BodyClass { get; init; }
+
+    public bool IsTerraformable { get; init; }
+
+    public double Mass { get; init; }
+
+    public bool IsFirstDiscoverer { get; init; }
+
+    public bool IsMapped { get; init; }
+
+    public bool IsFirstMapped { get; init; }
+
+    public bool IsOdyssey { get; init; }
+
+    public bool WithEfficiencyBonus { get; init; } = true;
+
+    public bool IsFleetCarrierSale { get; init; }
+}
+
 public static class ExplorationValueCalculator
 {
     private const double PlanetValueExponent = 0.56591828;
 
-    public static int Calculate(
-        string? bodyClass,
-        bool isTerraformable,
-        double mass,
-        bool isFirstDiscoverer,
-        bool isMapped,
-        bool isFirstMapped,
-        bool isOdyssey,
-        bool withEfficiencyBonus = true,
-        bool isFleetCarrierSale = false)
+    public static int Calculate(ExplorationValueRequest request)
     {
-        if (string.IsNullOrWhiteSpace(bodyClass))
+        ArgumentNullException.ThrowIfNull(request);
+        if (string.IsNullOrWhiteSpace(request.BodyClass))
         {
             return 0;
         }
 
-        if (IsStar(bodyClass))
+        if (IsStar(request.BodyClass))
         {
-            var starBaseValue = GetStarBaseValue(bodyClass);
-            return (int)Math.Round(
-                starBaseValue + (mass * starBaseValue / 66.25));
+            return CalculateStarValue(request.BodyClass, request.Mass);
         }
 
-        var bodyBaseValue = GetPlanetBaseValue(bodyClass, isTerraformable);
-        var mappingMultiplier = isMapped
-            ? isFirstDiscoverer && isFirstMapped
-                ? 3.699622554
-                : isFirstMapped
-                    ? 8.0956
-                    : 3.3333333333
-            : 1;
-        var value = (bodyBaseValue
-            + bodyBaseValue * PlanetValueExponent * Math.Pow(mass, 0.2))
-            * mappingMultiplier;
-
-        if (isMapped)
-        {
-            if (isOdyssey)
-            {
-                value += Math.Max(value * 0.3, 555);
-            }
-
-            if (withEfficiencyBonus)
-            {
-                value *= 1.25;
-            }
-        }
-
+        var value = CalculatePlanetBaseValue(request);
+        value = ApplyMappedBonuses(value, request);
         value = Math.Max(500, value);
-        value *= isFirstDiscoverer ? 2.6 : 1;
-        value *= isFleetCarrierSale ? 0.75 : 1;
+        value *= request.IsFirstDiscoverer ? 2.6 : 1;
+        value *= request.IsFleetCarrierSale ? 0.75 : 1;
         return (int)Math.Round(value);
+    }
+
+    private static int CalculateStarValue(string bodyClass, double mass)
+    {
+        var starBaseValue = GetStarBaseValue(bodyClass);
+        return (int)Math.Round(
+            starBaseValue + (mass * starBaseValue / 66.25));
+    }
+
+    private static double CalculatePlanetBaseValue(ExplorationValueRequest request)
+    {
+        var bodyBaseValue = GetPlanetBaseValue(
+            request.BodyClass!,
+            request.IsTerraformable);
+        return (bodyBaseValue
+            + bodyBaseValue * PlanetValueExponent * Math.Pow(request.Mass, 0.2))
+            * GetMappingMultiplier(request);
+    }
+
+    private static double GetMappingMultiplier(ExplorationValueRequest request)
+    {
+        if (!request.IsMapped)
+        {
+            return 1;
+        }
+
+        if (request.IsFirstDiscoverer && request.IsFirstMapped)
+        {
+            return 3.699622554;
+        }
+
+        return request.IsFirstMapped ? 8.0956 : 3.3333333333;
+    }
+
+    private static double ApplyMappedBonuses(
+        double value,
+        ExplorationValueRequest request)
+    {
+        if (!request.IsMapped)
+        {
+            return value;
+        }
+
+        if (request.IsOdyssey)
+        {
+            value += Math.Max(value * 0.3, 555);
+        }
+
+        if (request.WithEfficiencyBonus)
+        {
+            value *= 1.25;
+        }
+
+        return value;
     }
 
     public static double GetStarBaseValue(string starClass)

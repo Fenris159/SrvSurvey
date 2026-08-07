@@ -69,6 +69,22 @@ public static class OverlayThemeResources
         ApplyThemeResources(window);
     }
 
+    public static void Apply(
+        Window window,
+        LegacyOverlayLayout layout,
+        string plotterName)
+    {
+        ArgumentNullException.ThrowIfNull(layout);
+        _ = OverlayLayoutCatalog.GetRequired(plotterName);
+        Apply(window);
+        ApplyLegacyFormFactor(window, plotterName);
+        ApplyLegacyPresentation(window, plotterName);
+        ApplyScale(window, layout, plotterName);
+        ApplyOpacity(window, layout, plotterName);
+        OverlayWindowRegistry.Shared.Register(window, plotterName);
+        RegisterLayoutSettings(window, layout, plotterName);
+    }
+
     public static void RefreshAll()
     {
         Window[] windows;
@@ -179,22 +195,6 @@ public static class OverlayThemeResources
 
             ThemeWindows.Add(new WeakReference<Window>(window));
         }
-    }
-
-    public static void Apply(
-        Window window,
-        LegacyOverlayLayout layout,
-        string plotterName)
-    {
-        ArgumentNullException.ThrowIfNull(layout);
-        _ = OverlayLayoutCatalog.GetRequired(plotterName);
-        Apply(window);
-        ApplyLegacyFormFactor(window, plotterName);
-        ApplyLegacyPresentation(window, plotterName);
-        ApplyScale(window, layout, plotterName);
-        ApplyOpacity(window, layout, plotterName);
-        OverlayWindowRegistry.Shared.Register(window, plotterName);
-        RegisterLayoutSettings(window, layout, plotterName);
     }
 
     private static void RegisterLayoutSettings(

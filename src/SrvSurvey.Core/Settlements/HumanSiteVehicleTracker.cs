@@ -63,7 +63,7 @@ public sealed class HumanSiteVehicleTracker
             ? SurfaceNavigation.NormalizeDegrees(value)
             : ShipHeading;
         if (ShipLocation == location
-            && ShipHeading == normalizedHeading
+            && EquivalentHeading(ShipHeading, normalizedHeading)
             && !HasShipDeparted)
         {
             return false;
@@ -196,5 +196,16 @@ public sealed class HumanSiteVehicleTracker
             && double.IsFinite(number)
                 ? number
                 : null;
+    }
+
+    private static bool EquivalentHeading(double? left, double? right)
+    {
+        if (left.HasValue != right.HasValue)
+        {
+            return false;
+        }
+
+        return !left.HasValue
+            || Math.Abs(left.Value - right!.Value) <= 0.0001d;
     }
 }

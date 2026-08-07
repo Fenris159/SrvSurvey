@@ -176,7 +176,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
         }
 
         var files = EnumerateFilesWithoutLinks(root);
-        if (files.Count > MaximumInstallationFileCount)
+        if (files.Length > MaximumInstallationFileCount)
         {
             throw new InvalidDataException(
                 "The installation contains too many files to update safely.");
@@ -212,7 +212,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
             fingerprint.AppendData(fileHash);
         }
 
-        AppendInt32(fingerprint, files.Count);
+        AppendInt32(fingerprint, files.Length);
         return Convert.ToHexString(fingerprint.GetHashAndReset()).ToLowerInvariant();
     }
 
@@ -250,7 +250,7 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
         }
     }
 
-    private static IReadOnlyList<FingerprintFile> EnumerateFilesWithoutLinks(
+    private static FingerprintFile[] EnumerateFilesWithoutLinks(
         string root)
     {
         var rootInfo = new DirectoryInfo(root);
@@ -377,11 +377,10 @@ public sealed class ReleaseInstallationPreparer : IReleaseInstallationPreparer
                 Directory.Delete(path, recursive: true);
             }
         }
-        catch (IOException)
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException)
         {
-        }
-        catch (UnauthorizedAccessException)
-        {
+            // Cleanup is best effort; retained files support recovery diagnostics.
         }
     }
 

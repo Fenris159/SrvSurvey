@@ -10,6 +10,10 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
     private readonly QuestDevelopmentFolderLoader developmentFolderLoader;
     private readonly Action<string>? log;
     private readonly QuestCommanderContextTracker contextTracker = new();
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Usage",
+        "CA2213:Disposable fields should be disposed",
+        Justification = "The gate keeps DisposeAsync idempotent and may be released by in-flight work.")]
     private readonly SemaphoreSlim coordinatorLock = new(1, 1);
     private readonly Dictionary<QuestIdentity, RuntimeRegistration> runtimes = [];
     private QuestRuntimeConfiguration? configuration;
@@ -77,8 +81,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         string journalDirectory,
         IReadOnlyList<JournalEventEnvelope> journalEvents,
         bool isBootstrap,
-        CancellationToken cancellationToken = default,
-        bool allowCargoFile = true)
+        bool allowCargoFile = true,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(nextConfiguration);
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
@@ -139,8 +143,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
                     var resolved = await QuestJournalPayloadResolver.ResolveAsync(
                             journalDirectory,
                             journalEvent,
-                            cancellationToken,
-                            allowCargoFile)
+                            allowCargoFile,
+                            cancellationToken)
                         .ConfigureAwait(false);
                     AddWarning(warnings, resolved.Warning);
                     await ProcessEventAsync(
@@ -211,8 +215,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
     public async Task<QuestRuntimeUpdateResult> ReplayEventAsync(
         string journalDirectory,
         JournalEventEnvelope journalEvent,
-        CancellationToken cancellationToken = default,
-        bool allowCargoFile = true)
+        bool allowCargoFile = true,
+        CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(journalDirectory);
         ArgumentNullException.ThrowIfNull(journalEvent);
@@ -233,8 +237,8 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             var resolved = await QuestJournalPayloadResolver.ResolveAsync(
                     journalDirectory,
                     journalEvent,
-                    cancellationToken,
-                    allowCargoFile)
+                    allowCargoFile,
+                    cancellationToken)
                 .ConfigureAwait(false);
             AddWarning(warnings, resolved.Warning);
             await ProcessEventAsync(
@@ -926,36 +930,6 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
             .ConfigureAwait(false);
     }
 
-    private async Task<TResult> InvokeDevelopmentRuntimeAsync<TResult>(
-        RavenQuestReference reference,
-        Func<QuestScriptRuntime, CancellationToken, Task<TResult>> action,
-        CancellationToken cancellationToken)
-    {
-        return await InvokeRuntimeAsync(
-                reference,
-                action,
-                developmentOnly: true,
-                cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    private async Task InvokeDevelopmentRuntimeAsync(
-        RavenQuestReference reference,
-        Func<QuestScriptRuntime, CancellationToken, Task> action,
-        CancellationToken cancellationToken)
-    {
-        await InvokeRuntimeAsync<object?>(
-                reference,
-                async (runtime, token) =>
-                {
-                    await action(runtime, token).ConfigureAwait(false);
-                    return null;
-                },
-                developmentOnly: true,
-                cancellationToken)
-            .ConfigureAwait(false);
-    }
-
     private async Task<TResult> InvokeRuntimeAsync<TResult>(
         RavenQuestReference reference,
         Func<QuestScriptRuntime, CancellationToken, Task<TResult>> action,
@@ -997,6 +971,36 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
 
         Changed?.Invoke(this, EventArgs.Empty);
         return result;
+    }
+
+    private async Task<TResult> InvokeDevelopmentRuntimeAsync<TResult>(
+        RavenQuestReference reference,
+        Func<QuestScriptRuntime, CancellationToken, Task<TResult>> action,
+        CancellationToken cancellationToken)
+    {
+        return await InvokeRuntimeAsync(
+                reference,
+                action,
+                developmentOnly: true,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task InvokeDevelopmentRuntimeAsync(
+        RavenQuestReference reference,
+        Func<QuestScriptRuntime, CancellationToken, Task> action,
+        CancellationToken cancellationToken)
+    {
+        await InvokeRuntimeAsync<object?>(
+                reference,
+                async (runtime, token) =>
+                {
+                    await action(runtime, token).ConfigureAwait(false);
+                    return null;
+                },
+                developmentOnly: true,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task RemoveOrPauseQuestAsync(
@@ -1071,7 +1075,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    private Task SaveDevelopmentAsync(
+    private Task<LegacyQuestStateSaveResult> SaveDevelopmentAsync(
         QuestRuntimeConfiguration current,
         RavenCommanderQuest progress,
         CancellationToken cancellationToken)
@@ -1116,7 +1120,7 @@ public sealed class QuestRuntimeCoordinator : IAsyncDisposable
         }
     }
 
-    private IReadOnlyList<QuestRuntimeSnapshot> CreateSnapshot()
+    private QuestRuntimeSnapshot[] CreateSnapshot()
     {
         return runtimes.Values
             .Select(registration =>

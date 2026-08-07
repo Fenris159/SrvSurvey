@@ -560,7 +560,8 @@ public sealed class ColonizationProjectEditorViewModel
             return false;
         }
 
-        var build = buildCatalog.FindByLayout(site.BuildType).FirstOrDefault();
+        var matchingBuilds = buildCatalog.FindByLayout(site.BuildType);
+        var build = matchingBuilds.Count > 0 ? matchingBuilds[0] : null;
         if (build is null)
         {
             StatusMessage = $"The planned site layout '{site.BuildType}' is not in the local build catalog.";
@@ -610,7 +611,7 @@ public sealed class ColonizationProjectEditorViewModel
         BuildOptions = buildCatalog.ForLocation(SelectedLocation)
             .Select(build => new ColonizationBuildOptionViewModel(build))
             .ToArray();
-        selectedBuild = BuildOptions.FirstOrDefault();
+        selectedBuild = BuildOptions.Count > 0 ? BuildOptions[0] : null;
         OnPropertyChanged(nameof(SelectedBuild));
         UpdateLayouts();
     }
@@ -618,7 +619,7 @@ public sealed class ColonizationProjectEditorViewModel
     private void UpdateLayouts()
     {
         Layouts = SelectedBuild?.Build.Layouts ?? [];
-        selectedLayout = Layouts.FirstOrDefault();
+        selectedLayout = Layouts.Count > 0 ? Layouts[0] : null;
         OnPropertyChanged(nameof(SelectedLayout));
     }
 

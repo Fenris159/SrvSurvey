@@ -27,42 +27,9 @@ internal static partial class DesktopApplicationActivator
             + (long)ActivationTimeout.TotalMilliseconds;
         do
         {
-            foreach (var process in Process.GetProcessesByName(current.ProcessName))
+            if (TryActivateMatchingProcess(current, executablePath))
             {
-                using (process)
-                {
-                    try
-                    {
-                        if (process.Id == current.Id
-                            || process.SessionId != current.SessionId
-                            || !string.Equals(
-                                process.MainModule?.FileName,
-                                executablePath,
-                                StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-
-                        process.Refresh();
-                        var handle = process.MainWindowHandle;
-                        if (handle == nint.Zero)
-                        {
-                            continue;
-                        }
-
-                        _ = ShowWindow(handle, RestoreWindow);
-                        _ = SetForegroundWindow(handle);
-                        return true;
-                    }
-                    catch (Exception exception) when (
-                        exception is InvalidOperationException
-                            or NotSupportedException
-                            or Win32Exception)
-                    {
-                        // The original instance can exit while the callback
-                        // process is inspecting or activating its window.
-                    }
-                }
+                return true;
             }
 
             if (Environment.TickCount64 < deadline)
@@ -73,6 +40,63 @@ internal static partial class DesktopApplicationActivator
         while (Environment.TickCount64 < deadline);
 
         return false;
+    }
+
+    private static bool TryActivateMatchingProcess(
+        Process current,
+        string executablePath)
+    {
+        foreach (var process in Process.GetProcessesByName(current.ProcessName))
+        {
+            using (process)
+            {
+                if (TryActivateProcessWindow(current, process, executablePath))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryActivateProcessWindow(
+        Process current,
+        Process process,
+        string executablePath)
+    {
+        try
+        {
+            if (process.Id == current.Id
+                || process.SessionId != current.SessionId
+                || !string.Equals(
+                    process.MainModule?.FileName,
+                    executablePath,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            process.Refresh();
+            var handle = process.MainWindowHandle;
+            if (handle == nint.Zero)
+            {
+                return false;
+            }
+
+            _ = ShowWindow(handle, RestoreWindow);
+            _ = SetForegroundWindow(handle);
+            return true;
+        }
+        catch (Exception exception) when (
+            exception is InvalidOperationException
+                or NotSupportedException
+                or Win32Exception)
+        {
+            // The original instance can exit while the callback
+            // process is inspecting or activating its window.
+            return false;
+        }
     }
 
     [LibraryImport("user32.dll")]

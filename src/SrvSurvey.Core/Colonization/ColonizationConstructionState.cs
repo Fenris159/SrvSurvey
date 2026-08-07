@@ -250,7 +250,7 @@ public sealed class ColonizationConstructionState
 
     private bool ApplyMusic(JsonElement root)
     {
-        var updated = GetString(root, "MusicTrack");
+        var updated = GetString(root, nameof(MusicTrack));
         var changed = !string.Equals(
             updated,
             musicTrack,
@@ -261,7 +261,7 @@ public sealed class ColonizationConstructionState
             : changed;
     }
 
-    private static IReadOnlyList<ColonizationResourceRequirement>
+    private static List<ColonizationResourceRequirement>
         ReadResources(JsonElement root)
     {
         if (!root.TryGetProperty("ResourcesRequired", out var resources)
@@ -328,7 +328,8 @@ public sealed class ColonizationConstructionState
         return right is not null
             && left.Timestamp == right.Timestamp
             && left.MarketId == right.MarketId
-            && left.ReportedProgress.Equals(right.ReportedProgress)
+            && Math.Abs(left.ReportedProgress - right.ReportedProgress)
+                <= 0.0000001d
             && left.IsComplete == right.IsComplete
             && left.IsFailed == right.IsFailed
             && left.Resources.SequenceEqual(right.Resources);
@@ -347,7 +348,7 @@ public sealed class ColonizationConstructionState
                 && value == pair.Value);
     }
 
-    private static IReadOnlyDictionary<string, int> ReadContributions(
+    private static Dictionary<string, int> ReadContributions(
         JsonElement root)
     {
         if (!root.TryGetProperty("Contributions", out var contributions)
@@ -373,7 +374,7 @@ public sealed class ColonizationConstructionState
         return result;
     }
 
-    private static IReadOnlyList<string> GetStrings(
+    private static string[] GetStrings(
         JsonElement root,
         string propertyName)
     {

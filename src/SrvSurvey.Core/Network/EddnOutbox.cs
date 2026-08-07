@@ -28,6 +28,10 @@ namespace SrvSurvey.Core.Network
         private readonly bool automaticProcessing;
         private readonly object sync = new();
         private readonly object sharedConsentSync = new();
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Usage",
+            "CA2213:Disposable fields should be disposed",
+            Justification = "The durable queue worker may release this gate after Dispose returns.")]
         private readonly SemaphoreSlim processing = new(1, 1);
         private readonly System.Threading.Timer timer;
         private readonly CancellationTokenSource shutdown = new();
@@ -280,138 +284,219 @@ namespace SrvSurvey.Core.Network
             if (!await processing.WaitAsync(0, cancellationToken).ConfigureAwait(false)) return;
             try
             {
-                while (true)
+                while (await ProcessNextDueAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    if (isSharedConsentDisabled())
-                    {
-                        applyEnabledState(
-                            false,
-                            discardPendingWhenDisabled: true);
-                        return;
-                    }
-
-                    EddnQueuedMessage? next;
-                    CancellationToken activityToken;
-                    lock (sync)
-                    {
-                        if (!enabled
-                            || suspended
-                            || disposed
-                            || ownershipLease is null)
-                        {
-                            return;
-                        }
-
-                        var now = utcNow();
-                        next = pending.FirstOrDefault();
-                        if (next == null)
-                        {
-                            scheduleNextLocked(now);
-                            return;
-                        }
-
-                        if (next.nextAttempt > now)
-                        {
-                            schedule(next.nextAttempt - now);
-                            return;
-                        }
-
-                        activityToken = activityCancellation.Token;
-                    }
-
-                    EddnUploadResult? result = null;
-                    Exception? failure = null;
-                    try
-                    {
-                        using var combined = CancellationTokenSource.CreateLinkedTokenSource(
-                            shutdown.Token,
-                            activityToken,
-                            cancellationToken);
-                        result = await transport.upload(next, combined.Token).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException) when (
-                        cancellationToken.IsCancellationRequested)
-                    {
-                        throw;
-                    }
-                    catch (Exception ex) when (ex is HttpRequestException or IOException or OperationCanceledException)
-                    {
-                        failure = ex;
-                    }
-
-                    var retry = failure != null || result?.isRetryable == true;
-                    string? persistenceLog = null;
-                    string? resultLog = null;
-                    var stopAfterResult = false;
-                    lock (sync)
-                    {
-                        if (!enabled || suspended || disposed)
-                        {
-                            return;
-                        }
-
-                        if (!pending.Any(item => item.id == next.id)) continue;
-                        if (retry)
-                        {
-                            next.attempts++;
-                            var retryAt = utcNow() + getRetryDelay(next.attempts);
-                            next.nextAttempt = retryAt;
-                            save(out persistenceLog);
-                            var detail = failure?.Message
-                                ?? result?.responseDetail
-                                ?? result?.reasonPhrase
-                                ?? "request failed";
-                            resultLog = $"EDDN upload for {eventName(next)} will retry after {retryAt:u}: {singleLine(detail)}";
-                            scheduleNextLocked(utcNow());
-                            stopAfterResult = true;
-                        }
-                        else
-                        {
-                            pending.RemoveAll(item => item.id == next.id);
-                            if (pending.Count == 0)
-                                persistenceLog = deleteStore();
-                            else
-                                save(out persistenceLog);
-
-                            if (result?.isSuccess == true)
-                            {
-                                var schemaMode = next.useTestSchemas
-                                    ? "test"
-                                    : "live";
-                                resultLog =
-                                    $"EDDN uploaded {eventName(next)} using {schemaMode} schemas.";
-                            }
-                            else
-                            {
-                                var detail = result?.skipReason
-                                    ?? result?.responseDetail
-                                    ?? result?.reasonPhrase
-                                    ?? "request was rejected";
-                                resultLog = $"EDDN dropped {eventName(next)} without retry: {singleLine(detail)}";
-                            }
-                        }
-                    }
-
-                    // Logging can ultimately marshal to the UI. Never invoke it while
-                    // holding the queue lock or Settings can deadlock against this worker.
-                    writeLog(persistenceLog);
-                    writeLog(resultLog);
-                    if (stopAfterResult) return;
-
                     await Task.Delay(sendSpacing, cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
             {
-                bool shouldReleaseOwnership;
-                lock (sync)
+                ReleaseProcessingGate();
+            }
+        }
+
+        private async Task<bool> ProcessNextDueAsync(CancellationToken cancellationToken)
+        {
+            if (isSharedConsentDisabled())
+            {
+                applyEnabledState(false, discardPendingWhenDisabled: true);
+                return false;
+            }
+
+            if (!TryDequeueReadyMessage(
+                    cancellationToken,
+                    out var next,
+                    out var combinedCancellation))
+            {
+                return false;
+            }
+
+            var (result, failure) = await UploadOnceAsync(
+                    next!,
+                    combinedCancellation!,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            return ApplyUploadOutcome(
+                next!,
+                result,
+                failure,
+                failure != null || result?.isRetryable == true);
+        }
+
+        private bool TryDequeueReadyMessage(
+            CancellationToken cancellationToken,
+            out EddnQueuedMessage? next,
+            out CancellationTokenSource? combinedCancellation)
+        {
+            next = null;
+            combinedCancellation = null;
+            lock (sync)
+            {
+                if (!enabled
+                    || suspended
+                    || disposed
+                    || ownershipLease is null)
                 {
-                    shouldReleaseOwnership = disposed || !enabled;
+                    return false;
                 }
 
-                if (shouldReleaseOwnership) releaseOwnership();
-                processing.Release();
+                var now = utcNow();
+                next = pending.FirstOrDefault();
+                if (next == null)
+                {
+                    scheduleNextLocked(now);
+                    return false;
+                }
+
+                if (next.nextAttempt > now)
+                {
+                    schedule(next.nextAttempt - now);
+                    return false;
+                }
+
+                // Create the linked source while holding the same lock used
+                // by Dispose. Once the worker leaves this block, shutdown can
+                // dispose its source without racing a late token registration.
+                combinedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                    shutdown.Token,
+                    activityCancellation.Token,
+                    cancellationToken);
+                return true;
             }
+        }
+
+        private async Task<(EddnUploadResult? Result, Exception? Failure)> UploadOnceAsync(
+            EddnQueuedMessage next,
+            CancellationTokenSource combinedCancellation,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                using (combinedCancellation)
+                {
+                    var result = await transport.upload(
+                            next,
+                            combinedCancellation.Token)
+                        .ConfigureAwait(false);
+                    return (result, null);
+                }
+            }
+            catch (OperationCanceledException) when (
+                cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex) when (
+                ex is HttpRequestException or IOException or OperationCanceledException)
+            {
+                return (null, ex);
+            }
+        }
+
+        private bool ApplyUploadOutcome(
+            EddnQueuedMessage next,
+            EddnUploadResult? result,
+            Exception? failure,
+            bool retry)
+        {
+            string? persistenceLog = null;
+            string? resultLog = null;
+            var continueProcessing = true;
+            lock (sync)
+            {
+                if (!enabled || suspended || disposed)
+                {
+                    return false;
+                }
+
+                if (!pending.Any(item => item.id == next.id))
+                {
+                    return true;
+                }
+
+                if (retry)
+                {
+                    (persistenceLog, resultLog) = ScheduleRetryLocked(next, result, failure);
+                    continueProcessing = false;
+                }
+                else
+                {
+                    (persistenceLog, resultLog) = CompleteUploadLocked(next, result);
+                }
+            }
+
+            // Logging can ultimately marshal to the UI. Never invoke it while
+            // holding the queue lock or Settings can deadlock against this worker.
+            writeLog(persistenceLog);
+            writeLog(resultLog);
+            return continueProcessing;
+        }
+
+        private (string? PersistenceLog, string ResultLog) ScheduleRetryLocked(
+            EddnQueuedMessage next,
+            EddnUploadResult? result,
+            Exception? failure)
+        {
+            next.attempts++;
+            var retryAt = utcNow() + getRetryDelay(next.attempts);
+            next.nextAttempt = retryAt;
+            save(out var persistenceLog);
+            var detail = failure?.Message
+                ?? result?.responseDetail
+                ?? result?.reasonPhrase
+                ?? "request failed";
+            var resultLog =
+                $"EDDN upload for {eventName(next)} will retry after {retryAt:u}: {singleLine(detail)}";
+            scheduleNextLocked(utcNow());
+            return (persistenceLog, resultLog);
+        }
+
+        private (string? PersistenceLog, string ResultLog) CompleteUploadLocked(
+            EddnQueuedMessage next,
+            EddnUploadResult? result)
+        {
+            pending.RemoveAll(item => item.id == next.id);
+            string? persistenceLog;
+            if (pending.Count == 0)
+            {
+                persistenceLog = deleteStore();
+            }
+            else
+            {
+                save(out persistenceLog);
+            }
+
+            if (result?.isSuccess == true)
+            {
+                var schemaMode = next.useTestSchemas ? "test" : "live";
+                return (
+                    persistenceLog,
+                    $"EDDN uploaded {eventName(next)} using {schemaMode} schemas.");
+            }
+
+            var detail = result?.skipReason
+                ?? result?.responseDetail
+                ?? result?.reasonPhrase
+                ?? "request was rejected";
+            return (
+                persistenceLog,
+                $"EDDN dropped {eventName(next)} without retry: {singleLine(detail)}");
+        }
+
+        private void ReleaseProcessingGate()
+        {
+            bool shouldReleaseOwnership;
+            lock (sync)
+            {
+                shouldReleaseOwnership = disposed || !enabled;
+            }
+
+            if (shouldReleaseOwnership)
+            {
+                releaseOwnership();
+            }
+
+            processing.Release();
         }
 
         internal void clear()
@@ -428,7 +513,8 @@ namespace SrvSurvey.Core.Network
 
         public void Dispose()
         {
-            CancellationTokenSource? cancellation;
+            CancellationTokenSource cancellation;
+            CancellationTokenSource idleCancellation;
             lock (sync)
             {
                 if (disposed) return;
@@ -436,6 +522,7 @@ namespace SrvSurvey.Core.Network
                 enabled = false;
                 suspended = true;
                 cancellation = replaceActivityCancellationLocked();
+                idleCancellation = activityCancellation;
             }
             cancellation.Cancel();
             shutdown.Cancel();
@@ -447,7 +534,11 @@ namespace SrvSurvey.Core.Network
                 releaseSharedDisableLease();
             }
 
-            if (processing.Wait(0))
+            cancellation.Dispose();
+            idleCancellation.Dispose();
+            shutdown.Dispose();
+
+            if (processing.Wait(0, CancellationToken.None))
             {
                 try
                 {
@@ -467,7 +558,7 @@ namespace SrvSurvey.Core.Network
         private void triggerProcessing()
         {
             if (disposed) return;
-            processDue().ContinueWith(
+            processDue(shutdown.Token).ContinueWith(
                 task => writeLog($"EDDN queue processing failed: {singleLine(task.Exception?.GetBaseException().Message)}"),
                 CancellationToken.None,
                 TaskContinuationOptions.OnlyOnFaulted,
@@ -482,7 +573,7 @@ namespace SrvSurvey.Core.Network
             {
                 timer.Change(delay, Timeout.InfiniteTimeSpan);
             }
-            catch (ObjectDisposedException) when (disposed)
+            catch (ObjectDisposedException)
             {
                 // Dispose won the race after the check above.
             }
@@ -633,9 +724,9 @@ namespace SrvSurvey.Core.Network
             if (!string.IsNullOrWhiteSpace(message)) messages.Add(message);
         }
 
-        private bool tryAcquireOwnershipLocked(List<string> messages)
+        private void tryAcquireOwnershipLocked(List<string> messages)
         {
-            if (ownershipLease is not null) return true;
+            if (ownershipLease is not null) return;
             try
             {
                 var folder = Path.GetDirectoryName(ownershipPath);
@@ -653,7 +744,7 @@ namespace SrvSurvey.Core.Network
                     ownershipWarningReported = false;
                 }
 
-                return true;
+                return;
             }
             catch (Exception exception) when (
                 exception is IOException or UnauthorizedAccessException)
@@ -665,7 +756,7 @@ namespace SrvSurvey.Core.Network
                     ownershipWarningReported = true;
                 }
 
-                return false;
+                return;
             }
         }
 
@@ -893,7 +984,7 @@ namespace SrvSurvey.Core.Network
 
         private void releaseOwnershipIfIdle()
         {
-            if (!processing.Wait(0)) return;
+            if (!processing.Wait(0, CancellationToken.None)) return;
             try
             {
                 releaseOwnership();

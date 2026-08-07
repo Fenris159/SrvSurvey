@@ -8,34 +8,38 @@ namespace SrvSurvey.Desktop.ViewModels;
 
 public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
 {
+    private const string CategoryGeneral = "General";
+    private const string CategoryExobiology = "Exobiology";
+    private const string CategoryColonisation = "Colonisation";
+
     private static readonly IReadOnlyList<OverlayThemeColorDefinition> Definitions =
     [
-        new("General", "orange", "Primary accent"),
-        new("General", "orangeDark", "Primary accent (dim)"),
-        new("General", "cyan", "Secondary accent"),
-        new("General", "cyanDark", "Secondary accent (dim)"),
-        new("General", "red", "Danger"),
-        new("General", "redDark", "Danger (dim)"),
-        new("General", "yellow", "Warning"),
-        new("General", "green", "Success"),
-        new("General", "greenDark", "Success (dim)"),
-        new("General", "white", "Primary text"),
-        new("General", "black", "Background"),
-        new("General", "menuGold", "Menu gold"),
-        new("General", "grey", "Muted text"),
-        new("Exobiology", "bio.gold", "Candidate highlight"),
-        new("Exobiology", "bio.goldDark", "Candidate highlight (dim)"),
-        new("Exobiology", "bio.unknown", "Unknown species"),
-        new("Exobiology", "bio.hatch", "Hatch fill"),
-        new("Exobiology", "bio.white", "Biology text"),
-        new("Exobiology", "bio.prediction", "Prediction"),
-        new("Colonisation", "colonise.surplus", "Surplus"),
-        new("Colonisation", "colonise.surplusDark", "Surplus (dim)"),
-        new("Colonisation", "colonise.deficit", "Deficit"),
-        new("Colonisation", "colonise.deficitDark", "Deficit (dim)"),
-        new("Colonisation", "colonise.highlight", "Highlight"),
-        new("Colonisation", "colonise.item", "Item"),
-        new("Colonisation", "colonise.itemDark", "Item (dim)"),
+        new(CategoryGeneral, "orange", "Primary accent"),
+        new(CategoryGeneral, "orangeDark", "Primary accent (dim)"),
+        new(CategoryGeneral, "cyan", "Secondary accent"),
+        new(CategoryGeneral, "cyanDark", "Secondary accent (dim)"),
+        new(CategoryGeneral, "red", "Danger"),
+        new(CategoryGeneral, "redDark", "Danger (dim)"),
+        new(CategoryGeneral, "yellow", "Warning"),
+        new(CategoryGeneral, "green", "Success"),
+        new(CategoryGeneral, "greenDark", "Success (dim)"),
+        new(CategoryGeneral, "white", "Primary text"),
+        new(CategoryGeneral, "black", "Background"),
+        new(CategoryGeneral, "menuGold", "Menu gold"),
+        new(CategoryGeneral, "grey", "Muted text"),
+        new(CategoryExobiology, "bio.gold", "Candidate highlight"),
+        new(CategoryExobiology, "bio.goldDark", "Candidate highlight (dim)"),
+        new(CategoryExobiology, "bio.unknown", "Unknown species"),
+        new(CategoryExobiology, "bio.hatch", "Hatch fill"),
+        new(CategoryExobiology, "bio.white", "Biology text"),
+        new(CategoryExobiology, "bio.prediction", "Prediction"),
+        new(CategoryColonisation, "colonise.surplus", "Surplus"),
+        new(CategoryColonisation, "colonise.surplusDark", "Surplus (dim)"),
+        new(CategoryColonisation, "colonise.deficit", "Deficit"),
+        new(CategoryColonisation, "colonise.deficitDark", "Deficit (dim)"),
+        new(CategoryColonisation, "colonise.highlight", "Highlight"),
+        new(CategoryColonisation, "colonise.item", "Item"),
+        new(CategoryColonisation, "colonise.itemDark", "Item (dim)"),
         new("Guardian sites", "fcz.checkpoint", "Checkpoint"),
         new("Guardian sites", "fcz.checkpointLocal", "Local checkpoint"),
         new("Guardian sites", "fcz.powerPost", "Power post"),
@@ -396,9 +400,12 @@ public sealed class OverlayThemeSettingsViewModel : INotifyPropertyChanged
     {
         var collection = stateStore.Load();
         SavedStates = collection.States.Select(state => state.Name).ToArray();
+        var firstSavedState = SavedStates.Count > 0
+            ? SavedStates[0]
+            : null;
         SelectedSavedState = select is not null && SavedStates.Contains(select)
             ? select
-            : SavedStates.FirstOrDefault();
+            : firstSavedState;
         if (collection.Error is not null)
         {
             StatusMessage = collection.Error;

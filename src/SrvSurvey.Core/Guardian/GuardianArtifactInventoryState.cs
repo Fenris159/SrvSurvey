@@ -5,8 +5,10 @@ namespace SrvSurvey.Core.Guardian;
 
 public sealed class GuardianArtifactInventoryState
 {
-    private static readonly IReadOnlyDictionary<string, ArtifactDefinition>
-        Definitions = BuildDefinitions();
+    private const string CountPropertyName = "Count";
+
+    private static readonly Dictionary<string, ArtifactDefinition> Definitions =
+        BuildDefinitions();
     private readonly Dictionary<string, int> counts = new(
         StringComparer.OrdinalIgnoreCase);
 
@@ -55,13 +57,13 @@ public sealed class GuardianArtifactInventoryState
                 1),
             "EjectCargo" => ApplyDelta(
                 GetString(journalEvent.Payload, "Type"),
-                -Math.Max(0, GetInt32(journalEvent.Payload, "Count") ?? 0)),
+                -Math.Max(0, GetInt32(journalEvent.Payload, CountPropertyName) ?? 0)),
             "MarketBuy" => ApplyDelta(
                 GetString(journalEvent.Payload, "Type"),
-                Math.Max(0, GetInt32(journalEvent.Payload, "Count") ?? 0)),
+                Math.Max(0, GetInt32(journalEvent.Payload, CountPropertyName) ?? 0)),
             "MarketSell" => ApplyDelta(
                 GetString(journalEvent.Payload, "Type"),
-                -Math.Max(0, GetInt32(journalEvent.Payload, "Count") ?? 0)),
+                -Math.Max(0, GetInt32(journalEvent.Payload, CountPropertyName) ?? 0)),
             "CargoTransfer" => ApplyTransfers(
                 journalEvent.Payload,
                 isInSrv),
@@ -129,7 +131,7 @@ public sealed class GuardianArtifactInventoryState
         foreach (var item in inventory.EnumerateArray())
         {
             var name = GetString(item, "Name");
-            var count = GetInt32(item, "Count") ?? 0;
+            var count = GetInt32(item, CountPropertyName) ?? 0;
             if (TryResolve(name, out var definition) && count > 0)
             {
                 replacement[definition.CommodityName] = (int)Math.Min(
@@ -196,7 +198,7 @@ public sealed class GuardianArtifactInventoryState
         var changed = false;
         foreach (var transfer in transfers.EnumerateArray())
         {
-            var count = GetInt32(transfer, "Count") ?? 0;
+            var count = GetInt32(transfer, CountPropertyName) ?? 0;
             var direction = GetString(transfer, "Direction");
             if (count <= 0)
             {
@@ -248,7 +250,7 @@ public sealed class GuardianArtifactInventoryState
                 : null;
     }
 
-    private static IReadOnlyDictionary<string, ArtifactDefinition>
+    private static Dictionary<string, ArtifactDefinition>
         BuildDefinitions()
     {
         var definitions = new[]

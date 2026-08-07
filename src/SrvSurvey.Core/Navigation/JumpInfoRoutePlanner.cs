@@ -35,20 +35,40 @@ public sealed record JumpInfoRoutePlan(
     public double TotalDistanceLy => Legs.Sum(leg => leg.DistanceLy);
 }
 
+public sealed class JumpInfoRoutePlannerRequest
+{
+    public JumpTarget? FsdTarget { get; init; }
+
+    public EliteStatus? Status { get; init; }
+
+    public string? CurrentSystemName { get; init; }
+
+    public long? CurrentSystemAddress { get; init; }
+
+    public GalacticCoordinate? CurrentPosition { get; init; }
+
+    public NavRouteSnapshot? NavRoute { get; init; }
+
+    public FollowRouteDocument? FollowedRoute { get; init; }
+
+    public double? MaximumJumpRange { get; init; }
+}
+
 public static class JumpInfoRoutePlanner
 {
     private const string ScoopableStarClasses = "KGBFOAM";
 
-    public static JumpInfoRoutePlan? Create(
-        JumpTarget? fsdTarget,
-        EliteStatus? status,
-        string? currentSystemName,
-        long? currentSystemAddress,
-        GalacticCoordinate? currentPosition,
-        NavRouteSnapshot? navRoute,
-        FollowRouteDocument? followedRoute,
-        double? maximumJumpRange = null)
+    public static JumpInfoRoutePlan? Create(JumpInfoRoutePlannerRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        var fsdTarget = request.FsdTarget;
+        var status = request.Status;
+        var currentSystemName = request.CurrentSystemName;
+        var currentSystemAddress = request.CurrentSystemAddress;
+        var currentPosition = request.CurrentPosition;
+        var navRoute = request.NavRoute;
+        var followedRoute = request.FollowedRoute;
+        var maximumJumpRange = request.MaximumJumpRange;
         var target = SelectTarget(fsdTarget, status);
         if (target is null)
         {
@@ -59,11 +79,19 @@ public static class JumpInfoRoutePlanner
         var routePoints = navPoints.Count >= 3
             ? navPoints
             : CreateFollowedRoutePoints(followedRoute);
-        var source = navPoints.Count >= 3
-            ? JumpInfoRouteSource.NavRoute
-            : routePoints.Count > 0
-                ? JumpInfoRouteSource.FollowedRoute
-                : JumpInfoRouteSource.Direct;
+        JumpInfoRouteSource source;
+        if (navPoints.Count >= 3)
+        {
+            source = JumpInfoRouteSource.NavRoute;
+        }
+        else if (routePoints.Count > 0)
+        {
+            source = JumpInfoRouteSource.FollowedRoute;
+        }
+        else
+        {
+            source = JumpInfoRouteSource.Direct;
+        }
 
         var targetPoint = FindTarget(routePoints, target);
         if (targetPoint is not null && string.IsNullOrWhiteSpace(target.StarClass))

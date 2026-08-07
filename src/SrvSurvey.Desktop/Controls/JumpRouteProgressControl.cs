@@ -114,48 +114,118 @@ public sealed class JumpRouteProgressControl : Control
             new Point(right, y));
         context.DrawEllipse(behind, null, new Point(left, y), 3, 3);
 
+        var layout = new LegLayout(left, right, y, width, totalDistance);
+        var brushes = new LegBrushes(behind, ahead, target, boost);
         var x = left;
         for (var index = 0; index < legs.Count; index++)
         {
-            var leg = legs[index];
-            var nextX = index == legs.Count - 1
-                ? right
-                : x + width * (leg.DistanceLy / totalDistance);
-            var brush = index == TargetLegIndex
-                ? target
-                : index < TargetLegIndex
-                    ? behind
-                    : ahead;
-            if (leg.RequiresBoost)
-            {
-                context.DrawLine(
-                    new Pen(boost, index == TargetLegIndex ? 7 : 5),
-                    new Point(x, y),
-                    new Point(nextX, y));
-            }
-
-            context.DrawLine(
-                new Pen(brush, index == TargetLegIndex ? 4 : 2.5),
-                new Point(x, y),
-                new Point(nextX, y));
-            var radius = index == TargetLegIndex ? 5d : 3.5;
-            context.DrawEllipse(
-                brush,
-                null,
-                new Point(nextX, y),
-                radius,
-                radius);
-            if (leg.IsScoopable)
-            {
-                context.DrawEllipse(
-                    null,
-                    new Pen(target, 1.5),
-                    new Point(nextX, y - 9),
-                    4,
-                    2.5);
-            }
-
-            x = nextX;
+            x = DrawLeg(context, legs, index, x, layout, brushes);
         }
     }
+
+    private double DrawLeg(
+        DrawingContext context,
+        IReadOnlyList<JumpInfoRouteLeg> legs,
+        int index,
+        double x,
+        LegLayout layout,
+        LegBrushes brushes)
+    {
+        var leg = legs[index];
+        var nextX = index == legs.Count - 1
+            ? layout.Right
+            : x + layout.Width * (leg.DistanceLy / layout.TotalDistance);
+        var brush = ResolveLegBrush(index, brushes);
+        DrawLegSegments(new LegSegmentDraw
+        {
+            Context = context,
+            Leg = leg,
+            Index = index,
+            X = x,
+            NextX = nextX,
+            Layout = layout,
+            Brushes = brushes,
+            Brush = brush,
+        });
+        DrawLegMarker(context, leg, index, nextX, layout, brushes, brush);
+        return nextX;
+    }
+
+    private IBrush ResolveLegBrush(int index, LegBrushes brushes)
+    {
+        if (index == TargetLegIndex)
+        {
+            return brushes.Target;
+        }
+
+        return index < TargetLegIndex ? brushes.Behind : brushes.Ahead;
+    }
+
+    private sealed class LegSegmentDraw
+    {
+        public required DrawingContext Context { get; init; }
+        public required JumpInfoRouteLeg Leg { get; init; }
+        public int Index { get; init; }
+        public double X { get; init; }
+        public double NextX { get; init; }
+        public required LegLayout Layout { get; init; }
+        public required LegBrushes Brushes { get; init; }
+        public required IBrush Brush { get; init; }
+    }
+
+    private void DrawLegSegments(LegSegmentDraw draw)
+    {
+        if (draw.Leg.RequiresBoost)
+        {
+            draw.Context.DrawLine(
+                new Pen(draw.Brushes.Boost, draw.Index == TargetLegIndex ? 7 : 5),
+                new Point(draw.X, draw.Layout.Y),
+                new Point(draw.NextX, draw.Layout.Y));
+        }
+
+        draw.Context.DrawLine(
+            new Pen(draw.Brush, draw.Index == TargetLegIndex ? 4 : 2.5),
+            new Point(draw.X, draw.Layout.Y),
+            new Point(draw.NextX, draw.Layout.Y));
+    }
+
+    private void DrawLegMarker(
+        DrawingContext context,
+        JumpInfoRouteLeg leg,
+        int index,
+        double nextX,
+        LegLayout layout,
+        LegBrushes brushes,
+        IBrush brush)
+    {
+        var radius = index == TargetLegIndex ? 5d : 3.5;
+        context.DrawEllipse(
+            brush,
+            null,
+            new Point(nextX, layout.Y),
+            radius,
+            radius);
+        if (leg.IsScoopable)
+        {
+            context.DrawEllipse(
+                null,
+                new Pen(brushes.Target, 1.5),
+                new Point(nextX, layout.Y - 9),
+                4,
+                2.5);
+        }
+    }
+
+    private readonly record struct LegLayout(
+        double Left,
+        double Right,
+        double Y,
+        double Width,
+        double TotalDistance);
+
+    private readonly record struct LegBrushes(
+        IBrush Behind,
+        IBrush Ahead,
+        IBrush Target,
+        IBrush Boost);
 }

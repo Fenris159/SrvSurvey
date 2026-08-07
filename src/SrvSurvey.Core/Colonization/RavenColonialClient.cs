@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using SrvSurvey.Core.Network;
+
 namespace SrvSurvey.Core.Colonization;
 
 public interface IRavenColonialClient
@@ -111,6 +113,8 @@ public interface IRavenColonialClient
 
 public sealed class RavenColonialClient : IRavenColonialClient
 {
+    private const string RccKeyHeader = "rcc-key";
+
     private const int MaximumJsonResponseBytes = 8 * 1024 * 1024;
     private const int MaximumErrorDetailBytes = 2048;
 
@@ -184,7 +188,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         using var request = new HttpRequestMessage(
             HttpMethod.Get,
             CreateUri("api/cmdr/"));
-        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
         using var response = await httpClient.SendAsync(
             request,
             HttpCompletionOption.ResponseHeadersRead,
@@ -449,7 +453,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         {
             Content = JsonContent.Create(update, options: JsonOptions),
         };
-        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
         using var response = await httpClient.SendAsync(
             request,
             HttpCompletionOption.ResponseHeadersRead,
@@ -499,7 +503,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         {
             Content = JsonContent.Create(patch, options: JsonOptions),
         };
-        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
         using var response = await httpClient.SendAsync(
             request,
             HttpCompletionOption.ResponseHeadersRead,
@@ -580,7 +584,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         {
             Content = JsonContent.Create(carrier, options: JsonOptions),
         };
-        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
         using var response = await httpClient.SendAsync(
             request,
             HttpCompletionOption.ResponseHeadersRead,
@@ -645,7 +649,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         {
             Content = JsonContent.Create(ship, options: JsonOptions),
         };
-        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
         using var response = await httpClient.SendAsync(
             request,
             HttpCompletionOption.ResponseHeadersRead,
@@ -686,7 +690,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
         {
             Content = JsonContent.Create(normalizedCargo, options: JsonOptions),
         };
-        request.Headers.TryAddWithoutValidation("rcc-key", apiKey.Trim());
+        request.Headers.TryAddWithoutValidation(RccKeyHeader, apiKey.Trim());
         using var response = await httpClient.SendAsync(
             request,
             HttpCompletionOption.ResponseHeadersRead,
@@ -856,7 +860,10 @@ public sealed class RavenColonialClient : IRavenColonialClient
                     $"Raven Colonial returned more than {maximumBytes:N0} bytes.");
             }
 
-            destination.Write(buffer, 0, read);
+            await destination.WriteAsync(
+                    buffer.AsMemory(0, read),
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         return destination.ToArray();
@@ -877,9 +884,7 @@ public sealed class RavenColonialClient : IRavenColonialClient
                 nameof(uri));
         }
 
-        return uri.AbsoluteUri.EndsWith("/", StringComparison.Ordinal)
-            ? uri
-            : new Uri(uri.AbsoluteUri + "/");
+        return UriPath.EnsureTrailingSeparator(uri);
     }
 }
 

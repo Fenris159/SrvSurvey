@@ -2,6 +2,8 @@ namespace SrvSurvey.Desktop.Theming;
 
 public static class RavenThemeCatalog
 {
+    private const string White = "#FFFFFF";
+
     public const string DefaultThemeKey = "blue-dark";
 
     public static IReadOnlyList<RavenThemeDefinition> All { get; } =
@@ -10,14 +12,14 @@ public static class RavenThemeCatalog
             "blue-light",
             "Blue (light)",
             false,
-            "#FFFFFF",
-            "#FFFFFF",
-            "#FFFFFF",
+            White,
+            White,
+            White,
             "#EEEEEE",
             "#0078D4",
             "#106EBE",
             "#DEECF9",
-            "#FFFFFF",
+            White,
             "#323130",
             "#605E5C",
             "#E5E5E5"),
@@ -57,12 +59,12 @@ public static class RavenThemeCatalog
             false,
             "#F9FFF7",
             "#F3F8F1",
-            "#FFFFFF",
+            White,
             "#E6F2E1",
             "#3C8223",
             "#367520",
             "#D7EBD0",
-            "#FFFFFF",
+            White,
             "#163D08",
             "#4D6745",
             "#B7DAAA"),
@@ -78,7 +80,7 @@ public static class RavenThemeCatalog
             "#D5DD4C",
             "#3F4112",
             "#1E3533",
-            "#FFFFFF",
+            White,
             "#D0D0D0",
             "#83A377"),
     ];

@@ -328,9 +328,10 @@ public sealed class FrontierAccountServiceTests
                         : Json(HttpStatusCode.NoContent, string.Empty))),
                 store,
                 cache,
-                () => now,
-                (_, _) => Task.CompletedTask,
-                _ => Task.CompletedTask);
+                new FrontierAccountServiceOptions(
+                    UtcNow: () => now,
+                    OpenBrowser: (_, _) => Task.CompletedTask,
+                    RegisterProtocol: _ => Task.CompletedTask));
             service.SetActiveCommander("F123", "Fenris");
 
             var snapshot = await service.RefreshAsync();
@@ -470,9 +471,10 @@ public sealed class FrontierAccountServiceTests
                 frontierId => new FrontierProfileCacheStore(Path.Combine(
                     root,
                     frontierId + ".json")),
-                utcNow: () => now,
-                openBrowser: (_, _) => Task.CompletedTask,
-                registerProtocol: _ => Task.CompletedTask);
+                new FrontierAccountServiceOptions(
+                    UtcNow: () => now,
+                    OpenBrowser: (_, _) => Task.CompletedTask,
+                    RegisterProtocol: _ => Task.CompletedTask));
 
             service.SetActiveCommander("F123", "Fenris");
             var first = await service.RefreshAsync();
@@ -545,9 +547,10 @@ public sealed class FrontierAccountServiceTests
                 frontierId => new FrontierProfileCacheStore(Path.Combine(
                     root,
                     frontierId + ".json")),
-                utcNow: () => now,
-                openBrowser: (_, _) => Task.CompletedTask,
-                registerProtocol: _ => Task.CompletedTask);
+                new FrontierAccountServiceOptions(
+                    UtcNow: () => now,
+                    OpenBrowser: (_, _) => Task.CompletedTask,
+                    RegisterProtocol: _ => Task.CompletedTask));
             service.SetActiveCommander("F472567", "Fenris Nihilus");
 
             var snapshot = await service.RefreshAsync();
@@ -612,9 +615,10 @@ public sealed class FrontierAccountServiceTests
                 frontierId => new FrontierProfileCacheStore(Path.Combine(
                     root,
                     frontierId + ".json")),
-                utcNow: () => now,
-                openBrowser: (_, _) => Task.CompletedTask,
-                registerProtocol: _ => Task.CompletedTask);
+                new FrontierAccountServiceOptions(
+                    UtcNow: () => now,
+                    OpenBrowser: (_, _) => Task.CompletedTask,
+                    RegisterProtocol: _ => Task.CompletedTask));
             service.SetActiveCommander("F472567", "Fenris Nihilus");
 
             var linked = await service.GetLinkedCommandersAsync();
@@ -680,9 +684,10 @@ public sealed class FrontierAccountServiceTests
                 frontierId => new FrontierProfileCacheStore(Path.Combine(
                     root,
                     frontierId + ".json")),
-                utcNow: () => now,
-                openBrowser: (_, _) => Task.CompletedTask,
-                registerProtocol: _ => Task.CompletedTask);
+                new FrontierAccountServiceOptions(
+                    UtcNow: () => now,
+                    OpenBrowser: (_, _) => Task.CompletedTask,
+                    RegisterProtocol: _ => Task.CompletedTask));
             service.SetActiveCommander("F472567", null);
 
             var linked = await service.GetLinkedCommandersAsync();
@@ -731,9 +736,10 @@ public sealed class FrontierAccountServiceTests
                 frontierId => new FrontierProfileCacheStore(Path.Combine(
                     root,
                     frontierId + ".json")),
-                utcNow: () => now,
-                openBrowser: (_, _) => Task.CompletedTask,
-                registerProtocol: _ => Task.CompletedTask);
+                new FrontierAccountServiceOptions(
+                    UtcNow: () => now,
+                    OpenBrowser: (_, _) => Task.CompletedTask,
+                    RegisterProtocol: _ => Task.CompletedTask));
             service.SetActiveCommander("F472567", null);
 
             var state = await service.GetStateAsync();
@@ -779,9 +785,10 @@ public sealed class FrontierAccountServiceTests
                 frontierId => new FrontierProfileCacheStore(Path.Combine(
                     root,
                     frontierId + ".json")),
-                utcNow: () => now,
-                openBrowser: (_, _) => Task.CompletedTask,
-                registerProtocol: _ => Task.CompletedTask);
+                new FrontierAccountServiceOptions(
+                    UtcNow: () => now,
+                    OpenBrowser: (_, _) => Task.CompletedTask,
+                    RegisterProtocol: _ => Task.CompletedTask));
             service.SetActiveCommander("F472567", "Fenris Nihilus");
 
             var state = await service.GetStateAsync();
@@ -901,10 +908,11 @@ public sealed class FrontierAccountServiceTests
                     root,
                     "frontier-profile-cache",
                     frontierId + ".json")),
-                legacyCache,
-                () => now,
-                (_, _) => Task.CompletedTask,
-                _ => Task.CompletedTask);
+                new FrontierAccountServiceOptions(
+                    LegacyCache: legacyCache,
+                    UtcNow: () => now,
+                    OpenBrowser: (_, _) => Task.CompletedTask,
+                    RegisterProtocol: _ => Task.CompletedTask));
             service.SetActiveCommander("F123", "Fenris");
 
             var state = await service.GetStateAsync();
@@ -1055,10 +1063,11 @@ public sealed class FrontierAccountServiceTests
             new HttpClient(new StubHandler(response)),
             store,
             new FrontierProfileCacheStore(cachePath),
-            now,
-            (_, _) => Task.CompletedTask,
-            _ => Task.CompletedTask,
-            inaraCommunityGoals);
+            new FrontierAccountServiceOptions(
+                UtcNow: now,
+                OpenBrowser: (_, _) => Task.CompletedTask,
+                RegisterProtocol: _ => Task.CompletedTask,
+                InaraCommunityGoals: inaraCommunityGoals));
         service.SetActiveCommander("F123", "Fenris");
         return service;
     }
@@ -1121,6 +1130,10 @@ public sealed class FrontierAccountServiceTests
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Design",
+        "CA1001:Types that own disposable fields should be disposable",
+        Justification = "The test double and its gate live for the duration of each test.")]
     private sealed class MemoryCredentialStore : IFrontierCredentialStore
     {
         private readonly SemaphoreSlim gate = new(1, 1);

@@ -6,6 +6,9 @@ namespace SrvSurvey.Core.Storage;
 
 public sealed class HumanSiteKnowledgeStore
 {
+    private const string HeadingProperty = "heading";
+    private const string CalcMethodProperty = "calcMethod";
+
     private readonly LegacySystemDataFileStore fileStore;
 
     public HumanSiteKnowledgeStore(string dataDirectory)
@@ -19,10 +22,7 @@ public sealed class HumanSiteKnowledgeStore
         CancellationToken cancellationToken = default)
     {
         ValidateContext(context);
-        if (marketId <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(marketId));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(marketId);
 
         var result = await fileStore.LoadAsync(
                 ToFileContext(context),
@@ -138,28 +138,28 @@ public sealed class HumanSiteKnowledgeStore
             station["subType"] = Math.Max(0, site.SubType);
         }
 
-        var existingHeading = ReadDouble(station, "heading");
+        var existingHeading = ReadDouble(station, HeadingProperty);
         if (site.Heading is { } heading && double.IsFinite(heading))
         {
-            station["heading"] = heading;
+            station[HeadingProperty] = heading;
             if (geometrySource != HumanSiteGeometrySource.Unknown
                 || isNew
-                || GetProperty(station, "calcMethod") is null)
+                || GetProperty(station, CalcMethodProperty) is null)
             {
-                station["calcMethod"] = geometrySource.ToString();
+                station[CalcMethodProperty] = geometrySource.ToString();
             }
         }
         else if (isNew && existingHeading is null)
         {
-            station["heading"] = -1;
-            station["calcMethod"] = HumanSiteGeometrySource.Unknown.ToString();
+            station[HeadingProperty] = -1;
+            station[CalcMethodProperty] = HumanSiteGeometrySource.Unknown.ToString();
         }
     }
 
     private static HumanSiteKnowledge? ReadKnowledge(
         JsonObject station,
         HumanSiteKnowledgeContext context,
-        ICollection<string> warnings)
+        List<string> warnings)
     {
         var marketId = ReadInt64(station, "marketId") ?? 0;
         var systemAddress = ReadInt64(station, "systemAddress")
@@ -182,7 +182,7 @@ public sealed class HumanSiteKnowledgeStore
         }
 
         var subType = Math.Max(0, ReadInt32(station, "subType") ?? 0);
-        var heading = ReadDouble(station, "heading");
+        var heading = ReadDouble(station, HeadingProperty);
         if (heading is not null
             && (!double.IsFinite(heading.Value) || heading < 0))
         {
@@ -218,7 +218,7 @@ public sealed class HumanSiteKnowledgeStore
     private static HumanSiteGeometrySource ReadGeometrySource(
         JsonObject station)
     {
-        var value = ReadString(station, "calcMethod");
+        var value = ReadString(station, CalcMethodProperty);
         return Enum.TryParse<HumanSiteGeometrySource>(
             value,
             ignoreCase: true,
@@ -265,18 +265,11 @@ public sealed class HumanSiteKnowledgeStore
         JsonObject root,
         string propertyName)
     {
-        foreach (var property in root)
-        {
-            if (string.Equals(
+        return root.FirstOrDefault(property =>
+            string.Equals(
                 property.Key,
                 propertyName,
-                StringComparison.OrdinalIgnoreCase))
-            {
-                return property.Value;
-            }
-        }
-
-        return null;
+                StringComparison.OrdinalIgnoreCase)).Value;
     }
 
     private static string? ReadString(

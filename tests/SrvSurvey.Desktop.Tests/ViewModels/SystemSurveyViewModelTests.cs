@@ -25,6 +25,30 @@ public sealed class SystemSurveyViewModelTests : IDisposable
     }
 
     [Fact]
+    public void UseBioSignalRadiusInvertsSmallCanonnRadarCircles()
+    {
+        var viewModel = CreateViewModel();
+        Assert.True(viewModel.UseSmallCanonnRadarCircles);
+        Assert.False(viewModel.UseBioSignalRadius);
+
+        viewModel.UseBioSignalRadius = true;
+
+        Assert.True(viewModel.UseBioSignalRadius);
+        Assert.False(viewModel.UseSmallCanonnRadarCircles);
+
+        viewModel.UseSmallCanonnRadarCircles = true;
+
+        Assert.True(viewModel.UseSmallCanonnRadarCircles);
+        Assert.False(viewModel.UseBioSignalRadius);
+
+        // Setting the inverted option to false is a no-op until the small-circle
+        // preference is enabled again through its own setter.
+        viewModel.UseBioSignalRadius = false;
+        Assert.False(viewModel.UseBioSignalRadius);
+        Assert.True(viewModel.UseSmallCanonnRadarCircles);
+    }
+
+    [Fact]
     public void IdenticalEmptyUpdateRetainsPresentationAndDoesNotNotify()
     {
         var viewModel = CreateViewModel();
@@ -1298,7 +1322,7 @@ public sealed class SystemSurveyViewModelTests : IDisposable
             viewModel.CreateFssTuningCaptureRequest());
 
         viewModel.ApplyUpdate(
-            [Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 2 A Ring","BodyID":4,"PlanetClass":"Rocky body","Parents":[{"Ring":3}]}""")],
+            [Parse("""{"event":"Scan","SystemAddress":42,"BodyName":"Test 2 A Ring","BodyID":4,"PlanetClass":"Rocky body","Parents":[{"Planet":2},{"Ring":3}]}""")],
             null);
         Assert.Equal(
             skipped.Revision,

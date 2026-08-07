@@ -22,72 +22,132 @@ namespace SrvSurvey.Core.Network
         internal static async Task<EddnCompanionReadResult> read(
             string journalFolder,
             JObject journalEvent,
-            CancellationToken cancellationToken = default,
-            IReadOnlyList<TimeSpan>? retrySchedule = null)
+            IReadOnlyList<TimeSpan>? retrySchedule = null,
+            CancellationToken cancellationToken = default)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(journalFolder);
             ArgumentNullException.ThrowIfNull(journalEvent);
 
             var eventName = journalEvent.Value<string>("event");
             if (!EddnMessageSanitizer.isCompanionEvent(eventName))
+            {
                 return new EddnCompanionReadResult(
                     null,
                     "the journal event does not identify a supported companion file");
+            }
 
-            var filepath = Path.Combine(journalFolder, eventName + ".json");
-            var delays = retrySchedule ?? retryDelays;
+            return await readWithRetries(
+                    Path.Combine(journalFolder, eventName + ".json"),
+                    eventName!,
+                    journalEvent,
+                    retrySchedule ?? retryDelays,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        private static async Task<EddnCompanionReadResult> readWithRetries(
+            string filepath,
+            string eventName,
+            JObject journalEvent,
+            IReadOnlyList<TimeSpan> delays,
+            CancellationToken cancellationToken)
+        {
             string? lastError = null;
             for (var attempt = 0; attempt <= delays.Count; attempt++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                try
+                var attemptResult = await tryReadAttempt(
+                        filepath,
+                        eventName,
+                        journalEvent,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                if (attemptResult.isSuccess)
                 {
-                    if (!File.Exists(filepath))
-                    {
-                        lastError = $"{eventName}.json was not found";
-                    }
-                    else
-                    {
-                        using var stream = new FileStream(
-                            filepath,
-                            FileMode.Open,
-                            FileAccess.Read,
-                            FileShare.ReadWrite);
-                        using var reader = new StreamReader(stream);
-                        using var jsonReader = new JsonTextReader(reader);
-                        var content = await JObject.LoadAsync(
-                            jsonReader,
-                            cancellationToken).ConfigureAwait(false);
-                        if (content.Value<string>("event") != eventName)
-                        {
-                            lastError = $"{eventName}.json contained a different event";
-                        }
-                        else if (!matchesMarket(journalEvent, content))
-                        {
-                            lastError = $"{eventName}.json did not match the event's MarketID";
-                        }
-                        else if (!isCurrent(journalEvent, content))
-                        {
-                            lastError = $"{eventName}.json was older than the journal event";
-                        }
-                        else
-                        {
-                            return new EddnCompanionReadResult(content, null);
-                        }
-                    }
-                }
-                catch (Exception ex) when (ex is IOException or JsonException)
-                {
-                    lastError = $"{eventName}.json could not be read: {ex.Message}";
+                    return attemptResult;
                 }
 
+                lastError = attemptResult.error;
                 if (attempt < delays.Count)
-                    await Task.Delay(delays[attempt], cancellationToken).ConfigureAwait(false);
+                {
+                    await Task.Delay(delays[attempt], cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
 
             return new EddnCompanionReadResult(
                 null,
                 lastError ?? $"{eventName}.json could not be read");
+        }
+
+        private static async Task<EddnCompanionReadResult> tryReadAttempt(
+            string filepath,
+            string eventName,
+            JObject journalEvent,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await tryReadCompanionFile(
+                        filepath,
+                        eventName,
+                        journalEvent,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is IOException or JsonException)
+            {
+                return new EddnCompanionReadResult(
+                    null,
+                    $"{eventName}.json could not be read: {ex.Message}");
+            }
+        }
+
+        private static async Task<EddnCompanionReadResult> tryReadCompanionFile(
+            string filepath,
+            string eventName,
+            JObject journalEvent,
+            CancellationToken cancellationToken)
+        {
+            if (!File.Exists(filepath))
+            {
+                return new EddnCompanionReadResult(
+                    null,
+                    $"{eventName}.json was not found");
+            }
+
+            using var stream = new FileStream(
+                filepath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite);
+            using var reader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(reader);
+            var content = await JObject.LoadAsync(
+                jsonReader,
+                cancellationToken).ConfigureAwait(false);
+            if (content.Value<string>("event") != eventName)
+            {
+                return new EddnCompanionReadResult(
+                    null,
+                    $"{eventName}.json contained a different event");
+            }
+
+            if (!matchesMarket(journalEvent, content))
+            {
+                return new EddnCompanionReadResult(
+                    null,
+                    $"{eventName}.json did not match the event's MarketID");
+            }
+
+            if (!isCurrent(journalEvent, content))
+            {
+                return new EddnCompanionReadResult(
+                    null,
+                    $"{eventName}.json was older than the journal event");
+            }
+
+            return new EddnCompanionReadResult(content, null);
         }
 
         private static bool matchesMarket(JObject journalEvent, JObject content)

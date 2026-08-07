@@ -9,6 +9,10 @@ using SrvSurvey.Core.Storage;
 
 namespace SrvSurvey.Desktop.ViewModels;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1001:Types that own disposable fields should be disposable",
+    Justification = "The operation owns and disposes each cancellation source when it completes.")]
 public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
 {
     private readonly CommanderProfileCatalog commanderCatalog;
@@ -144,9 +148,11 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         {
             var normalized = value < JournalHistoryAnalyzer.EliteReleaseDate
                 ? JournalHistoryAnalyzer.EliteReleaseDate
-                : value > DateTimeOffset.Now
-                    ? DateTimeOffset.Now
-                    : value;
+                : (value > DateTimeOffset.Now) switch
+                {
+                    true => DateTimeOffset.Now,
+                    false => value
+                };
             if (SetField(ref startDate, normalized))
             {
                 CodexRebuildConfirmed = false;
@@ -268,7 +274,8 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
         {
             IsBusy = true;
             var currentId = SelectedCommander?.FrontierId;
-            var result = await commanderCatalog.LoadAsync();
+            var result = await commanderCatalog.LoadAsync(
+                CancellationToken.None);
             Commanders = result.Profiles
                 .Select(profile => new JournalPostProcessorCommanderViewModel(
                     profile.FrontierId,
@@ -279,13 +286,15 @@ public sealed class JournalPostProcessorViewModel : INotifyPropertyChanged
                         commander.FrontierId,
                         currentId,
                         StringComparison.OrdinalIgnoreCase))
-                ?? Commanders.FirstOrDefault();
+                ?? (Commanders.Count > 0 ? Commanders[0] : null);
             StatusMessage = result.Warnings.Count > 0
                 ? $"Found {Commanders.Count:N0} commander profile(s). "
                     + string.Join(" ", result.Warnings)
-                : Commanders.Count == 0
-                    ? "No commander profiles were found. Import the original profile first."
-                    : $"Choose one of {Commanders.Count:N0} commander profile(s) and a start date.";
+                : (Commanders.Count == 0) switch
+                {
+                    true => "No commander profiles were found. Import the original profile first.",
+                    false => $"Choose one of {Commanders.Count:N0} commander profile(s) and a start date."
+                };
         }
         catch (Exception exception) when (
             exception is IOException or UnauthorizedAccessException)

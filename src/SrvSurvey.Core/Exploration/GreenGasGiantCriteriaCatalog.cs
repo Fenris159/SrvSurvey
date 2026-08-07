@@ -95,7 +95,7 @@ public sealed class GreenGasGiantCriteriaCatalog
             temperature => Math.Abs(surfaceTemperature - temperature) < Tolerance);
     }
 
-    private static IReadOnlyDictionary<string, IReadOnlyList<double>>
+    private static Dictionary<string, IReadOnlyList<double>>
         ReadTemperatures(JsonElement root, string propertyName)
     {
         if (!root.TryGetProperty(propertyName, out var groups)

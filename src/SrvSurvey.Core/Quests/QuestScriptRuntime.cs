@@ -45,7 +45,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
                 Definition.Publisher,
                 StringComparison.Ordinal)
             || !string.Equals(progress.Id, Definition.Id, StringComparison.Ordinal)
-            || progress.Version != Definition.Version)
+            || progress.Version.CompareTo(Definition.Version) != 0)
         {
             throw new ArgumentException(
                 "Quest progress and definition identities do not match.",
@@ -663,12 +663,10 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
 
     internal void AddTags(LuaValue value)
     {
-        foreach (var tag in ReadStringValues(value))
+        foreach (var tag in ReadStringValues(value).Where(tag =>
+            !string.IsNullOrWhiteSpace(tag)))
         {
-            if (!string.IsNullOrWhiteSpace(tag))
-            {
-                dirty |= Progress.Tags.Add(tag);
-            }
+            dirty |= Progress.Tags.Add(tag);
         }
     }
 
@@ -925,7 +923,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             return loaded;
         }
 
-        var chapter = RequireChapterState(chapterId);
+        _ = RequireChapterState(chapterId);
         string? source = null;
         if (Definition.Chapters.TryGetValue(chapterId, out var embedded)
             && !string.IsNullOrWhiteSpace(embedded))
@@ -1091,13 +1089,11 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
             ids.Add(Definition.FirstChapter);
         }
 
-        foreach (var id in ids)
+        foreach (var id in ids.Where(id =>
+            Progress.Chapters.All(chapter =>
+                !string.Equals(chapter.Id, id, StringComparison.Ordinal))))
         {
-            if (Progress.Chapters.All(chapter =>
-                !string.Equals(chapter.Id, id, StringComparison.Ordinal)))
-            {
-                Progress.Chapters.Add(new RavenQuestChapterState { Id = id });
-            }
+            Progress.Chapters.Add(new RavenQuestChapterState { Id = id });
         }
     }
 
@@ -1247,7 +1243,7 @@ public sealed class QuestScriptRuntime : IAsyncDisposable
         return true;
     }
 
-    private static IReadOnlyList<string> ReadStringValues(LuaValue value)
+    private static string[] ReadStringValues(LuaValue value)
     {
         return value.Type == LuaValueType.Table
             ? value.Read<LuaTable>()

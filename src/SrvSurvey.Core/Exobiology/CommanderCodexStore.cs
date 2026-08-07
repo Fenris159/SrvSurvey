@@ -6,6 +6,12 @@ namespace SrvSurvey.Core.Exobiology;
 
 public sealed class CommanderCodexStore(string dataDirectory)
 {
+    private const string CodexFirstsProperty = "codexFirsts";
+    private static readonly JsonSerializerOptions IndentedJson = new()
+    {
+        WriteIndented = true,
+    };
+
     private readonly string dataDirectory = Path.GetFullPath(
         string.IsNullOrWhiteSpace(dataDirectory)
             ? throw new ArgumentException(
@@ -47,7 +53,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
 
             var warnings = new List<string>();
             var entries = new Dictionary<long, CommanderCodexFirst>();
-            if (root["codexFirsts"] is JsonObject firsts)
+            if (root[CodexFirstsProperty] is JsonObject firsts)
             {
                 foreach (var property in firsts)
                 {
@@ -114,10 +120,10 @@ public sealed class CommanderCodexStore(string dataDirectory)
         var commanders = new List<CommanderCodexData>();
         var warnings = new List<string>();
         const string suffix = "-codex.json";
-        foreach (var file in files)
+        foreach (var fileName in files.Select(file => file.Name))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var frontierId = file.Name[..^suffix.Length];
+            var frontierId = fileName[..^suffix.Length];
             var loaded = await LoadAsync(
                     frontierId,
                     null,
@@ -129,7 +135,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
             }
 
             warnings.AddRange(loaded.Warnings.Select(warning =>
-                $"{file.Name}: {warning}"));
+                $"{fileName}: {warning}"));
         }
 
         return new CommanderCodexCommanderCatalogResult(
@@ -147,26 +153,20 @@ public sealed class CommanderCodexStore(string dataDirectory)
     }
 
     public async Task<CommanderCodexTrackResult> TrackAsync(
-        string frontierId,
-        string? commanderName,
-        long entryId,
-        DateTimeOffset timestamp,
-        long systemAddress,
-        int? bodyId,
-        int regionId = 0,
-        string? regionName = null,
+        CommanderCodexTrackRequest request,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
         var result = await TrackBatchAsync(
-                frontierId,
-                commanderName,
+                request.FrontierId,
+                request.CommanderName,
                 [new CommanderCodexDiscovery(
-                    entryId,
-                    timestamp,
-                    systemAddress,
-                    bodyId ?? -1)],
-                regionId,
-                regionName,
+                    request.EntryId,
+                    request.Timestamp,
+                    request.SystemAddress,
+                    request.BodyId ?? -1)],
+                request.RegionId,
+                request.RegionName,
                 cancellationToken)
             .ConfigureAwait(false);
         return new CommanderCodexTrackResult(
@@ -210,11 +210,11 @@ public sealed class CommanderCodexStore(string dataDirectory)
                 exception.Message);
         }
 
-        var firsts = root["codexFirsts"] as JsonObject;
+        var firsts = root[CodexFirstsProperty] as JsonObject;
         if (firsts is null)
         {
             firsts = [];
-            root["codexFirsts"] = firsts;
+            root[CodexFirstsProperty] = firsts;
         }
 
         var key = entryId.ToString(CultureInfo.InvariantCulture);
@@ -292,56 +292,95 @@ public sealed class CommanderCodexStore(string dataDirectory)
             return new CommanderCodexBatchTrackResult(path, 0, true, null);
         }
 
-        JsonObject root;
+        var load = await TryLoadRootAsync(path, cancellationToken)
+            .ConfigureAwait(false);
+        if (!load.IsSuccess)
+        {
+            return new CommanderCodexBatchTrackResult(
+                path,
+                0,
+                false,
+                load.Error);
+        }
+
+        var root = load.Root!;
+        var changedEntryCount = ApplyDiscoveries(root, discoveries);
+        if (changedEntryCount == 0)
+        {
+            return new CommanderCodexBatchTrackResult(path, 0, true, null);
+        }
+
+        ApplyLedgerMetadata(root, frontierId, commanderName, regionId, regionName);
+        return await TryWriteRootAsync(path, root, changedEntryCount, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static async Task<(bool IsSuccess, JsonObject? Root, string? Error)>
+        TryLoadRootAsync(string path, CancellationToken cancellationToken)
+    {
         try
         {
-            root = File.Exists(path)
+            var root = File.Exists(path)
                 ? await ReadRootAsync(path, cancellationToken)
                     .ConfigureAwait(false) ?? []
                 : [];
+            return (true, root, null);
         }
         catch (Exception exception) when (
             exception is IOException
                 or UnauthorizedAccessException
                 or JsonException)
         {
-            return new CommanderCodexBatchTrackResult(
-                path,
-                0,
-                false,
-                exception.Message);
+            return (false, null, exception.Message);
         }
+    }
 
-        var firsts = root["codexFirsts"] as JsonObject;
+    private static int ApplyDiscoveries(
+        JsonObject root,
+        IReadOnlyList<CommanderCodexDiscovery> discoveries)
+    {
+        var firsts = root[CodexFirstsProperty] as JsonObject;
         if (firsts is null)
         {
             firsts = [];
-            root["codexFirsts"] = firsts;
+            root[CodexFirstsProperty] = firsts;
         }
 
         var changedEntryIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var discovery in discoveries)
         {
-            var key = discovery.EntryId.ToString(CultureInfo.InvariantCulture);
-            if (TryParseFirst(firsts[key], out var existing)
-                && ShouldKeepExistingFirst(existing, discovery))
-            {
-                continue;
-            }
-
-            firsts[key] = FormatFirst(new CommanderCodexFirst(
-                discovery.Timestamp,
-                discovery.SystemAddress,
-                discovery.BodyId));
-            changedEntryIds.Add(key);
+            ApplyDiscovery(firsts, discovery, changedEntryIds);
         }
 
-        var changedEntryCount = changedEntryIds.Count;
-        if (changedEntryCount == 0)
+        return changedEntryIds.Count;
+    }
+
+    private static void ApplyDiscovery(
+        JsonObject firsts,
+        CommanderCodexDiscovery discovery,
+        HashSet<string> changedEntryIds)
+    {
+        var key = discovery.EntryId.ToString(CultureInfo.InvariantCulture);
+        if (TryParseFirst(firsts[key], out var existing)
+            && ShouldKeepExistingFirst(existing, discovery))
         {
-            return new CommanderCodexBatchTrackResult(path, 0, true, null);
+            return;
         }
 
+        firsts[key] = FormatFirst(new CommanderCodexFirst(
+            discovery.Timestamp,
+            discovery.SystemAddress,
+            discovery.BodyId));
+        changedEntryIds.Add(key);
+    }
+
+    private static void ApplyLedgerMetadata(
+        JsonObject root,
+        string frontierId,
+        string? commanderName,
+        int regionId,
+        string? regionName)
+    {
         root["fid"] = frontierId;
         if (!string.IsNullOrWhiteSpace(commanderName))
         {
@@ -352,7 +391,14 @@ public sealed class CommanderCodexStore(string dataDirectory)
         {
             root["region"] = regionName;
         }
+    }
 
+    private static async Task<CommanderCodexBatchTrackResult> TryWriteRootAsync(
+        string path,
+        JsonObject root,
+        int changedEntryCount,
+        CancellationToken cancellationToken)
+    {
         try
         {
             await WriteAtomicAsync(path, root, cancellationToken)
@@ -390,10 +436,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
                 nameof(frontierId));
         }
 
-        if (regionId < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(regionId));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(regionId);
 
         var fileName = regionId == 0
             ? $"{frontierId}-codex.json"
@@ -441,7 +484,7 @@ public sealed class CommanderCodexStore(string dataDirectory)
                 await JsonSerializer.SerializeAsync(
                         stream,
                         root,
-                        new JsonSerializerOptions { WriteIndented = true },
+                        IndentedJson,
                         cancellationToken)
                     .ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
@@ -618,7 +661,9 @@ public sealed record CommanderCodexLoadResult(
 {
     public bool IsSuccess => Data is not null;
 
-    public string? Error => IsSuccess ? null : Warnings.FirstOrDefault();
+    public string? Error => IsSuccess || Warnings.Count == 0
+        ? null
+        : Warnings[0];
 
     public static CommanderCodexLoadResult Failed(string path, string error)
     {
@@ -631,6 +676,25 @@ public sealed record CommanderCodexCommanderCatalogResult(
     IReadOnlyList<string> Warnings)
 {
     public bool IsSuccess => Warnings.Count == 0;
+}
+
+public sealed class CommanderCodexTrackRequest
+{
+    public required string FrontierId { get; init; }
+
+    public string? CommanderName { get; init; }
+
+    public long EntryId { get; init; }
+
+    public DateTimeOffset Timestamp { get; init; }
+
+    public long SystemAddress { get; init; }
+
+    public int? BodyId { get; init; }
+
+    public int RegionId { get; init; }
+
+    public string? RegionName { get; init; }
 }
 
 public sealed record CommanderCodexTrackResult(

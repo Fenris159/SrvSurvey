@@ -30,10 +30,10 @@ public sealed partial class RouteWindow : Window
         Close();
     }
 
-    protected override void OnClosed(EventArgs eventArgs)
+    protected override void OnClosed(EventArgs e)
     {
         viewModel.DismissDialogs();
-        base.OnClosed(eventArgs);
+        base.OnClosed(e);
     }
 
     private void HopCheckBox_Click(object? sender, RoutedEventArgs eventArgs)
