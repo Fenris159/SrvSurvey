@@ -52,17 +52,17 @@ public sealed class OverlayPresentationContractTests
         ]),
         Contract("PlotGuardians", ["src/SrvSurvey.Desktop/GuardianOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianSiteOverlayPresentation.axaml"], [
             "ActiveMapSummary", "ActiveMapScaleText", "LiveMapPromptText", "TargetObeliskText",
-            "LegacyOverlayBackgroundControl", "ShowLegend=\"False\"",
+            "guardian-panel", "ShowLegend=\"False\"", "RavenGuardian",
         ]),
         Contract("PlotGuardianStatus", ["src/SrvSurvey.Desktop/GuardianStatusOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianStatusOverlayPresentation.axaml"], [
             "GuardianStatusTitle", "GuardianStatusDetail", "GuardianOriginFooter", "GuardianOnFootFooter",
             "GuardianStatusObeliskTitle", "GuardianStatusObeliskArtifacts",
             "GuardianStatusObeliskMissionStatus", "GuardianChoiceOneText",
-            "GlideApproachText", "LegacyOverlayBackgroundControl",
+            "GlideApproachText", "guardian-panel", "RavenGuardian",
         ]),
         Contract("PlotGuardianSystem", ["src/SrvSurvey.Desktop/GuardianSystemOverlayWindow.axaml", "src/SrvSurvey.Desktop/GuardianSystemOverlayPresentation.axaml"], [
             "CurrentSystemGuardianTitle", "CurrentSystemSites", "LegacyDisplayText", "LegacySurveyLine",
-            "LegacyBlueprintLine", "LegacyExtraLine", "LegacyOverlayBackgroundControl",
+            "LegacyBlueprintLine", "LegacyExtraLine", "guardian-panel", "RavenGuardian",
         ]),
         Contract("PlotHumanSite", ["src/SrvSurvey.Desktop/HumanSiteOverlayWindow.axaml"], [
             "SiteName", "TemplateText", "FactionText", "DockingStatusText", "ApproachDistanceText",
@@ -101,7 +101,7 @@ public sealed class OverlayPresentationContractTests
         Contract("PlotRamTah", ["src/SrvSurvey.Desktop/RamTahOverlayWindow.axaml", "src/SrvSurvey.Desktop/RamTahOverlayPresentation.axaml"], [
             "CurrentRamTahTitle", "CurrentRamTahLogs", "LogName", "Artifacts", "GuardianArtifactGlyphControl",
             "ObeliskNamesText", "Target obelisk A01: type .to A01 in chat",
-            "LegacyOverlayBackgroundControl",
+            "guardian-panel", "RavenGuardian",
         ]),
         Contract("PlotSphericalSearch", ["src/SrvSurvey.Desktop/SphericalSearchOverlayWindow.axaml"], [
             "SphereCenterSystemName", "SphereDestinationSystemName", "DestinationDistance", "DestinationResult",
@@ -138,7 +138,7 @@ public sealed class OverlayPresentationContractTests
     }
 
     [Fact]
-    public void GuardianPresentationsUseDedicatedLegacyVisualGrammar()
+    public void GuardianPresentationsUseDedicatedCompactVisualGrammar()
     {
         var root = FindRepositoryRoot();
         var presentations = new[]
@@ -156,13 +156,14 @@ public sealed class OverlayPresentationContractTests
                 "src",
                 "SrvSurvey.Desktop",
                 presentation));
-            Assert.Contains("LegacyOverlayBackgroundControl", markup);
-            Assert.Contains("guardian-legacy-", markup);
+            Assert.Contains("guardian-panel", markup);
+            Assert.Contains("RavenGuardian", markup);
+            Assert.DoesNotContain("LegacyOverlayBackgroundControl", markup);
+            Assert.DoesNotContain("StripeBrush", markup);
             Assert.Contains("TextWrapping=\"Wrap\"", markup);
             Assert.DoesNotContain("TextTrimming=", markup);
             Assert.DoesNotContain("Classes=\"card", markup);
             Assert.DoesNotContain("Classes=\"badge", markup);
-            Assert.DoesNotContain("CornerRadius=\"", markup);
         }
 
         var styles = File.ReadAllText(Path.Combine(
@@ -173,8 +174,12 @@ public sealed class OverlayPresentationContractTests
             "GuardianLegacyOverlayStyles.axaml"));
         Assert.Contains("Assets/Fonts/Oxanium#Oxanium", styles);
         Assert.Contains("Assets/Fonts/Rajdhani#Rajdhani", styles);
-        Assert.Contains("RavenPrimaryBrush", styles);
-        Assert.Contains("RavenSecondaryBrush", styles);
+        Assert.Contains("RavenGuardianHeaderBrush", styles);
+        Assert.Contains("RavenGuardianPrimaryBrush", styles);
+        Assert.Contains("RavenGuardianSecondaryBrush", styles);
+        Assert.Contains("RavenGuardianMutedBrush", styles);
+        Assert.Contains("guardian-panel", styles);
+        Assert.Contains("guardian-title", styles);
 
         var ramTah = File.ReadAllText(Path.Combine(
             root,

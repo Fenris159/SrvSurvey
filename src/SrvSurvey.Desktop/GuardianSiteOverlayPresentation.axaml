@@ -5,81 +5,77 @@
              x:Class="SrvSurvey.Desktop.GuardianSiteOverlayPresentation"
              x:DataType="vm:GuardianOverlayViewModel"
              ClipToBounds="True">
-  <Grid>
-    <controls:LegacyOverlayBackgroundControl
-        IsHitTestVisible="False"
-        BackgroundBrush="{DynamicResource RavenWindowBrush}"
-        StripeBrush="#0C0C0C"
-        EdgeBrush="{DynamicResource RavenPrimaryBrush}"
-        EdgeDimBrush="{DynamicResource RavenPrimaryDimBrush}" />
+  <Border Classes="guardian-panel">
+    <Grid>
+      <controls:GuardianSiteMapControl
+          Projection="{Binding Guardian.ActiveMapProjection}"
+          Proximity="{Binding Guardian.Proximity}"
+          MapScale="{Binding Guardian.ActiveMapScale}"
+          CommanderHeading="{Binding Guardian.ActiveMapRelativeHeading}"
+          TargetPointName="{Binding Guardian.TargetObeliskName}"
+          ShowLegend="False"
+          MapBackground="{DynamicResource RavenGuardianSurfaceBrush}"
+          GridBrush="{DynamicResource RavenGuardianSecondaryDimBrush}"
+          AccentBrush="{DynamicResource RavenGuardianSecondaryBrush}"
+          MutedBrush="{DynamicResource RavenGuardianPrimaryBrush}"
+          PresentBrush="{DynamicResource RavenGuardianSuccessBrush}"
+          AbsentBrush="{DynamicResource RavenGuardianDangerBrush}"
+          EmptyBrush="{DynamicResource RavenGuardianWarningBrush}" />
 
-    <controls:GuardianSiteMapControl
-        Projection="{Binding Guardian.ActiveMapProjection}"
-        Proximity="{Binding Guardian.Proximity}"
-        MapScale="{Binding Guardian.ActiveMapScale}"
-        CommanderHeading="{Binding Guardian.ActiveMapRelativeHeading}"
-        TargetPointName="{Binding Guardian.TargetObeliskName}"
-        ShowLegend="False"
-        MapBackground="Transparent"
-        GridBrush="{DynamicResource RavenSecondaryDimBrush}"
-        AccentBrush="{DynamicResource RavenSecondaryBrush}"
-        MutedBrush="{DynamicResource RavenPrimaryBrush}"
-        PresentBrush="{DynamicResource RavenSuccessBrush}"
-        AbsentBrush="{DynamicResource RavenDangerBrush}"
-        EmptyBrush="{DynamicResource RavenWarningBrush}" />
+      <controls:GuardianAlignmentControl
+          Margin="10"
+          Mode="{Binding Guardian.AlignmentMode}"
+          GuideBrush="{DynamicResource RavenGuardianWarningBrush}"
+          ShadowBrush="{DynamicResource RavenGuardianBackgroundBrush}"
+          Opacity="{Binding Guardian.AlignmentOpacity}"
+          IsVisible="{Binding Guardian.IsAlignmentVisible}" />
 
-    <controls:GuardianAlignmentControl
-        Margin="10"
-        Mode="{Binding Guardian.AlignmentMode}"
-        GuideBrush="{DynamicResource RavenWarningBrush}"
-        ShadowBrush="{DynamicResource RavenWindowBrush}"
-        Opacity="{Binding Guardian.AlignmentOpacity}"
-        IsVisible="{Binding Guardian.IsAlignmentVisible}" />
+      <Grid Margin="2"
+            RowDefinitions="Auto,*,Auto"
+            IsHitTestVisible="False">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <TextBlock Classes="guardian-legacy-middle guardian-legacy-cyan"
+                     Text="{Binding Guardian.ActiveMapSummary}"
+                     TextWrapping="Wrap" />
+          <TextBlock Grid.Column="1"
+                     Classes="guardian-legacy-small"
+                     VerticalAlignment="Center"
+                     Text="{Binding Guardian.ActiveMapScaleText}" />
+        </Grid>
 
-    <Grid Margin="8,6"
-          RowDefinitions="Auto,*,Auto"
-          IsHitTestVisible="False">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-        <TextBlock Classes="guardian-legacy-middle guardian-legacy-cyan"
-                   Text="{Binding Guardian.ActiveMapSummary}"
-                   TextWrapping="Wrap" />
-        <TextBlock Grid.Column="1"
-                   Classes="guardian-legacy-small"
-                   VerticalAlignment="Center"
-                   Text="{Binding Guardian.ActiveMapScaleText}" />
-      </Grid>
+        <StackPanel Grid.Row="1"
+                    Margin="10"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="6"
+                    IsVisible="{Binding Guardian.HasLiveMapPrompt}">
+          <TextBlock Classes="guardian-title"
+                     HorizontalAlignment="Center"
+                     Text="{Binding Guardian.LiveMapPromptTitle}"
+                     TextWrapping="Wrap" />
+          <TextBlock Classes="guardian-legacy-middle"
+                     MaxWidth="430"
+                     TextAlignment="Center"
+                     TextWrapping="Wrap"
+                     Text="{Binding Guardian.LiveMapPromptText}" />
+          <Image MaxWidth="430"
+                 MaxHeight="240"
+                 Stretch="Uniform"
+                 IsVisible="{Binding Guardian.HasHeadingGuide}"
+                 Source="{Binding Guardian.HeadingGuideAssetPath, Converter={StaticResource BundledAssetImageConverter}}" />
+          <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan"
+                     HorizontalAlignment="Center"
+                     IsVisible="{Binding Guardian.IsAlignmentVisible}"
+                     Text="{Binding Guardian.AlignmentStatusText}" />
+        </StackPanel>
 
-      <StackPanel Grid.Row="1"
-                  Margin="10"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  Spacing="6"
-                  IsVisible="{Binding Guardian.HasLiveMapPrompt}">
-        <TextBlock Classes="guardian-legacy-middle guardian-legacy-cyan"
-                   HorizontalAlignment="Center"
-                   Text="{Binding Guardian.LiveMapPromptTitle}" />
-        <TextBlock Classes="guardian-legacy-middle"
-                   MaxWidth="430"
+        <TextBlock Grid.Row="2"
+                   Classes="guardian-legacy-small guardian-legacy-cyan"
+                   HorizontalAlignment="Stretch"
                    TextAlignment="Center"
-                   TextWrapping="Wrap"
-                   Text="{Binding Guardian.LiveMapPromptText}" />
-        <Image MaxWidth="430"
-               MaxHeight="240"
-               Stretch="Uniform"
-               IsVisible="{Binding Guardian.HasHeadingGuide}"
-               Source="{Binding Guardian.HeadingGuideAssetPath, Converter={StaticResource BundledAssetImageConverter}}" />
-        <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan"
-                   HorizontalAlignment="Center"
-                   IsVisible="{Binding Guardian.IsAlignmentVisible}"
-                   Text="{Binding Guardian.AlignmentStatusText}" />
-      </StackPanel>
-
-      <TextBlock Grid.Row="2"
-                 Classes="guardian-legacy-small guardian-legacy-cyan"
-                 HorizontalAlignment="Stretch"
-                 TextAlignment="Center"
-                 Text="{Binding Guardian.TargetObeliskText}"
-                 TextWrapping="Wrap" />
+                   Text="{Binding Guardian.TargetObeliskText}"
+                   TextWrapping="Wrap" />
+      </Grid>
     </Grid>
-  </Grid>
+  </Border>
 </UserControl>

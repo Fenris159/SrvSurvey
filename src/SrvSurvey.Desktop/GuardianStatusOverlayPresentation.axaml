@@ -7,67 +7,56 @@
              ClipToBounds="True">
   <UserControl.Styles>
     <Style Selector="Border.guardian-legacy-choice">
-      <Setter Property="Width" Value="108" />
-      <Setter Property="Height" Value="44" />
-      <Setter Property="Padding" Value="5,3" />
+      <Setter Property="MinWidth" Value="96" />
+      <Setter Property="MinHeight" Value="40" />
+      <Setter Property="Padding" Value="8,6" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="BorderBrush" Value="{DynamicResource RavenPrimaryBrush}" />
-      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenGuardianPrimaryDimBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenGuardianSurfaceBrush}" />
+      <Setter Property="CornerRadius" Value="6" />
     </Style>
     <Style Selector="Border.guardian-legacy-choice.selected">
-      <Setter Property="BorderBrush" Value="{DynamicResource RavenSecondaryBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RavenGuardianSecondaryBrush}" />
+      <Setter Property="Background" Value="{DynamicResource RavenGuardianPrimaryDimBrush}" />
     </Style>
     <Style Selector="Border.guardian-legacy-choice.selected TextBlock">
-      <Setter Property="Foreground" Value="{DynamicResource RavenSecondaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenGuardianSecondaryBrush}" />
     </Style>
     <Style Selector="TextBlock.guardian-artifact.missing">
-      <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenGuardianDangerBrush}" />
     </Style>
   </UserControl.Styles>
-  <Grid MinHeight="108">
-    <controls:LegacyOverlayBackgroundControl
-        IsHitTestVisible="False"
-        BackgroundBrush="{DynamicResource RavenWindowBrush}"
-        StripeBrush="#0C0C0C"
-        EdgeBrush="{DynamicResource RavenPrimaryBrush}"
-        EdgeDimBrush="{DynamicResource RavenPrimaryDimBrush}" />
-
-    <Grid Margin="8,6"
-          RowDefinitions="Auto,*,Auto"
-          IsVisible="{Binding Guardian.IsGlideApproach}">
-      <TextBlock Classes="guardian-legacy-middle"
-                 HorizontalAlignment="Stretch"
+  <Border Classes="guardian-panel" MinHeight="108">
+    <Grid>
+    <Grid IsVisible="{Binding Guardian.IsGlideApproach}"
+          RowDefinitions="Auto,Auto,*,Auto">
+      <TextBlock Classes="guardian-title"
                  Text="{Binding Guardian.GlideApproachTitle}"
-                 TextAlignment="Center"
                  TextWrapping="Wrap" />
-      <TextBlock Grid.Row="1"
+      <Border Grid.Row="1" Classes="guardian-header-rule" />
+      <TextBlock Grid.Row="2"
                  Classes="guardian-legacy-middle guardian-legacy-cyan"
-                 HorizontalAlignment="Stretch"
                  VerticalAlignment="Center"
                  Text="{Binding Guardian.GlideApproachText}"
-                 TextAlignment="Center"
                  TextWrapping="Wrap" />
-      <TextBlock Grid.Row="2"
+      <TextBlock Grid.Row="3"
                  Classes="guardian-legacy-small"
-                 HorizontalAlignment="Stretch"
                  Text="{Binding Guardian.GlideApproachFooter}"
-                 TextAlignment="Center"
                  TextWrapping="Wrap" />
     </Grid>
 
-    <Grid Margin="8,6" IsVisible="{Binding Guardian.IsLocalGuardianStatus}">
-      <Grid RowDefinitions="Auto,*,Auto"
+    <Grid IsVisible="{Binding Guardian.IsLocalGuardianStatus}">
+      <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianSiteTypeChoiceVisible}">
-        <TextBlock Classes="guardian-legacy-middle guardian-legacy-cyan"
-                   HorizontalAlignment="Stretch"
+        <TextBlock Classes="guardian-title"
                    Text="{Binding Guardian.GuardianStatusTitle}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
-        <Grid Grid.Row="1"
+        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <Grid Grid.Row="2"
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
               ColumnDefinitions="Auto,Auto,Auto"
-              ColumnSpacing="12">
+              ColumnSpacing="10">
           <Border Classes="guardian-legacy-choice"
                   Classes.selected="{Binding Guardian.IsGuardianChoiceOneSelected}">
             <Grid>
@@ -107,94 +96,73 @@
             </Grid>
           </Border>
         </Grid>
-        <TextBlock Grid.Row="2"
+        <TextBlock Grid.Row="3"
                    Classes="guardian-legacy-small guardian-legacy-cyan"
-                   HorizontalAlignment="Stretch"
                    Text="{Binding Guardian.BlinkGestureText}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
       </Grid>
 
-      <Grid RowDefinitions="Auto,*,Auto"
+      <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianHeadingChoiceVisible}">
-        <TextBlock Classes="guardian-legacy-middle guardian-legacy-cyan"
-                   HorizontalAlignment="Stretch"
+        <TextBlock Classes="guardian-title"
                    Text="{Binding Guardian.GuardianStatusTitle}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
-        <TextBlock Grid.Row="1"
+        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <TextBlock Grid.Row="2"
                    Classes="guardian-legacy-middle"
-                   HorizontalAlignment="Stretch"
                    VerticalAlignment="Center"
                    Text="{Binding Guardian.GuardianStatusDetail}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
-        <TextBlock Grid.Row="2"
+        <TextBlock Grid.Row="3"
                    Classes="guardian-legacy-small guardian-legacy-cyan"
-                   HorizontalAlignment="Stretch"
                    Text="{Binding Guardian.BlinkGestureText}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
       </Grid>
 
-      <Grid RowDefinitions="Auto,*,Auto"
+      <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianOriginVisible}">
-        <TextBlock Classes="guardian-legacy-middle guardian-legacy-cyan"
-                   HorizontalAlignment="Stretch"
+        <TextBlock Classes="guardian-title"
                    Text="{Binding Guardian.GuardianStatusTitle}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
-        <TextBlock Grid.Row="1"
+        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <TextBlock Grid.Row="2"
                    Classes="guardian-legacy-middle"
-                   HorizontalAlignment="Stretch"
                    VerticalAlignment="Center"
                    Text="{Binding Guardian.GuardianStatusDetail}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
-        <TextBlock Grid.Row="2"
+        <TextBlock Grid.Row="3"
                    Classes="guardian-legacy-small guardian-legacy-cyan"
-                   HorizontalAlignment="Stretch"
                    Text="{Binding Guardian.GuardianOriginFooter}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
       </Grid>
 
-      <Grid RowDefinitions="Auto,*,Auto"
+      <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianOnFootRelicVisible}">
-        <TextBlock Classes="guardian-legacy-middle guardian-legacy-cyan"
-                   HorizontalAlignment="Stretch"
+        <TextBlock Classes="guardian-title"
                    Text="{Binding Guardian.GuardianStatusTitle}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
-        <TextBlock Grid.Row="1"
+        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <TextBlock Grid.Row="2"
                    Classes="guardian-legacy-middle"
-                   HorizontalAlignment="Stretch"
                    VerticalAlignment="Center"
                    Text="{Binding Guardian.GuardianStatusDetail}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
-        <TextBlock Grid.Row="2"
+        <TextBlock Grid.Row="3"
                    Classes="guardian-legacy-small guardian-legacy-cyan"
-                   HorizontalAlignment="Stretch"
                    Text="{Binding Guardian.GuardianOnFootFooter}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
       </Grid>
 
-      <Grid RowDefinitions="Auto,*,Auto"
+      <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianObeliskVisible}">
-        <TextBlock Classes="guardian-legacy-middle"
-                   HorizontalAlignment="Stretch"
+        <TextBlock Classes="guardian-title"
                    Text="{Binding Guardian.GuardianStatusObeliskTitle}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
-        <StackPanel Grid.Row="1"
-                    HorizontalAlignment="Center"
+        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <StackPanel Grid.Row="2"
                     VerticalAlignment="Center"
                     Spacing="2">
-          <StackPanel HorizontalAlignment="Center"
-                      Orientation="Horizontal"
-                      Spacing="3">
+          <StackPanel Orientation="Horizontal" Spacing="3">
             <TextBlock Classes="guardian-legacy-middle"
                        VerticalAlignment="Center"
                        Text="Requires:" />
@@ -224,22 +192,16 @@
             </ItemsControl>
           </StackPanel>
           <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan"
-                     HorizontalAlignment="Stretch"
                      Text="{Binding Guardian.GuardianStatusObeliskMissionStatus}"
-                     TextAlignment="Center"
                      TextWrapping="Wrap" />
-          <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan"
-                     HorizontalAlignment="Stretch"
+          <TextBlock Classes="guardian-legacy-small guardian-legacy-warning"
                      IsVisible="{Binding Guardian.HasGuardianMaterialCapacityWarning}"
                      Text="{Binding Guardian.GuardianMaterialCapacityWarning}"
-                     TextAlignment="Center"
                      TextWrapping="Wrap" />
         </StackPanel>
-        <Grid Grid.Row="2" RowDefinitions="Auto,Auto">
+        <Grid Grid.Row="3" RowDefinitions="Auto,Auto">
           <TextBlock Classes="guardian-legacy-small guardian-legacy-cyan"
-                     HorizontalAlignment="Stretch"
                      Text="{Binding Guardian.GuardianStatusObeliskFooter}"
-                     TextAlignment="Center"
                      TextWrapping="Wrap" />
           <TextBlock Grid.Row="1"
                      Classes="guardian-legacy-small"
@@ -248,18 +210,17 @@
         </Grid>
       </Grid>
 
-      <Grid RowDefinitions="Auto,*,Auto"
+      <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianPoiChoiceVisible}">
-        <TextBlock Classes="guardian-legacy-middle guardian-legacy-cyan"
-                   HorizontalAlignment="Stretch"
+        <TextBlock Classes="guardian-title"
                    Text="{Binding Guardian.GuardianStatusTitle}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
-        <Grid Grid.Row="1"
+        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <Grid Grid.Row="2"
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
               ColumnDefinitions="Auto,Auto,Auto"
-              ColumnSpacing="12">
+              ColumnSpacing="10">
           <Border Classes="guardian-legacy-choice"
                   Classes.selected="{Binding Guardian.IsGuardianChoiceOneSelected}">
             <TextBlock Classes="guardian-legacy-middle"
@@ -291,35 +252,29 @@
                        TextWrapping="Wrap" />
           </Border>
         </Grid>
-        <TextBlock Grid.Row="2"
+        <TextBlock Grid.Row="3"
                    Classes="guardian-legacy-small guardian-legacy-cyan"
-                   HorizontalAlignment="Stretch"
                    Text="{Binding Guardian.BlinkGestureText}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
       </Grid>
 
-      <Grid RowDefinitions="Auto,*,Auto"
+      <Grid RowDefinitions="Auto,Auto,*,Auto"
             IsVisible="{Binding Guardian.IsGuardianNoPointVisible}">
-        <TextBlock Classes="guardian-legacy-middle guardian-legacy-cyan"
-                   HorizontalAlignment="Stretch"
+        <TextBlock Classes="guardian-title"
                    Text="{Binding Guardian.GuardianStatusTitle}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
-        <TextBlock Grid.Row="1"
+        <Border Grid.Row="1" Classes="guardian-header-rule" />
+        <TextBlock Grid.Row="2"
                    Classes="guardian-legacy-middle"
-                   HorizontalAlignment="Stretch"
                    VerticalAlignment="Center"
                    Text="{Binding Guardian.GuardianStatusDetail}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
-        <TextBlock Grid.Row="2"
+        <TextBlock Grid.Row="3"
                    Classes="guardian-legacy-small"
-                   HorizontalAlignment="Stretch"
                    Text="{Binding Guardian.SiteDistanceText}"
-                   TextAlignment="Center"
                    TextWrapping="Wrap" />
       </Grid>
     </Grid>
-  </Grid>
+    </Grid>
+  </Border>
 </UserControl>

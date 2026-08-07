@@ -60,6 +60,18 @@ public static class OverlayThemeResources
             ["RavenFczCheckpointBrush"] = "RavenOverlayFczCheckpointBrush",
             ["RavenFczCheckpointLocalBrush"] = "RavenOverlayFczCheckpointLocalBrush",
             ["RavenFczPowerPostBrush"] = "RavenOverlayFczPowerPostBrush",
+            ["RavenGuardianBackgroundBrush"] = "RavenOverlayGuardianBackgroundBrush",
+            ["RavenGuardianHeaderBrush"] = "RavenOverlayGuardianHeaderBrush",
+            ["RavenGuardianPrimaryBrush"] = "RavenOverlayGuardianPrimaryBrush",
+            ["RavenGuardianPrimaryDimBrush"] = "RavenOverlayGuardianPrimaryDimBrush",
+            ["RavenGuardianSecondaryBrush"] = "RavenOverlayGuardianSecondaryBrush",
+            ["RavenGuardianSecondaryDimBrush"] = "RavenOverlayGuardianSecondaryDimBrush",
+            ["RavenGuardianTextBrush"] = "RavenOverlayGuardianTextBrush",
+            ["RavenGuardianMutedBrush"] = "RavenOverlayGuardianMutedBrush",
+            ["RavenGuardianDangerBrush"] = "RavenOverlayGuardianDangerBrush",
+            ["RavenGuardianSuccessBrush"] = "RavenOverlayGuardianSuccessBrush",
+            ["RavenGuardianWarningBrush"] = "RavenOverlayGuardianWarningBrush",
+            ["RavenGuardianSurfaceBrush"] = "RavenOverlayGuardianSurfaceBrush",
         };
 
     public static void Apply(Window window)

@@ -7,41 +7,36 @@
              ClipToBounds="True">
   <UserControl.Styles>
     <Style Selector="TextBlock.ram-tah-affiliation.current">
-      <Setter Property="Foreground" Value="{DynamicResource RavenSecondaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenGuardianSecondaryBrush}" />
     </Style>
     <Style Selector="TextBlock.ram-tah-affiliation.remote">
-      <Setter Property="Foreground" Value="{DynamicResource RavenSecondaryDimBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenGuardianSecondaryDimBrush}" />
     </Style>
     <Style Selector="TextBlock.ram-tah-log.missing">
       <Setter Property="TextDecorations" Value="Strikethrough" />
     </Style>
     <Style Selector="TextBlock.guardian-artifact.missing">
-      <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource RavenGuardianDangerBrush}" />
     </Style>
   </UserControl.Styles>
-  <Grid MinHeight="60">
-    <controls:LegacyOverlayBackgroundControl
-        IsHitTestVisible="False"
-        BackgroundBrush="{DynamicResource RavenWindowBrush}"
-        StripeBrush="#0C0C0C"
-        EdgeBrush="{DynamicResource RavenPrimaryBrush}"
-        EdgeDimBrush="{DynamicResource RavenPrimaryDimBrush}" />
-
-    <StackPanel Margin="6,8,10,10" Spacing="4">
-      <TextBlock Classes="guardian-legacy-small"
-                 Text="{Binding Guardian.CurrentRamTahTitle}" />
+  <Border Classes="guardian-panel" MinHeight="60">
+    <StackPanel Spacing="3">
+      <TextBlock Classes="guardian-title"
+                 Text="{Binding Guardian.CurrentRamTahTitle}"
+                 TextWrapping="Wrap" />
+      <Border Classes="guardian-header-rule" />
       <ItemsControl ItemsSource="{Binding Guardian.CurrentRamTahLogs}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:GuardianRamTahLogViewModel">
-            <StackPanel Margin="0,4,0,6" Spacing="2">
+            <StackPanel Margin="0,3,0,3" Spacing="1">
               <TextBlock Classes="guardian-legacy-middle ram-tah-affiliation ram-tah-log"
                          Classes.current="{Binding IsCurrentOrTargetObelisk}"
                          Classes.remote="{Binding IsRemoteTargetObelisk}"
                          Classes.missing="{Binding IsMissingArtifacts}"
-                         Margin="14,0,0,0"
+                         Margin="8,0,0,0"
                          Text="{Binding LogName, StringFormat='{}{0}:'}"
                          TextWrapping="Wrap" />
-              <ItemsControl Margin="24,0,0,0"
+              <ItemsControl Margin="16,0,0,0"
                             ItemsSource="{Binding Artifacts}">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
@@ -71,7 +66,7 @@
               <TextBlock Classes="guardian-legacy-small ram-tah-affiliation"
                          Classes.current="{Binding IsCurrentOrTargetObelisk}"
                          Classes.remote="{Binding IsRemoteTargetObelisk}"
-                         Margin="24,0,0,0"
+                         Margin="16,0,0,0"
                          Text="{Binding ObeliskNamesText}"
                          TextWrapping="Wrap" />
             </StackPanel>
@@ -79,17 +74,16 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
       <TextBlock Classes="guardian-legacy-middle"
-                 Margin="24,6,0,0"
+                 Margin="8,4,0,0"
                  IsVisible="{Binding !Guardian.HasCurrentRamTahLogs}"
                  Text="No new logs available"
                  TextWrapping="Wrap" />
       <TextBlock Classes="guardian-legacy-small"
-                 Margin="8,6,8,0"
+                 Margin="0,4,0,0"
                  HorizontalAlignment="Stretch"
                  IsVisible="{Binding Guardian.HasCurrentRamTahLogs}"
                  Text="Target obelisk A01: type .to A01 in chat"
-                 TextAlignment="Center"
                  TextWrapping="Wrap" />
     </StackPanel>
-  </Grid>
+  </Border>
 </UserControl>
