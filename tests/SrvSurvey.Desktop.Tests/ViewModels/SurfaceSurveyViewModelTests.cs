@@ -315,6 +315,11 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
             """
             {"event":"ScanOrganic","ScanType":"Log","Genus":"$Codex_Ent_Aleoids_Genus_Name;","Species":"$Codex_Ent_Aleoids_01_Name;","Variant":"$Codex_Ent_Aleoids_01_B_Name;","SystemAddress":42,"Body":7}
             """);
+        // Would auto-track a composition bookmark when processJournalMutations is true.
+        var codex = Event(
+            """
+            {"event":"CodexEntry","SubCategory":"$Codex_SubCategory_Organic_Structures;","EntryID":2310101,"SystemAddress":42,"BodyID":7,"Latitude":0.1,"Longitude":0.2}
+            """);
         var bookmark = Event(
             """
             {"event":"SendText","Message":"+tracker","To":"Local"}
@@ -322,7 +327,7 @@ public sealed class SurfaceSurveyViewModelTests : IDisposable
 
         await viewModel.ApplyUpdateAsync(
             Session(),
-            [organic, bookmark],
+            [organic, codex, bookmark],
             survey.CurrentStatus,
             ExobiologySnapshot.Empty,
             processJournalMutations: false);
