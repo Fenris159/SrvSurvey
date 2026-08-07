@@ -57,6 +57,18 @@
     <SolidColorBrush x:Key="RavenOverlayFczCheckpointBrush" Color="#FFFF00" />
     <SolidColorBrush x:Key="RavenOverlayFczCheckpointLocalBrush" Color="#00FF00" />
     <SolidColorBrush x:Key="RavenOverlayFczPowerPostBrush" Color="#DAA520" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianBackgroundBrush" Color="#000000" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianHeaderBrush" Color="#FFFF00" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianPrimaryBrush" Color="#FF6F00" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianPrimaryDimBrush" Color="#5F3003" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianSecondaryBrush" Color="#54DFED" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianSecondaryDimBrush" Color="#008B8B" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianTextBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianMutedBrush" Color="#646464" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianDangerBrush" Color="#FF0000" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianSuccessBrush" Color="#00FF00" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianWarningBrush" Color="#FFFF00" />
+    <SolidColorBrush x:Key="RavenOverlayGuardianSurfaceBrush" Color="#141414" />
     <presentation:FrontierAssetImageConverter
         x:Key="FrontierAssetImageConverter" />
     <presentation:BundledAssetImageConverter

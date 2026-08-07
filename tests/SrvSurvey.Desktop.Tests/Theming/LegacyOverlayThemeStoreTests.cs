@@ -41,7 +41,15 @@ public sealed class LegacyOverlayThemeStoreTests : IDisposable
         Assert.Equal(Color.FromArgb(255, 1, 2, 3), theme.GetColor("green"));
         Assert.Equal(theme.GetColor("green"), theme.GetColor("colonise.surplus"));
         Assert.Equal(Color.FromArgb(255, 255, 0, 0), theme.GetColor("red"));
-        Assert.Equal(29, theme.Colors.Count);
+        Assert.Equal(
+            LegacyOverlayThemeStore.CreateDefault().Colors.Count,
+            theme.Colors.Count);
+        Assert.Equal(
+            Color.FromArgb(255, 255, 111, 0),
+            theme.GetColor("guardian.primary"));
+        Assert.Equal(
+            Color.FromArgb(255, 84, 223, 237),
+            theme.GetColor("guardian.secondary"));
     }
 
     [Fact]

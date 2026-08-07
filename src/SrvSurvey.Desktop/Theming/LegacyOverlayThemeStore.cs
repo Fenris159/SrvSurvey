@@ -41,6 +41,20 @@ public sealed class LegacyOverlayThemeStore
             ["fcz.checkpoint"] = Color.FromArgb(255, 255, 255, 0),
             ["fcz.checkpointLocal"] = Color.FromArgb(255, 0, 255, 0),
             ["fcz.powerPost"] = Color.FromArgb(255, 218, 165, 32),
+            // Guardian overlays: dedicated palette so site/status panels can
+            // be tuned without changing the shared general accents.
+            ["guardian.background"] = Color.FromArgb(255, 0, 0, 0),
+            ["guardian.header"] = Color.FromArgb(255, 255, 255, 0),
+            ["guardian.primary"] = Color.FromArgb(255, 255, 111, 0),
+            ["guardian.primaryDark"] = Color.FromArgb(255, 95, 48, 3),
+            ["guardian.secondary"] = Color.FromArgb(255, 84, 223, 237),
+            ["guardian.secondaryDark"] = Color.FromArgb(255, 0, 139, 139),
+            ["guardian.text"] = Color.FromArgb(255, 255, 255, 255),
+            ["guardian.muted"] = Color.FromArgb(255, 100, 100, 100),
+            ["guardian.danger"] = Color.FromArgb(255, 255, 0, 0),
+            ["guardian.success"] = Color.FromArgb(255, 0, 255, 0),
+            ["guardian.warning"] = Color.FromArgb(255, 255, 255, 0),
+            ["guardian.surface"] = Color.FromArgb(255, 20, 20, 20),
         };
 
     private readonly string path;

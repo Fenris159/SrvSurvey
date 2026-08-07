@@ -97,6 +97,18 @@ public sealed class RavenThemeServiceTests : IDisposable
                      "RavenOverlayFczCheckpointBrush",
                      "RavenOverlayFczCheckpointLocalBrush",
                      "RavenOverlayFczPowerPostBrush",
+                     "RavenOverlayGuardianBackgroundBrush",
+                     "RavenOverlayGuardianHeaderBrush",
+                     "RavenOverlayGuardianPrimaryBrush",
+                     "RavenOverlayGuardianPrimaryDimBrush",
+                     "RavenOverlayGuardianSecondaryBrush",
+                     "RavenOverlayGuardianSecondaryDimBrush",
+                     "RavenOverlayGuardianTextBrush",
+                     "RavenOverlayGuardianMutedBrush",
+                     "RavenOverlayGuardianDangerBrush",
+                     "RavenOverlayGuardianSuccessBrush",
+                     "RavenOverlayGuardianWarningBrush",
+                     "RavenOverlayGuardianSurfaceBrush",
                  })
         {
             Assert.IsType<SolidColorBrush>(application.Resources[resource]);

@@ -39,6 +39,10 @@
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
   </Style>
+  <Style Selector="Window.srv-overlay TextBlock.guardian-title">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
+  </Style>
   <Style Selector="Window.srv-overlay TextBlock.guardian-legacy-middle">
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />

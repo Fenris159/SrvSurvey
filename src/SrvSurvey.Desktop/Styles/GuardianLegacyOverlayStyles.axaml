@@ -1,38 +1,76 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style Selector="TextBlock.guardian-legacy-middle">
+  <!-- Compact Guardian HUD grammar: shared plotter hierarchy (title + body +
+       detail) on dedicated guardian.* theme brushes so palette customisation
+       does not retarget general overlay accents. -->
+
+  <Style Selector="Border.guardian-panel">
+    <Setter Property="Background" Value="{DynamicResource RavenGuardianBackgroundBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="5" />
+    <Setter Property="Padding" Value="5" />
+  </Style>
+
+  <Style Selector="Border.guardian-header-rule">
+    <Setter Property="Height" Value="1" />
+    <Setter Property="Margin" Value="0,1,0,2" />
+    <Setter Property="Background" Value="{DynamicResource RavenGuardianHeaderBrush}" />
+    <Setter Property="Opacity" Value="0.65" />
+  </Style>
+
+  <Style Selector="TextBlock.guardian-title">
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
     <Setter Property="FontSize" Value="12" />
-    <Setter Property="Foreground" Value="{DynamicResource RavenPrimaryBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenGuardianHeaderBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.guardian-legacy-middle">
+    <Setter Property="FontFamily"
+            Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenGuardianTextBrush}" />
   </Style>
   <Style Selector="TextBlock.guardian-legacy-middle-bold">
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Oxanium#Oxanium" />
-    <Setter Property="FontSize" Value="12" />
+    <Setter Property="FontSize" Value="11" />
     <Setter Property="FontWeight" Value="Bold" />
-    <Setter Property="Foreground" Value="{DynamicResource RavenPrimaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenGuardianTextBrush}" />
   </Style>
   <Style Selector="TextBlock.guardian-legacy-small">
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
-    <Setter Property="FontSize" Value="8" />
-    <Setter Property="Foreground" Value="{DynamicResource RavenPrimaryBrush}" />
+    <Setter Property="FontSize" Value="9" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenGuardianMutedBrush}" />
   </Style>
   <Style Selector="TextBlock.guardian-legacy-small-bold">
     <Setter Property="FontFamily"
             Value="avares://SrvSurvey.Desktop/Assets/Fonts/Rajdhani#Rajdhani" />
-    <Setter Property="FontSize" Value="8" />
-    <Setter Property="FontWeight" Value="Bold" />
-    <Setter Property="Foreground" Value="{DynamicResource RavenPrimaryBrush}" />
+    <Setter Property="FontSize" Value="9" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenGuardianMutedBrush}" />
+  </Style>
+
+  <!-- Role modifiers layered on the size classes above. -->
+  <Style Selector="TextBlock.guardian-legacy-primary">
+    <Setter Property="Foreground" Value="{DynamicResource RavenGuardianPrimaryBrush}" />
   </Style>
   <Style Selector="TextBlock.guardian-legacy-cyan">
-    <Setter Property="Foreground" Value="{DynamicResource RavenSecondaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenGuardianSecondaryBrush}" />
   </Style>
   <Style Selector="TextBlock.guardian-legacy-dark-cyan">
-    <Setter Property="Foreground" Value="{DynamicResource RavenSecondaryDimBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenGuardianSecondaryDimBrush}" />
   </Style>
   <Style Selector="TextBlock.guardian-legacy-red">
-    <Setter Property="Foreground" Value="{DynamicResource RavenDangerBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource RavenGuardianDangerBrush}" />
+  </Style>
+  <Style Selector="TextBlock.guardian-legacy-warning">
+    <Setter Property="Foreground" Value="{DynamicResource RavenGuardianWarningBrush}" />
+  </Style>
+  <Style Selector="TextBlock.guardian-legacy-success">
+    <Setter Property="Foreground" Value="{DynamicResource RavenGuardianSuccessBrush}" />
   </Style>
 </Styles>

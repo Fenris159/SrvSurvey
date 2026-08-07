@@ -44,6 +44,18 @@ public sealed class RavenThemeService
             ["RavenOverlayFczCheckpointBrush"] = "fcz.checkpoint",
             ["RavenOverlayFczCheckpointLocalBrush"] = "fcz.checkpointLocal",
             ["RavenOverlayFczPowerPostBrush"] = "fcz.powerPost",
+            ["RavenOverlayGuardianBackgroundBrush"] = "guardian.background",
+            ["RavenOverlayGuardianHeaderBrush"] = "guardian.header",
+            ["RavenOverlayGuardianPrimaryBrush"] = "guardian.primary",
+            ["RavenOverlayGuardianPrimaryDimBrush"] = "guardian.primaryDark",
+            ["RavenOverlayGuardianSecondaryBrush"] = "guardian.secondary",
+            ["RavenOverlayGuardianSecondaryDimBrush"] = "guardian.secondaryDark",
+            ["RavenOverlayGuardianTextBrush"] = "guardian.text",
+            ["RavenOverlayGuardianMutedBrush"] = "guardian.muted",
+            ["RavenOverlayGuardianDangerBrush"] = "guardian.danger",
+            ["RavenOverlayGuardianSuccessBrush"] = "guardian.success",
+            ["RavenOverlayGuardianWarningBrush"] = "guardian.warning",
+            ["RavenOverlayGuardianSurfaceBrush"] = "guardian.surface",
         };
 
     private readonly Application application;
