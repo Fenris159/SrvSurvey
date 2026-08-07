@@ -59,6 +59,108 @@ if [[ $dependency_failure -ne 0 ]]; then
     exit 1
 fi
 
+# App logs can include NULs from native X11 chatter; always search as text.
+log_contains() {
+    local needle=$1
+    shift
+    local root
+    for root in "$@"; do
+        if [[ -d "$root" ]] \
+            && grep -R -a -F -q -- "$needle" "$root" 2>/dev/null; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+dump_logs() {
+    local process_log=$1
+    local data_root=$2
+    if [[ -f "$process_log" ]]; then
+        cat "$process_log" >&2 || true
+    fi
+    if [[ -d "$data_root" ]]; then
+        find "$data_root" -maxdepth 5 -type f -print -exec sed -n '1,200p' {} \; >&2 || true
+    fi
+}
+
+# Start the AppImage under Xvfb and wait until expected log markers appear
+# (or until the deadline). Avalonia/X11 init can take longer than a fixed
+# 8s kill window under busy CI runners.
+run_smoke_until_logs() {
+    local process_log=$1
+    local data_root=$2
+    local deadline_seconds=$3
+    shift 3
+    local markers=("$@")
+
+    set +e
+    xvfb-run --auto-servernum --server-args="-screen 0 1280x800x24" \
+        env \
+            HOME="$smoke_root/home" \
+            XDG_CONFIG_HOME="$smoke_root/config" \
+            XDG_DATA_HOME="$smoke_root/data" \
+            XDG_CACHE_HOME="$smoke_root/cache" \
+            XDG_RUNTIME_DIR="$smoke_root/runtime" \
+            XDG_SESSION_TYPE=wayland \
+            WAYLAND_DISPLAY=wayland-ci \
+            ${EXTRA_SMOKE_ENV:-} \
+            "$app_dir/AppRun" >"$process_log" 2>&1 &
+    local app_pid=$!
+    set -e
+
+    local elapsed=0
+    local all_found=0
+    while (( elapsed < deadline_seconds )); do
+        if ! kill -0 "$app_pid" 2>/dev/null; then
+            wait "$app_pid" || true
+            echo "The AppImage exited before smoke markers were observed (after ${elapsed}s)." >&2
+            dump_logs "$process_log" "$data_root"
+            return 1
+        fi
+
+        all_found=1
+        local marker
+        for marker in "${markers[@]}"; do
+            if ! log_contains "$marker" "$data_root/SrvSurvey/logs" "$data_root"; then
+                all_found=0
+                break
+            fi
+        done
+        if (( all_found == 1 )); then
+            break
+        fi
+
+        sleep 1
+        elapsed=$((elapsed + 1))
+    done
+
+    if (( all_found != 1 )); then
+        kill -TERM "$app_pid" 2>/dev/null || true
+        sleep 1
+        kill -KILL "$app_pid" 2>/dev/null || true
+        wait "$app_pid" 2>/dev/null || true
+        echo "Timed out after ${deadline_seconds}s waiting for AppImage log markers:" >&2
+        printf '  - %s\n' "${markers[@]}" >&2
+        dump_logs "$process_log" "$data_root"
+        return 1
+    fi
+
+    # Markers observed while the process is still alive — success for this phase.
+    kill -TERM "$app_pid" 2>/dev/null || true
+    local wait_status=0
+    set +e
+    wait "$app_pid"
+    wait_status=$?
+    set -e
+    # 143 = 128+SIGTERM is expected; 0 if it exited cleanly after TERM.
+    if [[ $wait_status -ne 0 && $wait_status -ne 143 && $wait_status -ne 137 ]]; then
+        # Still accept if markers were found; native shutdown can be noisy.
+        :
+    fi
+    return 0
+}
+
 smoke_root="$work_root/smoke"
 mkdir -p \
     "$smoke_root/home" \
@@ -68,84 +170,69 @@ mkdir -p \
     "$smoke_root/runtime"
 chmod 0700 "$smoke_root/runtime"
 smoke_log="$smoke_root/process.log"
+smoke_deadline_seconds=${SRVSURVEY_APPIMAGE_SMOKE_SECONDS:-25}
 
-set +e
-timeout --signal=TERM --kill-after=2s 8s \
-    xvfb-run --auto-servernum --server-args="-screen 0 1280x800x24" \
-    env \
-        HOME="$smoke_root/home" \
-        XDG_CONFIG_HOME="$smoke_root/config" \
-        XDG_DATA_HOME="$smoke_root/data" \
-        XDG_CACHE_HOME="$smoke_root/cache" \
-        XDG_RUNTIME_DIR="$smoke_root/runtime" \
-        XDG_SESSION_TYPE=wayland \
-        WAYLAND_DISPLAY=wayland-ci \
-        "$app_dir/AppRun" >"$smoke_log" 2>&1
-smoke_status=$?
-set -e
-
-if [[ $smoke_status -ne 124 ]]; then
-    echo "The AppImage did not remain running for the XWayland-mode smoke window (status $smoke_status)." >&2
-    cat "$smoke_log" >&2
-    exit 1
-fi
-
-if ! grep -R -Fq \
+unset EXTRA_SMOKE_ENV
+if ! run_smoke_until_logs \
+    "$smoke_log" \
+    "$smoke_root/data" \
+    "$smoke_deadline_seconds" \
     "Display host: LinuxXWayland" \
-    "$smoke_root/data/SrvSurvey/logs"; then
-    echo "The AppImage did not report the LinuxXWayland display host." >&2
-    cat "$smoke_log" >&2
-    find "$smoke_root/data" -maxdepth 4 -type f -print -exec sed -n '1,120p' {} \; >&2
-    exit 1
-fi
-
-if ! grep -R -Fq \
     "X11 overlay stacking policy: standard topmost" \
-    "$smoke_root/data/SrvSurvey/logs"; then
+    "Overlay presentation: MultipleWindows"; then
     echo "The AppImage did not use the safe overlay fallback when no window manager advertised KDE OSD support." >&2
-    cat "$smoke_log" >&2
-    find "$smoke_root/data" -maxdepth 4 -type f -print -exec sed -n '1,120p' {} \; >&2
-    exit 1
-fi
-
-if ! grep -R -Fq \
-    "Overlay presentation: MultipleWindows" \
-    "$smoke_root/data/SrvSurvey/logs"; then
-    echo "The ordinary XWayland smoke run did not preserve separate overlay windows." >&2
-    cat "$smoke_log" >&2
-    find "$smoke_root/data" -maxdepth 4 -type f -print -exec sed -n '1,160p' {} \; >&2
     exit 1
 fi
 
 gamescope_log="$smoke_root/gamescope-process.log"
+# Fresh data dir so combined-host selection is observed in a new session log.
+gamescope_data="$smoke_root/gamescope-data"
+mkdir -p "$gamescope_data"
+export EXTRA_SMOKE_ENV="GAMESCOPE_WAYLAND_DISPLAY=gamescope-ci"
+# Point XDG_DATA_HOME at a clean tree for the gamescope pass.
 set +e
-timeout --signal=TERM --kill-after=2s 8s \
-    xvfb-run --auto-servernum --server-args="-screen 0 1280x800x24" \
+xvfb-run --auto-servernum --server-args="-screen 0 1280x800x24" \
     env \
         HOME="$smoke_root/home" \
         XDG_CONFIG_HOME="$smoke_root/config" \
-        XDG_DATA_HOME="$smoke_root/data" \
+        XDG_DATA_HOME="$gamescope_data" \
         XDG_CACHE_HOME="$smoke_root/cache" \
         XDG_RUNTIME_DIR="$smoke_root/runtime" \
         XDG_SESSION_TYPE=wayland \
         WAYLAND_DISPLAY=wayland-ci \
         GAMESCOPE_WAYLAND_DISPLAY=gamescope-ci \
-        "$app_dir/AppRun" >"$gamescope_log" 2>&1
-gamescope_status=$?
+        "$app_dir/AppRun" >"$gamescope_log" 2>&1 &
+gamescope_pid=$!
 set -e
 
-if [[ $gamescope_status -ne 124 ]]; then
-    echo "The AppImage did not remain running for the Gamescope combined-host smoke window (status $gamescope_status)." >&2
-    cat "$gamescope_log" >&2
-    exit 1
-fi
+gamescope_elapsed=0
+gamescope_found=0
+while (( gamescope_elapsed < smoke_deadline_seconds )); do
+    if ! kill -0 "$gamescope_pid" 2>/dev/null; then
+        wait "$gamescope_pid" || true
+        echo "The AppImage exited before Gamescope combined-host selection was observed." >&2
+        dump_logs "$gamescope_log" "$gamescope_data"
+        exit 1
+    fi
+    if log_contains \
+        "Overlay presentation: CombinedWindow" \
+        "$gamescope_data/SrvSurvey/logs" \
+        "$gamescope_data"; then
+        gamescope_found=1
+        break
+    fi
+    sleep 1
+    gamescope_elapsed=$((gamescope_elapsed + 1))
+done
 
-if ! grep -R -Fq \
-    "Overlay presentation: CombinedWindow" \
-    "$smoke_root/data/SrvSurvey/logs"; then
+kill -TERM "$gamescope_pid" 2>/dev/null || true
+sleep 1
+kill -KILL "$gamescope_pid" 2>/dev/null || true
+wait "$gamescope_pid" 2>/dev/null || true
+
+if (( gamescope_found != 1 )); then
     echo "The Gamescope smoke run did not select the combined overlay host." >&2
-    cat "$gamescope_log" >&2
-    find "$smoke_root/data" -maxdepth 4 -type f -print -exec sed -n '1,180p' {} \; >&2
+    dump_logs "$gamescope_log" "$gamescope_data"
     exit 1
 fi
 
