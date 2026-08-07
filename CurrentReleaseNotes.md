@@ -1,10 +1,30 @@
-# SrvSurvey-XP 2.1.3.0-rc.2
+# SrvSurvey-XP 2.1.3.0-rc.3
 
-This is the second release candidate using the isolated SrvSurvey-XP release
+This is the third release candidate using the isolated SrvSurvey-XP release
 identity. It is intended for active testing against Elite Dangerous before the
 cross-platform branch is promoted to a stable XP release.
 
-## What's new in 2.1.3.0-rc.2
+## What's new in 2.1.3.0-rc.3
+
+- Restyles Guardian system, status, site, and Ram Tah overlays to the compact
+  shared HUD chrome used by other plotters (solid panel, title + hairline,
+  hierarchy), dropping the literal WinForms scanline field and orange edge
+  bands while keeping site-map glyphs on the shared map control for parity
+  with the main Guardian map view.
+- Adds dedicated `guardian.*` overlay colour keys (background, surface, header,
+  primary/secondary, text, muted, warning, success, danger) so Guardian panel
+  chrome can be customized independently of the shared general accents, with
+  theme-store defaults, settings UI, and resource mapping coverage.
+- Completes the exobiology residual-risk hardening pass for body-name
+  normalization, prior-scan display, multi-body surfaces, and bootstrap
+  no-mutation contracts, finishing the Avalonia exobiology parity checklist.
+- Restores upstream settings label and visual-aid parity, and fixes squadron
+  fleet-carrier cargo zero-diff for Raven Colonial shopping lists.
+- Clears a large SonarCloud maintainability backlog on the Avalonia branch and
+  scopes analysis away from binary assets and tooling scripts so quality gates
+  stay green without false-positive noise.
+
+## Highlights carried forward from 2.1.3.0-rc.2
 
 - Completes the Guardian survey workflow parity pass: persistent commander site
   and beacon state, Ram Tah guidance and missing-artifact styling, exact legacy
@@ -107,11 +127,11 @@ cross-platform branch is promoted to a stable XP release.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.2`
-- Tag: `xp-v2.1.3.0-rc.2`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.2-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.2-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.2-x86_64.AppImage`
+- Version: `2.1.3.0-rc.3`
+- Tag: `xp-v2.1.3.0-rc.3`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.3-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.3-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.3-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
