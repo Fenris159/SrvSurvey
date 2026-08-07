@@ -99,7 +99,7 @@ run_smoke_until_logs() {
         env \
             HOME="$smoke_root/home" \
             XDG_CONFIG_HOME="$smoke_root/config" \
-            XDG_DATA_HOME="$smoke_root/data" \
+            XDG_DATA_HOME="$data_root" \
             XDG_CACHE_HOME="$smoke_root/cache" \
             XDG_RUNTIME_DIR="$smoke_root/runtime" \
             XDG_SESSION_TYPE=wayland \
@@ -189,50 +189,12 @@ gamescope_log="$smoke_root/gamescope-process.log"
 gamescope_data="$smoke_root/gamescope-data"
 mkdir -p "$gamescope_data"
 export EXTRA_SMOKE_ENV="GAMESCOPE_WAYLAND_DISPLAY=gamescope-ci"
-# Point XDG_DATA_HOME at a clean tree for the gamescope pass.
-set +e
-xvfb-run --auto-servernum --server-args="-screen 0 1280x800x24" \
-    env \
-        HOME="$smoke_root/home" \
-        XDG_CONFIG_HOME="$smoke_root/config" \
-        XDG_DATA_HOME="$gamescope_data" \
-        XDG_CACHE_HOME="$smoke_root/cache" \
-        XDG_RUNTIME_DIR="$smoke_root/runtime" \
-        XDG_SESSION_TYPE=wayland \
-        WAYLAND_DISPLAY=wayland-ci \
-        GAMESCOPE_WAYLAND_DISPLAY=gamescope-ci \
-        "$app_dir/AppRun" >"$gamescope_log" 2>&1 &
-gamescope_pid=$!
-set -e
-
-gamescope_elapsed=0
-gamescope_found=0
-while (( gamescope_elapsed < smoke_deadline_seconds )); do
-    if ! kill -0 "$gamescope_pid" 2>/dev/null; then
-        wait "$gamescope_pid" || true
-        echo "The AppImage exited before Gamescope combined-host selection was observed." >&2
-        dump_logs "$gamescope_log" "$gamescope_data"
-        exit 1
-    fi
-    if log_contains \
-        "Overlay presentation: CombinedWindow" \
-        "$gamescope_data/SrvSurvey/logs" \
-        "$gamescope_data"; then
-        gamescope_found=1
-        break
-    fi
-    sleep 1
-    gamescope_elapsed=$((gamescope_elapsed + 1))
-done
-
-kill -TERM "$gamescope_pid" 2>/dev/null || true
-sleep 1
-kill -KILL "$gamescope_pid" 2>/dev/null || true
-wait "$gamescope_pid" 2>/dev/null || true
-
-if (( gamescope_found != 1 )); then
+if ! run_smoke_until_logs \
+    "$gamescope_log" \
+    "$gamescope_data" \
+    "$smoke_deadline_seconds" \
+    "Overlay presentation: CombinedWindow"; then
     echo "The Gamescope smoke run did not select the combined overlay host." >&2
-    dump_logs "$gamescope_log" "$gamescope_data"
     exit 1
 fi
 
