@@ -54,6 +54,39 @@ public sealed class OverlayEditorFolderTabTests
         }
     }
 
+    [AvaloniaFact]
+    public void RuntimePreviewDoesNotRetainASecondCatalogSizedBackingLayer()
+    {
+        var definition = OverlayLayoutCatalog.GetRequired(
+            "PlotGuardianSystem");
+        var preview = new OverlayPositionPreviewWindow(definition);
+        try
+        {
+            OverlayThemeResources.Apply(preview);
+            preview.ApplyRuntimePresentationTheme();
+            preview.ConfigureOpacity(0.35, null);
+            preview.Show();
+
+            Assert.Equal(1, preview.MinWidth);
+            Assert.Equal(0.35, preview.PreviewBodyControl.Opacity);
+            Assert.Equal(
+                new Thickness(0),
+                preview.PreviewBodyControl.Padding);
+            Assert.Same(
+                Brushes.Transparent,
+                preview.PreviewBodyControl.Background);
+            var measured = preview.GetExpectedPixelSize(1);
+            Assert.True(
+                measured.Width < definition.PreviewSize.Width,
+                $"Content measured {measured.Width} against the old "
+                    + $"{definition.PreviewSize.Width}px catalog floor.");
+        }
+        finally
+        {
+            preview.Close();
+        }
+    }
+
     private static void AssertFolderTabBrush(IBrush? candidate)
     {
         var brush = Assert.IsAssignableFrom<ISolidColorBrush>(candidate);

@@ -167,9 +167,12 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     {
         if (usesRuntimePresentation)
         {
-            // Match live hosts: grow/shrink to the presentation tree so
-            // preview text is not clipped at a fixed catalog box.
-            MinWidth = Definition.PreviewSize.Width;
+            // Match live hosts: the shared presentation (or the editor-only
+            // folder tab when it is wider) owns the measured width. Keeping
+            // the catalog width as a window floor leaves a transparent span
+            // behind compact content that looks like a second panel when the
+            // preview opacity is reduced.
+            MinWidth = 1;
             MaxWidth = double.PositiveInfinity;
             MinHeight = 1;
             MaxHeight = double.PositiveInfinity;

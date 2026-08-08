@@ -60,7 +60,7 @@
               Grid.Row="1"
               Margin="0,-2,0,0"
               MinHeight="24"
-              Background="{DynamicResource RavenWindowBrush}"
+              Background="Transparent"
               BorderBrush="#FFCC33"
               BorderThickness="2"
               CornerRadius="0,7,7,7"

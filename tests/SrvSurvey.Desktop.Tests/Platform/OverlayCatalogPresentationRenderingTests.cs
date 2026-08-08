@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -22,6 +23,16 @@ public sealed class OverlayCatalogPresentationRenderingTests
         };
         var outputDirectory = Environment.GetEnvironmentVariable(
             "SRVSURVEY_OVERLAY_RENDER_OUTPUT");
+        var opacityText = Environment.GetEnvironmentVariable(
+            "SRVSURVEY_OVERLAY_RENDER_OPACITY");
+        var previewOpacity = double.TryParse(
+            opacityText,
+            NumberStyles.Float,
+            CultureInfo.InvariantCulture,
+            out var parsedOpacity)
+            && parsedOpacity is >= 0 and <= 1
+                ? parsedOpacity
+                : 1d;
         if (!string.IsNullOrWhiteSpace(outputDirectory))
         {
             Directory.CreateDirectory(outputDirectory);
@@ -34,7 +45,15 @@ public sealed class OverlayCatalogPresentationRenderingTests
             {
                 OverlayThemeResources.Apply(preview);
                 preview.ApplyRuntimePresentationTheme();
+                preview.ConfigureOpacity(previewOpacity, null);
                 preview.Show();
+                Assert.Equal(1, preview.MinWidth);
+                Assert.Equal(
+                    new Thickness(0),
+                    preview.PreviewBodyControl.Padding);
+                Assert.Same(
+                    Avalonia.Media.Brushes.Transparent,
+                    preview.PreviewBodyControl.Background);
                 var frame = preview.CaptureRenderedFrame();
                 Assert.NotNull(frame);
                 // Content-driven hosts expand/contract with presentation
