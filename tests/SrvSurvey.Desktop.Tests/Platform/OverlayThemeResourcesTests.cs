@@ -71,7 +71,7 @@ public sealed class OverlayThemeResourcesTests
             Brushes.Yellow);
 
         Assert.Equal(new Thickness(0), surface.Margin);
-        Assert.Equal(new Thickness(5), surface.Padding);
+        Assert.Equal(new Thickness(4), surface.Padding);
         Assert.Same(Brushes.Black, surface.Background);
         Assert.Null(surface.BorderBrush);
         Assert.Equal(new Thickness(0), surface.BorderThickness);
@@ -100,7 +100,7 @@ public sealed class OverlayThemeResourcesTests
             OverlayThemeResources.OverlayTypographyClass,
             window.Classes);
         Assert.Equal(new Thickness(0), surface.Margin);
-        Assert.Equal(new Thickness(5), surface.Padding);
+        Assert.Equal(new Thickness(4), surface.Padding);
         Assert.Null(surface.BorderBrush);
         Assert.Equal(new Thickness(0), surface.BorderThickness);
         Assert.Equal(1d, surface.Opacity);
@@ -316,7 +316,7 @@ public sealed class OverlayThemeResourcesTests
             Brushes.Yellow);
 
         Assert.Equal(new Thickness(1), surface.Margin);
-        Assert.Equal(new Thickness(5), surface.Padding);
+        Assert.Equal(new Thickness(4), surface.Padding);
         Assert.Same(Brushes.Black, surface.Background);
         Assert.Same(Brushes.Yellow, surface.BorderBrush);
         Assert.Equal(new Thickness(2), surface.BorderThickness);

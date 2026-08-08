@@ -9,14 +9,13 @@
              ClipToBounds="True">
   <!-- Slim shopping list: compact chrome, no word-wrap, ~15 visible rows. -->
   <Border Margin="0"
-          Padding="6,5"
+          Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
           BorderThickness="0"
           CornerRadius="5">
     <Grid RowDefinitions="Auto,Auto,*,Auto"
           RowSpacing="3"
-          MinWidth="250"
-          MaxWidth="290">
+          MinWidth="200">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
         <StackPanel Spacing="0">
           <TextBlock Foreground="{DynamicResource RavenWarningBrush}"

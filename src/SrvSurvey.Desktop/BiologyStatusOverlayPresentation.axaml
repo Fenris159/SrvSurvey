@@ -10,7 +10,7 @@
   <!-- Legacy PlotBioStatus: 480x~80 content, orange header, cyan body text,
        three sample circles, range scale bar, completion %, codex image glyph. -->
   <Border Margin="0"
-          Padding="8,6"
+          Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
           BorderThickness="0"
           CornerRadius="0">

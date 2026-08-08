@@ -178,7 +178,7 @@ public static class OverlayThemeResources
     {
         ArgumentNullException.ThrowIfNull(surface);
         surface.Margin = new Thickness(isEditorPreview ? 1 : 0);
-        surface.Padding = new Thickness(5);
+        surface.Padding = new Thickness(4);
         surface.Background = windowBrush ?? surface.Background;
         surface.BorderBrush = isEditorPreview ? warningBrush : null;
         surface.BorderThickness = new Thickness(isEditorPreview ? 2 : 0);
@@ -375,9 +375,24 @@ public static class OverlayThemeResources
             return;
         }
 
-        if (window.MinWidth > width.Value)
+        // Catalog width is a preferred floor, not a hard clip edge. Content-
+        // driven hosts (WidthAndHeight) may grow so text is not truncated.
+        if (double.IsNaN(window.MinWidth) || window.MinWidth <= 0)
         {
             window.MinWidth = width.Value;
+        }
+
+        if (window.SizeToContent is SizeToContent.WidthAndHeight
+            or SizeToContent.Width)
+        {
+            if (!double.IsNaN(window.MaxWidth)
+                && window.MaxWidth > 0
+                && window.MaxWidth < width.Value)
+            {
+                window.MaxWidth = double.PositiveInfinity;
+            }
+
+            return;
         }
 
         if (window.MaxWidth < width.Value)
@@ -470,8 +485,21 @@ public static class OverlayThemeResources
         window.MinHeight = Scale(registration.BaseMinHeight, factor);
         window.MaxWidth = Scale(registration.BaseMaxWidth, factor);
         window.MaxHeight = Scale(registration.BaseMaxHeight, factor);
-        window.Width = Scale(registration.BaseWidth, factor);
-        window.Height = Scale(registration.BaseHeight, factor);
+
+        // Respect content-driven hosts: only force the axes the window is not
+        // already measuring from its presentation tree.
+        if (window.SizeToContent is SizeToContent.Manual
+            or SizeToContent.Height)
+        {
+            window.Width = Scale(registration.BaseWidth, factor);
+        }
+
+        if (window.SizeToContent is SizeToContent.Manual
+            or SizeToContent.Width)
+        {
+            window.Height = Scale(registration.BaseHeight, factor);
+        }
+
         registration.AppliedFactor = factor;
     }
 

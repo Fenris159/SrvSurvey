@@ -80,15 +80,14 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         }
 
         var effectiveScale = safeScaling * scaleFactor;
+        var measured = MeasureRuntimePresentationSize();
         return new PixelSize(
             Math.Max(
                 1,
-                (int)Math.Ceiling(
-                    Definition.PreviewSize.Width * effectiveScale)),
+                (int)Math.Ceiling(measured.Width * effectiveScale)),
             Math.Max(
                 1,
-                (int)Math.Ceiling(
-                    Definition.PreviewSize.Height * effectiveScale)));
+                (int)Math.Ceiling(measured.Height * effectiveScale)));
     }
 
     public PixelSize GetCurrentPixelSize(double scaling)
@@ -137,12 +136,24 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
     private void ApplyContentSize()
     {
-        Width = usesRuntimePresentation
-            ? Definition.PreviewSize.Width
-            : Preview.PreferredWidth;
+        if (usesRuntimePresentation)
+        {
+            // Match live hosts: grow/shrink to the presentation tree so
+            // preview text is not clipped at a fixed catalog box.
+            MinWidth = Definition.PreviewSize.Width;
+            MaxWidth = double.PositiveInfinity;
+            MinHeight = 1;
+            MaxHeight = double.PositiveInfinity;
+            Width = double.NaN;
+            Height = double.NaN;
+            SizeToContent = SizeToContent.WidthAndHeight;
+            return;
+        }
+
+        Width = Preview.PreferredWidth;
         MinWidth = Width;
         MaxWidth = Width;
-        if (usesRuntimePresentation || Preview.IsCompact)
+        if (Preview.IsCompact)
         {
             Height = Definition.PreviewSize.Height;
             MinHeight = Height;
@@ -157,6 +168,33 @@ public sealed partial class OverlayPositionPreviewWindow : Window
             Preview.PreferredWidth,
             double.PositiveInfinity));
         return Math.Max(1d, PreviewSurface.DesiredSize.Height);
+    }
+
+    private Size MeasureRuntimePresentationSize()
+    {
+        var available = new Size(
+            double.PositiveInfinity,
+            double.PositiveInfinity);
+        PreviewSurface.Measure(available);
+        var desired = PreviewSurface.DesiredSize;
+        // Prefer live measured content; catalog width is only a soft floor when
+        // the presentation actually wants that space (MinWidth on the host).
+        var width = Math.Max(
+            1d,
+            double.IsFinite(desired.Width) && desired.Width > 0
+                ? desired.Width
+                : Definition.PreviewSize.Width);
+        if (double.IsFinite(MinWidth) && MinWidth > 0)
+        {
+            width = Math.Max(width, MinWidth);
+        }
+
+        var height = Math.Max(
+            1d,
+            double.IsFinite(desired.Height) && desired.Height > 0
+                ? desired.Height
+                : Definition.PreviewSize.Height);
+        return new Size(width, height);
     }
 
     internal void ApplyRuntimePresentationTheme()

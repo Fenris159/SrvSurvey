@@ -9,7 +9,7 @@
              ClipToBounds="True">
   <Border Width="32"
           Height="32"
-          Padding="5"
+          Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
           BorderBrush="{DynamicResource RavenBorderBrush}"
           BorderThickness="1"

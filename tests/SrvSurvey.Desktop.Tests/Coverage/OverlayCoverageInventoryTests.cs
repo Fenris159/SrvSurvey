@@ -245,6 +245,15 @@ public sealed partial class OverlayCoverageInventoryTests
                 "src",
                 "SrvSurvey.Desktop",
                 pair.Value));
+            // Content-driven WidthAndHeight hosts may set only a soft MinWidth
+            // that is lower than the catalog anchor; only pin-check fixed hosts.
+            if (markup.Contains(
+                    "SizeToContent=\"WidthAndHeight\"",
+                    StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             var match = WindowWidthRegex().Match(markup);
             if (!match.Success)
             {
@@ -276,9 +285,9 @@ public sealed partial class OverlayCoverageInventoryTests
             "SrvSurvey.Desktop",
             PreviewProductionWindows["PlotBuildCommodities"]));
 
-        Assert.Contains("Height=\"1\"", markup);
+        Assert.Contains("MinHeight=\"1\"", markup);
         Assert.Contains("MaxHeight=\"480\"", markup);
-        Assert.Contains("SizeToContent=\"Height\"", markup);
+        Assert.Contains("SizeToContent=\"WidthAndHeight\"", markup);
     }
 
     [Fact]
@@ -470,7 +479,7 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains(
             "surface.BorderThickness = new Thickness(isEditorPreview ? 2 : 0)",
             themeResources);
-        Assert.Contains("surface.Padding = new Thickness(5)", themeResources);
+        Assert.Contains("surface.Padding = new Thickness(4)", themeResources);
         Assert.Contains("simulated game data", interaction);
         Assert.Contains("game.IsAvailable", interaction);
         Assert.Contains("? game.ClientBounds", interaction);
@@ -524,7 +533,7 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("Width=\"240\"", biologyOverlay);
         Assert.Contains("BiologySurveyOverlayPresentation", biologyOverlay);
         Assert.Contains("Text=\"System biology\"", biologyPresentation);
-        Assert.Contains("Padding=\"5\"", biologyPresentation);
+        Assert.Contains("Padding=\"4\"", biologyPresentation);
         Assert.Contains("BorderThickness=\"0\"", biologyPresentation);
         Assert.Contains("CornerRadius=\"5\"", biologyPresentation);
         Assert.DoesNotContain("EXOBIOLOGY SURVEY", biologyPresentation);

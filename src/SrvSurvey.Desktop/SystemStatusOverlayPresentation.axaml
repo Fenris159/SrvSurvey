@@ -12,7 +12,7 @@
        editor-only yellow border). Title "System status" is injected by
        ApplyLegacyPresentation when the catalog preview height is >= 50. -->
   <Border Margin="0"
-          Padding="5"
+          Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
           BorderThickness="0"
           CornerRadius="5">

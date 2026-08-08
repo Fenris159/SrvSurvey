@@ -7,7 +7,7 @@
              x:DataType="vm:CommanderInstancesViewModel"
              mc:Ignorable="d"
              ClipToBounds="True">
-  <Border Padding="12,4"
+  <Border Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
           BorderBrush="{DynamicResource RavenAccentBrush}"
           BorderThickness="1"

@@ -16,7 +16,7 @@
         Title="Overlay position preview">
   <Border x:Name="PreviewSurface"
           Margin="1"
-          Padding="5"
+          Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
           BorderBrush="{DynamicResource RavenWarningBrush}"
           BorderThickness="2"

@@ -8,7 +8,7 @@
              mc:Ignorable="d"
              ClipToBounds="True">
   <Border Margin="0"
-          Padding="6,5"
+          Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
           BorderThickness="0"
           CornerRadius="5">
