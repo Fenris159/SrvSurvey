@@ -316,14 +316,19 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
                 + TimeSpan.FromSeconds(2).Ticks,
         };
 
-        await ApplicationUpdateBootstrap.WaitForParentExitAsync(
-            currentPlan,
-            validatedParent: null,
-            CancellationToken.None);
-        await ApplicationUpdateBootstrap.WaitForParentExitAsync(
-            currentPlan with { ParentProcessId = int.MaxValue },
-            validatedParent: null,
-            CancellationToken.None);
+        var staleException = await Record.ExceptionAsync(() =>
+            ApplicationUpdateBootstrap.WaitForParentExitAsync(
+                currentPlan,
+                validatedParent: null,
+                CancellationToken.None));
+        var missingException = await Record.ExceptionAsync(() =>
+            ApplicationUpdateBootstrap.WaitForParentExitAsync(
+                currentPlan with { ParentProcessId = int.MaxValue },
+                validatedParent: null,
+                CancellationToken.None));
+
+        Assert.Null(staleException);
+        Assert.Null(missingException);
     }
 
     [Fact]
