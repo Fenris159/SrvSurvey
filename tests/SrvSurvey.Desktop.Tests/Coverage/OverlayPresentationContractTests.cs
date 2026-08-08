@@ -212,16 +212,23 @@ public sealed class OverlayPresentationContractTests
     }
 
     [Theory]
-    [InlineData("PlotFSSInfo", "FssInfoOverlayPresentation.axaml", "FssInfoOverlayWindow.axaml", 270)]
-    [InlineData("PlotFSS", "LastFssBodyOverlayPresentation.axaml", "LastFssBodyOverlayWindow.axaml", 285)]
-    [InlineData("PlotBodyInfo", "BodyInformationOverlayPresentation.axaml", "BodyInformationOverlayWindow.axaml", 290)]
-    [InlineData("PlotFleetCarrierRoute", "FleetCarrierRouteOverlayPresentation.axaml", "FleetCarrierRouteOverlayWindow.axaml", 290)]
-    [InlineData("PlotRouteBio", "RouteBioOverlayPresentation.axaml", "RouteBioOverlayWindow.axaml", 260)]
+    [InlineData("PlotFSSInfo", "FssInfoOverlayPresentation.axaml", "FssInfoOverlayWindow.axaml", 270, false)]
+    [InlineData("PlotFSS", "LastFssBodyOverlayPresentation.axaml", "LastFssBodyOverlayWindow.axaml", 240, true)]
+    [InlineData("PlotBodyInfo", "BodyInformationOverlayPresentation.axaml", "BodyInformationOverlayWindow.axaml", 260, true)]
+    [InlineData("PlotFleetCarrierRoute", "FleetCarrierRouteOverlayPresentation.axaml", "FleetCarrierRouteOverlayWindow.axaml", 260, true)]
+    [InlineData("PlotGuardianStatus", "GuardianStatusOverlayPresentation.axaml", "GuardianStatusOverlayWindow.axaml", 260, true)]
+    [InlineData("PlotGuardianSystem", "GuardianSystemOverlayPresentation.axaml", "GuardianSystemOverlayWindow.axaml", 190, true)]
+    [InlineData("PlotHumanSite", "HumanSiteOverlayPresentation.axaml", "HumanSiteOverlayWindow.axaml", 260, true)]
+    [InlineData("PlotQuestMini", "QuestIndicatorOverlayPresentation.axaml", "QuestIndicatorOverlayWindow.axaml", 220, true)]
+    [InlineData("PlotRamTah", "RamTahOverlayPresentation.axaml", "RamTahOverlayWindow.axaml", 190, true)]
+    [InlineData("PlotStationInfo", "StationInfoOverlayPresentation.axaml", "StationInfoOverlayWindow.axaml", 220, true)]
+    [InlineData("PlotRouteBio", "RouteBioOverlayPresentation.axaml", "RouteBioOverlayWindow.axaml", 260, false)]
     public void CompactPresentationsShareOneBoundedWidthWithTheirHosts(
         string plotterName,
         string presentationName,
         string windowName,
-        int expectedWidth)
+        int expectedWidth,
+        bool isContentSized)
     {
         var root = FindRepositoryRoot();
         var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
@@ -230,8 +237,18 @@ public sealed class OverlayPresentationContractTests
             presentationName));
         var window = File.ReadAllText(Path.Combine(desktop, windowName));
 
-        Assert.Contains($"Width=\"{expectedWidth}\"", presentation);
-        Assert.Contains($"MinWidth=\"{expectedWidth}\"", window);
+        if (isContentSized)
+        {
+            Assert.Contains($"MaxWidth=\"{expectedWidth}\"", presentation);
+            Assert.Contains("HorizontalAlignment=\"Left\"", presentation);
+            Assert.Contains("MinWidth=\"1\"", window);
+            Assert.Contains($"MaxWidth=\"{expectedWidth}\"", window);
+        }
+        else
+        {
+            Assert.Contains($"Width=\"{expectedWidth}\"", presentation);
+            Assert.Contains($"MinWidth=\"{expectedWidth}\"", window);
+        }
         Assert.Equal(
             expectedWidth,
             OverlayLayoutCatalog.GetRequired(plotterName).PreviewSize.Width);
@@ -282,6 +299,65 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("TextBlock.overlay-detail", typography);
         Assert.Contains("TextBlock.overlay-caption", typography);
         Assert.DoesNotContain("TextBlock[FontSize=", typography);
+    }
+
+    [Fact]
+    public void RequestedCompactRowsDoNotUsePanelFillingValueColumns()
+    {
+        var root = FindRepositoryRoot();
+        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        var bodyInfo = File.ReadAllText(Path.Combine(
+            desktop,
+            "BodyInformationOverlayPresentation.axaml"));
+        var lastFss = File.ReadAllText(Path.Combine(
+            desktop,
+            "LastFssBodyOverlayPresentation.axaml"));
+        var quest = File.ReadAllText(Path.Combine(
+            desktop,
+            "QuestIndicatorOverlayPresentation.axaml"));
+        var station = File.ReadAllText(Path.Combine(
+            desktop,
+            "StationInfoOverlayPresentation.axaml"));
+        var carrier = File.ReadAllText(Path.Combine(
+            desktop,
+            "FleetCarrierRouteOverlayPresentation.axaml"));
+        var humanSite = File.ReadAllText(Path.Combine(
+            desktop,
+            "HumanSiteOverlayPresentation.axaml"));
+
+        Assert.Contains("ColumnDefinitions=\"Auto,Auto,Auto\"", bodyInfo);
+        Assert.DoesNotContain("Width=\"132\"", bodyInfo);
+        Assert.Contains("Grid.Row=\"2\"", lastFss);
+        Assert.Contains("LastFssBodyDistance", lastFss);
+        Assert.Contains("LastFssBiologyRewardText", lastFss);
+        Assert.Contains("Grid.Row=\"1\"", quest);
+        Assert.Contains("UnreadMessageText", quest);
+        Assert.Contains("ColumnDefinitions=\"Auto,Auto\"", station);
+        Assert.Contains("HorizontalAlignment=\"Left\"", station);
+        Assert.Contains("ColumnDefinitions=\"Auto,Auto\"", carrier);
+        Assert.Contains("HorizontalAlignment=\"Left\"", carrier);
+        Assert.Contains("<WrapPanel Orientation=\"Horizontal\">", humanSite);
+    }
+
+    [Fact]
+    public void PriorScanStatePillsShareOneVisualContract()
+    {
+        var root = FindRepositoryRoot();
+        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        var priorScans = File.ReadAllText(Path.Combine(
+            desktop,
+            "PriorScansOverlayPresentation.axaml"));
+        var ravenStyles = File.ReadAllText(Path.Combine(
+            desktop,
+            "Styles",
+            "RavenStyles.axaml"));
+
+        Assert.Equal(
+            3,
+            priorScans.Split("Classes=\"badge overlay-state-pill\"").Length - 1);
+        Assert.Contains("Border.badge.overlay-state-pill", ravenStyles);
+        Assert.Contains("Property=\"Width\" Value=\"66\"", ravenStyles);
+        Assert.Contains("Property=\"Padding\" Value=\"8,3\"", ravenStyles);
     }
 
     [Fact]

@@ -6,6 +6,8 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:QuestIndicatorViewModel"
              mc:Ignorable="d"
+             MaxWidth="220"
+             HorizontalAlignment="Left"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"
@@ -13,7 +15,10 @@
           BorderThickness="0"
           CornerRadius="5">
     <StackPanel Spacing="4">
-      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
+      <Grid ColumnDefinitions="Auto,*"
+            RowDefinitions="Auto,Auto"
+            ColumnSpacing="6"
+            RowSpacing="1">
         <Border Width="18"
                 Height="18"
                 Background="{DynamicResource RavenAccentBrush}"
@@ -31,9 +36,9 @@
                    FontWeight="SemiBold"
                    TextTrimming="CharacterEllipsis"
                    Text="{Binding QuestTitle}" />
-        <TextBlock Grid.Column="2"
+        <TextBlock Grid.Row="1"
+                   Grid.Column="1"
                    IsVisible="{Binding HasUnreadMessages}"
-                   VerticalAlignment="Center"
                    Foreground="{DynamicResource RavenAccentBrush}"
                    FontSize="9"
                    FontWeight="Bold"

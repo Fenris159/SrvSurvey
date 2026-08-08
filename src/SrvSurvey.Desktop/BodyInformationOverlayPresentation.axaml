@@ -6,7 +6,8 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:SystemSurveyOverlayViewModel"
              mc:Ignorable="d"
-             Width="290"
+             MaxWidth="260"
+             HorizontalAlignment="Left"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"
@@ -91,7 +92,9 @@
           </Border>
         </Grid>
 
-        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+        <Grid ColumnDefinitions="Auto,Auto,Auto"
+              ColumnSpacing="12"
+              HorizontalAlignment="Left">
           <StackPanel Spacing="2">
             <TextBlock Classes="eyebrow overlay-caption" Text="TEMPERATURE" />
             <TextBlock Classes="monospace overlay-body"
@@ -173,10 +176,9 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:BodyCompositionRowViewModel">
-                <Grid Width="132"
-                      Margin="0,0,4,3"
-                      ColumnDefinitions="*,Auto"
-                      ColumnSpacing="6">
+                <Grid Margin="0,0,10,3"
+                      ColumnDefinitions="Auto,Auto"
+                      ColumnSpacing="5">
                   <TextBlock Classes="muted overlay-caption"
                              Text="{Binding Name}"
                              TextTrimming="CharacterEllipsis" />
@@ -200,12 +202,11 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:BodyCompositionRowViewModel">
-                <Border Width="132"
-                        Margin="0,0,4,4"
+                <Border Margin="0,0,6,4"
                         Padding="7,4"
                         Background="{DynamicResource RavenSurfaceBrush}"
                         CornerRadius="6">
-                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                  <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="5">
                     <TextBlock Classes="muted overlay-caption"
                                IsVisible="{Binding !IsRare}"
                                Text="{Binding Name}"

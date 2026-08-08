@@ -4,7 +4,8 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:Class="SrvSurvey.Desktop.RamTahOverlayPresentation"
              x:DataType="vm:GuardianOverlayViewModel"
-             Width="220"
+             MaxWidth="190"
+             HorizontalAlignment="Left"
              ClipToBounds="True">
   <UserControl.Styles>
     <Style Selector="TextBlock.ram-tah-affiliation.current">

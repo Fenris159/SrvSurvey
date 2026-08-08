@@ -6,7 +6,8 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:StationInfoOverlayViewModel"
              mc:Ignorable="d"
-             Width="240"
+             MaxWidth="220"
+             HorizontalAlignment="Left"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"
@@ -14,10 +15,15 @@
           BorderThickness="0"
           CornerRadius="5">
     <StackPanel Spacing="5">
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-        <StackPanel Spacing="2">
-          <TextBlock Classes="eyebrow" Text="STATION INFORMATION" />
-          <StackPanel Orientation="Horizontal" Spacing="7">
+      <Grid ColumnDefinitions="*,Auto"
+            RowDefinitions="Auto,Auto,Auto"
+            ColumnSpacing="6"
+            RowSpacing="2">
+        <TextBlock Classes="eyebrow" Text="STATION INFORMATION" />
+        <StackPanel Grid.Row="1"
+                    Grid.ColumnSpan="2"
+                    Orientation="Horizontal"
+                    Spacing="7">
             <Border Classes="badge"
                     IsVisible="{Binding StationInfo.IsQuestTagged}">
               <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
@@ -29,11 +35,7 @@
                        FontSize="17"
                        FontWeight="SemiBold"
                        Text="{Binding StationInfo.StationName}"
-                       TextTrimming="CharacterEllipsis" />
-          </StackPanel>
-          <TextBlock Classes="muted"
-                     FontSize="10"
-                     Text="{Binding StationInfo.StationType}" />
+                       TextWrapping="Wrap" />
         </StackPanel>
         <Border Grid.Column="1" Classes="badge" VerticalAlignment="Top">
           <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
@@ -41,6 +43,11 @@
                      FontWeight="Bold"
                      Text="{Binding InputMode}" />
         </Border>
+        <TextBlock Grid.Row="2"
+                   Grid.ColumnSpan="2"
+                   Classes="muted"
+                   FontSize="10"
+                   Text="{Binding StationInfo.StationType}" />
       </Grid>
 
       <StackPanel Spacing="4">
@@ -65,7 +72,9 @@
         <ItemsControl ItemsSource="{Binding StationInfo.EconomyLines}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:StationInfoLineViewModel">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <Grid ColumnDefinitions="Auto,Auto"
+                    ColumnSpacing="8"
+                    HorizontalAlignment="Left">
                 <TextBlock FontSize="10" Text="{Binding Label}" />
                 <TextBlock Grid.Column="1"
                            Classes="monospace"
