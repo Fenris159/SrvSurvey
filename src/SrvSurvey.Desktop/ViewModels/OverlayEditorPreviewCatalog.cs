@@ -36,9 +36,9 @@ internal static class OverlayEditorPreviewCatalog
         "PlotRouteBio" => CreateRouteBioPreview(),
         "PlotBuildCommodities" => CreateColonizationPreview(),
         "PlotFloatie" => CreateNotificationPreview(),
-        "PlotFootCombat" or "PlotMassacre" => CreateCombatPreview(plotterName),
+        "PlotFootCombat" or "PlotMassacre" => CreateCombatPreview(),
         "PlotGalMap" => CreateGalaxyMapPreview(),
-        "PlotGrounded" or "PlotMiniTrack" => CreateSurfaceSurveyPreview(plotterName),
+        "PlotGrounded" or "PlotMiniTrack" => CreateSurfaceSurveyPreview(),
         "PlotHumanSite" => CreateHumanSitePreview(),
         "PlotJumpInfo" => CreateJumpInfoPreview(),
         "PlotFleetCarrierRoute" => CreateFleetCarrierRoutePreview(),
@@ -113,15 +113,7 @@ internal static class OverlayEditorPreviewCatalog
 
     private static SystemScanSnapshot CreatePreviewSnapshot()
     {
-        var body = CreatePreviewBody(
-            bodyId: 3,
-            name: State.CurrentBody,
-            shortName: "B 3",
-            biologicalSignals: 6,
-            geologicalSignals: 2,
-            isLandable: true,
-            surfaceGravity: 28.4,
-            isDssComplete: false);
+        var body = CreatePreviewBody();
         return new SystemScanSnapshot(
             SystemName: State.CurrentSystem,
             SystemAddress: 1,
@@ -141,26 +133,18 @@ internal static class OverlayEditorPreviewCatalog
             Bodies: [body]);
     }
 
-    private static SystemScanBodySnapshot CreatePreviewBody(
-        int bodyId,
-        string name,
-        string shortName,
-        int biologicalSignals,
-        int geologicalSignals,
-        bool isLandable,
-        double surfaceGravity,
-        bool isDssComplete) =>
+    private static SystemScanBodySnapshot CreatePreviewBody() =>
         new(
-            BodyId: bodyId,
-            Name: name,
-            ShortName: shortName,
+            BodyId: 3,
+            Name: State.CurrentBody,
+            ShortName: "B 3",
             Kind: SystemBodyKind.LandablePlanet,
             StarClass: null,
             PlanetClass: "High metal content body",
-            IsLandable: isLandable,
+            IsLandable: true,
             IsTerraformable: false,
             IsScanned: true,
-            IsDssComplete: isDssComplete,
+            IsDssComplete: false,
             WasDiscovered: true,
             WasMapped: false,
             WasFootfalled: false,
@@ -170,7 +154,7 @@ internal static class OverlayEditorPreviewCatalog
             Mass: 0.42,
             DistanceFromArrivalLs: 1842,
             RadiusMeters: 4_200_000,
-            SurfaceGravity: surfaceGravity,
+            SurfaceGravity: 28.4,
             SurfaceTemperature: 187,
             SurfacePressure: 0.08,
             SemiMajorAxis: 0,
@@ -178,9 +162,9 @@ internal static class OverlayEditorPreviewCatalog
             Atmosphere: "Thin carbon dioxide",
             AtmosphereType: "CarbonDioxide",
             Volcanism: null,
-            BiologicalSignalCount: biologicalSignals,
+            BiologicalSignalCount: 6,
             AnalyzedBiologicalSignalCount: 0,
-            GeologicalSignalCount: geologicalSignals,
+            GeologicalSignalCount: 2,
             AnalyzedGeologicalSignalCount: 0,
             ScanValue: 842_310,
             EstimatedMappedValue: 2_840_000,
@@ -487,51 +471,51 @@ internal static class OverlayEditorPreviewCatalog
             IsSurfaceScanned: true),
     ];
 
-    private static object CreateRouteBioPreview() =>
+    private static RouteBioOverlayViewModel CreateRouteBioPreview() =>
         OverlayEditorPreviewFactories.CreateRouteBio();
 
-    private static object CreateColonizationPreview() =>
+    private static ColonizationCommodityOverlayViewModel CreateColonizationPreview() =>
         OverlayEditorPreviewFactories.CreateColonization();
 
-    private static object CreateNotificationPreview() =>
+    private static NotificationViewModel CreateNotificationPreview() =>
         OverlayEditorPreviewFactories.CreateNotification();
 
-    private static object CreateCombatPreview(string plotterName) =>
+    private static CombatOverlayViewModel CreateCombatPreview() =>
         OverlayEditorPreviewFactories.CreateCombat();
 
-    private static object CreateGalaxyMapPreview() =>
+    private static GalaxyMapOverlayViewModel CreateGalaxyMapPreview() =>
         OverlayEditorPreviewFactories.CreateGalaxyMap();
 
-    private static object CreateSurfaceSurveyPreview(string plotterName) =>
+    private static SurfaceSurveyOverlayViewModel CreateSurfaceSurveyPreview() =>
         OverlayEditorPreviewFactories.CreateSurfaceSurvey();
 
-    private static object CreateHumanSitePreview() =>
+    private static HumanSiteOverlayViewModel CreateHumanSitePreview() =>
         OverlayEditorPreviewFactories.CreateHumanSite();
 
-    private static object CreateJumpInfoPreview() =>
+    private static JumpInfoOverlayViewModel CreateJumpInfoPreview() =>
         OverlayEditorPreviewFactories.CreateJumpInfo();
 
-    private static object CreateFleetCarrierRoutePreview() =>
+    private static FleetCarrierRouteOverlayViewModel CreateFleetCarrierRoutePreview() =>
         OverlayEditorPreviewFactories.CreateFleetCarrierRoute();
 
-    private static object CreateMultiCommanderPreview() =>
+    private static CommanderInstancesViewModel CreateMultiCommanderPreview() =>
         OverlayEditorPreviewFactories.CreateMultiCommander();
 
-    private static object CreatePriorScansPreview() =>
+    private static PriorScansOverlayViewModel CreatePriorScansPreview() =>
         OverlayEditorPreviewFactories.CreatePriorScans();
 
-    private static object CreatePulsePreview() =>
+    private static PulseOverlayViewModel CreatePulsePreview() =>
         OverlayEditorPreviewFactories.CreatePulse();
 
-    private static object CreateQuestPreview() =>
+    private static QuestIndicatorViewModel CreateQuestPreview() =>
         OverlayEditorPreviewFactories.CreateQuest();
 
-    private static object CreateSphericalSearchPreview() =>
+    private static SphericalSearchOverlayViewModel CreateSphericalSearchPreview() =>
         OverlayEditorPreviewFactories.CreateSphericalSearch();
 
-    private static object CreateStationInfoPreview() =>
+    private static StationInfoOverlayViewModel CreateStationInfoPreview() =>
         OverlayEditorPreviewFactories.CreateStationInfo();
 
-    private static object CreateGroundTargetPreview() =>
+    private static GroundTargetOverlayViewModel CreateGroundTargetPreview() =>
         OverlayEditorPreviewFactories.CreateGroundTarget();
 }

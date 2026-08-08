@@ -19,6 +19,8 @@ namespace SrvSurvey.Desktop.ViewModels;
 /// </summary>
 internal static class OverlayEditorPreviewFactories
 {
+    private const string UiSettingsFileName = "ui-settings.json";
+
     private static readonly OverlayPreviewSimulationState State =
         OverlayPreviewSimulationState.Default;
 
@@ -116,7 +118,7 @@ internal static class OverlayEditorPreviewFactories
     {
         var vm = new NotificationViewModel(
             new NotificationSettingsStore(
-                Path.Combine(SettingsDir("notification"), "ui-settings.json")));
+                Path.Combine(SettingsDir("notification"), UiSettingsFileName)));
         vm.Enabled = true;
         vm.ShowMessage("First footfall confirmed on Synuefe NL-N C23-4 B 3");
         vm.ShowMessage("Codex: Bacterium Acies recorded");
@@ -127,7 +129,7 @@ internal static class OverlayEditorPreviewFactories
     {
         var combat = new CombatViewModel(
             new CombatSettingsStore(
-                Path.Combine(SettingsDir("combat"), "ui-settings.json")),
+                Path.Combine(SettingsDir("combat"), UiSettingsFileName)),
             new CommanderProfileStore(SettingsDir("combat-profile")));
         combat.InstallEditorPreview();
         return new CombatOverlayViewModel(combat, Caps());
@@ -139,11 +141,11 @@ internal static class OverlayEditorPreviewFactories
         var vm = new GalaxyMapOverlayViewModel(
             new EmptySystemSummaryClient(),
             new GalaxyMapSettingsStore(
-                Path.Combine(SettingsDir("galmap"), "ui-settings.json")),
+                Path.Combine(SettingsDir("galmap"), UiSettingsFileName)),
             new SystemNicknameViewModel(
                 SystemNicknameCatalog.Load(nicknameDir),
                 new SystemNicknameSettingsStore(
-                    Path.Combine(nicknameDir, "ui-settings.json"))));
+                    Path.Combine(nicknameDir, UiSettingsFileName))));
         vm.InstallEditorPreview(State);
         return vm;
     }
@@ -152,7 +154,7 @@ internal static class OverlayEditorPreviewFactories
     {
         var root = SettingsDir("surface");
         var survey = new SystemSurveyViewModel(
-            new SystemSurveySettingsStore(Path.Combine(root, "ui-settings.json")));
+            new SystemSurveySettingsStore(Path.Combine(root, UiSettingsFileName)));
         var store = new SystemSurfaceStore(root);
         var surface = new SurfaceSurveyViewModel(
             survey,
@@ -225,17 +227,19 @@ internal static class OverlayEditorPreviewFactories
     public static HumanSiteOverlayViewModel CreateHumanSite()
     {
         var humanSite = new HumanSiteViewModel();
-        humanSite.InstallEditorPreview(
-            siteName: State.SettlementName,
-            templateText: "Military M2 · threat 2",
-            geometryStatus: "Settlement map aligned",
-            factionText: "Blue Fortune Corp · Anarchy",
-            dockingStatusText: "Docking granted · pad 02",
-            distanceText: "186 m from origin",
-            approachDistanceText: "1.8 km approach distance",
-            commanderPositionText: "x +42.0 m · y -18.0 m · 164°",
-            threatLevelText: "Threat level 2 · full shield",
-            isQuestTagged: true);
+        humanSite.InstallEditorPreview(new HumanSiteEditorPreview
+        {
+            SiteName = State.SettlementName,
+            TemplateText = "Military M2 · threat 2",
+            GeometryStatus = "Settlement map aligned",
+            FactionText = "Blue Fortune Corp · Anarchy",
+            DockingStatusText = "Docking granted · pad 02",
+            DistanceText = "186 m from origin",
+            ApproachDistanceText = "1.8 km approach distance",
+            CommanderPositionText = "x +42.0 m · y -18.0 m · 164°",
+            ThreatLevelText = "Threat level 2 · full shield",
+            IsQuestTagged = true,
+        });
         return new HumanSiteOverlayViewModel(humanSite, Caps());
     }
 
@@ -244,7 +248,7 @@ internal static class OverlayEditorPreviewFactories
         var jump = new JumpInfoViewModel(
             new EmptySystemSummaryClient(),
             new JumpInfoSettingsStore(
-                Path.Combine(SettingsDir("jump-info"), "ui-settings.json")));
+                Path.Combine(SettingsDir("jump-info"), UiSettingsFileName)));
         var plan = new JumpInfoRoutePlan(
             new JumpTarget(State.DestinationSystem, 99, "K"),
             JumpInfoRouteSource.FollowedRoute,
@@ -330,7 +334,7 @@ internal static class OverlayEditorPreviewFactories
     {
         var survey = new SystemSurveyViewModel(
             new SystemSurveySettingsStore(
-                Path.Combine(SettingsDir("prior-scans"), "ui-settings.json")));
+                Path.Combine(SettingsDir("prior-scans"), UiSettingsFileName)));
         var vm = new PriorScansOverlayViewModel(
             survey,
             new EmptyCanonnClient(),
@@ -408,7 +412,7 @@ internal static class OverlayEditorPreviewFactories
     {
         var vm = new PulseOverlayViewModel(
             new PulseOverlaySettingsStore(
-                Path.Combine(SettingsDir("pulse"), "ui-settings.json")));
+                Path.Combine(SettingsDir("pulse"), UiSettingsFileName)));
         vm.Enabled = true;
         vm.InstallEditorPreview();
         return vm;
@@ -484,31 +488,33 @@ internal static class OverlayEditorPreviewFactories
     public static StationInfoOverlayViewModel CreateStationInfo()
     {
         var stationInfo = new StationInfoViewModel(new EmptySystemSummaryClient());
-        stationInfo.InstallEditorPreview(
-            stationName: State.StationName,
-            stationType: "Coriolis starport",
-            largestPad: "Largest pad: Large",
-            primaryEconomy: "Primary economy: High Tech",
-            faction: "Raven Colonial Initiative · Confederacy",
-            updated: "Spansh data updated just now",
-            isQuestTagged: true,
-            economies:
+        stationInfo.InstallEditorPreview(new StationInfoEditorPreview
+        {
+            StationName = State.StationName,
+            StationType = "Coriolis starport",
+            LargestPad = "Largest pad: Large",
+            PrimaryEconomy = "Primary economy: High Tech",
+            Faction = "Raven Colonial Initiative · Confederacy",
+            Updated = "Spansh data updated just now",
+            IsQuestTagged = true,
+            Economies =
             [
                 new StationInfoLineViewModel("High Tech", "62%"),
                 new StationInfoLineViewModel("Industrial", "38%"),
             ],
-            services:
+            Services =
             [
                 "Shipyard",
                 "Outfitting",
                 "Vista Genomics",
                 "Universal Cartographics",
             ],
-            prohibited:
+            Prohibited =
             [
                 "Narcotics",
                 "Slaves",
-            ]);
+            ],
+        });
         return new StationInfoOverlayViewModel(stationInfo, Caps());
     }
 
@@ -516,16 +522,18 @@ internal static class OverlayEditorPreviewFactories
     {
         var ground = new GroundTargetViewModel(
             new GroundTargetSettingsStore(SettingsDir("ground-target")));
-        ground.InstallEditorPreview(
-            coordinates: "18.4216°S  74.0921°E",
-            distance: "146 m",
-            bearing: "068°",
-            relativeHeadingText: "+6°",
-            descent: "28°",
-            approachStatusText: "Ideal approach corridor",
-            relativeBearing: 6,
-            attackAngle: 28,
-            approachKind: GroundTargetApproach.Ideal);
+        ground.InstallEditorPreview(new GroundTargetEditorPreview
+        {
+            Coordinates = "18.4216°S  74.0921°E",
+            Distance = "146 m",
+            Bearing = "068°",
+            RelativeHeadingText = "+6°",
+            Descent = "28°",
+            ApproachStatusText = "Ideal approach corridor",
+            RelativeBearing = 6,
+            AttackAngle = 28,
+            ApproachKind = GroundTargetApproach.Ideal,
+        });
         return new GroundTargetOverlayViewModel(ground, Caps());
     }
 

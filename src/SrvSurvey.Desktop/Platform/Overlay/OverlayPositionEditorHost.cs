@@ -336,7 +336,7 @@ public sealed class AvaloniaOverlayPositionEditorHost : IOverlayPositionEditorHo
         Close(restoreRuntimeWindows: false);
     }
 
-    private void OnPreviewPointerPressed(
+    private static void OnPreviewPointerPressed(
         object? sender,
         PointerPressedEventArgs eventArgs)
     {

@@ -96,7 +96,7 @@ public static class OverlayThemePresetCatalog
     }
 
     private static void ApplyGeneral(
-        IDictionary<string, Color> colors,
+        Dictionary<string, Color> colors,
         ExpandedPalette palette)
     {
         colors["orange"] = palette.Primary;
@@ -110,7 +110,7 @@ public static class OverlayThemePresetCatalog
     }
 
     private static void ApplyBiology(
-        IDictionary<string, Color> colors,
+        Dictionary<string, Color> colors,
         ExpandedPalette palette)
     {
         colors["bio.gold"] = palette.Value;
@@ -122,7 +122,7 @@ public static class OverlayThemePresetCatalog
     }
 
     private static void ApplyColonisation(
-        IDictionary<string, Color> colors,
+        Dictionary<string, Color> colors,
         ExpandedPalette palette)
     {
         colors["colonise.highlight"] = palette.Value;
@@ -132,7 +132,7 @@ public static class OverlayThemePresetCatalog
     }
 
     private static void ApplySettlements(
-        IDictionary<string, Color> colors,
+        Dictionary<string, Color> colors,
         ExpandedPalette palette)
     {
         colors["fcz.checkpoint"] = palette.Value;
@@ -140,7 +140,7 @@ public static class OverlayThemePresetCatalog
     }
 
     private static void ApplyGuardian(
-        IDictionary<string, Color> colors,
+        Dictionary<string, Color> colors,
         ExpandedPalette palette)
     {
         colors["guardian.surface"] = palette.Surface;

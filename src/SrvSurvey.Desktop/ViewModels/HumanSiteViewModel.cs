@@ -334,29 +334,20 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     /// Installs representative settlement text for the position editor.
     /// Map geometry still requires a live template projection.
     /// </summary>
-    internal void InstallEditorPreview(
-        string siteName,
-        string templateText,
-        string geometryStatus,
-        string factionText,
-        string dockingStatusText,
-        string distanceText,
-        string approachDistanceText,
-        string commanderPositionText,
-        string threatLevelText,
-        bool isQuestTagged = true)
+    internal void InstallEditorPreview(HumanSiteEditorPreview preview)
     {
+        ArgumentNullException.ThrowIfNull(preview);
         editorForceVisible = true;
-        editorSiteName = siteName;
-        editorTemplateText = templateText;
-        editorGeometryStatus = geometryStatus;
-        editorFactionText = factionText;
-        editorDockingStatusText = dockingStatusText;
-        editorDistanceText = distanceText;
-        editorApproachDistanceText = approachDistanceText;
-        editorCommanderPositionText = commanderPositionText;
-        editorThreatLevelText = threatLevelText;
-        editorIsQuestTagged = isQuestTagged;
+        editorSiteName = preview.SiteName;
+        editorTemplateText = preview.TemplateText;
+        editorGeometryStatus = preview.GeometryStatus;
+        editorFactionText = preview.FactionText;
+        editorDockingStatusText = preview.DockingStatusText;
+        editorDistanceText = preview.DistanceText;
+        editorApproachDistanceText = preview.ApproachDistanceText;
+        editorCommanderPositionText = preview.CommanderPositionText;
+        editorThreatLevelText = preview.ThreatLevelText;
+        editorIsQuestTagged = preview.IsQuestTagged;
         threatLevel = 2;
         OnPropertyChanged(nameof(SiteName));
         OnPropertyChanged(nameof(TemplateText));
@@ -1793,6 +1784,29 @@ public sealed class HumanSiteViewModel : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+}
+
+internal sealed class HumanSiteEditorPreview
+{
+    public required string SiteName { get; init; }
+
+    public required string TemplateText { get; init; }
+
+    public required string GeometryStatus { get; init; }
+
+    public required string FactionText { get; init; }
+
+    public required string DockingStatusText { get; init; }
+
+    public required string DistanceText { get; init; }
+
+    public required string ApproachDistanceText { get; init; }
+
+    public required string CommanderPositionText { get; init; }
+
+    public required string ThreatLevelText { get; init; }
+
+    public bool IsQuestTagged { get; init; } = true;
 }
 
 public sealed record HumanSiteQuestMarker(

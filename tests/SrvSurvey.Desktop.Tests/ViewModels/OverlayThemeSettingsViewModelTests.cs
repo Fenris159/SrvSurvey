@@ -59,7 +59,7 @@ public sealed class OverlayThemeSettingsViewModelTests : IDisposable
             LegacyOverlayThemeStore.CreateDefault().Colors);
         var viewModel = CreateViewModel(stateStore);
 
-        Assert.Equal("My custom theme", viewModel.SavedStates.Last());
+        Assert.Equal("My custom theme", viewModel.SavedStates[^1]);
 
         viewModel.SelectedSavedState = "My custom theme";
 

@@ -89,7 +89,9 @@ public sealed class OverlayEditorFolderTabTests
 
     private static void AssertFolderTabBrush(IBrush? candidate)
     {
-        var brush = Assert.IsAssignableFrom<ISolidColorBrush>(candidate);
+        var brush = Assert.IsType<ISolidColorBrush>(
+            candidate,
+            exactMatch: false);
         Assert.Equal(Color.Parse("#FFCC33"), brush.Color);
     }
 }

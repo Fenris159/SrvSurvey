@@ -178,26 +178,18 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
     /// <summary>
     /// Installs representative ground-target guidance for the position editor.
     /// </summary>
-    internal void InstallEditorPreview(
-        string coordinates,
-        string distance,
-        string bearing,
-        string relativeHeadingText,
-        string descent,
-        string approachStatusText,
-        double relativeBearing,
-        double attackAngle,
-        GroundTargetApproach approachKind)
+    internal void InstallEditorPreview(GroundTargetEditorPreview preview)
     {
-        targetCoordinates = coordinates;
-        distanceToTarget = distance;
-        targetBearing = bearing;
-        relativeHeading = relativeHeadingText;
-        descentAngle = descent;
-        approachStatus = approachStatusText;
-        relativeBearingDegrees = relativeBearing;
-        attackAngleDegrees = attackAngle;
-        approach = approachKind;
+        ArgumentNullException.ThrowIfNull(preview);
+        targetCoordinates = preview.Coordinates;
+        distanceToTarget = preview.Distance;
+        targetBearing = preview.Bearing;
+        relativeHeading = preview.RelativeHeadingText;
+        descentAngle = preview.Descent;
+        approachStatus = preview.ApproachStatusText;
+        relativeBearingDegrees = preview.RelativeBearing;
+        attackAngleDegrees = preview.AttackAngle;
+        approach = preview.ApproachKind;
         isStatusEligible = true;
         OnPropertyChanged(nameof(TargetCoordinates));
         OnPropertyChanged(nameof(DistanceToTarget));
@@ -526,4 +518,25 @@ public sealed class GroundTargetViewModel : INotifyPropertyChanged
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
+}
+
+internal sealed class GroundTargetEditorPreview
+{
+    public required string Coordinates { get; init; }
+
+    public required string Distance { get; init; }
+
+    public required string Bearing { get; init; }
+
+    public required string RelativeHeadingText { get; init; }
+
+    public required string Descent { get; init; }
+
+    public required string ApproachStatusText { get; init; }
+
+    public required double RelativeBearing { get; init; }
+
+    public required double AttackAngle { get; init; }
+
+    public required GroundTargetApproach ApproachKind { get; init; }
 }

@@ -9,8 +9,6 @@ namespace SrvSurvey.Desktop;
 
 public sealed partial class RouteBioOverlayWindow : Window
 {
-    private readonly RouteBioOverlayViewModel viewModel;
-
     public RouteBioOverlayWindow()
         : this(CreateDesignViewModel())
     {
@@ -18,8 +16,7 @@ public sealed partial class RouteBioOverlayWindow : Window
 
     public RouteBioOverlayWindow(RouteBioOverlayViewModel viewModel)
     {
-        this.viewModel = viewModel
-            ?? throw new ArgumentNullException(nameof(viewModel));
+        ArgumentNullException.ThrowIfNull(viewModel);
         InitializeComponent();
         DataContext = viewModel;
     }

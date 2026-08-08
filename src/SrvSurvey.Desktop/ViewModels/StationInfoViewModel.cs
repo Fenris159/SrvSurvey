@@ -199,28 +199,19 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     /// <summary>
     /// Installs representative station content for the position editor.
     /// </summary>
-    internal void InstallEditorPreview(
-        string stationName,
-        string stationType,
-        string largestPad,
-        string primaryEconomy,
-        string faction,
-        string updated,
-        bool isQuestTagged,
-        IReadOnlyList<StationInfoLineViewModel> economies,
-        IReadOnlyList<string> services,
-        IReadOnlyList<string> prohibited)
+    internal void InstallEditorPreview(StationInfoEditorPreview preview)
     {
-        editorStationName = stationName;
-        editorStationType = stationType;
-        editorLargestPadText = largestPad;
-        editorPrimaryEconomyText = primaryEconomy;
-        editorFactionText = faction;
-        editorUpdatedText = updated;
-        editorIsQuestTagged = isQuestTagged;
-        editorEconomyLines = economies;
-        editorRelevantServices = services;
-        editorProhibited = prohibited;
+        ArgumentNullException.ThrowIfNull(preview);
+        editorStationName = preview.StationName;
+        editorStationType = preview.StationType;
+        editorLargestPadText = preview.LargestPad;
+        editorPrimaryEconomyText = preview.PrimaryEconomy;
+        editorFactionText = preview.Faction;
+        editorUpdatedText = preview.Updated;
+        editorIsQuestTagged = preview.IsQuestTagged;
+        editorEconomyLines = preview.Economies;
+        editorRelevantServices = preview.Services;
+        editorProhibited = preview.Prohibited;
         OnPropertyChanged(nameof(StationName));
         OnPropertyChanged(nameof(StationType));
         OnPropertyChanged(nameof(LargestPadText));
@@ -522,6 +513,29 @@ public sealed class StationInfoViewModel : INotifyPropertyChanged, IDisposable
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+}
+
+internal sealed class StationInfoEditorPreview
+{
+    public required string StationName { get; init; }
+
+    public required string StationType { get; init; }
+
+    public required string LargestPad { get; init; }
+
+    public required string PrimaryEconomy { get; init; }
+
+    public required string Faction { get; init; }
+
+    public required string Updated { get; init; }
+
+    public required bool IsQuestTagged { get; init; }
+
+    public required IReadOnlyList<StationInfoLineViewModel> Economies { get; init; }
+
+    public required IReadOnlyList<string> Services { get; init; }
+
+    public required IReadOnlyList<string> Prohibited { get; init; }
 }
 
 public sealed record StationInfoLineViewModel(string Label, string Value);
