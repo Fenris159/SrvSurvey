@@ -368,14 +368,14 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         }
     }
 
-    protected override void OnClosed(EventArgs eventArgs)
+    protected override void OnClosed(EventArgs e)
     {
         DisposeEditorDataContext(runtimePresentation?.DataContext);
         if (runtimePresentation is not null)
         {
             runtimePresentation.DataContext = null;
         }
-        base.OnClosed(eventArgs);
+        base.OnClosed(e);
     }
 
     private static void DisposeEditorDataContext(object? dataContext)

@@ -423,12 +423,20 @@ internal static class OverlayEditorPreviewFactories
     public static PulseOverlayViewModel CreatePulse(
         PulseEditorPreviewState state = PulseEditorPreviewState.ScoCooling)
     {
+        var previewTime = new FrozenTimeProvider(
+            new DateTimeOffset(2026, 8, 8, 12, 0, 0, TimeSpan.Zero));
         var vm = new PulseOverlayViewModel(
             new PulseOverlaySettingsStore(
-                Path.Combine(SettingsDir("pulse"), UiSettingsFileName)));
+                Path.Combine(SettingsDir("pulse"), UiSettingsFileName)),
+            previewTime);
         vm.Enabled = true;
         vm.InstallEditorPreview(state);
         return vm;
+    }
+
+    private sealed class FrozenTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utcNow;
     }
 
     public static QuestIndicatorViewModel CreateQuest()

@@ -1,4 +1,5 @@
 using Avalonia.Headless.XUnit;
+using SrvSurvey.Core.Guardian;
 using SrvSurvey.Desktop.Platform.Overlay;
 using SrvSurvey.Desktop.ViewModels;
 
@@ -187,6 +188,24 @@ public sealed class OverlayRuntimePresentationFactoryTests
     }
 
     [Fact]
+    public void BiologyBodyStatesKeepSignalCountsConsistentWithTheirRows()
+    {
+        var predictions = CreateSystemSurveyState("PlotBioSystem", 1)
+            .Survey.BiologySurveyDisplay;
+        Assert.Equal("4 biological signals", predictions.ProgressText);
+        Assert.Equal(4, predictions.OrganismGroups.Count);
+        Assert.All(predictions.Organisms, organism =>
+            Assert.True(organism.IsPrediction));
+
+        var identified = CreateSystemSurveyState("PlotBioSystem", 2)
+            .Survey.BiologySurveyDisplay;
+        Assert.Equal("3 biological signals", identified.ProgressText);
+        Assert.Equal(3, identified.OrganismGroups.Count);
+        Assert.DoesNotContain(identified.Organisms, organism =>
+            organism.IsPrediction);
+    }
+
+    [Fact]
     public void BiologyStatusStatesRepresentDistinctGameConditions()
     {
         var active = CreateSystemSurveyState("PlotBioStatus", 0);
@@ -206,6 +225,7 @@ public sealed class OverlayRuntimePresentationFactoryTests
 
         var stale = CreateSystemSurveyState("PlotBioStatus", 3);
         Assert.True(stale.Survey.BiologyStatus!.IsStaleActiveSample);
+        Assert.False(stale.Survey.BiologyStatus.HasActiveSample);
     }
 
     [Fact]
@@ -237,6 +257,8 @@ public sealed class OverlayRuntimePresentationFactoryTests
         Assert.True(active.IsScoActive);
         var ready = CreatePulseState(2);
         Assert.True(ready.IsScoReady);
+        ready.Refresh();
+        Assert.True(ready.IsScoReady);
         var journal = CreatePulseState(3);
         Assert.False(journal.IsScoActive);
         Assert.False(journal.IsScoCoolingDown);
@@ -259,6 +281,7 @@ public sealed class OverlayRuntimePresentationFactoryTests
             state => state.IsGlideApproach,
         };
 
+        GuardianSiteMapProjection? sharedProjection = null;
         for (var index = 0; index < visibleBranches.Length; index++)
         {
             var viewModel = Assert.IsType<GuardianOverlayViewModel>(
@@ -266,6 +289,10 @@ public sealed class OverlayRuntimePresentationFactoryTests
                     "PlotGuardianStatus",
                     index));
             Assert.True(visibleBranches[index](viewModel.Guardian));
+            sharedProjection ??= viewModel.Guardian.ActiveMapProjection;
+            Assert.Same(
+                sharedProjection,
+                viewModel.Guardian.ActiveMapProjection);
             Assert.Equal(
                 1,
                 visibleBranches.Count(branch => branch(viewModel.Guardian)));

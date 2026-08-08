@@ -564,11 +564,12 @@ public sealed class GuideIconPreviewControl : Control
                 frame.Bottom - 5 - (index + 1) * 10,
                 frame.Width - 8,
                 8);
-            var segmentBrush = index < (isPrediction ? 2 : 3)
-                ? filled
-                : isPrediction && index == 2
-                    ? potential
-                    : empty;
+            var segmentBrush = GetRewardSegmentBrush(
+                index,
+                isPrediction,
+                filled,
+                potential,
+                empty);
             context.DrawRectangle(segmentBrush, null, segment, 1, 1);
         }
 
@@ -592,6 +593,24 @@ public sealed class GuideIconPreviewControl : Control
                 new Point(startX, frame.Bottom - (startX - x)),
                 new Point(endX, frame.Bottom - (endX - x)));
         }
+    }
+
+    private static IBrush GetRewardSegmentBrush(
+        int index,
+        bool isPrediction,
+        IBrush filled,
+        IBrush potential,
+        IBrush empty)
+    {
+        var filledSegmentCount = isPrediction ? 2 : 3;
+        if (index < filledSegmentCount)
+        {
+            return filled;
+        }
+
+        return isPrediction && index == filledSegmentCount
+            ? potential
+            : empty;
     }
 
     private static void DrawUnknownPip(

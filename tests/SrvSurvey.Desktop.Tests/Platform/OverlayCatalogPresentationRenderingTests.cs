@@ -103,14 +103,6 @@ public sealed class OverlayCatalogPresentationRenderingTests
     [AvaloniaFact]
     public void EveryStatefulEditorPreviewStateRendersThroughItsSharedTemplate()
     {
-        var statefulPlotters = new[]
-        {
-            "PlotBioSystem",
-            "PlotBioStatus",
-            "PlotGuardianStatus",
-            "PlotFleetCarrierRoute",
-            "PlotPulse",
-        };
         var outputDirectory = Environment.GetEnvironmentVariable(
             "SRVSURVEY_OVERLAY_RENDER_OUTPUT");
         if (!string.IsNullOrWhiteSpace(outputDirectory))
@@ -118,12 +110,17 @@ public sealed class OverlayCatalogPresentationRenderingTests
             Directory.CreateDirectory(outputDirectory);
         }
 
-        foreach (var plotterName in statefulPlotters)
+        foreach (var definition in OverlayLayoutCatalog.Supported)
         {
-            var preview = new OverlayPositionPreviewWindow(
-                OverlayLayoutCatalog.GetRequired(plotterName));
+            var plotterName = definition.Name;
+            var preview = new OverlayPositionPreviewWindow(definition);
             try
             {
+                if (preview.EditorPreviewStateCount == 1)
+                {
+                    continue;
+                }
+
                 OverlayThemeResources.Apply(preview);
                 preview.ApplyRuntimePresentationTheme();
                 preview.Show();

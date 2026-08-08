@@ -366,14 +366,17 @@ public sealed class BiologySurveyViewModel
             predictionEvaluator,
             referenceCatalog);
         var organisms = BuildBodyOrganismRows(
-            body,
-            exobiology,
-            predictionSet,
-            highlightRegionalFirsts,
-            dimAnalyzedOrganisms,
-            discoveryContext,
-            rewardThresholds,
-            referenceCatalog);
+            new BodyOrganismRowBuildContext
+            {
+                Body = body,
+                Exobiology = exobiology,
+                PredictionSet = predictionSet,
+                HighlightRegionalFirsts = highlightRegionalFirsts,
+                DimAnalyzedOrganisms = dimAnalyzedOrganisms,
+                DiscoveryContext = discoveryContext,
+                RewardThresholds = rewardThresholds,
+                ReferenceCatalog = referenceCatalog,
+            });
         var rewardEstimate = CreateRewardEstimate(body, predictionSet);
         var geoCount = hideGeoCount ? 0 : body.GeologicalSignalCount;
         var geoSignals = hideGeoCount
@@ -461,27 +464,10 @@ public sealed class BiologySurveyViewModel
     }
 
     private static List<BiologyOrganismRowViewModel> BuildBodyOrganismRows(
-        SystemScanBodySnapshot body,
-        ExobiologySnapshot exobiology,
-        BiologyPredictionSet predictionSet,
-        bool highlightRegionalFirsts,
-        bool dimAnalyzedOrganisms,
-        BiologyDiscoveryContext discoveryContext,
-        BiologyRewardThresholds rewardThresholds,
-        ExobiologyReferenceCatalog referenceCatalog)
+        BodyOrganismRowBuildContext context)
     {
-        var context = new BodyOrganismRowBuildContext
-        {
-            Body = body,
-            Exobiology = exobiology,
-            PredictionSet = predictionSet,
-            HighlightRegionalFirsts = highlightRegionalFirsts,
-            DimAnalyzedOrganisms = dimAnalyzedOrganisms,
-            DiscoveryContext = discoveryContext,
-            RewardThresholds = rewardThresholds,
-            ReferenceCatalog = referenceCatalog,
-        };
-        var predictionsByGenus = predictionSet.Predictions
+        var body = context.Body;
+        var predictionsByGenus = context.PredictionSet.Predictions
             .GroupBy(
                 prediction => prediction.Prediction.Genus,
                 StringComparer.OrdinalIgnoreCase)
@@ -514,7 +500,7 @@ public sealed class BiologySurveyViewModel
         {
             organisms.Add(BiologyOrganismRowViewModel.Unknown(
                 organisms.Count + 1,
-                rewardThresholds));
+                context.RewardThresholds));
         }
 
         return organisms;
@@ -1390,7 +1376,19 @@ public sealed class BiologyOrganismRowViewModel
     }
 }
 
+public interface IBiologyDiscoveryMarkerState
+{
+    bool IsGlobalRegionalFirst { get; }
+
+    bool IsCommanderFirst { get; }
+
+    bool IsHighlightedRegionalFirst { get; }
+
+    bool IsStandardRegionalFirst { get; }
+}
+
 public sealed class BiologyOrganismGroupViewModel
+    : IBiologyDiscoveryMarkerState
 {
     public string GenusName { get; init; } = string.Empty;
 
@@ -1468,7 +1466,7 @@ public sealed class BiologyOrganismGroupViewModel
     }
 
     private static BiologyOrganismGroupViewModel Create(
-        IReadOnlyList<BiologyOrganismRowViewModel> rows,
+        BiologyOrganismRowViewModel[] rows,
         bool showDivider)
     {
         var first = rows[0];
@@ -1525,6 +1523,7 @@ public sealed class BiologyOrganismGroupViewModel
 }
 
 public sealed class BiologyOrganismVariantRowViewModel
+    : IBiologyDiscoveryMarkerState
 {
     public string SpeciesName { get; init; } = string.Empty;
 

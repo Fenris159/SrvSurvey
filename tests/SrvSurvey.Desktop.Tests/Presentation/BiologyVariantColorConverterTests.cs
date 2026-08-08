@@ -18,11 +18,13 @@ public sealed class BiologyVariantColorConverterTests
     {
         var converter = new BiologyVariantColorConverter();
 
-        var brush = Assert.IsAssignableFrom<ISolidColorBrush>(converter.Convert(
-            variant,
-            typeof(IBrush),
-            null,
-            CultureInfo.InvariantCulture));
+        var brush = Assert.IsType<ISolidColorBrush>(
+            converter.Convert(
+                variant,
+                typeof(IBrush),
+                null,
+                CultureInfo.InvariantCulture),
+            exactMatch: false);
 
         Assert.Equal(Color.Parse(expected), brush.Color);
     }

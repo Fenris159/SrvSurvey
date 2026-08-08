@@ -19,6 +19,20 @@ internal sealed class GuardianOverlayPreviewState
         Scanned: false,
         ["Casket", TotemArtifact]);
 
+    private static readonly GuardianSiteTemplate SampleTemplate =
+        GuardianSiteTemplateCatalog.LoadEmbedded().Find("Beta")
+        ?? throw new InvalidOperationException(
+            "The embedded Beta Guardian site template is missing.");
+
+    private static readonly GuardianSiteMapProjection SampleMapProjection =
+        new GuardianSiteMapProjector().Project(
+            SampleTemplate,
+            activeObelisks: [SampleObelisk],
+            obeliskGroups: new HashSet<char> { 'A', 'B' },
+            neededRamTahLogCodes: new HashSet<string>(
+                [SampleLogCode],
+                StringComparer.OrdinalIgnoreCase));
+
     private readonly GuardianStatusPreviewState statusState;
 
     private GuardianOverlayPreviewState(
@@ -26,17 +40,8 @@ internal sealed class GuardianOverlayPreviewState
             GuardianStatusPreviewState.ObeliskTarget)
     {
         this.statusState = statusState;
-        var template = GuardianSiteTemplateCatalog.LoadEmbedded().Find("Beta")
-            ?? throw new InvalidOperationException(
-                "The embedded Beta Guardian site template is missing.");
-        ActiveMapProjection = new GuardianSiteMapProjector().Project(
-            template,
-            activeObelisks: [SampleObelisk],
-            obeliskGroups: new HashSet<char> { 'A', 'B' },
-            neededRamTahLogCodes: new HashSet<string>(
-                ["H12"],
-                StringComparer.OrdinalIgnoreCase));
-        var nearest = template.PointsOfInterest.First(point =>
+        ActiveMapProjection = SampleMapProjection;
+        var nearest = SampleTemplate.PointsOfInterest.First(point =>
             string.Equals(point.Name, SampleObeliskName, StringComparison.Ordinal));
         Proximity = new GuardianSiteProximitySnapshot(
             DistanceFromSite: 42.6,

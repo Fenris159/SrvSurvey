@@ -7,7 +7,7 @@ namespace SrvSurvey.Desktop.Presentation;
 
 public sealed class BiologyVariantColorConverter : IValueConverter
 {
-    private static readonly IReadOnlyDictionary<string, Color> VariantColors =
+    private static readonly Dictionary<string, Color> VariantColors =
         new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase)
         {
             ["Amethyst"] = ColorFromHex("#B57EDC"),

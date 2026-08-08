@@ -140,7 +140,7 @@ public sealed class PulseOverlayViewModel : INotifyPropertyChanged
         {
             PulseEditorPreviewState.ScoActive => (true, (DateTimeOffset?)null),
             PulseEditorPreviewState.ScoReady =>
-                (false, now - TimeSpan.FromSeconds(9.5)),
+                (false, now - ScoReadyThreshold),
             PulseEditorPreviewState.JournalPulse => (false, (DateTimeOffset?)null),
             _ => (false, now - TimeSpan.FromSeconds(4)),
         };

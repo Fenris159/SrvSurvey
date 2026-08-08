@@ -222,6 +222,9 @@ public sealed class OverlayEditorFolderTabTests
 
             Assert.True(preview.CycleEditorPreviewState());
             Assert.True(preview.CycleEditorPreviewState());
+            Assert.Equal(
+                "DSS required",
+                preview.CurrentEditorPreviewStateName);
             Assert.NotNull(preview.CaptureRenderedFrame());
             state = Assert.IsType<SystemSurveyOverlayViewModel>(
                 presentation.DataContext).Survey.BiologyStatus!;

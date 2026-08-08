@@ -102,6 +102,26 @@ public sealed class PulseOverlayViewModelTests : IDisposable
     }
 
     [Fact]
+    public void ReadyEditorPreviewPreservesTheIntentionalOneSecondTransition()
+    {
+        var time = new MutableTimeProvider(DateTimeOffset.UtcNow);
+        var viewModel = CreateViewModel(time);
+
+        viewModel.InstallEditorPreview(PulseEditorPreviewState.ScoReady);
+
+        Assert.True(viewModel.IsScoReady);
+        Assert.Equal(18, viewModel.ScoIndicatorTop);
+
+        time.Advance(TimeSpan.FromMilliseconds(999));
+        viewModel.Refresh();
+        Assert.True(viewModel.IsScoReady);
+
+        time.Advance(TimeSpan.FromMilliseconds(1));
+        viewModel.Refresh();
+        Assert.False(viewModel.IsScoReady);
+    }
+
+    [Fact]
     public void DisabledPreferencePersistsAndSuppressesOverlay()
     {
         var time = new MutableTimeProvider(DateTimeOffset.UtcNow);
