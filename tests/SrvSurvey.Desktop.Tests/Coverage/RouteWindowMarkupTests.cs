@@ -7,7 +7,7 @@ public sealed class RouteWindowMarkupTests
     private static readonly string[] RoutedFileNames =
     [
         "RouteWindow.axaml",
-        "JumpInfoOverlayWindow.axaml",
+        "JumpInfoOverlayPresentation.axaml",
     ];
 
     private static readonly string[] FleetCarrierFooterCommands =
