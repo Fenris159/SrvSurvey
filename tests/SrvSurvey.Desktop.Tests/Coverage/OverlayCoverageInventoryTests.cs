@@ -428,9 +428,14 @@ public sealed partial class OverlayCoverageInventoryTests
         Assert.Contains("ItemsSource=\"{Binding Rows}\"", preview);
         Assert.Contains("Text=\"{Binding CompactText}\"", preview);
         Assert.Contains("Text=\"{Binding Footer}\"", preview);
-        Assert.Contains("SizeToContent=\"Height\"", preview);
+        Assert.Contains("SizeToContent=\"WidthAndHeight\"", preview);
         // Shared runtime presentations host the real overlay templates; the
         // generic preview surface remains only as a chrome/fallback host.
+        // Editor-only yellow folder tab labels every panel for identification.
+        Assert.Contains("x:Name=\"PreviewBody\"", preview);
+        Assert.Contains("x:Name=\"EditorFolderTab\"", preview);
+        Assert.Contains("x:Name=\"EditorFolderTabLabel\"", preview);
+        Assert.Contains("CornerRadius=\"7,7,0,0\"", preview);
         Assert.Contains("SIMULATED GAME STATE", preview);
         Assert.Contains("BorderThickness=\"2\"", preview);
         var runtimeFactory = File.ReadAllText(Path.Combine(

@@ -150,6 +150,12 @@ public static class OverlayThemeResources
 
     private static void ApplySurfaceChrome(Window window)
     {
+        // Editor previews own yellow folder-tab + body chrome in XAML.
+        if (window is OverlayPositionPreviewWindow)
+        {
+            return;
+        }
+
         var surface = window.Content switch
         {
             Border border => border,
@@ -165,7 +171,7 @@ public static class OverlayThemeResources
         _ = window.TryFindResource(RavenWarningBrushResource, out var warningBrush);
         ApplySurfaceChrome(
             surface,
-            window is OverlayPositionPreviewWindow,
+            isEditorPreview: false,
             windowBrush as IBrush,
             warningBrush as IBrush);
     }
@@ -256,6 +262,13 @@ public static class OverlayThemeResources
 
     private static void ApplyDedicatedPresentationChrome(Window window)
     {
+        // Editor previews keep their XAML folder-tab chrome; only live hosts
+        // need the transparent dedicated presentation shell.
+        if (window is OverlayPositionPreviewWindow)
+        {
+            return;
+        }
+
         var surface = window.Content switch
         {
             Border border => border,
@@ -267,15 +280,11 @@ public static class OverlayThemeResources
             return;
         }
 
-        var isEditorPreview = window is OverlayPositionPreviewWindow;
-        _ = window.TryFindResource(
-            RavenWarningBrushResource,
-            out var warningBrush);
-        surface.Margin = new Thickness(isEditorPreview ? 1 : 0);
+        surface.Margin = new Thickness(0);
         surface.Padding = new Thickness(0);
         surface.Background = Brushes.Transparent;
-        surface.BorderBrush = isEditorPreview ? warningBrush as IBrush : null;
-        surface.BorderThickness = new Thickness(isEditorPreview ? 2 : 0);
+        surface.BorderBrush = null;
+        surface.BorderThickness = new Thickness(0);
         surface.CornerRadius = new CornerRadius(0);
         surface.Opacity = 1d;
     }

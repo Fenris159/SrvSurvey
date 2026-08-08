@@ -9,192 +9,238 @@
         ShowInTaskbar="False"
         WindowDecorations="None"
         Topmost="True"
-        SizeToContent="Height"
+        SizeToContent="WidthAndHeight"
         Background="Transparent"
         TransparencyBackgroundFallback="Transparent"
         TransparencyLevelHint="Transparent"
+        ClipToBounds="False"
         Title="Overlay position preview">
+  <!--
+    Editor-only chrome shell:
+      1) Yellow folder tab with panel display name (identification)
+      2) Yellow-bordered body hosting simulated / runtime presentation
+    Live overlay windows never use this host.
+  -->
   <Border x:Name="PreviewSurface"
-          Margin="1"
-          Padding="4"
-          Background="{DynamicResource RavenWindowBrush}"
-          BorderBrush="{DynamicResource RavenWarningBrush}"
-          BorderThickness="2"
-          CornerRadius="5"
+          Margin="0"
+          Padding="0"
+          Background="Transparent"
+          BorderThickness="0"
+          ClipToBounds="False"
           PointerPressed="OnPreviewSurfacePointerPressed">
-    <Grid>
-      <TextBlock HorizontalAlignment="Center"
-                 VerticalAlignment="Center"
-                 Foreground="{DynamicResource RavenWarningBrush}"
-                 FontSize="8"
-                 FontWeight="Bold"
-                 IsVisible="{Binding IsCompact}"
-                 Text="{Binding CompactText}"
-                 TextAlignment="Center"
-                 TextTrimming="CharacterEllipsis"
-                 ToolTip.Tip="{Binding Title}" />
-      <Grid Margin="3"
-            IsVisible="{Binding !IsCompact}"
-            RowDefinitions="Auto,Auto,Auto,Auto"
-            RowSpacing="3">
-        <StackPanel>
-          <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                     FontSize="12"
-                     FontWeight="SemiBold"
-                     Text="{Binding Title}"
+    <Grid RowDefinitions="Auto,*"
+          ClipToBounds="False">
+      <!-- Folder tab: solid yellow so it stays visible even before theme
+           brushes fully resolve on first frame. -->
+      <Border x:Name="EditorFolderTab"
+              HorizontalAlignment="Left"
+              Margin="10,0,16,0"
+              MinHeight="24"
+              MinWidth="72"
+              Padding="12,4,12,5"
+              Background="#FFCC33"
+              BorderBrush="#FFCC33"
+              BorderThickness="2,2,2,0"
+              CornerRadius="7,7,0,0"
+              BoxShadow="0 0 0 0 #00000000"
+              ToolTip.Tip="{Binding Title}">
+        <TextBlock x:Name="EditorFolderTabLabel"
+                   MaxWidth="280"
+                   VerticalAlignment="Center"
+                   Foreground="#1A1208"
+                   FontSize="11"
+                   FontWeight="Bold"
+                   Text="{Binding Title}"
+                   TextTrimming="CharacterEllipsis" />
+      </Border>
+
+      <!-- Body sits under the tab; top corners open so the tab reads as
+           attached to the yellow editor border. -->
+      <Border x:Name="PreviewBody"
+              Grid.Row="1"
+              Margin="0,-2,0,0"
+              MinHeight="24"
+              Background="{DynamicResource RavenWindowBrush}"
+              BorderBrush="#FFCC33"
+              BorderThickness="2"
+              CornerRadius="0,7,7,7"
+              ClipToBounds="False"
+              Padding="4">
+        <Grid>
+          <TextBlock HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource RavenWarningBrush}"
+                     FontSize="8"
+                     FontWeight="Bold"
+                     IsVisible="{Binding IsCompact}"
+                     Text="{Binding CompactText}"
+                     TextAlignment="Center"
                      TextTrimming="CharacterEllipsis"
                      ToolTip.Tip="{Binding Title}" />
-          <TextBlock Foreground="{DynamicResource RavenTextBrush}"
-                     FontSize="10"
-                     FontWeight="SemiBold"
-                     IsVisible="{Binding ShowSubtitle}"
-                     Text="{Binding Subtitle}"
-                     TextTrimming="CharacterEllipsis" />
-          <TextBlock Classes="muted"
-                     FontSize="9"
-                     IsVisible="{Binding ShowSubtitle}"
-                     Text="{Binding Context}"
-                     TextTrimming="CharacterEllipsis" />
-        </StackPanel>
-        <Border Grid.Row="1"
-                Height="1"
-                Background="{DynamicResource RavenWarningBrush}"
-                Opacity="0.65" />
-        <ItemsControl Grid.Row="2"
-                      IsVisible="{Binding !IsRouteBio}"
-                      ItemsSource="{Binding Rows}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:OverlayPositionPreviewRowViewModel">
-              <Grid>
-                <Grid Margin="0,1"
-                    IsVisible="{Binding !IsRouteBody}"
-                    RowDefinitions="Auto,Auto"
-                    ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*"
-                    ColumnSpacing="5">
-                <CheckBox IsVisible="{Binding ShowCompletionCheckBox}"
-                          IsHitTestVisible="False"
-                          IsChecked="{Binding IsCompleted}" />
-                <Border Grid.Column="1"
-                        Width="22"
-                        Height="22"
-                        Padding="2"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        CornerRadius="11"
-                        IsVisible="{Binding HasBodyIcon}"
-                        ToolTip.Tip="{Binding BodyIconAccessibleName}">
-                  <Image Source="{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}"
-                         Stretch="Uniform" />
-                </Border>
-                <Grid Grid.Column="2"
-                      Width="14"
-                      MinHeight="18"
-                      IsVisible="{Binding HasGlyph}">
-                  <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
-                             FontSize="11"
-                             FontWeight="Bold"
-                             IsVisible="{Binding IsPrimaryGlyph}"
-                             Text="{Binding Glyph}" />
-                  <TextBlock Foreground="{DynamicResource RavenSecondaryBrush}"
-                             FontSize="11"
-                             FontWeight="Bold"
-                             IsVisible="{Binding IsInformationGlyph}"
-                             Text="{Binding Glyph}" />
-                  <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
-                             FontSize="11"
-                             FontWeight="Bold"
-                             IsVisible="{Binding IsGoldGlyph}"
-                             Text="{Binding Glyph}" />
-                  <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                             FontSize="11"
-                             FontWeight="Bold"
-                             IsVisible="{Binding IsWarningGlyph}"
-                             Text="{Binding Glyph}" />
-                  <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
-                             FontSize="11"
-                             FontWeight="Bold"
-                             IsVisible="{Binding IsDangerGlyph}"
-                             Text="{Binding Glyph}" />
-                  <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
-                             FontSize="11"
-                             FontWeight="Bold"
-                             IsVisible="{Binding IsSuccessGlyph}"
-                             Text="{Binding Glyph}" />
-                </Grid>
-                <TextBlock Grid.Column="3"
-                           Foreground="{DynamicResource RavenPrimaryBrush}"
-                           FontSize="10"
-                           Text="{Binding Label}"
-                           TextTrimming="CharacterEllipsis" />
-                <ItemsControl Grid.Column="4"
-                              Margin="1,0,3,0"
+          <Grid Margin="3"
+                IsVisible="{Binding !IsCompact}"
+                RowDefinitions="Auto,Auto,Auto,Auto"
+                RowSpacing="3">
+            <StackPanel>
+              <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                         FontSize="12"
+                         FontWeight="SemiBold"
+                         Text="{Binding Title}"
+                         TextTrimming="CharacterEllipsis"
+                         ToolTip.Tip="{Binding Title}" />
+              <TextBlock Foreground="{DynamicResource RavenTextBrush}"
+                         FontSize="10"
+                         FontWeight="SemiBold"
+                         IsVisible="{Binding ShowSubtitle}"
+                         Text="{Binding Subtitle}"
+                         TextTrimming="CharacterEllipsis" />
+              <TextBlock Classes="muted"
+                         FontSize="9"
+                         IsVisible="{Binding ShowSubtitle}"
+                         Text="{Binding Context}"
+                         TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <Border Grid.Row="1"
+                    Height="1"
+                    Background="{DynamicResource RavenWarningBrush}"
+                    Opacity="0.65" />
+            <ItemsControl Grid.Row="2"
+                          IsVisible="{Binding !IsRouteBio}"
+                          ItemsSource="{Binding Rows}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:OverlayPositionPreviewRowViewModel">
+                  <Grid>
+                    <Grid Margin="0,1"
+                          IsVisible="{Binding !IsRouteBody}"
+                          RowDefinitions="Auto,Auto"
+                          ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*"
+                          ColumnSpacing="5">
+                      <CheckBox IsVisible="{Binding ShowCompletionCheckBox}"
+                                IsHitTestVisible="False"
+                                IsChecked="{Binding IsCompleted}" />
+                      <Border Grid.Column="1"
+                              Width="22"
+                              Height="22"
+                              Padding="2"
                               VerticalAlignment="Center"
-                              IsVisible="{Binding HasRewardBands}"
-                              ItemsSource="{Binding RewardBands}">
-                  <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                      <StackPanel Orientation="Horizontal" Spacing="2" />
-                    </ItemsPanelTemplate>
-                  </ItemsControl.ItemsPanel>
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:BiologySignalRewardBandViewModel">
-                      <controls:BiologyRewardBandControl Width="13"
-                                                         Height="28"
-                                                         MinimumReward="{Binding MinimumReward}"
-                                                         MaximumReward="{Binding MaximumReward}"
-                                                         BucketOneMillions="{Binding RewardBucketOneMillions}"
-                                                         BucketTwoMillions="{Binding RewardBucketTwoMillions}"
-                                                         BucketThreeMillions="{Binding RewardBucketThreeMillions}"
-                                                         IsPrediction="{Binding IsPrediction}"
-                                                         IsHighlighted="{Binding IsHighlighted}"
-                                                         IsDimmed="{Binding ShouldDim}"
-                                                         FilledBrush="{DynamicResource RavenPrimaryBrush}"
-                                                         PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                         DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
-                                                         PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
-                                                         PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
-                                                         HighlightBrush="{DynamicResource RavenBioGoldBrush}"
-                                                         DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
-                                                         UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
-                                                         HatchBrush="{DynamicResource RavenBioHatchBrush}"
-                                                         PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <TextBlock Grid.Column="5"
-                           HorizontalAlignment="Right"
-                           VerticalAlignment="Center"
-                           Foreground="{DynamicResource RavenPrimaryBrush}"
-                           FontSize="10"
-                           Text="{Binding Value}"
-                           TextTrimming="CharacterEllipsis" />
-                <ProgressBar Grid.Row="1"
-                             Grid.Column="3"
-                             Grid.ColumnSpan="3"
-                             Height="3"
-                             Margin="0,2,0,0"
-                             IsVisible="{Binding HasProgress}"
-                             Minimum="0"
-                             Maximum="100"
-                             Value="{Binding ProgressValue}" />
-                </Grid>
-              </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <controls:RouteBioTargetList Grid.Row="2"
-                                     IsVisible="{Binding IsRouteBio}"
-                                     ItemsSource="{Binding RouteBioTargets}"
-                                     IsInteractive="False" />
-        <TextBlock Grid.Row="3"
-                   HorizontalAlignment="Center"
-                   Foreground="{DynamicResource RavenMutedTextBrush}"
-                   FontSize="9"
-                   IsVisible="{Binding ShowFooter}"
-                   Text="{Binding Footer}"
-                   TextTrimming="CharacterEllipsis"
-                   ToolTip.Tip="SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE" />
-      </Grid>
+                              Background="Transparent"
+                              CornerRadius="11"
+                              IsVisible="{Binding HasBodyIcon}"
+                              ToolTip.Tip="{Binding BodyIconAccessibleName}">
+                        <Image Source="{Binding BodyIconAssetPath, Converter={StaticResource BundledAssetImageConverter}}"
+                               Stretch="Uniform" />
+                      </Border>
+                      <Grid Grid.Column="2"
+                            Width="14"
+                            MinHeight="18"
+                            IsVisible="{Binding HasGlyph}">
+                        <TextBlock Foreground="{DynamicResource RavenPrimaryBrush}"
+                                   FontSize="11"
+                                   FontWeight="Bold"
+                                   IsVisible="{Binding IsPrimaryGlyph}"
+                                   Text="{Binding Glyph}" />
+                        <TextBlock Foreground="{DynamicResource RavenSecondaryBrush}"
+                                   FontSize="11"
+                                   FontWeight="Bold"
+                                   IsVisible="{Binding IsInformationGlyph}"
+                                   Text="{Binding Glyph}" />
+                        <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
+                                   FontSize="11"
+                                   FontWeight="Bold"
+                                   IsVisible="{Binding IsGoldGlyph}"
+                                   Text="{Binding Glyph}" />
+                        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
+                                   FontSize="11"
+                                   FontWeight="Bold"
+                                   IsVisible="{Binding IsWarningGlyph}"
+                                   Text="{Binding Glyph}" />
+                        <TextBlock Foreground="{DynamicResource RavenDangerBrush}"
+                                   FontSize="11"
+                                   FontWeight="Bold"
+                                   IsVisible="{Binding IsDangerGlyph}"
+                                   Text="{Binding Glyph}" />
+                        <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
+                                   FontSize="11"
+                                   FontWeight="Bold"
+                                   IsVisible="{Binding IsSuccessGlyph}"
+                                   Text="{Binding Glyph}" />
+                      </Grid>
+                      <TextBlock Grid.Column="3"
+                                 Foreground="{DynamicResource RavenPrimaryBrush}"
+                                 FontSize="10"
+                                 Text="{Binding Label}"
+                                 TextTrimming="CharacterEllipsis" />
+                      <ItemsControl Grid.Column="4"
+                                    Margin="1,0,3,0"
+                                    VerticalAlignment="Center"
+                                    IsVisible="{Binding HasRewardBands}"
+                                    ItemsSource="{Binding RewardBands}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="2" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:BiologySignalRewardBandViewModel">
+                            <controls:BiologyRewardBandControl Width="13"
+                                                               Height="28"
+                                                               MinimumReward="{Binding MinimumReward}"
+                                                               MaximumReward="{Binding MaximumReward}"
+                                                               BucketOneMillions="{Binding RewardBucketOneMillions}"
+                                                               BucketTwoMillions="{Binding RewardBucketTwoMillions}"
+                                                               BucketThreeMillions="{Binding RewardBucketThreeMillions}"
+                                                               IsPrediction="{Binding IsPrediction}"
+                                                               IsHighlighted="{Binding IsHighlighted}"
+                                                               IsDimmed="{Binding ShouldDim}"
+                                                               FilledBrush="{DynamicResource RavenPrimaryBrush}"
+                                                               PotentialBrush="{DynamicResource RavenPrimaryDimBrush}"
+                                                               DimmedFilledBrush="{DynamicResource RavenPrimaryDimBrush}"
+                                                               PredictionFilledBrush="{DynamicResource RavenSecondaryBrush}"
+                                                               PredictionPotentialBrush="{DynamicResource RavenSecondaryDimBrush}"
+                                                               HighlightBrush="{DynamicResource RavenBioGoldBrush}"
+                                                               DimmedHighlightBrush="{DynamicResource RavenBioGoldDimBrush}"
+                                                               UnknownBrush="{DynamicResource RavenBioUnknownBrush}"
+                                                               HatchBrush="{DynamicResource RavenBioHatchBrush}"
+                                                               PredictionBrush="{DynamicResource RavenBioPredictionBrush}" />
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      <TextBlock Grid.Column="5"
+                                 HorizontalAlignment="Right"
+                                 VerticalAlignment="Center"
+                                 Foreground="{DynamicResource RavenPrimaryBrush}"
+                                 FontSize="10"
+                                 Text="{Binding Value}"
+                                 TextTrimming="CharacterEllipsis" />
+                      <ProgressBar Grid.Row="1"
+                                   Grid.Column="3"
+                                   Grid.ColumnSpan="3"
+                                   Height="3"
+                                   Margin="0,2,0,0"
+                                   IsVisible="{Binding HasProgress}"
+                                   Minimum="0"
+                                   Maximum="100"
+                                   Value="{Binding ProgressValue}" />
+                    </Grid>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <controls:RouteBioTargetList Grid.Row="2"
+                                         IsVisible="{Binding IsRouteBio}"
+                                         ItemsSource="{Binding RouteBioTargets}"
+                                         IsInteractive="False" />
+            <TextBlock Grid.Row="3"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource RavenMutedTextBrush}"
+                       FontSize="9"
+                       IsVisible="{Binding ShowFooter}"
+                       Text="{Binding Footer}"
+                       TextTrimming="CharacterEllipsis"
+                       ToolTip.Tip="SIMULATED GAME STATE • DRAG TO MOVE • RIGHT-CLICK FOR OPACITY / SCALE" />
+          </Grid>
+        </Grid>
+      </Border>
     </Grid>
   </Border>
 </Window>

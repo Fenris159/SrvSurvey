@@ -24,6 +24,7 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         Definition = OverlayLayoutCatalog.Supported[0];
         Preview = OverlayPositionPreviewViewModel.Create(Definition);
         DataContext = Preview;
+        EnsureEditorFolderTab(Definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
     }
@@ -34,9 +35,24 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         InitializeComponent();
         Preview = OverlayPositionPreviewViewModel.Create(definition);
         DataContext = Preview;
+        EnsureEditorFolderTab(definition.DisplayName);
         usesRuntimePresentation = TryUseRuntimePresentation();
         ApplyContentSize();
         Title = $"{definition.DisplayName} position preview";
+    }
+
+    /// <summary>
+    /// Forces the editor-only folder tab text/visibility from the catalog
+    /// display name so identification never depends solely on bindings.
+    /// </summary>
+    private void EnsureEditorFolderTab(string displayName)
+    {
+        var label = string.IsNullOrWhiteSpace(displayName)
+            ? Definition.Name
+            : displayName.Trim();
+        EditorFolderTab.IsVisible = true;
+        EditorFolderTabLabel.Text = label;
+        ToolTip.SetTip(EditorFolderTab, label);
     }
 
     public OverlayLayoutDefinition Definition { get; }
@@ -44,6 +60,12 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     public OverlayPositionPreviewViewModel Preview { get; }
 
     internal Control? RuntimePresentation => runtimePresentation;
+
+    /// <summary>Editor-only folder tab chrome (tests / diagnostics).</summary>
+    internal Border EditorFolderTabControl => EditorFolderTab;
+
+    /// <summary>Editor-only folder tab label (tests / diagnostics).</summary>
+    internal TextBlock EditorFolderTabLabelControl => EditorFolderTabLabel;
 
     public event EventHandler<OverlayPreviewSettingsRequestedEventArgs>?
         SettingsRequested;
@@ -131,7 +153,11 @@ public sealed partial class OverlayPositionPreviewWindow : Window
 
         globalOpacity = global;
         opacityOverride = overlayOverride;
-        PreviewSurface.Opacity = opacityOverride ?? globalOpacity;
+        var opacity = opacityOverride ?? globalOpacity;
+        // Dim the body with the preview opacity; keep the editor folder tab
+        // fully readable for panel identification.
+        PreviewBody.Opacity = opacity;
+        PreviewSurface.Opacity = 1d;
     }
 
     private void ApplyContentSize()
@@ -219,11 +245,11 @@ public sealed partial class OverlayPositionPreviewWindow : Window
         }
 
         runtimePresentation = presentation;
-        // Host the real shared template; outer PreviewSurface keeps the
-        // editor-only yellow drag border around it.
-        PreviewSurface.Child = presentation;
-        PreviewSurface.Padding = new Thickness(0);
-        PreviewSurface.Background = Avalonia.Media.Brushes.Transparent;
+        // Host the real shared template inside the yellow body; the folder
+        // tab above remains editor-only chrome for identification.
+        PreviewBody.Child = presentation;
+        PreviewBody.Padding = new Thickness(0);
+        PreviewBody.Background = Avalonia.Media.Brushes.Transparent;
         return true;
     }
 
