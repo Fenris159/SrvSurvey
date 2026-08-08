@@ -34,6 +34,7 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
             created.PlanPath);
 
         Assert.Equal(created.PlanPath, loaded.PlanPath);
+        Assert.Equal(created.HelperReadyMarkerPath, loaded.HelperReadyMarkerPath);
         Assert.Equal(created.HealthMarkerPath, loaded.HealthMarkerPath);
         Assert.Equal(created.OutcomePath, loaded.OutcomePath);
         Assert.Equal(created.CreatedAtUtc, loaded.CreatedAtUtc);
@@ -109,7 +110,7 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
             plan.HealthMarkerPath,
             JsonSerializer.Serialize(new
             {
-                schemaVersion = 1,
+                schemaVersion = 2,
                 requestId = plan.Preparation.RequestId,
                 version = plan.Preparation.Version.ToString(),
                 healthToken = new string('0', 64),
@@ -120,6 +121,22 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
         await store.WriteHealthMarkerAsync(plan);
 
         Assert.True(await store.IsHealthConfirmedAsync(plan));
+    }
+
+    [Fact]
+    public async Task HelperReadyMarkerRequiresMatchingRandomToken()
+    {
+        var store = new ReleaseInstallationPlanStore(
+            new FixedTimeProvider(Now));
+        var plan = await store.CreateAsync(
+            temporaryDirectory,
+            CreatePreparation() with { RequiresElevation = true },
+            1_234,
+            Now.AddMinutes(-1));
+
+        Assert.False(await store.IsHelperReadyAsync(plan));
+        await ReleaseInstallationPlanStore.WriteHelperReadyMarkerAsync(plan);
+        Assert.True(await store.IsHelperReadyAsync(plan));
     }
 
     [Fact]
@@ -193,12 +210,14 @@ public sealed class ReleaseInstallationPlanStoreTests : IDisposable
             new Version(2, 0, 95, 23),
             "win-x64",
             installation,
+            Path.Combine(temporaryDirectory, "ready"),
             Path.Combine(parent, $".SrvSurvey-update-{requestId:N}"),
             Path.Combine(parent, $".SrvSurvey-backup-{requestId:N}"),
             Path.Combine(parent, $".SrvSurvey-failed-{requestId:N}"),
             "SrvSurvey.Desktop.exe",
             new string('a', 64),
             new string('b', 64),
+            false,
             ["--frontier-id", "F123"]);
     }
 

@@ -107,6 +107,48 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
     }
 
     [Fact]
+    public void ProtectedWindowsHelperUsesRunAsVerb()
+    {
+        var helper = ApplicationUpdateHandoffService.CreateHelperStartInfo(
+            Path.Combine(temporaryDirectory, "staged", "SrvSurvey.Desktop.exe"),
+            Path.Combine(temporaryDirectory, "plans", "plan.json"),
+            requiresElevation: true);
+
+        Assert.Equal(OperatingSystem.IsWindows(), helper.UseShellExecute);
+        Assert.Equal(OperatingSystem.IsWindows() ? "runas" : string.Empty, helper.Verb);
+        Assert.Equal(
+            [ApplicationUpdateBootstrap.ApplyArgument, Path.GetFullPath(
+                Path.Combine(temporaryDirectory, "plans", "plan.json"))],
+            helper.ArgumentList);
+    }
+
+    [Fact]
+    public void ElevatedHelperValidatesInstalledParentProcess()
+    {
+        var plan = CreatePlan();
+        var expectedPath = Path.Combine(
+            plan.Preparation.InstallationDirectory,
+            plan.Preparation.EntryPoint);
+        ApplicationUpdateBootstrap.ValidateElevatedParentProcess(
+            plan,
+            plan.ParentProcessStartTimeUtcTicks,
+            expectedPath);
+
+        var tampered = plan with
+        {
+            Preparation = plan.Preparation with
+            {
+                InstallationDirectory = Path.Combine(temporaryDirectory, "wrong"),
+            },
+        };
+        Assert.Throws<InvalidDataException>(() =>
+            ApplicationUpdateBootstrap.ValidateElevatedParentProcess(
+                tampered,
+                tampered.ParentProcessStartTimeUtcTicks,
+                expectedPath));
+    }
+
+    [Fact]
     public void HealthConfirmationRequiresInstalledProcessAndBaseDirectory()
     {
         var plan = CreatePlan();
@@ -166,6 +208,192 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
         Assert.Equal(preparation.RequestId, loaded.Preparation.RequestId);
     }
 
+    [Fact]
+    public async Task ElevatedHandoffWaitsForHelperReadyMarker()
+    {
+        var stagedEntryPoint = Path.Combine(
+            temporaryDirectory,
+            "staged-elevated",
+            "SrvSurvey.Desktop.exe");
+        Directory.CreateDirectory(Path.GetDirectoryName(stagedEntryPoint)!);
+        await File.WriteAllTextAsync(stagedEntryPoint, "helper");
+        var store = new ReleaseInstallationPlanStore();
+        ProcessStartInfo? captured = null;
+        var service = new ApplicationUpdateHandoffService(
+            store,
+            startInfo =>
+            {
+                captured = startInfo;
+                var planPath = startInfo.ArgumentList[1];
+                _ = Task.Run(async () =>
+                {
+                    var loaded = await store.LoadAsync(
+                        temporaryDirectory,
+                        planPath);
+                    await ReleaseInstallationPlanStore.WriteHelperReadyMarkerAsync(
+                        loaded);
+                });
+                return Process.GetCurrentProcess();
+            });
+        var preparation = CreatePlan().Preparation with
+        {
+            RequiresElevation = true,
+        };
+
+        var plan = await service.StartHelperAsync(
+            temporaryDirectory,
+            preparation,
+            stagedEntryPoint);
+
+        Assert.NotNull(captured);
+        Assert.Equal(OperatingSystem.IsWindows(), captured.UseShellExecute);
+        Assert.True(await store.IsHelperReadyAsync(plan));
+    }
+
+    [Fact]
+    public void ElevatedHelperRejectsAParentFromAnotherExecutable()
+    {
+        using var current = Process.GetCurrentProcess();
+        var plan = CreatePlan() with
+        {
+            ParentProcessId = current.Id,
+            ParentProcessStartTimeUtcTicks = current.StartTime.ToUniversalTime().Ticks,
+        };
+
+        var exception = Assert.Throws<InvalidDataException>(() =>
+            ApplicationUpdateBootstrap.OpenValidatedParentProcess(plan));
+
+        Assert.Contains(
+            "did not come from the installed SrvSurvey process",
+            exception.Message);
+    }
+
+    [Fact]
+    public void ElevatedHelperRejectsAMissingParentProcess()
+    {
+        var plan = CreatePlan() with
+        {
+            ParentProcessId = int.MaxValue,
+        };
+
+        var exception = Assert.Throws<InvalidDataException>(() =>
+            ApplicationUpdateBootstrap.OpenValidatedParentProcess(plan));
+
+        Assert.Contains("could not validate", exception.Message);
+    }
+
+    [Fact]
+    public void ParentIdentityCheckRecognizesCurrentStaleAndMissingProcesses()
+    {
+        using var current = Process.GetCurrentProcess();
+        var currentPlan = CreatePlan() with
+        {
+            ParentProcessId = current.Id,
+            ParentProcessStartTimeUtcTicks = current.StartTime.ToUniversalTime().Ticks,
+        };
+
+        Assert.True(ApplicationUpdateBootstrap.IsParentStillRunning(currentPlan));
+        Assert.False(ApplicationUpdateBootstrap.IsParentStillRunning(
+            currentPlan with
+            {
+                ParentProcessStartTimeUtcTicks =
+                    currentPlan.ParentProcessStartTimeUtcTicks
+                    + TimeSpan.FromSeconds(2).Ticks,
+            }));
+        Assert.False(ApplicationUpdateBootstrap.IsParentStillRunning(
+            currentPlan with { ParentProcessId = int.MaxValue }));
+    }
+
+    [Fact]
+    public async Task ParentWaitReturnsForStaleAndMissingProcesses()
+    {
+        using var current = Process.GetCurrentProcess();
+        var currentPlan = CreatePlan() with
+        {
+            ParentProcessId = current.Id,
+            ParentProcessStartTimeUtcTicks =
+                current.StartTime.ToUniversalTime().Ticks
+                + TimeSpan.FromSeconds(2).Ticks,
+        };
+
+        var staleException = await Record.ExceptionAsync(() =>
+            ApplicationUpdateBootstrap.WaitForParentExitAsync(
+                currentPlan,
+                validatedParent: null,
+                CancellationToken.None));
+        var missingException = await Record.ExceptionAsync(() =>
+            ApplicationUpdateBootstrap.WaitForParentExitAsync(
+                currentPlan with { ParentProcessId = int.MaxValue },
+                validatedParent: null,
+                CancellationToken.None));
+
+        Assert.Null(staleException);
+        Assert.Null(missingException);
+    }
+
+    [Fact]
+    public async Task ElevatedHelperFailureWritesAnAbortedOutcome()
+    {
+        using var current = Process.GetCurrentProcess();
+        var store = new ReleaseInstallationPlanStore();
+        var preparation = CreatePlan().Preparation with
+        {
+            RequiresElevation = true,
+        };
+        var plan = await store.CreateAsync(
+            temporaryDirectory,
+            preparation,
+            current.Id,
+            current.StartTime.ToUniversalTime());
+
+        var exitCode = await ApplicationUpdateBootstrap.RunHelperAsync(
+            temporaryDirectory,
+            plan.PlanPath);
+
+        Assert.Equal(2, exitCode);
+        var outcome = await store.ReadOutcomeAsync(plan);
+        Assert.NotNull(outcome);
+        Assert.Equal(ReleaseInstallationOutcomeStatus.Aborted, outcome.Status);
+        Assert.Contains(
+            "did not come from the installed SrvSurvey process",
+            outcome.Error);
+    }
+
+    [Fact]
+    public async Task HelperFailureBeforePlanLoadReturnsAnErrorCode()
+    {
+        var exitCode = await ApplicationUpdateBootstrap.RunHelperAsync(
+            Path.Combine(temporaryDirectory, "missing-plan.json"));
+
+        Assert.Equal(2, exitCode);
+    }
+
+    [Fact]
+    public async Task ElevatedHandoffRejectsAHelperThatExitsBeforeValidation()
+    {
+        var stagedEntryPoint = Path.Combine(
+            temporaryDirectory,
+            "staged-exited",
+            "SrvSurvey.Desktop.exe");
+        Directory.CreateDirectory(Path.GetDirectoryName(stagedEntryPoint)!);
+        await File.WriteAllTextAsync(stagedEntryPoint, "helper");
+        var service = new ApplicationUpdateHandoffService(
+            new ReleaseInstallationPlanStore(),
+            _ => StartExitedProcess());
+        var preparation = CreatePlan().Preparation with
+        {
+            RequiresElevation = true,
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.StartHelperAsync(
+                temporaryDirectory,
+                preparation,
+                stagedEntryPoint));
+
+        Assert.Contains("exited before validating", exception.Message);
+    }
+
     public void Dispose()
     {
         ApplicationUpdateBootstrap.SetPendingConfirmation(null);
@@ -191,15 +419,18 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
             new Version(2, 0, 95, 23),
             "win-x64",
             installation,
+            Path.Combine(temporaryDirectory, "ready"),
             Path.Combine(parent, $".SrvSurvey-update-{requestId:N}"),
             Path.Combine(parent, $".SrvSurvey-backup-{requestId:N}"),
             Path.Combine(parent, $".SrvSurvey-failed-{requestId:N}"),
             "SrvSurvey.Desktop.exe",
             new string('a', 64),
             new string('b', 64),
+            false,
             []);
         return new ReleaseInstallationHandoffPlan(
             Path.Combine(planDirectory, "plan.json"),
+            Path.Combine(planDirectory, "helper-ready.json"),
             Path.Combine(planDirectory, "health.json"),
             Path.Combine(planDirectory, "outcome.json"),
             DateTimeOffset.UtcNow,
@@ -207,5 +438,18 @@ public sealed class ApplicationUpdateBootstrapTests : IDisposable
             DateTimeOffset.UtcNow.UtcTicks,
             new string('c', 64),
             preparation);
+    }
+
+    private static Process StartExitedProcess()
+    {
+        var startInfo = OperatingSystem.IsWindows()
+            ? new ProcessStartInfo("cmd.exe", "/c exit 0")
+            : new ProcessStartInfo("/bin/sh", "-c true");
+        startInfo.UseShellExecute = false;
+        startInfo.CreateNoWindow = true;
+        var process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Test process did not start.");
+        process.WaitForExit();
+        return process;
     }
 }

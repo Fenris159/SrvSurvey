@@ -1,6 +1,13 @@
 # Install SrvSurvey on Windows
 
-Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.4**.
+Current release candidate version: **SrvSurvey-XP 2.1.3.0-rc.5**.
+
+> [!IMPORTANT]
+> If RC4 or earlier is installed under a protected folder such as
+> `C:\Program Files` or `C:\Program Files (x86)`, perform the RC5 upgrade once
+> by starting the installed SrvSurvey as administrator and retrying its updater,
+> or by manually installing the RC5 Windows package. RC5 includes the elevation
+> handoff needed for later built-in updates from protected locations.
 
 These instructions apply to the portable cross-platform package named
 `SrvSurvey-XP-<version>-win-x64.zip`. It is self-contained and does not

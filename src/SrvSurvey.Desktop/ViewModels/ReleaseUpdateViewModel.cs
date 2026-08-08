@@ -485,8 +485,15 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
                 staged.ManifestSha256,
                 installer.InstallationDirectory,
                 installer.StartupArguments);
-            InstallProgressText =
-                "Rollback candidate verified; starting external helper...";
+            InstallProgressText = preparation.RequiresElevation
+                ? "Starting elevated update helper; approve the Windows prompt..."
+                : "Rollback candidate verified; starting external helper...";
+            if (preparation.RequiresElevation)
+            {
+                StatusMessage =
+                    "Windows administrator approval is required to update this protected installation. The player profile remains untouched.";
+            }
+
             await installer.HandoffService.StartHelperAsync(
                 installer.DataDirectory,
                 preparation,
@@ -564,6 +571,7 @@ public sealed class ReleaseUpdateViewModel : INotifyPropertyChanged
     {
         return exception is HttpRequestException
             or IOException
+            or Win32Exception
             or InvalidDataException
             or JsonException
             or TaskCanceledException

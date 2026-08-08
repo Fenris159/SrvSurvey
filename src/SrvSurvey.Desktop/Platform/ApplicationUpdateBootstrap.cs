@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using SrvSurvey.Core.Storage;
 using SrvSurvey.Core.Updates;
@@ -20,6 +21,7 @@ internal sealed record ApplicationUpdateStartup(
 public sealed class ApplicationUpdateHandoffService
     : IApplicationUpdateHandoffService
 {
+    private static readonly TimeSpan HelperReadyTimeout = TimeSpan.FromSeconds(30);
     private readonly ReleaseInstallationPlanStore planStore;
     private readonly Func<ProcessStartInfo, Process?> startProcess;
 
@@ -61,16 +63,26 @@ public sealed class ApplicationUpdateHandoffService
                 currentProcess.StartTime.ToUniversalTime(),
                 cancellationToken)
             .ConfigureAwait(false);
-        var startInfo = CreateHelperStartInfo(helperPath, plan.PlanPath);
+        var startInfo = CreateHelperStartInfo(
+            helperPath,
+            plan.PlanPath,
+            preparation.RequiresElevation);
         using var helper = startProcess(startInfo)
             ?? throw new InvalidOperationException(
                 "The staged SrvSurvey update helper did not start.");
+        if (preparation.RequiresElevation)
+        {
+            await WaitForHelperReadyAsync(plan, helper, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
         return plan;
     }
 
     internal static ProcessStartInfo CreateHelperStartInfo(
         string stagedEntryPoint,
-        string planPath)
+        string planPath,
+        bool requiresElevation = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(stagedEntryPoint);
         ArgumentException.ThrowIfNullOrWhiteSpace(planPath);
@@ -79,13 +91,51 @@ public sealed class ApplicationUpdateHandoffService
         {
             FileName = fullEntryPoint,
             WorkingDirectory = Path.GetDirectoryName(fullEntryPoint)!,
-            UseShellExecute = false,
+            UseShellExecute = requiresElevation && OperatingSystem.IsWindows(),
+            Verb = requiresElevation && OperatingSystem.IsWindows()
+                ? "runas"
+                : string.Empty,
             ArgumentList =
             {
                 ApplicationUpdateBootstrap.ApplyArgument,
                 Path.GetFullPath(planPath),
             },
         };
+    }
+
+    private async Task WaitForHelperReadyAsync(
+        ReleaseInstallationHandoffPlan plan,
+        Process helper,
+        CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken);
+        timeout.CancelAfter(HelperReadyTimeout);
+        try
+        {
+            while (!timeout.IsCancellationRequested)
+            {
+                if (await planStore.IsHelperReadyAsync(plan, timeout.Token)
+                    .ConfigureAwait(false))
+                {
+                    return;
+                }
+
+                if (helper.HasExited)
+                {
+                    throw new InvalidOperationException(
+                        "The elevated update helper exited before validating the installation.");
+                }
+
+                await Task.Delay(100, timeout.Token).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException) when (
+            !cancellationToken.IsCancellationRequested)
+        {
+            throw new InvalidOperationException(
+                "The elevated update helper did not become ready in time.");
+        }
     }
 }
 
@@ -325,21 +375,46 @@ internal static class ApplicationUpdateBootstrap
         return plan;
     }
 
-    public static async Task<int> RunHelperAsync(
+    public static Task<int> RunHelperAsync(
         string planPath,
         CancellationToken cancellationToken = default)
     {
         var paths = AppDataPaths.ResolveCurrent();
+        return RunHelperAsync(
+            paths.DataDirectory,
+            planPath,
+            cancellationToken);
+    }
+
+    internal static async Task<int> RunHelperAsync(
+        string dataDirectory,
+        string planPath,
+        CancellationToken cancellationToken = default)
+    {
         var store = new ReleaseInstallationPlanStore();
         ReleaseInstallationHandoffPlan? plan = null;
+        Process? validatedParent = null;
         try
         {
             plan = await store.LoadAsync(
-                    paths.DataDirectory,
+                    dataDirectory,
                     planPath,
                     cancellationToken)
                 .ConfigureAwait(false);
-            return await ApplyHelperPlanAsync(store, plan, cancellationToken)
+            if (plan.Preparation.RequiresElevation)
+            {
+                validatedParent = OpenValidatedParentProcess(plan);
+                await ReleaseInstallationPlanStore.WriteHelperReadyMarkerAsync(
+                        plan,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+
+            return await ApplyHelperPlanAsync(
+                    store,
+                    plan,
+                    validatedParent,
+                    cancellationToken)
                 .ConfigureAwait(false);
         }
         catch (Exception exception) when (
@@ -353,14 +428,19 @@ internal static class ApplicationUpdateBootstrap
                 .ConfigureAwait(false);
             return 2;
         }
+        finally
+        {
+            validatedParent?.Dispose();
+        }
     }
 
     private static async Task<int> ApplyHelperPlanAsync(
         ReleaseInstallationPlanStore store,
         ReleaseInstallationHandoffPlan plan,
+        Process? validatedParent,
         CancellationToken cancellationToken)
     {
-        await WaitForParentExitAsync(plan, cancellationToken)
+        await WaitForParentExitAsync(plan, validatedParent, cancellationToken)
             .ConfigureAwait(false);
         var transaction = new ReleaseInstallationTransaction();
         var result = await transaction.ApplyAsync(
@@ -452,6 +532,7 @@ internal static class ApplicationUpdateBootstrap
             plan.Preparation.EntryPoint);
         if (exception is UpdateParentStillRunningException
                 or OperationCanceledException
+            || IsParentStillRunning(plan)
             || !File.Exists(originalEntryPoint))
         {
             return;
@@ -529,20 +610,26 @@ internal static class ApplicationUpdateBootstrap
         }
     }
 
-    private static async Task WaitForParentExitAsync(
+    internal static async Task WaitForParentExitAsync(
         ReleaseInstallationHandoffPlan plan,
+        Process? validatedParent,
         CancellationToken cancellationToken)
     {
-        Process? parent = null;
+        Process? parent = validatedParent;
+        var disposeParent = false;
         try
         {
-            parent = Process.GetProcessById(plan.ParentProcessId);
-            var actualStartTicks = parent.StartTime.ToUniversalTime().Ticks;
-            if (Math.Abs(
-                    actualStartTicks - plan.ParentProcessStartTimeUtcTicks)
-                > TimeSpan.FromSeconds(1).Ticks)
+            if (parent is null)
             {
-                return;
+                parent = Process.GetProcessById(plan.ParentProcessId);
+                disposeParent = true;
+                var actualStartTicks = parent.StartTime.ToUniversalTime().Ticks;
+                if (Math.Abs(
+                        actualStartTicks - plan.ParentProcessStartTimeUtcTicks)
+                    > TimeSpan.FromSeconds(1).Ticks)
+                {
+                    return;
+                }
             }
 
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(
@@ -564,7 +651,89 @@ internal static class ApplicationUpdateBootstrap
         }
         finally
         {
+            if (disposeParent)
+            {
+                parent?.Dispose();
+            }
+        }
+    }
+
+    internal static bool IsParentStillRunning(
+        ReleaseInstallationHandoffPlan plan)
+    {
+        try
+        {
+            using var parent = Process.GetProcessById(plan.ParentProcessId);
+            return Math.Abs(
+                    parent.StartTime.ToUniversalTime().Ticks
+                    - plan.ParentProcessStartTimeUtcTicks)
+                <= TimeSpan.FromSeconds(1).Ticks;
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException
+                or InvalidOperationException
+                or Win32Exception)
+        {
+            return false;
+        }
+    }
+
+    internal static Process OpenValidatedParentProcess(
+        ReleaseInstallationHandoffPlan plan)
+    {
+        Process? parent = null;
+        try
+        {
+            parent = Process.GetProcessById(plan.ParentProcessId);
+            var actualStartTicks = parent.StartTime.ToUniversalTime().Ticks;
+            var actualPath = parent.MainModule?.FileName;
+            ValidateElevatedParentProcess(plan, actualStartTicks, actualPath);
+
+            return parent;
+        }
+        catch (InvalidDataException)
+        {
             parent?.Dispose();
+            throw;
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException
+                or InvalidOperationException
+                or Win32Exception)
+        {
+            parent?.Dispose();
+            throw new InvalidDataException(
+                "The elevated update helper could not validate the installed SrvSurvey process.",
+                exception);
+        }
+    }
+
+    internal static void ValidateElevatedParentProcess(
+        ReleaseInstallationHandoffPlan plan,
+        long actualStartTimeUtcTicks,
+        string? actualProcessPath)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        const string expectedEntryPoint = "SrvSurvey.Desktop.exe";
+        var expectedPath = Path.GetFullPath(Path.Combine(
+            plan.Preparation.InstallationDirectory,
+            plan.Preparation.EntryPoint));
+        if (plan.Preparation.RuntimeIdentifier != "win-x64"
+            || !string.Equals(
+                plan.Preparation.EntryPoint,
+                expectedEntryPoint,
+                StringComparison.Ordinal)
+            || Math.Abs(
+                actualStartTimeUtcTicks - plan.ParentProcessStartTimeUtcTicks)
+                > TimeSpan.FromSeconds(1).Ticks
+            || actualProcessPath is null
+            || !string.Equals(
+                Path.GetFullPath(actualProcessPath),
+                expectedPath,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException(
+                "The elevated update request did not come from the installed SrvSurvey process.");
         }
     }
 

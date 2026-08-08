@@ -1,40 +1,39 @@
-# SrvSurvey-XP 2.1.3.0-rc.4
+# SrvSurvey-XP 2.1.3.0-rc.5
 
-This fourth release candidate focuses on overlay presentation, compactness, and
-editor usability. The changes below are the delta from `2.1.3.0-rc.3`.
+This fifth release candidate is a targeted updater repair. The changes below
+are the delta from `2.1.3.0-rc.4`.
 
-## What's new since 2.1.3.0-rc.3
+## What's new since 2.1.3.0-rc.4
 
-- Uses the same shared Avalonia presentation templates for live overlays and
-  editor previews, so layout, typography, wrapping, colors, and panel contents
-  no longer drift between the two surfaces.
-- Tightens the information density of exploration, biology, route, Guardian,
-  settlement, station, mission, notification, and status overlays. Panels now
-  size more closely to their content, long descriptive text wraps, dividers no
-  longer force extra width, and compact text consistently uses Oxanium and
-  Rajdhani roles.
-- Improves FSS overlays with a wrapped description, a compact three-body
-  scrolling viewport, unscanned-first alphanumeric ordering, and a consistent
-  scanned-state pill. Route-body headings also wrap at meaningful separator
-  groups instead of splitting details arbitrarily.
-- Restores editor folder tabs, removes the duplicate preview backing layer, and
-  anchors the editor controls above the desktop work area. Overlay panels can
-  be moved beyond every screen edge, while per-panel opacity and scale controls
-  open toward the available space.
-- Adds a compact single-row overlay color editor and six built-in themes:
-  Default, Nebula Cyan, Toxic Green, Crimson Wake, Void Amethyst, and Cerulean
-  Gold. Loading either a preset or named state refreshes open overlays
-  immediately; Apply remains the explicit step that persists `theme.json`.
-- Expands automated rendering, placement, presentation-parity, theme, and
-  editor interaction coverage for the shared overlay system.
+- Fixes guarded updates for Windows installations under protected locations
+  such as `Program Files (x86)`. When the normal process cannot create the
+  same-volume rollback candidate, SrvSurvey now requests administrator approval
+  and completes that preparation in the external update helper.
+- Keeps the privilege transition narrow: the helper revalidates the staged
+  package, binds the request to the running installed SrvSurvey process, and
+  signals readiness before the application closes.
+- Preserves the existing whole-directory backup, startup health confirmation,
+  and automatic rollback behavior. Cancelling the Windows approval prompt
+  leaves the active installation and player profile unchanged.
+- Leaves user-writable Windows installs and Linux update behavior on their
+  existing non-elevated path.
+
+## Upgrading from RC4 or earlier on Windows
+
+The elevation repair runs from RC5, so an older build installed under
+`Program Files` cannot use it until RC5 is installed. For this one upgrade,
+either start the existing SrvSurvey build as administrator before using the
+built-in updater, or install the RC5 Windows package manually. Future built-in
+updates from RC5 will request administrator approval only when the installation
+location requires it.
 
 ## Packaging
 
-- Version: `2.1.3.0-rc.4`
-- Tag: `xp-v2.1.3.0-rc.4`
-- Windows: `SrvSurvey-XP-2.1.3.0-rc.4-win-x64.zip`
-- Linux: `SrvSurvey-XP-2.1.3.0-rc.4-linux-x64.tar.gz`
-- AppImage: `SrvSurvey-XP-2.1.3.0-rc.4-x86_64.AppImage`
+- Version: `2.1.3.0-rc.5`
+- Tag: `xp-v2.1.3.0-rc.5`
+- Windows: `SrvSurvey-XP-2.1.3.0-rc.5-win-x64.zip`
+- Linux: `SrvSurvey-XP-2.1.3.0-rc.5-linux-x64.tar.gz`
+- AppImage: `SrvSurvey-XP-2.1.3.0-rc.5-x86_64.AppImage`
 
 The Windows and Linux packages are self-contained. AppImages must be updated
 manually; the application links directly to the selected XP release.
