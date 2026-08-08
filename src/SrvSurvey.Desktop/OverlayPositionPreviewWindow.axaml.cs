@@ -67,6 +67,9 @@ public sealed partial class OverlayPositionPreviewWindow : Window
     /// <summary>Editor-only folder tab label (tests / diagnostics).</summary>
     internal TextBlock EditorFolderTabLabelControl => EditorFolderTabLabel;
 
+    /// <summary>Editor-only bordered preview body (tests / diagnostics).</summary>
+    internal Border PreviewBodyControl => PreviewBody;
+
     public event EventHandler<OverlayPreviewSettingsRequestedEventArgs>?
         SettingsRequested;
 

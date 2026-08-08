@@ -246,17 +246,22 @@ public static class OverlayThemeResources
             return;
         }
 
+        // Shared presentation templates own their complete visual grammar.
+        // Do not register the legacy LayoutUpdated normalizer: it would later
+        // walk the editor preview shell and strip the folder tab's padding,
+        // background, border, and corner radius after the window opens.
+        if (OverlayRuntimePresentationFactory.UsesDedicatedHostChrome(plotterName)
+            || GuardianOverlayPresentationFactory.IsSupported(plotterName))
+        {
+            ApplyDedicatedPresentationChrome(window);
+            return;
+        }
+
         var registration = LegacyPresentationRegistrations.GetValue(
             window,
             candidate => new LegacyPresentationRegistration(
                 candidate,
                 definition));
-        if (OverlayRuntimePresentationFactory.UsesDedicatedHostChrome(plotterName)
-            || GuardianOverlayPresentationFactory.IsSupported(plotterName))
-        {
-            ApplyDedicatedPresentationChrome(window);
-        }
-
         registration.ApplyPresentation();
     }
 
