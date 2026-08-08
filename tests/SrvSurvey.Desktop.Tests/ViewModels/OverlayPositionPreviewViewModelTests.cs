@@ -70,7 +70,7 @@ public sealed class OverlayPositionPreviewViewModelTests
 
         var preview = OverlayPositionPreviewViewModel.Create(definition);
 
-        Assert.Equal(220, preview.PreferredWidth);
+        Assert.Equal(definition.PreviewSize.Width, preview.PreferredWidth);
         Assert.Equal(5, preview.Rows.Count);
         Assert.Equal(5, preview.RouteBioTargets.Count);
         Assert.True(preview.IsRouteBio);

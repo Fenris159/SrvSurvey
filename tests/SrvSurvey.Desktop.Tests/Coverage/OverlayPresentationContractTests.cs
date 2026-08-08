@@ -1,3 +1,5 @@
+using SrvSurvey.Desktop.Platform.Overlay;
+
 namespace SrvSurvey.Desktop.Tests.Coverage;
 
 public sealed class OverlayPresentationContractTests
@@ -52,7 +54,8 @@ public sealed class OverlayPresentationContractTests
         ]),
         Contract("PlotFSSInfo", ["src/SrvSurvey.Desktop/FssInfoOverlayWindow.axaml", "src/SrvSurvey.Desktop/FssInfoOverlayPresentation.axaml"], [
             "SystemTitle", "ScanSummary", "FssFilterDescription", "FssBodies", "ScanValue", "DssValue",
-            "BiologicalSignalsText", "GeologicalSignalsText", "TextDecorations=\"Strikethrough\"",
+            "BiologicalSignalsText", "GeologicalSignalsText", "IsSurfaceScanned", "SCANNED",
+            "TextDecorations=\"Strikethrough\"",
         ]),
         Contract("PlotGalMap", ["src/SrvSurvey.Desktop/GalaxyMapOverlayWindow.axaml", "src/SrvSurvey.Desktop/GalaxyMapOverlayPresentation.axaml"], [
             "PrimarySystemDisplay.DiscoveryText", "PrimarySystemDisplay.DiscoveredByText",
@@ -206,6 +209,79 @@ public sealed class OverlayPresentationContractTests
             "SrvSurvey.Desktop",
             "RamTahOverlayPresentation.axaml"));
         Assert.DoesNotContain("&lt;A01&gt;", ramTah);
+    }
+
+    [Theory]
+    [InlineData("PlotFSSInfo", "FssInfoOverlayPresentation.axaml", "FssInfoOverlayWindow.axaml", 270)]
+    [InlineData("PlotFSS", "LastFssBodyOverlayPresentation.axaml", "LastFssBodyOverlayWindow.axaml", 310)]
+    [InlineData("PlotBodyInfo", "BodyInformationOverlayPresentation.axaml", "BodyInformationOverlayWindow.axaml", 290)]
+    [InlineData("PlotFleetCarrierRoute", "FleetCarrierRouteOverlayPresentation.axaml", "FleetCarrierRouteOverlayWindow.axaml", 320)]
+    [InlineData("PlotRouteBio", "RouteBioOverlayPresentation.axaml", "RouteBioOverlayWindow.axaml", 260)]
+    public void CompactPresentationsShareOneBoundedWidthWithTheirHosts(
+        string plotterName,
+        string presentationName,
+        string windowName,
+        int expectedWidth)
+    {
+        var root = FindRepositoryRoot();
+        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        var presentation = File.ReadAllText(Path.Combine(
+            desktop,
+            presentationName));
+        var window = File.ReadAllText(Path.Combine(desktop, windowName));
+
+        Assert.Contains($"Width=\"{expectedWidth}\"", presentation);
+        Assert.Contains($"MinWidth=\"{expectedWidth}\"", window);
+        Assert.Equal(
+            expectedWidth,
+            OverlayLayoutCatalog.GetRequired(plotterName).PreviewSize.Width);
+    }
+
+    [Fact]
+    public void CompactOverlayDetailsWrapWithoutSplittingRouteGroups()
+    {
+        var root = FindRepositoryRoot();
+        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        var fss = File.ReadAllText(Path.Combine(
+            desktop,
+            "FssInfoOverlayPresentation.axaml"));
+        var routeRow = File.ReadAllText(Path.Combine(
+            desktop,
+            "Controls",
+            "RouteBioTargetRow.axaml"));
+
+        Assert.Contains("FssFilterDescription", fss);
+        Assert.Contains("TextWrapping=\"Wrap\"", fss);
+        Assert.Contains("MaxHeight=\"216\"", fss);
+        Assert.Contains("ItemsSource=\"{Binding InlineSegments}\"", routeRow);
+        Assert.Contains("<WrapPanel Orientation=\"Horizontal\"", routeRow);
+        Assert.DoesNotContain("MaxWidth=\"128\"", routeRow);
+    }
+
+    [Fact]
+    public void CompactValueCellsAutoSizeAndTypographyUsesSemanticRoles()
+    {
+        var root = FindRepositoryRoot();
+        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        var lastFss = File.ReadAllText(Path.Combine(
+            desktop,
+            "LastFssBodyOverlayPresentation.axaml"));
+        var bodyInfo = File.ReadAllText(Path.Combine(
+            desktop,
+            "BodyInformationOverlayPresentation.axaml"));
+        var typography = File.ReadAllText(Path.Combine(
+            desktop,
+            "Styles",
+            "OverlayTypographyStyles.axaml"));
+
+        Assert.Contains("ColumnDefinitions=\"Auto,Auto\"", lastFss);
+        Assert.Contains("ColumnDefinitions=\"Auto,Auto\"", bodyInfo);
+        Assert.Contains("TextBlock.overlay-title", typography);
+        Assert.Contains("TextBlock.overlay-value", typography);
+        Assert.Contains("TextBlock.overlay-body", typography);
+        Assert.Contains("TextBlock.overlay-detail", typography);
+        Assert.Contains("TextBlock.overlay-caption", typography);
+        Assert.DoesNotContain("TextBlock[FontSize=", typography);
     }
 
     private static PresentationContract Contract(

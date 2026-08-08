@@ -107,13 +107,31 @@ public sealed class OverlayThemeResourcesTests
     }
 
     [AvaloniaFact]
-    public void EveryOverlayUsesBundledPrimaryAndCompactTypography()
+    public void EveryOverlayUsesBundledRoleBasedTypography()
     {
         var primary = new TextBlock { Text = "Primary" };
         var eyebrow = new TextBlock { Text = "Eyebrow", Classes = { "eyebrow" } };
         var muted = new TextBlock { Text = "Muted", Classes = { "muted" } };
-        var compact = new TextBlock { Text = "Compact", Classes = { "monospace" } };
-        var compactBySize = new TextBlock { Text = "Compact by size", FontSize = 9 };
+        var value = new TextBlock
+        {
+            Text = "Value",
+            Classes = { "monospace", "overlay-value" },
+        };
+        var compactBySize = new TextBlock
+        {
+            Text = "Size alone remains primary",
+            FontSize = 9,
+        };
+        var detail = new TextBlock
+        {
+            Text = "Longer detail",
+            Classes = { "overlay-detail" },
+        };
+        var caption = new TextBlock
+        {
+            Text = "Caption",
+            Classes = { "overlay-caption" },
+        };
         var guardianPrimary = new TextBlock
         {
             Text = "Guardian primary",
@@ -133,8 +151,10 @@ public sealed class OverlayThemeResourcesTests
                     primary,
                     eyebrow,
                     muted,
-                    compact,
+                    value,
                     compactBySize,
+                    detail,
+                    caption,
                     guardianPrimary,
                     guardianCompact,
                 },
@@ -149,8 +169,13 @@ public sealed class OverlayThemeResourcesTests
         Assert.Contains("Oxanium", guardianPrimary.FontFamily.Name);
         Assert.Contains("Rajdhani", eyebrow.FontFamily.Name);
         Assert.Contains("Rajdhani", muted.FontFamily.Name);
-        Assert.Contains("Rajdhani", compact.FontFamily.Name);
-        Assert.Contains("Rajdhani", compactBySize.FontFamily.Name);
+        Assert.Contains("Oxanium", value.FontFamily.Name);
+        Assert.Contains("Oxanium", compactBySize.FontFamily.Name);
+        Assert.Contains("Rajdhani", detail.FontFamily.Name);
+        Assert.Contains("Rajdhani", caption.FontFamily.Name);
+        Assert.Equal(12, value.FontSize);
+        Assert.Equal(10, detail.FontSize);
+        Assert.Equal(9, caption.FontSize);
         Assert.Contains("Rajdhani", guardianCompact.FontFamily.Name);
 
         window.Close();

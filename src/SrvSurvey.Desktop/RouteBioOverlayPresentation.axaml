@@ -7,6 +7,7 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:RouteBioOverlayViewModel"
              mc:Ignorable="d"
+             Width="260"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"
@@ -17,17 +18,15 @@
           RowDefinitions="Auto,Auto,Auto,Auto"
           RowSpacing="3">
       <StackPanel>
-        <TextBlock Foreground="{DynamicResource RavenWarningBrush}"
-                   FontSize="12"
-                   FontWeight="SemiBold"
+        <TextBlock Classes="overlay-value"
+                   Foreground="{DynamicResource RavenWarningBrush}"
                    Text="Route bodies" />
         <TextBlock Foreground="{DynamicResource RavenTextBrush}"
-                   FontSize="10"
+                   Classes="overlay-body"
                    FontWeight="SemiBold"
                    Text="{Binding SystemName}"
                    TextTrimming="CharacterEllipsis" />
-        <TextBlock Classes="muted"
-                   FontSize="9"
+        <TextBlock Classes="muted overlay-caption"
                    Text="Route body destinations" />
       </StackPanel>
 
@@ -43,8 +42,8 @@
 
       <TextBlock Grid.Row="3"
                  HorizontalAlignment="Center"
+                 Classes="overlay-caption"
                  Foreground="{DynamicResource RavenMutedTextBrush}"
-                 FontSize="9"
                  Text="{Binding Progress}"
                  TextTrimming="CharacterEllipsis" />
     </Grid>

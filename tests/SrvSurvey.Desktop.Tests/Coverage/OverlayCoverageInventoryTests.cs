@@ -524,7 +524,7 @@ public sealed partial class OverlayCoverageInventoryTests
             Native("src/SrvSurvey.Desktop/RouteBioOverlayPresentation.axaml")));
         Assert.Contains("RouteBioOverlayPresentation", routeOverlay);
         Assert.Contains("RouteBioTargetList", routeOverlayPresentation);
-        Assert.Contains("Width=\"220\"", routeOverlay);
+        Assert.Contains("Width=\"260\"", routeOverlay);
         Assert.DoesNotContain(
             "BorderBrush=\"{DynamicResource RavenWarningBrush}\"",
             routeOverlayPresentation);
