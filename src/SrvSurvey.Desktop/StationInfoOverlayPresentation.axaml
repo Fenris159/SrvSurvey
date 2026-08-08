@@ -6,6 +6,7 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:StationInfoOverlayViewModel"
              mc:Ignorable="d"
+             Width="240"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"
@@ -42,7 +43,7 @@
         </Border>
       </Grid>
 
-      <Grid ColumnDefinitions="*,*" ColumnSpacing="5">
+      <StackPanel Spacing="4">
         <Border Padding="9,7"
                 Background="{DynamicResource RavenSurfaceBrush}"
                 CornerRadius="7">
@@ -50,15 +51,14 @@
                      Text="{Binding StationInfo.LargestPadText}"
                      TextWrapping="Wrap" />
         </Border>
-        <Border Grid.Column="1"
-                Padding="9,7"
+        <Border Padding="9,7"
                 Background="{DynamicResource RavenSurfaceBrush}"
                 CornerRadius="7">
           <TextBlock FontSize="10"
                      Text="{Binding StationInfo.PrimaryEconomyText}"
                      TextWrapping="Wrap" />
         </Border>
-      </Grid>
+      </StackPanel>
 
       <StackPanel Spacing="4">
         <TextBlock Classes="eyebrow" Text="ECONOMIES" />

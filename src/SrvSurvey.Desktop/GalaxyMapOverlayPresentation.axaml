@@ -112,7 +112,8 @@
                  Text="{Binding RouteFooter}" />
 
       <StackPanel IsVisible="{Binding HasFactions}" Spacing="6">
-        <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+        <Border Classes="overlay-divider"
+                Background="{DynamicResource RavenBorderBrush}" />
         <TextBlock Classes="eyebrow" Text="FACTIONS" />
         <ItemsControl ItemsSource="{Binding Factions}">
           <ItemsControl.ItemTemplate>

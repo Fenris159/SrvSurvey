@@ -6,11 +6,12 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:SystemSurveyOverlayViewModel"
              mc:Ignorable="d"
+             MinWidth="120"
+             MaxWidth="220"
+             HorizontalAlignment="Left"
              ClipToBounds="True">
-  <!-- Chrome is normalized by OverlayThemeResources to the same compact
-       surface as OverlayPositionPreviewWindow (padding 5, corner 5, no
-       editor-only yellow border). Title "System status" is injected by
-       ApplyLegacyPresentation when the catalog preview height is >= 50. -->
+  <!-- Content-sized live/editor presentation; the editor folder tab is host
+       chrome and does not alter this panel's runtime dimensions. -->
   <Border Margin="0"
           Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
@@ -21,12 +22,13 @@
                  FontSize="10"
                  FontWeight="SemiBold"
                  Text="{Binding Survey.SystemStatusText}"
-                 TextTrimming="CharacterEllipsis" />
+                 TextWrapping="Wrap" />
 
       <StackPanel IsVisible="{Binding Survey.HasDssBodies}" Spacing="2">
         <TextBlock Classes="muted"
                    FontSize="9"
-                   Text="{Binding Survey.DssHeading}" />
+                   Text="{Binding Survey.DssHeading}"
+                   TextWrapping="Wrap" />
         <ItemsControl ItemsSource="{Binding Survey.DssBodies}">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
@@ -61,7 +63,8 @@
         <TextBlock Foreground="{DynamicResource RavenBioGoldBrush}"
                    FontSize="9"
                    FontWeight="SemiBold"
-                   Text="{Binding Survey.BiologicalHeading}" />
+                   Text="{Binding Survey.BiologicalHeading}"
+                   TextWrapping="Wrap" />
         <ItemsControl ItemsSource="{Binding Survey.BiologicalBodies}">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
@@ -83,7 +86,8 @@
       <TextBlock Classes="muted"
                  FontSize="9"
                  IsVisible="{Binding Survey.HasNonBodySignals}"
-                 Text="{Binding Survey.NonBodySignalsText}" />
+                 Text="{Binding Survey.NonBodySignalsText}"
+                 TextWrapping="Wrap" />
     </StackPanel>
   </Border>
 </UserControl>

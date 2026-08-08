@@ -6,6 +6,8 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:SurfaceSurveyOverlayViewModel"
              mc:Ignorable="d"
+             MaxWidth="360"
+             HorizontalAlignment="Left"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"

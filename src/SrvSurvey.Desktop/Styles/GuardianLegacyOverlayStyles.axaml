@@ -8,11 +8,12 @@
     <Setter Property="Background" Value="{DynamicResource RavenGuardianBackgroundBrush}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="CornerRadius" Value="5" />
-    <Setter Property="Padding" Value="5" />
+    <Setter Property="Padding" Value="4" />
   </Style>
 
   <Style Selector="Border.guardian-header-rule">
     <Setter Property="Height" Value="1" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="Margin" Value="0,1,0,2" />
     <Setter Property="Background" Value="{DynamicResource RavenGuardianHeaderBrush}" />
     <Setter Property="Opacity" Value="0.65" />

@@ -41,7 +41,8 @@
         </Border>
       </Grid>
 
-      <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+      <Border Classes="overlay-divider"
+              Background="{DynamicResource RavenBorderBrush}" />
 
       <Border ClipToBounds="True"
               CornerRadius="4"
@@ -77,16 +78,24 @@
                       <TextBlock FontWeight="SemiBold"
                                  Text="{Binding DisplayName}"
                                  TextTrimming="CharacterEllipsis" />
-                      <Border Classes="badge" IsVisible="{Binding IsActive}">
+                      <Border Classes="badge"
+                              Width="66"
+                              Padding="8,3"
+                              IsVisible="{Binding IsActive}">
                         <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                                    FontSize="8"
                                    FontWeight="Bold"
+                                   HorizontalAlignment="Center"
                                    Text="ACTIVE" />
                       </Border>
-                      <Border Classes="badge" IsVisible="{Binding IsAnalyzed}">
+                      <Border Classes="badge"
+                              Width="66"
+                              Padding="8,3"
+                              IsVisible="{Binding IsAnalyzed}">
                         <TextBlock Foreground="{DynamicResource RavenSuccessBrush}"
                                    FontSize="8"
                                    FontWeight="Bold"
+                                   HorizontalAlignment="Center"
                                    Text="ANALYZED" />
                       </Border>
                     </StackPanel>

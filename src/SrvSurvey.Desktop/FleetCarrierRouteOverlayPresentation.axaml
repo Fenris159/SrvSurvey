@@ -6,7 +6,7 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:FleetCarrierRouteOverlayViewModel"
              mc:Ignorable="d"
-             Width="320"
+             Width="290"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"
@@ -32,7 +32,8 @@
       <TextBlock Classes="muted overlay-detail"
                  Text="{Binding JumpsLeft}" />
 
-      <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+      <Border Classes="overlay-divider"
+              Background="{DynamicResource RavenBorderBrush}" />
 
       <TextBlock Classes="eyebrow" Text="TRITIUM" />
       <Grid ColumnDefinitions="Auto,Auto"
@@ -84,7 +85,8 @@
       </Grid>
 
       <StackPanel Spacing="7" IsVisible="{Binding HasCountdown}">
-        <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+        <Border Classes="overlay-divider"
+                Background="{DynamicResource RavenBorderBrush}" />
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
           <TextBlock Classes="eyebrow"
                      Text="{Binding CountdownTitle}"

@@ -31,7 +31,8 @@
         </Border>
       </Grid>
 
-      <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+      <Border Classes="overlay-divider"
+              Background="{DynamicResource RavenBorderBrush}" />
 
       <Grid ColumnDefinitions="104,*" ColumnSpacing="8">
         <controls:GroundTargetGuidanceControl

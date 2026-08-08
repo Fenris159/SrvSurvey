@@ -403,7 +403,7 @@ public sealed class OverlayThemeResourcesTests
             ["PlotGuardians"] = new PixelSize(300, 400),
             ["PlotGuardianStatus"] = new PixelSize(380, 108),
             ["PlotGuardianSystem"] = new PixelSize(220, 96),
-            ["PlotRamTah"] = new PixelSize(240, 224),
+            ["PlotRamTah"] = new PixelSize(220, 224),
         };
 
         Assert.All(expected, pair => Assert.Equal(
@@ -477,7 +477,7 @@ public sealed class OverlayThemeResourcesTests
         {
             ["PlotBioSystem"] = 240,
             ["PlotBuildCommodities"] = 270,
-            ["PlotMassacre"] = 240,
+            ["PlotMassacre"] = 190,
             ["PlotQuestMini"] = 240,
             ["PlotStationInfo"] = 240,
         };

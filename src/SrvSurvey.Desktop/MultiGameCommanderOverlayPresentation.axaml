@@ -6,6 +6,7 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:CommanderInstancesViewModel"
              mc:Ignorable="d"
+             HorizontalAlignment="Left"
              ClipToBounds="True">
   <Border Padding="4"
           Background="{DynamicResource RavenWindowBrush}"

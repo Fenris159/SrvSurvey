@@ -7,6 +7,14 @@
              x:DataType="vm:ColonizationCommodityOverlayViewModel"
              mc:Ignorable="d"
              ClipToBounds="True">
+  <UserControl.Styles>
+    <Style Selector="Border.commodity-row">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.commodity-row.alternate">
+      <Setter Property="Background" Value="{DynamicResource RavenColoniseRowHighlightBrush}" />
+    </Style>
+  </UserControl.Styles>
   <!-- Slim shopping list: compact chrome, no word-wrap, ~15 visible rows. -->
   <Border Margin="0"
           Padding="4"
@@ -81,7 +89,7 @@
         </Grid>
       </StackPanel>
 
-      <!-- ~15 commodity rows at ~18px before scroll; row fill, no dividers -->
+      <!-- ~15 commodity rows at ~18px before scroll; alternating fill, no dividers -->
       <ScrollViewer Grid.Row="2"
                     MaxHeight="300"
                     HorizontalScrollBarVisibility="Disabled"
@@ -103,10 +111,11 @@
                 <ItemsControl ItemsSource="{Binding Rows}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:ColonizationCommodityOverlayRowViewModel">
-                      <!-- Row fill uses colonise.rowHighlight (colour + opacity); no divider lines. -->
-                      <Border Margin="0,0,0,1"
+                      <!-- Alternate rows use colonise.rowHighlight; no divider lines. -->
+                      <Border Classes="commodity-row"
+                              Classes.alternate="{Binding IsAlternateRow}"
+                              Margin="0,0,0,1"
                               Padding="3,2"
-                              Background="{DynamicResource RavenColoniseRowHighlightBrush}"
                               CornerRadius="1"
                               Opacity="{Binding RowOpacity}">
                         <Grid ColumnDefinitions="*,40,34,34,12"

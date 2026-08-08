@@ -6,9 +6,10 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:SystemSurveyOverlayViewModel"
              mc:Ignorable="d"
+             Width="260"
              ClipToBounds="True">
-  <!-- Legacy PlotBioStatus: 480x~80 content, orange header, cyan body text,
-       three sample circles, range scale bar, completion %, codex image glyph. -->
+  <!-- Compact PlotBioStatus: progress and sample metadata stay grouped around
+       the circles/range scale instead of reserving a legacy 480px row. -->
   <Border Margin="0"
           Padding="4"
           Background="{DynamicResource RavenWindowBrush}"
@@ -17,30 +18,28 @@
     <Grid IsVisible="{Binding Survey.HasBiologyStatus}"
           RowDefinitions="Auto,*,Auto"
           MinHeight="68">
-      <Grid ColumnDefinitions="*,Auto"
-            ColumnSpacing="8">
+      <StackPanel Orientation="Horizontal"
+                  HorizontalAlignment="Left"
+                  Spacing="7">
         <TextBlock Classes="eyebrow"
                    Foreground="{DynamicResource RavenWarningBrush}"
                    FontSize="11"
                    FontWeight="SemiBold"
                    Text="{Binding Survey.BiologyStatus.ProgressText}"
                    TextTrimming="CharacterEllipsis" />
-        <StackPanel Grid.Column="1"
-                    Orientation="Horizontal"
-                    Spacing="6"
-                    VerticalAlignment="Center">
-          <TextBlock Classes="muted"
-                     Foreground="{DynamicResource RavenAccentBrush}"
-                     FontSize="11"
-                     FontWeight="SemiBold"
-                     Text="{Binding Survey.BiologyStatus.CompletionPercentText}" />
-          <ProgressBar Width="72"
-                       Height="8"
-                       Minimum="0"
-                       Maximum="100"
-                       Value="{Binding Survey.BiologyStatus.TrackedCompletionPercent}" />
-        </StackPanel>
-      </Grid>
+        <TextBlock Classes="muted"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource RavenAccentBrush}"
+                   FontSize="11"
+                   FontWeight="SemiBold"
+                   Text="{Binding Survey.BiologyStatus.CompletionPercentText}" />
+        <ProgressBar Width="64"
+                     Height="8"
+                     VerticalAlignment="Center"
+                     Minimum="0"
+                     Maximum="100"
+                     Value="{Binding Survey.BiologyStatus.TrackedCompletionPercent}" />
+      </StackPanel>
 
       <Grid Grid.Row="1"
             Margin="0,6,0,4"
@@ -56,12 +55,12 @@
 
         <Grid Grid.Row="1"
               IsVisible="{Binding Survey.BiologyStatus.HasActiveSample}"
-              ColumnDefinitions="104,*"
-              ColumnSpacing="8"
+              ColumnDefinitions="92,*"
+              ColumnSpacing="6"
               MinHeight="40">
           <StackPanel Orientation="Horizontal"
                       VerticalAlignment="Center"
-                      Spacing="8">
+                      Spacing="6">
             <!-- Stage 1: always filled once an active sample exists -->
             <Grid Width="24" Height="24">
               <Ellipse Stroke="{DynamicResource RavenWarningBrush}"
@@ -86,8 +85,7 @@
           </StackPanel>
 
           <Grid Grid.Column="1"
-                RowDefinitions="*,Auto"
-                ColumnDefinitions="*,Auto">
+                RowDefinitions="Auto,Auto">
             <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                        FontSize="14"
                        FontWeight="SemiBold"
@@ -108,14 +106,6 @@
                          FontSize="10"
                          Text="{Binding Survey.BiologyStatus.ActiveSample.SampleScaleLabel}" />
             </StackPanel>
-            <TextBlock Grid.Column="1"
-                       Grid.Row="1"
-                       HorizontalAlignment="Right"
-                       VerticalAlignment="Center"
-                       Foreground="{DynamicResource RavenAccentBrush}"
-                       FontSize="10"
-                       IsVisible="{Binding Survey.BiologyStatus.ActiveSample.HasReward}"
-                       Text="{Binding Survey.BiologyStatus.ActiveSample.RewardText}" />
           </Grid>
         </Grid>
 
@@ -149,9 +139,7 @@
         </ItemsControl>
       </Grid>
 
-      <Grid Grid.Row="2"
-            ColumnDefinitions="*,Auto"
-            MinHeight="18">
+      <Grid Grid.Row="2" MinHeight="18">
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Center"
                     Spacing="6"
@@ -173,43 +161,49 @@
                   Opacity="0.9" />
         </StackPanel>
 
-        <TextBlock HorizontalAlignment="Center"
-                   Classes="muted"
-                   Foreground="{DynamicResource RavenAccentBrush}"
-                   FontSize="10"
-                   IsVisible="{Binding !Survey.BiologyStatus.IsStaleActiveSample}"
-                   Text="{Binding Survey.BiologyStatus.Footer}"
-                   TextWrapping="Wrap"
-                   TextAlignment="Center" />
-
-        <Panel Grid.Column="1"
-               Width="28"
-               Height="28"
-               IsVisible="{Binding Survey.BiologyStatus.ShowCodexImageIndicator}">
-          <Border Width="22"
-                  Height="18"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  BorderBrush="{DynamicResource RavenAccentBrush}"
-                  BorderThickness="1.5"
-                  CornerRadius="2"
-                  Background="Transparent" />
-          <Border Width="10"
-                  Height="10"
-                  Margin="0,0,0,2"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  BorderBrush="{DynamicResource RavenAccentBrush}"
-                  BorderThickness="1"
-                  CornerRadius="5" />
-          <Path IsVisible="{Binding !Survey.BiologyStatus.HasCodexImage}"
-                Stroke="{DynamicResource RavenDangerBrush}"
-                StrokeThickness="2"
-                Data="M 4,4 L 24,24 M 24,4 L 4,24"
-                Width="28"
-                Height="28"
-                Stretch="None" />
-        </Panel>
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="8"
+                    IsVisible="{Binding !Survey.BiologyStatus.IsStaleActiveSample}">
+          <TextBlock Classes="muted"
+                     Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="10"
+                     Text="{Binding Survey.BiologyStatus.Footer}"
+                     TextWrapping="Wrap"
+                     TextAlignment="Center" />
+          <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
+                     FontSize="10"
+                     IsVisible="{Binding Survey.BiologyStatus.ActiveSample.HasReward}"
+                     Text="{Binding Survey.BiologyStatus.ActiveSample.RewardText}" />
+          <Panel Width="28"
+                 Height="28"
+                 IsVisible="{Binding Survey.BiologyStatus.ShowCodexImageIndicator}">
+            <Border Width="22"
+                    Height="18"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    BorderBrush="{DynamicResource RavenAccentBrush}"
+                    BorderThickness="1.5"
+                    CornerRadius="2"
+                    Background="Transparent" />
+            <Border Width="10"
+                    Height="10"
+                    Margin="0,0,0,2"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    BorderBrush="{DynamicResource RavenAccentBrush}"
+                    BorderThickness="1"
+                    CornerRadius="5" />
+            <Path IsVisible="{Binding !Survey.BiologyStatus.HasCodexImage}"
+                  Stroke="{DynamicResource RavenDangerBrush}"
+                  StrokeThickness="2"
+                  Data="M 4,4 L 24,24 M 24,4 L 4,24"
+                  Width="28"
+                  Height="28"
+                  Stretch="None" />
+          </Panel>
+        </StackPanel>
       </Grid>
     </Grid>
   </Border>

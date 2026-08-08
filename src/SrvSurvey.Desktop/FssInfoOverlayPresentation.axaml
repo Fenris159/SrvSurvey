@@ -39,7 +39,8 @@
                    TextWrapping="Wrap" />
       </StackPanel>
 
-      <Border Height="1" Background="{DynamicResource RavenBorderBrush}" />
+      <Border Classes="overlay-divider"
+              Background="{DynamicResource RavenBorderBrush}" />
 
       <TextBlock Classes="muted overlay-detail"
                  IsVisible="{Binding !Survey.HasFssBodies}"

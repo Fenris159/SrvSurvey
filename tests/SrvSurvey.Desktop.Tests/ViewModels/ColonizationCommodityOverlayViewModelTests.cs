@@ -190,7 +190,7 @@ public sealed class ColonizationCommodityOverlayViewModelTests
     {
         Commodity = "water",
         DisplayName = "Water",
-        Category = "Chemicals",
+        Category = "Metals",
         Needed = 50,
         InShip = 0,
         OnFleetCarriers = 0,
@@ -212,6 +212,8 @@ public sealed class ColonizationCommodityOverlayViewModelTests
         var rows = viewModel.Groups.SelectMany(group => group.Rows).ToArray();
         var steel = rows.Single(row => row.Commodity == "steel");
         var water = rows.Single(row => row.Commodity == "water");
+        Assert.True(steel.IsAlternateRow);
+        Assert.False(water.IsAlternateRow);
         Assert.True(steel.IsFleetCarrierLoadHighlighted);
         Assert.Equal("FC READY", steel.MarketBadgeText);
         Assert.Equal("-20", steel.OnFleetCarriersText);

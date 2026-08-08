@@ -87,7 +87,7 @@ public sealed class OverlayPositionEditSessionTests
                 bounds,
                 definition.PreviewSize));
         Assert.Equal(
-            new PixelPoint(460, 208),
+            new PixelPoint(570, 208),
             active.GetPosition(
                 definition.Name,
                 bounds,

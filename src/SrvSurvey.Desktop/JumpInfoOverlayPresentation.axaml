@@ -80,7 +80,7 @@
       </Grid>
 
       <StackPanel IsVisible="{Binding JumpInfo.ShowDetails}" Spacing="8">
-        <Border Height="1"
+        <Border Classes="overlay-divider"
                 Background="{DynamicResource RavenBorderBrush}" />
         <Grid IsVisible="{Binding JumpInfo.HasDiscoveryOrRouteGuidance}"
               ColumnDefinitions="*,Auto"

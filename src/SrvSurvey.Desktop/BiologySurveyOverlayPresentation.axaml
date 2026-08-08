@@ -29,7 +29,7 @@
                  Text="{Binding Survey.BiologySurveyDisplay.ProgressText}"
                  TextTrimming="CharacterEllipsis" />
 
-      <Border Height="1"
+      <Border Classes="overlay-divider"
               Margin="0,1"
               Background="{DynamicResource RavenWarningBrush}"
               Opacity="0.65" />

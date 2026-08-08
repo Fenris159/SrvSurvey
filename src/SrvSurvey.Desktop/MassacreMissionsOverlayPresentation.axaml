@@ -6,6 +6,8 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:CombatOverlayViewModel"
              mc:Ignorable="d"
+             HorizontalAlignment="Left"
+             MaxWidth="360"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"
@@ -27,13 +29,15 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:MassacreMissionViewModel">
             <Grid Margin="0,1"
-                  ColumnDefinitions="Auto,*,Auto"
+                  ColumnDefinitions="Auto,Auto,Auto"
                   ColumnSpacing="6"
                   Opacity="{Binding RowOpacity}">
               <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                          FontWeight="Bold"
                          Text="&#x25B6;" />
-              <StackPanel Grid.Column="1" Spacing="0">
+              <StackPanel Grid.Column="1"
+                          MaxWidth="260"
+                          Spacing="0">
                 <TextBlock Foreground="{DynamicResource RavenAccentBrush}"
                            FontSize="11"
                            FontWeight="SemiBold"

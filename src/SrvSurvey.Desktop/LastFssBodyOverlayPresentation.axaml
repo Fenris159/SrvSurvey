@@ -7,7 +7,7 @@
              xmlns:vm="using:SrvSurvey.Desktop.ViewModels"
              x:DataType="vm:SystemSurveyOverlayViewModel"
              mc:Ignorable="d"
-             Width="310"
+             Width="285"
              ClipToBounds="True">
   <Border Margin="0"
           Padding="4"

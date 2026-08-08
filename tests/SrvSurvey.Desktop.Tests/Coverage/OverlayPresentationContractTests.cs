@@ -213,9 +213,9 @@ public sealed class OverlayPresentationContractTests
 
     [Theory]
     [InlineData("PlotFSSInfo", "FssInfoOverlayPresentation.axaml", "FssInfoOverlayWindow.axaml", 270)]
-    [InlineData("PlotFSS", "LastFssBodyOverlayPresentation.axaml", "LastFssBodyOverlayWindow.axaml", 310)]
+    [InlineData("PlotFSS", "LastFssBodyOverlayPresentation.axaml", "LastFssBodyOverlayWindow.axaml", 285)]
     [InlineData("PlotBodyInfo", "BodyInformationOverlayPresentation.axaml", "BodyInformationOverlayWindow.axaml", 290)]
-    [InlineData("PlotFleetCarrierRoute", "FleetCarrierRouteOverlayPresentation.axaml", "FleetCarrierRouteOverlayWindow.axaml", 320)]
+    [InlineData("PlotFleetCarrierRoute", "FleetCarrierRouteOverlayPresentation.axaml", "FleetCarrierRouteOverlayWindow.axaml", 290)]
     [InlineData("PlotRouteBio", "RouteBioOverlayPresentation.axaml", "RouteBioOverlayWindow.axaml", 260)]
     public void CompactPresentationsShareOneBoundedWidthWithTheirHosts(
         string plotterName,
@@ -282,6 +282,50 @@ public sealed class OverlayPresentationContractTests
         Assert.Contains("TextBlock.overlay-detail", typography);
         Assert.Contains("TextBlock.overlay-caption", typography);
         Assert.DoesNotContain("TextBlock[FontSize=", typography);
+    }
+
+    [Fact]
+    public void SharedPresentationsOwnCompactionMapSizingAndDividerBehavior()
+    {
+        var root = FindRepositoryRoot();
+        var desktop = Path.Combine(root, "src", "SrvSurvey.Desktop");
+        var notification = File.ReadAllText(Path.Combine(
+            desktop,
+            "NotificationOverlayPresentation.axaml"));
+        var guardianSite = File.ReadAllText(Path.Combine(
+            desktop,
+            "GuardianSiteOverlayPresentation.axaml"));
+        var commodities = File.ReadAllText(Path.Combine(
+            desktop,
+            "ColonizationCommodityOverlayPresentation.axaml"));
+        var ravenStyles = File.ReadAllText(Path.Combine(
+            desktop,
+            "Styles",
+            "RavenStyles.axaml"));
+        var guardianStyles = File.ReadAllText(Path.Combine(
+            desktop,
+            "Styles",
+            "GuardianLegacyOverlayStyles.axaml"));
+        var pulseWindow = File.ReadAllText(Path.Combine(
+            desktop,
+            "PulseOverlayWindow.axaml"));
+        var pulsePresentation = File.ReadAllText(Path.Combine(
+            desktop,
+            "PulseOverlayPresentation.axaml"));
+
+        Assert.Contains("RowDefinitions=\"Auto,Auto\"", notification);
+        Assert.Contains("Value=\"{Binding ProgressPercent}\"", notification);
+        Assert.Contains("Width=\"{Binding Guardian.PreferredOverlayWidth}\"", guardianSite);
+        Assert.Contains("Height=\"{Binding Guardian.PreferredOverlayHeight}\"", guardianSite);
+        Assert.Contains("Classes.alternate=\"{Binding IsAlternateRow}\"", commodities);
+        Assert.Contains("Border.overlay-divider", ravenStyles);
+        Assert.Contains("HorizontalAlignment\" Value=\"Stretch\"", ravenStyles);
+        Assert.Contains("Border.guardian-header-rule", guardianStyles);
+        Assert.Contains("HorizontalAlignment\" Value=\"Stretch\"", guardianStyles);
+        Assert.Contains("Width=\"32\"", pulseWindow);
+        Assert.Contains("Height=\"32\"", pulseWindow);
+        Assert.Contains("Width=\"32\"", pulsePresentation);
+        Assert.Contains("Height=\"32\"", pulsePresentation);
     }
 
     private static PresentationContract Contract(
